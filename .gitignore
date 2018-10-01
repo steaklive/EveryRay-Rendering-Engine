@@ -1,0 +1,5 @@
+Game/Release/*
+Library/Release/*
+Library/Content/*
+!Library/Content/Effects
+!Library/Content/Shaders
