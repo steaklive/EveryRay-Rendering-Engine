@@ -120,6 +120,17 @@ namespace Library
 		ApplyRotation(transformMatrix);
 	}
 
+	void ProxyModel::ApplyRotaitonAroundPoint(float radius, float angle)
+	{
+		XMMATRIX rotation = XMMatrixRotationX(angle);
+
+		XMMATRIX translate = XMMatrixTranslation(0.0f, 0.0f, radius);
+
+		XMMATRIX matFinal = rotation * translate;
+
+
+	}
+
 	void ProxyModel::Initialize()
 	{
 		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
@@ -145,6 +156,12 @@ namespace Library
 		MatrixHelper::SetUp(worldMatrix, mUp);
 		MatrixHelper::SetRight(worldMatrix, mRight);
 		MatrixHelper::SetTranslation(worldMatrix, mPosition);
+		//
+		//XMMATRIX translate = XMMatrixTranslation(0.0f, 0.0f, 15.0f);
+		//
+		//XMMATRIX matFinal = -translate * rotation * translate;
+		//
+		//worldMatrix = matFinal;
 
 		XMStoreFloat4x4(&mWorldMatrix, XMLoadFloat4x4(&mScaleMatrix) * worldMatrix);
 	}

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PHYSICALLY_BASED_RENDERING_DEMO
+#define PHYSICALLY_BASED_RENDERING_DEMO
 
 #include "..\Library\DrawableGameComponent.h"
 #include "..\Library\MatrixHelper.h"
@@ -20,7 +21,8 @@ namespace Library
 	class IBLRadianceMap;
 }
 
-namespace Rendering
+	
+namespace PBRDemoLightInfo 
 {
 	struct LightData
 	{
@@ -31,6 +33,9 @@ namespace Rendering
 			delete PointLight;
 		}
 	};
+}
+namespace Rendering
+{
 
 	struct ShaderBallWoodMaterial
 	{
@@ -168,7 +173,6 @@ namespace Rendering
 			ReleaseObject(NormalTextureShaderResourceView);
 		}
 	};
-	
 	struct ShaderBallInnerMaterial
 	{
 		ID3D11ShaderResourceView* AlbedoTextureShaderResourceView = nullptr;
@@ -249,3 +253,5 @@ namespace Rendering
 		RenderStateHelper* mRenderStateHelper;
 	};
 }
+
+#endif

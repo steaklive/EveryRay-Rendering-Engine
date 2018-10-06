@@ -201,6 +201,7 @@ IF EXIST "$(TargetDir)Content" xcopy /E /Y "$(TargetDir)Content" "$(SolutionDir)
     <ClInclude Include="IBLCubemap.h" />
     <ClInclude Include="IBLCubemapFace.h" />
     <ClInclude Include="IBLRadianceMap.h" />
+    <ClInclude Include="InstancingMaterial.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Material.h" />
@@ -268,6 +269,7 @@ IF EXIST "$(TargetDir)Content" xcopy /E /Y "$(TargetDir)Content" "$(SolutionDir)
     <ClCompile Include="IBLCubemap.cpp" />
     <ClCompile Include="IBLCubemapFace.cpp" />
     <ClCompile Include="IBLRadianceMap.cpp" />
+    <ClCompile Include="InstancingMaterial.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Material.cpp" />

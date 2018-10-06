@@ -249,6 +249,9 @@
     <ClInclude Include="DemoLevel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="InstancingMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -433,6 +436,9 @@
     </ClCompile>
     <ClCompile Include="DemoLevel.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="InstancingMaterial.cpp">
+      <Filter>Source Files\Materials</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

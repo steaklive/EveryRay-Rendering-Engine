@@ -66,6 +66,9 @@
     <ClInclude Include="PhysicallyBasedRenderingDemo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="InstancingDemo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -99,6 +102,9 @@
       <Filter>Source Files\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="PhysicallyBasedRenderingDemo.cpp">
+      <Filter>Source Files\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="InstancingDemo.cpp">
       <Filter>Source Files\Scenes</Filter>
     </ClCompile>
   </ItemGroup>

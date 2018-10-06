@@ -106,7 +106,8 @@ float4 pixel_shader(VS_OUTPUT IN) : SV_Target
 {
 	float4 OUT = (float4)0;
 	
-	float4 color = ColorTexture.Sample(TrilinearSampler, IN.TextureCoordinate);
+    float4 color = (1, 1, 1, 1);
+    //ColorTexture.Sample(TrilinearSampler, IN.TextureCoordinate);
 	float3 ambient = get_vector_color_contribution(AmbientColor, color.rgb);	
 	float3 environment = EnvironmentMap.Sample(TrilinearSampler, IN.ReflectionVector).rgb;
 	float3 reflection = get_vector_color_contribution(EnvColor, environment);

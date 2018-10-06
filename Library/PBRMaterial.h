@@ -5,23 +5,23 @@
 
 namespace Library
 {
-	typedef struct _NormalMappingMaterialVertex
-	{
-		XMFLOAT4 Position;
-		XMFLOAT2 TextureCoordinates;
-		XMFLOAT3 Normal;
-		XMFLOAT3 Tangent;
-
-		_NormalMappingMaterialVertex()
-		{
-		}
-
-		_NormalMappingMaterialVertex(XMFLOAT4 position, XMFLOAT2 textureCoordinates, XMFLOAT3 normal, XMFLOAT3 tangent)
-			: Position(position), TextureCoordinates(textureCoordinates), Normal(normal), Tangent(tangent)
-		{
-		}
-
-	} NormalMappingMaterialVertex;
+	//typedef struct _NormalMappingMaterialVertex
+	//{
+	//	XMFLOAT4 Position;
+	//	XMFLOAT2 TextureCoordinates;
+	//	XMFLOAT3 Normal;
+	//	XMFLOAT3 Tangent;
+	//
+	//	_NormalMappingMaterialVertex()
+	//	{
+	//	}
+	//
+	//	_NormalMappingMaterialVertex(XMFLOAT4 position, XMFLOAT2 textureCoordinates, XMFLOAT3 normal, XMFLOAT3 tangent)
+	//		: Position(position), TextureCoordinates(textureCoordinates), Normal(normal), Tangent(tangent)
+	//	{
+	//	}
+	//
+	//} NormalMappingMaterialVertex;
 
 	class PBRMaterial : public Material
 	{

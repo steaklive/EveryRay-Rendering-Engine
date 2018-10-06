@@ -31,6 +31,7 @@ namespace Rendering
 	class AmbientLightingDemo;
 	class ShadowMappingDemo;
 	class PhysicallyBasedRenderingDemo;
+	class InstancingDemo;
 	
 	class RenderingGame : public Game
 	{
@@ -62,6 +63,7 @@ namespace Rendering
 		AmbientLightingDemo* mAmbientLightingDemo;
 		ShadowMappingDemo* mShadowMappingDemo;
 		PhysicallyBasedRenderingDemo* mPBRDemo;
+		InstancingDemo* mInstancingDemo;
 		
 		RenderStateHelper* mRenderStateHelper;
 

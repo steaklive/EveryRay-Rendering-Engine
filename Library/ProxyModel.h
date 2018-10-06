@@ -33,6 +33,7 @@ namespace Library
 
 		void ApplyRotation(CXMMATRIX transform);
 		void ApplyRotation(const XMFLOAT4X4& transform);
+		void ApplyRotaitonAroundPoint(float radius, float angle);
 
 		virtual void Initialize() override;
 		virtual void Update(const GameTime& gameTime) override;

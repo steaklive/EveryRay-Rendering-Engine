@@ -37,7 +37,7 @@ namespace Rendering
 	const float PhysicallyBasedRenderingDemo::LightMovementRate = 10.0f;
 	const int NUM_SPHERES = 5;
 
-	LightData lightData;
+	PBRDemoLightInfo::LightData lightData;
 
 	ShaderBallWoodMaterial		shaderBallWoodMaterial;
 	ShaderBallFloorMaterial		shaderBallFloorMaterial;

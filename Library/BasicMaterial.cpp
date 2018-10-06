@@ -51,7 +51,7 @@ namespace Library
 		}
 		else
 		{
-			XMFLOAT4 color = XMFLOAT4(reinterpret_cast<const float*>(&ColorHelper::RandomColor()));
+			XMFLOAT4 color = XMFLOAT4(reinterpret_cast<const float*>(&ColorHelper::White));
 			for (UINT i = 0; i < sourceVertices.size(); i++)
 			{
 				XMFLOAT3 position = sourceVertices.at(i);

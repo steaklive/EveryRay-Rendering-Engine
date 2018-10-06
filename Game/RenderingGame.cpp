@@ -31,6 +31,7 @@
 #include "AmbientLightingDemo.h"
 #include "ShadowMappingDemo.h"
 #include "PhysicallyBasedRenderingDemo.h"
+#include "InstancingDemo.h"
 
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
@@ -43,8 +44,9 @@ namespace Rendering
 	
 	const char* displayedLevelNames[] =
 	{
+		"GPU Instancing",
+		"Cascaded Shadow Mapping",
 		"Physically Based Rendering",
-		"Cascaded Shadow Mapping" 
 	};
 
 	// we will store our demo scenes here:
@@ -69,6 +71,7 @@ namespace Rendering
 		mAmbientLightingDemo(nullptr),
 		mShadowMappingDemo(nullptr),
 		mPBRDemo(nullptr),
+		mInstancingDemo(nullptr),
 
 		mRenderStateHelper(nullptr),
 		mRenderTarget(nullptr), mFullScreenQuad(nullptr)
@@ -112,9 +115,11 @@ namespace Rendering
 		mGrid->SetColor((XMFLOAT4)ColorHelper::LightGray);
 		components.push_back(mGrid);
 
-		// Adding empty displayedLevelNames
-		demoLevels.push_back(mPBRDemo);
+		// Adding empty Levels
+		demoLevels.push_back(mInstancingDemo);
 		demoLevels.push_back(mShadowMappingDemo);
+		demoLevels.push_back(mPBRDemo);
+
 
 		
 		//Render State Helper
@@ -153,10 +158,13 @@ namespace Rendering
 			switch (level)
 			{
 			case 0:
-				demoLevels[level] = new PhysicallyBasedRenderingDemo(*this, *mCamera);
+				demoLevels[level] = new InstancingDemo(*this, *mCamera);
 				break;
 			case 1:
 				demoLevels[level] = new ShadowMappingDemo(*this, *mCamera);
+				break;
+			case 2:
+				demoLevels[level] = new PhysicallyBasedRenderingDemo(*this, *mCamera);
 				break;
 			}
 		}
