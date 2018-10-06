@@ -7,6 +7,7 @@ I have changed and extended it for educational purposes with all kinds of featur
 
 <br>![alt text](https://preview.ibb.co/jVodie/Every_Ray_PBR.png")
 <br>![alt text](https://preview.ibb.co/h069pK/Every_Ray_CSM.png")
+<br>![alt text](https://preview.ibb.co/fqP3uK/Every_Ray_Instancing.png")
 
 # Features
 - 3D model loading (.obj, .fbx and etc.) with Assimp Library
