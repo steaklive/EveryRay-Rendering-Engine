@@ -3,7 +3,7 @@ Rendering engine/framework in C++ with DirectX 11 support.
 
 "EveryRay - Rendering Engine" is partially based on the small engine from the book "Real-Time 3D Rendering with DirectX and HLSL: A Practical Guide to Graphics Programming" by Paul Varcholik.
 
-I have changed and extended it for educational purposes with all kinds of features (see the description below). Stay tuned for more updates :)
+I have been changing and extending it for educational purposes with all kinds of features (see the description below) for quite a while. Stay tuned for more updates :)
 
 <br>![alt text](https://preview.ibb.co/jVodie/Every_Ray_PBR.png")
 <br>![alt text](https://preview.ibb.co/h069pK/Every_Ray_CSM.png")
