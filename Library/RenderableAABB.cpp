@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "RenderableFrustum.h"
+#include "RenderableAABB.h"
 #include "Game.h"
 #include "GameException.h"
 #include "BasicMaterial.h"
@@ -13,15 +13,15 @@
 
 namespace Library
 {
-	RTTI_DEFINITIONS(RenderableFrustum)
+	RTTI_DEFINITIONS(RenderableAABB)
 
-	const XMVECTORF32 RenderableFrustum::DefaultColor = ColorHelper::Green;
+	const XMVECTORF32 RenderableAABB::DefaultColor = ColorHelper::Blue;
 
-	const UINT RenderableFrustum::FrustumVertexCount = 8;
-	const UINT RenderableFrustum::FrustumPrimitiveCount = 12;
-	const UINT RenderableFrustum::FrustumIndicesPerPrimitive = 2;
-	const UINT RenderableFrustum::FrustumIndexCount = FrustumPrimitiveCount * FrustumIndicesPerPrimitive;
-	const USHORT RenderableFrustum::FrustumIndices[] = {
+	const UINT RenderableAABB::AABBVertexCount = 8;
+	const UINT RenderableAABB::AABBPrimitiveCount = 12;
+	const UINT RenderableAABB::AABBIndicesPerPrimitive = 2;
+	const UINT RenderableAABB::AABBIndexCount = AABBPrimitiveCount * AABBIndicesPerPrimitive;
+	const USHORT RenderableAABB::AABBIndices[] = {
 		// Near plane lines
 		0, 1,
 		1, 2,
@@ -40,8 +40,7 @@ namespace Library
 		6, 7,
 		7, 4
 	};
-
-	RenderableFrustum::RenderableFrustum(Game& game, Camera& camera)
+	RenderableAABB::RenderableAABB(Game& game, Camera& camera)
 		: DrawableGameComponent(game, camera),
 		mVertexBuffer(nullptr), mIndexBuffer(nullptr), mMaterial(nullptr), mPass(nullptr), mInputLayout(nullptr),
 		mColor(DefaultColor), mPosition(Vector3Helper::Zero), mDirection(Vector3Helper::Forward), mUp(Vector3Helper::Up), mRight(Vector3Helper::Right),
@@ -49,7 +48,7 @@ namespace Library
 	{
 	}
 
-	RenderableFrustum::RenderableFrustum(Game& game, Camera& camera, const XMFLOAT4& color)
+	RenderableAABB::RenderableAABB(Game& game, Camera& camera, const XMFLOAT4& color)
 		: DrawableGameComponent(game, camera),
 		mVertexBuffer(nullptr), mIndexBuffer(nullptr), mMaterial(nullptr), mPass(nullptr), mInputLayout(nullptr),
 		mColor(color), mPosition(Vector3Helper::Zero), mDirection(Vector3Helper::Forward), mUp(Vector3Helper::Up), mRight(Vector3Helper::Right),
@@ -57,7 +56,7 @@ namespace Library
 	{
 	}
 
-	RenderableFrustum::~RenderableFrustum()
+	RenderableAABB::~RenderableAABB()
 	{
 		ReleaseObject(mIndexBuffer);
 		ReleaseObject(mVertexBuffer);
@@ -70,103 +69,43 @@ namespace Library
 		}
 	}
 
-	const XMFLOAT3& RenderableFrustum::Position() const
-	{
-		return mPosition;
-	}
-
-	const XMFLOAT3& RenderableFrustum::Direction() const
-	{
-		return mDirection;
-	}
-
-	const XMFLOAT3& RenderableFrustum::Up() const
-	{
-		return mUp;
-	}
-
-	const XMFLOAT3& RenderableFrustum::Right() const
-	{
-		return mRight;
-	}
-
-	XMVECTOR RenderableFrustum::PositionVector() const
-	{
-		return XMLoadFloat3(&mPosition);
-	}
-
-	XMVECTOR RenderableFrustum::DirectionVector() const
-	{
-		return XMLoadFloat3(&mDirection);
-	}
-
-	XMVECTOR RenderableFrustum::UpVector() const
-	{
-		return XMLoadFloat3(&mUp);
-	}
-
-	XMVECTOR RenderableFrustum::RightVector() const
-	{
-		return XMLoadFloat3(&mRight);
-	}
-
-	void RenderableFrustum::SetPosition(FLOAT x, FLOAT y, FLOAT z)
-	{
-		XMVECTOR position = XMVectorSet(x, y, z, 1.0f);
-		SetPosition(position);
-	}
-
-	void RenderableFrustum::SetPosition(FXMVECTOR position)
-	{
-		XMStoreFloat3(&mPosition, position);
-	}
-
-	void RenderableFrustum::SetPosition(const XMFLOAT3& position)
+	void RenderableAABB::SetPosition(const XMFLOAT3& position)
 	{
 		mPosition = position;
 	}
 
-	void RenderableFrustum::Reset()
+	void RenderableAABB::InitializeGeometry(const std::vector<XMFLOAT3>& aabb, XMMATRIX matrix)
 	{
-		mDirection = Vector3Helper::Forward;
-		mUp =  Vector3Helper::Up;
-		mRight = Vector3Helper::Right;
 
-		mWorldMatrix = MatrixHelper::Identity;
+		XMVECTOR scaleVector;
+		XMVECTOR rotQuatVector;
+		XMVECTOR translationVector;
 
-	}
+		XMFLOAT3 scale;
+		XMFLOAT3 translation;
+
+		XMMatrixDecompose(&scaleVector, &rotQuatVector, &translationVector, matrix);
 		
-	void RenderableFrustum::ApplyRotation(CXMMATRIX transform)
-	{
-		XMVECTOR direction = XMLoadFloat3(&mDirection);
-		XMVECTOR up = XMLoadFloat3(&mUp);
+		XMStoreFloat3(&scale, scaleVector);
+		XMStoreFloat3(&translation, translationVector);
 
-		direction = XMVector3TransformNormal(direction, transform);
-		direction = XMVector3Normalize(direction);
 
-		up = XMVector3TransformNormal(up, transform);
-		up = XMVector3Normalize(up);
+		std::vector<XMFLOAT3> vertices;
+		vertices.push_back(XMFLOAT3(aabb[0].x * scale.x, aabb[1].y  * scale.y, aabb[0].z  * scale.z));
+		vertices.push_back(XMFLOAT3(aabb[1].x * scale.x, aabb[1].y  * scale.y, aabb[0].z  * scale.z));
+		vertices.push_back(XMFLOAT3(aabb[1].x * scale.x, aabb[0].y  * scale.y, aabb[0].z  * scale.z));
+		vertices.push_back(XMFLOAT3(aabb[0].x * scale.x, aabb[0].y  * scale.y, aabb[0].z  * scale.z));
+		vertices.push_back(XMFLOAT3(aabb[0].x * scale.x, aabb[1].y  * scale.y, aabb[1].z  * scale.z));
+		vertices.push_back(XMFLOAT3(aabb[1].x * scale.x, aabb[1].y  * scale.y, aabb[1].z  * scale.z));
+		vertices.push_back(XMFLOAT3(aabb[1].x * scale.x, aabb[0].y  * scale.y, aabb[1].z  * scale.z));
+		vertices.push_back(XMFLOAT3(aabb[0].x * scale.x, aabb[0].y  * scale.y, aabb[1].z  * scale.z));
 
-		XMVECTOR right = XMVector3Cross(direction, up);
-		up = XMVector3Cross(right, direction);
 
-		XMStoreFloat3(&mDirection, direction);
-		XMStoreFloat3(&mUp, up);
-		XMStoreFloat3(&mRight, right);
+
+		InitializeVertexBuffer(vertices);
 	}
 
-	void RenderableFrustum::ApplyRotation(const XMFLOAT4X4& transform)
-	{
-		XMMATRIX transformMatrix = XMLoadFloat4x4(&transform);
-		ApplyRotation(transformMatrix);
-	}
-
-	void RenderableFrustum::InitializeGeometry(const Frustum& frustum)
-	{
-		InitializeVertexBuffer(frustum);
-	}
-
-	void RenderableFrustum::Initialize()
+	void RenderableAABB::Initialize()
 	{
 		Effect* effect = new Effect(*mGame);
 		effect->CompileFromFile(L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Effects\\BasicEffect.fx");
@@ -180,7 +119,7 @@ namespace Library
 		InitializeIndexBuffer();
 	}
 
-	void RenderableFrustum::Update(const GameTime& gameTime)
+	void RenderableAABB::Update(const GameTime& gameTime)
 	{
 		XMMATRIX worldMatrix = XMMatrixIdentity();
 		MatrixHelper::SetForward(worldMatrix, mDirection);
@@ -191,7 +130,7 @@ namespace Library
 		XMStoreFloat4x4(&mWorldMatrix, worldMatrix);
 	}
 
-	void RenderableFrustum::Draw(const GameTime& gameTime)
+	void RenderableAABB::Draw(const GameTime& gameTime)
 	{
 		assert(mPass != nullptr);
 		assert(mInputLayout != nullptr);
@@ -211,27 +150,27 @@ namespace Library
 
 		mPass->Apply(0, direct3DDeviceContext);
 
-		direct3DDeviceContext->DrawIndexed(FrustumIndexCount, 0, 0);
+		direct3DDeviceContext->DrawIndexed(AABBIndexCount, 0, 0);
 	}
-	void RenderableFrustum::SetColor(XMFLOAT4 color)
+	void RenderableAABB::SetColor(XMFLOAT4 color)
 	{
 		mColor = color;
 	}
-	void RenderableFrustum::InitializeVertexBuffer(const Frustum& frustum)
+	void RenderableAABB::InitializeVertexBuffer(const std::vector<XMFLOAT3>& aabb)
 	{
 		ReleaseObject(mVertexBuffer);
 
-		VertexPositionColor vertices[FrustumVertexCount];
-		const XMFLOAT3* corners = frustum.Corners();
-		for (UINT i = 0; i < FrustumVertexCount; i++)
+		VertexPositionColor vertices[AABBVertexCount];
+		//const XMFLOAT3* corners = frustum.Corners();
+		for (UINT i = 0; i < AABBVertexCount; i++)
 		{
-			vertices[i].Position = XMFLOAT4(corners[i].x, corners[i].y, corners[i].z, 1.0f);
+			vertices[i].Position = XMFLOAT4(aabb[i].x, aabb[i].y, aabb[i].z, 1.0f);
 			vertices[i].Color = mColor;
 		}
 
 		D3D11_BUFFER_DESC vertexBufferDesc;
 		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
-		vertexBufferDesc.ByteWidth = sizeof(VertexPositionColor) * FrustumVertexCount;
+		vertexBufferDesc.ByteWidth = sizeof(VertexPositionColor) * AABBVertexCount;
 		vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
@@ -244,17 +183,17 @@ namespace Library
 		}
 	}
 
-	void RenderableFrustum::InitializeIndexBuffer()
+	void RenderableAABB::InitializeIndexBuffer()
 	{
 		D3D11_BUFFER_DESC indexBufferDesc;
 		ZeroMemory(&indexBufferDesc, sizeof(indexBufferDesc));
-		indexBufferDesc.ByteWidth = sizeof(USHORT) * FrustumIndexCount;
+		indexBufferDesc.ByteWidth = sizeof(USHORT) * AABBIndexCount;
 		indexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 
 		D3D11_SUBRESOURCE_DATA indexSubResourceData;
 		ZeroMemory(&indexSubResourceData, sizeof(indexSubResourceData));
-		indexSubResourceData.pSysMem = FrustumIndices;
+		indexSubResourceData.pSysMem = AABBIndices;
 		if (FAILED(mGame->Direct3DDevice()->CreateBuffer(&indexBufferDesc, &indexSubResourceData, &mIndexBuffer)))
 		{
 			throw GameException("ID3D11Device::CreateBuffer() failed.");

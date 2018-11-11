@@ -1,3 +1,4 @@
+// Instancing effect
 
 /************* Resources *************/
 
@@ -20,6 +21,9 @@ cbuffer CBufferPerFrame
     float LightRadius2 = 10.0f;
     float LightRadius3 = 10.0f;
 
+    float4 DirectionalLightColor = { 1.0f, 1.0f, 1.0f, -1.0f };
+    float3 LightDirection = { 0.0, 0.0, 0.0 };
+
     float3 CameraPosition : CAMERAPOSITION;
 }
 
@@ -40,7 +44,7 @@ SamplerState TrilinearSampler
 
 BlendState AlphaBlendingOn
 {
-    BlendEnable[0] = TRUE;
+    BlendEnable[0] = FALSE;
     DestBlend = INV_SRC_ALPHA;
     SrcBlend = SRC_ALPHA;
 };
@@ -69,6 +73,8 @@ struct VS_OUTPUT
     float Attenuation1 : ATTENUATION1;
     float Attenuation2 : ATTENUATION2;
     float Attenuation3 : ATTENUATION3;
+
+	float3 LightDirection : TEXCOORD1;
 };
 
 
@@ -110,6 +116,9 @@ VS_OUTPUT vertex_shader(VS_INPUT IN)
     OUT.Attenuation2 = saturate(1.0f - (length(LightPosition2 - OUT.WorldPosition) / LightRadius2));
     OUT.Attenuation3 = saturate(1.0f - (length(LightPosition3 - OUT.WorldPosition) / LightRadius3));
 
+    OUT.LightDirection = normalize(-LightDirection);
+
+
     return OUT;
 }
 
@@ -145,16 +154,42 @@ float4 pixel_shader(VS_OUTPUT IN) : SV_Target
 
     sampledNormal = mul(sampledNormal, tbn); // Transform normal to world space
     
-
-    float3 diffuse = saturate(
-        CalculateDiffuse(LightPosition0, LightColor0, IN.WorldPosition, sampledNormal, color, IN.Attenuation0)+
-        CalculateDiffuse(LightPosition1, LightColor1, IN.WorldPosition, sampledNormal, color, IN.Attenuation1)+
-        CalculateDiffuse(LightPosition2, LightColor2, IN.WorldPosition, sampledNormal, color, IN.Attenuation2)+
+    //point lights
+    if (DirectionalLightColor.a == -1.0f)
+    {
+    
+        float3 diffuse = saturate(
+        CalculateDiffuse(LightPosition0, LightColor0, IN.WorldPosition, sampledNormal, color, IN.Attenuation0) +
+        CalculateDiffuse(LightPosition1, LightColor1, IN.WorldPosition, sampledNormal, color, IN.Attenuation1) +
+        CalculateDiffuse(LightPosition2, LightColor2, IN.WorldPosition, sampledNormal, color, IN.Attenuation2) +
         CalculateDiffuse(LightPosition3, LightColor3, IN.WorldPosition, sampledNormal, color, IN.Attenuation3)
-    );
+        );
+    
+        OUT.rgb = diffuse;
+        OUT.a = color.a;
+    }
+    else
+    //directional light
+    {
+        float3 lightDirection = normalize(IN.LightDirection);
+        float n_dot_l = dot(lightDirection, sampledNormal);
 
-    OUT.rgb = diffuse;
-    OUT.a = color.a;
+        float3 ambient = float3(0.9, 0.9, 0.9) * 0.5f * color.rgb;
+
+        float3 diffuse = (float3) 0;
+	
+        if (n_dot_l > 0)
+        {
+            diffuse = DirectionalLightColor.rgb * DirectionalLightColor.a * n_dot_l * color.rgb;
+        }
+	
+        OUT.rgb = diffuse;
+        OUT.a = color.a;
+    }
+
+
+
+    clip(color.a < 0.1f ? -1 : 1);
     
     return OUT;
 }

@@ -28,6 +28,14 @@ SamplerState ColorSampler
 	AddressV = WRAP;
 };
 
+SamplerState SamplerAnisotropic
+{
+    Filter = ANISOTROPIC;
+    MaxAnisotropy = 16;
+    AddressU = Wrap;
+    AddressV = Wrap;
+};
+
 /************* Data Structures *************/
 
 struct VS_INPUT
@@ -73,7 +81,7 @@ float4 pixel_shader(VS_OUTPUT IN) : SV_Target
 {
 	float4 OUT = (float4)0;
 	
-	OUT = ColorTexture.Sample(ColorSampler, IN.TextureCoordinate);
+	OUT = ColorTexture.Sample(SamplerAnisotropic, IN.TextureCoordinate);
     OUT.rgb *= AmbientColor.rgb * AmbientColor.a; // Color (.rgb) * Intensity (.a)
 	
 	return OUT;

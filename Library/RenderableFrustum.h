@@ -31,6 +31,8 @@ namespace Library
 		void SetPosition(FXMVECTOR position);
 		void SetPosition(const XMFLOAT3& position);
 
+		void Reset();
+
 		void ApplyRotation(CXMMATRIX transform);
 		void ApplyRotation(const XMFLOAT4X4& transform);
 

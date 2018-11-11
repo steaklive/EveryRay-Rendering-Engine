@@ -87,4 +87,40 @@ namespace Library
 	{
 		return mMaterials;
 	}
+
+	std::vector<XMFLOAT3> Model::GenerateAABB()
+	{
+		std::vector<XMFLOAT3> vertices;
+
+		for (Mesh* mesh : mMeshes)
+		{
+			vertices.insert(vertices.end(), mesh->Vertices().begin(), mesh->Vertices().end());
+		}
+
+
+		XMFLOAT3 minVertex = XMFLOAT3(FLT_MAX, FLT_MAX, FLT_MAX);
+		XMFLOAT3 maxVertex = XMFLOAT3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+		for (UINT i = 0; i < vertices.size(); i++)
+		{
+
+			//Get the smallest vertex 
+			minVertex.x = std::min(minVertex.x, vertices[i].x);    // Find smallest x value in model
+			minVertex.y = std::min(minVertex.y, vertices[i].y);    // Find smallest y value in model
+			minVertex.z = std::min(minVertex.z, vertices[i].z);    // Find smallest z value in model
+
+			//Get the largest vertex 
+			maxVertex.x = std::max(maxVertex.x, vertices[i].x);    // Find largest x value in model
+			maxVertex.y = std::max(maxVertex.y, vertices[i].y);    // Find largest y value in model
+			maxVertex.z = std::max(maxVertex.z, vertices[i].z);    // Find largest z value in model
+		}
+
+		std::vector<XMFLOAT3> AABB;
+
+		// Our AABB [0] is the min vertex and [1] is the max
+		AABB.push_back(minVertex);
+		AABB.push_back(maxVertex);
+
+		return AABB;
+	}
 }

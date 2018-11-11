@@ -178,4 +178,5 @@ namespace Library
 			throw GameException("ID3D11Device::CreateBuffer() failed.");
 		}
 	}
+
 }

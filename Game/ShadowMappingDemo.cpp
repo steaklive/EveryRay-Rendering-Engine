@@ -23,6 +23,7 @@
 #include "..\Library\DepthMap.h"
 #include "..\Library\FullScreenRenderTarget.h"
 #include "..\Library\DemoLevel.h"
+#include "..\Library\Skybox.h"
 
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
@@ -59,7 +60,7 @@ namespace Rendering
 	const RECT ShadowMappingDemo::DepthMapDestinationRectangle1 = { 128, 640, 256, 768 };
 	const RECT ShadowMappingDemo::DepthMapDestinationRectangle2 = { 256, 640, 384, 768 };
 
-	static float modelColorFloat3[3] = { 0.16f, 0.67f, 0.8f };
+	static float modelColorFloat3[3] = { 0.56f, 0.67f, 0.3f };
 	XMVECTOR modelColorVector = XMLoadColor(&XMCOLOR(modelColorFloat3[0], modelColorFloat3[1], modelColorFloat3[2], 1));
 
 	ShadowMappingDemo::ShadowMappingDemo(Game& game, Camera& camera)
@@ -92,7 +93,9 @@ namespace Rendering
 		mLightProjectors(NUM_FRUSTUMS, nullptr), mLightProjectorFrustums(NUM_FRUSTUMS, XMMatrixIdentity()),
 		mLightProjectorCenteredPositions(NUM_FRUSTUMS, XMFLOAT3{}), mLightProjectorFrustumsDebug(NUM_FRUSTUMS, nullptr),
 		mIsVisualizeCascades(false),
-		mActiveTechnique(ShadowMappingTechniqueSimplePCF)
+		mActiveTechnique(ShadowMappingTechniqueSimplePCF),
+
+		mSkybox(nullptr)
 
 			
 	{
@@ -140,21 +143,22 @@ namespace Rendering
 		DeletePointerCollection(mLightProjectorFrustumsDebug);
 		DeletePointerCollection(mLightProjectors);
 
+		DeleteObject(mSkybox);
+
 
 	}
 
-
+	/////////////////////////////////////////////////////////////
+	// 'DemoLevel' ugly methods...
 	bool ShadowMappingDemo::IsComponent()
 	{
 		return mGame->IsInGameComponents<ShadowMappingDemo*>(mGame->components, this);
 	}
-
 	void ShadowMappingDemo::Create()
 	{
 		Initialize();
 		mGame->components.push_back(this);
 	}
-	
 	void ShadowMappingDemo::Destroy()
 	{
 		std::pair<bool, int> res = mGame->FindInGameComponents<ShadowMappingDemo*>(mGame->components, this);
@@ -169,6 +173,8 @@ namespace Rendering
 	
 	
 	}
+	/////////////////////////////////////////////////////////////
+
 
 	void ShadowMappingDemo::Initialize()
 	{
@@ -266,7 +272,7 @@ namespace Rendering
 
 
 		//Load plane model
-		std::unique_ptr<Model> plane_model(new Model(*mGame, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\TriplePlane.obj", true));
+		std::unique_ptr<Model> plane_model(new Model(*mGame, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\default_plane\\default_plane.obj", true));
 		
 		Mesh* mesh_plane = plane_model->Meshes().at(0);
 		mDepthMapMaterial->CreateVertexBuffer(mGame->Direct3DDevice(), *mesh_plane, &mPlanePositionVertexBuffer);
@@ -274,10 +280,10 @@ namespace Rendering
 
 		mesh_plane->CreateIndexBuffer(&mPlaneIndexBuffer);
 		mPlaneVertexCount = mesh_plane->Indices().size();
-		XMStoreFloat4x4(&mPlaneWorldMatrix, XMMatrixScaling(7.0f, 7.0f, 7.0f));
+		//XMStoreFloat4x4(&mPlaneWorldMatrix, XMMatrixScaling(7.0f, 7.0f, 7.0f));
 
 
-		std::wstring textureName = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\floor.jpg";
+		std::wstring textureName = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\default_plane\\UV_Grid_Lrg.jpg";
 		HRESULT hr2 = DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureName.c_str(), nullptr, &mPlaneTexture);
 		if (FAILED(hr2))
 		{
@@ -308,6 +314,16 @@ namespace Rendering
 		mDepthMap2 = new DepthMap(*mGame, DepthMapWidth, DepthMapHeight);
 		UpdateDepthBiasState();
 #pragma endregion
+
+		#pragma region INITIALIZE_SKYBOX
+
+
+		//Skybox initialization
+		mSkybox = new Skybox(*mGame, *mCamera, L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\Sky_Type_1.dds", 100.0f);
+		mSkybox->Initialize();
+#pragma endregion
+
+
 
 	}
 
@@ -343,6 +359,7 @@ namespace Rendering
 #pragma endregion
 
 	}
+	
 	void ShadowMappingDemo::Draw(const GameTime& gameTime)
 	{
 

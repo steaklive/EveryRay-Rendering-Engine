@@ -24,6 +24,9 @@ namespace Library
 		const std::vector<Mesh*>& Meshes() const;
 		const std::vector<ModelMaterial*>& Materials() const;
 
+		std::vector<XMFLOAT3> GenerateAABB();
+
+
 	private:
 		Model(const Model& rhs);
 		Model& operator=(const Model& rhs);

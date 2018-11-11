@@ -114,28 +114,21 @@ namespace Rendering
 		DeleteObject(mRenderStateHelper);
 		DeleteObject(mProxyModel);
 		
-		//delete skybox from components
-		std::pair<bool, int> isSkyboxComponent = mGame->FindInGameComponents<Skybox*>(mGame->components, mSkybox);
-		if (isSkyboxComponent.first)
-		{
-			mGame->components.erase(mGame->components.begin() + isSkyboxComponent.second);
-		}
-
 		DeleteObject(mSkybox);
 	}
 
+	/////////////////////////////////////////////////////////////
+	// 'DemoLevel' ugly methods...
 	bool PhysicallyBasedRenderingDemo::IsComponent()
 	{
 		return mGame->IsInGameComponents<PhysicallyBasedRenderingDemo*>(mGame->components, this);
 	}
-
 	void PhysicallyBasedRenderingDemo::Create()
 	{
 		Initialize();
 		mGame->components.push_back(this);
 
 	}
-	
 	void PhysicallyBasedRenderingDemo::Destroy()
 	{
 		std::pair<bool, int> res = mGame->FindInGameComponents<PhysicallyBasedRenderingDemo*>(mGame->components, this);
@@ -149,6 +142,7 @@ namespace Rendering
 		}
 
 	}
+	/////////////////////////////////////////////////////////////
 
 
 	void PhysicallyBasedRenderingDemo::Initialize()
@@ -539,7 +533,6 @@ namespace Rendering
 
 		mSkybox = new Skybox(*mGame, *mCamera, L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Skyboxes\\milkmill_cube_map.dds", 100.0f);
 		mSkybox->Initialize();
-		mGame->components.push_back(mSkybox);// push_back(mSkybox);
 
 
 		mRenderStateHelper = new RenderStateHelper(*mGame);

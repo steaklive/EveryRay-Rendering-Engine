@@ -32,6 +32,7 @@
 #include "ShadowMappingDemo.h"
 #include "PhysicallyBasedRenderingDemo.h"
 #include "InstancingDemo.h"
+#include "FrustumCullingDemo.h"
 
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
@@ -47,6 +48,7 @@ namespace Rendering
 		"GPU Instancing",
 		"Cascaded Shadow Mapping",
 		"Physically Based Rendering",
+		"Frustum Culling"
 	};
 
 	// we will store our demo scenes here:
@@ -72,6 +74,7 @@ namespace Rendering
 		mShadowMappingDemo(nullptr),
 		mPBRDemo(nullptr),
 		mInstancingDemo(nullptr),
+		mFrustumCullingDemo(nullptr),
 
 		mRenderStateHelper(nullptr),
 		mRenderTarget(nullptr), mFullScreenQuad(nullptr)
@@ -111,7 +114,7 @@ namespace Rendering
 		components.push_back(mCamera);
 		mServices.AddService(Camera::TypeIdClass(), mCamera);
 
-		mGrid = new Grid(*this, *mCamera, 32, 32, XMFLOAT4(0.961f, 0.871f, 0.702f, 1.0f));
+		mGrid = new Grid(*this, *mCamera, 100, 64, XMFLOAT4(0.961f, 0.871f, 0.702f, 1.0f));
 		mGrid->SetColor((XMFLOAT4)ColorHelper::LightGray);
 		components.push_back(mGrid);
 
@@ -119,14 +122,14 @@ namespace Rendering
 		demoLevels.push_back(mInstancingDemo);
 		demoLevels.push_back(mShadowMappingDemo);
 		demoLevels.push_back(mPBRDemo);
-
+		demoLevels.push_back(mFrustumCullingDemo);
 
 		
 		//Render State Helper
 		mRenderStateHelper = new RenderStateHelper(*this);
 
 		//RenderTarget
-		mRenderTarget = new FullScreenRenderTarget(*this);	
+		//mRenderTarget = new FullScreenRenderTarget(*this);	
 
 		#pragma region INITIALIZE_IMGUI
 
@@ -165,6 +168,9 @@ namespace Rendering
 				break;
 			case 2:
 				demoLevels[level] = new PhysicallyBasedRenderingDemo(*this, *mCamera);
+				break;
+			case 3:
+				demoLevels[level] = new FrustumCullingDemo(*this, *mCamera);
 				break;
 			}
 		}
