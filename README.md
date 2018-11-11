@@ -21,11 +21,6 @@ I have been changing and extending it for educational purposes with all kinds of
 - GPU Instancing
 - Frustum Culling
 
-# How to build
-This repo only contains the source code of the engine: "Game" & "Library" folders. You should build the contents of "Library" as a .lib file and use "Game" as the main project.
-
-Do not forget to link all the dependencies properly!
-
 # External Dependencies
 - DirectX Effects 11 (https://github.com/Microsoft/FX11)
 - DirectXTK (https://github.com/Microsoft/DirectXTK)
