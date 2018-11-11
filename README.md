@@ -12,12 +12,13 @@ I have been changing and extending it for educational purposes with all kinds of
 # Features
 - 3D model loading (.obj, .fbx and etc.) with Assimp Library
 - User Interface with ImGUI
-- Different light sources support
+- Different light sources
 - FPS camera
 - Normal-Mapping, Environment-Mapping
 - Physically Based Rendering with IBL
 - Cascaded Shadow Mapping
 - GPU Instancing
+- Frustum Culling
 
 # How to build
 This repo only contains the source code of the engine: "Game" & "Library" folders. You should build the contents of "Library" as a .lib file and use "Game" as the main project.
