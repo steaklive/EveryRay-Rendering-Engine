@@ -75,6 +75,12 @@ namespace Library
 		return mCorners;
 	}
 
+	const XMFLOAT4* Frustum::Planes() const
+	{
+		return mPlanes;
+	}
+
+
 	XMMATRIX Frustum::Matrix() const
 	{
 		return XMLoadFloat4x4(&mMatrix);

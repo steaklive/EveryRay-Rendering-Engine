@@ -32,6 +32,7 @@ namespace Rendering
 	class ShadowMappingDemo;
 	class PhysicallyBasedRenderingDemo;
 	class InstancingDemo;
+	class FrustumCullingDemo;
 	
 	class RenderingGame : public Game
 	{
@@ -64,6 +65,7 @@ namespace Rendering
 		ShadowMappingDemo* mShadowMappingDemo;
 		PhysicallyBasedRenderingDemo* mPBRDemo;
 		InstancingDemo* mInstancingDemo;
+		FrustumCullingDemo* mFrustumCullingDemo;
 		
 		RenderStateHelper* mRenderStateHelper;
 

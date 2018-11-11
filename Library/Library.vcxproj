@@ -221,6 +221,7 @@ IF EXIST "$(TargetDir)Content" xcopy /E /Y "$(TargetDir)Content" "$(SolutionDir)
     <ClInclude Include="QuadRenderer.h" />
     <ClInclude Include="RasterizerStates.h" />
     <ClInclude Include="Ray.h" />
+    <ClInclude Include="RenderableAABB.h" />
     <ClInclude Include="RenderableFrustum.h" />
     <ClInclude Include="RenderStateHelper.h" />
     <ClInclude Include="RenderTarget.h" />
@@ -289,6 +290,7 @@ IF EXIST "$(TargetDir)Content" xcopy /E /Y "$(TargetDir)Content" "$(SolutionDir)
     <ClCompile Include="QuadRenderer.cpp" />
     <ClCompile Include="RasterizerStates.cpp" />
     <ClCompile Include="Ray.cpp" />
+    <ClCompile Include="RenderableAABB.cpp" />
     <ClCompile Include="RenderableFrustum.cpp" />
     <ClCompile Include="RenderStateHelper.cpp" />
     <ClCompile Include="RenderTarget.cpp" />

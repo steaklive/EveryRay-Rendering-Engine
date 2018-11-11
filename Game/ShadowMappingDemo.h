@@ -19,6 +19,7 @@ namespace Library
 	class ShadowMappingDirectionalMaterial;
 	class DepthMapMaterial;
 	class DepthMap;
+	class Skybox;
 }
 
 namespace Rendering
@@ -146,6 +147,8 @@ namespace Rendering
 
 		ShadowMappingTechnique mActiveTechnique;
 		XMFLOAT4X4 mProjectedTextureScalingMatrix;
+
+		Skybox* mSkybox;
 
 	};
 }

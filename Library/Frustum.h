@@ -35,6 +35,8 @@ namespace Library
 		XMVECTOR BottomVector() const;
 
 		const XMFLOAT3* Corners() const;
+		const XMFLOAT4* Planes() const;
+
 
 		XMMATRIX Matrix() const;
 		void SetMatrix(CXMMATRIX matrix);

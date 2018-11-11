@@ -176,6 +176,7 @@ IF EXIST "$(ProjectDir)content" xcopy /E /Y "$(ProjectDir)Content" "$(OutDir)Con
     <ClInclude Include="..\..\external\ImGUI\stb_textedit.h" />
     <ClInclude Include="..\..\external\ImGUI\stb_truetype.h" />
     <ClInclude Include="AmbientLightingDemo.h" />
+    <ClInclude Include="FrustumCullingDemo.h" />
     <ClInclude Include="InstancingDemo.h" />
     <ClInclude Include="PhysicallyBasedRenderingDemo.h" />
     <ClInclude Include="RenderingGame.h" />
@@ -191,6 +192,7 @@ IF EXIST "$(ProjectDir)content" xcopy /E /Y "$(ProjectDir)Content" "$(OutDir)Con
     <ClCompile Include="..\..\external\ImGUI\imgui_impl_dx11.cpp" />
     <ClCompile Include="..\..\external\ImGUI\imgui_impl_win32.cpp" />
     <ClCompile Include="AmbientLightingDemo.cpp" />
+    <ClCompile Include="FrustumCullingDemo.cpp" />
     <ClCompile Include="InstancingDemo.cpp" />
     <ClCompile Include="PhysicallyBasedRenderingDemo.cpp" />
     <ClCompile Include="Program.cpp" />

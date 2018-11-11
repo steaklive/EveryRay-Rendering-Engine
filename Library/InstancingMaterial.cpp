@@ -22,6 +22,10 @@ namespace Rendering
 		MATERIAL_VARIABLE_INITIALIZATION(LightRadius2),
 		MATERIAL_VARIABLE_INITIALIZATION(LightRadius3),
 
+		MATERIAL_VARIABLE_INITIALIZATION(DirectionalLightColor),
+		MATERIAL_VARIABLE_INITIALIZATION(LightDirection),
+
+
 		MATERIAL_VARIABLE_INITIALIZATION(CameraPosition),
 		MATERIAL_VARIABLE_INITIALIZATION(ColorTexture),
 		MATERIAL_VARIABLE_INITIALIZATION(NormalTexture)
@@ -42,6 +46,9 @@ namespace Rendering
 	MATERIAL_VARIABLE_DEFINITION(InstancingMaterial, LightRadius1)
 	MATERIAL_VARIABLE_DEFINITION(InstancingMaterial, LightRadius2)
 	MATERIAL_VARIABLE_DEFINITION(InstancingMaterial, LightRadius3)
+
+	MATERIAL_VARIABLE_DEFINITION(InstancingMaterial, DirectionalLightColor)
+	MATERIAL_VARIABLE_DEFINITION(InstancingMaterial, LightDirection)
 
 	MATERIAL_VARIABLE_DEFINITION(InstancingMaterial, CameraPosition)
 	MATERIAL_VARIABLE_DEFINITION(InstancingMaterial, ColorTexture)
@@ -65,6 +72,9 @@ namespace Rendering
 		MATERIAL_VARIABLE_RETRIEVE(LightRadius1)
 		MATERIAL_VARIABLE_RETRIEVE(LightRadius2)
 		MATERIAL_VARIABLE_RETRIEVE(LightRadius3)
+
+		MATERIAL_VARIABLE_RETRIEVE(DirectionalLightColor)
+		MATERIAL_VARIABLE_RETRIEVE(LightDirection)
 
 		MATERIAL_VARIABLE_RETRIEVE(CameraPosition)
 		MATERIAL_VARIABLE_RETRIEVE(ColorTexture)
@@ -127,7 +137,7 @@ namespace Rendering
 		vertexSubResourceData.pSysMem = vertices;
 		if (FAILED(device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, vertexBuffer)))
 		{
-			throw GameException("ID3D11Device::CreateBuffer() failed.");
+			throw GameException("ID3D11Device::CreateBuffer() while creating VertexBuffer failed.");
 		}
 	}
 
@@ -154,7 +164,7 @@ namespace Rendering
 		instanceSubResourceData.pSysMem = instanceData;
 		if (FAILED(device->CreateBuffer(&instanceBufferDesc, &instanceSubResourceData, instanceBuffer)))
 		{
-			throw GameException("ID3D11Device::CreateBuffer() failed.");
+			throw GameException("ID3D11Device::CreateBuffer() failed while creating InstanceBuffer.");
 		}
 	}
 

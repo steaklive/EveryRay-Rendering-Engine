@@ -252,6 +252,9 @@
     <ClInclude Include="InstancingMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RenderableAABB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -439,6 +442,9 @@
     </ClCompile>
     <ClCompile Include="InstancingMaterial.cpp">
       <Filter>Source Files\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderableAABB.cpp">
+      <Filter>Source Files\Objects</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

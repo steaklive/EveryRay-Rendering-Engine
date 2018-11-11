@@ -10,6 +10,8 @@
 #include "Mesh.h"
 #include "Utility.h"
 #include <DDSTextureLoader.h>
+#include <WICTextureLoader.h>
+
 
 namespace Library
 {
@@ -26,11 +28,19 @@ namespace Library
 
 	Skybox::~Skybox()
 	{
+		//delete skybox from components
+		std::pair<bool, int> isSkyboxComponent = mGame->FindInGameComponents<Skybox*>(mGame->components, this);
+		if (isSkyboxComponent.first)
+		{
+			mGame->components.erase(mGame->components.begin() + isSkyboxComponent.second);
+		}
+
 		ReleaseObject(mCubeMapShaderResourceView);
 		DeleteObject(mMaterial);
 		DeleteObject(mEffect);
 		ReleaseObject(mVertexBuffer);
 		ReleaseObject(mIndexBuffer);
+
 	}
 
 	void Skybox::Initialize()
@@ -50,11 +60,31 @@ namespace Library
 		mesh->CreateIndexBuffer(&mIndexBuffer);
 		mIndexCount = mesh->Indices().size();
 		
-		HRESULT hr = DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mCubeMapFileName.c_str(), nullptr, &mCubeMapShaderResourceView);
-		if (FAILED(hr))
-		{
-			throw GameException("Failed to load a Skybox texture!", hr);
+
+		if (mCubeMapFileName.find(std::wstring(L".dds")) != std::string::npos) {
+			
+			HRESULT hr = DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mCubeMapFileName.c_str(), nullptr, &mCubeMapShaderResourceView);
+			if (FAILED(hr))
+			{
+				throw GameException("Failed to load a Skybox texture!", hr);
+			}
+		
 		}
+		else
+		{
+			HRESULT hr = DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mCubeMapFileName.c_str(), nullptr, &mCubeMapShaderResourceView);
+			if (FAILED(hr))
+			{
+				throw GameException("Failed to load a Skybox texture!", hr);
+			}
+
+
+		}
+
+		// add to game components
+		mGame->components.push_back(this);
+
+
 	}
 
 	void Skybox::Update(const GameTime& gameTime)
