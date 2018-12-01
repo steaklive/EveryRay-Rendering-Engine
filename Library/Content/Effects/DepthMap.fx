@@ -9,9 +9,20 @@ struct VS_OUTPUT
     float2 Depth : TEXCOORD;
 };
 
+DepthStencilState EnableDepthDisableStencil
+{
+    DepthEnable = TRUE;
+    DepthWriteMask = ALL;
+    DepthFunc = LESS_EQUAL;
+    StencilEnable = FALSE;
+};
+
 float4 create_depthmap_vertex_shader(float4 ObjectPosition : POSITION) : SV_Position
 {
-    return mul(ObjectPosition, WorldLightViewProjection);
+    float4 pos = mul(ObjectPosition, WorldLightViewProjection);
+    pos.z *= pos.w; // We want linear positions
+    return pos;
+    //return mul(ObjectPosition, WorldLightViewProjection);
 }
 
 VS_OUTPUT create_depthmap_w_render_target_vertex_shader(float4 ObjectPosition : POSITION)
@@ -58,5 +69,8 @@ technique11 create_depthmap_w_render_target
         SetVertexShader(CompileShader(vs_5_0, create_depthmap_w_render_target_vertex_shader()));
         SetGeometryShader(NULL);
         SetPixelShader(CompileShader(ps_5_0, create_depthmap_w_render_target_pixel_shader()));
+
+        SetDepthStencilState(EnableDepthDisableStencil, 0);
+
     }
 }

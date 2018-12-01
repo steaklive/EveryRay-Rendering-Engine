@@ -9,6 +9,8 @@
 #include "..\Library\Frustum.h"
 
 #include "..\Library\DirectionalLight.h"
+#include "..\Library\RenderStateHelper.h"
+
 
 
 using namespace Library;
@@ -203,7 +205,7 @@ namespace Rendering
 
 		Skybox* mSkybox;
 
-		RenderStateHelper* mRenderStateHelper;
+		RenderStateHelper mRenderStateHelper;
 
 		bool mIsCustomFrustumActive = false;
 		bool mIsCustomFrustumRotating = false;
