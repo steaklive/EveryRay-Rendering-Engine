@@ -255,6 +255,12 @@
     <ClInclude Include="RenderableAABB.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SkinShadingColorMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SkinShadingScatterMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -445,6 +451,12 @@
     </ClCompile>
     <ClCompile Include="RenderableAABB.cpp">
       <Filter>Source Files\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="SkinShadingColorMaterial.cpp">
+      <Filter>Source Files\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="SkinShadingScatterMaterial.cpp">
+      <Filter>Source Files\Materials</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

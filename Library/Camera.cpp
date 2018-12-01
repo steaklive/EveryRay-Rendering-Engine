@@ -126,6 +126,13 @@ namespace Library
 		mPosition = position;
 	}
 
+	void Camera::SetFOV(float fov)
+	{
+		mFieldOfView = fov;
+		UpdateProjectionMatrix();
+
+	}
+
 	void Camera::Reset()
 	{
 		mPosition = Vector3Helper::Zero;

@@ -33,6 +33,8 @@
 #include "PhysicallyBasedRenderingDemo.h"
 #include "InstancingDemo.h"
 #include "FrustumCullingDemo.h"
+#include "SubsurfaceScatteringDemo.h"
+
 
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
@@ -48,12 +50,16 @@ namespace Rendering
 		"GPU Instancing",
 		"Cascaded Shadow Mapping",
 		"Physically Based Rendering",
-		"Frustum Culling"
+		"Frustum Culling", 
+		"Separable Subsurface Scattering"
 	};
 
 	// we will store our demo scenes here:
 	std::vector<DemoLevel*> demoLevels;
 	static int currentLevel = 0;
+
+	static float fov = 60.0f;
+	
 
 	bool showImGuiDemo = false;
 
@@ -75,6 +81,7 @@ namespace Rendering
 		mPBRDemo(nullptr),
 		mInstancingDemo(nullptr),
 		mFrustumCullingDemo(nullptr),
+		mSubsurfaceScatteringDemo(nullptr),
 
 		mRenderStateHelper(nullptr),
 		mRenderTarget(nullptr), mFullScreenQuad(nullptr)
@@ -123,6 +130,8 @@ namespace Rendering
 		demoLevels.push_back(mShadowMappingDemo);
 		demoLevels.push_back(mPBRDemo);
 		demoLevels.push_back(mFrustumCullingDemo);
+		demoLevels.push_back(mSubsurfaceScatteringDemo);
+
 
 		
 		//Render State Helper
@@ -171,6 +180,9 @@ namespace Rendering
 				break;
 			case 3:
 				demoLevels[level] = new FrustumCullingDemo(*this, *mCamera);
+				break;
+			case 4:
+				demoLevels[level] = new SubsurfaceScatteringDemo(*this, *mCamera);
 				break;
 			}
 		}
@@ -236,6 +248,10 @@ namespace Rendering
 				ImGui::Text("Mouse Position: <invalid>");
 			
 			ImGui::Text("Camera Position: (%.1f,%.1f,%.1f)", mCamera->Position().x, mCamera->Position().y, mCamera->Position().z);
+			
+			
+			ImGui::SliderFloat("Camera FOV", &fov, 1.0f, 90.0f);
+			mCamera->SetFOV(fov*XM_PI/180.0f);
 			ImGui::Separator();
 
 			ImGui::Checkbox("Show grid", &mShowGrid);
@@ -262,6 +278,9 @@ namespace Rendering
 		DeleteObject(mAmbientLightingDemo);
 		DeleteObject(mShadowMappingDemo);
 		DeleteObject(mPBRDemo);
+		DeleteObject(mInstancingDemo);
+		DeleteObject(mFrustumCullingDemo);
+		DeleteObject(mSubsurfaceScatteringDemo);
 
 		DeleteObject(mFullScreenQuad);
 		DeleteObject(mRenderTarget);
@@ -295,8 +314,8 @@ namespace Rendering
 		mDirect3DDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 		
 		Game::Draw(gameTime);
-		ImGui::Render();
-		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+		//ImGui::Render();
+		//ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 		
 		//Render FPS info.
 	    mRenderStateHelper->SaveAll();

@@ -231,6 +231,8 @@ IF EXIST "$(TargetDir)Content" xcopy /E /Y "$(TargetDir)Content" "$(SolutionDir)
     <ClInclude Include="ShaderCompiler.h" />
     <ClInclude Include="ShadowMappingDirectionalMaterial.h" />
     <ClInclude Include="ShadowMappingMaterial.h" />
+    <ClInclude Include="SkinShadingColorMaterial.h" />
+    <ClInclude Include="SkinShadingScatterMaterial.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="SkyboxMaterial.h" />
     <ClInclude Include="SpotLight.h" />
@@ -298,6 +300,8 @@ IF EXIST "$(TargetDir)Content" xcopy /E /Y "$(TargetDir)Content" "$(SolutionDir)
     <ClCompile Include="ServiceContainer.cpp" />
     <ClCompile Include="ShadowMappingDirectionalMaterial.cpp" />
     <ClCompile Include="ShadowMappingMaterial.cpp" />
+    <ClCompile Include="SkinShadingColorMaterial.cpp" />
+    <ClCompile Include="SkinShadingScatterMaterial.cpp" />
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="SkyboxMaterial.cpp" />
     <ClCompile Include="SpotLight.cpp" />

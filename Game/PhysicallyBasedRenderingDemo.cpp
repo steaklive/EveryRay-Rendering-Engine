@@ -559,7 +559,7 @@ namespace Rendering
 		//**************************************//
 		//     'GOLD MATERIAL' SHADER BALL 	    //
 		//										//
-		// Pass 1 - Outer Material				//
+		// Pass 1 - Outer SkinColorMaterial				//
 		for (int i = 0; i < NUM_SPHERES; i++)
 		{
 			Pass* pass = mPBRShaderBallOuterMaterial->CurrentTechnique()->Passes().at(0);
@@ -596,7 +596,7 @@ namespace Rendering
 
 			direct3DDeviceContext->DrawIndexed(mIndexCountShaderBallOuterPart, 0, 0);
 		}
-		// Pass 2 - Inner Material				//
+		// Pass 2 - Inner SkinColorMaterial				//
 		for (int i = 0; i < NUM_SPHERES; i++)
 		{
 			Pass* pass = mPBRShaderBallInnerMaterial->CurrentTechnique()->Passes().at(0);
@@ -641,7 +641,7 @@ namespace Rendering
 		//**************************************//
 		//    'SILVER MATERIAL' SHADER BALL 	//
 		//										//
-		// Pass 1 - Outer Material				//
+		// Pass 1 - Outer SkinColorMaterial				//
 		for (int i = 0; i < NUM_SPHERES; i++)
 		{
 			Pass* pass = mPBRShaderBallOuterMaterial->CurrentTechnique()->Passes().at(0);
@@ -678,7 +678,7 @@ namespace Rendering
 
 			direct3DDeviceContext->DrawIndexed(mIndexCountShaderBallOuterPart, 0, 0);
 		}
-		// Pass 2 - Inner Material				//
+		// Pass 2 - Inner SkinColorMaterial				//
 		for (int i = 0; i < NUM_SPHERES; i++)
 		{
 			Pass* pass = mPBRShaderBallInnerMaterial->CurrentTechnique()->Passes().at(0);
@@ -723,7 +723,7 @@ namespace Rendering
 		//**************************************//
 		//     'BRICK MATERIAL' SHADER BALL     //
 		//										//
-		// Pass 1 - Outer Material				//
+		// Pass 1 - Outer SkinColorMaterial				//
 		{
 			Pass* pass = mPBRShaderBallOuterMaterial->CurrentTechnique()->Passes().at(0);
 			ID3D11InputLayout* inputLayout = mPBRShaderBallOuterMaterial->InputLayouts().at(pass);
@@ -759,7 +759,7 @@ namespace Rendering
 
 			direct3DDeviceContext->DrawIndexed(mIndexCountShaderBallOuterPart, 0, 0);
 		}								//								//
-		// Pass 2 - Inner Material				//
+		// Pass 2 - Inner SkinColorMaterial				//
 		{
 			Pass* pass = mPBRShaderBallInnerMaterial->CurrentTechnique()->Passes().at(0);
 			ID3D11InputLayout* inputLayout = mPBRShaderBallInnerMaterial->InputLayouts().at(pass);
@@ -803,7 +803,7 @@ namespace Rendering
 		//**************************************//
 		//   'CONCRETE MATERIAL' SHADER BALL 	//
 		//										//
-		// Pass 1 - Outer Material				//
+		// Pass 1 - Outer SkinColorMaterial				//
 		{
 			Pass* pass = mPBRShaderBallOuterMaterial->CurrentTechnique()->Passes().at(0);
 			ID3D11InputLayout* inputLayout = mPBRShaderBallOuterMaterial->InputLayouts().at(pass);
@@ -839,7 +839,7 @@ namespace Rendering
 
 			direct3DDeviceContext->DrawIndexed(mIndexCountShaderBallOuterPart, 0, 0);
 		}								//
-		// Pass 2 - Inner Material				//
+		// Pass 2 - Inner SkinColorMaterial				//
 		{
 			Pass* pass = mPBRShaderBallInnerMaterial->CurrentTechnique()->Passes().at(0);
 			ID3D11InputLayout* inputLayout = mPBRShaderBallInnerMaterial->InputLayouts().at(pass);
@@ -883,7 +883,7 @@ namespace Rendering
 		//**************************************//
 		//   'BATHROOM MATERIAL' SHADER BALL 	//
 		//										//
-		// Pass 1 - Outer Material				//
+		// Pass 1 - Outer SkinColorMaterial				//
 		{
 			Pass* pass = mPBRShaderBallOuterMaterial->CurrentTechnique()->Passes().at(0);
 			ID3D11InputLayout* inputLayout = mPBRShaderBallOuterMaterial->InputLayouts().at(pass);
@@ -919,7 +919,7 @@ namespace Rendering
 
 			direct3DDeviceContext->DrawIndexed(mIndexCountShaderBallOuterPart, 0, 0);
 		}								//
-		// Pass 2 - Inner Material				//
+		// Pass 2 - Inner SkinColorMaterial				//
 		{
 			Pass* pass = mPBRShaderBallInnerMaterial->CurrentTechnique()->Passes().at(0);
 			ID3D11InputLayout* inputLayout = mPBRShaderBallInnerMaterial->InputLayouts().at(pass);
@@ -963,7 +963,7 @@ namespace Rendering
 		//**************************************//
 		//    'FLOOR MATERIAL' SHADER BALL 	    //
 		//										//
-		// Pass 1 - Outer Material				//
+		// Pass 1 - Outer SkinColorMaterial				//
 		{
 			Pass* pass = mPBRShaderBallOuterMaterial->CurrentTechnique()->Passes().at(0);
 			ID3D11InputLayout* inputLayout = mPBRShaderBallOuterMaterial->InputLayouts().at(pass);
@@ -999,7 +999,7 @@ namespace Rendering
 
 			direct3DDeviceContext->DrawIndexed(mIndexCountShaderBallOuterPart, 0, 0);
 		}								//
-		// Pass 2 - Inner Material				//
+		// Pass 2 - Inner SkinColorMaterial				//
 		{
 			Pass* pass = mPBRShaderBallInnerMaterial->CurrentTechnique()->Passes().at(0);
 			ID3D11InputLayout* inputLayout = mPBRShaderBallInnerMaterial->InputLayouts().at(pass);
@@ -1043,7 +1043,7 @@ namespace Rendering
 		//**************************************//
 		//    'MARBLE MATERIAL' SHADER BALL 	//
 		//										//
-		// Pass 1 - Outer Material				//
+		// Pass 1 - Outer SkinColorMaterial				//
 		{
 			Pass* pass = mPBRShaderBallOuterMaterial->CurrentTechnique()->Passes().at(0);
 			ID3D11InputLayout* inputLayout = mPBRShaderBallOuterMaterial->InputLayouts().at(pass);
@@ -1079,7 +1079,7 @@ namespace Rendering
 
 			direct3DDeviceContext->DrawIndexed(mIndexCountShaderBallOuterPart, 0, 0);
 		}								//
-		// Pass 2 - Inner Material				//
+		// Pass 2 - Inner SkinColorMaterial				//
 		{
 			Pass* pass = mPBRShaderBallInnerMaterial->CurrentTechnique()->Passes().at(0);
 			ID3D11InputLayout* inputLayout = mPBRShaderBallInnerMaterial->InputLayouts().at(pass);
@@ -1123,7 +1123,7 @@ namespace Rendering
 		//**************************************//
 		//     'WOOD MATERIAL' SHADER BALL      //
 		//										//
-		// Pass 1 - Outer Material				//
+		// Pass 1 - Outer SkinColorMaterial				//
 		{
 			Pass* pass = mPBRShaderBallOuterMaterial->CurrentTechnique()->Passes().at(0);
 			ID3D11InputLayout* inputLayout = mPBRShaderBallOuterMaterial->InputLayouts().at(pass);
@@ -1159,7 +1159,7 @@ namespace Rendering
 
 			direct3DDeviceContext->DrawIndexed(mIndexCountShaderBallOuterPart, 0, 0);
 		}								//
-		// Pass 2 - Inner Material				//
+		// Pass 2 - Inner SkinColorMaterial				//
 		{
 			Pass* pass = mPBRShaderBallInnerMaterial->CurrentTechnique()->Passes().at(0);
 			ID3D11InputLayout* inputLayout = mPBRShaderBallInnerMaterial->InputLayouts().at(pass);

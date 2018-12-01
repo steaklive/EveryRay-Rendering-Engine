@@ -44,7 +44,7 @@ namespace Rendering
 	RTTI_DEFINITIONS(FrustumCullingDemo)
 
 
-	FrustumCullingDemoLightInfo::LightData directionalLight;
+	FrustumCullingDemoLightInfo::LightData currentLightSource;
 
 	FrustumCullingDemo::FrustumCullingDemo(Game& game, Camera& camera)
 		: DrawableGameComponent(game, camera),
@@ -59,19 +59,18 @@ namespace Rendering
 		mDefaultPlaneObject(nullptr),
 
 		mWorldMatrix(MatrixHelper::Identity),
-		mRenderStateHelper(nullptr)
+		mRenderStateHelper(game)
 	{
 	}
 
 	FrustumCullingDemo::~FrustumCullingDemo()
 	{
-		DeleteObject(mRenderStateHelper);
 		DeleteObject(mInstancedObject);
 		DeleteObject(mDefaultPlaneObject);
 		DeleteObject(mDebugFrustum);
 		DeleteObject(mSkybox);
 
-		directionalLight.Destroy();
+		currentLightSource.Destroy();
 	}
 
 	/////////////////////////////////////////////////////////////
@@ -195,10 +194,10 @@ namespace Rendering
 		#pragma endregion
 
 		// Directional Light initiazlization
-		directionalLight.DirectionalLight = new DirectionalLight(*mGame);
-		directionalLight.ProxyModel =  new ProxyModel(*mGame, *mCamera, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\DirectionalLightProxy.obj", 0.5f);
-		directionalLight.ProxyModel->Initialize();
-		directionalLight.ProxyModel->SetPosition(0.0f, 30.0, 100.0f);
+		currentLightSource.DirectionalLight = new DirectionalLight(*mGame);
+		currentLightSource.ProxyModel =  new ProxyModel(*mGame, *mCamera, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\DirectionalLightProxy.obj", 0.5f);
+		currentLightSource.ProxyModel->Initialize();
+		currentLightSource.ProxyModel->SetPosition(0.0f, 30.0, 100.0f);
 
 
 		mKeyboard = (Keyboard*)mGame->Services().GetService(Keyboard::TypeIdClass());
@@ -218,7 +217,6 @@ namespace Rendering
 		mSkybox = new Skybox(*mGame, *mCamera, L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\Sky_Type_1.dds", 100.0f);
 		mSkybox->Initialize();
 
-		mRenderStateHelper = new RenderStateHelper(*mGame);
 	}
 
 	void FrustumCullingDemo::DiskRandomDistribution()
@@ -274,7 +272,7 @@ namespace Rendering
 		
 		std::for_each(mInstancedObject->DebugInstancesAABBs.begin(), mInstancedObject->DebugInstancesAABBs.end(), [&](RenderableAABB* a) {a->Update(gameTime); });
 		
-		directionalLight.ProxyModel->Update(gameTime);
+		currentLightSource.ProxyModel->Update(gameTime);
 		
 		// Do the culling
 		CullAABB(mIsCullingEnabled, mFrustum, mInstancedObject->ModelAABB, mInstancedObject->InstancesPositions);
@@ -376,6 +374,10 @@ namespace Rendering
 
 	void FrustumCullingDemo::Draw(const GameTime& gameTime)
 	{
+
+		mRenderStateHelper.SaveRasterizerState();
+
+
 		ID3D11DeviceContext* direct3DDeviceContext = mGame->Direct3DDeviceContext();
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -440,8 +442,8 @@ namespace Rendering
 			mInstancedObject->Materials[i]->LightRadius2() << (float)0;
 			mInstancedObject->Materials[i]->LightRadius3() << (float)0;
 
-			mInstancedObject->Materials[i]->LightDirection() << directionalLight.DirectionalLight->DirectionVector();
-			mInstancedObject->Materials[i]->DirectionalLightColor() << directionalLight.DirectionalLight->ColorVector();
+			mInstancedObject->Materials[i]->LightDirection() << currentLightSource.DirectionalLight->DirectionVector();
+			mInstancedObject->Materials[i]->DirectionalLightColor() << currentLightSource.DirectionalLight->ColorVector();
 
 
 
@@ -456,15 +458,15 @@ namespace Rendering
 		}
 		
 
-		directionalLight.ProxyModel->Draw(gameTime);
+		currentLightSource.ProxyModel->Draw(gameTime);
 		
 		mDebugFrustum->Draw(gameTime);
 
 		if (mIsAABBRendered) std::for_each(mInstancedObject->DebugInstancesAABBs.begin(), mInstancedObject->DebugInstancesAABBs.end(), [&](RenderableAABB* a) {a->Draw(gameTime); });
 
 
-		mRenderStateHelper->SaveAll();
-		mRenderStateHelper->RestoreAll();
+		mRenderStateHelper.SaveAll();
+		//mRenderStateHelper.RestoreAll();
 
 		#pragma region DRAW_IMGUI
 		ImGui::Render();
@@ -521,13 +523,13 @@ namespace Rendering
 		}
 		if (rotationAmount.y != 0)
 		{
-			XMMATRIX lightRotationAxisMatrix = XMMatrixRotationAxis(directionalLight.DirectionalLight->DirectionVector(), rotationAmount.y);
+			XMMATRIX lightRotationAxisMatrix = XMMatrixRotationAxis(currentLightSource.DirectionalLight->DirectionVector(), rotationAmount.y);
 			lightRotationMatrix *= lightRotationAxisMatrix;
 		}
 		if (rotationAmount.x != 0.0f || rotationAmount.y != 0.0f)
 		{
-			directionalLight.DirectionalLight->ApplyRotation(lightRotationMatrix);
-			directionalLight.ProxyModel->ApplyRotation(lightRotationMatrix);
+			currentLightSource.DirectionalLight->ApplyRotation(lightRotationMatrix);
+			currentLightSource.ProxyModel->ApplyRotation(lightRotationMatrix);
 		}
 	
 	}

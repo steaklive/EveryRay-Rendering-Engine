@@ -48,6 +48,11 @@ BlendState AlphaBlendingOn
     DestBlend = INV_SRC_ALPHA;
     SrcBlend = SRC_ALPHA;
 };
+RasterizerState BackFaceCulling
+{
+    CullMode = NONE;
+};
+
 
 /************* Data Structures *************/
 
@@ -205,5 +210,6 @@ technique11 main11
         SetVertexShader(CompileShader(vs_5_0, vertex_shader()));
         SetGeometryShader(NULL);
         SetPixelShader(CompileShader(ps_5_0, pixel_shader()));
+
     }
 }
