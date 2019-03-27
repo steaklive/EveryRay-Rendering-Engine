@@ -22,6 +22,7 @@ I have been changing and extending it for educational purposes with all kinds of
 - GPU Instancing
 - Frustum Culling
 - Separable Subsurface Scattering (based on the work of J.Jimenez and D.Gutierrez)
+- Volumetric Lighting (based on NVIDIA's "Fast, Flexible, Physically-Based Volumetric Light Scattering") - sorry, can't show all the code here...
 
 # External Dependencies
 - DirectX Effects 11 (https://github.com/Microsoft/FX11)
