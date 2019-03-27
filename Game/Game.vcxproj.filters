@@ -75,6 +75,9 @@
     <ClInclude Include="SubsurfaceScatteringDemo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VolumetricLightingDemo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -117,6 +120,9 @@
       <Filter>Source Files\Scenes</Filter>
     </ClCompile>
     <ClCompile Include="SubsurfaceScatteringDemo.cpp">
+      <Filter>Source Files\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="VolumetricLightingDemo.cpp">
       <Filter>Source Files\Scenes</Filter>
     </ClCompile>
   </ItemGroup>

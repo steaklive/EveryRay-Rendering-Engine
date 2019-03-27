@@ -34,6 +34,8 @@
 #include "InstancingDemo.h"
 #include "FrustumCullingDemo.h"
 #include "SubsurfaceScatteringDemo.h"
+#include "VolumetricLightingDemo.h"
+
 
 
 #include "imgui.h"
@@ -51,7 +53,8 @@ namespace Rendering
 		"Cascaded Shadow Mapping",
 		"Physically Based Rendering",
 		"Frustum Culling", 
-		"Separable Subsurface Scattering"
+		"Separable Subsurface Scattering",
+		"Volumetric Lighting"
 	};
 
 	// we will store our demo scenes here:
@@ -82,6 +85,7 @@ namespace Rendering
 		mInstancingDemo(nullptr),
 		mFrustumCullingDemo(nullptr),
 		mSubsurfaceScatteringDemo(nullptr),
+		mVolumetricLightingDemo(nullptr),
 
 		mRenderStateHelper(nullptr),
 		mRenderTarget(nullptr), mFullScreenQuad(nullptr)
@@ -116,7 +120,7 @@ namespace Rendering
 		components.push_back(mMouse);
 		mServices.AddService(Mouse::TypeIdClass(), mMouse);
 
-		mCamera = new FirstPersonCamera(*this, 1.5708f, this->AspectRatio(), 0.01f, 600.0f );
+		mCamera = new FirstPersonCamera(*this, 1.5708f, this->AspectRatio(), 0.5f, 600.0f );
 		mCamera->SetPosition(0.0f, 20.0f, 65.0f);
 		components.push_back(mCamera);
 		mServices.AddService(Camera::TypeIdClass(), mCamera);
@@ -131,6 +135,8 @@ namespace Rendering
 		demoLevels.push_back(mPBRDemo);
 		demoLevels.push_back(mFrustumCullingDemo);
 		demoLevels.push_back(mSubsurfaceScatteringDemo);
+		demoLevels.push_back(mVolumetricLightingDemo);
+
 
 
 		
@@ -183,6 +189,9 @@ namespace Rendering
 				break;
 			case 4:
 				demoLevels[level] = new SubsurfaceScatteringDemo(*this, *mCamera);
+				break;
+			case 5:
+				demoLevels[level] = new VolumetricLightingDemo(*this, *mCamera);
 				break;
 			}
 		}
@@ -281,6 +290,7 @@ namespace Rendering
 		DeleteObject(mInstancingDemo);
 		DeleteObject(mFrustumCullingDemo);
 		DeleteObject(mSubsurfaceScatteringDemo);
+		DeleteObject(mVolumetricLightingDemo);
 
 		DeleteObject(mFullScreenQuad);
 		DeleteObject(mRenderTarget);
@@ -313,16 +323,16 @@ namespace Rendering
 		mDirect3DDeviceContext->ClearRenderTargetView(mRenderTargetView, reinterpret_cast<const float*>(&BackgroundColor));
 		mDirect3DDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 		
+
 		Game::Draw(gameTime);
 		//ImGui::Render();
 		//ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 		
 		//Render FPS info.
 	    mRenderStateHelper->SaveAll();
-
-		//mFpsComponent->Draw(gameTime);
 		mRenderStateHelper->RestoreAll();
-
+		
+		
 		HRESULT hr = mSwapChain->Present(0, 0);
 		if (FAILED(hr))
 		{

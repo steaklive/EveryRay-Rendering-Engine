@@ -3,3 +3,6 @@ Library/Release/*
 Library/Content/*
 !Library/Content/Effects
 !Library/Content/Shaders
+
+Library/Content/Shaders/VolumetricLight
+Game/VolumetricLightingDemo.cpp
