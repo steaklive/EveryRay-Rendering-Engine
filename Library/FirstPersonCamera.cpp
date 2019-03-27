@@ -84,14 +84,14 @@ namespace Library
 	void FirstPersonCamera::Update(const GameTime& gameTime)
 	{
 		XMFLOAT3 movementAmount = Vector3Helper::Zero;
-		if (mKeyboard != nullptr)
+		if (mKeyboard != nullptr )
 		{
 			if (mKeyboard->IsKeyDown(DIK_W))
 			{
 				movementAmount.y = 1.0f;
 			}
 
-			if (mKeyboard->IsKeyDown(DIK_S))
+			if (mKeyboard->IsKeyDown(DIK_S) )
 			{
 				movementAmount.y = -1.0f;
 			}

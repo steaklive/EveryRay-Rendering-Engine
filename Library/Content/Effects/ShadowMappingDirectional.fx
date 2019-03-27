@@ -213,8 +213,8 @@ float4 csm_shadowmap_pcf_pixel_shader(VS_OUTPUT IN) : SV_Target
     }
 
 
-    OUT.rgb = ambient + diffuse;
-    OUT.a = 1.0f;
+    OUT.rgb = (ambient + diffuse);
+    OUT.a = 0.5f;
 
     return OUT;
 }

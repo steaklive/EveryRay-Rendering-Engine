@@ -453,7 +453,6 @@ namespace Rendering
 
 			pass->Apply(0, direct3DDeviceContext);
 
-
 			direct3DDeviceContext->DrawIndexedInstanced(mInstancedObject->MeshesIndicesCounts[i], mInstancedObject->InstanceCount, 0, 0, 0);
 		}
 		

@@ -46,6 +46,18 @@
     <Filter Include="Source Files\Objects\Frustums">
       <UniqueIdentifier>{8aed3072-d0a1-4ed0-ac9f-2bc88a7c28c7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Effects">
+      <UniqueIdentifier>{cb66bc09-9b78-4531-8ec0-10a31f0b8295}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{09f1a3ac-1868-41c5-8c47-d866e35cd170}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\PBR">
+      <UniqueIdentifier>{3a46b407-bb43-4e45-af57-5ce23f448b2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\VolumetricLighting">
+      <UniqueIdentifier>{b4952fdd-8615-41aa-879e-346bf0c5e5b6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -261,6 +273,15 @@
     <ClInclude Include="SkinShadingScatterMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DepthTarget.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomRenderTarget.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\Shaders\VolumetricLight\ShaderCommon.h">
+      <Filter>Shaders\VolumetricLighting</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -458,5 +479,121 @@
     <ClCompile Include="SkinShadingScatterMaterial.cpp">
       <Filter>Source Files\Materials</Filter>
     </ClCompile>
+    <ClCompile Include="DepthTarget.cpp">
+      <Filter>Source Files\Objects\RenderTarget</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomRenderTarget.cpp">
+      <Filter>Source Files\Objects\RenderTarget</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Content\Effects\AmbientLighting.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Effects\BasicEffect.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Effects\BasicEffect.hlsl">
+      <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Effects\ColorFilter.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Effects\DepthMap.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Effects\DiffuseLighting.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Effects\EnvironmentMapping.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Effects\Instancing.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Effects\NormalMapping.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Effects\PBR.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Effects\PointLighting.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Effects\ShadowMappingDirectional.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Effects\ShadowMappingPoint.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Effects\SkinShadingColor.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Effects\SkinShadingSeparableSubsurface.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Effects\SkinShadingSpecular.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Effects\Skybox.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\PBR\RadianceMapPS.hlsl">
+      <Filter>Shaders\PBR</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\PBR\RadianceMapVS.hlsl">
+      <Filter>Shaders\PBR</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\VolumetricLight\Apply_PS.hlsl">
+      <Filter>Shaders\VolumetricLighting</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\VolumetricLight\ComputeLightLUT_CS.hlsl">
+      <Filter>Shaders\VolumetricLighting</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\VolumetricLight\ComputePhaseLookup_PS.hlsl">
+      <Filter>Shaders\VolumetricLighting</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\VolumetricLight\Debug_PS.hlsl">
+      <Filter>Shaders\VolumetricLighting</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\VolumetricLight\DownsampleDepth_PS.hlsl">
+      <Filter>Shaders\VolumetricLighting</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\VolumetricLight\PostProcess_PS.hlsl">
+      <Filter>Shaders\VolumetricLighting</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\VolumetricLight\Quad_VS.hlsl">
+      <Filter>Shaders\VolumetricLighting</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\VolumetricLight\RenderVolume_DS.hlsl">
+      <Filter>Shaders\VolumetricLighting</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\VolumetricLight\RenderVolume_HS.hlsl">
+      <Filter>Shaders\VolumetricLighting</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\VolumetricLight\RenderVolume_PS.hlsl">
+      <Filter>Shaders\VolumetricLighting</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\VolumetricLight\RenderVolume_VS.hlsl">
+      <Filter>Shaders\VolumetricLighting</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\VolumetricLight\RenderVolumeBase_VS.hlsl">
+      <Filter>Shaders\VolumetricLighting</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\VolumetricLight\RenderVolumeFinal_PS.hlsl">
+      <Filter>Shaders\VolumetricLighting</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\VolumetricLight\RenderVolumeGeometry_PS.hlsl">
+      <Filter>Shaders\VolumetricLighting</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\VolumetricLight\RenderVolumeGrid_VS.hlsl">
+      <Filter>Shaders\VolumetricLighting</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\VolumetricLight\Resolve_PS.hlsl">
+      <Filter>Shaders\VolumetricLighting</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\VolumetricLight\TemporalFilter_PS.hlsl">
+      <Filter>Shaders\VolumetricLighting</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

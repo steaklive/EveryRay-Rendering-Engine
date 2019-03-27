@@ -188,18 +188,27 @@ float4 pixel_shader(VS_OUTPUT IN) : SV_Target
     float4 color = ColorTexture.Sample(TrilinearSampler, IN.TextureCoordinate);
     float3 ambient = get_vector_color_contribution(AmbientColor, color.rgb);
     
-    LIGHT_CONTRIBUTION_DATA lightContributionData;
-    lightContributionData.Color = color;
-    lightContributionData.Normal = sampledNormal;
-    lightContributionData.ViewDirection = viewDirection;
-    lightContributionData.LightDirection = float4(IN.LightDirection, 1);
-    lightContributionData.SpecularColor = SpecularColor;
-    lightContributionData.SpecularPower = SpecularPower;
-    lightContributionData.LightColor = LightColor;
-    lightContributionData.Attenuation = IN.Attenuation; //attenuation
-    float3 light_contribution = get_light_contribution(lightContributionData);
-    
-    OUT.rgb = ambient + light_contribution;
+    //LIGHT_CONTRIBUTION_DATA lightContributionData;
+    //lightContributionData.Color = color;
+    //lightContributionData.Normal = sampledNormal;
+    //lightContributionData.ViewDirection = viewDirection;
+    //lightContributionData.LightDirection = float4(IN.LightDirection, 1);
+    //lightContributionData.SpecularColor = SpecularColor;
+    //lightContributionData.SpecularPower = SpecularPower;
+    //lightContributionData.LightColor = LightColor;
+    //lightContributionData.Attenuation = IN.Attenuation; //attenuation
+    //float3 light_contribution = get_light_contribution(lightContributionData);
+   
+    float3 diffuse = (float3) 0;
+
+    float n_dot_l = dot(normalize(-LightDirection), sampledNormal);
+	
+    if (n_dot_l > 0)
+    {
+        diffuse = /*LightColor.rgb * LightColor.a * */n_dot_l * color.rgb;
+    }
+
+    OUT.rgb = ambient + diffuse /*+ light_contribution*/;
     OUT.a = 1.0f;
     
     return OUT;
