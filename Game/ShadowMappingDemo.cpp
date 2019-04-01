@@ -335,6 +335,7 @@ namespace Rendering
 		UpdateImGui();
 		UpdateDepthBias(gameTime);
 		UpdateDirectionalLightAndProjector(gameTime);
+		mSkybox->Update(gameTime);
 		
 		#pragma region UPDATE_FRUSTUMS_INFO
 
@@ -449,6 +450,13 @@ namespace Rendering
 
 		mRenderStateHelper.RestoreRasterizerState();
 		
+
+#pragma endregion
+
+		#pragma region DRAW_SKYBOX
+		mSkybox->Draw(gameTime);
+		#pragma endregion
+
 		// Projective texture mapping directional pass
 		pass0 = mShadowMappingDirectionalMaterial->CurrentTechnique()->Passes().at(0);
 		inputLayout0 = mShadowMappingDirectionalMaterial->InputLayouts().at(pass0);
@@ -461,8 +469,6 @@ namespace Rendering
 		pass2 = mShadowMappingDirectionalMaterial->CurrentTechnique()->Passes().at(0);
 		inputLayout2 = mShadowMappingDirectionalMaterial->InputLayouts().at(pass2);
 		direct3DDeviceContext2->IASetInputLayout(inputLayout2);
-
-#pragma endregion
 
 		#pragma region DRAW_MODELS
 

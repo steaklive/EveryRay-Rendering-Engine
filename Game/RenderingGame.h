@@ -35,7 +35,8 @@ namespace Rendering
 	class FrustumCullingDemo;
 	class SubsurfaceScatteringDemo;
 	class VolumetricLightingDemo;
-	
+
+
 	class RenderingGame : public Game
 	{
 	public:
@@ -45,6 +46,8 @@ namespace Rendering
 		virtual void Initialize() override;
 		virtual void Update(const GameTime& gameTime) override;
 		virtual void Draw(const GameTime& gameTime) override;
+
+		void UpdateColorFilterMaterial();
 	
 	protected:
 		virtual void Shutdown() override;
@@ -80,6 +83,7 @@ namespace Rendering
 
 		FullScreenRenderTarget* mRenderTarget;
 		FullScreenQuad* mFullScreenQuad;
+
 
 		void SetLevel(int level);
 		void UpdateImGui();
