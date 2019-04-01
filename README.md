@@ -18,6 +18,7 @@ I have been changing and extending it for educational purposes with all kinds of
 - Different light sources
 - FPS camera
 - Normal-Mapping, Environment-Mapping
+- Post Processing: Motion Blur, Vignette, LUT color grading
 - Physically Based Rendering with IBL
 - Cascaded Shadow Mapping
 - GPU Instancing
