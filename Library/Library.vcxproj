@@ -177,6 +177,7 @@ IF EXIST "$(TargetDir)Content" xcopy /E /Y "$(TargetDir)Content" "$(SolutionDir)
     <ClInclude Include="BasicMaterial.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="ColorFilteringMaterial.h" />
+    <ClInclude Include="ColorGradingMaterial.h" />
     <ClInclude Include="ColorHelper.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="ConstantBuffer.h" />
@@ -215,6 +216,7 @@ IF EXIST "$(TargetDir)Content" xcopy /E /Y "$(TargetDir)Content" "$(SolutionDir)
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="ModelMaterial.h" />
+    <ClInclude Include="MotionBlurMaterial.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="NormalMappingMaterial.h" />
     <ClInclude Include="Pass.h" />
@@ -222,6 +224,7 @@ IF EXIST "$(TargetDir)Content" xcopy /E /Y "$(TargetDir)Content" "$(SolutionDir)
     <ClInclude Include="PointLight.h" />
     <ClInclude Include="PointLightingMaterial.h" />
     <ClInclude Include="PostProcessingMaterial.h" />
+    <ClInclude Include="PostProcessingStack.h" />
     <ClInclude Include="Projector.h" />
     <ClInclude Include="ProxyModel.h" />
     <ClInclude Include="QuadRenderer.h" />
@@ -249,12 +252,14 @@ IF EXIST "$(TargetDir)Content" xcopy /E /Y "$(TargetDir)Content" "$(SolutionDir)
     <ClInclude Include="Variable.h" />
     <ClInclude Include="VectorHelper.h" />
     <ClInclude Include="VertexDeclarations.h" />
+    <ClInclude Include="VignetteMaterial.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AmbientLightingMaterial.cpp" />
     <ClCompile Include="BasicMaterial.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ColorFilteringMaterial.cpp" />
+    <ClCompile Include="ColorGradingMaterial.cpp" />
     <ClCompile Include="ColorHelper.cpp" />
     <ClCompile Include="CustomRenderTarget.cpp" />
     <ClCompile Include="DemoLevel.cpp" />
@@ -288,6 +293,7 @@ IF EXIST "$(TargetDir)Content" xcopy /E /Y "$(TargetDir)Content" "$(SolutionDir)
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="ModelMaterial.cpp" />
+    <ClCompile Include="MotionBlurMaterial.cpp" />
     <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="NormalMappingMaterial.cpp" />
     <ClCompile Include="Pass.cpp" />
@@ -295,6 +301,7 @@ IF EXIST "$(TargetDir)Content" xcopy /E /Y "$(TargetDir)Content" "$(SolutionDir)
     <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="PointLightingMaterial.cpp" />
     <ClCompile Include="PostProcessingMaterial.cpp" />
+    <ClCompile Include="PostProcessingStack.cpp" />
     <ClCompile Include="Projector.cpp" />
     <ClCompile Include="ProxyModel.cpp" />
     <ClCompile Include="QuadRenderer.cpp" />
@@ -323,6 +330,7 @@ IF EXIST "$(TargetDir)Content" xcopy /E /Y "$(TargetDir)Content" "$(SolutionDir)
     <ClCompile Include="Utility.cpp" />
     <ClCompile Include="Variable.cpp" />
     <ClCompile Include="VectorHelper.cpp" />
+    <ClCompile Include="VignetteMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Content\Effects\AmbientLighting.fx">
@@ -341,6 +349,9 @@ IF EXIST "$(TargetDir)Content" xcopy /E /Y "$(TargetDir)Content" "$(SolutionDir)
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </FxCompile>
+    <FxCompile Include="Content\Effects\ColorGrading.fx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="Content\Effects\DepthMap.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -355,6 +366,9 @@ IF EXIST "$(TargetDir)Content" xcopy /E /Y "$(TargetDir)Content" "$(SolutionDir)
     </FxCompile>
     <FxCompile Include="Content\Effects\Instancing.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Content\Effects\MotionBlur.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Content\Effects\NormalMapping.fx">
@@ -391,6 +405,9 @@ IF EXIST "$(TargetDir)Content" xcopy /E /Y "$(TargetDir)Content" "$(SolutionDir)
     </FxCompile>
     <FxCompile Include="Content\Effects\Skybox.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Content\Effects\Vignette.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Content\Shaders\PBR\RadianceMapPS.hlsl">

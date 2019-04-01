@@ -543,12 +543,18 @@ namespace Rendering
 		UpdatePointLight(gameTime);
 
 		mProxyModel->Update(gameTime);
+		mSkybox->Update(gameTime);
 
 		UpdateImGui();
 	}
 
 	void PhysicallyBasedRenderingDemo::Draw(const GameTime& gameTime)
 	{
+
+		#pragma region DRAW_SKYBOX
+				mSkybox->Draw(gameTime);
+		#pragma endregion
+
 		ID3D11DeviceContext* direct3DDeviceContext = mGame->Direct3DDeviceContext();
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -1215,8 +1221,6 @@ namespace Rendering
 		#pragma region LEVEL_SPECIFIC_IMGUI
 		ImGui::Begin("Physically Based Rendering - Demo");
 
-		ImGui::Checkbox("Show skybox", &mShowSkybox);
-		mSkybox->SetVisible(mShowSkybox);
 
 		if (ImGui::CollapsingHeader("Light Properties"))
 		{

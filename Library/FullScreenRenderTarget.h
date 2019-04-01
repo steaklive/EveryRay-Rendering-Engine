@@ -9,11 +9,18 @@ namespace Library
 	{
 	public:
 		FullScreenRenderTarget(Game& game);
+		FullScreenRenderTarget(Game& game, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsv);
 		~FullScreenRenderTarget();
 
 		ID3D11ShaderResourceView* OutputTexture() const;
 		ID3D11RenderTargetView* RenderTargetView() const;
 		ID3D11DepthStencilView* DepthStencilView() const;
+
+		void SetRTV(ID3D11RenderTargetView * RTV);
+
+		void SetDSV(ID3D11DepthStencilView * DSV);
+
+		void SetSRV(ID3D11ShaderResourceView * SRV);
 
 		void Begin();
 		void End();

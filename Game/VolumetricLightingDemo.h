@@ -152,6 +152,7 @@ namespace VolumetricLightingDemoInfo
 namespace Rendering
 {
 	class NormalMappingMaterial;
+	class PostProcessingStack;
 
 	namespace VolumetricDemoObjects
 	{
@@ -291,6 +292,10 @@ namespace Rendering
 
 
 		DepthTarget* mDepthTarget0;
+		DepthTarget* mSceneDepth;
+
+
+		CustomRenderTarget* mSceneRT;
 
 		CustomRenderTarget* mPhaseLUTRenderTarget;
 		CustomRenderTarget* mAccumulationRenderTarget;
@@ -340,6 +345,12 @@ namespace Rendering
 		XMCOLOR mAmbientColor;
 		XMCOLOR mSpecularColor;
 		float mSpecularPower;
+
+		PostProcessingStack* mPostProcessingStack;
+		FullScreenRenderTarget* mRenderTargetPP0;
+		FullScreenRenderTarget* mRenderTargetPP1;
+		FullScreenRenderTarget* mRenderTargetPP2;
+
 
 		RenderStateHelper mRenderStateHelper;
 

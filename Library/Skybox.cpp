@@ -82,7 +82,7 @@ namespace Library
 		}
 
 		// add to game components
-		mGame->components.push_back(this);
+		//mGame->components.push_back(this);
 
 
 	}
@@ -118,5 +118,7 @@ namespace Library
 		pass->Apply(0, direct3DDeviceContext);
 
 		direct3DDeviceContext->DrawIndexed(mIndexCount, 0, 0);
+		mGame->UnbindPixelShaderResources(0, 3);
+
 	}
 }

@@ -277,6 +277,7 @@ namespace Rendering
 		// Do the culling
 		CullAABB(mIsCullingEnabled, mFrustum, mInstancedObject->ModelAABB, mInstancedObject->InstancesPositions);
 
+		mSkybox->Update(gameTime);
 		UpdateImGui();
 	}
 
@@ -377,6 +378,9 @@ namespace Rendering
 
 		mRenderStateHelper.SaveRasterizerState();
 
+		#pragma region DRAW_SKYBOX
+		mSkybox->Draw(gameTime);
+#pragma endregion
 
 		ID3D11DeviceContext* direct3DDeviceContext = mGame->Direct3DDeviceContext();
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

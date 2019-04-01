@@ -27,6 +27,8 @@
 #include "..\Library\Effect.h"
 #include "..\Library\ColorFilteringMaterial.h"
 #include "..\Library\DemoLevel.h"
+#include "..\Library\PostProcessingStack.h"
+
 
 #include "AmbientLightingDemo.h"
 #include "ShadowMappingDemo.h"
@@ -138,13 +140,10 @@ namespace Rendering
 		demoLevels.push_back(mVolumetricLightingDemo);
 
 
-
-		
 		//Render State Helper
 		mRenderStateHelper = new RenderStateHelper(*this);
 
-		//RenderTarget
-		//mRenderTarget = new FullScreenRenderTarget(*this);	
+
 
 		#pragma region INITIALIZE_IMGUI
 
@@ -231,6 +230,7 @@ namespace Rendering
 
 		UpdateImGui();
 
+	
 		Game::Update(gameTime);
 	}
 	
@@ -320,16 +320,17 @@ namespace Rendering
 	
 	void RenderingGame::Draw(const GameTime& gameTime)
 	{
+
+
+
 		mDirect3DDeviceContext->ClearRenderTargetView(mRenderTargetView, reinterpret_cast<const float*>(&BackgroundColor));
 		mDirect3DDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-		
-
 		Game::Draw(gameTime);
-		//ImGui::Render();
-		//ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+
+
 		
-		//Render FPS info.
-	    mRenderStateHelper->SaveAll();
+		mRenderStateHelper->SaveAll();
 		mRenderStateHelper->RestoreAll();
 		
 		

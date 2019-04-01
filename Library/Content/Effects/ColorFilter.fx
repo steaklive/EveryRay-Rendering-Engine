@@ -86,6 +86,12 @@ float4 genericfilter_pixel_shader(VS_OUTPUT IN) : SV_Target
     return float4(mul(color, ColorFilter).rgb, color.a);
 }
 
+float4 no_filter_pixel_shader(VS_OUTPUT IN) : SV_Target
+{
+    return ColorTexture.Sample(TrilinearSampler, IN.TextureCoordinate);
+
+}
+
 /************* Techniques *************/
 
 technique11 grayscale_filter
@@ -125,5 +131,15 @@ technique11 generic_filter
         SetVertexShader(CompileShader(vs_5_0, vertex_shader()));
         SetGeometryShader(NULL);
         SetPixelShader(CompileShader(ps_5_0, genericfilter_pixel_shader()));
+    }
+}
+
+technique11 no_filter
+{
+    pass p0
+    {
+        SetVertexShader(CompileShader(vs_5_0, vertex_shader()));
+        SetGeometryShader(NULL);
+        SetPixelShader(CompileShader(ps_5_0, no_filter_pixel_shader()));
     }
 }

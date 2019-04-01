@@ -282,6 +282,18 @@
     <ClInclude Include="Content\Shaders\VolumetricLight\ShaderCommon.h">
       <Filter>Shaders\VolumetricLighting</Filter>
     </ClInclude>
+    <ClInclude Include="PostProcessingStack.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VignetteMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ColorGradingMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MotionBlurMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -485,6 +497,18 @@
     <ClCompile Include="CustomRenderTarget.cpp">
       <Filter>Source Files\Objects\RenderTarget</Filter>
     </ClCompile>
+    <ClCompile Include="PostProcessingStack.cpp">
+      <Filter>Source Files\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="VignetteMaterial.cpp">
+      <Filter>Source Files\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="ColorGradingMaterial.cpp">
+      <Filter>Source Files\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="MotionBlurMaterial.cpp">
+      <Filter>Source Files\Materials</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Content\Effects\AmbientLighting.fx">
@@ -594,6 +618,15 @@
     </FxCompile>
     <FxCompile Include="Content\Shaders\VolumetricLight\TemporalFilter_PS.hlsl">
       <Filter>Shaders\VolumetricLighting</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Effects\Vignette.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Effects\ColorGrading.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Effects\MotionBlur.fx">
+      <Filter>Effects</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
