@@ -35,7 +35,7 @@ namespace Rendering
 	class FrustumCullingDemo;
 	class SubsurfaceScatteringDemo;
 	class VolumetricLightingDemo;
-
+	class CollisionTestDemo;
 
 	class RenderingGame : public Game
 	{
@@ -73,7 +73,7 @@ namespace Rendering
 		FrustumCullingDemo* mFrustumCullingDemo;
 		SubsurfaceScatteringDemo* mSubsurfaceScatteringDemo;
 		VolumetricLightingDemo* mVolumetricLightingDemo;
-
+		CollisionTestDemo* mCollisionTestDemo;
 		
 		RenderStateHelper* mRenderStateHelper;
 

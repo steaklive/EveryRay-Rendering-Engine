@@ -37,6 +37,7 @@
 #include "FrustumCullingDemo.h"
 #include "SubsurfaceScatteringDemo.h"
 #include "VolumetricLightingDemo.h"
+#include "CollisionTestDemo.h"
 
 
 
@@ -56,7 +57,8 @@ namespace Rendering
 		"Physically Based Rendering",
 		"Frustum Culling", 
 		"Separable Subsurface Scattering",
-		"Volumetric Lighting"
+		"Volumetric Lighting",
+		"Collision Detection"
 	};
 
 	// we will store our demo scenes here:
@@ -88,6 +90,7 @@ namespace Rendering
 		mFrustumCullingDemo(nullptr),
 		mSubsurfaceScatteringDemo(nullptr),
 		mVolumetricLightingDemo(nullptr),
+		mCollisionTestDemo(nullptr),
 
 		mRenderStateHelper(nullptr),
 		mRenderTarget(nullptr), mFullScreenQuad(nullptr)
@@ -138,6 +141,7 @@ namespace Rendering
 		demoLevels.push_back(mFrustumCullingDemo);
 		demoLevels.push_back(mSubsurfaceScatteringDemo);
 		demoLevels.push_back(mVolumetricLightingDemo);
+		demoLevels.push_back(mCollisionTestDemo);
 
 
 		//Render State Helper
@@ -191,6 +195,9 @@ namespace Rendering
 				break;
 			case 5:
 				demoLevels[level] = new VolumetricLightingDemo(*this, *mCamera);
+				break;
+			case 6:
+				demoLevels[level] = new CollisionTestDemo(*this, *mCamera);
 				break;
 			}
 		}
@@ -291,6 +298,7 @@ namespace Rendering
 		DeleteObject(mFrustumCullingDemo);
 		DeleteObject(mSubsurfaceScatteringDemo);
 		DeleteObject(mVolumetricLightingDemo);
+		DeleteObject(mCollisionTestDemo);
 
 		DeleteObject(mFullScreenQuad);
 		DeleteObject(mRenderTarget);
