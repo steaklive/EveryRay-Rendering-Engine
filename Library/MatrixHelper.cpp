@@ -103,5 +103,30 @@ namespace Library
 		matrix.r[3] = XMLoadFloat4(&m4);
 	}
 
+	std::vector<XMFLOAT3> MatrixHelper::GetRows(XMFLOAT4X4& mat)
+	{
+
+		std::vector<XMFLOAT3> rowVector;
+		rowVector.push_back(XMFLOAT3(mat._11, mat._12, mat._13));
+		rowVector.push_back(XMFLOAT3(mat._21, mat._22, mat._23));
+		rowVector.push_back(XMFLOAT3(mat._31, mat._32, mat._33));
+
+		return rowVector;
+	}
+	std::vector<XMFLOAT3>& MatrixHelper::GetRows(XMMATRIX& pMat)
+	{
+
+		XMFLOAT4X4 mat;
+		XMStoreFloat4x4(&mat, pMat);
+
+		pMat.r[0];
+		std::vector<XMFLOAT3> rowVector;
+
+		rowVector.push_back(XMFLOAT3(mat._11, mat._12, mat._13));
+		rowVector.push_back(XMFLOAT3(mat._21, mat._22, mat._23));
+		rowVector.push_back(XMFLOAT3(mat._31, mat._32, mat._33));
+
+		return rowVector;
+	}
 	
 }

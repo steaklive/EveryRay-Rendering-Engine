@@ -156,7 +156,8 @@ namespace Rendering
 		D3D11_BUFFER_DESC instanceBufferDesc;
 		ZeroMemory(&instanceBufferDesc, sizeof(instanceBufferDesc));
 		instanceBufferDesc.ByteWidth = InstanceSize() * instanceCount;
-		instanceBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+		instanceBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+		instanceBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		instanceBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
 		D3D11_SUBRESOURCE_DATA instanceSubResourceData;
@@ -166,6 +167,8 @@ namespace Rendering
 		{
 			throw GameException("ID3D11Device::CreateBuffer() failed while creating InstanceBuffer.");
 		}
+
+
 	}
 
 	UINT InstancingMaterial::InstanceSize() const

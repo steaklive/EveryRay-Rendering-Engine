@@ -1,5 +1,4 @@
-#ifndef FRUSTUM_CULLING_DEMO
-#define FRUSTUM_CULLING_DEMO
+#pragma once
 
 #include "..\Library\DrawableGameComponent.h"
 #include "..\Library\InstancingMaterial.h"
@@ -216,5 +215,3 @@ namespace Rendering
 
 	};
 }
-
-#endif

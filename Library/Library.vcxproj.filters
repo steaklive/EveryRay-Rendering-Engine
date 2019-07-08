@@ -58,6 +58,9 @@
     <Filter Include="Shaders\VolumetricLighting">
       <UniqueIdentifier>{b4952fdd-8615-41aa-879e-346bf0c5e5b6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Objects\Spatial hierarchies">
+      <UniqueIdentifier>{e080a665-c4ec-411c-a175-d36f961e12bf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -294,6 +297,24 @@
     <ClInclude Include="MotionBlurMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RenderableOBB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OctreeStructure.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SpatialElement.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SpatialCell.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BruteforceStructure.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionDetectionTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -508,6 +529,18 @@
     </ClCompile>
     <ClCompile Include="MotionBlurMaterial.cpp">
       <Filter>Source Files\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderableOBB.cpp">
+      <Filter>Source Files\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="OctreeStructure.cpp">
+      <Filter>Source Files\Objects\Spatial hierarchies</Filter>
+    </ClCompile>
+    <ClCompile Include="SpatialElement.cpp">
+      <Filter>Source Files\Objects\Spatial hierarchies</Filter>
+    </ClCompile>
+    <ClCompile Include="BruteforceStructure.cpp">
+      <Filter>Source Files\Objects\Spatial hierarchies</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

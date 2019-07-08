@@ -20,19 +20,31 @@ namespace Library
 		void InitializeGeometry(const std::vector<XMFLOAT3>& aabb, XMMATRIX matrix);
 		void SetPosition(const XMFLOAT3& position);
 		void SetColor(XMFLOAT4 color);
+		void SetRotationMatrix(const XMMATRIX& rotationMat);
+		void SetAABB(const std::vector<XMFLOAT3>& aabb);
+
+
+		void UpdateColor(XMFLOAT4 color);
+
+		const std::vector<XMFLOAT3>& GetAABB() { return mModifiedAABB; };
 
 		virtual void Initialize() override;
 		virtual void Update(const GameTime& gameTime) override;
 		virtual void Draw(const GameTime& gameTime) override;
+
+		bool isColliding = false;
 
 	private:
 		RenderableAABB();
 		RenderableAABB(const RenderableAABB& rhs);
 		RenderableAABB& operator=(const RenderableAABB& rhs);
 
+
 		void InitializeVertexBuffer(const std::vector<XMFLOAT3>& aabb);
 		void InitializeIndexBuffer();
+		
 
+		void ResizeAABB();
 
 
 		static const XMVECTORF32 DefaultColor;
@@ -55,5 +67,14 @@ namespace Library
 		XMFLOAT3 mRight;
 
 		XMFLOAT4X4 mWorldMatrix;
+
+		XMMATRIX mRotationMatrix;
+
+		std::vector<XMFLOAT3> mVertices;
+
+		const std::vector<XMFLOAT3>* mAABB;
+
+		std::vector<XMFLOAT3> mModifiedAABB;
+		std::vector<XMFLOAT3> mModifiedAABB2;
 	};
 }
