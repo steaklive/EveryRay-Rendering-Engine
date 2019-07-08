@@ -10,7 +10,7 @@ I have been changing and extending it for educational purposes with all kinds of
 <br>![alt text](https://preview.ibb.co/fqP3uK/Every_Ray_Instancing.png")
 <br>![alt text](https://preview.ibb.co/i8mLnq/Every-Ray-Frustum-Culling.png")
 <br>![alt text](https://i.ibb.co/zVG7qvL/Every-Ray-SSSS.png")
-<br>![alt text](https://i.ibb.co/GM5xvKG/Volumetric-Lighting.png")
+<br>![alt text](https://i.ibb.co/0ZJmFfh/Every-Ray-Post-Processing.png")
 
 # Features
 - 3D model loading (.obj, .fbx and etc.) with Assimp Library
@@ -18,6 +18,7 @@ I have been changing and extending it for educational purposes with all kinds of
 - Different light sources
 - FPS camera
 - Normal-Mapping, Environment-Mapping
+- Post Processing: Motion Blur, Vignette, LUT color grading
 - Physically Based Rendering with IBL
 - Cascaded Shadow Mapping
 - GPU Instancing
