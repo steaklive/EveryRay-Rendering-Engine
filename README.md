@@ -11,6 +11,7 @@ I have been changing and extending it for educational purposes with all kinds of
 <br>![alt text](https://preview.ibb.co/i8mLnq/Every-Ray-Frustum-Culling.png")
 <br>![alt text](https://i.ibb.co/zVG7qvL/Every-Ray-SSSS.png")
 <br>![alt text](https://i.ibb.co/0ZJmFfh/Every-Ray-Post-Processing.png")
+<br>![alt text](https://i.ibb.co/CQ9k9wy/Every-Ray-Water.png")
 
 # Features
 - 3D model loading (.obj, .fbx and etc.) with Assimp Library
