@@ -49,6 +49,7 @@ namespace Rendering
 		DeleteObject(mSpriteBatch);
 		DeleteObject(mRenderStateHelper);
 		DeleteObject(mAmbientLight);
+		DeleteObject(mObject);
 		//ReleaseObject(mTextureShaderResourceView);
 		//DeleteObject(mMaterial);
 		//DeleteObject(mEffect);
@@ -90,7 +91,7 @@ namespace Rendering
 		std::wstring exedir = Utility::ExecutableDirectory();
 		std::string dir;
 		Utility::GetDirectory(currentdir, dir);
-		mObject = new RenderingObject("Statue", *mGame, std::unique_ptr<Model>(new Model(*mGame, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\bunny.fbx", true)));
+		mObject = new RenderingObject("Statue", *mGame, std::unique_ptr<Model>(new Model(*mGame, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\Sponza\\sponza.fbx", true)));
 
 		// Initialize the material
 		Effect* mEffect = new Effect(*mGame);
@@ -98,19 +99,6 @@ namespace Rendering
 
 		mObject->LoadMaterial(new AmbientLightingMaterial(), mEffect);
 		mObject->LoadRenderBuffers();
-		mObject->LoadAssignedMeshTextures();
-		//for (size_t i = 0; i < mObject->GetMeshCount(); i++)
-		//{
-		//	mObject->LoadCustomMeshTextures(i,
-		//		L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\statue\\statue_d.dds",
-		//		L"",
-		//		L"",
-		//		L"",
-		//		L"",
-		//		L"",
-		//		L""
-		//	);
-		//}
 
 		mAmbientLight = new Light(*mGame);
 		mAmbientLight->SetColor(ColorHelper::White);

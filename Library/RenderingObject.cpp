@@ -7,10 +7,9 @@
 #include "Game.h"
 #include "MatrixHelper.h"
 #include "Camera.h"
-#include "AmbientLightingMaterial.h"
-//#include "ModelMaterial.h"
 #include "Utility.h"
 
+#include "TGATextureLoader.h"
 #include <DDSTextureLoader.h>
 #include <WICTextureLoader.h>
 
@@ -35,13 +34,17 @@ namespace Rendering
 			mMeshesTextures.push_back(TextureData());
 		}
 
+		LoadAssignedMeshTextures();
 		mAABB = mModel->GenerateAABB();
 		
 	}
 
 	RenderingObject::~RenderingObject()
 	{
-
+		mMeshesRenderBuffers.clear();
+		mMeshesTextures.clear();
+		mMeshesInstanceBuffers.clear();
+		mMeshesMaterials.clear();
 	}
 
 	void RenderingObject::LoadMaterial(Material* pMaterial, Effect* pEffect)
@@ -59,20 +62,19 @@ namespace Rendering
 	{
 		for (size_t i = 0; i < mMeshesCount; i++)
 		{
-			if (mModel->Meshes()[i]->GetMaterial()->Textures().size() == 0) continue;
-			auto it = mModel->Meshes()[i]->GetMaterial()->Textures().find(TextureType::TextureTypeDifffuse);
-
-			if (it != mModel->Meshes()[i]->GetMaterial()->Textures().end())
+			if (mModel->Meshes()[i]->GetMaterial()->Textures().size() == 0) 
+				continue;
+			std::vector<std::wstring>* textures = mModel->Meshes()[i]->GetMaterial()->GetTexturesByType(TextureType::TextureTypeDifffuse);
+			if (textures->size()!=0)
 			{
 				{
-					std::wstring textureRelativePath = it->second->at(0);
+					std::wstring textureRelativePath = textures->at(0);
 					std::string fullPath;
 					Utility::GetDirectory(mModel->GetFileName(), fullPath);
 					fullPath += "/";
 					std::wstring resultPath;
 					Utility::ToWideString(fullPath, resultPath);
 					resultPath += textureRelativePath;
-
 					LoadTexture(TextureType::TextureTypeDifffuse, resultPath, i);
 				}
 
@@ -106,8 +108,10 @@ namespace Rendering
 	}
 	void RenderingObject::LoadTexture(TextureType type, std::wstring path, int meshIndex)
 	{
-		const wchar_t* postfix = L".dds";
-		bool ddsLoader = (path.substr(path.length() - 4) == std::wstring(postfix));
+		const wchar_t* postfixDDS = L".dds";
+		const wchar_t* postfixTGA = L".tga";
+		bool ddsLoader = (path.substr(path.length() - 4) == std::wstring(postfixDDS));
+		bool tgaLoader = (path.substr(path.length() - 4) == std::wstring(postfixTGA));
 		std::string errorMessage = mModel->GetFileName() + " of mesh index: " + std::to_string(meshIndex);
 
 		std::string texType;
@@ -133,10 +137,29 @@ namespace Rendering
 			break;
 		}
 
-		if (FAILED(ddsLoader ? DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), path.c_str(), nullptr, resource)
-			: DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), path.c_str(), nullptr, resource)))
+		if (ddsLoader)
 		{
-			std::string status = "Failed to load " + texType;
+			if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), path.c_str(), nullptr, resource)))
+			{
+				std::string status = "Failed to load DDS Texture" + texType;
+				status += errorMessage;
+				throw GameException(status.c_str());
+			}
+		}
+		else if (tgaLoader)
+		{
+			TGATextureLoader* loader = new TGATextureLoader();
+			if (!loader->Initialize(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), path.c_str(), resource))
+			{
+				std::string status = "Failed to load TGA Texture" + texType;
+				status += errorMessage;
+				throw GameException(status.c_str());
+			}
+			loader->Shutdown();
+		}
+		else if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), path.c_str(), nullptr, resource)))
+		{
+			std::string status = "Failed to load WIC Texture" + texType;
 			status += errorMessage;
 			throw GameException(status.c_str());
 		}

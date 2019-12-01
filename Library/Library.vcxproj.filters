@@ -330,6 +330,9 @@
     <ClInclude Include="GeneralEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TGATextureLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -565,6 +568,9 @@
     </ClCompile>
     <ClCompile Include="RenderingObject.cpp">
       <Filter>Source Files\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="TGATextureLoader.cpp">
+      <Filter>Source Files\Helpers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
