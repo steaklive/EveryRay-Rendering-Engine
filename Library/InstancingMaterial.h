@@ -62,6 +62,7 @@ namespace Rendering
 		virtual UINT VertexSize() const override;
 
 		void CreateInstanceBuffer(ID3D11Device* device, std::vector<InstancedData>& instancedData, ID3D11Buffer** instanceBuffer) const;
+		void UpdateInstanceBuffer(ID3D11DeviceContext * context, std::vector<InstancedData> instanceData, UINT instanceCount, ID3D11Buffer * instanceBuffer);
 		void CreateInstanceBuffer(ID3D11Device* device, InstancedData* instanceData, UINT instanceCount, ID3D11Buffer** instanceBuffer) const;
 		UINT InstanceSize() const;
 

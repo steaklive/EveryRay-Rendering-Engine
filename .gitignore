@@ -4,5 +4,17 @@ Library/Content/*
 !Library/Content/Effects
 !Library/Content/Shaders
 
+# taken from NVIDIA GameWorks
 Library/Content/Shaders/VolumetricLight
+Game/VolumetricLightingDemo.h
 Game/VolumetricLightingDemo.cpp
+
+# taken from NVIDIA GameWorks
+Library/Content/Shaders/WaterSimulation
+Game/WaterSimulationDemo.cpp
+Game/WaterSimulationDemo.h
+Library/FastFourierTransform.cpp
+Library/FastFourierTransform.h
+Library/OceanSimulator.cpp
+Library/OceanSimulator.h
+

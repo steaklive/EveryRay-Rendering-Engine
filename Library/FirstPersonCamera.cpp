@@ -72,6 +72,11 @@ namespace Library
 		return mMovementRate;
 	}
 
+	void FirstPersonCamera::SetMovementRate(float value)
+	{
+		mMovementRate = value;
+	}
+
 
 	void FirstPersonCamera::Initialize()
 	{
@@ -120,7 +125,7 @@ namespace Library
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 
 		XMFLOAT2 rotationAmount = Vector2Helper::Zero;
-		if ((mMouse != nullptr) && (mMouse->IsButtonHeldDown(MouseButtonsLeft)) && (!io.WantCaptureMouse))
+		if ((mMouse != nullptr) && (mMouse->IsButtonHeldDown(MouseButtonsRight)) && (!io.WantCaptureMouse))
 		{
 			LPDIMOUSESTATE mouseState = mMouse->CurrentState();
 			rotationAmount.x = -mouseState->lX * mMouseSensitivity;

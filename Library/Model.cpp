@@ -48,6 +48,8 @@ namespace Library
 				mMeshes.push_back(mesh);
 			}
 		}
+
+		mFilename = filename;
 	}
 
 	Model::~Model()

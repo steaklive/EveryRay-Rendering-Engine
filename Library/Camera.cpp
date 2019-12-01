@@ -133,6 +133,17 @@ namespace Library
 
 	}
 
+	void Camera::SetFarPlaneDistance(float value)
+	{
+		mFarPlaneDistance = value;
+		UpdateProjectionMatrix();
+	}
+	void Camera::SetNearPlaneDistance(float value)
+	{
+		mNearPlaneDistance = value;
+		UpdateProjectionMatrix();
+	}
+
 	void Camera::Reset()
 	{
 		mPosition = Vector3Helper::Zero;

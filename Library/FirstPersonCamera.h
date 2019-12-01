@@ -26,6 +26,7 @@ namespace Library
 		float& MouseSensitivity();
 		float& RotationRate();
 		float& MovementRate();
+		void SetMovementRate(float value);
 
 
 		virtual void Initialize() override;

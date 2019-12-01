@@ -42,6 +42,8 @@ namespace Library
 		virtual void SetPosition(FXMVECTOR position);
 		virtual void SetPosition(const XMFLOAT3& position);
 		virtual void SetFOV(float fov);
+		virtual void SetNearPlaneDistance(float value);
+		virtual void SetFarPlaneDistance(float value);
 
 
 		virtual void Reset();

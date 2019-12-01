@@ -61,6 +61,9 @@
     <Filter Include="Source Files\Objects\Spatial hierarchies">
       <UniqueIdentifier>{e080a665-c4ec-411c-a175-d36f961e12bf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\WaterSimulation">
+      <UniqueIdentifier>{4d1d2b2b-ec22-4805-b87f-528f0912b78e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -315,6 +318,18 @@
     <ClInclude Include="CollisionDetectionTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="OceanSimulator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FastFourierTransform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneralEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -542,6 +557,15 @@
     <ClCompile Include="BruteforceStructure.cpp">
       <Filter>Source Files\Objects\Spatial hierarchies</Filter>
     </ClCompile>
+    <ClCompile Include="OceanSimulator.cpp">
+      <Filter>Source Files\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="FastFourierTransform.cpp">
+      <Filter>Source Files\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderingObject.cpp">
+      <Filter>Source Files\Objects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Content\Effects\AmbientLighting.fx">
@@ -660,6 +684,18 @@
     </FxCompile>
     <FxCompile Include="Content\Effects\MotionBlur.fx">
       <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\WaterSimulation\WaterSimulation.hlsl">
+      <Filter>Shaders\WaterSimulation</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\WaterSimulation\SimulatorCompute.hlsl">
+      <Filter>Shaders\WaterSimulation</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\WaterSimulation\SimulatorVSPS.hlsl">
+      <Filter>Shaders\WaterSimulation</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\WaterSimulation\fft_512x512_c2c.hlsl">
+      <Filter>Shaders\WaterSimulation</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

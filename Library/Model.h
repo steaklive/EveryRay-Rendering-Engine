@@ -23,7 +23,8 @@ namespace Library
 
 		const std::vector<Mesh*>& Meshes() const;
 		const std::vector<ModelMaterial*>& Materials() const;
-
+		const std::string GetFileName() { return mFilename; }
+		const char* GetFileNameChar() { return mFilename.c_str(); }
 		std::vector<XMFLOAT3> GenerateAABB();
 
 
@@ -34,6 +35,7 @@ namespace Library
 		Game& mGame;
 		std::vector<Mesh*> mMeshes;
 		std::vector<ModelMaterial*> mMaterials;
+		std::string mFilename;
 	};
 }
 #endif // !MODELH
