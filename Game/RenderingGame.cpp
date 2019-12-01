@@ -38,6 +38,7 @@
 #include "SubsurfaceScatteringDemo.h"
 #include "VolumetricLightingDemo.h"
 #include "CollisionTestDemo.h"
+#include "WaterSimulationDemo.h"
 
 
 
@@ -58,14 +59,19 @@ namespace Rendering
 		"Frustum Culling", 
 		"Separable Subsurface Scattering",
 		"Volumetric Lighting",
-		"Collision Detection"
+		"Collision Detection",
+		"Water Simulation"
 	};
 
 	// we will store our demo scenes here:
 	std::vector<DemoLevel*> demoLevels;
+	DemoLevel* demoLevel;
 	static int currentLevel = 0;
 
 	static float fov = 60.0f;
+	static float movementRate = 10.0f;
+	static float nearPlaneDist = 0.5f;
+	static float farPlaneDist = 600.0f;
 	
 
 	bool showImGuiDemo = false;
@@ -91,6 +97,7 @@ namespace Rendering
 		mSubsurfaceScatteringDemo(nullptr),
 		mVolumetricLightingDemo(nullptr),
 		mCollisionTestDemo(nullptr),
+		mWaterSimulationDemo(nullptr),
 
 		mRenderStateHelper(nullptr),
 		mRenderTarget(nullptr), mFullScreenQuad(nullptr)
@@ -125,7 +132,7 @@ namespace Rendering
 		components.push_back(mMouse);
 		mServices.AddService(Mouse::TypeIdClass(), mMouse);
 
-		mCamera = new FirstPersonCamera(*this, 1.5708f, this->AspectRatio(), 0.5f, 600.0f );
+		mCamera = new FirstPersonCamera(*this, 1.5708f, this->AspectRatio(), nearPlaneDist, farPlaneDist );
 		mCamera->SetPosition(0.0f, 20.0f, 65.0f);
 		components.push_back(mCamera);
 		mServices.AddService(Camera::TypeIdClass(), mCamera);
@@ -135,13 +142,14 @@ namespace Rendering
 		components.push_back(mGrid);
 
 		// Adding empty Levels
-		demoLevels.push_back(mInstancingDemo);
-		demoLevels.push_back(mShadowMappingDemo);
-		demoLevels.push_back(mPBRDemo);
-		demoLevels.push_back(mFrustumCullingDemo);
-		demoLevels.push_back(mSubsurfaceScatteringDemo);
-		demoLevels.push_back(mVolumetricLightingDemo);
-		demoLevels.push_back(mCollisionTestDemo);
+		//demoLevels.push_back(mInstancingDemo);
+		//demoLevels.push_back(mShadowMappingDemo);
+		//demoLevels.push_back(mPBRDemo);
+		//demoLevels.push_back(mFrustumCullingDemo);
+		//demoLevels.push_back(mSubsurfaceScatteringDemo);
+		//demoLevels.push_back(mVolumetricLightingDemo);
+		//demoLevels.push_back(mCollisionTestDemo);
+		//demoLevels.push_back(mWaterSimulationDemo);
 
 
 		//Render State Helper
@@ -164,7 +172,7 @@ namespace Rendering
 #pragma endregion
 
 		Game::Initialize();
-		
+		SetLevel(0);
 	}
 
 
@@ -174,62 +182,70 @@ namespace Rendering
 	// ...also have you heard of Data-Oriented Design?..
 	void RenderingGame::SetLevel(int level)
 	{
-		if (demoLevels[level] == nullptr)
+		if (demoLevel != nullptr)
+		{
+			demoLevel->Destroy();
+			demoLevel = nullptr;
+		}
+		if (demoLevel/*s[level]*/ == nullptr)
 		{
 			switch (level)
 			{
 			case 0:
-				demoLevels[level] = new InstancingDemo(*this, *mCamera);
+				demoLevel/*s[level]*/ = new InstancingDemo(*this, *mCamera);
 				break;
 			case 1:
-				demoLevels[level] = new ShadowMappingDemo(*this, *mCamera);
+				demoLevel/*s[level]*/ = /*ShadowMappingDemo*/new AmbientLightingDemo(*this, *mCamera);
 				break;
 			case 2:
-				demoLevels[level] = new PhysicallyBasedRenderingDemo(*this, *mCamera);
+				demoLevel/*s[level]*/ = new PhysicallyBasedRenderingDemo(*this, *mCamera);
 				break;
 			case 3:
-				demoLevels[level] = new FrustumCullingDemo(*this, *mCamera);
+				demoLevel/*s[level]*/ = new FrustumCullingDemo(*this, *mCamera);
 				break;
-			case 4:
-				demoLevels[level] = new SubsurfaceScatteringDemo(*this, *mCamera);
-				break;
-			case 5:
-				demoLevels[level] = new VolumetricLightingDemo(*this, *mCamera);
-				break;
-			case 6:
-				demoLevels[level] = new CollisionTestDemo(*this, *mCamera);
-				break;
+			//case 4:
+			//	demoLevels[level] = new SubsurfaceScatteringDemo(*this, *mCamera);
+			//	break;
+			//case 5:
+			//	demoLevels[level] = new VolumetricLightingDemo(*this, *mCamera);
+			//	break;
+			//case 6:
+			//	demoLevels[level] = new CollisionTestDemo(*this, *mCamera);
+			//	break;
+			//case 7:
+			//	demoLevels[level] = new WaterSimulationDemo(*this, *mCamera);
+			//	break;
 			}
 		}
+		demoLevel->Create();
+		//components.push_back((GameComponent*)demoLevel);
 
-		bool isComponent = demoLevels[level]->IsComponent();
-
-		if (isComponent)
-		{
-			return;
-		}
-		else
-		{
-			demoLevels[level]->Create();
-
-			int i = 0;
-			std::for_each(demoLevels.begin(), demoLevels.end(), [&](DemoLevel* lvl)
-			{
-				if (i != level && lvl!=nullptr)
-				{
-					lvl->Destroy();
-					demoLevels[i] = nullptr;
-				}
-				i++;
-			});
-		}
+		//bool isComponent = demoLevels[level]->IsComponent();
+		//
+		//if (isComponent)
+		//{
+		//	return;
+		//}
+		//else
+		//{
+		//	demoLevels[level]->Create();
+		//
+		//	int i = 0;
+		//	std::for_each(demoLevels.begin(), demoLevels.end(), [&](DemoLevel* lvl)
+		//	{
+		//		if (i != level && lvl!=nullptr)
+		//		{
+		//			lvl->Destroy();
+		//			demoLevels[i] = nullptr;
+		//		}
+		//		i++;
+		//	});
+		//}
 		
 	}
 
 	void RenderingGame::Update(const GameTime& gameTime)
 	{
-		SetLevel(currentLevel);
-
 		if (mKeyboard->WasKeyPressedThisFrame(DIK_ESCAPE))
 		{
 			Exit();
@@ -266,8 +282,18 @@ namespace Rendering
 			ImGui::Text("Camera Position: (%.1f,%.1f,%.1f)", mCamera->Position().x, mCamera->Position().y, mCamera->Position().z);
 			
 			
+			ImGui::SliderFloat("Camera Speed", &movementRate, 10.0f, 2000.0f);
+			mCamera->SetMovementRate(movementRate);
+
 			ImGui::SliderFloat("Camera FOV", &fov, 1.0f, 90.0f);
 			mCamera->SetFOV(fov*XM_PI/180.0f);
+
+			ImGui::SliderFloat("Camera Near Plane", &nearPlaneDist, 0.5f, 150.0f);
+			mCamera->SetNearPlaneDistance(nearPlaneDist);
+
+			ImGui::SliderFloat("Camera Far Plane", &farPlaneDist, 150.0f, 200000.0f);
+			mCamera->SetFarPlaneDistance(farPlaneDist);
+
 			ImGui::Separator();
 
 			ImGui::Checkbox("Show grid", &mShowGrid);
@@ -280,7 +306,8 @@ namespace Rendering
 
 			if (ImGui::CollapsingHeader("Load Demo Level"))
 			{
-				ImGui::Combo("Level", &currentLevel, displayedLevelNames, IM_ARRAYSIZE(displayedLevelNames));
+				if (ImGui::Combo("Level", &currentLevel, displayedLevelNames, IM_ARRAYSIZE(displayedLevelNames)))
+					SetLevel(currentLevel);
 			}
 
 
@@ -299,6 +326,7 @@ namespace Rendering
 		DeleteObject(mSubsurfaceScatteringDemo);
 		DeleteObject(mVolumetricLightingDemo);
 		DeleteObject(mCollisionTestDemo);
+		DeleteObject(mWaterSimulationDemo);
 
 		DeleteObject(mFullScreenQuad);
 		DeleteObject(mRenderTarget);
@@ -328,28 +356,18 @@ namespace Rendering
 	
 	void RenderingGame::Draw(const GameTime& gameTime)
 	{
-
-
-
 		mDirect3DDeviceContext->ClearRenderTargetView(mRenderTargetView, reinterpret_cast<const float*>(&BackgroundColor));
 		mDirect3DDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 		Game::Draw(gameTime);
 
-
-
-		
 		mRenderStateHelper->SaveAll();
 		mRenderStateHelper->RestoreAll();
-		
-		
+
 		HRESULT hr = mSwapChain->Present(0, 0);
 		if (FAILED(hr))
 		{
 			throw GameException("IDXGISwapChain::Present() failed.", hr);
 		}
 	}
-
-
-	
 }
 

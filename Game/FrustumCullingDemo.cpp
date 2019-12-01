@@ -23,14 +23,11 @@
 #include "..\Library\RenderableAABB.h"
 #include "..\Library\Skybox.h"
 
-
-
 #include "DDSTextureLoader.h"
 
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
 #include "imgui_impl_win32.h"
-
 
 #include <WICTextureLoader.h>
 #include <SpriteBatch.h>
@@ -95,7 +92,6 @@ namespace Rendering
 			//very provocative...
 			delete this;
 		}
-
 	}
 	/////////////////////////////////////////////////////////////
 
@@ -143,11 +139,9 @@ namespace Rendering
 		// for every mesh material create instance buffer
 		for (size_t i = 0; i < mInstancedObject->Materials.size(); i++)
 		{
-			ID3D11Buffer* instanceBuffer = nullptr;
-			mInstancedObject->Materials[i]->CreateInstanceBuffer(mGame->Direct3DDevice(), mInstancedObject->InstanceData, &instanceBuffer);
 			mInstancedObject->InstanceCount = mInstancedObject->InstanceData.size();
-			mInstancedObject->MeshesVertexBuffers.push_back(InstancedObject::VertexBufferData(instanceBuffer, mInstancedObject->Materials[i]->InstanceSize(), 0));
-
+			mInstancedObject->Materials[i]->CreateInstanceBuffer(mGame->Direct3DDevice(), mInstancedObject->InstanceData, &mInstancedObject->InstanceBuffer);
+			mInstancedObject->MeshesVertexBuffers.push_back(InstancedObject::VertexBufferData(mInstancedObject->InstanceBuffer, mInstancedObject->Materials[i]->InstanceSize(), 0));
 		}
 
 		// Load diffuse texture
@@ -365,9 +359,8 @@ namespace Rendering
 			// for every mesh material create instance buffer
 			for (size_t i = 0; i < mInstancedObject->Materials.size(); i++)
 			{
-				ID3D11Buffer* instanceBuffer = nullptr;
-				mInstancedObject->Materials[i]->CreateInstanceBuffer(mGame->Direct3DDevice(), newInstanceData, &instanceBuffer);
-				mInstancedObject->MeshesVertexBuffers[mInstancedObject->Materials.size() + i] = (InstancedObject::VertexBufferData(instanceBuffer, mInstancedObject->Materials[i]->InstanceSize(), 0));
+				mInstancedObject->Materials[i]->UpdateInstanceBuffer(mGame->Direct3DDeviceContext(), newInstanceData, mInstancedObject->InstanceCount, mInstancedObject->MeshesVertexBuffers.at(1).VertexBuffer);
+				//mInstancedObject->MeshesVertexBuffers[mInstancedObject->Materials.size() + i] = (InstancedObject::VertexBufferData(mInstancedObject->MeshesVertexBuffers.at(0).VertexBuffer, mInstancedObject->Materials[i]->InstanceSize(), 0));
 			}
 		}
 		

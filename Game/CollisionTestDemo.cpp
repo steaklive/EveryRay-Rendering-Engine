@@ -590,7 +590,7 @@ namespace Rendering
 			D3D11_MAPPED_SUBRESOURCE mappedResource;
 			ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
 			mGame->Direct3DDeviceContext()->Map(mDynamicInstancedObject->MeshesVertexBuffers.at(1).VertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-			memcpy(mappedResource.pData, &mDynamicInstancedObject->InstanceData[0], sizeof(mDynamicInstancedObject->InstanceData[0]) *mDynamicInstancedObject->InstanceCount);
+			memcpy(mappedResource.pData, &mDynamicInstancedObject->InstanceData[0], sizeof(mDynamicInstancedObject->InstanceData[0]) * mDynamicInstancedObject->InstanceCount);
 			mGame->Direct3DDeviceContext()->Unmap(mDynamicInstancedObject->MeshesVertexBuffers.at(1).VertexBuffer, 0);
 
 		}

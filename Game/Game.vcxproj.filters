@@ -81,6 +81,9 @@
     <ClInclude Include="CollisionTestDemo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="WaterSimulationDemo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -129,6 +132,9 @@
       <Filter>Source Files\Scenes</Filter>
     </ClCompile>
     <ClCompile Include="CollisionTestDemo.cpp">
+      <Filter>Source Files\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="WaterSimulationDemo.cpp">
       <Filter>Source Files\Scenes</Filter>
     </ClCompile>
   </ItemGroup>

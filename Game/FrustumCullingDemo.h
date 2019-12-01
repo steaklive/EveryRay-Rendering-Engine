@@ -112,6 +112,7 @@ namespace Rendering
 			InstanceData(0),
 			MeshesVertexBuffers(),
 			MeshesIndexBuffers(0, nullptr),
+			InstanceBuffer(nullptr),
 			MeshesIndicesCounts(0, 0),
 			InstanceCount(0),
 			AlbedoMap(nullptr),
@@ -130,6 +131,7 @@ namespace Rendering
 		std::vector<ID3D11Buffer*>		 MeshesIndexBuffers  ;
 		std::vector<UINT>				 MeshesIndicesCounts ;
 
+		ID3D11Buffer*		 InstanceBuffer;
 		UINT InstanceCount = 0;
 
 		ID3D11ShaderResourceView* AlbedoMap;
@@ -156,7 +158,6 @@ namespace Rendering
 
 			ReleaseObject(AlbedoMap);
 			ReleaseObject(NormalMap);
-
 		}
 	};
 

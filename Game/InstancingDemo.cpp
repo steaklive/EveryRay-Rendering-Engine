@@ -111,8 +111,6 @@ namespace Rendering
 			//very provocative...
 			delete this;
 		}
-
-
 	}
 
 
@@ -174,7 +172,6 @@ namespace Rendering
 			mModelMaterials[i]->CreateInstanceBuffer(mGame->Direct3DDevice(), instanceData, &instanceBuffer);
 			mInstanceCount = instanceData.size();
 			mVertexBuffers.push_back(VertexBufferData(instanceBuffer, mModelMaterials[i]->InstanceSize(), 0));
-
 		}
 
 

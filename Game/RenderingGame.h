@@ -36,6 +36,7 @@ namespace Rendering
 	class SubsurfaceScatteringDemo;
 	class VolumetricLightingDemo;
 	class CollisionTestDemo;
+	class WaterSimulationDemo;
 
 	class RenderingGame : public Game
 	{
@@ -74,7 +75,7 @@ namespace Rendering
 		SubsurfaceScatteringDemo* mSubsurfaceScatteringDemo;
 		VolumetricLightingDemo* mVolumetricLightingDemo;
 		CollisionTestDemo* mCollisionTestDemo;
-		
+		WaterSimulationDemo* mWaterSimulationDemo;
 		RenderStateHelper* mRenderStateHelper;
 
 		FpsComponent* mFpsComponent;

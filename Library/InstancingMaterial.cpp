@@ -151,6 +151,15 @@ namespace Rendering
 		CreateInstanceBuffer(device, &instanceData[0], instanceData.size(), instanceBuffer);
 	}
 
+	void InstancingMaterial::UpdateInstanceBuffer(ID3D11DeviceContext* context, std::vector<InstancedData> instanceData, UINT instanceCount, ID3D11Buffer * instanceBuffer)
+	{
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+		ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
+		context->Map(instanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+		memcpy(mappedResource.pData, &instanceData[0], InstanceSize() * instanceCount);
+		context->Unmap(instanceBuffer, 0);
+	}
+
 	void InstancingMaterial::CreateInstanceBuffer(ID3D11Device* device, InstancedData* instanceData, UINT instanceCount, ID3D11Buffer** instanceBuffer) const
 	{
 		D3D11_BUFFER_DESC instanceBufferDesc;
@@ -167,8 +176,6 @@ namespace Rendering
 		{
 			throw GameException("ID3D11Device::CreateBuffer() failed while creating InstanceBuffer.");
 		}
-
-
 	}
 
 	UINT InstancingMaterial::InstanceSize() const
