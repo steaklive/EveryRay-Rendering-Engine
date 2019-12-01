@@ -16,8 +16,7 @@ I have been changing and extending it for educational purposes with all kinds of
 # Features
 - 3D model loading (.obj, .fbx and etc.) with Assimp Library
 - User Interface with ImGUI
-- Different light sources
-- FPS camera
+- AABB, OBB, collision detection
 - Normal-Mapping, Environment-Mapping
 - Post Processing: Motion Blur, Vignette, LUT color grading
 - Physically Based Rendering with IBL
@@ -25,7 +24,10 @@ I have been changing and extending it for educational purposes with all kinds of
 - GPU Instancing
 - Frustum Culling
 - Separable Subsurface Scattering (based on the work of J.Jimenez and D.Gutierrez)
-- Volumetric Lighting (based on NVIDIA's "Fast, Flexible, Physically-Based Volumetric Light Scattering") - sorry, can't show all the code here...
+
+Other features based on NVIDIA techniques (no code provided here)
+- Volumetric Lighting (from "Fast, Flexible, Physically-Based Volumetric Light Scattering")
+- Ocean Simulation (from DX11 archive samples)
 
 # External Dependencies
 - DirectX Effects 11 (https://github.com/Microsoft/FX11)
