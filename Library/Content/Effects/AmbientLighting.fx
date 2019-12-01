@@ -81,9 +81,10 @@ float4 pixel_shader(VS_OUTPUT IN) : SV_Target
 {
 	float4 OUT = (float4)0;
 	
-	OUT = ColorTexture.Sample(SamplerAnisotropic, IN.TextureCoordinate);
-    OUT.rgb *= AmbientColor.rgb * AmbientColor.a; // Color (.rgb) * Intensity (.a)
-	
+	float4 color = ColorTexture.Sample(SamplerAnisotropic, IN.TextureCoordinate);
+    color.rgb *= AmbientColor.rgb * AmbientColor.a; // Color (.rgb) * Intensity (.a)
+    OUT = color;
+    clip(color.a < 0.1f ? -1 : 1);
 	return OUT;
 }
 

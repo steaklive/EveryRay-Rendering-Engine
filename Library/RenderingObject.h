@@ -108,7 +108,6 @@ namespace Rendering
 		void LoadCustomMeshTextures(int meshIndex, std::wstring albedoPath, std::wstring normalPath, std::wstring roughnessPath, std::wstring metallicPath, std::wstring extra1Path, std::wstring extra2Path, std::wstring extra3Path);
 
 		void LoadMaterial(Material* pMaterial, Effect* pEffect);
-		void LoadAssignedMeshTextures();
 		void LoadRenderBuffers();
 		void LoadInstanceBuffers();
 		void Draw(/*Camera* camera*/);
@@ -120,6 +119,7 @@ namespace Rendering
 		GeneralEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new GeneralEvent<Delegate_MeshMaterialVariablesUpdate>();
 
 	private:
+		void LoadAssignedMeshTextures();
 		void LoadTexture(TextureType type, std::wstring path, int meshIndex);
 		std::vector<RenderBufferData>						mMeshesRenderBuffers;
 		std::vector<TextureData>							mMeshesTextures;
@@ -129,10 +129,6 @@ namespace Rendering
 
 		std::vector<XMFLOAT3>								mAABB;
 		std::unique_ptr<Model>								mModel;
-		ID3D11Buffer*			VertexBuffer;
-		ID3D11Buffer*			IndexBuffer;
-		ID3D11Buffer*			VertexBuffer2;
-		ID3D11Buffer*			IndexBuffer2;
 		int													mMeshesCount;
 		std::string											mName;
 
