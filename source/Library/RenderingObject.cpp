@@ -15,12 +15,13 @@
 
 namespace Rendering
 {
-	RenderingObject::RenderingObject(std::string pName, Game& pGame, std::unique_ptr<Model> pModel) 
-		: 
+	RenderingObject::RenderingObject(std::string pName, Game& pGame, std::unique_ptr<Model> pModel)
+		:
 		GameComponent(pGame),
 		mModel(std::move(pModel)),
 		mMeshesRenderBuffers(0, nullptr),
 		mMeshesInstanceBuffers(0, nullptr),
+		mMesheMaterial(nullptr),
 		mMeshVertices(0),
 		mName(pName),
 		mInstanceCount(0)
@@ -44,7 +45,7 @@ namespace Rendering
 	RenderingObject::~RenderingObject()
 	{
 		DeleteObject(MeshMaterialVariablesUpdateEvent);
-		DeletePointerCollection(mMeshesMaterials);
+		DeleteObject(mMesheMaterial);
 		DeletePointerCollection(mMeshesRenderBuffers);
 		DeletePointerCollection(mMeshesInstanceBuffers);
 		mMeshesTextureBuffers.clear();
@@ -54,11 +55,8 @@ namespace Rendering
 	{
 		assert(mModel != nullptr);
 
-		for (size_t i = 0; i < mMeshesCount; i++)
-		{
-			mMeshesMaterials.push_back(pMaterial);
-			mMeshesMaterials.back()->Initialize(pEffect);
-		}
+		mMesheMaterial = pMaterial;
+		mMesheMaterial->Initialize(pEffect);
 	}
 
 	void RenderingObject::LoadAssignedMeshTextures()
@@ -211,10 +209,10 @@ namespace Rendering
 
 		for (size_t i = 0; i < mMeshesCount; i++)
 		{
-			mMeshesMaterials[i]->CreateVertexBuffer(mGame->Direct3DDevice(), *mModel->Meshes()[i], &(mMeshesRenderBuffers[i]->VertexBuffer));
+			mMesheMaterial->CreateVertexBuffer(mGame->Direct3DDevice(), *mModel->Meshes()[i], &(mMeshesRenderBuffers[i]->VertexBuffer));
 			mModel->Meshes()[i]->CreateIndexBuffer(&(mMeshesRenderBuffers[i]->IndexBuffer));
 			mMeshesRenderBuffers[i]->IndicesCount = mModel->Meshes()[i]->Indices().size();
-			mMeshesRenderBuffers[i]->Stride = mMeshesMaterials[i]->VertexSize();
+			mMeshesRenderBuffers[i]->Stride = mMesheMaterial->VertexSize();
 			mMeshesRenderBuffers[i]->Offset = 0;
 		}
 	}
@@ -227,21 +225,21 @@ namespace Rendering
 		for (size_t i = 0; i < mMeshesCount; i++)
 		{
 			mMeshesInstanceBuffers.push_back(new InstanceBufferData());
-			static_cast<InstancingMaterial*>(mMeshesMaterials[i])->CreateInstanceBuffer(mGame->Direct3DDevice(), pInstanceData, &(mMeshesInstanceBuffers[i]->InstanceBuffer));
+			static_cast<InstancingMaterial*>(mMesheMaterial)->CreateInstanceBuffer(mGame->Direct3DDevice(), pInstanceData, &(mMeshesInstanceBuffers[i]->InstanceBuffer));
 			mMeshesInstanceBuffers[i]->Stride = sizeof(InstancingMaterial::InstancedData);
 		}
 	}
 	
 	void RenderingObject::Draw()
 	{
-		if (mMeshesMaterials.size() == 0 || mMeshesRenderBuffers.size() == 0)
+		if (!mMesheMaterial || mMeshesRenderBuffers.size() == 0)
 			return;
 
 		for (size_t i = 0; i < mMeshesCount; i++)
 		{
 			ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
-			Pass* pass = mMeshesMaterials.at(i)->CurrentTechnique()->Passes().at(0);
-			ID3D11InputLayout* inputLayout = mMeshesMaterials.at(i)->InputLayouts().at(pass);
+			Pass* pass = mMesheMaterial->CurrentTechnique()->Passes().at(0);
+			ID3D11InputLayout* inputLayout = mMesheMaterial->InputLayouts().at(pass);
 			context->IASetInputLayout(inputLayout);
 
 			UINT stride = mMeshesRenderBuffers[i]->Stride;
@@ -261,8 +259,8 @@ namespace Rendering
 		for (int i = 0; i < mMeshesCount; i++)
 		{
 			ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
-			Pass* pass = mMeshesMaterials.at(i)->CurrentTechnique()->Passes().at(0);
-			ID3D11InputLayout* inputLayout = mMeshesMaterials.at(i)->InputLayouts().at(pass);
+			Pass* pass = mMesheMaterial->CurrentTechnique()->Passes().at(0);
+			ID3D11InputLayout* inputLayout = mMesheMaterial->InputLayouts().at(pass);
 			context->IASetInputLayout(inputLayout);
 
 			ID3D11Buffer* vertexBuffers[2] = { mMeshesRenderBuffers[i]->VertexBuffer, mMeshesInstanceBuffers[i]->InstanceBuffer };

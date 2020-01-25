@@ -360,27 +360,27 @@ namespace Rendering
 		projectedShadowMatrixTransform._44 = 1.0f;
 		XMMATRIX modelToShadowMatrix = XMMatrixIdentity() * mShadowProjector->ViewMatrix() * mShadowProjector->ProjectionMatrix() * XMLoadFloat4x4(&projectedShadowMatrixTransform);
 
-		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial(meshIndex))->WorldViewProjection() << wvp;
-		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial(meshIndex))->World() << worldMatrix;
-		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial(meshIndex))->ModelToShadow() << modelToShadowMatrix;
-		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial(meshIndex))->CameraPosition() << mCamera->PositionVector();
+		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->WorldViewProjection() << wvp;
+		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->World() << worldMatrix;
+		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->ModelToShadow() << modelToShadowMatrix;
+		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->CameraPosition() << mCamera->PositionVector();
 		
-		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial(meshIndex))->SunDirection() << XMVectorNegate(mDirectionalLight->DirectionVector());
-		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial(meshIndex))->SunColor() << XMVECTOR{ mSunColor[0],mSunColor[1], mSunColor[2] , 1.0f };
-		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial(meshIndex))->AmbientColor() << XMVECTOR{ mAmbientColor[0], mAmbientColor[1], mAmbientColor[2], 1.0f };
-		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial(meshIndex))->ShadowTexelSize() << XMVECTOR{ 1.0f / 4096.0f, 1.0f, 1.0f , 1.0f };
+		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->SunDirection() << XMVectorNegate(mDirectionalLight->DirectionVector());
+		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->SunColor() << XMVECTOR{ mSunColor[0],mSunColor[1], mSunColor[2] , 1.0f };
+		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->AmbientColor() << XMVECTOR{ mAmbientColor[0], mAmbientColor[1], mAmbientColor[2], 1.0f };
+		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->ShadowTexelSize() << XMVECTOR{ 1.0f / 4096.0f, 1.0f, 1.0f , 1.0f };
 		
-		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial(meshIndex))->AlbedoTexture() << mSponzaLightingRenderingObject->GetTextureData(meshIndex).AlbedoMap;
-		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial(meshIndex))->NormalTexture() << mSponzaLightingRenderingObject->GetTextureData(meshIndex).NormalMap;
-		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial(meshIndex))->SpecularTexture() << mSponzaLightingRenderingObject->GetTextureData(meshIndex).RoughnessMap;
-		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial(meshIndex))->ShadowTexture() << mShadowMap->OutputTexture();
+		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->AlbedoTexture() << mSponzaLightingRenderingObject->GetTextureData(meshIndex).AlbedoMap;
+		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->NormalTexture() << mSponzaLightingRenderingObject->GetTextureData(meshIndex).NormalMap;
+		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->SpecularTexture() << mSponzaLightingRenderingObject->GetTextureData(meshIndex).RoughnessMap;
+		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->ShadowTexture() << mShadowMap->OutputTexture();
 
 	}
 
 	void SponzaMainDemo::UpdateDepthMapMaterialVariables(int meshIndex)
 	{
 		XMMATRIX wlvp = XMMatrixIdentity() * mShadowProjector->ViewMatrix() * mShadowProjector->ProjectionMatrix();
-		static_cast<DepthMapMaterial*>(mSponzaShadowRenderingObject->GetMeshMaterial(meshIndex))->WorldLightViewProjection() << wlvp;
+		static_cast<DepthMapMaterial*>(mSponzaShadowRenderingObject->GetMeshMaterial())->WorldLightViewProjection() << wlvp;
 	}
 
 	XMMATRIX SponzaMainDemo::GetProjectionMatrixFromFrustum(Frustum& cameraFrustum, DirectionalLight& light)
