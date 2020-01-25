@@ -87,7 +87,6 @@ namespace Library
 
 	void RenderableAABB::InitializeGeometry(const std::vector<XMFLOAT3>& aabb, XMMATRIX matrix)
 	{
-
 		mAABB = &aabb;
 
 		mModifiedAABB = aabb;
@@ -105,7 +104,6 @@ namespace Library
 		XMStoreFloat3(&scale, scaleVector);
 		XMStoreFloat3(&translation, translationVector);
 
-
 		//std::vector<XMFLOAT3> vertices;
 		mVertices.push_back(XMFLOAT3(aabb[0].x * scale.x, aabb[1].y  * scale.y, aabb[0].z  * scale.z));
 		mVertices.push_back(XMFLOAT3(aabb[1].x * scale.x, aabb[1].y  * scale.y, aabb[0].z  * scale.z));
@@ -115,8 +113,6 @@ namespace Library
 		mVertices.push_back(XMFLOAT3(aabb[1].x * scale.x, aabb[1].y  * scale.y, aabb[1].z  * scale.z));
 		mVertices.push_back(XMFLOAT3(aabb[1].x * scale.x, aabb[0].y  * scale.y, aabb[1].z  * scale.z));
 		mVertices.push_back(XMFLOAT3(aabb[0].x * scale.x, aabb[0].y  * scale.y, aabb[1].z  * scale.z));
-
-
 
 		InitializeVertexBuffer(mVertices);
 	}

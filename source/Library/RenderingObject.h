@@ -115,7 +115,7 @@ namespace Rendering
 		void Draw();
 		void DrawInstanced();
 
-		Material* GetMeshMaterial(int meshIndex) { return mMeshesMaterials[meshIndex]; }
+		Material* GetMeshMaterial() { return mMesheMaterial; }
 		TextureData& GetTextureData(int meshIndex) { return mMeshesTextureBuffers[meshIndex]; }
 		int GetMeshCount() { return mMeshesCount; }
 
@@ -131,8 +131,8 @@ namespace Rendering
 		std::vector<RenderBufferData*>						mMeshesRenderBuffers;
 		std::vector<TextureData>							mMeshesTextureBuffers;
 		std::vector<InstanceBufferData*>					mMeshesInstanceBuffers;
-		std::vector<Material*>								mMeshesMaterials;
 		std::vector<std::vector<XMFLOAT3>>					mMeshVertices;
+		Material*											mMesheMaterial;
 
 		std::vector<XMFLOAT3>								mAABB;
 		std::unique_ptr<Model>								mModel;
