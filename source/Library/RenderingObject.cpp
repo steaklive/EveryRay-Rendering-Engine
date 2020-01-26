@@ -37,6 +37,14 @@ namespace Rendering
 			mMeshesTextureBuffers.push_back(TextureData());
 		}
 
+		for (size_t i = 0; i < mMeshVertices.size(); i++)
+		{
+			for (size_t j = 0; j < mMeshVertices[i].size(); j++)
+			{
+				mMeshAllVertices.push_back(mMeshVertices[i][j]);
+			}
+		}
+
 		LoadAssignedMeshTextures();
 		mAABB = mModel->GenerateAABB();
 		
@@ -121,16 +129,17 @@ namespace Rendering
 		
 		std::string errorMessage = mModel->GetFileName() + " of mesh index: " + std::to_string(meshIndex);
 
-		if (!albedoPath.empty())
+		if (!albedoPath.empty() && albedoPath.back() != '\\')
 			LoadTexture(TextureType::TextureTypeDifffuse, albedoPath, meshIndex);
 
-		if (!normalPath.empty())
+		if (!normalPath.empty() && normalPath.back() != '\\')
 			LoadTexture(TextureType::TextureTypeNormalMap, normalPath, meshIndex);
 
-		if (!roughnessPath.empty())
+		auto sym = roughnessPath.back();
+		if (!roughnessPath.empty() && roughnessPath.back() != '\\')
 			LoadTexture(TextureType::TextureTypeSpecularMap, roughnessPath, meshIndex);
 
-		if (!metallicPath.empty())
+		if (!metallicPath.empty() && metallicPath.back() != '\\')
 			LoadTexture(TextureType::TextureTypeEmissive, metallicPath, meshIndex);
 
 		//TODO
@@ -276,6 +285,28 @@ namespace Rendering
 			pass->Apply(0, context);
 
 			context->DrawIndexedInstanced(mMeshesRenderBuffers[i]->IndicesCount, mInstanceCount, 0, 0, 0);
+		}
+	}
+
+	const std::vector<XMFLOAT3>& RenderingObject::GetVertices()
+	{
+		return mMeshAllVertices;
+	}
+
+	void RenderingObject::UpdateInstanceData(std::vector<InstancingMaterial::InstancedData> pInstanceData)
+	{
+		for (size_t i = 0; i < mMeshesCount; i++)
+		{
+			static_cast<InstancingMaterial*>(mMesheMaterial)->CreateInstanceBuffer(mGame->Direct3DDevice(), pInstanceData, &(mMeshesInstanceBuffers[i]->InstanceBuffer));
+			
+			// dynamically update instance buffer
+			D3D11_MAPPED_SUBRESOURCE mappedResource;
+			ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
+			
+			mGame->Direct3DDeviceContext()->Map(mMeshesInstanceBuffers[i]->InstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+			memcpy(mappedResource.pData, &pInstanceData[0], sizeof(pInstanceData[0]) * mInstanceCount);
+			mGame->Direct3DDeviceContext()->Unmap(mMeshesInstanceBuffers[i]->InstanceBuffer, 0);
+
 		}
 	}
 

@@ -27,22 +27,20 @@
 #include "..\Library\OctreeStructure.h"
 #include "..\Library\BruteforceStructure.h"
 #include "..\Library\SpatialElement.h"
-
-
-
-#include "DDSTextureLoader.h"
+#include "..\Library\RenderingObject.h"
 
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
 #include "imgui_impl_win32.h"
 
-
+#include "DDSTextureLoader.h"
 #include <WICTextureLoader.h>
 #include <SpriteBatch.h>
 #include <SpriteFont.h>
 #include <sstream>
 
-
+const int NUM_DYNAMIC_INSTANCES = 300;
+const int NUM_STATIC_INSTANCES = 25;
 
 namespace Rendering
 {
@@ -59,7 +57,7 @@ namespace Rendering
 		mVolumeDebugAABB(nullptr),
 		mOctreeStructure(nullptr), mBruteforceStructure(nullptr),
 		mDynamicInstancedObject(nullptr), mStaticInstancedObject(nullptr),
-		mSpatialElements(CollisionTestObjects::NUM_DYNAMIC_INSTANCES + CollisionTestObjects::NUM_STATIC_INSTANCES, nullptr),
+		mSpatialElements(NUM_DYNAMIC_INSTANCES + NUM_STATIC_INSTANCES, nullptr),
 
 		mWorldMatrix(MatrixHelper::Identity),
 		mRenderStateHelper(game)
@@ -112,188 +110,75 @@ namespace Rendering
 	{
 		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
 
-		#pragma region DYNAMIC_OBJECT_INITIALIZATION
-
-		mDynamicInstancedObject = new CollisionTestObjects::DynamicInstancedObject();
-
-		// Load dynamic model
-		std::unique_ptr<Model> model_main(new Model(*mGame, Utility::GetFilePath("content\\models\\bunny.fbx"), true));
-
-		std::unique_ptr<Model> model_main_convexhull(new Model(*mGame, Utility::GetFilePath("content\\models\\bunny_convexhull.fbx"), true));
-
-
 		// Load the instaning instancingEffect shader
 		Effect* instancingEffect = new Effect(*mGame);
 		instancingEffect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\Instancing.fx"));
+		
+		mDynamicConvexHullObject = new RenderingObject("Bunny Convex Hull", *mGame, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\bunny\\bunny_convexhull.fbx"), true)));
 
-		mDynamicInstancedObject->Vertices = model_main->Meshes().at(0)->Vertices();
-		mDynamicInstancedObject->VerticesConvexHull = model_main_convexhull->Meshes().at(0)->Vertices();
+		#pragma region DYNAMIC_OBJECT_INITIALIZATION
+	
+		mDynamicInstancedObject = new RenderingObject("Bunny Dynamic", *mGame, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\bunny\\bunny.fbx"), true)));
+		mDynamicInstancedObject->LoadMaterial(new InstancingMaterial(), instancingEffect);
+		mDynamicInstancedObject->LoadRenderBuffers();
+		for (size_t i = 0; i < mDynamicInstancedObject->GetMeshCount(); i++)
+			mDynamicInstancedObject->LoadCustomMeshTextures(i,
+				Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"),
+				Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"),
+				Utility::GetFilePath(L""),
+				Utility::GetFilePath(L""),
+				Utility::GetFilePath(L""),
+				Utility::GetFilePath(L""),
+				Utility::GetFilePath(L"")
+			);
 
-		for (size_t i = 0; i < CollisionTestObjects::NUM_DYNAMIC_INSTANCES; i++)
+		float dynObjRad = CalculateObjectRadius(mDynamicInstancedObject->GetVertices());
+		for (size_t i = 0; i < NUM_DYNAMIC_INSTANCES; i++)
 		{
-			mDynamicMeshVertices.push_back(model_main->Meshes().at(0)->Vertices());
-
-		}
-
-
-		// Load Vertex & Index Buffers
-		for (Mesh* mesh : model_main->Meshes())
-		{
-			mDynamicInstancedObject->MeshesIndexBuffers.push_back(nullptr);
-			mDynamicInstancedObject->MeshesIndicesCounts.push_back(0);
-
-			mDynamicInstancedObject->Materials.push_back(new InstancingMaterial());
-			mDynamicInstancedObject->Materials.back()->Initialize(instancingEffect);
-
-			//Vertex buffers
-			ID3D11Buffer* vertexBuffer = nullptr;
-			mDynamicInstancedObject->Materials.back()->CreateVertexBuffer(mGame->Direct3DDevice(), *mesh, &vertexBuffer);
-			mDynamicInstancedObject->MeshesVertexBuffers.push_back(CollisionTestObjects::DynamicInstancedObject::VertexBufferData(vertexBuffer, mDynamicInstancedObject->Materials.back()->VertexSize(), 0));
-
-			//Index buffers
-			mesh->CreateIndexBuffer(&mDynamicInstancedObject->MeshesIndexBuffers[mDynamicInstancedObject->MeshesIndexBuffers.size() - 1]);
-			mDynamicInstancedObject->MeshesIndicesCounts[mDynamicInstancedObject->MeshesIndicesCounts.size() - 1] = mesh->Indices().size();
-
-		}
-
-		// generate an AABB vector
-		mDynamicInstancedObject->ModelAABB = model_main->GenerateAABB();
-
-
-		for (size_t i = 0; i < CollisionTestObjects::NUM_DYNAMIC_INSTANCES; i++)
-		{
-			mDynamicMeshAABBs.push_back(mDynamicInstancedObject->ModelAABB);
-			mDynamicMeshOBBs.push_back(mDynamicInstancedObject->ModelAABB);
-		}
-
-		float dynObjRad = CalculateObjectRadius(mDynamicInstancedObject->Vertices);
-
-		for (size_t i = 0; i < CollisionTestObjects::NUM_DYNAMIC_INSTANCES; i++)
-		{
-
+			mDynamicMeshAABBs.push_back(mDynamicInstancedObject->GetAABB());
+			mDynamicMeshOBBs.push_back(mDynamicInstancedObject->GetAABB());
 			mSpatialElements[i] = new SpatialElement(i);
 			mSpatialElements[i]->SetRadius(dynObjRad);
-
 		}
 
 		// generate dynamic objects' random positions within a volume
 		CalculateDynamicObjectsRandomDistribution();
-
-		// for every mesh material create instance buffer
-		for (size_t i = 0; i < mDynamicInstancedObject->Materials.size(); i++)
-		{
-			//ID3D11Buffer* instanceBuffer = nullptr;
-			mDynamicInstancedObject->Materials[i]->CreateInstanceBuffer(mGame->Direct3DDevice(), mDynamicInstancedObject->InstanceData, &mDynamicInstancedObject->InstanceBuffer);
-			mDynamicInstancedObject->InstanceCount = mDynamicInstancedObject->InstanceData.size();
-			mDynamicInstancedObject->MeshesVertexBuffers.push_back(CollisionTestObjects::DynamicInstancedObject::VertexBufferData(mDynamicInstancedObject->InstanceBuffer, mDynamicInstancedObject->Materials[i]->InstanceSize(), 0));
-
-		}
-
-		// Load diffuse texture
-		std::wstring textureName = Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png");
-		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureName.c_str(), nullptr, &mDynamicInstancedObject->AlbedoMap)))
-		{
-			throw GameException("Failed to load 'Albedo Map'.");
-		}
-
-		// Load normal texture
-		std::wstring textureName2 = Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg");
-		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureName2.c_str(), nullptr, &mDynamicInstancedObject->NormalMap)))
-		{
-			throw GameException("Failed to load 'Normal Map'.");
-		}
+		mDynamicInstancedObject->LoadInstanceBuffers(mDynamicObjectInstanceData);
+		mDynamicInstancedObject->MeshMaterialVariablesUpdateEvent->AddListener("Instancing Material Dynamic Object Update", [&](int meshIndex) { UpdateInstancingMaterialVariables(*mDynamicInstancedObject, meshIndex); });
 
 		#pragma endregion
 
 		#pragma region STATIC_OBJECT_INITIALIZATION
 
-		mStaticInstancedObject = new CollisionTestObjects::StaticInstancedObject();
+		mStaticInstancedObject = new RenderingObject("Bunny Dynamic", *mGame, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)));
+		mStaticInstancedObject->LoadMaterial(new InstancingMaterial(), instancingEffect);
+		mStaticInstancedObject->LoadRenderBuffers();
+		for (size_t i = 0; i < mStaticInstancedObject->GetMeshCount(); i++)
+			mStaticInstancedObject->LoadCustomMeshTextures(i,
+				Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap2.png"),
+				Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"),
+				Utility::GetFilePath(L""),
+				Utility::GetFilePath(L""),
+				Utility::GetFilePath(L""),
+				Utility::GetFilePath(L""),
+				Utility::GetFilePath(L"")
+			);
 
-		// Load static model
-		std::unique_ptr<Model> model_main_static(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true));
-
-		// Load the instaning instancingEffect shader
-		Effect* instancingEffect2 = new Effect(*mGame);
-		instancingEffect2->CompileFromFile(Utility::GetFilePath(L"content\\effects\\Instancing.fx"));
-
-
-		mStaticInstancedObject->Vertices = model_main_static->Meshes().at(0)->Vertices();
-
-
-		for (size_t i = 0; i < CollisionTestObjects::NUM_STATIC_INSTANCES; i++)
+		float staticObjRad = CalculateObjectRadius(mStaticInstancedObject->GetVertices());
+		for (size_t i = 0; i < NUM_STATIC_INSTANCES; i++)
 		{
-			mStaticMeshVertices.push_back(model_main_static->Meshes().at(0)->Vertices());
-
-		}
-
-
-		// Load Vertex & Index Buffers
-		for (Mesh* mesh : model_main_static->Meshes())
-		{
-			mStaticInstancedObject->MeshesIndexBuffers.push_back(nullptr);
-			mStaticInstancedObject->MeshesIndicesCounts.push_back(0);
-			mStaticInstancedObject->Materials.push_back(new InstancingMaterial());
-			mStaticInstancedObject->Materials.back()->Initialize(instancingEffect2);
-
-			//Vertex buffers
-			ID3D11Buffer* vertexBuffer = nullptr;
-			mStaticInstancedObject->Materials.back()->CreateVertexBuffer(mGame->Direct3DDevice(), *mesh, &vertexBuffer);
-			mStaticInstancedObject->MeshesVertexBuffers.push_back(CollisionTestObjects::StaticInstancedObject::VertexBufferData(vertexBuffer, mStaticInstancedObject->Materials.back()->VertexSize(), 0));
-
-			//Index buffers
-			mesh->CreateIndexBuffer(&mStaticInstancedObject->MeshesIndexBuffers[mStaticInstancedObject->MeshesIndexBuffers.size() - 1]);
-			mStaticInstancedObject->MeshesIndicesCounts[mStaticInstancedObject->MeshesIndicesCounts.size() - 1] = mesh->Indices().size();
-
-		}
-
-		// generate an AABB vector
-		mStaticInstancedObject->ModelAABB = model_main_static->GenerateAABB();
-
-
-		for (size_t i = 0; i < CollisionTestObjects::NUM_STATIC_INSTANCES; i++)
-		{
-			mStaticMeshAABBs.push_back(mStaticInstancedObject->ModelAABB);
-			mStaticMeshOBBs.push_back(mStaticInstancedObject->ModelAABB);
-		}
-
-		float staticObjRad = CalculateObjectRadius(mStaticInstancedObject->Vertices);
-
-		for (size_t i = CollisionTestObjects::NUM_DYNAMIC_INSTANCES; i < CollisionTestObjects::NUM_DYNAMIC_INSTANCES + CollisionTestObjects::NUM_STATIC_INSTANCES; i++)
-		{
-			mSpatialElements[i] = new SpatialElement(i);
-			mSpatialElements[i]->SetRadius(staticObjRad);
-
+			mStaticMeshAABBs.push_back(mStaticInstancedObject->GetAABB());
+			mStaticMeshOBBs.push_back(mStaticInstancedObject->GetAABB());
+			mSpatialElements[i + NUM_DYNAMIC_INSTANCES] = new SpatialElement(i + NUM_DYNAMIC_INSTANCES);
+			mSpatialElements[i + NUM_DYNAMIC_INSTANCES]->SetRadius(staticObjRad);
 		}
 
 		// generate static objects' random positions within a volume
 		CalculateStaticObjectsRandomDistribution();
-
-		// for every mesh material create instance buffer
-		for (size_t i = 0; i < mStaticInstancedObject->Materials.size(); i++)
-		{
-			//ID3D11Buffer* instanceBuffer = nullptr;
-			mStaticInstancedObject->Materials[i]->CreateInstanceBuffer(mGame->Direct3DDevice(), mStaticInstancedObject->InstanceData, &mStaticInstancedObject->InstanceBuffer);
-			mStaticInstancedObject->InstanceCount = mStaticInstancedObject->InstanceData.size();
-			mStaticInstancedObject->MeshesVertexBuffers.push_back(CollisionTestObjects::StaticInstancedObject::VertexBufferData(mStaticInstancedObject->InstanceBuffer, mStaticInstancedObject->Materials[i]->InstanceSize(), 0));
-
-		}
-
-		// Load diffuse texture
-		std::wstring textureNameStatic = Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap2.png");
-		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureNameStatic.c_str(), nullptr, &mStaticInstancedObject->AlbedoMap)))
-		{
-			throw GameException("Failed to load 'Albedo Map'.");
-		}
-
-		// Load normal texture
-		std::wstring textureName2Static = Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg");
-		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureName2Static.c_str(), nullptr, &mStaticInstancedObject->NormalMap)))
-		{
-			throw GameException("Failed to load 'Normal Map'.");
-		}
+		mStaticInstancedObject->LoadInstanceBuffers(mStaticObjectInstanceData);
+		mStaticInstancedObject->MeshMaterialVariablesUpdateEvent->AddListener("Instancing Material Static Object Update", [&](int meshIndex) { UpdateInstancingMaterialVariables(*mStaticInstancedObject, meshIndex); });
 
 #pragma endregion
-
 
 		//initialize octree
 		mOctreeStructure = new OctreeStructure(XMFLOAT3(0.0f, 0.0f, 0.0f), 25.0f);
@@ -306,7 +191,7 @@ namespace Rendering
 
 		// Directional Light initiazlization
 		currentLightSource.DirectionalLight = new DirectionalLight(*mGame);
-		currentLightSource.ProxyModel = new ProxyModel(*mGame, *mCamera, Utility::GetFilePath("content\\Models\\DirectionalLightProxy.obj"), 0.5f);
+		currentLightSource.ProxyModel = new ProxyModel(*mGame, *mCamera, Utility::GetFilePath("content\\models\\DirectionalLightProxy.obj"), 0.5f);
 		currentLightSource.ProxyModel->Initialize();
 		currentLightSource.ProxyModel->SetPosition(0.0f, 30.0, 100.0f);
 
@@ -320,17 +205,13 @@ namespace Rendering
 		mVolumeDebugAABB->InitializeGeometry(volumeAABB, XMMatrixScaling(1, 1, 1));
 		mVolumeDebugAABB->SetPosition(XMFLOAT3(0, 0.0f, 0));
 
-	
-
 		mKeyboard = (Keyboard*)mGame->Services().GetService(Keyboard::TypeIdClass());
 		assert(mKeyboard != nullptr);
 
 		//Skybox initialization
-		mSkybox = new Skybox(*mGame, *mCamera, Utility::GetFilePath(L"content\\Textures\\Sky_Type_1.dds"), 100.0f);
+		mSkybox = new Skybox(*mGame, *mCamera, Utility::GetFilePath(L"content\\textures\\Sky_Type_1.dds"), 100.0f);
 		mSkybox->Initialize();
-
 	}
-
 
 	// Update methods
 	void CollisionTestDemo::Update(const GameTime& gameTime)
@@ -350,9 +231,9 @@ namespace Rendering
 			auto startTimerTransformUpdate = std::chrono::high_resolution_clock::now();
 			
 			if (mIsTransformOptimized)
-				UpdateObjectsTransforms_OptimizedDataAccess(*mDynamicInstancedObject, gameTime);
+				UpdateObjectsTransforms_OptimizedDataAccess(gameTime);
 			else
-				UpdateObjectsTransforms_UnoptimizedDataAccess(*mDynamicInstancedObject, gameTime);
+				UpdateObjectsTransforms_UnoptimizedDataAccess(gameTime);
 
 			auto endTimerTransformUpdate = std::chrono::high_resolution_clock::now();
 			mElapsedTimeTransformUpdate = endTimerTransformUpdate - startTimerTransformUpdate;
@@ -363,7 +244,7 @@ namespace Rendering
 		
 		auto startTimerElementUpdate = std::chrono::high_resolution_clock::now();
 
-		UpdateSpatialElement(mSpatialElements, 0, CollisionTestObjects::NUM_DYNAMIC_INSTANCES + CollisionTestObjects::NUM_STATIC_INSTANCES, gameTime);
+		UpdateSpatialElement(mSpatialElements, 0, NUM_DYNAMIC_INSTANCES + NUM_STATIC_INSTANCES, gameTime);
 
 		auto endTimerElementUpdate = std::chrono::high_resolution_clock::now();
 		mElapsedTimeElementUpdate = endTimerElementUpdate - startTimerElementUpdate;
@@ -388,12 +269,37 @@ namespace Rendering
 		#pragma endregion
 
 		VisualizeCollisionDetection();
-		
-		
+
 		currentLightSource.ProxyModel->Update(gameTime);
 		mSkybox->Update(gameTime);
 		UpdateImGui();
 	}
+
+	void CollisionTestDemo::UpdateInstancingMaterialVariables(RenderingObject& object, int meshIndex)
+	{
+		XMVECTOR empty = { 0,0,0,0 };
+
+		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->ViewProjection()			<< mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
+		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightColor0()				<< empty;
+		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightPosition0()			<< empty;
+		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightColor1()				<< empty;
+		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightPosition1()			<< empty;
+		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightColor2()				<< empty;
+		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightPosition2()			<< empty;
+		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightColor3()				<< empty;
+		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightPosition3()			<< empty;
+		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightRadius0()				<< (float)0;
+		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightRadius1()				<< (float)0;
+		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightRadius2()				<< (float)0;
+		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightRadius3()				<< (float)0;
+		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightDirection()			<< currentLightSource.DirectionalLight->DirectionVector();
+		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->DirectionalLightColor()		<< currentLightSource.DirectionalLight->ColorVector();
+		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->ColorTexture()				<< object.GetTextureData(meshIndex).AlbedoMap;
+		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->NormalTexture()				<< object.GetTextureData(meshIndex).NormalMap;
+		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->CameraPosition()			<< mCamera->PositionVector();
+
+	}
+
 	void CollisionTestDemo::UpdateDirectionalLight(const GameTime& gameTime)
 	{
 		float elapsedTime = (float)gameTime.ElapsedGameTime();
@@ -436,107 +342,104 @@ namespace Rendering
 		}
 
 	}
-	void CollisionTestDemo::UpdateObjectsTransforms_UnoptimizedDataAccess(CollisionTestObjects::DynamicInstancedObject& object, const GameTime& gameTime)
+	void CollisionTestDemo::UpdateObjectsTransforms_UnoptimizedDataAccess(const GameTime& gameTime)
 	{
-		if (mDynamicMeshVertices.size() == 0) return;
-
-		for (size_t i = 0; i < CollisionTestObjects::NUM_DYNAMIC_INSTANCES; i++)
+		for (size_t i = 0; i < NUM_DYNAMIC_INSTANCES; i++)
 		{
 
 			#pragma region WALL_COLLISION
 
-			if (object.InstancesPositions.at(i).x + object.ModelAABB.at(0).x <= -25.0f)
+			if (mDynamicObjectInstancesPositions.at(i).x + mDynamicInstancedObject->GetAABB().at(0).x <= -25.0f)
 			{
 				// Left wall
 				XMVECTOR normal = { 1.0f, 0.0f, 0.0f };
 
-				XMVECTOR currentDirection = XMLoadFloat3(&object.InstancesDirections.at(i));
+				XMVECTOR currentDirection = XMLoadFloat3(&mDynamicObjectInstancesDirections.at(i));
 				XMVECTOR newDirection = currentDirection - XMVECTOR{ 2.0f, 2.0f, 2.0f } *normal * XMVector3Dot(currentDirection, normal);
 
-				XMStoreFloat3(&object.InstancesDirections.at(i), newDirection);
+				XMStoreFloat3(&mDynamicObjectInstancesDirections.at(i), newDirection);
 			}
 
-			if (object.InstancesPositions.at(i).x + object.ModelAABB.at(1).x >= 25.0f)
+			if (mDynamicObjectInstancesPositions.at(i).x + mDynamicInstancedObject->GetAABB().at(1).x >= 25.0f)
 			{
 				// Right wall
 				XMVECTOR normal = { -1.0f, 0.0f, 0.0f };
 
-				XMVECTOR currentDirection = XMLoadFloat3(&object.InstancesDirections.at(i));
+				XMVECTOR currentDirection = XMLoadFloat3(&mDynamicObjectInstancesDirections.at(i));
 				XMVECTOR newDirection = currentDirection - XMVECTOR{ 2.0f, 2.0f, 2.0f } *normal * XMVector3Dot(currentDirection, normal);
 
-				XMStoreFloat3(&object.InstancesDirections.at(i), newDirection);
+				XMStoreFloat3(&mDynamicObjectInstancesDirections.at(i), newDirection);
 			}
 
-			if (object.InstancesPositions.at(i).z + object.ModelAABB.at(0).z <= -25.0f)
+			if (mDynamicObjectInstancesPositions.at(i).z + mDynamicInstancedObject->GetAABB().at(0).z <= -25.0f)
 			{
 				// Front Wall
 
 				XMVECTOR normal = { 0.0f, 0.0f, 1.0f };
 
-				XMVECTOR currentDirection = XMLoadFloat3(&object.InstancesDirections.at(i));
+				XMVECTOR currentDirection = XMLoadFloat3(&mDynamicObjectInstancesDirections.at(i));
 				XMVECTOR newDirection = currentDirection - XMVECTOR{ 2.0f, 2.0f, 2.0f } *normal * XMVector3Dot(currentDirection, normal);
 
-				XMStoreFloat3(&object.InstancesDirections.at(i), newDirection);
+				XMStoreFloat3(&mDynamicObjectInstancesDirections.at(i), newDirection);
 			}
 
-			if (object.InstancesPositions.at(i).z + object.ModelAABB.at(1).z >= 25.0f)
+			if (mDynamicObjectInstancesPositions.at(i).z + mDynamicInstancedObject->GetAABB().at(1).z >= 25.0f)
 			{
 				// Back wall
 				XMVECTOR normal = { 0.0f, 0.0f, -1.0f };
 
-				XMVECTOR currentDirection = XMLoadFloat3(&object.InstancesDirections.at(i));
+				XMVECTOR currentDirection = XMLoadFloat3(&mDynamicObjectInstancesDirections.at(i));
 				XMVECTOR newDirection = currentDirection - XMVECTOR{ 2.0f, 2.0f, 2.0f } *normal * XMVector3Dot(currentDirection, normal);
 
-				XMStoreFloat3(&object.InstancesDirections.at(i), newDirection);
+				XMStoreFloat3(&mDynamicObjectInstancesDirections.at(i), newDirection);
 			}
 
-			if (object.InstancesPositions.at(i).y + object.ModelAABB.at(0).y <= -25.0f)
+			if (mDynamicObjectInstancesPositions.at(i).y + mDynamicInstancedObject->GetAABB().at(0).y <= -25.0f)
 			{
 				// Bottom wall
 				XMVECTOR normal = { 0.0f, 1.0f, 0.0f };
 
-				XMVECTOR currentDirection = XMLoadFloat3(&object.InstancesDirections.at(i));
+				XMVECTOR currentDirection = XMLoadFloat3(&mDynamicObjectInstancesDirections.at(i));
 				XMVECTOR newDirection = currentDirection - XMVECTOR{ 2.0f, 2.0f, 2.0f } *normal * XMVector3Dot(currentDirection, normal);
 
-				XMStoreFloat3(&object.InstancesDirections.at(i), newDirection);
+				XMStoreFloat3(&mDynamicObjectInstancesDirections.at(i), newDirection);
 			}
 
-			if (object.InstancesPositions.at(i).y + object.ModelAABB.at(1).y >= 25.0f)
+			if (mDynamicObjectInstancesPositions.at(i).y + mDynamicInstancedObject->GetAABB().at(1).y >= 25.0f)
 			{
 				// Top wall
 				XMVECTOR normal = { 0.0f, -1.0f, 0.0f };
 
-				XMVECTOR currentDirection = XMLoadFloat3(&object.InstancesDirections.at(i));
+				XMVECTOR currentDirection = XMLoadFloat3(&mDynamicObjectInstancesDirections.at(i));
 				XMVECTOR newDirection = currentDirection - XMVECTOR{ 2.0f, 2.0f, 2.0f } *normal * XMVector3Dot(currentDirection, normal);
 
-				XMStoreFloat3(&object.InstancesDirections.at(i), newDirection);
+				XMStoreFloat3(&mDynamicObjectInstancesDirections.at(i), newDirection);
 			}
 
 			#pragma endregion
 
 			// update positions
-			object.InstancesPositions.at(i).x += object.InstancesDirections.at(i).x*mSpeed;
-			object.InstancesPositions.at(i).y += object.InstancesDirections.at(i).y*mSpeed;
-			object.InstancesPositions.at(i).z += object.InstancesDirections.at(i).z*mSpeed;
+			mDynamicObjectInstancesPositions.at(i).x += mDynamicObjectInstancesDirections.at(i).x * mSpeed;
+			mDynamicObjectInstancesPositions.at(i).y += mDynamicObjectInstancesDirections.at(i).y * mSpeed;
+			mDynamicObjectInstancesPositions.at(i).z += mDynamicObjectInstancesDirections.at(i).z * mSpeed;
 
 			// update rotations
 			XMMATRIX rotation = XMMatrixRotationY(gameTime.TotalGameTime());
-			mDynamicInstancedObject->InstanceData.at(i) = InstancingMaterial::InstancedData
+			mDynamicObjectInstanceData.at(i) = InstancingMaterial::InstancedData
 			(
 				rotation *
 
 				XMMatrixTranslation
 				(
-					object.InstancesPositions.at(i).x,
-					object.InstancesPositions.at(i).y,
-					object.InstancesPositions.at(i).z
+					mDynamicObjectInstancesPositions.at(i).x,
+					mDynamicObjectInstancesPositions.at(i).y,
+					mDynamicObjectInstancesPositions.at(i).z
 				)
 
 			);
 
 			// update positions of spatial objects
-			mSpatialElements.at(i)->SetPosition(object.InstancesPositions.at(i));
-
+			mSpatialElements.at(i)->SetPosition(mDynamicObjectInstancesPositions.at(i));
 
 			if (mCollisionMethodNumber == 0)
 			{
@@ -544,9 +447,9 @@ namespace Rendering
 				mSpatialElements.at(i)->AABB->SetPosition(
 					XMFLOAT3
 					(
-						object.InstancesPositions.at(i).x,
-						object.InstancesPositions.at(i).y,
-						object.InstancesPositions.at(i).z
+						mDynamicObjectInstancesPositions.at(i).x,
+						mDynamicObjectInstancesPositions.at(i).y,
+						mDynamicObjectInstancesPositions.at(i).z
 					)
 				);
 
@@ -569,133 +472,117 @@ namespace Rendering
 				mSpatialElements[i]->OBB->SetPosition(
 					XMFLOAT3
 					(
-						object.InstancesPositions.at(i).x,
-						object.InstancesPositions.at(i).y,
-						object.InstancesPositions.at(i).z
+						mDynamicObjectInstancesPositions.at(i).x,
+						mDynamicObjectInstancesPositions.at(i).y,
+						mDynamicObjectInstancesPositions.at(i).z
 					)
 				);
 
 				// set rotations for OBBs
 				mSpatialElements.at(i)->OBB->SetRotationMatrix(rotation);
 			}
-
-
-
-
 		}
 
-		for (size_t i = 0; i < mDynamicInstancedObject->Materials.size(); i++)
-		{
-			// dynamically update instance buffer
-			D3D11_MAPPED_SUBRESOURCE mappedResource;
-			ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
-			mGame->Direct3DDeviceContext()->Map(mDynamicInstancedObject->MeshesVertexBuffers.at(1).VertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-			memcpy(mappedResource.pData, &mDynamicInstancedObject->InstanceData[0], sizeof(mDynamicInstancedObject->InstanceData[0]) * mDynamicInstancedObject->InstanceCount);
-			mGame->Direct3DDeviceContext()->Unmap(mDynamicInstancedObject->MeshesVertexBuffers.at(1).VertexBuffer, 0);
-
-		}
+		mDynamicInstancedObject->UpdateInstanceData(mDynamicObjectInstanceData);
 	}
-	void CollisionTestDemo::UpdateObjectsTransforms_OptimizedDataAccess(CollisionTestObjects::DynamicInstancedObject& object, const GameTime& gameTime)
+	void CollisionTestDemo::UpdateObjectsTransforms_OptimizedDataAccess(const GameTime& gameTime)
 	{
-		if (mDynamicMeshVertices.size() == 0) return;
-
-		for (size_t i = 0; i < CollisionTestObjects::NUM_DYNAMIC_INSTANCES; i++)
+		for (size_t i = 0; i < NUM_DYNAMIC_INSTANCES; i++)
 		{
 
 			#pragma region WALL_COLLISION
 
-			if (object.InstancesPositions[i].x + object.ModelAABB.at(0).x <= -25.0f)
+			if (mDynamicObjectInstancesPositions[i].x + mDynamicInstancedObject->GetAABB().at(0).x <= -25.0f)
 			{
 				// Left wall
 				XMVECTOR normal = { 1.0f, 0.0f, 0.0f };
 
-				XMVECTOR currentDirection = XMLoadFloat3(&object.InstancesDirections[i]);
+				XMVECTOR currentDirection = XMLoadFloat3(&mDynamicObjectInstancesDirections[i]);
 				XMVECTOR newDirection = currentDirection - XMVECTOR{ 2.0f, 2.0f, 2.0f } *normal * XMVector3Dot(currentDirection, normal);
 
-				XMStoreFloat3(&object.InstancesDirections[i], newDirection);
+				XMStoreFloat3(&mDynamicObjectInstancesDirections[i], newDirection);
 			}
 
-			if (object.InstancesPositions[i].x + object.ModelAABB.at(1).x >= 25.0f)
+			if (mDynamicObjectInstancesPositions[i].x + mDynamicInstancedObject->GetAABB().at(1).x >= 25.0f)
 			{
 				// Right wall
 				XMVECTOR normal = { -1.0f, 0.0f, 0.0f };
 
-				XMVECTOR currentDirection = XMLoadFloat3(&object.InstancesDirections[i]);
+				XMVECTOR currentDirection = XMLoadFloat3(&mDynamicObjectInstancesDirections[i]);
 				XMVECTOR newDirection = currentDirection - XMVECTOR{ 2.0f, 2.0f, 2.0f } *normal * XMVector3Dot(currentDirection, normal);
 
-				XMStoreFloat3(&object.InstancesDirections[i], newDirection);
+				XMStoreFloat3(&mDynamicObjectInstancesDirections[i], newDirection);
 			}
 
-			if (object.InstancesPositions[i].z + object.ModelAABB.at(0).z <= -25.0f)
+			if (mDynamicObjectInstancesPositions[i].z + mDynamicInstancedObject->GetAABB().at(0).z <= -25.0f)
 			{
 				// Front Wall
 
 				XMVECTOR normal = { 0.0f, 0.0f, 1.0f };
 
-				XMVECTOR currentDirection = XMLoadFloat3(&object.InstancesDirections[i]);
+				XMVECTOR currentDirection = XMLoadFloat3(&mDynamicObjectInstancesDirections[i]);
 				XMVECTOR newDirection = currentDirection - XMVECTOR{ 2.0f, 2.0f, 2.0f } *normal * XMVector3Dot(currentDirection, normal);
 
-				XMStoreFloat3(&object.InstancesDirections[i], newDirection);
+				XMStoreFloat3(&mDynamicObjectInstancesDirections[i], newDirection);
 			}
 
-			if (object.InstancesPositions[i].z + object.ModelAABB.at(1).z >= 25.0f)
+			if (mDynamicObjectInstancesPositions[i].z + mDynamicInstancedObject->GetAABB().at(1).z >= 25.0f)
 			{
 				// Back wall
 				XMVECTOR normal = { 0.0f, 0.0f, -1.0f };
 
-				XMVECTOR currentDirection = XMLoadFloat3(&object.InstancesDirections[i]);
+				XMVECTOR currentDirection = XMLoadFloat3(&mDynamicObjectInstancesDirections[i]);
 				XMVECTOR newDirection = currentDirection - XMVECTOR{ 2.0f, 2.0f, 2.0f } *normal * XMVector3Dot(currentDirection, normal);
 
-				XMStoreFloat3(&object.InstancesDirections[i], newDirection);
+				XMStoreFloat3(&mDynamicObjectInstancesDirections[i], newDirection);
 			}
 
-			if (object.InstancesPositions[i].y + object.ModelAABB.at(0).y <= -25.0f)
+			if (mDynamicObjectInstancesPositions[i].y + mDynamicInstancedObject->GetAABB().at(0).y <= -25.0f)
 			{
 				// Bottom wall
 				XMVECTOR normal = { 0.0f, 1.0f, 0.0f };
 
-				XMVECTOR currentDirection = XMLoadFloat3(&object.InstancesDirections[i]);
+				XMVECTOR currentDirection = XMLoadFloat3(&mDynamicObjectInstancesDirections[i]);
 				XMVECTOR newDirection = currentDirection - XMVECTOR{ 2.0f, 2.0f, 2.0f } *normal * XMVector3Dot(currentDirection, normal);
 
-				XMStoreFloat3(&object.InstancesDirections[i], newDirection);
+				XMStoreFloat3(&mDynamicObjectInstancesDirections[i], newDirection);
 			}
 
-			if (object.InstancesPositions[i].y + object.ModelAABB.at(1).y >= 25.0f)
+			if (mDynamicObjectInstancesPositions[i].y + mDynamicInstancedObject->GetAABB().at(1).y >= 25.0f)
 			{
 				// Top wall
 				XMVECTOR normal = { 0.0f, -1.0f, 0.0f };
 
-				XMVECTOR currentDirection = XMLoadFloat3(&object.InstancesDirections[i]);
+				XMVECTOR currentDirection = XMLoadFloat3(&mDynamicObjectInstancesDirections[i]);
 				XMVECTOR newDirection = currentDirection - XMVECTOR{ 2.0f, 2.0f, 2.0f } *normal * XMVector3Dot(currentDirection, normal);
 
-				XMStoreFloat3(&object.InstancesDirections[i], newDirection);
+				XMStoreFloat3(&mDynamicObjectInstancesDirections[i], newDirection);
 			}
 
 			#pragma endregion
 
 			// update positions
-			object.InstancesPositions[i].x += object.InstancesDirections[i].x*mSpeed;
-			object.InstancesPositions[i].y += object.InstancesDirections[i].y*mSpeed;
-			object.InstancesPositions[i].z += object.InstancesDirections[i].z*mSpeed;
+			mDynamicObjectInstancesPositions[i].x += mDynamicObjectInstancesDirections[i].x * mSpeed;
+			mDynamicObjectInstancesPositions[i].y += mDynamicObjectInstancesDirections[i].y * mSpeed;
+			mDynamicObjectInstancesPositions[i].z += mDynamicObjectInstancesDirections[i].z * mSpeed;
 
 			// update rotations
 			XMMATRIX rotation = XMMatrixRotationY(gameTime.TotalGameTime());
-			mDynamicInstancedObject->InstanceData[i] = InstancingMaterial::InstancedData
+			mDynamicObjectInstanceData[i] = InstancingMaterial::InstancedData
 			(
 				rotation *
 
 				XMMatrixTranslation
 				(
-					object.InstancesPositions[i].x,
-					object.InstancesPositions[i].y,
-					object.InstancesPositions[i].z
+					mDynamicObjectInstancesPositions[i].x,
+					mDynamicObjectInstancesPositions[i].y,
+					mDynamicObjectInstancesPositions[i].z
 				)
 
 			);
 
 			// update positions of spatial objects
-			mSpatialElements[i]->SetPosition(object.InstancesPositions[i]);
-
+			mSpatialElements[i]->SetPosition(mDynamicObjectInstancesPositions[i]);
 
 			if (mCollisionMethodNumber == 0)
 			{
@@ -703,9 +590,9 @@ namespace Rendering
 				mSpatialElements[i]->AABB->SetPosition(
 					XMFLOAT3
 					(
-						object.InstancesPositions[i].x,
-						object.InstancesPositions[i].y,
-						object.InstancesPositions[i].z
+						mDynamicObjectInstancesPositions[i].x,
+						mDynamicObjectInstancesPositions[i].y,
+						mDynamicObjectInstancesPositions[i].z
 					)
 				);
 
@@ -728,31 +615,18 @@ namespace Rendering
 				mSpatialElements[i]->OBB->SetPosition(
 					XMFLOAT3
 					(
-						object.InstancesPositions[i].x,
-						object.InstancesPositions[i].y,
-						object.InstancesPositions[i].z
+						mDynamicObjectInstancesPositions[i].x,
+						mDynamicObjectInstancesPositions[i].y,
+						mDynamicObjectInstancesPositions[i].z
 					)
 				);
 
 				// set rotations for OBBs
 				mSpatialElements[i]->OBB->SetRotationMatrix(rotation);
 			}
-
-
-
-
 		}
 
-		for (size_t i = 0; i < mDynamicInstancedObject->Materials.size(); i++)
-		{
-			// dynamically update instance buffer
-			D3D11_MAPPED_SUBRESOURCE mappedResource;
-			ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
-			mGame->Direct3DDeviceContext()->Map(mDynamicInstancedObject->MeshesVertexBuffers.at(1).VertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-			memcpy(mappedResource.pData, &mDynamicInstancedObject->InstanceData[0], sizeof(mDynamicInstancedObject->InstanceData[0]) *mDynamicInstancedObject->InstanceCount);
-			mGame->Direct3DDeviceContext()->Unmap(mDynamicInstancedObject->MeshesVertexBuffers.at(1).VertexBuffer, 0);
-
-		}
+		mDynamicInstancedObject->UpdateInstanceData(mDynamicObjectInstanceData);
 	}
 	void CollisionTestDemo::UpdateSpatialElement(std::vector<SpatialElement*>& elements, int startIndex, int endIndex, const GameTime& gameTime)
 	{
@@ -807,8 +681,8 @@ namespace Rendering
 
 		ImGui::Begin("Collision Detection - Demo");
 
-		ImGui::TextColored(ImVec4(0.8f, 0.0f, 0.0f, 1), "Rendered dynamic instances: %i/%i", mDynamicInstancedObject->InstanceCount, CollisionTestObjects::NUM_DYNAMIC_INSTANCES);
-		ImGui::TextColored(ImVec4(0.8f, 0.0f, 0.0f, 1), "Rendered static instances: %i/%i", mStaticInstancedObject->InstanceCount, CollisionTestObjects::NUM_STATIC_INSTANCES);
+		ImGui::TextColored(ImVec4(0.8f, 0.0f, 0.0f, 1), "Rendered dynamic instances: %i/%i", mDynamicInstancedObject->GetInstanceCount(), NUM_DYNAMIC_INSTANCES);
+		ImGui::TextColored(ImVec4(0.8f, 0.0f, 0.0f, 1), "Rendered static instances: %i/%i", mStaticInstancedObject->GetInstanceCount(), NUM_STATIC_INSTANCES);
 
 		ImGui::Separator();
 		ImGui::Checkbox("Objects Movement", &mIsDynamic);
@@ -875,107 +749,10 @@ namespace Rendering
 		ID3D11DeviceContext* direct3DDeviceContext = mGame->Direct3DDeviceContext();
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-
-		#pragma region DRAW_INSTANCES_DYNAMIC
-
-		// Draw Instances
-		for (int i = 0; i < mDynamicInstancedObject->MeshesIndicesCounts.size(); i++)
-		{
-			Pass* pass = mDynamicInstancedObject->Materials[i]->CurrentTechnique()->Passes().at(0);
-			ID3D11InputLayout* inputLayout = mDynamicInstancedObject->Materials[i]->InputLayouts().at(pass);
-			direct3DDeviceContext->IASetInputLayout(inputLayout);
-
-			ID3D11Buffer* vertexBuffers[2]
-				= { mDynamicInstancedObject->MeshesVertexBuffers[i].VertexBuffer, mDynamicInstancedObject->MeshesVertexBuffers[i + mDynamicInstancedObject->MeshesVertexBuffers.size() / 2].VertexBuffer };
-
-			UINT strides[2] = { mDynamicInstancedObject->MeshesVertexBuffers[i].Stride, mDynamicInstancedObject->MeshesVertexBuffers[i + mDynamicInstancedObject->MeshesVertexBuffers.size() / 2].Stride };
-			UINT offsets[2] = { mDynamicInstancedObject->MeshesVertexBuffers[i].Offset, mDynamicInstancedObject->MeshesVertexBuffers[i + mDynamicInstancedObject->MeshesVertexBuffers.size() / 2].Offset };
-
-			direct3DDeviceContext->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
-			direct3DDeviceContext->IASetIndexBuffer(mDynamicInstancedObject->MeshesIndexBuffers[i], DXGI_FORMAT_R32_UINT, 0);
-
-			mDynamicInstancedObject->Materials[i]->ViewProjection() << mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
-
-			XMVECTOR empty;
-
-			mDynamicInstancedObject->Materials[i]->LightColor0() << empty;
-			mDynamicInstancedObject->Materials[i]->LightPosition0() << empty;
-			mDynamicInstancedObject->Materials[i]->LightColor1() << empty;
-			mDynamicInstancedObject->Materials[i]->LightPosition1() << empty;
-			mDynamicInstancedObject->Materials[i]->LightColor2() << empty;
-			mDynamicInstancedObject->Materials[i]->LightPosition2() << empty;
-			mDynamicInstancedObject->Materials[i]->LightColor3() << empty;
-			mDynamicInstancedObject->Materials[i]->LightPosition3() << empty;
-
-			mDynamicInstancedObject->Materials[i]->LightRadius0() << (float)0;
-			mDynamicInstancedObject->Materials[i]->LightRadius1() << (float)0;
-			mDynamicInstancedObject->Materials[i]->LightRadius2() << (float)0;
-			mDynamicInstancedObject->Materials[i]->LightRadius3() << (float)0;
-
-			mDynamicInstancedObject->Materials[i]->LightDirection() << currentLightSource.DirectionalLight->DirectionVector();
-			mDynamicInstancedObject->Materials[i]->DirectionalLightColor() << currentLightSource.DirectionalLight->ColorVector();
-
-
-
-			mDynamicInstancedObject->Materials[i]->ColorTexture() << mDynamicInstancedObject->AlbedoMap;
-			mDynamicInstancedObject->Materials[i]->NormalTexture() << mDynamicInstancedObject->NormalMap;
-			mDynamicInstancedObject->Materials[i]->CameraPosition() << mCamera->PositionVector();
-
-			pass->Apply(0, direct3DDeviceContext);
-
-			direct3DDeviceContext->DrawIndexedInstanced(mDynamicInstancedObject->MeshesIndicesCounts[i], mDynamicInstancedObject->InstanceCount, 0, 0, 0);
-		}
+		#pragma region DRAW_OBJECTS
+		mDynamicInstancedObject->DrawInstanced();
+		mStaticInstancedObject->DrawInstanced();
 #pragma endregion
-
-		#pragma region DRAW_INSTANCES_STATIC
-		// Draw Instances
-		for (int i = 0; i < mStaticInstancedObject->MeshesIndicesCounts.size(); i++)
-		{
-			Pass* pass = mStaticInstancedObject->Materials[i]->CurrentTechnique()->Passes().at(0);
-			ID3D11InputLayout* inputLayout = mStaticInstancedObject->Materials[i]->InputLayouts().at(pass);
-			direct3DDeviceContext->IASetInputLayout(inputLayout);
-
-			ID3D11Buffer* vertexBuffers[2]
-				= { mStaticInstancedObject->MeshesVertexBuffers[i].VertexBuffer, mStaticInstancedObject->MeshesVertexBuffers[i + mStaticInstancedObject->MeshesVertexBuffers.size() / 2].VertexBuffer };
-
-			UINT strides[2] = { mStaticInstancedObject->MeshesVertexBuffers[i].Stride, mStaticInstancedObject->MeshesVertexBuffers[i +mStaticInstancedObject->MeshesVertexBuffers.size() / 2].Stride };
-			UINT offsets[2] = { mStaticInstancedObject->MeshesVertexBuffers[i].Offset, mStaticInstancedObject->MeshesVertexBuffers[i +mStaticInstancedObject->MeshesVertexBuffers.size() / 2].Offset };
-
-			direct3DDeviceContext->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
-			direct3DDeviceContext->IASetIndexBuffer(mStaticInstancedObject->MeshesIndexBuffers[i], DXGI_FORMAT_R32_UINT, 0);
-
-			mStaticInstancedObject->Materials[i]->ViewProjection() << mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
-
-			XMVECTOR empty;
-
-			mStaticInstancedObject->Materials[i]->LightColor0() << empty;
-			mStaticInstancedObject->Materials[i]->LightPosition0() << empty;
-			mStaticInstancedObject->Materials[i]->LightColor1() << empty;
-			mStaticInstancedObject->Materials[i]->LightPosition1() << empty;
-			mStaticInstancedObject->Materials[i]->LightColor2() << empty;
-			mStaticInstancedObject->Materials[i]->LightPosition2() << empty;
-			mStaticInstancedObject->Materials[i]->LightColor3() << empty;
-			mStaticInstancedObject->Materials[i]->LightPosition3() << empty;
-
-			mStaticInstancedObject->Materials[i]->LightRadius0() << (float)0;
-			mStaticInstancedObject->Materials[i]->LightRadius1() << (float)0;
-			mStaticInstancedObject->Materials[i]->LightRadius2() << (float)0;
-			mStaticInstancedObject->Materials[i]->LightRadius3() << (float)0;
-
-			mStaticInstancedObject->Materials[i]->LightDirection() << currentLightSource.DirectionalLight->DirectionVector();
-			mStaticInstancedObject->Materials[i]->DirectionalLightColor() << currentLightSource.DirectionalLight->ColorVector();
-
-
-
-			mStaticInstancedObject->Materials[i]->ColorTexture() << mStaticInstancedObject->AlbedoMap;
-			mStaticInstancedObject->Materials[i]->NormalTexture() << mStaticInstancedObject->NormalMap;
-			mStaticInstancedObject->Materials[i]->CameraPosition() << mCamera->PositionVector();
-
-			pass->Apply(0, direct3DDeviceContext);
-
-			direct3DDeviceContext->DrawIndexedInstanced(mStaticInstancedObject->MeshesIndicesCounts[i], mStaticInstancedObject->InstanceCount, 0, 0, 0);
-		}
-		#pragma endregion
 
 		#pragma region DRAW_GIZMOS
 		
@@ -1004,11 +781,9 @@ namespace Rendering
 	}
 	
 	// Utility methods
-	float CollisionTestDemo::CalculateObjectRadius( std::vector<XMFLOAT3>& vertices)
+	float CollisionTestDemo::CalculateObjectRadius(std::vector<XMFLOAT3> vertices)
 	{
-
 		float Radius = -1;
-
 		for (size_t i = 0; i < vertices.size(); i++)
 		{
 			float tempRadius = sqrt(vertices.at(i).x*vertices.at(i).x + vertices.at(i).y*vertices.at(i).y+ vertices.at(i).z*vertices.at(i).z);
@@ -1019,91 +794,76 @@ namespace Rendering
 	}
 	void CollisionTestDemo::CalculateDynamicObjectsRandomDistribution()
 	{
-		for (size_t i = 0; i < CollisionTestObjects::NUM_DYNAMIC_INSTANCES; i++)
+		for (size_t i = 0; i < NUM_DYNAMIC_INSTANCES; i++)
 		{
-
 			// random position
 			float x = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) * (25.0f - (-25.0f) - 2.0f * 5.0f) + (-25.0f) + 5.0f;
 			float y = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) * (25.0f - (-25.0f) - 2.0f * 5.0f) + (-25.0f) + 5.0f;
 			float z = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) * (25.0f - (-25.0f) - 2.0f * 5.0f) + (-25.0f) + 5.0f;
-
-			mDynamicInstancedObject->InstanceData.push_back(InstancingMaterial::InstancedData(XMMatrixTranslation(x, y, z)));
-			mDynamicInstancedObject->InstancesPositions.push_back(XMFLOAT3(x, y, z));
-
+			mDynamicObjectInstanceData.push_back(InstancingMaterial::InstancedData(XMMatrixTranslation(x, y, z)));
+			mDynamicObjectInstancesPositions.push_back(XMFLOAT3(x, y, z));
 
 			float dirX = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) *	(25.0f - (-25.0f)) + (-25.0f);
 			float dirY = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) *	(25.0f - (-25.0f)) + (-25.0f);
 			float dirZ = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) * (25.0f - (-25.0f)) + (-25.0f);
+			mDynamicObjectInstancesDirections.push_back(XMFLOAT3(dirX, dirY, dirZ));
 
-			mDynamicInstancedObject->InstancesDirections.push_back(XMFLOAT3(dirX, dirY, dirZ));
-
-
-			mSpatialElements.at(i)->SetBoundsAABB(mDynamicInstancedObject->ModelAABB.at(0), mDynamicInstancedObject->ModelAABB.at(1));
-			mSpatialElements.at(i)->SetPosition(mDynamicInstancedObject->InstancesPositions.at(i));
-
+			mSpatialElements.at(i)->SetBoundsAABB(mDynamicInstancedObject->GetAABB().at(0), mDynamicInstancedObject->GetAABB().at(1));
+			mSpatialElements.at(i)->SetPosition(mDynamicObjectInstancesPositions[i]);
 
 			// create a debug AABB & OBB visualization for every instance
 			mSpatialElements.at(i)->AABB = new RenderableAABB(*mGame, *mCamera);
 			mSpatialElements.at(i)->AABB->Initialize();
-			mSpatialElements.at(i)->AABB->InitializeGeometry(mDynamicInstancedObject->ModelAABB, XMMatrixScaling(1, 1, 1));
+			mSpatialElements.at(i)->AABB->InitializeGeometry(mDynamicInstancedObject->GetAABB(), XMMatrixScaling(1, 1, 1));
 			mSpatialElements.at(i)->AABB->SetPosition(XMFLOAT3(x, y, z));
+			mSpatialElements.at(i)->AABB->SetAABB(mDynamicMeshAABBs[i]);
 
 			mSpatialElements.at(i)->OBB = new RenderableOBB(*mGame, *mCamera);
 			mSpatialElements.at(i)->OBB->Initialize();
-			mSpatialElements.at(i)->OBB->InitializeGeometry(mDynamicInstancedObject->ModelAABB, XMMatrixScaling(1, 1, 1));
+			mSpatialElements.at(i)->OBB->InitializeGeometry(mDynamicInstancedObject->GetAABB(), XMMatrixScaling(1, 1, 1));
 			mSpatialElements.at(i)->OBB->SetPosition(XMFLOAT3(x, y, z));
 			mSpatialElements.at(i)->OBB->SetRotationMatrix(XMMatrixRotationAxis(XMVECTOR{ 1.0, 0.0, 0.0f }, 0.0f));
-
-
 		}
 	}
 	void CollisionTestDemo::CalculateStaticObjectsRandomDistribution()
 	{
-		for (size_t i = CollisionTestObjects::NUM_DYNAMIC_INSTANCES; i < CollisionTestObjects::NUM_DYNAMIC_INSTANCES + CollisionTestObjects::NUM_STATIC_INSTANCES; i++)
+		for (size_t i = NUM_DYNAMIC_INSTANCES; i < NUM_DYNAMIC_INSTANCES + NUM_STATIC_INSTANCES; i++)
 		{
-
 			// random position
 			float x = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) * (25.0f - (-25.0f) - 2.0f * 5.0f) + (-25.0f) + 5.0f;
 			float y = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) * (25.0f - (-25.0f) - 2.0f * 5.0f) + (-25.0f) + 5.0f;
 			float z = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) * (25.0f - (-25.0f) - 2.0f * 5.0f) + (-25.0f) + 5.0f;
-
-			mStaticInstancedObject->InstanceData.push_back(InstancingMaterial::InstancedData(XMMatrixTranslation(x, y, z)));
-			mStaticInstancedObject->InstancesPositions.push_back(XMFLOAT3(x, y, z));
-
-
-			mSpatialElements.at(i)->SetBoundsAABB(mStaticInstancedObject->ModelAABB.at(0), mStaticInstancedObject->ModelAABB.at(1));
-			mSpatialElements.at(i)->SetPosition(mStaticInstancedObject->InstancesPositions.at(i - CollisionTestObjects::NUM_DYNAMIC_INSTANCES));
-
+			mStaticObjectInstanceData.push_back(InstancingMaterial::InstancedData(XMMatrixTranslation(x, y, z)));
+			mStaticObjectInstancesPositions.push_back(XMFLOAT3(x, y, z));
+			mSpatialElements.at(i)->SetBoundsAABB(mStaticInstancedObject->GetAABB().at(0), mStaticInstancedObject->GetAABB().at(1));
+			mSpatialElements.at(i)->SetPosition(mStaticObjectInstancesPositions[i - NUM_DYNAMIC_INSTANCES]);
 
 			// create a debug AABB & OBB visualization for every instance
 			mSpatialElements.at(i)->AABB = new RenderableAABB(*mGame, *mCamera);
 			mSpatialElements.at(i)->AABB->Initialize();
-			mSpatialElements.at(i)->AABB->InitializeGeometry(mStaticInstancedObject->ModelAABB, XMMatrixScaling(1, 1, 1));
+			mSpatialElements.at(i)->AABB->InitializeGeometry(mStaticInstancedObject->GetAABB(), XMMatrixScaling(1, 1, 1));
 			mSpatialElements.at(i)->AABB->SetPosition(XMFLOAT3(x, y, z));
+			mSpatialElements.at(i)->AABB->SetAABB(mStaticMeshAABBs[i - NUM_DYNAMIC_INSTANCES]);
 
 			mSpatialElements.at(i)->OBB = new RenderableOBB(*mGame, *mCamera);
 			mSpatialElements.at(i)->OBB->Initialize();
-			mSpatialElements.at(i)->OBB->InitializeGeometry(mStaticInstancedObject->ModelAABB, XMMatrixScaling(1, 1, 1));
+			mSpatialElements.at(i)->OBB->InitializeGeometry(mStaticInstancedObject->GetAABB(), XMMatrixScaling(1, 1, 1));
 			mSpatialElements.at(i)->OBB->SetPosition(XMFLOAT3(x, y, z));
 			mSpatialElements.at(i)->OBB->SetRotationMatrix(XMMatrixRotationAxis(XMVECTOR{ 1.0, 0.0, 0.0f }, 0.0f));
-
-
 		}
 	}
-	void CollisionTestDemo::RecalculateAABB(int index, CollisionTestObjects::DynamicInstancedObject & object, XMMATRIX& mat)
+	void CollisionTestDemo::RecalculateAABB(int index, RenderingObject& object, XMMATRIX& mat)
 	{
-
 		if (mIsAABBRecalculatedFromConvexHull)
 		{
-
-			int numVertices = object.VerticesConvexHull.size();
+			int numVertices = mDynamicConvexHullObject->GetVertices().size();
 			// recalculate AABB 
 			XMFLOAT3 minVertex = XMFLOAT3(FLT_MAX, FLT_MAX, FLT_MAX);
 			XMFLOAT3 maxVertex = XMFLOAT3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
 			for (UINT i = 0; i < numVertices; i++)
 			{
-				XMVECTOR tempVector = XMVector3Transform(XMLoadFloat3(&object.VerticesConvexHull.at(i)), mat);
+				XMVECTOR tempVector = XMVector3Transform(XMLoadFloat3(&(mDynamicConvexHullObject->GetVertices()).at(i)), mat);
 
 				//Get the smallest vertex 
 				minVertex.x = std::min(minVertex.x, tempVector.m128_f32[0]);    // Find smallest x value in model
@@ -1122,7 +882,7 @@ namespace Rendering
 		}
 		else
 		{
-			int numVertices = object.Vertices.size();
+			int numVertices = object.GetVertices().size();
 
 			// recalculate AABB 
 			XMFLOAT3 minVertex = XMFLOAT3(FLT_MAX, FLT_MAX, FLT_MAX);
@@ -1130,7 +890,7 @@ namespace Rendering
 
 			for (UINT i = 0; i < numVertices; i++)
 			{
-				XMVECTOR tempVector = XMVector3Transform(XMLoadFloat3(&object.Vertices.at(i)), mat);
+				XMVECTOR tempVector = XMVector3Transform(XMLoadFloat3(&(object.GetVertices()).at(i)), mat);
 
 				//Get the smallest vertex 
 				minVertex.x = std::min(minVertex.x, tempVector.m128_f32[0]);    // Find smallest x value in model
@@ -1142,20 +902,17 @@ namespace Rendering
 				maxVertex.z = std::max(maxVertex.z, tempVector.m128_f32[2]);    // Find largest z value in model
 			}
 
-
 			// store unique AABB of an instance
-			mDynamicMeshAABBs.at(index).at(0) = (minVertex);
-			mDynamicMeshAABBs.at(index).at(1) = (maxVertex);
+			mDynamicMeshAABBs[index][0] = (minVertex);
+			mDynamicMeshAABBs[index][1] = (maxVertex);
 		}
 
 	}
 	void CollisionTestDemo::VisualizeCollisionDetection()
 	{
-
-
 		mNumberOfCollisions = 0;
 
-		for (size_t i = 0; i < CollisionTestObjects::NUM_DYNAMIC_INSTANCES + CollisionTestObjects::NUM_STATIC_INSTANCES; i++)
+		for (size_t i = 0; i < NUM_DYNAMIC_INSTANCES + NUM_STATIC_INSTANCES; i++)
 		{
 			if (mSpatialElements[i]->IsColliding())
 			{
