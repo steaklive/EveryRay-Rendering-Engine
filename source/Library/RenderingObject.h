@@ -114,10 +114,14 @@ namespace Rendering
 		void LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData);
 		void Draw();
 		void DrawInstanced();
+		void UpdateInstanceData(std::vector<InstancingMaterial::InstancedData> pInstanceData);
 
 		Material* GetMeshMaterial() { return mMesheMaterial; }
 		TextureData& GetTextureData(int meshIndex) { return mMeshesTextureBuffers[meshIndex]; }
 		int GetMeshCount() { return mMeshesCount; }
+		std::vector<XMFLOAT3> GetAABB() { return mAABB; }
+		const std::vector<XMFLOAT3>& GetVertices();
+		UINT GetInstanceCount() { return mInstanceCount; }
 
 		GeneralEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new GeneralEvent<Delegate_MeshMaterialVariablesUpdate>();
 
@@ -132,6 +136,7 @@ namespace Rendering
 		std::vector<TextureData>							mMeshesTextureBuffers;
 		std::vector<InstanceBufferData*>					mMeshesInstanceBuffers;
 		std::vector<std::vector<XMFLOAT3>>					mMeshVertices;
+		std::vector<XMFLOAT3>								mMeshAllVertices;
 		Material*											mMesheMaterial;
 
 		std::vector<XMFLOAT3>								mAABB;

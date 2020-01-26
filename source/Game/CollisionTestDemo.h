@@ -14,10 +14,7 @@
 #include <thread>
 #include <mutex>
 
-
 using namespace Library;
-
-
 
 namespace Library
 {
@@ -60,158 +57,9 @@ namespace CollisionTestDemoLightInfo
 
 namespace Rendering
 {
-
+	class RenderingObject;
 	class AmbientLightingMaterial;
 	class InstancingMaterial;
-
-	namespace CollisionTestObjects
-	{
-		const int NUM_DYNAMIC_INSTANCES = 300;
-		const int NUM_STATIC_INSTANCES = 25;
-		
-		struct StaticInstancedObject
-		{
-			struct VertexBufferData
-			{
-				ID3D11Buffer* VertexBuffer;
-				UINT Stride;
-				UINT Offset;
-
-				VertexBufferData(ID3D11Buffer* vertexBuffer, UINT stride, UINT offset)
-					:
-					VertexBuffer(vertexBuffer),
-					Stride(stride),
-					Offset(offset)
-				{ }
-			};
-
-			StaticInstancedObject()
-				:
-				Materials(0, nullptr),
-				InstanceData(0),
-				MeshesVertexBuffers(),
-				MeshesIndexBuffers(0, nullptr),
-				MeshesIndicesCounts(0, 0),
-				InstanceCount(0),
-				AlbedoMap(nullptr),
-				NormalMap(nullptr),
-				ModelAABB(0),
-				InstancesPositions(0),
-				InstanceBuffer(nullptr)
-
-
-			{}
-
-			std::vector<InstancingMaterial*> Materials;
-			std::vector<InstancingMaterial::InstancedData> InstanceData;
-
-			ID3D11Buffer* InstanceBuffer;
-			std::vector<VertexBufferData>	 MeshesVertexBuffers;
-			std::vector<ID3D11Buffer*>		 MeshesIndexBuffers;
-			std::vector<UINT>				 MeshesIndicesCounts;
-
-			std::vector<XMFLOAT3> Vertices;
-
-			UINT InstanceCount = 0;
-
-			ID3D11ShaderResourceView* AlbedoMap;
-			ID3D11ShaderResourceView* NormalMap;
-
-			std::vector<XMFLOAT3>		 ModelAABB;
-			std::vector<XMFLOAT3>		 InstancesPositions;
-
-
-			~StaticInstancedObject()
-			{
-				DeletePointerCollection(Materials);
-
-				ReleasePointerCollection(MeshesIndexBuffers);
-
-				for (VertexBufferData& bufferData : MeshesVertexBuffers)
-				{
-					ReleaseObject(bufferData.VertexBuffer);
-				}
-
-				ReleaseObject(AlbedoMap);
-				ReleaseObject(NormalMap);
-				//ReleaseObject(InstanceBuffer);
-
-			}
-		};
-
-		struct DynamicInstancedObject
-		{
-			struct VertexBufferData
-			{
-				ID3D11Buffer* VertexBuffer;
-				UINT Stride;
-				UINT Offset;
-
-				VertexBufferData(ID3D11Buffer* vertexBuffer, UINT stride, UINT offset)
-					:
-					VertexBuffer(vertexBuffer),
-					Stride(stride),
-					Offset(offset)
-				{ }
-			};
-
-			DynamicInstancedObject()
-				:
-				Materials(0, nullptr),
-				InstanceData(0),
-				MeshesVertexBuffers(),
-				MeshesIndexBuffers(0, nullptr),
-				MeshesIndicesCounts(0, 0),
-				InstanceCount(0),
-				AlbedoMap(nullptr),
-				NormalMap(nullptr),
-				ModelAABB(0),
-				InstancesPositions(0),
-				InstancesDirections(0),
-				InstanceBuffer(nullptr)
-
-
-			{}
-
-			std::vector<InstancingMaterial*> Materials;
-			std::vector<InstancingMaterial::InstancedData> InstanceData;
-
-			ID3D11Buffer* InstanceBuffer;
-			std::vector<VertexBufferData>	 MeshesVertexBuffers;
-			std::vector<ID3D11Buffer*>		 MeshesIndexBuffers;
-			std::vector<UINT>				 MeshesIndicesCounts;
-
-			std::vector<XMFLOAT3> Vertices;
-			std::vector<XMFLOAT3> VerticesConvexHull;
-
-			UINT InstanceCount = 0;
-
-			ID3D11ShaderResourceView* AlbedoMap;
-			ID3D11ShaderResourceView* NormalMap;
-
-			std::vector<XMFLOAT3>		 ModelAABB;
-			std::vector<XMFLOAT3>		 InstancesPositions;
-			std::vector<XMFLOAT3>		 InstancesDirections;
-
-
-			~DynamicInstancedObject()
-			{
-				DeletePointerCollection(Materials);
-
-				ReleasePointerCollection(MeshesIndexBuffers);
-
-				for (VertexBufferData& bufferData : MeshesVertexBuffers)
-				{
-					ReleaseObject(bufferData.VertexBuffer);
-				}
-
-				ReleaseObject(AlbedoMap);
-				ReleaseObject(NormalMap);
-				//ReleaseObject(InstanceBuffer);
-
-			}
-		};
-	}
 
 	class CollisionTestDemo : public DrawableGameComponent, public DemoLevel
 	{
@@ -235,32 +83,38 @@ namespace Rendering
 		CollisionTestDemo(const CollisionTestDemo& rhs);
 		CollisionTestDemo& operator=(const CollisionTestDemo& rhs);
 
+		void UpdateInstancingMaterialVariables(RenderingObject& object, int meshIndex);
+
 		void UpdateDirectionalLight(const GameTime& gameTime);
-		void UpdateObjectsTransforms_UnoptimizedDataAccess(CollisionTestObjects::DynamicInstancedObject & object, const GameTime & gameTime);
-		void UpdateObjectsTransforms_OptimizedDataAccess(CollisionTestObjects::DynamicInstancedObject & object, const GameTime & gameTime);
+		void UpdateObjectsTransforms_UnoptimizedDataAccess(const GameTime & gameTime);
+		void UpdateObjectsTransforms_OptimizedDataAccess(const GameTime & gameTime);
 		void UpdateSpatialElement(std::vector<SpatialElement*>& elements, int startIndex, int endIndex, const GameTime& gameTime);
 		void UpdateImGui();
 		
 		void CalculateDynamicObjectsRandomDistribution();
 		void CalculateStaticObjectsRandomDistribution();
-		float CalculateObjectRadius(std::vector<XMFLOAT3>& vertices);
-		void RecalculateAABB(int index, CollisionTestObjects::DynamicInstancedObject & object, XMMATRIX & mat);
+		float CalculateObjectRadius(std::vector<XMFLOAT3> vertices);
+		void RecalculateAABB(int index, RenderingObject& object, XMMATRIX & mat);
 		void VisualizeCollisionDetection();
 
-
-
-
 		std::vector<SpatialElement*> mSpatialElements;
-		CollisionTestObjects::DynamicInstancedObject*	mDynamicInstancedObject;
-		CollisionTestObjects::StaticInstancedObject*	mStaticInstancedObject;
 		
-		std::vector<std::vector<XMFLOAT3>> mDynamicMeshVertices;
-		std::vector<std::vector<XMFLOAT3>> mDynamicMeshAABBs;
-		std::vector<std::vector<XMFLOAT3>> mDynamicMeshOBBs;
+		RenderingObject*								mDynamicConvexHullObject;
 
-		std::vector<std::vector<XMFLOAT3>> mStaticMeshVertices;
-		std::vector<std::vector<XMFLOAT3>> mStaticMeshAABBs;
-		std::vector<std::vector<XMFLOAT3>> mStaticMeshOBBs;
+		RenderingObject*								mDynamicInstancedObject;
+		std::vector<XMFLOAT3>							mDynamicObjectInstancesPositions;
+		std::vector<XMFLOAT3>							mDynamicObjectInstancesDirections;
+		std::vector<std::vector<XMFLOAT3>>				mDynamicMeshVertices;
+		std::vector<std::vector<XMFLOAT3>>				mDynamicMeshAABBs;
+		std::vector<std::vector<XMFLOAT3>>				mDynamicMeshOBBs;
+		std::vector<InstancingMaterial::InstancedData>  mDynamicObjectInstanceData;
+
+		RenderingObject*								mStaticInstancedObject;
+		std::vector<XMFLOAT3>							mStaticObjectInstancesPositions;
+		std::vector<std::vector<XMFLOAT3>>				mStaticMeshVertices;
+		std::vector<std::vector<XMFLOAT3>>				mStaticMeshAABBs;
+		std::vector<std::vector<XMFLOAT3>>				mStaticMeshOBBs;
+		std::vector<InstancingMaterial::InstancedData>  mStaticObjectInstanceData;
 		
 		//std::vector<std::thread> mElementUpdateThreads;
 
