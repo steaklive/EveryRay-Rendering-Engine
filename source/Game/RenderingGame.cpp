@@ -167,6 +167,8 @@ namespace Rendering
 	// ...also have you heard of Data-Oriented Design?..
 	void RenderingGame::SetLevel(int level)
 	{
+		mCamera->Reset();
+
 		if (demoLevel != nullptr)
 		{
 			demoLevel->Destroy();
@@ -229,7 +231,6 @@ namespace Rendering
 		//		i++;
 		//	});
 		//}
-		
 	}
 
 	void RenderingGame::Update(const GameTime& gameTime)
@@ -307,7 +308,7 @@ namespace Rendering
 
 			ImGui::Checkbox("Show World Grid", &showWorldGrid);
 			if (showWorldGrid) 
-				mGrid->SetVisible(false);
+				mGrid->SetVisible(showWorldGrid);
 			ImGui::Separator();
 
 			if (ImGui::CollapsingHeader("Load Demo Level"))

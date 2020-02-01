@@ -103,11 +103,11 @@ namespace Rendering
 		mInstancedObject = new InstancedObject();
 
 		// Load the model_main
-		std::unique_ptr<Model> model_main(new Model(*mGame, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\pine_tree\\pine.fbx", true));
+		std::unique_ptr<Model> model_main(new Model(*mGame, Utility::GetFilePath("content\\models\\pine_tree\\pine.fbx"), true));
 
 		// Load the instaning instancingEffect shader
 		Effect* instancingEffect = new Effect(*mGame);
-		instancingEffect->CompileFromFile(L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Effects\\Instancing.fx");
+		instancingEffect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\Instancing.fx"));
 
 		// Load Vertex & Index Buffers
 		for (Mesh* mesh : model_main->Meshes())
@@ -145,14 +145,14 @@ namespace Rendering
 		}
 
 		// Load diffuse texture
-		std::wstring textureName = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\pine_tree\\Pinetree_D.dds";
+		std::wstring textureName = Utility::GetFilePath(L"content\\models\\pine_tree\\Pinetree_D.dds");
 		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureName.c_str(), nullptr, &mInstancedObject->AlbedoMap)))
 		{
 			throw GameException("Failed to load 'Albedo Map'.");
 		}
 
 		// Load normal texture
-		std::wstring textureName2 = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\pine_tree\\Pinetree_N.dds";
+		std::wstring textureName2 = Utility::GetFilePath(L"content\\models\\pine_tree\\Pinetree_N.dds");
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureName2.c_str(), nullptr, &mInstancedObject->NormalMap)))
 		{
 			throw GameException("Failed to load 'Normal Map'.");
@@ -164,11 +164,11 @@ namespace Rendering
 		mDefaultPlaneObject = new DefaultPlaneObject();
 
 		// Default Plane Object
-		std::unique_ptr<Model> model_plane(new Model(*mGame, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\default_plane\\default_plane.obj", true));
+		std::unique_ptr<Model> model_plane(new Model(*mGame, Utility::GetFilePath("content\\models\\default_plane\\default_plane.obj"), true));
 
 		// Load the instancingEffect
 		Effect* ambientEffect = new Effect(*mGame);
-		ambientEffect->CompileFromFile(L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Effects\\AmbientLighting.fx");
+		ambientEffect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\AmbientLighting.fx"));
 
 		mDefaultPlaneObject->Material = new AmbientLightingMaterial();
 		mDefaultPlaneObject->Material->Initialize(ambientEffect);
@@ -179,7 +179,7 @@ namespace Rendering
 		mDefaultPlaneObject->IndexCount = mesh_default_plane->Indices().size();
 
 		// load diffuse texture
-		std::wstring textureName3 = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\default_plane\\UV_Grid_Lrg.jpg";
+		std::wstring textureName3 = Utility::GetFilePath(L"content\\models\\default_plane\\UV_Grid_Lrg.jpg");
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureName3.c_str(), nullptr, &mDefaultPlaneObject->DiffuseTexture)))
 		{
 			throw GameException("Failed to load plane's 'Diffuse Texture'.");
@@ -189,7 +189,7 @@ namespace Rendering
 
 		// Directional Light initiazlization
 		currentLightSource.DirectionalLight = new DirectionalLight(*mGame);
-		currentLightSource.ProxyModel =  new ProxyModel(*mGame, *mCamera, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\DirectionalLightProxy.obj", 0.5f);
+		currentLightSource.ProxyModel =  new ProxyModel(*mGame, *mCamera, Utility::GetFilePath("content\\models\\DirectionalLightProxy.obj"), 0.5f);
 		currentLightSource.ProxyModel->Initialize();
 		currentLightSource.ProxyModel->SetPosition(0.0f, 30.0, 100.0f);
 
@@ -208,7 +208,7 @@ namespace Rendering
 		//mDebugFrustum->SetPosition(XMFLOAT3(0, 10, 0));
 
 		//Skybox initialization
-		mSkybox = new Skybox(*mGame, *mCamera, L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\Sky_Type_4.dds", 100.0f);
+		mSkybox = new Skybox(*mGame, *mCamera, Utility::GetFilePath(L"content\\textures\\Sky_Type_4.dds"), 100.0f);
 		mSkybox->Initialize();
 
 	}
