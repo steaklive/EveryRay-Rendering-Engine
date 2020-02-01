@@ -40,7 +40,6 @@ namespace Rendering
 	InstancingDemoLightInfo::LightData light2;
 	InstancingDemoLightInfo::LightData light3;
 
-
 	InstancingDemo::InstancingDemo(Game& game, Camera& camera)
 		: DrawableGameComponent(game, camera),
 		mInstanceCount(0),
@@ -102,11 +101,11 @@ namespace Rendering
 		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
 
 		// Load the model
-		mStatueRenderingObject = new RenderingObject("Statue", *mGame, std::unique_ptr<Model>(new Model(*mGame, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\statue\\statue.fbx", true)));
+		mStatueRenderingObject = new RenderingObject("Statue", *mGame, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\statue\\statue.fbx"), true)));
 
 		// Load the effect
 		Effect* effect = new Effect(*mGame);
-		effect->CompileFromFile(L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Effects\\Instancing.fx");
+		effect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\Instancing.fx"));
 
 		mStatueRenderingObject->LoadMaterial(new InstancingMaterial(), effect);
 		mStatueRenderingObject->LoadRenderBuffers();
@@ -136,6 +135,9 @@ namespace Rendering
 		light0.pointLight = new PointLight(*mGame);
 		light0.pointLight->SetRadius(light0.lightRadius);
 		light0.pointLight->SetPosition(0.0f, 0.0f, 0.0f);
+		light0.lightColor[0] = 1.0f;
+		light0.lightColor[1] = 0.3f;
+		light0.lightColor[2] = 0.4f;
 		light0.pointLight->SetColor(light0.lightColor[0], light0.lightColor[1], light0.lightColor[2], 1.0f);
 		light0.height = 5.0f;
 		light0.orbitRadius = 15.0f;
@@ -144,6 +146,9 @@ namespace Rendering
 		light1.pointLight = new PointLight(*mGame);
 		light1.pointLight->SetRadius(light1.lightRadius);
 		light1.pointLight->SetPosition(0.0f, 0.0f, 0.0f);
+		light1.lightColor[0] = 0.8f;
+		light1.lightColor[1] = 0.3f;
+		light1.lightColor[2] = 0.1f;
 		light1.pointLight->SetColor(light1.lightColor[0], light1.lightColor[1], light1.lightColor[2], 1.0f);
 		light1.height = 15.0f;
 		light1.orbitRadius = 35.0f;
@@ -152,6 +157,9 @@ namespace Rendering
 		light2.pointLight = new PointLight(*mGame);
 		light2.pointLight->SetRadius(light2.lightRadius);
 		light2.pointLight->SetPosition(0.0f, 0.0f, 0.0f);
+		light2.lightColor[0] = 0.2f;
+		light2.lightColor[1] = 0.3f;
+		light2.lightColor[2] = 1.0f;
 		light2.pointLight->SetColor(light2.lightColor[0], light2.lightColor[1], light2.lightColor[2], 1.0f);
 		light2.height = 25.0f;
 		light2.orbitRadius = 55.0f;
@@ -160,21 +168,24 @@ namespace Rendering
 		light3.pointLight = new PointLight(*mGame);
 		light3.pointLight->SetRadius(light3.lightRadius);
 		light3.pointLight->SetPosition(0.0f, 0.0f, 0.0f);
+		light3.lightColor[0] = 0.7f;
+		light3.lightColor[1] = 0.4f;
+		light3.lightColor[2] = 0.6f;
 		light3.pointLight->SetColor(light3.lightColor[0], light3.lightColor[1], light3.lightColor[2], 1.0f);
 		light3.height = 35.0f;
 		light3.orbitRadius = 65.0f;
 		light3.movementSpeed = 1.4f;
 
-		mProxyModel0 = new ProxyModel(*mGame, *mCamera, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\PointLightProxy.obj", 0.5f);
+		mProxyModel0 = new ProxyModel(*mGame, *mCamera, Utility::GetFilePath("content\\models\\PointLightProxy.obj"), 0.5f);
 		mProxyModel0->Initialize();
 
-		mProxyModel1 = new ProxyModel(*mGame, *mCamera, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\PointLightProxy.obj", 0.5f);
+		mProxyModel1 = new ProxyModel(*mGame, *mCamera, Utility::GetFilePath("content\\models\\PointLightProxy.obj"), 0.5f);
 		mProxyModel1->Initialize();
 
-		mProxyModel2 = new ProxyModel(*mGame, *mCamera, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\PointLightProxy.obj", 0.5f);
+		mProxyModel2 = new ProxyModel(*mGame, *mCamera, Utility::GetFilePath("content\\models\\PointLightProxy.obj"), 0.5f);
 		mProxyModel2->Initialize();
 
-		mProxyModel3 = new ProxyModel(*mGame, *mCamera, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\PointLightProxy.obj", 0.5f);
+		mProxyModel3 = new ProxyModel(*mGame, *mCamera, Utility::GetFilePath("content\\models\\PointLightProxy.obj"), 0.5f);
 		mProxyModel3->Initialize();
 
 		mKeyboard = (Keyboard*)mGame->Services().GetService(Keyboard::TypeIdClass());

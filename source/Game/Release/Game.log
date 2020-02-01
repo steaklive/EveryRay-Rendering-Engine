@@ -1,28 +1,6 @@
-﻿  CollisionTestDemo.cpp
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\octreestructure.h(24): warning C4244: 'return': conversion from '_Rep' to 'float', possible loss of data
-          with
-          [
-              _Rep=double
-          ]
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\octreestructure.h(25): warning C4244: 'return': conversion from '_Rep' to 'float', possible loss of data
-          with
-          [
-              _Rep=double
-          ]
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\collisiontestdemo.cpp(124): warning C4018: '<': signed/unsigned mismatch
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\collisiontestdemo.cpp(156): warning C4018: '<': signed/unsigned mismatch
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\collisiontestdemo.cpp(203): warning C4316: 'Library::RenderableAABB': object allocated on the heap may not be aligned 16
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\collisiontestdemo.cpp(427): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\collisiontestdemo.cpp(570): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\collisiontestdemo.cpp(815): warning C4316: 'Library::RenderableAABB': object allocated on the heap may not be aligned 16
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\collisiontestdemo.cpp(821): warning C4316: 'Library::RenderableOBB': object allocated on the heap may not be aligned 16
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\collisiontestdemo.cpp(842): warning C4316: 'Library::RenderableAABB': object allocated on the heap may not be aligned 16
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\collisiontestdemo.cpp(848): warning C4316: 'Library::RenderableOBB': object allocated on the heap may not be aligned 16
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\collisiontestdemo.cpp(864): warning C4018: '<': signed/unsigned mismatch
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\collisiontestdemo.cpp(891): warning C4018: '<': signed/unsigned mismatch
-  Generating code
-  0 of 4754 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+﻿  Generating code
+  2 of 4754 functions (<0.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
+    34 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Game.vcxproj -> C:\Users\Gen\Documents\Graphics Programming\EveryRay Rendering Engine\build\EveryRay Rendering Engine\\bin\Release\EveryRay - Rendering Engine.exe

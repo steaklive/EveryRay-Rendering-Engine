@@ -10,6 +10,7 @@
 #include "VectorHelper.h"
 #include "Camera.h"
 #include "VertexDeclarations.h"
+#include "Utility.h"
 
 namespace Library
 {
@@ -169,7 +170,7 @@ namespace Library
 	void RenderableFrustum::Initialize()
 	{
 		Effect* effect = new Effect(*mGame);
-		effect->CompileFromFile(L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Effects\\BasicEffect.fx");
+		effect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\BasicEffect.fx"));
 
 		mMaterial = new BasicMaterial();
 		mMaterial->Initialize(effect);

@@ -30,7 +30,7 @@ namespace InstancingDemoLightInfo
 	{
 		PointLight* pointLight = nullptr;
 		float lightColor[3] = {0.9, 0.9, 0.9};
-		float lightRadius = 25.0f;
+		float lightRadius = 45.0f;
 		float orbitRadius = 0.0f;
 		float height = 0.0f;
 		float movementSpeed = 1.0f;
