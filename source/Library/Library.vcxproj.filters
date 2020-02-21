@@ -333,6 +333,9 @@
     <ClInclude Include="StandardLightingMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FXAAMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -575,6 +578,9 @@
     <ClCompile Include="StandardLightingMaterial.cpp">
       <Filter>Source Files\Materials</Filter>
     </ClCompile>
+    <ClCompile Include="FXAAMaterial.cpp">
+      <Filter>Source Files\Materials</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\content\effects\AmbientLighting.fx">
@@ -708,6 +714,9 @@
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\WaterSimulation\WaterSimulation.hlsl">
       <Filter>Shaders\WaterSimulation</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\effects\FXAA.fx">
+      <Filter>Effects</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

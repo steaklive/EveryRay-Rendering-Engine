@@ -2,6 +2,7 @@
 #include "Common.h"
 #include "Game.h"
 #include "Camera.h"
+#include "GameTime.h"
 
 namespace Library
 {
@@ -17,25 +18,26 @@ namespace Rendering
 	class VignetteMaterial;
 	class ColorGradingMaterial;
 	class MotionBlurMaterial;
+	class FXAAMaterial;
 
 	namespace EffectElements
 	{
 		struct VignetteEffect
 		{
 			VignetteEffect() :
-				Material(nullptr), Quad(nullptr), RenderTarget(nullptr)
+				Material(nullptr), Quad(nullptr), OutputTexture(nullptr)
 			{}
 
 			~VignetteEffect()
 			{
 				DeleteObject(Material);
 				DeleteObject(Quad);
-				DeleteObject(RenderTarget);
+				ReleaseObject(OutputTexture);
 			}
 
 			VignetteMaterial* Material;
 			FullScreenQuad* Quad;
-			FullScreenRenderTarget* RenderTarget;
+			ID3D11ShaderResourceView* OutputTexture;
 
 			bool isActive = false;
 
@@ -43,10 +45,30 @@ namespace Rendering
 			float softness = 0.5f;
 		};
 
+		struct FXAAEffect
+		{
+			FXAAEffect() :
+				Material(nullptr), Quad(nullptr), OutputTexture(nullptr)
+			{}
+
+			~FXAAEffect()
+			{
+				DeleteObject(Material);
+				DeleteObject(Quad);
+				ReleaseObject(OutputTexture);
+			}
+
+			FXAAMaterial* Material;
+			FullScreenQuad* Quad;
+			ID3D11ShaderResourceView* OutputTexture;
+
+			bool isActive = false;
+		};
+
 		struct ColorGradingEffect
 		{
 			ColorGradingEffect() :
-				Material(nullptr), Quad(nullptr), RenderTarget(nullptr),
+				Material(nullptr), Quad(nullptr), OutputTexture(nullptr),
 				LUT1(nullptr),LUT2(nullptr),LUT3(nullptr)
 			{}
 
@@ -57,13 +79,13 @@ namespace Rendering
 				ReleaseObject(LUT1);
 				ReleaseObject(LUT2);
 				ReleaseObject(LUT3);
-				DeleteObject(RenderTarget);
+				ReleaseObject(OutputTexture);
 
 			}
 
 			ColorGradingMaterial* Material;
 			FullScreenQuad* Quad;
-			FullScreenRenderTarget* RenderTarget;
+			ID3D11ShaderResourceView* OutputTexture;
 
 			ID3D11ShaderResourceView* LUT1;
 			ID3D11ShaderResourceView* LUT2;
@@ -77,7 +99,7 @@ namespace Rendering
 		struct MotionBlurEffect
 		{
 			MotionBlurEffect() :
-				Material(nullptr), Quad(nullptr), RenderTarget(nullptr),
+				Material(nullptr), Quad(nullptr), OutputTexture(nullptr),
 				DepthMap(nullptr)
 			{}
 
@@ -85,15 +107,14 @@ namespace Rendering
 			{
 				DeleteObject(Material);
 				DeleteObject(Quad);
-				//ReleaseObject(DepthMap);
-				DeleteObject(RenderTarget);
+				ReleaseObject(DepthMap);
+				ReleaseObject(OutputTexture);
 
 			}
 
 			MotionBlurMaterial* Material;
 			FullScreenQuad* Quad;
-			FullScreenRenderTarget* RenderTarget;
-
+			ID3D11ShaderResourceView* OutputTexture;
 			ID3D11ShaderResourceView* DepthMap;
 
 			XMMATRIX WVP = XMMatrixIdentity();
@@ -119,28 +140,23 @@ namespace Rendering
 		void UpdateVignetteMaterial();
 		void UpdateColorGradingMaterial();
 		void UpdateMotionBlurMaterial();
+		void UpdateFXAAMaterial();
 
-		void Initialize(bool vignetteOn, bool colorGradeOn, bool blurOn);
-		void DrawVignette(const GameTime& gameTime);
-		void DrawColorGrading(const GameTime& gameTime);
-		void DrawMotionBlur(const GameTime& gameTime);
+		void Initialize(bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA);
+		void Begin();
+		void End(const GameTime& gameTime);
 
 		void Update();
-
-		void SetVignetteRT(FullScreenRenderTarget* rt);
-		void SetColorGradingRT(FullScreenRenderTarget* rt);
-		void SetMotionBlurRT(FullScreenRenderTarget* rt, ID3D11ShaderResourceView* depthMap);
-
 
 		void ShowPostProcessingWindow();
 
 		bool isWindowOpened = false;
 
 	private:
-
 		EffectElements::VignetteEffect* mVignetteEffect;
 		EffectElements::ColorGradingEffect* mColorGradingEffect;
 		EffectElements::MotionBlurEffect* mMotionBlurEffect;
+		EffectElements::FXAAEffect* mFXAAEffect;
 
 		Game& game;
 		Camera& camera;
@@ -148,6 +164,12 @@ namespace Rendering
 		bool mVignetteLoaded = false;
 		bool mColorGradingLoaded = false;
 		bool mMotionBlurLoaded = false;
+		bool mFXAALoaded = false;
 
+		FullScreenRenderTarget* mMainRenderTarget;
+		FullScreenRenderTarget* mVignetteRenderTarget;
+		FullScreenRenderTarget* mColorGradingRenderTarget;
+		FullScreenRenderTarget* mMotionBlurRenderTarget;
+		FullScreenRenderTarget* mFXAARenderTarget;
 	};
 }

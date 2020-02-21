@@ -46,6 +46,7 @@
 namespace Rendering
 {
 	const XMVECTORF32 RenderingGame::BackgroundColor = ColorHelper::Black;
+	const XMVECTORF32 RenderingGame::BackgroundColor2 = ColorHelper::Red;
 	const float RenderingGame::BrightnessModulationRate = 1.0f;
 	
 	const char* displayedLevelNames[] =
@@ -61,8 +62,6 @@ namespace Rendering
 		"Water Simulation"
 	};
 
-	// we will store our demo scenes here:
-	std::vector<DemoLevel*> demoLevels;
 	DemoLevel* demoLevel;
 	static int currentLevel = 0;
 
@@ -76,10 +75,6 @@ namespace Rendering
 
 	RenderingGame::RenderingGame(HINSTANCE instance, const std::wstring& windowClass, const std::wstring& windowTitle, int showCommand)
 		: Game(instance, windowClass, windowTitle, showCommand),
-		
-		mFpsComponent(nullptr),
-		mSpriteBatch(nullptr),
-		mSpriteFont(nullptr),
 		mDirectInput(nullptr),
 		mKeyboard(nullptr),
 		mMouse(nullptr),
@@ -96,9 +91,7 @@ namespace Rendering
 		mVolumetricLightingDemo(nullptr),
 		mCollisionTestDemo(nullptr),
 		mWaterSimulationDemo(nullptr),
-
-		mRenderStateHelper(nullptr),
-		mRenderTarget(nullptr), mFullScreenQuad(nullptr)
+		mRenderStateHelper(nullptr)
 
 	{
 		mDepthStencilBufferEnabled = true;
@@ -208,29 +201,6 @@ namespace Rendering
 			}
 		}
 		demoLevel->Create();
-		//components.push_back((GameComponent*)demoLevel);
-
-		//bool isComponent = demoLevels[level]->IsComponent();
-		//
-		//if (isComponent)
-		//{
-		//	return;
-		//}
-		//else
-		//{
-		//	demoLevels[level]->Create();
-		//
-		//	int i = 0;
-		//	std::for_each(demoLevels.begin(), demoLevels.end(), [&](DemoLevel* lvl)
-		//	{
-		//		if (i != level && lvl!=nullptr)
-		//		{
-		//			lvl->Destroy();
-		//			demoLevels[i] = nullptr;
-		//		}
-		//		i++;
-		//	});
-		//}
 	}
 
 	void RenderingGame::Update(const GameTime& gameTime)
@@ -271,24 +241,32 @@ namespace Rendering
 			else
 				ImGui::Text("Mouse Position: <invalid>");
 			
-			ImGui::Text("Camera Position: (%.1f,%.1f,%.1f)", mCamera->Position().x, mCamera->Position().y, mCamera->Position().z);
-			
-			
-			ImGui::SliderFloat("Camera Speed", &movementRate, 10.0f, 2000.0f);
-			mCamera->SetMovementRate(movementRate);
-
-			ImGui::SliderFloat("Camera FOV", &fov, 1.0f, 90.0f);
-			mCamera->SetFOV(fov*XM_PI/180.0f);
-
-			ImGui::SliderFloat("Camera Near Plane", &nearPlaneDist, 0.5f, 150.0f);
-			mCamera->SetNearPlaneDistance(nearPlaneDist);
-
-			ImGui::SliderFloat("Camera Far Plane", &farPlaneDist, 150.0f, 200000.0f);
-			mCamera->SetFarPlaneDistance(farPlaneDist);
-
 			ImGui::Separator();
 
-			ImGui::Checkbox("Show profiler", &mShowProfiler);
+			ImGui::Checkbox("Show Camera Settings", &mShowCameraSettings);
+			if (mShowCameraSettings)
+			{
+				ImGui::Begin("Camera Settings");
+				ImGui::Text("Camera Position: (%.1f,%.1f,%.1f)", mCamera->Position().x, mCamera->Position().y, mCamera->Position().z);
+				if (ImGui::Button("Reset Position"))
+					mCamera->SetPosition(XMFLOAT3(0, 0, 0));
+
+				ImGui::SliderFloat("Camera Speed", &movementRate, 10.0f, 2000.0f);
+				mCamera->SetMovementRate(movementRate);
+
+				ImGui::SliderFloat("Camera FOV", &fov, 1.0f, 90.0f);
+				mCamera->SetFOV(fov*XM_PI / 180.0f);
+
+				ImGui::SliderFloat("Camera Near Plane", &nearPlaneDist, 0.5f, 150.0f);
+				mCamera->SetNearPlaneDistance(nearPlaneDist);
+
+				ImGui::SliderFloat("Camera Far Plane", &farPlaneDist, 150.0f, 200000.0f);
+				mCamera->SetFarPlaneDistance(farPlaneDist);
+				ImGui::End();
+			}
+			ImGui::Separator();
+
+			ImGui::Checkbox("Show Profiler", &mShowProfiler);
 			if (mShowProfiler)
 			{
 				ImGui::Begin("EveryRay Profiler");
@@ -335,20 +313,11 @@ namespace Rendering
 		DeleteObject(mCollisionTestDemo);
 		DeleteObject(mWaterSimulationDemo);
 
-		DeleteObject(mFullScreenQuad);
-		DeleteObject(mRenderTarget);
-
 		DeleteObject(mKeyboard);
 		DeleteObject(mMouse);
-		DeleteObject(mFpsComponent);
-		DeleteObject(mSpriteFont);
-		DeleteObject(mSpriteBatch);
 		DeleteObject(mCamera);
 		DeleteObject(mGrid);
 		DeleteObject(mRenderStateHelper);
-
-		demoLevels.clear();
-		DeletePointerCollection(demoLevels);
 
 		RasterizerStates::Release();
 		SamplerStates::Release();

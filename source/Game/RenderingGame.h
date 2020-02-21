@@ -6,13 +6,6 @@
 #include <chrono>
 
 using namespace Library;
-
-namespace DirectX
-{
-	class SpriteBatch;
-	class SpriteFont;
-}
-
 namespace Library
 {
 	class FpsComponent;
@@ -21,10 +14,6 @@ namespace Library
 	class FirstPersonCamera;
 	class Grid;
 	class RenderStateHelper;
-
-	class Effect;
-	class FullScreenRenderTarget;
-	class FullScreenQuad;
 }
 
 namespace Rendering
@@ -49,10 +38,7 @@ namespace Rendering
 		virtual void Update(const GameTime& gameTime) override;
 		virtual void Draw(const GameTime& gameTime) override;
 
-		void CollectRenderingTimestamps(ID3D11DeviceContext * pContext);
-
-		void UpdateColorFilterMaterial();
-	
+		void CollectRenderingTimestamps(ID3D11DeviceContext * pContext);	
 	protected:
 		virtual void Shutdown() override;
 	
@@ -61,6 +47,7 @@ namespace Rendering
 		void UpdateImGui();
 
 		static const XMVECTORF32 BackgroundColor;
+		static const XMVECTORF32 BackgroundColor2;
 		static const float BrightnessModulationRate;
 
 		LPDIRECTINPUT8 mDirectInput;
@@ -68,9 +55,7 @@ namespace Rendering
 		Mouse* mMouse;
 		XMFLOAT2 mMouseTextPosition;
 		FirstPersonCamera* mCamera;
-
 		Grid* mGrid;
-		bool mShowProfiler;
 
 		//Demo scenes
 		SponzaMainDemo* mAmbientLightingDemo;
@@ -84,15 +69,10 @@ namespace Rendering
 		WaterSimulationDemo* mWaterSimulationDemo;
 		RenderStateHelper* mRenderStateHelper;
 
-		FpsComponent* mFpsComponent;
-		SpriteBatch* mSpriteBatch;
-		SpriteFont* mSpriteFont;
-
-		FullScreenRenderTarget* mRenderTarget;
-		FullScreenQuad* mFullScreenQuad;
-
 		std::chrono::duration<double> mElapsedTimeUpdateCPU;
 		std::chrono::duration<double> mElapsedTimeRenderCPU;
 
+		bool mShowProfiler;
+		bool mShowCameraSettings = true;
 	};
 }
