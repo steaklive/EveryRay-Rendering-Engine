@@ -18,7 +18,7 @@ I have been changing and extending it for educational purposes with all kinds of
 - User Interface with ImGUI
 - AABB, OBB, collision detection
 - Normal-Mapping, Environment-Mapping
-- Post Processing: Motion Blur, Vignette, LUT color grading
+- Post Processing: Motion Blur, Vignette, LUT color grading, FXAA
 - Physically Based Rendering with IBL
 - Cascaded Shadow Mapping
 - GPU Instancing
