@@ -54,9 +54,6 @@ namespace Rendering
 		mProxyModel(nullptr),
 		mLightFrustum(XMMatrixIdentity()),
 		mSkybox(nullptr),
-		mPostProcessingStack(nullptr), 
-		mSceneRT(nullptr),
-		mColorGradingRT(nullptr),
 		mSponzaLightingRenderingObject(nullptr),
 		mSponzaShadowRenderingObject(nullptr)
 	{
@@ -77,8 +74,6 @@ namespace Rendering
 		DeleteObject(mProxyModel);
 		DeleteObject(mSkybox);
 		DeleteObject(mPostProcessingStack);
-		//DeleteObject(mSceneRT);
-		//DeleteObject(mColorGradingRT);
 	}
 #pragma region COMPONENT_METHODS
 	/////////////////////////////////////////////////////////////
@@ -162,6 +157,10 @@ namespace Rendering
 			throw GameException("ID3D11Device::CreateRasterizerState() failed.", hr);
 		}
 
+
+		mPostProcessingStack = new PostProcessingStack(*mGame, *mCamera);
+		mPostProcessingStack->Initialize(false, false, true, true);
+
 		//shadows
 		mShadowProjector = new Projector(*mGame);
 		mShadowProjector->Initialize();
@@ -174,14 +173,6 @@ namespace Rendering
 
 		mCamera->SetPosition(XMFLOAT3(-76.6f, 8.4f, 8.8f));
 		mCamera->ApplyRotation(XMMatrixRotationAxis(mCamera->RightVector(), XMConvertToRadians(18.0f)) * XMMatrixRotationAxis(mCamera->UpVector(), -XMConvertToRadians(70.0f)));
-	
-		mSceneRT = new FullScreenRenderTarget(*mGame);
-		mColorGradingRT = new FullScreenRenderTarget(*mGame);
-
-		mPostProcessingStack = new PostProcessingStack(*mGame, *mCamera);
-		mPostProcessingStack->Initialize(true, true, false);
-		mPostProcessingStack->SetColorGradingRT(mSceneRT);
-		mPostProcessingStack->SetVignetteRT(mColorGradingRT);
 	}
 
 	void SponzaMainDemo::Update(const GameTime& gameTime)
@@ -190,9 +181,10 @@ namespace Rendering
 		mShadowProjector->Update(gameTime);
 		mProxyModel->Update(gameTime);
 		mSkybox->Update(gameTime);
-		mPostProcessingStack->Update();
 
 		UpdateDirectionalLightAndProjector(gameTime);
+
+		mPostProcessingStack->Update();
 
 		XMMATRIX projectionMatrix = XMMatrixPerspectiveFovRH(XM_PIDIV4, mGame->AspectRatio(), 0.01f, 500.0f);
 		XMMATRIX viewMatrix = XMMatrixLookToRH(mProxyModel->PositionVector(), mDirectionalLight->DirectionVector(), mDirectionalLight->UpVector());
@@ -208,12 +200,10 @@ namespace Rendering
 		ImGui::SliderFloat3("Sun Color", mSunColor, 0.0f, 1.0f);
 		ImGui::SliderFloat3("Ambient Color", mAmbientColor, 0.0f, 1.0f);
 
-		ImGui::Separator();
-
 		ImGui::Checkbox("Show Post Processing Stack", &mPostProcessingStack->isWindowOpened);
-		if (mPostProcessingStack->isWindowOpened)
-			mPostProcessingStack->ShowPostProcessingWindow();
+		if (mPostProcessingStack->isWindowOpened) mPostProcessingStack->ShowPostProcessingWindow();
 
+		ImGui::Separator();
 		ImGui::End();
 	}
 	void SponzaMainDemo::UpdateDirectionalLightAndProjector(const GameTime& gameTime)
@@ -305,12 +295,10 @@ namespace Rendering
 		mRenderStateHelper->RestoreRasterizerState();
 		#pragma endregion
 
+		mPostProcessingStack->Begin();
+
 		#pragma region DRAW_SCENE
 		
-		mSceneRT->Begin();
-		mGame->Direct3DDeviceContext()->ClearRenderTargetView(mSceneRT->RenderTargetView(), clear_color);
-		mGame->Direct3DDeviceContext()->ClearDepthStencilView(mSceneRT->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
-
 		//skybox
 		mSkybox->Draw(gameTime);
 
@@ -319,23 +307,9 @@ namespace Rendering
 
 		//gizmo
 		mProxyModel->Draw(gameTime);
-		
-		mSceneRT->End();
 		#pragma endregion
 
-		#pragma region DRAW_POST_EFFECTS
-
-		//color grading
-		mColorGradingRT->Begin();
-		mGame->Direct3DDeviceContext()->ClearRenderTargetView(mColorGradingRT->RenderTargetView(), clear_color);
-		mGame->Direct3DDeviceContext()->ClearDepthStencilView(mColorGradingRT->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
-		mPostProcessingStack->DrawColorGrading(gameTime);
-		mColorGradingRT->End();
-
-		//vignette
-		mPostProcessingStack->DrawVignette(gameTime);
-
-		#pragma endregion
+		mPostProcessingStack->End(gameTime);
 
 		mRenderStateHelper->SaveAll();
 

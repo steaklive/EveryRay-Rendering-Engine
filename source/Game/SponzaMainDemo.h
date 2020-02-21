@@ -82,8 +82,6 @@ namespace Rendering
 		Skybox* mSkybox;
 
 		PostProcessingStack* mPostProcessingStack;
-		FullScreenRenderTarget* mSceneRT;
-		FullScreenRenderTarget* mColorGradingRT;
 
 		float mSunColor[3] = { 1.0f, 1.0f, 1.0f };
 		float mAmbientColor[3] = { 0.1f, 0.1f, 0.1f };
