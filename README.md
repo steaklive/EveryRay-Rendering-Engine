@@ -30,6 +30,7 @@ Other features based on NVIDIA techniques (no code provided here)
 - Ocean Simulation (from DX11 archive samples)
 
 # External Dependencies
+Create a folder "external" in the root directory and place these built libraries
 - DirectX Effects 11 (https://github.com/Microsoft/FX11)
 - DirectXTK (https://github.com/Microsoft/DirectXTK)
 - ImGui (https://github.com/ocornut/imgui)
