@@ -159,7 +159,7 @@ namespace Rendering
 
 
 		mPostProcessingStack = new PostProcessingStack(*mGame, *mCamera);
-		mPostProcessingStack->Initialize(false, false, true, true);
+		mPostProcessingStack->Initialize(true, false, true, true, true);
 
 		//shadows
 		mShadowProjector = new Projector(*mGame);

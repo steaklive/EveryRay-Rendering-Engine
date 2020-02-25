@@ -83,8 +83,8 @@ namespace Rendering
 
 		PostProcessingStack* mPostProcessingStack;
 
-		float mSunColor[3] = { 1.0f, 1.0f, 1.0f };
-		float mAmbientColor[3] = { 0.1f, 0.1f, 0.1f };
+		float mSunColor[3] = { 1.0f, 0.95f, 0.863f };
+		float mAmbientColor[3] = { 0.08f, 0.08f, 0.08f };
 
 	};
 }
