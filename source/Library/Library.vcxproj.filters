@@ -64,6 +64,9 @@
     <Filter Include="Shaders\WaterSimulation">
       <UniqueIdentifier>{4d1d2b2b-ec22-4805-b87f-528f0912b78e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\Tonemap">
+      <UniqueIdentifier>{e9c80043-00e9-441c-9f00-d0bbbd826f22}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -717,6 +720,9 @@
     </FxCompile>
     <FxCompile Include="..\..\content\effects\FXAA.fx">
       <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\Tonemap\Tonemap.hlsl">
+      <Filter>Shaders\Tonemap</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

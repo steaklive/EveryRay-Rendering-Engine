@@ -3,6 +3,7 @@
 #include "Game.h"
 #include "Camera.h"
 #include "GameTime.h"
+#include "CustomRenderTarget.h"
 
 namespace Library
 {
@@ -10,7 +11,6 @@ namespace Library
 	class FullScreenRenderTarget;
 	class FullScreenQuad;
 }
-
 
 namespace Rendering
 {
@@ -22,6 +22,69 @@ namespace Rendering
 
 	namespace EffectElements
 	{
+		struct TonemapEffect
+		{
+			TonemapEffect():
+				CalcLumPS(nullptr),
+				AvgLumPS(nullptr),
+				BrightPS(nullptr),
+				AddPS(nullptr),
+				BlurHPS(nullptr),
+				BlurVPS(nullptr),
+				ToneMapWithBloomPS(nullptr),
+				EmptyPassPS(nullptr)
+			{
+			}
+
+			~TonemapEffect()
+			{
+				DeleteObject(LuminanceResource);
+				DeleteObject(AvgLuminanceResource);
+				DeleteObject(BrightResource);
+				DeleteObject(BlurHorizontalResource);
+				DeleteObject(BlurVerticalResource);
+				DeleteObject(BlurSummedResource);
+
+				ReleaseObject(BloomConstants);
+				ReleaseObject(ConstBuffer);
+				ReleaseObject(LinearSampler);
+
+				ReleaseObject(CalcLumPS);
+				ReleaseObject(AvgLumPS);
+				ReleaseObject(BrightPS);
+				ReleaseObject(AddPS);
+				ReleaseObject(BlurHPS);
+				ReleaseObject(BlurVPS);
+				ReleaseObject(ToneMapWithBloomPS);
+				ReleaseObject(EmptyPassPS);
+			}
+
+			CustomRenderTarget* LuminanceResource;
+			CustomRenderTarget* AvgLuminanceResource;
+			CustomRenderTarget* BrightResource;
+			CustomRenderTarget* BlurHorizontalResource;
+			CustomRenderTarget* BlurVerticalResource;
+			CustomRenderTarget* BlurSummedResource;
+
+			ID3D11PixelShader* CalcLumPS;
+			ID3D11PixelShader* AvgLumPS;
+			ID3D11PixelShader* BrightPS;
+			ID3D11PixelShader* AddPS;
+			ID3D11PixelShader* BlurHPS;
+			ID3D11PixelShader* BlurVPS;
+			ID3D11PixelShader* ToneMapWithBloomPS;
+			ID3D11PixelShader* EmptyPassPS;
+
+			ID3D11Buffer* BloomConstants;
+			ID3D11Buffer* ConstBuffer;	
+			ID3D11SamplerState* LinearSampler;
+
+			float middlegrey = 0.065f;
+			float bloomthreshold = 0.23f;
+			float bloommultiplier = 0.85f;
+			bool isActive = true;
+		};
+		
 		struct VignetteEffect
 		{
 			VignetteEffect() :
@@ -91,7 +154,7 @@ namespace Rendering
 			ID3D11ShaderResourceView* LUT2;
 			ID3D11ShaderResourceView* LUT3;
 
-			bool isActive = false;
+			bool isActive = true;
 			int currentLUT = 0;
 
 		};
@@ -125,8 +188,6 @@ namespace Rendering
 
 			float amount = 17.0f;
 		};
-
-
 	}
 
 	class PostProcessingStack
@@ -142,34 +203,49 @@ namespace Rendering
 		void UpdateMotionBlurMaterial();
 		void UpdateFXAAMaterial();
 
-		void Initialize(bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA);
+		void Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA);
 		void Begin();
 		void End(const GameTime& gameTime);
 
 		void Update();
-
+		void DrawFullscreenQuad(ID3D11DeviceContext* pContext);
 		void ShowPostProcessingWindow();
 
 		bool isWindowOpened = false;
 
 	private:
+		void UpdateTonemapConstantBuffer(ID3D11DeviceContext * pD3DImmediateContext, ID3D11Buffer* buffer, int mipLevel0, int mipLevel1, unsigned int width, unsigned int height);
+		void ComputeLuminance(ID3D11DeviceContext* pContext, ID3D11ShaderResourceView* pInput, ID3D11RenderTargetView* pOutput);
+		void ComputeBrightPass(ID3D11DeviceContext* pContext, ID3D11ShaderResourceView* pInput, ID3D11RenderTargetView* pOutput);
+		void ComputeHorizontalBlur(ID3D11DeviceContext* pContext, ID3D11ShaderResourceView* pInput, ID3D11RenderTargetView* pOutput);
+		void ComputeVerticalBlur(ID3D11DeviceContext* pContext, ID3D11ShaderResourceView* pInput, ID3D11RenderTargetView* pOutput);
+		void ComputeToneMapWithBloom(ID3D11DeviceContext* pContext, ID3D11ShaderResourceView* pInput, ID3D11ShaderResourceView* pAVG, ID3D11ShaderResourceView* pBloom, ID3D11RenderTargetView* pOutput);
+		void PerformEmptyPass(ID3D11DeviceContext * pContext, ID3D11ShaderResourceView * pInput, ID3D11RenderTargetView * pOutput);
+
+		Game& game;
+		Camera& camera;
+
 		EffectElements::VignetteEffect* mVignetteEffect;
 		EffectElements::ColorGradingEffect* mColorGradingEffect;
 		EffectElements::MotionBlurEffect* mMotionBlurEffect;
 		EffectElements::FXAAEffect* mFXAAEffect;
+		EffectElements::TonemapEffect* mTonemapEffect;
+		
+		FullScreenRenderTarget* mMainRenderTarget;
+		FullScreenRenderTarget* mVignetteRenderTarget;
+		FullScreenRenderTarget* mColorGradingRenderTarget;
+		FullScreenRenderTarget* mMotionBlurRenderTarget;
+		FullScreenRenderTarget* mFXAARenderTarget;
+		FullScreenRenderTarget* mTonemapRenderTarget;
 
-		Game& game;
-		Camera& camera;
+		ID3D11Buffer* mQuadVB;
+		ID3D11VertexShader* mFullScreenQuadVS;
+		ID3D11InputLayout* mFullScreenQuadLayout;
 
 		bool mVignetteLoaded = false;
 		bool mColorGradingLoaded = false;
 		bool mMotionBlurLoaded = false;
 		bool mFXAALoaded = false;
 
-		FullScreenRenderTarget* mMainRenderTarget;
-		FullScreenRenderTarget* mVignetteRenderTarget;
-		FullScreenRenderTarget* mColorGradingRenderTarget;
-		FullScreenRenderTarget* mMotionBlurRenderTarget;
-		FullScreenRenderTarget* mFXAARenderTarget;
 	};
 }

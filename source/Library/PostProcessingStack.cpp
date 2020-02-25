@@ -5,6 +5,7 @@
 #include "FXAAMaterial.h"
 #include "FullScreenQuad.h"
 #include "FullScreenRenderTarget.h"
+#include "ShaderCompiler.h"
 #include "GameException.h"
 #include <WICTextureLoader.h>
 #include "Utility.h"
@@ -34,14 +35,20 @@ namespace Rendering {
 		DeleteObject(mFXAAEffect);
 		DeleteObject(mColorGradingEffect);
 		DeleteObject(mMotionBlurEffect);
+		DeleteObject(mTonemapEffect);
+
 		DeleteObject(mMainRenderTarget);
 		DeleteObject(mColorGradingRenderTarget);
 		DeleteObject(mMotionBlurRenderTarget);
 		DeleteObject(mVignetteRenderTarget);
 		DeleteObject(mFXAARenderTarget);
+
+		ReleaseObject(mQuadVB);
+		ReleaseObject(mFullScreenQuadVS);
+		ReleaseObject(mFullScreenQuadLayout);
 	}
 
-	void PostProcessingStack::Initialize(bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA)
+	void PostProcessingStack::Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA)
 	{
 		mMainRenderTarget = new FullScreenRenderTarget(game);
 
@@ -92,7 +99,6 @@ namespace Rendering {
 		}
 		mColorGradingLoaded = true;
 
-
 		Effect* motionblurEffectFX = new Effect(game);
 		motionblurEffectFX->CompileFromFile(Utility::GetFilePath(L"content\\effects\\MotionBlur.fx"));
 		mMotionBlurEffect = new EffectElements::MotionBlurEffect();
@@ -119,7 +125,140 @@ namespace Rendering {
 		mFXAARenderTarget = new FullScreenRenderTarget(game);
 		mFXAAEffect->isActive = pFXAA;
 		mFXAALoaded = true;
+
+		// Tonemapping
+		mTonemapEffect = new EffectElements::TonemapEffect();
+		mTonemapEffect->isActive = pTonemap;
+		mTonemapRenderTarget = new FullScreenRenderTarget(game);
+		UINT bindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+		float minDim = (float)std::min(game.ScreenHeight(), game.ScreenWidth());
+		int log2min = std::min((int)floor(log(minDim) / log(2.0f)), 9);
+		int lumDim = 1 << log2min;
+		mTonemapEffect->LuminanceResource = CustomRenderTarget::Create(game.Direct3DDevice(), lumDim, lumDim, 0, DXGI_FORMAT_R16_FLOAT, bindFlags, log2min + 1);
+		mTonemapEffect->AvgLuminanceResource = CustomRenderTarget::Create(game.Direct3DDevice(), 16, 16, 0, DXGI_FORMAT_R16_FLOAT, bindFlags, 1);
+		mTonemapEffect->BrightResource = CustomRenderTarget::Create(game.Direct3DDevice(), game.ScreenWidth()/2, game.ScreenHeight()/2, 0, DXGI_FORMAT_R11G11B10_FLOAT, bindFlags, 4);
+		mTonemapEffect->BlurSummedResource = CustomRenderTarget::Create(game.Direct3DDevice(), game.ScreenWidth() / 2, game.ScreenHeight() / 2, 0, DXGI_FORMAT_R11G11B10_FLOAT, bindFlags, 4);
+		mTonemapEffect->BlurHorizontalResource = CustomRenderTarget::Create(game.Direct3DDevice(), game.ScreenWidth() / 2, game.ScreenHeight() / 2, 0, DXGI_FORMAT_R11G11B10_FLOAT, bindFlags, 4);
+		mTonemapEffect->BlurVerticalResource = CustomRenderTarget::Create(game.Direct3DDevice(), game.ScreenWidth() / 2, game.ScreenHeight() / 2, 0, DXGI_FORMAT_R11G11B10_FLOAT, bindFlags, 4);
+
+		D3D11_BUFFER_DESC BufferDesc;
+		ZeroMemory(&BufferDesc, sizeof(BufferDesc));
+		BufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		BufferDesc.CPUAccessFlags = 0;
+		BufferDesc.ByteWidth = sizeof(int) * 4;
+		BufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		game.Direct3DDevice()->CreateBuffer(&BufferDesc, NULL, &mTonemapEffect->ConstBuffer);
+
+		BufferDesc.ByteWidth = sizeof(float) * 4;
+		BufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		game.Direct3DDevice()->CreateBuffer(&BufferDesc, NULL, &mTonemapEffect->BloomConstants);
+
+		D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC();
+		ZeroMemory(&samplerDesc, sizeof(D3D11_SAMPLER_DESC));
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		samplerDesc.MaxAnisotropy = 16;
+		samplerDesc.MaxLOD = FLT_MAX;
+		samplerDesc.MinLOD = FLT_MIN;
+		samplerDesc.MipLODBias = 0.0f;
+		game.Direct3DDevice()->CreateSamplerState(&samplerDesc, &mTonemapEffect->LinearSampler);		
+		
+		ID3DBlob* pShaderBlob = nullptr;		
+		if(FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Tonemap\\Tonemap.hlsl").c_str(), "ToneMapWithBloom", "ps_4_0", &pShaderBlob)))
+			throw GameException("Failed to load ToneMapWithBloom pass from shader: PSPostProcess.hlsl!");
+		if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mTonemapEffect->ToneMapWithBloomPS)))
+			throw GameException("Failed to create ToneMapWithBloom shader from PSPostProcess.hlsl!");
+		pShaderBlob->Release();
+
+		pShaderBlob = nullptr;
+		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Tonemap\\Tonemap.hlsl").c_str(), "Add", "ps_4_0", &pShaderBlob)))
+			throw GameException("Failed to load Add pass from shader: PSPostProcess.hlsl!");
+		if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mTonemapEffect->AddPS)))
+			throw GameException("Failed to create Add shader from PSPostProcess.hlsl!");
+		pShaderBlob->Release();
+
+		pShaderBlob = nullptr;
+		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Tonemap\\Tonemap.hlsl").c_str(), "BlurHorizontal", "ps_4_0", &pShaderBlob)))
+			throw GameException("Failed to load BlurHorizontal pass from shader: PSPostProcess.hlsl!");
+		if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mTonemapEffect->BlurHPS)))
+			throw GameException("Failed to create BlurHorizontal shader from PSPostProcess.hlsl!");
+		pShaderBlob->Release();
+
+		pShaderBlob = nullptr;
+		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Tonemap\\Tonemap.hlsl").c_str(), "BlurVertical", "ps_4_0", &pShaderBlob)))
+			throw GameException("Failed to load BlurVertical pass from shader: PSPostProcess.hlsl!");
+		if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mTonemapEffect->BlurVPS)))
+			throw GameException("Failed to create BlurVertical shader from PSPostProcess.hlsl!");
+		pShaderBlob->Release();
+
+		pShaderBlob = nullptr;
+		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Tonemap\\Tonemap.hlsl").c_str(), "Bright", "ps_4_0", &pShaderBlob)))
+			throw GameException("Failed to load Bright pass from shader: PSPostProcess.hlsl!");
+		if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mTonemapEffect->BrightPS)))
+			throw GameException("Failed to create Bright shader from PSPostProcess.hlsl!");
+		pShaderBlob->Release();
+	
+		pShaderBlob = nullptr;
+		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Tonemap\\Tonemap.hlsl").c_str(), "CalcLuminance", "ps_4_0", &pShaderBlob)))
+			throw GameException("Failed to load CalcLuminance pass from shader: PSPostProcess.hlsl!");
+		if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mTonemapEffect->CalcLumPS)))
+			throw GameException("Failed to create CalcLuminance shader from PSPostProcess.hlsl!");
+		pShaderBlob->Release();
+
+		pShaderBlob = nullptr;
+		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Tonemap\\Tonemap.hlsl").c_str(), "AvgLuminance", "ps_4_0", &pShaderBlob)))
+			throw GameException("Failed to load AvgLuminance pass from shader: PSPostProcess.hlsl!");
+		if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mTonemapEffect->AvgLumPS)))
+			throw GameException("Failed to create AvgLuminance shader from PSPostProcess.hlsl!");
+		pShaderBlob->Release();
+
+		pShaderBlob = nullptr;
+		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Tonemap\\Tonemap.hlsl").c_str(), "EmptyPass", "ps_4_0", &pShaderBlob)))
+			throw GameException("Failed to load EmptyPass pass from shader: PSPostProcess.hlsl!");
+		if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mTonemapEffect->EmptyPassPS)))
+			throw GameException("Failed to create EmptyPass shader from PSPostProcess.hlsl!");
+		pShaderBlob->Release();
+
+		// Quad temp
+		ID3DBlob* pBlob = NULL;
+		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Tonemap\\FullScreenQuad.hlsl").c_str(), "VSMain", "vs_4_0", &pBlob)))
+			throw GameException("Failed to load VSMain pass from shader: FullScreenQuad.hlsl!");
+		if (FAILED(game.Direct3DDevice()->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), NULL, &mFullScreenQuadVS)))
+			throw GameException("Failed to create AvgLuminance shader from PSPostProcess.hlsl!");
+
+		D3D11_INPUT_ELEMENT_DESC InputLayout[] =
+		{ { "SV_POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
+		game.Direct3DDevice()->CreateInputLayout(InputLayout, ARRAYSIZE(InputLayout),
+			pBlob->GetBufferPointer(), pBlob->GetBufferSize(),
+			&mFullScreenQuadLayout);
+		pBlob->Release();
+
+		float data[] =
+		{ -1.0f,  1.0f, 0.0f,
+			 1.0f,  1.0f, 0.0f,
+			-1.0f, -1.0f, 0.0f,
+			 1.0f, -1.0f, 0.0f,
+		};
+
+		D3D11_BUFFER_DESC BufferDesc2;
+		ZeroMemory(&BufferDesc2, sizeof(BufferDesc2));
+		BufferDesc2.ByteWidth = sizeof(float) * 3 * 4;
+		BufferDesc2.Usage = D3D11_USAGE_DEFAULT;
+		BufferDesc2.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		BufferDesc2.CPUAccessFlags = 0;
+
+		D3D11_SUBRESOURCE_DATA subresourceData2;
+		subresourceData2.pSysMem = data;
+		subresourceData2.SysMemPitch = 0;
+		subresourceData2.SysMemSlicePitch = 0;
+		game.Direct3DDevice()->CreateBuffer(&BufferDesc2, &subresourceData2, &mQuadVB);
 	}
+
+	// Only updates Effects
 	void PostProcessingStack::Update()
 	{
 		if (mVignetteLoaded)
@@ -155,6 +294,14 @@ namespace Rendering {
 			else
 				mFXAAEffect->Quad->SetActiveTechnique("no_filter", "p0");
 		}
+	}
+
+	void PostProcessingStack::UpdateTonemapConstantBuffer(ID3D11DeviceContext* pD3DImmediateContext, ID3D11Buffer* buffer, int mipLevel0, int mipLevel1, unsigned int width, unsigned int height)
+	{
+		int src[] = { mipLevel0, mipLevel1, width, height };
+		int rowpitch = sizeof(int) * 4;
+		pD3DImmediateContext->UpdateSubresource(buffer, 0, NULL, &src, rowpitch, 0);
+		pD3DImmediateContext->PSSetConstantBuffers(0, 1, &buffer);
 	}
 
 	void PostProcessingStack::UpdateVignetteMaterial()
@@ -211,6 +358,18 @@ namespace Rendering {
 	{
 		ImGui::Begin("Post Processing Stack Config");
 
+
+		if (true)
+		{
+			if (ImGui::CollapsingHeader("Tonemap and Bloom"))
+			{
+				ImGui::Checkbox("Tonemap and Bloom - On", &mTonemapEffect->isActive);
+				ImGui::SliderFloat("Middle Grey", &mTonemapEffect->middlegrey, 0.0f, 0.2f);
+				ImGui::SliderFloat("Bloom Threshold", &mTonemapEffect->bloomthreshold, 0.0f, 1.0f);
+				ImGui::SliderFloat("Bloom Multiplier", &mTonemapEffect->bloommultiplier, 0.0f, 1.0f);
+			}
+		}
+
 		if (mMotionBlurLoaded)
 		{
 			if (ImGui::CollapsingHeader("Motion Blur"))
@@ -253,6 +412,68 @@ namespace Rendering {
 
 		ImGui::End();
 	}
+
+	void PostProcessingStack::ComputeLuminance(ID3D11DeviceContext * pContext, ID3D11ShaderResourceView * pInput, ID3D11RenderTargetView* pOutput)
+	{
+		pContext->OMSetRenderTargets(1, &pOutput, NULL);
+		pContext->PSSetShaderResources(0, 1, &pInput);
+		pContext->PSSetShader(mTonemapEffect->CalcLumPS, NULL, NULL);
+		DrawFullscreenQuad(pContext);
+
+		pContext->OMSetRenderTargets(1, mTonemapEffect->AvgLuminanceResource->getRTVs(), NULL);
+		ID3D11ShaderResourceView* srv = mTonemapEffect->LuminanceResource->getSRV();
+		pContext->GenerateMips(srv);
+		pContext->PSSetShaderResources(0, 1, &srv);
+		pContext->PSSetShader(mTonemapEffect->AvgLumPS, NULL, NULL);
+		DrawFullscreenQuad(pContext);
+	}
+
+	void PostProcessingStack::ComputeBrightPass(ID3D11DeviceContext * pContext, ID3D11ShaderResourceView * pInput, ID3D11RenderTargetView * pOutput)
+	{
+		ID3D11RenderTargetView* pRT[] = { pOutput };
+		pContext->PSSetShaderResources(0, 1, &pInput);
+		pContext->PSSetShader(mTonemapEffect->BrightPS, NULL, NULL);
+		pContext->OMSetRenderTargets(1, pRT, NULL);
+		DrawFullscreenQuad(pContext);
+	}
+
+	void PostProcessingStack::ComputeHorizontalBlur(ID3D11DeviceContext * pContext, ID3D11ShaderResourceView * pInput, ID3D11RenderTargetView * pOutput)
+	{
+		pContext->OMSetRenderTargets(1, &pOutput, NULL);
+		ID3D11ShaderResourceView* pSR[] = { pInput };
+		pContext->PSSetShaderResources(0, 1, pSR);
+		pContext->PSSetShader(mTonemapEffect->BlurHPS, NULL, NULL);
+		DrawFullscreenQuad(pContext);
+	}
+
+	void PostProcessingStack::ComputeVerticalBlur(ID3D11DeviceContext * pContext, ID3D11ShaderResourceView * pInput, ID3D11RenderTargetView * pOutput)
+	{
+		ID3D11ShaderResourceView* pSR[] = { NULL, NULL };
+		pContext->PSSetShaderResources(0, 2, pSR);
+		pContext->OMSetRenderTargets(1, &pOutput, NULL);
+		pSR[0] = pInput;
+		pContext->PSSetShaderResources(0, 1, pSR);
+		pContext->PSSetShader(mTonemapEffect->BlurVPS, NULL, NULL);
+		DrawFullscreenQuad(pContext);
+	}
+
+	void PostProcessingStack::ComputeToneMapWithBloom(ID3D11DeviceContext * pContext, ID3D11ShaderResourceView * pInput, ID3D11ShaderResourceView * pAVG, ID3D11ShaderResourceView * pBloom, ID3D11RenderTargetView * pOutput)
+	{
+		pContext->OMSetRenderTargets(1, &pOutput, NULL);
+		ID3D11ShaderResourceView* pSR[] = { pInput, pBloom, pAVG };
+		pContext->PSSetShaderResources(0, 3, pSR);
+		pContext->PSSetShader(mTonemapEffect->ToneMapWithBloomPS, NULL, NULL);
+		DrawFullscreenQuad(pContext);
+	}
+
+	void PostProcessingStack::PerformEmptyPass(ID3D11DeviceContext* pContext, ID3D11ShaderResourceView * pInput, ID3D11RenderTargetView * pOutput)
+	{
+		pContext->OMSetRenderTargets(1, &pOutput, NULL);
+		ID3D11ShaderResourceView* pSR[] = { pInput };
+		pContext->PSSetShaderResources(0, 1, pSR);
+		pContext->PSSetShader(mTonemapEffect->EmptyPassPS, NULL, NULL);
+		DrawFullscreenQuad(pContext);
+	}
 	
 	void PostProcessingStack::Begin()
 	{
@@ -263,16 +484,134 @@ namespace Rendering {
 
 	void PostProcessingStack::End(const GameTime& gameTime)
 	{
+		ID3D11DeviceContext* context = game.Direct3DDeviceContext();
+
 		mMainRenderTarget->End();
 
+		// TONEMAP
+		mTonemapRenderTarget->Begin();
+		context->ClearRenderTargetView(mTonemapRenderTarget->RenderTargetView(), ClearBackgroundColor);
+		context->ClearDepthStencilView(mTonemapRenderTarget->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
+
+		if (mTonemapEffect->isActive)
+		{
+			float pBuffer[] = { mTonemapEffect->middlegrey, mTonemapEffect->bloomthreshold, mTonemapEffect->bloommultiplier, 0.0f };
+			context->UpdateSubresource(mTonemapEffect->BloomConstants, 0, NULL, pBuffer, sizeof(float) * 4, 0);
+			context->PSSetConstantBuffers(1, 1, &mTonemapEffect->BloomConstants);
+			D3D11_VIEWPORT viewport;
+			UINT numViewPorts = 1;
+			context->RSGetViewports(&numViewPorts, &viewport);
+
+			unsigned int width = 512;
+			unsigned int height = 512;
+
+			int gameWidth = game.ScreenWidth();
+			int gameHeight = game.ScreenHeight();
+
+			D3D11_VIEWPORT quadViewPort;
+			quadViewPort.Height = (float)height;
+			quadViewPort.Width = (float)width;
+			quadViewPort.MaxDepth = 1.0f;
+			quadViewPort.MinDepth = 0.0f;
+			quadViewPort.TopLeftX = 0;
+			quadViewPort.TopLeftY = 0;
+
+			context->PSSetSamplers(0, 1, &mTonemapEffect->LinearSampler);
+			context->RSSetViewports(1, &quadViewPort);
+
+			UpdateTonemapConstantBuffer(context, mTonemapEffect->ConstBuffer, 0, 0, width, height);
+			ComputeLuminance(context, mMainRenderTarget->OutputColorTexture(), *mTonemapEffect->LuminanceResource->getRTVs());
+
+			quadViewPort.Height = (float)(gameHeight / 2);
+			quadViewPort.Width = (float)(gameWidth / 2);
+			context->RSSetViewports(1, &quadViewPort);
+
+			ComputeBrightPass(context, mMainRenderTarget->OutputColorTexture(), *mTonemapEffect->BrightResource->getRTVs());
+			ID3D11RenderTargetView* pNULLRT[] = { NULL };
+			context->OMSetRenderTargets(1, pNULLRT, NULL);
+			context->GenerateMips(mTonemapEffect->BrightResource->getSRV());
+
+			int mipLevel0 = 3;
+			int mipLevel1 = 4;
+			width = gameWidth >> (mipLevel0 + 1);
+			height = gameHeight >> (mipLevel0 + 1);
+			quadViewPort.Height = (float)height;
+			quadViewPort.Width = (float)width;
+			context->RSSetViewports(1, &quadViewPort);
+			UpdateTonemapConstantBuffer(context, mTonemapEffect->ConstBuffer, mipLevel0, mipLevel1, width, height);
+			ComputeHorizontalBlur(context, mTonemapEffect->BrightResource->getSRV(), mTonemapEffect->BlurHorizontalResource->getRTVs()[mipLevel0]);
+			ComputeVerticalBlur(context, mTonemapEffect->BlurHorizontalResource->getSRV(), mTonemapEffect->BlurVerticalResource->getRTVs()[mipLevel0]);
+
+			mipLevel0--;
+			mipLevel1--;
+			width = gameWidth >> (mipLevel0 + 1);;
+			height = gameHeight >> (mipLevel0 + 1);
+			quadViewPort.Height = (float)height;
+			quadViewPort.Width = (float)width;
+			context->RSSetViewports(1, &quadViewPort);
+
+			UpdateTonemapConstantBuffer(context, mTonemapEffect->ConstBuffer, mipLevel0, mipLevel1, width, height);
+			context->OMSetRenderTargets(1, &mTonemapEffect->BlurSummedResource->getRTVs()[mipLevel0], NULL);
+			ID3D11ShaderResourceView* pSR[] = { mTonemapEffect->BrightResource->getSRV(),  mTonemapEffect->BlurVerticalResource->getSRV() };
+			context->PSSetShaderResources(0, 2, pSR);
+			context->PSSetShader(mTonemapEffect->AddPS, NULL, NULL);
+			DrawFullscreenQuad(context);
+			ComputeHorizontalBlur(context, mTonemapEffect->BlurSummedResource->getSRV(), mTonemapEffect->BlurHorizontalResource->getRTVs()[mipLevel0]);
+			ComputeVerticalBlur(context, mTonemapEffect->BlurHorizontalResource->getSRV(), mTonemapEffect->BlurVerticalResource->getRTVs()[mipLevel0]);
+
+			mipLevel0--;
+			mipLevel1--;
+			width = gameWidth >> (mipLevel0 + 1);
+			height = gameHeight >> (mipLevel0 + 1);
+			quadViewPort.Height = (float)height;
+			quadViewPort.Width = (float)width;
+			context->RSSetViewports(1, &quadViewPort);
+
+			UpdateTonemapConstantBuffer(context, mTonemapEffect->ConstBuffer, mipLevel0, mipLevel1, width, height);
+			context->OMSetRenderTargets(1, &mTonemapEffect->BlurSummedResource->getRTVs()[mipLevel0], NULL);
+			ID3D11ShaderResourceView* pSR2[] = { mTonemapEffect->BrightResource->getSRV(), mTonemapEffect->BlurVerticalResource->getSRV() };
+			context->PSSetShaderResources(0, 2, pSR2);
+			context->PSSetShader(mTonemapEffect->AddPS, NULL, NULL);
+			DrawFullscreenQuad(context);
+			ComputeHorizontalBlur(context, mTonemapEffect->BlurSummedResource->getSRV(), mTonemapEffect->BlurHorizontalResource->getRTVs()[mipLevel0]);
+			ComputeVerticalBlur(context, mTonemapEffect->BlurHorizontalResource->getSRV(), mTonemapEffect->BlurVerticalResource->getRTVs()[mipLevel0]);
+
+			mipLevel0--;
+			mipLevel1--;
+			width = gameWidth >> (mipLevel0 + 1);
+			height = gameHeight >> (mipLevel0 + 1);
+			quadViewPort.Height = (float)height;
+			quadViewPort.Width = (float)width;
+			context->RSSetViewports(1, &quadViewPort);
+
+			UpdateTonemapConstantBuffer(context, mTonemapEffect->ConstBuffer, mipLevel0, mipLevel1, width, height);
+			context->OMSetRenderTargets(1, &mTonemapEffect->BlurSummedResource->getRTVs()[mipLevel0], NULL);
+			ID3D11ShaderResourceView* pSR3[] = { mTonemapEffect->BrightResource->getSRV(), mTonemapEffect->BlurVerticalResource->getSRV() };
+			context->PSSetShaderResources(0, 2, pSR3);
+			context->PSSetShader(mTonemapEffect->AddPS, NULL, NULL);
+			DrawFullscreenQuad(context);
+			ComputeHorizontalBlur(context, mTonemapEffect->BlurSummedResource->getSRV(), mTonemapEffect->BlurHorizontalResource->getRTVs()[mipLevel0]);
+			ComputeVerticalBlur(context, mTonemapEffect->BlurHorizontalResource->getSRV(), mTonemapEffect->BlurVerticalResource->getRTVs()[mipLevel0]);
+
+			context->RSSetViewports(1, &viewport);
+			ComputeToneMapWithBloom(context, mMainRenderTarget->OutputColorTexture(), mTonemapEffect->AvgLuminanceResource->getSRV(), mTonemapEffect->BlurVerticalResource->getSRV(), mTonemapRenderTarget->RenderTargetView());
+		}
+		else
+		{
+			PerformEmptyPass(context, mMainRenderTarget->OutputColorTexture(), mTonemapRenderTarget->RenderTargetView());
+		}
+		mTonemapRenderTarget->End();
+
+		// MOTION BLUR
 		mMotionBlurRenderTarget->Begin();
 		game.Direct3DDeviceContext()->ClearRenderTargetView(mMotionBlurRenderTarget->RenderTargetView(), ClearBackgroundColor);
 		game.Direct3DDeviceContext()->ClearDepthStencilView(mMotionBlurRenderTarget->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
-		mMotionBlurEffect->OutputTexture = mMainRenderTarget->OutputColorTexture();
+		mMotionBlurEffect->OutputTexture = mTonemapRenderTarget->OutputColorTexture();
 		mMotionBlurEffect->DepthMap = mMainRenderTarget->OutputDepthTexture();
 		mMotionBlurEffect->Quad->Draw(gameTime);
 		mMotionBlurRenderTarget->End();
 
+		// COLOR GRADING
 		mColorGradingRenderTarget->Begin();
 		mColorGradingEffect->OutputTexture = mMotionBlurRenderTarget->OutputColorTexture();
 		game.Direct3DDeviceContext()->ClearRenderTargetView(mColorGradingRenderTarget->RenderTargetView(), ClearBackgroundColor);
@@ -280,6 +619,7 @@ namespace Rendering {
 		mColorGradingEffect->Quad->Draw(gameTime);
 		mColorGradingRenderTarget->End();
 		
+		// VIGNETTE
 		mVignetteRenderTarget->Begin();
 		game.Direct3DDeviceContext()->ClearRenderTargetView(mVignetteRenderTarget->RenderTargetView(), ClearBackgroundColor);
 		game.Direct3DDeviceContext()->ClearDepthStencilView(mVignetteRenderTarget->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
@@ -287,6 +627,7 @@ namespace Rendering {
 		mVignetteEffect->Quad->Draw(gameTime);
 		mVignetteRenderTarget->End();
 
+		// FXAA
 		/* uncomment if there is an effect after this one */
 		//mFXAARenderTarget->Begin();
 		//game.Direct3DDeviceContext()->ClearRenderTargetView(mFXAARenderTarget->RenderTargetView(), ClearBackgroundColor);
@@ -296,6 +637,17 @@ namespace Rendering {
 		//mFXAARenderTarget->End();
 	}
 
+	void PostProcessingStack::DrawFullscreenQuad(ID3D11DeviceContext* pContext)
+	{
+		pContext->VSSetShader(mFullScreenQuadVS, NULL, 0);
+		pContext->IASetInputLayout(mFullScreenQuadLayout);
+		ID3D11Buffer* pVBs[] = { mQuadVB };
+		UINT strides[] = { sizeof(float) * 3 };
+		UINT offsets[] = { 0 };
+		pContext->IASetVertexBuffers(0, 1, pVBs, strides, offsets);
+		pContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+		pContext->Draw(4, 0);
+	}
 }
 
 
