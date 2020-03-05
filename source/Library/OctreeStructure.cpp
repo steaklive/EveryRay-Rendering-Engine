@@ -489,6 +489,6 @@ namespace Library
 	}
 	void OctreeNode::DrawCellAABB(const GameTime& gameTime)
 	{
-		mCellAABB->Draw(gameTime);
+		mCellAABB->Draw();
 	}
 }

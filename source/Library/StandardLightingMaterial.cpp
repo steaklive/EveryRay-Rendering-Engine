@@ -21,7 +21,12 @@ namespace Rendering
 		MATERIAL_VARIABLE_INITIALIZATION(AlbedoTexture),
 		MATERIAL_VARIABLE_INITIALIZATION(NormalTexture),
 		MATERIAL_VARIABLE_INITIALIZATION(SpecularTexture),
-		MATERIAL_VARIABLE_INITIALIZATION(ShadowTexture)
+		MATERIAL_VARIABLE_INITIALIZATION(MetallicTexture),
+		MATERIAL_VARIABLE_INITIALIZATION(RoughnessTexture),
+		MATERIAL_VARIABLE_INITIALIZATION(ShadowTexture),
+		MATERIAL_VARIABLE_INITIALIZATION(IrradianceTexture),
+		MATERIAL_VARIABLE_INITIALIZATION(RadianceTexture),
+		MATERIAL_VARIABLE_INITIALIZATION(IntegrationTexture)
 	{
 	}
 
@@ -36,7 +41,12 @@ namespace Rendering
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, AlbedoTexture)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, NormalTexture)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, SpecularTexture)
+		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, MetallicTexture)
+		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, RoughnessTexture)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, ShadowTexture)
+		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, IrradianceTexture)
+		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, RadianceTexture)
+		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, IntegrationTexture)
 
 
 	void StandardLightingMaterial::Initialize(Effect* effect)
@@ -54,7 +64,12 @@ namespace Rendering
 			MATERIAL_VARIABLE_RETRIEVE(AlbedoTexture)
 			MATERIAL_VARIABLE_RETRIEVE(NormalTexture)
 			MATERIAL_VARIABLE_RETRIEVE(SpecularTexture)
+			MATERIAL_VARIABLE_RETRIEVE(MetallicTexture)
+			MATERIAL_VARIABLE_RETRIEVE(RoughnessTexture)
 			MATERIAL_VARIABLE_RETRIEVE(ShadowTexture)
+			MATERIAL_VARIABLE_RETRIEVE(IrradianceTexture)
+			MATERIAL_VARIABLE_RETRIEVE(RadianceTexture)
+			MATERIAL_VARIABLE_RETRIEVE(IntegrationTexture)
 
 			D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 		{
@@ -66,6 +81,7 @@ namespace Rendering
 		};
 
 		CreateInputLayout("standard_lighting_no_pbr", "p0", inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
+		CreateInputLayout("standard_lighting_pbr", "p0", inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
 	}
 
 	void StandardLightingMaterial::CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const

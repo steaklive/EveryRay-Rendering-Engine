@@ -84,6 +84,9 @@
     <ClInclude Include="SponzaMainDemo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\external\ImGUI\ImGuizmo.h">
+      <Filter>Source Files\ImGui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -136,6 +139,9 @@
     </ClCompile>
     <ClCompile Include="SponzaMainDemo.cpp">
       <Filter>Source Files\Demo Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external\ImGUI\ImGuizmo.cpp">
+      <Filter>Source Files\ImGui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -354,6 +354,7 @@ namespace Rendering {
 		mFXAAEffect->Material->Height() << game.ScreenHeight();
 
 	}
+	
 	void PostProcessingStack::ShowPostProcessingWindow()
 	{
 		ImGui::Begin("Post Processing Stack Config");

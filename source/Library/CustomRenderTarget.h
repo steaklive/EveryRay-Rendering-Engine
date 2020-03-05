@@ -19,11 +19,11 @@ public:
 protected:
 	CustomRenderTarget() {};
 	//some annoying legacy code decisions....
-	ID3D11RenderTargetView** mRTVs;
-	ID3D11RenderTargetView* mRTV;
-	ID3D11UnorderedAccessView** mUAVs;
-	ID3D11ShaderResourceView* mSRV; 
-	ID3D11Texture2D* mTexture2D;
+	ID3D11RenderTargetView** mRTVs = nullptr;
+	ID3D11RenderTargetView* mRTV = nullptr;
+	ID3D11UnorderedAccessView** mUAVs = nullptr;
+	ID3D11ShaderResourceView* mSRV = nullptr; 
+	ID3D11Texture2D* mTexture2D = nullptr;
 
 	static UINT mBindFlags;
 	static int mMipLevels;

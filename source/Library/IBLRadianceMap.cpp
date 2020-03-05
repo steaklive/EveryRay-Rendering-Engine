@@ -16,6 +16,7 @@
 #include "IBLRadianceMap.h"
 #include "IBLCubemap.h"
 #include "QuadRenderer.h"
+#include "Utility.h"
 #include "ShaderCompiler.h"
 #include <DDSTextureLoader.h>
 
@@ -65,7 +66,7 @@ namespace Library
 
 		// vertex shader
 		ID3DBlob* vertexShaderBlob = nullptr;
-		HRESULT hrloadVS = ShaderCompiler::CompileShader(L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Shaders\\PBR\\RadianceMapVS.hlsl", "main", "vs_5_0", &vertexShaderBlob);
+		HRESULT hrloadVS = ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\PBR\\RadianceMapVS.hlsl").c_str(), "main", "vs_5_0", &vertexShaderBlob);
 		if (FAILED(hrloadVS)) throw GameException("Failed to load a shader: RadianceMapVS.hlsl!", hrloadVS);
 
 		ID3D11VertexShader* vertexShader = NULL;
@@ -74,7 +75,7 @@ namespace Library
 
 		//pixel shader
 		ID3DBlob* pixelShaderBlob = nullptr;
-		HRESULT hrloadPS = ShaderCompiler::CompileShader(L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Shaders\\PBR\\RadianceMapPS.hlsl", "main", "ps_5_0", &pixelShaderBlob);
+		HRESULT hrloadPS = ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\PBR\\RadianceMapPS.hlsl").c_str(), "main", "ps_5_0", &pixelShaderBlob);
 		if (FAILED(hrloadPS)) throw GameException("Failed to load a shader: RadianceMapPS.hlsl!", hrloadPS);
 
 		ID3D11PixelShader* pixelShader = NULL;

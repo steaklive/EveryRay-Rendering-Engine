@@ -25,12 +25,14 @@
 #include "..\Library\DepthMapMaterial.h"
 #include "..\Library\PostProcessingStack.h"
 #include "..\Library\FullScreenRenderTarget.h"
+#include "..\Library\IBLRadianceMap.h"
 
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
 #include "imgui_impl_win32.h"
 
 #include <WICTextureLoader.h>
+#include <DDSTextureLoader.h>
 #include <SpriteBatch.h>
 #include <SpriteFont.h>
 #include <sstream>
@@ -54,26 +56,33 @@ namespace Rendering
 		mProxyModel(nullptr),
 		mLightFrustum(XMMatrixIdentity()),
 		mSkybox(nullptr),
-		mSponzaLightingRenderingObject(nullptr),
-		mSponzaShadowRenderingObject(nullptr)
+		mSponzaLightingRenderingObject(nullptr), mSpherePBRObject(nullptr),
+		mIrradianceTextureSRV(nullptr),
+		mRadianceTextureSRV(nullptr),
+		mIntegrationMapTextureSRV(nullptr)
 	{
 	}
 
 	SponzaMainDemo::~SponzaMainDemo()
 	{
 		mSponzaLightingRenderingObject->MeshMaterialVariablesUpdateEvent->RemoverAllListeners();
-		mSponzaShadowRenderingObject->MeshMaterialVariablesUpdateEvent->RemoverAllListeners();
 		DeleteObject(mSponzaLightingRenderingObject);
-		DeleteObject(mSponzaShadowRenderingObject);
+		mSpherePBRObject->MeshMaterialVariablesUpdateEvent->RemoverAllListeners();
+		DeleteObject(mSpherePBRObject);
 
 		DeleteObject(mRenderStateHelper);
 		DeleteObject(mShadowMap);
 		DeleteObject(mShadowProjector);
-		ReleaseObject(mShadowRasterizerState);
 		DeleteObject(mDirectionalLight);
 		DeleteObject(mProxyModel);
 		DeleteObject(mSkybox);
 		DeleteObject(mPostProcessingStack);
+
+		ReleaseObject(mShadowRasterizerState);
+		
+		ReleaseObject(mIrradianceTextureSRV);
+		ReleaseObject(mRadianceTextureSRV);
+		ReleaseObject(mIntegrationMapTextureSRV);
 	}
 #pragma region COMPONENT_METHODS
 	/////////////////////////////////////////////////////////////
@@ -106,8 +115,8 @@ namespace Rendering
 	{
 		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
 
-		mSponzaLightingRenderingObject = new RenderingObject("Statue Light", *mGame, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\Sponza\\sponza.fbx"), true)));
-		mSponzaShadowRenderingObject = new RenderingObject("Statue Shadow", *mGame, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\Sponza\\sponza.fbx"), true)));
+		mSponzaLightingRenderingObject = new RenderingObject("Statue Light", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\Sponza\\sponza.fbx"), true)));
+		mSpherePBRObject = new RenderingObject("PBR Sphere", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere.fbx"), true)));
 
 		// Initialize the material - lighting
 		Effect* lightingEffect = new Effect(*mGame);
@@ -118,10 +127,30 @@ namespace Rendering
 		effectShadow->CompileFromFile(Utility::GetFilePath(L"content\\effects\\DepthMap.fx"));
 
 		mSponzaLightingRenderingObject->LoadMaterial(new StandardLightingMaterial(), lightingEffect);
+		mSponzaLightingRenderingObject->LoadMaterial(new DepthMapMaterial(), effectShadow);
 		mSponzaLightingRenderingObject->LoadRenderBuffers();
+		mSponzaLightingRenderingObject->GetMeshMaterial()->SetCurrentTechnique(mSponzaLightingRenderingObject->GetMeshMaterial()->GetEffect()->TechniquesByName().at("standard_lighting_pbr"));
+		mSponzaLightingRenderingObject->MeshMaterialVariablesUpdateEvent->AddListener("Standard Lighting Material Update", [&](int meshIndex) { UpdateStandardLightingMaterialVariables(meshIndex); });
+		mSponzaLightingRenderingObject->MeshMaterialVariablesUpdateEvent->AddListener("Shadow Map Material Update", [&](int meshIndex) { UpdateDepthMapMaterialVariables(meshIndex); });
+		
 
-		mSponzaShadowRenderingObject->LoadMaterial(new DepthMapMaterial(), effectShadow);
-		mSponzaShadowRenderingObject->LoadRenderBuffers();
+		mSpherePBRObject->LoadMaterial(new StandardLightingMaterial(), lightingEffect);
+		mSpherePBRObject->LoadMaterial(new DepthMapMaterial(), effectShadow);
+		mSpherePBRObject->LoadRenderBuffers();
+		mSpherePBRObject->GetMeshMaterial()->SetCurrentTechnique(mSpherePBRObject->GetMeshMaterial()->GetEffect()->TechniquesByName().at("standard_lighting_pbr"));
+		mSpherePBRObject->LoadCustomMeshTextures(0,
+			Utility::GetFilePath(L"content\\textures\\PBR\\Gold\\GoldMetal_albedo.jpg"),
+			Utility::GetFilePath(L"content\\textures\\PBR\\Gold\\GoldMetal_nrm.jpg"),
+			Utility::GetFilePath(L""),
+			Utility::GetFilePath(L"content\\textures\\PBR\\Gold\\GoldMetal_rgh.jpg"),
+			Utility::GetFilePath(L"content\\textures\\PBR\\Gold\\GoldMetal_mtl.jpg"),
+			Utility::GetFilePath(L""),
+			Utility::GetFilePath(L""),
+			Utility::GetFilePath(L"")
+		);
+		mSpherePBRObject->MeshMaterialVariablesUpdateEvent->AddListener("Standard Lighting PBR Material Update", [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables(meshIndex); });
+		mSpherePBRObject->MeshMaterialVariablesUpdateEvent->AddListener("Shadow Map Material Update", [&](int meshIndex) { UpdateDepthMapMaterialPBRVariables(meshIndex); });
+
 
 		mKeyboard = (Keyboard*)mGame->Services().GetService(Keyboard::TypeIdClass());
 		assert(mKeyboard != nullptr);
@@ -139,9 +168,6 @@ namespace Rendering
 		mProxyModel->SetPosition(0.0f, 500.0, 0.0f);
 
 		mRenderStateHelper = new RenderStateHelper(*mGame);
-
-		mSponzaLightingRenderingObject->MeshMaterialVariablesUpdateEvent->AddListener("Standard Lighting Material Update", [&](int meshIndex) { UpdateStandardLightingMaterialVariables(meshIndex); });
-		mSponzaShadowRenderingObject->MeshMaterialVariablesUpdateEvent->AddListener("Shadow Map Material Update", [&](int meshIndex) { UpdateDepthMapMaterialVariables(meshIndex); });
 
 		D3D11_RASTERIZER_DESC rasterizerStateDesc;
 		ZeroMemory(&rasterizerStateDesc, sizeof(rasterizerStateDesc));
@@ -164,7 +190,6 @@ namespace Rendering
 		//shadows
 		mShadowProjector = new Projector(*mGame);
 		mShadowProjector->Initialize();
-
 		mShadowMap = new DepthMap(*mGame, 4096, 4096);
 
 		mProxyModel->ApplyRotation(XMMatrixRotationX(-XMConvertToRadians(70.0f)) * XMMatrixRotationY(-XMConvertToRadians(25.0f)));
@@ -173,6 +198,34 @@ namespace Rendering
 
 		mCamera->SetPosition(XMFLOAT3(-76.6f, 8.4f, 8.8f));
 		mCamera->ApplyRotation(XMMatrixRotationAxis(mCamera->RightVector(), XMConvertToRadians(18.0f)) * XMMatrixRotationAxis(mCamera->UpVector(), -XMConvertToRadians(70.0f)));
+	
+	
+		//***********************************//
+		//			Initialize IBL			 //
+		//***********************************//
+		//									 //
+		// Load Pre-Convoluted Irradiance Map
+		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\sponzaCubeDiffuseHDR.dds").c_str(), nullptr, &mIrradianceTextureSRV)))
+			throw GameException("Failed to create Irradiance Map.");
+
+		// Create an IBL Radiance Map from Environment Map
+		mIBLRadianceMap.reset(new IBLRadianceMap(*mGame, Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\sponzaCubemap.dds")));
+		mIBLRadianceMap->Initialize();
+		mIBLRadianceMap->Create(*mGame);
+
+		mRadianceTextureSRV = *mIBLRadianceMap->GetShaderResourceViewAddress();
+		if (mRadianceTextureSRV == nullptr)
+			throw GameException("Failed to create Radiance Map.");
+		mIBLRadianceMap.release();
+		mIBLRadianceMap.reset(nullptr);
+
+		// Load a pre-computed Integration Map
+		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\sponzaCubeBrdf.dds").c_str(), nullptr, &mIntegrationMapTextureSRV)))
+			throw GameException("Failed to create Integration Texture.");
+		//									 //
+		//***********************************//
+		//									 //
+		//***********************************//
 	}
 
 	void SponzaMainDemo::Update(const GameTime& gameTime)
@@ -181,6 +234,7 @@ namespace Rendering
 		mShadowProjector->Update(gameTime);
 		mProxyModel->Update(gameTime);
 		mSkybox->Update(gameTime);
+		mSpherePBRObject->Update(gameTime);
 
 		UpdateDirectionalLightAndProjector(gameTime);
 
@@ -190,7 +244,6 @@ namespace Rendering
 		XMMATRIX viewMatrix = XMMatrixLookToRH(mProxyModel->PositionVector(), mDirectionalLight->DirectionVector(), mDirectionalLight->UpVector());
 		mLightFrustum.SetMatrix(XMMatrixMultiply(viewMatrix, projectionMatrix));
 		mShadowProjector->SetProjectionMatrix(GetProjectionMatrixFromFrustum(mLightFrustum, *mDirectionalLight));
-
 	}
 
 	void SponzaMainDemo::UpdateImGui()
@@ -204,18 +257,20 @@ namespace Rendering
 		if (mPostProcessingStack->isWindowOpened) mPostProcessingStack->ShowPostProcessingWindow();
 
 		ImGui::Separator();
+		mSpherePBRObject->UpdateGizmos();
+
 		ImGui::End();
 	}
 	void SponzaMainDemo::UpdateDirectionalLightAndProjector(const GameTime& gameTime)
 	{
 		float elapsedTime = (float)gameTime.ElapsedGameTime();
 
-#pragma region UPDATE_POSITIONS
+		#pragma region UPDATE_POSITIONS
 
 		mShadowProjector->SetPosition(XMVECTOR{ mLightFrustumCenter.x,mLightFrustumCenter.y , mLightFrustumCenter.z } /*+movement*/);
 #pragma endregion
 
-#pragma region UPDATE_ROTATIONS
+		#pragma region UPDATE_ROTATIONS
 
 		XMFLOAT2 rotationAmount = Vector2Helper::Zero;
 		if (mKeyboard->IsKeyDown(DIK_LEFTARROW))
@@ -290,7 +345,8 @@ namespace Rendering
 		mShadowMap->Begin();
 		direct3DDeviceContext->ClearDepthStencilView(mShadowMap->DepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 		direct3DDeviceContext->RSSetState(mShadowRasterizerState);
-		mSponzaShadowRenderingObject->Draw();
+		mSponzaLightingRenderingObject->Draw(1);
+		mSpherePBRObject->Draw(1);
 		mShadowMap->End();
 		mRenderStateHelper->RestoreRasterizerState();
 		#pragma endregion
@@ -303,7 +359,10 @@ namespace Rendering
 		mSkybox->Draw(gameTime);
 
 		//lighting
-		mSponzaLightingRenderingObject->Draw();
+		mSponzaLightingRenderingObject->Draw(0);
+
+		//PBR Sphere
+		mSpherePBRObject->Draw(0);
 
 		//gizmo
 		mProxyModel->Draw(gameTime);
@@ -332,7 +391,7 @@ namespace Rendering
 		projectedShadowMatrixTransform._41 = 0.5f;
 		projectedShadowMatrixTransform._42 = 0.5f;
 		projectedShadowMatrixTransform._44 = 1.0f;
-		XMMATRIX modelToShadowMatrix = XMMatrixIdentity() * mShadowProjector->ViewMatrix() * mShadowProjector->ProjectionMatrix() * XMLoadFloat4x4(&projectedShadowMatrixTransform);
+		XMMATRIX modelToShadowMatrix = worldMatrix * mShadowProjector->ViewMatrix() * mShadowProjector->ProjectionMatrix() * XMLoadFloat4x4(&projectedShadowMatrixTransform);
 
 		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->WorldViewProjection() << wvp;
 		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->World() << worldMatrix;
@@ -346,15 +405,60 @@ namespace Rendering
 		
 		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->AlbedoTexture() << mSponzaLightingRenderingObject->GetTextureData(meshIndex).AlbedoMap;
 		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->NormalTexture() << mSponzaLightingRenderingObject->GetTextureData(meshIndex).NormalMap;
-		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->SpecularTexture() << mSponzaLightingRenderingObject->GetTextureData(meshIndex).RoughnessMap;
+		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->SpecularTexture() << mSponzaLightingRenderingObject->GetTextureData(meshIndex).SpecularMap;
+		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->RoughnessTexture() << mSponzaLightingRenderingObject->GetTextureData(meshIndex).RoughnessMap;
+		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->MetallicTexture() << mSponzaLightingRenderingObject->GetTextureData(meshIndex).MetallicMap;
 		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->ShadowTexture() << mShadowMap->OutputTexture();
+		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->IrradianceTexture() << mIrradianceTextureSRV;
+		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->RadianceTexture() << mRadianceTextureSRV;
+		static_cast<StandardLightingMaterial*>(mSponzaLightingRenderingObject->GetMeshMaterial())->IntegrationTexture() << mIntegrationMapTextureSRV;
+	}	
+	void SponzaMainDemo::UpdateStandardLightingPBRMaterialVariables(int meshIndex)
+	{
+		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mSpherePBRObject->GetTransformMatrix()));
+		XMMATRIX wvp = worldMatrix * mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
 
+		XMFLOAT4X4 projectedShadowMatrixTransform = MatrixHelper::Zero;
+		projectedShadowMatrixTransform._11 = 0.5f;
+		projectedShadowMatrixTransform._22 = -0.5f;
+		projectedShadowMatrixTransform._33 = 1.0f;
+		projectedShadowMatrixTransform._41 = 0.5f;
+		projectedShadowMatrixTransform._42 = 0.5f;
+		projectedShadowMatrixTransform._44 = 1.0f;
+		XMMATRIX modelToShadowMatrix = worldMatrix * mShadowProjector->ViewMatrix() * mShadowProjector->ProjectionMatrix() * XMLoadFloat4x4(&projectedShadowMatrixTransform);
+
+		static_cast<StandardLightingMaterial*>(mSpherePBRObject->GetMeshMaterial())->WorldViewProjection() << wvp;
+		static_cast<StandardLightingMaterial*>(mSpherePBRObject->GetMeshMaterial())->World() << worldMatrix;
+		static_cast<StandardLightingMaterial*>(mSpherePBRObject->GetMeshMaterial())->ModelToShadow() << modelToShadowMatrix;
+		static_cast<StandardLightingMaterial*>(mSpherePBRObject->GetMeshMaterial())->CameraPosition() << mCamera->PositionVector();
+		
+		static_cast<StandardLightingMaterial*>(mSpherePBRObject->GetMeshMaterial())->SunDirection() << XMVectorNegate(mDirectionalLight->DirectionVector());
+		static_cast<StandardLightingMaterial*>(mSpherePBRObject->GetMeshMaterial())->SunColor() << XMVECTOR{ mSunColor[0],mSunColor[1], mSunColor[2] , 1.0f };
+		static_cast<StandardLightingMaterial*>(mSpherePBRObject->GetMeshMaterial())->AmbientColor() << XMVECTOR{ mAmbientColor[0], mAmbientColor[1], mAmbientColor[2], 1.0f };
+		static_cast<StandardLightingMaterial*>(mSpherePBRObject->GetMeshMaterial())->ShadowTexelSize() << XMVECTOR{ 1.0f / 4096.0f, 1.0f, 1.0f , 1.0f };
+		
+		static_cast<StandardLightingMaterial*>(mSpherePBRObject->GetMeshMaterial())->AlbedoTexture() << mSpherePBRObject->GetTextureData(meshIndex).AlbedoMap;
+		static_cast<StandardLightingMaterial*>(mSpherePBRObject->GetMeshMaterial())->NormalTexture() << mSpherePBRObject->GetTextureData(meshIndex).NormalMap;
+		static_cast<StandardLightingMaterial*>(mSpherePBRObject->GetMeshMaterial())->SpecularTexture() << mSpherePBRObject->GetTextureData(meshIndex).SpecularMap;
+		static_cast<StandardLightingMaterial*>(mSpherePBRObject->GetMeshMaterial())->RoughnessTexture() << mSpherePBRObject->GetTextureData(meshIndex).RoughnessMap;
+		static_cast<StandardLightingMaterial*>(mSpherePBRObject->GetMeshMaterial())->MetallicTexture() << mSpherePBRObject->GetTextureData(meshIndex).MetallicMap;
+		static_cast<StandardLightingMaterial*>(mSpherePBRObject->GetMeshMaterial())->ShadowTexture() << mShadowMap->OutputTexture();
+		static_cast<StandardLightingMaterial*>(mSpherePBRObject->GetMeshMaterial())->IrradianceTexture() << mIrradianceTextureSRV;
+		static_cast<StandardLightingMaterial*>(mSpherePBRObject->GetMeshMaterial())->RadianceTexture() << mRadianceTextureSRV;
+		static_cast<StandardLightingMaterial*>(mSpherePBRObject->GetMeshMaterial())->IntegrationTexture() << mIntegrationMapTextureSRV;
 	}
 
 	void SponzaMainDemo::UpdateDepthMapMaterialVariables(int meshIndex)
 	{
 		XMMATRIX wlvp = XMMatrixIdentity() * mShadowProjector->ViewMatrix() * mShadowProjector->ProjectionMatrix();
-		static_cast<DepthMapMaterial*>(mSponzaShadowRenderingObject->GetMeshMaterial())->WorldLightViewProjection() << wlvp;
+		static_cast<DepthMapMaterial*>(mSponzaLightingRenderingObject->GetMaterials()[1])->WorldLightViewProjection() << wlvp;
+	}
+
+	void SponzaMainDemo::UpdateDepthMapMaterialPBRVariables(int meshIndex)
+	{
+		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mSpherePBRObject->GetTransformMatrix()));
+		XMMATRIX wlvp = worldMatrix * mShadowProjector->ViewMatrix() * mShadowProjector->ProjectionMatrix();
+		static_cast<DepthMapMaterial*>(mSpherePBRObject->GetMaterials()[1])->WorldLightViewProjection() << wlvp;
 	}
 
 	XMMATRIX SponzaMainDemo::GetProjectionMatrixFromFrustum(Frustum& cameraFrustum, DirectionalLight& light)

@@ -101,7 +101,7 @@ namespace Rendering
 		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
 
 		// Load the model
-		mStatueRenderingObject = new RenderingObject("Statue", *mGame, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\statue\\statue.fbx"), true)));
+		mStatueRenderingObject = new RenderingObject("Statue", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\statue\\statue.fbx"), true)));
 
 		// Load the effect
 		Effect* effect = new Effect(*mGame);
@@ -129,7 +129,7 @@ namespace Rendering
 			}
 		}
 
-		mStatueRenderingObject->LoadInstanceBuffers(instanceData);
+		mStatueRenderingObject->LoadInstanceBuffers(instanceData, 0);
 		
 		// Setup lights data
 		light0.pointLight = new PointLight(*mGame);
@@ -286,7 +286,7 @@ namespace Rendering
 		ID3D11DeviceContext* direct3DDeviceContext = mGame->Direct3DDeviceContext();
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		mStatueRenderingObject->DrawInstanced();
+		mStatueRenderingObject->DrawInstanced(0);
 
 		mProxyModel0->Draw(gameTime);
 		mProxyModel1->Draw(gameTime);

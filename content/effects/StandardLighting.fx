@@ -1,5 +1,6 @@
 // Standard Lighting Effect
 static const float4 ColorWhite = { 1, 1, 1, 1 };
+static const float Pi = 3.141592654f;
 cbuffer CBufferPerFrame
 {
     float4 SunDirection;
@@ -18,9 +19,14 @@ cbuffer CBufferPerObject
 Texture2D AlbedoTexture;
 Texture2D NormalTexture;
 Texture2D SpecularTexture;
-//Texture2D metallicTexture;
-//Texture2D aoTexture;
+Texture2D MetallicTexture;
+Texture2D RoughnessTexture;
+
 Texture2D ShadowTexture;
+
+TextureCube IrradianceTexture;
+TextureCube RadianceTexture;
+Texture2D IntegrationTexture;
 
 SamplerState Sampler
 {
@@ -148,6 +154,113 @@ float3 ApplyDirectionalLight(float3 diffuseColor,float3 specularColor, float spe
     return shadow * ApplyLightCommon(diffuseColor, specularColor, specularMask, gloss, normal, viewDir, lightDir, lightColor);
 }
 
+// ===============================================================================================
+// http://graphicrants.blogspot.com.au/2013/08/specular-brdf-reference.html
+// ===============================================================================================
+float GGX(float NdotV, float a)
+{
+    float k = a / 2;
+    return NdotV / (NdotV * (1.0f - k) + k);
+}
+
+// ===============================================================================================
+// Geometry with Smith approximation:
+// http://blog.selfshadow.com/publications/s2013-shading-course/rad/s2013_pbs_rad_notes.pdf
+// http://graphicrants.blogspot.fr/2013/08/specular-brdf-reference.html
+// ===============================================================================================
+float G_Smith(float a, float nDotV, float nDotL)
+{
+    return GGX(nDotL, a * a) * GGX(nDotV, a * a);
+}
+
+// ================================================================================================
+// Fresnel with Schlick's approximation:
+// http://blog.selfshadow.com/publications/s2013-shading-course/rad/s2013_pbs_rad_notes.pdf
+// http://graphicrants.blogspot.fr/2013/08/specular-brdf-reference.html
+// ================================================================================================
+float3 Schlick_Fresnel(float3 f0, float3 h, float3 l)
+{
+    return f0 + (1.0f - f0) * pow((1.0f - dot(l, h)), 5.0f);
+}
+// ================================================================================================
+// Lambertian BRDF
+// http://en.wikipedia.org/wiki/Lambertian_reflectance
+// ================================================================================================
+float3 DirectDiffuseBRDF(float3 diffuseAlbedo, float nDotL)
+{
+    return (diffuseAlbedo * nDotL) / Pi;
+}
+
+// ================================================================================================
+// Cook-Torrence BRDF
+float3 DirectSpecularBRDF(float3 specularAlbedo, float3 positionWS, float3 normalWS, float3 lightDir, float roughness)
+{
+    float3 viewDir = normalize(CameraPosition.xyz - positionWS);
+    float3 halfVec = normalize(viewDir + lightDir);
+
+    float nDotH = saturate(dot(normalWS, halfVec));
+    float nDotL = saturate(dot(normalWS, lightDir));
+    float nDotV = max(dot(normalWS, viewDir), 0.0001f);
+
+    float alpha2 = roughness * roughness;
+
+	// Normal distribution term with Trowbridge-Reitz/GGX.
+    float D = alpha2 / (Pi * pow(nDotH * nDotH * (alpha2 - 1) + 1, 2.0f));
+ 
+	// Fresnel term with Schlick's approximation.
+    float3 F = Schlick_Fresnel(specularAlbedo, halfVec, lightDir);
+
+	// Geometry term with Smith's approximation.
+    float G = G_Smith(roughness, nDotV, nDotL);
+
+    return D * F * G;
+}
+// ================================================================================================
+
+float3 DirectLightingPBR(float3 normalWS, float3 lightColor, float3 diffuseAlbedo,
+	float3 specularAlbedo, float3 positionWS, float roughness, float attenuation)
+{
+    float3 lighting = 0.0f;
+    float3 lightDir = SunDirection.xyz;
+
+    float nDotL = saturate(dot(normalWS, lightDir));
+
+    if (nDotL > 0.0f)
+    {
+        lighting = DirectDiffuseBRDF(diffuseAlbedo, nDotL) * attenuation + DirectSpecularBRDF(specularAlbedo, positionWS, normalWS, lightDir, roughness) * attenuation;
+    }
+
+    return max(lighting, 0.0f) * lightColor;
+}
+
+// ================================================================================================
+// Split sum approximation 
+// http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
+// ================================================================================================
+float3 ApproximateSpecularIBL(float3 specularAlbedo, float3 reflectDir, float nDotV, float roughness)
+{
+	// Mip level is in [0, 6] range and roughness is [0, 1].
+    float mipIndex = roughness * 6;
+    float3 prefilteredColor = RadianceTexture.SampleLevel(Sampler, reflectDir, mipIndex);
+    float3 environmentBRDF = IntegrationTexture.Sample(Sampler, float2(roughness, nDotV));
+
+    return prefilteredColor * (specularAlbedo * environmentBRDF.x + environmentBRDF.y);
+
+}
+float3 IndirectLighting(float roughness, float3 diffuseAlbedo, float3 specularAlbedo, float3 normalWS, float3 positionWS)
+{
+    float3 viewDir = normalize(CameraPosition.xyz - positionWS);
+    float3 reflectDir = normalize(reflect(-viewDir, normalWS));
+    float nDotV = max(dot(normalWS, viewDir), 0.0001f);
+
+	// Sample the indirect diffuse lighting from the irradiance environment map. 
+    float3 indirectDiffuseLighting = IrradianceTexture.SampleLevel(Sampler, normalWS, 0).rgb * diffuseAlbedo;
+	
+    // Split sum approximation of specular lighting.
+    float3 indirectSpecularLighting = ApproximateSpecularIBL(specularAlbedo, reflectDir, nDotV, roughness);
+
+    return indirectDiffuseLighting + indirectSpecularLighting;
+}
 
 float3 mainPS(VS_OUTPUT vsOutput) : SV_Target0
 {
@@ -170,7 +283,9 @@ float3 mainPS(VS_OUTPUT vsOutput) : SV_Target0
         normal = normalize(mul(normal, tbn));
     }
     
-    float3 specularAlbedo = float3(0.56, 0.56, 0.56);
+    //float3 specularAlbedo = float3(0.56, 0.56, 0.56);
+    float metalness = MetallicTexture.Sample(Sampler, vsOutput.UV).r;
+    float3 specularAlbedo = float3(metalness, metalness, metalness);
     float specularMask = SpecularTexture.Sample(Sampler, vsOutput.UV).g;
     float3 viewDir = normalize(vsOutput.ViewDir);
     colorSum += ApplyDirectionalLight(diffuseAlbedo.rgb, specularAlbedo, specularMask, gloss, normal, viewDir, SunDirection.xyz, SunColor.xyz, vsOutput.ShadowCoord);
@@ -186,6 +301,33 @@ float3 mainPS(VS_OUTPUT vsOutput) : SV_Target0
     return colorSum;
 }
 
+float3 mainPS_PBR(VS_OUTPUT vsOutput) : SV_Target0
+{
+
+    float3 sampledNormal = (2 * NormalTexture.Sample(Sampler, vsOutput.UV).xyz) - 1.0; // Map normal from [0..1] to [-1..1]
+    float3x3 tbn = float3x3(vsOutput.Tangent, cross(vsOutput.Normal, vsOutput.Tangent), vsOutput.Normal);
+    sampledNormal = mul(sampledNormal, tbn); // Transform normal to world space
+
+    float3 normalWS = sampledNormal;
+
+    float4 diffuseAlbedo = pow(AlbedoTexture.Sample(Sampler, vsOutput.UV), 2.2);
+    clip(diffuseAlbedo.a < 0.1f ? -1 : 1);
+    float  metalness = MetallicTexture.Sample(Sampler, vsOutput.UV).r;
+    float roughness = RoughnessTexture.Sample(Sampler, vsOutput.UV).r;
+
+    float3 specularAlbedo = float3(metalness, metalness, metalness);
+
+    float3 directLighting = DirectLightingPBR(normalWS, SunColor.xyz, diffuseAlbedo.rgb,
+		specularAlbedo, vsOutput.WorldPos, roughness, 1.0f);
+    
+    float3 indirectLighting = IndirectLighting(roughness, diffuseAlbedo.rgb,
+		specularAlbedo, normalWS, vsOutput.WorldPos);
+
+    float shadow = GetShadow(vsOutput.ShadowCoord);
+    float3 ambient = AmbientColor.rgb * diffuseAlbedo.rgb;
+    return ambient + float3(directLighting + indirectLighting) * shadow;
+}
+
 /************* Techniques *************/
 
 technique11 standard_lighting_no_pbr
@@ -195,5 +337,15 @@ technique11 standard_lighting_no_pbr
         SetVertexShader(CompileShader(vs_5_0, mainVS()));
         SetGeometryShader(NULL);
         SetPixelShader(CompileShader(ps_5_0, mainPS()));
+    }
+}
+
+technique11 standard_lighting_pbr
+{
+    pass p0
+    {
+        SetVertexShader(CompileShader(vs_5_0, mainVS()));
+        SetGeometryShader(NULL);
+        SetPixelShader(CompileShader(ps_5_0, mainPS_PBR()));
     }
 }
