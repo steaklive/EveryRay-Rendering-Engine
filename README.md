@@ -16,7 +16,7 @@ I have been changing and extending it for educational purposes with all kinds of
 
 # Features
 - 3D model loading (.obj, .fbx and etc.) with Assimp Library
-- User Interface with ImGUI
+- User Interface with ImGUI, ImGuizmo
 - AABB, OBB, collision detection
 - Normal-Mapping, Environment-Mapping
 - Post Processing: Motion Blur, Vignette, LUT color grading, FXAA, Tonemap, Bloom
