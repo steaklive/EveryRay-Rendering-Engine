@@ -5,6 +5,7 @@ Rendering engine/framework written in C++ with DirectX 11 support.
 
 I have been changing and extending it for educational purposes with all kinds of features (see the description below) for quite a while. Stay tuned for more updates :)
 
+<br>![alt text](https://i.ibb.co/KqbfGz9/Every-Ray-Sponza.png")
 <br>![alt text](https://preview.ibb.co/jVodie/Every_Ray_PBR.png")
 <br>![alt text](https://preview.ibb.co/h069pK/Every_Ray_CSM.png")
 <br>![alt text](https://preview.ibb.co/fqP3uK/Every_Ray_Instancing.png")
@@ -18,7 +19,7 @@ I have been changing and extending it for educational purposes with all kinds of
 - User Interface with ImGUI
 - AABB, OBB, collision detection
 - Normal-Mapping, Environment-Mapping
-- Post Processing: Motion Blur, Vignette, LUT color grading, FXAA
+- Post Processing: Motion Blur, Vignette, LUT color grading, FXAA, Tonemap, Bloom
 - Physically Based Rendering with IBL
 - Cascaded Shadow Mapping
 - GPU Instancing
