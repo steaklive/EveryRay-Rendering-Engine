@@ -2,7 +2,10 @@
 .vs/
 
 # ignore external libraries
-external/
+external/Assimp
+external/DirectXTK
+external/Effects11
+!external/ImGUI
 *.lib
 
 # taken from NVIDIA GameWorks
