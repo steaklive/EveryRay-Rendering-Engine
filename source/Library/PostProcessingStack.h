@@ -79,9 +79,9 @@ namespace Rendering
 			ID3D11Buffer* ConstBuffer;	
 			ID3D11SamplerState* LinearSampler;
 
-			float middlegrey = 0.065f;
-			float bloomthreshold = 0.23f;
-			float bloommultiplier = 0.85f;
+			float middlegrey = 0.053f;
+			float bloomthreshold = 0.342f;
+			float bloommultiplier = 0.837f;
 			bool isActive = true;
 		};
 		

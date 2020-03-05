@@ -1,6 +1,5 @@
 cbuffer VSConstants
 {
-	float2  HalfPixel;
 	float	Face;
 	float	MipIndex;
 };

@@ -32,7 +32,9 @@ namespace Library
 		float FarPlaneDistance() const;
 
 		XMMATRIX ViewMatrix() const;
+		XMFLOAT4X4 ViewMatrix4X4() const;
 		XMMATRIX ProjectionMatrix() const;
+		XMFLOAT4X4 ProjectionMatrix4X4() const;
 		XMMATRIX ViewProjectionMatrix() const;
 		XMMATRIX RotationTransformMatrix() const;
 

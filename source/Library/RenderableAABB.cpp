@@ -163,7 +163,7 @@ namespace Library
 
 	}
 
-	void RenderableAABB::Draw(const GameTime& gameTime)
+	void RenderableAABB::Draw()
 	{
 		assert(mPass != nullptr);
 		assert(mInputLayout != nullptr);

@@ -30,7 +30,7 @@ namespace Library
 
 		virtual void Initialize() override;
 		virtual void Update(const GameTime& gameTime) override;
-		virtual void Draw(const GameTime& gameTime) override;
+		void Draw();
 
 		bool isColliding = false;
 

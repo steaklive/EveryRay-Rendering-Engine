@@ -458,7 +458,7 @@ namespace Rendering
 		
 		mDebugFrustum->Draw(gameTime);
 
-		if (mIsAABBRendered) std::for_each(mInstancedObject->DebugInstancesAABBs.begin(), mInstancedObject->DebugInstancesAABBs.end(), [&](RenderableAABB* a) {a->Draw(gameTime); });
+		if (mIsAABBRendered) std::for_each(mInstancedObject->DebugInstancesAABBs.begin(), mInstancedObject->DebugInstancesAABBs.end(), [&](RenderableAABB* a) {a->Draw(); });
 
 
 		mRenderStateHelper.SaveAll();

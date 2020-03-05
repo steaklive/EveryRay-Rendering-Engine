@@ -114,17 +114,18 @@ namespace Rendering
 		Effect* instancingEffect = new Effect(*mGame);
 		instancingEffect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\Instancing.fx"));
 		
-		mDynamicConvexHullObject = new RenderingObject("Bunny Convex Hull", *mGame, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\bunny\\bunny_convexhull.fbx"), true)));
+		mDynamicConvexHullObject = new RenderingObject("Bunny Convex Hull", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\bunny\\bunny_convexhull.fbx"), true)));
 
 		#pragma region DYNAMIC_OBJECT_INITIALIZATION
 	
-		mDynamicInstancedObject = new RenderingObject("Bunny Dynamic", *mGame, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\bunny\\bunny.fbx"), true)));
+		mDynamicInstancedObject = new RenderingObject("Bunny Dynamic", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\bunny\\bunny.fbx"), true)));
 		mDynamicInstancedObject->LoadMaterial(new InstancingMaterial(), instancingEffect);
 		mDynamicInstancedObject->LoadRenderBuffers();
 		for (size_t i = 0; i < mDynamicInstancedObject->GetMeshCount(); i++)
 			mDynamicInstancedObject->LoadCustomMeshTextures(i,
 				Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"),
 				Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"),
+				Utility::GetFilePath(L""),
 				Utility::GetFilePath(L""),
 				Utility::GetFilePath(L""),
 				Utility::GetFilePath(L""),
@@ -143,20 +144,21 @@ namespace Rendering
 
 		// generate dynamic objects' random positions within a volume
 		CalculateDynamicObjectsRandomDistribution();
-		mDynamicInstancedObject->LoadInstanceBuffers(mDynamicObjectInstanceData);
+		mDynamicInstancedObject->LoadInstanceBuffers(mDynamicObjectInstanceData, 0);
 		mDynamicInstancedObject->MeshMaterialVariablesUpdateEvent->AddListener("Instancing Material Dynamic Object Update", [&](int meshIndex) { UpdateInstancingMaterialVariables(*mDynamicInstancedObject, meshIndex); });
 
 		#pragma endregion
 
 		#pragma region STATIC_OBJECT_INITIALIZATION
 
-		mStaticInstancedObject = new RenderingObject("Bunny Dynamic", *mGame, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)));
+		mStaticInstancedObject = new RenderingObject("Bunny Dynamic", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)));
 		mStaticInstancedObject->LoadMaterial(new InstancingMaterial(), instancingEffect);
 		mStaticInstancedObject->LoadRenderBuffers();
 		for (size_t i = 0; i < mStaticInstancedObject->GetMeshCount(); i++)
 			mStaticInstancedObject->LoadCustomMeshTextures(i,
 				Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap2.png"),
 				Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"),
+				Utility::GetFilePath(L""),
 				Utility::GetFilePath(L""),
 				Utility::GetFilePath(L""),
 				Utility::GetFilePath(L""),
@@ -175,7 +177,7 @@ namespace Rendering
 
 		// generate static objects' random positions within a volume
 		CalculateStaticObjectsRandomDistribution();
-		mStaticInstancedObject->LoadInstanceBuffers(mStaticObjectInstanceData);
+		mStaticInstancedObject->LoadInstanceBuffers(mStaticObjectInstanceData, 0);
 		mStaticInstancedObject->MeshMaterialVariablesUpdateEvent->AddListener("Instancing Material Static Object Update", [&](int meshIndex) { UpdateInstancingMaterialVariables(*mStaticInstancedObject, meshIndex); });
 
 #pragma endregion
@@ -483,7 +485,7 @@ namespace Rendering
 			}
 		}
 
-		mDynamicInstancedObject->UpdateInstanceData(mDynamicObjectInstanceData);
+		mDynamicInstancedObject->UpdateInstanceData(mDynamicObjectInstanceData, 0);
 	}
 	void CollisionTestDemo::UpdateObjectsTransforms_OptimizedDataAccess(const GameTime& gameTime)
 	{
@@ -626,7 +628,7 @@ namespace Rendering
 			}
 		}
 
-		mDynamicInstancedObject->UpdateInstanceData(mDynamicObjectInstanceData);
+		mDynamicInstancedObject->UpdateInstanceData(mDynamicObjectInstanceData, 0);
 	}
 	void CollisionTestDemo::UpdateSpatialElement(std::vector<SpatialElement*>& elements, int startIndex, int endIndex, const GameTime& gameTime)
 	{
@@ -750,19 +752,19 @@ namespace Rendering
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		#pragma region DRAW_OBJECTS
-		mDynamicInstancedObject->DrawInstanced();
-		mStaticInstancedObject->DrawInstanced();
+		mDynamicInstancedObject->DrawInstanced(0);
+		mStaticInstancedObject->DrawInstanced(0);
 #pragma endregion
 
 		#pragma region DRAW_GIZMOS
 		
 		if (mIsAABBRendered)
-			std::for_each(mSpatialElements.begin(), mSpatialElements.end(), [&](SpatialElement* a) {a->AABB->Draw(gameTime); });
+			std::for_each(mSpatialElements.begin(), mSpatialElements.end(), [&](SpatialElement* a) {a->AABB->Draw(); });
 		if (mIsOBBRendered)
 			std::for_each(mSpatialElements.begin(), mSpatialElements.end(), [&](SpatialElement* a) {a->OBB->Draw(gameTime); });
 
 
-		mVolumeDebugAABB->Draw(gameTime);
+		mVolumeDebugAABB->Draw();
 
 		if (mIsOctreeRendered)
 			mOctreeStructure->GetRootNode()->DrawCells(gameTime);

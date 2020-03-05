@@ -209,6 +209,9 @@ CustomRenderTarget::~CustomRenderTarget()
 			ReleaseObject(mUAVs[i]);
 		}
 	}
+
+	ReleaseObject(mTexture2D);
+
 	mMipLevels = 0;
 	mBindFlags = 0;
 }

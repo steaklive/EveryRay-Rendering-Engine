@@ -42,6 +42,7 @@
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
 #include "imgui_impl_win32.h"
+#include "ImGuizmo.h"
 
 namespace Rendering
 {
@@ -227,7 +228,34 @@ namespace Rendering
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
+		ImGuizmo::BeginFrame();
+		if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Backspace)))
+			mEditorModeActive = !mEditorModeActive;
+		ImGuizmo::Enable(mEditorModeActive);
+		if (mEditorModeActive)
+		{
+			mGrid->SetVisible(true);
 
+			ImGui::Begin("EveryRay Editor");
+
+			ImGui::Text("Camera Position: (%.1f,%.1f,%.1f)", mCamera->Position().x, mCamera->Position().y, mCamera->Position().z);
+			if (ImGui::Button("Reset Position"))
+				mCamera->SetPosition(XMFLOAT3(0, 0, 0));
+			ImGui::SliderFloat("Camera Speed", &movementRate, 10.0f, 2000.0f);
+			mCamera->SetMovementRate(movementRate);
+			ImGui::SliderFloat("Camera FOV", &fov, 1.0f, 90.0f);
+			mCamera->SetFOV(fov*XM_PI / 180.0f);
+			ImGui::SliderFloat("Camera Near Plane", &nearPlaneDist, 0.5f, 150.0f);
+			mCamera->SetNearPlaneDistance(nearPlaneDist);
+			ImGui::SliderFloat("Camera Far Plane", &farPlaneDist, 150.0f, 200000.0f);
+			mCamera->SetFarPlaneDistance(farPlaneDist);
+			ImGui::Separator();
+			
+			ImGui::End();
+		}
+		else
+			mGrid->SetVisible(false);
+			
 		ImGui::SetNextWindowBgAlpha(0.9f); // Transparent background
 		if (ImGui::Begin("EveryRay - Rendering Engine: Configuration"))
 		{
@@ -243,28 +271,7 @@ namespace Rendering
 			
 			ImGui::Separator();
 
-			ImGui::Checkbox("Show Camera Settings", &mShowCameraSettings);
-			if (mShowCameraSettings)
-			{
-				ImGui::Begin("Camera Settings");
-				ImGui::Text("Camera Position: (%.1f,%.1f,%.1f)", mCamera->Position().x, mCamera->Position().y, mCamera->Position().z);
-				if (ImGui::Button("Reset Position"))
-					mCamera->SetPosition(XMFLOAT3(0, 0, 0));
-
-				ImGui::SliderFloat("Camera Speed", &movementRate, 10.0f, 2000.0f);
-				mCamera->SetMovementRate(movementRate);
-
-				ImGui::SliderFloat("Camera FOV", &fov, 1.0f, 90.0f);
-				mCamera->SetFOV(fov*XM_PI / 180.0f);
-
-				ImGui::SliderFloat("Camera Near Plane", &nearPlaneDist, 0.5f, 150.0f);
-				mCamera->SetNearPlaneDistance(nearPlaneDist);
-
-				ImGui::SliderFloat("Camera Far Plane", &farPlaneDist, 150.0f, 200000.0f);
-				mCamera->SetFarPlaneDistance(farPlaneDist);
-				ImGui::End();
-			}
-			ImGui::Separator();
+			ImGui::Checkbox("Switch to Editor", &mEditorModeActive);
 
 			ImGui::Checkbox("Show Profiler", &mShowProfiler);
 			if (mShowProfiler)
@@ -281,12 +288,6 @@ namespace Rendering
 				}
 				ImGui::End();
 			}
-			mGrid->SetVisible(false);
-			ImGui::Separator();
-
-			ImGui::Checkbox("Show World Grid", &showWorldGrid);
-			if (showWorldGrid) 
-				mGrid->SetVisible(showWorldGrid);
 			ImGui::Separator();
 
 			if (ImGui::CollapsingHeader("Load Demo Level"))
@@ -294,8 +295,6 @@ namespace Rendering
 				if (ImGui::Combo("Level", &currentLevel, displayedLevelNames, IM_ARRAYSIZE(displayedLevelNames)))
 					SetLevel(currentLevel);
 			}
-
-
 		}
 		ImGui::End();
 		#pragma endregion

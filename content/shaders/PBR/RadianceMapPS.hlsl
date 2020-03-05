@@ -3,7 +3,6 @@ static const float Pi = 3.141592654f;
 
 cbuffer PSConstants
 {
-	float2	HalfPixel;
 	float	Face;
 	float	MipIndex;
 };

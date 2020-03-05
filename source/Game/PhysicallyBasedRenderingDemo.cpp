@@ -149,18 +149,18 @@ namespace Rendering
 	{
 		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
 
-		std::unique_ptr<Model> model(new Model(*mGame, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\shaderball.fbx", true));
+		std::unique_ptr<Model> model(new Model(*mGame, Utility::GetFilePath("content\\models\\shaderball.fbx"), true));
 
 		// Initialize the material
 		mEffectPBR = new Effect(*mGame);
-		mEffectPBR->CompileFromFile(L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Effects\\PBR.fx");
+		mEffectPBR->CompileFromFile(Utility::GetFilePath(L"content\\effects\\PBR.fx"));
 		
 		//***********************************//
 		//			Initialize IBL			 //
 		//***********************************//
 		//									 //
 		// Load Pre-Convoluted Irradiance Map
-		std::wstring textureIrradiance =  L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Skyboxes\\milkmill_diffuse_cube_map.dds";
+		std::wstring textureIrradiance = Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\milkmill_diffuse_cube_map.dds");
 		HRESULT hr5 = DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureIrradiance.c_str(), nullptr, &mIrradianceTextureShaderResourceView);
 		if (FAILED(hr5))
 		{
@@ -168,7 +168,7 @@ namespace Rendering
 		}
 
 		// Create an IBL Radiance Map from Environment Map
-		mRadianceMap.reset(new IBLRadianceMap(*mGame, L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Skyboxes\\milkmill_cube_map.dds") );
+		mRadianceMap.reset(new IBLRadianceMap(*mGame, Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\milkmill_cube_map.dds")) );
 		mRadianceMap->Initialize();
 		mRadianceMap->Create(*mGame);
 		
@@ -181,7 +181,7 @@ namespace Rendering
 		mRadianceMap.reset(nullptr);
 
 		// Load a pre-computed Integration Map
-		std::wstring textureIntegration = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Skyboxes\\ibl_brdf_lut.png";
+		std::wstring textureIntegration = Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\ibl_brdf_lut.png");
 		DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureIntegration.c_str(), nullptr, &mIntegrationTextureShaderResourceView);
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureIntegration.c_str(), nullptr, &mIntegrationTextureShaderResourceView)))
 		{
@@ -195,22 +195,23 @@ namespace Rendering
 		
 		//***********************************//
 		// LOADING INNER MATERIAL TEXTURES   //
-		std::wstring textureShaderBallInnerMaterialAlbedo = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png";
+		std::wstring textureShaderBallInnerMaterialAlbedo =		Utility::GetFilePath(L"content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png");
+		std::wstring textureShaderBallInnerMaterialMetal =		Utility::GetFilePath(L"content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png");
+		std::wstring textureShaderBallInnerMaterialRoughness =  Utility::GetFilePath(L"content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png");
+		std::wstring textureShaderBallInnerMaterialNormal =		Utility::GetFilePath(L"content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png");
+		
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureShaderBallInnerMaterialAlbedo.c_str(), nullptr, &mShaderBallInnerAlbedoTextureShaderResourceView)))
 		{
 			throw GameException("Failed to create ShaderBall Inner Material Albedo Texture.");
 		}
-		std::wstring textureShaderBallInnerMaterialMetal = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureShaderBallInnerMaterialMetal.c_str(), nullptr, &mShaderBallInnerMetalnessTextureShaderResourceView)))
 		{
 			throw GameException("Failed to create ShaderBall Inner Material Metalness Texture.");
 		}
-		std::wstring textureShaderBallInnerMaterialRoughness = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureShaderBallInnerMaterialRoughness.c_str(), nullptr, &mShaderBallInnerRoughnessTextureShaderResourceView)))
 		{
 			throw GameException("Failed to create ShaderBall Inner Material Roughness Texture.");
 		}
-		std::wstring textureShaderBallInnerMaterialNormal = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureShaderBallInnerMaterialNormal.c_str(), nullptr, &mShaderBallInnerNormalTextureShaderResourceView)))
 		{
 			throw GameException("Failed to create ShaderBall Inner Material Normal Texture.");
@@ -221,22 +222,22 @@ namespace Rendering
 
 		//***********************************//
 		// LOADING 'BRICK' TEXTURES		     //
-		std::wstring textBrickAlbedo = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Brick\\redbricks2b-albedo.png";
+		std::wstring textBrickAlbedo =	  Utility::GetFilePath(L"content\\textures\\PBR\\Brick\\redbricks2b-albedo.png");
+		std::wstring textBrickMetalness = Utility::GetFilePath(L"content\\textures\\PBR\\Brick\\redbricks2b-metalness.png");
+		std::wstring textBrickRoughness = Utility::GetFilePath(L"content\\textures\\PBR\\Brick\\redbricks2b-rough.png");
+		std::wstring textBrickNormal =	  Utility::GetFilePath(L"content\\textures\\PBR\\Brick\\redbricks2b-normal.png");
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textBrickAlbedo.c_str(), nullptr, &shaderBallBrickMaterial.AlbedoTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Brick Albedo Texture.");
 		}
-		std::wstring textBrickMetalness = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Brick\\redbricks2b-metalness.png";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textBrickMetalness.c_str(), nullptr, &shaderBallBrickMaterial.MetalnessTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Brick Metalness Texture.");
 		}
-		std::wstring textBrickRoughness = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Brick\\redbricks2b-rough.png";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textBrickRoughness.c_str(), nullptr, &shaderBallBrickMaterial.RoughnessTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Brick Roughness Texture.");
 		}
-		std::wstring textBrickNormal = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Brick\\redbricks2b-normal.png";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textBrickNormal.c_str(), nullptr, &shaderBallBrickMaterial.NormalTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Brick Normal Texture.");
@@ -247,22 +248,22 @@ namespace Rendering
 
 		//***********************************//
 		// LOADING 'CONCRETE' TEXTURES		 //
-		std::wstring textConcreteAlbedo = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Concrete\\concrete2_albedo.png";
+		std::wstring textConcreteAlbedo =	 Utility::GetFilePath(L"content\\textures\\PBR\\Concrete\\concrete2_albedo.png");
+		std::wstring textConcreteMetalness = Utility::GetFilePath(L"content\\textures\\PBR\\Concrete\\concrete2_Metallic.png");
+		std::wstring textConcreteRoughness = Utility::GetFilePath(L"content\\textures\\PBR\\Concrete\\concrete2_Roughness.png");
+		std::wstring textConcreteNormal =	 Utility::GetFilePath(L"content\\textures\\PBR\\Concrete\\concrete2_Normal-dx.png");
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textConcreteAlbedo.c_str(), nullptr, &shaderBallConcreteMaterial.AlbedoTextureShaderResourceView)	))
 		{
 			throw GameException("Failed to load Concrete Albedo Texture.");
 		}
-		std::wstring textConcreteMetalness = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Concrete\\concrete2_Metallic.png";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textConcreteMetalness.c_str(), nullptr, &shaderBallConcreteMaterial.MetalnessTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Concrete Metalness Texture.");
 		}
-		std::wstring textConcreteRoughness = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Concrete\\concrete2_Roughness.png";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textConcreteRoughness.c_str(), nullptr, &shaderBallConcreteMaterial.RoughnessTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Concrete Roughness Texture.");
 		}
-		std::wstring textConcreteNormal = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Concrete\\concrete2_Normal-dx.png";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textConcreteNormal.c_str(), nullptr, &shaderBallConcreteMaterial.NormalTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Concrete Normal Texture.");
@@ -273,22 +274,22 @@ namespace Rendering
 
 		//***********************************//
 		// LOADING 'BATHROOM' TEXTURES		 //
-		std::wstring textBathroomAlbedo = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Bathroom\\bathroomtile1_basecolor.png";
+		std::wstring textBathroomAlbedo =	  Utility::GetFilePath(L"content\\textures\\PBR\\Bathroom\\bathroomtile1_basecolor.png");
+		std::wstring textBathroomMetalness =  Utility::GetFilePath(L"content\\textures\\PBR\\Bathroom\\bathroomtile1_metalness.png");
+		std::wstring textBathroomNormal =	  Utility::GetFilePath(L"content\\textures\\PBR\\Bathroom\\bathroomtile1_normal-dx.png");
+		std::wstring textBathroomRoughness =  Utility::GetFilePath(L"content\\textures\\PBR\\Bathroom\\bathroomtile1_roughness.png");
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textBathroomAlbedo.c_str(), nullptr, &shaderBallBathroomMaterial.AlbedoTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Bathroom Albedo Texture.");
 		}
-		std::wstring textBathroomMetalness = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Bathroom\\bathroomtile1_metalness.png";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textBathroomMetalness.c_str(), nullptr, &shaderBallBathroomMaterial.MetalnessTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Bathroom Metalness Texture.");
 		}
-		std::wstring textBathroomRoughness = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Bathroom\\bathroomtile1_roughness.png";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textBathroomRoughness.c_str(), nullptr, &shaderBallBathroomMaterial.RoughnessTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Bathroom Roughness Texture.");
 		}
-		std::wstring textBathroomNormal = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Bathroom\\bathroomtile1_normal-dx.png";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textBathroomNormal.c_str(), nullptr, &shaderBallBathroomMaterial.NormalTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Bathroom Normal Texture.");
@@ -299,22 +300,22 @@ namespace Rendering
 
 		//***********************************//
 		// LOADING 'FLOOR' TEXTURES		     //
-		std::wstring textFloorAlbedo = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Floor\\Herringbone_marble_tiles_01_Color.png";
+		std::wstring textFloorAlbedo =    Utility::GetFilePath(L"content\\textures\\PBR\\Floor\\Herringbone_marble_tiles_01_Color.png");
+		std::wstring textFloorMetalness = Utility::GetFilePath(L"content\\textures\\PBR\\Floor\\EmptyMetalMap.png");
+		std::wstring textFloorRoughness = Utility::GetFilePath(L"content\\textures\\PBR\\Floor\\Herringbone_marble_tiles_01_Roughness.png");
+		std::wstring textFloorNormal =	  Utility::GetFilePath(L"content\\textures\\PBR\\Floor\\Herringbone_marble_tiles_01_Normal.png");
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textFloorAlbedo.c_str(), nullptr, &shaderBallFloorMaterial.AlbedoTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Floor Albedo Texture.");
 		}
-		std::wstring textFloorMetalness = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Floor\\EmptyMetalMap.png";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textFloorMetalness.c_str(), nullptr, &shaderBallFloorMaterial.MetalnessTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Floor Metalness Texture.");
 		}
-		std::wstring textFloorRoughness = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Floor\\Herringbone_marble_tiles_01_Roughness.png";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textFloorRoughness.c_str(), nullptr, &shaderBallFloorMaterial.RoughnessTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Floor Roughness Texture.");
 		}
-		std::wstring textFloorNormal = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Floor\\Herringbone_marble_tiles_01_Normal.png";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textFloorNormal.c_str(), nullptr, &shaderBallFloorMaterial.NormalTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Floor Normal Texture.");
@@ -325,22 +326,22 @@ namespace Rendering
 
 		//***********************************//
 		// LOADING 'MARBLE' TEXTURES		 //
-		std::wstring textMarbleAlbedo = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Marble\\Marble_col.jpg";
+		std::wstring textMarbleAlbedo =	   Utility::GetFilePath(L"content\\textures\\PBR\\Marble\\Marble_col.jpg");
+		std::wstring textMarbleMetalness = Utility::GetFilePath(L"content\\textures\\PBR\\Marble\\EmptyMetalMap.png");
+		std::wstring textMarbleRoughness = Utility::GetFilePath(L"content\\textures\\PBR\\Marble\\Marble_rgh.jpg");
+		std::wstring textMarbleNormal =	   Utility::GetFilePath(L"content\\textures\\PBR\\Marble\\Marble_nrm.jpg");
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textMarbleAlbedo.c_str(), nullptr, &shaderBallMarbleMaterial.AlbedoTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Marble Albedo Texture.");
 		}
-		std::wstring textMarbleMetalness = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Marble\\EmptyMetalMap.png";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textMarbleMetalness.c_str(), nullptr, &shaderBallMarbleMaterial.MetalnessTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Marble Metalness Texture.");
 		}
-		std::wstring textMarbleRoughness = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Marble\\Marble_rgh.jpg";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textMarbleRoughness.c_str(), nullptr, &shaderBallMarbleMaterial.RoughnessTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Marble Roughness Texture.");
 		}
-		std::wstring textMarbleNormal = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Marble\\Marble_nrm.jpg";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textMarbleNormal.c_str(), nullptr, &shaderBallMarbleMaterial.NormalTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Marble Normal Texture.");
@@ -351,22 +352,22 @@ namespace Rendering
 
 		//***********************************//
 		// LOADING 'WOOD' TEXTURES           //
-		std::wstring textWoodAlbedo = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Wood\\WoodFloor07_col.jpg";
+		std::wstring textWoodAlbedo =	 Utility::GetFilePath(L"content\\textures\\PBR\\Wood\\WoodFloor07_col.jpg");
+		std::wstring textWoodMetalness = Utility::GetFilePath(L"content\\textures\\PBR\\Wood\\EmptyMetalMap.png");
+		std::wstring textWoodRoughness = Utility::GetFilePath(L"content\\textures\\PBR\\Wood\\WoodFloor07_rgh.jpg");
+		std::wstring textWoodNormal =	 Utility::GetFilePath(L"content\\textures\\PBR\\Wood\\WoodFloor07_nrm.jpg");
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textWoodAlbedo.c_str(), nullptr, &shaderBallWoodMaterial.AlbedoTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Peeling Albedo Texture.");
 		}
-		std::wstring textWoodMetalness = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Wood\\EmptyMetalMap.png";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textWoodMetalness.c_str(), nullptr, &shaderBallWoodMaterial.MetalnessTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Peeling Metalness Texture.");
 		}
-		std::wstring textWoodRoughness = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Wood\\WoodFloor07_rgh.jpg";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textWoodRoughness.c_str(), nullptr, &shaderBallWoodMaterial.RoughnessTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Peeling Roughness Texture.");
 		}
-		std::wstring textWoodNormal = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Wood\\WoodFloor07_nrm.jpg";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textWoodNormal.c_str(), nullptr, &shaderBallWoodMaterial.NormalTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Peeling Normal Texture.");
@@ -377,22 +378,22 @@ namespace Rendering
 
 		//***********************************//
 		// LOADING 'GOLD' TEXTURES		     //
-		std::wstring textGoldAlbedo = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Gold\\GoldMetal_albedo.jpg";
+		std::wstring textGoldAlbedo =	 Utility::GetFilePath(L"content\\textures\\PBR\\Gold\\GoldMetal_albedo.jpg");
+		std::wstring textGoldMetalness = Utility::GetFilePath(L"content\\textures\\PBR\\Gold\\GoldMetal_mtl.jpg");
+		std::wstring textGoldRoughness = Utility::GetFilePath(L"content\\textures\\PBR\\TestTexture.png");
+		std::wstring textGoldNormal =	 Utility::GetFilePath(L"content\\textures\\PBR\\Gold\\GoldMetal_nrm.jpg");
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textGoldAlbedo.c_str(), nullptr, &shaderBallGoldMaterial.AlbedoTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Gold Albedo Texture.");
 		}
-		std::wstring textGoldMetalness = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Gold\\GoldMetal_mtl.jpg";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textGoldMetalness.c_str(), nullptr, &shaderBallGoldMaterial.MetalnessTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Gold Metalness Texture.");
 		}
-		std::wstring textGoldRoughness = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\TestTexture.png";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textGoldRoughness.c_str(), nullptr, &shaderBallGoldMaterial.RoughnessTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Gold Roughness Texture.");
 		}
-		std::wstring textGoldNormal = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Gold\\GoldMetal_nrm.jpg";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textGoldNormal.c_str(), nullptr, &shaderBallGoldMaterial.NormalTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Gold Normal Texture.");
@@ -403,22 +404,22 @@ namespace Rendering
 
 		//***********************************//
 		// LOADING 'SILVER' TEXTURES		 //
-		std::wstring textSilverAlbedo = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Silver\\SilverMetal_col.jpg";
+		std::wstring textSilverAlbedo =	   Utility::GetFilePath(L"content\\textures\\PBR\\Silver\\SilverMetal_col.jpg");
+		std::wstring textSilverMetalness = Utility::GetFilePath(L"content\\textures\\PBR\\TestTexture.png");
+		std::wstring textSilverRoughness = Utility::GetFilePath(L"content\\textures\\PBR\\Silver\\SilverMetal_rgh.jpg");
+		std::wstring textSilverNormal =	   Utility::GetFilePath(L"content\\textures\\PBR\\Silver\\SilverMetal_nrm.jpg");
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textSilverAlbedo.c_str(), nullptr, &shaderBallSilverMaterial.AlbedoTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Silver Albedo Texture.");
 		}
-		std::wstring textSilverMetalness = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\TestTexture.png";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textSilverMetalness.c_str(), nullptr, &shaderBallSilverMaterial.MetalnessTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Silver Metalness Texture.");
 		}
-		std::wstring textSilverRoughness = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Silver\\SilverMetal_rgh.jpg";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textSilverRoughness.c_str(), nullptr, &shaderBallSilverMaterial.RoughnessTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Silver Roughness Texture.");
 		}
-		std::wstring textSilverNormal = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Silver\\SilverMetal_nrm.jpg";
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textSilverNormal.c_str(), nullptr, &shaderBallSilverMaterial.NormalTextureShaderResourceView)))
 		{
 			throw GameException("Failed to load Silver Normal Texture.");
@@ -519,8 +520,6 @@ namespace Rendering
 			XMStoreFloat4x4(&shaderBallWoodMaterial.WorldMatrix, *translation);
 		}
 
-
-
 		lightData.PointLight = new PointLight(*mGame);
 		lightData.PointLight->SetRadius(120.0f);
 		lightData.PointLight->SetPosition(82.5f, 0.0f, 100.0f);
@@ -528,12 +527,11 @@ namespace Rendering
 		mKeyboard = (Keyboard*)mGame->Services().GetService(Keyboard::TypeIdClass());
 		assert(mKeyboard != nullptr);
 
-		mProxyModel = new ProxyModel(*mGame, *mCamera, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\PointLightProxy.obj", 0.5f);
+		mProxyModel = new ProxyModel(*mGame, *mCamera, Utility::GetFilePath("content\\models\\PointLightProxy.obj"), 0.5f);
 		mProxyModel->Initialize();
 
-		mSkybox = new Skybox(*mGame, *mCamera, L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\PBR\\Skyboxes\\milkmill_cube_map.dds", 100.0f);
+		mSkybox = new Skybox(*mGame, *mCamera, Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\milkmill_cube_map.dds"), 100.0f);
 		mSkybox->Initialize();
-
 
 		mRenderStateHelper = new RenderStateHelper(*mGame);
 	}

@@ -17,6 +17,7 @@ namespace Library
 	class DirectionalLight;
 	class ProxyModel;
 	class Skybox;
+	class IBLRadianceMap;
 	class Frustum;
 	class FullScreenRenderTarget;
 }
@@ -54,7 +55,9 @@ namespace Rendering
 		SponzaMainDemo& operator=(const SponzaMainDemo& rhs);
 
 		void UpdateStandardLightingMaterialVariables(int meshIndex);
+		void UpdateStandardLightingPBRMaterialVariables(int meshIndex);
 		void UpdateDepthMapMaterialVariables(int meshIndex);
+		void UpdateDepthMapMaterialPBRVariables(int meshIndex);
 		void UpdateDirectionalLightAndProjector(const GameTime & gameTime);
 		void UpdateImGui();
 		XMMATRIX GetProjectionMatrixFromFrustum(Frustum & cameraFrustum, DirectionalLight& light);
@@ -66,7 +69,7 @@ namespace Rendering
 		XMFLOAT4X4 mWorldMatrix;
 
 		RenderingObject* mSponzaLightingRenderingObject;
-		RenderingObject* mSponzaShadowRenderingObject;
+		RenderingObject* mSpherePBRObject;
 
 		Projector* mShadowProjector;
 		DepthMap* mShadowMap;
@@ -80,6 +83,10 @@ namespace Rendering
 		RenderStateHelper* mRenderStateHelper;
 
 		Skybox* mSkybox;
+		ID3D11ShaderResourceView* mIrradianceTextureSRV;
+		ID3D11ShaderResourceView* mRadianceTextureSRV;
+		ID3D11ShaderResourceView* mIntegrationMapTextureSRV;
+		std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
 
 		PostProcessingStack* mPostProcessingStack;
 

@@ -2,12 +2,14 @@
 
 #include "Common.h"
 #include "GameComponent.h"
+#include "Camera.h"
 #include "Material.h"
 #include "VertexDeclarations.h"
 #include "InstancingMaterial.h"
 #include "ModelMaterial.h"
 #include "Effect.h"
 #include "GeneralEvent.h"
+#include "RenderableAABB.h"
 
 namespace Rendering
 {
@@ -48,18 +50,20 @@ namespace Rendering
 	{
 		ID3D11ShaderResourceView* AlbedoMap		= nullptr;
 		ID3D11ShaderResourceView* NormalMap		= nullptr;
-		ID3D11ShaderResourceView* RoughnessMap	= nullptr;
+		ID3D11ShaderResourceView* SpecularMap	= nullptr;
 		ID3D11ShaderResourceView* MetallicMap	= nullptr;
+		ID3D11ShaderResourceView* RoughnessMap	= nullptr;
 		ID3D11ShaderResourceView* ExtraMap1		= nullptr;  // can be used for extra textures (AO, opacity, displacement)
 		ID3D11ShaderResourceView* ExtraMap2		= nullptr;  // can be used for extra textures (AO, opacity, displacement)
 		ID3D11ShaderResourceView* ExtraMap3		= nullptr;  // can be used for extra textures (AO, opacity, displacement)
 
 		TextureData(){}
 
-		TextureData(ID3D11ShaderResourceView* albedo, ID3D11ShaderResourceView* normal, ID3D11ShaderResourceView* roughness, ID3D11ShaderResourceView* metallic, ID3D11ShaderResourceView* extra1, ID3D11ShaderResourceView* extra2, ID3D11ShaderResourceView* extra3)
+		TextureData(ID3D11ShaderResourceView* albedo, ID3D11ShaderResourceView* normal, ID3D11ShaderResourceView* specular, ID3D11ShaderResourceView* roughness, ID3D11ShaderResourceView* metallic, ID3D11ShaderResourceView* extra1, ID3D11ShaderResourceView* extra2, ID3D11ShaderResourceView* extra3)
 			:
 			AlbedoMap(albedo),
 			NormalMap(normal),
+			SpecularMap(specular),
 			RoughnessMap(roughness),
 			MetallicMap(metallic),
 			ExtraMap1(extra1),
@@ -71,6 +75,7 @@ namespace Rendering
 		{
 			ReleaseObject(AlbedoMap);
 			ReleaseObject(NormalMap);
+			ReleaseObject(SpecularMap);
 			ReleaseObject(RoughnessMap);
 			ReleaseObject(MetallicMap);
 			ReleaseObject(ExtraMap1);
@@ -104,24 +109,27 @@ namespace Rendering
 		using Delegate_MeshMaterialVariablesUpdate = std::function<void(int)>; // mesh index for input
 
 	public:
-		RenderingObject(std::string pName, Game& pGame, std::unique_ptr<Model> pModel);
+		RenderingObject(std::string pName, Game& pGame, Camera& pCamera, std::unique_ptr<Model> pModel);
 		~RenderingObject();
 
-		void LoadCustomMeshTextures(int meshIndex, std::wstring albedoPath, std::wstring normalPath, std::wstring roughnessPath, std::wstring metallicPath, std::wstring extra1Path, std::wstring extra2Path, std::wstring extra3Path);
-
+		void LoadCustomMeshTextures(int meshIndex, std::wstring albedoPath, std::wstring normalPath, std::wstring specularPath, std::wstring roughnessPath, std::wstring metallicPath, std::wstring extra1Path, std::wstring extra2Path, std::wstring extra3Path);
 		void LoadMaterial(Material* pMaterial, Effect* pEffect);
 		void LoadRenderBuffers();
-		void LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData);
-		void Draw();
-		void DrawInstanced();
-		void UpdateInstanceData(std::vector<InstancingMaterial::InstancedData> pInstanceData);
+		void LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData, int materialIndex);
+		void Draw(int materialIndex);
+		void DrawInstanced(int materialIndex);
+		void UpdateInstanceData(std::vector<InstancingMaterial::InstancedData> pInstanceData, int materialIndex);
+		void UpdateGizmos();
+		void Update(const GameTime& time);
 
-		Material* GetMeshMaterial() { return mMesheMaterial; }
+		Material* GetMeshMaterial() { return mMaterials[0]; }
+		std::vector<Material*> GetMaterials() { return mMaterials; }
 		TextureData& GetTextureData(int meshIndex) { return mMeshesTextureBuffers[meshIndex]; }
 		int GetMeshCount() { return mMeshesCount; }
 		std::vector<XMFLOAT3> GetAABB() { return mAABB; }
 		const std::vector<XMFLOAT3>& GetVertices();
 		UINT GetInstanceCount() { return mInstanceCount; }
+		XMFLOAT4X4 GetTransformMatrix() { return XMFLOAT4X4(mObjectTransformMatrix); }
 
 		GeneralEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new GeneralEvent<Delegate_MeshMaterialVariablesUpdate>();
 
@@ -130,20 +138,36 @@ namespace Rendering
 		RenderingObject(const RenderingObject& rhs);
 		RenderingObject& operator=(const RenderingObject& rhs);
 
+		void UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix);
+
 		void LoadAssignedMeshTextures();
 		void LoadTexture(TextureType type, std::wstring path, int meshIndex);
-		std::vector<RenderBufferData*>						mMeshesRenderBuffers;
+		std::vector<std::vector<RenderBufferData*>>			mMeshesRenderBuffers;
 		std::vector<TextureData>							mMeshesTextureBuffers;
 		std::vector<InstanceBufferData*>					mMeshesInstanceBuffers;
 		std::vector<std::vector<XMFLOAT3>>					mMeshVertices;
 		std::vector<XMFLOAT3>								mMeshAllVertices;
-		Material*											mMesheMaterial;
+		std::vector<Material*>								mMaterials;
 
 		std::vector<XMFLOAT3>								mAABB;
+		RenderableAABB*										mDebugAABB;
+		bool												mEnableAABBDebug = false;
 		std::unique_ptr<Model>								mModel;
 		int													mMeshesCount;
 		std::string											mName;
 		UINT												mInstanceCount;
+
+		Camera& mCamera;
+
+		float mCameraViewMatrix[16];
+		float mCameraProjectionMatrix[16];
+		float mObjectTransformMatrix[16] = 
+		{ 1.f, 0.f, 0.f, 0.f,
+		0.f, 1.f, 0.f, 0.f,
+		0.f, 0.f, 1.f, 0.f,
+		0.f, 0.f, 0.f, 1.f };
+
+		float mMatrixTranslation[3], mMatrixRotation[3], mMatrixScale[3];
 
 	};
 }

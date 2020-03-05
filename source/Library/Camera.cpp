@@ -95,11 +95,20 @@ namespace Library
 	XMMATRIX Camera::ViewMatrix() const
 	{
 		return XMLoadFloat4x4(&mViewMatrix);
+	}	
+	XMFLOAT4X4 Camera::ViewMatrix4X4() const
+	{
+		return mViewMatrix;
 	}
 
 	XMMATRIX Camera::ProjectionMatrix() const
 	{
 		return XMLoadFloat4x4(&mProjectionMatrix);
+	}
+
+	XMFLOAT4X4 Camera::ProjectionMatrix4X4() const
+	{
+		return mProjectionMatrix;
 	}
 
 	XMMATRIX Camera::ViewProjectionMatrix() const

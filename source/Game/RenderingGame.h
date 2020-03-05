@@ -72,6 +72,7 @@ namespace Rendering
 		std::chrono::duration<double> mElapsedTimeUpdateCPU;
 		std::chrono::duration<double> mElapsedTimeRenderCPU;
 
+		bool mEditorModeActive = false;
 		bool mShowProfiler;
 		bool mShowCameraSettings = true;
 	};
