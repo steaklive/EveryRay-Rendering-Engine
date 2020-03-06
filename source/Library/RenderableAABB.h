@@ -19,6 +19,7 @@ namespace Library
 
 		void InitializeGeometry(const std::vector<XMFLOAT3>& aabb, XMMATRIX matrix);
 		void SetPosition(const XMFLOAT3& position);
+		void SetScale(const XMFLOAT3& scale) { mScale = scale; };
 		void SetColor(XMFLOAT4 color);
 		void SetRotationMatrix(const XMMATRIX& rotationMat);
 		void SetAABB(const std::vector<XMFLOAT3>& aabb);
@@ -62,6 +63,7 @@ namespace Library
 
 		XMFLOAT4 mColor;
 		XMFLOAT3 mPosition;
+		XMFLOAT3 mScale;
 		XMFLOAT3 mDirection;
 		XMFLOAT3 mUp;
 		XMFLOAT3 mRight;

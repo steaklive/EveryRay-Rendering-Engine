@@ -109,18 +109,20 @@ namespace Rendering
 		using Delegate_MeshMaterialVariablesUpdate = std::function<void(int)>; // mesh index for input
 
 	public:
-		RenderingObject(std::string pName, Game& pGame, Camera& pCamera, std::unique_ptr<Model> pModel);
+		RenderingObject(std::string pName, Game& pGame, Camera& pCamera, std::unique_ptr<Model> pModel, bool availableInEditor = false);
 		~RenderingObject();
 
 		void LoadCustomMeshTextures(int meshIndex, std::wstring albedoPath, std::wstring normalPath, std::wstring specularPath, std::wstring roughnessPath, std::wstring metallicPath, std::wstring extra1Path, std::wstring extra2Path, std::wstring extra3Path);
 		void LoadMaterial(Material* pMaterial, Effect* pEffect);
 		void LoadRenderBuffers();
 		void LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData, int materialIndex);
-		void Draw(int materialIndex);
+		void Draw(int materialIndex, bool toDepth = false);
+		void DrawAABB();
 		void DrawInstanced(int materialIndex);
 		void UpdateInstanceData(std::vector<InstancingMaterial::InstancedData> pInstanceData, int materialIndex);
 		void UpdateGizmos();
 		void Update(const GameTime& time);
+		void Selected(bool val) { mSelected = val; }
 
 		Material* GetMeshMaterial() { return mMaterials[0]; }
 		std::vector<Material*> GetMaterials() { return mMaterials; }
@@ -131,6 +133,7 @@ namespace Rendering
 		UINT GetInstanceCount() { return mInstanceCount; }
 		XMFLOAT4X4 GetTransformMatrix() { return XMFLOAT4X4(mObjectTransformMatrix); }
 
+
 		GeneralEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new GeneralEvent<Delegate_MeshMaterialVariablesUpdate>();
 
 	private:
@@ -139,34 +142,39 @@ namespace Rendering
 		RenderingObject& operator=(const RenderingObject& rhs);
 
 		void UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix);
-
 		void LoadAssignedMeshTextures();
 		void LoadTexture(TextureType type, std::wstring path, int meshIndex);
+		
+		Camera& mCamera;
 		std::vector<std::vector<RenderBufferData*>>			mMeshesRenderBuffers;
 		std::vector<TextureData>							mMeshesTextureBuffers;
 		std::vector<InstanceBufferData*>					mMeshesInstanceBuffers;
 		std::vector<std::vector<XMFLOAT3>>					mMeshVertices;
 		std::vector<XMFLOAT3>								mMeshAllVertices;
 		std::vector<Material*>								mMaterials;
-
 		std::vector<XMFLOAT3>								mAABB;
-		RenderableAABB*										mDebugAABB;
-		bool												mEnableAABBDebug = false;
 		std::unique_ptr<Model>								mModel;
 		int													mMeshesCount;
-		std::string											mName;
 		UINT												mInstanceCount;
 
-		Camera& mCamera;
+		//Editor variables
+		std::string											mName;
+		RenderableAABB*										mDebugAABB;
+		bool												mEnableAABBDebug = true;
+		bool												mWireframeMode = false;
+		bool												mAvailableInEditorMode = false;
+		bool												mSelected = false;
+
 
 		float mCameraViewMatrix[16];
 		float mCameraProjectionMatrix[16];
 		float mObjectTransformMatrix[16] = 
-		{ 1.f, 0.f, 0.f, 0.f,
-		0.f, 1.f, 0.f, 0.f,
-		0.f, 0.f, 1.f, 0.f,
-		0.f, 0.f, 0.f, 1.f };
-
+		{   
+			1.f, 0.f, 0.f, 0.f,
+			0.f, 1.f, 0.f, 0.f,
+			0.f, 0.f, 1.f, 0.f,
+			0.f, 0.f, 0.f, 1.f 
+		};
 		float mMatrixTranslation[3], mMatrixRotation[3], mMatrixScale[3];
 
 	};

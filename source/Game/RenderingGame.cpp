@@ -80,7 +80,7 @@ namespace Rendering
 		mKeyboard(nullptr),
 		mMouse(nullptr),
 		mMouseTextPosition(0.0f, 40.0f),
-		mGrid(nullptr), mShowProfiler(false), 
+		mShowProfiler(false), 
 
 		//scenes
 		mAmbientLightingDemo(nullptr),
@@ -126,12 +126,12 @@ namespace Rendering
 
 		mCamera = new FirstPersonCamera(*this, 1.5708f, this->AspectRatio(), nearPlaneDist, farPlaneDist );
 		mCamera->SetPosition(0.0f, 20.0f, 65.0f);
+		mCamera->SetMovementRate(movementRate);
+		mCamera->SetFOV(fov*XM_PI / 180.0f);
+		mCamera->SetNearPlaneDistance(nearPlaneDist);
+		mCamera->SetFarPlaneDistance(farPlaneDist);
 		components.push_back(mCamera);
 		mServices.AddService(Camera::TypeIdClass(), mCamera);
-
-		mGrid = new Grid(*this, *mCamera, 100, 64, XMFLOAT4(0.961f, 0.871f, 0.702f, 1.0f));
-		mGrid->SetColor((XMFLOAT4)ColorHelper::LightGray);
-		components.push_back(mGrid);
 
 		//Render State Helper
 		mRenderStateHelper = new RenderStateHelper(*this);
@@ -230,12 +230,10 @@ namespace Rendering
 
 		ImGuizmo::BeginFrame();
 		if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Backspace)))
-			mEditorModeActive = !mEditorModeActive;
-		ImGuizmo::Enable(mEditorModeActive);
-		if (mEditorModeActive)
+			Utility::IsEditorMode = !Utility::IsEditorMode;
+		ImGuizmo::Enable(Utility::IsEditorMode);
+		if (Utility::IsEditorMode)
 		{
-			mGrid->SetVisible(true);
-
 			ImGui::Begin("EveryRay Editor");
 
 			ImGui::Text("Camera Position: (%.1f,%.1f,%.1f)", mCamera->Position().x, mCamera->Position().y, mCamera->Position().z);
@@ -253,8 +251,6 @@ namespace Rendering
 			
 			ImGui::End();
 		}
-		else
-			mGrid->SetVisible(false);
 			
 		ImGui::SetNextWindowBgAlpha(0.9f); // Transparent background
 		if (ImGui::Begin("EveryRay - Rendering Engine: Configuration"))
@@ -271,7 +267,7 @@ namespace Rendering
 			
 			ImGui::Separator();
 
-			ImGui::Checkbox("Switch to Editor", &mEditorModeActive);
+			ImGui::Checkbox("Switch to Editor", &Utility::IsEditorMode);
 
 			ImGui::Checkbox("Show Profiler", &mShowProfiler);
 			if (mShowProfiler)
@@ -315,7 +311,6 @@ namespace Rendering
 		DeleteObject(mKeyboard);
 		DeleteObject(mMouse);
 		DeleteObject(mCamera);
-		DeleteObject(mGrid);
 		DeleteObject(mRenderStateHelper);
 
 		RasterizerStates::Release();

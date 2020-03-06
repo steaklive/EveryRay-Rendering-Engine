@@ -8,6 +8,8 @@
 
 namespace Library
 {
+	bool Utility::IsEditorMode = false;
+
 	std::string Utility::CurrentDirectory()
 	{
 		WCHAR buffer[MAX_PATH];

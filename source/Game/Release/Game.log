@@ -1,28 +1,4 @@
-﻿  CollisionTestDemo.cpp
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\octreestructure.h(24): warning C4244: 'return': conversion from '_Rep' to 'float', possible loss of data
-          with
-          [
-              _Rep=double
-          ]
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\octreestructure.h(25): warning C4244: 'return': conversion from '_Rep' to 'float', possible loss of data
-          with
-          [
-              _Rep=double
-          ]
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\collisiontestdemo.cpp(124): warning C4018: '<': signed/unsigned mismatch
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\collisiontestdemo.cpp(157): warning C4018: '<': signed/unsigned mismatch
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\collisiontestdemo.cpp(205): warning C4316: 'Library::RenderableAABB': object allocated on the heap may not be aligned 16
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\collisiontestdemo.cpp(429): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\collisiontestdemo.cpp(572): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\collisiontestdemo.cpp(817): warning C4316: 'Library::RenderableAABB': object allocated on the heap may not be aligned 16
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\collisiontestdemo.cpp(823): warning C4316: 'Library::RenderableOBB': object allocated on the heap may not be aligned 16
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\collisiontestdemo.cpp(844): warning C4316: 'Library::RenderableAABB': object allocated on the heap may not be aligned 16
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\collisiontestdemo.cpp(850): warning C4316: 'Library::RenderableOBB': object allocated on the heap may not be aligned 16
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\collisiontestdemo.cpp(866): warning C4018: '<': signed/unsigned mismatch
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\collisiontestdemo.cpp(893): warning C4018: '<': signed/unsigned mismatch
-  InstancingDemo.cpp
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\instancingdemo.h(32): warning C4305: 'initializing': truncation from 'double' to 'float'
-  SponzaMainDemo.cpp
+﻿  SponzaMainDemo.cpp
 c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\postprocessingstack.h(96): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
   c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\postprocessingstack.h(18): note: see declaration of 'Rendering::VignetteMaterial'
 c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\postprocessingstack.h(97): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
@@ -39,12 +15,11 @@ c:\users\gen\documents\graphics programming\everyray rendering engine\build\ever
   c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\postprocessingstack.h(20): note: see declaration of 'Rendering::MotionBlurMaterial'
 c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\postprocessingstack.h(172): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
   c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\sponzamaindemo.cpp(177): warning C4244: '=': conversion from 'float' to 'INT', possible loss of data
-  Generating Code...
+c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\sponzamaindemo.cpp(183): warning C4244: '=': conversion from 'float' to 'INT', possible loss of data
   Generating code
-  79 of 4955 functions ( 1.6%) were compiled, the rest were copied from previous compilation.
+  0 of 4971 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    28 functions had inline decision re-evaluated but remain unchanged
+    0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
 stdafx.obj : warning LNK4099: PDB 'vc141.pdb' was not found with 'stdafx.obj' or at 'C:\Users\Gen\Documents\Graphics Programming\EveryRay Rendering Engine\build\EveryRay Rendering Engine\bin\Release\vc141.pdb'; linking object as if no debug info
 imgui_impl_win32.obj : warning LNK4099: PDB 'vc141.pdb' was not found with 'imgui_impl_win32.obj' or at 'C:\Users\Gen\Documents\Graphics Programming\EveryRay Rendering Engine\build\EveryRay Rendering Engine\bin\Release\vc141.pdb'; linking object as if no debug info

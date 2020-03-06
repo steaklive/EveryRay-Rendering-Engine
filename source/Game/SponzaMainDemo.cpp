@@ -15,6 +15,7 @@
 #include "..\Library\Keyboard.h"
 #include "..\Library\Light.h"
 #include "..\Library\Skybox.h"
+#include "..\Library\Grid.h"
 #include "..\Library\DemoLevel.h"
 #include "..\Library\RenderStateHelper.h"
 #include "..\Library\RenderingObject.h"
@@ -59,7 +60,8 @@ namespace Rendering
 		mSponzaLightingRenderingObject(nullptr), mSpherePBRObject(nullptr),
 		mIrradianceTextureSRV(nullptr),
 		mRadianceTextureSRV(nullptr),
-		mIntegrationMapTextureSRV(nullptr)
+		mIntegrationMapTextureSRV(nullptr),
+		mGrid(nullptr)
 	{
 	}
 
@@ -76,6 +78,7 @@ namespace Rendering
 		DeleteObject(mDirectionalLight);
 		DeleteObject(mProxyModel);
 		DeleteObject(mSkybox);
+		DeleteObject(mGrid);
 		DeleteObject(mPostProcessingStack);
 
 		ReleaseObject(mShadowRasterizerState);
@@ -115,8 +118,8 @@ namespace Rendering
 	{
 		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
 
-		mSponzaLightingRenderingObject = new RenderingObject("Statue Light", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\Sponza\\sponza.fbx"), true)));
-		mSpherePBRObject = new RenderingObject("PBR Sphere", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere.fbx"), true)));
+		mSponzaLightingRenderingObject = new RenderingObject("Statue Light", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\Sponza\\sponza.fbx"), true)), false);
+		mSpherePBRObject = new RenderingObject("PBR Sphere 1", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere.fbx"), true)), true);
 
 		// Initialize the material - lighting
 		Effect* lightingEffect = new Effect(*mGame);
@@ -133,7 +136,6 @@ namespace Rendering
 		mSponzaLightingRenderingObject->MeshMaterialVariablesUpdateEvent->AddListener("Standard Lighting Material Update", [&](int meshIndex) { UpdateStandardLightingMaterialVariables(meshIndex); });
 		mSponzaLightingRenderingObject->MeshMaterialVariablesUpdateEvent->AddListener("Shadow Map Material Update", [&](int meshIndex) { UpdateDepthMapMaterialVariables(meshIndex); });
 		
-
 		mSpherePBRObject->LoadMaterial(new StandardLightingMaterial(), lightingEffect);
 		mSpherePBRObject->LoadMaterial(new DepthMapMaterial(), effectShadow);
 		mSpherePBRObject->LoadRenderBuffers();
@@ -157,6 +159,10 @@ namespace Rendering
 
 		mSkybox = new Skybox(*mGame, *mCamera, Utility::GetFilePath(L"content\\textures\\Sky_Type_4.dds"), 100);
 		mSkybox->Initialize();
+
+		mGrid = new Grid(*mGame, *mCamera, 100, 64, XMFLOAT4(0.961f, 0.871f, 0.702f, 1.0f));
+		mGrid->Initialize();
+		mGrid->SetColor((XMFLOAT4)ColorHelper::LightGray);
 
 		//directional light
 		mDirectionalLight = new DirectionalLight(*mGame);
@@ -234,6 +240,7 @@ namespace Rendering
 		mShadowProjector->Update(gameTime);
 		mProxyModel->Update(gameTime);
 		mSkybox->Update(gameTime);
+		mGrid->Update(gameTime);
 		mSpherePBRObject->Update(gameTime);
 
 		UpdateDirectionalLightAndProjector(gameTime);
@@ -345,8 +352,8 @@ namespace Rendering
 		mShadowMap->Begin();
 		direct3DDeviceContext->ClearDepthStencilView(mShadowMap->DepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 		direct3DDeviceContext->RSSetState(mShadowRasterizerState);
-		mSponzaLightingRenderingObject->Draw(1);
-		mSpherePBRObject->Draw(1);
+		mSponzaLightingRenderingObject->Draw(1, true);
+		mSpherePBRObject->Draw(1, true);
 		mShadowMap->End();
 		mRenderStateHelper->RestoreRasterizerState();
 		#pragma endregion
@@ -357,6 +364,10 @@ namespace Rendering
 		
 		//skybox
 		mSkybox->Draw(gameTime);
+
+		//grid
+		if (Utility::IsEditorMode)
+			mGrid->Draw(gameTime);
 
 		//lighting
 		mSponzaLightingRenderingObject->Draw(0);
@@ -518,4 +529,65 @@ namespace Rendering
 		//set orthographic proj with proper boundaries
 		return XMMatrixOrthographicLH(maxX - minX, maxY - minY, maxZ, minZ);
 	}
+
+	//void SponzaMainDemo::CheckMouseIntersections()
+	//{
+	//	float pointX, pointY;
+	//	XMMATRIX viewMatrix, inverseViewMatrix, worldMatrix, translateMatrix, inverseWorldMatrix;
+	//	XMFLOAT3 direction, origin, rayOrigin, rayDirection;
+	//	bool intersect, result;
+	//
+	//
+	//	// Move the mouse cursor coordinates into the -1 to +1 range.
+	//	pointX = ((2.0f * (float)mouseX) / (float)mGame->ScreenWidth()) - 1.0f;
+	//	pointY = (((2.0f * (float)mouseY) / (float)mGame->ScreenHeight()) - 1.0f) * -1.0f;
+	//
+	//	// Adjust the points using the projection matrix to account for the aspect ratio of the viewport.
+	//	pointX = pointX / mCamera->ProjectionMatrix4X4()._11;
+	//	pointY = pointY / mCamera->ProjectionMatrix4X4()._22;
+	//
+	//	// Get the inverse of the view matrix.
+	//	viewMatrix = mCamera->ViewMatrix();
+	//	inverseViewMatrix = XMMatrixInverse(NULL, viewMatrix);
+	//
+	//	// Calculate the direction of the picking ray in view space.
+	//	direction.x = (pointX * inverseViewMatrix._11) + (pointY * inverseViewMatrix._21) + inverseViewMatrix._31;
+	//	direction.y = (pointX * inverseViewMatrix._12) + (pointY * inverseViewMatrix._22) + inverseViewMatrix._32;
+	//	direction.z = (pointX * inverseViewMatrix._13) + (pointY * inverseViewMatrix._23) + inverseViewMatrix._33;
+	//
+	//	// Get the origin of the picking ray which is the position of the camera.
+	//	origin = mCamera->Position();
+	//
+	//	// Get the world matrix and translate to the location of the sphere.
+	//	m_D3D->GetWorldMatrix(worldMatrix);
+	//	D3DXMatrixTranslation(&translateMatrix, -5.0f, 1.0f, 5.0f);
+	//	D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &translateMatrix);
+	//
+	//	// Now get the inverse of the translated world matrix.
+	//	D3DXMatrixInverse(&inverseWorldMatrix, NULL, &worldMatrix);
+	//
+	//	// Now transform the ray origin and the ray direction from view space to world space.
+	//	D3DXVec3TransformCoord(&rayOrigin, &origin, &inverseWorldMatrix);
+	//	D3DXVec3TransformNormal(&rayDirection, &direction, &inverseWorldMatrix);
+	//
+	//	// Normalize the ray direction.
+	//	D3DXVec3Normalize(&rayDirection, &rayDirection);
+	//
+	//	// Now perform the ray-sphere intersection test.
+	//	for (size_t i = 0; i < length; i++)
+	//	{
+	//		intersect = RaySphereIntersect(rayOrigin, rayDirection, 1.0f);
+	//
+	//		if (intersect == true)
+	//		{
+	//			// If it does intersect then set the intersection to "yes" in the text string that is displayed to the screen.
+	//			result = m_Text->SetIntersection(true, m_D3D->GetDeviceContext());
+	//		}
+	//		else
+	//		{
+	//			// If not then set the intersection to "No".
+	//			result = m_Text->SetIntersection(false, m_D3D->GetDeviceContext());
+	//		}
+	//	}
+	//}
 }
