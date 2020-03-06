@@ -17,6 +17,7 @@ namespace Library
 	class DirectionalLight;
 	class ProxyModel;
 	class Skybox;
+	class Grid;
 	class IBLRadianceMap;
 	class Frustum;
 	class FullScreenRenderTarget;
@@ -62,6 +63,8 @@ namespace Rendering
 		void UpdateImGui();
 		XMMATRIX GetProjectionMatrixFromFrustum(Frustum & cameraFrustum, DirectionalLight& light);
 
+		void CheckMouseIntersections();
+
 		static const float AmbientModulationRate;
 		static const XMFLOAT2 LightRotationRate;
 
@@ -83,6 +86,7 @@ namespace Rendering
 		RenderStateHelper* mRenderStateHelper;
 
 		Skybox* mSkybox;
+		Grid* mGrid;
 		ID3D11ShaderResourceView* mIrradianceTextureSRV;
 		ID3D11ShaderResourceView* mRadianceTextureSRV;
 		ID3D11ShaderResourceView* mIntegrationMapTextureSRV;

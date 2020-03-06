@@ -109,17 +109,6 @@ namespace Library
 
 		std::wstring path = Utility::GetFilePath(L"content\\effects\\BasicEffect.fx");
 
-		//std::vector<char> compiledShader;
-		//Utility::LoadBinaryFile(L"Content\\Effects\\BasicEffect.cso", compiledShader);
-
-		/*std::ifstream is("C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Effects\\BasicEffect.cso", std::ios::binary);
-		
-		is.seekg(0, std::ios_base::end);
-		std::streampos pos = is.tellg();
-		is.seekg(0, std::ios_base::beg);
-		char * effectBuffer = new char[pos];
-		is.read(effectBuffer, pos);*/
-
 		#if defined (DEBUG) || defined (_DEBUG)
 				shaderFlags |= D3DCOMPILE_DEBUG;
 				shaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;

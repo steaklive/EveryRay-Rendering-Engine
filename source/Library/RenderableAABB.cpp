@@ -133,18 +133,15 @@ namespace Library
 
 	void RenderableAABB::Update(const GameTime& gameTime)
 	{
-
 		ResizeAABB();
-
-		//TODO change color properly
-		//if (isColliding) 
-		//	UpdateColor(XMFLOAT4{1.0f, 0.0f, 0.0f, 1.0f});
-		//else UpdateColor(XMFLOAT4{ 0.0f, 0.0f, 1.0f, 1.0f });
 
 		XMMATRIX worldMatrix = XMMatrixIdentity();
 		MatrixHelper::SetForward(worldMatrix, mDirection);
 		MatrixHelper::SetUp(worldMatrix, mUp);
 		MatrixHelper::SetRight(worldMatrix, mRight);
+		XMMATRIX scale = XMMatrixScaling(mScale.x,mScale.y,mScale.z);
+		worldMatrix *= scale;
+		worldMatrix *= mRotationMatrix;
 		MatrixHelper::SetTranslation(worldMatrix, mPosition);
 
 		XMStoreFloat4x4(&mWorldMatrix, worldMatrix);
@@ -215,14 +212,14 @@ namespace Library
 		if (mVertices.size() != 8 || mAABB->size()!=2) return;
 
 		// update the vertices of AABB (due to tranformation we had to recalculate AABB)
-		mVertices.at(0) = (XMFLOAT3(mAABB->at(0).x , mAABB->at(1).y , mAABB->at(0).z  ));
-		mVertices.at(1) = (XMFLOAT3(mAABB->at(1).x , mAABB->at(1).y , mAABB->at(0).z  ));
-		mVertices.at(2) = (XMFLOAT3(mAABB->at(1).x , mAABB->at(0).y , mAABB->at(0).z  ));
-		mVertices.at(3) = (XMFLOAT3(mAABB->at(0).x , mAABB->at(0).y , mAABB->at(0).z  ));
-		mVertices.at(4) = (XMFLOAT3(mAABB->at(0).x , mAABB->at(1).y , mAABB->at(1).z  ));
-		mVertices.at(5) = (XMFLOAT3(mAABB->at(1).x , mAABB->at(1).y , mAABB->at(1).z  ));
-		mVertices.at(6) = (XMFLOAT3(mAABB->at(1).x , mAABB->at(0).y , mAABB->at(1).z  ));
-		mVertices.at(7) = (XMFLOAT3(mAABB->at(0).x , mAABB->at(0).y , mAABB->at(1).z  ));
+		mVertices.at(0) = (XMFLOAT3(mAABB->at(0).x, mAABB->at(1).y, mAABB->at(0).z));
+		mVertices.at(1) = (XMFLOAT3(mAABB->at(1).x, mAABB->at(1).y, mAABB->at(0).z));
+		mVertices.at(2) = (XMFLOAT3(mAABB->at(1).x, mAABB->at(0).y, mAABB->at(0).z));
+		mVertices.at(3) = (XMFLOAT3(mAABB->at(0).x, mAABB->at(0).y, mAABB->at(0).z));
+		mVertices.at(4) = (XMFLOAT3(mAABB->at(0).x, mAABB->at(1).y, mAABB->at(1).z));
+		mVertices.at(5) = (XMFLOAT3(mAABB->at(1).x, mAABB->at(1).y, mAABB->at(1).z));
+		mVertices.at(6) = (XMFLOAT3(mAABB->at(1).x, mAABB->at(0).y, mAABB->at(1).z));
+		mVertices.at(7) = (XMFLOAT3(mAABB->at(0).x, mAABB->at(0).y, mAABB->at(1).z));
 
 	}
 

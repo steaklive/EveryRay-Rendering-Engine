@@ -17,7 +17,7 @@
 
 namespace Rendering
 {
-	RenderingObject::RenderingObject(std::string pName, Game& pGame, Camera& pCamera, std::unique_ptr<Model> pModel)
+	RenderingObject::RenderingObject(std::string pName, Game& pGame, Camera& pCamera, std::unique_ptr<Model> pModel, bool availableInEditor )
 		:
 		GameComponent(pGame),
 		mCamera(pCamera),
@@ -28,7 +28,8 @@ namespace Rendering
 		mMeshVertices(0),
 		mName(pName),
 		mInstanceCount(0),
-		mDebugAABB(nullptr)
+		mDebugAABB(nullptr),
+		mAvailableInEditorMode(availableInEditor)
 	{
 		if (!mModel)
 			throw GameException("Failed to create a RenderingObject from a model");
@@ -51,11 +52,12 @@ namespace Rendering
 		LoadAssignedMeshTextures();
 		mAABB = mModel->GenerateAABB();
 
-		mDebugAABB = new RenderableAABB(*mGame, mCamera);
-		mDebugAABB->Initialize();
-		mDebugAABB->InitializeGeometry(mAABB, XMMatrixScaling(1, 1, 1));
-		mDebugAABB->SetPosition(XMFLOAT3(0,0,0));
-
+		if (mAvailableInEditorMode) {
+			mDebugAABB = new RenderableAABB(*mGame, mCamera);
+			mDebugAABB->Initialize();
+			mDebugAABB->InitializeGeometry(mAABB, XMMatrixScaling(1, 1, 1));
+			mDebugAABB->SetPosition(XMFLOAT3(0,0,0));
+		}
 		
 	}
 
@@ -219,6 +221,9 @@ namespace Rendering
 	}
 	void RenderingObject::UpdateGizmos()
 	{
+		if (!mAvailableInEditorMode)
+			return;
+
 		mCameraViewMatrix[0] = mCamera.ViewMatrix4X4()._11;
 		mCameraViewMatrix[1] = mCamera.ViewMatrix4X4()._12;
 		mCameraViewMatrix[2] = mCamera.ViewMatrix4X4()._13;
@@ -257,9 +262,11 @@ namespace Rendering
 	}
 	void RenderingObject::Update(const GameTime & time)
 	{
-		if (mEnableAABBDebug)
+		if (mAvailableInEditorMode && mEnableAABBDebug && Utility::IsEditorMode)
 		{
 			mDebugAABB->SetPosition(XMFLOAT3(mMatrixTranslation[0],mMatrixTranslation[1],mMatrixTranslation[2]));
+			mDebugAABB->SetScale(XMFLOAT3(mMatrixScale[0], mMatrixScale[1], mMatrixScale[2]));
+			mDebugAABB->SetRotationMatrix(XMMatrixRotationRollPitchYaw(XMConvertToRadians(mMatrixRotation[0]), XMConvertToRadians(mMatrixRotation[1]), XMConvertToRadians(mMatrixRotation[2])));
 			mDebugAABB->Update(time);
 		}
 
@@ -364,7 +371,7 @@ namespace Rendering
 		}
 	}
 	
-	void RenderingObject::Draw(int materialIndex)
+	void RenderingObject::Draw(int materialIndex, bool toDepth)
 	{
 		if (!mMaterials.size() || mMeshesRenderBuffers.size() == 0)
 			return;
@@ -372,6 +379,10 @@ namespace Rendering
 		for (size_t i = 0; i < mMeshesCount; i++)
 		{
 			ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+			if (mWireframeMode)
+				context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+			else
+				context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			Pass* pass = mMaterials[materialIndex]->CurrentTechnique()->Passes().at(0);
 			ID3D11InputLayout* inputLayout = mMaterials[materialIndex]->InputLayouts().at(pass);
 			context->IASetInputLayout(inputLayout);
@@ -388,9 +399,17 @@ namespace Rendering
 			context->DrawIndexed(mMeshesRenderBuffers[materialIndex][i]->IndicesCount, 0, 0);
 		}
 
-		if (mEnableAABBDebug)
+
+		if (!toDepth && mAvailableInEditorMode)
+			DrawAABB();
+	}
+
+	void RenderingObject::DrawAABB()
+	{
+		if (mAvailableInEditorMode && mEnableAABBDebug && Utility::IsEditorMode)
 			mDebugAABB->Draw();
 	}
+
 	void RenderingObject::DrawInstanced(int materialIndex)
 	{
 		for (int i = 0; i < mMeshesCount; i++)
@@ -449,40 +468,43 @@ namespace Rendering
 		static bool boundSizing = false;
 		static bool boundSizingSnap = false;
 
-		ImGui::Begin("Object Editor");
-		ImGui::TextColored(ImVec4(0.8f, 0.2f, 0.24f, 1), mName.c_str());
-		ImGui::Separator();
-		ImGui::Checkbox("Show AABB", &mEnableAABBDebug);
+		if (Utility::IsEditorMode) {
+			ImGui::Begin("Object Editor");
+			ImGui::TextColored(ImVec4(0.8f, 0.2f, 0.24f, 1), mName.c_str());
+			ImGui::Separator();
+			ImGui::Checkbox("Show AABB", &mEnableAABBDebug);
+			ImGui::Checkbox("Wireframe", &mWireframeMode);
 
-		if (ImGui::IsKeyPressed(84))
-			mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-		if (ImGui::IsKeyPressed(89))
-			mCurrentGizmoOperation = ImGuizmo::ROTATE;
-		if (ImGui::IsKeyPressed(82)) // r Key
-			mCurrentGizmoOperation = ImGuizmo::SCALE;
+			if (ImGui::IsKeyPressed(84))
+				mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+			if (ImGui::IsKeyPressed(89))
+				mCurrentGizmoOperation = ImGuizmo::ROTATE;
+			if (ImGui::IsKeyPressed(82)) // r Key
+				mCurrentGizmoOperation = ImGuizmo::SCALE;
 
-		if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
-			mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-		ImGui::SameLine();
-		if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE))
-			mCurrentGizmoOperation = ImGuizmo::ROTATE;
-		ImGui::SameLine();
-		if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
-			mCurrentGizmoOperation = ImGuizmo::SCALE;
-		
-		
-		ImGuizmo::DecomposeMatrixToComponents(matrix, mMatrixTranslation, mMatrixRotation, mMatrixScale);
-		ImGui::InputFloat3("Tr", mMatrixTranslation, 3);
-		ImGui::InputFloat3("Rt", mMatrixRotation, 3);
-		ImGui::InputFloat3("Sc", mMatrixScale, 3);
-		ImGuizmo::RecomposeMatrixFromComponents(mMatrixTranslation, mMatrixRotation, mMatrixScale, matrix);
-		ImGui::End();
+			if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
+				mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+			ImGui::SameLine();
+			if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE))
+				mCurrentGizmoOperation = ImGuizmo::ROTATE;
+			ImGui::SameLine();
+			if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
+				mCurrentGizmoOperation = ImGuizmo::SCALE;
 
 
+			ImGuizmo::DecomposeMatrixToComponents(matrix, mMatrixTranslation, mMatrixRotation, mMatrixScale);
+			ImGui::InputFloat3("Tr", mMatrixTranslation, 3);
+			ImGui::InputFloat3("Rt", mMatrixRotation, 3);
+			ImGui::InputFloat3("Sc", mMatrixScale, 3);
+			ImGuizmo::RecomposeMatrixFromComponents(mMatrixTranslation, mMatrixRotation, mMatrixScale, matrix);
+			ImGui::End();
 
-		ImGuiIO& io = ImGui::GetIO();
-		ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-		ImGuizmo::Manipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, matrix, NULL, useSnap ? &snap[0] : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
+
+
+			ImGuiIO& io = ImGui::GetIO();
+			ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+			ImGuizmo::Manipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, matrix, NULL, useSnap ? &snap[0] : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
+		}
 	}
 
 

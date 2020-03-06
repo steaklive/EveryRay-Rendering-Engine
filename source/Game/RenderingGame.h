@@ -12,7 +12,6 @@ namespace Library
 	class Mouse;
 	class Keyboard;
 	class FirstPersonCamera;
-	class Grid;
 	class RenderStateHelper;
 }
 
@@ -55,8 +54,7 @@ namespace Rendering
 		Mouse* mMouse;
 		XMFLOAT2 mMouseTextPosition;
 		FirstPersonCamera* mCamera;
-		Grid* mGrid;
-
+		
 		//Demo scenes
 		SponzaMainDemo* mAmbientLightingDemo;
 		ShadowMappingDemo* mShadowMappingDemo;
@@ -72,7 +70,6 @@ namespace Rendering
 		std::chrono::duration<double> mElapsedTimeUpdateCPU;
 		std::chrono::duration<double> mElapsedTimeRenderCPU;
 
-		bool mEditorModeActive = false;
 		bool mShowProfiler;
 		bool mShowCameraSettings = true;
 	};
