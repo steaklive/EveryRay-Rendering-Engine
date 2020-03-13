@@ -5,14 +5,14 @@ Rendering engine/framework written in C++ with DirectX 11 support.
 
 I have been changing and extending it for educational purposes with all kinds of features (see the description below) for quite a while. Stay tuned for more updates :)
 
-<br>![alt text](https://i.ibb.co/KqbfGz9/Every-Ray-Sponza.png")
-<br>![alt text](https://preview.ibb.co/jVodie/Every_Ray_PBR.png")
-<br>![alt text](https://preview.ibb.co/h069pK/Every_Ray_CSM.png")
-<br>![alt text](https://preview.ibb.co/fqP3uK/Every_Ray_Instancing.png")
-<br>![alt text](https://preview.ibb.co/i8mLnq/Every-Ray-Frustum-Culling.png")
-<br>![alt text](https://i.ibb.co/zVG7qvL/Every-Ray-SSSS.png")
-<br>![alt text](https://i.ibb.co/0ZJmFfh/Every-Ray-Post-Processing.png")
-<br>![alt text](https://i.ibb.co/CQ9k9wy/Every-Ray-Water.png")
+![picture](screenshots/EveryRayEditor.png)
+![picture](screenshots/EveryRayPBR.png)
+![picture](screenshots/EveryRayCSM.png)
+![picture](screenshots/EveryRayInstancing.png)
+![picture](screenshots/EveryRayFrustumCulling.png)
+![picture](screenshots/EveryRaySSSS.png)
+![picture](screenshots/EveryRayPostProcessing.png)
+![picture](screenshots/EveryRayWater.png)
 
 # Features
 - 3D model loading (.obj, .fbx and etc.) with Assimp Library
