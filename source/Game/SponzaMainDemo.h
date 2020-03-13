@@ -55,13 +55,14 @@ namespace Rendering
 		SponzaMainDemo(const SponzaMainDemo& rhs);
 		SponzaMainDemo& operator=(const SponzaMainDemo& rhs);
 
-		void UpdateStandardLightingMaterialVariables(int meshIndex);
-		void UpdateStandardLightingPBRMaterialVariables(int meshIndex);
-		void UpdateDepthMapMaterialVariables(int meshIndex);
-		void UpdateDepthMapMaterialPBRVariables(int meshIndex);
+		//void UpdateStandardLightingMaterialVariables(int meshIndex);
+		//void UpdateDepthMapMaterialVariables(int meshIndex);
+		void UpdateStandardLightingPBRMaterialVariables(const std::string& objectName, int meshIndex);
+		void UpdateDepthMaterialVariables(const std::string& objectName, int meshIndex);
 		void UpdateDirectionalLightAndProjector(const GameTime & gameTime);
 		void UpdateImGui();
 		XMMATRIX GetProjectionMatrixFromFrustum(Frustum & cameraFrustum, DirectionalLight& light);
+		XMFLOAT4X4 GetProjectionShadowMatrix();
 
 		void CheckMouseIntersections();
 
@@ -71,8 +72,7 @@ namespace Rendering
 		Keyboard* mKeyboard;
 		XMFLOAT4X4 mWorldMatrix;
 
-		RenderingObject* mSponzaLightingRenderingObject;
-		RenderingObject* mSpherePBRObject;
+		std::map<std::string, RenderingObject*> mRenderingObjects;
 
 		Projector* mShadowProjector;
 		DepthMap* mShadowMap;
@@ -87,6 +87,7 @@ namespace Rendering
 
 		Skybox* mSkybox;
 		Grid* mGrid;
+
 		ID3D11ShaderResourceView* mIrradianceTextureSRV;
 		ID3D11ShaderResourceView* mRadianceTextureSRV;
 		ID3D11ShaderResourceView* mIntegrationMapTextureSRV;
@@ -96,6 +97,5 @@ namespace Rendering
 
 		float mSunColor[3] = { 1.0f, 0.95f, 0.863f };
 		float mAmbientColor[3] = { 0.08f, 0.08f, 0.08f };
-
 	};
 }

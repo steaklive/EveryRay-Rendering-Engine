@@ -262,7 +262,7 @@ namespace Rendering
 	}
 	void RenderingObject::Update(const GameTime & time)
 	{
-		if (mAvailableInEditorMode && mEnableAABBDebug && Utility::IsEditorMode)
+		if (mAvailableInEditorMode && mEnableAABBDebug && Utility::IsEditorMode && mSelected)
 		{
 			mDebugAABB->SetPosition(XMFLOAT3(mMatrixTranslation[0],mMatrixTranslation[1],mMatrixTranslation[2]));
 			mDebugAABB->SetScale(XMFLOAT3(mMatrixScale[0], mMatrixScale[1], mMatrixScale[2]));
@@ -400,7 +400,7 @@ namespace Rendering
 		}
 
 
-		if (!toDepth && mAvailableInEditorMode)
+		if (!toDepth && mAvailableInEditorMode && mSelected)
 			DrawAABB();
 	}
 

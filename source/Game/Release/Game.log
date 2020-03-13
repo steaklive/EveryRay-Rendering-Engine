@@ -1,4 +1,6 @@
 ﻿  SponzaMainDemo.cpp
+c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\sponzamaindemo.h(104): warning C4200: nonstandard extension used: zero-sized array in struct/union
+  c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\sponzamaindemo.h(104): note: This member will be ignored by a defaulted constructor or copy/move assignment operator
 c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\postprocessingstack.h(96): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
   c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\postprocessingstack.h(18): note: see declaration of 'Rendering::VignetteMaterial'
 c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\postprocessingstack.h(97): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
@@ -15,7 +17,7 @@ c:\users\gen\documents\graphics programming\everyray rendering engine\build\ever
   c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\postprocessingstack.h(20): note: see declaration of 'Rendering::MotionBlurMaterial'
 c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\postprocessingstack.h(172): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
   c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\sponzamaindemo.cpp(183): warning C4244: '=': conversion from 'float' to 'INT', possible loss of data
+c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\sponzamaindemo.cpp(216): warning C4244: '=': conversion from 'float' to 'INT', possible loss of data
   Generating code
   0 of 4971 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
