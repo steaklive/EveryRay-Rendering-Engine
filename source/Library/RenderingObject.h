@@ -132,7 +132,11 @@ namespace Rendering
 		const std::vector<XMFLOAT3>& GetVertices();
 		UINT GetInstanceCount() { return mInstanceCount; }
 		XMFLOAT4X4 GetTransformMatrix() { return XMFLOAT4X4(mObjectTransformMatrix); }
+		bool IsAvailableInEditor() { return mAvailableInEditorMode; }
+		bool IsSelected() { return mSelected; }
 
+		void SetTranslation(float x, float y, float z) { mObjectTransformMatrix[3] = 0; mObjectTransformMatrix[7] = 0; mObjectTransformMatrix[11] = 0; }
+		void SetScale(float x, float y, float z) { mObjectTransformMatrix[0] = x; mObjectTransformMatrix[5] = y; mObjectTransformMatrix[10] = z; }
 
 		GeneralEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new GeneralEvent<Delegate_MeshMaterialVariablesUpdate>();
 
