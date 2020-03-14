@@ -22,9 +22,9 @@ namespace Rendering
 		GameComponent(pGame),
 		mCamera(pCamera),
 		mModel(std::move(pModel)),
-		mMeshesRenderBuffers(0, std::vector<RenderBufferData*>(0, nullptr)),
 		mMeshesInstanceBuffers(0, nullptr),
-		mMaterials(0, nullptr),
+		/*mMaterials(0, nullptr),*/
+		//mMeshesRenderBuffers(0, std::vector<RenderBufferData*>(0, nullptr)),
 		mMeshVertices(0),
 		mName(pName),
 		mInstanceCount(0),
@@ -64,23 +64,29 @@ namespace Rendering
 	RenderingObject::~RenderingObject()
 	{
 		DeleteObject(MeshMaterialVariablesUpdateEvent);
-		DeletePointerCollection(mMaterials);
-		for (size_t i = 0; i < mMeshesRenderBuffers.size(); i++)
-		{
-			DeletePointerCollection(mMeshesRenderBuffers[i]);
-		}
+
+		for (auto object : mMaterials)
+			DeleteObject(object.second);
+		mMaterials.clear();
+
+		for (auto meshRenderBuffer : mMeshesRenderBuffers)
+			DeletePointerCollection(meshRenderBuffer.second);
+		mMeshesRenderBuffers.clear();
+
 		DeletePointerCollection(mMeshesInstanceBuffers);
 		mMeshesTextureBuffers.clear();
 
 		DeleteObject(mDebugAABB);
 	}
 
-	void RenderingObject::LoadMaterial(Material* pMaterial, Effect* pEffect)
+	void RenderingObject::LoadMaterial(Material* pMaterial, Effect* pEffect, std::string materialName)
 	{
 		assert(mModel != nullptr);
+		assert(pMaterial != nullptr);
+		assert(pEffect != nullptr);
 
-		mMaterials.push_back(pMaterial);
-		mMaterials.back()->Initialize(pEffect);
+		mMaterials.insert(std::pair<std::string, Material*>(materialName, pMaterial));
+		mMaterials[materialName]->Initialize(pEffect);
 	}
 
 	void RenderingObject::LoadAssignedMeshTextures()
@@ -342,22 +348,22 @@ namespace Rendering
 		assert(mModel != nullptr);
 		assert(mGame->Direct3DDevice() != nullptr);
 
-		for (size_t materialIndex = 0; materialIndex < mMaterials.size(); materialIndex++)
+		for (auto material : mMaterials)
 		{
-			mMeshesRenderBuffers.push_back(std::vector<RenderBufferData*>());
+			mMeshesRenderBuffers.insert(std::pair<std::string, std::vector<RenderBufferData*>>(material.first, std::vector<RenderBufferData*>()));
 			for (size_t i = 0; i < mMeshesCount; i++)
 			{
-				mMeshesRenderBuffers[materialIndex].push_back(new RenderBufferData());
-				mMaterials[materialIndex]->CreateVertexBuffer(mGame->Direct3DDevice(), *mModel->Meshes()[i], &(mMeshesRenderBuffers[materialIndex][i]->VertexBuffer));
-				mModel->Meshes()[i]->CreateIndexBuffer(&(mMeshesRenderBuffers[materialIndex][i]->IndexBuffer));
-				mMeshesRenderBuffers[materialIndex][i]->IndicesCount = mModel->Meshes()[i]->Indices().size();
-				mMeshesRenderBuffers[materialIndex][i]->Stride = mMaterials[materialIndex]->VertexSize();
-				mMeshesRenderBuffers[materialIndex][i]->Offset = 0;
+				mMeshesRenderBuffers[material.first].push_back(new RenderBufferData());
+				material.second->CreateVertexBuffer(mGame->Direct3DDevice(), *mModel->Meshes()[i], &(mMeshesRenderBuffers[material.first][i]->VertexBuffer));
+				mModel->Meshes()[i]->CreateIndexBuffer(&(mMeshesRenderBuffers[material.first][i]->IndexBuffer));
+				mMeshesRenderBuffers[material.first][i]->IndicesCount = mModel->Meshes()[i]->Indices().size();
+				mMeshesRenderBuffers[material.first][i]->Stride = mMaterials[material.first]->VertexSize();
+				mMeshesRenderBuffers[material.first][i]->Offset = 0;
 			}
 		}
 
 	}
-	void RenderingObject::LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData, int materialIndex)
+	void RenderingObject::LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData, std::string materialName)
 	{
 		assert(mModel != nullptr);
 		assert(mGame->Direct3DDevice() != nullptr);
@@ -366,42 +372,45 @@ namespace Rendering
 		for (size_t i = 0; i < mMeshesCount; i++)
 		{
 			mMeshesInstanceBuffers.push_back(new InstanceBufferData());
-			static_cast<InstancingMaterial*>(mMaterials[materialIndex])->CreateInstanceBuffer(mGame->Direct3DDevice(), pInstanceData, &(mMeshesInstanceBuffers[i]->InstanceBuffer));
+			static_cast<InstancingMaterial*>(mMaterials[materialName])->CreateInstanceBuffer(mGame->Direct3DDevice(), pInstanceData, &(mMeshesInstanceBuffers[i]->InstanceBuffer));
 			mMeshesInstanceBuffers[i]->Stride = sizeof(InstancingMaterial::InstancedData);
 		}
 	}
 	
-	void RenderingObject::Draw(int materialIndex, bool toDepth)
+	void RenderingObject::Draw(std::string materialName, bool toDepth)
 	{
-		if (!mMaterials.size() || mMeshesRenderBuffers.size() == 0)
-			return;
-
-		for (size_t i = 0; i < mMeshesCount; i++)
+		if (mRendered)
 		{
-			ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
-			if (mWireframeMode)
-				context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-			else
-				context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-			Pass* pass = mMaterials[materialIndex]->CurrentTechnique()->Passes().at(0);
-			ID3D11InputLayout* inputLayout = mMaterials[materialIndex]->InputLayouts().at(pass);
-			context->IASetInputLayout(inputLayout);
+			if (!mMaterials.size() || mMeshesRenderBuffers.size() == 0)
+				return;
 
-			UINT stride = mMeshesRenderBuffers[materialIndex][i]->Stride;
-			UINT offset = mMeshesRenderBuffers[materialIndex][i]->Offset;
-			context->IASetVertexBuffers(0, 1, &(mMeshesRenderBuffers[materialIndex][i]->VertexBuffer), &stride, &offset);
-			context->IASetIndexBuffer(mMeshesRenderBuffers[materialIndex][i]->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+			for (size_t i = 0; i < mMeshesCount; i++)
+			{
+				ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+				if (mWireframeMode)
+					context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+				else
+					context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+				Pass* pass = mMaterials[materialName]->CurrentTechnique()->Passes().at(0);
+				ID3D11InputLayout* inputLayout = mMaterials[materialName]->InputLayouts().at(pass);
+				context->IASetInputLayout(inputLayout);
 
-			for (auto listener : MeshMaterialVariablesUpdateEvent->GetListeners())
-				listener(i);
+				UINT stride = mMeshesRenderBuffers[materialName][i]->Stride;
+				UINT offset = mMeshesRenderBuffers[materialName][i]->Offset;
+				context->IASetVertexBuffers(0, 1, &(mMeshesRenderBuffers[materialName][i]->VertexBuffer), &stride, &offset);
+				context->IASetIndexBuffer(mMeshesRenderBuffers[materialName][i]->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
-			pass->Apply(0, context);
-			context->DrawIndexed(mMeshesRenderBuffers[materialIndex][i]->IndicesCount, 0, 0);
+				for (auto listener : MeshMaterialVariablesUpdateEvent->GetListeners())
+					listener(i);
+
+				pass->Apply(0, context);
+				context->DrawIndexed(mMeshesRenderBuffers[materialName][i]->IndicesCount, 0, 0);
+			}
+
+
+			if (!toDepth && mAvailableInEditorMode && mSelected)
+				DrawAABB();
 		}
-
-
-		if (!toDepth && mAvailableInEditorMode && mSelected)
-			DrawAABB();
 	}
 
 	void RenderingObject::DrawAABB()
@@ -410,41 +419,39 @@ namespace Rendering
 			mDebugAABB->Draw();
 	}
 
-	void RenderingObject::DrawInstanced(int materialIndex)
+	void RenderingObject::DrawInstanced(std::string materialName)
 	{
-		for (int i = 0; i < mMeshesCount; i++)
+		if (mRendered)
 		{
-			ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
-			Pass* pass = mMaterials[materialIndex]->CurrentTechnique()->Passes().at(0);
-			ID3D11InputLayout* inputLayout = mMaterials[materialIndex]->InputLayouts().at(pass);
-			context->IASetInputLayout(inputLayout);
+			for (int i = 0; i < mMeshesCount; i++)
+			{
+				ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+				Pass* pass = mMaterials[materialName]->CurrentTechnique()->Passes().at(0);
+				ID3D11InputLayout* inputLayout = mMaterials[materialName]->InputLayouts().at(pass);
+				context->IASetInputLayout(inputLayout);
 
-			ID3D11Buffer* vertexBuffers[2] = { mMeshesRenderBuffers[materialIndex][i]->VertexBuffer, mMeshesInstanceBuffers[i]->InstanceBuffer };
-			UINT strides[2] = { mMeshesRenderBuffers[materialIndex][i]->Stride, mMeshesInstanceBuffers[i]->Stride };
-			UINT offsets[2] = { mMeshesRenderBuffers[materialIndex][i]->Offset, mMeshesInstanceBuffers[i]->Offset };
+				ID3D11Buffer* vertexBuffers[2] = { mMeshesRenderBuffers[materialName][i]->VertexBuffer, mMeshesInstanceBuffers[i]->InstanceBuffer };
+				UINT strides[2] = { mMeshesRenderBuffers[materialName][i]->Stride, mMeshesInstanceBuffers[i]->Stride };
+				UINT offsets[2] = { mMeshesRenderBuffers[materialName][i]->Offset, mMeshesInstanceBuffers[i]->Offset };
 
-			context->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
-			context->IASetIndexBuffer(mMeshesRenderBuffers[materialIndex][i]->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+				context->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
+				context->IASetIndexBuffer(mMeshesRenderBuffers[materialName][i]->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
-			for (auto listener : MeshMaterialVariablesUpdateEvent->GetListeners())
-				listener(i);
+				for (auto listener : MeshMaterialVariablesUpdateEvent->GetListeners())
+					listener(i);
 
-			pass->Apply(0, context);
+				pass->Apply(0, context);
 
-			context->DrawIndexedInstanced(mMeshesRenderBuffers[materialIndex][i]->IndicesCount, mInstanceCount, 0, 0, 0);
+				context->DrawIndexedInstanced(mMeshesRenderBuffers[materialName][i]->IndicesCount, mInstanceCount, 0, 0, 0);
+			}
 		}
 	}
 
-	const std::vector<XMFLOAT3>& RenderingObject::GetVertices()
-	{
-		return mMeshAllVertices;
-	}
-
-	void RenderingObject::UpdateInstanceData(std::vector<InstancingMaterial::InstancedData> pInstanceData, int materialIndex)
+	void RenderingObject::UpdateInstanceData(std::vector<InstancingMaterial::InstancedData> pInstanceData, std::string materialName)
 	{
 		for (size_t i = 0; i < mMeshesCount; i++)
 		{
-			static_cast<InstancingMaterial*>(mMaterials[materialIndex])->CreateInstanceBuffer(mGame->Direct3DDevice(), pInstanceData, &(mMeshesInstanceBuffers[i]->InstanceBuffer));
+			static_cast<InstancingMaterial*>(mMaterials[materialName])->CreateInstanceBuffer(mGame->Direct3DDevice(), pInstanceData, &(mMeshesInstanceBuffers[i]->InstanceBuffer));
 			
 			// dynamically update instance buffer
 			D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -472,6 +479,7 @@ namespace Rendering
 			ImGui::Begin("Object Editor");
 			ImGui::TextColored(ImVec4(0.8f, 0.2f, 0.24f, 1), mName.c_str());
 			ImGui::Separator();
+			ImGui::Checkbox("Visible", &mRendered);
 			ImGui::Checkbox("Show AABB", &mEnableAABBDebug);
 			ImGui::Checkbox("Wireframe", &mWireframeMode);
 
@@ -498,8 +506,6 @@ namespace Rendering
 			ImGui::InputFloat3("Sc", mMatrixScale, 3);
 			ImGuizmo::RecomposeMatrixFromComponents(mMatrixTranslation, mMatrixRotation, mMatrixScale, matrix);
 			ImGui::End();
-
-
 
 			ImGuiIO& io = ImGui::GetIO();
 			ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);

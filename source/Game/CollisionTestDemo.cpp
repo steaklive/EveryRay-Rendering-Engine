@@ -119,7 +119,7 @@ namespace Rendering
 		#pragma region DYNAMIC_OBJECT_INITIALIZATION
 	
 		mDynamicInstancedObject = new RenderingObject("Bunny Dynamic", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\bunny\\bunny.fbx"), true)));
-		mDynamicInstancedObject->LoadMaterial(new InstancingMaterial(), instancingEffect);
+		mDynamicInstancedObject->LoadMaterial(new InstancingMaterial(), instancingEffect, "instancing");
 		mDynamicInstancedObject->LoadRenderBuffers();
 		for (size_t i = 0; i < mDynamicInstancedObject->GetMeshCount(); i++)
 			mDynamicInstancedObject->LoadCustomMeshTextures(i,
@@ -144,7 +144,7 @@ namespace Rendering
 
 		// generate dynamic objects' random positions within a volume
 		CalculateDynamicObjectsRandomDistribution();
-		mDynamicInstancedObject->LoadInstanceBuffers(mDynamicObjectInstanceData, 0);
+		mDynamicInstancedObject->LoadInstanceBuffers(mDynamicObjectInstanceData, "instancing");
 		mDynamicInstancedObject->MeshMaterialVariablesUpdateEvent->AddListener("Instancing Material Dynamic Object Update", [&](int meshIndex) { UpdateInstancingMaterialVariables(*mDynamicInstancedObject, meshIndex); });
 
 		#pragma endregion
@@ -152,7 +152,7 @@ namespace Rendering
 		#pragma region STATIC_OBJECT_INITIALIZATION
 
 		mStaticInstancedObject = new RenderingObject("Bunny Dynamic", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)));
-		mStaticInstancedObject->LoadMaterial(new InstancingMaterial(), instancingEffect);
+		mStaticInstancedObject->LoadMaterial(new InstancingMaterial(), instancingEffect, "instancing");
 		mStaticInstancedObject->LoadRenderBuffers();
 		for (size_t i = 0; i < mStaticInstancedObject->GetMeshCount(); i++)
 			mStaticInstancedObject->LoadCustomMeshTextures(i,
@@ -177,7 +177,7 @@ namespace Rendering
 
 		// generate static objects' random positions within a volume
 		CalculateStaticObjectsRandomDistribution();
-		mStaticInstancedObject->LoadInstanceBuffers(mStaticObjectInstanceData, 0);
+		mStaticInstancedObject->LoadInstanceBuffers(mStaticObjectInstanceData, "instancing");
 		mStaticInstancedObject->MeshMaterialVariablesUpdateEvent->AddListener("Instancing Material Static Object Update", [&](int meshIndex) { UpdateInstancingMaterialVariables(*mStaticInstancedObject, meshIndex); });
 
 #pragma endregion
@@ -281,24 +281,24 @@ namespace Rendering
 	{
 		XMVECTOR empty = { 0,0,0,0 };
 
-		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->ViewProjection()			<< mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
-		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightColor0()				<< empty;
-		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightPosition0()			<< empty;
-		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightColor1()				<< empty;
-		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightPosition1()			<< empty;
-		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightColor2()				<< empty;
-		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightPosition2()			<< empty;
-		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightColor3()				<< empty;
-		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightPosition3()			<< empty;
-		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightRadius0()				<< (float)0;
-		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightRadius1()				<< (float)0;
-		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightRadius2()				<< (float)0;
-		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightRadius3()				<< (float)0;
-		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->LightDirection()			<< currentLightSource.DirectionalLight->DirectionVector();
-		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->DirectionalLightColor()		<< currentLightSource.DirectionalLight->ColorVector();
-		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->ColorTexture()				<< object.GetTextureData(meshIndex).AlbedoMap;
-		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->NormalTexture()				<< object.GetTextureData(meshIndex).NormalMap;
-		static_cast<InstancingMaterial*>(object.GetMeshMaterial())->CameraPosition()			<< mCamera->PositionVector();
+		static_cast<InstancingMaterial*>(object.GetMaterials()["instancing"])->ViewProjection()				<< mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
+		static_cast<InstancingMaterial*>(object.GetMaterials()["instancing"])->LightColor0()				<< empty;
+		static_cast<InstancingMaterial*>(object.GetMaterials()["instancing"])->LightPosition0()				<< empty;
+		static_cast<InstancingMaterial*>(object.GetMaterials()["instancing"])->LightColor1()				<< empty;
+		static_cast<InstancingMaterial*>(object.GetMaterials()["instancing"])->LightPosition1()				<< empty;
+		static_cast<InstancingMaterial*>(object.GetMaterials()["instancing"])->LightColor2()				<< empty;
+		static_cast<InstancingMaterial*>(object.GetMaterials()["instancing"])->LightPosition2()				<< empty;
+		static_cast<InstancingMaterial*>(object.GetMaterials()["instancing"])->LightColor3()				<< empty;
+		static_cast<InstancingMaterial*>(object.GetMaterials()["instancing"])->LightPosition3()				<< empty;
+		static_cast<InstancingMaterial*>(object.GetMaterials()["instancing"])->LightRadius0()				<< (float)0;
+		static_cast<InstancingMaterial*>(object.GetMaterials()["instancing"])->LightRadius1()				<< (float)0;
+		static_cast<InstancingMaterial*>(object.GetMaterials()["instancing"])->LightRadius2()				<< (float)0;
+		static_cast<InstancingMaterial*>(object.GetMaterials()["instancing"])->LightRadius3()				<< (float)0;
+		static_cast<InstancingMaterial*>(object.GetMaterials()["instancing"])->LightDirection()				<< currentLightSource.DirectionalLight->DirectionVector();
+		static_cast<InstancingMaterial*>(object.GetMaterials()["instancing"])->DirectionalLightColor()		<< currentLightSource.DirectionalLight->ColorVector();
+		static_cast<InstancingMaterial*>(object.GetMaterials()["instancing"])->ColorTexture()				<< object.GetTextureData(meshIndex).AlbedoMap;
+		static_cast<InstancingMaterial*>(object.GetMaterials()["instancing"])->NormalTexture()				<< object.GetTextureData(meshIndex).NormalMap;
+		static_cast<InstancingMaterial*>(object.GetMaterials()["instancing"])->CameraPosition()				<< mCamera->PositionVector();
 
 	}
 
@@ -485,7 +485,7 @@ namespace Rendering
 			}
 		}
 
-		mDynamicInstancedObject->UpdateInstanceData(mDynamicObjectInstanceData, 0);
+		mDynamicInstancedObject->UpdateInstanceData(mDynamicObjectInstanceData, "instancing");
 	}
 	void CollisionTestDemo::UpdateObjectsTransforms_OptimizedDataAccess(const GameTime& gameTime)
 	{
@@ -628,7 +628,7 @@ namespace Rendering
 			}
 		}
 
-		mDynamicInstancedObject->UpdateInstanceData(mDynamicObjectInstanceData, 0);
+		mDynamicInstancedObject->UpdateInstanceData(mDynamicObjectInstanceData, "instancing");
 	}
 	void CollisionTestDemo::UpdateSpatialElement(std::vector<SpatialElement*>& elements, int startIndex, int endIndex, const GameTime& gameTime)
 	{
@@ -752,9 +752,9 @@ namespace Rendering
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		#pragma region DRAW_OBJECTS
-		mDynamicInstancedObject->DrawInstanced(0);
-		mStaticInstancedObject->DrawInstanced(0);
-#pragma endregion
+		mDynamicInstancedObject->DrawInstanced("instancing");
+		mStaticInstancedObject->DrawInstanced("instancing");
+		#pragma endregion
 
 		#pragma region DRAW_GIZMOS
 		

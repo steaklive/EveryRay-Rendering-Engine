@@ -107,7 +107,7 @@ namespace Rendering
 		Effect* effect = new Effect(*mGame);
 		effect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\Instancing.fx"));
 
-		mStatueRenderingObject->LoadMaterial(new InstancingMaterial(), effect);
+		mStatueRenderingObject->LoadMaterial(new InstancingMaterial(), effect, "instancing");
 		mStatueRenderingObject->LoadRenderBuffers();
 
 		// Load Instance buffers
@@ -129,7 +129,7 @@ namespace Rendering
 			}
 		}
 
-		mStatueRenderingObject->LoadInstanceBuffers(instanceData, 0);
+		mStatueRenderingObject->LoadInstanceBuffers(instanceData, "instancing");
 		
 		// Setup lights data
 		light0.pointLight = new PointLight(*mGame);
@@ -286,7 +286,7 @@ namespace Rendering
 		ID3D11DeviceContext* direct3DDeviceContext = mGame->Direct3DDeviceContext();
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		mStatueRenderingObject->DrawInstanced(0);
+		mStatueRenderingObject->DrawInstanced("instancing");
 
 		mProxyModel0->Draw(gameTime);
 		mProxyModel1->Draw(gameTime);
@@ -305,22 +305,22 @@ namespace Rendering
 
 	void InstancingDemo::UpdateInstancingMaterialVariables(int meshIndex)
 	{
-		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMeshMaterial())->ViewProjection() << mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
-		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMeshMaterial())->LightColor0() << light0.pointLight->ColorVector();
-		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMeshMaterial())->LightPosition0() << light0.pointLight->PositionVector();
-		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMeshMaterial())->LightColor1() << light1.pointLight->ColorVector();
-		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMeshMaterial())->LightPosition1() << light1.pointLight->PositionVector();
-		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMeshMaterial())->LightColor2() << light2.pointLight->ColorVector();
-		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMeshMaterial())->LightPosition2() << light2.pointLight->PositionVector();
-		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMeshMaterial())->LightColor3() << light3.pointLight->ColorVector();
-		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMeshMaterial())->LightPosition3() << light3.pointLight->PositionVector();
-		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMeshMaterial())->LightRadius0() << light0.pointLight->Radius();
-		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMeshMaterial())->LightRadius1() << light1.pointLight->Radius();
-		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMeshMaterial())->LightRadius2() << light2.pointLight->Radius();
-		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMeshMaterial())->LightRadius3() << light3.pointLight->Radius();
-		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMeshMaterial())->ColorTexture() << mStatueRenderingObject->GetTextureData(meshIndex).AlbedoMap;
-		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMeshMaterial())->NormalTexture() << mStatueRenderingObject->GetTextureData(meshIndex).NormalMap;
-		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMeshMaterial())->CameraPosition() << mCamera->PositionVector();
+		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMaterials()["instancing"])->ViewProjection() << mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
+		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMaterials()["instancing"])->LightColor0() << light0.pointLight->ColorVector();
+		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMaterials()["instancing"])->LightPosition0() << light0.pointLight->PositionVector();
+		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMaterials()["instancing"])->LightColor1() << light1.pointLight->ColorVector();
+		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMaterials()["instancing"])->LightPosition1() << light1.pointLight->PositionVector();
+		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMaterials()["instancing"])->LightColor2() << light2.pointLight->ColorVector();
+		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMaterials()["instancing"])->LightPosition2() << light2.pointLight->PositionVector();
+		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMaterials()["instancing"])->LightColor3() << light3.pointLight->ColorVector();
+		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMaterials()["instancing"])->LightPosition3() << light3.pointLight->PositionVector();
+		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMaterials()["instancing"])->LightRadius0() << light0.pointLight->Radius();
+		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMaterials()["instancing"])->LightRadius1() << light1.pointLight->Radius();
+		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMaterials()["instancing"])->LightRadius2() << light2.pointLight->Radius();
+		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMaterials()["instancing"])->LightRadius3() << light3.pointLight->Radius();
+		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMaterials()["instancing"])->ColorTexture() << mStatueRenderingObject->GetTextureData(meshIndex).AlbedoMap;
+		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMaterials()["instancing"])->NormalTexture() << mStatueRenderingObject->GetTextureData(meshIndex).NormalMap;
+		static_cast<InstancingMaterial*>(mStatueRenderingObject->GetMaterials()["instancing"])->CameraPosition() << mCamera->PositionVector();
 	}
 
 	void InstancingDemo::UpdatePointLight(const GameTime& gameTime)

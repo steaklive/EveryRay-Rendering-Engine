@@ -113,25 +113,27 @@ namespace Rendering
 		~RenderingObject();
 
 		void LoadCustomMeshTextures(int meshIndex, std::wstring albedoPath, std::wstring normalPath, std::wstring specularPath, std::wstring roughnessPath, std::wstring metallicPath, std::wstring extra1Path, std::wstring extra2Path, std::wstring extra3Path);
-		void LoadMaterial(Material* pMaterial, Effect* pEffect);
+		void LoadMaterial(Material* pMaterial, Effect* pEffect, std::string materialName);
 		void LoadRenderBuffers();
-		void LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData, int materialIndex);
-		void Draw(int materialIndex, bool toDepth = false);
+		void LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData, std::string materialName);
+		void Draw(std::string materialName, bool toDepth = false);
+		void DrawInstanced(std::string materialName);
 		void DrawAABB();
-		void DrawInstanced(int materialIndex);
-		void UpdateInstanceData(std::vector<InstancingMaterial::InstancedData> pInstanceData, int materialIndex);
+		void UpdateInstanceData(std::vector<InstancingMaterial::InstancedData> pInstanceData, std::string materialName);
 		void UpdateGizmos();
 		void Update(const GameTime& time);
 		void Selected(bool val) { mSelected = val; }
 
-		Material* GetMeshMaterial() { return mMaterials[0]; }
-		std::vector<Material*> GetMaterials() { return mMaterials; }
+		std::map<std::string, Material*> GetMaterials() { return mMaterials; }
 		TextureData& GetTextureData(int meshIndex) { return mMeshesTextureBuffers[meshIndex]; }
-		int GetMeshCount() { return mMeshesCount; }
-		std::vector<XMFLOAT3> GetAABB() { return mAABB; }
-		const std::vector<XMFLOAT3>& GetVertices();
-		UINT GetInstanceCount() { return mInstanceCount; }
+		
+		const int GetMeshCount() { return mMeshesCount; }
+		const std::vector<XMFLOAT3>& GetVertices() { return mMeshAllVertices; }
+		const UINT GetInstanceCount() { return mInstanceCount; }
+		
 		XMFLOAT4X4 GetTransformMatrix() { return XMFLOAT4X4(mObjectTransformMatrix); }
+		std::vector<XMFLOAT3> GetAABB() { return mAABB; }
+
 		bool IsAvailableInEditor() { return mAvailableInEditorMode; }
 		bool IsSelected() { return mSelected; }
 
@@ -139,7 +141,6 @@ namespace Rendering
 		void SetScale(float x, float y, float z) { mObjectTransformMatrix[0] = x; mObjectTransformMatrix[5] = y; mObjectTransformMatrix[10] = z; }
 
 		GeneralEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new GeneralEvent<Delegate_MeshMaterialVariablesUpdate>();
-
 	private:
 		RenderingObject();
 		RenderingObject(const RenderingObject& rhs);
@@ -150,16 +151,16 @@ namespace Rendering
 		void LoadTexture(TextureType type, std::wstring path, int meshIndex);
 		
 		Camera& mCamera;
-		std::vector<std::vector<RenderBufferData*>>			mMeshesRenderBuffers;
-		std::vector<TextureData>							mMeshesTextureBuffers;
-		std::vector<InstanceBufferData*>					mMeshesInstanceBuffers;
-		std::vector<std::vector<XMFLOAT3>>					mMeshVertices;
-		std::vector<XMFLOAT3>								mMeshAllVertices;
-		std::vector<Material*>								mMaterials;
-		std::vector<XMFLOAT3>								mAABB;
-		std::unique_ptr<Model>								mModel;
-		int													mMeshesCount;
-		UINT												mInstanceCount;
+		std::vector<TextureData>								mMeshesTextureBuffers;
+		std::vector<InstanceBufferData*>						mMeshesInstanceBuffers;
+		std::vector<std::vector<XMFLOAT3>>						mMeshVertices;
+		std::vector<XMFLOAT3>									mMeshAllVertices;
+		std::map<std::string, std::vector<RenderBufferData*>>	mMeshesRenderBuffers;
+		std::map<std::string, Material*>						mMaterials;
+		std::vector<XMFLOAT3>									mAABB;
+		std::unique_ptr<Model>									mModel;
+		int														mMeshesCount;
+		UINT													mInstanceCount;
 
 		//Editor variables
 		std::string											mName;
@@ -168,7 +169,7 @@ namespace Rendering
 		bool												mWireframeMode = false;
 		bool												mAvailableInEditorMode = false;
 		bool												mSelected = false;
-
+		bool												mRendered = true;
 
 		float mCameraViewMatrix[16];
 		float mCameraProjectionMatrix[16];
