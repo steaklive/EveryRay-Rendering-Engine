@@ -186,7 +186,7 @@ namespace Rendering
 
 		//shader
 		mShadowMappingEffect = new Effect(*mGame);
-		mShadowMappingEffect->CompileFromFile(L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Effects\\ShadowMappingDirectional.fx");
+		mShadowMappingEffect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\ShadowMappingDirectional.fx"));
 
 		//material
 		mShadowMappingDirectionalMaterial = new ShadowMappingDirectionalMaterial();
@@ -197,7 +197,7 @@ namespace Rendering
 
 		//shader
 		mDepthMapEffect = new Effect(*mGame);
-		mDepthMapEffect->CompileFromFile(L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Effects\\DepthMap.fx");
+		mDepthMapEffect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\DepthMap.fx"));
 
 		//material
 		mDepthMapMaterial = new DepthMapMaterial();
@@ -207,14 +207,14 @@ namespace Rendering
 
 		//shader
 		mEnvironmentMappingEffect = new Effect(*mGame);
-		mEnvironmentMappingEffect->CompileFromFile(L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Effects\\EnvironmentMapping.fx");
+		mEnvironmentMappingEffect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\EnvironmentMapping.fx"));
 
 		//material
 		mEnvironmentMappingMaterial = new EnvironmentMappingMaterial();
 		mEnvironmentMappingMaterial->Initialize(mEnvironmentMappingEffect);
 		
 		//load environment texture
-		HRESULT hr = DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\Maskonaive2_1024.dds", nullptr, &mCubeMapShaderResourceView);
+		HRESULT hr = DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), Utility::GetFilePath(L"content\\textures\\Sky_Type_4.dds").c_str(), nullptr, &mCubeMapShaderResourceView);
 		if (FAILED(hr))
 		{
 			throw GameException("CreateDDSTextureFromFile() failed.", hr);
@@ -230,7 +230,7 @@ namespace Rendering
 		mAmbientColor.a = 55;
 
 		//directional gizmo model
-		mProxyModel = new ProxyModel(*mGame, *mCamera, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\DirectionalLightProxy.obj", 0.5f);
+		mProxyModel = new ProxyModel(*mGame, *mCamera, Utility::GetFilePath("content\\models\\DirectionalLightProxy.obj"), 0.5f);
 		mProxyModel->Initialize();
 		mProxyModel->ApplyRotation(XMMatrixRotationY(XM_PIDIV2));
 		mProxyModel->SetPosition(51.0f, 30.0, 116.0f);
@@ -272,7 +272,7 @@ namespace Rendering
 
 
 		//Load plane model
-		std::unique_ptr<Model> plane_model(new Model(*mGame, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\default_plane\\default_plane.obj", true));
+		std::unique_ptr<Model> plane_model(new Model(*mGame, Utility::GetFilePath("content\\models\\default_plane\\default_plane.obj"), true));
 		
 		Mesh* mesh_plane = plane_model->Meshes().at(0);
 		mDepthMapMaterial->CreateVertexBuffer(mGame->Direct3DDevice(), *mesh_plane, &mPlanePositionVertexBuffer);
@@ -283,7 +283,7 @@ namespace Rendering
 		//XMStoreFloat4x4(&mPlaneWorldMatrix, XMMatrixScaling(7.0f, 7.0f, 7.0f));
 
 
-		std::wstring textureName = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\default_plane\\UV_Grid_Lrg.jpg";
+		std::wstring textureName = Utility::GetFilePath(L"content\\models\\default_plane\\UV_Grid_Lrg.jpg");
 		HRESULT hr2 = DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureName.c_str(), nullptr, &mPlaneTexture);
 		if (FAILED(hr2))
 		{
@@ -291,7 +291,7 @@ namespace Rendering
 		}
 
 		//Load dragon models
-		std::unique_ptr<Model> model(new Model(*mGame, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\dragon50k_array.obj", true));
+		std::unique_ptr<Model> model(new Model(*mGame, Utility::GetFilePath("content\\models\\dragon50k_array.obj"), true));
 
 		Mesh* mesh = model->Meshes().at(0);
 		mDepthMapMaterial->CreateVertexBuffer(mGame->Direct3DDevice(), *mesh, &mModelPositionVertexBuffer);
@@ -319,7 +319,7 @@ namespace Rendering
 
 
 		//Skybox initialization
-		mSkybox = new Skybox(*mGame, *mCamera, L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Textures\\Sky_Type_1.dds", 100.0f);
+		mSkybox = new Skybox(*mGame, *mCamera, Utility::GetFilePath(L"content\\textures\\Sky_Type_4.dds"), 100.0f);
 		mSkybox->Initialize();
 #pragma endregion
 

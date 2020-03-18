@@ -56,7 +56,7 @@ namespace Rendering
 		FirstPersonCamera* mCamera;
 		
 		//Demo scenes
-		SponzaMainDemo* mAmbientLightingDemo;
+		SponzaMainDemo* mSponzaMainDemo;
 		ShadowMappingDemo* mShadowMappingDemo;
 		PhysicallyBasedRenderingDemo* mPBRDemo;
 		InstancingDemo* mInstancingDemo;
