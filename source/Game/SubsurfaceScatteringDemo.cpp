@@ -29,9 +29,6 @@
 #include "..\Library\FullScreenQuad.h"
 #include "..\Library\FullScreenRenderTarget.h"
 
-
-
-
 #include "DDSTextureLoader.h"
 
 #include "imgui.h"
@@ -140,44 +137,16 @@ namespace Rendering
 	{
 		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
 
-		/*#pragma region DEFAULT_PLANE_OBJECT_INITIALIZATION
-		{
-			mDefaultPlaneObject = new SubsurfaceScatteringDemoStructs::DefaultPlaneObject();
-
-			// Default Plane Object
-			std::unique_ptr<Model> model_plane(new Model(*mGame, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\default_plane\\default_plane.obj", true));
-
-			// Load the instancingEffect
-			Effect* ambientEffect = new Effect(*mGame);
-			ambientEffect->CompileFromFile(L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Effects\\AmbientLighting.fx");
-
-			mDefaultPlaneObject->Material = new AmbientLightingMaterial();
-			mDefaultPlaneObject->Material->Initialize(ambientEffect);
-
-			Mesh* mesh_default_plane = model_plane->Meshes().at(0);
-			mDefaultPlaneObject->Material->CreateVertexBuffer(mGame->Direct3DDevice(), *mesh_default_plane, &mDefaultPlaneObject->VertexBuffer);
-			mesh_default_plane->CreateIndexBuffer(&mDefaultPlaneObject->IndexBuffer);
-			mDefaultPlaneObject->IndexCount = mesh_default_plane->Indices().size();
-
-			// load diffuse texture
-			std::wstring textureName3 = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\default_plane\\UV_Grid_Lrg.jpg";
-			if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureName3.c_str(), nullptr, &mDefaultPlaneObject->DiffuseTexture)))
-			{
-				throw GameException("Failed to load plane's 'Diffuse Texture'.");
-			}
-		}
-#pragma endregion*/
-
 		#pragma region HEAD_OBJECT_INITIALIZATION
 		{
 			mHeadObject = new SubsurfaceScatteringDemoStructs::HeadObject();
 
 			//Head LPS model
-			std::unique_ptr<Model> model_head(new Model(*mGame, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\lpshead\\lpshead.fbx", true));
+			std::unique_ptr<Model> model_head(new Model(*mGame, Utility::GetFilePath("content\\models\\lpshead\\lpshead.fbx"), true));
 
 			// Load the skin color effect
 			Effect* skinColorEffect = new Effect(*mGame);
-			skinColorEffect->CompileFromFile(L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Effects\\SkinShadingColor.fx");
+			skinColorEffect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\SkinShadingColor.fx"));
 
 			mHeadObject->SkinColorMaterial = new SkinShadingColorMaterial();
 			mHeadObject->SkinColorMaterial->Initialize(skinColorEffect);
@@ -188,35 +157,35 @@ namespace Rendering
 			mHeadObject->IndexCount = mesh_head->Indices().size();
 
 			// load diffuse texture
-			std::wstring textureName4 = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\lpshead\\DiffuseMap.dds";
+			std::wstring textureName4 = Utility::GetFilePath(L"content\\models\\lpshead\\DiffuseMap.dds");
 			if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureName4.c_str(), nullptr, &mHeadObject->DiffuseTexture)))
 			{
 				throw GameException("Failed to load head's 'Diffuse Texture'.");
 			}
 
 			// load normal texture
-			std::wstring textureName5 = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\lpshead\\NormalMap.dds";
+			std::wstring textureName5 = Utility::GetFilePath(L"content\\models\\lpshead\\NormalMap.dds");
 			if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureName5.c_str(), nullptr, &mHeadObject->NormalTexture)))
 			{
 				throw GameException("Failed to load head's 'Normal Texture'.");
 			}
 
 			// load specular ao texture
-			std::wstring textureName6 = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\lpshead\\spec.jpg";
+			std::wstring textureName6 = Utility::GetFilePath(L"content\\models\\lpshead\\spec.jpg");
 			if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureName6.c_str(), nullptr, &mHeadObject->SpecularAOTexture)))
 			{
 				throw GameException("Failed to load head's 'Specular AO Texture'.");
 			}
 
 			// load beckmann texture
-			std::wstring textureName7 = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\lpshead\\BeckmannMap.dds";
+			std::wstring textureName7 = Utility::GetFilePath(L"content\\models\\lpshead\\BeckmannMap.dds");
 			if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureName7.c_str(), nullptr, &mHeadObject->BeckmannTexture)))
 			{
 				throw GameException("Failed to load head's 'Beckmann Texture'.");
 			}
 
 			// load irradiance texture
-			std::wstring textureName8 = L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\lpshead\\IrradianceMap.dds";
+			std::wstring textureName8 = Utility::GetFilePath(L"content\\models\\lpshead\\IrradianceMap.dds");
 			if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureName8.c_str(), nullptr, &mHeadObject->IrradianceTexture)))
 			{
 				throw GameException("Failed to load head's 'Irradiance Texture'.");
@@ -227,14 +196,14 @@ namespace Rendering
 
 		//current light initiazlization
 		currentLightSource.DirectionalLight = new DirectionalLight(*mGame);
-		currentLightSource.ProxyModel = new ProxyModel(*mGame, *mCamera, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\DirectionalLightProxy.obj", 0.5f);
+		currentLightSource.ProxyModel = new ProxyModel(*mGame, *mCamera, Utility::GetFilePath("content\\models\\DirectionalLightProxy.obj"), 0.5f);
 		currentLightSource.ProxyModel->Initialize();
 		currentLightSource.ProxyModel->ApplyRotation(XMMatrixRotationY(XM_PIDIV2));
 		currentLightSource.ProxyModel->SetPosition(0, 0, 0);
 
 		//light 1 initialization
 		lightSource1.DirectionalLight = new DirectionalLight(*mGame);
-		lightSource1.ProxyModel = new ProxyModel(*mGame, *mCamera, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\DirectionalLightProxy.obj", 0.5f);
+		lightSource1.ProxyModel = new ProxyModel(*mGame, *mCamera, Utility::GetFilePath("content\\models\\DirectionalLightProxy.obj"), 0.5f);
 		lightSource1.ProxyModel->Initialize();
 		lightSource1.ProxyModel->SetPosition(-2.0, 12.0f, 5.0f);
 		
@@ -248,7 +217,7 @@ namespace Rendering
 
 		//light 2 initialization
 		lightSource2.DirectionalLight = new DirectionalLight(*mGame);
-		lightSource2.ProxyModel = new ProxyModel(*mGame, *mCamera, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\DirectionalLightProxy.obj", 0.5f);
+		lightSource2.ProxyModel = new ProxyModel(*mGame, *mCamera, Utility::GetFilePath("content\\models\\DirectionalLightProxy.obj"), 0.5f);
 		lightSource2.ProxyModel->Initialize();
 		lightSource2.ProxyModel->SetPosition(3.5, 9.0f, -6.0f);
 
@@ -261,7 +230,7 @@ namespace Rendering
 
 		//light 3 initialization
 		lightSource3.DirectionalLight = new DirectionalLight(*mGame);
-		lightSource3.ProxyModel = new ProxyModel(*mGame, *mCamera, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\DirectionalLightProxy.obj", 0.5f);
+		lightSource3.ProxyModel = new ProxyModel(*mGame, *mCamera, Utility::GetFilePath("content\\models\\DirectionalLightProxy.obj"), 0.5f);
 		lightSource3.ProxyModel->Initialize();
 		lightSource3.ProxyModel->SetPosition(0.0, 3.0f, 5.0f);
 
@@ -278,7 +247,7 @@ namespace Rendering
 
 
 		//Skybox initialization
-		mSkybox = new Skybox(*mGame, *mCamera, L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\lpshead\\IrradianceMap.dds", 100.0f);
+		mSkybox = new Skybox(*mGame, *mCamera, Utility::GetFilePath(L"content\\models\\lpshead\\IrradianceMap.dds"), 100.0f);
 		mSkybox->Initialize();
 		mSkybox->SetVisible(false);
 
@@ -288,13 +257,13 @@ namespace Rendering
 
 		//shader depth
 		Effect* depthMapEffect = new Effect(*mGame);
-		depthMapEffect->CompileFromFile(L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Effects\\DepthMap.fx");
+		depthMapEffect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\DepthMap.fx"));
 
 		//material
 		mDepthMapMaterial = new DepthMapMaterial();
 		mDepthMapMaterial->Initialize(depthMapEffect);
 		//mDepthMapMaterial->SetCurrentTechnique(mDepthMapMaterial.Get);
-		std::unique_ptr<Model> model_head(new Model(*mGame, "C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Models\\lpshead\\lpshead.fbx", true));
+		std::unique_ptr<Model> model_head(new Model(*mGame, Utility::GetFilePath("content\\models\\lpshead\\lpshead.fbx"), true));
 		Mesh* mesh_head = model_head->Meshes().at(0);
 
 		mDepthMapMaterial->CreateVertexBuffer(mGame->Direct3DDevice(), *mesh_head, &mShadowMapVertexBuffer);
@@ -305,7 +274,7 @@ namespace Rendering
 
 		//shader subsurface scattering
 		Effect* skinScatterEffect = new Effect(*mGame);
-		skinScatterEffect->CompileFromFile(L"C:\\Users\\Gen\\Documents\\Graphics Programming\\EveryRay Rendering Engine\\source\\Library\\Content\\Effects\\SkinShadingSeparableSubsurface.fx");
+		skinScatterEffect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\SkinShadingSeparableSubsurface.fx"));
 
 
 		mHeadObject->SkinScatterMaterial = new SkinShadingScatterMaterial();

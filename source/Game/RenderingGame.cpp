@@ -83,7 +83,7 @@ namespace Rendering
 		mShowProfiler(false), 
 
 		//scenes
-		mAmbientLightingDemo(nullptr),
+		mSponzaMainDemo(nullptr),
 		mShadowMappingDemo(nullptr),
 		mPBRDemo(nullptr),
 		mInstancingDemo(nullptr),
@@ -298,7 +298,7 @@ namespace Rendering
 	
 	void RenderingGame::Shutdown()
 	{
-		DeleteObject(mAmbientLightingDemo);
+		DeleteObject(mSponzaMainDemo);
 		DeleteObject(mShadowMappingDemo);
 		DeleteObject(mPBRDemo);
 		DeleteObject(mInstancingDemo);

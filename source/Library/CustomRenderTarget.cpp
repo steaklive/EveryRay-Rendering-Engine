@@ -2,6 +2,7 @@
 
 int CustomRenderTarget::mMipLevels = 0;
 UINT CustomRenderTarget::mBindFlags = 0;
+
 CustomRenderTarget* CustomRenderTarget::Create(ID3D11Device * device, UINT width, UINT height, UINT samples, DXGI_FORMAT format, int mips)
 {
 	ID3D11Texture2D * tex = nullptr;
@@ -178,6 +179,7 @@ CustomRenderTarget* CustomRenderTarget::Create(ID3D11Device * device, UINT width
 
 CustomRenderTarget::CustomRenderTarget(ID3D11Texture2D* resource, ID3D11ShaderResourceView * srv, ID3D11RenderTargetView** rtv, ID3D11UnorderedAccessView** uav)
 {
+	mLegacyCode = false;
 	mRTVs = rtv;
 	mSRV = srv;
 	mUAVs = uav;
@@ -186,6 +188,7 @@ CustomRenderTarget::CustomRenderTarget(ID3D11Texture2D* resource, ID3D11ShaderRe
 
 CustomRenderTarget::CustomRenderTarget(ID3D11Texture2D * resource, ID3D11ShaderResourceView * srv, ID3D11RenderTargetView * rtv, ID3D11UnorderedAccessView * uav)
 {
+	mLegacyCode = true;
 	mRTV = rtv;
 	mSRV = srv;
 }
