@@ -45,7 +45,7 @@ namespace Library
 		: DrawableGameComponent(game, camera),
 		mVertexBuffer(nullptr), mIndexBuffer(nullptr), mMaterial(nullptr), mPass(nullptr), mInputLayout(nullptr),
 		mColor(DefaultColor), mPosition(Vector3Helper::Zero), mDirection(Vector3Helper::Forward), mUp(Vector3Helper::Up), mRight(Vector3Helper::Right),
-		mWorldMatrix(MatrixHelper::Identity), mVertices(0)
+		mWorldMatrix(MatrixHelper::Identity), mVertices(0), mScale(XMFLOAT3(1,1,1)), mRotationMatrix(XMMatrixIdentity())
 	{
 	}
 
@@ -53,7 +53,7 @@ namespace Library
 		: DrawableGameComponent(game, camera),
 		mVertexBuffer(nullptr), mIndexBuffer(nullptr), mMaterial(nullptr), mPass(nullptr), mInputLayout(nullptr),
 		mColor(color), mPosition(Vector3Helper::Zero), mDirection(Vector3Helper::Forward), mUp(Vector3Helper::Up), mRight(Vector3Helper::Right),
-		mWorldMatrix(MatrixHelper::Identity), mVertices(0)
+		mWorldMatrix(MatrixHelper::Identity), mVertices(0), mScale(XMFLOAT3(1, 1, 1)), mRotationMatrix(XMMatrixIdentity())
 	{
 	}
 
