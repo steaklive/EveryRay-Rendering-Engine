@@ -128,5 +128,31 @@ namespace Library
 
 		return rowVector;
 	}
+
+	void MatrixHelper::GetFloatArray(XMMATRIX & pMat, float* matrixArray)
+	{
+		XMFLOAT4X4 mat;
+		XMStoreFloat4x4(&mat, pMat);
+
+		matrixArray[0] = mat._11;
+		matrixArray[1] = mat._12;
+		matrixArray[2] = mat._13;
+		matrixArray[3] = mat._14;
+		matrixArray[4] = mat._21;
+		matrixArray[5] = mat._22;
+		matrixArray[6] = mat._23;
+		matrixArray[7] = mat._24;
+		matrixArray[8] = mat._31;
+		matrixArray[9] = mat._32;
+		matrixArray[10] = mat._33;
+		matrixArray[11] = mat._34;
+		matrixArray[12] = mat._41;
+		matrixArray[13] = mat._42;
+		matrixArray[14] = mat._43;
+		matrixArray[15] = mat._44;
+
+	}
+
+
 	
 }
