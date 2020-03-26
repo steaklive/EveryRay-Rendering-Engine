@@ -187,7 +187,7 @@ namespace Rendering
 		);
 		mRenderingObjects["PBR Dragon"]->MeshMaterialVariablesUpdateEvent->AddListener("Standard Lighting PBR Material Update", [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables("PBR Dragon", meshIndex); });
 		mRenderingObjects["PBR Dragon"]->MeshMaterialVariablesUpdateEvent->AddListener("Shadow Map Material Update", [&](int meshIndex) { UpdateDepthMaterialVariables("PBR Dragon", meshIndex); });
-		mRenderingObjects["PBR Dragon"]->SetTranslation(15.0f, 0.0, 0.0);
+		mRenderingObjects["PBR Dragon"]->SetTranslation(-35.0f, 0.0, -15.0);
 		mRenderingObjects["PBR Dragon"]->SetScale(0.6f,0.6f,0.6f);
 
 		mKeyboard = (Keyboard*)mGame->Services().GetService(Keyboard::TypeIdClass());

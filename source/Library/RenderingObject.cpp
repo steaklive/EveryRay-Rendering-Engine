@@ -17,7 +17,7 @@
 
 namespace Rendering
 {
-	RenderingObject::RenderingObject(std::string pName, Game& pGame, Camera& pCamera, std::unique_ptr<Model> pModel, bool availableInEditor )
+	RenderingObject::RenderingObject(std::string pName, Game& pGame, Camera& pCamera, std::unique_ptr<Model> pModel, bool availableInEditor)
 		:
 		GameComponent(pGame),
 		mCamera(pCamera),
@@ -29,7 +29,8 @@ namespace Rendering
 		mName(pName),
 		mInstanceCount(0),
 		mDebugAABB(nullptr),
-		mAvailableInEditorMode(availableInEditor)
+		mAvailableInEditorMode(availableInEditor),
+		mTransformationMatrix(XMMatrixIdentity())
 	{
 		if (!mModel)
 			throw GameException("Failed to create a RenderingObject from a model");
@@ -58,7 +59,9 @@ namespace Rendering
 			mDebugAABB->InitializeGeometry(mAABB, XMMatrixScaling(1, 1, 1));
 			mDebugAABB->SetPosition(XMFLOAT3(0,0,0));
 		}
-		
+
+		XMFLOAT4X4 transform = XMFLOAT4X4( mObjectTransformMatrix );
+		mTransformationMatrix = XMLoadFloat4x4(&transform);
 	}
 
 	RenderingObject::~RenderingObject()

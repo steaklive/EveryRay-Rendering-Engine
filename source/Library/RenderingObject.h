@@ -10,6 +10,7 @@
 #include "Effect.h"
 #include "GeneralEvent.h"
 #include "RenderableAABB.h"
+#include "MatrixHelper.h"
 
 namespace Rendering
 {
@@ -132,13 +133,28 @@ namespace Rendering
 		const UINT GetInstanceCount() { return mInstanceCount; }
 		
 		XMFLOAT4X4 GetTransformMatrix() { return XMFLOAT4X4(mObjectTransformMatrix); }
+		XMMATRIX GetTransformationMatrix() { return mTransformationMatrix; }
+
 		std::vector<XMFLOAT3> GetAABB() { return mAABB; }
 
 		bool IsAvailableInEditor() { return mAvailableInEditorMode; }
 		bool IsSelected() { return mSelected; }
 
-		void SetTranslation(float x, float y, float z) { mObjectTransformMatrix[3] = 0; mObjectTransformMatrix[7] = 0; mObjectTransformMatrix[11] = 0; }
-		void SetScale(float x, float y, float z) { mObjectTransformMatrix[0] = x; mObjectTransformMatrix[5] = y; mObjectTransformMatrix[10] = z; }
+		void SetTranslation(float x, float y, float z)
+		{
+			mTransformationMatrix *= XMMatrixTranslation(x, y, z);
+			MatrixHelper::GetFloatArray(mTransformationMatrix, mObjectTransformMatrix);
+		}
+		void SetScale(float x, float y, float z)
+		{ 
+			mTransformationMatrix *= XMMatrixScaling(x, y, z);
+			MatrixHelper::GetFloatArray(mTransformationMatrix, mObjectTransformMatrix);
+		}
+		void SetRotation(float x, float y, float z)
+		{
+			mTransformationMatrix *= XMMatrixRotationRollPitchYaw(x, y, z);
+			MatrixHelper::GetFloatArray(mTransformationMatrix, mObjectTransformMatrix);
+		}
 
 		GeneralEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new GeneralEvent<Delegate_MeshMaterialVariablesUpdate>();
 	private:
@@ -173,6 +189,7 @@ namespace Rendering
 
 		float mCameraViewMatrix[16];
 		float mCameraProjectionMatrix[16];
+
 		float mObjectTransformMatrix[16] = 
 		{   
 			1.f, 0.f, 0.f, 0.f,
@@ -182,5 +199,6 @@ namespace Rendering
 		};
 		float mMatrixTranslation[3], mMatrixRotation[3], mMatrixScale[3];
 
+		XMMATRIX mTransformationMatrix;
 	};
 }
