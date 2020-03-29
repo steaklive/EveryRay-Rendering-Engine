@@ -128,12 +128,12 @@ namespace Rendering
 		std::map<std::string, Material*> GetMaterials() { return mMaterials; }
 		TextureData& GetTextureData(int meshIndex) { return mMeshesTextureBuffers[meshIndex]; }
 		
-		const int GetMeshCount() { return mMeshesCount; }
+		const int GetMeshCount() const { return mMeshesCount; }
 		const std::vector<XMFLOAT3>& GetVertices() { return mMeshAllVertices; }
 		const UINT GetInstanceCount() { return mInstanceCount; }
 		
-		XMFLOAT4X4 GetTransformMatrix() { return XMFLOAT4X4(mObjectTransformMatrix); }
-		XMMATRIX GetTransformationMatrix() { return mTransformationMatrix; }
+		XMFLOAT4X4 GetTransformMatrix() const { return XMFLOAT4X4(mObjectTransformMatrix); }
+		XMMATRIX GetTransformationMatrix() const { return mTransformationMatrix; }
 
 		std::vector<XMFLOAT3> GetAABB() { return mAABB; }
 

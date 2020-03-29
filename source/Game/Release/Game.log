@@ -15,12 +15,12 @@ c:\users\gen\documents\graphics programming\everyray rendering engine\build\ever
   c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\postprocessingstack.h(20): note: see declaration of 'Rendering::MotionBlurMaterial'
 c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\postprocessingstack.h(172): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
   c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\sponzamaindemo.cpp(139): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\sponzamaindemo.cpp(151): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\sponzamaindemo.cpp(173): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\sponzamaindemo.cpp(219): warning C4244: '=': conversion from 'float' to 'INT', possible loss of data
+c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\sponzamaindemo.cpp(154): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
+c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\sponzamaindemo.cpp(168): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
+c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\sponzamaindemo.cpp(192): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
+c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\game\sponzamaindemo.cpp(240): warning C4244: '=': conversion from 'float' to 'INT', possible loss of data
   Generating code
-  0 of 5070 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+  0 of 5095 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
