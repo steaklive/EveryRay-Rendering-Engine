@@ -21,6 +21,7 @@ namespace Library
 	class IBLRadianceMap;
 	class Frustum;
 	class FullScreenRenderTarget;
+	class GBuffer;
 }
 
 namespace DirectX
@@ -55,16 +56,15 @@ namespace Rendering
 		SponzaMainDemo(const SponzaMainDemo& rhs);
 		SponzaMainDemo& operator=(const SponzaMainDemo& rhs);
 
-		//void UpdateStandardLightingMaterialVariables(int meshIndex);
-		//void UpdateDepthMapMaterialVariables(int meshIndex);
 		void UpdateStandardLightingPBRMaterialVariables(const std::string& objectName, int meshIndex);
 		void UpdateDepthMaterialVariables(const std::string& objectName, int meshIndex);
+		void UpdateDeferredPrepassMaterialVariables(const std::string& objectName, int meshIndex);
 		void UpdateDirectionalLightAndProjector(const GameTime & gameTime);
 		void UpdateImGui();
 		XMMATRIX GetProjectionMatrixFromFrustum(Frustum & cameraFrustum, DirectionalLight& light);
 		XMFLOAT4X4 GetProjectionShadowMatrix();
 
-		void CheckMouseIntersections();
+		//void CheckMouseIntersections();
 
 		static const float AmbientModulationRate;
 		static const XMFLOAT2 LightRotationRate;
@@ -92,6 +92,8 @@ namespace Rendering
 		ID3D11ShaderResourceView* mRadianceTextureSRV;
 		ID3D11ShaderResourceView* mIntegrationMapTextureSRV;
 		std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
+
+		GBuffer* mGBuffer;
 
 		PostProcessingStack* mPostProcessingStack;
 

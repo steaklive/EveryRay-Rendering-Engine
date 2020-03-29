@@ -182,6 +182,7 @@
     <ClInclude Include="Common.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="CustomRenderTarget.h" />
+    <ClInclude Include="DeferredMaterial.h" />
     <ClInclude Include="DemoLevel.h" />
     <ClInclude Include="DepthMap.h" />
     <ClInclude Include="DepthMapMaterial.h" />
@@ -202,6 +203,7 @@
     <ClInclude Include="GameClock.h" />
     <ClInclude Include="GameComponent.h" />
     <ClInclude Include="GameTime.h" />
+    <ClInclude Include="GBuffer.h" />
     <ClInclude Include="GeneralEvent.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="IBLCubemap.h" />
@@ -270,6 +272,7 @@
     <ClCompile Include="ColorGradingMaterial.cpp" />
     <ClCompile Include="ColorHelper.cpp" />
     <ClCompile Include="CustomRenderTarget.cpp" />
+    <ClCompile Include="DeferredMaterial.cpp" />
     <ClCompile Include="DemoLevel.cpp" />
     <ClCompile Include="DepthMap.cpp" />
     <ClCompile Include="DepthMapMaterial.cpp" />
@@ -291,6 +294,7 @@
     <ClCompile Include="GameComponent.cpp" />
     <ClCompile Include="GameException.cpp" />
     <ClCompile Include="GameTime.cpp" />
+    <ClCompile Include="GBuffer.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="IBLCubemap.cpp" />
     <ClCompile Include="IBLCubemapFace.cpp" />
@@ -363,6 +367,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\content\effects\ColorGrading.fx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\content\effects\DeferredPrepass.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </FxCompile>

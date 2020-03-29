@@ -27,6 +27,8 @@
 #include "..\Library\PostProcessingStack.h"
 #include "..\Library\FullScreenRenderTarget.h"
 #include "..\Library\IBLRadianceMap.h"
+#include "..\Library\DeferredMaterial.h"
+#include "..\Library\GBuffer.h"
 
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
@@ -44,8 +46,11 @@ namespace Rendering
 
 	const float SponzaMainDemo::AmbientModulationRate = UCHAR_MAX;
 	const XMFLOAT2 SponzaMainDemo::LightRotationRate = XMFLOAT2(XM_PI / 2, XM_PI / 2);
-	const std::string depthMaterialName = "depth";
+
+	const std::string shadowMapMaterialName = "shadowMap";
 	const std::string lightingMaterialName = "lighting";
+	const std::string deferredPrepassMaterialName = "deferredPrepass";
+
 	static int selectedObjectIndex = -1;
 	
 	SponzaMainDemo::SponzaMainDemo(Game& game, Camera& camera)
@@ -63,7 +68,8 @@ namespace Rendering
 		mIrradianceTextureSRV(nullptr),
 		mRadianceTextureSRV(nullptr),
 		mIntegrationMapTextureSRV(nullptr),
-		mGrid(nullptr)
+		mGrid(nullptr),
+		mGBuffer(nullptr)
 	{
 	}
 
@@ -90,6 +96,8 @@ namespace Rendering
 		ReleaseObject(mIrradianceTextureSRV);
 		ReleaseObject(mRadianceTextureSRV);
 		ReleaseObject(mIntegrationMapTextureSRV);
+
+		DeleteObject(mGBuffer);
 	}
 
 	#pragma region COMPONENT_METHODS
@@ -124,6 +132,9 @@ namespace Rendering
 	{
 		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
 
+		mGBuffer = new GBuffer(*mGame, *mCamera, mGame->ScreenWidth(), mGame->ScreenHeight());
+		mGBuffer->Initialize();
+
 		// Initialize the material - lighting
 		Effect* lightingEffect = new Effect(*mGame);
 		lightingEffect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\StandardLighting.fx"));
@@ -132,17 +143,23 @@ namespace Rendering
 		Effect* effectShadow = new Effect(*mGame);
 		effectShadow->CompileFromFile(Utility::GetFilePath(L"content\\effects\\DepthMap.fx"));
 
+		Effect* effectDeferredPrepass = new Effect(*mGame);
+		effectDeferredPrepass->CompileFromFile(Utility::GetFilePath(L"content\\effects\\DeferredPrepass.fx"));
+
+
 		/**/
 		////
 		/**/
 		
 		mRenderingObjects.insert(std::pair<std::string, RenderingObject*>("Sponza", new RenderingObject("Sponza", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\Sponza\\sponza.fbx"), true)), false)));
 		mRenderingObjects["Sponza"]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, lightingMaterialName);
-		mRenderingObjects["Sponza"]->LoadMaterial(new DepthMapMaterial(), effectShadow, depthMaterialName);
+		mRenderingObjects["Sponza"]->LoadMaterial(new DepthMapMaterial(), effectShadow, shadowMapMaterialName);
+		mRenderingObjects["Sponza"]->LoadMaterial(new DeferredMaterial(), effectDeferredPrepass, deferredPrepassMaterialName);
 		mRenderingObjects["Sponza"]->LoadRenderBuffers();
 		mRenderingObjects["Sponza"]->GetMaterials()[lightingMaterialName]->SetCurrentTechnique(mRenderingObjects["Sponza"]->GetMaterials()[lightingMaterialName]->GetEffect()->TechniquesByName().at("standard_lighting_pbr"));
 		mRenderingObjects["Sponza"]->MeshMaterialVariablesUpdateEvent->AddListener("Standard Lighting Material Update", [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables("Sponza", meshIndex); });
 		mRenderingObjects["Sponza"]->MeshMaterialVariablesUpdateEvent->AddListener("Shadow Map Material Update", [&](int meshIndex) { UpdateDepthMaterialVariables("Sponza", meshIndex); });
+		mRenderingObjects["Sponza"]->MeshMaterialVariablesUpdateEvent->AddListener("Deferred Prepass Material Update", [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables("Sponza", meshIndex); });
 		
 		/**/
 		////
@@ -150,7 +167,8 @@ namespace Rendering
 		
 		mRenderingObjects.insert(std::pair<std::string, RenderingObject*>("PBR Sphere 1", new RenderingObject("PBR Sphere 1", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere.fbx"), true)), true)));
 		mRenderingObjects["PBR Sphere 1"]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, lightingMaterialName);
-		mRenderingObjects["PBR Sphere 1"]->LoadMaterial(new DepthMapMaterial(), effectShadow, depthMaterialName);
+		mRenderingObjects["PBR Sphere 1"]->LoadMaterial(new DepthMapMaterial(), effectShadow, shadowMapMaterialName);
+		mRenderingObjects["PBR Sphere 1"]->LoadMaterial(new DeferredMaterial(), effectDeferredPrepass, deferredPrepassMaterialName);
 		mRenderingObjects["PBR Sphere 1"]->LoadRenderBuffers();
 		mRenderingObjects["PBR Sphere 1"]->GetMaterials()[lightingMaterialName]->SetCurrentTechnique(mRenderingObjects["PBR Sphere 1"]->GetMaterials()[lightingMaterialName]->GetEffect()->TechniquesByName().at("standard_lighting_pbr"));
 		mRenderingObjects["PBR Sphere 1"]->LoadCustomMeshTextures(0,
@@ -165,6 +183,7 @@ namespace Rendering
 		);
 		mRenderingObjects["PBR Sphere 1"]->MeshMaterialVariablesUpdateEvent->AddListener("Standard Lighting PBR Material Update", [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables("PBR Sphere 1", meshIndex); });
 		mRenderingObjects["PBR Sphere 1"]->MeshMaterialVariablesUpdateEvent->AddListener("Shadow Map Material Update", [&](int meshIndex) { UpdateDepthMaterialVariables("PBR Sphere 1", meshIndex); });
+		mRenderingObjects["PBR Sphere 1"]->MeshMaterialVariablesUpdateEvent->AddListener("Deferred Prepass Material Update", [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables("PBR Sphere 1", meshIndex); });
 
 		/**/
 		////
@@ -172,7 +191,8 @@ namespace Rendering
 
 		mRenderingObjects.insert(std::pair<std::string, RenderingObject*>("PBR Dragon", new RenderingObject("PBR Dragon", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\dragon\\dragon.fbx"), true)), true)));
 		mRenderingObjects["PBR Dragon"]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, lightingMaterialName);
-		mRenderingObjects["PBR Dragon"]->LoadMaterial(new DepthMapMaterial(), effectShadow, depthMaterialName);
+		mRenderingObjects["PBR Dragon"]->LoadMaterial(new DepthMapMaterial(), effectShadow, shadowMapMaterialName);
+		mRenderingObjects["PBR Dragon"]->LoadMaterial(new DeferredMaterial(), effectDeferredPrepass, deferredPrepassMaterialName);
 		mRenderingObjects["PBR Dragon"]->LoadRenderBuffers();
 		mRenderingObjects["PBR Dragon"]->GetMaterials()[lightingMaterialName]->SetCurrentTechnique(mRenderingObjects["PBR Dragon"]->GetMaterials()[lightingMaterialName]->GetEffect()->TechniquesByName().at("standard_lighting_pbr"));
 		mRenderingObjects["PBR Dragon"]->LoadCustomMeshTextures(0,
@@ -187,6 +207,7 @@ namespace Rendering
 		);
 		mRenderingObjects["PBR Dragon"]->MeshMaterialVariablesUpdateEvent->AddListener("Standard Lighting PBR Material Update", [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables("PBR Dragon", meshIndex); });
 		mRenderingObjects["PBR Dragon"]->MeshMaterialVariablesUpdateEvent->AddListener("Shadow Map Material Update", [&](int meshIndex) { UpdateDepthMaterialVariables("PBR Dragon", meshIndex); });
+		mRenderingObjects["PBR Dragon"]->MeshMaterialVariablesUpdateEvent->AddListener("Deferred Prepass Material Update", [&](int meshIndex) { UpdateDepthMaterialVariables("PBR Dragon", meshIndex); });
 		mRenderingObjects["PBR Dragon"]->SetTranslation(-35.0f, 0.0, -15.0);
 		mRenderingObjects["PBR Dragon"]->SetScale(0.6f,0.6f,0.6f);
 
@@ -400,6 +421,17 @@ namespace Rendering
 		ID3D11DeviceContext* direct3DDeviceContext = mGame->Direct3DDeviceContext();
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+		#pragma region DEFERRED_PREPASS
+
+		mGBuffer->Start();
+		mRenderingObjects["Sponza"]->Draw(deferredPrepassMaterialName, false);
+		mRenderingObjects["PBR Sphere 1"]->Draw(deferredPrepassMaterialName, false);
+		mRenderingObjects["PBR Dragon"]->Draw(deferredPrepassMaterialName, false);
+
+		mGBuffer->End();
+
+		#pragma endregion
+
 		#pragma region DRAW_SHADOWS
 		
 		//shadow
@@ -407,9 +439,9 @@ namespace Rendering
 		direct3DDeviceContext->ClearDepthStencilView(mShadowMap->DepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 		direct3DDeviceContext->RSSetState(mShadowRasterizerState);
 		
-		mRenderingObjects["Sponza"]->Draw(depthMaterialName, true);
-		mRenderingObjects["PBR Sphere 1"]->Draw(depthMaterialName, true);
-		mRenderingObjects["PBR Dragon"]->Draw(depthMaterialName, true);
+		mRenderingObjects["Sponza"]->Draw(shadowMapMaterialName, true);
+		mRenderingObjects["PBR Sphere 1"]->Draw(shadowMapMaterialName, true);
+		mRenderingObjects["PBR Dragon"]->Draw(shadowMapMaterialName, true);
 		
 		mShadowMap->End();
 		mRenderStateHelper->RestoreRasterizerState();
@@ -475,7 +507,16 @@ namespace Rendering
 	{
 		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mRenderingObjects[objectName]->GetTransformMatrix()));
 		XMMATRIX wlvp = worldMatrix * mShadowProjector->ViewMatrix() * mShadowProjector->ProjectionMatrix();
-		static_cast<DepthMapMaterial*>(mRenderingObjects[objectName]->GetMaterials()[depthMaterialName])->WorldLightViewProjection() << wlvp;
+		static_cast<DepthMapMaterial*>(mRenderingObjects[objectName]->GetMaterials()[shadowMapMaterialName])->WorldLightViewProjection() << wlvp;
+	}
+
+	void SponzaMainDemo::UpdateDeferredPrepassMaterialVariables(const std::string & objectName, int meshIndex)
+	{
+		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mRenderingObjects[objectName]->GetTransformMatrix()));
+		XMMATRIX wvp = worldMatrix * mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
+		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[deferredPrepassMaterialName])->WorldViewProjection() << wvp;
+		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[deferredPrepassMaterialName])->World() << worldMatrix;
+		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[deferredPrepassMaterialName])->AlbedoMap() << mRenderingObjects[objectName]->GetTextureData(meshIndex).AlbedoMap;
 	}
 
 	XMMATRIX SponzaMainDemo::GetProjectionMatrixFromFrustum(Frustum& cameraFrustum, DirectionalLight& light)

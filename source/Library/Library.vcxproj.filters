@@ -339,6 +339,12 @@
     <ClInclude Include="FXAAMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DeferredMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -584,6 +590,12 @@
     <ClCompile Include="FXAAMaterial.cpp">
       <Filter>Source Files\Materials</Filter>
     </ClCompile>
+    <ClCompile Include="GBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DeferredMaterial.cpp">
+      <Filter>Source Files\Materials</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\content\effects\AmbientLighting.fx">
@@ -723,6 +735,9 @@
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\Tonemap\Tonemap.hlsl">
       <Filter>Shaders\Tonemap</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\effects\DeferredPrepass.fx">
+      <Filter>Effects</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

@@ -1,11 +1,6 @@
-﻿  RenderingObject.cpp
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\renderingobject.cpp(39): warning C4018: '<': signed/unsigned mismatch
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\renderingobject.cpp(57): warning C4316: 'Library::RenderableAABB': object allocated on the heap may not be aligned 16
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\renderingobject.cpp(97): warning C4018: '<': signed/unsigned mismatch
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\renderingobject.cpp(357): warning C4018: '<': signed/unsigned mismatch
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\renderingobject.cpp(375): warning C4018: '<': signed/unsigned mismatch
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\renderingobject.cpp(390): warning C4018: '<': signed/unsigned mismatch
-c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\renderingobject.cpp(455): warning C4018: '<': signed/unsigned mismatch
+﻿  Game.cpp
+c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\game.cpp(240): warning C4018: '<': signed/unsigned mismatch
+c:\users\gen\documents\graphics programming\everyray rendering engine\build\everyray rendering engine\source\library\game.cpp(289): warning C4838: conversion from 'UINT' to 'LONG' requires a narrowing conversion
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Black" (?Black@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Yellow" (?Yellow@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Blue" (?Blue@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored

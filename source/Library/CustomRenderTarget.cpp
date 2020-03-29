@@ -24,10 +24,14 @@ CustomRenderTarget* CustomRenderTarget::Create(ID3D11Device * device, UINT width
 	texDesc.Height = height;
 	texDesc.MipLevels = 1;
 	texDesc.MiscFlags = 0;
+
 	if (samples > 1)
 	{
 		texDesc.SampleDesc.Count = samples;
-		texDesc.SampleDesc.Quality = 0;//static_cast<UINT>(D3D11_STANDARD_MULTISAMPLE_PATTERN);
+
+		UINT qualityLevels = 0;
+		device->CheckMultisampleQualityLevels(format, samples, &qualityLevels);
+		texDesc.SampleDesc.Quality = qualityLevels - 1;
 	}
 	else
 	{
@@ -123,7 +127,9 @@ CustomRenderTarget* CustomRenderTarget::Create(ID3D11Device * device, UINT width
 	if (samples > 1)
 	{
 		texDesc.SampleDesc.Count = samples;
-		texDesc.SampleDesc.Quality = 0;//static_cast<UINT>(D3D11_STANDARD_MULTISAMPLE_PATTERN);
+		UINT qualityLevels = 0;
+		device->CheckMultisampleQualityLevels(format, samples, &qualityLevels);
+		texDesc.SampleDesc.Quality = qualityLevels - 1;
 	}
 	else
 	{
