@@ -345,6 +345,9 @@
     <ClInclude Include="DeferredMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ScreenSpaceReflectionsMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -596,6 +599,9 @@
     <ClCompile Include="DeferredMaterial.cpp">
       <Filter>Source Files\Materials</Filter>
     </ClCompile>
+    <ClCompile Include="ScreenSpaceReflectionsMaterial.cpp">
+      <Filter>Source Files\Materials</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\content\effects\AmbientLighting.fx">
@@ -739,5 +745,13 @@
     <FxCompile Include="..\..\content\effects\DeferredPrepass.fx">
       <Filter>Effects</Filter>
     </FxCompile>
+    <FxCompile Include="..\..\content\effects\SSR.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\content\effects\ShaderHelper.hlsli">
+      <Filter>Effects</Filter>
+    </None>
   </ItemGroup>
 </Project>

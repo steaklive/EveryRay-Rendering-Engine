@@ -2,6 +2,7 @@
 #include "VignetteMaterial.h"
 #include "MotionBlurMaterial.h"
 #include "ColorGradingMaterial.h"
+#include "ScreenSpaceReflectionsMaterial.h"
 #include "FXAAMaterial.h"
 #include "FullScreenQuad.h"
 #include "FullScreenRenderTarget.h"
@@ -25,6 +26,7 @@ namespace Rendering {
 		mColorGradingEffect(nullptr),
 		mMotionBlurEffect(nullptr),
 		mFXAAEffect(nullptr),
+		mSSREffect(nullptr),
 		game(pGame), camera(pCamera)
 	{
 	}
@@ -36,19 +38,21 @@ namespace Rendering {
 		DeleteObject(mColorGradingEffect);
 		DeleteObject(mMotionBlurEffect);
 		DeleteObject(mTonemapEffect);
+		DeleteObject(mSSREffect);
 
 		DeleteObject(mMainRenderTarget);
 		DeleteObject(mColorGradingRenderTarget);
 		DeleteObject(mMotionBlurRenderTarget);
 		DeleteObject(mVignetteRenderTarget);
 		DeleteObject(mFXAARenderTarget);
+		DeleteObject(mSSRRenderTarget);
 
 		ReleaseObject(mQuadVB);
 		ReleaseObject(mFullScreenQuadVS);
 		ReleaseObject(mFullScreenQuadLayout);
 	}
 
-	void PostProcessingStack::Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA)
+	void PostProcessingStack::Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR)
 	{
 		mMainRenderTarget = new FullScreenRenderTarget(game);
 
@@ -65,6 +69,20 @@ namespace Rendering {
 		mVignetteRenderTarget = new FullScreenRenderTarget(game);
 		mVignetteEffect->OutputTexture = mVignetteRenderTarget->OutputColorTexture();
 		mVignetteEffect->isActive = pVignette;
+
+		Effect* ssrEffectFX = new Effect(game);
+		ssrEffectFX->CompileFromFile(Utility::GetFilePath(L"content\\effects\\SSR.fx"));
+		mSSREffect = new EffectElements::SSREffect();
+		mSSREffect->Material = new ScreenSpaceReflectionsMaterial();
+		mSSREffect->Material->Initialize(ssrEffectFX);
+		mSSREffect->Quad = new FullScreenQuad(game, *mSSREffect->Material);
+		mSSREffect->Quad->Initialize();
+		mSSREffect->Quad->SetActiveTechnique("ssr", "p0");
+		//mSSREffect->Quad->SetCustomUpdateMaterial(std::bind(&PostProcessingStack::UpdateSSRMaterial, this));
+		mSSRRenderTarget = new FullScreenRenderTarget(game);
+		mSSREffect->InputColor = mSSRRenderTarget->OutputColorTexture();
+		mSSREffect->isActive = pSSR;
+		mSSRLoaded = true;
 
 		Effect* colorgradingEffectFX = new Effect(game);
 		colorgradingEffectFX->CompileFromFile(Utility::GetFilePath(L"content\\effects\\ColorGrading.fx"));
@@ -293,7 +311,16 @@ namespace Rendering {
 				mFXAAEffect->Quad->SetActiveTechnique("fxaa_filter", "p0");
 			else
 				mFXAAEffect->Quad->SetActiveTechnique("no_filter", "p0");
+		}		
+		
+		if (mSSRLoaded)
+		{
+			if (mSSREffect->isActive)
+				mSSREffect->Quad->SetActiveTechnique("ssr", "p0");
+			else
+				mSSREffect->Quad->SetActiveTechnique("no_ssr", "p0");
 		}
+
 	}
 
 	void PostProcessingStack::UpdateTonemapConstantBuffer(ID3D11DeviceContext* pD3DImmediateContext, ID3D11Buffer* buffer, int mipLevel0, int mipLevel1, unsigned int width, unsigned int height)
@@ -345,6 +372,26 @@ namespace Rendering {
 		mMotionBlurEffect->Material->WorldInverseTranspose()	 << mMotionBlurEffect->WIT;
 		mMotionBlurEffect->Material->amount() << mMotionBlurEffect->amount;
 	}
+
+	void PostProcessingStack::UpdateSSRMaterial(ID3D11ShaderResourceView* normal, ID3D11ShaderResourceView* depth, ID3D11ShaderResourceView* extra, float time)
+	{
+		XMMATRIX vp = camera.ViewMatrix() * camera.ProjectionMatrix();
+
+		mSSREffect->Material->ColorTexture() << mSSREffect->InputColor;
+		mSSREffect->Material->GBufferDepth() << depth;
+		mSSREffect->Material->GBufferNormals() << normal;
+		mSSREffect->Material->GBufferExtra() << extra;
+		mSSREffect->Material->ViewProjection() << vp;
+		mSSREffect->Material->InvProjMatrix() << XMMatrixInverse(nullptr, camera.ProjectionMatrix());
+		mSSREffect->Material->InvViewMatrix() << XMMatrixInverse(nullptr, camera.ViewMatrix());
+		mSSREffect->Material->ViewMatrix() << camera.ViewMatrix();
+		mSSREffect->Material->ProjMatrix() << camera.ProjectionMatrix();
+		mSSREffect->Material->CameraPosition() << camera.PositionVector();
+		mSSREffect->Material->StepSize() << mSSREffect->stepSize;
+		mSSREffect->Material->MaxThickness() << mSSREffect->maxThickness;
+		mSSREffect->Material->Time() << time;
+		mSSREffect->Material->MaxRayCount() << mSSREffect->rayCount;
+	}
 	
 	void PostProcessingStack::UpdateFXAAMaterial()
 	{
@@ -359,6 +406,16 @@ namespace Rendering {
 	{
 		ImGui::Begin("Post Processing Stack Config");
 
+		if (mSSRLoaded)
+		{
+			if (ImGui::CollapsingHeader("Screen Space Reflections"))
+			{
+				ImGui::Checkbox("SSR - On", &mSSREffect->isActive);
+				ImGui::SliderInt("Ray count", &mSSREffect->rayCount, 0, 100);
+				ImGui::SliderFloat("Step Size", &mSSREffect->stepSize, 0.0f, 10.0f);
+				ImGui::SliderFloat("Max Thickness", &mSSREffect->maxThickness, 0.0f, 0.01f);
+			}
+		}
 
 		if (true)
 		{
@@ -413,6 +470,16 @@ namespace Rendering {
 
 		ImGui::End();
 	}
+
+	ID3D11ShaderResourceView * PostProcessingStack::GetDepthOutputTexture()
+	{
+		return mMainRenderTarget->OutputDepthTexture(); 
+	}
+
+	//ID3D11ShaderResourceView * PostProcessingStack::GetPrepassColorOutputTexture()
+	//{
+	//	return mMainRenderTarget->OutputColorTexture();
+	//}
 
 	void PostProcessingStack::ComputeLuminance(ID3D11DeviceContext * pContext, ID3D11ShaderResourceView * pInput, ID3D11RenderTargetView* pOutput)
 	{
@@ -485,9 +552,21 @@ namespace Rendering {
 
 	void PostProcessingStack::End(const GameTime& gameTime)
 	{
+		mMainRenderTarget->End();
+	}
+
+	void PostProcessingStack::DrawEffects(const GameTime& gameTime)
+	{
 		ID3D11DeviceContext* context = game.Direct3DDeviceContext();
 
-		mMainRenderTarget->End();
+		// SSR
+		mSSRRenderTarget->Begin();
+		mSSREffect->InputColor = mMainRenderTarget->OutputColorTexture();
+		game.Direct3DDeviceContext()->ClearRenderTargetView(mSSRRenderTarget->RenderTargetView(), ClearBackgroundColor);
+		game.Direct3DDeviceContext()->ClearDepthStencilView(mSSRRenderTarget->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
+		mSSREffect->Quad->Draw(gameTime);
+		mSSRRenderTarget->End();
+
 
 		// TONEMAP
 		mTonemapRenderTarget->Begin();
@@ -521,13 +600,13 @@ namespace Rendering {
 			context->RSSetViewports(1, &quadViewPort);
 
 			UpdateTonemapConstantBuffer(context, mTonemapEffect->ConstBuffer, 0, 0, width, height);
-			ComputeLuminance(context, mMainRenderTarget->OutputColorTexture(), *mTonemapEffect->LuminanceResource->getRTVs());
+			ComputeLuminance(context, mSSRRenderTarget->OutputColorTexture(), *mTonemapEffect->LuminanceResource->getRTVs());
 
 			quadViewPort.Height = (float)(gameHeight / 2);
 			quadViewPort.Width = (float)(gameWidth / 2);
 			context->RSSetViewports(1, &quadViewPort);
 
-			ComputeBrightPass(context, mMainRenderTarget->OutputColorTexture(), *mTonemapEffect->BrightResource->getRTVs());
+			ComputeBrightPass(context, mSSRRenderTarget->OutputColorTexture(), *mTonemapEffect->BrightResource->getRTVs());
 			ID3D11RenderTargetView* pNULLRT[] = { NULL };
 			context->OMSetRenderTargets(1, pNULLRT, NULL);
 			context->GenerateMips(mTonemapEffect->BrightResource->getSRV());
@@ -595,11 +674,11 @@ namespace Rendering {
 			ComputeVerticalBlur(context, mTonemapEffect->BlurHorizontalResource->getSRV(), mTonemapEffect->BlurVerticalResource->getRTVs()[mipLevel0]);
 
 			context->RSSetViewports(1, &viewport);
-			ComputeToneMapWithBloom(context, mMainRenderTarget->OutputColorTexture(), mTonemapEffect->AvgLuminanceResource->getSRV(), mTonemapEffect->BlurVerticalResource->getSRV(), mTonemapRenderTarget->RenderTargetView());
+			ComputeToneMapWithBloom(context, mSSRRenderTarget->OutputColorTexture(), mTonemapEffect->AvgLuminanceResource->getSRV(), mTonemapEffect->BlurVerticalResource->getSRV(), mTonemapRenderTarget->RenderTargetView());
 		}
 		else
 		{
-			PerformEmptyPass(context, mMainRenderTarget->OutputColorTexture(), mTonemapRenderTarget->RenderTargetView());
+			PerformEmptyPass(context, mSSRRenderTarget->OutputColorTexture(), mTonemapRenderTarget->RenderTargetView());
 		}
 		mTonemapRenderTarget->End();
 

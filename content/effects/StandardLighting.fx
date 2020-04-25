@@ -182,6 +182,10 @@ float3 Schlick_Fresnel(float3 f0, float3 h, float3 l)
 {
     return f0 + (1.0f - f0) * pow((1.0f - dot(l, h)), 5.0f);
 }
+float3 Schlick_Fresnel_Roughness(float cosTheta, float3 F0, float roughness)
+{
+    return F0 + (max(float3(1.0 - roughness, 1.0f - roughness, 1.0f - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+}
 // ================================================================================================
 // Lambertian BRDF
 // http://en.wikipedia.org/wiki/Lambertian_reflectance
@@ -314,18 +318,22 @@ float3 mainPS_PBR(VS_OUTPUT vsOutput) : SV_Target0
     clip(diffuseAlbedo.a < 0.1f ? -1 : 1);
     float  metalness = MetallicTexture.Sample(Sampler, vsOutput.UV).r;
     float roughness = RoughnessTexture.Sample(Sampler, vsOutput.UV).r;
-
+        
     float3 specularAlbedo = float3(metalness, metalness, metalness);
 
     float3 directLighting = DirectLightingPBR(normalWS, SunColor.xyz, diffuseAlbedo.rgb,
 		specularAlbedo, vsOutput.WorldPos, roughness, 1.0f);
+    
+    float3 F0 = float3(0.04, 0.04, 0.04);
+    F0 = lerp(F0, diffuseAlbedo.rgb, metalness);
+    specularAlbedo = Schlick_Fresnel_Roughness(max(dot(normalWS, normalize(CameraPosition.xyz - vsOutput.WorldPos)), 0.0001f), F0, roughness);
     
     float3 indirectLighting = IndirectLighting(roughness, diffuseAlbedo.rgb,
 		specularAlbedo, normalWS, vsOutput.WorldPos);
 
     float shadow = GetShadow(vsOutput.ShadowCoord);
     float3 ambient = AmbientColor.rgb * diffuseAlbedo.rgb;
-    return ambient + float3(directLighting + indirectLighting) * shadow;
+	return ambient + float3(directLighting + indirectLighting) * shadow;
 }
 
 /************* Techniques *************/

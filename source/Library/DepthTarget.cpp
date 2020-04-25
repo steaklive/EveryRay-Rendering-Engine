@@ -47,7 +47,11 @@ DepthTarget* DepthTarget::Create(ID3D11Device * device, UINT width, UINT height,
 	if (samples > 1)
 	{
 		texDesc.SampleDesc.Count = samples;
-		texDesc.SampleDesc.Quality = 0;//static_cast<UINT>(D3D11_STANDARD_MULTISAMPLE_PATTERN);
+
+		UINT multiSampleLevel;
+		device->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, samples, &multiSampleLevel);
+
+		texDesc.SampleDesc.Quality = multiSampleLevel - 1;
 	}
 	else
 	{

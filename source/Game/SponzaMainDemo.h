@@ -21,6 +21,7 @@ namespace Library
 	class IBLRadianceMap;
 	class Frustum;
 	class FullScreenRenderTarget;
+	class FullScreenQuad;
 	class GBuffer;
 }
 
@@ -59,6 +60,7 @@ namespace Rendering
 		void UpdateStandardLightingPBRMaterialVariables(const std::string& objectName, int meshIndex);
 		void UpdateDepthMaterialVariables(const std::string& objectName, int meshIndex);
 		void UpdateDeferredPrepassMaterialVariables(const std::string& objectName, int meshIndex);
+		void UpdateSSRMaterialVariables(const std::string & objectName, int meshIndex);
 		void UpdateDirectionalLightAndProjector(const GameTime & gameTime);
 		void UpdateImGui();
 		XMMATRIX GetProjectionMatrixFromFrustum(Frustum & cameraFrustum, DirectionalLight& light);
@@ -76,6 +78,8 @@ namespace Rendering
 
 		Projector* mShadowProjector;
 		DepthMap* mShadowMap;
+
+		FullScreenQuad* mSSRQuad;
 
 		ProxyModel* mProxyModel;
 		DirectionalLight* mDirectionalLight;
@@ -99,5 +103,6 @@ namespace Rendering
 
 		float mSunColor[3] = { 1.0f, 0.95f, 0.863f };
 		float mAmbientColor[3] = { 0.08f, 0.08f, 0.08f };
+
 	};
 }

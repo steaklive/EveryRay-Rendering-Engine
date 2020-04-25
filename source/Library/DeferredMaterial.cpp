@@ -12,13 +12,15 @@ namespace Library
 		: Material("deferred"),
 		MATERIAL_VARIABLE_INITIALIZATION(WorldViewProjection),
 		MATERIAL_VARIABLE_INITIALIZATION(World),
-		MATERIAL_VARIABLE_INITIALIZATION(AlbedoMap)
+		MATERIAL_VARIABLE_INITIALIZATION(AlbedoMap),
+		MATERIAL_VARIABLE_INITIALIZATION(ReflectionMaskFactor)
 	{
 	}
 
 	MATERIAL_VARIABLE_DEFINITION(DeferredMaterial, WorldViewProjection)
 	MATERIAL_VARIABLE_DEFINITION(DeferredMaterial, World)
 	MATERIAL_VARIABLE_DEFINITION(DeferredMaterial, AlbedoMap)
+	MATERIAL_VARIABLE_DEFINITION(DeferredMaterial, ReflectionMaskFactor)
 
 	void DeferredMaterial::Initialize(Effect* effect)
 	{
@@ -27,6 +29,7 @@ namespace Library
 		MATERIAL_VARIABLE_RETRIEVE(WorldViewProjection)
 		MATERIAL_VARIABLE_RETRIEVE(World)
 		MATERIAL_VARIABLE_RETRIEVE(AlbedoMap)
+		MATERIAL_VARIABLE_RETRIEVE(ReflectionMaskFactor)
 
 		D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 		{
