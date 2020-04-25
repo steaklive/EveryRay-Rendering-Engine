@@ -34,11 +34,11 @@ Other features based on NVIDIA techniques (no code provided here)
 - Ocean Simulation (from DX11 archive samples)
 
 # Controls
-Mouse + Right Click - camera rotation
-WASD - camera side movement
-E/Q - camera up/down movement
-Backspace - enable editor
-R/T/Y - scale/translate/rotate object in the editor mode
+- Mouse + Right Click - camera rotation
+- WASD - camera side movement
+- E/Q - camera up/down movement
+- Backspace - enable editor
+- R/T/Y - scale/translate/rotate object in the editor mode
 
 # External Dependencies
 Create a folder "external" in the root directory and place these built libraries
