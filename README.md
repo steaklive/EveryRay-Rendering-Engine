@@ -40,6 +40,9 @@ Other features based on NVIDIA techniques (no code provided here)
 - Backspace - enable editor
 - R/T/Y - scale/translate/rotate object in the editor mode
 
+# Notes
+Only "Sponza Main Demo" scene has almost all features and is up-to-date with all changes to the codebase. Other levels might not have, for example, working editor or post processing stack due to the legacy code. I will be refactoring those levels when possible. 
+
 # External Dependencies
 Create a folder "external" in the root directory and place these built libraries
 - DirectX Effects 11 (https://github.com/Microsoft/FX11)
