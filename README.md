@@ -16,6 +16,7 @@ I have been changing and extending it for educational purposes with all kinds of
 ![picture](screenshots/EveryRaySSR.png)
 
 # Features
+- Hybrid Rendering (Deferred Prepass with limited GBuffer (albedo, normals, positions, mask) + Forward Pass)
 - 3D model loading (.obj, .fbx and etc.) with Assimp Library
 - User Interface with ImGUI, ImGuizmo
 - AABB, OBB, collision detection
