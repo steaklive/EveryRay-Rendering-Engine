@@ -13,6 +13,7 @@ I have been changing and extending it for educational purposes with all kinds of
 ![picture](screenshots/EveryRaySSSS.png)
 ![picture](screenshots/EveryRayPostProcessing.png)
 ![picture](screenshots/EveryRayWater.png)
+![picture](screenshots/EveryRaySSR.png)
 
 # Features
 - 3D model loading (.obj, .fbx and etc.) with Assimp Library
@@ -25,6 +26,7 @@ I have been changing and extending it for educational purposes with all kinds of
 - GPU Instancing
 - Frustum Culling
 - Separable Subsurface Scattering (based on the work of J.Jimenez and D.Gutierrez)
+- Screen Space Reflections
 
 Other features based on NVIDIA techniques (no code provided here)
 - Volumetric Lighting (from "Fast, Flexible, Physically-Based Volumetric Light Scattering")
