@@ -19,6 +19,7 @@ namespace Rendering
 	class ColorGradingMaterial;
 	class MotionBlurMaterial;
 	class FXAAMaterial;
+	class ScreenSpaceReflectionsMaterial;
 
 	namespace EffectElements
 	{
@@ -159,6 +160,30 @@ namespace Rendering
 
 		};
 
+		struct SSREffect
+		{
+			SSREffect() :
+				Material(nullptr), Quad(nullptr), InputColor(nullptr)
+			{}
+
+			~SSREffect()
+			{
+				DeleteObject(Material);
+				DeleteObject(Quad);
+				ReleaseObject(InputColor);
+
+			}
+
+			ScreenSpaceReflectionsMaterial* Material;
+			FullScreenQuad* Quad;
+			ID3D11ShaderResourceView* InputColor;
+
+			bool isActive = true;
+			int rayCount = 50;
+			float stepSize = 0.741f;
+			float maxThickness = 0.00021f;
+		};
+
 		struct MotionBlurEffect
 		{
 			MotionBlurEffect() :
@@ -188,6 +213,7 @@ namespace Rendering
 
 			float amount = 17.0f;
 		};
+
 	}
 
 	class PostProcessingStack
@@ -202,14 +228,20 @@ namespace Rendering
 		void UpdateColorGradingMaterial();
 		void UpdateMotionBlurMaterial();
 		void UpdateFXAAMaterial();
+		void UpdateSSRMaterial(ID3D11ShaderResourceView* normal, ID3D11ShaderResourceView* depth, ID3D11ShaderResourceView* extra, float time);
 
-		void Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA);
+		void Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR = true);
 		void Begin();
 		void End(const GameTime& gameTime);
+
+		void DrawEffects(const GameTime & gameTime);
 
 		void Update();
 		void DrawFullscreenQuad(ID3D11DeviceContext* pContext);
 		void ShowPostProcessingWindow();
+
+		ID3D11ShaderResourceView* GetDepthOutputTexture();
+		//ID3D11ShaderResourceView* GetPrepassColorOutputTexture();
 
 		bool isWindowOpened = false;
 
@@ -230,6 +262,7 @@ namespace Rendering
 		EffectElements::MotionBlurEffect* mMotionBlurEffect;
 		EffectElements::FXAAEffect* mFXAAEffect;
 		EffectElements::TonemapEffect* mTonemapEffect;
+		EffectElements::SSREffect* mSSREffect;
 		
 		FullScreenRenderTarget* mMainRenderTarget;
 		FullScreenRenderTarget* mVignetteRenderTarget;
@@ -237,6 +270,7 @@ namespace Rendering
 		FullScreenRenderTarget* mMotionBlurRenderTarget;
 		FullScreenRenderTarget* mFXAARenderTarget;
 		FullScreenRenderTarget* mTonemapRenderTarget;
+		FullScreenRenderTarget* mSSRRenderTarget;
 
 		ID3D11Buffer* mQuadVB;
 		ID3D11VertexShader* mFullScreenQuadVS;
@@ -246,6 +280,7 @@ namespace Rendering
 		bool mColorGradingLoaded = false;
 		bool mMotionBlurLoaded = false;
 		bool mFXAALoaded = false;
+		bool mSSRLoaded = false;
 
 	};
 }

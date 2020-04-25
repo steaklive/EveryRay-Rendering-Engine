@@ -12,6 +12,7 @@ namespace Library
 		MATERIAL_VARIABLE_DECLARATION(WorldViewProjection)
 		MATERIAL_VARIABLE_DECLARATION(World)
 		MATERIAL_VARIABLE_DECLARATION(AlbedoMap)
+		MATERIAL_VARIABLE_DECLARATION(ReflectionMaskFactor)
 
 	public:
 		DeferredMaterial();

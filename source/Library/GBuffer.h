@@ -3,6 +3,7 @@
 #include "Common.h"
 #include "DrawableGameComponent.h"
 #include "CustomRenderTarget.h"
+#include "DepthTarget.h"
 
 namespace Library
 {
@@ -18,11 +19,21 @@ namespace Library
 		void Start();
 		void End();
 
+		CustomRenderTarget* GetAlbedo() { return mAlbedoBuffer; }
+		CustomRenderTarget* GetNormals() { return mNormalBuffer; }
+		CustomRenderTarget* GetPositions() { return mPositionsBuffer; }
+		CustomRenderTarget* GetExtraBuffer() { return mExtraBuffer; }
+		DepthTarget* GetDepth() { return mDepthBuffer; }
+
 	private:
 	
+		DepthTarget* mDepthBuffer;
 		CustomRenderTarget* mAlbedoBuffer;
 		CustomRenderTarget* mNormalBuffer;
+		CustomRenderTarget* mPositionsBuffer;
+		CustomRenderTarget* mExtraBuffer;
 		ID3D11RasterizerState* mRS;
+
 		int mWidth;
 		int mHeight;
 	};

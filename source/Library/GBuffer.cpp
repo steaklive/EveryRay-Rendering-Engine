@@ -18,13 +18,19 @@ namespace Library {
 	{
 		DeleteObject(mAlbedoBuffer);
 		DeleteObject(mNormalBuffer);
+		DeleteObject(mDepthBuffer);
+		DeleteObject(mExtraBuffer);
 	}
 
 	void GBuffer::Initialize()
 	{
 		mAlbedoBuffer = CustomRenderTarget::Create(mGame->Direct3DDevice(), mWidth, mHeight, 4, DXGI_FORMAT_R32G32B32A32_FLOAT);
 		mNormalBuffer = CustomRenderTarget::Create(mGame->Direct3DDevice(), mWidth, mHeight, 4, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	
+		mPositionsBuffer = CustomRenderTarget::Create(mGame->Direct3DDevice(), mWidth, mHeight, 4, DXGI_FORMAT_R16G16B16A16_FLOAT);
+		mExtraBuffer = CustomRenderTarget::Create(mGame->Direct3DDevice(), mWidth, mHeight, 4, DXGI_FORMAT_R16G16B16A16_FLOAT);
+		
+		mDepthBuffer = DepthTarget::Create(mGame->Direct3DDevice(), mGame->ScreenWidth(), mGame->ScreenHeight(), mGame->GetMultisampleCount(), DXGI_FORMAT_D24_UNORM_S8_UINT);
+
 		D3D11_RASTERIZER_DESC rasterizerStateDesc;
 		ZeroMemory(&rasterizerStateDesc, sizeof(rasterizerStateDesc));
 		rasterizerStateDesc.FillMode = D3D11_FILL_SOLID;
@@ -46,11 +52,14 @@ namespace Library {
 	{
 		float color[4] = { 0,0,0,0 };
 
-		ID3D11RenderTargetView* rtvs[] = { mAlbedoBuffer->getRTV(), mNormalBuffer->getRTV() };
-		mGame->Direct3DDeviceContext()->OMSetRenderTargets(2, rtvs, mGame->DepthStencilView());
+		ID3D11RenderTargetView* rtvs[] = { mAlbedoBuffer->getRTV(), mNormalBuffer->getRTV(), mPositionsBuffer->getRTV(), mExtraBuffer->getRTV() };
+		mGame->Direct3DDeviceContext()->OMSetRenderTargets(4, rtvs, mDepthBuffer->getDSV() /*mGame->DepthStencilView()*/);
 
 		mGame->Direct3DDeviceContext()->ClearRenderTargetView(rtvs[0], color);
 		mGame->Direct3DDeviceContext()->ClearRenderTargetView(rtvs[1], color);
+		mGame->Direct3DDeviceContext()->ClearRenderTargetView(rtvs[2], color);
+		mGame->Direct3DDeviceContext()->ClearRenderTargetView(rtvs[3], color);
+		mGame->Direct3DDeviceContext()->ClearDepthStencilView(mDepthBuffer->getDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 		mGame->Direct3DDeviceContext()->RSSetState(mRS);
 

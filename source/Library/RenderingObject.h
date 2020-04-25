@@ -118,12 +118,16 @@ namespace Rendering
 		void LoadRenderBuffers();
 		void LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData, std::string materialName);
 		void Draw(std::string materialName, bool toDepth = false);
+		void Draw(std::string materialName, int meshIndex, bool toDepth);
 		void DrawInstanced(std::string materialName);
 		void DrawAABB();
 		void UpdateInstanceData(std::vector<InstancingMaterial::InstancedData> pInstanceData, std::string materialName);
 		void UpdateGizmos();
 		void Update(const GameTime& time);
 		void Selected(bool val) { mSelected = val; }
+
+		void SetMeshReflectionFactor(int meshIndex, float factor) { mMeshesReflectionFactors[meshIndex] = factor; }
+		float GetMeshReflectionFactor(int meshIndex) { return mMeshesReflectionFactors[meshIndex]; }
 
 		std::map<std::string, Material*> GetMaterials() { return mMaterials; }
 		TextureData& GetTextureData(int meshIndex) { return mMeshesTextureBuffers[meshIndex]; }
@@ -172,6 +176,7 @@ namespace Rendering
 		std::vector<std::vector<XMFLOAT3>>						mMeshVertices;
 		std::vector<XMFLOAT3>									mMeshAllVertices;
 		std::map<std::string, std::vector<RenderBufferData*>>	mMeshesRenderBuffers;
+		std::vector<float>										mMeshesReflectionFactors;
 		std::map<std::string, Material*>						mMaterials;
 		std::vector<XMFLOAT3>									mAABB;
 		std::unique_ptr<Model>									mModel;

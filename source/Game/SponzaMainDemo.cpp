@@ -23,12 +23,14 @@
 #include "..\Library\Projector.h"
 #include "..\Library\Frustum.h"
 #include "..\Library\StandardLightingMaterial.h"
+#include "..\Library\ScreenSpaceReflectionsMaterial.h"
 #include "..\Library\DepthMapMaterial.h"
 #include "..\Library\PostProcessingStack.h"
 #include "..\Library\FullScreenRenderTarget.h"
 #include "..\Library\IBLRadianceMap.h"
 #include "..\Library\DeferredMaterial.h"
 #include "..\Library\GBuffer.h"
+#include "..\Library\FullScreenQuad.h"
 
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
@@ -50,6 +52,7 @@ namespace Rendering
 	const std::string shadowMapMaterialName = "shadowMap";
 	const std::string lightingMaterialName = "lighting";
 	const std::string deferredPrepassMaterialName = "deferredPrepass";
+	const std::string ssrMaterialName = "ssr";
 
 	static int selectedObjectIndex = -1;
 	
@@ -69,7 +72,8 @@ namespace Rendering
 		mRadianceTextureSRV(nullptr),
 		mIntegrationMapTextureSRV(nullptr),
 		mGrid(nullptr),
-		mGBuffer(nullptr)
+		mGBuffer(nullptr),
+		mSSRQuad(nullptr)
 	{
 	}
 
@@ -98,6 +102,7 @@ namespace Rendering
 		ReleaseObject(mIntegrationMapTextureSRV);
 
 		DeleteObject(mGBuffer);
+		DeleteObject(mSSRQuad);
 	}
 
 	#pragma region COMPONENT_METHODS
@@ -144,9 +149,12 @@ namespace Rendering
 		effectShadow->CompileFromFile(Utility::GetFilePath(L"content\\effects\\DepthMap.fx"));
 
 		Effect* effectDeferredPrepass = new Effect(*mGame);
-		effectDeferredPrepass->CompileFromFile(Utility::GetFilePath(L"content\\effects\\DeferredPrepass.fx"));
+		effectDeferredPrepass->CompileFromFile(Utility::GetFilePath(L"content\\effects\\DeferredPrepass.fx"));	
+		
+		Effect* effectSSR = new Effect(*mGame);
+		effectSSR->CompileFromFile(Utility::GetFilePath(L"content\\effects\\SSR.fx"));
 
-
+		
 		/**/
 		////
 		/**/
@@ -155,11 +163,13 @@ namespace Rendering
 		mRenderingObjects["Sponza"]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, lightingMaterialName);
 		mRenderingObjects["Sponza"]->LoadMaterial(new DepthMapMaterial(), effectShadow, shadowMapMaterialName);
 		mRenderingObjects["Sponza"]->LoadMaterial(new DeferredMaterial(), effectDeferredPrepass, deferredPrepassMaterialName);
+		//mRenderingObjects["Sponza"]->LoadMaterial(new ScreenSpaceReflectionsMaterial(), effectSSR, ssrMaterialName);
 		mRenderingObjects["Sponza"]->LoadRenderBuffers();
 		mRenderingObjects["Sponza"]->GetMaterials()[lightingMaterialName]->SetCurrentTechnique(mRenderingObjects["Sponza"]->GetMaterials()[lightingMaterialName]->GetEffect()->TechniquesByName().at("standard_lighting_pbr"));
 		mRenderingObjects["Sponza"]->MeshMaterialVariablesUpdateEvent->AddListener("Standard Lighting Material Update", [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables("Sponza", meshIndex); });
 		mRenderingObjects["Sponza"]->MeshMaterialVariablesUpdateEvent->AddListener("Shadow Map Material Update", [&](int meshIndex) { UpdateDepthMaterialVariables("Sponza", meshIndex); });
 		mRenderingObjects["Sponza"]->MeshMaterialVariablesUpdateEvent->AddListener("Deferred Prepass Material Update", [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables("Sponza", meshIndex); });
+		mRenderingObjects["Sponza"]->SetMeshReflectionFactor(5, 1.0f);
 		
 		/**/
 		////
@@ -184,6 +194,7 @@ namespace Rendering
 		mRenderingObjects["PBR Sphere 1"]->MeshMaterialVariablesUpdateEvent->AddListener("Standard Lighting PBR Material Update", [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables("PBR Sphere 1", meshIndex); });
 		mRenderingObjects["PBR Sphere 1"]->MeshMaterialVariablesUpdateEvent->AddListener("Shadow Map Material Update", [&](int meshIndex) { UpdateDepthMaterialVariables("PBR Sphere 1", meshIndex); });
 		mRenderingObjects["PBR Sphere 1"]->MeshMaterialVariablesUpdateEvent->AddListener("Deferred Prepass Material Update", [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables("PBR Sphere 1", meshIndex); });
+		mRenderingObjects["PBR Sphere 1"]->SetMeshReflectionFactor(0, 1.0f);
 
 		/**/
 		////
@@ -207,9 +218,13 @@ namespace Rendering
 		);
 		mRenderingObjects["PBR Dragon"]->MeshMaterialVariablesUpdateEvent->AddListener("Standard Lighting PBR Material Update", [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables("PBR Dragon", meshIndex); });
 		mRenderingObjects["PBR Dragon"]->MeshMaterialVariablesUpdateEvent->AddListener("Shadow Map Material Update", [&](int meshIndex) { UpdateDepthMaterialVariables("PBR Dragon", meshIndex); });
-		mRenderingObjects["PBR Dragon"]->MeshMaterialVariablesUpdateEvent->AddListener("Deferred Prepass Material Update", [&](int meshIndex) { UpdateDepthMaterialVariables("PBR Dragon", meshIndex); });
+		mRenderingObjects["PBR Dragon"]->MeshMaterialVariablesUpdateEvent->AddListener("Deferred Prepass Material Update", [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables("PBR Dragon", meshIndex); });
 		mRenderingObjects["PBR Dragon"]->SetTranslation(-35.0f, 0.0, -15.0);
 		mRenderingObjects["PBR Dragon"]->SetScale(0.6f,0.6f,0.6f);
+
+		mSSRQuad = new FullScreenQuad(*mGame, *(mRenderingObjects["Sponza"]->GetMaterials()[ssrMaterialName]));
+		mSSRQuad->Initialize();
+
 
 		mKeyboard = (Keyboard*)mGame->Services().GetService(Keyboard::TypeIdClass());
 		assert(mKeyboard != nullptr);
@@ -248,7 +263,7 @@ namespace Rendering
 
 		//PP
 		mPostProcessingStack = new PostProcessingStack(*mGame, *mCamera);
-		mPostProcessingStack->Initialize(true, false, true, true, true);
+		mPostProcessingStack->Initialize(true, false, true, true, true, true);
 
 		//shadows
 		mShadowProjector = new Projector(*mGame);
@@ -291,6 +306,8 @@ namespace Rendering
 		mSkybox->Update(gameTime);
 		mGrid->Update(gameTime);
 		mPostProcessingStack->Update();
+
+		//time = (float)gameTime.TotalGameTime();
 
 		for (auto object : mRenderingObjects)
 			object.second->Update(gameTime);
@@ -427,7 +444,6 @@ namespace Rendering
 		mRenderingObjects["Sponza"]->Draw(deferredPrepassMaterialName, false);
 		mRenderingObjects["PBR Sphere 1"]->Draw(deferredPrepassMaterialName, false);
 		mRenderingObjects["PBR Dragon"]->Draw(deferredPrepassMaterialName, false);
-
 		mGBuffer->End();
 
 		#pragma endregion
@@ -462,12 +478,15 @@ namespace Rendering
 		mRenderingObjects["Sponza"]->Draw(lightingMaterialName);
 		mRenderingObjects["PBR Sphere 1"]->Draw(lightingMaterialName);
 		mRenderingObjects["PBR Dragon"]->Draw(lightingMaterialName);
-
+		
 		//gizmo
 		mProxyModel->Draw(gameTime);
 		#pragma endregion
 
 		mPostProcessingStack->End(gameTime);
+		mPostProcessingStack->UpdateSSRMaterial(mGBuffer->GetNormals()->getSRV(), mGBuffer->GetDepth()->getSRV(), mGBuffer->GetExtraBuffer()->getSRV(), (float)gameTime.TotalGameTime());
+		mPostProcessingStack->DrawEffects(gameTime);
+
 
 		mRenderStateHelper->SaveAll();
 
@@ -517,8 +536,9 @@ namespace Rendering
 		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[deferredPrepassMaterialName])->WorldViewProjection() << wvp;
 		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[deferredPrepassMaterialName])->World() << worldMatrix;
 		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[deferredPrepassMaterialName])->AlbedoMap() << mRenderingObjects[objectName]->GetTextureData(meshIndex).AlbedoMap;
-	}
-
+		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[deferredPrepassMaterialName])->ReflectionMaskFactor() << mRenderingObjects[objectName]->GetMeshReflectionFactor(meshIndex);
+	}	
+	
 	XMMATRIX SponzaMainDemo::GetProjectionMatrixFromFrustum(Frustum& cameraFrustum, DirectionalLight& light)
 	{
 		//create corners

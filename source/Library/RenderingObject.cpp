@@ -23,6 +23,7 @@ namespace Rendering
 		mCamera(pCamera),
 		mModel(std::move(pModel)),
 		mMeshesInstanceBuffers(0, nullptr),
+		mMeshesReflectionFactors(0),
 		/*mMaterials(0, nullptr),*/
 		//mMeshesRenderBuffers(0, std::vector<RenderBufferData*>(0, nullptr)),
 		mMeshVertices(0),
@@ -40,6 +41,7 @@ namespace Rendering
 		{
 			mMeshVertices.push_back(mModel->Meshes().at(i)->Vertices());
 			mMeshesTextureBuffers.push_back(TextureData());
+			mMeshesReflectionFactors.push_back(0.0f);
 		}
 
 		for (size_t i = 0; i < mMeshVertices.size(); i++)
@@ -380,6 +382,44 @@ namespace Rendering
 		}
 	}
 	
+
+	void RenderingObject::Draw(std::string materialName, int meshIndex, bool toDepth)
+	{
+		if (mRendered)
+		{
+			if (!mMaterials.size() || mMeshesRenderBuffers.size() == 0)
+				return;
+
+			int i = meshIndex;
+
+			{
+				ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+				if (mWireframeMode)
+					context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+				else
+					context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+				Pass* pass = mMaterials[materialName]->CurrentTechnique()->Passes().at(0);
+				ID3D11InputLayout* inputLayout = mMaterials[materialName]->InputLayouts().at(pass);
+				context->IASetInputLayout(inputLayout);
+
+				UINT stride = mMeshesRenderBuffers[materialName][i]->Stride;
+				UINT offset = mMeshesRenderBuffers[materialName][i]->Offset;
+				context->IASetVertexBuffers(0, 1, &(mMeshesRenderBuffers[materialName][i]->VertexBuffer), &stride, &offset);
+				context->IASetIndexBuffer(mMeshesRenderBuffers[materialName][i]->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+				for (auto listener : MeshMaterialVariablesUpdateEvent->GetListeners())
+					listener(i);
+
+				pass->Apply(0, context);
+				context->DrawIndexed(mMeshesRenderBuffers[materialName][i]->IndicesCount, 0, 0);
+			}
+
+
+			if (!toDepth && mAvailableInEditorMode && mSelected)
+				DrawAABB();
+		}
+	}
+
 	void RenderingObject::Draw(std::string materialName, bool toDepth)
 	{
 		if (mRendered)
