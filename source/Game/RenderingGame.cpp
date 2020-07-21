@@ -37,6 +37,7 @@
 #include "VolumetricLightingDemo.h"
 #include "CollisionTestDemo.h"
 #include "WaterSimulationDemo.h"
+#include "TestSceneDemo.h"
 
 // include IMGUI
 #include "imgui.h"
@@ -60,7 +61,8 @@ namespace Rendering
 		"Volumetric Lighting",
 		"Collision Detection",
 		"Cascaded Shadow Mapping",
-		"Water Simulation"
+		"Water Simulation",
+		"Test Demo Scene",
 	};
 
 	DemoLevel* demoLevel;
@@ -83,6 +85,7 @@ namespace Rendering
 		mShowProfiler(false), 
 
 		//scenes
+		mTestSceneDemo(nullptr),
 		mSponzaMainDemo(nullptr),
 		mShadowMappingDemo(nullptr),
 		mPBRDemo(nullptr),
@@ -199,6 +202,9 @@ namespace Rendering
 			case 8:
 				demoLevel = new WaterSimulationDemo(*this, *mCamera);
 				break;
+			case 9:
+				demoLevel = new TestSceneDemo(*this, *mCamera);
+				break;
 			}
 		}
 		demoLevel->Create();
@@ -218,6 +224,9 @@ namespace Rendering
 
 		auto endUpdateTimer = std::chrono::high_resolution_clock::now();
 		mElapsedTimeUpdateCPU = endUpdateTimer - startUpdateTimer;
+
+		farPlaneDist = mCamera->FarPlaneDistance();
+		nearPlaneDist = mCamera->NearPlaneDistance();
 	}
 	
 	void RenderingGame::UpdateImGui()
@@ -307,6 +316,7 @@ namespace Rendering
 		DeleteObject(mVolumetricLightingDemo);
 		DeleteObject(mCollisionTestDemo);
 		DeleteObject(mWaterSimulationDemo);
+		DeleteObject(mTestSceneDemo);
 
 		DeleteObject(mKeyboard);
 		DeleteObject(mMouse);

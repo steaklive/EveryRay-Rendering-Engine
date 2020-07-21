@@ -17,6 +17,7 @@ namespace Library
 
 namespace Rendering
 {	
+	class TestSceneDemo;
 	class SponzaMainDemo;
 	class ShadowMappingDemo;
 	class PhysicallyBasedRenderingDemo;
@@ -56,6 +57,7 @@ namespace Rendering
 		FirstPersonCamera* mCamera;
 		
 		//Demo scenes
+		TestSceneDemo* mTestSceneDemo;
 		SponzaMainDemo* mSponzaMainDemo;
 		ShadowMappingDemo* mShadowMappingDemo;
 		PhysicallyBasedRenderingDemo* mPBRDemo;

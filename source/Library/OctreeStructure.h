@@ -9,10 +9,6 @@
 namespace Library
 {
 	class OctreeNode;
-
-	
-
-
 	class OctreeStructure 
 	{
 	public:
@@ -27,7 +23,7 @@ namespace Library
 		OctreeNode* GetRootNode() { return mRootNode; };
 
 	private:
-		const int mMaxDepth = 4;
+		const int mMaxDepth = 0;
 		const float mMaxObjectNodeRatio = 4.0;
 		float mHalfWidth;
 

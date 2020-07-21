@@ -1,0 +1,573 @@
+#include "stdafx.h"
+
+#include "TestSceneDemo.h"
+#include "..\Library\Game.h"
+#include "..\Library\GameException.h"
+#include "..\Library\VectorHelper.h"
+#include "..\Library\MatrixHelper.h"
+#include "..\Library\ColorHelper.h"
+#include "..\Library\Camera.h"
+#include "..\Library\Model.h"
+#include "..\Library\Mesh.h"
+#include "..\Library\Utility.h"
+#include "..\Library\DirectionalLight.h"
+#include "..\Library\ProxyModel.h"
+#include "..\Library\Keyboard.h"
+#include "..\Library\Light.h"
+#include "..\Library\Skybox.h"
+#include "..\Library\Grid.h"
+#include "..\Library\DemoLevel.h"
+#include "..\Library\RenderStateHelper.h"
+#include "..\Library\RenderingObject.h"
+#include "..\Library\DepthMap.h"
+#include "..\Library\Projector.h"
+#include "..\Library\Frustum.h"
+#include "..\Library\StandardLightingMaterial.h"
+#include "..\Library\ScreenSpaceReflectionsMaterial.h"
+#include "..\Library\DepthMapMaterial.h"
+#include "..\Library\PostProcessingStack.h"
+#include "..\Library\FullScreenRenderTarget.h"
+#include "..\Library\IBLRadianceMap.h"
+#include "..\Library\DeferredMaterial.h"
+#include "..\Library\GBuffer.h"
+#include "..\Library\FullScreenQuad.h"
+
+#include "imgui.h"
+#include "imgui_impl_dx11.h"
+#include "imgui_impl_win32.h"
+
+#include <WICTextureLoader.h>
+#include <DDSTextureLoader.h>
+#include <SpriteBatch.h>
+#include <SpriteFont.h>
+#include <sstream>
+
+namespace Rendering
+{
+	RTTI_DEFINITIONS(TestSceneDemo)
+
+	const float TestSceneDemo::AmbientModulationRate = UCHAR_MAX;
+	const XMFLOAT2 TestSceneDemo::LightRotationRate = XMFLOAT2(XM_PI / 2, XM_PI / 2);
+
+	const std::string shadowMapMaterialName			= "shadowMap";
+	const std::string lightingMaterialName			= "lighting";
+	const std::string deferredPrepassMaterialName	= "deferredPrepass";
+	//const std::string ssrMaterialName = "ssr";
+
+	static int selectedObjectIndex = -1;
+
+	TestSceneDemo::TestSceneDemo(Game& game, Camera& camera)
+		: DrawableGameComponent(game, camera),
+		mKeyboard(nullptr),
+		mWorldMatrix(MatrixHelper::Identity),
+		mRenderStateHelper(nullptr),
+		mShadowMap(nullptr),
+		//mShadowProjector(nullptr),
+		mShadowRasterizerState(nullptr),
+		mDirectionalLight(nullptr),
+		mProxyModel(nullptr),
+		mLightFrustum(XMMatrixIdentity()),
+		mSkybox(nullptr),
+		mIrradianceTextureSRV(nullptr),
+		mRadianceTextureSRV(nullptr),
+		mIntegrationMapTextureSRV(nullptr),
+		mGrid(nullptr),
+		mGBuffer(nullptr),
+		mSSRQuad(nullptr)
+	{
+	}
+
+	TestSceneDemo::~TestSceneDemo()
+	{
+		for (auto object : mRenderingObjects)
+		{
+			object.second->MeshMaterialVariablesUpdateEvent->RemoverAllListeners();
+			DeleteObject(object.second);
+		}
+		mRenderingObjects.clear();
+
+		DeleteObject(mRenderStateHelper);
+		DeleteObject(mShadowMap);
+		//DeleteObject(mShadowProjector);
+		DeleteObject(mDirectionalLight);
+		DeleteObject(mProxyModel);
+		DeleteObject(mSkybox);
+		DeleteObject(mGrid);
+		DeleteObject(mPostProcessingStack);
+
+		ReleaseObject(mShadowRasterizerState);
+
+		ReleaseObject(mIrradianceTextureSRV);
+		ReleaseObject(mRadianceTextureSRV);
+		ReleaseObject(mIntegrationMapTextureSRV);
+
+		DeleteObject(mGBuffer);
+		DeleteObject(mSSRQuad);
+	}
+
+#pragma region COMPONENT_METHODS
+	/////////////////////////////////////////////////////////////
+	// 'DemoLevel' ugly methods...
+	bool TestSceneDemo::IsComponent()
+	{
+		return mGame->IsInGameComponents<TestSceneDemo*>(mGame->components, this);
+	}
+	void TestSceneDemo::Create()
+	{
+		Initialize();
+		mGame->components.push_back(this);
+	}
+	void TestSceneDemo::Destroy()
+	{
+		std::pair<bool, int> res = mGame->FindInGameComponents<TestSceneDemo*>(mGame->components, this);
+
+		if (res.first)
+		{
+			mGame->components.erase(mGame->components.begin() + res.second);
+
+			//very provocative...
+			delete this;
+		}
+
+	}
+	/////////////////////////////////////////////////////////////  
+#pragma endregion
+
+	void TestSceneDemo::Initialize()
+	{
+		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
+
+		mGBuffer = new GBuffer(*mGame, *mCamera, mGame->ScreenWidth(), mGame->ScreenHeight());
+		mGBuffer->Initialize();
+
+		// Initialize the material - lighting
+		Effect* lightingEffect = new Effect(*mGame);
+		lightingEffect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\StandardLighting.fx"));
+
+		// Initialize the material - shadow
+		Effect* effectShadow = new Effect(*mGame);
+		effectShadow->CompileFromFile(Utility::GetFilePath(L"content\\effects\\DepthMap.fx"));
+
+		Effect* effectDeferredPrepass = new Effect(*mGame);
+		effectDeferredPrepass->CompileFromFile(Utility::GetFilePath(L"content\\effects\\DeferredPrepass.fx"));
+
+		//Effect* effectSSR = new Effect(*mGame);
+		//effectSSR->CompileFromFile(Utility::GetFilePath(L"content\\effects\\SSR.fx"));
+
+
+		/**/
+		////
+		/**/
+
+		mRenderingObjects.insert(std::pair<std::string, RenderingObject*>("Ground Plane", new RenderingObject("Ground Plane", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\default_plane\\default_plane.fbx"), true)), false)));
+		mRenderingObjects["Ground Plane"]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, lightingMaterialName);
+		mRenderingObjects["Ground Plane"]->LoadMaterial(new DepthMapMaterial(), effectShadow, shadowMapMaterialName);
+		mRenderingObjects["Ground Plane"]->LoadMaterial(new DeferredMaterial(), effectDeferredPrepass, deferredPrepassMaterialName);
+		mRenderingObjects["Ground Plane"]->LoadRenderBuffers();
+		mRenderingObjects["Ground Plane"]->GetMaterials()[lightingMaterialName]->SetCurrentTechnique(mRenderingObjects["Ground Plane"]->GetMaterials()[lightingMaterialName]->GetEffect()->TechniquesByName().at("standard_lighting_pbr"));
+		mRenderingObjects["Ground Plane"]->MeshMaterialVariablesUpdateEvent->AddListener("Standard Lighting Material Update", [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables("Ground Plane", meshIndex); });
+		mRenderingObjects["Ground Plane"]->MeshMaterialVariablesUpdateEvent->AddListener("Shadow Map Material Update", [&](int meshIndex) { UpdateDepthMaterialVariables("Ground Plane", meshIndex); });
+		mRenderingObjects["Ground Plane"]->MeshMaterialVariablesUpdateEvent->AddListener("Deferred Prepass Material Update", [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables("Ground Plane", meshIndex); });
+
+		
+		/**/
+		////
+		/**/
+
+		mRenderingObjects.insert(std::pair<std::string, RenderingObject*>("Acer Tree Medium", new RenderingObject("Acer Tree Medium", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\vegetation\\trees\\acer\\tree_acer_middle2.fbx"), true)), true)));
+		mRenderingObjects["Acer Tree Medium"]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, lightingMaterialName);
+		mRenderingObjects["Acer Tree Medium"]->LoadMaterial(new DepthMapMaterial(), effectShadow, shadowMapMaterialName);
+		mRenderingObjects["Acer Tree Medium"]->LoadMaterial(new DeferredMaterial(), effectDeferredPrepass, deferredPrepassMaterialName);
+		mRenderingObjects["Acer Tree Medium"]->LoadRenderBuffers();
+		mRenderingObjects["Acer Tree Medium"]->GetMaterials()[lightingMaterialName]->SetCurrentTechnique(mRenderingObjects["Acer Tree Medium"]->GetMaterials()[lightingMaterialName]->GetEffect()->TechniquesByName().at("standard_lighting_pbr"));
+		mRenderingObjects["Acer Tree Medium"]->MeshMaterialVariablesUpdateEvent->AddListener("Standard Lighting PBR Material Update", [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables("Acer Tree Medium", meshIndex); });
+		mRenderingObjects["Acer Tree Medium"]->MeshMaterialVariablesUpdateEvent->AddListener("Shadow Map Material Update", [&](int meshIndex) { UpdateDepthMaterialVariables("Acer Tree Medium", meshIndex); });
+		mRenderingObjects["Acer Tree Medium"]->MeshMaterialVariablesUpdateEvent->AddListener("Deferred Prepass Material Update", [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables("Acer Tree Medium", meshIndex); });
+		
+
+		mKeyboard = (Keyboard*)mGame->Services().GetService(Keyboard::TypeIdClass());
+		assert(mKeyboard != nullptr);
+
+		mSkybox = new Skybox(*mGame, *mCamera, Utility::GetFilePath(L"content\\textures\\Sky_Type_4.dds"), 10000);
+		mSkybox->Initialize();
+
+		mGrid = new Grid(*mGame, *mCamera, 100, 64, XMFLOAT4(0.961f, 0.871f, 0.702f, 1.0f));
+		mGrid->Initialize();
+		mGrid->SetColor((XMFLOAT4)ColorHelper::LightGray);
+
+		//directional light
+		mDirectionalLight = new DirectionalLight(*mGame);
+
+		//directional gizmo model
+		mProxyModel = new ProxyModel(*mGame, *mCamera, Utility::GetFilePath("content\\models\\DirectionalLightProxy.obj"), 0.5f);
+		mProxyModel->Initialize();
+		mProxyModel->ApplyRotation(XMMatrixRotationY(XM_PIDIV2));
+		mProxyModel->SetPosition(0.0f, 100.0, 0.0f);
+
+		mRenderStateHelper = new RenderStateHelper(*mGame);
+
+		D3D11_RASTERIZER_DESC rasterizerStateDesc;
+		ZeroMemory(&rasterizerStateDesc, sizeof(rasterizerStateDesc));
+		rasterizerStateDesc.FillMode = D3D11_FILL_SOLID;
+		rasterizerStateDesc.CullMode = D3D11_CULL_BACK;
+		rasterizerStateDesc.DepthClipEnable = true;
+		rasterizerStateDesc.DepthBias = 0.05f;
+		rasterizerStateDesc.SlopeScaledDepthBias = 3.0f;
+		rasterizerStateDesc.FrontCounterClockwise = false;
+		HRESULT hr = mGame->Direct3DDevice()->CreateRasterizerState(&rasterizerStateDesc, &mShadowRasterizerState);
+		if (FAILED(hr))
+		{
+			throw GameException("ID3D11Device::CreateRasterizerState() failed.", hr);
+		}
+
+		//PP
+		mPostProcessingStack = new PostProcessingStack(*mGame, *mCamera);
+		mPostProcessingStack->Initialize(false, false, true, true, true, false);
+
+		//shadows
+		//mShadowProjector = new Projector(*mGame);
+		//mShadowProjector->Initialize();
+		mShadowMap = new DepthMap(*mGame, 4096, 4096);
+
+		mProxyModel->ApplyRotation(XMMatrixRotationX(-XMConvertToRadians(70.0f)) * XMMatrixRotationAxis(mDirectionalLight->UpVector(), -XMConvertToRadians(25.0f)));
+		mDirectionalLight->ApplyRotation(XMMatrixRotationAxis(mDirectionalLight->RightVector(), -XMConvertToRadians(70.0f)) * XMMatrixRotationAxis(mDirectionalLight->UpVector(), -XMConvertToRadians(25.0f)));
+		//mShadowProjector->ApplyRotation(XMMatrixRotationAxis(mShadowProjector->RightVector(), -XMConvertToRadians(70.0f)) * XMMatrixRotationAxis(mDirectionalLight->UpVector(), -XMConvertToRadians(25.0f)));
+
+		mCamera->SetPosition(XMFLOAT3(0, 8.4f, 60.0f));
+		mCamera->SetFarPlaneDistance(100000.0f);
+		//mCamera->ApplyRotation(XMMatrixRotationAxis(mCamera->RightVector(), XMConvertToRadians(18.0f)) * XMMatrixRotationAxis(mCamera->UpVector(), -XMConvertToRadians(70.0f)));
+
+		//IBL
+		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\sponzaCubeDiffuseHDR.dds").c_str(), nullptr, &mIrradianceTextureSRV)))
+			throw GameException("Failed to create Irradiance Map.");
+
+		// Create an IBL Radiance Map from Environment Map
+		mIBLRadianceMap.reset(new IBLRadianceMap(*mGame, Utility::GetFilePath(L"content\\textures\\Sky_Type_4.dds")));
+		mIBLRadianceMap->Initialize();
+		mIBLRadianceMap->Create(*mGame);
+
+		mRadianceTextureSRV = *mIBLRadianceMap->GetShaderResourceViewAddress();
+		if (mRadianceTextureSRV == nullptr)
+			throw GameException("Failed to create Radiance Map.");
+		mIBLRadianceMap.release();
+		mIBLRadianceMap.reset(nullptr);
+
+		// Load a pre-computed Integration Map
+		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\sponzaCubeBrdf.dds").c_str(), nullptr, &mIntegrationMapTextureSRV)))
+			throw GameException("Failed to create Integration Texture.");
+	}
+
+	void TestSceneDemo::Update(const GameTime& gameTime)
+	{
+		UpdateImGui();
+
+		//mShadowProjector->Update(gameTime);
+		mProxyModel->Update(gameTime);
+		mSkybox->Update(gameTime);
+		mGrid->Update(gameTime);
+		mPostProcessingStack->Update();
+
+		//time = (float)gameTime.TotalGameTime();
+
+		for (auto object : mRenderingObjects)
+			object.second->Update(gameTime);
+
+		//UpdateDirectionalLightAndProjector(gameTime);
+		mShadowMapProjectionMatrix = XMMatrixOrthographicRH(5000, 5000, 0.01f, 500.0f);
+		//XMMATRIX projectionMatrix = XMMatrixPerspectiveFovRH(XM_PIDIV4, mGame->AspectRatio(), 0.01f, 500.0f);
+		mShadowMapViewMatrix = XMMatrixLookToRH(XMVECTOR{0.0f, 100.0f, 0.0f, 1.0f}, mDirectionalLight->DirectionVector(), mDirectionalLight->UpVector());
+		//mLightFrustum.SetMatrix(XMMatrixMultiply(viewMatrix, projectionMatrix));
+		//mShadowProjector->SetProjectionMatrix(GetProjectionMatrixFromFrustum(mLightFrustum, *mDirectionalLight));
+	}
+
+	void TestSceneDemo::UpdateImGui()
+	{
+
+		ImGui::Begin("Test Demo Scene");
+
+		ImGui::SliderFloat3("Sun Color", mSunColor, 0.0f, 1.0f);
+		ImGui::SliderFloat3("Ambient Color", mAmbientColor, 0.0f, 1.0f);
+
+		ImGui::Checkbox("Show Post Processing Stack", &mPostProcessingStack->isWindowOpened);
+		if (mPostProcessingStack->isWindowOpened) mPostProcessingStack->ShowPostProcessingWindow();
+
+		ImGui::Separator();
+
+		if (Utility::IsEditorMode)
+		{
+			ImGui::Begin("Scene Objects");
+
+			const char* listbox_items[] = { "Ground Plane", "Acer Tree Medium" };
+
+			ImGui::PushItemWidth(-1);
+			ImGui::ListBox("##empty", &selectedObjectIndex, listbox_items, IM_ARRAYSIZE(listbox_items));
+
+			for (size_t i = 0; i < IM_ARRAYSIZE(listbox_items); i++)
+			{
+				if (i == selectedObjectIndex)
+					mRenderingObjects[listbox_items[selectedObjectIndex]]->Selected(true);
+				else
+					mRenderingObjects[listbox_items[i]]->Selected(false);
+			}
+
+			ImGui::End();
+		}
+
+		for (auto object : mRenderingObjects)
+			if (object.second->IsAvailableInEditor() && object.second->IsSelected())
+				object.second->UpdateGizmos();
+
+		ImGui::End();
+	}
+	void TestSceneDemo::UpdateDirectionalLightAndProjector(const GameTime& gameTime)
+	{
+		float elapsedTime = (float)gameTime.ElapsedGameTime();
+
+#pragma region UPDATE_POSITIONS
+
+		//mShadowProjector->SetPosition(XMVECTOR{ mLightFrustumCenter.x,mLightFrustumCenter.y , mLightFrustumCenter.z } /*+movement*/);
+#pragma endregion
+
+#pragma region UPDATE_ROTATIONS
+
+		XMFLOAT2 rotationAmount = Vector2Helper::Zero;
+		if (mKeyboard->IsKeyDown(DIK_LEFTARROW))
+		{
+			rotationAmount.x += LightRotationRate.x * elapsedTime;
+		}
+		if (mKeyboard->IsKeyDown(DIK_RIGHTARROW))
+		{
+			rotationAmount.x -= LightRotationRate.x * elapsedTime;
+		}
+		if (mKeyboard->IsKeyDown(DIK_UPARROW))
+		{
+			rotationAmount.y += 0.3f*LightRotationRate.y * elapsedTime;
+		}
+		if (mKeyboard->IsKeyDown(DIK_DOWNARROW))
+		{
+			rotationAmount.y -= 0.3f*LightRotationRate.y * elapsedTime;
+		}
+
+		//rotation matrix for light + light gizmo
+		XMMATRIX lightRotationMatrix = XMMatrixIdentity();
+		if (rotationAmount.x != 0)
+		{
+			lightRotationMatrix = XMMatrixRotationY(rotationAmount.x);
+		}
+		if (rotationAmount.y != 0)
+		{
+			XMMATRIX lightRotationAxisMatrix = XMMatrixRotationAxis(mDirectionalLight->RightVector(), rotationAmount.y);
+			lightRotationMatrix *= lightRotationAxisMatrix;
+		}
+		if (rotationAmount.x != 0.0f || rotationAmount.y != 0.0f)
+		{
+			mDirectionalLight->ApplyRotation(lightRotationMatrix);
+			mProxyModel->ApplyRotation(lightRotationMatrix);
+		}
+
+		XMMATRIX lightMatrix = mDirectionalLight->LightMatrix(XMFLOAT3(0, 0, 0));
+
+		//rotation matrices for frustums and AABBs
+		for (size_t i = 0; i < 1; i++)
+		{
+			XMMATRIX projectorRotationMatrix = XMMatrixIdentity();
+			if (rotationAmount.x != 0)
+			{
+				projectorRotationMatrix = XMMatrixRotationY(rotationAmount.x);
+			}
+			if (rotationAmount.y != 0)
+			{
+//				XMMATRIX projectorRotationAxisMatrix = XMMatrixRotationAxis(mShadowProjector->RightVector(), rotationAmount.y);
+//				projectorRotationMatrix *= projectorRotationAxisMatrix;
+			}
+			if (rotationAmount.x != Vector2Helper::Zero.x || rotationAmount.y != Vector2Helper::Zero.y)
+			{
+//				mShadowProjector->ApplyRotation(projectorRotationMatrix);
+			}
+		}
+#pragma endregion
+
+	}
+
+	void TestSceneDemo::Draw(const GameTime& gameTime)
+	{
+		float clear_color[4] = { 0.0f, 1.0f, 1.0f, 0.0f };
+
+		mRenderStateHelper->SaveRasterizerState();
+
+		ID3D11DeviceContext* direct3DDeviceContext = mGame->Direct3DDeviceContext();
+		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+#pragma region DEFERRED_PREPASS
+
+		mGBuffer->Start();
+
+		for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++)
+			it->second->Draw(deferredPrepassMaterialName, false);
+
+		mGBuffer->End();
+
+#pragma endregion
+
+#pragma region DRAW_SHADOWS
+
+		//shadow
+		mShadowMap->Begin();
+		direct3DDeviceContext->ClearDepthStencilView(mShadowMap->DepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+		direct3DDeviceContext->RSSetState(mShadowRasterizerState);
+
+		for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++)
+			it->second->Draw(shadowMapMaterialName, false);
+
+		mShadowMap->End();
+		mRenderStateHelper->RestoreRasterizerState();
+#pragma endregion
+
+		mPostProcessingStack->Begin();
+
+#pragma region DRAW_SCENE
+
+		//skybox
+		mSkybox->Draw(gameTime);
+
+		////grid
+		//if (Utility::IsEditorMode)
+		//	mGrid->Draw(gameTime);
+
+		//gizmo
+		if (Utility::IsEditorMode)
+			mProxyModel->Draw(gameTime);
+
+		//lighting
+		for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++)
+			it->second->Draw(lightingMaterialName);
+
+#pragma endregion
+
+		mPostProcessingStack->End(gameTime);
+		mPostProcessingStack->UpdateSSRMaterial(mGBuffer->GetNormals()->getSRV(), mGBuffer->GetDepth()->getSRV(), mGBuffer->GetExtraBuffer()->getSRV(), (float)gameTime.TotalGameTime());
+		mPostProcessingStack->DrawEffects(gameTime);
+
+
+		mRenderStateHelper->SaveAll();
+
+#pragma region DRAW_IMGUI
+		ImGui::Render();
+		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+#pragma endregion
+	}
+
+	void TestSceneDemo::UpdateStandardLightingPBRMaterialVariables(const std::string& objectName, int meshIndex)
+	{
+		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mRenderingObjects[objectName]->GetTransformMatrix()));
+		XMMATRIX wvp = worldMatrix * mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
+		XMMATRIX modelToShadowMatrix = worldMatrix * mShadowMapViewMatrix * mShadowMapProjectionMatrix/* mShadowProjector->ViewMatrix() * mShadowProjector->ProjectionMatrix()*/ * XMLoadFloat4x4(&GetProjectionShadowMatrix());
+
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->WorldViewProjection() << wvp;
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->World() << worldMatrix;
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->ModelToShadow() << modelToShadowMatrix;
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->CameraPosition() << mCamera->PositionVector();
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->SunDirection() << XMVectorNegate(mDirectionalLight->DirectionVector());
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->SunColor() << XMVECTOR{ mSunColor[0],mSunColor[1], mSunColor[2] , 1.0f };
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->AmbientColor() << XMVECTOR{ mAmbientColor[0], mAmbientColor[1], mAmbientColor[2], 1.0f };
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->ShadowTexelSize() << XMVECTOR{ 1.0f / 4096.0f, 1.0f, 1.0f , 1.0f };
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->AlbedoTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).AlbedoMap;
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->NormalTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).NormalMap;
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->SpecularTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).SpecularMap;
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->RoughnessTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).RoughnessMap;
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->MetallicTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).MetallicMap;
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->ShadowTexture() << mShadowMap->OutputTexture();
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->IrradianceTexture() << mIrradianceTextureSRV;
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->RadianceTexture() << mRadianceTextureSRV;
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->IntegrationTexture() << mIntegrationMapTextureSRV;
+	}
+
+	void TestSceneDemo::UpdateDepthMaterialVariables(const std::string& objectName, int meshIndex)
+	{
+		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mRenderingObjects[objectName]->GetTransformMatrix()));
+		XMMATRIX wlvp = worldMatrix * mShadowMapViewMatrix * mShadowMapProjectionMatrix;// mShadowProjector->ViewMatrix() * mShadowProjector->ProjectionMatrix();
+		static_cast<DepthMapMaterial*>(mRenderingObjects[objectName]->GetMaterials()[shadowMapMaterialName])->WorldLightViewProjection() << wlvp;
+	}
+
+	void TestSceneDemo::UpdateDeferredPrepassMaterialVariables(const std::string & objectName, int meshIndex)
+	{
+		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mRenderingObjects[objectName]->GetTransformMatrix()));
+		XMMATRIX wvp = worldMatrix * mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
+		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[deferredPrepassMaterialName])->WorldViewProjection() << wvp;
+		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[deferredPrepassMaterialName])->World() << worldMatrix;
+		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[deferredPrepassMaterialName])->AlbedoMap() << mRenderingObjects[objectName]->GetTextureData(meshIndex).AlbedoMap;
+		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[deferredPrepassMaterialName])->ReflectionMaskFactor() << mRenderingObjects[objectName]->GetMeshReflectionFactor(meshIndex);
+	}
+
+	XMMATRIX TestSceneDemo::GetProjectionMatrixFromFrustum(Frustum& cameraFrustum, DirectionalLight& light)
+	{
+		//create corners
+		XMFLOAT3 frustumCorners[9] = {};
+
+		frustumCorners[0] = (cameraFrustum.Corners()[0]);
+		frustumCorners[1] = (cameraFrustum.Corners()[1]);
+		frustumCorners[2] = (cameraFrustum.Corners()[2]);
+		frustumCorners[3] = (cameraFrustum.Corners()[3]);
+		frustumCorners[4] = (cameraFrustum.Corners()[4]);
+		frustumCorners[5] = (cameraFrustum.Corners()[5]);
+		frustumCorners[6] = (cameraFrustum.Corners()[6]);
+		frustumCorners[7] = (cameraFrustum.Corners()[7]);
+		frustumCorners[8] = (cameraFrustum.Corners()[8]);
+
+		XMFLOAT3 frustumCenter = { 0, 0, 0 };
+
+		for (size_t i = 0; i < 8; i++)
+		{
+			frustumCenter = XMFLOAT3(frustumCenter.x + frustumCorners[i].x,
+				frustumCenter.y + frustumCorners[i].y,
+				frustumCenter.z + frustumCorners[i].z);
+		}
+
+		//calculate frustum's center position
+		frustumCenter = XMFLOAT3(frustumCenter.x * (1.0f / 8.0f),
+			frustumCenter.y * (1.0f / 8.0f),
+			frustumCenter.z * (1.0f / 8.0f));
+
+		mLightFrustumCenter = frustumCenter;
+
+		float minX = (std::numeric_limits<float>::max)();
+		float maxX = (std::numeric_limits<float>::min)();
+		float minY = (std::numeric_limits<float>::max)();
+		float maxY = (std::numeric_limits<float>::min)();
+		float minZ = (std::numeric_limits<float>::max)();
+		float maxZ = (std::numeric_limits<float>::min)();
+
+		for (int j = 0; j < 8; j++) {
+
+			// Transform the frustum coordinate from world to light space
+			XMVECTOR frustumCornerVector = XMLoadFloat3(&frustumCorners[j]);
+			frustumCornerVector = XMVector3Transform(frustumCornerVector, (light.LightMatrix(frustumCenter)));
+
+			XMStoreFloat3(&frustumCorners[j], frustumCornerVector);
+
+			minX = min(minX, frustumCorners[j].x);
+			maxX = max(maxX, frustumCorners[j].x);
+			minY = min(minY, frustumCorners[j].y);
+			maxY = max(maxY, frustumCorners[j].y);
+			minZ = min(minZ, frustumCorners[j].z);
+			maxZ = max(maxZ, frustumCorners[j].z);
+		}
+
+		//set orthographic proj with proper boundaries
+		return XMMatrixOrthographicLH(maxX - minX, maxY - minY, maxZ, minZ);
+	}
+
+	XMFLOAT4X4 TestSceneDemo::GetProjectionShadowMatrix()
+	{
+		XMFLOAT4X4 projectedShadowMatrixTransform = MatrixHelper::Zero;
+		projectedShadowMatrixTransform._11 = 0.5f;
+		projectedShadowMatrixTransform._22 = -0.5f;
+		projectedShadowMatrixTransform._33 = 1.0f;
+		projectedShadowMatrixTransform._41 = 0.5f;
+		projectedShadowMatrixTransform._42 = 0.5f;
+		projectedShadowMatrixTransform._44 = 1.0f;
+
+		return projectedShadowMatrixTransform;
+	}
+}
