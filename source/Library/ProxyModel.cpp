@@ -20,7 +20,7 @@ namespace Library
 		: DrawableGameComponent(game, camera),
 		mModelFileName(modelFileName), mEffect(nullptr), mMaterial(nullptr),
 		mVertexBuffer(nullptr), mIndexBuffer(nullptr), mIndexCount(0),
-		mWorldMatrix(MatrixHelper::Identity), mScaleMatrix(MatrixHelper::Identity), mDisplayWireframe(true),
+		mWorldMatrix(MatrixHelper::Identity), mScaleMatrix(MatrixHelper::Identity), mDisplayWireframe(false),
 		mPosition(Vector3Helper::Zero), mDirection(Vector3Helper::Forward), mUp(Vector3Helper::Up), mRight(Vector3Helper::Right)
 	{
 		XMStoreFloat4x4(&mScaleMatrix, XMMatrixScaling(scale, scale, scale));
