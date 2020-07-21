@@ -13,8 +13,10 @@ I have been changing and extending it for educational purposes with all kinds of
 ![picture](screenshots/EveryRaySSSS.png)
 ![picture](screenshots/EveryRayPostProcessing.png)
 ![picture](screenshots/EveryRayWater.png)
+![picture](screenshots/EveryRaySSR.png)
 
 # Features
+- Hybrid Rendering (Deferred Prepass with GBuffer + Forward Pass)
 - 3D model loading (.obj, .fbx and etc.) with Assimp Library
 - User Interface with ImGUI, ImGuizmo
 - AABB, OBB, collision detection
@@ -25,10 +27,21 @@ I have been changing and extending it for educational purposes with all kinds of
 - GPU Instancing
 - Frustum Culling
 - Separable Subsurface Scattering (based on the work of J.Jimenez and D.Gutierrez)
+- Screen Space Reflections
 
 Other features based on NVIDIA techniques (no code provided here)
 - Volumetric Lighting (from "Fast, Flexible, Physically-Based Volumetric Light Scattering")
 - Ocean Simulation (from DX11 archive samples)
+
+# Controls
+- Mouse + Right Click - camera rotation
+- WASD - camera side movement
+- E/Q - camera up/down movement
+- Backspace - enable editor
+- R/T/Y - scale/translate/rotate object in the editor mode
+
+# Notes
+Only "Sponza Main Demo" scene has almost all features and is up-to-date with all changes to the codebase. Other levels might not have, for example, working editor or post processing stack due to the legacy code. I will be refactoring those levels when possible. 
 
 # External Dependencies
 Create a folder "external" in the root directory and place these built libraries
