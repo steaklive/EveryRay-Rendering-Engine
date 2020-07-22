@@ -129,11 +129,16 @@ namespace Library
 		return rowVector;
 	}
 
-	void MatrixHelper::GetFloatArray(XMMATRIX & pMat, float* matrixArray)
+	void MatrixHelper::GetFloatArray(const XMMATRIX & pMat, float* matrixArray)
 	{
 		XMFLOAT4X4 mat;
 		XMStoreFloat4x4(&mat, pMat);
 
+		GetFloatArray(mat, matrixArray);
+	}
+
+	void MatrixHelper::GetFloatArray(const XMFLOAT4X4& mat, float* matrixArray)
+	{
 		matrixArray[0] = mat._11;
 		matrixArray[1] = mat._12;
 		matrixArray[2] = mat._13;
@@ -150,9 +155,21 @@ namespace Library
 		matrixArray[13] = mat._42;
 		matrixArray[14] = mat._43;
 		matrixArray[15] = mat._44;
-
 	}
 
+
+	XMFLOAT4X4 MatrixHelper::GetProjectionShadowMatrix()
+	{
+		XMFLOAT4X4 projectedShadowMatrixTransform = MatrixHelper::Zero;
+		projectedShadowMatrixTransform._11 = 0.5f;
+		projectedShadowMatrixTransform._22 = -0.5f;
+		projectedShadowMatrixTransform._33 = 1.0f;
+		projectedShadowMatrixTransform._41 = 0.5f;
+		projectedShadowMatrixTransform._42 = 0.5f;
+		projectedShadowMatrixTransform._44 = 1.0f;
+
+		return projectedShadowMatrixTransform;
+	}
 
 	
 }

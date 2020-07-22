@@ -21,6 +21,7 @@ namespace Library
 		static void GetPathExtension(const std::wstring& source, std::wstring& dest);
 
 		static bool IsEditorMode;
+		static bool IsLightEditor;
 	private:
 		Utility();
 		Utility(const Utility& rhs);

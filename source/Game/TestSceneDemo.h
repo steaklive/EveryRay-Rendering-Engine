@@ -13,9 +13,7 @@ namespace Library
 	class Light;
 	class RenderStateHelper;
 	class DepthMap;
-	class Projector;
 	class DirectionalLight;
-	class ProxyModel;
 	class Skybox;
 	class Grid;
 	class IBLRadianceMap;
@@ -60,37 +58,24 @@ namespace Rendering
 		void UpdateStandardLightingPBRMaterialVariables(const std::string& objectName, int meshIndex);
 		void UpdateDepthMaterialVariables(const std::string& objectName, int meshIndex);
 		void UpdateDeferredPrepassMaterialVariables(const std::string& objectName, int meshIndex);
-		void UpdateSSRMaterialVariables(const std::string & objectName, int meshIndex);
-		void UpdateDirectionalLightAndProjector(const GameTime & gameTime);
 		void UpdateImGui();
-		XMMATRIX GetProjectionMatrixFromFrustum(Frustum & cameraFrustum, DirectionalLight& light);
-		XMFLOAT4X4 GetProjectionShadowMatrix();
-
-		static const float AmbientModulationRate;
-		static const XMFLOAT2 LightRotationRate;
-
-		Keyboard* mKeyboard;
-		XMFLOAT4X4 mWorldMatrix;
 
 		std::map<std::string, RenderingObject*> mRenderingObjects;
 
-		//Projector* mShadowProjector;
+		Keyboard* mKeyboard;
+		XMFLOAT4X4 mWorldMatrix;
+		RenderStateHelper* mRenderStateHelper;
+		Skybox* mSkybox;
+		Grid* mGrid;
+		
 		DepthMap* mShadowMap;
 		XMMATRIX mShadowMapViewMatrix;
 		XMMATRIX mShadowMapProjectionMatrix;
+		ID3D11RasterizerState* mShadowRasterizerState;
 
 		FullScreenQuad* mSSRQuad;
 
-		ProxyModel* mProxyModel;
 		DirectionalLight* mDirectionalLight;
-		Frustum mLightFrustum;
-		XMFLOAT3 mLightFrustumCenter;
-
-		ID3D11RasterizerState* mShadowRasterizerState;
-		RenderStateHelper* mRenderStateHelper;
-
-		Skybox* mSkybox;
-		Grid* mGrid;
 
 		ID3D11ShaderResourceView* mIrradianceTextureSRV;
 		ID3D11ShaderResourceView* mRadianceTextureSRV;
@@ -100,8 +85,5 @@ namespace Rendering
 		GBuffer* mGBuffer;
 
 		PostProcessingStack* mPostProcessingStack;
-
-		float mSunColor[3] = { 1.0f, 0.95f, 0.863f };
-		float mAmbientColor[3] = { 0.08f, 0.08f, 0.08f };
 	};
 }

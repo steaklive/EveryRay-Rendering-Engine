@@ -32,6 +32,7 @@ namespace Library
 		void SetPosition(const XMFLOAT3& position);
 
 		void ApplyRotation(CXMMATRIX transform);
+		void ApplyTransform(XMMATRIX transformMatrix);
 		void ApplyRotation(const XMFLOAT4X4& transform);
 		void ApplyRotaitonAroundPoint(float radius, float angle);
 
