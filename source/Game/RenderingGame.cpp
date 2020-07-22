@@ -62,7 +62,7 @@ namespace Rendering
 		"Collision Detection",
 		"Cascaded Shadow Mapping",
 		"Water Simulation",
-		"Test Demo Scene",
+		"TEST_SCENE",
 	};
 
 	DemoLevel* demoLevel;
@@ -257,6 +257,8 @@ namespace Rendering
 			ImGui::SliderFloat("Camera Far Plane", &farPlaneDist, 150.0f, 200000.0f);
 			mCamera->SetFarPlaneDistance(farPlaneDist);
 			ImGui::Separator();
+
+			ImGui::Checkbox("Enable light editor", &Utility::IsLightEditor);
 			
 			ImGui::End();
 		}

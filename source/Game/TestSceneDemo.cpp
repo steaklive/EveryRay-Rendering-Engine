@@ -11,7 +11,6 @@
 #include "..\Library\Mesh.h"
 #include "..\Library\Utility.h"
 #include "..\Library\DirectionalLight.h"
-#include "..\Library\ProxyModel.h"
 #include "..\Library\Keyboard.h"
 #include "..\Library\Light.h"
 #include "..\Library\Skybox.h"
@@ -20,7 +19,6 @@
 #include "..\Library\RenderStateHelper.h"
 #include "..\Library\RenderingObject.h"
 #include "..\Library\DepthMap.h"
-#include "..\Library\Projector.h"
 #include "..\Library\Frustum.h"
 #include "..\Library\StandardLightingMaterial.h"
 #include "..\Library\ScreenSpaceReflectionsMaterial.h"
@@ -46,9 +44,6 @@ namespace Rendering
 {
 	RTTI_DEFINITIONS(TestSceneDemo)
 
-	const float TestSceneDemo::AmbientModulationRate = UCHAR_MAX;
-	const XMFLOAT2 TestSceneDemo::LightRotationRate = XMFLOAT2(XM_PI / 2, XM_PI / 2);
-
 	const std::string shadowMapMaterialName			= "shadowMap";
 	const std::string lightingMaterialName			= "lighting";
 	const std::string deferredPrepassMaterialName	= "deferredPrepass";
@@ -62,11 +57,8 @@ namespace Rendering
 		mWorldMatrix(MatrixHelper::Identity),
 		mRenderStateHelper(nullptr),
 		mShadowMap(nullptr),
-		//mShadowProjector(nullptr),
 		mShadowRasterizerState(nullptr),
 		mDirectionalLight(nullptr),
-		mProxyModel(nullptr),
-		mLightFrustum(XMMatrixIdentity()),
 		mSkybox(nullptr),
 		mIrradianceTextureSRV(nullptr),
 		mRadianceTextureSRV(nullptr),
@@ -88,9 +80,7 @@ namespace Rendering
 
 		DeleteObject(mRenderStateHelper);
 		DeleteObject(mShadowMap);
-		//DeleteObject(mShadowProjector);
 		DeleteObject(mDirectionalLight);
-		DeleteObject(mProxyModel);
 		DeleteObject(mSkybox);
 		DeleteObject(mGrid);
 		DeleteObject(mPostProcessingStack);
@@ -191,18 +181,12 @@ namespace Rendering
 		mSkybox = new Skybox(*mGame, *mCamera, Utility::GetFilePath(L"content\\textures\\Sky_Type_4.dds"), 10000);
 		mSkybox->Initialize();
 
-		mGrid = new Grid(*mGame, *mCamera, 100, 64, XMFLOAT4(0.961f, 0.871f, 0.702f, 1.0f));
+		mGrid = new Grid(*mGame, *mCamera, 200, 56, XMFLOAT4(0.961f, 0.871f, 0.702f, 1.0f));
 		mGrid->Initialize();
 		mGrid->SetColor((XMFLOAT4)ColorHelper::LightGray);
 
 		//directional light
-		mDirectionalLight = new DirectionalLight(*mGame);
-
-		//directional gizmo model
-		mProxyModel = new ProxyModel(*mGame, *mCamera, Utility::GetFilePath("content\\models\\DirectionalLightProxy.obj"), 0.5f);
-		mProxyModel->Initialize();
-		mProxyModel->ApplyRotation(XMMatrixRotationY(XM_PIDIV2));
-		mProxyModel->SetPosition(0.0f, 100.0, 0.0f);
+		mDirectionalLight = new DirectionalLight(*mGame, *mCamera);
 
 		mRenderStateHelper = new RenderStateHelper(*mGame);
 
@@ -225,13 +209,10 @@ namespace Rendering
 		mPostProcessingStack->Initialize(false, false, true, true, true, false);
 
 		//shadows
-		//mShadowProjector = new Projector(*mGame);
-		//mShadowProjector->Initialize();
 		mShadowMap = new DepthMap(*mGame, 4096, 4096);
 
-		mProxyModel->ApplyRotation(XMMatrixRotationX(-XMConvertToRadians(70.0f)) * XMMatrixRotationAxis(mDirectionalLight->UpVector(), -XMConvertToRadians(25.0f)));
+		//light
 		mDirectionalLight->ApplyRotation(XMMatrixRotationAxis(mDirectionalLight->RightVector(), -XMConvertToRadians(70.0f)) * XMMatrixRotationAxis(mDirectionalLight->UpVector(), -XMConvertToRadians(25.0f)));
-		//mShadowProjector->ApplyRotation(XMMatrixRotationAxis(mShadowProjector->RightVector(), -XMConvertToRadians(70.0f)) * XMMatrixRotationAxis(mDirectionalLight->UpVector(), -XMConvertToRadians(25.0f)));
 
 		mCamera->SetPosition(XMFLOAT3(0, 8.4f, 60.0f));
 		mCamera->SetFarPlaneDistance(100000.0f);
@@ -261,8 +242,7 @@ namespace Rendering
 	{
 		UpdateImGui();
 
-		//mShadowProjector->Update(gameTime);
-		mProxyModel->Update(gameTime);
+		mDirectionalLight->UpdateProxyModel(gameTime, mCamera->ViewMatrix4X4(), mCamera->ProjectionMatrix4X4());
 		mSkybox->Update(gameTime);
 		mGrid->Update(gameTime);
 		mPostProcessingStack->Update();
@@ -272,21 +252,14 @@ namespace Rendering
 		for (auto object : mRenderingObjects)
 			object.second->Update(gameTime);
 
-		//UpdateDirectionalLightAndProjector(gameTime);
 		mShadowMapProjectionMatrix = XMMatrixOrthographicRH(5000, 5000, 0.01f, 500.0f);
-		//XMMATRIX projectionMatrix = XMMatrixPerspectiveFovRH(XM_PIDIV4, mGame->AspectRatio(), 0.01f, 500.0f);
-		mShadowMapViewMatrix = XMMatrixLookToRH(XMVECTOR{0.0f, 100.0f, 0.0f, 1.0f}, mDirectionalLight->DirectionVector(), mDirectionalLight->UpVector());
-		//mLightFrustum.SetMatrix(XMMatrixMultiply(viewMatrix, projectionMatrix));
-		//mShadowProjector->SetProjectionMatrix(GetProjectionMatrixFromFrustum(mLightFrustum, *mDirectionalLight));
+		mShadowMapViewMatrix = XMMatrixLookToRH(XMVECTOR{0.0f, 200.0f, 0.0f, 1.0f}, mDirectionalLight->DirectionVector(), mDirectionalLight->UpVector());
 	}
 
 	void TestSceneDemo::UpdateImGui()
 	{
 
 		ImGui::Begin("Test Demo Scene");
-
-		ImGui::SliderFloat3("Sun Color", mSunColor, 0.0f, 1.0f);
-		ImGui::SliderFloat3("Ambient Color", mAmbientColor, 0.0f, 1.0f);
 
 		ImGui::Checkbox("Show Post Processing Stack", &mPostProcessingStack->isWindowOpened);
 		if (mPostProcessingStack->isWindowOpened) mPostProcessingStack->ShowPostProcessingWindow();
@@ -319,75 +292,6 @@ namespace Rendering
 
 		ImGui::End();
 	}
-	void TestSceneDemo::UpdateDirectionalLightAndProjector(const GameTime& gameTime)
-	{
-		float elapsedTime = (float)gameTime.ElapsedGameTime();
-
-#pragma region UPDATE_POSITIONS
-
-		//mShadowProjector->SetPosition(XMVECTOR{ mLightFrustumCenter.x,mLightFrustumCenter.y , mLightFrustumCenter.z } /*+movement*/);
-#pragma endregion
-
-#pragma region UPDATE_ROTATIONS
-
-		XMFLOAT2 rotationAmount = Vector2Helper::Zero;
-		if (mKeyboard->IsKeyDown(DIK_LEFTARROW))
-		{
-			rotationAmount.x += LightRotationRate.x * elapsedTime;
-		}
-		if (mKeyboard->IsKeyDown(DIK_RIGHTARROW))
-		{
-			rotationAmount.x -= LightRotationRate.x * elapsedTime;
-		}
-		if (mKeyboard->IsKeyDown(DIK_UPARROW))
-		{
-			rotationAmount.y += 0.3f*LightRotationRate.y * elapsedTime;
-		}
-		if (mKeyboard->IsKeyDown(DIK_DOWNARROW))
-		{
-			rotationAmount.y -= 0.3f*LightRotationRate.y * elapsedTime;
-		}
-
-		//rotation matrix for light + light gizmo
-		XMMATRIX lightRotationMatrix = XMMatrixIdentity();
-		if (rotationAmount.x != 0)
-		{
-			lightRotationMatrix = XMMatrixRotationY(rotationAmount.x);
-		}
-		if (rotationAmount.y != 0)
-		{
-			XMMATRIX lightRotationAxisMatrix = XMMatrixRotationAxis(mDirectionalLight->RightVector(), rotationAmount.y);
-			lightRotationMatrix *= lightRotationAxisMatrix;
-		}
-		if (rotationAmount.x != 0.0f || rotationAmount.y != 0.0f)
-		{
-			mDirectionalLight->ApplyRotation(lightRotationMatrix);
-			mProxyModel->ApplyRotation(lightRotationMatrix);
-		}
-
-		XMMATRIX lightMatrix = mDirectionalLight->LightMatrix(XMFLOAT3(0, 0, 0));
-
-		//rotation matrices for frustums and AABBs
-		for (size_t i = 0; i < 1; i++)
-		{
-			XMMATRIX projectorRotationMatrix = XMMatrixIdentity();
-			if (rotationAmount.x != 0)
-			{
-				projectorRotationMatrix = XMMatrixRotationY(rotationAmount.x);
-			}
-			if (rotationAmount.y != 0)
-			{
-//				XMMATRIX projectorRotationAxisMatrix = XMMatrixRotationAxis(mShadowProjector->RightVector(), rotationAmount.y);
-//				projectorRotationMatrix *= projectorRotationAxisMatrix;
-			}
-			if (rotationAmount.x != Vector2Helper::Zero.x || rotationAmount.y != Vector2Helper::Zero.y)
-			{
-//				mShadowProjector->ApplyRotation(projectorRotationMatrix);
-			}
-		}
-#pragma endregion
-
-	}
 
 	void TestSceneDemo::Draw(const GameTime& gameTime)
 	{
@@ -403,7 +307,7 @@ namespace Rendering
 		mGBuffer->Start();
 
 		for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++)
-			it->second->Draw(deferredPrepassMaterialName, false);
+			it->second->Draw(deferredPrepassMaterialName, true);
 
 		mGBuffer->End();
 
@@ -417,7 +321,7 @@ namespace Rendering
 		direct3DDeviceContext->RSSetState(mShadowRasterizerState);
 
 		for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++)
-			it->second->Draw(shadowMapMaterialName, false);
+			it->second->Draw(shadowMapMaterialName, true);
 
 		mShadowMap->End();
 		mRenderStateHelper->RestoreRasterizerState();
@@ -430,13 +334,13 @@ namespace Rendering
 		//skybox
 		mSkybox->Draw(gameTime);
 
-		////grid
+		//grid
 		//if (Utility::IsEditorMode)
 		//	mGrid->Draw(gameTime);
 
 		//gizmo
 		if (Utility::IsEditorMode)
-			mProxyModel->Draw(gameTime);
+			mDirectionalLight->DrawProxyModel(gameTime);
 
 		//lighting
 		for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++)
@@ -462,15 +366,15 @@ namespace Rendering
 	{
 		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mRenderingObjects[objectName]->GetTransformMatrix()));
 		XMMATRIX wvp = worldMatrix * mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
-		XMMATRIX modelToShadowMatrix = worldMatrix * mShadowMapViewMatrix * mShadowMapProjectionMatrix/* mShadowProjector->ViewMatrix() * mShadowProjector->ProjectionMatrix()*/ * XMLoadFloat4x4(&GetProjectionShadowMatrix());
+		XMMATRIX modelToShadowMatrix = worldMatrix * mShadowMapViewMatrix * mShadowMapProjectionMatrix/* mShadowProjector->ViewMatrix() * mShadowProjector->ProjectionMatrix()*/ * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix());
 
 		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->WorldViewProjection() << wvp;
 		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->World() << worldMatrix;
 		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->ModelToShadow() << modelToShadowMatrix;
 		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->CameraPosition() << mCamera->PositionVector();
 		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->SunDirection() << XMVectorNegate(mDirectionalLight->DirectionVector());
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->SunColor() << XMVECTOR{ mSunColor[0],mSunColor[1], mSunColor[2] , 1.0f };
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->AmbientColor() << XMVECTOR{ mAmbientColor[0], mAmbientColor[1], mAmbientColor[2], 1.0f };
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->SunColor() << XMVECTOR{ mDirectionalLight->GetDirectionalLightColor().x,  mDirectionalLight->GetDirectionalLightColor().y, mDirectionalLight->GetDirectionalLightColor().z , 1.0f };
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->AmbientColor() << XMVECTOR{ mDirectionalLight->GetAmbientLightColor().x,  mDirectionalLight->GetAmbientLightColor().y, mDirectionalLight->GetAmbientLightColor().z , 1.0f };
 		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->ShadowTexelSize() << XMVECTOR{ 1.0f / 4096.0f, 1.0f, 1.0f , 1.0f };
 		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->AlbedoTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).AlbedoMap;
 		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->NormalTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).NormalMap;
@@ -500,74 +404,4 @@ namespace Rendering
 		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[deferredPrepassMaterialName])->ReflectionMaskFactor() << mRenderingObjects[objectName]->GetMeshReflectionFactor(meshIndex);
 	}
 
-	XMMATRIX TestSceneDemo::GetProjectionMatrixFromFrustum(Frustum& cameraFrustum, DirectionalLight& light)
-	{
-		//create corners
-		XMFLOAT3 frustumCorners[9] = {};
-
-		frustumCorners[0] = (cameraFrustum.Corners()[0]);
-		frustumCorners[1] = (cameraFrustum.Corners()[1]);
-		frustumCorners[2] = (cameraFrustum.Corners()[2]);
-		frustumCorners[3] = (cameraFrustum.Corners()[3]);
-		frustumCorners[4] = (cameraFrustum.Corners()[4]);
-		frustumCorners[5] = (cameraFrustum.Corners()[5]);
-		frustumCorners[6] = (cameraFrustum.Corners()[6]);
-		frustumCorners[7] = (cameraFrustum.Corners()[7]);
-		frustumCorners[8] = (cameraFrustum.Corners()[8]);
-
-		XMFLOAT3 frustumCenter = { 0, 0, 0 };
-
-		for (size_t i = 0; i < 8; i++)
-		{
-			frustumCenter = XMFLOAT3(frustumCenter.x + frustumCorners[i].x,
-				frustumCenter.y + frustumCorners[i].y,
-				frustumCenter.z + frustumCorners[i].z);
-		}
-
-		//calculate frustum's center position
-		frustumCenter = XMFLOAT3(frustumCenter.x * (1.0f / 8.0f),
-			frustumCenter.y * (1.0f / 8.0f),
-			frustumCenter.z * (1.0f / 8.0f));
-
-		mLightFrustumCenter = frustumCenter;
-
-		float minX = (std::numeric_limits<float>::max)();
-		float maxX = (std::numeric_limits<float>::min)();
-		float minY = (std::numeric_limits<float>::max)();
-		float maxY = (std::numeric_limits<float>::min)();
-		float minZ = (std::numeric_limits<float>::max)();
-		float maxZ = (std::numeric_limits<float>::min)();
-
-		for (int j = 0; j < 8; j++) {
-
-			// Transform the frustum coordinate from world to light space
-			XMVECTOR frustumCornerVector = XMLoadFloat3(&frustumCorners[j]);
-			frustumCornerVector = XMVector3Transform(frustumCornerVector, (light.LightMatrix(frustumCenter)));
-
-			XMStoreFloat3(&frustumCorners[j], frustumCornerVector);
-
-			minX = min(minX, frustumCorners[j].x);
-			maxX = max(maxX, frustumCorners[j].x);
-			minY = min(minY, frustumCorners[j].y);
-			maxY = max(maxY, frustumCorners[j].y);
-			minZ = min(minZ, frustumCorners[j].z);
-			maxZ = max(maxZ, frustumCorners[j].z);
-		}
-
-		//set orthographic proj with proper boundaries
-		return XMMatrixOrthographicLH(maxX - minX, maxY - minY, maxZ, minZ);
-	}
-
-	XMFLOAT4X4 TestSceneDemo::GetProjectionShadowMatrix()
-	{
-		XMFLOAT4X4 projectedShadowMatrixTransform = MatrixHelper::Zero;
-		projectedShadowMatrixTransform._11 = 0.5f;
-		projectedShadowMatrixTransform._22 = -0.5f;
-		projectedShadowMatrixTransform._33 = 1.0f;
-		projectedShadowMatrixTransform._41 = 0.5f;
-		projectedShadowMatrixTransform._42 = 0.5f;
-		projectedShadowMatrixTransform._44 = 1.0f;
-
-		return projectedShadowMatrixTransform;
-	}
 }

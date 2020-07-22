@@ -235,39 +235,8 @@ namespace Rendering
 		if (!mAvailableInEditorMode)
 			return;
 
-		mCameraViewMatrix[0] = mCamera.ViewMatrix4X4()._11;
-		mCameraViewMatrix[1] = mCamera.ViewMatrix4X4()._12;
-		mCameraViewMatrix[2] = mCamera.ViewMatrix4X4()._13;
-		mCameraViewMatrix[3] = mCamera.ViewMatrix4X4()._14;
-		mCameraViewMatrix[4] = mCamera.ViewMatrix4X4()._21;
-		mCameraViewMatrix[5] = mCamera.ViewMatrix4X4()._22;
-		mCameraViewMatrix[6] = mCamera.ViewMatrix4X4()._23;
-		mCameraViewMatrix[7] = mCamera.ViewMatrix4X4()._24;
-		mCameraViewMatrix[8] = mCamera.ViewMatrix4X4()._31;
-		mCameraViewMatrix[9] = mCamera.ViewMatrix4X4()._32;
-		mCameraViewMatrix[10] = mCamera.ViewMatrix4X4()._33;
-		mCameraViewMatrix[11] = mCamera.ViewMatrix4X4()._34;
-		mCameraViewMatrix[12] = mCamera.ViewMatrix4X4()._41;
-		mCameraViewMatrix[13] = mCamera.ViewMatrix4X4()._42;
-		mCameraViewMatrix[14] = mCamera.ViewMatrix4X4()._43;
-		mCameraViewMatrix[15] = mCamera.ViewMatrix4X4()._44;
-
-		mCameraProjectionMatrix[0] = mCamera.ProjectionMatrix4X4()._11;
-		mCameraProjectionMatrix[1] = mCamera.ProjectionMatrix4X4()._12;
-		mCameraProjectionMatrix[2] = mCamera.ProjectionMatrix4X4()._13;
-		mCameraProjectionMatrix[3] = mCamera.ProjectionMatrix4X4()._14;
-		mCameraProjectionMatrix[4] = mCamera.ProjectionMatrix4X4()._21;
-		mCameraProjectionMatrix[5] = mCamera.ProjectionMatrix4X4()._22;
-		mCameraProjectionMatrix[6] = mCamera.ProjectionMatrix4X4()._23;
-		mCameraProjectionMatrix[7] = mCamera.ProjectionMatrix4X4()._24;
-		mCameraProjectionMatrix[8] = mCamera.ProjectionMatrix4X4()._31;
-		mCameraProjectionMatrix[9] = mCamera.ProjectionMatrix4X4()._32;
-		mCameraProjectionMatrix[10] = mCamera.ProjectionMatrix4X4()._33;
-		mCameraProjectionMatrix[11] = mCamera.ProjectionMatrix4X4()._34;
-		mCameraProjectionMatrix[12] = mCamera.ProjectionMatrix4X4()._41;
-		mCameraProjectionMatrix[13] = mCamera.ProjectionMatrix4X4()._42;
-		mCameraProjectionMatrix[14] = mCamera.ProjectionMatrix4X4()._43;
-		mCameraProjectionMatrix[15] = mCamera.ProjectionMatrix4X4()._44;
+		MatrixHelper::GetFloatArray(mCamera.ViewMatrix4X4(), mCameraViewMatrix);
+		MatrixHelper::GetFloatArray(mCamera.ProjectionMatrix4X4(), mCameraProjectionMatrix);
 
 		UpdateGizmoTransform(mCameraViewMatrix, mCameraProjectionMatrix, mObjectTransformMatrix);
 	}
@@ -519,6 +488,9 @@ namespace Rendering
 		static bool boundSizingSnap = false;
 
 		if (Utility::IsEditorMode) {
+
+			Utility::IsLightEditor = false;
+
 			ImGui::Begin("Object Editor");
 			ImGui::TextColored(ImVec4(0.8f, 0.2f, 0.24f, 1), mName.c_str());
 			ImGui::Separator();

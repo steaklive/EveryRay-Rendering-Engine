@@ -9,6 +9,7 @@
 namespace Library
 {
 	bool Utility::IsEditorMode = false;
+	bool Utility::IsLightEditor = false;
 
 	std::string Utility::CurrentDirectory()
 	{

@@ -4,12 +4,12 @@
 #include "Game.h"
 #include "GameException.h"
 #include "BasicMaterial.h"
-#include "Camera.h"
 #include "MatrixHelper.h"
 #include "VectorHelper.h"
 #include "Model.h"
 #include "Mesh.h"
 #include "Utility.h"
+#include "Camera.h"
 #include "RasterizerStates.h"
 
 namespace Library
@@ -113,7 +113,24 @@ namespace Library
 		XMStoreFloat3(&mUp, up);
 		XMStoreFloat3(&mRight, right);
 	}
+	void ProxyModel::ApplyTransform(XMMATRIX transformMatrix)
+	{
+		XMVECTOR direction = XMVECTOR{ 0.0f, 0.0, -1.0f };
+		XMVECTOR up = XMVECTOR{ 0.0f, 1.0, 0.0f };
 
+		direction = XMVector3TransformNormal(direction, transformMatrix);
+		direction = XMVector3Normalize(direction);
+
+		up = XMVector3TransformNormal(up, transformMatrix);
+		up = XMVector3Normalize(up);
+
+		XMVECTOR right = XMVector3Cross(direction, up);
+		up = XMVector3Cross(right, direction);
+
+		XMStoreFloat3(&mDirection, direction);
+		XMStoreFloat3(&mUp, up);
+		XMStoreFloat3(&mRight, right);
+	}
 	void ProxyModel::ApplyRotation(const XMFLOAT4X4& transform)
 	{
 		XMMATRIX transformMatrix = XMLoadFloat4x4(&transform);
@@ -123,12 +140,8 @@ namespace Library
 	void ProxyModel::ApplyRotaitonAroundPoint(float radius, float angle)
 	{
 		XMMATRIX rotation = XMMatrixRotationX(angle);
-
 		XMMATRIX translate = XMMatrixTranslation(0.0f, 0.0f, radius);
-
 		XMMATRIX matFinal = rotation * translate;
-
-
 	}
 
 	void ProxyModel::Initialize()
