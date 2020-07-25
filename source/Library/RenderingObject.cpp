@@ -17,7 +17,7 @@
 
 namespace Rendering
 {
-	RenderingObject::RenderingObject(std::string pName, Game& pGame, Camera& pCamera, std::unique_ptr<Model> pModel, bool availableInEditor)
+	RenderingObject::RenderingObject(std::string pName, Game& pGame, Camera& pCamera, std::unique_ptr<Model> pModel, bool availableInEditor, bool isInstanced)
 		:
 		GameComponent(pGame),
 		mCamera(pCamera),
@@ -31,7 +31,8 @@ namespace Rendering
 		mInstanceCount(0),
 		mDebugAABB(nullptr),
 		mAvailableInEditorMode(availableInEditor),
-		mTransformationMatrix(XMMatrixIdentity())
+		mTransformationMatrix(XMMatrixIdentity()),
+		mIsInstanced(isInstanced)
 	{
 		if (!mModel)
 			throw GameException("Failed to create a RenderingObject from a model");
@@ -337,19 +338,7 @@ namespace Rendering
 		}
 
 	}
-	void RenderingObject::LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData, std::string materialName)
-	{
-		assert(mModel != nullptr);
-		assert(mGame->Direct3DDevice() != nullptr);
 
-		mInstanceCount = pInstanceData.size();
-		for (size_t i = 0; i < mMeshesCount; i++)
-		{
-			mMeshesInstanceBuffers.push_back(new InstanceBufferData());
-			static_cast<InstancingMaterial*>(mMaterials[materialName])->CreateInstanceBuffer(mGame->Direct3DDevice(), pInstanceData, &(mMeshesInstanceBuffers[i]->InstanceBuffer));
-			mMeshesInstanceBuffers[i]->Stride = sizeof(InstancingMaterial::InstancedData);
-		}
-	}
 	
 
 	void RenderingObject::Draw(std::string materialName, int meshIndex, bool toDepth)
@@ -459,6 +448,21 @@ namespace Rendering
 		}
 	}
 
+	// legacy instancing code
+	void RenderingObject::LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData, std::string materialName)
+	{
+		assert(mModel != nullptr);
+		assert(mGame->Direct3DDevice() != nullptr);
+
+		mInstanceCount = pInstanceData.size();
+		for (size_t i = 0; i < mMeshesCount; i++)
+		{
+			mMeshesInstanceBuffers.push_back(new InstanceBufferData());
+			static_cast<InstancingMaterial*>(mMaterials[materialName])->CreateInstanceBuffer(mGame->Direct3DDevice(), pInstanceData, &(mMeshesInstanceBuffers[i]->InstanceBuffer));
+			mMeshesInstanceBuffers[i]->Stride = sizeof(InstancingMaterial::InstancedData);
+		}
+	}
+	// legacy instancing code
 	void RenderingObject::UpdateInstanceData(std::vector<InstancingMaterial::InstancedData> pInstanceData, std::string materialName)
 	{
 		for (size_t i = 0; i < mMeshesCount; i++)
@@ -528,6 +532,82 @@ namespace Rendering
 		}
 	}
 
+	void RenderingObject::LoadInstanceBuffers()
+	{
+		assert(mModel != nullptr);
+		assert(mGame->Direct3DDevice() != nullptr);
+		assert(mInstanceData.size() != 0);
+		assert(mIsInstanced == true);
 
+		mInstanceCount = mInstanceData.size();
+		//mMeshesInstanceBuffers.clear();
+		for (size_t i = 0; i < mMeshesCount; i++)
+		{
+			mMeshesInstanceBuffers.push_back(new InstanceBufferData());
+			CreateInstanceBuffer(mGame->Direct3DDevice(), &mInstanceData[0], mInstanceCount, &(mMeshesInstanceBuffers[i]->InstanceBuffer));
+			mMeshesInstanceBuffers[i]->Stride = sizeof(InstancedData);
+		}
+	}
+
+	void RenderingObject::CreateInstanceBuffer(ID3D11Device* device, InstancedData* instanceData, UINT instanceCount, ID3D11Buffer** instanceBuffer)
+	{
+		D3D11_BUFFER_DESC instanceBufferDesc;
+		ZeroMemory(&instanceBufferDesc, sizeof(instanceBufferDesc));
+		instanceBufferDesc.ByteWidth = InstanceSize() * instanceCount;
+		instanceBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+		instanceBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		instanceBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+		D3D11_SUBRESOURCE_DATA instanceSubResourceData;
+		ZeroMemory(&instanceSubResourceData, sizeof(instanceSubResourceData));
+		instanceSubResourceData.pSysMem = instanceData;
+		if (FAILED(device->CreateBuffer(&instanceBufferDesc, &instanceSubResourceData, instanceBuffer)))
+		{
+			throw GameException("ID3D11Device::CreateBuffer() failed while creating InstanceBuffer in RenderObject.");
+		}
+	}
+
+	void RenderingObject::UpdateInstanceBuffer(std::vector<InstancedData>& instanceData)
+	{
+		for (size_t i = 0; i < mMeshesCount; i++)
+		{
+			//CreateInstanceBuffer(instanceData);
+
+			mInstanceCount = instanceData.size();
+
+			// dynamically update instance buffer
+			D3D11_MAPPED_SUBRESOURCE mappedResource;
+			ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
+
+			mGame->Direct3DDeviceContext()->Map(mMeshesInstanceBuffers[i]->InstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+			memcpy(mappedResource.pData, &instanceData[0], sizeof(instanceData[0]) * mInstanceCount);
+			mGame->Direct3DDeviceContext()->Unmap(mMeshesInstanceBuffers[i]->InstanceBuffer, 0);
+
+		}
+	}
+
+	UINT RenderingObject::InstanceSize() const
+	{
+		return sizeof(InstancedData);
+	}
+
+	// TODO move to Utility
+	void RenderingObject::CalculateInstanceObjectsRandomDistribution(int count)
+	{
+		mInstanceCount = count;
+		for (size_t i = 0; i < count; i++)
+		{
+			// random position
+			float x = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) * (25.0f - (-25.0f) - 2.0f * 5.0f) + (-25.0f) + 5.0f;
+			float y = 0.0f;// (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) * (25.0f - (-25.0f) - 2.0f * 5.0f) + (-25.0f) + 5.0f;
+			float z = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) * (25.0f - (-25.0f) - 2.0f * 5.0f) + (-25.0f) + 5.0f;
+			mInstanceData.push_back(InstancedData(XMMatrixTranslation(x, y, z)));
+			//mDynamicObjectInstancesPositions.push_back(XMFLOAT3(x, y, z));
+
+			float dirX = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) *	(25.0f - (-25.0f)) + (-25.0f);
+			float dirY = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) *	(25.0f - (-25.0f)) + (-25.0f);
+			float dirZ = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) * (25.0f - (-25.0f)) + (-25.0f);
+		}
+	}
 }
 

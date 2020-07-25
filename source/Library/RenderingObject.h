@@ -85,6 +85,15 @@ namespace Rendering
 		}
 	};
 
+	struct InstancedData
+	{
+		XMFLOAT4X4 World;
+
+		InstancedData() {}
+		InstancedData(const XMFLOAT4X4& world) : World(world) {}
+		InstancedData(CXMMATRIX world) : World() { XMStoreFloat4x4(&World, world); }
+	};
+
 	struct InstanceBufferData
 	{
 		UINT								Stride = 0; 
@@ -110,7 +119,7 @@ namespace Rendering
 		using Delegate_MeshMaterialVariablesUpdate = std::function<void(int)>; // mesh index for input
 
 	public:
-		RenderingObject(std::string pName, Game& pGame, Camera& pCamera, std::unique_ptr<Model> pModel, bool availableInEditor = false);
+		RenderingObject(std::string pName, Game& pGame, Camera& pCamera, std::unique_ptr<Model> pModel, bool availableInEditor = false, bool isInstanced = false);
 		~RenderingObject();
 
 		void LoadCustomMeshTextures(int meshIndex, std::wstring albedoPath, std::wstring normalPath, std::wstring specularPath, std::wstring roughnessPath, std::wstring metallicPath, std::wstring extra1Path, std::wstring extra2Path, std::wstring extra3Path);
@@ -143,6 +152,7 @@ namespace Rendering
 
 		bool IsAvailableInEditor() { return mAvailableInEditorMode; }
 		bool IsSelected() { return mSelected; }
+		bool IsInstanced() { return mIsInstanced; }
 
 		void SetTranslation(float x, float y, float z)
 		{
@@ -160,6 +170,12 @@ namespace Rendering
 			MatrixHelper::GetFloatArray(mTransformationMatrix, mObjectTransformMatrix);
 		}
 
+		void LoadInstanceBuffers();
+		void UpdateInstanceBuffer(std::vector<InstancedData>& instanceData);
+		UINT InstanceSize() const;
+
+		void CalculateInstanceObjectsRandomDistribution(int count);
+
 		GeneralEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new GeneralEvent<Delegate_MeshMaterialVariablesUpdate>();
 	private:
 		RenderingObject();
@@ -169,6 +185,7 @@ namespace Rendering
 		void UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix);
 		void LoadAssignedMeshTextures();
 		void LoadTexture(TextureType type, std::wstring path, int meshIndex);
+		void CreateInstanceBuffer(ID3D11Device* device, InstancedData* instanceData, UINT instanceCount, ID3D11Buffer** instanceBuffer);
 		
 		Camera& mCamera;
 		std::vector<TextureData>								mMeshesTextureBuffers;
@@ -182,6 +199,7 @@ namespace Rendering
 		std::unique_ptr<Model>									mModel;
 		int														mMeshesCount;
 		UINT													mInstanceCount;
+		std::vector<InstancedData>								mInstanceData;
 
 		//Editor variables
 		std::string											mName;
@@ -205,5 +223,6 @@ namespace Rendering
 		float mMatrixTranslation[3], mMatrixRotation[3], mMatrixScale[3];
 
 		XMMATRIX mTransformationMatrix;
+		bool mIsInstanced;
 	};
 }

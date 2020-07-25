@@ -11,6 +11,7 @@ namespace Library
 		RTTI_DECLARATIONS(DepthMapMaterial, Material)
 
 		MATERIAL_VARIABLE_DECLARATION(WorldLightViewProjection)
+		MATERIAL_VARIABLE_DECLARATION(LightViewProjection)
 
 	public:
 		DepthMapMaterial();

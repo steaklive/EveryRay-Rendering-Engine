@@ -10,14 +10,14 @@ namespace Library
 
 	DeferredMaterial::DeferredMaterial()
 		: Material("deferred"),
-		MATERIAL_VARIABLE_INITIALIZATION(WorldViewProjection),
+		MATERIAL_VARIABLE_INITIALIZATION(ViewProjection),
 		MATERIAL_VARIABLE_INITIALIZATION(World),
 		MATERIAL_VARIABLE_INITIALIZATION(AlbedoMap),
 		MATERIAL_VARIABLE_INITIALIZATION(ReflectionMaskFactor)
 	{
 	}
 
-	MATERIAL_VARIABLE_DEFINITION(DeferredMaterial, WorldViewProjection)
+	MATERIAL_VARIABLE_DEFINITION(DeferredMaterial, ViewProjection)
 	MATERIAL_VARIABLE_DEFINITION(DeferredMaterial, World)
 	MATERIAL_VARIABLE_DEFINITION(DeferredMaterial, AlbedoMap)
 	MATERIAL_VARIABLE_DEFINITION(DeferredMaterial, ReflectionMaskFactor)
@@ -26,7 +26,7 @@ namespace Library
 	{
 		Material::Initialize(effect);
 
-		MATERIAL_VARIABLE_RETRIEVE(WorldViewProjection)
+		MATERIAL_VARIABLE_RETRIEVE(ViewProjection)
 		MATERIAL_VARIABLE_RETRIEVE(World)
 		MATERIAL_VARIABLE_RETRIEVE(AlbedoMap)
 		MATERIAL_VARIABLE_RETRIEVE(ReflectionMaskFactor)
@@ -39,7 +39,20 @@ namespace Library
 			//{ "TANGENT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 		};
 
+		D3D11_INPUT_ELEMENT_DESC inputElementDescriptionsInstanced[] =
+		{
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			//{ "TANGENT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+						{ "WORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+			{ "WORLD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+			{ "WORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+			{ "WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+		};
+
 		CreateInputLayout("deferred", "p0", inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
+		CreateInputLayout("deferred_instanced", "p0", inputElementDescriptionsInstanced, ARRAYSIZE(inputElementDescriptionsInstanced));
 	}
 
 	void DeferredMaterial::CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const
