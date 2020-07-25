@@ -2,7 +2,7 @@ Texture2D AlbedoMap;
 
 cbuffer CBufferPerObject
 {
-    float4x4 WorldViewProjection : WORLDVIEWPROJECTION;
+    float4x4 ViewProjection;
     float4x4 World : WORLD;
     float ReflectionMaskFactor;
 }
@@ -21,6 +21,16 @@ struct VS_INPUT
     float2 TextureCoordinate : TEXCOORD;
     float3 Normal : NORMAL;
 };
+    
+struct VS_INPUT_INSTANCING
+{
+    float4 ObjectPosition : POSITION;
+    float2 TextureCoordinate : TEXCOORD;
+    float3 Normal : NORMAL;
+    
+    //instancing
+    row_major float4x4 World : WORLD;
+};
 
 struct VS_OUTPUT
 {
@@ -34,14 +44,24 @@ VS_OUTPUT vertex_shader(VS_INPUT IN)
 {
     VS_OUTPUT OUT = (VS_OUTPUT) 0;
     
-    OUT.Position = mul(IN.ObjectPosition, WorldViewProjection);
+    OUT.Position = mul(IN.ObjectPosition, mul(World, ViewProjection));
     OUT.Normal = normalize(mul(float4(IN.Normal, 0), World).xyz);
     OUT.TextureCoordinate = IN.TextureCoordinate;
     OUT.WorldPos = mul(IN.ObjectPosition, World);
     
     return OUT;
 }
-
+VS_OUTPUT vertex_shader_instancing(VS_INPUT_INSTANCING IN)
+{
+    VS_OUTPUT OUT = (VS_OUTPUT) 0;
+    
+    OUT.WorldPos = mul(IN.ObjectPosition, IN.World);
+    OUT.Position = mul(OUT.WorldPos, ViewProjection);
+    OUT.Normal = normalize(mul(float4(IN.Normal, 0), IN.World).xyz);
+    OUT.TextureCoordinate = IN.TextureCoordinate;
+    
+    return OUT;
+}
 
 struct PS_OUTPUT
 {
@@ -67,6 +87,14 @@ technique10 deferred
     pass p0
     {
         SetVertexShader(CompileShader(vs_5_0, vertex_shader()));
+        SetPixelShader(CompileShader(ps_5_0, pixel_shader()));
+    }
+}
+technique10 deferred_instanced
+{
+    pass p0
+    {
+        SetVertexShader(CompileShader(vs_5_0, vertex_shader_instancing()));
         SetPixelShader(CompileShader(ps_5_0, pixel_shader()));
     }
 }

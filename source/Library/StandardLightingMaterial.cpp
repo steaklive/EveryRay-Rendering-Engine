@@ -10,9 +10,9 @@ namespace Rendering
 
 		StandardLightingMaterial::StandardLightingMaterial()
 		: Material("standard_lighting_no_pbr"),
-		MATERIAL_VARIABLE_INITIALIZATION(WorldViewProjection),
+		MATERIAL_VARIABLE_INITIALIZATION(ViewProjection),
 		MATERIAL_VARIABLE_INITIALIZATION(World),
-		MATERIAL_VARIABLE_INITIALIZATION(ModelToShadow),
+		MATERIAL_VARIABLE_INITIALIZATION(ShadowMatrix),
 		MATERIAL_VARIABLE_INITIALIZATION(CameraPosition),
 		MATERIAL_VARIABLE_INITIALIZATION(SunDirection),
 		MATERIAL_VARIABLE_INITIALIZATION(SunColor),
@@ -30,9 +30,9 @@ namespace Rendering
 	{
 	}
 
-	MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, WorldViewProjection)
+	MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, ViewProjection)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, World)
-		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, ModelToShadow)
+		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, ShadowMatrix)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, CameraPosition)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, SunDirection)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, SunColor)
@@ -53,9 +53,9 @@ namespace Rendering
 	{
 		Material::Initialize(effect);
 
-		MATERIAL_VARIABLE_RETRIEVE(WorldViewProjection)
+		MATERIAL_VARIABLE_RETRIEVE(ViewProjection)
 			MATERIAL_VARIABLE_RETRIEVE(World)
-			MATERIAL_VARIABLE_RETRIEVE(ModelToShadow)
+			MATERIAL_VARIABLE_RETRIEVE(ShadowMatrix)
 			MATERIAL_VARIABLE_RETRIEVE(CameraPosition)
 			MATERIAL_VARIABLE_RETRIEVE(SunDirection)
 			MATERIAL_VARIABLE_RETRIEVE(SunColor)
@@ -71,17 +71,31 @@ namespace Rendering
 			MATERIAL_VARIABLE_RETRIEVE(RadianceTexture)
 			MATERIAL_VARIABLE_RETRIEVE(IntegrationTexture)
 
-			D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
+		D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 		{
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "TANGENT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		};
 
+		D3D11_INPUT_ELEMENT_DESC inputElementDescriptionsInstancing[] =
+		{
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TANGENT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "WORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+			{ "WORLD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+			{ "WORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+			{ "WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
 		};
 
 		CreateInputLayout("standard_lighting_no_pbr", "p0", inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
 		CreateInputLayout("standard_lighting_pbr", "p0", inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
+
+		CreateInputLayout("standard_lighting_no_pbr_instancing", "p0", inputElementDescriptionsInstancing, ARRAYSIZE(inputElementDescriptionsInstancing));
+		CreateInputLayout("standard_lighting_pbr_instancing", "p0", inputElementDescriptionsInstancing, ARRAYSIZE(inputElementDescriptionsInstancing));
 	}
 
 	void StandardLightingMaterial::CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const

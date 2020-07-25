@@ -42,13 +42,6 @@ namespace Library
 		ID3D10Blob* compiledShader = nullptr;
 		ID3D10Blob* errorMessages = nullptr;
 		HRESULT hr = D3DCompileFromFile(filename.c_str(), nullptr, nullptr, nullptr, "fx_5_0", shaderFlags, 0, &compiledShader, &errorMessages);
-		/*if (errorMessages != nullptr)
-		{
-			GameException ex((char*)errorMessages->GetBufferPointer(), hr);
-			ReleaseObject(errorMessages);
-
-			throw ex;
-		}*/
 
 		if (FAILED(hr))
 		{
@@ -56,6 +49,13 @@ namespace Library
 			errorStatus.append(filename);
 
 			std::string resultMessasge(errorStatus.begin(), errorStatus.end());
+
+			if (errorMessages != nullptr)
+			{
+				resultMessasge.append((char*)errorMessages->GetBufferPointer());
+				ReleaseObject(errorMessages);
+			}
+
 			throw GameException(resultMessasge.c_str(), hr);
 		}
 

@@ -10,9 +10,9 @@ cbuffer CBufferPerFrame
 }
 cbuffer CBufferPerObject
 {
-    float4x4 WorldViewProjection : WORLDVIEWPROJECTION;
+    float4x4 ViewProjection;
     float4x4 World : WORLD;
-    float4x4 ModelToShadow;
+    float4x4 ShadowMatrix;
     float4 CameraPosition;
 }
 
@@ -45,6 +45,7 @@ SamplerComparisonState ShadowSampler
     ComparisonFunc = LESS_EQUAL;
 };
 
+
 struct LightData
 {
     float3 Pos;
@@ -58,7 +59,18 @@ struct VS_INPUT
     float4 Position : POSITION;
     float2 Texcoord0 : TEXCOORD;
     float3 Normal : NORMAL;
+    float3 Tangent : TANGENT;  
+};
+
+struct VS_INPUT_INSTANCING
+{
+    float4 Position : POSITION;
+    float2 Texcoord0 : TEXCOORD;
+    float3 Normal : NORMAL;
     float3 Tangent : TANGENT;
+    
+    //instancing
+    row_major float4x4 World : WORLD; 
 };
 
 struct VS_OUTPUT
@@ -77,12 +89,27 @@ VS_OUTPUT mainVS(VS_INPUT IN)
 {
     VS_OUTPUT OUT = (VS_OUTPUT) 0;
 
-    OUT.Position = mul(IN.Position, WorldViewProjection);
+    OUT.Position = mul(IN.Position, mul(World, ViewProjection));
     OUT.WorldPos = mul(IN.Position, World).xyz;
     OUT.UV = IN.Texcoord0;
     OUT.Normal = normalize(mul(float4(IN.Normal, 0), World).xyz);
     OUT.ViewDir = IN.Position.xyz - CameraPosition.xyz;
-    OUT.ShadowCoord = mul(IN.Position, ModelToShadow).xyz;
+    OUT.ShadowCoord = mul(IN.Position, mul(World, ShadowMatrix)).xyz;
+    OUT.Tangent = IN.Tangent;
+
+    return OUT;
+}
+
+VS_OUTPUT mainVS_Instancing(VS_INPUT_INSTANCING IN)
+{
+    VS_OUTPUT OUT = (VS_OUTPUT) 0;
+
+    OUT.WorldPos = mul(IN.Position, IN.World).xyz;
+    OUT.Position = mul(float4(OUT.WorldPos, 1.0f), ViewProjection);
+    OUT.UV = IN.Texcoord0;
+    OUT.Normal = normalize(mul(float4(IN.Normal, 0), IN.World).xyz);
+    OUT.ViewDir = IN.Position.xyz - CameraPosition.xyz;
+    OUT.ShadowCoord = mul(IN.Position, mul(IN.World, ShadowMatrix)).xyz;
     OUT.Tangent = IN.Tangent;
 
     return OUT;
@@ -321,19 +348,19 @@ float3 mainPS_PBR(VS_OUTPUT vsOutput) : SV_Target0
         
     float3 specularAlbedo = float3(metalness, metalness, metalness);
 
-    float3 directLighting = DirectLightingPBR(normalWS, SunColor.xyz, diffuseAlbedo.rgb,
-		specularAlbedo, vsOutput.WorldPos, roughness, 1.0f);
+    float3 directLighting = DirectLightingPBR(normalWS, SunColor.xyz, diffuseAlbedo.rgb, specularAlbedo, vsOutput.WorldPos, roughness, 1.0f);
     
     float3 F0 = float3(0.04, 0.04, 0.04);
     F0 = lerp(F0, diffuseAlbedo.rgb, metalness);
     specularAlbedo = Schlick_Fresnel_Roughness(max(dot(normalWS, normalize(CameraPosition.xyz - vsOutput.WorldPos)), 0.0001f), F0, roughness);
     
-    float3 indirectLighting = IndirectLighting(roughness, diffuseAlbedo.rgb,
-		specularAlbedo, normalWS, vsOutput.WorldPos);
+    float3 indirectLighting = IndirectLighting(roughness, diffuseAlbedo.rgb, specularAlbedo, normalWS, vsOutput.WorldPos);
 
     float shadow = GetShadow(vsOutput.ShadowCoord);
     float3 ambient = AmbientColor.rgb * diffuseAlbedo.rgb;
-	return ambient + float3(directLighting + indirectLighting) * shadow;
+    
+    float3 color = ambient + float3(directLighting + indirectLighting) * shadow;    
+    return color;
 }
 
 /************* Techniques *************/
@@ -353,6 +380,26 @@ technique11 standard_lighting_pbr
     pass p0
     {
         SetVertexShader(CompileShader(vs_5_0, mainVS()));
+        SetGeometryShader(NULL);
+        SetPixelShader(CompileShader(ps_5_0, mainPS_PBR()));
+    }
+}
+
+technique11 standard_lighting_no_pbr_instancing
+{
+    pass p0
+    {
+        SetVertexShader(CompileShader(vs_5_0, mainVS_Instancing()));
+        SetGeometryShader(NULL);
+        SetPixelShader(CompileShader(ps_5_0, mainPS()));
+    }
+}
+
+technique11 standard_lighting_pbr_instancing
+{
+    pass p0
+    {
+        SetVertexShader(CompileShader(vs_5_0, mainVS_Instancing()));
         SetGeometryShader(NULL);
         SetPixelShader(CompileShader(ps_5_0, mainPS_PBR()));
     }

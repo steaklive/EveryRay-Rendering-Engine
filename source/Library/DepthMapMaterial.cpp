@@ -10,26 +10,42 @@ namespace Library
 
 	DepthMapMaterial::DepthMapMaterial()
 		: Material("create_depthmap_w_render_target"),
-		MATERIAL_VARIABLE_INITIALIZATION(WorldLightViewProjection)
+		MATERIAL_VARIABLE_INITIALIZATION(WorldLightViewProjection),
+		MATERIAL_VARIABLE_INITIALIZATION(LightViewProjection)
 	{
 	}
 
 	MATERIAL_VARIABLE_DEFINITION(DepthMapMaterial, WorldLightViewProjection)
+	MATERIAL_VARIABLE_DEFINITION(DepthMapMaterial, LightViewProjection)
 
 	void DepthMapMaterial::Initialize(Effect* effect)
 	{
 		Material::Initialize(effect);
 
 		MATERIAL_VARIABLE_RETRIEVE(WorldLightViewProjection)
+		MATERIAL_VARIABLE_RETRIEVE(LightViewProjection)
 
 		D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 		{
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 		};
 
+		D3D11_INPUT_ELEMENT_DESC inputElementDescriptionsInstanced[] =
+		{
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "WORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+			{ "WORLD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+			{ "WORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+			{ "WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+		};
+
 		CreateInputLayout("create_depthmap", "p0", inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
 		CreateInputLayout("create_depthmap_w_bias", "p0", inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
 		CreateInputLayout("create_depthmap_w_render_target", "p0", inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
+
+		CreateInputLayout("create_depthmap_instanced", "p0", inputElementDescriptionsInstanced, ARRAYSIZE(inputElementDescriptionsInstanced));
+		CreateInputLayout("create_depthmap_w_bias_instanced", "p0", inputElementDescriptionsInstanced, ARRAYSIZE(inputElementDescriptionsInstanced));
+		CreateInputLayout("create_depthmap_w_render_target_instanced", "p0", inputElementDescriptionsInstanced, ARRAYSIZE(inputElementDescriptionsInstanced));
 	}
 
 	void DepthMapMaterial::CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const

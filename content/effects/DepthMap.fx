@@ -1,7 +1,19 @@
 cbuffer CBufferPerObject
 {
     float4x4 WorldLightViewProjection;
+    float4x4 LightViewProjection; // for not breaking the legacy code...
 }
+
+struct VS_INPUT
+{
+    float4 ObjectPosition : POSITION;
+};
+    
+struct VS_INPUT_INSTANCING
+{
+    float4 ObjectPosition : POSITION;
+    row_major float4x4 World : WORLD;
+};
 
 struct VS_OUTPUT
 {
@@ -17,19 +29,37 @@ DepthStencilState EnableDepthDisableStencil
     StencilEnable = FALSE;
 };
 
-float4 create_depthmap_vertex_shader(float4 ObjectPosition : POSITION) : SV_Position
+float4 create_depthmap_vertex_shader(VS_INPUT IN) : SV_Position
 {
-    float4 pos = mul(ObjectPosition, WorldLightViewProjection);
+    float4 pos = mul(IN.ObjectPosition, WorldLightViewProjection);
     pos.z *= pos.w; // We want linear positions
     return pos;
-    //return mul(ObjectPosition, WorldLightViewProjection);
 }
 
-VS_OUTPUT create_depthmap_w_render_target_vertex_shader(float4 ObjectPosition : POSITION)
+float4 create_depthmap_vertex_shader_instancing(VS_INPUT_INSTANCING IN) : SV_Position
+{
+    float3 WorldPos = mul(IN.ObjectPosition, IN.World).xyz;
+    float4 pos = mul(float4(WorldPos, 1.0f), LightViewProjection);
+    pos.z *= pos.w; // We want linear positions
+    return pos;
+}
+
+
+VS_OUTPUT create_depthmap_w_render_target_vertex_shader(VS_INPUT IN)
 {
     VS_OUTPUT OUT = (VS_OUTPUT) 0;
 
-    OUT.Position = mul(ObjectPosition, WorldLightViewProjection);
+    OUT.Position = mul(IN.ObjectPosition, WorldLightViewProjection);
+    OUT.Depth = OUT.Position.zw;
+
+    return OUT;
+}
+VS_OUTPUT create_depthmap_w_render_target_vertex_shader_instancing(VS_INPUT_INSTANCING IN)
+{
+    VS_OUTPUT OUT = (VS_OUTPUT) 0;
+
+    float3 WorldPos = mul(IN.ObjectPosition, IN.World).xyz;
+    OUT.Position = mul(float4(WorldPos, 1.0f), LightViewProjection);
     OUT.Depth = OUT.Position.zw;
 
     return OUT;
@@ -67,6 +97,40 @@ technique11 create_depthmap_w_render_target
     pass p0
     {
         SetVertexShader(CompileShader(vs_5_0, create_depthmap_w_render_target_vertex_shader()));
+        SetGeometryShader(NULL);
+        SetPixelShader(CompileShader(ps_5_0, create_depthmap_w_render_target_pixel_shader()));
+
+        SetDepthStencilState(EnableDepthDisableStencil, 0);
+
+    }
+}
+
+//instancing
+technique11 create_depthmap_instanced
+{
+    pass p0
+    {
+        SetVertexShader(CompileShader(vs_5_0, create_depthmap_vertex_shader_instancing()));
+        SetGeometryShader(NULL);
+        SetPixelShader(NULL);
+    }
+}
+
+technique11 create_depthmap_w_bias_instanced
+{
+    pass p0
+    {
+        SetVertexShader(CompileShader(vs_5_0, create_depthmap_vertex_shader_instancing()));
+        SetGeometryShader(NULL);
+        SetPixelShader(NULL);
+    }
+}
+
+technique11 create_depthmap_w_render_target_instanced
+{
+    pass p0
+    {
+        SetVertexShader(CompileShader(vs_5_0, create_depthmap_w_render_target_vertex_shader_instancing()));
         SetGeometryShader(NULL);
         SetPixelShader(CompileShader(ps_5_0, create_depthmap_w_render_target_pixel_shader()));
 
