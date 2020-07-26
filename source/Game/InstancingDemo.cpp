@@ -1,3 +1,5 @@
+// DEPRECATED!!!
+
 #include "stdafx.h"
 
 #include "InstancingDemo.h"
@@ -286,7 +288,7 @@ namespace Rendering
 		ID3D11DeviceContext* direct3DDeviceContext = mGame->Direct3DDeviceContext();
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		mStatueRenderingObject->DrawInstanced("instancing");
+		mStatueRenderingObject->Draw("instancing", -1, false, mStatueRenderingObject->IsInstanced());
 
 		mProxyModel0->Draw(gameTime);
 		mProxyModel1->Draw(gameTime);

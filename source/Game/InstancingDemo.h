@@ -1,3 +1,5 @@
+// DEPRECATED!!!
+
 #ifndef INSTANCING_DEMO
 #define INSTANCING_DEMO
 

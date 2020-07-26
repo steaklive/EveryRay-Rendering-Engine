@@ -1,4 +1,17 @@
-﻿  StandardLightingMaterial.cpp
+﻿  GBuffer.cpp
+  RenderingObject.cpp
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(45): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(64): warning C4316: 'Library::RenderableAABB': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(115): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(295): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(376): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(386): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(411): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(439): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(562): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(567): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.18362.0\ucrt\string.h(133): note: see declaration of 'strcpy'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(581): warning C4018: '<': signed/unsigned mismatch
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Black" (?Black@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Yellow" (?Yellow@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Blue" (?Blue@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored

@@ -114,11 +114,11 @@ namespace Rendering
 		Effect* instancingEffect = new Effect(*mGame);
 		instancingEffect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\Instancing.fx"));
 		
-		mDynamicConvexHullObject = new RenderingObject("Bunny Convex Hull", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\bunny\\bunny_convexhull.fbx"), true)));
+		mDynamicConvexHullObject = new RenderingObject("Bunny Convex Hull", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\bunny\\bunny_convexhull.fbx"), true)), false, true);
 
 		#pragma region DYNAMIC_OBJECT_INITIALIZATION
 	
-		mDynamicInstancedObject = new RenderingObject("Bunny Dynamic", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\bunny\\bunny.fbx"), true)));
+		mDynamicInstancedObject = new RenderingObject("Bunny Dynamic", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\bunny\\bunny.fbx"), true)), false, true);
 		mDynamicInstancedObject->LoadMaterial(new InstancingMaterial(), instancingEffect, "instancing");
 		mDynamicInstancedObject->LoadRenderBuffers();
 		for (size_t i = 0; i < mDynamicInstancedObject->GetMeshCount(); i++)
@@ -752,8 +752,8 @@ namespace Rendering
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		#pragma region DRAW_OBJECTS
-		mDynamicInstancedObject->DrawInstanced("instancing");
-		mStaticInstancedObject->DrawInstanced("instancing");
+		mDynamicInstancedObject->Draw("instancing", -1, false, mDynamicInstancedObject->IsInstanced());
+		mStaticInstancedObject->Draw("instancing", -1, false, mStaticInstancedObject->IsInstanced());
 		#pragma endregion
 
 		#pragma region DRAW_GIZMOS

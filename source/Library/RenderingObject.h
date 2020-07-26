@@ -126,9 +126,7 @@ namespace Rendering
 		void LoadMaterial(Material* pMaterial, Effect* pEffect, std::string materialName);
 		void LoadRenderBuffers();
 		void LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData, std::string materialName);
-		void Draw(std::string materialName, bool toDepth = false);
-		void Draw(std::string materialName, int meshIndex, bool toDepth);
-		void DrawInstanced(std::string materialName);
+		void Draw(std::string materialName, int meshIndex = -1, bool toDepth = false, bool isInstanced = false);
 		void DrawAABB();
 		void UpdateInstanceData(std::vector<InstancingMaterial::InstancedData> pInstanceData, std::string materialName);
 		void UpdateGizmos();
@@ -182,10 +180,11 @@ namespace Rendering
 		RenderingObject(const RenderingObject& rhs);
 		RenderingObject& operator=(const RenderingObject& rhs);
 
-		void UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix);
 		void LoadAssignedMeshTextures();
 		void LoadTexture(TextureType type, std::wstring path, int meshIndex);
 		void CreateInstanceBuffer(ID3D11Device* device, InstancedData* instanceData, UINT instanceCount, ID3D11Buffer** instanceBuffer);
+		void ShowInstancesListUI();
+		void UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix);
 		
 		Camera& mCamera;
 		std::vector<TextureData>								mMeshesTextureBuffers;
@@ -201,28 +200,26 @@ namespace Rendering
 		UINT													mInstanceCount;
 		std::vector<InstancedData>								mInstanceData;
 
-		//Editor variables
-		std::string											mName;
-		RenderableAABB*										mDebugAABB;
-		bool												mEnableAABBDebug = true;
-		bool												mWireframeMode = false;
-		bool												mAvailableInEditorMode = false;
-		bool												mSelected = false;
-		bool												mRendered = true;
+		std::string												mName;
+		RenderableAABB*											mDebugAABB;
+		bool													mEnableAABBDebug = true;
+		bool													mWireframeMode = false;
+		bool													mAvailableInEditorMode = false;
+		bool													mSelected = false;
+		bool													mRendered = true;
+		bool													mIsInstanced = false;
+		int														mSelectedInstancedObjectIndex = 0;
 
-		float mCameraViewMatrix[16];
-		float mCameraProjectionMatrix[16];
-
-		float mObjectTransformMatrix[16] = 
+		float													mCameraViewMatrix[16];
+		float													mCameraProjectionMatrix[16];
+		float													mObjectTransformMatrix[16] = 
 		{   
 			1.f, 0.f, 0.f, 0.f,
 			0.f, 1.f, 0.f, 0.f,
 			0.f, 0.f, 1.f, 0.f,
 			0.f, 0.f, 0.f, 1.f 
 		};
-		float mMatrixTranslation[3], mMatrixRotation[3], mMatrixScale[3];
-
-		XMMATRIX mTransformationMatrix;
-		bool mIsInstanced;
+		float													mMatrixTranslation[3], mMatrixRotation[3], mMatrixScale[3];
+		XMMATRIX												mTransformationMatrix;
 	};
 }
