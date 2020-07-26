@@ -43,7 +43,7 @@ Other features based on NVIDIA techniques (no code provided here)
 - R/T/Y - scale/translate/rotate object in the editor mode
 
 # Notes
-Only "Sponza Main Demo" and "Test Scene" have almost all the features and are up-to-date with the changes to the codebase. Other levels suffer from legacy issues and might not have, for example, up to date code, such as RenderingObject, working editor or post processing stack due... I will be refactoring those levels when possible. 
+Only "Sponza Main Demo" and "Test Scene" have almost all the features and are up-to-date with the changes to the codebase. Other levels suffer from legacy issues and might not have, for example, up to date code, such as RenderingObject, working editor or post processing stack... I will be refactoring those levels when possible. 
 
 # External Dependencies
 Create a folder "external" in the root directory and place these built libraries
