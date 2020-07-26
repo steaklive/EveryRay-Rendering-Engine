@@ -35,7 +35,11 @@ namespace Rendering
 		mIsInstanced(isInstanced)
 	{
 		if (!mModel)
-			throw GameException("Failed to create a RenderingObject from a model");
+		{
+			std::string message = "Failed to create a RenderingObject from a model: ";
+			message.append(pName);
+			throw GameException(message.c_str());
+		}
 
 		mMeshesCount = mModel->Meshes().size();
 		for (size_t i = 0; i < mMeshesCount; i++)
@@ -97,6 +101,17 @@ namespace Rendering
 
 	void RenderingObject::LoadAssignedMeshTextures()
 	{
+		auto pathBuilder = [&](std::wstring relativePath)
+		{
+			std::string fullPath;
+			Utility::GetDirectory(mModel->GetFileName(), fullPath);
+			fullPath += "/";
+			std::wstring resultPath;
+			Utility::ToWideString(fullPath, resultPath);
+			resultPath += relativePath;
+			return resultPath;
+		};
+
 		for (size_t i = 0; i < mMeshesCount; i++)
 		{
 			if (mModel->Meshes()[i]->GetMaterial()->Textures().size() == 0) 
@@ -107,14 +122,8 @@ namespace Rendering
 			{
 				if (texturesAlbedo->size() != 0)
 				{
-					std::wstring textureRelativePath = texturesAlbedo->at(0);
-					std::string fullPath;
-					Utility::GetDirectory(mModel->GetFileName(), fullPath);
-					fullPath += "/";
-					std::wstring resultPath;
-					Utility::ToWideString(fullPath, resultPath);
-					resultPath += textureRelativePath;
-					LoadTexture(TextureType::TextureTypeDifffuse, resultPath, i);
+					std::wstring result = pathBuilder(texturesAlbedo->at(0));
+					LoadTexture(TextureType::TextureTypeDifffuse, result, i);
 				}
 				else
 					LoadTexture(TextureType::TextureTypeDifffuse, Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), i);
@@ -127,14 +136,8 @@ namespace Rendering
 			{
 				if(texturesNormal->size() != 0)
 				{
-					std::wstring textureRelativePath = texturesNormal->at(0);
-					std::string fullPath;
-					Utility::GetDirectory(mModel->GetFileName(), fullPath);
-					fullPath += "/";
-					std::wstring resultPath;
-					Utility::ToWideString(fullPath, resultPath);
-					resultPath += textureRelativePath;
-					LoadTexture(TextureType::TextureTypeNormalMap, resultPath, i);
+					std::wstring result = pathBuilder(texturesNormal->at(0));
+					LoadTexture(TextureType::TextureTypeNormalMap, result, i);
 				}
 				else
 					LoadTexture(TextureType::TextureTypeNormalMap, Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"), i);
@@ -147,14 +150,8 @@ namespace Rendering
 			{
 				if (texturesSpec->size() != 0)
 				{
-					std::wstring textureRelativePath = texturesSpec->at(0);
-					std::string fullPath;
-					Utility::GetDirectory(mModel->GetFileName(), fullPath);
-					fullPath += "/";
-					std::wstring resultPath;
-					Utility::ToWideString(fullPath, resultPath);
-					resultPath += textureRelativePath;
-					LoadTexture(TextureType::TextureTypeSpecularMap, resultPath, i);
+					std::wstring result = pathBuilder(texturesSpec->at(0));
+					LoadTexture(TextureType::TextureTypeSpecularMap, result, i);
 				}
 				else
 					LoadTexture(TextureType::TextureTypeSpecularMap, Utility::GetFilePath(L"content\\textures\\emptySpecularMap.png"), i);
@@ -167,14 +164,8 @@ namespace Rendering
 			{
 				if (texturesRoughness->size() != 0)
 				{
-					std::wstring textureRelativePath = texturesRoughness->at(0);
-					std::string fullPath;
-					Utility::GetDirectory(mModel->GetFileName(), fullPath);
-					fullPath += "/";
-					std::wstring resultPath;
-					Utility::ToWideString(fullPath, resultPath);
-					resultPath += textureRelativePath;
-					LoadTexture(TextureType::TextureTypeDisplacementMap, resultPath, i);
+					std::wstring result = pathBuilder(texturesRoughness->at(0));
+					LoadTexture(TextureType::TextureTypeDisplacementMap, result, i);
 				}
 				else
 					LoadTexture(TextureType::TextureTypeDisplacementMap, Utility::GetFilePath(L"content\\textures\\emptyRoughnessMap.png"), i);
@@ -187,14 +178,8 @@ namespace Rendering
 			{
 				if (texturesMetallic->size() != 0)
 				{
-					std::wstring textureRelativePath = texturesMetallic->at(0);
-					std::string fullPath;
-					Utility::GetDirectory(mModel->GetFileName(), fullPath);
-					fullPath += "/";
-					std::wstring resultPath;
-					Utility::ToWideString(fullPath, resultPath);
-					resultPath += textureRelativePath;
-					LoadTexture(TextureType::TextureTypeEmissive, resultPath, i);
+					std::wstring result = pathBuilder(texturesMetallic->at(0));
+					LoadTexture(TextureType::TextureTypeEmissive, result, i);
 				}
 				else
 					LoadTexture(TextureType::TextureTypeEmissive, Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), i);
@@ -203,6 +188,7 @@ namespace Rendering
 				LoadTexture(TextureType::TextureTypeEmissive, Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), i);
 		}
 	}
+	
 	void RenderingObject::LoadCustomMeshTextures(int meshIndex, std::wstring albedoPath, std::wstring normalPath, std::wstring specularPath, std::wstring roughnessPath, std::wstring metallicPath, std::wstring extra1Path, std::wstring extra2Path, std::wstring extra3Path)
 	{
 		assert(meshIndex < mMeshesCount);
@@ -231,27 +217,7 @@ namespace Rendering
 		//TODO
 		//if (!extra3Path.empty())
 	}
-	void RenderingObject::UpdateGizmos()
-	{
-		if (!mAvailableInEditorMode)
-			return;
-
-		MatrixHelper::GetFloatArray(mCamera.ViewMatrix4X4(), mCameraViewMatrix);
-		MatrixHelper::GetFloatArray(mCamera.ProjectionMatrix4X4(), mCameraProjectionMatrix);
-
-		UpdateGizmoTransform(mCameraViewMatrix, mCameraProjectionMatrix, mObjectTransformMatrix);
-	}
-	void RenderingObject::Update(const GameTime & time)
-	{
-		if (mAvailableInEditorMode && mEnableAABBDebug && Utility::IsEditorMode && mSelected)
-		{
-			mDebugAABB->SetPosition(XMFLOAT3(mMatrixTranslation[0],mMatrixTranslation[1],mMatrixTranslation[2]));
-			mDebugAABB->SetScale(XMFLOAT3(mMatrixScale[0], mMatrixScale[1], mMatrixScale[2]));
-			mDebugAABB->SetRotationMatrix(XMMatrixRotationRollPitchYaw(XMConvertToRadians(mMatrixRotation[0]), XMConvertToRadians(mMatrixRotation[1]), XMConvertToRadians(mMatrixRotation[2])));
-			mDebugAABB->Update(time);
-		}
-
-	}
+	
 	void RenderingObject::LoadTexture(TextureType type, std::wstring path, int meshIndex)
 	{
 		const wchar_t* postfixDDS = L".dds";
@@ -338,18 +304,18 @@ namespace Rendering
 		}
 
 	}
-
 	
-
-	void RenderingObject::Draw(std::string materialName, int meshIndex, bool toDepth)
+	void RenderingObject::Draw(std::string materialName, int meshIndex, bool toDepth, bool isInstanced)
 	{
+		assert(mMaterials.find(materialName) != mMaterials.end());
+
 		if (mRendered)
 		{
 			if (!mMaterials.size() || mMeshesRenderBuffers.size() == 0)
 				return;
-
-			int i = meshIndex;
-
+			
+			bool isSpecificMesh = (meshIndex != -1);
+			for (int i = (isSpecificMesh) ? meshIndex : 0; i < ((isSpecificMesh) ? 1 : mMeshesCount); i++)
 			{
 				ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
 				if (mWireframeMode)
@@ -360,52 +326,32 @@ namespace Rendering
 				ID3D11InputLayout* inputLayout = mMaterials[materialName]->InputLayouts().at(pass);
 				context->IASetInputLayout(inputLayout);
 
-				UINT stride = mMeshesRenderBuffers[materialName][i]->Stride;
-				UINT offset = mMeshesRenderBuffers[materialName][i]->Offset;
-				context->IASetVertexBuffers(0, 1, &(mMeshesRenderBuffers[materialName][i]->VertexBuffer), &stride, &offset);
-				context->IASetIndexBuffer(mMeshesRenderBuffers[materialName][i]->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+				if (isInstanced)
+				{
+					ID3D11Buffer* vertexBuffers[2] = { mMeshesRenderBuffers[materialName][i]->VertexBuffer, mMeshesInstanceBuffers[i]->InstanceBuffer };
+					UINT strides[2] = { mMeshesRenderBuffers[materialName][i]->Stride, mMeshesInstanceBuffers[i]->Stride };
+					UINT offsets[2] = { mMeshesRenderBuffers[materialName][i]->Offset, mMeshesInstanceBuffers[i]->Offset };
 
-				for (auto listener : MeshMaterialVariablesUpdateEvent->GetListeners())
-					listener(i);
-
-				pass->Apply(0, context);
-				context->DrawIndexed(mMeshesRenderBuffers[materialName][i]->IndicesCount, 0, 0);
-			}
-
-
-			if (!toDepth && mAvailableInEditorMode && mSelected)
-				DrawAABB();
-		}
-	}
-
-	void RenderingObject::Draw(std::string materialName, bool toDepth)
-	{
-		if (mRendered)
-		{
-			if (!mMaterials.size() || mMeshesRenderBuffers.size() == 0)
-				return;
-
-			for (size_t i = 0; i < mMeshesCount; i++)
-			{
-				ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
-				if (mWireframeMode)
-					context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+					context->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
+					context->IASetIndexBuffer(mMeshesRenderBuffers[materialName][i]->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+				}
 				else
-					context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-				Pass* pass = mMaterials[materialName]->CurrentTechnique()->Passes().at(0);
-				ID3D11InputLayout* inputLayout = mMaterials[materialName]->InputLayouts().at(pass);
-				context->IASetInputLayout(inputLayout);
-
-				UINT stride = mMeshesRenderBuffers[materialName][i]->Stride;
-				UINT offset = mMeshesRenderBuffers[materialName][i]->Offset;
-				context->IASetVertexBuffers(0, 1, &(mMeshesRenderBuffers[materialName][i]->VertexBuffer), &stride, &offset);
-				context->IASetIndexBuffer(mMeshesRenderBuffers[materialName][i]->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+				{
+					UINT stride = mMeshesRenderBuffers[materialName][i]->Stride;
+					UINT offset = mMeshesRenderBuffers[materialName][i]->Offset;
+					context->IASetVertexBuffers(0, 1, &(mMeshesRenderBuffers[materialName][i]->VertexBuffer), &stride, &offset);
+					context->IASetIndexBuffer(mMeshesRenderBuffers[materialName][i]->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+				}
 
 				for (auto listener : MeshMaterialVariablesUpdateEvent->GetListeners())
 					listener(i);
 
 				pass->Apply(0, context);
-				context->DrawIndexed(mMeshesRenderBuffers[materialName][i]->IndicesCount, 0, 0);
+
+				if (isInstanced)
+					context->DrawIndexedInstanced(mMeshesRenderBuffers[materialName][i]->IndicesCount, mInstanceCount, 0, 0, 0);
+				else
+					context->DrawIndexed(mMeshesRenderBuffers[materialName][i]->IndicesCount, 0, 0);
 			}
 
 
@@ -420,35 +366,7 @@ namespace Rendering
 			mDebugAABB->Draw();
 	}
 
-	void RenderingObject::DrawInstanced(std::string materialName)
-	{
-		if (mRendered)
-		{
-			for (int i = 0; i < mMeshesCount; i++)
-			{
-				ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
-				Pass* pass = mMaterials[materialName]->CurrentTechnique()->Passes().at(0);
-				ID3D11InputLayout* inputLayout = mMaterials[materialName]->InputLayouts().at(pass);
-				context->IASetInputLayout(inputLayout);
-
-				ID3D11Buffer* vertexBuffers[2] = { mMeshesRenderBuffers[materialName][i]->VertexBuffer, mMeshesInstanceBuffers[i]->InstanceBuffer };
-				UINT strides[2] = { mMeshesRenderBuffers[materialName][i]->Stride, mMeshesInstanceBuffers[i]->Stride };
-				UINT offsets[2] = { mMeshesRenderBuffers[materialName][i]->Offset, mMeshesInstanceBuffers[i]->Offset };
-
-				context->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
-				context->IASetIndexBuffer(mMeshesRenderBuffers[materialName][i]->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-
-				for (auto listener : MeshMaterialVariablesUpdateEvent->GetListeners())
-					listener(i);
-
-				pass->Apply(0, context);
-
-				context->DrawIndexedInstanced(mMeshesRenderBuffers[materialName][i]->IndicesCount, mInstanceCount, 0, 0, 0);
-			}
-		}
-	}
-
-	// legacy instancing code
+	// legacy instancing code [DEPRECATED]
 	void RenderingObject::LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData, std::string materialName)
 	{
 		assert(mModel != nullptr);
@@ -462,7 +380,7 @@ namespace Rendering
 			mMeshesInstanceBuffers[i]->Stride = sizeof(InstancingMaterial::InstancedData);
 		}
 	}
-	// legacy instancing code
+	// legacy instancing code [DEPRECATED]
 	void RenderingObject::UpdateInstanceData(std::vector<InstancingMaterial::InstancedData> pInstanceData, std::string materialName)
 	{
 		for (size_t i = 0; i < mMeshesCount; i++)
@@ -480,6 +398,106 @@ namespace Rendering
 		}
 	}
 
+	// new instancing code
+	void RenderingObject::LoadInstanceBuffers()
+	{
+		assert(mModel != nullptr);
+		assert(mGame->Direct3DDevice() != nullptr);
+		assert(mInstanceData.size() != 0);
+		assert(mIsInstanced == true);
+
+		mInstanceCount = mInstanceData.size();
+		//mMeshesInstanceBuffers.clear();
+		for (size_t i = 0; i < mMeshesCount; i++)
+		{
+			mMeshesInstanceBuffers.push_back(new InstanceBufferData());
+			CreateInstanceBuffer(mGame->Direct3DDevice(), &mInstanceData[0], mInstanceCount, &(mMeshesInstanceBuffers[i]->InstanceBuffer));
+			mMeshesInstanceBuffers[i]->Stride = sizeof(InstancedData);
+		}
+	}
+	// new instancing code
+	void RenderingObject::CreateInstanceBuffer(ID3D11Device* device, InstancedData* instanceData, UINT instanceCount, ID3D11Buffer** instanceBuffer)
+	{
+		D3D11_BUFFER_DESC instanceBufferDesc;
+		ZeroMemory(&instanceBufferDesc, sizeof(instanceBufferDesc));
+		instanceBufferDesc.ByteWidth = InstanceSize() * instanceCount;
+		instanceBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+		instanceBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		instanceBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+		D3D11_SUBRESOURCE_DATA instanceSubResourceData;
+		ZeroMemory(&instanceSubResourceData, sizeof(instanceSubResourceData));
+		instanceSubResourceData.pSysMem = instanceData;
+		if (FAILED(device->CreateBuffer(&instanceBufferDesc, &instanceSubResourceData, instanceBuffer)))
+		{
+			throw GameException("ID3D11Device::CreateBuffer() failed while creating InstanceBuffer in RenderObject.");
+		}
+	}
+	// new instancing code
+	void RenderingObject::UpdateInstanceBuffer(std::vector<InstancedData>& instanceData)
+	{
+		for (size_t i = 0; i < mMeshesCount; i++)
+		{
+			//CreateInstanceBuffer(instanceData);
+
+			mInstanceCount = instanceData.size();
+
+			// dynamically update instance buffer
+			D3D11_MAPPED_SUBRESOURCE mappedResource;
+			ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
+
+			mGame->Direct3DDeviceContext()->Map(mMeshesInstanceBuffers[i]->InstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+			memcpy(mappedResource.pData, &instanceData[0], sizeof(instanceData[0]) * mInstanceCount);
+			mGame->Direct3DDeviceContext()->Unmap(mMeshesInstanceBuffers[i]->InstanceBuffer, 0);
+
+		}
+	}
+
+	UINT RenderingObject::InstanceSize() const
+	{
+		return sizeof(InstancedData);
+	}
+
+	//Updates
+
+	void RenderingObject::Update(const GameTime & time)
+	{
+		if (mSelected && mIsInstanced && mInstanceCount) 
+		{
+			ShowInstancesListUI();
+			MatrixHelper::GetFloatArray(mInstanceData[mSelectedInstancedObjectIndex].World, mObjectTransformMatrix);
+		}
+
+		if (mSelected)
+			UpdateGizmos();
+
+		if (mSelected && mIsInstanced)
+		{
+			mInstanceData[mSelectedInstancedObjectIndex].World = XMFLOAT4X4(mObjectTransformMatrix);
+			UpdateInstanceBuffer(mInstanceData);
+		}
+
+		if (mAvailableInEditorMode && mEnableAABBDebug && Utility::IsEditorMode && mSelected)
+		{
+			mDebugAABB->SetPosition(XMFLOAT3(mMatrixTranslation[0],mMatrixTranslation[1],mMatrixTranslation[2]));
+			mDebugAABB->SetScale(XMFLOAT3(mMatrixScale[0], mMatrixScale[1], mMatrixScale[2]));
+			mDebugAABB->SetRotationMatrix(XMMatrixRotationRollPitchYaw(XMConvertToRadians(mMatrixRotation[0]), XMConvertToRadians(mMatrixRotation[1]), XMConvertToRadians(mMatrixRotation[2])));
+			mDebugAABB->Update(time);
+		}
+
+	}
+	
+	void RenderingObject::UpdateGizmos()
+	{
+		if (!mAvailableInEditorMode)
+			return;
+
+		MatrixHelper::GetFloatArray(mCamera.ViewMatrix4X4(), mCameraViewMatrix);
+		MatrixHelper::GetFloatArray(mCamera.ProjectionMatrix4X4(), mCameraProjectionMatrix);
+
+		UpdateGizmoTransform(mCameraViewMatrix, mCameraProjectionMatrix, mObjectTransformMatrix);
+	}
+	
 	void RenderingObject::UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix)
 	{
 		static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
@@ -531,66 +549,31 @@ namespace Rendering
 			ImGuizmo::Manipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, matrix, NULL, useSnap ? &snap[0] : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
 		}
 	}
-
-	void RenderingObject::LoadInstanceBuffers()
+	
+	void RenderingObject::ShowInstancesListUI()
 	{
-		assert(mModel != nullptr);
-		assert(mGame->Direct3DDevice() != nullptr);
-		assert(mInstanceData.size() != 0);
-		assert(mIsInstanced == true);
+		assert(mInstanceCount != 0);
 
-		mInstanceCount = mInstanceData.size();
-		//mMeshesInstanceBuffers.clear();
-		for (size_t i = 0; i < mMeshesCount; i++)
+		std::string title = mName + " instances:";
+		ImGui::Begin(title.c_str());
+
+		char** listbox_items = new char*[mInstanceCount];
+
+		for (int i = 0; i < mInstanceCount; i++)
 		{
-			mMeshesInstanceBuffers.push_back(new InstanceBufferData());
-			CreateInstanceBuffer(mGame->Direct3DDevice(), &mInstanceData[0], mInstanceCount, &(mMeshesInstanceBuffers[i]->InstanceBuffer));
-			mMeshesInstanceBuffers[i]->Stride = sizeof(InstancedData);
+			std::string instanceName = mName;
+			instanceName.append(" " + std::to_string(i));
+			listbox_items[i] = new char[50];
+			std::strcpy(listbox_items[i], instanceName.c_str());
 		}
+
+		ImGui::PushItemWidth(-1);
+		ImGui::ListBox("##empty", &mSelectedInstancedObjectIndex, listbox_items, mInstanceCount, 15);
+
+		ImGui::End();
 	}
-
-	void RenderingObject::CreateInstanceBuffer(ID3D11Device* device, InstancedData* instanceData, UINT instanceCount, ID3D11Buffer** instanceBuffer)
-	{
-		D3D11_BUFFER_DESC instanceBufferDesc;
-		ZeroMemory(&instanceBufferDesc, sizeof(instanceBufferDesc));
-		instanceBufferDesc.ByteWidth = InstanceSize() * instanceCount;
-		instanceBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-		instanceBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		instanceBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-
-		D3D11_SUBRESOURCE_DATA instanceSubResourceData;
-		ZeroMemory(&instanceSubResourceData, sizeof(instanceSubResourceData));
-		instanceSubResourceData.pSysMem = instanceData;
-		if (FAILED(device->CreateBuffer(&instanceBufferDesc, &instanceSubResourceData, instanceBuffer)))
-		{
-			throw GameException("ID3D11Device::CreateBuffer() failed while creating InstanceBuffer in RenderObject.");
-		}
-	}
-
-	void RenderingObject::UpdateInstanceBuffer(std::vector<InstancedData>& instanceData)
-	{
-		for (size_t i = 0; i < mMeshesCount; i++)
-		{
-			//CreateInstanceBuffer(instanceData);
-
-			mInstanceCount = instanceData.size();
-
-			// dynamically update instance buffer
-			D3D11_MAPPED_SUBRESOURCE mappedResource;
-			ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
-
-			mGame->Direct3DDeviceContext()->Map(mMeshesInstanceBuffers[i]->InstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-			memcpy(mappedResource.pData, &instanceData[0], sizeof(instanceData[0]) * mInstanceCount);
-			mGame->Direct3DDeviceContext()->Unmap(mMeshesInstanceBuffers[i]->InstanceBuffer, 0);
-
-		}
-	}
-
-	UINT RenderingObject::InstanceSize() const
-	{
-		return sizeof(InstancedData);
-	}
-
+	
+	// temp for testing
 	// TODO move to Utility
 	void RenderingObject::CalculateInstanceObjectsRandomDistribution(int count)
 	{

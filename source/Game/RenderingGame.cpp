@@ -54,7 +54,6 @@ namespace Rendering
 	const char* displayedLevelNames[] =
 	{
 		"Sponza Demo Scene",
-		"GPU Instancing",
 		"Physically Based Rendering",
 		"Frustum Culling", 
 		"Separable Subsurface Scattering",
@@ -179,30 +178,27 @@ namespace Rendering
 				demoLevel = new SponzaMainDemo(*this, *mCamera);
 				break;
 			case 1:
-				demoLevel = new InstancingDemo(*this, *mCamera);
-				break;
-			case 2:
 				demoLevel = new PhysicallyBasedRenderingDemo(*this, *mCamera);
 				break;
-			case 3:
+			case 2:
 				demoLevel = new FrustumCullingDemo(*this, *mCamera);
 				break;
-			case 4:
+			case 3:
 				demoLevel = new SubsurfaceScatteringDemo(*this, *mCamera);
 				break;
-			case 5:
+			case 4:
 				demoLevel = new VolumetricLightingDemo(*this, *mCamera);
 				break;
-			case 6:
+			case 5:
 				demoLevel = new CollisionTestDemo(*this, *mCamera);
 				break;
-			case 7:
+			case 6:
 				demoLevel = new ShadowMappingDemo(*this, *mCamera);
 				break;
-			case 8:
+			case 7:
 				demoLevel = new WaterSimulationDemo(*this, *mCamera);
 				break;
-			case 9:
+			case 8:
 				demoLevel = new TestSceneDemo(*this, *mCamera);
 				break;
 			}

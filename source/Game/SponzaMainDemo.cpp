@@ -441,9 +441,9 @@ namespace Rendering
 		#pragma region DEFERRED_PREPASS
 
 		mGBuffer->Start();
-		mRenderingObjects["Sponza"]->Draw(deferredPrepassMaterialName, false);
-		mRenderingObjects["PBR Sphere 1"]->Draw(deferredPrepassMaterialName, false);
-		mRenderingObjects["PBR Dragon"]->Draw(deferredPrepassMaterialName, false);
+		mRenderingObjects["Sponza"]->Draw(deferredPrepassMaterialName);
+		mRenderingObjects["PBR Sphere 1"]->Draw(deferredPrepassMaterialName);
+		mRenderingObjects["PBR Dragon"]->Draw(deferredPrepassMaterialName);
 		mGBuffer->End();
 
 		#pragma endregion
@@ -455,9 +455,9 @@ namespace Rendering
 		direct3DDeviceContext->ClearDepthStencilView(mShadowMap->DepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 		direct3DDeviceContext->RSSetState(mShadowRasterizerState);
 		
-		mRenderingObjects["Sponza"]->Draw(shadowMapMaterialName, true);
-		mRenderingObjects["PBR Sphere 1"]->Draw(shadowMapMaterialName, true);
-		mRenderingObjects["PBR Dragon"]->Draw(shadowMapMaterialName, true);
+		mRenderingObjects["Sponza"]->Draw(shadowMapMaterialName, -1, true);
+		mRenderingObjects["PBR Sphere 1"]->Draw(shadowMapMaterialName, -1,  true);
+		mRenderingObjects["PBR Dragon"]->Draw(shadowMapMaterialName, -1, true);
 		
 		mShadowMap->End();
 		mRenderStateHelper->RestoreRasterizerState();

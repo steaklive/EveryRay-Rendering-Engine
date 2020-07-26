@@ -293,10 +293,6 @@ namespace Rendering
 			ImGui::End();
 		}
 
-		for (auto object : mRenderingObjects)
-			if (object.second->IsAvailableInEditor() && object.second->IsSelected())
-				object.second->UpdateGizmos();
-
 		ImGui::End();
 	}
 
@@ -312,14 +308,8 @@ namespace Rendering
 #pragma region DEFERRED_PREPASS
 
 		mGBuffer->Start();
-
 		for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++) 
-		{
-			if (it->second->IsInstanced())
-				it->second->DrawInstanced(deferredPrepassMaterialName);
-			else
-				it->second->Draw(deferredPrepassMaterialName, true);
-		}
+			it->second->Draw(deferredPrepassMaterialName, -1, true, it->second->IsInstanced());
 		mGBuffer->End();
 
 #pragma endregion
@@ -332,12 +322,7 @@ namespace Rendering
 		direct3DDeviceContext->RSSetState(mShadowRasterizerState);
 
 		for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++)
-		{
-			if (it->second->IsInstanced())
-				it->second->DrawInstanced(shadowMapMaterialName);
-			else
-				it->second->Draw(shadowMapMaterialName, true);
-		}
+			it->second->Draw(shadowMapMaterialName, -1, true, it->second->IsInstanced());
 
 		mShadowMap->End();
 		mRenderStateHelper->RestoreRasterizerState();
@@ -360,12 +345,7 @@ namespace Rendering
 
 		//lighting
 		for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++)
-		{
-			if (it->second->IsInstanced())
-				it->second->DrawInstanced(lightingMaterialName);
-			else
-				it->second->Draw(lightingMaterialName);
-		}
+			it->second->Draw(lightingMaterialName, -1, false, it->second->IsInstanced());
 
 #pragma endregion
 
