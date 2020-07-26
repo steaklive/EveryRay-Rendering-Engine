@@ -14,6 +14,7 @@ I have been changing and extending it for educational purposes with all kinds of
 ![picture](screenshots/EveryRayPostProcessing.png)
 ![picture](screenshots/EveryRayWater.png)
 ![picture](screenshots/EveryRaySSR.png)
+![picture](screenshots/EveryRayTestScene.png)
 
 # Features
 - Hybrid Rendering (Deferred Prepass with GBuffer + Forward Pass)
