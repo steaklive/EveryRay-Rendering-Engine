@@ -151,7 +151,7 @@ namespace Rendering
 
 		#pragma region STATIC_OBJECT_INITIALIZATION
 
-		mStaticInstancedObject = new RenderingObject("Bunny Dynamic", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)));
+		mStaticInstancedObject = new RenderingObject("Bunny Dynamic", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true);
 		mStaticInstancedObject->LoadMaterial(new InstancingMaterial(), instancingEffect, "instancing");
 		mStaticInstancedObject->LoadRenderBuffers();
 		for (size_t i = 0; i < mStaticInstancedObject->GetMeshCount(); i++)
