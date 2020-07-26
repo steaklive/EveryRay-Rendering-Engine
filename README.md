@@ -13,6 +13,7 @@ I have been changing and extending it for educational purposes with all kinds of
 ![picture](screenshots/EveryRaySSSS.png)
 ![picture](screenshots/EveryRayPostProcessing.png)
 ![picture](screenshots/EveryRayWater.png)
+![picture](screenshots/EveryRayCollisionDetection.png)
 ![picture](screenshots/EveryRaySSR.png)
 ![picture](screenshots/EveryRayTestScene.png)
 
