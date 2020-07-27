@@ -126,7 +126,7 @@ namespace Rendering
 		void LoadMaterial(Material* pMaterial, Effect* pEffect, std::string materialName);
 		void LoadRenderBuffers();
 		void LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData, std::string materialName);
-		void Draw(std::string materialName, int meshIndex = -1, bool toDepth = false, bool isInstanced = false);
+		void Draw(std::string materialName, int meshIndex = -1, bool toDepth = false);
 		void DrawAABB();
 		void UpdateInstanceData(std::vector<InstancingMaterial::InstancedData> pInstanceData, std::string materialName);
 		void UpdateGizmos();

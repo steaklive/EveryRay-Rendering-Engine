@@ -305,7 +305,7 @@ namespace Rendering
 
 	}
 	
-	void RenderingObject::Draw(std::string materialName, int meshIndex, bool toDepth, bool isInstanced)
+	void RenderingObject::Draw(std::string materialName, int meshIndex, bool toDepth)
 	{
 		assert(mMaterials.find(materialName) != mMaterials.end());
 
@@ -326,7 +326,7 @@ namespace Rendering
 				ID3D11InputLayout* inputLayout = mMaterials[materialName]->InputLayouts().at(pass);
 				context->IASetInputLayout(inputLayout);
 
-				if (isInstanced)
+				if (mIsInstanced)
 				{
 					ID3D11Buffer* vertexBuffers[2] = { mMeshesRenderBuffers[materialName][i]->VertexBuffer, mMeshesInstanceBuffers[i]->InstanceBuffer };
 					UINT strides[2] = { mMeshesRenderBuffers[materialName][i]->Stride, mMeshesInstanceBuffers[i]->Stride };
@@ -348,7 +348,7 @@ namespace Rendering
 
 				pass->Apply(0, context);
 
-				if (isInstanced)
+				if (mIsInstanced)
 					context->DrawIndexedInstanced(mMeshesRenderBuffers[materialName][i]->IndicesCount, mInstanceCount, 0, 0, 0);
 				else
 					context->DrawIndexed(mMeshesRenderBuffers[materialName][i]->IndicesCount, 0, 0);

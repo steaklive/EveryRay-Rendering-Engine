@@ -288,7 +288,7 @@ namespace Rendering
 		ID3D11DeviceContext* direct3DDeviceContext = mGame->Direct3DDeviceContext();
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		mStatueRenderingObject->Draw("instancing", -1, false, mStatueRenderingObject->IsInstanced());
+		mStatueRenderingObject->Draw("instancing", -1, false);
 
 		mProxyModel0->Draw(gameTime);
 		mProxyModel1->Draw(gameTime);
