@@ -13,6 +13,7 @@ I have been changing and extending it for educational purposes with all kinds of
 ![picture](screenshots/EveryRaySSSS.png)
 ![picture](screenshots/EveryRayPostProcessing.png)
 ![picture](screenshots/EveryRayWater.png)
+![picture](screenshots/EveryRayCollisionDetection.png)
 ![picture](screenshots/EveryRaySSR.png)
 ![picture](screenshots/EveryRayTestScene.png)
 
@@ -42,7 +43,7 @@ Other features based on NVIDIA techniques (no code provided here)
 - R/T/Y - scale/translate/rotate object in the editor mode
 
 # Notes
-Only "Sponza Main Demo" scene has almost all features and is up-to-date with all changes to the codebase. Other levels might not have, for example, working editor or post processing stack due to the legacy code. I will be refactoring those levels when possible. 
+Only "Sponza Main Demo" and "Test Scene" have almost all the features and are up-to-date with the changes to the codebase. Other levels suffer from legacy issues and might not have, for example, up to date code, such as RenderingObject, working editor or post processing stack... I will be refactoring those levels when possible. 
 
 # External Dependencies
 Create a folder "external" in the root directory and place these built libraries
