@@ -455,9 +455,9 @@ namespace Rendering
 		direct3DDeviceContext->ClearDepthStencilView(mShadowMap->DepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 		direct3DDeviceContext->RSSetState(mShadowRasterizerState);
 		
-		mRenderingObjects["Sponza"]->Draw(shadowMapMaterialName, -1, true);
-		mRenderingObjects["PBR Sphere 1"]->Draw(shadowMapMaterialName, -1,  true);
-		mRenderingObjects["PBR Dragon"]->Draw(shadowMapMaterialName, -1, true);
+		mRenderingObjects["Sponza"]->Draw(shadowMapMaterialName, true);
+		mRenderingObjects["PBR Sphere 1"]->Draw(shadowMapMaterialName, true);
+		mRenderingObjects["PBR Dragon"]->Draw(shadowMapMaterialName, true);
 		
 		mShadowMap->End();
 		mRenderStateHelper->RestoreRasterizerState();

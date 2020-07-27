@@ -305,7 +305,7 @@ namespace Rendering
 
 	}
 	
-	void RenderingObject::Draw(std::string materialName, int meshIndex, bool toDepth)
+	void RenderingObject::Draw(std::string materialName, bool toDepth, int meshIndex)
 	{
 		assert(mMaterials.find(materialName) != mMaterials.end());
 
