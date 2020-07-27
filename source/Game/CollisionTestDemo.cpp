@@ -752,8 +752,8 @@ namespace Rendering
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		#pragma region DRAW_OBJECTS
-		mDynamicInstancedObject->Draw("instancing", -1, false);
-		mStaticInstancedObject->Draw("instancing", -1, false);
+		mDynamicInstancedObject->Draw("instancing");
+		mStaticInstancedObject->Draw("instancing");
 		#pragma endregion
 
 		#pragma region DRAW_GIZMOS

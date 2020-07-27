@@ -309,7 +309,7 @@ namespace Rendering
 
 		mGBuffer->Start();
 		for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++) 
-			it->second->Draw(deferredPrepassMaterialName, -1, true);
+			it->second->Draw(deferredPrepassMaterialName, true);
 		mGBuffer->End();
 
 #pragma endregion
@@ -322,7 +322,7 @@ namespace Rendering
 		direct3DDeviceContext->RSSetState(mShadowRasterizerState);
 
 		for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++)
-			it->second->Draw(shadowMapMaterialName, -1, true);
+			it->second->Draw(shadowMapMaterialName, true);
 
 		mShadowMap->End();
 		mRenderStateHelper->RestoreRasterizerState();
@@ -345,7 +345,7 @@ namespace Rendering
 
 		//lighting
 		for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++)
-			it->second->Draw(lightingMaterialName, -1, false);
+			it->second->Draw(lightingMaterialName);
 
 #pragma endregion
 
