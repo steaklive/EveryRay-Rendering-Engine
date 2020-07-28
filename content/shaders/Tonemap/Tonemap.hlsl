@@ -17,6 +17,7 @@ cbuffer PostCBuffer : register(b0)
 
 cbuffer BloomConstants : register(b1)
 {
+    float4 luminanceWeights;
 	float middleGrey = MIDDLE_GREY;
 	float bloomThreshold = BLOOM_THRESHOLD;
 	float bloomMultiplier = BLOOM_MULTIPLIER;
@@ -25,7 +26,7 @@ cbuffer BloomConstants : register(b1)
 
 float CalcLuminance( float4 pos : SV_POSITION, float2 tex : TEX_COORD0) : SV_Target 
 {     
-	return log(dot(g_Input0.Sample(samLinear, tex).rgb, LUM_WEIGHTS)+DELTA); 
+    return log(dot(g_Input0.Sample(samLinear, tex).rgb, luminanceWeights.rgb) + DELTA);
 } 
 
 float AvgLuminance( ) : SV_Target 
