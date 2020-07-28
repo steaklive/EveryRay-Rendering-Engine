@@ -131,7 +131,8 @@ namespace Rendering
 		void UpdateInstanceData(std::vector<InstancingMaterial::InstancedData> pInstanceData, std::string materialName);
 		void UpdateGizmos();
 		void Update(const GameTime& time);
-		void Selected(bool val) { mSelected = val; }
+		void Selected(bool val) { mIsSelected = val; }
+		void Visible(bool val) { mIsRendered = val; }
 
 		void SetMeshReflectionFactor(int meshIndex, float factor) { mMeshesReflectionFactors[meshIndex] = factor; }
 		float GetMeshReflectionFactor(int meshIndex) { return mMeshesReflectionFactors[meshIndex]; }
@@ -141,31 +142,33 @@ namespace Rendering
 		
 		const int GetMeshCount() const { return mMeshesCount; }
 		const std::vector<XMFLOAT3>& GetVertices() { return mMeshAllVertices; }
-		const UINT GetInstanceCount() { return mInstanceCount; }
+		const UINT GetInstanceCount() { return mInstanceData.size(); }
+		std::vector<InstancedData>& GetInstancesData() { return mInstanceData; }
 		
-		XMFLOAT4X4 GetTransformMatrix() const { return XMFLOAT4X4(mObjectTransformMatrix); }
+		XMFLOAT4X4 GetTransformationMatrix4X4() const { return XMFLOAT4X4(mCurrentObjectTransformMatrix); }
 		XMMATRIX GetTransformationMatrix() const { return mTransformationMatrix; }
 
 		std::vector<XMFLOAT3> GetAABB() { return mAABB; }
 
 		bool IsAvailableInEditor() { return mAvailableInEditorMode; }
-		bool IsSelected() { return mSelected; }
+		bool IsSelected() { return mIsSelected; }
 		bool IsInstanced() { return mIsInstanced; }
+		bool IsVisible() { return mIsRendered; }
 
 		void SetTranslation(float x, float y, float z)
 		{
 			mTransformationMatrix *= XMMatrixTranslation(x, y, z);
-			MatrixHelper::GetFloatArray(mTransformationMatrix, mObjectTransformMatrix);
+			MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
 		}
 		void SetScale(float x, float y, float z)
 		{ 
 			mTransformationMatrix *= XMMatrixScaling(x, y, z);
-			MatrixHelper::GetFloatArray(mTransformationMatrix, mObjectTransformMatrix);
+			MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
 		}
 		void SetRotation(float x, float y, float z)
 		{
 			mTransformationMatrix *= XMMatrixRotationRollPitchYaw(x, y, z);
-			MatrixHelper::GetFloatArray(mTransformationMatrix, mObjectTransformMatrix);
+			MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
 		}
 
 		void LoadInstanceBuffers();
@@ -198,6 +201,7 @@ namespace Rendering
 		std::unique_ptr<Model>									mModel;
 		int														mMeshesCount;
 		UINT													mInstanceCount;
+		UINT													mInstanceCountToRender;
 		std::vector<InstancedData>								mInstanceData;
 
 		std::string												mName;
@@ -205,14 +209,14 @@ namespace Rendering
 		bool													mEnableAABBDebug = true;
 		bool													mWireframeMode = false;
 		bool													mAvailableInEditorMode = false;
-		bool													mSelected = false;
-		bool													mRendered = true;
+		bool													mIsSelected = false;
+		bool													mIsRendered = true;
 		bool													mIsInstanced = false;
 		int														mSelectedInstancedObjectIndex = 0;
 
 		float													mCameraViewMatrix[16];
 		float													mCameraProjectionMatrix[16];
-		float													mObjectTransformMatrix[16] = 
+		float													mCurrentObjectTransformMatrix[16] = 
 		{   
 			1.f, 0.f, 0.f, 0.f,
 			0.f, 1.f, 0.f, 0.f,

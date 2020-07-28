@@ -67,7 +67,7 @@ namespace Rendering
 			mDebugAABB->SetPosition(XMFLOAT3(0,0,0));
 		}
 
-		XMFLOAT4X4 transform = XMFLOAT4X4( mObjectTransformMatrix );
+		XMFLOAT4X4 transform = XMFLOAT4X4( mCurrentObjectTransformMatrix );
 		mTransformationMatrix = XMLoadFloat4x4(&transform);
 	}
 
@@ -309,7 +309,7 @@ namespace Rendering
 	{
 		assert(mMaterials.find(materialName) != mMaterials.end());
 
-		if (mRendered)
+		if (mIsRendered)
 		{
 			if (!mMaterials.size() || mMeshesRenderBuffers.size() == 0)
 				return;
@@ -349,13 +349,13 @@ namespace Rendering
 				pass->Apply(0, context);
 
 				if (mIsInstanced)
-					context->DrawIndexedInstanced(mMeshesRenderBuffers[materialName][i]->IndicesCount, mInstanceCount, 0, 0, 0);
+					context->DrawIndexedInstanced(mMeshesRenderBuffers[materialName][i]->IndicesCount, mInstanceCountToRender, 0, 0, 0);
 				else
 					context->DrawIndexed(mMeshesRenderBuffers[materialName][i]->IndicesCount, 0, 0);
 			}
 
 
-			if (!toDepth && mAvailableInEditorMode && mSelected)
+			if (!toDepth && mAvailableInEditorMode && mIsSelected)
 				DrawAABB();
 		}
 	}
@@ -365,6 +365,7 @@ namespace Rendering
 		if (mAvailableInEditorMode && mEnableAABBDebug && Utility::IsEditorMode)
 			mDebugAABB->Draw();
 	}
+
 
 	// legacy instancing code [DEPRECATED]
 	void RenderingObject::LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData, std::string materialName)
@@ -439,15 +440,14 @@ namespace Rendering
 		for (size_t i = 0; i < mMeshesCount; i++)
 		{
 			//CreateInstanceBuffer(instanceData);
-
-			mInstanceCount = instanceData.size();
+			mInstanceCountToRender = instanceData.size();
 
 			// dynamically update instance buffer
 			D3D11_MAPPED_SUBRESOURCE mappedResource;
 			ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
 
 			mGame->Direct3DDeviceContext()->Map(mMeshesInstanceBuffers[i]->InstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-			memcpy(mappedResource.pData, &instanceData[0], sizeof(instanceData[0]) * mInstanceCount);
+			memcpy(mappedResource.pData, &instanceData[0], sizeof(instanceData[0]) * mInstanceCountToRender);
 			mGame->Direct3DDeviceContext()->Unmap(mMeshesInstanceBuffers[i]->InstanceBuffer, 0);
 
 		}
@@ -462,22 +462,23 @@ namespace Rendering
 
 	void RenderingObject::Update(const GameTime & time)
 	{
-		if (mSelected && mIsInstanced && mInstanceCount) 
+		if (mIsSelected && mIsInstanced && mInstanceCount) 
 		{
 			ShowInstancesListUI();
-			MatrixHelper::GetFloatArray(mInstanceData[mSelectedInstancedObjectIndex].World, mObjectTransformMatrix);
+			MatrixHelper::GetFloatArray(mInstanceData[mSelectedInstancedObjectIndex].World, mCurrentObjectTransformMatrix);
 		}
 
-		if (mSelected)
+		if (mIsSelected)
 			UpdateGizmos();
 
-		if (mSelected && mIsInstanced)
+		if (mIsSelected && mIsInstanced)
 		{
-			mInstanceData[mSelectedInstancedObjectIndex].World = XMFLOAT4X4(mObjectTransformMatrix);
-			UpdateInstanceBuffer(mInstanceData);
+			mInstanceData[mSelectedInstancedObjectIndex].World = XMFLOAT4X4(mCurrentObjectTransformMatrix);
+			if (!Utility::IsCameraCulling) //otherwise camera will load proper instance data
+				UpdateInstanceBuffer(mInstanceData);
 		}
 
-		if (mAvailableInEditorMode && mEnableAABBDebug && Utility::IsEditorMode && mSelected)
+		if (mAvailableInEditorMode && mEnableAABBDebug && Utility::IsEditorMode && mIsSelected)
 		{
 			mDebugAABB->SetPosition(XMFLOAT3(mMatrixTranslation[0],mMatrixTranslation[1],mMatrixTranslation[2]));
 			mDebugAABB->SetScale(XMFLOAT3(mMatrixScale[0], mMatrixScale[1], mMatrixScale[2]));
@@ -495,7 +496,7 @@ namespace Rendering
 		MatrixHelper::GetFloatArray(mCamera.ViewMatrix4X4(), mCameraViewMatrix);
 		MatrixHelper::GetFloatArray(mCamera.ProjectionMatrix4X4(), mCameraProjectionMatrix);
 
-		UpdateGizmoTransform(mCameraViewMatrix, mCameraProjectionMatrix, mObjectTransformMatrix);
+		UpdateGizmoTransform(mCameraViewMatrix, mCameraProjectionMatrix, mCurrentObjectTransformMatrix);
 	}
 	
 	void RenderingObject::UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix)
@@ -516,7 +517,8 @@ namespace Rendering
 			ImGui::Begin("Object Editor");
 			ImGui::TextColored(ImVec4(0.8f, 0.2f, 0.24f, 1), mName.c_str());
 			ImGui::Separator();
-			ImGui::Checkbox("Visible", &mRendered);
+			if (!mIsInstanced)
+				ImGui::Checkbox("Visible", &mIsRendered);
 			ImGui::Checkbox("Show AABB", &mEnableAABBDebug);
 			ImGui::Checkbox("Wireframe", &mWireframeMode);
 
@@ -578,18 +580,20 @@ namespace Rendering
 	void RenderingObject::CalculateInstanceObjectsRandomDistribution(int count)
 	{
 		mInstanceCount = count;
+		mInstanceCountToRender = count;
+		const float size = 350.0f;
 		for (size_t i = 0; i < count; i++)
 		{
 			// random position
-			float x = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) * (25.0f - (-25.0f) - 2.0f * 5.0f) + (-25.0f) + 5.0f;
+			float x = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) * (size - (-size) - 2.0f * 5.0f) + (-size) + 5.0f;
 			float y = 0.0f;// (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) * (25.0f - (-25.0f) - 2.0f * 5.0f) + (-25.0f) + 5.0f;
-			float z = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) * (25.0f - (-25.0f) - 2.0f * 5.0f) + (-25.0f) + 5.0f;
-			mInstanceData.push_back(InstancedData(XMMatrixTranslation(x, y, z)));
+			float z = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) * (size - (-size) - 2.0f * 5.0f) + (-size) + 5.0f;
+
+			float scale = 0.5f + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (1.0f - 0.5f)));
+
+			mInstanceData.push_back(InstancedData(XMMatrixScaling(scale, scale, scale) *  XMMatrixTranslation(x, y, z)));
 			//mDynamicObjectInstancesPositions.push_back(XMFLOAT3(x, y, z));
 
-			float dirX = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) *	(25.0f - (-25.0f)) + (-25.0f);
-			float dirY = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) *	(25.0f - (-25.0f)) + (-25.0f);
-			float dirZ = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) * (25.0f - (-25.0f)) + (-25.0f);
 		}
 	}
 }

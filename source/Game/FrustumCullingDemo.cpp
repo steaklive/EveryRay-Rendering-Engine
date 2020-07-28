@@ -1,3 +1,14 @@
+// *****************************
+// ******* DEPRECATED!!! *******
+//
+// This game level is outdated and has obsolete code.
+// An up-to-date frustum culling implementation has been added to "Camera" class with the support of "RenderingObject".
+// i.e. go to "TestSceneDemo" to see how to use camera culling. You only have to call Cull() method of the camera now.
+// However, this demo may still be useful for visual debugging of the frustum with "RenderableFrustum".
+//
+// *****************************
+
+
 #include "stdafx.h"
 
 #include "FrustumCullingDemo.h"

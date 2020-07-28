@@ -275,7 +275,7 @@ namespace Rendering
 		mShadowProjector->ApplyRotation(XMMatrixRotationAxis(mShadowProjector->RightVector(), -XMConvertToRadians(70.0f)) * XMMatrixRotationAxis(mDirectionalLight->UpVector(), -XMConvertToRadians(25.0f)));
 
 		mCamera->SetPosition(XMFLOAT3(-76.6f, 8.4f, 8.8f));
-		mCamera->ApplyRotation(XMMatrixRotationAxis(mCamera->RightVector(), XMConvertToRadians(18.0f)) * XMMatrixRotationAxis(mCamera->UpVector(), -XMConvertToRadians(70.0f)));
+		//mCamera->ApplyRotation(XMMatrixRotationAxis(mCamera->RightVector(), XMConvertToRadians(18.0f)) * XMMatrixRotationAxis(mCamera->UpVector(), -XMConvertToRadians(70.0f)));
 	
 		//IBL
 		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\sponzaCubeDiffuseHDR.dds").c_str(), nullptr, &mIrradianceTextureSRV)))
@@ -306,6 +306,8 @@ namespace Rendering
 		mSkybox->Update(gameTime);
 		mGrid->Update(gameTime);
 		mPostProcessingStack->Update();
+
+		mCamera->Cull(mRenderingObjects);
 
 		//time = (float)gameTime.TotalGameTime();
 
@@ -499,7 +501,7 @@ namespace Rendering
 
 	void SponzaMainDemo::UpdateStandardLightingPBRMaterialVariables(const std::string& objectName, int meshIndex)
 	{
-		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mRenderingObjects[objectName]->GetTransformMatrix()));
+		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mRenderingObjects[objectName]->GetTransformationMatrix4X4()));
 		XMMATRIX vp =/* worldMatrix **/ mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
 		XMMATRIX shadowMatrix = mShadowProjector->ViewMatrix() * mShadowProjector->ProjectionMatrix() * XMLoadFloat4x4(&GetProjectionShadowMatrix());
 
@@ -524,14 +526,14 @@ namespace Rendering
 
 	void SponzaMainDemo::UpdateDepthMaterialVariables(const std::string& objectName, int meshIndex)
 	{
-		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mRenderingObjects[objectName]->GetTransformMatrix()));
+		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mRenderingObjects[objectName]->GetTransformationMatrix4X4()));
 		XMMATRIX wlvp = worldMatrix * mShadowProjector->ViewMatrix() * mShadowProjector->ProjectionMatrix();
 		static_cast<DepthMapMaterial*>(mRenderingObjects[objectName]->GetMaterials()[shadowMapMaterialName])->WorldLightViewProjection() << wlvp;
 	}
 
 	void SponzaMainDemo::UpdateDeferredPrepassMaterialVariables(const std::string & objectName, int meshIndex)
 	{
-		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mRenderingObjects[objectName]->GetTransformMatrix()));
+		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mRenderingObjects[objectName]->GetTransformationMatrix4X4()));
 		XMMATRIX vp = /*worldMatrix * */mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
 		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[deferredPrepassMaterialName])->ViewProjection() << vp;
 		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[deferredPrepassMaterialName])->World() << worldMatrix;

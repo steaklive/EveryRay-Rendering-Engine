@@ -55,7 +55,6 @@ namespace Rendering
 	{
 		"Sponza Demo Scene",
 		"Physically Based Rendering",
-		"Frustum Culling", 
 		"Separable Subsurface Scattering",
 		"Volumetric Lighting",
 		"Collision Detection",
@@ -181,24 +180,21 @@ namespace Rendering
 				demoLevel = new PhysicallyBasedRenderingDemo(*this, *mCamera);
 				break;
 			case 2:
-				demoLevel = new FrustumCullingDemo(*this, *mCamera);
-				break;
-			case 3:
 				demoLevel = new SubsurfaceScatteringDemo(*this, *mCamera);
 				break;
-			case 4:
+			case 3:
 				demoLevel = new VolumetricLightingDemo(*this, *mCamera);
 				break;
-			case 5:
+			case 4:
 				demoLevel = new CollisionTestDemo(*this, *mCamera);
 				break;
-			case 6:
+			case 5:
 				demoLevel = new ShadowMappingDemo(*this, *mCamera);
 				break;
-			case 7:
+			case 6:
 				demoLevel = new WaterSimulationDemo(*this, *mCamera);
 				break;
-			case 8:
+			case 7:
 				demoLevel = new TestSceneDemo(*this, *mCamera);
 				break;
 			}
@@ -244,6 +240,9 @@ namespace Rendering
 			ImGui::Text("Camera Position: (%.1f,%.1f,%.1f)", mCamera->Position().x, mCamera->Position().y, mCamera->Position().z);
 			if (ImGui::Button("Reset Position"))
 				mCamera->SetPosition(XMFLOAT3(0, 0, 0));
+			ImGui::SameLine();
+			if (ImGui::Button("Reset Direction"))
+				mCamera->SetDirection(XMFLOAT3(0, 0, -1));
 			ImGui::SliderFloat("Camera Speed", &movementRate, 10.0f, 2000.0f);
 			mCamera->SetMovementRate(movementRate);
 			ImGui::SliderFloat("Camera FOV", &fov, 1.0f, 90.0f);
@@ -252,6 +251,8 @@ namespace Rendering
 			mCamera->SetNearPlaneDistance(nearPlaneDist);
 			ImGui::SliderFloat("Camera Far Plane", &farPlaneDist, 150.0f, 200000.0f);
 			mCamera->SetFarPlaneDistance(farPlaneDist);
+			ImGui::Checkbox("Enable culling", &Utility::IsCameraCulling);
+
 			ImGui::Separator();
 
 			ImGui::Checkbox("Enable light editor", &Utility::IsLightEditor);
@@ -308,8 +309,8 @@ namespace Rendering
 		DeleteObject(mSponzaMainDemo);
 		DeleteObject(mShadowMappingDemo);
 		DeleteObject(mPBRDemo);
-		DeleteObject(mInstancingDemo);
-		DeleteObject(mFrustumCullingDemo);
+		//DeleteObject(mInstancingDemo);
+		//DeleteObject(mFrustumCullingDemo);
 		DeleteObject(mSubsurfaceScatteringDemo);
 		DeleteObject(mVolumetricLightingDemo);
 		DeleteObject(mCollisionTestDemo);
