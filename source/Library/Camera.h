@@ -1,6 +1,12 @@
 #pragma once
 
 #include "GameComponent.h"
+#include "Frustum.h"
+
+namespace Rendering
+{
+	class RenderingObject;
+}
 
 namespace Library
 {
@@ -38,11 +44,14 @@ namespace Library
 		XMMATRIX ViewProjectionMatrix() const;
 		XMMATRIX RotationTransformMatrix() const;
 
+		void Cull(const std::map<std::string, Rendering::RenderingObject*> objects);
+	
 		XMMATRIX rotationMatrix;
 
 		virtual void SetPosition(FLOAT x, FLOAT y, FLOAT z);
 		virtual void SetPosition(FXMVECTOR position);
 		virtual void SetPosition(const XMFLOAT3& position);
+		virtual void SetDirection(const XMFLOAT3& direction);
 		virtual void SetFOV(float fov);
 		virtual void SetNearPlaneDistance(float value);
 		virtual void SetFarPlaneDistance(float value);
@@ -78,5 +87,7 @@ namespace Library
 	private:
 		Camera(const Camera& rhs);
 		Camera& operator=(const Camera& rhs);
+
+		Frustum mFrustum;
 	};
 }

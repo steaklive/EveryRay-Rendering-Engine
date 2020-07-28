@@ -22,6 +22,7 @@ namespace Library
 
 		static bool IsEditorMode;
 		static bool IsLightEditor;
+		static bool IsCameraCulling;
 	private:
 		Utility();
 		Utility(const Utility& rhs);

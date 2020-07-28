@@ -1,3 +1,5 @@
+// DEPRECATED!!!
+
 #pragma once
 
 #include "..\Library\DrawableGameComponent.h"

@@ -1,5 +1,13 @@
-// DEPRECATED!!!
-
+// *****************************
+// ******* DEPRECATED!!! *******
+//
+// This game level is outdated and has obsolete code.
+// An up-to-date instancing implementation has been added to "RenderingObject" class.
+// Right now you do not need a specific "InstancingMaterial" but can use any material that has instancing code there, such as vertex input etc.
+// Also, all the manipulations with buffers, drawcalls etc are now handled in "RenderingObject".
+// You can go to the "TestSceneDemo" in order to see how to setup instancing and work with instance buffers of RenderingObject(s).
+//
+// *****************************
 #include "stdafx.h"
 
 #include "InstancingDemo.h"

@@ -10,6 +10,7 @@ namespace Library
 {
 	bool Utility::IsEditorMode = false;
 	bool Utility::IsLightEditor = false;
+	bool Utility::IsCameraCulling = false;
 
 	std::string Utility::CurrentDirectory()
 	{

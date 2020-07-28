@@ -5,6 +5,8 @@
 #include "GameTime.h"
 #include "VectorHelper.h"
 #include "MatrixHelper.h"
+#include "RenderingObject.h"
+#include "Utility.h"
 
 namespace Library
 {
@@ -17,14 +19,14 @@ namespace Library
 	Camera::Camera(Game& game)
 		: GameComponent(game),
 		mFieldOfView(DefaultFieldOfView), mAspectRatio(game.AspectRatio()), mNearPlaneDistance(DefaultNearPlaneDistance), mFarPlaneDistance(DefaultFarPlaneDistance),
-		mPosition(), mDirection(), mUp(), mRight(), mViewMatrix(), mProjectionMatrix()
+		mPosition(), mDirection(), mUp(), mRight(), mViewMatrix(), mProjectionMatrix(), mFrustum(XMMatrixIdentity())
 	{
 	}
 
 	Camera::Camera(Game& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance)
 		: GameComponent(game),
 		mFieldOfView(fieldOfView), mAspectRatio(aspectRatio), mNearPlaneDistance(nearPlaneDistance), mFarPlaneDistance(farPlaneDistance),
-		mPosition(), mDirection(), mUp(), mRight(), mViewMatrix(), mProjectionMatrix()
+		mPosition(), mDirection(), mUp(), mRight(), mViewMatrix(), mProjectionMatrix(), mFrustum(XMMatrixIdentity())
 	{
 	}
 
@@ -134,7 +136,10 @@ namespace Library
 	{
 		mPosition = position;
 	}
-
+	void Camera::SetDirection(const XMFLOAT3& direction)
+	{
+		mDirection = direction;
+	}
 	void Camera::SetFOV(float fov)
 	{
 		mFieldOfView = fov;
@@ -167,11 +172,14 @@ namespace Library
 	{
 		UpdateProjectionMatrix();
 		Reset();
+
+		mFrustum.SetMatrix(ViewProjectionMatrix());
 	}
 
 	void Camera::Update(const GameTime& gameTime)
 	{
 		UpdateViewMatrix();
+		mFrustum.SetMatrix(ViewProjectionMatrix());
 	}
 
 	void Camera::UpdateViewMatrix()
@@ -221,5 +229,92 @@ namespace Library
 	XMMATRIX Camera::RotationTransformMatrix() const
 	{
 		return rotationMatrix;
+	}
+
+	void Camera::Cull(const std::map<std::string, Rendering::RenderingObject*> objects)
+	{
+		if (!Utility::IsCameraCulling)
+		{
+			for (auto object : objects) 
+			{
+				if (object.second->IsInstanced())
+					object.second->UpdateInstanceBuffer((object.second->GetInstancesData()));
+				else
+					object.second->Visible(true);
+			}
+			
+			return;
+		}
+
+		for (auto object : objects)
+		{
+			bool isInstanced = object.second->IsInstanced();
+			std::vector<Rendering::InstancedData> newInstanceData;
+			int instanceCount = object.second->GetInstanceCount();
+
+			for (int i = 0; i < ((isInstanced) ? (instanceCount) : 1); i++)
+			{
+				bool cull = false;
+				std::vector<XMFLOAT3> aabb = object.second->GetAABB();
+				XMFLOAT3 position; 
+				MatrixHelper::GetTranslation(object.second->GetTransformationMatrix(), position);
+				XMMATRIX instanceWorldMatrix = XMMatrixIdentity();
+				
+				if (isInstanced)
+				{
+					instanceWorldMatrix = XMLoadFloat4x4(&(object.second->GetInstancesData()[i].World));
+					MatrixHelper::GetTranslation(instanceWorldMatrix, position);
+				}
+
+				// start a loop through all frustum planes
+				for (int planeID = 0; planeID < 6; ++planeID)
+				{
+					XMVECTOR planeNormal = XMVectorSet(mFrustum.Planes()[planeID].x, mFrustum.Planes()[planeID].y, mFrustum.Planes()[planeID].z, 0.0f);
+					float planeConstant = mFrustum.Planes()[planeID].w;
+
+					XMFLOAT3 axisVert;
+
+					// x-axis
+					if (mFrustum.Planes()[planeID].x > 0.0f)
+						axisVert.x = aabb[0].x + position.x;
+					else
+						axisVert.x = aabb[1].x + position.x;
+
+					// y-axis
+					if (mFrustum.Planes()[planeID].y > 0.0f)
+						axisVert.y = aabb[0].y + position.y;
+					else
+						axisVert.y = aabb[1].y + position.y;
+
+					// z-axis
+					if (mFrustum.Planes()[planeID].z > 0.0f)
+						axisVert.z = aabb[0].z + position.z;
+					else
+						axisVert.z = aabb[1].z + position.z;
+
+
+					if (XMVectorGetX(XMVector3Dot(planeNormal, XMLoadFloat3(&axisVert))) + planeConstant > 0.0f)
+					{
+						cull = true;
+						object.second->Visible(true);
+						// Skip remaining planes to check and move on 
+
+
+						break;
+					}
+				}
+				
+				if (!isInstanced)
+					object.second->Visible(!cull);
+				else if (!cull)
+					newInstanceData.push_back(instanceWorldMatrix);
+
+			}
+
+			if (isInstanced)
+				object.second->UpdateInstanceBuffer(newInstanceData);
+		
+		}
+
 	}
 }

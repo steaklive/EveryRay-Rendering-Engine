@@ -164,7 +164,7 @@ namespace Rendering
 		////
 		/**/
 
-		mRenderingObjects.insert(std::pair<std::string, RenderingObject*>("Acer Tree Medium", new RenderingObject("Acer Tree Medium", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\vegetation\\trees\\acer\\tree_acer_middle2.fbx"), true)), true, true)));
+		mRenderingObjects.insert(std::pair<std::string, RenderingObject*>("Acer Tree Medium", new RenderingObject("Acer Tree Medium", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\vegetation\\trees\\elm\\elm.fbx"), true)), true, true)));
 		mRenderingObjects["Acer Tree Medium"]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, lightingMaterialName);
 		mRenderingObjects["Acer Tree Medium"]->LoadMaterial(new DepthMapMaterial(), effectShadow, shadowMapMaterialName);
 		mRenderingObjects["Acer Tree Medium"]->LoadMaterial(new DeferredMaterial(), effectDeferredPrepass, deferredPrepassMaterialName);
@@ -179,7 +179,7 @@ namespace Rendering
 		mRenderingObjects["Acer Tree Medium"]->MeshMaterialVariablesUpdateEvent->AddListener("Shadow Map Material Update", [&](int meshIndex) { UpdateDepthMaterialVariables("Acer Tree Medium", meshIndex); });
 		mRenderingObjects["Acer Tree Medium"]->MeshMaterialVariablesUpdateEvent->AddListener("Deferred Prepass Material Update", [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables("Acer Tree Medium", meshIndex); });
 		
-		mRenderingObjects["Acer Tree Medium"]->CalculateInstanceObjectsRandomDistribution(10);
+		mRenderingObjects["Acer Tree Medium"]->CalculateInstanceObjectsRandomDistribution(1500);
 		mRenderingObjects["Acer Tree Medium"]->LoadInstanceBuffers();
 
 		mKeyboard = (Keyboard*)mGame->Services().GetService(Keyboard::TypeIdClass());
@@ -254,6 +254,7 @@ namespace Rendering
 		mGrid->Update(gameTime);
 		mPostProcessingStack->Update();
 
+		mCamera->Cull(mRenderingObjects);
 		//time = (float)gameTime.TotalGameTime();
 
 		for (auto object : mRenderingObjects)
@@ -365,7 +366,7 @@ namespace Rendering
 
 	void TestSceneDemo::UpdateStandardLightingPBRMaterialVariables(const std::string& objectName, int meshIndex)
 	{
-		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mRenderingObjects[objectName]->GetTransformMatrix()));
+		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mRenderingObjects[objectName]->GetTransformationMatrix4X4()));
 		XMMATRIX vp = /*worldMatrix * */mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
 		XMMATRIX shadowMatrix = /*worldMatrix **/ mShadowMapViewMatrix * mShadowMapProjectionMatrix/* mShadowProjector->ViewMatrix() * mShadowProjector->ProjectionMatrix()*/ * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix());
 
@@ -397,7 +398,7 @@ namespace Rendering
 
 	void TestSceneDemo::UpdateDeferredPrepassMaterialVariables(const std::string & objectName, int meshIndex)
 	{
-		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mRenderingObjects[objectName]->GetTransformMatrix()));
+		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mRenderingObjects[objectName]->GetTransformationMatrix4X4()));
 		XMMATRIX vp = /*worldMatrix * */mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
 		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[deferredPrepassMaterialName])->ViewProjection() << vp;
 		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[deferredPrepassMaterialName])->World() << worldMatrix;
