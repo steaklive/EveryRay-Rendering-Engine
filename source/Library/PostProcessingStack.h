@@ -83,6 +83,7 @@ namespace Rendering
 			float middlegrey = 0.053f;
 			float bloomthreshold = 0.342f;
 			float bloommultiplier = 0.837f;
+			float luminanceWeights[3] = { 0.27f, 0.67f, 0.06f };
 			bool isActive = true;
 		};
 		

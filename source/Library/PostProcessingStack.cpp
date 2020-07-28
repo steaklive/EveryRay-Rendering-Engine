@@ -167,7 +167,7 @@ namespace Rendering {
 		BufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		game.Direct3DDevice()->CreateBuffer(&BufferDesc, NULL, &mTonemapEffect->ConstBuffer);
 
-		BufferDesc.ByteWidth = sizeof(float) * 4;
+		BufferDesc.ByteWidth = sizeof(float) * 8;
 		BufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		game.Direct3DDevice()->CreateBuffer(&BufferDesc, NULL, &mTonemapEffect->BloomConstants);
 
@@ -422,9 +422,10 @@ namespace Rendering {
 			if (ImGui::CollapsingHeader("Tonemap and Bloom"))
 			{
 				ImGui::Checkbox("Tonemap and Bloom - On", &mTonemapEffect->isActive);
-				ImGui::SliderFloat("Middle Grey", &mTonemapEffect->middlegrey, 0.0f, 0.2f);
+				ImGui::SliderFloat("Middle Grey", &mTonemapEffect->middlegrey, 0.0f, 1.0f);
 				ImGui::SliderFloat("Bloom Threshold", &mTonemapEffect->bloomthreshold, 0.0f, 1.0f);
 				ImGui::SliderFloat("Bloom Multiplier", &mTonemapEffect->bloommultiplier, 0.0f, 1.0f);
+				ImGui::ColorEdit3("Luminance Weights", mTonemapEffect->luminanceWeights);
 			}
 		}
 
@@ -575,8 +576,17 @@ namespace Rendering {
 
 		if (mTonemapEffect->isActive)
 		{
-			float pBuffer[] = { mTonemapEffect->middlegrey, mTonemapEffect->bloomthreshold, mTonemapEffect->bloommultiplier, 0.0f };
-			context->UpdateSubresource(mTonemapEffect->BloomConstants, 0, NULL, pBuffer, sizeof(float) * 4, 0);
+			float pBuffer[] = { 
+				mTonemapEffect->luminanceWeights[0],
+				mTonemapEffect->luminanceWeights[1],
+				mTonemapEffect->luminanceWeights[2],
+				1.0f,
+				mTonemapEffect->middlegrey,
+				mTonemapEffect->bloomthreshold,
+				mTonemapEffect->bloommultiplier, 
+				0.0f 
+			};
+			context->UpdateSubresource(mTonemapEffect->BloomConstants, 0, NULL, pBuffer, sizeof(float) * 8, 0);
 			context->PSSetConstantBuffers(1, 1, &mTonemapEffect->BloomConstants);
 			D3D11_VIEWPORT viewport;
 			UINT numViewPorts = 1;
