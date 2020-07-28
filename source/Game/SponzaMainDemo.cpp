@@ -275,7 +275,7 @@ namespace Rendering
 		mShadowProjector->ApplyRotation(XMMatrixRotationAxis(mShadowProjector->RightVector(), -XMConvertToRadians(70.0f)) * XMMatrixRotationAxis(mDirectionalLight->UpVector(), -XMConvertToRadians(25.0f)));
 
 		mCamera->SetPosition(XMFLOAT3(-76.6f, 8.4f, 8.8f));
-		//mCamera->ApplyRotation(XMMatrixRotationAxis(mCamera->RightVector(), XMConvertToRadians(18.0f)) * XMMatrixRotationAxis(mCamera->UpVector(), -XMConvertToRadians(70.0f)));
+		mCamera->ApplyRotation(XMMatrixRotationAxis(mCamera->RightVector(), XMConvertToRadians(18.0f)) * XMMatrixRotationAxis(mCamera->UpVector(), -XMConvertToRadians(70.0f)));
 	
 		//IBL
 		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\sponzaCubeDiffuseHDR.dds").c_str(), nullptr, &mIrradianceTextureSRV)))
