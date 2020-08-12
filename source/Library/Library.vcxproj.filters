@@ -348,6 +348,9 @@
     <ClInclude Include="ScreenSpaceReflectionsMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MaterialHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -601,6 +604,9 @@
     </ClCompile>
     <ClCompile Include="ScreenSpaceReflectionsMaterial.cpp">
       <Filter>Source Files\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialHelper.cpp">
+      <Filter>Source Files\Helpers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
