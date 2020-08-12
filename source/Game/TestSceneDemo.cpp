@@ -6,6 +6,7 @@
 #include "..\Library\VectorHelper.h"
 #include "..\Library\MatrixHelper.h"
 #include "..\Library\ColorHelper.h"
+#include "..\Library\MaterialHelper.h"
 #include "..\Library\Camera.h"
 #include "..\Library\Model.h"
 #include "..\Library\Mesh.h"
@@ -43,11 +44,6 @@
 namespace Rendering
 {
 	RTTI_DEFINITIONS(TestSceneDemo)
-
-	const std::string shadowMapMaterialName			= "shadowMap";
-	const std::string lightingMaterialName			= "lighting";
-	const std::string deferredPrepassMaterialName	= "deferredPrepass";
-	//const std::string ssrMaterialName = "ssr";
 
 	static int selectedObjectIndex = -1;
 
@@ -150,14 +146,14 @@ namespace Rendering
 		/**/
 
 		mRenderingObjects.insert(std::pair<std::string, RenderingObject*>("Ground Plane", new RenderingObject("Ground Plane", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\default_plane\\default_plane.fbx"), true)), false)));
-		mRenderingObjects["Ground Plane"]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, lightingMaterialName);
-		mRenderingObjects["Ground Plane"]->LoadMaterial(new DepthMapMaterial(), effectShadow, shadowMapMaterialName);
-		mRenderingObjects["Ground Plane"]->LoadMaterial(new DeferredMaterial(), effectDeferredPrepass, deferredPrepassMaterialName);
+		mRenderingObjects["Ground Plane"]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, MaterialHelper::lightingMaterialName);
+		mRenderingObjects["Ground Plane"]->LoadMaterial(new DepthMapMaterial(), effectShadow, MaterialHelper::shadowMapMaterialName);
+		mRenderingObjects["Ground Plane"]->LoadMaterial(new DeferredMaterial(), effectDeferredPrepass, MaterialHelper::deferredPrepassMaterialName);
 		mRenderingObjects["Ground Plane"]->LoadRenderBuffers();
-		mRenderingObjects["Ground Plane"]->GetMaterials()[lightingMaterialName]->SetCurrentTechnique(mRenderingObjects["Ground Plane"]->GetMaterials()[lightingMaterialName]->GetEffect()->TechniquesByName().at("standard_lighting_pbr"));
-		mRenderingObjects["Ground Plane"]->MeshMaterialVariablesUpdateEvent->AddListener("Standard Lighting Material Update", [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables("Ground Plane", meshIndex); });
-		mRenderingObjects["Ground Plane"]->MeshMaterialVariablesUpdateEvent->AddListener("Shadow Map Material Update", [&](int meshIndex) { UpdateDepthMaterialVariables("Ground Plane", meshIndex); });
-		mRenderingObjects["Ground Plane"]->MeshMaterialVariablesUpdateEvent->AddListener("Deferred Prepass Material Update", [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables("Ground Plane", meshIndex); });
+		mRenderingObjects["Ground Plane"]->GetMaterials()[MaterialHelper::lightingMaterialName]->SetCurrentTechnique(mRenderingObjects["Ground Plane"]->GetMaterials()[MaterialHelper::lightingMaterialName]->GetEffect()->TechniquesByName().at("standard_lighting_pbr"));
+		mRenderingObjects["Ground Plane"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::lightingMaterialName, [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables("Ground Plane", meshIndex); });
+		mRenderingObjects["Ground Plane"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName, [&](int meshIndex) { UpdateDepthMaterialVariables("Ground Plane", meshIndex); });
+		mRenderingObjects["Ground Plane"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables("Ground Plane", meshIndex); });
 
 		
 		/**/
@@ -165,19 +161,19 @@ namespace Rendering
 		/**/
 
 		mRenderingObjects.insert(std::pair<std::string, RenderingObject*>("Acer Tree Medium", new RenderingObject("Acer Tree Medium", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\vegetation\\trees\\elm\\elm.fbx"), true)), true, true)));
-		mRenderingObjects["Acer Tree Medium"]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, lightingMaterialName);
-		mRenderingObjects["Acer Tree Medium"]->LoadMaterial(new DepthMapMaterial(), effectShadow, shadowMapMaterialName);
-		mRenderingObjects["Acer Tree Medium"]->LoadMaterial(new DeferredMaterial(), effectDeferredPrepass, deferredPrepassMaterialName);
+		mRenderingObjects["Acer Tree Medium"]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, MaterialHelper::lightingMaterialName);
+		mRenderingObjects["Acer Tree Medium"]->LoadMaterial(new DepthMapMaterial(), effectShadow, MaterialHelper::shadowMapMaterialName);
+		mRenderingObjects["Acer Tree Medium"]->LoadMaterial(new DeferredMaterial(), effectDeferredPrepass, MaterialHelper::deferredPrepassMaterialName);
 
 		mRenderingObjects["Acer Tree Medium"]->LoadRenderBuffers();
 
-		mRenderingObjects["Acer Tree Medium"]->GetMaterials()[lightingMaterialName]->SetCurrentTechnique(mRenderingObjects["Acer Tree Medium"]->GetMaterials()[lightingMaterialName]->GetEffect()->TechniquesByName().at("standard_lighting_pbr_instancing"));
-		mRenderingObjects["Acer Tree Medium"]->GetMaterials()[shadowMapMaterialName]->SetCurrentTechnique(mRenderingObjects["Acer Tree Medium"]->GetMaterials()[shadowMapMaterialName]->GetEffect()->TechniquesByName().at("create_depthmap_w_render_target_instanced"));
-		mRenderingObjects["Acer Tree Medium"]->GetMaterials()[deferredPrepassMaterialName]->SetCurrentTechnique(mRenderingObjects["Acer Tree Medium"]->GetMaterials()[deferredPrepassMaterialName]->GetEffect()->TechniquesByName().at("deferred_instanced"));
+		mRenderingObjects["Acer Tree Medium"]->GetMaterials()[MaterialHelper::lightingMaterialName]->SetCurrentTechnique(mRenderingObjects["Acer Tree Medium"]->GetMaterials()[MaterialHelper::lightingMaterialName]->GetEffect()->TechniquesByName().at("standard_lighting_pbr_instancing"));
+		mRenderingObjects["Acer Tree Medium"]->GetMaterials()[MaterialHelper::shadowMapMaterialName]->SetCurrentTechnique(mRenderingObjects["Acer Tree Medium"]->GetMaterials()[MaterialHelper::shadowMapMaterialName]->GetEffect()->TechniquesByName().at("create_depthmap_w_render_target_instanced"));
+		mRenderingObjects["Acer Tree Medium"]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName]->SetCurrentTechnique(mRenderingObjects["Acer Tree Medium"]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName]->GetEffect()->TechniquesByName().at("deferred_instanced"));
 		
-		mRenderingObjects["Acer Tree Medium"]->MeshMaterialVariablesUpdateEvent->AddListener("Standard Lighting PBR Material Update", [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables("Acer Tree Medium", meshIndex); });
-		mRenderingObjects["Acer Tree Medium"]->MeshMaterialVariablesUpdateEvent->AddListener("Shadow Map Material Update", [&](int meshIndex) { UpdateDepthMaterialVariables("Acer Tree Medium", meshIndex); });
-		mRenderingObjects["Acer Tree Medium"]->MeshMaterialVariablesUpdateEvent->AddListener("Deferred Prepass Material Update", [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables("Acer Tree Medium", meshIndex); });
+		mRenderingObjects["Acer Tree Medium"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::lightingMaterialName, [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables("Acer Tree Medium", meshIndex); });
+		mRenderingObjects["Acer Tree Medium"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName, [&](int meshIndex) { UpdateDepthMaterialVariables("Acer Tree Medium", meshIndex); });
+		mRenderingObjects["Acer Tree Medium"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables("Acer Tree Medium", meshIndex); });
 		
 		mRenderingObjects["Acer Tree Medium"]->CalculateInstanceObjectsRandomDistribution(1500);
 		mRenderingObjects["Acer Tree Medium"]->LoadInstanceBuffers();
@@ -310,7 +306,7 @@ namespace Rendering
 
 		mGBuffer->Start();
 		for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++) 
-			it->second->Draw(deferredPrepassMaterialName, true);
+			it->second->Draw(MaterialHelper::deferredPrepassMaterialName, true);
 		mGBuffer->End();
 
 #pragma endregion
@@ -323,7 +319,7 @@ namespace Rendering
 		direct3DDeviceContext->RSSetState(mShadowRasterizerState);
 
 		for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++)
-			it->second->Draw(shadowMapMaterialName, true);
+			it->second->Draw(MaterialHelper::shadowMapMaterialName, true);
 
 		mShadowMap->End();
 		mRenderStateHelper->RestoreRasterizerState();
@@ -346,7 +342,7 @@ namespace Rendering
 
 		//lighting
 		for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++)
-			it->second->Draw(lightingMaterialName);
+			it->second->Draw(MaterialHelper::lightingMaterialName);
 
 #pragma endregion
 
@@ -370,40 +366,40 @@ namespace Rendering
 		XMMATRIX vp = /*worldMatrix * */mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
 		XMMATRIX shadowMatrix = /*worldMatrix **/ mShadowMapViewMatrix * mShadowMapProjectionMatrix/* mShadowProjector->ViewMatrix() * mShadowProjector->ProjectionMatrix()*/ * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix());
 
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->ViewProjection() << vp;
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->World() << worldMatrix;
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->ShadowMatrix() << shadowMatrix;
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->CameraPosition() << mCamera->PositionVector();
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->SunDirection() << XMVectorNegate(mDirectionalLight->DirectionVector());
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->SunColor() << XMVECTOR{ mDirectionalLight->GetDirectionalLightColor().x,  mDirectionalLight->GetDirectionalLightColor().y, mDirectionalLight->GetDirectionalLightColor().z , 1.0f };
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->AmbientColor() << XMVECTOR{ mDirectionalLight->GetAmbientLightColor().x,  mDirectionalLight->GetAmbientLightColor().y, mDirectionalLight->GetAmbientLightColor().z , 1.0f };
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->ShadowTexelSize() << XMVECTOR{ 1.0f / 4096.0f, 1.0f, 1.0f , 1.0f };
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->AlbedoTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).AlbedoMap;
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->NormalTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).NormalMap;
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->SpecularTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).SpecularMap;
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->RoughnessTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).RoughnessMap;
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->MetallicTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).MetallicMap;
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->ShadowTexture() << mShadowMap->OutputTexture();
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->IrradianceTexture() << mIrradianceTextureSRV;
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->RadianceTexture() << mRadianceTextureSRV;
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[lightingMaterialName])->IntegrationTexture() << mIntegrationMapTextureSRV;
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->ViewProjection() << vp;
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->World() << worldMatrix;
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->ShadowMatrix() << shadowMatrix;
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->CameraPosition() << mCamera->PositionVector();
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->SunDirection() << XMVectorNegate(mDirectionalLight->DirectionVector());
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->SunColor() << XMVECTOR{ mDirectionalLight->GetDirectionalLightColor().x,  mDirectionalLight->GetDirectionalLightColor().y, mDirectionalLight->GetDirectionalLightColor().z , 1.0f };
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->AmbientColor() << XMVECTOR{ mDirectionalLight->GetAmbientLightColor().x,  mDirectionalLight->GetAmbientLightColor().y, mDirectionalLight->GetAmbientLightColor().z , 1.0f };
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->ShadowTexelSize() << XMVECTOR{ 1.0f / 4096.0f, 1.0f, 1.0f , 1.0f };
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->AlbedoTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).AlbedoMap;
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->NormalTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).NormalMap;
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->SpecularTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).SpecularMap;
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->RoughnessTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).RoughnessMap;
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->MetallicTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).MetallicMap;
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->ShadowTexture() << mShadowMap->OutputTexture();
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->IrradianceTexture() << mIrradianceTextureSRV;
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->RadianceTexture() << mRadianceTextureSRV;
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->IntegrationTexture() << mIntegrationMapTextureSRV;
 	}
 
 	void TestSceneDemo::UpdateDepthMaterialVariables(const std::string& objectName, int meshIndex)
 	{
 		//XMMATRIX worldMatrix = XMLoadFloat4x4(&(mRenderingObjects[objectName]->GetTransformMatrix()));
 		XMMATRIX lvp =/* worldMatrix * */mShadowMapViewMatrix * mShadowMapProjectionMatrix;// mShadowProjector->ViewMatrix() * mShadowProjector->ProjectionMatrix();
-		static_cast<DepthMapMaterial*>(mRenderingObjects[objectName]->GetMaterials()[shadowMapMaterialName])->LightViewProjection() << lvp;
+		static_cast<DepthMapMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::shadowMapMaterialName])->LightViewProjection() << lvp;
 	}
 
 	void TestSceneDemo::UpdateDeferredPrepassMaterialVariables(const std::string & objectName, int meshIndex)
 	{
 		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mRenderingObjects[objectName]->GetTransformationMatrix4X4()));
 		XMMATRIX vp = /*worldMatrix * */mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
-		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[deferredPrepassMaterialName])->ViewProjection() << vp;
-		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[deferredPrepassMaterialName])->World() << worldMatrix;
-		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[deferredPrepassMaterialName])->AlbedoMap() << mRenderingObjects[objectName]->GetTextureData(meshIndex).AlbedoMap;
-		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[deferredPrepassMaterialName])->ReflectionMaskFactor() << mRenderingObjects[objectName]->GetMeshReflectionFactor(meshIndex);
+		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->ViewProjection() << vp;
+		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->World() << worldMatrix;
+		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->AlbedoMap() << mRenderingObjects[objectName]->GetTextureData(meshIndex).AlbedoMap;
+		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->ReflectionMaskFactor() << mRenderingObjects[objectName]->GetMeshReflectionFactor(meshIndex);
 	}
 
 }
