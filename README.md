@@ -1,5 +1,5 @@
 # EveryRay-Rendering-Engine
-Rendering engine/framework written in C++ with DirectX 11 support. 
+Rendering engine/framework written in C++/DirectX 11. 
 
 ![picture](screenshots/EveryRayEditor.png)
 ![picture](screenshots/EveryRayPBR.png)
