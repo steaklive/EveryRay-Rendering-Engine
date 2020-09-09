@@ -1,18 +1,6 @@
 # EveryRay-Rendering-Engine
 Rendering engine/framework written in C++/DirectX 11. 
 
-![picture](screenshots/EveryRayEditor.png)
-![picture](screenshots/EveryRayPBR.png)
-![picture](screenshots/EveryRayCSM.png)
-![picture](screenshots/EveryRayInstancing.png)
-![picture](screenshots/EveryRayFrustumCulling.png)
-![picture](screenshots/EveryRaySSSS.png)
-![picture](screenshots/EveryRayPostProcessing.png)
-![picture](screenshots/EveryRayWater.png)
-![picture](screenshots/EveryRayCollisionDetection.png)
-![picture](screenshots/EveryRaySSR.png)
-![picture](screenshots/EveryRayTestScene.png)
-
 # Features
 - Hybrid Rendering (Deferred Prepass with GBuffer + Forward Pass)
 - 3D model loading (.obj, .fbx and etc.) with Assimp Library
@@ -31,6 +19,20 @@ Other features based on NVIDIA techniques (no code provided here)
 - Volumetric Lighting (from "Fast, Flexible, Physically-Based Volumetric Light Scattering")
 - Ocean Simulation (from DX11 archive samples)
 
+# Screenshots
+
+![picture](screenshots/EveryRayEditor.png)
+![picture](screenshots/EveryRayPBR.png)
+![picture](screenshots/EveryRayCSM.png)
+![picture](screenshots/EveryRayInstancing.png)
+![picture](screenshots/EveryRayFrustumCulling.png)
+![picture](screenshots/EveryRaySSSS.png)
+![picture](screenshots/EveryRayPostProcessing.png)
+![picture](screenshots/EveryRayWater.png)
+![picture](screenshots/EveryRayCollisionDetection.png)
+![picture](screenshots/EveryRaySSR.png)
+![picture](screenshots/EveryRayTestScene.png)
+
 # Controls
 - Mouse + Right Click - camera rotation
 - WASD - camera side movement
@@ -40,6 +42,8 @@ Other features based on NVIDIA techniques (no code provided here)
 
 # Notes
 Only "Sponza Main Demo" and "Test Scene" have almost all the features and are up-to-date with the changes to the codebase. Other levels suffer from legacy issues and might not have, for example, up to date code, such as RenderingObject, working editor or post processing stack... I will be refactoring those levels when possible. 
+
+The framework is NOT API-agnostic and, thus, is tighly bound to DX11. Hopefully, I will be changing that in the future.
 
 # External Dependencies
 Create a folder "external" in the root directory and place these built libraries
