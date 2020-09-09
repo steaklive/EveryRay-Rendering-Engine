@@ -1,18 +1,22 @@
 // Standard Lighting Effect
 static const float4 ColorWhite = { 1, 1, 1, 1 };
 static const float Pi = 3.141592654f;
+
+#define NUM_OF_SHADOW_CASCADES 3
+
 cbuffer CBufferPerFrame
 {
     float4 SunDirection;
     float4 SunColor;
     float4 AmbientColor;
     float4 ShadowTexelSize;
+    float4 ShadowCascadeDistances;
 }
 cbuffer CBufferPerObject
 {
     float4x4 ViewProjection;
     float4x4 World : WORLD;
-    float4x4 ShadowMatrix;
+    float4x4 ShadowMatrices[NUM_OF_SHADOW_CASCADES];
     float4 CameraPosition;
 }
 
@@ -22,7 +26,7 @@ Texture2D SpecularTexture;
 Texture2D MetallicTexture;
 Texture2D RoughnessTexture;
 
-Texture2D ShadowTexture;
+Texture2D CascadedShadowTextures[NUM_OF_SHADOW_CASCADES];
 
 TextureCube IrradianceTexture;
 TextureCube RadianceTexture;
@@ -44,6 +48,15 @@ SamplerComparisonState ShadowSampler
     BorderColor = ColorWhite;
     ComparisonFunc = LESS_EQUAL;
 };
+SamplerComparisonState CascadedPcfShadowMapSampler
+{
+    Filter = COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+    AddressU = BORDER;
+    AddressV = BORDER;
+    BorderColor = ColorWhite;
+    ComparisonFunc = LESS_EQUAL;
+};
+
 
 
 struct LightData
@@ -79,7 +92,9 @@ struct VS_OUTPUT
     float3 WorldPos : WorldPos;
     float2 UV : TexCoord0;
     float3 ViewDir : TexCoord1;
-    float3 ShadowCoord : TexCoord2;
+    float3 ShadowCoord0 : TexCoord2;
+    float3 ShadowCoord1 : TexCoord3;
+    float3 ShadowCoord2 : TexCoord4;
     float3 Normal : Normal;
     float3 Tangent : Tangent;
 };
@@ -94,7 +109,9 @@ VS_OUTPUT mainVS(VS_INPUT IN)
     OUT.UV = IN.Texcoord0;
     OUT.Normal = normalize(mul(float4(IN.Normal, 0), World).xyz);
     OUT.ViewDir = IN.Position.xyz - CameraPosition.xyz;
-    OUT.ShadowCoord = mul(IN.Position, mul(World, ShadowMatrix)).xyz;
+    OUT.ShadowCoord0 = mul(IN.Position, mul(World, ShadowMatrices[0])).xyz;
+    OUT.ShadowCoord1 = mul(IN.Position, mul(World, ShadowMatrices[1])).xyz;
+    OUT.ShadowCoord2 = mul(IN.Position, mul(World, ShadowMatrices[2])).xyz;
     OUT.Tangent = IN.Tangent;
 
     return OUT;
@@ -109,35 +126,47 @@ VS_OUTPUT mainVS_Instancing(VS_INPUT_INSTANCING IN)
     OUT.UV = IN.Texcoord0;
     OUT.Normal = normalize(mul(float4(IN.Normal, 0), IN.World).xyz);
     OUT.ViewDir = IN.Position.xyz - CameraPosition.xyz;
-    OUT.ShadowCoord = mul(IN.Position, mul(IN.World, ShadowMatrix)).xyz;
+    OUT.ShadowCoord0 = mul(IN.Position, mul(IN.World, ShadowMatrices[0])).xyz;
+    OUT.ShadowCoord1 = mul(IN.Position, mul(IN.World, ShadowMatrices[1])).xyz;
+    OUT.ShadowCoord2 = mul(IN.Position, mul(IN.World, ShadowMatrices[2])).xyz;
     OUT.Tangent = IN.Tangent;
 
     return OUT;
 }
 
-float GetShadow(float3 ShadowCoord)
+float CalculateShadow(float3 ShadowCoord, int index)
 {
-    //float result = ShadowTexture.SampleCmpLevelZero(ShadowSampler, ShadowCoord.xy, ShadowCoord.z).r;
-
     const float Dilation = 2.0;
     float d1 = Dilation * ShadowTexelSize.x * 0.125;
     float d2 = Dilation * ShadowTexelSize.x * 0.875;
     float d3 = Dilation * ShadowTexelSize.x * 0.625;
     float d4 = Dilation * ShadowTexelSize.x * 0.375;
     float result = (
-        2.0 * 
-        ShadowTexture.SampleCmpLevelZero(ShadowSampler, ShadowCoord.xy, ShadowCoord.z) +
-        ShadowTexture.SampleCmpLevelZero(ShadowSampler, ShadowCoord.xy + float2(-d2, d1), ShadowCoord.z) +
-        ShadowTexture.SampleCmpLevelZero(ShadowSampler, ShadowCoord.xy + float2(-d1, -d2), ShadowCoord.z) +
-        ShadowTexture.SampleCmpLevelZero(ShadowSampler, ShadowCoord.xy + float2(d2, -d1), ShadowCoord.z) +
-        ShadowTexture.SampleCmpLevelZero(ShadowSampler, ShadowCoord.xy + float2(d1, d2), ShadowCoord.z) +
-        ShadowTexture.SampleCmpLevelZero(ShadowSampler, ShadowCoord.xy + float2(-d4, d3), ShadowCoord.z) +
-        ShadowTexture.SampleCmpLevelZero(ShadowSampler, ShadowCoord.xy + float2(-d3, -d4), ShadowCoord.z) +
-        ShadowTexture.SampleCmpLevelZero(ShadowSampler, ShadowCoord.xy + float2(d4, -d3), ShadowCoord.z) +
-        ShadowTexture.SampleCmpLevelZero(ShadowSampler, ShadowCoord.xy + float2(d3, d4), ShadowCoord.z)
+        2.0 *
+        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy, ShadowCoord.z) +
+        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d2, d1), ShadowCoord.z) +
+        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d1, -d2), ShadowCoord.z) +
+        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d2, -d1), ShadowCoord.z) +
+        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d1, d2), ShadowCoord.z) +
+        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d4, d3), ShadowCoord.z) +
+        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d3, -d4), ShadowCoord.z) +
+        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d4, -d3), ShadowCoord.z) +
+        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d3, d4), ShadowCoord.z)
         ) / 10.0;
 
     return result * result;
+}
+float GetShadow(float3 ShadowCoord0, float3 ShadowCoord1, float3 ShadowCoord2, float depthDistance)
+{
+    if (depthDistance < ShadowCascadeDistances.x)
+        return CalculateShadow(ShadowCoord0, 0);
+    else if (depthDistance < ShadowCascadeDistances.y)
+        return CalculateShadow(ShadowCoord1, 1);
+    else if (depthDistance < ShadowCascadeDistances.z)
+        return CalculateShadow(ShadowCoord2, 2);
+    else
+        return 1.0f;
+    
 }
 
 // Apply fresnel to modulate the specular albedo
@@ -175,9 +204,9 @@ float3 ApplyAmbientLight(float3 diffuse, float ao, float3 lightColor)
 }
 
 float3 ApplyDirectionalLight(float3 diffuseColor,float3 specularColor, float specularMask, float gloss, float3 normal,
-    float3 viewDir, float3 lightDir, float3 lightColor, float3 shadowCoord)
+    float3 viewDir, float3 lightDir, float3 lightColor, float3 shadowCoord0,float3 shadowCoord1,float3 shadowCoord2, float depthPosition)
 {
-    float shadow = GetShadow(shadowCoord);
+    float shadow = GetShadow(shadowCoord0, shadowCoord1, shadowCoord2, depthPosition);
     return shadow * ApplyLightCommon(diffuseColor, specularColor, specularMask, gloss, normal, viewDir, lightDir, lightColor);
 }
 
@@ -319,7 +348,7 @@ float3 mainPS(VS_OUTPUT vsOutput) : SV_Target0
     float3 specularAlbedo = float3(metalness, metalness, metalness);
     float specularMask = SpecularTexture.Sample(Sampler, vsOutput.UV).g;
     float3 viewDir = normalize(vsOutput.ViewDir);
-    colorSum += ApplyDirectionalLight(diffuseAlbedo.rgb, specularAlbedo, specularMask, gloss, normal, viewDir, SunDirection.xyz, SunColor.xyz, vsOutput.ShadowCoord);
+    colorSum += ApplyDirectionalLight(diffuseAlbedo.rgb, specularAlbedo, specularMask, gloss, normal, viewDir, SunDirection.xyz, SunColor.xyz, vsOutput.ShadowCoord0, vsOutput.ShadowCoord1, vsOutput.ShadowCoord2, vsOutput.Position.w);
 
     //// point
     //for (uint n = 0; n < tileLightCountSphere; n++, tileLightLoadOffset += 4)
@@ -356,7 +385,7 @@ float3 mainPS_PBR(VS_OUTPUT vsOutput) : SV_Target0
     
     float3 indirectLighting = IndirectLighting(roughness, diffuseAlbedo.rgb, specularAlbedo, normalWS, vsOutput.WorldPos);
 
-    float shadow = GetShadow(vsOutput.ShadowCoord);
+    float shadow = GetShadow(vsOutput.ShadowCoord0, vsOutput.ShadowCoord1, vsOutput.ShadowCoord2, vsOutput.Position.w);
     float3 ambient = AmbientColor.rgb * diffuseAlbedo.rgb;
     
     float3 color = ambient + float3(directLighting + indirectLighting) * shadow;    

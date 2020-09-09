@@ -207,4 +207,24 @@ namespace Library
 		XMMATRIX transformMatrix = XMLoadFloat4x4(&transform);
 		ApplyRotation(transformMatrix);
 	}
+
+	void Projector::ApplyTransform(CXMMATRIX transform)
+	{
+		XMVECTOR direction = XMVECTOR{ 0.0f, 0.0, -1.0f };
+		XMVECTOR up = XMVECTOR{ 0.0f, 1.0, 0.0f };
+
+		direction = XMVector3TransformNormal(direction, transform);
+		direction = XMVector3Normalize(direction);
+
+		up = XMVector3TransformNormal(up, transform);
+		up = XMVector3Normalize(up);
+
+		XMVECTOR right = XMVector3Cross(direction, up);
+		up = XMVector3Cross(right, direction);
+
+		XMStoreFloat3(&mDirection, direction);
+		XMStoreFloat3(&mUp, up);
+		XMStoreFloat3(&mRight, right);
+
+	}
 }

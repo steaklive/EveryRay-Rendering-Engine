@@ -45,7 +45,7 @@ namespace Library
 		: DrawableGameComponent(game, camera),
 		mVertexBuffer(nullptr), mIndexBuffer(nullptr), mMaterial(nullptr), mPass(nullptr), mInputLayout(nullptr),
 		mColor(DefaultColor), mPosition(Vector3Helper::Zero), mDirection(Vector3Helper::Forward), mUp(Vector3Helper::Up), mRight(Vector3Helper::Right),
-		mWorldMatrix(MatrixHelper::Identity), mVertices(0), mScale(XMFLOAT3(1,1,1)), mRotationMatrix(XMMatrixIdentity())
+		mWorldMatrix(MatrixHelper::Identity), mVertices(0), mScale(XMFLOAT3(1,1,1)), mTransformMatrix(XMMatrixIdentity())
 	{
 	}
 
@@ -53,7 +53,7 @@ namespace Library
 		: DrawableGameComponent(game, camera),
 		mVertexBuffer(nullptr), mIndexBuffer(nullptr), mMaterial(nullptr), mPass(nullptr), mInputLayout(nullptr),
 		mColor(color), mPosition(Vector3Helper::Zero), mDirection(Vector3Helper::Forward), mUp(Vector3Helper::Up), mRight(Vector3Helper::Right),
-		mWorldMatrix(MatrixHelper::Identity), mVertices(0), mScale(XMFLOAT3(1, 1, 1)), mRotationMatrix(XMMatrixIdentity())
+		mWorldMatrix(MatrixHelper::Identity), mVertices(0), mScale(XMFLOAT3(1, 1, 1)), mTransformMatrix(XMMatrixIdentity())
 	{
 	}
 
@@ -77,7 +77,7 @@ namespace Library
 
 	void RenderableAABB::SetRotationMatrix(const XMMATRIX& rotationMat)
 	{
-		mRotationMatrix = rotationMat;
+		mTransformMatrix = rotationMat;
 	}
 
 	void RenderableAABB::SetAABB(const std::vector<XMFLOAT3>& aabb)
@@ -141,7 +141,7 @@ namespace Library
 		MatrixHelper::SetRight(worldMatrix, mRight);
 		XMMATRIX scale = XMMatrixScaling(mScale.x,mScale.y,mScale.z);
 		worldMatrix *= scale;
-		worldMatrix *= mRotationMatrix;
+		worldMatrix *= mTransformMatrix;
 		MatrixHelper::SetTranslation(worldMatrix, mPosition);
 
 		XMStoreFloat4x4(&mWorldMatrix, worldMatrix);

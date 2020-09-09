@@ -29,6 +29,7 @@
 #define DeletePointerCollection(objects) {for (auto &it: objects) delete it; objects.clear();}
 #define ReleasePointerCollection(objects) {for (auto &it: objects) it->Release(); objects.clear();}
 
+#define MAX_NUM_OF_CASCADES 3
 
 namespace Library
 {

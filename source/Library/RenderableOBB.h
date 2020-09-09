@@ -72,7 +72,7 @@ namespace Library
 
 		XMFLOAT4X4 mWorldMatrix;
 
-		XMMATRIX mRotationMatrix;
+		XMMATRIX mTransformMatrix;
 
 
 		XMFLOAT3 mExtents;

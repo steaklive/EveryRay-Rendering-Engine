@@ -3,12 +3,16 @@
 #include "Common.h"
 #include "Light.h"
 #include "ProxyModel.h"
+#include "GeneralEvent.h"
+
 
 namespace Library
 {
 	class DirectionalLight : public Light
 	{
 		RTTI_DECLARATIONS(DirectionalLight, Light)
+		
+		using Delegate_RotationUpdate = std::function<void()>; 
 
 	public:
 		DirectionalLight(Game& game);
@@ -33,6 +37,9 @@ namespace Library
 		void UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix);
 		XMFLOAT3 GetDirectionalLightColor() { return XMFLOAT3(mSunColor); }
 		XMFLOAT3 GetAmbientLightColor() { return XMFLOAT3(mAmbientColor); }
+		XMMATRIX GetTransform() { return mTransformMatrix; }
+
+		GeneralEvent<Delegate_RotationUpdate>* RotationUpdateEvent = new GeneralEvent<Delegate_RotationUpdate>();
 
 	protected:
 		XMFLOAT3 mDirection;
@@ -59,5 +66,7 @@ namespace Library
 
 		float mSunColor[3] = { 1.0f, 0.95f, 0.863f };
 		float mAmbientColor[3] = { 0.08f, 0.08f, 0.08f };
+
+		XMMATRIX mTransformMatrix = XMMatrixIdentity();
 	};
 }

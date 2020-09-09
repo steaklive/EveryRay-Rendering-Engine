@@ -70,7 +70,7 @@ namespace Library
 
 		XMFLOAT4X4 mWorldMatrix;
 
-		XMMATRIX mRotationMatrix;
+		XMMATRIX mTransformMatrix;
 
 		std::vector<XMFLOAT3> mVertices;
 

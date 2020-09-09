@@ -84,7 +84,7 @@ namespace Library
 
 	void RenderableOBB::SetRotationMatrix(const XMMATRIX& rotationMat)
 	{
-		mRotationMatrix = rotationMat;
+		mTransformMatrix = rotationMat;
 		mTranformationMatrix *= rotationMat;
 	}
 
@@ -243,14 +243,14 @@ namespace Library
 	void RenderableOBB::TransformOBB(const GameTime& gameTime)
 	{
 		if (mVertices.size() != 8 ) return;
-		XMStoreFloat3(&mVertices.at(0), XMVector3Transform(XMLoadFloat3(&mCornersAABB.at(0)), mRotationMatrix));
-		XMStoreFloat3(&mVertices.at(1), XMVector3Transform(XMLoadFloat3(&mCornersAABB.at(1)), mRotationMatrix));
-		XMStoreFloat3(&mVertices.at(2), XMVector3Transform(XMLoadFloat3(&mCornersAABB.at(2)), mRotationMatrix));
-		XMStoreFloat3(&mVertices.at(3), XMVector3Transform(XMLoadFloat3(&mCornersAABB.at(3)), mRotationMatrix));
-		XMStoreFloat3(&mVertices.at(4), XMVector3Transform(XMLoadFloat3(&mCornersAABB.at(4)), mRotationMatrix));
-		XMStoreFloat3(&mVertices.at(5), XMVector3Transform(XMLoadFloat3(&mCornersAABB.at(5)), mRotationMatrix));
-		XMStoreFloat3(&mVertices.at(6), XMVector3Transform(XMLoadFloat3(&mCornersAABB.at(6)), mRotationMatrix));
-		XMStoreFloat3(&mVertices.at(7), XMVector3Transform(XMLoadFloat3(&mCornersAABB.at(7)), mRotationMatrix));
+		XMStoreFloat3(&mVertices.at(0), XMVector3Transform(XMLoadFloat3(&mCornersAABB.at(0)), mTransformMatrix));
+		XMStoreFloat3(&mVertices.at(1), XMVector3Transform(XMLoadFloat3(&mCornersAABB.at(1)), mTransformMatrix));
+		XMStoreFloat3(&mVertices.at(2), XMVector3Transform(XMLoadFloat3(&mCornersAABB.at(2)), mTransformMatrix));
+		XMStoreFloat3(&mVertices.at(3), XMVector3Transform(XMLoadFloat3(&mCornersAABB.at(3)), mTransformMatrix));
+		XMStoreFloat3(&mVertices.at(4), XMVector3Transform(XMLoadFloat3(&mCornersAABB.at(4)), mTransformMatrix));
+		XMStoreFloat3(&mVertices.at(5), XMVector3Transform(XMLoadFloat3(&mCornersAABB.at(5)), mTransformMatrix));
+		XMStoreFloat3(&mVertices.at(6), XMVector3Transform(XMLoadFloat3(&mCornersAABB.at(6)), mTransformMatrix));
+		XMStoreFloat3(&mVertices.at(7), XMVector3Transform(XMLoadFloat3(&mCornersAABB.at(7)), mTransformMatrix));
 	}
 
 

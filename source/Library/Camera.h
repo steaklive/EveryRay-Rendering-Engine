@@ -45,7 +45,8 @@ namespace Library
 		XMMATRIX RotationTransformMatrix() const;
 
 		void Cull(const std::map<std::string, Rendering::RenderingObject*> objects);
-	
+		float GetCameraCascadeDistance(int index);
+
 		XMMATRIX rotationMatrix;
 
 		virtual void SetPosition(FLOAT x, FLOAT y, FLOAT z);
@@ -55,6 +56,7 @@ namespace Library
 		virtual void SetFOV(float fov);
 		virtual void SetNearPlaneDistance(float value);
 		virtual void SetFarPlaneDistance(float value);
+		virtual XMMATRIX GetCustomViewProjectionMatrixForCascade(int cascadeIndex);
 
 
 		virtual void Reset();
