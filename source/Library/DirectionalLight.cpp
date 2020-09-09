@@ -31,6 +31,9 @@ namespace Library
 	DirectionalLight::~DirectionalLight()
 	{
 		DeleteObject(mProxyModel);
+
+		RotationUpdateEvent->RemoverAllListeners();
+		DeleteObject(RotationUpdateEvent);
 	}
 
 	const XMFLOAT3& DirectionalLight::Direction() const
@@ -65,6 +68,8 @@ namespace Library
 
 	void DirectionalLight::ApplyRotation(CXMMATRIX transform)
 	{
+		mTransformMatrix = transform;
+
 		XMVECTOR direction = XMLoadFloat3(&mDirection);
 		XMVECTOR up = XMLoadFloat3(&mUp);
 
@@ -114,8 +119,13 @@ namespace Library
 		XMStoreFloat3(&mUp, up);
 		XMStoreFloat3(&mRight, right);
 
+		mTransformMatrix = transformMatrix;
+
 		if (mProxyModel)
 			mProxyModel->ApplyTransform(transformMatrix);
+
+		for (auto listener : RotationUpdateEvent->GetListeners())
+			listener();
 	}
 
 	void DirectionalLight::DrawProxyModel(const GameTime & time)

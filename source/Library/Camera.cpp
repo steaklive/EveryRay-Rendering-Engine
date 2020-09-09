@@ -8,6 +8,8 @@
 #include "RenderingObject.h"
 #include "Utility.h"
 
+#define MAX_NUM_CASCADES 3
+
 namespace Library
 {
 	RTTI_DEFINITIONS(Camera)
@@ -15,6 +17,8 @@ namespace Library
 	const float Camera::DefaultFieldOfView = XM_PIDIV2;
 	const float Camera::DefaultNearPlaneDistance = 0.01f;
 	const float Camera::DefaultFarPlaneDistance = 600;
+
+	const float cascadeDistances[MAX_NUM_CASCADES] = { 100.0f, 500.0f, 1200.0f };
 
 	Camera::Camera(Game& game)
 		: GameComponent(game),
@@ -152,6 +156,34 @@ namespace Library
 		mFarPlaneDistance = value;
 		UpdateProjectionMatrix();
 	}
+
+	XMMATRIX Camera::GetCustomViewProjectionMatrixForCascade(int cascadeIndex)
+	{
+		XMMATRIX projectionMatrix;
+		float delta = 5.0f;
+
+		switch (cascadeIndex)
+		{
+		case 0:
+			projectionMatrix = XMMatrixPerspectiveFovRH(mFieldOfView, mAspectRatio, mNearPlaneDistance, cascadeDistances[0]);
+			break;
+		case 1:
+			projectionMatrix = XMMatrixPerspectiveFovRH(mFieldOfView, mAspectRatio, cascadeDistances[0], cascadeDistances[1]);
+			break;
+		case 2:
+			projectionMatrix = XMMatrixPerspectiveFovRH(mFieldOfView, mAspectRatio, cascadeDistances[1], cascadeDistances[2]);
+			break;
+
+
+		default:
+			projectionMatrix = XMMatrixPerspectiveFovRH(mFieldOfView, mAspectRatio, mNearPlaneDistance, cascadeDistances[2]);
+		}
+
+		XMMATRIX viewMatrix = XMLoadFloat4x4(&mViewMatrix);
+
+		return XMMatrixMultiply(viewMatrix, projectionMatrix);
+	}
+
 	void Camera::SetNearPlaneDistance(float value)
 	{
 		mNearPlaneDistance = value;
@@ -317,4 +349,11 @@ namespace Library
 		}
 
 	}
+
+	float Camera::GetCameraCascadeDistance(int index)
+	{
+		assert(index < (sizeof(cascadeDistances) / sizeof(cascadeDistances[0])));
+		return cascadeDistances[index];
+	}
+
 }

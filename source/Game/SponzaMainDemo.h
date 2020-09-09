@@ -23,6 +23,7 @@ namespace Library
 	class FullScreenRenderTarget;
 	class FullScreenQuad;
 	class GBuffer;
+	class ShadowMapper;
 }
 
 namespace DirectX
@@ -58,36 +59,21 @@ namespace Rendering
 		SponzaMainDemo& operator=(const SponzaMainDemo& rhs);
 
 		void UpdateStandardLightingPBRMaterialVariables(const std::string& objectName, int meshIndex);
-		void UpdateDepthMaterialVariables(const std::string& objectName, int meshIndex);
 		void UpdateDeferredPrepassMaterialVariables(const std::string& objectName, int meshIndex);
 		void UpdateSSRMaterialVariables(const std::string & objectName, int meshIndex);
-		void UpdateDirectionalLightAndProjector(const GameTime & gameTime);
 		void UpdateImGui();
-		XMMATRIX GetProjectionMatrixFromFrustum(Frustum & cameraFrustum, DirectionalLight& light);
-		XMFLOAT4X4 GetProjectionShadowMatrix();
 
 		//void CheckMouseIntersections();
-
-		static const float AmbientModulationRate;
-		static const XMFLOAT2 LightRotationRate;
 
 		Keyboard* mKeyboard;
 		XMFLOAT4X4 mWorldMatrix;
 
 		std::map<std::string, RenderingObject*> mRenderingObjects;
 
-		Projector* mShadowProjector;
-		DepthMap* mShadowMap;
-
 		FullScreenQuad* mSSRQuad;
 
-		ProxyModel* mProxyModel;
 		DirectionalLight* mDirectionalLight;
-		Frustum mLightFrustum;
-		XMFLOAT3 mLightFrustumCenter;
-
-		ID3D11RasterizerState* mShadowRasterizerState;
-		RenderStateHelper* mRenderStateHelper;
+		ShadowMapper* mShadowMapper;
 
 		Skybox* mSkybox;
 		Grid* mGrid;
@@ -100,9 +86,6 @@ namespace Rendering
 		GBuffer* mGBuffer;
 
 		PostProcessingStack* mPostProcessingStack;
-
-		float mSunColor[3] = { 1.0f, 0.95f, 0.863f };
-		float mAmbientColor[3] = { 0.08f, 0.08f, 0.08f };
-
+		RenderStateHelper* mRenderStateHelper;
 	};
 }

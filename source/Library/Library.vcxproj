@@ -245,6 +245,7 @@
     <ClInclude Include="ScreenSpaceReflectionsMaterial.h" />
     <ClInclude Include="ServiceContainer.h" />
     <ClInclude Include="ShaderCompiler.h" />
+    <ClInclude Include="ShadowMapper.h" />
     <ClInclude Include="ShadowMappingDirectionalMaterial.h" />
     <ClInclude Include="ShadowMappingMaterial.h" />
     <ClInclude Include="SkinShadingColorMaterial.h" />
@@ -335,6 +336,7 @@
     <ClCompile Include="SamplerStates.cpp" />
     <ClCompile Include="ScreenSpaceReflectionsMaterial.cpp" />
     <ClCompile Include="ServiceContainer.cpp" />
+    <ClCompile Include="ShadowMapper.cpp" />
     <ClCompile Include="ShadowMappingDirectionalMaterial.cpp" />
     <ClCompile Include="ShadowMappingMaterial.cpp" />
     <ClCompile Include="SkinShadingColorMaterial.cpp" />

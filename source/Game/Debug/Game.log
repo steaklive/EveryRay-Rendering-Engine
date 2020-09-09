@@ -1,10 +1,41 @@
-﻿  CollisionTestDemo.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\octreestructure.h(24): warning C4244: 'return': conversion from '_Rep' to 'float', possible loss of data
+﻿  stdafx.cpp
+  imgui.cpp
+  ImGuizmo.cpp
+  imgui_demo.cpp
+  imgui_draw.cpp
+  imgui_impl_dx11.cpp
+  imgui_impl_win32.cpp
+  SponzaMainDemo.cpp
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(98): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(18): note: see declaration of 'Rendering::VignetteMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(99): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(121): warning C4150: deletion of pointer to incomplete type 'Rendering::FXAAMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(21): note: see declaration of 'Rendering::FXAAMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(122): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(142): warning C4150: deletion of pointer to incomplete type 'Rendering::ColorGradingMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(19): note: see declaration of 'Rendering::ColorGradingMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(143): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(173): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(197): warning C4150: deletion of pointer to incomplete type 'Rendering::MotionBlurMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(20): note: see declaration of 'Rendering::MotionBlurMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(198): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\sponzamaindemo.cpp(158): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\sponzamaindemo.cpp(174): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\sponzamaindemo.cpp(199): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\sponzamaindemo.cpp(236): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\sponzamaindemo.cpp(251): warning C4244: '=': conversion from 'float' to 'INT', possible loss of data
+  CollisionTestDemo.cpp
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\octreestructure.h(20): warning C4244: 'return': conversion from '_Rep' to 'float', possible loss of data
           with
           [
               _Rep=double
           ]
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\octreestructure.h(25): warning C4244: 'return': conversion from '_Rep' to 'float', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\octreestructure.h(21): warning C4244: 'return': conversion from '_Rep' to 'float', possible loss of data
           with
           [
               _Rep=double
@@ -14,6 +45,7 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\g
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(124): warning C4018: '<': signed/unsigned mismatch
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(154): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(157): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(195): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(205): warning C4316: 'Library::RenderableAABB': object allocated on the heap may not be aligned 16
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(429): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(572): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
@@ -24,32 +56,33 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\g
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(866): warning C4018: '<': signed/unsigned mismatch
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(893): warning C4018: '<': signed/unsigned mismatch
   FrustumCullingDemo.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.h(150): warning C4150: deletion of pointer to incomplete type 'Library::RenderableAABB'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.h(28): note: see declaration of 'Library::RenderableAABB'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(224): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(225): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(233): warning C4316: 'Library::RenderableAABB': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(395): warning C4305: 'argument': truncation from 'double' to 'float'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(409): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.h(152): warning C4150: deletion of pointer to incomplete type 'Library::RenderableAABB'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.h(30): note: see declaration of 'Library::RenderableAABB'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(202): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(235): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(236): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(244): warning C4316: 'Library::RenderableAABB': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(406): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(420): warning C4018: '<': signed/unsigned mismatch
   InstancingDemo.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\instancingdemo.h(32): warning C4305: 'initializing': truncation from 'double' to 'float'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\instancingdemo.cpp(104): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\instancingdemo.h(34): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\instancingdemo.cpp(114): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
   PhysicallyBasedRenderingDemo.cpp
   Program.cpp
   RenderingGame.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(96): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(98): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(18): note: see declaration of 'Rendering::VignetteMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(119): warning C4150: deletion of pointer to incomplete type 'Rendering::FXAAMaterial'; no destructor called
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(121): warning C4150: deletion of pointer to incomplete type 'Rendering::FXAAMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(21): note: see declaration of 'Rendering::FXAAMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(140): warning C4150: deletion of pointer to incomplete type 'Rendering::ColorGradingMaterial'; no destructor called
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(142): warning C4150: deletion of pointer to incomplete type 'Rendering::ColorGradingMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(19): note: see declaration of 'Rendering::ColorGradingMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(171): warning C4150: deletion of pointer to incomplete type 'Rendering::MotionBlurMaterial'; no destructor called
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(172): warning C4150: deletion of pointer to incomplete type 'Rendering::ScreenSpaceReflectionsMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(22): note: see declaration of 'Rendering::ScreenSpaceReflectionsMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(197): warning C4150: deletion of pointer to incomplete type 'Rendering::MotionBlurMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(20): note: see declaration of 'Rendering::MotionBlurMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\instancingdemo.h(32): warning C4305: 'initializing': truncation from 'double' to 'float'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.h(150): warning C4150: deletion of pointer to incomplete type 'Library::RenderableAABB'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.h(28): note: see declaration of 'Library::RenderableAABB'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\subsurfacescatteringdemo.h(60): warning C4150: deletion of pointer to incomplete type 'Library::ProxyModel'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\subsurfacescatteringdemo.h(24): note: see declaration of 'Library::ProxyModel'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\instancingdemo.h(34): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.h(152): warning C4150: deletion of pointer to incomplete type 'Library::RenderableAABB'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.h(30): note: see declaration of 'Library::RenderableAABB'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(176): warning C4150: deletion of pointer to incomplete type 'Rendering::NormalMappingMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(154): note: see declaration of 'Rendering::NormalMappingMaterial'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(177): warning C4150: deletion of pointer to incomplete type 'Library::DepthMapMaterial'; no destructor called
@@ -59,35 +92,40 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\g
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(217): warning C4150: deletion of pointer to incomplete type 'Library::DepthMapMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(39): note: see declaration of 'Library::DepthMapMaterial'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(362): warning C4305: 'initializing': truncation from 'double' to 'float'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\renderinggame.cpp(127): warning C4316: 'Library::FirstPersonCamera': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\renderinggame.cpp(191): warning C4316: 'Rendering::VolumetricLightingDemo': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\renderinggame.cpp(200): warning C4316: 'Rendering::WaterSimulationDemo': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\renderinggame.cpp(128): warning C4316: 'Library::FirstPersonCamera': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\renderinggame.cpp(186): warning C4316: 'Rendering::VolumetricLightingDemo': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\renderinggame.cpp(195): warning C4316: 'Rendering::WaterSimulationDemo': object allocated on the heap may not be aligned 16
   ShadowMappingDemo.cpp
-  SponzaMainDemo.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(96): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(18): note: see declaration of 'Rendering::VignetteMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(97): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(119): warning C4150: deletion of pointer to incomplete type 'Rendering::FXAAMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(21): note: see declaration of 'Rendering::FXAAMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(120): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(140): warning C4150: deletion of pointer to incomplete type 'Rendering::ColorGradingMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(19): note: see declaration of 'Rendering::ColorGradingMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(141): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(171): warning C4150: deletion of pointer to incomplete type 'Rendering::MotionBlurMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(20): note: see declaration of 'Rendering::MotionBlurMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(172): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\sponzamaindemo.cpp(159): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\sponzamaindemo.cpp(175): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\sponzamaindemo.cpp(199): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\sponzamaindemo.cpp(247): warning C4244: '=': conversion from 'float' to 'INT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\shadowmappingdemo.cpp(229): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
   SubsurfaceScatteringDemo.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\subsurfacescatteringdemo.h(60): warning C4150: deletion of pointer to incomplete type 'Library::ProxyModel'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\subsurfacescatteringdemo.h(24): note: see declaration of 'Library::ProxyModel'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\subsurfacescatteringdemo.cpp(198): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\subsurfacescatteringdemo.cpp(205): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\subsurfacescatteringdemo.cpp(219): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\subsurfacescatteringdemo.cpp(232): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\subsurfacescatteringdemo.cpp(420): warning C4305: 'argument': truncation from 'double' to 'float'
+  TestSceneDemo.cpp
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(98): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(18): note: see declaration of 'Rendering::VignetteMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(99): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(121): warning C4150: deletion of pointer to incomplete type 'Rendering::FXAAMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(21): note: see declaration of 'Rendering::FXAAMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(122): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(142): warning C4150: deletion of pointer to incomplete type 'Rendering::ColorGradingMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(19): note: see declaration of 'Rendering::ColorGradingMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(143): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(173): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(197): warning C4150: deletion of pointer to incomplete type 'Rendering::MotionBlurMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(20): note: see declaration of 'Rendering::MotionBlurMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(198): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(146): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(164): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(194): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(228): warning C4316: 'Library::ShadowMapper': object allocated on the heap may not be aligned 16
   VolumetricLightingDemo.cpp
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(176): warning C4150: deletion of pointer to incomplete type 'Rendering::NormalMappingMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(154): note: see declaration of 'Rendering::NormalMappingMaterial'
@@ -98,22 +136,27 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\g
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(217): warning C4150: deletion of pointer to incomplete type 'Library::DepthMapMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(39): note: see declaration of 'Library::DepthMapMaterial'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(362): warning C4305: 'initializing': truncation from 'double' to 'float'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(96): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(98): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(18): note: see declaration of 'Rendering::VignetteMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(97): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(99): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(119): warning C4150: deletion of pointer to incomplete type 'Rendering::FXAAMaterial'; no destructor called
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(121): warning C4150: deletion of pointer to incomplete type 'Rendering::FXAAMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(21): note: see declaration of 'Rendering::FXAAMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(120): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(122): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(140): warning C4150: deletion of pointer to incomplete type 'Rendering::ColorGradingMaterial'; no destructor called
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(142): warning C4150: deletion of pointer to incomplete type 'Rendering::ColorGradingMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(19): note: see declaration of 'Rendering::ColorGradingMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(141): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(143): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(171): warning C4150: deletion of pointer to incomplete type 'Rendering::MotionBlurMaterial'; no destructor called
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(172): warning C4150: deletion of pointer to incomplete type 'Rendering::ScreenSpaceReflectionsMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(22): note: see declaration of 'Rendering::ScreenSpaceReflectionsMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(173): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(197): warning C4150: deletion of pointer to incomplete type 'Rendering::MotionBlurMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(20): note: see declaration of 'Rendering::MotionBlurMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(172): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(198): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(283): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(1376): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(1378): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(1396): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
@@ -122,23 +165,28 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\g
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(1412): warning C4305: 'argument': truncation from 'double' to 'float'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(1665): warning C4305: '=': truncation from 'double' to 'float'
   WaterSimulationDemo.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(96): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(98): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(18): note: see declaration of 'Rendering::VignetteMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(97): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(99): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(119): warning C4150: deletion of pointer to incomplete type 'Rendering::FXAAMaterial'; no destructor called
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(121): warning C4150: deletion of pointer to incomplete type 'Rendering::FXAAMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(21): note: see declaration of 'Rendering::FXAAMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(120): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(122): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(140): warning C4150: deletion of pointer to incomplete type 'Rendering::ColorGradingMaterial'; no destructor called
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(142): warning C4150: deletion of pointer to incomplete type 'Rendering::ColorGradingMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(19): note: see declaration of 'Rendering::ColorGradingMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(141): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(143): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(171): warning C4150: deletion of pointer to incomplete type 'Rendering::MotionBlurMaterial'; no destructor called
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(172): warning C4150: deletion of pointer to incomplete type 'Rendering::ScreenSpaceReflectionsMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(22): note: see declaration of 'Rendering::ScreenSpaceReflectionsMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(173): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(197): warning C4150: deletion of pointer to incomplete type 'Rendering::MotionBlurMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(20): note: see declaration of 'Rendering::MotionBlurMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(172): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(198): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\watersimulationdemo.cpp(113): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\watersimulationdemo.cpp(150): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
   Generating Code...
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(428): warning C4700: uninitialized local variable 'empty' used
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(439): warning C4700: uninitialized local variable 'empty' used
   Game.vcxproj -> C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\\bin\Debug\EveryRay - Rendering Engine.exe

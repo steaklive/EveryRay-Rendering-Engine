@@ -12,18 +12,19 @@ namespace Rendering
 		: Material("standard_lighting_no_pbr"),
 		MATERIAL_VARIABLE_INITIALIZATION(ViewProjection),
 		MATERIAL_VARIABLE_INITIALIZATION(World),
-		MATERIAL_VARIABLE_INITIALIZATION(ShadowMatrix),
+		MATERIAL_VARIABLE_INITIALIZATION(ShadowMatrices),
 		MATERIAL_VARIABLE_INITIALIZATION(CameraPosition),
 		MATERIAL_VARIABLE_INITIALIZATION(SunDirection),
 		MATERIAL_VARIABLE_INITIALIZATION(SunColor),
 		MATERIAL_VARIABLE_INITIALIZATION(AmbientColor),
+		MATERIAL_VARIABLE_INITIALIZATION(ShadowCascadeDistances),
 		MATERIAL_VARIABLE_INITIALIZATION(ShadowTexelSize),
 		MATERIAL_VARIABLE_INITIALIZATION(AlbedoTexture),
 		MATERIAL_VARIABLE_INITIALIZATION(NormalTexture),
 		MATERIAL_VARIABLE_INITIALIZATION(SpecularTexture),
 		MATERIAL_VARIABLE_INITIALIZATION(MetallicTexture),
 		MATERIAL_VARIABLE_INITIALIZATION(RoughnessTexture),
-		MATERIAL_VARIABLE_INITIALIZATION(ShadowTexture),
+		MATERIAL_VARIABLE_INITIALIZATION(CascadedShadowTextures),
 		MATERIAL_VARIABLE_INITIALIZATION(IrradianceTexture),
 		MATERIAL_VARIABLE_INITIALIZATION(RadianceTexture),
 		MATERIAL_VARIABLE_INITIALIZATION(IntegrationTexture)
@@ -32,18 +33,19 @@ namespace Rendering
 
 	MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, ViewProjection)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, World)
-		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, ShadowMatrix)
+		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, ShadowMatrices)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, CameraPosition)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, SunDirection)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, SunColor)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, AmbientColor)
+		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, ShadowCascadeDistances)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, ShadowTexelSize)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, AlbedoTexture)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, NormalTexture)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, SpecularTexture)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, MetallicTexture)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, RoughnessTexture)
-		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, ShadowTexture)
+		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, CascadedShadowTextures)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, IrradianceTexture)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, RadianceTexture)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, IntegrationTexture)
@@ -55,18 +57,19 @@ namespace Rendering
 
 		MATERIAL_VARIABLE_RETRIEVE(ViewProjection)
 			MATERIAL_VARIABLE_RETRIEVE(World)
-			MATERIAL_VARIABLE_RETRIEVE(ShadowMatrix)
+			MATERIAL_VARIABLE_RETRIEVE(ShadowMatrices)
 			MATERIAL_VARIABLE_RETRIEVE(CameraPosition)
 			MATERIAL_VARIABLE_RETRIEVE(SunDirection)
 			MATERIAL_VARIABLE_RETRIEVE(SunColor)
 			MATERIAL_VARIABLE_RETRIEVE(AmbientColor)
+			MATERIAL_VARIABLE_RETRIEVE(ShadowCascadeDistances)
 			MATERIAL_VARIABLE_RETRIEVE(ShadowTexelSize)
 			MATERIAL_VARIABLE_RETRIEVE(AlbedoTexture)
 			MATERIAL_VARIABLE_RETRIEVE(NormalTexture)
 			MATERIAL_VARIABLE_RETRIEVE(SpecularTexture)
 			MATERIAL_VARIABLE_RETRIEVE(MetallicTexture)
 			MATERIAL_VARIABLE_RETRIEVE(RoughnessTexture)
-			MATERIAL_VARIABLE_RETRIEVE(ShadowTexture)
+			MATERIAL_VARIABLE_RETRIEVE(CascadedShadowTextures)
 			MATERIAL_VARIABLE_RETRIEVE(IrradianceTexture)
 			MATERIAL_VARIABLE_RETRIEVE(RadianceTexture)
 			MATERIAL_VARIABLE_RETRIEVE(IntegrationTexture)

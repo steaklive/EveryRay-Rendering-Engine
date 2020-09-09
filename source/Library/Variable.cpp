@@ -56,6 +56,27 @@ namespace Library
 
 		return *this;
 	}
+	void Variable::SetResourceArray(ID3D11ShaderResourceView** value, UINT offset, UINT size)
+	{
+		ID3DX11EffectShaderResourceVariable* variable = mVariable->AsShaderResource();
+		if (variable->IsValid() == false)
+		{
+			throw GameException("Invalid effect variable cast.");
+		}
+
+		variable->SetResourceArray(value, offset, size);
+	}
+
+	void Variable::SetMatrixArray(XMMATRIX* value, UINT offset, UINT size)
+	{
+		ID3DX11EffectMatrixVariable* variable = mVariable->AsMatrix();
+		if (variable->IsValid() == false)
+		{
+			throw GameException("Invalid effect variable cast.");
+		}
+
+		variable->SetMatrixArray(reinterpret_cast<const float*>(value), offset, size);
+	}
 
 	Variable& Variable::operator<<(ID3D11ShaderResourceView* value)
 	{
@@ -69,7 +90,6 @@ namespace Library
 
 		return *this;
 	}
-
 	Variable& Variable::operator<<(FXMVECTOR value)
 	{
 		ID3DX11EffectVectorVariable* variable = mVariable->AsVector();

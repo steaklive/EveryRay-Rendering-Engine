@@ -21,6 +21,7 @@ namespace Library
 	class FullScreenRenderTarget;
 	class FullScreenQuad;
 	class GBuffer;
+	class ShadowMapper;
 }
 
 namespace DirectX
@@ -56,7 +57,6 @@ namespace Rendering
 		TestSceneDemo& operator=(const TestSceneDemo& rhs);
 
 		void UpdateStandardLightingPBRMaterialVariables(const std::string& objectName, int meshIndex);
-		void UpdateDepthMaterialVariables(const std::string& objectName, int meshIndex);
 		void UpdateDeferredPrepassMaterialVariables(const std::string& objectName, int meshIndex);
 		void UpdateImGui();
 
@@ -67,11 +67,7 @@ namespace Rendering
 		RenderStateHelper* mRenderStateHelper;
 		Skybox* mSkybox;
 		Grid* mGrid;
-		
-		DepthMap* mShadowMap;
-		XMMATRIX mShadowMapViewMatrix;
-		XMMATRIX mShadowMapProjectionMatrix;
-		ID3D11RasterizerState* mShadowRasterizerState;
+		ShadowMapper* mShadowMapper;
 
 		FullScreenQuad* mSSRQuad;
 

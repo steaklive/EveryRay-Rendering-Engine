@@ -22,6 +22,8 @@ namespace Library
 		Variable& operator<<(FXMVECTOR value);
 		Variable& operator<<(float value);
 
+		void SetResourceArray(ID3D11ShaderResourceView** value, UINT offset, UINT size);
+		void SetMatrixArray(XMMATRIX* value, UINT offset, UINT size);
 	private:
 		Variable(const Variable& rhs);
 		Variable& operator=(const Variable& rhs);
@@ -33,4 +35,6 @@ namespace Library
 		D3DX11_EFFECT_TYPE_DESC mTypeDesc;
 		std::string mName;
 	};
+
+	
 }
