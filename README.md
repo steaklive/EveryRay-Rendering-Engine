@@ -1,10 +1,6 @@
 # EveryRay-Rendering-Engine
 Rendering engine/framework written in C++ with DirectX 11 support. 
 
-"EveryRay - Rendering Engine" is partially based on the small engine from the book "Real-Time 3D Rendering with DirectX and HLSL: A Practical Guide to Graphics Programming" by Paul Varcholik.
-
-I have been changing and extending it for educational purposes with all kinds of features (see the description below) for quite a while. Stay tuned for more updates :)
-
 ![picture](screenshots/EveryRayEditor.png)
 ![picture](screenshots/EveryRayPBR.png)
 ![picture](screenshots/EveryRayCSM.png)
@@ -51,6 +47,9 @@ Create a folder "external" in the root directory and place these built libraries
 - DirectXTK (https://github.com/Microsoft/DirectXTK)
 - ImGui (https://github.com/ocornut/imgui)
 - Assimp (https://github.com/assimp/assimp)
+
+# References
+"Real-Time 3D Rendering with DirectX and HLSL: A Practical Guide to Graphics Programming" by Paul Varcholik.
 
 # Requirements
 - Visual Studio 2017
