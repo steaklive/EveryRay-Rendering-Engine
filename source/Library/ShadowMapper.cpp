@@ -39,8 +39,8 @@ namespace Library
 
 			mLightProjectors.push_back(new Projector(mGame));
 			mLightProjectors[i]->Initialize();
-			mLightProjectors[i]->SetProjectionMatrix(GetLightProjectionMatrixInFrustum(i, mCameraCascadesFrustums[i], mDirectionalLight));
-			mLightProjectors[i]->ApplyRotation(mDirectionalLight.GetTransform());
+			mLightProjectors[i]->SetProjectionMatrix(GetProjectionBoundingSphere(i));
+			//mLightProjectors[i]->ApplyRotation(mDirectionalLight.GetTransform());
 
 		}
 
@@ -48,7 +48,7 @@ namespace Library
 		ZeroMemory(&rasterizerStateDesc, sizeof(rasterizerStateDesc));
 		rasterizerStateDesc.FillMode = D3D11_FILL_SOLID;
 		rasterizerStateDesc.CullMode = D3D11_CULL_BACK;
-		rasterizerStateDesc.DepthClipEnable = true;
+		rasterizerStateDesc.DepthClipEnable = false;
 		rasterizerStateDesc.DepthBias = 0.05f;
 		rasterizerStateDesc.SlopeScaledDepthBias = 3.0f;
 		rasterizerStateDesc.FrontCounterClockwise = false;
@@ -71,7 +71,8 @@ namespace Library
 			(mIsCascaded) ? mCameraCascadesFrustums[i].SetMatrix(mCamera.GetCustomViewProjectionMatrixForCascade(i)) : mCameraCascadesFrustums[i].SetMatrix(mCamera.ProjectionMatrix());
 
 			mLightProjectors[i]->SetPosition(mLightProjectorCenteredPositions[i].x, mLightProjectorCenteredPositions[i].y, mLightProjectorCenteredPositions[i].z);
-			mLightProjectors[i]->SetProjectionMatrix(GetLightProjectionMatrixInFrustum(i, mCameraCascadesFrustums[i], mDirectionalLight));
+			mLightProjectors[i]->SetProjectionMatrix(GetProjectionBoundingSphere(i));
+			mLightProjectors[i]->SetViewMatrix(mLightProjectorCenteredPositions[i], mDirectionalLight.Direction(), mDirectionalLight.Up());
 			mLightProjectors[i]->Update(gameTime);
 		}
 	}
@@ -125,7 +126,7 @@ namespace Library
 		assert(index < MAX_NUM_OF_CASCADES);
 
 		//create corners
-		XMFLOAT3 frustumCorners[9] = {};
+		XMFLOAT3 frustumCorners[8] = {};
 
 		frustumCorners[0] = (cameraFrustum.Corners()[0]);
 		frustumCorners[1] = (cameraFrustum.Corners()[1]);
@@ -135,7 +136,6 @@ namespace Library
 		frustumCorners[5] = (cameraFrustum.Corners()[5]);
 		frustumCorners[6] = (cameraFrustum.Corners()[6]);
 		frustumCorners[7] = (cameraFrustum.Corners()[7]);
-		frustumCorners[8] = (cameraFrustum.Corners()[8]);
 
 		XMFLOAT3 frustumCenter = { 0, 0, 0 };
 
@@ -147,11 +147,12 @@ namespace Library
 		}
 
 		//calculate frustum's center position
-		frustumCenter = XMFLOAT3(frustumCenter.x * (1.0f / 8.0f),
+		frustumCenter = XMFLOAT3(
+			frustumCenter.x * (1.0f / 8.0f),
 			frustumCenter.y * (1.0f / 8.0f),
 			frustumCenter.z * (1.0f / 8.0f));
 
-		mLightProjectorCenteredPositions[index] = frustumCenter;
+		//mLightProjectorCenteredPositions[index] = frustumCenter;
 
 		float minX = (std::numeric_limits<float>::max)();
 		float maxX = (std::numeric_limits<float>::min)();
@@ -176,10 +177,55 @@ namespace Library
 			maxZ = max(maxZ, frustumCorners[j].z);
 		}
 
+		mLightProjectorCenteredPositions[index] =
+			XMFLOAT3(
+				frustumCenter.x + light.Direction().x * -maxZ,
+				frustumCenter.y + light.Direction().y * -maxZ,
+				frustumCenter.z + light.Direction().z * -maxZ
+			);
+
 		//set orthographic proj with proper boundaries
-		float delta = 5.0f;
-		XMMATRIX projectionMatrix = XMMatrixOrthographicLH(maxX - minX + delta, maxY - minY + delta, maxZ, minZ);
+		float delta = 10.0f;
+		XMMATRIX projectionMatrix = XMMatrixOrthographicRH(maxX - minX, maxY - minY, -delta, maxZ - minZ);
 		return projectionMatrix;
 	}
+	XMMATRIX ShadowMapper::GetProjectionBoundingSphere(int index)
+	{
+		// Create a bounding sphere around the camera frustum for 360 rotation
+		float nearV = mCamera.GetCameraNearCascadeDistance(index);
+		float farV = mCamera.GetCameraFarCascadeDistance(index);
+		float endV = nearV + farV;
+		XMFLOAT3 sphereCenter = XMFLOAT3(
+			mCamera.Position().x + mCamera.Direction().x * (nearV + 0.5f * endV),
+			mCamera.Position().y + mCamera.Direction().y * (nearV + 0.5f * endV),
+			mCamera.Position().z + mCamera.Direction().z * (nearV + 0.5f * endV)
+		);
+		// Create a vector to the frustum far corner
+		float tanFovXhalf = mCamera.AspectRatio() * tanf(mCamera.FieldOfView()/2);
+		float sinFovX = sqrt(1 + tanFovXhalf * tanFovXhalf) / tanFovXhalf; // 2 * tanFovXhalf / (1 - tanFovXhalf * tanFovXhalf);
+		float tanFovY = tanf(mCamera.FieldOfView());
+		// !!!!! Tan values were causing issues in FOV !!!!!
+		XMFLOAT3 farCorner = XMFLOAT3(
+			mCamera.Direction().x + mCamera.Right().x * sinFovX + mCamera.Up().x * tanFovY,
+			mCamera.Direction().y + mCamera.Right().y * sinFovX + mCamera.Up().y * tanFovY,
+			mCamera.Direction().z + mCamera.Right().z * sinFovX + mCamera.Up().z * tanFovY);
+		// Compute the frustumBoundingSphere radius
+		XMFLOAT3 boundVec = XMFLOAT3(
+			mCamera.Position().x + farCorner.x  * farV - sphereCenter.x,
+			mCamera.Position().y + farCorner.y  * farV - sphereCenter.y,
+			mCamera.Position().z + farCorner.z  * farV - sphereCenter.z);
+		float sphereRadius = sqrt(boundVec.x * boundVec.x + boundVec.y * boundVec.y + boundVec.z * boundVec.z);
+
+		mLightProjectorCenteredPositions[index] =
+			XMFLOAT3(
+				mCamera.Position().x + mCamera.Direction().x * 0.5f * mCamera.GetCameraFarCascadeDistance(index),
+				mCamera.Position().y + mCamera.Direction().y * 0.5f * mCamera.GetCameraFarCascadeDistance(index),
+				mCamera.Position().z + mCamera.Direction().z * 0.5f * mCamera.GetCameraFarCascadeDistance(index)
+			);
+
+		XMMATRIX projectionMatrix = XMMatrixOrthographicRH(sphereRadius, sphereRadius, -sphereRadius, sphereRadius);
+		return projectionMatrix;
+	}
+
 
 }

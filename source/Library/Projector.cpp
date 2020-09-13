@@ -161,6 +161,20 @@ namespace Library
 		XMStoreFloat4x4(&mViewMatrix, viewMatrix);
 	}
 
+	void Projector::SetViewMatrix(XMFLOAT3 pos, XMFLOAT3 dir, XMFLOAT3 up)
+	{
+		mPosition = pos;
+		mDirection = dir;
+		mUp = up;
+
+		XMVECTOR eyePosition = XMLoadFloat3(&mPosition);
+		XMVECTOR direction = XMLoadFloat3(&mDirection);
+		XMVECTOR upDirection = XMLoadFloat3(&mUp);
+
+		XMMATRIX viewMatrix = XMMatrixLookToRH(eyePosition, direction, upDirection);
+		XMStoreFloat4x4(&mViewMatrix, viewMatrix);
+	}
+
 	void Projector::SetProjectionMatrix(CXMMATRIX projectionMatrix)
 	{
 		//orthographic

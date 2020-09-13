@@ -18,7 +18,8 @@ namespace Library
 	const float Camera::DefaultNearPlaneDistance = 0.01f;
 	const float Camera::DefaultFarPlaneDistance = 600;
 
-	const float cascadeDistances[MAX_NUM_CASCADES] = { 100.0f, 500.0f, 1200.0f };
+	const float cascadeDistances[MAX_NUM_CASCADES] = { 150.0f, 500.0f, 1200.0f };
+	//const float cascadeDistances[MAX_NUM_CASCADES] = { 75.0f, 150.0f, 600.0f };
 
 	Camera::Camera(Game& game)
 		: GameComponent(game),
@@ -350,10 +351,17 @@ namespace Library
 
 	}
 
-	float Camera::GetCameraCascadeDistance(int index)
+	float Camera::GetCameraFarCascadeDistance(int index)
 	{
 		assert(index < (sizeof(cascadeDistances) / sizeof(cascadeDistances[0])));
 		return cascadeDistances[index];
 	}
-
+	float Camera::GetCameraNearCascadeDistance(int index)
+	{
+		assert(index < (sizeof(cascadeDistances) / sizeof(cascadeDistances[0])));
+		if (index == 0)
+			return mNearPlaneDistance;
+		else
+			return cascadeDistances[index - 1];
+	}
 }
