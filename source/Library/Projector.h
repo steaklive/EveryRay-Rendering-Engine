@@ -42,6 +42,7 @@ namespace Library
 		virtual void Initialize() override;
 		virtual void Update(const GameTime& gameTime) override;
 		virtual void UpdateViewMatrix();
+		void SetViewMatrix(XMFLOAT3 pos, XMFLOAT3 dir, XMFLOAT3 up);
 		virtual void UpdateProjectionMatrix();
 		virtual void SetProjectionMatrix(CXMMATRIX matrix);
 		virtual void ApplyRotation(CXMMATRIX transform);

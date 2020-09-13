@@ -91,7 +91,9 @@ namespace Rendering
 		mCameraViewFrustums(NUM_FRUSTUMS, XMMatrixIdentity()), mCameraFrustumsDebug(NUM_FRUSTUMS, nullptr), mIsDrawFrustum(false),
 
 		mLightProjectors(NUM_FRUSTUMS, nullptr), mLightProjectorFrustums(NUM_FRUSTUMS, XMMatrixIdentity()),
-		mLightProjectorCenteredPositions(NUM_FRUSTUMS, XMFLOAT3{}), mLightProjectorFrustumsDebug(NUM_FRUSTUMS, nullptr),
+		mLightProjectorCenteredPositions(NUM_FRUSTUMS, XMFLOAT3{}),
+		mLightProjectorDebugCenteredPositions(NUM_FRUSTUMS, XMFLOAT3{}),
+		mLightProjectorFrustumsDebug(NUM_FRUSTUMS, nullptr),
 		mIsVisualizeCascades(false),
 		mActiveTechnique(ShadowMappingTechniqueSimplePCF),
 
@@ -254,10 +256,10 @@ namespace Rendering
 			//initialize projectors for depth map
 			mLightProjectors[i] = new Projector(*mGame);
 			mLightProjectors[i]->Initialize();
-			mLightProjectors[i]->SetProjectionMatrix(GetProjectionAABB(i, mCameraViewFrustums[i], *mDirectionalLight, *mProxyModel));
+			mLightProjectors[i]->SetProjectionMatrix(GetProjectionBoundingSphere(i));
 
 			//initialize projector frustums for depth map
-			mLightProjectorFrustums[i].SetMatrix(GetProjectionAABB(i, mCameraViewFrustums[i], *mDirectionalLight, *mProxyModel));
+			mLightProjectorFrustums[i].SetMatrix(GetProjectionBoundingSphere(i));
 
 			//initialize gizmo of projectors AABB for debug
 			mLightProjectorFrustumsDebug[i] = new RenderableFrustum(*mGame, *mCamera);
@@ -330,20 +332,23 @@ namespace Rendering
 
 	void ShadowMappingDemo::Update(const GameTime& gameTime)
 	{
+		mProxyModel->SetPosition(XMFLOAT3(mLightProjectorCenteredPositions[0].x, 25.0f, mLightProjectorCenteredPositions[0].z));
 		mProxyModel->Update(gameTime);
 
 		UpdateImGui();
 		UpdateDepthBias(gameTime);
-		UpdateDirectionalLightAndProjector(gameTime);
 		mSkybox->Update(gameTime);
 		
 		#pragma region UPDATE_FRUSTUMS_INFO
+
+		if (!mStopUpdatingGizmos) {
 
 		std::for_each(mCameraFrustumsDebug.begin(), mCameraFrustumsDebug.end(), [&](RenderableFrustum* a) {a->Update(gameTime); });
 		std::for_each(mLightProjectors.begin(), mLightProjectors.end(), [&](Projector* a) {a->Update(gameTime); });
 		std::for_each(mLightProjectorFrustumsDebug.begin(), mLightProjectorFrustumsDebug.end(), [&](RenderableFrustum* a) {a->Update(gameTime); });
 
-		for (size_t i = 0; i < NUM_FRUSTUMS; i++)
+		}
+		for (size_t i = 0; i < NUM_FRUSTUMS && !mStopUpdatingGizmos; i++)
 		{
 			//update matrices for camera frustums
 			mCameraViewFrustums[i].SetMatrix(SetMatrixForCustomFrustum(*mGame , *mCamera, i, mCamera->Position(), mCamera->DirectionVector()));
@@ -351,12 +356,14 @@ namespace Rendering
 			mCameraFrustumsDebug[i]->InitializeGeometry(mCameraViewFrustums[i]);
 
 			//update matrices for projectors, AABBs and etc.
-			mLightProjectors[i]->SetProjectionMatrix(GetProjectionAABB(i, mCameraViewFrustums[i], *mDirectionalLight, *mProxyModel));
-			mLightProjectorFrustums[i].SetMatrix(GetProjectionAABB(i, mCameraViewFrustums[i], *mDirectionalLight, *mProxyModel));
+			mLightProjectors[i]->SetProjectionMatrix(GetProjectionBoundingSphere(i));
+			mLightProjectorFrustums[i].SetMatrix(mLightProjectors[i]->ProjectionMatrix());
 			mLightProjectorFrustumsDebug[i]->InitializeGeometry(mLightProjectorFrustums[i]);
 
 		}
 
+		if (!mStopUpdatingGizmos )
+			UpdateDirectionalLightAndProjector(gameTime);
 #pragma endregion
 
 	}
@@ -612,6 +619,11 @@ namespace Rendering
 			modelColorVector = XMLoadColor(&XMCOLOR(modelColorFloat3[0], modelColorFloat3[1], modelColorFloat3[2], 1));
 		}
 
+		ImGui::Checkbox("Debug gizmos", &mIsDrawFrustum);
+		ImGui::Checkbox("Stop gizmos update", &mStopUpdatingGizmos);
+		ImGui::SliderFloat("Depth bias", &mDepthBias, 0.0f, 10.0f);
+		ImGui::SliderFloat("Slope Scaled Depth bias", &mSlopeScaledDepthBias, 0.0f, 10.0f);
+
 		ImGui::End();
 		#pragma endregion
 	}
@@ -668,13 +680,15 @@ namespace Rendering
 	{
 		float elapsedTime = (float)gameTime.ElapsedGameTime();
 
-		#pragma region UPDATE_POSITIONS
+		#pragma region UPDATE_LIGHT_PROJECTORS
 
 
 		for (size_t i = 0; i < NUM_FRUSTUMS; i++)
 		{
-			mLightProjectors[i]->SetPosition(XMVECTOR{ mLightProjectorCenteredPositions[i].x, mLightProjectorCenteredPositions[i].y , mLightProjectorCenteredPositions[i].z } /*+movement*/);
-			mLightProjectorFrustumsDebug[i]->SetPosition(XMVECTOR{ mLightProjectorCenteredPositions[i].x, mLightProjectorCenteredPositions[i].y , mLightProjectorCenteredPositions[i].z } /*+ movement*/);
+			//mLightProjectors[i]->SetPosition(XMVECTOR{ mLightProjectorCenteredPositions[i].x, mLightProjectorCenteredPositions[i].y , mLightProjectorCenteredPositions[i].z } /*+movement*/);
+			mLightProjectors[i]->SetViewMatrix(mLightProjectorCenteredPositions[i], mDirectionalLight->Direction(), mDirectionalLight->Up());
+			mLightProjectorFrustumsDebug[i]->SetPosition(XMVECTOR{ mLightProjectorDebugCenteredPositions[i].x, mLightProjectorDebugCenteredPositions[i].y , mLightProjectorDebugCenteredPositions[i].z } /*+ movement*/);
+		
 		}
 		#pragma endregion
 
@@ -725,15 +739,16 @@ namespace Rendering
 			}
 			if (rotationAmount.y != 0)
 			{
-				XMMATRIX projectorRotationAxisMatrix = XMMatrixRotationAxis(mLightProjectors[i]->RightVector(), rotationAmount.y);
+				XMMATRIX projectorRotationAxisMatrix = XMMatrixRotationAxis(/*mLightProjectors[i]-*/ mDirectionalLight->RightVector(), rotationAmount.y);
 				projectorRotationMatrix *= projectorRotationAxisMatrix;
 			}
 			if (rotationAmount.x != Vector2Helper::Zero.x || rotationAmount.y != Vector2Helper::Zero.y)
 			{
-
-				mLightProjectors[i]->ApplyRotation(projectorRotationMatrix);
-				mLightProjectorFrustumsDebug[i]->ApplyRotation(projectorRotationMatrix);
-
+		
+				//mLightProjectors[i]->ApplyRotation(projectorRotationMatrix);
+				//mLightProjectorFrustumsDebug[i]->ApplyRotation(projectorRotationMatrix);
+				//mLightProjectors[i]->
+		
 			}
 		}
 #pragma endregion
@@ -758,28 +773,66 @@ namespace Rendering
 		switch (number)
 		{
 			case 0:
-				projectionMatrix = XMMatrixPerspectiveFovRH(XM_PIDIV4, game.AspectRatio(), -25.0f, clippingPlanes[0]);
+				projectionMatrix = XMMatrixPerspectiveFovRH(mCamera->FieldOfView(), mCamera->AspectRatio(), mCamera->NearPlaneDistance(), clippingPlanes[0]);
 				break;
 			case 1:
-				projectionMatrix = XMMatrixPerspectiveFovRH(XM_PIDIV4, game.AspectRatio(), -25.0f, clippingPlanes[1]);
+				projectionMatrix = XMMatrixPerspectiveFovRH(mCamera->FieldOfView(), mCamera->AspectRatio(), clippingPlanes[0], clippingPlanes[1]);
 				break;																	   										   
 			case 2:																		   										   
-				projectionMatrix = XMMatrixPerspectiveFovRH(XM_PIDIV4, game.AspectRatio(), -25.0f, clippingPlanes[2]);
+				projectionMatrix = XMMatrixPerspectiveFovRH(mCamera->FieldOfView(), mCamera->AspectRatio(), clippingPlanes[1], clippingPlanes[2]);
 				break;																	   				    
 			default:																	   				    
-				projectionMatrix = XMMatrixPerspectiveFovRH(XM_PIDIV4, game.AspectRatio(), -25.0f, clippingPlanes[2]);
+				projectionMatrix = XMMatrixPerspectiveFovRH(mCamera->FieldOfView(), mCamera->AspectRatio(), mCamera->NearPlaneDistance(), clippingPlanes[2]);
 				break;
 
 
 		}
-		XMMATRIX viewMatrix = XMMatrixLookToRH(XMVECTOR{ pos.x, pos.y, pos.z }, dir, XMVECTOR{ 0, 1 ,0 });
+		XMMATRIX viewMatrix = mCamera->ViewMatrix();
 
 		return XMMatrixMultiply(viewMatrix, projectionMatrix);
 	}
+
+	XMMATRIX ShadowMappingDemo::GetProjectionBoundingSphere(int index)
+	{
+		// Create a bounding sphere around the camera frustum for 360 rotation
+		float nearV = mCamera->GetCameraNearCascadeDistance(index);
+		float farV = mCamera->GetCameraFarCascadeDistance(index);
+		float endV = nearV + farV;
+		XMFLOAT3 sphereCenter = XMFLOAT3(
+			mCamera->Position().x + mCamera->Direction().x * (nearV + 0.5f * endV),
+			mCamera->Position().y + mCamera->Direction().y * (nearV + 0.5f * endV),
+			mCamera->Position().z + mCamera->Direction().z * (nearV + 0.5f * endV)
+		);
+		// Create a vector to the frustum far corner
+		float tanFovXhalf = mCamera->AspectRatio() * tanf(mCamera->FieldOfView() / 2);
+		float sinFovX = sqrt(1 + tanFovXhalf * tanFovXhalf) / tanFovXhalf; // 2 * tanFovXhalf / (1 - tanFovXhalf * tanFovXhalf);
+		float tanFovY = tanf(mCamera->FieldOfView());
+		XMFLOAT3 farCorner = XMFLOAT3(
+			mCamera->Direction().x + mCamera->Right().x * sinFovX + mCamera->Up().x * tanFovY,
+			mCamera->Direction().y + mCamera->Right().y * sinFovX + mCamera->Up().y * tanFovY,
+			mCamera->Direction().z + mCamera->Right().z * sinFovX + mCamera->Up().z * tanFovY);
+		// Compute the frustumBoundingSphere radius
+		XMFLOAT3 boundVec = XMFLOAT3(
+			mCamera->Position().x + farCorner.x  * farV - sphereCenter.x,
+			mCamera->Position().y + farCorner.y  * farV - sphereCenter.y,
+			mCamera->Position().z + farCorner.z  * farV - sphereCenter.z);
+		float sphereRadius = sqrt(boundVec.x * boundVec.x + boundVec.y * boundVec.y + boundVec.z * boundVec.z);
+
+		mLightProjectorCenteredPositions[index] =
+			XMFLOAT3(
+				mCamera->Position().x + mCamera->Direction().x * 0.5f * mCamera->GetCameraFarCascadeDistance(index),
+				mCamera->Position().y + mCamera->Direction().y * 0.5f * mCamera->GetCameraFarCascadeDistance(index),
+				mCamera->Position().z + mCamera->Direction().z * 0.5f * mCamera->GetCameraFarCascadeDistance(index)
+			);
+
+		XMMATRIX projectionMatrix = XMMatrixOrthographicRH(sphereRadius, sphereRadius, -sphereRadius, sphereRadius);
+		return projectionMatrix;
+	}
+
 	XMMATRIX ShadowMappingDemo::GetProjectionAABB(int index, Frustum& cameraFrustum, DirectionalLight& light, ProxyModel& positionObject)
 	{
 		//create corners
-		XMFLOAT3 frustumCorners[9] = {};
+		XMFLOAT3 frustumCorners[8] = {};
 
 		frustumCorners[0] = (cameraFrustum.Corners()[0]);
 		frustumCorners[1] = (cameraFrustum.Corners()[1]);
@@ -789,23 +842,25 @@ namespace Rendering
 		frustumCorners[5] = (cameraFrustum.Corners()[5]);
 		frustumCorners[6] = (cameraFrustum.Corners()[6]);
 		frustumCorners[7] = (cameraFrustum.Corners()[7]);
-		frustumCorners[8] = (cameraFrustum.Corners()[8]);
+
 
 		XMFLOAT3 frustumCenter = { 0, 0, 0 };
+		float maxZDistance = (std::numeric_limits<float>::min)();
+		float minZDistance = (std::numeric_limits<float>::max)();
 
 		for (size_t i = 0; i < 8; i++)
 		{
 			frustumCenter = XMFLOAT3(frustumCenter.x + frustumCorners[i].x,
 									 frustumCenter.y + frustumCorners[i].y,
 								     frustumCenter.z + frustumCorners[i].z);
+			minZDistance = min(minZDistance, frustumCorners[i].z);
+			maxZDistance = max(maxZDistance, frustumCorners[i].z);
 		}
-
 		//calculate frustum's center position
-		frustumCenter = XMFLOAT3(frustumCenter.x * (1.0f / 8.0f), 
-								 frustumCenter.y * (1.0f / 8.0f), 
-								 frustumCenter.z * (1.0f / 8.0f) );
-
-		mLightProjectorCenteredPositions[index] = frustumCenter;
+		frustumCenter = XMFLOAT3(
+			frustumCenter.x * (1.0f / 8.0f),
+			frustumCenter.y * (1.0f / 8.0f),
+			frustumCenter.z * (1.0f / 8.0f));
 
 		float minX = (std::numeric_limits<float>::max)();
 		float maxX = (std::numeric_limits<float>::min)();
@@ -813,15 +868,16 @@ namespace Rendering
 		float maxY = (std::numeric_limits<float>::min)();
 		float minZ = (std::numeric_limits<float>::max)();
 		float maxZ = (std::numeric_limits<float>::min)();
-
+	
+		//XMMATRIX tempLightMat = XMMatrixLookToLH(XMVECTOR{ frustumCenter.x, frustumCenter.y, frustumCenter.z }, XMVECTOR{ 0.0f, -1.0f, 0.0f }, XMVECTOR{ 0.0f, 0.0f, 1.0f });
 		for (int j = 0; j < 8; j++) {
-
+		
 			// Transform the frustum coordinate from world to light space
 			XMVECTOR frustumCornerVector = XMLoadFloat3(&frustumCorners[j]);
 			frustumCornerVector = XMVector3Transform(frustumCornerVector, (light.LightMatrix(frustumCenter)));
-
+		
 			XMStoreFloat3(&frustumCorners[j], frustumCornerVector);
-
+		
 			minX = min(minX, frustumCorners[j].x);
 			maxX = max(maxX, frustumCorners[j].x);
 			minY = min(minY, frustumCorners[j].y);
@@ -829,9 +885,16 @@ namespace Rendering
 			minZ = min(minZ, frustumCorners[j].z);
 			maxZ = max(maxZ, frustumCorners[j].z);
 		}
+		
+		mLightProjectorCenteredPositions[index] =
+			XMFLOAT3(
+				frustumCenter.x + mDirectionalLight->Direction().x * -maxZ,
+				frustumCenter.y + mDirectionalLight->Direction().y * -maxZ,
+				frustumCenter.z + mDirectionalLight->Direction().z * -maxZ
+			);
 
 		//set orthographic proj with proper boundaries
-		XMMATRIX projectionMatrix = XMMatrixOrthographicLH(maxX - minX, maxY - minY,  maxZ , minZ );
+		XMMATRIX projectionMatrix = XMMatrixOrthographicRH(maxX - minX, maxY - minY, -10.0f, maxZ - minZ);
 		return projectionMatrix;
 	}
 }

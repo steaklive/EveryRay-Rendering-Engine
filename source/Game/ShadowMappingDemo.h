@@ -68,6 +68,7 @@ namespace Rendering
 		void UpdateDirectionalLightAndProjector(const GameTime& gameTime);
 		void InitializeProjectedTextureScalingMatrix();
 		XMMATRIX GetProjectionAABB(int index, Frustum& cameraFrustum, DirectionalLight& light, ProxyModel& positionObject);
+		XMMATRIX GetProjectionBoundingSphere(int index);
 		XMMATRIX SetMatrixForCustomFrustum(Game& game, Camera& camera, int number, XMFLOAT3 pos, XMVECTOR dir);
 
 		//statics
@@ -94,12 +95,14 @@ namespace Rendering
 		std::vector<Projector*> mLightProjectors;
 		std::vector<Frustum> mLightProjectorFrustums;
 		std::vector<XMFLOAT3> mLightProjectorCenteredPositions;
+		std::vector<XMFLOAT3> mLightProjectorDebugCenteredPositions;
 		std::vector<RenderableFrustum*> mLightProjectorFrustumsDebug;
 
 		std::vector<Frustum> mCameraViewFrustums;
 		std::vector<RenderableFrustum*> mCameraFrustumsDebug;
 		bool mIsDrawFrustum;
 		bool mIsVisualizeCascades;
+		bool mStopUpdatingGizmos = false;
 
 
 		//Effects and materials data
