@@ -58,6 +58,9 @@ namespace Rendering
 
 		void UpdateStandardLightingPBRMaterialVariables(const std::string& objectName, int meshIndex);
 		void UpdateDeferredPrepassMaterialVariables(const std::string& objectName, int meshIndex);
+		void UpdateShadow0MaterialVariables(const std::string & objectName, int meshIndex);
+		void UpdateShadow1MaterialVariables(const std::string & objectName, int meshIndex);
+		void UpdateShadow2MaterialVariables(const std::string & objectName, int meshIndex); 
 		void UpdateImGui();
 
 		std::map<std::string, RenderingObject*> mRenderingObjects;

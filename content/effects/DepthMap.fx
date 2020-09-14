@@ -7,18 +7,21 @@ cbuffer CBufferPerObject
 struct VS_INPUT
 {
     float4 ObjectPosition : POSITION;
+    float2 TextureCoordinate : TEXCOORD;
 };
     
 struct VS_INPUT_INSTANCING
 {
     float4 ObjectPosition : POSITION;
+    float2 TextureCoordinate : TEXCOORD;
     row_major float4x4 World : WORLD;
 };
 
 struct VS_OUTPUT
 {
     float4 Position : SV_Position;
-    float2 Depth : TEXCOORD;
+    float2 Depth : TexCoord0;
+	float2 TextureCoordinate : TexCoord1;	
 };
 
 DepthStencilState EnableDepthDisableStencil
@@ -28,6 +31,14 @@ DepthStencilState EnableDepthDisableStencil
     DepthFunc = LESS_EQUAL;
     StencilEnable = FALSE;
 };
+
+SamplerState Sampler
+{
+    Filter = MIN_MAG_MIP_LINEAR;
+    AddressU = WRAP;
+    AddressV = WRAP;
+};
+Texture2D AlbedoAlphaMap;
 
 float4 create_depthmap_vertex_shader(VS_INPUT IN) : SV_Position
 {
@@ -51,6 +62,7 @@ VS_OUTPUT create_depthmap_w_render_target_vertex_shader(VS_INPUT IN)
 
     OUT.Position = mul(IN.ObjectPosition, WorldLightViewProjection);
     OUT.Depth = OUT.Position.zw;
+    OUT.TextureCoordinate = IN.TextureCoordinate;
 
     return OUT;
 }
@@ -61,13 +73,19 @@ VS_OUTPUT create_depthmap_w_render_target_vertex_shader_instancing(VS_INPUT_INST
     float3 WorldPos = mul(IN.ObjectPosition, IN.World).xyz;
     OUT.Position = mul(float4(WorldPos, 1.0f), LightViewProjection);
     OUT.Depth = OUT.Position.zw;
-
+    OUT.TextureCoordinate = IN.TextureCoordinate;
+    
     return OUT;
 }
 
 float4 create_depthmap_w_render_target_pixel_shader(VS_OUTPUT IN) : SV_Target
 {
-    IN.Depth.x /= IN.Depth.y;
+    float alphaValue = AlbedoAlphaMap.Sample(Sampler, IN.TextureCoordinate).a;
+    
+    if (alphaValue > 0.1f)
+        IN.Depth.x /= IN.Depth.y;
+    else
+        discard;
 
     return float4(IN.Depth.x, 0, 0, 1);
 }
