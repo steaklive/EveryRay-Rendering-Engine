@@ -11,12 +11,14 @@ namespace Library
 	DepthMapMaterial::DepthMapMaterial()
 		: Material("create_depthmap_w_render_target"),
 		MATERIAL_VARIABLE_INITIALIZATION(WorldLightViewProjection),
-		MATERIAL_VARIABLE_INITIALIZATION(LightViewProjection)
+		MATERIAL_VARIABLE_INITIALIZATION(LightViewProjection),
+		MATERIAL_VARIABLE_INITIALIZATION(AlbedoAlphaMap)
 	{
 	}
 
 	MATERIAL_VARIABLE_DEFINITION(DepthMapMaterial, WorldLightViewProjection)
 	MATERIAL_VARIABLE_DEFINITION(DepthMapMaterial, LightViewProjection)
+	MATERIAL_VARIABLE_DEFINITION(DepthMapMaterial, AlbedoAlphaMap)
 
 	void DepthMapMaterial::Initialize(Effect* effect)
 	{
@@ -24,15 +26,18 @@ namespace Library
 
 		MATERIAL_VARIABLE_RETRIEVE(WorldLightViewProjection)
 		MATERIAL_VARIABLE_RETRIEVE(LightViewProjection)
+		MATERIAL_VARIABLE_RETRIEVE(AlbedoAlphaMap)
 
 		D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 		{
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 		};
 
 		D3D11_INPUT_ELEMENT_DESC inputElementDescriptionsInstanced[] =
 		{
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "WORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
 			{ "WORLD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
 			{ "WORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
@@ -51,19 +56,21 @@ namespace Library
 	void DepthMapMaterial::CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const
 	{
 		const std::vector<XMFLOAT3>& sourceVertices = mesh.Vertices();
-
-		std::vector<VertexPosition> vertices;
+		std::vector<XMFLOAT3>* textureCoordinates = mesh.TextureCoordinates().at(0);
+		assert(textureCoordinates->size() == sourceVertices.size());
+		std::vector<VertexPositionTexture> vertices;
 		vertices.reserve(sourceVertices.size());
 		for (UINT i = 0; i < sourceVertices.size(); i++)
 		{
 			XMFLOAT3 position = sourceVertices.at(i);
-			vertices.push_back(VertexPosition(XMFLOAT4(position.x, position.y, position.z, 1.0f)));
+			XMFLOAT3 uv = textureCoordinates->at(i);
+			vertices.push_back(VertexPositionTexture(XMFLOAT4(position.x, position.y, position.z, 1.0f), XMFLOAT2(uv.x, uv.y)));
 		}
 
 		CreateVertexBuffer(device, &vertices[0], vertices.size(), vertexBuffer);
 	}
 
-	void DepthMapMaterial::CreateVertexBuffer(ID3D11Device* device, VertexPosition* vertices, UINT vertexCount, ID3D11Buffer** vertexBuffer) const
+	void DepthMapMaterial::CreateVertexBuffer(ID3D11Device* device, VertexPositionTexture* vertices, UINT vertexCount, ID3D11Buffer** vertexBuffer) const
 	{
 		D3D11_BUFFER_DESC vertexBufferDesc;
 		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
@@ -82,6 +89,6 @@ namespace Library
 
 	UINT DepthMapMaterial::VertexSize() const
 	{
-		return sizeof(VertexPosition);
+		return sizeof(VertexPositionTexture);
 	}
 }

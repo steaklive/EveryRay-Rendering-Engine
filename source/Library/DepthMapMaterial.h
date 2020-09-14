@@ -12,13 +12,14 @@ namespace Library
 
 		MATERIAL_VARIABLE_DECLARATION(WorldLightViewProjection)
 		MATERIAL_VARIABLE_DECLARATION(LightViewProjection)
+		MATERIAL_VARIABLE_DECLARATION(AlbedoAlphaMap)
 
 	public:
 		DepthMapMaterial();
 
 		virtual void Initialize(Effect* effect) override;
 		virtual void CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const override;
-		void CreateVertexBuffer(ID3D11Device* device, VertexPosition* vertices, UINT vertexCount, ID3D11Buffer** vertexBuffer) const;
+		void CreateVertexBuffer(ID3D11Device* device, VertexPositionTexture* vertices, UINT vertexCount, ID3D11Buffer** vertexBuffer) const;
 		virtual UINT VertexSize() const override;
 	};
 }

@@ -61,6 +61,7 @@ namespace Rendering
 		void UpdateStandardLightingPBRMaterialVariables(const std::string& objectName, int meshIndex);
 		void UpdateDeferredPrepassMaterialVariables(const std::string& objectName, int meshIndex);
 		void UpdateSSRMaterialVariables(const std::string & objectName, int meshIndex);
+		void UpdateShadowMaterialVariables(const std::string & objectName, int meshIndex);
 		void UpdateImGui();
 
 		//void CheckMouseIntersections();

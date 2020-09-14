@@ -154,6 +154,7 @@ namespace Rendering
 		mRenderingObjects["Sponza"]->GetMaterials()[MaterialHelper::lightingMaterialName]->SetCurrentTechnique(mRenderingObjects["Sponza"]->GetMaterials()[MaterialHelper::lightingMaterialName]->GetEffect()->TechniquesByName().at("standard_lighting_pbr"));
 		mRenderingObjects["Sponza"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::lightingMaterialName,		[&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables("Sponza", meshIndex); });
 		mRenderingObjects["Sponza"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables("Sponza", meshIndex); });
+		mRenderingObjects["Sponza"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName, [&](int meshIndex) { UpdateShadowMaterialVariables("Sponza", meshIndex); });
 		mRenderingObjects["Sponza"]->SetMeshReflectionFactor(5, 1.0f);
 		
 		/**/
@@ -178,6 +179,7 @@ namespace Rendering
 		);
 		mRenderingObjects["PBR Sphere 1"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::lightingMaterialName,			[&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables("PBR Sphere 1", meshIndex); });
 		mRenderingObjects["PBR Sphere 1"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName,	[&](int meshIndex) { UpdateDeferredPrepassMaterialVariables("PBR Sphere 1", meshIndex); });
+		mRenderingObjects["PBR Sphere 1"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName,	[&](int meshIndex) { UpdateShadowMaterialVariables("PBR Sphere 1", meshIndex); });
 		mRenderingObjects["PBR Sphere 1"]->SetMeshReflectionFactor(0, 1.0f);
 
 		/**/
@@ -202,6 +204,7 @@ namespace Rendering
 		);
 		mRenderingObjects["PBR Dragon"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::lightingMaterialName,		[&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables("PBR Dragon", meshIndex); });
 		mRenderingObjects["PBR Dragon"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables("PBR Dragon", meshIndex); });
+		mRenderingObjects["PBR Dragon"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName, [&](int meshIndex) { UpdateShadowMaterialVariables("PBR Dragon", meshIndex); });
 		mRenderingObjects["PBR Dragon"]->SetTranslation(-35.0f, 0.0, -15.0);
 		mRenderingObjects["PBR Dragon"]->SetScale(0.6f,0.6f,0.6f);
 
@@ -274,6 +277,7 @@ namespace Rendering
 			object.second->Update(gameTime);
 	}
 
+
 	void SponzaMainDemo::UpdateImGui()
 	{
 
@@ -335,13 +339,16 @@ namespace Rendering
 		mShadowMapper->BeginRenderingToShadowMap();
 
 		XMMATRIX lvp = mShadowMapper->GetViewMatrix() * mShadowMapper->GetProjectionMatrix();
-		for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++)
+		int objectIndex = 0;
+		for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++, objectIndex++)
 		{
 			XMMATRIX worldMatrix = XMLoadFloat4x4(&(it->second->GetTransformationMatrix4X4()));
 			if (it->second->IsInstanced())
 				static_cast<DepthMapMaterial*>(it->second->GetMaterials()[MaterialHelper::shadowMapMaterialName])->LightViewProjection() << lvp;
 			else
 				static_cast<DepthMapMaterial*>(it->second->GetMaterials()[MaterialHelper::shadowMapMaterialName])->WorldLightViewProjection() << worldMatrix * lvp;
+			//static_cast<DepthMapMaterial*>(it->second->GetMaterials()[MaterialHelper::shadowMapMaterialName])->AlbedoAlphaMap() << it->second->GetTextureData(objectIndex).AlbedoMap;
+
 			it->second->Draw(MaterialHelper::shadowMapMaterialName, true);
 		}
 		
@@ -383,6 +390,10 @@ namespace Rendering
 		#pragma endregion
 	}
 
+	void SponzaMainDemo::UpdateShadowMaterialVariables(const std::string & objectName, int meshIndex)
+	{
+		static_cast<DepthMapMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::shadowMapMaterialName])->AlbedoAlphaMap() << mRenderingObjects[objectName]->GetTextureData(meshIndex).AlbedoMap;
+	}
 	void SponzaMainDemo::UpdateStandardLightingPBRMaterialVariables(const std::string& objectName, int meshIndex)
 	{
 		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mRenderingObjects[objectName]->GetTransformationMatrix4X4()));
