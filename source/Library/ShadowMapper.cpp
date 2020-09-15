@@ -201,14 +201,13 @@ namespace Library
 			mCamera.Position().z + mCamera.Direction().z * (nearV + 0.5f * endV)
 		);
 		// Create a vector to the frustum far corner
-		float tanFovXhalf = mCamera.AspectRatio() * tanf(mCamera.FieldOfView()/2);
-		float sinFovX = sqrt(1 + tanFovXhalf * tanFovXhalf) / tanFovXhalf; // 2 * tanFovXhalf / (1 - tanFovXhalf * tanFovXhalf);
 		float tanFovY = tanf(mCamera.FieldOfView());
-		// !!!!! Tan values were causing issues in FOV !!!!!
+		float tanFovX = mCamera.AspectRatio() * tanFovY;
+
 		XMFLOAT3 farCorner = XMFLOAT3(
-			mCamera.Direction().x + mCamera.Right().x * sinFovX + mCamera.Up().x * tanFovY,
-			mCamera.Direction().y + mCamera.Right().y * sinFovX + mCamera.Up().y * tanFovY,
-			mCamera.Direction().z + mCamera.Right().z * sinFovX + mCamera.Up().z * tanFovY);
+			mCamera.Direction().x + mCamera.Right().x * tanFovX + mCamera.Up().x * tanFovY,
+			mCamera.Direction().y + mCamera.Right().y * tanFovX + mCamera.Up().y * tanFovY,
+			mCamera.Direction().z + mCamera.Right().z * tanFovX + mCamera.Up().z * tanFovY);
 		// Compute the frustumBoundingSphere radius
 		XMFLOAT3 boundVec = XMFLOAT3(
 			mCamera.Position().x + farCorner.x  * farV - sphereCenter.x,
