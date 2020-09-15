@@ -1,5 +1,7 @@
-﻿  Generating code
-  1 of 5776 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+﻿  ShadowMappingDemo.cpp
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\shadowmappingdemo.cpp(231): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
+  Generating code
+  0 of 5776 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
