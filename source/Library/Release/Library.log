@@ -1,4 +1,8 @@
-﻿  Camera.cpp
+﻿  Terrain.cpp
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(111): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(113): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(287): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(289): warning C4018: '<': signed/unsigned mismatch
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Black" (?Black@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Yellow" (?Yellow@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Blue" (?Blue@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored

@@ -31,6 +31,7 @@
 #include "..\Library\GBuffer.h"
 #include "..\Library\FullScreenQuad.h"
 #include "..\Library\ShadowMapper.h"
+#include "..\Library\Terrain.h"
 
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
@@ -62,6 +63,7 @@ namespace Rendering
 		mGBuffer(nullptr),
 		mSSRQuad(nullptr),
 		mShadowMapper(nullptr)
+		//mTerrain(nullptr)
 	{
 	}
 
@@ -74,6 +76,7 @@ namespace Rendering
 		}
 		mRenderingObjects.clear();
 
+		//DeleteObject(mTerrain)
 		DeleteObject(mRenderStateHelper);
 		DeleteObject(mDirectionalLight);
 		DeleteObject(mSkybox);
@@ -138,6 +141,8 @@ namespace Rendering
 		//Effect* effectSSR = new Effect(*mGame);
 		//effectSSR->CompileFromFile(Utility::GetFilePath(L"content\\effects\\SSR.fx"));
 
+
+		//mTerrain = new Terrain(*mGame, *mCamera, 128, 1.0f, true);
 
 		/**/
 		////
@@ -333,14 +338,17 @@ namespace Rendering
 
 		mPostProcessingStack->Begin();
 
-#pragma region DRAW_SCENE
+#pragma region DRAW_LIGHTING
 
 		//skybox
 		mSkybox->Draw(gameTime);
 
+		//terrain
+		//mTerrain->Draw();
+
 		//grid
-		//if (Utility::IsEditorMode)
-		//	mGrid->Draw(gameTime);
+		if (Utility::IsEditorMode)
+			mGrid->Draw(gameTime);
 
 		//gizmo
 		if (Utility::IsEditorMode)
@@ -355,7 +363,6 @@ namespace Rendering
 		mPostProcessingStack->End(gameTime);
 		mPostProcessingStack->UpdateSSRMaterial(mGBuffer->GetNormals()->getSRV(), mGBuffer->GetDepth()->getSRV(), mGBuffer->GetExtraBuffer()->getSRV(), (float)gameTime.TotalGameTime());
 		mPostProcessingStack->DrawEffects(gameTime);
-
 
 		mRenderStateHelper->SaveAll();
 

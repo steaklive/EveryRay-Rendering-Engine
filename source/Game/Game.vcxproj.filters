@@ -90,6 +90,9 @@
     <ClInclude Include="TestSceneDemo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TerrainDemo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -147,6 +150,9 @@
       <Filter>Source Files\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="TestSceneDemo.cpp">
+      <Filter>Source Files\Demo Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainDemo.cpp">
       <Filter>Source Files\Demo Scenes</Filter>
     </ClCompile>
   </ItemGroup>
