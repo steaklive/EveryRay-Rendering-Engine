@@ -37,6 +37,7 @@
 #include "VolumetricLightingDemo.h"
 #include "CollisionTestDemo.h"
 #include "WaterSimulationDemo.h"
+#include "TerrainDemo.h"
 #include "TestSceneDemo.h"
 
 // include IMGUI
@@ -54,6 +55,7 @@ namespace Rendering
 	const char* displayedLevelNames[] =
 	{
 		"Sponza Demo Scene",
+		"Terrain Demo Scene",
 		"Physically Based Rendering",
 		"Separable Subsurface Scattering",
 		"Volumetric Lighting",
@@ -70,8 +72,6 @@ namespace Rendering
 	static float movementRate = 10.0f;
 	static float nearPlaneDist = 0.5f;
 	static float farPlaneDist = 600.0f;
-	
-
 	bool showWorldGrid = false;
 
 	RenderingGame::RenderingGame(HINSTANCE instance, const std::wstring& windowClass, const std::wstring& windowTitle, int showCommand)
@@ -93,6 +93,7 @@ namespace Rendering
 		mVolumetricLightingDemo(nullptr),
 		mCollisionTestDemo(nullptr),
 		mWaterSimulationDemo(nullptr),
+		mTerrainDemo(nullptr),
 		mRenderStateHelper(nullptr)
 
 	{
@@ -177,24 +178,27 @@ namespace Rendering
 				demoLevel = new SponzaMainDemo(*this, *mCamera);
 				break;
 			case 1:
-				demoLevel = new PhysicallyBasedRenderingDemo(*this, *mCamera);
+				demoLevel = new TerrainDemo(*this, *mCamera);
 				break;
 			case 2:
-				demoLevel = new SubsurfaceScatteringDemo(*this, *mCamera);
+				demoLevel = new PhysicallyBasedRenderingDemo(*this, *mCamera);
 				break;
 			case 3:
-				demoLevel = new VolumetricLightingDemo(*this, *mCamera);
+				demoLevel = new SubsurfaceScatteringDemo(*this, *mCamera);
 				break;
 			case 4:
-				demoLevel = new CollisionTestDemo(*this, *mCamera);
+				demoLevel = new VolumetricLightingDemo(*this, *mCamera);
 				break;
 			case 5:
-				demoLevel = new ShadowMappingDemo(*this, *mCamera);
+				demoLevel = new CollisionTestDemo(*this, *mCamera);
 				break;
 			case 6:
-				demoLevel = new WaterSimulationDemo(*this, *mCamera);
+				demoLevel = new ShadowMappingDemo(*this, *mCamera);
 				break;
 			case 7:
+				demoLevel = new WaterSimulationDemo(*this, *mCamera);
+				break;
+			case 8:
 				demoLevel = new TestSceneDemo(*this, *mCamera);
 				break;
 			}
@@ -315,6 +319,7 @@ namespace Rendering
 		DeleteObject(mVolumetricLightingDemo);
 		DeleteObject(mCollisionTestDemo);
 		DeleteObject(mWaterSimulationDemo);
+		DeleteObject(mTerrainDemo);
 		DeleteObject(mTestSceneDemo);
 
 		DeleteObject(mKeyboard);

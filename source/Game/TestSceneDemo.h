@@ -22,6 +22,7 @@ namespace Library
 	class FullScreenQuad;
 	class GBuffer;
 	class ShadowMapper;
+	class Terrain;
 }
 
 namespace DirectX
@@ -84,5 +85,7 @@ namespace Rendering
 		GBuffer* mGBuffer;
 
 		PostProcessingStack* mPostProcessingStack;
+
+		//Terrain* mTerrain;
 	};
 }

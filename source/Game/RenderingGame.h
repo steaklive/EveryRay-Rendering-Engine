@@ -27,6 +27,7 @@ namespace Rendering
 	class VolumetricLightingDemo;
 	class CollisionTestDemo;
 	class WaterSimulationDemo;
+	class TerrainDemo;
 
 	class RenderingGame : public Game
 	{
@@ -67,6 +68,7 @@ namespace Rendering
 		VolumetricLightingDemo* mVolumetricLightingDemo;
 		CollisionTestDemo* mCollisionTestDemo;
 		WaterSimulationDemo* mWaterSimulationDemo;
+		TerrainDemo* mTerrainDemo;
 		RenderStateHelper* mRenderStateHelper;
 
 		std::chrono::duration<double> mElapsedTimeUpdateCPU;
