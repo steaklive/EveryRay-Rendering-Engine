@@ -15,33 +15,53 @@
 namespace Library
 {
 
-	Terrain::Terrain(std::string path, Game& pGame, Camera& camera, float cellScale, bool isWireframe) :
+	Terrain::Terrain(std::string path, Game& pGame, Camera& camera, bool isWireframe) :
 		GameComponent(pGame),
 		mCamera(camera), 
-		/*mSize(size),*/
-		mCellScale(cellScale), 
-		mWorldMatrix(XMMatrixIdentity()),
-		mIsWireframe(isWireframe)
+		mIsWireframe(isWireframe),
+		mHeightMaps(0, nullptr)
 	{
+		if (!(mNumTiles && !(mNumTiles & (mNumTiles - 1))))
+			throw GameException("Number of tiles defined is not a power of 2!");
+
 		Effect* effect = new Effect(pGame);
 		effect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\BasicEffect.fx"));
 
 		mMaterial = new BasicMaterial();
 		mMaterial->Initialize(effect);
 
-		LoadTextures(path);
-		GenerateMesh();
+		int numTilesSqrt = sqrt(mNumTiles);
+		// Create the float array to hold the height map data.
+		for (int i = 0; i < numTilesSqrt; i++)
+		{
+			for (int j = 0; j < numTilesSqrt; j++)
+			{
+				mHeightMaps.push_back(new HeightMap(mWidth, mHeight));
+
+				int index = i * numTilesSqrt + j;
+				std::string filePath = path;
+				filePath += "_x" + std::to_string(i) + "_y" + std::to_string(j) + ".r16";
+				
+				LoadRawHeightmapTile(i, j, filePath);
+				GenerateTileMesh(index);
+			}
+		}
+
 	}
 
 	Terrain::~Terrain()
 	{
 		DeleteObject(mMaterial);
-		ReleaseObject(mVertexBuffer);
-		ReleaseObject(mIndexBuffer);
-		DeleteObjects(mHeightMap);
+		DeletePointerCollection(mHeightMaps);
 	}
 
 	void Terrain::Draw()
+	{
+		for (int i = 0 ; i < mHeightMaps.size(); i++)
+			Draw(i);
+	}
+
+	void Terrain::Draw(int tileIndex)
 	{
 		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
@@ -52,10 +72,10 @@ namespace Library
 
 		UINT stride = sizeof(VertexPositionColor);
 		UINT offset = 0;
-		context->IASetVertexBuffers(0, 1, &mVertexBuffer, &stride, &offset);
-		context->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		context->IASetVertexBuffers(0, 1, &(mHeightMaps[tileIndex]->mVertexBuffer), &stride, &offset);
+		context->IASetIndexBuffer(mHeightMaps[tileIndex]->mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
-		XMMATRIX wvp = mWorldMatrix * mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
+		XMMATRIX wvp = mHeightMaps[tileIndex]->mWorldMatrix * mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
 		mMaterial->WorldViewProjection() << wvp;
 
 		pass->Apply(0, context);
@@ -63,54 +83,36 @@ namespace Library
 		if (mIsWireframe)
 		{
 			context->RSSetState(RasterizerStates::Wireframe);
-			context->DrawIndexed(mIndexCount, 0, 0);
+			context->DrawIndexed(mHeightMaps[tileIndex]->mIndexCount, 0, 0);
 			context->RSSetState(nullptr);
 		}
 		else
-			context->DrawIndexed(mIndexCount, 0, 0);
+			context->DrawIndexed(mHeightMaps[tileIndex]->mIndexCount, 0, 0);
 	}
 
-	void Terrain::GenerateMesh()
+	void Terrain::GenerateTileMesh(int tileIndex)
 	{
-		InitializeGrid();
-	}
+		assert(tileIndex < mHeightMaps.size());
 
-	void Terrain::InitializeGrid()
-	{
 		ID3D11Device* device = GetGame()->Direct3DDevice();
 
-		mVertexCount = (mWidth - 1) * (mHeight - 1) * 12;
-		int size = sizeof(VertexPositionColor) * mVertexCount;
+		mHeightMaps[tileIndex]->mVertexCount = (mWidth - 1) * (mHeight - 1) * 12;
+		int size = sizeof(VertexPositionColor) * mHeightMaps[tileIndex]->mVertexCount;
 
-		VertexPositionColor* vertices = new VertexPositionColor[mVertexCount];
+		VertexPositionColor* vertices = new VertexPositionColor[mHeightMaps[tileIndex]->mVertexCount];
 
 		unsigned long* indices;
-		mIndexCount = mVertexCount;
-		indices = new unsigned long[mIndexCount];
+		mHeightMaps[tileIndex]->mIndexCount = mHeightMaps[tileIndex]->mVertexCount;
+		indices = new unsigned long[mHeightMaps[tileIndex]->mIndexCount];
 
 		XMFLOAT4 vertexColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-		//float adjustedScale = mCellScale;// *0.1f;
-		//float maxPosition = mSize * adjustedScale / 2;
-
-		//for (unsigned int i = 0, j = 0; i < mSize + 1; i++, j = 4 * i)
-		//{
-		//	float position = maxPosition - (i * adjustedScale);
-		//
-		//	// Vertical line
-		//	vertices[j] = VertexPositionColor(XMFLOAT4(position, 0.0f, maxPosition, 1.0f), vertexColor);
-		//	vertices[j + 1] = VertexPositionColor(XMFLOAT4(position, 0.0f, -maxPosition, 1.0f), vertexColor);
-		//
-		//	// Horizontal line
-		//	vertices[j + 2] = VertexPositionColor(XMFLOAT4(maxPosition, 0.0f, position, 1.0f), vertexColor);
-		//	vertices[j + 3] = VertexPositionColor(XMFLOAT4(-maxPosition, 0.0f, position, 1.0f), vertexColor);
-		//}
 
 		int index = 0;
 		int index1, index2, index3, index4;
 		// Load the vertex and index array with the terrain data.
-		for (int j = 0; j < (mHeight - 1); j++)
+		for (int j = 0; j < ((int)mHeight - 1); j++)
 		{
-			for (int i = 0; i < (mWidth - 1); i++)
+			for (int i = 0; i < ((int)mWidth - 1); i++)
 			{
 				index1 = (mHeight * j) + i;          // Bottom left.
 				index2 = (mHeight * j) + (i + 1);      // Bottom right.
@@ -118,73 +120,73 @@ namespace Library
 				index4 = (mHeight * (j + 1)) + (i + 1);  // Upper right.
 
 				// Upper left.
-				vertices[index].Position = XMFLOAT4(mHeightMap[index3].x, mHeightMap[index3].y, mHeightMap[index3].z, 1.0f);
+				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index3].x, mHeightMaps[tileIndex]->mData[index3].y, mHeightMaps[tileIndex]->mData[index3].z, 1.0f);
 				vertices[index].Color = vertexColor;
 				indices[index] = index;
 				index++;
 
 				// Upper right.
-				vertices[index].Position = XMFLOAT4(mHeightMap[index4].x, mHeightMap[index4].y, mHeightMap[index4].z, 1.0f);
+				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index4].x, mHeightMaps[tileIndex]->mData[index4].y, mHeightMaps[tileIndex]->mData[index4].z, 1.0f);
 				vertices[index].Color = vertexColor;
 				indices[index] = index;
 				index++;
 
 				// Upper right.
-				vertices[index].Position = XMFLOAT4(mHeightMap[index4].x, mHeightMap[index4].y, mHeightMap[index4].z, 1.0f);
+				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index4].x, mHeightMaps[tileIndex]->mData[index4].y, mHeightMaps[tileIndex]->mData[index4].z, 1.0f);
 				vertices[index].Color = vertexColor;
 				indices[index] = index;
 				index++;
 
 				// Bottom left.
-				vertices[index].Position = XMFLOAT4(mHeightMap[index1].x, mHeightMap[index1].y, mHeightMap[index1].z, 1.0f);
+				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index1].x, mHeightMaps[tileIndex]->mData[index1].y, mHeightMaps[tileIndex]->mData[index1].z, 1.0f);
 				vertices[index].Color = vertexColor;
 				indices[index] = index;
 				index++;
 
 				// Bottom left.
-				vertices[index].Position = XMFLOAT4(mHeightMap[index1].x, mHeightMap[index1].y, mHeightMap[index1].z, 1.0f);
+				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index1].x, mHeightMaps[tileIndex]->mData[index1].y, mHeightMaps[tileIndex]->mData[index1].z, 1.0f);
 				vertices[index].Color = vertexColor;
 				indices[index] = index;
 				index++;
 
 				// Upper left.
-				vertices[index].Position = XMFLOAT4(mHeightMap[index3].x, mHeightMap[index3].y, mHeightMap[index3].z, 1.0f);
+				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index3].x, mHeightMaps[tileIndex]->mData[index3].y, mHeightMaps[tileIndex]->mData[index3].z, 1.0f);
 				vertices[index].Color = vertexColor;
 				indices[index] = index;
 				index++;
 
 				// Bottom left.
-				vertices[index].Position = XMFLOAT4(mHeightMap[index1].x, mHeightMap[index1].y, mHeightMap[index1].z, 1.0f);
+				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index1].x, mHeightMaps[tileIndex]->mData[index1].y, mHeightMaps[tileIndex]->mData[index1].z, 1.0f);
 				vertices[index].Color = vertexColor;
 				indices[index] = index;
 				index++;
 
 				// Upper right.
-				vertices[index].Position = XMFLOAT4(mHeightMap[index4].x, mHeightMap[index4].y, mHeightMap[index4].z, 1.0f);
+				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index4].x, mHeightMaps[tileIndex]->mData[index4].y, mHeightMaps[tileIndex]->mData[index4].z, 1.0f);
 				vertices[index].Color = vertexColor;
 				indices[index] = index;
 				index++;
 
 				// Upper right.
-				vertices[index].Position = XMFLOAT4(mHeightMap[index4].x, mHeightMap[index4].y, mHeightMap[index4].z, 1.0f);
+				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index4].x, mHeightMaps[tileIndex]->mData[index4].y, mHeightMaps[tileIndex]->mData[index4].z, 1.0f);
 				vertices[index].Color = vertexColor;
 				indices[index] = index;
 				index++;
 
 				// Bottom right.
-				vertices[index].Position = XMFLOAT4(mHeightMap[index2].x, mHeightMap[index2].y, mHeightMap[index2].z, 1.0f);
+				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index2].x, mHeightMaps[tileIndex]->mData[index2].y, mHeightMaps[tileIndex]->mData[index2].z, 1.0f);
 				vertices[index].Color = vertexColor;
 				indices[index] = index;
 				index++;
 
 				// Bottom right.
-				vertices[index].Position = XMFLOAT4(mHeightMap[index2].x, mHeightMap[index2].y, mHeightMap[index2].z, 1.0f);
+				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index2].x, mHeightMaps[tileIndex]->mData[index2].y, mHeightMaps[tileIndex]->mData[index2].z, 1.0f);
 				vertices[index].Color = vertexColor;
 				indices[index] = index;
 				index++;
 
 				// Bottom left.
-				vertices[index].Position = XMFLOAT4(mHeightMap[index1].x, mHeightMap[index1].y, mHeightMap[index1].z, 1.0f);
+				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index1].x, mHeightMaps[tileIndex]->mData[index1].y, mHeightMaps[tileIndex]->mData[index1].z, 1.0f);
 				vertices[index].Color = vertexColor;
 				indices[index] = index;
 				index++;
@@ -202,7 +204,7 @@ namespace Library
 		vertexSubResourceData.pSysMem = vertices;
 
 		HRESULT hr;
-		if (FAILED(hr = device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, &mVertexBuffer)))
+		if (FAILED(hr = device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, &(mHeightMaps[tileIndex]->mVertexBuffer))))
 			throw GameException("ID3D11Device::CreateBuffer() failed while generating vertex buffer of terrain mesh");
 
 		delete[] vertices;
@@ -210,7 +212,7 @@ namespace Library
 
 		D3D11_BUFFER_DESC indexBufferDesc;
 		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		indexBufferDesc.ByteWidth = sizeof(unsigned long) * mIndexCount;
+		indexBufferDesc.ByteWidth = sizeof(unsigned long) * mHeightMaps[tileIndex]->mIndexCount;
 		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		indexBufferDesc.CPUAccessFlags = 0;
 		indexBufferDesc.MiscFlags = 0;
@@ -222,87 +224,73 @@ namespace Library
 		indexSubResourceData.pSysMem = indices;
 
 		HRESULT hr2;
-		if (FAILED(hr2 = device->CreateBuffer(&indexBufferDesc, &indexSubResourceData, &mIndexBuffer)))
+		if (FAILED(hr2 = device->CreateBuffer(&indexBufferDesc, &indexSubResourceData, &(mHeightMaps[tileIndex]->mIndexBuffer))))
 			throw GameException("ID3D11Device::CreateBuffer() failed while generating index buffer of terrain mesh");
 
 		delete[] indices;
 		indices = NULL;
 	}
 
-	void Terrain::LoadTextures(std::string path)
+	void Terrain::LoadRawHeightmapTile(int tileIndexX, int tileIndexY, std::string path)
 	{
-		FILE* filePtr;
-		int error;
-		unsigned int count;
-		BITMAPFILEHEADER bitmapFileHeader;
-		BITMAPINFOHEADER bitmapInfoHeader;
-		int imageSize, i, j, k, index;
-		unsigned char* bitmapImage;
-		unsigned char height;
+		assert(tileIndex < mHeightMaps.size());
 
-		// Open the height map file in binary.
+		int error, i, j, index;
+		FILE* filePtr;
+		unsigned long long imageSize, count;
+		unsigned short* rawImage;
+
+		// Open the 16 bit raw height map file for reading in binary.
 		error = fopen_s(&filePtr, path.c_str(), "rb");
 		if (error != 0)
-			throw GameException("Can not open the terrain's heightmap bmp!");
+			throw GameException("Can not open the terrain's heightmap RAW!");
 
-		// Read in the file header.
-		count = fread(&bitmapFileHeader, sizeof(BITMAPFILEHEADER), 1, filePtr);
-		if (count != 1)
-			throw GameException("Can not read the terrain's heightmap bmp header!");
+		// Calculate the size of the raw image data.
+		imageSize = mWidth * mHeight;
 
-		// Read in the bitmap info header.
-		count = fread(&bitmapInfoHeader, sizeof(BITMAPINFOHEADER), 1, filePtr);
-		if (count != 1)
-			throw GameException("Can not read the terrain's heightmap bmp info header!");
+		// Allocate memory for the raw image data.
+		rawImage = new unsigned short[imageSize];
 
-		// Save the dimensions of the terrain.
-		mWidth = bitmapInfoHeader.biWidth;
-		mHeight = bitmapInfoHeader.biHeight;
-
-		// Calculate the size of the bitmap image data.
-		imageSize = mWidth * mHeight * 3;
-
-		// Allocate memory for the bitmap image data.
-		bitmapImage = new unsigned char[imageSize];
-		if (!bitmapImage)
-			throw GameException("Can not allocate data for the terrain's heightmap bmp!");
-
-		// Move to the beginning of the bitmap data.
-		fseek(filePtr, bitmapFileHeader.bfOffBits, SEEK_SET);
-
-		// Read in the bitmap image data.
-		count = fread(bitmapImage, 1, imageSize, filePtr);
+		// Read in the raw image data.
+		count = fread(rawImage, sizeof(unsigned short), imageSize, filePtr);
 		if (count != imageSize)
-			throw GameException("Can not read the loaded data from the terrain's heightmap bmp!");
+			throw GameException("Can not read the terrain's heightmap RAW file!");
 
 		// Close the file.
 		error = fclose(filePtr);
 		if (error != 0)
-			throw GameException("Can not close the terrain's heightmap bmp!");
+			throw GameException("Can not close the terrain's heightmap RAW file!");
 
-		// Create the structure to hold the height map data.
-		mHeightMap = new HeightMap[mWidth * mHeight];
-
-		k = 0;
-		for (j = 0; j < mHeight; j++)
+		// Copy the image data into the height map array.
+		for (j = 0; j < (int)mHeight; j++)
 		{
-			for (i = 0; i < mWidth; i++)
+			for (i = 0; i < (int)mWidth; i++)
 			{
-				height = bitmapImage[k];
+				index = (mWidth * j) + i;
 
-				index = (mHeight * j) + i;
+				// Store the height at this point in the height map array.
+				mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index].x = (float)(i + (int)mWidth * (tileIndexX - 1));
+				mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index].y = (float)rawImage[index] / mHeightScale;
+				mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index].z = (float)(j - (int)mHeight * tileIndexY);
 
-				mHeightMap[index].x = (float)i;
-				mHeightMap[index].y = (float)height;
-				mHeightMap[index].z = (float)j;
-
-				k += 3;
 			}
 		}
 
-		// Release the bitmap image data.
-		delete[] bitmapImage;
-		bitmapImage = NULL;
+		// Release image data.
+		delete[] rawImage;
+		rawImage = 0;
+	}
+
+	HeightMap::HeightMap(int width, int height)
+	{
+		mData = new MapData[width * height];
+	}
+
+	HeightMap::~HeightMap()
+	{		
+		ReleaseObject(mVertexBuffer);
+		ReleaseObject(mIndexBuffer);
+		DeleteObjects(mData);
 	}
 
 }

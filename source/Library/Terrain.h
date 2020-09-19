@@ -7,48 +7,55 @@ namespace Library
 {
 	class BasicMaterial;
 
-	struct HeightMap
+	class HeightMap
 	{
-		float x, y, z;
-	};
-
-	class Terrain : public GameComponent
-	{
+		struct MapData
+		{
+			float x, y, z;
+		};
 	public:
-		Terrain(std::string path, Game& game, Camera& camera, float cellScale, bool isWireframe);
-		~Terrain();
 
-		UINT GetWidth() { return mWidth; }
-		UINT GetHeight() { return mHeight; }
-		float GetCellScale() { return mCellScale; }
-
-		void Draw();
-		void Update();
-
-	private:
-		Camera& mCamera;
-
-		void GenerateMesh();
-		void InitializeGrid();
-		void LoadTextures(std::string path);
+		HeightMap(int width, int height);
+		~HeightMap();
 
 		ID3D11Buffer* mVertexBuffer;
 		ID3D11Buffer* mIndexBuffer;
 		int mVertexCount = 0;
 		int mIndexCount = 0;
+		XMMATRIX mWorldMatrix = XMMatrixIdentity();
+
+		MapData* mData;
+	};
+
+	class Terrain : public GameComponent
+	{
+	public:
+		Terrain(std::string path, Game& game, Camera& camera, bool isWireframe);
+		~Terrain();
+
+		UINT GetWidth() { return mWidth; }
+		UINT GetHeight() { return mHeight; }
+
+		void Draw();
+		void Draw(int tileIndex);
+		void Update();
+
+	private:
+		Camera& mCamera;
+
+		void GenerateTileMesh(int tileIndex);
+		void LoadRawHeightmapTile(int tileIndexX, int tileIndexY, std::string path);
 
 		BasicMaterial* mMaterial;
 
-		//UINT mSize = 0;
-
-		UINT mWidth = 0;
-		UINT mHeight = 0;
+		UINT mWidth = /*1024*/ 512;
+		UINT mHeight = /*1024*/ 512;
 		
-		float mCellScale = 0.0f;
-		XMMATRIX mWorldMatrix;
-
 		bool mIsWireframe = false;
 
-		HeightMap* mHeightMap = nullptr;
+		std::vector<HeightMap*> mHeightMaps;
+		int mNumTiles = 16;
+		float mHeightScale = 200.0f;
+
 	};
 }

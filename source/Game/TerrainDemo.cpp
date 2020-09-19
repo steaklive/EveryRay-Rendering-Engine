@@ -142,7 +142,7 @@ namespace Rendering
 		//effectSSR->CompileFromFile(Utility::GetFilePath(L"content\\effects\\SSR.fx"));
 
 
-		mTerrain = new Terrain(Utility::GetFilePath("content\\terrain\\terrainHeight.bmp"), *mGame, *mCamera, 1.0f, true);
+		mTerrain = new Terrain(Utility::GetFilePath("content\\terrain\\terrainHeight"), *mGame, *mCamera, true);
 
 		/**/
 		////
