@@ -43,6 +43,7 @@ namespace Library
 	private:
 		Camera& mCamera;
 
+		void LoadTileGroup(int threadIndex, std::string path);
 		void GenerateTileMesh(int tileIndex);
 		void LoadRawHeightmapTile(int tileIndexX, int tileIndexY, std::string path);
 

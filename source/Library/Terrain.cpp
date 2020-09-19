@@ -12,6 +12,13 @@
 #include "BasicMaterial.h"
 #include "RasterizerStates.h"
 
+#include <thread>
+#include <mutex>
+#include <chrono>
+
+#define MULTITHREADED_LOAD 1
+const int NUM_THREADS = 4;
+
 namespace Library
 {
 
@@ -30,23 +37,33 @@ namespace Library
 		mMaterial = new BasicMaterial();
 		mMaterial->Initialize(effect);
 
-		int numTilesSqrt = sqrt(mNumTiles);
-		// Create the float array to hold the height map data.
-		for (int i = 0; i < numTilesSqrt; i++)
+		auto startTime = std::chrono::system_clock::now();
+		
+		for (int i = 0; i < mNumTiles; i++)
+			mHeightMaps.push_back(new HeightMap(mWidth, mHeight));
+
+#if MULTITHREADED_LOAD
+
+		std::vector<std::thread> threads;
+		threads.reserve(NUM_THREADS);
+
+		int threadOffset = sqrt(mNumTiles) / 2;
+		for (int i = 0; i < NUM_THREADS; i++)
 		{
-			for (int j = 0; j < numTilesSqrt; j++)
-			{
-				mHeightMaps.push_back(new HeightMap(mWidth, mHeight));
-
-				int index = i * numTilesSqrt + j;
-				std::string filePath = path;
-				filePath += "_x" + std::to_string(i) + "_y" + std::to_string(j) + ".r16";
-				
-				LoadRawHeightmapTile(i, j, filePath);
-				GenerateTileMesh(index);
-			}
+			threads.push_back(
+				std::thread
+				(
+					[&, this] {this->LoadTileGroup(i, path); }
+				)
+			);
 		}
+		for (auto& t : threads) t.join();
+#else
 
+		LoadTileGroup(0, path);
+#endif
+		std::chrono::duration<double> durationTime = std::chrono::system_clock::now() - startTime;
+		//float timeSec = durationTime.count();
 	}
 
 	Terrain::~Terrain()
@@ -55,6 +72,29 @@ namespace Library
 		DeletePointerCollection(mHeightMaps);
 	}
 
+	void Terrain::LoadTileGroup(int threadIndex, std::string path)
+	{
+		int numTilesSqrt = sqrt(mNumTiles);
+#if MULTITHREADED_LOAD
+		int offset = numTilesSqrt / NUM_THREADS;
+#else
+		int offset = numTilesSqrt;
+#endif
+
+		for (int i = threadIndex; i < (threadIndex + 1) * offset; i++)
+		{
+			for (int j = 0; j < numTilesSqrt; j++)
+			{
+
+				int index = i * numTilesSqrt + j;
+				std::string filePath = path;
+				filePath += "_x" + std::to_string(i) + "_y" + std::to_string(j) + ".r16";
+
+				LoadRawHeightmapTile(i, j, filePath);
+				GenerateTileMesh(index);
+			}
+		}
+	}
 	void Terrain::Draw()
 	{
 		for (int i = 0 ; i < mHeightMaps.size(); i++)
