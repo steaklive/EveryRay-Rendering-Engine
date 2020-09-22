@@ -9,8 +9,8 @@
 #include "MatrixHelper.h"
 #include "Utility.h"
 #include "VertexDeclarations.h"
-#include "BasicMaterial.h"
 #include "RasterizerStates.h"
+#include "TerrainMaterial.h"
 
 #include <thread>
 #include <mutex>
@@ -32,9 +32,9 @@ namespace Library
 			throw GameException("Number of tiles defined is not a power of 2!");
 
 		Effect* effect = new Effect(pGame);
-		effect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\BasicEffect.fx"));
+		effect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\TerrainEffect.fx"));
 
-		mMaterial = new BasicMaterial();
+		mMaterial = new TerrainMaterial();
 		mMaterial->Initialize(effect);
 
 		auto startTime = std::chrono::system_clock::now();
@@ -104,19 +104,21 @@ namespace Library
 	void Terrain::Draw(int tileIndex)
 	{
 		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+		context->IASetPrimitiveTopology(/*D3D11_PRIMITIVE_TOPOLOGY_LINELIST*/D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		
 		Pass* pass = mMaterial->CurrentTechnique()->Passes().at(0);
 		ID3D11InputLayout* inputLayout = mMaterial->InputLayouts().at(pass);
 		context->IASetInputLayout(inputLayout);
 
-		UINT stride = sizeof(VertexPositionColor);
+		UINT stride = sizeof(VertexPositionNormal);
 		UINT offset = 0;
 		context->IASetVertexBuffers(0, 1, &(mHeightMaps[tileIndex]->mVertexBuffer), &stride, &offset);
 		context->IASetIndexBuffer(mHeightMaps[tileIndex]->mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
 		XMMATRIX wvp = mHeightMaps[tileIndex]->mWorldMatrix * mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
-		mMaterial->WorldViewProjection() << wvp;
+		mMaterial->World() << mHeightMaps[tileIndex]->mWorldMatrix;
+		mMaterial->View() << mCamera.ViewMatrix();
+		mMaterial->Projection() << mCamera.ProjectionMatrix();
 
 		pass->Apply(0, context);
 
@@ -136,16 +138,16 @@ namespace Library
 
 		ID3D11Device* device = GetGame()->Direct3DDevice();
 
-		mHeightMaps[tileIndex]->mVertexCount = (mWidth - 1) * (mHeight - 1) * 12;
-		int size = sizeof(VertexPositionColor) * mHeightMaps[tileIndex]->mVertexCount;
+		mHeightMaps[tileIndex]->mVertexCount = (mWidth - 1) * (mHeight - 1) * 6;
+		int size = sizeof(VertexPositionNormal) * mHeightMaps[tileIndex]->mVertexCount;
 
-		VertexPositionColor* vertices = new VertexPositionColor[mHeightMaps[tileIndex]->mVertexCount];
+		VertexPositionNormal* vertices = new VertexPositionNormal[mHeightMaps[tileIndex]->mVertexCount];
 
 		unsigned long* indices;
 		mHeightMaps[tileIndex]->mIndexCount = mHeightMaps[tileIndex]->mVertexCount;
 		indices = new unsigned long[mHeightMaps[tileIndex]->mIndexCount];
 
-		XMFLOAT4 vertexColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+		//XMFLOAT4 vertexColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
 		int index = 0;
 		int index1, index2, index3, index4;
@@ -161,73 +163,40 @@ namespace Library
 
 				// Upper left.
 				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index3].x, mHeightMaps[tileIndex]->mData[index3].y, mHeightMaps[tileIndex]->mData[index3].z, 1.0f);
-				vertices[index].Color = vertexColor;
+				vertices[index].Normal = XMFLOAT3(mHeightMaps[tileIndex]->mData[index3].normalX, mHeightMaps[tileIndex]->mData[index3].normalY, mHeightMaps[tileIndex]->mData[index3].normalZ);
 				indices[index] = index;
 				index++;
 
 				// Upper right.
 				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index4].x, mHeightMaps[tileIndex]->mData[index4].y, mHeightMaps[tileIndex]->mData[index4].z, 1.0f);
-				vertices[index].Color = vertexColor;
+				vertices[index].Normal = XMFLOAT3(mHeightMaps[tileIndex]->mData[index4].normalX, mHeightMaps[tileIndex]->mData[index4].normalY, mHeightMaps[tileIndex]->mData[index4].normalZ);
 				indices[index] = index;
 				index++;
 
-				// Upper right.
-				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index4].x, mHeightMaps[tileIndex]->mData[index4].y, mHeightMaps[tileIndex]->mData[index4].z, 1.0f);
-				vertices[index].Color = vertexColor;
-				indices[index] = index;
-				index++;
 
 				// Bottom left.
 				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index1].x, mHeightMaps[tileIndex]->mData[index1].y, mHeightMaps[tileIndex]->mData[index1].z, 1.0f);
-				vertices[index].Color = vertexColor;
+				vertices[index].Normal = XMFLOAT3(mHeightMaps[tileIndex]->mData[index1].normalX, mHeightMaps[tileIndex]->mData[index1].normalY, mHeightMaps[tileIndex]->mData[index1].normalZ);
 				indices[index] = index;
 				index++;
+
 
 				// Bottom left.
 				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index1].x, mHeightMaps[tileIndex]->mData[index1].y, mHeightMaps[tileIndex]->mData[index1].z, 1.0f);
-				vertices[index].Color = vertexColor;
-				indices[index] = index;
-				index++;
-
-				// Upper left.
-				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index3].x, mHeightMaps[tileIndex]->mData[index3].y, mHeightMaps[tileIndex]->mData[index3].z, 1.0f);
-				vertices[index].Color = vertexColor;
-				indices[index] = index;
-				index++;
-
-				// Bottom left.
-				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index1].x, mHeightMaps[tileIndex]->mData[index1].y, mHeightMaps[tileIndex]->mData[index1].z, 1.0f);
-				vertices[index].Color = vertexColor;
+				vertices[index].Normal = XMFLOAT3(mHeightMaps[tileIndex]->mData[index1].normalX, mHeightMaps[tileIndex]->mData[index1].normalY, mHeightMaps[tileIndex]->mData[index1].normalZ);
 				indices[index] = index;
 				index++;
 
 				// Upper right.
 				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index4].x, mHeightMaps[tileIndex]->mData[index4].y, mHeightMaps[tileIndex]->mData[index4].z, 1.0f);
-				vertices[index].Color = vertexColor;
+				vertices[index].Normal = XMFLOAT3(mHeightMaps[tileIndex]->mData[index4].normalX, mHeightMaps[tileIndex]->mData[index4].normalY, mHeightMaps[tileIndex]->mData[index4].normalZ);
 				indices[index] = index;
 				index++;
 
-				// Upper right.
-				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index4].x, mHeightMaps[tileIndex]->mData[index4].y, mHeightMaps[tileIndex]->mData[index4].z, 1.0f);
-				vertices[index].Color = vertexColor;
-				indices[index] = index;
-				index++;
 
 				// Bottom right.
 				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index2].x, mHeightMaps[tileIndex]->mData[index2].y, mHeightMaps[tileIndex]->mData[index2].z, 1.0f);
-				vertices[index].Color = vertexColor;
-				indices[index] = index;
-				index++;
-
-				// Bottom right.
-				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index2].x, mHeightMaps[tileIndex]->mData[index2].y, mHeightMaps[tileIndex]->mData[index2].z, 1.0f);
-				vertices[index].Color = vertexColor;
-				indices[index] = index;
-				index++;
-
-				// Bottom left.
-				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index1].x, mHeightMaps[tileIndex]->mData[index1].y, mHeightMaps[tileIndex]->mData[index1].z, 1.0f);
-				vertices[index].Color = vertexColor;
+				vertices[index].Normal = XMFLOAT3(mHeightMaps[tileIndex]->mData[index2].normalX, mHeightMaps[tileIndex]->mData[index2].normalY, mHeightMaps[tileIndex]->mData[index2].normalZ);
 				indices[index] = index;
 				index++;
 			}
@@ -319,6 +288,128 @@ namespace Library
 		// Release image data.
 		delete[] rawImage;
 		rawImage = 0;
+
+		//calculate normals
+		{
+			int i, j, index1, index2, index3, index, count;
+			float vertex1[3], vertex2[3], vertex3[3], vector1[3], vector2[3], sum[3], length;
+			NormalVector* normals = new NormalVector[((int)mHeight - 1) * ((int)mWidth - 1)];
+
+			for (j = 0; j < ((int)mHeight - 1); j++)
+			{
+				for (i = 0; i < ((int)mWidth - 1); i++)
+				{
+					index1 = (j * mHeight) + i;
+					index2 = (j * mHeight) + (i + 1);
+					index3 = ((j + 1) * mHeight) + i;
+
+					// Get three vertices from the face.
+					vertex1[0] = mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index1].x;
+					vertex1[1] = mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index1].y;
+					vertex1[2] = mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index1].z;
+					vertex2[0] = mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index2].x;
+					vertex2[1] = mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index2].y;
+					vertex2[2] = mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index2].z;
+					vertex3[0] = mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index3].x;
+					vertex3[1] = mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index3].y;
+					vertex3[2] = mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index3].z;
+
+					// Calculate the two vectors for this face.
+					vector1[0] = vertex1[0] - vertex3[0];
+					vector1[1] = vertex1[1] - vertex3[1];
+					vector1[2] = vertex1[2] - vertex3[2];
+					vector2[0] = vertex3[0] - vertex2[0];
+					vector2[1] = vertex3[1] - vertex2[1];
+					vector2[2] = vertex3[2] - vertex2[2];
+
+					index = (j * (mHeight - 1)) + i;
+
+					// Calculate the cross product of those two vectors to get the un-normalized value for this face normal.
+					normals[index].x = (vector1[1] * vector2[2]) - (vector1[2] * vector2[1]);
+					normals[index].y = (vector1[2] * vector2[0]) - (vector1[0] * vector2[2]);
+					normals[index].z = (vector1[0] * vector2[1]) - (vector1[1] * vector2[0]);
+				}
+			}
+
+			// Now go through all the vertices and take an average of each face normal 	
+			// that the vertex touches to get the averaged normal for that vertex.
+			for (j = 0; j < (int)mHeight; j++)
+			{
+				for (i = 0; i < (int)mWidth; i++)
+				{
+					// Initialize the sum.
+					sum[0] = 0.0f;
+					sum[1] = 0.0f;
+					sum[2] = 0.0f;
+
+					// Initialize the count.
+					count = 0;
+
+					// Bottom left face.
+					if (((i - 1) >= 0) && ((j - 1) >= 0))
+					{
+						index = ((j - 1) * ((int)mHeight - 1)) + (i - 1);
+
+						sum[0] += normals[index].x;
+						sum[1] += normals[index].y;
+						sum[2] += normals[index].z;
+						count++;
+					}
+
+					// Bottom right face.
+					if ((i < ((int)mWidth - 1)) && ((j - 1) >= 0))
+					{
+						index = ((j - 1) * ((int)mHeight - 1)) + i;
+
+						sum[0] += normals[index].x;
+						sum[1] += normals[index].y;
+						sum[2] += normals[index].z;
+						count++;
+					}
+
+					// Upper left face.
+					if (((i - 1) >= 0) && (j < ((int)mHeight - 1)))
+					{
+						index = (j * ((int)mHeight - 1)) + (i - 1);
+
+						sum[0] += normals[index].x;
+						sum[1] += normals[index].y;
+						sum[2] += normals[index].z;
+						count++;
+					}
+
+					// Upper right face.
+					if ((i < ((int)mWidth - 1)) && (j < ((int)mHeight - 1)))
+					{
+						index = (j * ((int)mHeight - 1)) + i;
+
+						sum[0] += normals[index].x;
+						sum[1] += normals[index].y;
+						sum[2] += normals[index].z;
+						count++;
+					}
+
+					// Take the average of the faces touching this vertex.
+					sum[0] = (sum[0] / (float)count);
+					sum[1] = (sum[1] / (float)count);
+					sum[2] = (sum[2] / (float)count);
+
+					// Calculate the length of this normal.
+					length = sqrt((sum[0] * sum[0]) + (sum[1] * sum[1]) + (sum[2] * sum[2]));
+
+					// Get an index to the vertex location in the height map array.
+					index = (j * (int)mHeight) + i;
+
+					// Normalize the final shared normal for this vertex and store it in the height map array.
+					mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index].normalX = (sum[0] / length);
+					mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index].normalY = (sum[1] / length);
+					mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index].normalZ = (sum[2] / length);
+				}
+			}
+			
+			delete[] normals;
+			normals = NULL;
+		}
 	}
 
 	HeightMap::HeightMap(int width, int height)
