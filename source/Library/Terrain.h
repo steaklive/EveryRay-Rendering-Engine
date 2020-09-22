@@ -5,13 +5,19 @@
 
 namespace Library 
 {
-	class BasicMaterial;
+	class TerrainMaterial;
+
+	struct NormalVector
+	{
+		float x, y, z;
+	};
 
 	class HeightMap
 	{
 		struct MapData
 		{
 			float x, y, z;
+			float normalX, normalY, normalZ;
 		};
 	public:
 
@@ -47,7 +53,7 @@ namespace Library
 		void GenerateTileMesh(int tileIndex);
 		void LoadRawHeightmapTile(int tileIndexX, int tileIndexY, std::string path);
 
-		BasicMaterial* mMaterial;
+		TerrainMaterial* mMaterial;
 
 		UINT mWidth = /*1024*/ 512;
 		UINT mHeight = /*1024*/ 512;

@@ -260,6 +260,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Technique.h" />
     <ClInclude Include="Terrain.h" />
+    <ClInclude Include="TerrainMaterial.h" />
     <ClInclude Include="TGATextureLoader.h" />
     <ClInclude Include="Utility.h" />
     <ClInclude Include="Variable.h" />
@@ -355,6 +356,7 @@
     </ClCompile>
     <ClCompile Include="Technique.cpp" />
     <ClCompile Include="Terrain.cpp" />
+    <ClCompile Include="TerrainMaterial.cpp" />
     <ClCompile Include="TGATextureLoader.cpp" />
     <ClCompile Include="Utility.cpp" />
     <ClCompile Include="Variable.cpp" />
@@ -451,6 +453,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\content\effects\StandardLighting.fx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\content\effects\TerrainEffect.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </FxCompile>
