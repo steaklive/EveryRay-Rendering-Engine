@@ -270,6 +270,8 @@ namespace Library
 		if (error != 0)
 			throw GameException("Can not close the terrain's heightmap RAW file!");
 
+		int tileIndex = tileIndexX * sqrt(mNumTiles) + tileIndexY;
+
 		// Copy the image data into the height map array.
 		for (j = 0; j < (int)mHeight; j++)
 		{
@@ -278,9 +280,15 @@ namespace Library
 				index = (mWidth * j) + i;
 
 				// Store the height at this point in the height map array.
-				mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index].x = (float)(i + (int)mWidth * (tileIndexX - 1));
-				mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index].y = (float)rawImage[index] / mHeightScale;
-				mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index].z = (float)(j - (int)mHeight * tileIndexY);
+				mHeightMaps[tileIndex]->mData[index].x = (float)(i + (int)mWidth * (tileIndexX - 1));
+				mHeightMaps[tileIndex]->mData[index].y = (float)rawImage[index] / mHeightScale;
+				mHeightMaps[tileIndex]->mData[index].z = (float)(j - (int)mHeight * tileIndexY);
+
+				if (tileIndex > 0) //a way to fix the seams between tiles...
+				{
+					mHeightMaps[tileIndex]->mData[index].x -= (float)tileIndexX /** scale*/;
+					mHeightMaps[tileIndex]->mData[index].z += (float)tileIndexY /** scale*/;
+				}
 
 			}
 		}
