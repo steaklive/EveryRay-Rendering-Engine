@@ -142,7 +142,6 @@ namespace Rendering
 		//effectSSR->CompileFromFile(Utility::GetFilePath(L"content\\effects\\SSR.fx"));
 
 
-		mTerrain = new Terrain(Utility::GetFilePath("content\\terrain\\terrainHeight"), *mGame, *mCamera, false);
 
 		/**/
 		////
@@ -192,11 +191,13 @@ namespace Rendering
 		mDirectionalLight = new DirectionalLight(*mGame, *mCamera);
 		mDirectionalLight->ApplyRotation(XMMatrixRotationAxis(mDirectionalLight->RightVector(), -XMConvertToRadians(70.0f)) * XMMatrixRotationAxis(mDirectionalLight->UpVector(), -XMConvertToRadians(25.0f)));
 
+
 		mShadowMapper = new ShadowMapper(*mGame, *mCamera, *mDirectionalLight, 4096, 4096);
 		mDirectionalLight->RotationUpdateEvent->AddListener("shadow mapper", [&]() {mShadowMapper->ApplyTransform(); });
 
 		mRenderStateHelper = new RenderStateHelper(*mGame);
 
+		mTerrain = new Terrain(Utility::GetFilePath("content\\terrain\\terrainHeight"), *mGame, *mCamera, *mDirectionalLight, false);
 		//PP
 		mPostProcessingStack = new PostProcessingStack(*mGame, *mCamera);
 		mPostProcessingStack->Initialize(false, false, true, true, true, false);
@@ -322,7 +323,7 @@ namespace Rendering
 #pragma region DRAW_LIGHTING
 
 		//skybox
-		//mSkybox->Draw(gameTime);
+		mSkybox->Draw(gameTime);
 
 		//terrain
 		mTerrain->Draw();
