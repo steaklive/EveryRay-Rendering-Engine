@@ -1,23 +1,26 @@
 ﻿  Terrain.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(43): warning C4316: 'Library::HeightMap': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(50): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(77): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(100): warning C4018: '<': signed/unsigned mismatch
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(261): warning C4244: 'initializing': conversion from 'unsigned __int64' to 'unsigned int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(264): warning C4244: 'argument': conversion from 'unsigned __int64' to 'size_t', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(273): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(315): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(316): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(317): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(318): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(319): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(320): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(321): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(322): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(323): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(412): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(413): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(414): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(51): warning C4316: 'Library::HeightMap': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(58): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(86): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(109): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(305): warning C4244: 'initializing': conversion from 'unsigned __int64' to 'unsigned int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(308): warning C4244: 'argument': conversion from 'unsigned __int64' to 'size_t', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(317): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(359): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(360): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(361): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(362): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(363): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(364): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(365): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(366): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(367): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(456): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(457): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(458): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(488): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(489): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
+  TerrainMaterial.cpp
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Black" (?Black@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Yellow" (?Yellow@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Blue" (?Blue@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored

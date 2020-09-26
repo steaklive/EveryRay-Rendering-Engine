@@ -12,6 +12,10 @@
 #include "RasterizerStates.h"
 #include "TerrainMaterial.h"
 
+#include "TGATextureLoader.h"
+#include <DDSTextureLoader.h>
+#include <WICTextureLoader.h>
+
 #include <thread>
 #include <mutex>
 #include <chrono>
@@ -22,10 +26,11 @@ const int NUM_THREADS = 4;
 namespace Library
 {
 
-	Terrain::Terrain(std::string path, Game& pGame, Camera& camera, bool isWireframe) :
+	Terrain::Terrain(std::string path, Game& pGame, Camera& camera, DirectionalLight& light, bool isWireframe) :
 		GameComponent(pGame),
 		mCamera(camera), 
 		mIsWireframe(isWireframe),
+		mDirectionalLight(light),
 		mHeightMaps(0, nullptr)
 	{
 		if (!(mNumTiles && !(mNumTiles & (mNumTiles - 1))))
@@ -36,6 +41,9 @@ namespace Library
 
 		mMaterial = new TerrainMaterial();
 		mMaterial->Initialize(effect);
+
+		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\terrain\\grassTextureAlbedo.jpg").c_str(), nullptr, &mAlbedoTexture)))
+			throw GameException("Failed to create Terrain Albedo Map.");
 
 		auto startTime = std::chrono::system_clock::now();
 		
@@ -70,6 +78,7 @@ namespace Library
 	{
 		DeleteObject(mMaterial);
 		DeletePointerCollection(mHeightMaps);
+		ReleaseObject(mAlbedoTexture);
 	}
 
 	void Terrain::LoadTileGroup(int threadIndex, std::string path)
@@ -110,7 +119,7 @@ namespace Library
 		ID3D11InputLayout* inputLayout = mMaterial->InputLayouts().at(pass);
 		context->IASetInputLayout(inputLayout);
 
-		UINT stride = sizeof(VertexPositionNormal);
+		UINT stride = sizeof(VertexPositionTextureNormal);
 		UINT offset = 0;
 		context->IASetVertexBuffers(0, 1, &(mHeightMaps[tileIndex]->mVertexBuffer), &stride, &offset);
 		context->IASetIndexBuffer(mHeightMaps[tileIndex]->mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
@@ -119,6 +128,12 @@ namespace Library
 		mMaterial->World() << mHeightMaps[tileIndex]->mWorldMatrix;
 		mMaterial->View() << mCamera.ViewMatrix();
 		mMaterial->Projection() << mCamera.ProjectionMatrix();
+		mMaterial->albedoTexture() << mAlbedoTexture;
+		mMaterial->SunDirection() << XMVectorNegate(mDirectionalLight.DirectionVector());
+		mMaterial->SunColor() << XMVECTOR{ mDirectionalLight.GetDirectionalLightColor().x,  mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z , 1.0f };
+		mMaterial->AmbientColor() << XMVECTOR{ mDirectionalLight.GetAmbientLightColor().x,  mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
+		mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f, 1.0f, 1.0f , 1.0f }; //todo
+		mMaterial->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
 
 		pass->Apply(0, context);
 
@@ -139,9 +154,9 @@ namespace Library
 		ID3D11Device* device = GetGame()->Direct3DDevice();
 
 		mHeightMaps[tileIndex]->mVertexCount = (mWidth - 1) * (mHeight - 1) * 6;
-		int size = sizeof(VertexPositionNormal) * mHeightMaps[tileIndex]->mVertexCount;
+		int size = sizeof(VertexPositionTextureNormal) * mHeightMaps[tileIndex]->mVertexCount;
 
-		VertexPositionNormal* vertices = new VertexPositionNormal[mHeightMaps[tileIndex]->mVertexCount];
+		VertexPositionTextureNormal* vertices = new VertexPositionTextureNormal[mHeightMaps[tileIndex]->mVertexCount];
 
 		unsigned long* indices;
 		mHeightMaps[tileIndex]->mIndexCount = mHeightMaps[tileIndex]->mVertexCount;
@@ -160,16 +175,32 @@ namespace Library
 				index2 = (mHeight * j) + (i + 1);      // Bottom right.
 				index3 = (mHeight * (j + 1)) + i;      // Upper left.
 				index4 = (mHeight * (j + 1)) + (i + 1);  // Upper right.
+				
+				float u, v;
 
 				// Upper left.
+				v = mHeightMaps[tileIndex]->mData[index3].v;
+				if (v == 1.0f)
+					v = 0.0f;
+
 				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index3].x, mHeightMaps[tileIndex]->mData[index3].y, mHeightMaps[tileIndex]->mData[index3].z, 1.0f);
 				vertices[index].Normal = XMFLOAT3(mHeightMaps[tileIndex]->mData[index3].normalX, mHeightMaps[tileIndex]->mData[index3].normalY, mHeightMaps[tileIndex]->mData[index3].normalZ);
+				vertices[index].TextureCoordinates = XMFLOAT2(mHeightMaps[tileIndex]->mData[index3].u, v);
 				indices[index] = index;
 				index++;
 
 				// Upper right.
+				u = mHeightMaps[tileIndex]->mData[index4].u;
+				v = mHeightMaps[tileIndex]->mData[index4].v;
+
+				if (u == 0.0f)
+					u = 1.0f; 
+				if (v == 1.0f) 
+					v = 0.0f; 
+
 				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index4].x, mHeightMaps[tileIndex]->mData[index4].y, mHeightMaps[tileIndex]->mData[index4].z, 1.0f);
 				vertices[index].Normal = XMFLOAT3(mHeightMaps[tileIndex]->mData[index4].normalX, mHeightMaps[tileIndex]->mData[index4].normalY, mHeightMaps[tileIndex]->mData[index4].normalZ);
+				vertices[index].TextureCoordinates = XMFLOAT2(u, v);
 				indices[index] = index;
 				index++;
 
@@ -177,6 +208,7 @@ namespace Library
 				// Bottom left.
 				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index1].x, mHeightMaps[tileIndex]->mData[index1].y, mHeightMaps[tileIndex]->mData[index1].z, 1.0f);
 				vertices[index].Normal = XMFLOAT3(mHeightMaps[tileIndex]->mData[index1].normalX, mHeightMaps[tileIndex]->mData[index1].normalY, mHeightMaps[tileIndex]->mData[index1].normalZ);
+				vertices[index].TextureCoordinates = XMFLOAT2(mHeightMaps[tileIndex]->mData[index1].u,mHeightMaps[tileIndex]->mData[index1].v);
 				indices[index] = index;
 				index++;
 
@@ -184,19 +216,31 @@ namespace Library
 				// Bottom left.
 				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index1].x, mHeightMaps[tileIndex]->mData[index1].y, mHeightMaps[tileIndex]->mData[index1].z, 1.0f);
 				vertices[index].Normal = XMFLOAT3(mHeightMaps[tileIndex]->mData[index1].normalX, mHeightMaps[tileIndex]->mData[index1].normalY, mHeightMaps[tileIndex]->mData[index1].normalZ);
+				vertices[index].TextureCoordinates = XMFLOAT2(mHeightMaps[tileIndex]->mData[index1].u, mHeightMaps[tileIndex]->mData[index1].v);
 				indices[index] = index;
 				index++;
 
 				// Upper right.
+				u = mHeightMaps[tileIndex]->mData[index4].u;
+				v = mHeightMaps[tileIndex]->mData[index4].v;
+				if (u == 0.0f) 
+				    u = 1.0f; 
+				if (v == 1.0f)
+					v = 0.0f; 
 				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index4].x, mHeightMaps[tileIndex]->mData[index4].y, mHeightMaps[tileIndex]->mData[index4].z, 1.0f);
 				vertices[index].Normal = XMFLOAT3(mHeightMaps[tileIndex]->mData[index4].normalX, mHeightMaps[tileIndex]->mData[index4].normalY, mHeightMaps[tileIndex]->mData[index4].normalZ);
+				vertices[index].TextureCoordinates = XMFLOAT2(u, v);
 				indices[index] = index;
 				index++;
 
 
 				// Bottom right.
+				u = mHeightMaps[tileIndex]->mData[index2].u;
+				if (u == 0.0f)
+					u = 1.0f; 
 				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index2].x, mHeightMaps[tileIndex]->mData[index2].y, mHeightMaps[tileIndex]->mData[index2].z, 1.0f);
 				vertices[index].Normal = XMFLOAT3(mHeightMaps[tileIndex]->mData[index2].normalX, mHeightMaps[tileIndex]->mData[index2].normalY, mHeightMaps[tileIndex]->mData[index2].normalZ);
+				vertices[index].TextureCoordinates = XMFLOAT2(u, mHeightMaps[tileIndex]->mData[index2].v);
 				indices[index] = index;
 				index++;
 			}
@@ -417,6 +461,55 @@ namespace Library
 			
 			delete[] normals;
 			normals = NULL;
+		}
+
+		//calculate uvs
+		{
+			int index, incrementCount, i, j, uCount, vCount, repeatValue = 8;
+			float incrementValue, uCoord, vCoord;
+
+			incrementValue = (float)repeatValue / (float)mWidth;
+			incrementCount = (int)mWidth / repeatValue;
+
+			uCoord = 0.0f;
+			vCoord = 1.0f;
+
+			// Initialize the tu and tv coordinate indices.
+			uCount = 0;
+			vCount = 0;
+
+			for (j = 0; j < (int)mHeight; j++)
+			{
+				for (i = 0; i < (int)mWidth; i++)
+				{
+					index = (j * (int)mHeight) + i;
+
+					// Store the texture coordinate in the height map.
+					mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index].u = uCoord;
+					mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index].v = vCoord;
+					
+					// Increment the tu texture coordinate by the increment value and increment the index by one.
+					uCoord += incrementValue;
+					uCount++;
+
+					// Check if at the far right end of the texture and if so then start at the beginning again.
+					if (uCount == incrementCount)
+					{
+						uCoord = 0.0f;
+						uCount = 0;
+					}
+				}
+
+				vCoord -= incrementValue;
+				vCount++;
+
+				// Check if at the top of the texture and if so then start at the bottom again.
+				if (vCount == incrementCount)
+				{
+					vCoord = 1.0f;
+					vCount = 0;
+				}
+			}
 		}
 	}
 

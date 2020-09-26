@@ -2,6 +2,7 @@
 #include "Common.h"
 #include "GameComponent.h"
 #include "Camera.h"
+#include "DirectionalLight.h"
 
 namespace Library 
 {
@@ -18,6 +19,7 @@ namespace Library
 		{
 			float x, y, z;
 			float normalX, normalY, normalZ;
+			float u, v;
 		};
 	public:
 
@@ -36,7 +38,7 @@ namespace Library
 	class Terrain : public GameComponent
 	{
 	public:
-		Terrain(std::string path, Game& game, Camera& camera, bool isWireframe);
+		Terrain(std::string path, Game& game, Camera& camera, DirectionalLight& light ,bool isWireframe);
 		~Terrain();
 
 		UINT GetWidth() { return mWidth; }
@@ -55,6 +57,8 @@ namespace Library
 
 		TerrainMaterial* mMaterial;
 
+		DirectionalLight& mDirectionalLight;
+
 		UINT mWidth = /*1024*/ 512;
 		UINT mHeight = /*1024*/ 512;
 		
@@ -63,6 +67,8 @@ namespace Library
 		std::vector<HeightMap*> mHeightMaps;
 		int mNumTiles = 16;
 		float mHeightScale = 200.0f;
+
+		ID3D11ShaderResourceView* mAlbedoTexture = nullptr;
 
 	};
 }

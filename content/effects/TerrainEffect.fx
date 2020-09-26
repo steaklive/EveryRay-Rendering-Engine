@@ -4,15 +4,25 @@ cbuffer CBufferPerObject
     float4x4 View;
     float4x4 Projection;
 }
+cbuffer CBufferPerFrame
+{
+    float4 SunDirection;
+    float4 SunColor;
+    float4 AmbientColor;
+    float4 ShadowTexelSize;
+    float4 ShadowCascadeDistances;
+}
 struct VS_INPUT
 {
 	float4 ObjectPosition: POSITION;
+	float2 TextureCoordinates : TEXCOORD;
 	float3 Normal : NORMAL;
 };
 struct VS_OUTPUT 
 {
 	float4 Position: SV_Position;
     float3 Normal : NORMAL;
+	float2 TextureCoordinates : TEXCOORD0;	
 };
 
 VS_OUTPUT vertex_shader(VS_INPUT IN)
@@ -23,33 +33,33 @@ VS_OUTPUT vertex_shader(VS_INPUT IN)
     OUT.Position = mul(OUT.Position, View);
     OUT.Position = mul(OUT.Position, Projection);
     OUT.Normal = normalize(mul(float4(IN.Normal, 0), World).xyz);
-	
+    OUT.TextureCoordinates = IN.TextureCoordinates;
 	return OUT;
 }
+SamplerState TerrainTextureSampler
+{
+    Filter = MIN_MAG_MIP_LINEAR;
+    AddressU = WRAP;
+    AddressV = WRAP;
+    //MaxAnisotropy = 1;
+};
+
+Texture2D albedoTexture;
+
 float4 pixel_shader(VS_OUTPUT IN) : SV_Target
 {
-    float3 lightDir;
-    float lightIntensity;
-    float4 color;
-    
-    color = float4(0.5f, 0.5f, 0.5f, 1.0f);
+    float3 albedo = albedoTexture.Sample(TerrainTextureSampler, IN.TextureCoordinates).rgb;
+    float3 color = AmbientColor.rgb;
 
-    // Invert the light direction for calculations.
-    lightDir = -float3(0.2f, -0.7f, 0.0f);
-
-    // Calculate the amount of light on this pixel.
-    lightIntensity = saturate(dot(IN.Normal, lightDir));
+    float lightIntensity = saturate(dot(IN.Normal, SunDirection.rgb));
 
     if (lightIntensity > 0.0f)
-    {
-        // Determine the final diffuse color based on the diffuse color and the amount of light intensity.
-        color += (float4(0.5f, 0.5f, 0.5f, 1.0f) * lightIntensity);
-    }
+        color += SunColor.rgb * lightIntensity;
 
-    // Saturate the final light color.
     color = saturate(color);
-
-    return color;
+    color *= albedo;
+    
+    return float4(color, 1.0f);
 }
 technique11 main
 {
