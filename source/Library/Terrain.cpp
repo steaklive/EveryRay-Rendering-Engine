@@ -41,8 +41,6 @@ namespace Library
 
 		mMaterial = new TerrainMaterial();
 		mMaterial->Initialize(effect);
-
-
 		auto startTime = std::chrono::system_clock::now();
 		
 		for (int i = 0; i < mNumTiles; i++)
