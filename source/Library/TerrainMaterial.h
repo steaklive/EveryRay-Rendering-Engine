@@ -12,7 +12,11 @@ namespace Library
 		MATERIAL_VARIABLE_DECLARATION(World)
 		MATERIAL_VARIABLE_DECLARATION(View)
 		MATERIAL_VARIABLE_DECLARATION(Projection)
-		MATERIAL_VARIABLE_DECLARATION(albedoTexture)
+		MATERIAL_VARIABLE_DECLARATION(groundTexture)
+		MATERIAL_VARIABLE_DECLARATION(grassTexture)
+		MATERIAL_VARIABLE_DECLARATION(rockTexture)
+		MATERIAL_VARIABLE_DECLARATION(mudTexture)
+		MATERIAL_VARIABLE_DECLARATION(splatTexture)
 
 			MATERIAL_VARIABLE_DECLARATION(SunDirection)
 			MATERIAL_VARIABLE_DECLARATION(SunColor)
@@ -25,7 +29,7 @@ namespace Library
 
 		virtual void Initialize(Effect* effect) override;
 		virtual void CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const override;
-		void CreateVertexBuffer(ID3D11Device* device, VertexPositionTextureNormal* vertices, UINT vertexCount, ID3D11Buffer** vertexBuffer) const;
+		void CreateVertexBuffer(ID3D11Device* device, TerrainVertexInput* vertices, UINT vertexCount, ID3D11Buffer** vertexBuffer) const;
 		virtual UINT VertexSize() const override;
 	};
 }

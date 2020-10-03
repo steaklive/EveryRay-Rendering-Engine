@@ -88,6 +88,19 @@ namespace Library
 			: Position(position), TextureCoordinates(textureCoordinates), Normal(normal) { }
 	} VertexPositionTextureNormal;
 
+	typedef struct _TerrainVertexInput
+	{
+		XMFLOAT4 Position;
+		XMFLOAT4 TextureCoordinates;
+		XMFLOAT3 Normal;
+		//XMFLOAT2 TileTextureCoordinates;
+
+		_TerrainVertexInput() { }
+
+		_TerrainVertexInput(const XMFLOAT4& position, const XMFLOAT4& textureCoordinates, const XMFLOAT3& normal/*, const XMFLOAT4& tileTextureCoordinates*/)
+			: Position(position), TextureCoordinates(textureCoordinates), Normal(normal)/*, TileTextureCoordinates(tileTextureCoordinates)*/ { }
+	} TerrainVertexInput;
+
 	typedef struct _VertexSkinnedPositionTextureNormal
 	{
 		XMFLOAT4 Position;

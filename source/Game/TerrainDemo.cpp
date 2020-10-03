@@ -197,7 +197,7 @@ namespace Rendering
 
 		mRenderStateHelper = new RenderStateHelper(*mGame);
 
-		mTerrain = new Terrain(Utility::GetFilePath("content\\terrain\\terrainHeight"), *mGame, *mCamera, *mDirectionalLight, false);
+		mTerrain = new Terrain(Utility::GetFilePath("content\\terrain\\terrain"), *mGame, *mCamera, *mDirectionalLight, false);
 		//PP
 		mPostProcessingStack = new PostProcessingStack(*mGame, *mCamera);
 		mPostProcessingStack->Initialize(false, false, true, true, true, false);

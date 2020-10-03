@@ -15,14 +15,16 @@ cbuffer CBufferPerFrame
 struct VS_INPUT
 {
 	float4 ObjectPosition: POSITION;
-	float2 TextureCoordinates : TEXCOORD;
+    float4 TextureCoordinates : TEXCOORD0;
 	float3 Normal : NORMAL;
+    //float2 TileTextureCoordinates : TEXCOORD1;
 };
 struct VS_OUTPUT 
 {
 	float4 Position: SV_Position;
+	float4 TextureCoordinates : TEXCOORD0;	
     float3 Normal : NORMAL;
-	float2 TextureCoordinates : TEXCOORD0;	
+	//float2 TileTextureCoordinates : TEXCOORD1;	
 };
 
 VS_OUTPUT vertex_shader(VS_INPUT IN)
@@ -34,6 +36,7 @@ VS_OUTPUT vertex_shader(VS_INPUT IN)
     OUT.Position = mul(OUT.Position, Projection);
     OUT.Normal = normalize(mul(float4(IN.Normal, 0), World).xyz);
     OUT.TextureCoordinates = IN.TextureCoordinates;
+    //OUT.TileTextureCoordinates = IN.TileTextureCoordinates;
 	return OUT;
 }
 SamplerState TerrainTextureSampler
@@ -44,11 +47,33 @@ SamplerState TerrainTextureSampler
     //MaxAnisotropy = 1;
 };
 
-Texture2D albedoTexture;
+SamplerState TerrainSplatSampler
+{
+    Filter = MIN_MAG_MIP_LINEAR;
+    AddressU = WRAP;
+    AddressV = WRAP;
+    //MaxAnisotropy = 1;
+};
+
+Texture2D splatTexture;
+
+Texture2D groundTexture;
+Texture2D grassTexture;
+Texture2D rockTexture;
+Texture2D mudTexture;
 
 float4 pixel_shader(VS_OUTPUT IN) : SV_Target
 {
-    float3 albedo = albedoTexture.Sample(TerrainTextureSampler, IN.TextureCoordinates).rgb;
+    float4 splat = splatTexture.Sample(TerrainSplatSampler, IN.TextureCoordinates.zw);
+    
+    float3 ground = groundTexture.Sample(TerrainTextureSampler, IN.TextureCoordinates.xy).rgb;
+    float3 grass = grassTexture.Sample(TerrainTextureSampler, IN.TextureCoordinates.xy).rgb;
+    float3 rock = rockTexture.Sample(TerrainTextureSampler, IN.TextureCoordinates.xy).rgb;
+    float3 mud = mudTexture.Sample(TerrainTextureSampler, IN.TextureCoordinates.xy).rgb;
+    
+    float3 albedo = splat.r * ground + splat.g * grass + splat.b * rock + splat.a * mud;
+        
+    
     float3 color = AmbientColor.rgb;
 
     float lightIntensity = saturate(dot(IN.Normal, SunDirection.rgb));

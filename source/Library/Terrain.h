@@ -20,19 +20,21 @@ namespace Library
 			float x, y, z;
 			float normalX, normalY, normalZ;
 			float u, v;
+			float uTile, vTile;
 		};
 	public:
 
 		HeightMap(int width, int height);
 		~HeightMap();
 
-		ID3D11Buffer* mVertexBuffer;
-		ID3D11Buffer* mIndexBuffer;
+		ID3D11Buffer* mVertexBuffer = nullptr;
+		ID3D11Buffer* mIndexBuffer = nullptr;
+		ID3D11ShaderResourceView* mSplatTexture = nullptr;
 		int mVertexCount = 0;
 		int mIndexCount = 0;
 		XMMATRIX mWorldMatrix = XMMatrixIdentity();
 
-		MapData* mData;
+		MapData* mData = nullptr;
 	};
 
 	class Terrain : public GameComponent
@@ -51,9 +53,11 @@ namespace Library
 	private:
 		Camera& mCamera;
 
+		void LoadTextures(std::string path);
 		void LoadTileGroup(int threadIndex, std::string path);
 		void GenerateTileMesh(int tileIndex);
 		void LoadRawHeightmapTile(int tileIndexX, int tileIndexY, std::string path);
+		void LoadSplatmap(int tileIndexX, int tileIndexY, std::string path);
 
 		TerrainMaterial* mMaterial;
 
@@ -68,7 +72,9 @@ namespace Library
 		int mNumTiles = 16;
 		float mHeightScale = 200.0f;
 
-		ID3D11ShaderResourceView* mAlbedoTexture = nullptr;
-
+		ID3D11ShaderResourceView* mGrassTexture = nullptr;
+		ID3D11ShaderResourceView* mGroundTexture = nullptr;
+		ID3D11ShaderResourceView* mRockTexture = nullptr;
+		ID3D11ShaderResourceView* mMudTexture = nullptr;
 	};
 }
