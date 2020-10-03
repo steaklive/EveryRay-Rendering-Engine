@@ -124,6 +124,8 @@ CustomRenderTarget* CustomRenderTarget::Create(ID3D11Device * device, UINT width
 	texDesc.MipLevels = mMipLevels;
 	if (mMipLevels > 1 && (D3D11_BIND_RENDER_TARGET & bindFlags) != 0)
 		texDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+	else
+		texDesc.MiscFlags = 0;
 	if (samples > 1)
 	{
 		texDesc.SampleDesc.Count = samples;
