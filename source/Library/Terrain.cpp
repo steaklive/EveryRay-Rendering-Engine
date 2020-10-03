@@ -97,6 +97,22 @@ namespace Library
 
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\terrain\\terrainMudTexture.jpg").c_str(), nullptr, &mMudTexture)))
 			throw GameException("Failed to create Terrain Mud Map.");
+
+		int numTilesSqrt = sqrt(mNumTiles);
+
+		for (int i = 0; i < numTilesSqrt; i++)
+		{
+			for (int j = 0; j < numTilesSqrt; j++)
+			{
+
+				int index = i * numTilesSqrt + j;
+				std::string filePathSplatmap = path;
+				filePathSplatmap += "Splat_x" + std::to_string(i) + "_y" + std::to_string(j) + ".png";
+
+				LoadSplatmap(i, j, filePathSplatmap); //unfortunately, not thread safe
+			}
+		}
+
 	}
 	void Terrain::LoadTileGroup(int threadIndex, std::string path)
 	{
@@ -115,10 +131,7 @@ namespace Library
 				int index = i * numTilesSqrt + j;
 				std::string filePathHeightmap = path;
 				filePathHeightmap += "Height_x" + std::to_string(i) + "_y" + std::to_string(j) + ".r16";	
-				std::string filePathSplatmap = path;
-				filePathSplatmap += "Splat_x" + std::to_string(i) + "_y" + std::to_string(j) + ".png";
-				
-				LoadSplatmap(i, j, filePathSplatmap);
+
 				LoadRawHeightmapTile(i, j, filePathHeightmap);
 				GenerateTileMesh(index);
 			}
@@ -128,7 +141,8 @@ namespace Library
 	void Terrain::LoadSplatmap(int tileIndexX, int tileIndexY, std::string path)
 	{
 		int tileIndex = tileIndexX * sqrt(mNumTiles) + tileIndexY;
-		assert(tileIndex < mHeightMaps.size());
+		if (tileIndex >= mHeightMaps.size())
+			return;
 
 		std::wstring pathW = Utility::ToWideString(path);
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), pathW.c_str(), nullptr, &(mHeightMaps[tileIndex]->mSplatTexture))))
@@ -187,7 +201,9 @@ namespace Library
 
 	void Terrain::GenerateTileMesh(int tileIndex)
 	{
-		assert(tileIndex < mHeightMaps.size());
+		if (tileIndex >= mHeightMaps.size())
+			return;
+		//assert(tileIndex < mHeightMaps.size());
 
 		ID3D11Device* device = GetGame()->Direct3DDevice();
 
@@ -350,7 +366,9 @@ namespace Library
 	void Terrain::LoadRawHeightmapTile(int tileIndexX, int tileIndexY, std::string path)
 	{
 		int tileIndex = tileIndexX * sqrt(mNumTiles) + tileIndexY;
-		assert(tileIndex < mHeightMaps.size());
+		if (tileIndex >= mHeightMaps.size())
+			return;
+		//assert(tileIndex < mHeightMaps.size());
 
 		int error, i, j, index;
 		FILE* filePtr;
