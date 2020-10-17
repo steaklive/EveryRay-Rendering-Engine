@@ -240,6 +240,8 @@ namespace Rendering
 		mCamera->Cull(mRenderingObjects);
 		mShadowMapper->Update(gameTime);
 
+		mTerrain->SetWireframeMode(isWireframe);
+
 		for (auto object : mRenderingObjects)
 			object.second->Update(gameTime);
 	}
@@ -273,6 +275,7 @@ namespace Rendering
 		//
 		//	ImGui::End();
 		//}
+		ImGui::Checkbox("Render Wireframe", &isWireframe);
 
 		ImGui::End();
 	}
@@ -323,7 +326,7 @@ namespace Rendering
 #pragma region DRAW_LIGHTING
 
 		//skybox
-		mSkybox->Draw(gameTime);
+		//mSkybox->Draw(gameTime);
 
 		//terrain
 		mTerrain->Draw();

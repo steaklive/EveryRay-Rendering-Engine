@@ -50,6 +50,8 @@ namespace Library
 		void Draw(int tileIndex);
 		void Update();
 
+		void SetWireframeMode(bool flag) { mIsWireframe = flag; }
+
 	private:
 		Camera& mCamera;
 
@@ -72,9 +74,13 @@ namespace Library
 		int mNumTiles = 16;
 		float mHeightScale = 200.0f;
 
+		bool mUseTessellation = true;
+
 		ID3D11ShaderResourceView* mGrassTexture = nullptr;
 		ID3D11ShaderResourceView* mGroundTexture = nullptr;
 		ID3D11ShaderResourceView* mRockTexture = nullptr;
 		ID3D11ShaderResourceView* mMudTexture = nullptr;
+
+		ID3D11Buffer* mVertexPatchBuffer = nullptr;
 	};
 }
