@@ -66,7 +66,13 @@ namespace Library
 			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 		};
 
+		D3D11_INPUT_ELEMENT_DESC inputElementDescriptionsTS[] =
+		{ 
+			{ "PATCH_INFO", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		};
+		
 		CreateInputLayout("main", "p0", inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
+		CreateInputLayout("main", "tessellation", inputElementDescriptionsTS, ARRAYSIZE(inputElementDescriptionsTS));
 	}
 
 	void TerrainMaterial::CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const

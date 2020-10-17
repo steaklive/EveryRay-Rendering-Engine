@@ -76,5 +76,7 @@ namespace Rendering
 		ID3D11ShaderResourceView* mRadianceTextureSRV;
 		ID3D11ShaderResourceView* mIntegrationMapTextureSRV;
 		std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
+
+		bool isWireframe = false;
 	};
 }
