@@ -20,18 +20,21 @@
 #include <mutex>
 #include <chrono>
 
-#define MULTITHREADED_LOAD 1
+#define MULTITHREADED_LOAD 0
 const int NUM_THREADS = 4;
+const int NUM_PATCHES = 4;
+const int TERRAIN_TILE_RESOLUTION = 512;
 
 namespace Library
 {
 
-	Terrain::Terrain(std::string path, Game& pGame, Camera& camera, DirectionalLight& light, bool isWireframe) :
+	Terrain::Terrain(std::string path, Game& pGame, Camera& camera, DirectionalLight& light, Rendering::PostProcessingStack& pp, bool isWireframe) :
 		GameComponent(pGame),
 		mCamera(camera), 
 		mIsWireframe(isWireframe),
 		mDirectionalLight(light),
-		mHeightMaps(0, nullptr)
+		mHeightMaps(0, nullptr),
+		mPPStack(pp)
 	{
 		if (!(mNumTiles && !(mNumTiles & (mNumTiles - 1))))
 			throw GameException("Number of tiles defined is not a power of 2!");
@@ -42,60 +45,32 @@ namespace Library
 		mMaterial = new TerrainMaterial();
 		mMaterial->Initialize(effect);
 
-		// creating terrain vertex buffer for patches
-		float* patches_rawdata = new float[64 * 64 * 4];
-		for (int i = 0; i < 64; i++)
-			for (int j = 0; j < 64; j++)
-			{
-				patches_rawdata[(i + j * 64) * 4 + 0] = i * 512 / 64;
-				patches_rawdata[(i + j * 64) * 4 + 1] = j * 512 / 64;
-				patches_rawdata[(i + j * 64) * 4 + 2] = 512 / 64;
-				patches_rawdata[(i + j * 64) * 4 + 3] = 512 / 64;
-			}
-
-		D3D11_BUFFER_DESC buf_desc;
-		memset(&buf_desc, 0, sizeof(buf_desc));
-
-		buf_desc.ByteWidth = 64 * 64 * 4 * sizeof(float);
-		buf_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		buf_desc.Usage = D3D11_USAGE_DEFAULT;
-
-		D3D11_SUBRESOURCE_DATA subresource_data;
-		subresource_data.pSysMem = patches_rawdata;
-		subresource_data.SysMemPitch = 0;
-		subresource_data.SysMemSlicePitch = 0;
-
-		if (FAILED(mGame->Direct3DDevice()->CreateBuffer(&buf_desc, &subresource_data, &mVertexPatchBuffer)))
-			throw GameException("ID3D11Device::CreateBuffer() failed while generating vertex buffer of terrain mesh patch");
-
-		free(patches_rawdata);
-
 		auto startTime = std::chrono::system_clock::now();
 		
 		for (int i = 0; i < mNumTiles; i++)
 			mHeightMaps.push_back(new HeightMap(mWidth, mHeight));
 
-		//LoadTextures(path);
+		LoadTextures(path);
 
 #if MULTITHREADED_LOAD
 
-		//std::vector<std::thread> threads;
-		//threads.reserve(NUM_THREADS);
-		//
-		//int threadOffset = sqrt(mNumTiles) / 2;
-		//for (int i = 0; i < NUM_THREADS; i++)
-		//{
-		//	threads.push_back(
-		//		std::thread
-		//		(
-		//			[&, this] {this->LoadTileGroup(i, path); }
-		//		)
-		//	);
-		//}
-		//for (auto& t : threads) t.join();
+		std::vector<std::thread> threads;
+		threads.reserve(NUM_THREADS);
+		
+		int threadOffset = sqrt(mNumTiles) / 2;
+		for (int i = 0; i < NUM_THREADS; i++)
+		{
+			threads.push_back(
+				std::thread
+				(
+					[&, this] {this->LoadTileGroup(i, path); }
+				)
+			);
+		}
+		for (auto& t : threads) t.join();
 #else
 
-		//LoadTileGroup(0, path);
+		LoadTileGroup(0, path);
 #endif
 		std::chrono::duration<double> durationTime = std::chrono::system_clock::now() - startTime;
 		//float timeSec = durationTime.count();
@@ -131,15 +106,12 @@ namespace Library
 		{
 			for (int j = 0; j < numTilesSqrt; j++)
 			{
-
 				int index = i * numTilesSqrt + j;
 				std::string filePathSplatmap = path;
 				filePathSplatmap += "Splat_x" + std::to_string(i) + "_y" + std::to_string(j) + ".png";
-
 				LoadSplatmap(i, j, filePathSplatmap); //unfortunately, not thread safe
 			}
 		}
-
 	}
 	void Terrain::LoadTileGroup(int threadIndex, std::string path)
 	{
@@ -202,7 +174,7 @@ namespace Library
 
 			UINT stride = sizeof(float) * 4;
 			UINT offset = 0;
-			context->IASetVertexBuffers(0, 1, &mVertexPatchBuffer, &stride, &offset);
+			context->IASetVertexBuffers(0, 1, &(mHeightMaps[tileIndex]->mVertexBufferTS), &stride, &offset);
 
 			XMMATRIX wvp = mHeightMaps[tileIndex]->mWorldMatrix * mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
 			mMaterial->World() << mHeightMaps[tileIndex]->mWorldMatrix;
@@ -224,14 +196,17 @@ namespace Library
 			if (mIsWireframe)
 			{
 				context->RSSetState(RasterizerStates::Wireframe);
-				context->Draw(64 * 64, 0);
+				context->Draw(NUM_PATCHES * NUM_PATCHES, 0);
 				context->RSSetState(nullptr);
 			}
 			else
-				context->Draw(64 * 64, 0);
+				context->Draw(NUM_PATCHES * NUM_PATCHES, 0);
 
+			GetGame()->Direct3DDeviceContext()->ClearState();
+			GetGame()->Direct3DDeviceContext()->RSSetViewports(1, &(GetGame()->Viewport()));
+			mPPStack.ResetOMToMainRenderTarget();
 		}
-		else
+
 		{
 			context->IASetPrimitiveTopology(/*D3D11_PRIMITIVE_TOPOLOGY_LINELIST*/D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -290,7 +265,7 @@ namespace Library
 		indices = new unsigned long[mHeightMaps[tileIndex]->mIndexCount];
 
 		//XMFLOAT4 vertexColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-
+			
 		int index = 0;
 		int index1, index2, index3, index4;
 		// Load the vertex and index array with the terrain data.
@@ -298,10 +273,10 @@ namespace Library
 		{
 			for (int i = 0; i < ((int)mWidth - 1); i++)
 			{
-				index1 = (mHeight * j) + i;          // Bottom left.
-				index2 = (mHeight * j) + (i + 1);      // Bottom right.
-				index3 = (mHeight * (j + 1)) + i;      // Upper left.
-				index4 = (mHeight * (j + 1)) + (i + 1);  // Upper right.
+				index1 = (mHeight * j) + i;					// Bottom left.	
+				index2 = (mHeight * j) + (i + 1);			// Bottom right.
+				index3 = (mHeight * (j + 1)) + i;			// Upper left.	
+				index4 = (mHeight * (j + 1)) + (i + 1);		// Upper right.	
 				
 				float u, v;
 				float uTile, vTile;
@@ -469,7 +444,38 @@ namespace Library
 		if (error != 0)
 			throw GameException("Can not close the terrain's heightmap RAW file!");
 
-		//int tileIndex = tileIndexX * sqrt(mNumTiles) + tileIndexY;
+
+		// genertate tessellated vertex buffers
+		{
+			// creating terrain vertex buffer for patches
+			float* patches_rawdata = new float[NUM_PATCHES * NUM_PATCHES * 4];
+			for (int i = 0; i < NUM_PATCHES; i++)
+				for (int j = 0; j < NUM_PATCHES; j++)
+				{
+					patches_rawdata[(i + j * NUM_PATCHES) * 4 + 0] = i * TERRAIN_TILE_RESOLUTION / NUM_PATCHES + TERRAIN_TILE_RESOLUTION * (tileIndexX - 1);
+					patches_rawdata[(i + j * NUM_PATCHES) * 4 + 1] = j * TERRAIN_TILE_RESOLUTION / NUM_PATCHES + TERRAIN_TILE_RESOLUTION * -tileIndexY;
+
+					patches_rawdata[(i + j * NUM_PATCHES) * 4 + 2] = TERRAIN_TILE_RESOLUTION / NUM_PATCHES;
+					patches_rawdata[(i + j * NUM_PATCHES) * 4 + 3] = TERRAIN_TILE_RESOLUTION / NUM_PATCHES;
+				}
+
+			D3D11_BUFFER_DESC buf_desc;
+			memset(&buf_desc, 0, sizeof(buf_desc));
+
+			buf_desc.ByteWidth = NUM_PATCHES * NUM_PATCHES * 4 * sizeof(float);
+			buf_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+			buf_desc.Usage = D3D11_USAGE_DEFAULT;
+
+			D3D11_SUBRESOURCE_DATA subresource_data;
+			subresource_data.pSysMem = patches_rawdata;
+			subresource_data.SysMemPitch = 0;
+			subresource_data.SysMemSlicePitch = 0;
+
+			if (FAILED(mGame->Direct3DDevice()->CreateBuffer(&buf_desc, &subresource_data, &(mHeightMaps[tileIndex]->mVertexBufferTS))))
+				throw GameException("ID3D11Device::CreateBuffer() failed while generating vertex buffer of terrain mesh patch");
+
+			free(patches_rawdata);
+		}
 
 		// Copy the image data into the height map array.
 		for (j = 0; j < (int)mHeight; j++)
@@ -480,7 +486,7 @@ namespace Library
 
 				// Store the height at this point in the height map array.
 				mHeightMaps[tileIndex]->mData[index].x = (float)(i + (int)mWidth * (tileIndexX - 1));
-				mHeightMaps[tileIndex]->mData[index].y = (float)rawImage[index] / mHeightScale;
+				mHeightMaps[tileIndex]->mData[index].y = 0.0f;// (float)rawImage[index] / mHeightScale;
 				mHeightMaps[tileIndex]->mData[index].z = (float)(j - (int)mHeight * tileIndexY);
 
 				if (tileIndex > 0) //a way to fix the seams between tiles...
@@ -704,6 +710,7 @@ namespace Library
 	HeightMap::~HeightMap()
 	{		
 		ReleaseObject(mVertexBuffer);
+		ReleaseObject(mVertexBufferTS);
 		ReleaseObject(mIndexBuffer);
 		ReleaseObject(mSplatTexture);
 		DeleteObjects(mData);

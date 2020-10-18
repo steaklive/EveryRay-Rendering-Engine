@@ -239,6 +239,7 @@ namespace Rendering
 
 		void Update();
 		void DrawFullscreenQuad(ID3D11DeviceContext* pContext);
+		void ResetOMToMainRenderTarget();
 		void ShowPostProcessingWindow();
 
 		ID3D11ShaderResourceView* GetDepthOutputTexture();

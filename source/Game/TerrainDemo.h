@@ -78,5 +78,6 @@ namespace Rendering
 		std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
 
 		bool isWireframe = false;
+		bool isTessellation = false;
 	};
 }

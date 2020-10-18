@@ -3,6 +3,7 @@
 #include "GameComponent.h"
 #include "Camera.h"
 #include "DirectionalLight.h"
+#include "PostProcessingStack.h"
 
 namespace Library 
 {
@@ -28,6 +29,7 @@ namespace Library
 		~HeightMap();
 
 		ID3D11Buffer* mVertexBuffer = nullptr;
+		ID3D11Buffer* mVertexBufferTS = nullptr;
 		ID3D11Buffer* mIndexBuffer = nullptr;
 		ID3D11ShaderResourceView* mSplatTexture = nullptr;
 		int mVertexCount = 0;
@@ -40,7 +42,7 @@ namespace Library
 	class Terrain : public GameComponent
 	{
 	public:
-		Terrain(std::string path, Game& game, Camera& camera, DirectionalLight& light ,bool isWireframe);
+		Terrain(std::string path, Game& game, Camera& camera, DirectionalLight& light, Rendering::PostProcessingStack& pp, bool isWireframe);
 		~Terrain();
 
 		UINT GetWidth() { return mWidth; }
@@ -51,6 +53,7 @@ namespace Library
 		void Update();
 
 		void SetWireframeMode(bool flag) { mIsWireframe = flag; }
+		void SetTessellationMode(bool flag) { mUseTessellation = flag; }
 
 	private:
 		Camera& mCamera;
@@ -64,6 +67,8 @@ namespace Library
 		TerrainMaterial* mMaterial;
 
 		DirectionalLight& mDirectionalLight;
+
+		Rendering::PostProcessingStack& mPPStack;
 
 		UINT mWidth = /*1024*/ 512;
 		UINT mHeight = /*1024*/ 512;
