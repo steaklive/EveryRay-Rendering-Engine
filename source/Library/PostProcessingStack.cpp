@@ -738,6 +738,12 @@ namespace Rendering {
 		pContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 		pContext->Draw(4, 0);
 	}
+
+	void PostProcessingStack::ResetOMToMainRenderTarget()
+	{
+		if (mMainRenderTarget)
+			mMainRenderTarget->Begin();
+	}
 }
 
 

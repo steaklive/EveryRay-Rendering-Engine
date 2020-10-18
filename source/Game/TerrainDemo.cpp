@@ -197,11 +197,11 @@ namespace Rendering
 
 		mRenderStateHelper = new RenderStateHelper(*mGame);
 
-		mTerrain = new Terrain(Utility::GetFilePath("content\\terrain\\terrain"), *mGame, *mCamera, *mDirectionalLight, false);
 		//PP
 		mPostProcessingStack = new PostProcessingStack(*mGame, *mCamera);
 		mPostProcessingStack->Initialize(false, false, true, true, true, false);
-
+		
+		mTerrain = new Terrain(Utility::GetFilePath("content\\terrain\\terrain"), *mGame, *mCamera, *mDirectionalLight, *mPostProcessingStack, false);
 
 		mCamera->SetPosition(XMFLOAT3(0, 0.0f, 0.0f));
 		mCamera->SetFarPlaneDistance(100000.0f);
@@ -241,6 +241,7 @@ namespace Rendering
 		mShadowMapper->Update(gameTime);
 
 		mTerrain->SetWireframeMode(isWireframe);
+		mTerrain->SetTessellationMode(isTessellation);
 
 		for (auto object : mRenderingObjects)
 			object.second->Update(gameTime);
@@ -276,6 +277,7 @@ namespace Rendering
 		//	ImGui::End();
 		//}
 		ImGui::Checkbox("Render Wireframe", &isWireframe);
+		ImGui::Checkbox("Switch to hardware tessellation", &isTessellation);
 
 		ImGui::End();
 	}
