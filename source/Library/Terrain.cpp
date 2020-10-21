@@ -107,9 +107,15 @@ namespace Library
 			for (int j = 0; j < numTilesSqrt; j++)
 			{
 				int index = i * numTilesSqrt + j;
+				
 				std::string filePathSplatmap = path;
 				filePathSplatmap += "Splat_x" + std::to_string(i) + "_y" + std::to_string(j) + ".png";
-				LoadSplatmap(i, j, filePathSplatmap); //unfortunately, not thread safe
+
+				std::string filePathHeightmap = path;
+				filePathHeightmap += "Height_x" + std::to_string(i) + "_y" + std::to_string(j) + ".png";
+
+				LoadSplatmapPerTileGPU(i, j, filePathSplatmap); //unfortunately, not thread safe
+				LoadHeightmapPerTileGPU(i, j, filePathHeightmap); //unfortunately, not thread safe
 			}
 		}
 	}
@@ -131,13 +137,13 @@ namespace Library
 				std::string filePathHeightmap = path;
 				filePathHeightmap += "Height_x" + std::to_string(i) + "_y" + std::to_string(j) + ".r16";	
 
-				LoadRawHeightmapTile(i, j, filePathHeightmap);
+				LoadRawHeightmapPerTileCPU(i, j, filePathHeightmap);
 				GenerateTileMesh(index);
 			}
 		}
 	}
 
-	void Terrain::LoadSplatmap(int tileIndexX, int tileIndexY, std::string path)
+	void Terrain::LoadSplatmapPerTileGPU(int tileIndexX, int tileIndexY, std::string path)
 	{
 		int tileIndex = tileIndexX * sqrt(mNumTiles) + tileIndexY;
 		if (tileIndex >= mHeightMaps.size())
@@ -146,7 +152,21 @@ namespace Library
 		std::wstring pathW = Utility::ToWideString(path);
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), pathW.c_str(), nullptr, &(mHeightMaps[tileIndex]->mSplatTexture))))
 		{
-			std::string errorMessage = "Failed to create Terrain Splat Map: " + path;
+			std::string errorMessage = "Failed to create tile's 'Splat Map' SRV: " + path;
+			throw GameException(errorMessage.c_str());
+		}
+	}
+
+	void Terrain::LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, std::string path)
+	{
+		int tileIndex = tileIndexX * sqrt(mNumTiles) + tileIndexY;
+		if (tileIndex >= mHeightMaps.size())
+			return;
+
+		std::wstring pathW = Utility::ToWideString(path);
+		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), pathW.c_str(), nullptr, &(mHeightMaps[tileIndex]->mHeightTexture))))
+		{
+			std::string errorMessage = "Failed to create tile's 'Heightmap Map' SRV: " + path;
 			throw GameException(errorMessage.c_str());
 		}
 	}
@@ -164,7 +184,7 @@ namespace Library
 	{
 		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
 
-		if (mUseTessellation)
+		if (mUseTessellatedTerrain)
 		{
 			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST);
 			
@@ -180,6 +200,7 @@ namespace Library
 			mMaterial->World() << mHeightMaps[tileIndex]->mWorldMatrix;
 			mMaterial->View() << mCamera.ViewMatrix();
 			mMaterial->Projection() << mCamera.ProjectionMatrix();
+			mMaterial->heightTexture() << mHeightMaps[tileIndex]->mHeightTexture;
 			mMaterial->grassTexture() << mGrassTexture;
 			mMaterial->groundTexture() << mGroundTexture;
 			mMaterial->rockTexture() << mRockTexture;
@@ -190,6 +211,8 @@ namespace Library
 			mMaterial->AmbientColor() << XMVECTOR{ mDirectionalLight.GetAmbientLightColor().x,  mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
 			mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f, 1.0f, 1.0f , 1.0f }; //todo
 			mMaterial->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
+			mMaterial->TessellationFactor() << (float)mTessellationFactor;
+			mMaterial->TerrainHeightScale() << mTerrainHeightScale;
 
 			pass->Apply(0, context);
 
@@ -207,6 +230,7 @@ namespace Library
 			mPPStack.ResetOMToMainRenderTarget();
 		}
 
+		if (mUseNonTessellatedTerrain)
 		{
 			context->IASetPrimitiveTopology(/*D3D11_PRIMITIVE_TOPOLOGY_LINELIST*/D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -233,7 +257,9 @@ namespace Library
 			mMaterial->AmbientColor() << XMVECTOR{ mDirectionalLight.GetAmbientLightColor().x,  mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
 			mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f, 1.0f, 1.0f , 1.0f }; //todo
 			mMaterial->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
-
+			mMaterial->TessellationFactor() << (float)mTessellationFactor;
+			mMaterial->TerrainHeightScale() << mTerrainHeightScale;
+			
 			pass->Apply(0, context);
 
 			if (mIsWireframe)
@@ -246,7 +272,6 @@ namespace Library
 				context->DrawIndexed(mHeightMaps[tileIndex]->mIndexCount, 0, 0);
 		}
 	}
-
 	void Terrain::GenerateTileMesh(int tileIndex)
 	{
 		if (tileIndex >= mHeightMaps.size())
@@ -411,7 +436,7 @@ namespace Library
 		indices = NULL;
 	}
 
-	void Terrain::LoadRawHeightmapTile(int tileIndexX, int tileIndexY, std::string path)
+	void Terrain::LoadRawHeightmapPerTileCPU(int tileIndexX, int tileIndexY, std::string path)
 	{
 		int tileIndex = tileIndexX * sqrt(mNumTiles) + tileIndexY;
 		if (tileIndex >= mHeightMaps.size())
@@ -486,7 +511,7 @@ namespace Library
 
 				// Store the height at this point in the height map array.
 				mHeightMaps[tileIndex]->mData[index].x = (float)(i + (int)mWidth * (tileIndexX - 1));
-				mHeightMaps[tileIndex]->mData[index].y = 0.0f;// (float)rawImage[index] / mHeightScale;
+				mHeightMaps[tileIndex]->mData[index].y = (float)rawImage[index] / mHeightScale;
 				mHeightMaps[tileIndex]->mData[index].z = (float)(j - (int)mHeight * tileIndexY);
 
 				if (tileIndex > 0) //a way to fix the seams between tiles...
@@ -713,6 +738,7 @@ namespace Library
 		ReleaseObject(mVertexBufferTS);
 		ReleaseObject(mIndexBuffer);
 		ReleaseObject(mSplatTexture);
+		ReleaseObject(mHeightTexture);
 		DeleteObjects(mData);
 	}
 

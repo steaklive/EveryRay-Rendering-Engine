@@ -241,7 +241,10 @@ namespace Rendering
 		mShadowMapper->Update(gameTime);
 
 		mTerrain->SetWireframeMode(isWireframe);
-		mTerrain->SetTessellationMode(isTessellation);
+		mTerrain->SetTessellationTerrainMode(isTessellationTerrain);
+		mTerrain->SetNormalTerrainMode(isNormalTerrain);
+		mTerrain->SetTessellationFactor(tessellationFactor);
+		mTerrain->SetTerrainHeightScale(terrainHeightScale);
 
 		for (auto object : mRenderingObjects)
 			object.second->Update(gameTime);
@@ -277,7 +280,10 @@ namespace Rendering
 		//	ImGui::End();
 		//}
 		ImGui::Checkbox("Render Wireframe", &isWireframe);
-		ImGui::Checkbox("Switch to hardware tessellation", &isTessellation);
+		ImGui::Checkbox("Render tessellated terrain", &isTessellationTerrain);
+		ImGui::Checkbox("Render non-tessellated terrain", &isNormalTerrain);
+		ImGui::SliderInt("Tessellation factor", &tessellationFactor, 1, 64);
+		ImGui::SliderFloat("Height scale", &terrainHeightScale, 0.0f, 1000.0f);
 
 		ImGui::End();
 	}

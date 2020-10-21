@@ -32,6 +32,7 @@ namespace Library
 		ID3D11Buffer* mVertexBufferTS = nullptr;
 		ID3D11Buffer* mIndexBuffer = nullptr;
 		ID3D11ShaderResourceView* mSplatTexture = nullptr;
+		ID3D11ShaderResourceView* mHeightTexture = nullptr;
 		int mVertexCount = 0;
 		int mIndexCount = 0;
 		XMMATRIX mWorldMatrix = XMMatrixIdentity();
@@ -53,16 +54,19 @@ namespace Library
 		void Update();
 
 		void SetWireframeMode(bool flag) { mIsWireframe = flag; }
-		void SetTessellationMode(bool flag) { mUseTessellation = flag; }
-
+		void SetTessellationTerrainMode(bool flag) { mUseTessellatedTerrain = flag; }
+		void SetNormalTerrainMode(bool flag) { mUseNonTessellatedTerrain = flag; }
+		void SetTessellationFactor(int tessellationFactor) { mTessellationFactor = tessellationFactor; };
+		void SetTerrainHeightScale(float scale) { mTerrainHeightScale = scale; };
 	private:
 		Camera& mCamera;
 
 		void LoadTextures(std::string path);
 		void LoadTileGroup(int threadIndex, std::string path);
 		void GenerateTileMesh(int tileIndex);
-		void LoadRawHeightmapTile(int tileIndexX, int tileIndexY, std::string path);
-		void LoadSplatmap(int tileIndexX, int tileIndexY, std::string path);
+		void LoadRawHeightmapPerTileCPU(int tileIndexX, int tileIndexY, std::string path);
+		void LoadSplatmapPerTileGPU(int tileIndexX, int tileIndexY, std::string path);
+		void LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, std::string path);
 
 		TerrainMaterial* mMaterial;
 
@@ -79,7 +83,8 @@ namespace Library
 		int mNumTiles = 16;
 		float mHeightScale = 200.0f;
 
-		bool mUseTessellation = true;
+		bool mUseTessellatedTerrain = true;
+		bool mUseNonTessellatedTerrain = true;
 
 		ID3D11ShaderResourceView* mGrassTexture = nullptr;
 		ID3D11ShaderResourceView* mGroundTexture = nullptr;
@@ -87,5 +92,7 @@ namespace Library
 		ID3D11ShaderResourceView* mMudTexture = nullptr;
 
 		ID3D11Buffer* mVertexPatchBuffer = nullptr;
+		int mTessellationFactor;
+		int mTerrainHeightScale;
 	};
 }
