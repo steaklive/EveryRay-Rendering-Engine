@@ -78,6 +78,9 @@ namespace Rendering
 		std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
 
 		bool isWireframe = false;
-		bool isTessellation = false;
+		bool isTessellationTerrain = false;
+		bool isNormalTerrain = false;
+		int tessellationFactor = 1;
+		float terrainHeightScale = 250.0f;
 	};
 }

@@ -1,9 +1,12 @@
-cbuffer CBufferPerObject
+static const int TILE_SIZE = 512;
+
+cbuffer CBufferPerObject 
 {
     float4x4 World;
     float4x4 View;
     float4x4 Projection;
 }
+
 cbuffer CBufferPerFrame
 {
     float4 SunDirection;
@@ -12,6 +15,11 @@ cbuffer CBufferPerFrame
     float4 ShadowTexelSize;
     float4 ShadowCascadeDistances;
 }
+cbuffer CBufferTerrainData
+{
+    float TessellationFactor;
+    float TerrainHeightScale;
+};
 struct VS_INPUT
 {
 	float4 ObjectPosition: POSITION;
@@ -55,6 +63,27 @@ struct PatchData
     float2 size : SIZE;
 };
 
+SamplerState TerrainTextureSampler
+{
+    Filter = Anisotropic;
+    AddressU = WRAP;
+    AddressV = WRAP;
+};
+
+SamplerState TerrainSplatSampler
+{
+    Filter = MIN_MAG_MIP_LINEAR;
+    AddressU = WRAP;
+    AddressV = WRAP;
+};
+
+Texture2D heightTexture;
+Texture2D splatTexture;
+Texture2D groundTexture;
+Texture2D grassTexture;
+Texture2D rockTexture;
+Texture2D mudTexture;
+
 
 VS_OUTPUT vertex_shader(VS_INPUT IN)
 {
@@ -82,15 +111,13 @@ PatchData hull_constant_function(InputPatch<HS_INPUT, 1> inputPatch)
     PatchData output;
 
     //float distance_to_camera;
-    float tesselation_factor = 0.0f;
+    float tesselation_factor = TessellationFactor;
     float inside_tessellation_factor = 0.0f;
     //float in_frustum = 0;
 
     output.origin = inputPatch[0].origin;
     output.size = inputPatch[0].size;
 
-    
-    tesselation_factor = 1;
     output.Edges[0] = tesselation_factor;
     inside_tessellation_factor += tesselation_factor;
 
@@ -124,9 +151,13 @@ DS_OUTPUT domain_shader(PatchData input, float2 uv : SV_DomainLocation, OutputPa
 {
     DS_OUTPUT output;
     float3 vertexPosition;
+    
+    float2 texcoord01 = (input.origin + uv * input.size) / TILE_SIZE;
+    float height = heightTexture.SampleLevel(TerrainTextureSampler, texcoord01, 0).r;
 	
     vertexPosition.xz = input.origin + uv * input.size;
-    vertexPosition.y = 0;//    base_texvalue.w;
+    vertexPosition.y = TerrainHeightScale * height;
+    
 
 	// moving vertices by detail height along base normal
     //vertexPosition += base_normal * detail_height;
@@ -138,26 +169,6 @@ DS_OUTPUT domain_shader(PatchData input, float2 uv : SV_DomainLocation, OutputPa
     return output;
 }
 
-
-SamplerState TerrainTextureSampler
-{
-    Filter = Anisotropic;
-    AddressU = WRAP;
-    AddressV = WRAP;
-};
-
-SamplerState TerrainSplatSampler
-{
-    Filter = MIN_MAG_MIP_LINEAR;
-    AddressU = WRAP;
-    AddressV = WRAP;
-};
-
-Texture2D splatTexture;
-Texture2D groundTexture;
-Texture2D grassTexture;
-Texture2D rockTexture;
-Texture2D mudTexture;
 
 float4 pixel_shader(VS_OUTPUT IN) : SV_Target
 {
