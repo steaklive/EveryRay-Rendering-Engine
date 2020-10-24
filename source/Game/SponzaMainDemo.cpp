@@ -52,7 +52,6 @@ namespace Rendering
 	
 	SponzaMainDemo::SponzaMainDemo(Game& game, Camera& camera)
 		: DrawableGameComponent(game, camera),
-		mKeyboard(nullptr),
 		mWorldMatrix(MatrixHelper::Identity),
 		mRenderStateHelper(nullptr), 
 		mShadowMapper(nullptr),
@@ -63,7 +62,8 @@ namespace Rendering
 		mIntegrationMapTextureSRV(nullptr),
 		mGrid(nullptr),
 		mGBuffer(nullptr),
-		mSSRQuad(nullptr)
+		mSSRQuad(nullptr),
+		mPostProcessingStack(nullptr)
 	{
 	}
 
@@ -81,14 +81,13 @@ namespace Rendering
 		DeleteObject(mSkybox);
 		DeleteObject(mGrid);
 		DeleteObject(mPostProcessingStack);
+		DeleteObject(mGBuffer);
+		DeleteObject(mSSRQuad);
+		DeleteObject(mShadowMapper);
 
 		ReleaseObject(mIrradianceTextureSRV);
 		ReleaseObject(mRadianceTextureSRV);
 		ReleaseObject(mIntegrationMapTextureSRV);
-
-		DeleteObject(mGBuffer);
-		DeleteObject(mSSRQuad);
-		DeleteObject(mShadowMapper);
 	}
 
 	#pragma region COMPONENT_METHODS
@@ -96,25 +95,17 @@ namespace Rendering
 	// 'DemoLevel' ugly methods...
 	bool SponzaMainDemo::IsComponent()
 	{
-		return mGame->IsInGameComponents<SponzaMainDemo*>(mGame->components, this);
+		return mGame->IsInGameLevels<SponzaMainDemo*>(mGame->levels, this);
 	}
 	void SponzaMainDemo::Create()
 	{
 		Initialize();
-		mGame->components.push_back(this);
+		mGame->levels.push_back(this);
 	}
 	void SponzaMainDemo::Destroy()
 	{
-		std::pair<bool, int> res = mGame->FindInGameComponents<SponzaMainDemo*>(mGame->components, this);
-
-		if (res.first)
-		{
-			mGame->components.erase(mGame->components.begin() + res.second);
-
-			//very provocative...
-			delete this;
-		}
-
+		this->~SponzaMainDemo();
+		mGame->levels.clear();
 	}
 	/////////////////////////////////////////////////////////////  
 #pragma endregion
@@ -211,10 +202,6 @@ namespace Rendering
 		mSSRQuad = new FullScreenQuad(*mGame, *(mRenderingObjects["Sponza"]->GetMaterials()[MaterialHelper::ssrMaterialName]));
 		mSSRQuad->Initialize();
 
-
-		mKeyboard = (Keyboard*)mGame->Services().GetService(Keyboard::TypeIdClass());
-		assert(mKeyboard != nullptr);
-
 		mSkybox = new Skybox(*mGame, *mCamera, Utility::GetFilePath(L"content\\textures\\Sky_Type_4.dds"), 100);
 		mSkybox->Initialize();
 
@@ -261,7 +248,7 @@ namespace Rendering
 			throw GameException("Failed to create Integration Texture.");
 	}
 
-	void SponzaMainDemo::Update(const GameTime& gameTime)
+	void SponzaMainDemo::UpdateLevel(const GameTime& gameTime)
 	{
 		UpdateImGui();
 
@@ -315,7 +302,7 @@ namespace Rendering
 		ImGui::End();
 	}
 
-	void SponzaMainDemo::Draw(const GameTime& gameTime)
+	void SponzaMainDemo::DrawLevel(const GameTime& gameTime)
 	{
 		float clear_color[4] = { 0.0f, 1.0f, 1.0f, 0.0f };
 

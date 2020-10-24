@@ -51,7 +51,6 @@ namespace Rendering
 
 	TerrainDemo::TerrainDemo(Game& game, Camera& camera)
 		: DrawableGameComponent(game, camera),
-		mKeyboard(nullptr),
 		mWorldMatrix(MatrixHelper::Identity),
 		mRenderStateHelper(nullptr),
 		mDirectionalLight(nullptr),
@@ -62,8 +61,9 @@ namespace Rendering
 		mGrid(nullptr),
 		mGBuffer(nullptr),
 		mSSRQuad(nullptr),
-		mShadowMapper(nullptr)
-		//mTerrain(nullptr)
+		mShadowMapper(nullptr),
+		mTerrain(nullptr),
+		mPostProcessingStack(nullptr)
 	{
 	}
 
@@ -82,40 +82,31 @@ namespace Rendering
 		DeleteObject(mSkybox);
 		DeleteObject(mGrid);
 		DeleteObject(mPostProcessingStack);
+		DeleteObject(mGBuffer);
+		DeleteObject(mSSRQuad);
+		DeleteObject(mShadowMapper);
 
 		ReleaseObject(mIrradianceTextureSRV);
 		ReleaseObject(mRadianceTextureSRV);
 		ReleaseObject(mIntegrationMapTextureSRV);
-
-		DeleteObject(mGBuffer);
-		DeleteObject(mSSRQuad);
-		DeleteObject(mShadowMapper);
 	}
 
-#pragma region COMPONENT_METHODS
+	#pragma region COMPONENT_METHODS
 	/////////////////////////////////////////////////////////////
 	// 'DemoLevel' ugly methods...
 	bool TerrainDemo::IsComponent()
 	{
-		return mGame->IsInGameComponents<TerrainDemo*>(mGame->components, this);
+		return mGame->IsInGameLevels<TerrainDemo*>(mGame->levels, this);
 	}
 	void TerrainDemo::Create()
 	{
 		Initialize();
-		mGame->components.push_back(this);
+		mGame->levels.push_back(this);
 	}
 	void TerrainDemo::Destroy()
 	{
-		std::pair<bool, int> res = mGame->FindInGameComponents<TerrainDemo*>(mGame->components, this);
-
-		if (res.first)
-		{
-			mGame->components.erase(mGame->components.begin() + res.second);
-
-			//very provocative...
-			delete this;
-		}
-
+		this->~TerrainDemo();
+		mGame->levels.clear();
 	}
 	/////////////////////////////////////////////////////////////  
 #pragma endregion
@@ -176,9 +167,6 @@ namespace Rendering
 		//mRenderingObjects["Acer Tree Medium"]->CalculateInstanceObjectsRandomDistribution(1500);
 		//mRenderingObjects["Acer Tree Medium"]->LoadInstanceBuffers();
 
-		mKeyboard = (Keyboard*)mGame->Services().GetService(Keyboard::TypeIdClass());
-		assert(mKeyboard != nullptr);
-
 		mSkybox = new Skybox(*mGame, *mCamera, Utility::GetFilePath(L"content\\textures\\Sky_Type_4.dds"), 10000);
 		mSkybox->Initialize();
 
@@ -228,7 +216,7 @@ namespace Rendering
 
 	}
 
-	void TerrainDemo::Update(const GameTime& gameTime)
+	void TerrainDemo::UpdateLevel(const GameTime& gameTime)
 	{
 		UpdateImGui();
 
@@ -288,7 +276,7 @@ namespace Rendering
 		ImGui::End();
 	}
 
-	void TerrainDemo::Draw(const GameTime& gameTime)
+	void TerrainDemo::DrawLevel(const GameTime& gameTime)
 	{
 		float clear_color[4] = { 0.0f, 1.0f, 1.0f, 0.0f };
 
