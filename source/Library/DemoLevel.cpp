@@ -10,6 +10,16 @@ namespace Library {
 	{
 	}
 
+	void DemoLevel::UpdateLevel(const GameTime& time)
+	{
+
+	}
+
+	void DemoLevel::DrawLevel(const GameTime& time)
+	{
+
+	}
+
 	bool DemoLevel::IsComponent()
 	{
 		return false;

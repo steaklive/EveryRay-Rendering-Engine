@@ -217,6 +217,7 @@ namespace Rendering
 
 		UpdateImGui();
 		Game::Update(gameTime);
+		demoLevel->UpdateLevel(gameTime);
 
 		auto endUpdateTimer = std::chrono::high_resolution_clock::now();
 		mElapsedTimeUpdateCPU = endUpdateTimer - startUpdateTimer;
@@ -344,6 +345,7 @@ namespace Rendering
 		mDirect3DDeviceContext->ClearRenderTargetView(mRenderTargetView, reinterpret_cast<const float*>(&BackgroundColor));
 		mDirect3DDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 		Game::Draw(gameTime);
+		demoLevel->DrawLevel(gameTime);
 
 		mRenderStateHelper->SaveAll();
 		mRenderStateHelper->RestoreAll();

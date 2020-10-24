@@ -38,13 +38,13 @@ namespace Rendering
 		TerrainDemo(Game& game, Camera& camera);
 		~TerrainDemo();
 
-		virtual void Initialize() override;
-		virtual void Update(const GameTime& gameTime) override;
-		virtual void Draw(const GameTime& gameTime) override;
+		//virtual void Initialize() override;
 
 		virtual void Create() override;
 		virtual void Destroy() override;
 		virtual bool IsComponent() override;
+		virtual void UpdateLevel(const GameTime& gameTime) override;
+		virtual void DrawLevel(const GameTime& gameTime) override;
 
 	private:
 		TerrainDemo();
@@ -57,10 +57,10 @@ namespace Rendering
 		void UpdateShadow1MaterialVariables(const std::string & objectName, int meshIndex);
 		void UpdateShadow2MaterialVariables(const std::string & objectName, int meshIndex);
 		void UpdateImGui();
+		void Initialize();
 
 		std::map<std::string, RenderingObject*> mRenderingObjects;
 
-		Keyboard* mKeyboard;
 		XMFLOAT4X4 mWorldMatrix;
 		RenderStateHelper* mRenderStateHelper;
 		Skybox* mSkybox;

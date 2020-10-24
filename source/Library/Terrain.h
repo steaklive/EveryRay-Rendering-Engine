@@ -33,6 +33,7 @@ namespace Library
 		ID3D11Buffer* mIndexBuffer = nullptr;
 		ID3D11ShaderResourceView* mSplatTexture = nullptr;
 		ID3D11ShaderResourceView* mHeightTexture = nullptr;
+		ID3D11ShaderResourceView* mNormalTexture = nullptr;
 		int mVertexCount = 0;
 		int mIndexCount = 0;
 		XMMATRIX mWorldMatrix = XMMatrixIdentity();
@@ -67,6 +68,7 @@ namespace Library
 		void LoadRawHeightmapPerTileCPU(int tileIndexX, int tileIndexY, std::string path);
 		void LoadSplatmapPerTileGPU(int tileIndexX, int tileIndexY, std::string path);
 		void LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, std::string path);
+		void LoadNormalmapPerTileGPU(int tileIndexX, int tileIndexY, std::string path);
 
 		TerrainMaterial* mMaterial;
 
@@ -93,6 +95,6 @@ namespace Library
 
 		ID3D11Buffer* mVertexPatchBuffer = nullptr;
 		int mTessellationFactor;
-		int mTerrainHeightScale;
+		int mTerrainHeightScale = 389.0f;
 	};
 }

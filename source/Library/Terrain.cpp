@@ -112,10 +112,14 @@ namespace Library
 				filePathSplatmap += "Splat_x" + std::to_string(i) + "_y" + std::to_string(j) + ".png";
 
 				std::string filePathHeightmap = path;
-				filePathHeightmap += "Height_x" + std::to_string(i) + "_y" + std::to_string(j) + ".png";
+				filePathHeightmap += "Height_x" + std::to_string(i) + "_y" + std::to_string(j) + ".png"; //"testHeightMap.png";//
+				
+				std::string filePathNormalmap = path;
+				filePathNormalmap += "Normal_x" + std::to_string(i) + "_y" + std::to_string(j) + ".png";
 
 				LoadSplatmapPerTileGPU(i, j, filePathSplatmap); //unfortunately, not thread safe
 				LoadHeightmapPerTileGPU(i, j, filePathHeightmap); //unfortunately, not thread safe
+				LoadNormalmapPerTileGPU(i, j, filePathNormalmap); //unfortunately, not thread safe
 			}
 		}
 	}
@@ -171,10 +175,24 @@ namespace Library
 		}
 	}
 
+	void Terrain::LoadNormalmapPerTileGPU(int tileIndexX, int tileIndexY, std::string path)
+	{
+		int tileIndex = tileIndexX * sqrt(mNumTiles) + tileIndexY;
+		if (tileIndex >= mHeightMaps.size())
+			return;
+
+		std::wstring pathW = Utility::ToWideString(path);
+		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), pathW.c_str(), nullptr, &(mHeightMaps[tileIndex]->mNormalTexture))))
+		{
+			std::string errorMessage = "Failed to create tile's 'Normal Map' SRV: " + path;
+			throw GameException(errorMessage.c_str());
+		}
+	}
+
 	void Terrain::Draw()
 	{
 		for (int i = 0 ; i < mHeightMaps.size(); i++)
-			Draw(i);
+			Draw(0);
 
 		GetGame()->Direct3DDeviceContext()->ClearState();
 		GetGame()->Direct3DDeviceContext()->RSSetViewports(1, &(GetGame()->Viewport()));
@@ -205,6 +223,7 @@ namespace Library
 			mMaterial->groundTexture() << mGroundTexture;
 			mMaterial->rockTexture() << mRockTexture;
 			mMaterial->mudTexture() << mMudTexture;
+			mMaterial->normalTexture() << mHeightMaps[tileIndex]->mNormalTexture;
 			mMaterial->splatTexture() << mHeightMaps[tileIndex]->mSplatTexture;
 			mMaterial->SunDirection() << XMVectorNegate(mDirectionalLight.DirectionVector());
 			mMaterial->SunColor() << XMVECTOR{ mDirectionalLight.GetDirectionalLightColor().x,  mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z , 1.0f };
@@ -252,6 +271,7 @@ namespace Library
 			mMaterial->rockTexture() << mRockTexture;
 			mMaterial->mudTexture() << mMudTexture;
 			mMaterial->splatTexture() << mHeightMaps[tileIndex]->mSplatTexture;
+			mMaterial->normalTexture() << mHeightMaps[tileIndex]->mNormalTexture;
 			mMaterial->SunDirection() << XMVectorNegate(mDirectionalLight.DirectionVector());
 			mMaterial->SunColor() << XMVECTOR{ mDirectionalLight.GetDirectionalLightColor().x,  mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z , 1.0f };
 			mMaterial->AmbientColor() << XMVECTOR{ mDirectionalLight.GetAmbientLightColor().x,  mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
@@ -739,6 +759,7 @@ namespace Library
 		ReleaseObject(mIndexBuffer);
 		ReleaseObject(mSplatTexture);
 		ReleaseObject(mHeightTexture);
+		ReleaseObject(mNormalTexture);
 		DeleteObjects(mData);
 	}
 

@@ -45,10 +45,10 @@ namespace Rendering
 		SponzaMainDemo(Game& game, Camera& camera);
 		~SponzaMainDemo();
 
-		virtual void Initialize() override;
-		virtual void Update(const GameTime& gameTime) override;
-		virtual void Draw(const GameTime& gameTime) override;
+		//virtual void Initialize() override;
 
+		virtual void UpdateLevel(const GameTime& gameTime) override;
+		virtual void DrawLevel(const GameTime& gameTime) override;
 		virtual void Create() override;
 		virtual void Destroy() override;
 		virtual bool IsComponent() override;
@@ -63,30 +63,24 @@ namespace Rendering
 		void UpdateSSRMaterialVariables(const std::string & objectName, int meshIndex);
 		void UpdateShadowMaterialVariables(const std::string & objectName, int meshIndex);
 		void UpdateImGui();
+		void Initialize();
 
 		//void CheckMouseIntersections();
-
-		Keyboard* mKeyboard;
 		XMFLOAT4X4 mWorldMatrix;
 
 		std::map<std::string, RenderingObject*> mRenderingObjects;
-
 		FullScreenQuad* mSSRQuad;
-
 		DirectionalLight* mDirectionalLight;
 		ShadowMapper* mShadowMapper;
-
 		Skybox* mSkybox;
 		Grid* mGrid;
+		GBuffer* mGBuffer;
+		PostProcessingStack* mPostProcessingStack;
+		RenderStateHelper* mRenderStateHelper;
 
 		ID3D11ShaderResourceView* mIrradianceTextureSRV;
 		ID3D11ShaderResourceView* mRadianceTextureSRV;
 		ID3D11ShaderResourceView* mIntegrationMapTextureSRV;
 		std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
-
-		GBuffer* mGBuffer;
-
-		PostProcessingStack* mPostProcessingStack;
-		RenderStateHelper* mRenderStateHelper;
 	};
 }

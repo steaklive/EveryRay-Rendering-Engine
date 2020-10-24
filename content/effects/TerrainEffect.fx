@@ -52,6 +52,8 @@ struct HS_OUTPUT
 struct DS_OUTPUT
 {
     float4 position : SV_Position;
+    centroid float2 texcoord : TEXCOORD0;
+    centroid float3 normal : NORMAL;
 };
 
 struct PatchData
@@ -72,12 +74,13 @@ SamplerState TerrainTextureSampler
 
 SamplerState TerrainSplatSampler
 {
-    Filter = MIN_MAG_MIP_LINEAR;
-    AddressU = WRAP;
-    AddressV = WRAP;
+    //Filter = MIN_MAG_MIP_LINEAR;
+    //AddressU = BORDER;
+    //AddressV = BORDER;
 };
 
 Texture2D heightTexture;
+Texture2D normalTexture;
 Texture2D splatTexture;
 Texture2D groundTexture;
 Texture2D grassTexture;
@@ -152,20 +155,18 @@ DS_OUTPUT domain_shader(PatchData input, float2 uv : SV_DomainLocation, OutputPa
     DS_OUTPUT output;
     float3 vertexPosition;
     
-    float2 texcoord01 = (input.origin + uv * input.size) / TILE_SIZE;
-    float height = heightTexture.SampleLevel(TerrainTextureSampler, texcoord01, 0).r;
+    float2 texcoord01 = (input.origin + uv * input.size) / float(TILE_SIZE);
+    float height = heightTexture.SampleLevel(TerrainSplatSampler, texcoord01, 0).r;
 	
     vertexPosition.xz = input.origin + uv * input.size;
     vertexPosition.y = TerrainHeightScale * height;
-    
-
-	// moving vertices by detail height along base normal
-    //vertexPosition += base_normal * detail_height;
-
+   
 	// writing output params
     output.position = mul(float4(vertexPosition, 1.0), World);
     output.position = mul(output.position, View);
     output.position = mul(output.position, Projection);
+    output.texcoord = texcoord01;
+    output.normal = float3(1, 1, 1); //not implemented
     return output;
 }
 
@@ -189,14 +190,38 @@ float4 pixel_shader(VS_OUTPUT IN) : SV_Target
         color += SunColor.rgb * lightIntensity;
 
     color = saturate(color);
-    color *= albedo;
+    color *= float3(0.5, 0.5, 0.5);
     
     return float4(color, 1.0f);
 }
 
-float4 pixel_shader_ts(/*PS_INPUT IN*/) : SV_Target
+float4 pixel_shader_ts(DS_OUTPUT IN) : SV_Target
 {   
-    return float4(1.0, 1.0, 1.0, 1.0);
+    float2 uvTile = IN.texcoord;
+    //uvTile.y = 1.0f - uvTile.y;
+    
+    float4 splat = splatTexture.Sample(TerrainSplatSampler, uvTile);
+    float4 height = heightTexture.Sample(TerrainSplatSampler, uvTile);
+    
+    float3 ground = groundTexture.Sample(TerrainTextureSampler, uvTile).rgb;
+    float3 grass = grassTexture.Sample(TerrainTextureSampler, uvTile).rgb;
+    float3 rock = rockTexture.Sample(TerrainTextureSampler, uvTile).rgb;
+    float3 mud = mudTexture.Sample(TerrainTextureSampler, uvTile).rgb;
+    
+    float3 albedo = splat.r * mud + splat.g * grass + splat.b * rock + splat.a * ground;
+    
+    float3 color = AmbientColor.rgb;
+
+    float3 normal = normalTexture.Sample(TerrainSplatSampler, uvTile).rgb;
+    float lightIntensity = saturate(dot(normal, SunDirection.rgb));
+
+    if (lightIntensity > 0.0f)
+        color += SunColor.rgb * lightIntensity;
+
+    color = saturate(color);
+    color = height.rgb;
+    
+    return float4(color, 1.0f);
 }
 
 technique11 main
