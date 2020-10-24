@@ -1,5 +1,5 @@
 static const int TILE_SIZE = 512;
-
+static const int DETAIL_TEXTURE_REPEAT = 8;
 cbuffer CBufferPerObject 
 {
     float4x4 World;
@@ -74,13 +74,31 @@ SamplerState TerrainTextureSampler
 
 SamplerState TerrainSplatSampler
 {
-    //Filter = MIN_MAG_MIP_LINEAR;
-    //AddressU = BORDER;
-    //AddressV = BORDER;
+    Filter = MIN_MAG_MIP_LINEAR;
+    AddressU = WRAP;
+    AddressV = WRAP;
+    AddressW = WRAP;
+    //MaxAnisotropy = 16;
 };
 
+SamplerState TerrainHeightSampler
+{
+    Filter = MIN_MAG_MIP_POINT;
+    AddressU = WRAP;
+    AddressV = WRAP;
+    AddressW = WRAP;
+    //MaxAnisotropy = 16;
+};
+
+SamplerState BilinearSampler
+{
+    Filter = MIN_MAG_LINEAR_MIP_POINT;
+    AddressU = WRAP;
+    AddressV = WRAP;
+    AddressW = WRAP;
+    //MaxAnisotropy = 16;
+};
 Texture2D heightTexture;
-Texture2D normalTexture;
 Texture2D splatTexture;
 Texture2D groundTexture;
 Texture2D grassTexture;
@@ -107,6 +125,23 @@ HS_INPUT vertex_shader_ts(VS_INPUT_TS IN)
     OUT.origin = IN.PatchInfo.xy;
     OUT.size = IN.PatchInfo.zw;
     return OUT;
+}
+
+// https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/chapter5-andersson-terrain-rendering-in-frostbite.pdf
+float3 GetNormalFromHeightmap(float2 uv, float texelSize, float maxHeight)
+{
+    float4 h;
+    h[0] = heightTexture.Sample(BilinearSampler, uv + texelSize * float2(0, -1)).r * maxHeight;
+    h[1] = heightTexture.Sample(BilinearSampler, uv + texelSize * float2(-1, 0)).r * maxHeight;
+    h[2] = heightTexture.Sample(BilinearSampler, uv + texelSize * float2(1, 0)).r * maxHeight;
+    h[3] = heightTexture.Sample(BilinearSampler, uv + texelSize * float2(0, 1)).r * maxHeight;
+    
+    float3 n;
+    n.z = h[0] - h[3];
+    n.x = h[1] - h[2];
+    n.y = 2;
+
+    return normalize(n);
 }
 
 PatchData hull_constant_function(InputPatch<HS_INPUT, 1> inputPatch)
@@ -156,17 +191,29 @@ DS_OUTPUT domain_shader(PatchData input, float2 uv : SV_DomainLocation, OutputPa
     float3 vertexPosition;
     
     float2 texcoord01 = (input.origin + uv * input.size) / float(TILE_SIZE);
-    float height = heightTexture.SampleLevel(TerrainSplatSampler, texcoord01, 0).r;
+    float2 texcoord01Height = (input.origin + uv * input.size) / float(TILE_SIZE + 1);
+    float height = heightTexture.SampleLevel(TerrainHeightSampler, texcoord01Height, 0).r;
 	
-    vertexPosition.xz = input.origin + uv * input.size;
+    vertexPosition.xz = input.origin + uv * (input.size + 1);
     vertexPosition.y = TerrainHeightScale * height;
    
+    //calculating base normal rotation matrix
+    //float3 normal = normalize(/*2.0f **/ normalTexture.SampleLevel(TerrainSplatSampler, float2(texcoord01.x, 1.0f - texcoord01.y), 0).rgb /*- float3(1.0f, 1.0f, 1.0f)*/);
+    //normal.z = -normal.z;
+    //float3x3 normal_rotation_matrix;
+    //normal_rotation_matrix[1] = normal;
+    //normal_rotation_matrix[2] = normalize(cross(float3(-1.0, 0.0, 0.0), normal_rotation_matrix[1]));
+    //normal_rotation_matrix[0] = normalize(cross(normal_rotation_matrix[2], normal_rotation_matrix[1]));
+
+	//applying base rotation matrix to detail normal
+    //float3 normalRot = mul(normal, normal_rotation_matrix);
+    
 	// writing output params
     output.position = mul(float4(vertexPosition, 1.0), World);
     output.position = mul(output.position, View);
     output.position = mul(output.position, Projection);
     output.texcoord = texcoord01;
-    output.normal = float3(1, 1, 1); //not implemented
+    output.normal = float3(0, 0, 0);//    normalRot;
     return output;
 }
 
@@ -190,7 +237,7 @@ float4 pixel_shader(VS_OUTPUT IN) : SV_Target
         color += SunColor.rgb * lightIntensity;
 
     color = saturate(color);
-    color *= float3(0.5, 0.5, 0.5);
+    color *= albedo;
     
     return float4(color, 1.0f);
 }
@@ -198,28 +245,29 @@ float4 pixel_shader(VS_OUTPUT IN) : SV_Target
 float4 pixel_shader_ts(DS_OUTPUT IN) : SV_Target
 {   
     float2 uvTile = IN.texcoord;
-    //uvTile.y = 1.0f - uvTile.y;
+    
+    //float4 height = heightTexture.Sample(TerrainHeightSampler, uvTile);
+    float3 normal = GetNormalFromHeightmap(uvTile, 1.0f / (float) (TILE_SIZE), TerrainHeightScale);
+   
+    uvTile.y = 1.0f - uvTile.y;
     
     float4 splat = splatTexture.Sample(TerrainSplatSampler, uvTile);
-    float4 height = heightTexture.Sample(TerrainSplatSampler, uvTile);
-    
-    float3 ground = groundTexture.Sample(TerrainTextureSampler, uvTile).rgb;
-    float3 grass = grassTexture.Sample(TerrainTextureSampler, uvTile).rgb;
-    float3 rock = rockTexture.Sample(TerrainTextureSampler, uvTile).rgb;
-    float3 mud = mudTexture.Sample(TerrainTextureSampler, uvTile).rgb;
+    float3 ground = groundTexture.Sample(TerrainTextureSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
+    float3 grass = grassTexture.Sample(TerrainTextureSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
+    float3 rock = rockTexture.Sample(TerrainTextureSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
+    float3 mud = mudTexture.Sample(TerrainTextureSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
     
     float3 albedo = splat.r * mud + splat.g * grass + splat.b * rock + splat.a * ground;
     
     float3 color = AmbientColor.rgb;
 
-    float3 normal = normalTexture.Sample(TerrainSplatSampler, uvTile).rgb;
     float lightIntensity = saturate(dot(normal, SunDirection.rgb));
 
     if (lightIntensity > 0.0f)
         color += SunColor.rgb * lightIntensity;
 
     color = saturate(color);
-    color = height.rgb;
+    color *= albedo;
     
     return float4(color, 1.0f);
 }
