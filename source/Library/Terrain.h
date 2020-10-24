@@ -69,6 +69,8 @@ namespace Library
 		void LoadSplatmapPerTileGPU(int tileIndexX, int tileIndexY, std::string path);
 		void LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, std::string path);
 		void LoadNormalmapPerTileGPU(int tileIndexX, int tileIndexY, std::string path);
+		void DrawTessellated(int i);
+		void DrawNonTessellated(int i);
 
 		TerrainMaterial* mMaterial;
 

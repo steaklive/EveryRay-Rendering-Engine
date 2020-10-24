@@ -81,6 +81,6 @@ namespace Rendering
 		bool isTessellationTerrain = false;
 		bool isNormalTerrain = false;
 		int tessellationFactor = 1;
-		float terrainHeightScale = 250.0f;
+		float terrainHeightScale = 389.0f;
 	};
 }
