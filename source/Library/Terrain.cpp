@@ -34,7 +34,9 @@ namespace Library
 		mIsWireframe(isWireframe),
 		mDirectionalLight(light),
 		mHeightMaps(0, nullptr),
-		mPPStack(pp)
+		mPPStack(pp),
+		mWidth(TERRAIN_TILE_RESOLUTION),
+		mHeight(TERRAIN_TILE_RESOLUTION)
 	{
 		if (!(mNumTiles && !(mNumTiles & (mNumTiles - 1))))
 			throw GameException("Number of tiles defined is not a power of 2!");
@@ -123,6 +125,7 @@ namespace Library
 			}
 		}
 	}
+	
 	void Terrain::LoadTileGroup(int threadIndex, std::string path)
 	{
 		int numTilesSqrt = sqrt(mNumTiles);
@@ -217,7 +220,7 @@ namespace Library
 		context->IASetVertexBuffers(0, 1, &(mHeightMaps[tileIndex]->mVertexBufferTS), &stride, &offset);
 
 		XMMATRIX wvp = mHeightMaps[tileIndex]->mWorldMatrix * mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
-		mMaterial->World() << mHeightMaps[tileIndex]->mWorldMatrix;
+		mMaterial->World() << mHeightMaps[tileIndex]->mWorldMatrixTS;
 		mMaterial->View() << mCamera.ViewMatrix();
 		mMaterial->Projection() << mCamera.ProjectionMatrix();
 		mMaterial->heightTexture() << mHeightMaps[tileIndex]->mHeightTexture;
@@ -270,6 +273,7 @@ namespace Library
 		context->IASetVertexBuffers(0, 1, &(mHeightMaps[tileIndex]->mVertexBuffer), &stride, &offset);
 		context->IASetIndexBuffer(mHeightMaps[tileIndex]->mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
+		//mHeightMaps[tileIndex]->mWorldMatrix = XMMatrixTranslation(1.0f, 0.0f, 0.0f);
 		XMMATRIX wvp = mHeightMaps[tileIndex]->mWorldMatrix * mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
 		mMaterial->World() << mHeightMaps[tileIndex]->mWorldMatrix;
 		mMaterial->View() << mCamera.ViewMatrix();
@@ -299,6 +303,7 @@ namespace Library
 			context->DrawIndexed(mHeightMaps[tileIndex]->mIndexCount, 0, 0);
 	
 	}
+	
 	void Terrain::GenerateTileMesh(int tileIndex)
 	{
 		if (tileIndex >= mHeightMaps.size())
@@ -497,6 +502,8 @@ namespace Library
 			throw GameException("Can not close the terrain's heightmap RAW file!");
 
 
+		mHeightMaps[tileIndex]->mWorldMatrixTS = XMMatrixTranslation(TERRAIN_TILE_RESOLUTION * (tileIndexX - 1), 0.0f, TERRAIN_TILE_RESOLUTION * -tileIndexY);
+
 		// genertate tessellated vertex buffers
 		{
 			// creating terrain vertex buffer for patches
@@ -504,8 +511,8 @@ namespace Library
 			for (int i = 0; i < NUM_PATCHES; i++)
 				for (int j = 0; j < NUM_PATCHES; j++)
 				{
-					patches_rawdata[(i + j * NUM_PATCHES) * 4 + 0] = i * (TERRAIN_TILE_RESOLUTION) / NUM_PATCHES + (TERRAIN_TILE_RESOLUTION + 1) * (tileIndexX - 1);
-					patches_rawdata[(i + j * NUM_PATCHES) * 4 + 1] = j * (TERRAIN_TILE_RESOLUTION) / NUM_PATCHES + (TERRAIN_TILE_RESOLUTION + 1) * -tileIndexY;
+					patches_rawdata[(i + j * NUM_PATCHES) * 4 + 0] = i * (TERRAIN_TILE_RESOLUTION) / NUM_PATCHES;
+					patches_rawdata[(i + j * NUM_PATCHES) * 4 + 1] = j * (TERRAIN_TILE_RESOLUTION) / NUM_PATCHES;
 
 					patches_rawdata[(i + j * NUM_PATCHES) * 4 + 2] = TERRAIN_TILE_RESOLUTION / NUM_PATCHES;
 					patches_rawdata[(i + j * NUM_PATCHES) * 4 + 3] = TERRAIN_TILE_RESOLUTION / NUM_PATCHES;
@@ -769,5 +776,4 @@ namespace Library
 		ReleaseObject(mNormalTexture);
 		DeleteObjects(mData);
 	}
-
 }

@@ -87,20 +87,18 @@ SamplerState TerrainSplatSampler
 
 SamplerState TerrainHeightSampler
 {
-    Filter = MIN_MAG_MIP_POINT;
-    AddressU = WRAP;
-    AddressV = WRAP;
-    AddressW = WRAP;
+    Filter = MIN_MAG_MIP_LINEAR;
+    AddressU = CLAMP;//WRAP;
+    AddressV = CLAMP;//WRAP;
+    AddressW = CLAMP;//WRAP;
     //MaxAnisotropy = 16;
 };
 
 SamplerState BilinearSampler
 {
     Filter = MIN_MAG_LINEAR_MIP_POINT;
-    AddressU = WRAP;
-    AddressV = WRAP;
-    AddressW = WRAP;
-    //MaxAnisotropy = 16;
+    AddressU = CLAMP;
+    AddressV = CLAMP;
 };
 Texture2D heightTexture;
 Texture2D splatTexture;
@@ -141,10 +139,10 @@ float GetTessellationFactorFromCamera(float distance)
 float3 GetNormalFromHeightmap(float2 uv, float texelSize, float maxHeight)
 {
     float4 h;
-    h[0] = heightTexture.Sample(BilinearSampler, uv + texelSize * float2(0, -1)).r * maxHeight;
-    h[1] = heightTexture.Sample(BilinearSampler, uv + texelSize * float2(-1, 0)).r * maxHeight;
-    h[2] = heightTexture.Sample(BilinearSampler, uv + texelSize * float2(1, 0)).r * maxHeight;
-    h[3] = heightTexture.Sample(BilinearSampler, uv + texelSize * float2(0, 1)).r * maxHeight;
+    h[0] = heightTexture.SampleLevel(BilinearSampler, uv + texelSize * float2(0, -1), 0).r * maxHeight;
+    h[1] = heightTexture.SampleLevel(BilinearSampler, uv + texelSize * float2(-1, 0), 0).r * maxHeight;
+    h[2] = heightTexture.SampleLevel(BilinearSampler, uv + texelSize * float2(1, 0), 0).r * maxHeight;
+    h[3] = heightTexture.SampleLevel(BilinearSampler, uv + texelSize * float2(0, 1), 0).r * maxHeight;
     
     float3 n;
     n.z = h[0] - h[3];
@@ -165,23 +163,26 @@ PatchData hull_constant_function(InputPatch<HS_INPUT, 1> inputPatch)
 
     output.origin = inputPatch[0].origin;
     output.size = inputPatch[0].size;
+    
+    float4 pos = float4(inputPatch[0].origin.x, 0.0f, inputPatch[0].origin.y, 1.0f);
+    pos = mul(pos, World);
 
-	distance_to_camera = length(CameraPosition.xz - inputPatch[0].origin - float2(0, inputPatch[0].size.y * 0.5));
+    distance_to_camera = length(CameraPosition.xz - pos.xz - float2(0, inputPatch[0].size.y * 0.5));
     tesselation_factor = GetTessellationFactorFromCamera(distance_to_camera);
     output.Edges[0] = tesselation_factor;
     inside_tessellation_factor += tesselation_factor;
 
-    distance_to_camera = length(CameraPosition.xz - inputPatch[0].origin - float2(inputPatch[0].size.x * 0.5, 0));
+    distance_to_camera = length(CameraPosition.xz - pos.xz - float2(inputPatch[0].size.x * 0.5, 0));
     tesselation_factor = GetTessellationFactorFromCamera(distance_to_camera);
     output.Edges[1] = tesselation_factor;
     inside_tessellation_factor += tesselation_factor;
 
-    distance_to_camera = length(CameraPosition.xz - inputPatch[0].origin - float2(inputPatch[0].size.x, inputPatch[0].size.y * 0.5));
+    distance_to_camera = length(CameraPosition.xz - pos.xz - float2(inputPatch[0].size.x, inputPatch[0].size.y * 0.5));
     tesselation_factor = GetTessellationFactorFromCamera(distance_to_camera);
     output.Edges[2] = tesselation_factor;
     inside_tessellation_factor += tesselation_factor;
 
-    distance_to_camera = length(CameraPosition.xz - inputPatch[0].origin - float2(inputPatch[0].size.x * 0.5, inputPatch[0].size.y));
+    distance_to_camera = length(CameraPosition.xz - pos.xz - float2(inputPatch[0].size.x * 0.5, inputPatch[0].size.y));
     tesselation_factor = GetTessellationFactorFromCamera(distance_to_camera);
     output.Edges[3] = tesselation_factor;
     inside_tessellation_factor += tesselation_factor;
@@ -209,10 +210,9 @@ DS_OUTPUT domain_shader(PatchData input, float2 uv : SV_DomainLocation, OutputPa
     float3 vertexPosition;
     
     float2 texcoord01 = (input.origin + uv * input.size) / float(TILE_SIZE);
-    float2 texcoord01Height = (input.origin + uv * input.size) / float(TILE_SIZE + 1);
-    float height = heightTexture.SampleLevel(TerrainHeightSampler, texcoord01Height, 0).r;
+    float height = heightTexture.SampleLevel(TerrainHeightSampler, texcoord01, 0).r;
 	
-    vertexPosition.xz = input.origin + uv * (input.size + 1);
+    vertexPosition.xz = input.origin + uv * input.size;
     vertexPosition.y = TerrainHeightScale * height;
    
     //calculating base normal rotation matrix
@@ -231,7 +231,7 @@ DS_OUTPUT domain_shader(PatchData input, float2 uv : SV_DomainLocation, OutputPa
     output.position = mul(output.position, View);
     output.position = mul(output.position, Projection);
     output.texcoord = texcoord01;
-    output.normal = float3(0, 0, 0);//    normalRot;
+    output.normal = float3(0, 0, 0);
     return output;
 }
 
