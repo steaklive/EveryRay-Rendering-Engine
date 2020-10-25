@@ -232,7 +232,10 @@ namespace Rendering
 		mTerrain->SetTessellationTerrainMode(isTessellationTerrain);
 		mTerrain->SetNormalTerrainMode(isNormalTerrain);
 		mTerrain->SetTessellationFactor(tessellationFactor);
+		mTerrain->SetTessellationFactorDynamic(tessellationFactorDynamic);
 		mTerrain->SetTerrainHeightScale(terrainHeightScale);
+		mTerrain->SetDynamicTessellation(isDynamicTessellation);
+		mTerrain->SetDynamicTessellationDistanceFactor(distanceFactor);
 
 		for (auto object : mRenderingObjects)
 			object.second->Update(gameTime);
@@ -270,8 +273,11 @@ namespace Rendering
 		ImGui::Checkbox("Render Wireframe", &isWireframe);
 		ImGui::Checkbox("Render tessellated terrain", &isTessellationTerrain);
 		ImGui::Checkbox("Render non-tessellated terrain", &isNormalTerrain);
-		ImGui::SliderInt("Tessellation factor", &tessellationFactor, 1, 64);
-		ImGui::SliderFloat("Height scale", &terrainHeightScale, 0.0f, 1000.0f);
+		ImGui::SliderInt("Tessellation factor static", &tessellationFactor, 1, 64);
+		ImGui::SliderInt("Tessellation factor dynamic", &tessellationFactorDynamic, 1, 64);
+		ImGui::Checkbox("Use dynamic tessellation", &isDynamicTessellation);
+		ImGui::SliderFloat("Dynamic LOD distance factor", &distanceFactor, 0.0001f, 0.1f);
+		ImGui::SliderFloat("Tessellated terrain height scale", &terrainHeightScale, 0.0f, 1000.0f);
 
 		ImGui::End();
 	}

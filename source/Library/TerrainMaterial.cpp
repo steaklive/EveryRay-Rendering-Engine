@@ -25,8 +25,12 @@ namespace Library
 		MATERIAL_VARIABLE_INITIALIZATION(AmbientColor),
 		MATERIAL_VARIABLE_INITIALIZATION(ShadowCascadeDistances),
 		MATERIAL_VARIABLE_INITIALIZATION(ShadowTexelSize),
+		MATERIAL_VARIABLE_INITIALIZATION(CameraPosition),
 		MATERIAL_VARIABLE_INITIALIZATION(TessellationFactor),
-		MATERIAL_VARIABLE_INITIALIZATION(TerrainHeightScale)
+		MATERIAL_VARIABLE_INITIALIZATION(TerrainHeightScale),
+		MATERIAL_VARIABLE_INITIALIZATION(UseDynamicTessellation),
+		MATERIAL_VARIABLE_INITIALIZATION(TessellationFactorDynamic),
+		MATERIAL_VARIABLE_INITIALIZATION(DistanceFactor)
 	{
 	}
 
@@ -45,8 +49,12 @@ namespace Library
 	MATERIAL_VARIABLE_DEFINITION(TerrainMaterial, AmbientColor)
 	MATERIAL_VARIABLE_DEFINITION(TerrainMaterial, ShadowCascadeDistances)
 	MATERIAL_VARIABLE_DEFINITION(TerrainMaterial, ShadowTexelSize)
+	MATERIAL_VARIABLE_DEFINITION(TerrainMaterial, CameraPosition)
 	MATERIAL_VARIABLE_DEFINITION(TerrainMaterial, TessellationFactor)
 	MATERIAL_VARIABLE_DEFINITION(TerrainMaterial, TerrainHeightScale)
+	MATERIAL_VARIABLE_DEFINITION(TerrainMaterial, UseDynamicTessellation)
+	MATERIAL_VARIABLE_DEFINITION(TerrainMaterial, TessellationFactorDynamic)
+	MATERIAL_VARIABLE_DEFINITION(TerrainMaterial, DistanceFactor)
 
 	void TerrainMaterial::Initialize(Effect* effect)
 	{
@@ -67,8 +75,12 @@ namespace Library
 			MATERIAL_VARIABLE_RETRIEVE(AmbientColor)
 			MATERIAL_VARIABLE_RETRIEVE(ShadowCascadeDistances)
 			MATERIAL_VARIABLE_RETRIEVE(ShadowTexelSize)
+			MATERIAL_VARIABLE_RETRIEVE(CameraPosition)
 			MATERIAL_VARIABLE_RETRIEVE(TessellationFactor)
 			MATERIAL_VARIABLE_RETRIEVE(TerrainHeightScale)
+			MATERIAL_VARIABLE_RETRIEVE(UseDynamicTessellation)
+			MATERIAL_VARIABLE_RETRIEVE(TessellationFactorDynamic)
+			MATERIAL_VARIABLE_RETRIEVE(DistanceFactor)
 
 		D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 		{
