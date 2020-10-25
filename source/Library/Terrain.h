@@ -57,8 +57,11 @@ namespace Library
 		void SetWireframeMode(bool flag) { mIsWireframe = flag; }
 		void SetTessellationTerrainMode(bool flag) { mUseTessellatedTerrain = flag; }
 		void SetNormalTerrainMode(bool flag) { mUseNonTessellatedTerrain = flag; }
-		void SetTessellationFactor(int tessellationFactor) { mTessellationFactor = tessellationFactor; };
-		void SetTerrainHeightScale(float scale) { mTerrainHeightScale = scale; };
+		void SetDynamicTessellation(bool flag) { mUseDynamicTessellation = flag; }
+		void SetTessellationFactor(int tessellationFactor) { mTessellationFactor = tessellationFactor; }
+		void SetDynamicTessellationDistanceFactor(float factor) { mDistanceFactor = factor; }
+		void SetTessellationFactorDynamic(float factor) { mTessellationFactorDynamic = factor; }
+		void SetTerrainHeightScale(float scale) { mTerrainHeightScale = scale; }
 	private:
 		Camera& mCamera;
 
@@ -81,14 +84,7 @@ namespace Library
 		UINT mWidth = /*1024*/ 512;
 		UINT mHeight = /*1024*/ 512;
 		
-		bool mIsWireframe = false;
-
 		std::vector<HeightMap*> mHeightMaps;
-		int mNumTiles = 16;
-		float mHeightScale = 200.0f;
-
-		bool mUseTessellatedTerrain = true;
-		bool mUseNonTessellatedTerrain = true;
 
 		ID3D11ShaderResourceView* mGrassTexture = nullptr;
 		ID3D11ShaderResourceView* mGroundTexture = nullptr;
@@ -96,7 +92,16 @@ namespace Library
 		ID3D11ShaderResourceView* mMudTexture = nullptr;
 
 		ID3D11Buffer* mVertexPatchBuffer = nullptr;
-		int mTessellationFactor;
+
+		float mHeightScale = 200.0f;
+		int mNumTiles = 16;
+		bool mIsWireframe = false;
+		bool mUseTessellatedTerrain = true;
+		bool mUseNonTessellatedTerrain = true;
+		bool mUseDynamicTessellation = false;
+		int mTessellationFactor = 4;
+		int mTessellationFactorDynamic = 64;
 		int mTerrainHeightScale = 389.0f;
+		float mDistanceFactor = 0.0001f;
 	};
 }

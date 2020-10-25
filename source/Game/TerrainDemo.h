@@ -80,7 +80,10 @@ namespace Rendering
 		bool isWireframe = false;
 		bool isTessellationTerrain = false;
 		bool isNormalTerrain = false;
-		int tessellationFactor = 1;
+		int tessellationFactor = 4;
 		float terrainHeightScale = 389.0f;
+		int tessellationFactorDynamic = 64;
+		bool isDynamicTessellation = false;
+		float distanceFactor = 0.015;
 	};
 }

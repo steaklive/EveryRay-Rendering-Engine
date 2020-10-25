@@ -232,8 +232,13 @@ namespace Library
 		mMaterial->AmbientColor() << XMVECTOR{ mDirectionalLight.GetAmbientLightColor().x,  mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
 		mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f, 1.0f, 1.0f , 1.0f }; //todo
 		mMaterial->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
+		mMaterial->CameraPosition() << mCamera.PositionVector();
 		mMaterial->TessellationFactor() << (float)mTessellationFactor;
 		mMaterial->TerrainHeightScale() << mTerrainHeightScale;
+		float val = (mUseDynamicTessellation) ? 1.0f : 0.0f;
+		mMaterial->UseDynamicTessellation() << val;
+		mMaterial->TessellationFactorDynamic() << (float)mTessellationFactorDynamic;
+		mMaterial->DistanceFactor() << mDistanceFactor;
 
 		pass->Apply(0, context);
 
@@ -280,9 +285,8 @@ namespace Library
 		mMaterial->AmbientColor() << XMVECTOR{ mDirectionalLight.GetAmbientLightColor().x,  mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
 		mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f, 1.0f, 1.0f , 1.0f }; //todo
 		mMaterial->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
-		mMaterial->TessellationFactor() << (float)mTessellationFactor;
-		mMaterial->TerrainHeightScale() << mTerrainHeightScale;
-		
+		mMaterial->CameraPosition() << mCamera.PositionVector();
+
 		pass->Apply(0, context);
 
 		if (mIsWireframe)

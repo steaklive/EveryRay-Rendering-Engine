@@ -14,11 +14,15 @@ cbuffer CBufferPerFrame
     float4 AmbientColor;
     float4 ShadowTexelSize;
     float4 ShadowCascadeDistances;
+    float4 CameraPosition;
 }
 cbuffer CBufferTerrainData
 {
     float TessellationFactor;
     float TerrainHeightScale;
+    float UseDynamicTessellation;
+    float TessellationFactorDynamic;
+    float DistanceFactor;
 };
 struct VS_INPUT
 {
@@ -127,6 +131,12 @@ HS_INPUT vertex_shader_ts(VS_INPUT_TS IN)
     return OUT;
 }
 
+// hyperbolic function that determines a factor
+float GetTessellationFactorFromCamera(float distance)
+{
+    return lerp(TessellationFactor, TessellationFactorDynamic * (1 / (DistanceFactor * distance)), UseDynamicTessellation);
+}
+
 // https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/chapter5-andersson-terrain-rendering-in-frostbite.pdf
 float3 GetNormalFromHeightmap(float2 uv, float texelSize, float maxHeight)
 {
@@ -148,23 +158,31 @@ PatchData hull_constant_function(InputPatch<HS_INPUT, 1> inputPatch)
 {
     PatchData output;
 
-    //float distance_to_camera;
-    float tesselation_factor = TessellationFactor;
+    float distance_to_camera = 0.0f;
+    float tesselation_factor = 0.0f;
     float inside_tessellation_factor = 0.0f;
     //float in_frustum = 0;
 
     output.origin = inputPatch[0].origin;
     output.size = inputPatch[0].size;
 
+	distance_to_camera = length(CameraPosition.xz - inputPatch[0].origin - float2(0, inputPatch[0].size.y * 0.5));
+    tesselation_factor = GetTessellationFactorFromCamera(distance_to_camera);
     output.Edges[0] = tesselation_factor;
     inside_tessellation_factor += tesselation_factor;
 
+    distance_to_camera = length(CameraPosition.xz - inputPatch[0].origin - float2(inputPatch[0].size.x * 0.5, 0));
+    tesselation_factor = GetTessellationFactorFromCamera(distance_to_camera);
     output.Edges[1] = tesselation_factor;
     inside_tessellation_factor += tesselation_factor;
 
+    distance_to_camera = length(CameraPosition.xz - inputPatch[0].origin - float2(inputPatch[0].size.x, inputPatch[0].size.y * 0.5));
+    tesselation_factor = GetTessellationFactorFromCamera(distance_to_camera);
     output.Edges[2] = tesselation_factor;
     inside_tessellation_factor += tesselation_factor;
 
+    distance_to_camera = length(CameraPosition.xz - inputPatch[0].origin - float2(inputPatch[0].size.x * 0.5, inputPatch[0].size.y));
+    tesselation_factor = GetTessellationFactorFromCamera(distance_to_camera);
     output.Edges[3] = tesselation_factor;
     inside_tessellation_factor += tesselation_factor;
 
