@@ -37,6 +37,7 @@ namespace Library
 		int mVertexCount = 0;
 		int mIndexCount = 0;
 		XMMATRIX mWorldMatrix = XMMatrixIdentity();
+		XMMATRIX mWorldMatrixTS = XMMatrixIdentity();
 
 		MapData* mData = nullptr;
 	};
@@ -81,8 +82,8 @@ namespace Library
 
 		Rendering::PostProcessingStack& mPPStack;
 
-		UINT mWidth = /*1024*/ 512;
-		UINT mHeight = /*1024*/ 512;
+		UINT mWidth = 0;
+		UINT mHeight = 0;
 		
 		std::vector<HeightMap*> mHeightMaps;
 
