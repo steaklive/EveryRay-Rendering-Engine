@@ -51,7 +51,6 @@ namespace Rendering
 
 	TestSceneDemo::TestSceneDemo(Game& game, Camera& camera)
 		: DrawableGameComponent(game, camera),
-		mKeyboard(nullptr),
 		mWorldMatrix(MatrixHelper::Identity),
 		mRenderStateHelper(nullptr),
 		mDirectionalLight(nullptr),
@@ -82,14 +81,12 @@ namespace Rendering
 		DeleteObject(mSkybox);
 		DeleteObject(mGrid);
 		DeleteObject(mPostProcessingStack);
-
-		ReleaseObject(mIrradianceTextureSRV);
-		ReleaseObject(mRadianceTextureSRV);
-		ReleaseObject(mIntegrationMapTextureSRV);
-
 		DeleteObject(mGBuffer);
 		DeleteObject(mSSRQuad);
 		DeleteObject(mShadowMapper);
+		ReleaseObject(mIrradianceTextureSRV);
+		ReleaseObject(mRadianceTextureSRV);
+		ReleaseObject(mIntegrationMapTextureSRV);
 	}
 
 #pragma region COMPONENT_METHODS
@@ -97,25 +94,17 @@ namespace Rendering
 	// 'DemoLevel' ugly methods...
 	bool TestSceneDemo::IsComponent()
 	{
-		return mGame->IsInGameComponents<TestSceneDemo*>(mGame->components, this);
+		return mGame->IsInGameLevels<TestSceneDemo*>(mGame->levels, this);
 	}
 	void TestSceneDemo::Create()
 	{
 		Initialize();
-		mGame->components.push_back(this);
+		mGame->levels.push_back(this);
 	}
 	void TestSceneDemo::Destroy()
 	{
-		std::pair<bool, int> res = mGame->FindInGameComponents<TestSceneDemo*>(mGame->components, this);
-
-		if (res.first)
-		{
-			mGame->components.erase(mGame->components.begin() + res.second);
-
-			//very provocative...
-			delete this;
-		}
-
+		this->~TestSceneDemo();
+		mGame->levels.clear();
 	}
 	/////////////////////////////////////////////////////////////  
 #pragma endregion
@@ -246,7 +235,7 @@ namespace Rendering
 
 	}
 
-	void TestSceneDemo::Update(const GameTime& gameTime)
+	void TestSceneDemo::UpdateLevel(const GameTime& gameTime)
 	{
 		UpdateImGui();
 
@@ -295,7 +284,7 @@ namespace Rendering
 		ImGui::End();
 	}
 
-	void TestSceneDemo::Draw(const GameTime& gameTime)
+	void TestSceneDemo::DrawLevel(const GameTime& gameTime)
 	{
 		float clear_color[4] = { 0.0f, 1.0f, 1.0f, 0.0f };
 

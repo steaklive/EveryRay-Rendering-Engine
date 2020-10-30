@@ -44,13 +44,11 @@ namespace Rendering
 		TestSceneDemo(Game& game, Camera& camera);
 		~TestSceneDemo();
 
-		virtual void Initialize() override;
-		virtual void Update(const GameTime& gameTime) override;
-		virtual void Draw(const GameTime& gameTime) override;
-
 		virtual void Create() override;
 		virtual void Destroy() override;
 		virtual bool IsComponent() override;
+		virtual void UpdateLevel(const GameTime& gameTime) override;
+		virtual void DrawLevel(const GameTime& gameTime) override;
 
 	private:
 		TestSceneDemo();
@@ -63,6 +61,7 @@ namespace Rendering
 		void UpdateShadow1MaterialVariables(const std::string & objectName, int meshIndex);
 		void UpdateShadow2MaterialVariables(const std::string & objectName, int meshIndex); 
 		void UpdateImGui();
+		void Initialize();
 
 		std::map<std::string, RenderingObject*> mRenderingObjects;
 
@@ -72,19 +71,16 @@ namespace Rendering
 		Skybox* mSkybox;
 		Grid* mGrid;
 		ShadowMapper* mShadowMapper;
-
 		FullScreenQuad* mSSRQuad;
-
 		DirectionalLight* mDirectionalLight;
+		GBuffer* mGBuffer;
+		PostProcessingStack* mPostProcessingStack;
 
 		ID3D11ShaderResourceView* mIrradianceTextureSRV;
 		ID3D11ShaderResourceView* mRadianceTextureSRV;
 		ID3D11ShaderResourceView* mIntegrationMapTextureSRV;
 		std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
 
-		GBuffer* mGBuffer;
-
-		PostProcessingStack* mPostProcessingStack;
 
 		//Terrain* mTerrain;
 	};
