@@ -14,6 +14,7 @@ Rendering engine/framework written in C++/DirectX 11.
 - Frustum Culling
 - Separable Subsurface Scattering (based on the work of J.Jimenez and D.Gutierrez)
 - Screen Space Reflections
+- Terrain Rendering with tessellation
 
 Other features based on NVIDIA techniques (no code provided here)
 - Volumetric Lighting (from "Fast, Flexible, Physically-Based Volumetric Light Scattering")
