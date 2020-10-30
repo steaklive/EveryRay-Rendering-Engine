@@ -194,6 +194,7 @@
     <ClInclude Include="EnvironmentMappingMaterial.h" />
     <ClInclude Include="FastFourierTransform.h" />
     <ClInclude Include="FirstPersonCamera.h" />
+    <ClInclude Include="Foliage.h" />
     <ClInclude Include="FpsComponent.h" />
     <ClInclude Include="Frustum.h" />
     <ClInclude Include="FullScreenQuad.h" />
@@ -289,6 +290,7 @@
     <ClCompile Include="EnvironmentMappingMaterial.cpp" />
     <ClCompile Include="FastFourierTransform.cpp" />
     <ClCompile Include="FirstPersonCamera.cpp" />
+    <ClCompile Include="Foliage.cpp" />
     <ClCompile Include="FpsComponent.cpp" />
     <ClCompile Include="Frustum.cpp" />
     <ClCompile Include="FullScreenQuad.cpp" />
