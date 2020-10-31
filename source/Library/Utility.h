@@ -19,7 +19,7 @@ namespace Library
 		static std::wstring ToWideString(const std::string& source);
 		static void PathJoin(std::wstring& dest, const std::wstring& sourceDirectory, const std::wstring& sourceFile);
 		static void GetPathExtension(const std::wstring& source, std::wstring& dest);
-
+		static float RandomFloat(float a, float b);
 		static bool IsEditorMode;
 		static bool IsLightEditor;
 		static bool IsCameraCulling;

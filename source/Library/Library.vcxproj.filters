@@ -363,6 +363,9 @@
     <ClInclude Include="Foliage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FoliageMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -632,6 +635,9 @@
     <ClCompile Include="Foliage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FoliageMaterial.cpp">
+      <Filter>Source Files\Materials</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\content\effects\AmbientLighting.fx">
@@ -779,6 +785,9 @@
       <Filter>Effects</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\effects\TerrainEffect.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\effects\Foliage.fx">
       <Filter>Effects</Filter>
     </FxCompile>
   </ItemGroup>
