@@ -581,13 +581,13 @@ namespace Rendering
 	{
 		mInstanceCount = count;
 		mInstanceCountToRender = count;
-		const float size = 350.0f;
+		const float size = 100.0f;
 		for (size_t i = 0; i < count; i++)
 		{
 			// random position
-			float x = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) * (size - (-size) - 2.0f * 5.0f) + (-size) + 5.0f;
-			float y = 0.0f;// (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) * (25.0f - (-25.0f) - 2.0f * 5.0f) + (-25.0f) + 5.0f;
-			float z = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) * (size - (-size) - 2.0f * 5.0f) + (-size) + 5.0f;
+			float x = (rand() / (float)(RAND_MAX)) * size - size / 2;
+			float y = 0.0f;
+			float z = (rand() / (float)(RAND_MAX)) * size - size / 2;
 
 			float scale = 0.5f + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (1.0f - 0.5f)));
 

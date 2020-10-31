@@ -8,6 +8,13 @@
 
 namespace Library
 {
+	enum FoliageBillboardType
+	{
+		SINGLE,
+		TWO_QUADS_CROSSING,
+		THREE_QUADS_CROSSING
+	};
+
 	struct FoliagePatchData //for GPU vertex buffer
 	{
 		XMFLOAT4 pos;
@@ -22,14 +29,15 @@ namespace Library
 
 	struct FoliageData //for CPU buffer
 	{
-		float x, y, z;
+		float xPos, yPos, zPos;
 		float r, g, b;
+		float scale;
 	};
 
 	class Foliage : public GameComponent
 	{
 	public:
-		Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale = 1.0f);
+		Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale = 1.0f, float distributionRadius = 100);
 		~Foliage();
 
 		void Initialize();
@@ -62,5 +70,7 @@ namespace Library
 		int mPatchesCount;
 		bool mIsWireframe = false;
 		float mScale;
+		float mDistributionRadius;
+		bool mRotateFromCamPosition = false;
 	};
 }

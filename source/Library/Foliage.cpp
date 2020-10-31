@@ -13,13 +13,14 @@
 
 namespace Library
 {
-	Foliage::Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale)
+	Foliage::Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale, float distributionRadius)
 		:
 		GameComponent(pGame),
 		mCamera(pCamera),
 		mDirectionalLight(pLight),
 		mPatchesCount(pPatchesCount),
-		mScale(scale)
+		mScale(scale),
+		mDistributionRadius(distributionRadius)
 	{
 		Effect* effect = new Effect(pGame);
 		effect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\Foliage.fx"));
@@ -136,7 +137,8 @@ namespace Library
 		for (int i = 0; i < instanceCount; i++)
 		{
 			float randomScale = Utility::RandomFloat(mScale - 1.0f, mScale + 1.0f);
-			mPatchesBufferGPU[i].worldMatrix = XMMatrixTranslation(mPatchesBufferCPU[i].x, mPatchesBufferCPU[i].y, mPatchesBufferCPU[i].z) * XMMatrixScaling(randomScale, randomScale, randomScale);
+			mPatchesBufferCPU[i].scale = randomScale;
+			mPatchesBufferGPU[i].worldMatrix = XMMatrixTranslation(mPatchesBufferCPU[i].xPos, mPatchesBufferCPU[i].yPos, mPatchesBufferCPU[i].zPos) * XMMatrixScaling(randomScale, randomScale, randomScale);
 			mPatchesBufferGPU[i].color = XMFLOAT3(mPatchesBufferCPU[i].r, mPatchesBufferCPU[i].g, mPatchesBufferCPU[i].b);
 		}
 
@@ -161,12 +163,12 @@ namespace Library
 	{
 		// randomly generate positions and color
 		mPatchesBufferCPU = new FoliageData[mPatchesCount];
-		float radius = 50.0f;
+		
 		for (int i = 0; i < mPatchesCount; i++)
 		{
-			mPatchesBufferCPU[i].x = ((float)rand() / (float)(RAND_MAX)) * radius - radius/2;
-			mPatchesBufferCPU[i].y = 0.0f;
-			mPatchesBufferCPU[i].z = ((float)rand() / (float)(RAND_MAX)) * radius - radius/2;
+			mPatchesBufferCPU[i].xPos = ((float)rand() / (float)(RAND_MAX)) * mDistributionRadius - mDistributionRadius /2;
+			mPatchesBufferCPU[i].yPos = 0.0f;
+			mPatchesBufferCPU[i].zPos = ((float)rand() / (float)(RAND_MAX)) * mDistributionRadius - mDistributionRadius /2;
 
 			mPatchesBufferCPU[i].r = ((float)rand() / (float)(RAND_MAX)) * 1.0f + 1.0f;
 			mPatchesBufferCPU[i].g = ((float)rand() / (float)(RAND_MAX)) * 1.0f + 0.5f;
@@ -229,7 +231,52 @@ namespace Library
 
 	void Foliage::Update(const GameTime& gameTime)
 	{
+		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
 
+		double angle;
+		float rotation, windRotation;
+		XMMATRIX rotationMatrix;
+		XMMATRIX translationMatrix;
+
+		for (int i = 0; i < mPatchesCount; i++)
+		{
+			// Get the position of this piece of foliage.
+			translationMatrix = XMMatrixTranslation(mPatchesBufferCPU[i].xPos, mPatchesBufferCPU[i].yPos, mPatchesBufferCPU[i].zPos);
+
+			if (mRotateFromCamPosition)
+				angle = atan2(mPatchesBufferCPU[i].xPos - mCamera.Position().x, mPatchesBufferCPU[i].zPos - mCamera.Position().z) * (180.0 / XM_PI);
+			else 
+				angle = atan2(mCamera.Direction().x, mCamera.Direction().z) * (180.0 / XM_PI);
+
+			// Convert rotation into radians.
+			rotation = (float)angle * 0.0174532925f;
+			rotationMatrix = XMMatrixRotationY(rotation);
+
+			// Get the wind rotation for the foliage.
+			//windRotation = m_windRotation * 0.0174532925f;
+
+			// Setup the wind rotation.
+			//D3DXMatrixRotationX(&rotateMatrix2, windRotation);
+
+			mPatchesBufferGPU[i].worldMatrix = XMMatrixScaling(mPatchesBufferCPU[i].scale, mPatchesBufferCPU[i].scale, mPatchesBufferCPU[i].scale) * rotationMatrix * translationMatrix ;
+		}
+
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+		FoliageInstanceData* instancesPtr;
+
+		// Lock the instance buffer so it can be written to.
+		if (FAILED(context->Map(mInstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource)))
+			throw GameException("Map() failed while updating instance buffer of foliage patches");
+
+
+		// Get a pointer to the data in the instance buffer.
+		instancesPtr = (FoliageInstanceData*)mappedResource.pData;
+
+		// Copy the instances array into the instance buffer.
+		memcpy(instancesPtr, (void*)mPatchesBufferGPU, (sizeof(FoliageInstanceData) * mPatchesCount));
+
+		// Unlock the instance buffer.
+		context->Unmap(mInstanceBuffer, 0);
 	}
 
 }
