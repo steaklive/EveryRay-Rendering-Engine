@@ -5,15 +5,36 @@
 #include "Utility.h"
 #include "VertexDeclarations.h"
 #include "RasterizerStates.h"
+#include "FoliageMaterial.h"
+
+#include "TGATextureLoader.h"
+#include <DDSTextureLoader.h>
+#include <WICTextureLoader.h>
 
 namespace Library
 {
-	Foliage::Foliage(Game& pGame, Camera& pCamera, int pPatchesCount)
+	Foliage::Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale)
 		:
 		GameComponent(pGame),
 		mCamera(pCamera),
-		mPatchesCount(pPatchesCount)
+		mDirectionalLight(pLight),
+		mPatchesCount(pPatchesCount),
+		mScale(scale)
 	{
+		Effect* effect = new Effect(pGame);
+		effect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\Foliage.fx"));
+
+		mMaterial = new FoliageMaterial();
+		mMaterial->Initialize(effect);
+
+		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::ToWideString(textureName).c_str(), nullptr, &mAlbedoTexture)))
+		{
+			std::string message = "Failed to create Foliage Albedo Map: ";
+			message += textureName;
+			throw GameException(message.c_str());
+		}
+
+		CreateBlendStates();
 		Initialize();
 	}
 
@@ -23,14 +44,43 @@ namespace Library
 		ReleaseObject(mInstanceBuffer);
 		ReleaseObject(mIndexBuffer);
 		ReleaseObject(mAlbedoTexture);
+		ReleaseObject(mAlphaToCoverageState);
+		ReleaseObject(mNoBlendState);
 		DeleteObject(mPatchesBufferCPU);
 		DeleteObject(mPatchesBufferGPU);
+		DeleteObject(mMaterial);
 	}
 
 	void Foliage::Initialize()
 	{
 		InitializeBuffersCPU();
 		InitializeBuffersGPU();
+	}
+
+	void Foliage::CreateBlendStates()
+	{
+		D3D11_BLEND_DESC blendStateDescription;
+		ZeroMemory(&blendStateDescription, sizeof(D3D11_BLEND_DESC));
+
+		// Create an alpha enabled blend state description.
+		blendStateDescription.AlphaToCoverageEnable = TRUE;
+		blendStateDescription.RenderTarget[0].BlendEnable = TRUE;
+		blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+		blendStateDescription.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+		blendStateDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+		blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+		blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+		blendStateDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+		blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
+
+		// Create the blend state using the description.
+		if (FAILED(mGame->Direct3DDevice()->CreateBlendState(&blendStateDescription, &mAlphaToCoverageState)))
+			throw GameException("ID3D11Device::CreateBlendState() failed while create alpha-to-coverage blend state for foliage");
+
+		blendStateDescription.RenderTarget[0].BlendEnable = FALSE;
+		blendStateDescription.AlphaToCoverageEnable = FALSE;
+		if (FAILED(mGame->Direct3DDevice()->CreateBlendState(&blendStateDescription, &mNoBlendState)))
+			throw GameException("ID3D11Device::CreateBlendState() failed while create no blend state for foliage");
 	}
 
 	void Foliage::InitializeBuffersGPU()
@@ -85,7 +135,8 @@ namespace Library
 
 		for (int i = 0; i < instanceCount; i++)
 		{
-			mPatchesBufferGPU[i].worldMatrix = XMMatrixTranslation(mPatchesBufferCPU[i].x, mPatchesBufferCPU[i].y, mPatchesBufferCPU[i].z);
+			float randomScale = Utility::RandomFloat(mScale - 1.0f, mScale + 1.0f);
+			mPatchesBufferGPU[i].worldMatrix = XMMatrixTranslation(mPatchesBufferCPU[i].x, mPatchesBufferCPU[i].y, mPatchesBufferCPU[i].z) * XMMatrixScaling(randomScale, randomScale, randomScale);
 			mPatchesBufferGPU[i].color = XMFLOAT3(mPatchesBufferCPU[i].r, mPatchesBufferCPU[i].g, mPatchesBufferCPU[i].b);
 		}
 
@@ -110,12 +161,12 @@ namespace Library
 	{
 		// randomly generate positions and color
 		mPatchesBufferCPU = new FoliageData[mPatchesCount];
-
+		float radius = 50.0f;
 		for (int i = 0; i < mPatchesCount; i++)
 		{
-			mPatchesBufferCPU[i].x = ((float)rand() / (float)(RAND_MAX)) * 9.0f - 4.5f;
+			mPatchesBufferCPU[i].x = ((float)rand() / (float)(RAND_MAX)) * radius - radius/2;
 			mPatchesBufferCPU[i].y = 0.0f;
-			mPatchesBufferCPU[i].z = ((float)rand() / (float)(RAND_MAX)) * 9.0f - 4.5f;
+			mPatchesBufferCPU[i].z = ((float)rand() / (float)(RAND_MAX)) * radius - radius/2;
 
 			mPatchesBufferCPU[i].r = ((float)rand() / (float)(RAND_MAX)) * 1.0f + 1.0f;
 			mPatchesBufferCPU[i].g = ((float)rand() / (float)(RAND_MAX)) * 1.0f + 0.5f;
@@ -128,7 +179,8 @@ namespace Library
 		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
 
 		// dont forget to set alpha blend state if not using the one declared in .fx
-		//context->OMSetBlendState(alphaBlendState, blendFactor, 0xffffffff);
+		float blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+		context->OMSetBlendState(mAlphaToCoverageState, blendFactor, 0xffffffff);
 
 		unsigned int strides[2];
 		unsigned int offsets[2];
@@ -147,7 +199,21 @@ namespace Library
 		context->IASetVertexBuffers(0, 2, bufferPointers, strides, offsets);
 		context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		// material stuff
+		Pass* pass = mMaterial->CurrentTechnique()->Passes().at(0);
+		ID3D11InputLayout* inputLayout = mMaterial->InputLayouts().at(pass);
+		context->IASetInputLayout(inputLayout);
+
+		mMaterial->World() << XMMatrixIdentity();
+		mMaterial->View() << mCamera.ViewMatrix();
+		mMaterial->Projection() << mCamera.ProjectionMatrix();
+		mMaterial->albedoTexture() << mAlbedoTexture;
+		mMaterial->SunDirection() << XMVectorNegate(mDirectionalLight.DirectionVector());
+		mMaterial->SunColor() << XMVECTOR{ mDirectionalLight.GetDirectionalLightColor().x,  mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z , 1.0f };
+		mMaterial->AmbientColor() << XMVECTOR{ mDirectionalLight.GetAmbientLightColor().x,  mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
+		mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f, 1.0f, 1.0f , 1.0f }; //todo
+		mMaterial->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
+		//mMaterial->CameraPosition() << mCamera.PositionVector();
+		pass->Apply(0, context);
 
 		if (mIsWireframe)
 		{
@@ -158,5 +224,12 @@ namespace Library
 		else
 			context->DrawInstanced(6, mPatchesCount, 0, 0);
 
+		context->OMSetBlendState(mNoBlendState, blendFactor, 0xffffffff);
 	}
+
+	void Foliage::Update(const GameTime& gameTime)
+	{
+
+	}
+
 }

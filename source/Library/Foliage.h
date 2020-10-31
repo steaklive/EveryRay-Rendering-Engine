@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "DirectionalLight.h"
 #include "PostProcessingStack.h"
+#include "FoliageMaterial.h"
 
 namespace Library
 {
@@ -28,12 +29,10 @@ namespace Library
 	class Foliage : public GameComponent
 	{
 	public:
-		Foliage(Game& pGame, Camera& pCamera,int pPatchesCount);
+		Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale = 1.0f);
 		~Foliage();
 
 		void Initialize();
-		void InitializeBuffersGPU();
-		void InitializeBuffersCPU();
 		void Draw();
 		void Update(const GameTime& gameTime);
 
@@ -41,19 +40,27 @@ namespace Library
 		void SetWireframe(bool flag) { mIsWireframe = flag; }
 
 	private:
-		Camera& mCamera;
+		void CreateBlendStates();
+		void InitializeBuffersGPU();
+		void InitializeBuffersCPU();
 
-		//FoliageMaterial* mMaterial;
+		Camera& mCamera;
+		DirectionalLight& mDirectionalLight;
+
+		FoliageMaterial* mMaterial;
 
 		ID3D11Buffer* mVertexBuffer = nullptr;
 		ID3D11Buffer* mIndexBuffer = nullptr;
 		ID3D11Buffer* mInstanceBuffer = nullptr;
 		ID3D11ShaderResourceView* mAlbedoTexture = nullptr;
+		ID3D11BlendState* mAlphaToCoverageState = nullptr;
+		ID3D11BlendState* mNoBlendState = nullptr;
 
 		FoliageInstanceData* mPatchesBufferGPU;
 		FoliageData* mPatchesBufferCPU;
 
 		int mPatchesCount;
-		bool mIsWireframe;
+		bool mIsWireframe = false;
+		float mScale;
 	};
 }

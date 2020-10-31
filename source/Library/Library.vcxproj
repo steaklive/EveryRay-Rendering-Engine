@@ -195,6 +195,7 @@
     <ClInclude Include="FastFourierTransform.h" />
     <ClInclude Include="FirstPersonCamera.h" />
     <ClInclude Include="Foliage.h" />
+    <ClInclude Include="FoliageMaterial.h" />
     <ClInclude Include="FpsComponent.h" />
     <ClInclude Include="Frustum.h" />
     <ClInclude Include="FullScreenQuad.h" />
@@ -291,6 +292,7 @@
     <ClCompile Include="FastFourierTransform.cpp" />
     <ClCompile Include="FirstPersonCamera.cpp" />
     <ClCompile Include="Foliage.cpp" />
+    <ClCompile Include="FoliageMaterial.cpp" />
     <ClCompile Include="FpsComponent.cpp" />
     <ClCompile Include="Frustum.cpp" />
     <ClCompile Include="FullScreenQuad.cpp" />
@@ -395,6 +397,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\content\effects\EnvironmentMapping.fx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\content\effects\Foliage.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </FxCompile>

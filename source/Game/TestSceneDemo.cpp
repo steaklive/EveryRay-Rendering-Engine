@@ -32,6 +32,7 @@
 #include "..\Library\FullScreenQuad.h"
 #include "..\Library\ShadowMapper.h"
 #include "..\Library\Terrain.h"
+#include "..\Library\Foliage.h"
 
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
@@ -61,7 +62,8 @@ namespace Rendering
 		mGrid(nullptr),
 		mGBuffer(nullptr),
 		mSSRQuad(nullptr),
-		mShadowMapper(nullptr)
+		mShadowMapper(nullptr),
+		mFoliage(nullptr)
 		//mTerrain(nullptr)
 	{
 	}
@@ -84,6 +86,7 @@ namespace Rendering
 		DeleteObject(mGBuffer);
 		DeleteObject(mSSRQuad);
 		DeleteObject(mShadowMapper);
+		DeleteObject(mFoliage);
 		ReleaseObject(mIrradianceTextureSRV);
 		ReleaseObject(mRadianceTextureSRV);
 		ReleaseObject(mIntegrationMapTextureSRV);
@@ -185,6 +188,7 @@ namespace Rendering
 		mRenderingObjects["Acer Tree Medium"]->CalculateInstanceObjectsRandomDistribution(1500);
 		mRenderingObjects["Acer Tree Medium"]->LoadInstanceBuffers();
 
+
 		mKeyboard = (Keyboard*)mGame->Services().GetService(Keyboard::TypeIdClass());
 		assert(mKeyboard != nullptr);
 
@@ -209,6 +213,8 @@ namespace Rendering
 		mPostProcessingStack = new PostProcessingStack(*mGame, *mCamera);
 		mPostProcessingStack->Initialize(false, false, true, true, true, false);
 
+		//foliage
+		mFoliage = new Foliage(*mGame, *mCamera, *mDirectionalLight, 10000, Utility::GetFilePath("content\\textures\\foliage\\grass_type1.png"), 3.0f);
 
 		mCamera->SetPosition(XMFLOAT3(0, 8.4f, 60.0f));
 		mCamera->SetFarPlaneDistance(100000.0f);
@@ -243,6 +249,7 @@ namespace Rendering
 		mSkybox->Update(gameTime);
 		mGrid->Update(gameTime);
 		mPostProcessingStack->Update();
+		mFoliage->Update(gameTime);
 
 		mCamera->Cull(mRenderingObjects);
 		mShadowMapper->Update(gameTime);
@@ -292,7 +299,7 @@ namespace Rendering
 
 		ID3D11DeviceContext* direct3DDeviceContext = mGame->Direct3DDeviceContext();
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
+		
 #pragma region DEFERRED_PREPASS
 
 		mGBuffer->Start();
@@ -323,6 +330,7 @@ namespace Rendering
 		}
 
 		mRenderStateHelper->RestoreRasterizerState();
+		
 #pragma endregion
 
 		mPostProcessingStack->Begin();
@@ -330,10 +338,11 @@ namespace Rendering
 #pragma region DRAW_LIGHTING
 
 		//skybox
-		mSkybox->Draw(gameTime);
+		//mSkybox->Draw(gameTime);
 
 		//terrain
 		//mTerrain->Draw();
+
 
 		//grid
 		if (Utility::IsEditorMode)
@@ -346,6 +355,9 @@ namespace Rendering
 		//lighting
 		for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++)
 			it->second->Draw(MaterialHelper::lightingMaterialName);
+
+		//foliage 
+		mFoliage->Draw();
 
 #pragma endregion
 

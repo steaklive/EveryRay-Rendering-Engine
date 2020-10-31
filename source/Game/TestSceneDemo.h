@@ -23,6 +23,7 @@ namespace Library
 	class GBuffer;
 	class ShadowMapper;
 	class Terrain;
+	class Foliage;
 }
 
 namespace DirectX
@@ -75,6 +76,7 @@ namespace Rendering
 		DirectionalLight* mDirectionalLight;
 		GBuffer* mGBuffer;
 		PostProcessingStack* mPostProcessingStack;
+		Foliage* mFoliage;
 
 		ID3D11ShaderResourceView* mIrradianceTextureSRV;
 		ID3D11ShaderResourceView* mRadianceTextureSRV;

@@ -88,6 +88,18 @@ namespace Library
 			: Position(position), TextureCoordinates(textureCoordinates), Normal(normal) { }
 	} VertexPositionTextureNormal;
 
+	typedef struct _VertexPositionTextureColor
+	{
+		XMFLOAT4 Position;
+		XMFLOAT2 TextureCoordinates;
+		XMFLOAT3 Color;
+
+		_VertexPositionTextureColor() { }
+
+		_VertexPositionTextureColor(const XMFLOAT4& position, const XMFLOAT2& textureCoordinates, const XMFLOAT3& color)
+			: Position(position), TextureCoordinates(textureCoordinates), Color(color) { }
+	} VertexPositionTextureColor;
+
 	typedef struct _TerrainVertexInput
 	{
 		XMFLOAT4 Position;
