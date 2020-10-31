@@ -76,7 +76,7 @@ namespace Rendering
 		DirectionalLight* mDirectionalLight;
 		GBuffer* mGBuffer;
 		PostProcessingStack* mPostProcessingStack;
-		Foliage* mFoliage;
+		std::vector<Foliage*> mFoliageCollection;
 
 		ID3D11ShaderResourceView* mIrradianceTextureSRV;
 		ID3D11ShaderResourceView* mRadianceTextureSRV;

@@ -63,7 +63,7 @@ namespace Rendering
 		mGBuffer(nullptr),
 		mSSRQuad(nullptr),
 		mShadowMapper(nullptr),
-		mFoliage(nullptr)
+		mFoliageCollection(0, nullptr)
 		//mTerrain(nullptr)
 	{
 	}
@@ -86,7 +86,7 @@ namespace Rendering
 		DeleteObject(mGBuffer);
 		DeleteObject(mSSRQuad);
 		DeleteObject(mShadowMapper);
-		DeleteObject(mFoliage);
+		DeletePointerCollection(mFoliageCollection);
 		ReleaseObject(mIrradianceTextureSRV);
 		ReleaseObject(mRadianceTextureSRV);
 		ReleaseObject(mIntegrationMapTextureSRV);
@@ -185,7 +185,7 @@ namespace Rendering
 		mRenderingObjects["Acer Tree Medium"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + std::to_string(1), [&](int meshIndex) { UpdateShadow1MaterialVariables("Acer Tree Medium", meshIndex); });
 		mRenderingObjects["Acer Tree Medium"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + std::to_string(2), [&](int meshIndex) { UpdateShadow2MaterialVariables("Acer Tree Medium", meshIndex); });
 		
-		mRenderingObjects["Acer Tree Medium"]->CalculateInstanceObjectsRandomDistribution(1500);
+		mRenderingObjects["Acer Tree Medium"]->CalculateInstanceObjectsRandomDistribution(10);
 		mRenderingObjects["Acer Tree Medium"]->LoadInstanceBuffers();
 
 
@@ -214,7 +214,13 @@ namespace Rendering
 		mPostProcessingStack->Initialize(false, false, true, true, true, false);
 
 		//foliage
-		mFoliage = new Foliage(*mGame, *mCamera, *mDirectionalLight, 10000, Utility::GetFilePath("content\\textures\\foliage\\grass_type1.png"), 3.0f);
+		mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 3000, Utility::GetFilePath("content\\textures\\foliage\\grass_type1.png"), 2.5f, 100.0f));
+		mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 10000, Utility::GetFilePath("content\\textures\\foliage\\grass_type2.png"), 1.3f, 100.0f));
+		mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 8000, Utility::GetFilePath("content\\textures\\foliage\\grass_type3.png"), 1.5f, 100.0f));
+		mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 5000, Utility::GetFilePath("content\\textures\\foliage\\grass_type4.png"), 2.0f, 100.0f));
+		mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 100, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type1.png"), 3.5f, 100.0f));
+		mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 50, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type3.png"), 2.5f, 100.0f));
+		mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 100, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type10.png"), 3.5f, 100.0f));
 
 		mCamera->SetPosition(XMFLOAT3(0, 8.4f, 60.0f));
 		mCamera->SetFarPlaneDistance(100000.0f);
@@ -249,7 +255,8 @@ namespace Rendering
 		mSkybox->Update(gameTime);
 		mGrid->Update(gameTime);
 		mPostProcessingStack->Update();
-		mFoliage->Update(gameTime);
+		for (auto object : mFoliageCollection)
+			object->Update(gameTime);
 
 		mCamera->Cull(mRenderingObjects);
 		mShadowMapper->Update(gameTime);
@@ -301,7 +308,7 @@ namespace Rendering
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		
 #pragma region DEFERRED_PREPASS
-
+		
 		mGBuffer->Start();
 		for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++) 
 			it->second->Draw(MaterialHelper::deferredPrepassMaterialName, true);
@@ -338,7 +345,7 @@ namespace Rendering
 #pragma region DRAW_LIGHTING
 
 		//skybox
-		//mSkybox->Draw(gameTime);
+		mSkybox->Draw(gameTime);
 
 		//terrain
 		//mTerrain->Draw();
@@ -357,7 +364,8 @@ namespace Rendering
 			it->second->Draw(MaterialHelper::lightingMaterialName);
 
 		//foliage 
-		mFoliage->Draw();
+		for (auto object : mFoliageCollection)
+			object->Draw();
 
 #pragma endregion
 
