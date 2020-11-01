@@ -23,6 +23,7 @@ namespace Library
 	class GBuffer;
 	class ShadowMapper;
 	class Terrain;
+	class Foliage;
 }
 
 namespace Rendering
@@ -56,8 +57,10 @@ namespace Rendering
 		void UpdateShadow0MaterialVariables(const std::string & objectName, int meshIndex);
 		void UpdateShadow1MaterialVariables(const std::string & objectName, int meshIndex);
 		void UpdateShadow2MaterialVariables(const std::string & objectName, int meshIndex);
+		void DistributeObjectAcrossTerrainGrid(RenderingObject* object, int count);
 		void UpdateImGui();
 		void Initialize();
+		void GenerateFoliageZones(int count);
 
 		std::map<std::string, RenderingObject*> mRenderingObjects;
 
@@ -71,6 +74,8 @@ namespace Rendering
 		GBuffer* mGBuffer;
 		PostProcessingStack* mPostProcessingStack;
 		Terrain* mTerrain;
+		std::vector<std::map<std::string, Foliage*>> mFoliageZonesCollections;
+		std::vector<XMFLOAT3> mFoliageZonesCenters;
 
 		ID3D11ShaderResourceView* mIrradianceTextureSRV;
 		ID3D11ShaderResourceView* mRadianceTextureSRV;
@@ -85,5 +90,10 @@ namespace Rendering
 		int tessellationFactorDynamic = 64;
 		bool isDynamicTessellation = false;
 		float distanceFactor = 0.015;
+
+		int mFoliageZonesCount = 64;
+		float mFoliageDynamicLODToCameraDistance = 650.0f;
+
+		bool mRenderFoliage = true;
 	};
 }

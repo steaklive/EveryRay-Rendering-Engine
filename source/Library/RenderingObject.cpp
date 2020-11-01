@@ -114,8 +114,8 @@ namespace Rendering
 
 		for (size_t i = 0; i < mMeshesCount; i++)
 		{
-			if (mModel->Meshes()[i]->GetMaterial()->Textures().size() == 0) 
-				continue;
+			//if (mModel->Meshes()[i]->GetMaterial()->Textures().size() == 0) 
+			//	continue;
 
 			std::vector<std::wstring>* texturesAlbedo = mModel->Meshes()[i]->GetMaterial()->GetTexturesByType(TextureType::TextureTypeDifffuse);
 			if (texturesAlbedo != nullptr)
@@ -595,6 +595,16 @@ namespace Rendering
 			//mDynamicObjectInstancesPositions.push_back(XMFLOAT3(x, y, z));
 
 		}
+	}
+
+	void RenderingObject::ResetInstanceData(int count)
+	{
+		mInstanceCount = count;
+		mInstanceCountToRender = count;
+	}
+	void RenderingObject::AddInstanceData(XMMATRIX worldMatrix)
+	{
+		mInstanceData.push_back(InstancedData(worldMatrix));
 	}
 }
 

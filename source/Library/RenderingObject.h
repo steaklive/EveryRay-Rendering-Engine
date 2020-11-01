@@ -175,6 +175,9 @@ namespace Rendering
 		void UpdateInstanceBuffer(std::vector<InstancedData>& instanceData);
 		UINT InstanceSize() const;
 
+		void ResetInstanceData(int count);
+		void AddInstanceData(XMMATRIX worldMatrix);
+
 		void CalculateInstanceObjectsRandomDistribution(int count);
 
 		GeneralEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new GeneralEvent<Delegate_MeshMaterialVariablesUpdate>();
