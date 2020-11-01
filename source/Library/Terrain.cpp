@@ -21,9 +21,6 @@
 #include <chrono>
 
 #define MULTITHREADED_LOAD 1
-const int NUM_THREADS = 4;
-const int NUM_PATCHES = 8;
-const int TERRAIN_TILE_RESOLUTION = 512;
 
 namespace Library
 {

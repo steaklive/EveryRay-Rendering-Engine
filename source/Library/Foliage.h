@@ -37,7 +37,7 @@ namespace Library
 	class Foliage : public GameComponent
 	{
 	public:
-		Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale = 1.0f, float distributionRadius = 100);
+		Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale = 1.0f, float distributionRadius = 100, XMFLOAT3 distributionCenter = XMFLOAT3(0.0f, 0.0f, 0.0f));
 		~Foliage();
 
 		void Initialize();
@@ -46,8 +46,9 @@ namespace Library
 
 		int GetPatchesCount() { return mPatchesCount; }
 		void SetWireframe(bool flag) { mIsWireframe = flag; }
-
+		void SetDynamicLODMaxDistance(float val) { mMaxDistanceToCamera = val; }
 	private:
+		void CalculateDynamicLOD(float distanceToCam);
 		void CreateBlendStates();
 		void InitializeBuffersGPU();
 		void InitializeBuffersCPU();
@@ -67,10 +68,19 @@ namespace Library
 		FoliageInstanceData* mPatchesBufferGPU;
 		FoliageData* mPatchesBufferCPU;
 
+
 		int mPatchesCount;
+		int mPatchesCountToRender;
+
 		bool mIsWireframe = false;
 		float mScale;
+		XMFLOAT3 mDistributionCenter;
 		float mDistributionRadius;
 		bool mRotateFromCamPosition = false;
+
+		bool mDynamicLOD = true;
+		float mDynamicLODFactor = 0.001;
+		float mDoRotationDistance = 300.0f;
+		float mMaxDistanceToCamera = 650.0f;
 	};
 }

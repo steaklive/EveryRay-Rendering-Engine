@@ -32,6 +32,7 @@
 #include "..\Library\FullScreenQuad.h"
 #include "..\Library\ShadowMapper.h"
 #include "..\Library\Terrain.h"
+#include "..\Library\Foliage.h"
 
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
@@ -69,13 +70,27 @@ namespace Rendering
 
 	TerrainDemo::~TerrainDemo()
 	{
+		#pragma region DELETE_RENDEROBJECTS
 		for (auto object : mRenderingObjects)
 		{
 			object.second->MeshMaterialVariablesUpdateEvent->RemoverAllListeners();
 			DeleteObject(object.second);
 		}
 		mRenderingObjects.clear();
-
+#pragma endregion
+		
+		#pragma region DELETE_FOLIAGE
+		for (auto foliageZone : mFoliageZonesCollections)
+		{
+			for (auto object : foliageZone)
+			{
+				DeleteObject(object.second);
+			}
+			foliageZone.clear();
+		}
+		mFoliageZonesCollections.clear();
+#pragma endregion
+		
 		DeleteObject(mTerrain)
 		DeleteObject(mRenderStateHelper);
 		DeleteObject(mDirectionalLight);
@@ -132,40 +147,21 @@ namespace Rendering
 		//Effect* effectSSR = new Effect(*mGame);
 		//effectSSR->CompileFromFile(Utility::GetFilePath(L"content\\effects\\SSR.fx"));
 
-
-
 		/**/
 		////
 		/**/
 
-
-		//mRenderingObjects.insert(std::pair<std::string, RenderingObject*>("Acer Tree Medium", new RenderingObject("Acer Tree Medium", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\vegetation\\trees\\elm\\elm.fbx"), true)), true, true)));
-		//mRenderingObjects["Acer Tree Medium"]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, MaterialHelper::lightingMaterialName);
-		//for (int i = 0; i < MAX_NUM_OF_CASCADES; i++)
-		//{
-		//	const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(i);
-		//	mRenderingObjects["Acer Tree Medium"]->LoadMaterial(new DepthMapMaterial(), effectShadow, name);
-		//}
-		//mRenderingObjects["Acer Tree Medium"]->LoadMaterial(new DeferredMaterial(), effectDeferredPrepass, MaterialHelper::deferredPrepassMaterialName);
-		//
-		//mRenderingObjects["Acer Tree Medium"]->LoadRenderBuffers();
-		//
-		//mRenderingObjects["Acer Tree Medium"]->GetMaterials()[MaterialHelper::lightingMaterialName]->SetCurrentTechnique(mRenderingObjects["Acer Tree Medium"]->GetMaterials()[MaterialHelper::lightingMaterialName]->GetEffect()->TechniquesByName().at("standard_lighting_pbr_instancing"));
-		//for (int i = 0; i < MAX_NUM_OF_CASCADES; i++)
-		//{
-		//	const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(i);
-		//	mRenderingObjects["Acer Tree Medium"]->GetMaterials()[name]->SetCurrentTechnique(mRenderingObjects["Acer Tree Medium"]->GetMaterials()[name]->GetEffect()->TechniquesByName().at("create_depthmap_w_render_target_instanced"));
-		//}
-		//mRenderingObjects["Acer Tree Medium"]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName]->SetCurrentTechnique(mRenderingObjects["Acer Tree Medium"]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName]->GetEffect()->TechniquesByName().at("deferred_instanced"));
-		//
-		//mRenderingObjects["Acer Tree Medium"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::lightingMaterialName, [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables("Acer Tree Medium", meshIndex); });
-		//mRenderingObjects["Acer Tree Medium"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables("Acer Tree Medium", meshIndex); });
-		//mRenderingObjects["Acer Tree Medium"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + std::to_string(0), [&](int meshIndex) { UpdateShadow0MaterialVariables("Acer Tree Medium", meshIndex); });
-		//mRenderingObjects["Acer Tree Medium"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + std::to_string(1), [&](int meshIndex) { UpdateShadow1MaterialVariables("Acer Tree Medium", meshIndex); });
-		//mRenderingObjects["Acer Tree Medium"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + std::to_string(2), [&](int meshIndex) { UpdateShadow2MaterialVariables("Acer Tree Medium", meshIndex); });
-		//
-		//mRenderingObjects["Acer Tree Medium"]->CalculateInstanceObjectsRandomDistribution(1500);
-		//mRenderingObjects["Acer Tree Medium"]->LoadInstanceBuffers();
+		// test sphere for foliage zones
+		mRenderingObjects.insert(std::pair<std::string, RenderingObject*>("Sphere", new RenderingObject("Sphere", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), true, true)));
+		mRenderingObjects["Sphere"]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, MaterialHelper::lightingMaterialName);
+		mRenderingObjects["Sphere"]->LoadMaterial(new DeferredMaterial(), effectDeferredPrepass, MaterialHelper::deferredPrepassMaterialName);
+		mRenderingObjects["Sphere"]->LoadRenderBuffers();
+		mRenderingObjects["Sphere"]->GetMaterials()[MaterialHelper::lightingMaterialName]->SetCurrentTechnique(mRenderingObjects["Sphere"]->GetMaterials()[MaterialHelper::lightingMaterialName]->GetEffect()->TechniquesByName().at("standard_lighting_pbr_instancing"));
+		mRenderingObjects["Sphere"]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName]->SetCurrentTechnique(mRenderingObjects["Sphere"]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName]->GetEffect()->TechniquesByName().at("deferred_instanced"));
+		mRenderingObjects["Sphere"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::lightingMaterialName, [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables("Sphere", meshIndex); });
+		mRenderingObjects["Sphere"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables("Sphere", meshIndex); });
+		DistributeObjectAcrossTerrainGrid(mRenderingObjects["Sphere"], mFoliageZonesCount);
+		mRenderingObjects["Sphere"]->LoadInstanceBuffers();
 
 		mSkybox = new Skybox(*mGame, *mCamera, Utility::GetFilePath(L"content\\textures\\Sky_Type_4.dds"), 10000);
 		mSkybox->Initialize();
@@ -195,6 +191,8 @@ namespace Rendering
 		mCamera->SetFarPlaneDistance(100000.0f);
 		//mCamera->ApplyRotation(XMMatrixRotationAxis(mCamera->RightVector(), XMConvertToRadians(18.0f)) * XMMatrixRotationAxis(mCamera->UpVector(), -XMConvertToRadians(70.0f)));
 
+		GenerateFoliageZones(mFoliageZonesCount);
+
 		//IBL
 		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\Sky_Type_4_PBRDiffuseHDR.dds").c_str(), nullptr, &mIrradianceTextureSRV)))
 			throw GameException("Failed to create Irradiance Map.");
@@ -216,6 +214,28 @@ namespace Rendering
 
 	}
 
+	void TerrainDemo::GenerateFoliageZones(int count)
+	{
+		if (mFoliageZonesCenters.size() != count)
+			throw GameException("Failed to foliage zones! Centers collections size is not equal to zones count");
+
+		for (int i = 0; i < count; i++)
+		{
+			mFoliageZonesCollections.push_back(
+				std::map<std::string, Foliage*>
+				(
+					{
+						{ "content\\textures\\foliage\\grass_type1.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 8000, Utility::GetFilePath("content\\textures\\foliage\\grass_type1.png"), 2.5f, TERRAIN_TILE_RESOLUTION/2, mFoliageZonesCenters[i]) },
+						{ "content\\textures\\foliage\\grass_type4.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 10000, Utility::GetFilePath("content\\textures\\foliage\\grass_type4.png"), 2.0f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i]) },
+						{ "content\\textures\\foliage\\grass_flower_type1.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 500, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type1.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i]) },
+						{ "content\\textures\\foliage\\grass_flower_type3.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 400, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type3.png"), 2.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i]) },
+						{ "content\\textures\\foliage\\grass_flower_type10.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 500, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type10.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i]) }
+					}
+				)
+			);
+		}
+	}
+
 	void TerrainDemo::UpdateLevel(const GameTime& gameTime)
 	{
 		UpdateImGui();
@@ -224,6 +244,14 @@ namespace Rendering
 		mSkybox->Update(gameTime);
 		mGrid->Update(gameTime);
 		mPostProcessingStack->Update();
+		for (auto foliageZone : mFoliageZonesCollections)
+		{
+			for (auto foliageType : foliageZone)
+			{
+				foliageType.second->SetDynamicLODMaxDistance(mFoliageDynamicLODToCameraDistance);
+				foliageType.second->Update(gameTime);
+			}
+		}
 
 		mCamera->Cull(mRenderingObjects);
 		mShadowMapper->Update(gameTime);
@@ -251,25 +279,26 @@ namespace Rendering
 
 		ImGui::Separator();
 
-		//if (Utility::IsEditorMode)
-		//{
-		//	ImGui::Begin("Scene Objects");
-		//
-		//	const char* listbox_items[] = { "Ground Plane", "Acer Tree Medium" };
-		//
-		//	ImGui::PushItemWidth(-1);
-		//	ImGui::ListBox("##empty", &selectedObjectIndex, listbox_items, IM_ARRAYSIZE(listbox_items));
-		//
-		//	for (size_t i = 0; i < IM_ARRAYSIZE(listbox_items); i++)
-		//	{
-		//		if (i == selectedObjectIndex)
-		//			mRenderingObjects[listbox_items[selectedObjectIndex]]->Selected(true);
-		//		else
-		//			mRenderingObjects[listbox_items[i]]->Selected(false);
-		//	}
-		//
-		//	ImGui::End();
-		//}
+		if (Utility::IsEditorMode)
+		{
+			ImGui::Begin("Scene Objects");
+
+			const char* listbox_items[] = { /*"Ground Plane", */"Sphere" };
+
+			ImGui::PushItemWidth(-1);
+			ImGui::ListBox("##empty", &selectedObjectIndex, listbox_items, IM_ARRAYSIZE(listbox_items));
+
+			for (size_t i = 0; i < IM_ARRAYSIZE(listbox_items); i++)
+			{
+				if (i == selectedObjectIndex)
+					mRenderingObjects[listbox_items[selectedObjectIndex]]->Selected(true);
+				else
+					mRenderingObjects[listbox_items[i]]->Selected(false);
+			}
+
+			ImGui::End();
+		}
+
 		ImGui::Checkbox("Render Wireframe", &isWireframe);
 		ImGui::Checkbox("Render tessellated terrain", &isTessellationTerrain);
 		ImGui::Checkbox("Render non-tessellated terrain", &isNormalTerrain);
@@ -278,6 +307,8 @@ namespace Rendering
 		ImGui::Checkbox("Use dynamic tessellation", &isDynamicTessellation);
 		ImGui::SliderFloat("Dynamic LOD distance factor", &distanceFactor, 0.0001f, 0.1f);
 		ImGui::SliderFloat("Tessellated terrain height scale", &terrainHeightScale, 0.0f, 1000.0f);
+		ImGui::Checkbox("Render foliage", &mRenderFoliage);
+		ImGui::SliderFloat("Foliage dynamic LOD max distance", &mFoliageDynamicLODToCameraDistance, 100.0f, 5000.0f);
 
 		ImGui::End();
 	}
@@ -312,9 +343,12 @@ namespace Rendering
 			int objectIndex = 0;
 			for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++, objectIndex++)
 			{
-				static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->LightViewProjection() << lvp;
-				//static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->AlbedoAlphaMap() << it->second->GetTextureData(objectIndex).AlbedoMap;
-				it->second->Draw(name, true);
+				if (static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name]))
+				{
+					static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->LightViewProjection() << lvp;
+					//static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->AlbedoAlphaMap() << it->second->GetTextureData(objectIndex).AlbedoMap;
+					it->second->Draw(name, true);
+				}
 			}
 
 			mShadowMapper->StopRenderingToShadowMap(i);
@@ -328,7 +362,7 @@ namespace Rendering
 #pragma region DRAW_LIGHTING
 
 		//skybox
-		//mSkybox->Draw(gameTime);
+		mSkybox->Draw(gameTime);
 
 		//terrain
 		mTerrain->Draw();
@@ -344,6 +378,15 @@ namespace Rendering
 		//lighting
 		for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++)
 			it->second->Draw(MaterialHelper::lightingMaterialName);
+
+		//foliage
+		if (mRenderFoliage) {
+			for (auto foliageZone : mFoliageZonesCollections)
+			{
+				for (auto foliageType : foliageZone)
+					foliageType.second->Draw();
+			}
+		}
 
 #pragma endregion
 
@@ -422,5 +465,33 @@ namespace Rendering
 	{
 		const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(2);
 		static_cast<DepthMapMaterial*>(mRenderingObjects[objectName]->GetMaterials()[name])->AlbedoAlphaMap() << mRenderingObjects[objectName]->GetTextureData(meshIndex).AlbedoMap;
+	}
+
+	void TerrainDemo::DistributeObjectAcrossTerrainGrid(RenderingObject* object, int count)
+	{
+		if (count & (count - 1) != 0)
+			throw GameException("Can't distribute objects across terrain grid! Number of objects is not a power of two");
+
+		if (!object->IsInstanced())
+			throw GameException("Can't distribute objects across terrain grid! Object has disabled instancing!");
+		else
+		{
+			object->ResetInstanceData(count);
+
+			float tileWidth = TERRAIN_TILE_RESOLUTION / 2.0f;
+			for (int i = 0; i < sqrt(count); i++)
+			{
+				for (int j = 0; j < sqrt(count); j++)
+				{
+					float x = (float)((int)tileWidth * (i - 1) - tileWidth / 2);
+					float y = 0.0f;
+					float z = (float)((int)-tileWidth * j + tileWidth * 1.5f);
+
+					float scale = 30.0f;
+					mFoliageZonesCenters.push_back(XMFLOAT3(x, y, z));
+					object->AddInstanceData(XMMatrixScaling(scale, scale, scale) *  XMMatrixTranslation(x, y, z));
+				}
+			}
+		}
 	}
 }
