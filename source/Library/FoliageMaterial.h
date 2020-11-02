@@ -18,13 +18,15 @@ namespace Library
 			MATERIAL_VARIABLE_DECLARATION(AmbientColor)
 			MATERIAL_VARIABLE_DECLARATION(ShadowTexelSize)
 			MATERIAL_VARIABLE_DECLARATION(ShadowCascadeDistances)
+			MATERIAL_VARIABLE_DECLARATION(RotateToCamera)
 
 	public:
 		FoliageMaterial();
 
 		virtual void Initialize(Effect* effect) override;
 		virtual void CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const override;
-		void CreateVertexBuffer(ID3D11Device* device, VertexPositionTextureColor* vertices, UINT vertexCount, ID3D11Buffer** vertexBuffer) const;
+		void CreateVertexBuffer(ID3D11Device* device, VertexPositionTexture* vertices, UINT vertexCount, ID3D11Buffer** vertexBuffer) const;
+		void CreateIndexBuffer(Mesh& mesh, ID3D11Buffer** indexBuffer);
 		virtual UINT VertexSize() const override;
 	};
 }

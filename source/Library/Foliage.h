@@ -37,7 +37,7 @@ namespace Library
 	class Foliage : public GameComponent
 	{
 	public:
-		Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale = 1.0f, float distributionRadius = 100, XMFLOAT3 distributionCenter = XMFLOAT3(0.0f, 0.0f, 0.0f));
+		Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale = 1.0f, float distributionRadius = 100, XMFLOAT3 distributionCenter = XMFLOAT3(0.0f, 0.0f, 0.0f), FoliageBillboardType bType = FoliageBillboardType::SINGLE);
 		~Foliage();
 
 		void Initialize();
@@ -47,7 +47,9 @@ namespace Library
 		int GetPatchesCount() { return mPatchesCount; }
 		void SetWireframe(bool flag) { mIsWireframe = flag; }
 		void SetDynamicLODMaxDistance(float val) { mMaxDistanceToCamera = val; }
+		bool IsRotating() { return mIsRotating; }
 	private:
+		void LoadBillboardModel(FoliageBillboardType bType);
 		void CalculateDynamicLOD(float distanceToCam);
 		void CreateBlendStates();
 		void InitializeBuffersGPU();
@@ -68,6 +70,7 @@ namespace Library
 		FoliageInstanceData* mPatchesBufferGPU;
 		FoliageData* mPatchesBufferCPU;
 
+		FoliageBillboardType mType;
 
 		int mPatchesCount;
 		int mPatchesCountToRender;
@@ -82,5 +85,8 @@ namespace Library
 		float mDynamicLODFactor = 0.001;
 		float mDoRotationDistance = 300.0f;
 		float mMaxDistanceToCamera = 650.0f;
+
+		int mVerticesCount = 0;
+		bool mIsRotating = false;
 	};
 }
