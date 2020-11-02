@@ -682,7 +682,7 @@ namespace Library
 
 		//calculate uvs
 		{
-			int index, incrementCount, incrementCountTile, i, j, uCount, vCount, uCountTile, vCountTile, repeatValue = 16;
+			int index, incrementCount, incrementCountTile, i, j, uCount, vCount, uCountTile, vCountTile, repeatValue = 32;
 			float incrementValue, incrementValueTile, uCoord, vCoord, uCoordTile, vCoordTile;
 
 			incrementValue = (float)repeatValue / (float)mWidth;

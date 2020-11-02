@@ -1,5 +1,5 @@
 static const int TILE_SIZE = 512;
-static const int DETAIL_TEXTURE_REPEAT = 8;
+static const int DETAIL_TEXTURE_REPEAT = 32;
 cbuffer CBufferPerObject 
 {
     float4x4 World;
