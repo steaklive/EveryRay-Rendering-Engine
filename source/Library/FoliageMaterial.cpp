@@ -19,7 +19,9 @@ namespace Library
 		MATERIAL_VARIABLE_INITIALIZATION(SunColor),
 		MATERIAL_VARIABLE_INITIALIZATION(AmbientColor),
 		MATERIAL_VARIABLE_INITIALIZATION(ShadowCascadeDistances),
-		MATERIAL_VARIABLE_INITIALIZATION(ShadowTexelSize)
+		MATERIAL_VARIABLE_INITIALIZATION(ShadowTexelSize),
+		MATERIAL_VARIABLE_INITIALIZATION(RotateToCamera)
+
 	{
 	}
 
@@ -32,6 +34,7 @@ namespace Library
 	MATERIAL_VARIABLE_DEFINITION(FoliageMaterial, AmbientColor)
 	MATERIAL_VARIABLE_DEFINITION(FoliageMaterial, ShadowCascadeDistances)
 	MATERIAL_VARIABLE_DEFINITION(FoliageMaterial, ShadowTexelSize)
+	MATERIAL_VARIABLE_DEFINITION(FoliageMaterial, RotateToCamera)
 
 	void FoliageMaterial::Initialize(Effect* effect)
 	{
@@ -46,6 +49,7 @@ namespace Library
 		MATERIAL_VARIABLE_RETRIEVE(AmbientColor)
 		MATERIAL_VARIABLE_RETRIEVE(ShadowCascadeDistances)
 		MATERIAL_VARIABLE_RETRIEVE(ShadowTexelSize)
+		MATERIAL_VARIABLE_RETRIEVE(RotateToCamera)
 
 		D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] = 
 		{
@@ -63,42 +67,45 @@ namespace Library
 
 	void FoliageMaterial::CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const
 	{
-		//const std::vector<XMFLOAT3>& sourceVertices = mesh.Vertices();
-		//std::vector<XMFLOAT3>* textureCoordinates = mesh.TextureCoordinates().at(0);
-		//const std::vector<XMFLOAT3>& normals = mesh.Normals();
-		//
-		//std::vector<TerrainVertexInput> vertices;
-		//vertices.reserve(sourceVertices.size());
-		//for (UINT i = 0; i < sourceVertices.size(); i++)
-		//{
-		//	XMFLOAT3 position = sourceVertices.at(i);
-		//	XMFLOAT3 uv = textureCoordinates->at(i);
-		//	XMFLOAT3 normal = normals.at(i);
-		//	vertices.push_back(TerrainVertexInput(XMFLOAT4(position.x, position.y, position.z, 1.0f), XMFLOAT2(uv.x, uv.y), normal));
-		//}
-		//
-		//CreateVertexBuffer(device, &vertices[0], vertices.size(), vertexBuffer);
+		const std::vector<XMFLOAT3>& sourceVertices = mesh.Vertices();
+		std::vector<XMFLOAT3>* textureCoordinates = mesh.TextureCoordinates().at(0);
+		
+		std::vector<VertexPositionTexture> vertices;
+		vertices.reserve(sourceVertices.size());
+		for (UINT i = 0; i < sourceVertices.size(); i++)
+		{
+			XMFLOAT3 position = sourceVertices.at(i);
+			XMFLOAT3 uv = textureCoordinates->at(i);
+			vertices.push_back(VertexPositionTexture(XMFLOAT4(position.x, position.y, position.z, 1.0f), XMFLOAT2(uv.x, uv.y)));
+		}
+		
+		CreateVertexBuffer(device, &vertices[0], vertices.size(), vertexBuffer);
 	}
 
-	void FoliageMaterial::CreateVertexBuffer(ID3D11Device* device, VertexPositionTextureColor* vertices, UINT vertexCount, ID3D11Buffer** vertexBuffer) const
+	void FoliageMaterial::CreateVertexBuffer(ID3D11Device* device, VertexPositionTexture* vertices, UINT vertexCount, ID3D11Buffer** vertexBuffer) const
 	{
-		//D3D11_BUFFER_DESC vertexBufferDesc;
-		//ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
-		//vertexBufferDesc.ByteWidth = VertexSize() * vertexCount;
-		//vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-		//vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		//
-		//D3D11_SUBRESOURCE_DATA vertexSubResourceData;
-		//ZeroMemory(&vertexSubResourceData, sizeof(vertexSubResourceData));
-		//vertexSubResourceData.pSysMem = vertices;
-		//if (FAILED(device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, vertexBuffer)))
-		//{
-		//	throw GameException("ID3D11Device::CreateBuffer() failed.");
-		//}
+		D3D11_BUFFER_DESC vertexBufferDesc;
+		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
+		vertexBufferDesc.ByteWidth = VertexSize() * vertexCount;
+		vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+		D3D11_SUBRESOURCE_DATA vertexSubResourceData;
+		ZeroMemory(&vertexSubResourceData, sizeof(vertexSubResourceData));
+		vertexSubResourceData.pSysMem = vertices;
+		if (FAILED(device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, vertexBuffer)))
+		{
+			throw GameException("ID3D11Device::CreateBuffer() failed.");
+		}
+	}
+
+	void FoliageMaterial::CreateIndexBuffer(Mesh& mesh, ID3D11Buffer** indexBuffer)
+	{
+		mesh.CreateIndexBuffer(indexBuffer);
 	}
 
 	UINT FoliageMaterial::VertexSize() const
 	{
-		return sizeof(VertexPositionTextureColor);
+		return sizeof(VertexPositionTexture);
 	}
 }

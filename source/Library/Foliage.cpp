@@ -3,6 +3,8 @@
 #include "Game.h"
 #include "MatrixHelper.h"
 #include "Utility.h"
+#include "Model.h"
+#include "Mesh.h"
 #include "VertexDeclarations.h"
 #include "RasterizerStates.h"
 #include "FoliageMaterial.h"
@@ -13,7 +15,7 @@
 
 namespace Library
 {
-	Foliage::Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale, float distributionRadius, XMFLOAT3 distributionCenter )
+	Foliage::Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale, float distributionRadius, XMFLOAT3 distributionCenter, FoliageBillboardType bType)
 		:
 		GameComponent(pGame),
 		mCamera(pCamera),
@@ -21,13 +23,17 @@ namespace Library
 		mPatchesCount(pPatchesCount),
 		mScale(scale),
 		mDistributionRadius(distributionRadius),
-		mDistributionCenter(distributionCenter)
+		mDistributionCenter(distributionCenter),
+		mType(bType)
 	{
+
 		Effect* effect = new Effect(pGame);
 		effect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\Foliage.fx"));
 
 		mMaterial = new FoliageMaterial();
 		mMaterial->Initialize(effect);
+
+		LoadBillboardModel(mType);
 
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::ToWideString(textureName).c_str(), nullptr, &mAlbedoTexture)))
 		{
@@ -53,6 +59,35 @@ namespace Library
 		DeleteObject(mMaterial);
 	}
 
+	void Foliage::LoadBillboardModel(FoliageBillboardType bType)
+	{
+		assert(mMaterial != nullptr);
+
+		if (bType == FoliageBillboardType::SINGLE) {
+			mIsRotating = true;
+			std::unique_ptr<Model> quadSingleModel(new Model(*mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_single.obj"), true));
+			mMaterial->CreateVertexBuffer(mGame->Direct3DDevice(), *(quadSingleModel->Meshes()[0]), &mVertexBuffer);
+			mMaterial->CreateIndexBuffer(*(quadSingleModel->Meshes()[0]), &mIndexBuffer);
+			quadSingleModel->Meshes()[0]->CreateIndexBuffer(&mIndexBuffer);
+			mVerticesCount = quadSingleModel->Meshes()[0]->Indices().size();
+		}
+		else if (bType == FoliageBillboardType::TWO_QUADS_CROSSING) {
+			mIsRotating = false;
+			std::unique_ptr<Model> quadDoubleModel(new Model(*mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_double.obj"), true));
+			mMaterial->CreateVertexBuffer(mGame->Direct3DDevice(), *(quadDoubleModel->Meshes()[0]), &mVertexBuffer);
+			mMaterial->CreateIndexBuffer(*(quadDoubleModel->Meshes()[0]), &mIndexBuffer);
+			quadDoubleModel->Meshes()[0]->CreateIndexBuffer(&mIndexBuffer);
+			mVerticesCount = quadDoubleModel->Meshes()[0]->Indices().size();
+		}
+		else if (bType == FoliageBillboardType::THREE_QUADS_CROSSING) {
+			mIsRotating = false;
+			std::unique_ptr<Model> quadTripleModel(new Model(*mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_triple.obj"), true));
+			mMaterial->CreateVertexBuffer(mGame->Direct3DDevice(), *(quadTripleModel->Meshes()[0]), &mVertexBuffer);
+			mMaterial->CreateIndexBuffer(*(quadTripleModel->Meshes()[0]), &mIndexBuffer);
+			quadTripleModel->Meshes()[0]->CreateIndexBuffer(&mIndexBuffer);
+			mVerticesCount = quadTripleModel->Meshes()[0]->Indices().size();
+		}
+	}
 	void Foliage::Initialize()
 	{
 		InitializeBuffersCPU();
@@ -89,47 +124,47 @@ namespace Library
 	{
 		D3D11_BUFFER_DESC vertexBufferDesc, instanceBufferDesc;
 		D3D11_SUBRESOURCE_DATA vertexData, instanceData;
-
-		int vertexCount = 6;
-		FoliagePatchData* patchData = new FoliagePatchData[vertexCount];
-
-		// Load the vertex array with data.
-		patchData[0].pos = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);  // Bottom left.
-		patchData[0].uv = XMFLOAT2(0.0f, 1.0f);
-
-		patchData[1].pos = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);  // Top left.
-		patchData[1].uv = XMFLOAT2(0.0f, 0.0f);
-
-		patchData[2].pos = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);  // Bottom right.
-		patchData[2].uv = XMFLOAT2(1.0f, 1.0f);
-
-		patchData[3].pos = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);  // Bottom right.
-		patchData[3].uv = XMFLOAT2(1.0f, 1.0f);
-
-		patchData[4].pos = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);  // Top left.
-		patchData[4].uv = XMFLOAT2(0.0f, 0.0f);
-
-		patchData[5].pos = XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f);  // Top right.
-		patchData[5].uv = XMFLOAT2(1.0f, 0.0f);
-
-		// Set up the description of the vertex buffer.
-		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		vertexBufferDesc.ByteWidth = sizeof(FoliagePatchData) * vertexCount;
-		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		vertexBufferDesc.CPUAccessFlags = 0;
-		vertexBufferDesc.MiscFlags = 0;
-		vertexBufferDesc.StructureByteStride = 0;
-
-		// Give the subresource structure a pointer to the vertex data.
-		vertexData.pSysMem = patchData;
-		vertexData.SysMemPitch = 0;
-		vertexData.SysMemSlicePitch = 0;
-
-		if (FAILED(mGame->Direct3DDevice()->CreateBuffer(&vertexBufferDesc, &vertexData, &mVertexBuffer)))
-			throw GameException("ID3D11Device::CreateBuffer() failed while generating vertex buffer of foliage mesh patch");
-
-		delete patchData;
-		patchData = nullptr;
+		//
+		//int vertexCount = 6;
+		//FoliagePatchData* patchData = new FoliagePatchData[vertexCount];
+		//
+		//// Load the vertex array with data.
+		//patchData[0].pos = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);  // Bottom left.
+		//patchData[0].uv = XMFLOAT2(0.0f, 1.0f);
+		//
+		//patchData[1].pos = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);  // Top left.
+		//patchData[1].uv = XMFLOAT2(0.0f, 0.0f);
+		//
+		//patchData[2].pos = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);  // Bottom right.
+		//patchData[2].uv = XMFLOAT2(1.0f, 1.0f);
+		//
+		//patchData[3].pos = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);  // Bottom right.
+		//patchData[3].uv = XMFLOAT2(1.0f, 1.0f);
+		//
+		//patchData[4].pos = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);  // Top left.
+		//patchData[4].uv = XMFLOAT2(0.0f, 0.0f);
+		//
+		//patchData[5].pos = XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f);  // Top right.
+		//patchData[5].uv = XMFLOAT2(1.0f, 0.0f);
+		//
+		//// Set up the description of the vertex buffer.
+		//vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		//vertexBufferDesc.ByteWidth = sizeof(FoliagePatchData) * vertexCount;
+		//vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		//vertexBufferDesc.CPUAccessFlags = 0;
+		//vertexBufferDesc.MiscFlags = 0;
+		//vertexBufferDesc.StructureByteStride = 0;
+		//
+		//// Give the subresource structure a pointer to the vertex data.
+		//vertexData.pSysMem = patchData;
+		//vertexData.SysMemPitch = 0;
+		//vertexData.SysMemSlicePitch = 0;
+		//
+		//if (FAILED(mGame->Direct3DDevice()->CreateBuffer(&vertexBufferDesc, &vertexData, &mVertexBuffer)))
+		//	throw GameException("ID3D11Device::CreateBuffer() failed while generating vertex buffer of foliage mesh patch");
+		//
+		//delete patchData;
+		//patchData = nullptr;
 
 		// instance buffer
 		int instanceCount = mPatchesCount;
@@ -200,6 +235,7 @@ namespace Library
 		bufferPointers[1] = mInstanceBuffer;
 
 		context->IASetVertexBuffers(0, 2, bufferPointers, strides, offsets);
+		context->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		Pass* pass = mMaterial->CurrentTechnique()->Passes().at(0);
@@ -216,16 +252,18 @@ namespace Library
 		mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f, 1.0f, 1.0f , 1.0f }; //todo
 		mMaterial->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
 		//mMaterial->CameraPosition() << mCamera.PositionVector();
+		float rotateToCamera = (mIsRotating) ? 1.0f : 0.0f;
+		mMaterial->RotateToCamera() << rotateToCamera;
 		pass->Apply(0, context);
 
 		if (mIsWireframe)
 		{
 			context->RSSetState(RasterizerStates::Wireframe);
-			context->DrawInstanced(6, mPatchesCountToRender, 0, 0);
+			context->DrawIndexedInstanced(mVerticesCount, mPatchesCountToRender, 0, 0, 0);
 			context->RSSetState(nullptr);
 		}
 		else
-			context->DrawInstanced(6, mPatchesCountToRender, 0, 0);
+			context->DrawIndexedInstanced(mVerticesCount, mPatchesCountToRender, 0, 0, 0);
 
 		context->OMSetBlendState(mNoBlendState, blendFactor, 0xffffffff);
 	}
@@ -289,10 +327,12 @@ namespace Library
 
 	void Foliage::CalculateDynamicLOD(float distanceToCam)
 	{
-		float factor = distanceToCam / mMaxDistanceToCamera;
+		float factor = (distanceToCam - 150.0f) / mMaxDistanceToCamera;
 
 		if (factor > 1.0f)
 			factor = 1.0f;
+		else if (factor < 0.0f)
+			factor = 0.0f;
 
 		mPatchesCountToRender = mPatchesCount * (1.0f - factor);
 	}
