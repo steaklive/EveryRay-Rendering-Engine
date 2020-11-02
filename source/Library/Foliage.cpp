@@ -124,7 +124,8 @@ namespace Library
 	{
 		D3D11_BUFFER_DESC vertexBufferDesc, instanceBufferDesc;
 		D3D11_SUBRESOURCE_DATA vertexData, instanceData;
-		//
+		
+
 		//int vertexCount = 6;
 		//FoliagePatchData* patchData = new FoliagePatchData[vertexCount];
 		//

@@ -225,11 +225,11 @@ namespace Rendering
 				std::map<std::string, Foliage*>
 				(
 					{
-						{ "content\\textures\\foliage\\grass_type1.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 8000, Utility::GetFilePath("content\\textures\\foliage\\grass_type1.png"), 2.5f, TERRAIN_TILE_RESOLUTION/2, mFoliageZonesCenters[i], FoliageBillboardType::TWO_QUADS_CROSSING)},
-						{ "content\\textures\\foliage\\grass_type4.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 10000, Utility::GetFilePath("content\\textures\\foliage\\grass_type4.png"), 2.0f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::THREE_QUADS_CROSSING) },
-						{ "content\\textures\\foliage\\grass_flower_type1.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 500, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type1.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) },
-						{ "content\\textures\\foliage\\grass_flower_type3.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 400, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type3.png"), 2.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) },
-						{ "content\\textures\\foliage\\grass_flower_type10.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 500, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type10.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) }
+						{ "content\\textures\\foliage\\grass_type1.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 12000, Utility::GetFilePath("content\\textures\\foliage\\grass_type1.png"), 2.5f, TERRAIN_TILE_RESOLUTION/2, mFoliageZonesCenters[i], FoliageBillboardType::TWO_QUADS_CROSSING)},
+						{ "content\\textures\\foliage\\grass_type4.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 15000, Utility::GetFilePath("content\\textures\\foliage\\grass_type4.png"), 2.0f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::THREE_QUADS_CROSSING) },
+						{ "content\\textures\\foliage\\grass_flower_type1.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 1200, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type1.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) },
+						{ "content\\textures\\foliage\\grass_flower_type3.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 1000, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type3.png"), 2.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) },
+						{ "content\\textures\\foliage\\grass_flower_type10.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 800, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type10.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) }
 					}
 				)
 			);
