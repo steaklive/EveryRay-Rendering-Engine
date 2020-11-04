@@ -15,6 +15,11 @@ cbuffer CBufferPerFrame
     float4 ShadowTexelSize;
     float4 ShadowCascadeDistances;
     float RotateToCamera;
+    float Time;
+    float WindFrequency;
+    float WindStrength;
+    float WindGustDistance;
+    float4 WindDirection;
 }
 
 SamplerState ColorSampler
@@ -46,32 +51,41 @@ VS_OUTPUT vertex_shader(VS_INPUT IN)
 {
     VS_OUTPUT OUT = (VS_OUTPUT) 0;
 
-    if (RotateToCamera > 0.0f)
-    {
-        float scaleX = sqrt(IN.World[0][0] * IN.World[0][0] + IN.World[0][1] * IN.World[0][1] + IN.World[0][2] * IN.World[0][2]);
-        //float scaleY = sqrt(IN.World[1][0] * IN.World[1][0] + IN.World[1][1] * IN.World[1][1] + IN.World[1][2] * IN.World[1][2]);
-        //float scaleZ = sqrt(IN.World[2][0] * IN.World[2][0] + IN.World[2][1] * IN.World[2][1] + IN.World[2][2] * IN.World[2][2]);
+    float4 localPos = IN.Position;
     
-        float4x4 modelView = mul(IN.World, View);
+    float vertexHeight = 0.5f;
     
-        //cylindrical rotation to camera trick from https://www.geeks3d.com/20140807/billboarding-vertex-shader-glsl/
-        modelView[0][0] = scaleX;
-        modelView[0][1] = 0.0f;
-        modelView[0][2] = 0.0f;
-    
-        //modelView[1][0] = 0.0f; //uncomment for spherical rotation
-        //modelView[1][1] = 1.0f; //uncomment for spherical rotation
-        //modelView[1][2] = 0.0f; //uncomment for spherical rotation
-    
-        modelView[2][0] = 0.0f;
-        modelView[2][1] = 0.0f;
-        modelView[2][2] = 1.0f; //dont care bout z scale in a billboard
-    
-        OUT.Position = mul(IN.Position, modelView);
-    }
-    else
+    //if (RotateToCamera > 0.0f)
+    //{
+    //    float scaleX = sqrt(IN.World[0][0] * IN.World[0][0] + IN.World[0][1] * IN.World[0][1] + IN.World[0][2] * IN.World[0][2]);
+    //    //float scaleY = sqrt(IN.World[1][0] * IN.World[1][0] + IN.World[1][1] * IN.World[1][1] + IN.World[1][2] * IN.World[1][2]);
+    //    //float scaleZ = sqrt(IN.World[2][0] * IN.World[2][0] + IN.World[2][1] * IN.World[2][1] + IN.World[2][2] * IN.World[2][2]);
+    //
+    //    float4x4 modelView = mul(IN.World, View);
+    //
+    //    //cylindrical rotation to camera trick from https://www.geeks3d.com/20140807/billboarding-vertex-shader-glsl/
+    //    modelView[0][0] = scaleX;
+    //    modelView[0][1] = 0.0f;
+    //    modelView[0][2] = 0.0f;
+    //
+    //    //modelView[1][0] = 0.0f; //uncomment for spherical rotation
+    //    //modelView[1][1] = 1.0f; //uncomment for spherical rotation
+    //    //modelView[1][2] = 0.0f; //uncomment for spherical rotation
+    //
+    //    modelView[2][0] = 0.0f;
+    //    modelView[2][1] = 0.0f;
+    //    modelView[2][2] = 1.0f; //dont care bout z scale in a billboard
+    //
+    //    OUT.Position = mul(IN.Position, modelView);
+    //}
+    //else
     {
         OUT.Position = mul(IN.Position, IN.World);
+        if (localPos.y > vertexHeight)
+        {
+            OUT.Position.x += sin(Time * WindFrequency + OUT.Position.x * WindGustDistance) * vertexHeight * WindStrength * WindDirection.x;
+            OUT.Position.z += sin(Time * WindFrequency + OUT.Position.z * WindGustDistance) * vertexHeight * WindStrength * WindDirection.z;
+        }
         OUT.Position = mul(OUT.Position, View);
     }
 

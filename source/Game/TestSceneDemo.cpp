@@ -255,8 +255,10 @@ namespace Rendering
 		mSkybox->Update(gameTime);
 		mGrid->Update(gameTime);
 		mPostProcessingStack->Update();
-		for (auto object : mFoliageCollection)
+		for (auto object : mFoliageCollection) {
+			object->SetWindParams(mWindGustDistance, mWindStrength, mWindFrequency);
 			object->Update(gameTime);
+		}
 
 		mCamera->Cull(mRenderingObjects);
 		mShadowMapper->Update(gameTime);
@@ -294,6 +296,10 @@ namespace Rendering
 
 			ImGui::End();
 		}
+
+		ImGui::SliderFloat("Wind strength", &mWindStrength, 0.0f, 100.0f);
+		ImGui::SliderFloat("Wind gust distance", &mWindGustDistance, 0.0f, 100.0f);
+		ImGui::SliderFloat("Wind frequency", &mWindFrequency, 0.0f, 100.0f);
 
 		ImGui::End();
 	}
@@ -365,7 +371,7 @@ namespace Rendering
 
 		//foliage 
 		for (auto object : mFoliageCollection)
-			object->Draw();
+			object->Draw(gameTime);
 
 #pragma endregion
 

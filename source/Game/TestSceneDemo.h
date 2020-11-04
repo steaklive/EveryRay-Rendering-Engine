@@ -83,7 +83,9 @@ namespace Rendering
 		ID3D11ShaderResourceView* mIntegrationMapTextureSRV;
 		std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
 
-
+		float mWindStrength = 1.0f;
+		float mWindFrequency = 1.0f;
+		float mWindGustDistance = 1.0f;
 		//Terrain* mTerrain;
 	};
 }

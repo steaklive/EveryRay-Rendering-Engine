@@ -213,7 +213,7 @@ namespace Library
 		}
 	}
 
-	void Foliage::Draw()
+	void Foliage::Draw(const GameTime& gameTime)
 	{
 		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
 
@@ -255,6 +255,12 @@ namespace Library
 		//mMaterial->CameraPosition() << mCamera.PositionVector();
 		float rotateToCamera = (mIsRotating) ? 1.0f : 0.0f;
 		mMaterial->RotateToCamera() << rotateToCamera;
+		mMaterial->Time() << static_cast<float>(gameTime.TotalGameTime());
+		mMaterial->WindStrength() << mWindStrength;
+		mMaterial->WindDirection() << XMVECTOR{ 0.0f, 0.0f, 1.0f , 1.0f };
+		mMaterial->WindFrequency() << mWindFrequency;
+		mMaterial->WindGustDistance() << mWindGustDistance;
+
 		pass->Apply(0, context);
 
 		if (mIsWireframe)

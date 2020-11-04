@@ -95,5 +95,10 @@ namespace Rendering
 		float mFoliageDynamicLODToCameraDistance = 650.0f;
 
 		bool mRenderFoliage = true;
+		bool mRenderFoliageZonesCenters = true;
+
+		float mWindStrength = 1.0f;
+		float mWindFrequency = 1.0f;
+		float mWindGustDistance = 1.0f;
 	};
 }

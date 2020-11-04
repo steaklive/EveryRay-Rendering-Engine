@@ -41,13 +41,20 @@ namespace Library
 		~Foliage();
 
 		void Initialize();
-		void Draw();
+		void Draw(const GameTime& gameTime);
 		void Update(const GameTime& gameTime);
 
 		int GetPatchesCount() { return mPatchesCount; }
 		void SetWireframe(bool flag) { mIsWireframe = flag; }
 		void SetDynamicLODMaxDistance(float val) { mMaxDistanceToCamera = val; }
 		bool IsRotating() { return mIsRotating; }
+		void SetWindParams(float gustDistance, float strength, float frequency) 
+		{
+			mWindGustDistance = gustDistance;
+			mWindStrength = strength;
+			mWindFrequency = frequency;
+		}
+
 	private:
 		void LoadBillboardModel(FoliageBillboardType bType);
 		void CalculateDynamicLOD(float distanceToCam);
@@ -88,5 +95,9 @@ namespace Library
 
 		int mVerticesCount = 0;
 		bool mIsRotating = false;
+
+		float mWindStrength;
+		float mWindFrequency;
+		float mWindGustDistance;
 	};
 }
