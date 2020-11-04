@@ -249,6 +249,7 @@ namespace Rendering
 			for (auto foliageType : foliageZone)
 			{
 				foliageType.second->SetDynamicLODMaxDistance(mFoliageDynamicLODToCameraDistance);
+				foliageType.second->SetWindParams(mWindGustDistance, mWindStrength, mWindFrequency);
 				foliageType.second->Update(gameTime);
 			}
 		}
@@ -308,6 +309,14 @@ namespace Rendering
 		ImGui::SliderFloat("Dynamic LOD distance factor", &distanceFactor, 0.0001f, 0.1f);
 		ImGui::SliderFloat("Tessellated terrain height scale", &terrainHeightScale, 0.0f, 1000.0f);
 		ImGui::Checkbox("Render foliage", &mRenderFoliage);
+		ImGui::Checkbox("Render foliage zones centers gizmos", &mRenderFoliageZonesCenters);
+		ImGui::SliderFloat("Wind strength", &mWindStrength, 0.0f, 100.0f);
+		ImGui::SliderFloat("Wind gust distance", &mWindGustDistance, 0.0f, 100.0f);
+		ImGui::SliderFloat("Wind frequency", &mWindFrequency, 0.0f, 100.0f);
+
+
+		mRenderingObjects["Sphere"]->Visible(mRenderFoliageZonesCenters);
+
 		ImGui::SliderFloat("Foliage dynamic LOD max distance", &mFoliageDynamicLODToCameraDistance, 100.0f, 5000.0f);
 
 		ImGui::End();
@@ -384,7 +393,7 @@ namespace Rendering
 			for (auto foliageZone : mFoliageZonesCollections)
 			{
 				for (auto foliageType : foliageZone)
-					foliageType.second->Draw();
+					foliageType.second->Draw(gameTime);
 			}
 		}
 
