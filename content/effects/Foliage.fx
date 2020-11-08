@@ -92,23 +92,23 @@ VS_OUTPUT vertex_shader(VS_INPUT IN)
     translateMat[3][2] = IN.World[3][2];
     translateMat[3][3] = IN.World[3][3];
     
-    //float4x4 rotationMat;
-    //rotationMat[0][0] = IN.World[0][0] / scaleX;
-    //rotationMat[0][1] = IN.World[0][1] / scaleX;
-    //rotationMat[0][2] = IN.World[0][2] / scaleX;
-    //rotationMat[0][3] = 0.0f;
-    //rotationMat[1][0] = IN.World[1][0] / scaleY;
-    //rotationMat[1][1] = IN.World[1][1] / scaleY;
-    //rotationMat[1][2] = IN.World[1][2] / scaleY;
-    //rotationMat[1][3] = 0.0f;
-    //rotationMat[2][0] = IN.World[2][0] / scaleZ;
-    //rotationMat[2][1] = IN.World[2][1] / scaleZ;
-    //rotationMat[2][2] = IN.World[2][2] / scaleZ;
-    //rotationMat[2][3] = 0.0f;
-    //rotationMat[3][0] = 0.0f;
-    //rotationMat[3][1] = 0.0f;
-    //rotationMat[3][2] = 0.0f;
-    //rotationMat[3][3] = 1.0f;
+    float4x4 rotationMat;
+    rotationMat[0][0] = IN.World[0][0] / scaleX;
+    rotationMat[0][1] = IN.World[0][1] / scaleX;
+    rotationMat[0][2] = IN.World[0][2] / scaleX;
+    rotationMat[0][3] = 0.0f;
+    rotationMat[1][0] = IN.World[1][0] / scaleY;
+    rotationMat[1][1] = IN.World[1][1] / scaleY;
+    rotationMat[1][2] = IN.World[1][2] / scaleY;
+    rotationMat[1][3] = 0.0f;
+    rotationMat[2][0] = IN.World[2][0] / scaleZ;
+    rotationMat[2][1] = IN.World[2][1] / scaleZ;
+    rotationMat[2][2] = IN.World[2][2] / scaleZ;
+    rotationMat[2][3] = 0.0f;
+    rotationMat[3][0] = 0.0f;
+    rotationMat[3][1] = 0.0f;
+    rotationMat[3][2] = 0.0f;
+    rotationMat[3][3] = 1.0f;
     
     float4 localPos = IN.Position;
     float vertexHeight = 0.5f;
@@ -135,10 +135,11 @@ VS_OUTPUT vertex_shader(VS_INPUT IN)
     newRotationMat[3][3] = 1.0f;
     
     localPos = mul(localPos, scaleMat);
-    localPos = mul(localPos, newRotationMat);
+    if (RotateToCamera > 0.0f)
+        localPos = mul(localPos, newRotationMat);
     localPos = mul(localPos, translateMat);
     OUT.Position = localPos;
-    
+
     //if (RotateToCamera > 0.0f)
     //{
     //    float scaleX = sqrt(IN.World[0][0] * IN.World[0][0] + IN.World[0][1] * IN.World[0][1] + IN.World[0][2] * IN.World[0][2]);
