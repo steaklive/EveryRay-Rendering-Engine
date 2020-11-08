@@ -272,7 +272,7 @@ namespace Library
 		else
 			context->DrawIndexedInstanced(mVerticesCount, mPatchesCountToRender, 0, 0, 0);
 
-		context->OMSetBlendState(mNoBlendState, blendFactor, 0xffffffff);
+		//context->OMSetBlendState(mNoBlendState, blendFactor, 0xffffffff);
 	}
 
 	void Foliage::Update(const GameTime& gameTime)
