@@ -252,7 +252,7 @@ namespace Library
 		mMaterial->AmbientColor() << XMVECTOR{ mDirectionalLight.GetAmbientLightColor().x,  mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
 		mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f, 1.0f, 1.0f , 1.0f }; //todo
 		mMaterial->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
-		//mMaterial->CameraPosition() << mCamera.PositionVector();
+		mMaterial->CameraDirection() << mCamera.DirectionVector();
 		float rotateToCamera = (mIsRotating) ? 1.0f : 0.0f;
 		mMaterial->RotateToCamera() << rotateToCamera;
 		mMaterial->Time() << static_cast<float>(gameTime.TotalGameTime());
