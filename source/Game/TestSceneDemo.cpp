@@ -325,22 +325,22 @@ namespace Rendering
 #pragma region DRAW_SHADOWS
 
 		//shadows
-		for (int i = 0; i < MAX_NUM_OF_CASCADES; i++)
-		{
-			mShadowMapper->BeginRenderingToShadowMap(i);
-			const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(i);
-
-			XMMATRIX lvp = mShadowMapper->GetViewMatrix(i) * mShadowMapper->GetProjectionMatrix(i);
-			int objectIndex = 0;
-			for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++, objectIndex++)
-			{
-				static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->LightViewProjection() << lvp;
-				//static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->AlbedoAlphaMap() << it->second->GetTextureData(objectIndex).AlbedoMap;
-				it->second->Draw(name, true);
-			}
-
-			mShadowMapper->StopRenderingToShadowMap(i);
-		}
+		//for (int i = 0; i < MAX_NUM_OF_CASCADES; i++)
+		//{
+		//	mShadowMapper->BeginRenderingToShadowMap(i);
+		//	const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(i);
+		//
+		//	XMMATRIX lvp = mShadowMapper->GetViewMatrix(i) * mShadowMapper->GetProjectionMatrix(i);
+		//	int objectIndex = 0;
+		//	for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++, objectIndex++)
+		//	{
+		//		static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->LightViewProjection() << lvp;
+		//		//static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->AlbedoAlphaMap() << it->second->GetTextureData(objectIndex).AlbedoMap;
+		//		it->second->Draw(name, true);
+		//	}
+		//
+		//	mShadowMapper->StopRenderingToShadowMap(i);
+		//}
 
 		mRenderStateHelper->RestoreRasterizerState();
 		
@@ -366,8 +366,8 @@ namespace Rendering
 			mDirectionalLight->DrawProxyModel(gameTime);
 
 		//lighting
-		for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++)
-			it->second->Draw(MaterialHelper::lightingMaterialName);
+		//for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++)
+		//	it->second->Draw(MaterialHelper::lightingMaterialName);
 
 		//foliage 
 		for (auto object : mFoliageCollection)

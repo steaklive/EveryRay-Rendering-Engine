@@ -3,7 +3,7 @@
 #include "ModelMaterial.h"
 #include "GameException.h"
 #include "Utility.h"
-#include "..\assimp\scene.h"
+#include "assimp\scene.h"
 
 namespace Library
 {

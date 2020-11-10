@@ -4,7 +4,7 @@
 //#include "Model.h"
 #include "Game.h"
 #include "GameException.h"
-#include "..\assimp\scene.h"
+#include "assimp\scene.h"
 
 namespace Library
 {

@@ -1,4 +1,33 @@
-﻿  CollisionTestDemo.cpp
+﻿  stdafx.cpp
+  imgui.cpp
+  ImGuizmo.cpp
+  imgui_demo.cpp
+  imgui_draw.cpp
+  imgui_impl_dx11.cpp
+  imgui_impl_win32.cpp
+  SponzaMainDemo.cpp
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(145): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(98): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(18): note: see declaration of 'Rendering::VignetteMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(99): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(121): warning C4150: deletion of pointer to incomplete type 'Rendering::FXAAMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(21): note: see declaration of 'Rendering::FXAAMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(122): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(142): warning C4150: deletion of pointer to incomplete type 'Rendering::ColorGradingMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(19): note: see declaration of 'Rendering::ColorGradingMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(143): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(173): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(197): warning C4150: deletion of pointer to incomplete type 'Rendering::MotionBlurMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(20): note: see declaration of 'Rendering::MotionBlurMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(198): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\sponzamaindemo.cpp(49): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\sponzamaindemo.cpp(49): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
+  CollisionTestDemo.cpp
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\octreestructure.h(20): warning C4244: 'return': conversion from '_Rep' to 'float', possible loss of data
           with
           [
@@ -9,34 +38,91 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\l
           [
               _Rep=double
           ]
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(117): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(121): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(124): warning C4018: '<': signed/unsigned mismatch
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(154): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(157): warning C4018: '<': signed/unsigned mismatch
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(195): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(205): warning C4316: 'Library::RenderableAABB': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(145): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(47): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(47): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(134): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(141): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(167): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(174): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(429): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(463): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(572): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(817): warning C4316: 'Library::RenderableAABB': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(823): warning C4316: 'Library::RenderableOBB': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(844): warning C4316: 'Library::RenderableAABB': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(850): warning C4316: 'Library::RenderableOBB': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(606): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(861): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(866): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(887): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(893): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\game.h(57): warning C4244: '=': conversion from '__int64' to '_Ty2', possible loss of data
+          with
+          [
+              _Ty2=int
+          ]
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\collisiontestdemo.cpp(94): note: see reference to function template instantiation 'std::pair<bool,int> Library::Game::FindInGameComponents<Rendering::CollisionTestDemo*>(std::vector<Library::GameComponent *,std::allocator<_Ty>> &,const T &)' being compiled
+          with
+          [
+              _Ty=Library::GameComponent *,
+              T=Rendering::CollisionTestDemo *
+          ]
   FrustumCullingDemo.cpp
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.h(152): warning C4150: deletion of pointer to incomplete type 'Library::RenderableAABB'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.h(30): note: see declaration of 'Library::RenderableAABB'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(202): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(52): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(52): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(139): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=UINT
+          ]
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(153): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(190): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(235): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(236): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(244): warning C4316: 'Library::RenderableAABB': object allocated on the heap may not be aligned 16
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(406): warning C4305: 'argument': truncation from 'double' to 'float'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(420): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\game.h(57): warning C4244: '=': conversion from '__int64' to '_Ty2', possible loss of data
+          with
+          [
+              _Ty2=int
+          ]
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(97): note: see reference to function template instantiation 'std::pair<bool,int> Library::Game::FindInGameComponents<Rendering::FrustumCullingDemo*>(std::vector<Library::GameComponent *,std::allocator<_Ty>> &,const T &)' being compiled
+          with
+          [
+              _Ty=Library::GameComponent *,
+              T=Rendering::FrustumCullingDemo *
+          ]
   InstancingDemo.cpp
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\instancingdemo.h(34): warning C4305: 'initializing': truncation from 'double' to 'float'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\instancingdemo.cpp(114): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(145): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\instancingdemo.cpp(46): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\instancingdemo.cpp(46): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\game.h(57): warning C4244: '=': conversion from '__int64' to '_Ty2', possible loss of data
+          with
+          [
+              _Ty2=int
+          ]
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\instancingdemo.cpp(97): note: see reference to function template instantiation 'std::pair<bool,int> Library::Game::FindInGameComponents<Rendering::InstancingDemo*>(std::vector<Library::GameComponent *,std::allocator<_Ty>> &,const T &)' being compiled
+          with
+          [
+              _Ty=Library::GameComponent *,
+              T=Rendering::InstancingDemo *
+          ]
   PhysicallyBasedRenderingDemo.cpp
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\physicallybasedrenderingdemo.cpp(34): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\physicallybasedrenderingdemo.cpp(34): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\physicallybasedrenderingdemo.cpp(442): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\physicallybasedrenderingdemo.cpp(451): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\game.h(57): warning C4244: '=': conversion from '__int64' to '_Ty2', possible loss of data
+          with
+          [
+              _Ty2=int
+          ]
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\physicallybasedrenderingdemo.cpp(134): note: see reference to function template instantiation 'std::pair<bool,int> Library::Game::FindInGameComponents<Rendering::PhysicallyBasedRenderingDemo*>(std::vector<Library::GameComponent *,std::allocator<_Ty>> &,const T &)' being compiled
+          with
+          [
+              _Ty=Library::GameComponent *,
+              T=Rendering::PhysicallyBasedRenderingDemo *
+          ]
+  Program.cpp
   RenderingGame.cpp
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(98): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(18): note: see declaration of 'Rendering::VignetteMaterial'
@@ -60,44 +146,47 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\g
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(217): warning C4150: deletion of pointer to incomplete type 'Library::DepthMapMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(39): note: see declaration of 'Library::DepthMapMaterial'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(362): warning C4305: 'initializing': truncation from 'double' to 'float'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.h(87): warning C4305: 'initializing': truncation from 'double' to 'float'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\renderinggame.cpp(129): warning C4316: 'Library::FirstPersonCamera': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\renderinggame.cpp(190): warning C4316: 'Rendering::VolumetricLightingDemo': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\renderinggame.cpp(199): warning C4316: 'Rendering::WaterSimulationDemo': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.h(92): warning C4305: 'initializing': truncation from 'double' to 'float'
   ShadowMappingDemo.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\shadowmappingdemo.cpp(231): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
-  SponzaMainDemo.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(98): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(18): note: see declaration of 'Rendering::VignetteMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(99): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(121): warning C4150: deletion of pointer to incomplete type 'Rendering::FXAAMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(21): note: see declaration of 'Rendering::FXAAMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(122): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(142): warning C4150: deletion of pointer to incomplete type 'Rendering::ColorGradingMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(19): note: see declaration of 'Rendering::ColorGradingMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(143): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(173): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(197): warning C4150: deletion of pointer to incomplete type 'Rendering::MotionBlurMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(20): note: see declaration of 'Rendering::MotionBlurMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(198): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\sponzamaindemo.cpp(139): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\sponzamaindemo.cpp(155): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\sponzamaindemo.cpp(180): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\sponzamaindemo.cpp(213): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\sponzamaindemo.cpp(223): warning C4316: 'Library::ShadowMapper': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\shadowmappingdemo.cpp(42): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\shadowmappingdemo.cpp(42): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\shadowmappingdemo.cpp(253): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\shadowmappingdemo.cpp(259): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\shadowmappingdemo.cpp(262): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\shadowmappingdemo.cpp(284): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\shadowmappingdemo.cpp(302): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\shadowmappingdemo.cpp(354): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\shadowmappingdemo.cpp(359): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\game.h(57): warning C4244: '=': conversion from '__int64' to '_Ty2', possible loss of data
+          with
+          [
+              _Ty2=int
+          ]
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\shadowmappingdemo.cpp(166): note: see reference to function template instantiation 'std::pair<bool,int> Library::Game::FindInGameComponents<Rendering::ShadowMappingDemo*>(std::vector<Library::GameComponent *,std::allocator<_Ty>> &,const T &)' being compiled
+          with
+          [
+              _Ty=Library::GameComponent *,
+              T=Rendering::ShadowMappingDemo *
+          ]
   SubsurfaceScatteringDemo.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\subsurfacescatteringdemo.cpp(198): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\subsurfacescatteringdemo.cpp(205): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\subsurfacescatteringdemo.cpp(219): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\subsurfacescatteringdemo.cpp(232): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\subsurfacescatteringdemo.cpp(48): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\subsurfacescatteringdemo.cpp(48): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\subsurfacescatteringdemo.cpp(157): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\subsurfacescatteringdemo.cpp(420): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\game.h(57): warning C4244: '=': conversion from '__int64' to '_Ty2', possible loss of data
+          with
+          [
+              _Ty2=int
+          ]
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\subsurfacescatteringdemo.cpp(123): note: see reference to function template instantiation 'std::pair<bool,int> Library::Game::FindInGameComponents<Rendering::SubsurfaceScatteringDemo*>(std::vector<Library::GameComponent *,std::allocator<_Ty>> &,const T &)' being compiled
+          with
+          [
+              _Ty=Library::GameComponent *,
+              T=Rendering::SubsurfaceScatteringDemo *
+          ]
   TerrainDemo.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.h(87): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.h(92): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(145): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(98): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(18): note: see declaration of 'Rendering::VignetteMaterial'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(99): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
@@ -116,13 +205,16 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\l
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(20): note: see declaration of 'Rendering::MotionBlurMaterial'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(198): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(105): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(64): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(65): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(179): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(183): warning C4316: 'Library::ShadowMapper': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(235): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(109): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(68): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(69): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\foliage.h(92): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(49): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(49): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(264): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(481): warning C4554: '&': check operator precedence for possible error; use parentheses to clarify precedence
   TestSceneDemo.cpp
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(145): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(98): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(18): note: see declaration of 'Rendering::VignetteMaterial'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(99): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
@@ -141,13 +233,12 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\l
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(20): note: see declaration of 'Rendering::MotionBlurMaterial'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(198): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(105): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(64): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(65): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(143): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(163): warning C4316: 'Rendering::RenderingObject': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(204): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(207): warning C4316: 'Library::ShadowMapper': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(109): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(68): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(69): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\foliage.h(92): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(49): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(49): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
   VolumetricLightingDemo.cpp
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(176): warning C4150: deletion of pointer to incomplete type 'Rendering::NormalMappingMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(154): note: see declaration of 'Rendering::NormalMappingMaterial'
@@ -178,7 +269,16 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\l
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(20): note: see declaration of 'Rendering::MotionBlurMaterial'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(198): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(283): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(103): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(103): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(306): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(312): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(315): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(348): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(376): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(572): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(577): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(578): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(1376): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(1378): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(1396): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
@@ -186,6 +286,17 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\g
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(1411): warning C4305: 'argument': truncation from 'double' to 'float'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(1412): warning C4305: 'argument': truncation from 'double' to 'float'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(1665): warning C4305: '=': truncation from 'double' to 'float'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\game.h(57): warning C4244: '=': conversion from '__int64' to '_Ty2', possible loss of data
+          with
+          [
+              _Ty2=int
+          ]
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.cpp(243): note: see reference to function template instantiation 'std::pair<bool,int> Library::Game::FindInGameComponents<Rendering::VolumetricLightingDemo*>(std::vector<Library::GameComponent *,std::allocator<_Ty>> &,const T &)' being compiled
+          with
+          [
+              _Ty=Library::GameComponent *,
+              T=Rendering::VolumetricLightingDemo *
+          ]
   WaterSimulationDemo.cpp
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(98): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(18): note: see declaration of 'Rendering::VignetteMaterial'
@@ -207,8 +318,20 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\l
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(20): note: see declaration of 'Rendering::MotionBlurMaterial'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(198): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\watersimulationdemo.cpp(113): warning C4316: 'Library::DirectionalLight': object allocated on the heap may not be aligned 16
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\watersimulationdemo.cpp(48): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\watersimulationdemo.cpp(48): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\watersimulationdemo.cpp(150): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\game.h(57): warning C4244: '=': conversion from '__int64' to '_Ty2', possible loss of data
+          with
+          [
+              _Ty2=int
+          ]
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\watersimulationdemo.cpp(85): note: see reference to function template instantiation 'std::pair<bool,int> Library::Game::FindInGameComponents<Rendering::WaterSimulationDemo*>(std::vector<Library::GameComponent *,std::allocator<_Ty>> &,const T &)' being compiled
+          with
+          [
+              _Ty=Library::GameComponent *,
+              T=Rendering::WaterSimulationDemo *
+          ]
   Generating Code...
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.cpp(439): warning C4700: uninitialized local variable 'empty' used
-  Game.vcxproj -> C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\\bin\Debug\EveryRay - Rendering Engine.exe
+  Game.vcxproj -> C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\\bin\x64\Debug\EveryRay - Rendering Engine.exe
