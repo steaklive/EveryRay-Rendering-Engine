@@ -758,6 +758,205 @@ namespace Library
 		}
 	}
 
+	float HeightMap::FindHeightFromPosition(float x, float z)
+	{
+		int index = 0;
+		float vertex1[3], vertex2[3], vertex3[3];
+		float height = 0.0f;
+		bool isFound = false;
+
+		int index1, index2, index3;
+
+		for (int j = 0; j < (TERRAIN_TILE_RESOLUTION - 1); j++)
+		{
+			for (int i = 0; i < (TERRAIN_TILE_RESOLUTION - 1); i++)
+			{
+				index1 = (j * TERRAIN_TILE_RESOLUTION) + i;
+				index2 = (j * TERRAIN_TILE_RESOLUTION) + (i + 1);
+				index3 = ((j + 1) * TERRAIN_TILE_RESOLUTION) + i;
+
+				// Get three vertices from the face.
+				vertex1[0] = mData[index1].x;
+				vertex1[1] = mData[index1].y;
+				vertex1[2] = mData[index1].z;
+				vertex2[0] = mData[index2].x;
+				vertex2[1] = mData[index2].y;
+				vertex2[2] = mData[index2].z;
+				vertex3[0] = mData[index3].x;
+				vertex3[1] = mData[index3].y;
+				vertex3[2] = mData[index3].z;
+
+				//// Calculate the two vectors for this face.
+				//vector1[0] = vertex1[0] - vertex3[0];
+				//vector1[1] = vertex1[1] - vertex3[1];
+				//vector1[2] = vertex1[2] - vertex3[2];
+				//vector2[0] = vertex3[0] - vertex2[0];
+				//vector2[1] = vertex3[1] - vertex2[1];
+				//vector2[2] = vertex3[2] - vertex2[2];
+				//
+				//index = (j * (mHeight - 1)) + i;
+				//
+				//// Calculate the cross product of those two vectors to get the un-normalized value for this face normal.
+				//normals[index].x = (vector1[1] * vector2[2]) - (vector1[2] * vector2[1]);
+				//normals[index].y = (vector1[2] * vector2[0]) - (vector1[0] * vector2[2]);
+				//normals[index].z = (vector1[0] * vector2[1]) - (vector1[1] * vector2[0]);
+
+				isFound = GetHeightFromTriangle(x, z, vertex1, vertex2, vertex3, height);
+				if (isFound)
+					return height;
+			}
+		}
+
+		//for (int i = 0; i < TERRAIN_TILE_RESOLUTION * TERRAIN_TILE_RESOLUTION / 3; i++)
+		//{
+		//	index = i * 3;
+		//
+		//	vertex1[0] = mData[index].x;
+		//	vertex1[1] = mData[index].y;
+		//	vertex1[2] = mData[index].z;
+		//	index++;
+		//
+		//	vertex2[0] = mData[index].x;
+		//	vertex2[1] = mData[index].y;
+		//	vertex2[2] = mData[index].z;
+		//	index++;
+		//
+		//	vertex3[0] = mData[index].x;
+		//	vertex3[1] = mData[index].y;
+		//	vertex3[2] = mData[index].z;
+		//
+		//	isFound = GetHeightFromTriangle(x, z, vertex1, vertex2, vertex3, height);
+		//	if (isFound)
+		//		return height;
+		//}
+		return 0.0f;
+	}
+
+	bool HeightMap::GetHeightFromTriangle(float x, float z, float v0[3], float v1[3], float v2[3], float& height)
+	{
+		float startVector[3], directionVector[3], edge1[3], edge2[3], normal[3];
+		float Q[3], e1[3], e2[3], e3[3], edgeNormal[3], temp[3];
+		float magnitude, D, denominator, numerator, t, determinant;
+
+
+		// Starting position of the ray that is being cast.
+		startVector[0] = x;
+		startVector[1] = 0.0f;
+		startVector[2] = z;
+
+		// The direction the ray is being cast.
+		directionVector[0] = 0.0f;
+		directionVector[1] = -1.0f;
+		directionVector[2] = 0.0f;
+
+		// Calculate the two edges from the three points given.
+		edge1[0] = v1[0] - v0[0];
+		edge1[1] = v1[1] - v0[1];
+		edge1[2] = v1[2] - v0[2];
+
+		edge2[0] = v2[0] - v0[0];
+		edge2[1] = v2[1] - v0[1];
+		edge2[2] = v2[2] - v0[2];
+
+		// Calculate the normal of the triangle from the two edges.
+		normal[0] = (edge1[1] * edge2[2]) - (edge1[2] * edge2[1]);
+		normal[1] = (edge1[2] * edge2[0]) - (edge1[0] * edge2[2]);
+		normal[2] = (edge1[0] * edge2[1]) - (edge1[1] * edge2[0]);
+
+		magnitude = (float)sqrt((normal[0] * normal[0]) + (normal[1] * normal[1]) + (normal[2] * normal[2]));
+
+		normal[0] = normal[0] / magnitude;
+		normal[1] = normal[1] / magnitude;
+		normal[2] = normal[2] / magnitude;
+
+		// Find the distance from the origin to the plane.
+		D = ((-normal[0] * v0[0]) + (-normal[1] * v0[1]) + (-normal[2] * v0[2]));
+
+		// Get the denominator of the equation.
+		denominator = ((normal[0] * directionVector[0]) + (normal[1] * directionVector[1]) + (normal[2] * directionVector[2]));
+
+		// Make sure the result doesn't get too close to zero to prevent divide by zero.
+		if (fabs(denominator) < 0.0001f)
+			return false;
+
+		// Get the numerator of the equation.
+		numerator = -1.0f * (((normal[0] * startVector[0]) + (normal[1] * startVector[1]) + (normal[2] * startVector[2])) + D);
+
+		// Calculate where we intersect the triangle.
+		t = numerator / denominator;
+
+		// Find the intersection vector.
+		Q[0] = startVector[0] + (directionVector[0] * t);
+		Q[1] = startVector[1] + (directionVector[1] * t);
+		Q[2] = startVector[2] + (directionVector[2] * t);
+
+		// Find the three edges of the triangle.
+		e1[0] = v1[0] - v0[0];
+		e1[1] = v1[1] - v0[1];
+		e1[2] = v1[2] - v0[2];
+
+		e2[0] = v2[0] - v1[0];
+		e2[1] = v2[1] - v1[1];
+		e2[2] = v2[2] - v1[2];
+
+		e3[0] = v0[0] - v2[0];
+		e3[1] = v0[1] - v2[1];
+		e3[2] = v0[2] - v2[2];
+
+		// Calculate the normal for the first edge.
+		edgeNormal[0] = (e1[1] * normal[2]) - (e1[2] * normal[1]);
+		edgeNormal[1] = (e1[2] * normal[0]) - (e1[0] * normal[2]);
+		edgeNormal[2] = (e1[0] * normal[1]) - (e1[1] * normal[0]);
+
+		// Calculate the determinant to see if it is on the inside, outside, or directly on the edge.
+		temp[0] = Q[0] - v0[0];
+		temp[1] = Q[1] - v0[1];
+		temp[2] = Q[2] - v0[2];
+
+		determinant = ((edgeNormal[0] * temp[0]) + (edgeNormal[1] * temp[1]) + (edgeNormal[2] * temp[2]));
+
+		// Check if it is outside.
+		if (determinant > 0.001f)
+			return false;
+
+		// Calculate the normal for the second edge.
+		edgeNormal[0] = (e2[1] * normal[2]) - (e2[2] * normal[1]);
+		edgeNormal[1] = (e2[2] * normal[0]) - (e2[0] * normal[2]);
+		edgeNormal[2] = (e2[0] * normal[1]) - (e2[1] * normal[0]);
+
+		// Calculate the determinant to see if it is on the inside, outside, or directly on the edge.
+		temp[0] = Q[0] - v1[0];
+		temp[1] = Q[1] - v1[1];
+		temp[2] = Q[2] - v1[2];
+
+		determinant = ((edgeNormal[0] * temp[0]) + (edgeNormal[1] * temp[1]) + (edgeNormal[2] * temp[2]));
+
+		// Check if it is outside.
+		if (determinant > 0.001f)
+			return false;
+
+		// Calculate the normal for the third edge.
+		edgeNormal[0] = (e3[1] * normal[2]) - (e3[2] * normal[1]);
+		edgeNormal[1] = (e3[2] * normal[0]) - (e3[0] * normal[2]);
+		edgeNormal[2] = (e3[0] * normal[1]) - (e3[1] * normal[0]);
+
+		// Calculate the determinant to see if it is on the inside, outside, or directly on the edge.
+		temp[0] = Q[0] - v2[0];
+		temp[1] = Q[1] - v2[1];
+		temp[2] = Q[2] - v2[2];
+
+		determinant = ((edgeNormal[0] * temp[0]) + (edgeNormal[1] * temp[1]) + (edgeNormal[2] * temp[2]));
+
+		// Check if it is outside.
+		if (determinant > 0.001f)
+			return false;
+
+		// Now we have our height.
+		height = Q[1];
+
+		return true;
+	}
+
 	HeightMap::HeightMap(int width, int height)
 	{
 		mData = new MapData[width * height];
