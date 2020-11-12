@@ -151,18 +151,6 @@ namespace Rendering
 		////
 		/**/
 
-		// test sphere for foliage zones
-		mRenderingObjects.insert(std::pair<std::string, RenderingObject*>("Sphere", new RenderingObject("Sphere", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), true, true)));
-		mRenderingObjects["Sphere"]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, MaterialHelper::lightingMaterialName);
-		mRenderingObjects["Sphere"]->LoadMaterial(new DeferredMaterial(), effectDeferredPrepass, MaterialHelper::deferredPrepassMaterialName);
-		mRenderingObjects["Sphere"]->LoadRenderBuffers();
-		mRenderingObjects["Sphere"]->GetMaterials()[MaterialHelper::lightingMaterialName]->SetCurrentTechnique(mRenderingObjects["Sphere"]->GetMaterials()[MaterialHelper::lightingMaterialName]->GetEffect()->TechniquesByName().at("standard_lighting_pbr_instancing"));
-		mRenderingObjects["Sphere"]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName]->SetCurrentTechnique(mRenderingObjects["Sphere"]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName]->GetEffect()->TechniquesByName().at("deferred_instanced"));
-		mRenderingObjects["Sphere"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::lightingMaterialName, [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables("Sphere", meshIndex); });
-		mRenderingObjects["Sphere"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables("Sphere", meshIndex); });
-		DistributeObjectAcrossTerrainGrid(mRenderingObjects["Sphere"], mFoliageZonesCount);
-		mRenderingObjects["Sphere"]->LoadInstanceBuffers();
-
 		mSkybox = new Skybox(*mGame, *mCamera, Utility::GetFilePath(L"content\\textures\\Sky_Type_4.dds"), 10000);
 		mSkybox->Initialize();
 
@@ -190,6 +178,18 @@ namespace Rendering
 		mCamera->SetPosition(XMFLOAT3(0, 0.0f, 0.0f));
 		mCamera->SetFarPlaneDistance(100000.0f);
 		//mCamera->ApplyRotation(XMMatrixRotationAxis(mCamera->RightVector(), XMConvertToRadians(18.0f)) * XMMatrixRotationAxis(mCamera->UpVector(), -XMConvertToRadians(70.0f)));
+
+		// test sphere for foliage zones
+		mRenderingObjects.insert(std::pair<std::string, RenderingObject*>("Sphere", new RenderingObject("Sphere", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), true, true)));
+		mRenderingObjects["Sphere"]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, MaterialHelper::lightingMaterialName);
+		mRenderingObjects["Sphere"]->LoadMaterial(new DeferredMaterial(), effectDeferredPrepass, MaterialHelper::deferredPrepassMaterialName);
+		mRenderingObjects["Sphere"]->LoadRenderBuffers();
+		mRenderingObjects["Sphere"]->GetMaterials()[MaterialHelper::lightingMaterialName]->SetCurrentTechnique(mRenderingObjects["Sphere"]->GetMaterials()[MaterialHelper::lightingMaterialName]->GetEffect()->TechniquesByName().at("standard_lighting_pbr_instancing"));
+		mRenderingObjects["Sphere"]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName]->SetCurrentTechnique(mRenderingObjects["Sphere"]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName]->GetEffect()->TechniquesByName().at("deferred_instanced"));
+		mRenderingObjects["Sphere"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::lightingMaterialName, [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables("Sphere", meshIndex); });
+		mRenderingObjects["Sphere"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables("Sphere", meshIndex); });
+		DistributeObjectAcrossTerrainGrid(mRenderingObjects["Sphere"], mFoliageZonesCount);
+		mRenderingObjects["Sphere"]->LoadInstanceBuffers();
 
 		GenerateFoliageZones(mFoliageZonesCount);
 
@@ -493,8 +493,9 @@ namespace Rendering
 				for (int j = 0; j < sqrt(count); j++)
 				{
 					float x = (float)((int)tileWidth * (i - 1) - tileWidth / 2);
-					float y = 0.0f;
 					float z = (float)((int)-tileWidth * j + tileWidth * 1.5f);
+					int heightMapIndex = (int)(i / (sqrt(count) / NUM_THREADS)) * (NUM_THREADS) + (int)(j / (sqrt(count) / NUM_THREADS));
+					float y = mTerrain->GetHeightmap(heightMapIndex)->FindHeightFromPosition(x, z);
 
 					float scale = 30.0f;
 					mFoliageZonesCenters.push_back(XMFLOAT3(x, y, z));

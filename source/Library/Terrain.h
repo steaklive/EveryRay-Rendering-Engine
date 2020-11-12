@@ -28,6 +28,8 @@ namespace Library
 			float uTile, vTile;
 		};
 	public:
+		bool GetHeightFromTriangle(float x, float z, float v0[3], float v1[3], float v2[3], float& height);
+		float FindHeightFromPosition(float x, float z);
 
 		HeightMap(int width, int height);
 		~HeightMap();
@@ -67,6 +69,8 @@ namespace Library
 		void SetDynamicTessellationDistanceFactor(float factor) { mDistanceFactor = factor; }
 		void SetTessellationFactorDynamic(float factor) { mTessellationFactorDynamic = factor; }
 		void SetTerrainHeightScale(float scale) { mTerrainHeightScale = scale; }
+		HeightMap* GetHeightmap(int index) { return mHeightMaps.at(index); }
+
 	private:
 		Camera& mCamera;
 
