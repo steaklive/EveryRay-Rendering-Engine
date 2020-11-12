@@ -52,7 +52,7 @@ Create a folder "external" in the root directory and place these built libraries
 - DirectX Effects 11 (https://github.com/Microsoft/FX11)
 - DirectXTK (https://github.com/Microsoft/DirectXTK)
 - ImGui (https://github.com/ocornut/imgui)
-- Assimp (https://github.com/assimp/assimp)
+- Assimp 5.0.1 (https://github.com/assimp/assimp)
 
 # References
 "Real-Time 3D Rendering with DirectX and HLSL: A Practical Guide to Graphics Programming" by Paul Varcholik.
