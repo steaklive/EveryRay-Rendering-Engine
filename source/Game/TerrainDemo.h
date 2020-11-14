@@ -57,7 +57,8 @@ namespace Rendering
 		void UpdateShadow0MaterialVariables(const std::string & objectName, int meshIndex);
 		void UpdateShadow1MaterialVariables(const std::string & objectName, int meshIndex);
 		void UpdateShadow2MaterialVariables(const std::string & objectName, int meshIndex);
-		void DistributeObjectAcrossTerrainGrid(RenderingObject* object, int count);
+		void DistributeFoliageZonesAcrossTerrainGrid(RenderingObject* object, int count);
+		void DistributeAcrossTerrainGrid(RenderingObject* object, int count);
 		void UpdateImGui();
 		void Initialize();
 		void GenerateFoliageZones(int count);
@@ -96,6 +97,7 @@ namespace Rendering
 
 		bool mRenderFoliage = true;
 		bool mRenderFoliageZonesCenters = true;
+		float mFoliageZoneGizmoSphereScale = 10.0f;
 
 		float mWindStrength = 1.0f;
 		float mWindFrequency = 1.0f;

@@ -21,8 +21,9 @@ namespace Library
 		mCamera(pCamera),
 		mDirectionalLight(pLight),
 		mPatchesCount(pPatchesCount),
+		mPatchesCountToRender(pPatchesCount),
 		mScale(scale),
-		mDistributionRadius(distributionRadius),
+		mDistributionRadius(distributionRadius - 5.0f),
 		mDistributionCenter(distributionCenter),
 		mType(bType)
 	{
@@ -125,7 +126,7 @@ namespace Library
 		D3D11_BUFFER_DESC vertexBufferDesc, instanceBufferDesc;
 		D3D11_SUBRESOURCE_DATA vertexData, instanceData;
 		
-
+		#pragma region QUAD_GENERATION
 		//int vertexCount = 6;
 		//FoliagePatchData* patchData = new FoliagePatchData[vertexCount];
 		//
@@ -166,6 +167,7 @@ namespace Library
 		//
 		//delete patchData;
 		//patchData = nullptr;
+#pragma endregion
 
 		// instance buffer
 		int instanceCount = mPatchesCount;
@@ -281,55 +283,35 @@ namespace Library
 		XMFLOAT3 toCam = { mDistributionCenter.x - mCamera.Position().x, mDistributionCenter.y - mCamera.Position().y, mDistributionCenter.z - mCamera.Position().z };
 		float distanceToCam = sqrt(toCam.x * toCam.x + toCam.y*toCam.y + toCam.z*toCam.z);
 
-		//if (distanceToCam <= mDoRotationDistance)
-		//{
-		//	double angle;
-		//	float rotation, windRotation;
-		//	XMMATRIX rotationMatrix;
-		//	XMMATRIX translationMatrix;
-		//
-		//	for (int i = 0; i < mPatchesCount; i++)
-		//	{
-		//		// Get the position of this piece of foliage.
-		//		translationMatrix = XMMatrixTranslation(mPatchesBufferCPU[i].xPos, mPatchesBufferCPU[i].yPos, mPatchesBufferCPU[i].zPos);
-		//
-		//		if (mRotateFromCamPosition)
-		//			angle = atan2(mPatchesBufferCPU[i].xPos - mCamera.Position().x, mPatchesBufferCPU[i].zPos - mCamera.Position().z) * (180.0 / XM_PI);
-		//		else
-		//			angle = atan2(mCamera.Direction().x, mCamera.Direction().z) * (180.0 / XM_PI);
-		//
-		//		// Convert rotation into radians.
-		//		rotation = (float)angle * 0.0174532925f;
-		//		rotationMatrix = XMMatrixRotationY(rotation);
-		//
-		//		// Get the wind rotation for the foliage.
-		//		//windRotation = m_windRotation * 0.0174532925f;
-		//
-		//		// Setup the wind rotation.
-		//		//D3DXMatrixRotationX(&rotateMatrix2, windRotation);
-		//
-		//		mPatchesBufferGPU[i].worldMatrix = XMMatrixScaling(mPatchesBufferCPU[i].scale, mPatchesBufferCPU[i].scale, mPatchesBufferCPU[i].scale) * rotationMatrix * translationMatrix;
-		//	}
-		//
-		//	D3D11_MAPPED_SUBRESOURCE mappedResource;
-		//	FoliageInstanceData* instancesPtr;
-		//
-		//	// Lock the instance buffer so it can be written to.
-		//	if (FAILED(context->Map(mInstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource)))
-		//		throw GameException("Map() failed while updating instance buffer of foliage patches");
-		//
-		//
-		//	// Get a pointer to the data in the instance buffer.
-		//	instancesPtr = (FoliageInstanceData*)mappedResource.pData;
-		//
-		//	// Copy the instances array into the instance buffer.
-		//	memcpy(instancesPtr, (void*)mPatchesBufferGPU, (sizeof(FoliageInstanceData) * mPatchesCount));
-		//
-		//	// Unlock the instance buffer.
-		//	context->Unmap(mInstanceBuffer, 0);
-		//}
+		UpdateBufferGPU();
+		//CalculateDynamicLOD(distanceToCam);
+	}
 
-		CalculateDynamicLOD(distanceToCam);
+	void Foliage::UpdateBufferGPU()
+	{
+		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
+
+		double angle;
+		float rotation, windRotation;
+		XMMATRIX translationMatrix;
+
+		for (int i = 0; i < mPatchesCount; i++)
+		{
+			translationMatrix = XMMatrixTranslation(mPatchesBufferCPU[i].xPos, mPatchesBufferCPU[i].yPos, mPatchesBufferCPU[i].zPos);
+			mPatchesBufferGPU[i].worldMatrix = XMMatrixScaling(mPatchesBufferCPU[i].scale, mPatchesBufferCPU[i].scale, mPatchesBufferCPU[i].scale) * translationMatrix;
+		}
+
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+		FoliageInstanceData* instancesPtr;
+
+		if (FAILED(context->Map(mInstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource)))
+			throw GameException("Map() failed while updating instance buffer of foliage patches");
+
+		instancesPtr = (FoliageInstanceData*)mappedResource.pData;
+
+		memcpy(instancesPtr, (void*)mPatchesBufferGPU, (sizeof(FoliageInstanceData) * mPatchesCount));
+		context->Unmap(mInstanceBuffer, 0);
+		
 	}
 
 	void Foliage::CalculateDynamicLOD(float distanceToCam)

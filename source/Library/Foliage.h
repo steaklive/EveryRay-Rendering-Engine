@@ -55,12 +55,22 @@ namespace Library
 			mWindFrequency = frequency;
 		}
 
+		void SetPatchPosition(int i, float x, float y, float z) {
+			mPatchesBufferCPU[i].xPos = x;
+			mPatchesBufferCPU[i].yPos = y;
+			mPatchesBufferCPU[i].zPos = z;
+		}
+
+		float GetPatchPositionX(int i) { return mPatchesBufferCPU[i].xPos; }
+		float GetPatchPositionZ(int i) { return mPatchesBufferCPU[i].zPos; }
+
+		void UpdateBufferGPU();
 	private:
+		void InitializeBuffersGPU();
+		void InitializeBuffersCPU();
 		void LoadBillboardModel(FoliageBillboardType bType);
 		void CalculateDynamicLOD(float distanceToCam);
 		void CreateBlendStates();
-		void InitializeBuffersGPU();
-		void InitializeBuffersCPU();
 
 		Camera& mCamera;
 		DirectionalLight& mDirectionalLight;

@@ -20,7 +20,7 @@
 #include <mutex>
 #include <chrono>
 
-#define MULTITHREADED_LOAD 1
+#define MULTITHREADED_LOAD 0
 
 namespace Library
 {
@@ -441,6 +441,13 @@ namespace Library
 		if (FAILED(hr = device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, &(mHeightMaps[tileIndex]->mVertexBuffer))))
 			throw GameException("ID3D11Device::CreateBuffer() failed while generating vertex buffer of terrain mesh");
 
+		for (int i = 0; i < mHeightMaps[tileIndex]->mVertexCount; i++)
+		{
+			mHeightMaps[tileIndex]->mVertexList[i].x = vertices[i].Position.x;
+			mHeightMaps[tileIndex]->mVertexList[i].y = vertices[i].Position.y;
+			mHeightMaps[tileIndex]->mVertexList[i].z = vertices[i].Position.z;
+		}
+
 		delete[] vertices;
 		vertices = NULL;
 
@@ -761,78 +768,87 @@ namespace Library
 	float HeightMap::FindHeightFromPosition(float x, float z)
 	{
 		int index = 0;
-		float vertex1[3], vertex2[3], vertex3[3];
+		float vertex1[3], vertex2[3], vertex3[3], vector1[3], vector2[3], normals[3];
 		float height = 0.0f;
 		bool isFound = false;
 
 		int index1, index2, index3;
 
-		for (int j = 0; j < (TERRAIN_TILE_RESOLUTION - 1); j++)
+		for (int i = 0; i < mVertexCount / 3; i++)
 		{
-			for (int i = 0; i < (TERRAIN_TILE_RESOLUTION - 1); i++)
-			{
-				index1 = (j * TERRAIN_TILE_RESOLUTION) + i;
-				index2 = (j * TERRAIN_TILE_RESOLUTION) + (i + 1);
-				index3 = ((j + 1) * TERRAIN_TILE_RESOLUTION) + i;
+			index = i * 3;
 
-				// Get three vertices from the face.
-				vertex1[0] = mData[index1].x;
-				vertex1[1] = mData[index1].y;
-				vertex1[2] = mData[index1].z;
-				vertex2[0] = mData[index2].x;
-				vertex2[1] = mData[index2].y;
-				vertex2[2] = mData[index2].z;
-				vertex3[0] = mData[index3].x;
-				vertex3[1] = mData[index3].y;
-				vertex3[2] = mData[index3].z;
+			vertex1[0] = mVertexList[index].x;
+			vertex1[1] = mVertexList[index].y;
+			vertex1[2] = mVertexList[index].z;
+			index++;
 
-				//// Calculate the two vectors for this face.
-				//vector1[0] = vertex1[0] - vertex3[0];
-				//vector1[1] = vertex1[1] - vertex3[1];
-				//vector1[2] = vertex1[2] - vertex3[2];
-				//vector2[0] = vertex3[0] - vertex2[0];
-				//vector2[1] = vertex3[1] - vertex2[1];
-				//vector2[2] = vertex3[2] - vertex2[2];
-				//
-				//index = (j * (mHeight - 1)) + i;
-				//
-				//// Calculate the cross product of those two vectors to get the un-normalized value for this face normal.
-				//normals[index].x = (vector1[1] * vector2[2]) - (vector1[2] * vector2[1]);
-				//normals[index].y = (vector1[2] * vector2[0]) - (vector1[0] * vector2[2]);
-				//normals[index].z = (vector1[0] * vector2[1]) - (vector1[1] * vector2[0]);
+			vertex2[0] = mVertexList[index].x;
+			vertex2[1] = mVertexList[index].y;
+			vertex2[2] = mVertexList[index].z;
+			index++;
 
-				isFound = GetHeightFromTriangle(x, z, vertex1, vertex2, vertex3, height);
-				if (isFound)
-					return height;
-			}
+			vertex3[0] = mVertexList[index].x;
+			vertex3[1] = mVertexList[index].y;
+			vertex3[2] = mVertexList[index].z;
+
+			// Check to see if this is the polygon we are looking for.
+			isFound = GetHeightFromTriangle(x, z, vertex1, vertex2, vertex3, normals, height);
+			if (isFound)
+				return height;
 		}
+		return -1.0f;
+	}
+	bool HeightMap::RayIntersectsTriangle(float x, float z, float v0[3], float v1[3], float v2[3], float normals[3],float& height)
+	{
+		const float EPSILON = 0.0000001;
 
-		//for (int i = 0; i < TERRAIN_TILE_RESOLUTION * TERRAIN_TILE_RESOLUTION / 3; i++)
-		//{
-		//	index = i * 3;
-		//
-		//	vertex1[0] = mData[index].x;
-		//	vertex1[1] = mData[index].y;
-		//	vertex1[2] = mData[index].z;
-		//	index++;
-		//
-		//	vertex2[0] = mData[index].x;
-		//	vertex2[1] = mData[index].y;
-		//	vertex2[2] = mData[index].z;
-		//	index++;
-		//
-		//	vertex3[0] = mData[index].x;
-		//	vertex3[1] = mData[index].y;
-		//	vertex3[2] = mData[index].z;
-		//
-		//	isFound = GetHeightFromTriangle(x, z, vertex1, vertex2, vertex3, height);
-		//	if (isFound)
-		//		return height;
-		//}
-		return 0.0f;
+		XMVECTOR directionVector = { 0.0f, 1.0f, 0.0f };
+		XMVECTOR originVector = { x, 0.0f, z };
+
+		XMVECTOR edge1 = { v1[0] - v0[0],v1[1] - v0[1], v1[2] - v0[2] };
+		XMVECTOR edge2 = { v2[0] - v0[0],v2[1] - v0[1], v2[2] - v0[2] };
+
+		XMVECTOR h = XMVector3Cross(directionVector, edge2);
+
+		float a;
+		XMStoreFloat(&a, XMVector3Dot(edge1, h));
+
+		if (a > -EPSILON && a < EPSILON)
+			return false;    // This ray is parallel to this triangle.
+		float f = 1.0 / a;
+		XMVECTOR s = XMVectorSubtract(originVector, XMVECTOR{v0[0],v0[1],v0[2]});
+		
+		float dotSH;
+		XMStoreFloat(&dotSH, XMVector3Dot(s, h));
+
+		float u = f * dotSH;
+		if (u < 0.0 || u > 1.0)
+			return false;
+
+		XMVECTOR q = XMVector3Cross(s, edge1);
+
+		float dotDirQ;
+		XMStoreFloat(&dotDirQ, XMVector3Dot(directionVector, q));
+
+		float v = f * dotDirQ;
+		if (v < 0.0 || u + v > 1.0)
+			return false;
+
+		// At this stage we can compute t to find out where the intersection point is on the line.
+		float dotEdge2Q;
+		XMStoreFloat(&dotEdge2Q, XMVector3Dot(edge2, q));
+		float t = f * dotEdge2Q;
+		if (t > EPSILON) // ray intersection
+		{
+			//outIntersectionPoint = rayOrigin + rayVector * t;
+			return true;
+		}
+		else // This means that there is a line intersection but not a ray intersection.
+			return false;
 	}
 
-	bool HeightMap::GetHeightFromTriangle(float x, float z, float v0[3], float v1[3], float v2[3], float& height)
+	bool HeightMap::GetHeightFromTriangle(float x, float z, float v0[3], float v1[3], float v2[3], float normals[3], float& height)
 	{
 		float startVector[3], directionVector[3], edge1[3], edge2[3], normal[3];
 		float Q[3], e1[3], e2[3], e3[3], edgeNormal[3], temp[3];
@@ -864,7 +880,6 @@ namespace Library
 		normal[2] = (edge1[0] * edge2[1]) - (edge1[1] * edge2[0]);
 
 		magnitude = (float)sqrt((normal[0] * normal[0]) + (normal[1] * normal[1]) + (normal[2] * normal[2]));
-
 		normal[0] = normal[0] / magnitude;
 		normal[1] = normal[1] / magnitude;
 		normal[2] = normal[2] / magnitude;
@@ -877,7 +892,9 @@ namespace Library
 
 		// Make sure the result doesn't get too close to zero to prevent divide by zero.
 		if (fabs(denominator) < 0.0001f)
+		{
 			return false;
+		}
 
 		// Get the numerator of the equation.
 		numerator = -1.0f * (((normal[0] * startVector[0]) + (normal[1] * startVector[1]) + (normal[2] * startVector[2])) + D);
@@ -917,7 +934,9 @@ namespace Library
 
 		// Check if it is outside.
 		if (determinant > 0.001f)
+		{
 			return false;
+		}
 
 		// Calculate the normal for the second edge.
 		edgeNormal[0] = (e2[1] * normal[2]) - (e2[2] * normal[1]);
@@ -933,7 +952,9 @@ namespace Library
 
 		// Check if it is outside.
 		if (determinant > 0.001f)
+		{
 			return false;
+		}
 
 		// Calculate the normal for the third edge.
 		edgeNormal[0] = (e3[1] * normal[2]) - (e3[2] * normal[1]);
@@ -949,7 +970,9 @@ namespace Library
 
 		// Check if it is outside.
 		if (determinant > 0.001f)
+		{
 			return false;
+		}
 
 		// Now we have our height.
 		height = Q[1];

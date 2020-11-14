@@ -49,6 +49,8 @@ namespace Rendering
 	RTTI_DEFINITIONS(TerrainDemo)
 
 	static int selectedObjectIndex = -1;
+	static std::string foliageZoneGizmoName = "Foliage Zone Gizmo Sphere";
+	static std::string testSphereGizmoName = "Test Gizmo Sphere";
 
 	TerrainDemo::TerrainDemo(Game& game, Camera& camera)
 		: DrawableGameComponent(game, camera),
@@ -180,18 +182,29 @@ namespace Rendering
 		//mCamera->ApplyRotation(XMMatrixRotationAxis(mCamera->RightVector(), XMConvertToRadians(18.0f)) * XMMatrixRotationAxis(mCamera->UpVector(), -XMConvertToRadians(70.0f)));
 
 		// test sphere for foliage zones
-		mRenderingObjects.insert(std::pair<std::string, RenderingObject*>("Sphere", new RenderingObject("Sphere", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), true, true)));
-		mRenderingObjects["Sphere"]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, MaterialHelper::lightingMaterialName);
-		mRenderingObjects["Sphere"]->LoadMaterial(new DeferredMaterial(), effectDeferredPrepass, MaterialHelper::deferredPrepassMaterialName);
-		mRenderingObjects["Sphere"]->LoadRenderBuffers();
-		mRenderingObjects["Sphere"]->GetMaterials()[MaterialHelper::lightingMaterialName]->SetCurrentTechnique(mRenderingObjects["Sphere"]->GetMaterials()[MaterialHelper::lightingMaterialName]->GetEffect()->TechniquesByName().at("standard_lighting_pbr_instancing"));
-		mRenderingObjects["Sphere"]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName]->SetCurrentTechnique(mRenderingObjects["Sphere"]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName]->GetEffect()->TechniquesByName().at("deferred_instanced"));
-		mRenderingObjects["Sphere"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::lightingMaterialName, [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables("Sphere", meshIndex); });
-		mRenderingObjects["Sphere"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables("Sphere", meshIndex); });
-		DistributeObjectAcrossTerrainGrid(mRenderingObjects["Sphere"], mFoliageZonesCount);
-		mRenderingObjects["Sphere"]->LoadInstanceBuffers();
+		mRenderingObjects.insert(std::pair<std::string, RenderingObject*>(foliageZoneGizmoName, new RenderingObject(foliageZoneGizmoName, *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), true, true)));
+		mRenderingObjects[foliageZoneGizmoName]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, MaterialHelper::lightingMaterialName);
+		mRenderingObjects[foliageZoneGizmoName]->LoadMaterial(new DeferredMaterial(), effectDeferredPrepass, MaterialHelper::deferredPrepassMaterialName);
+		mRenderingObjects[foliageZoneGizmoName]->LoadRenderBuffers();
+		mRenderingObjects[foliageZoneGizmoName]->GetMaterials()[MaterialHelper::lightingMaterialName]->SetCurrentTechnique(mRenderingObjects[foliageZoneGizmoName]->GetMaterials()[MaterialHelper::lightingMaterialName]->GetEffect()->TechniquesByName().at("standard_lighting_pbr_instancing"));
+		mRenderingObjects[foliageZoneGizmoName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName]->SetCurrentTechnique(mRenderingObjects[foliageZoneGizmoName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName]->GetEffect()->TechniquesByName().at("deferred_instanced"));
+		mRenderingObjects[foliageZoneGizmoName]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::lightingMaterialName, [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables(foliageZoneGizmoName, meshIndex); });
+		mRenderingObjects[foliageZoneGizmoName]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables(foliageZoneGizmoName, meshIndex); });
+		DistributeFoliageZonesAcrossTerrainGrid(mRenderingObjects[foliageZoneGizmoName], mFoliageZonesCount);
+		mRenderingObjects[foliageZoneGizmoName]->LoadInstanceBuffers();
 
 		GenerateFoliageZones(mFoliageZonesCount);
+
+		//mRenderingObjects.insert(std::pair<std::string, RenderingObject*>(testSphereGizmoName, new RenderingObject(testSphereGizmoName, *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), true, true)));
+		//mRenderingObjects[testSphereGizmoName]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, MaterialHelper::lightingMaterialName);
+		//mRenderingObjects[testSphereGizmoName]->LoadMaterial(new DeferredMaterial(), effectDeferredPrepass, MaterialHelper::deferredPrepassMaterialName);
+		//mRenderingObjects[testSphereGizmoName]->LoadRenderBuffers();
+		//mRenderingObjects[testSphereGizmoName]->GetMaterials()[MaterialHelper::lightingMaterialName]->SetCurrentTechnique(mRenderingObjects[testSphereGizmoName]->GetMaterials()[MaterialHelper::lightingMaterialName]->GetEffect()->TechniquesByName().at("standard_lighting_pbr_instancing"));
+		//mRenderingObjects[testSphereGizmoName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName]->SetCurrentTechnique(mRenderingObjects[testSphereGizmoName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName]->GetEffect()->TechniquesByName().at("deferred_instanced"));
+		//mRenderingObjects[testSphereGizmoName]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::lightingMaterialName, [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables(testSphereGizmoName, meshIndex); });
+		//mRenderingObjects[testSphereGizmoName]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables(testSphereGizmoName, meshIndex); });
+		//DistributeAcrossTerrainGrid(mRenderingObjects[testSphereGizmoName], 100);
+		//mRenderingObjects[testSphereGizmoName]->LoadInstanceBuffers();
 
 		//IBL
 		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\Sky_Type_4_PBRDiffuseHDR.dds").c_str(), nullptr, &mIrradianceTextureSRV)))
@@ -225,14 +238,34 @@ namespace Rendering
 				std::map<std::string, Foliage*>
 				(
 					{
-						{ "content\\textures\\foliage\\grass_type1.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 12000, Utility::GetFilePath("content\\textures\\foliage\\grass_type1.png"), 2.5f, TERRAIN_TILE_RESOLUTION/2, mFoliageZonesCenters[i], FoliageBillboardType::TWO_QUADS_CROSSING)},
-						{ "content\\textures\\foliage\\grass_type4.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 15000, Utility::GetFilePath("content\\textures\\foliage\\grass_type4.png"), 2.0f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::THREE_QUADS_CROSSING) },
-						{ "content\\textures\\foliage\\grass_flower_type1.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 1200, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type1.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) },
-						{ "content\\textures\\foliage\\grass_flower_type3.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 1000, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type3.png"), 2.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) },
-						{ "content\\textures\\foliage\\grass_flower_type10.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 800, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type10.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) }
+						{ "content\\textures\\foliage\\grass_type1.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 15, Utility::GetFilePath("content\\textures\\foliage\\grass_type1.png"), 2.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::TWO_QUADS_CROSSING)},
+						{ "content\\textures\\foliage\\grass_type4.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 15, Utility::GetFilePath("content\\textures\\foliage\\grass_type4.png"), 2.0f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::THREE_QUADS_CROSSING) },
+						{ "content\\textures\\foliage\\grass_flower_type1.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 12, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type1.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) },
+						{ "content\\textures\\foliage\\grass_flower_type3.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 10, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type3.png"), 2.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) },
+						{ "content\\textures\\foliage\\grass_flower_type10.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 8, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type10.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) }
 					}
-				)
+					)
 			);
+		}
+		float tileWidth = NUM_THREADS * TERRAIN_TILE_RESOLUTION / sqrt(count);
+		for (int i = 0; i < sqrt(count); i++)
+		{
+			for (int j = 0; j < sqrt(count); j++) 
+			{
+				for (auto& foliage : mFoliageZonesCollections[i * sqrt(count) + j]) {
+					for (int patchIndex = 0; patchIndex < foliage.second->GetPatchesCount(); patchIndex++)
+					{
+						float x = foliage.second->GetPatchPositionX(patchIndex);
+						float z = foliage.second->GetPatchPositionZ(patchIndex);
+
+						int heightMapIndex = (int)(i / (sqrt(count) / NUM_THREADS)) * (NUM_THREADS)+(int)(j / (sqrt(count) / NUM_THREADS));
+
+						float height = mTerrain->GetHeightmap(heightMapIndex)->FindHeightFromPosition(x, z);
+						foliage.second->SetPatchPosition(patchIndex, x, height, z);
+					}
+					foliage.second->UpdateBufferGPU();
+				}
+			}
 		}
 	}
 
@@ -284,7 +317,7 @@ namespace Rendering
 		{
 			ImGui::Begin("Scene Objects");
 
-			const char* listbox_items[] = { /*"Ground Plane", */"Sphere" };
+			const char* listbox_items[] = { /*"Ground Plane", */foliageZoneGizmoName.c_str() };
 
 			ImGui::PushItemWidth(-1);
 			ImGui::ListBox("##empty", &selectedObjectIndex, listbox_items, IM_ARRAYSIZE(listbox_items));
@@ -315,7 +348,7 @@ namespace Rendering
 		ImGui::SliderFloat("Wind frequency", &mWindFrequency, 0.0f, 100.0f);
 
 
-		mRenderingObjects["Sphere"]->Visible(mRenderFoliageZonesCenters);
+		mRenderingObjects[foliageZoneGizmoName]->Visible(mRenderFoliageZonesCenters);
 
 		ImGui::SliderFloat("Foliage dynamic LOD max distance", &mFoliageDynamicLODToCameraDistance, 100.0f, 5000.0f);
 
@@ -476,32 +509,46 @@ namespace Rendering
 		static_cast<DepthMapMaterial*>(mRenderingObjects[objectName]->GetMaterials()[name])->AlbedoAlphaMap() << mRenderingObjects[objectName]->GetTextureData(meshIndex).AlbedoMap;
 	}
 
-	void TerrainDemo::DistributeObjectAcrossTerrainGrid(RenderingObject* object, int count)
+	void TerrainDemo::DistributeFoliageZonesAcrossTerrainGrid(RenderingObject* object, int count)
 	{
 		if (count & (count - 1) != 0)
-			throw GameException("Can't distribute objects across terrain grid! Number of objects is not a power of two");
+			throw GameException("Can't distribute foliage zones across terrain grid! Number of objects is not a power of two");
 
 		if (!object->IsInstanced())
-			throw GameException("Can't distribute objects across terrain grid! Object has disabled instancing!");
+			throw GameException("Can't distribute foliage zones across terrain grid! Object has disabled instancing!");
 		else
 		{
 			object->ResetInstanceData(count);
 
-			float tileWidth = TERRAIN_TILE_RESOLUTION / 2.0f;
+			float tileWidth = NUM_THREADS * TERRAIN_TILE_RESOLUTION / sqrt(count);
 			for (int i = 0; i < sqrt(count); i++)
 			{
 				for (int j = 0; j < sqrt(count); j++)
 				{
-					float x = (float)((int)tileWidth * (i - 1) - tileWidth / 2);
-					float z = (float)((int)-tileWidth * j + tileWidth * 1.5f);
+					float x = (float)((int)tileWidth * i - TERRAIN_TILE_RESOLUTION + tileWidth/2);
+					float z = (float)((int)-tileWidth * j + TERRAIN_TILE_RESOLUTION - tileWidth/2);
 					int heightMapIndex = (int)(i / (sqrt(count) / NUM_THREADS)) * (NUM_THREADS) + (int)(j / (sqrt(count) / NUM_THREADS));
 					float y = mTerrain->GetHeightmap(heightMapIndex)->FindHeightFromPosition(x, z);
 
-					float scale = 30.0f;
 					mFoliageZonesCenters.push_back(XMFLOAT3(x, y, z));
-					object->AddInstanceData(XMMatrixScaling(scale, scale, scale) *  XMMatrixTranslation(x, y, z));
+					object->AddInstanceData(XMMatrixScaling(mFoliageZoneGizmoSphereScale, mFoliageZoneGizmoSphereScale, mFoliageZoneGizmoSphereScale) *  XMMatrixTranslation(x, y, z));
 				}
 			}
+		}
+	}
+
+	void TerrainDemo::DistributeAcrossTerrainGrid(RenderingObject* object, int count)
+	{
+		object->ResetInstanceData(count);
+		float mDistributionRadius = 150;
+
+		for (int i = 0; i < count; i++)
+		{
+			float x = mFoliageZonesCenters[0].x + ((float)rand() / (float)(RAND_MAX)) * mDistributionRadius - mDistributionRadius / 2;
+			float z = mFoliageZonesCenters[0].z + ((float)rand() / (float)(RAND_MAX)) * mDistributionRadius - mDistributionRadius / 2;
+			//float heightMapIndex = (int)(i / (sqrt(count) / NUM_THREADS)) * (NUM_THREADS)+(int)(j / (sqrt(count) / NUM_THREADS));
+			float y = mTerrain->GetHeightmap(0)->FindHeightFromPosition(x, z);
+			object->AddInstanceData(XMMatrixScaling(5.0f, 5.0f, 5.0f) *  XMMatrixTranslation(x, y, z));
 		}
 	}
 }
