@@ -1,6 +1,4 @@
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\library.pch
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\library.pdb
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\stdafx.obj
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\firstpersoncamera.obj
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\fastfouriertransform.obj
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\environmentmappingmaterial.obj
@@ -55,6 +53,9 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\l
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\normalmappingmaterial.obj
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\mouse.obj
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\motionblurmaterial.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\modelmaterial.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\model.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\mesh.obj
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\matrixhelper.obj
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\materialhelper.obj
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\material.obj
@@ -87,10 +88,10 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\l
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\terrain.obj
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\technique.obj
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\standardlightingmaterial.obj
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\modelmaterial.obj
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\model.obj
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\mesh.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\library.pch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\stdafx.obj
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\bin\x64\release\library.lib
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\stdafx.nativecodeanalysis.xml
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\\bin\x64\release\library.lib
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\library.tlog\cl.command.1.tlog
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\release\library.tlog\cl.read.1.tlog

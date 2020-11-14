@@ -222,6 +222,10 @@ namespace Rendering
 		mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 50, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type3.png"), 2.5f, 100.0f));
 		mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 100, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type10.png"), 3.5f, 100.0f));
 
+		for (auto& foliage : mFoliageCollection) {
+			foliage->UpdateBufferGPU();
+		}
+
 		mCamera->SetPosition(XMFLOAT3(0, 8.4f, 60.0f));
 		mCamera->SetFarPlaneDistance(100000.0f);
 		//mCamera->ApplyRotation(XMMatrixRotationAxis(mCamera->RightVector(), XMConvertToRadians(18.0f)) * XMMatrixRotationAxis(mCamera->UpVector(), -XMConvertToRadians(70.0f)));

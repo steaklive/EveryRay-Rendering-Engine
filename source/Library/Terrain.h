@@ -27,8 +27,14 @@ namespace Library
 			float u, v;
 			float uTile, vTile;
 		};
+
+		struct Vertex {
+			float x, y, z;
+		};
+
 	public:
-		bool GetHeightFromTriangle(float x, float z, float v0[3], float v1[3], float v2[3], float& height);
+		bool GetHeightFromTriangle(float x, float z, float v0[3], float v1[3], float v2[3], float normal[3], float& height);
+		bool RayIntersectsTriangle(float x, float z, float v0[3], float v1[3], float v2[3], float normals[3], float& height);
 		float FindHeightFromPosition(float x, float z);
 
 		HeightMap(int width, int height);
@@ -44,6 +50,8 @@ namespace Library
 		int mIndexCount = 0;
 		XMMATRIX mWorldMatrix = XMMatrixIdentity();
 		XMMATRIX mWorldMatrixTS = XMMatrixIdentity();
+
+		Vertex mVertexList[(TERRAIN_TILE_RESOLUTION-1) * (TERRAIN_TILE_RESOLUTION - 1)*6];
 
 		MapData* mData = nullptr;
 	};

@@ -167,7 +167,7 @@ VS_OUTPUT vertex_shader(VS_INPUT IN)
     {
         //OUT.Position = mul(localPos, IN.World);
         //OUT.Position = mul(OUT.Position, rotationMat);
-        if (localPos.y > vertexHeight)
+        if (IN.Position.y > vertexHeight)
         {
             OUT.Position.x += sin(Time * WindFrequency + OUT.Position.x * WindGustDistance) * vertexHeight * WindStrength * WindDirection.x;
             OUT.Position.z += sin(Time * WindFrequency + OUT.Position.z * WindGustDistance) * vertexHeight * WindStrength * WindDirection.z;
