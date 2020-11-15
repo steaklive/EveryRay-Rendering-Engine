@@ -33,7 +33,7 @@ Other features based on NVIDIA techniques (no code provided here)
 ![picture](screenshots/EveryRayCollisionDetection.png)
 ![picture](screenshots/EveryRaySSR.png)
 ![picture](screenshots/EveryRayTestScene.png)
-![picture](screenshots/EveryRayTerrain.png)
+![picture](screenshots/EveryRayTerrain2.png)
 
 # Controls
 - Mouse + Right Click - camera rotation
