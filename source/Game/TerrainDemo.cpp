@@ -33,6 +33,7 @@
 #include "..\Library\ShadowMapper.h"
 #include "..\Library\Terrain.h"
 #include "..\Library\Foliage.h"
+#include "..\Library\ShaderCompiler.h"
 
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
@@ -194,6 +195,8 @@ namespace Rendering
 		mRenderingObjects[foliageZoneGizmoName]->LoadInstanceBuffers();
 
 		GenerateFoliageZones(mFoliageZonesCount);
+		for (int i = 0; i < NUM_THREADS * NUM_THREADS; i++)
+			PlaceFoliageOnTerrainTile(i);
 
 		//mRenderingObjects.insert(std::pair<std::string, RenderingObject*>(testSphereGizmoName, new RenderingObject(testSphereGizmoName, *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), true, true)));
 		//mRenderingObjects[testSphereGizmoName]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, MaterialHelper::lightingMaterialName);
@@ -238,34 +241,14 @@ namespace Rendering
 				std::map<std::string, Foliage*>
 				(
 					{
-						{ "content\\textures\\foliage\\grass_type1.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 15, Utility::GetFilePath("content\\textures\\foliage\\grass_type1.png"), 2.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::TWO_QUADS_CROSSING)},
-						{ "content\\textures\\foliage\\grass_type4.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 15, Utility::GetFilePath("content\\textures\\foliage\\grass_type4.png"), 2.0f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::THREE_QUADS_CROSSING) },
-						{ "content\\textures\\foliage\\grass_flower_type1.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 12, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type1.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) },
-						{ "content\\textures\\foliage\\grass_flower_type3.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 10, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type3.png"), 2.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) },
-						{ "content\\textures\\foliage\\grass_flower_type10.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 8, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type10.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) }
+						{ "content\\textures\\foliage\\grass_type1.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 15000, Utility::GetFilePath("content\\textures\\foliage\\grass_type1.png"), 2.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::TWO_QUADS_CROSSING)},
+						{ "content\\textures\\foliage\\grass_type4.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 15000, Utility::GetFilePath("content\\textures\\foliage\\grass_type4.png"), 2.0f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::THREE_QUADS_CROSSING) },
+						{ "content\\textures\\foliage\\grass_flower_type1.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 1200, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type1.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) },
+						{ "content\\textures\\foliage\\grass_flower_type3.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 100, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type3.png"), 2.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) },
+						{ "content\\textures\\foliage\\grass_flower_type10.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 80, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type10.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) }
 					}
-					)
+				)
 			);
-		}
-		float tileWidth = NUM_THREADS * TERRAIN_TILE_RESOLUTION / sqrt(count);
-		for (int i = 0; i < sqrt(count); i++)
-		{
-			for (int j = 0; j < sqrt(count); j++) 
-			{
-				for (auto& foliage : mFoliageZonesCollections[i * sqrt(count) + j]) {
-					for (int patchIndex = 0; patchIndex < foliage.second->GetPatchesCount(); patchIndex++)
-					{
-						float x = foliage.second->GetPatchPositionX(patchIndex);
-						float z = foliage.second->GetPatchPositionZ(patchIndex);
-
-						int heightMapIndex = (int)(i / (sqrt(count) / NUM_THREADS)) * (NUM_THREADS)+(int)(j / (sqrt(count) / NUM_THREADS));
-
-						float height = mTerrain->GetHeightmap(heightMapIndex)->FindHeightFromPosition(x, z);
-						foliage.second->SetPatchPosition(patchIndex, x, height, z);
-					}
-					foliage.second->UpdateBufferGPU();
-				}
-			}
 		}
 	}
 
@@ -550,5 +533,172 @@ namespace Rendering
 			float y = mTerrain->GetHeightmap(0)->FindHeightFromPosition(x, z);
 			object->AddInstanceData(XMMatrixScaling(5.0f, 5.0f, 5.0f) *  XMMatrixTranslation(x, y, z));
 		}
+	}
+
+	void TerrainDemo::PlaceFoliageOnTerrainTile(int tileIndex)
+	{
+		if (mFoliageZonesCenters.size() == 0)
+			throw GameException("Failed to load foliage zones when placing foliage on terrain! No zones!");
+
+		// prepare before GPU dispatch on compute shader
+		std::vector<XMFLOAT4> foliagePatchesPositions;
+		int maxSizeFoliagePatches = 0;
+		int count = mFoliageZonesCollections.size();
+
+		for (int i = 0; i < sqrt(count); i++)
+		{
+			for (int j = 0; j < sqrt(count); j++)
+			{
+				int heightMapIndex = (int)(i / (sqrt(count) / NUM_THREADS)) * (NUM_THREADS)+(int)(j / (sqrt(count) / NUM_THREADS));
+				if (heightMapIndex == tileIndex) {
+					for (auto foliageType : mFoliageZonesCollections[i * sqrt(count) + j]) {
+						maxSizeFoliagePatches += foliageType.second->GetPatchesCount();
+						for (int patchIndex = 0; patchIndex < foliageType.second->GetPatchesCount(); patchIndex++)
+						{
+							foliagePatchesPositions.push_back(XMFLOAT4(foliageType.second->GetPatchPositionX(patchIndex), 0.0f, foliageType.second->GetPatchPositionZ(patchIndex), 1.0f));
+						}
+					}
+				}
+			}
+		}
+		
+		std::vector<XMFLOAT4> terrainVertices;
+		int maxSizeTerrainVertices = mTerrain->GetHeightmap(tileIndex)->mVertexCount;
+		for (int j = 0; j < maxSizeTerrainVertices; j++)
+			terrainVertices.push_back(XMFLOAT4(mTerrain->GetHeightmap(tileIndex)->mVertexList[j].x, mTerrain->GetHeightmap(tileIndex)->mVertexList[j].y, mTerrain->GetHeightmap(tileIndex)->mVertexList[j].z, 1.0f));
+
+		// compute shader pass
+		PlaceObjectsOnTerrain(&foliagePatchesPositions[0], maxSizeFoliagePatches, &terrainVertices[0], maxSizeTerrainVertices);
+
+		// read back to foliage
+		int offset = 0;
+		for (int i = 0; i < sqrt(count); i++)
+		{
+			for (int j = 0; j < sqrt(count); j++)
+			{
+				int heightMapIndex = (int)(i / (sqrt(count) / NUM_THREADS)) * (NUM_THREADS)+(int)(j / (sqrt(count) / NUM_THREADS));
+				if (heightMapIndex == tileIndex) {
+					for (auto foliageType : mFoliageZonesCollections[i * sqrt(count) + j]) 
+					{
+						for (int patchIndex = 0; patchIndex < foliageType.second->GetPatchesCount(); patchIndex++)
+						{
+							foliageType.second->SetPatchPosition(patchIndex,
+								foliageType.second->GetPatchPositionX(patchIndex),
+								foliagePatchesPositions[offset + patchIndex].y,
+								foliageType.second->GetPatchPositionZ(patchIndex));
+						}
+						offset += mFoliageZonesCollections[i * sqrt(count) + j].at(foliageType.first)->GetPatchesCount();
+						foliageType.second->UpdateBufferGPU();
+					}
+				}
+			}
+		}
+	}
+
+	void TerrainDemo::PlaceObjectsOnTerrain(XMFLOAT4* objectsPositions, int objectsCount, XMFLOAT4* terrainVertices, int terrainVertexCount)
+	{
+		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+		UINT initCounts = 0;
+
+		ID3DBlob* placeObjectsOnTerrainCS = NULL;
+		ID3D11ComputeShader* computeShader = NULL;
+
+		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Terrain\\PlaceObjectsOnTerrain.hlsl").c_str(), "displaceOnTerrainCS", "cs_5_0", &placeObjectsOnTerrainCS)))
+			throw GameException("Failed to load a shader: Compute Shader from PlaceObjectsOnTerrain.hlsl!");
+		if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(placeObjectsOnTerrainCS->GetBufferPointer(), placeObjectsOnTerrainCS->GetBufferSize(), NULL, &computeShader)))
+			throw GameException("Failed to create shader from PlaceObjectsOnTerrain.hlsl!");
+		
+		ReleaseObject(placeObjectsOnTerrainCS);
+
+		// terrain vertex buffer
+		ID3D11ShaderResourceView* terrainBufferSRV;
+		ID3D11Buffer* terrainBuffer;
+		D3D11_SUBRESOURCE_DATA data = { terrainVertices, 0, 0 };
+
+		D3D11_BUFFER_DESC buf_descTerrain;
+		buf_descTerrain.ByteWidth = sizeof(XMFLOAT4) * terrainVertexCount;
+		buf_descTerrain.Usage = D3D11_USAGE_DEFAULT;
+		buf_descTerrain.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		buf_descTerrain.CPUAccessFlags = 0;
+		buf_descTerrain.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+		buf_descTerrain.StructureByteStride = sizeof(XMFLOAT4);
+		if (FAILED(mGame->Direct3DDevice()->CreateBuffer(&buf_descTerrain, terrainVertices != NULL ? &data : NULL, &terrainBuffer)))
+			throw GameException("Failed to create terrain vertices buffer in PlaceObjectsOnTerrain call.");
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc;
+		srv_desc.Format = DXGI_FORMAT_UNKNOWN;
+		srv_desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+		srv_desc.Buffer.FirstElement = 0;
+		srv_desc.Buffer.NumElements = terrainVertexCount;
+		if (FAILED(mGame->Direct3DDevice()->CreateShaderResourceView(terrainBuffer, &srv_desc, &terrainBufferSRV)))
+			throw GameException("Failed to create terrain vertices SRV buffer in PlaceObjectsOnTerrain call.");
+
+		// positions buffers
+		ID3D11Buffer* posBuffer;
+		ID3D11Buffer* outputPosBuffer;
+		ID3D11UnorderedAccessView* posUAV;
+		D3D11_SUBRESOURCE_DATA init_data = { objectsPositions, 0, 0 };
+
+		D3D11_BUFFER_DESC buf_desc;
+		buf_desc.ByteWidth = sizeof(XMFLOAT4) * objectsCount;
+		buf_desc.Usage = D3D11_USAGE_DEFAULT;
+		buf_desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
+		buf_desc.CPUAccessFlags = 0;
+		buf_desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+		buf_desc.StructureByteStride = sizeof(XMFLOAT4);
+		if (FAILED(mGame->Direct3DDevice()->CreateBuffer(&buf_desc, objectsPositions != NULL ? &init_data : NULL, &posBuffer)))
+			throw GameException("Failed to create objects positions buffer in PlaceObjectsOnTerrain call.");
+
+		// uav for positions
+		D3D11_UNORDERED_ACCESS_VIEW_DESC uav_desc;
+		uav_desc.Format = DXGI_FORMAT_UNKNOWN;
+		uav_desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+		uav_desc.Buffer.FirstElement = 0;
+		uav_desc.Buffer.NumElements = objectsCount;// sizeof(objectsPositions) / sizeof(XMFLOAT4);
+		uav_desc.Buffer.Flags = 0;
+		if (FAILED(mGame->Direct3DDevice()->CreateUnorderedAccessView(posBuffer, &uav_desc, &posUAV)))
+			throw GameException("Failed to create UAV of objects positions buffer in PlaceObjectsOnTerrain call.");
+
+		// create the ouput buffer for storing data from GPU for positions
+		buf_desc.Usage = D3D11_USAGE_STAGING;
+		buf_desc.BindFlags = 0;
+		buf_desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+		if (FAILED(mGame->Direct3DDevice()->CreateBuffer(&buf_desc, 0, &outputPosBuffer)))
+			throw GameException("Failed to create objects positions output buffer in PlaceObjectsOnTerrain call.");
+
+		// run
+		context->CSSetShader(computeShader, NULL, 0);
+		context->CSSetShaderResources(0, 1, &terrainBufferSRV);
+		context->CSSetUnorderedAccessViews(0, 1, &posUAV, &initCounts);
+		context->Dispatch(512, 1, 1);
+
+		// read results
+		context->CopyResource(outputPosBuffer, posBuffer);
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+		HRESULT hr = context->Map(outputPosBuffer, 0, D3D11_MAP_READ, 0, &mappedResource);
+
+		if (SUCCEEDED(hr))
+		{
+			XMFLOAT4* positions = reinterpret_cast<XMFLOAT4*>(mappedResource.pData);
+			for (size_t i = 0; i < objectsCount; i++)
+				objectsPositions[i] = positions[i];
+		}
+		else
+			throw GameException("Failed to read objects positions from GPU in output buffer in PlaceObjectsOnTerrain call.");
+		
+		context->Unmap(outputPosBuffer, 0);
+
+		// Unbind resources for CS
+		ID3D11UnorderedAccessView* UAViewNULL[1] = { NULL };
+		context->CSSetUnorderedAccessViews(0, 1, UAViewNULL, &initCounts);
+		ID3D11ShaderResourceView* SRVNULL[1] = { NULL };
+		context->CSSetShaderResources(0, 1, SRVNULL);
+
+		ReleaseObject(computeShader);
+		ReleaseObject(posBuffer);
+		ReleaseObject(outputPosBuffer);
+		ReleaseObject(posUAV);
+		ReleaseObject(terrainBuffer);
+		ReleaseObject(terrainBufferSRV);
 	}
 }

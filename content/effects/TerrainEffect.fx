@@ -107,7 +107,6 @@ Texture2D grassTexture;
 Texture2D rockTexture;
 Texture2D mudTexture;
 
-
 VS_OUTPUT vertex_shader(VS_INPUT IN)
 {
 	VS_OUTPUT OUT = (VS_OUTPUT)0;
@@ -307,4 +306,9 @@ technique11 main
         SetGeometryShader(NULL);
         SetPixelShader(CompileShader(ps_5_0, pixel_shader_ts()));
     }
+
+    //pass placeObjects
+    //{
+    //    SetComputeShader(CompileShader(cs_5_0, displaceOnTerrainCS()));
+    //}
 }

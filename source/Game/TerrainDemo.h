@@ -59,6 +59,8 @@ namespace Rendering
 		void UpdateShadow2MaterialVariables(const std::string & objectName, int meshIndex);
 		void DistributeFoliageZonesAcrossTerrainGrid(RenderingObject* object, int count);
 		void DistributeAcrossTerrainGrid(RenderingObject* object, int count);
+		void PlaceFoliageOnTerrainTile(int tileIndex);
+		void PlaceObjectsOnTerrain(XMFLOAT4* objectsPositions, int objectsCount, XMFLOAT4* terrainVertices, int terrainVertexCount);
 		void UpdateImGui();
 		void Initialize();
 		void GenerateFoliageZones(int count);
