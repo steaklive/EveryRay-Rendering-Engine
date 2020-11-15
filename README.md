@@ -43,11 +43,11 @@ Other features based on NVIDIA techniques (no code provided here)
 - R/T/Y - scale/translate/rotate object in the editor mode
 
 # Notes
-Only "Sponza Main Demo" and "Test Scene" have almost all the features and are up-to-date with the changes to the codebase. Other levels suffer from legacy issues and might not have, for example, up to date code, such as RenderingObject, working editor or post processing stack... I will be refactoring those levels when possible. 
+Only "Sponza Main Demo", "Test Scene", "Terrain Demo Scene" have almost all the features and are up-to-date with the changes to the codebase. Other levels suffer from legacy issues and might not have, for example, up to date code, such as RenderingObjects, working editor or post processing stack... I will be refactoring those when possible. 
 
-If you would like to run "Terrain Demo Scene", then you might increase TDR time of your GPU driver (explained here https://docs.substance3d.com/spdoc/gpu-drivers-crash-with-long-computations-128745489.html). In this particular level I currently place objects on the terrain during loading and exectue several compute shader dispatches for that. It takes around 2 minutes to load a level on my RTX2060.
+If you would like to run "Terrain Demo Scene", then you might increase TDR time of your GPU driver (explained here https://docs.substance3d.com/spdoc/gpu-drivers-crash-with-long-computations-128745489.html). In this particular level I currently place objects on the terrain during loading and exectue several compute shader dispatches for that. It takes around 2 minutes to load a level on my RTX2060 and Ryzen 5 3550H.
 
-The framework is NOT API-agnostic and, thus, is tighly bound to DX11. Hopefully, I will be changing that in the future.
+The framework is NOT API-agnostic and, thus, has been tighly bound to DX11 since the beginning of its development. Hopefully, I will be changing that in the future and adding DX12 support for it. It will undeniably improve the perfomance in many scenarios (like loading a command-buffer list of several comptue shader dispatches for terrain loading etc.)
 
 # External Dependencies
 Create a folder "external" in the root directory and place these built libraries
@@ -57,8 +57,12 @@ Create a folder "external" in the root directory and place these built libraries
 - Assimp 5.0.1 (https://github.com/assimp/assimp)
 
 # References
-"Real-Time 3D Rendering with DirectX and HLSL: A Practical Guide to Graphics Programming" by Paul Varcholik.
-
+- "Real-Time 3D Rendering with DirectX and HLSL: A Practical Guide to Graphics Programming" by Paul Varcholik.
+- "Real-Time Rendering" 3rd/4th ed. by Tomas Möller, Naty Hoffman, Eric Haines
+- "GPU Gems" series from NVIDIA
+- "GPU Pro" series by Wolfgang Engel
+- numerous SIGGRAPH, GDC papers and blogposts by fellow graphics geeks and vendors :)
+ 
 # Requirements
 - Visual Studio 2017
 - Windows 10 + SDK
