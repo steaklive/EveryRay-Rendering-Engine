@@ -54,10 +54,10 @@ namespace Library
 #if MULTITHREADED_LOAD
 
 		std::vector<std::thread> threads;
-		threads.reserve(NUM_THREADS);
+		threads.reserve(NUM_THREADS_PER_TERRAIN_SIDE);
 		
 		int threadOffset = sqrt(mNumTiles) / 2;
-		for (int i = 0; i < NUM_THREADS; i++)
+		for (int i = 0; i < NUM_THREADS_PER_TERRAIN_SIDE; i++)
 		{
 			threads.push_back(
 				std::thread
