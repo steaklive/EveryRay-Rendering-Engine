@@ -20,7 +20,7 @@
 #include <mutex>
 #include <chrono>
 
-#define MULTITHREADED_LOAD 0
+#define MULTITHREADED_LOAD 1
 
 namespace Library
 {
@@ -127,7 +127,7 @@ namespace Library
 	{
 		int numTilesSqrt = sqrt(mNumTiles);
 #if MULTITHREADED_LOAD
-		int offset = numTilesSqrt / NUM_THREADS;
+		int offset = numTilesSqrt / NUM_THREADS_PER_TERRAIN_SIDE;
 #else
 		int offset = numTilesSqrt;
 #endif
