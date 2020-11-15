@@ -283,8 +283,8 @@ namespace Library
 		XMFLOAT3 toCam = { mDistributionCenter.x - mCamera.Position().x, mDistributionCenter.y - mCamera.Position().y, mDistributionCenter.z - mCamera.Position().z };
 		float distanceToCam = sqrt(toCam.x * toCam.x + toCam.y*toCam.y + toCam.z*toCam.z);
 
-		UpdateBufferGPU();
-		//CalculateDynamicLOD(distanceToCam);
+		//UpdateBufferGPU();
+		CalculateDynamicLOD(distanceToCam);
 	}
 
 	void Foliage::UpdateBufferGPU()

@@ -790,6 +790,7 @@
     <FxCompile Include="..\..\content\effects\Foliage.fx">
       <Filter>Effects</Filter>
     </FxCompile>
+    <FxCompile Include="..\..\content\shaders\Terrain\PlaceObjectsOnTerrain.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\content\effects\ShaderHelper.hlsli">
