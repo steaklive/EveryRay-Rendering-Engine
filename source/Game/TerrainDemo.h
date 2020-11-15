@@ -39,8 +39,6 @@ namespace Rendering
 		TerrainDemo(Game& game, Camera& camera);
 		~TerrainDemo();
 
-		//virtual void Initialize() override;
-
 		virtual void Create() override;
 		virtual void Destroy() override;
 		virtual bool IsComponent() override;
@@ -85,21 +83,21 @@ namespace Rendering
 		ID3D11ShaderResourceView* mIntegrationMapTextureSRV;
 		std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
 
-		bool isWireframe = false;
-		bool isTessellationTerrain = false;
-		bool isNormalTerrain = false;
-		int tessellationFactor = 4;
-		float terrainHeightScale = 328.0f;
-		int tessellationFactorDynamic = 64;
-		bool isDynamicTessellation = false;
-		float distanceFactor = 0.015;
+		bool mRenderTerrainWireframe = false;
+		bool mRenderTessellatedTerrain = false;
+		bool mRenderNonTessellatedTerrain = true;
+		int mStaticTessellationFactor = 4;
+		float mTessellatedTerrainHeightScale = 328.0f;
+		int mTessellationFactorDynamic = 64;
+		bool mDynamicTessellation = false;
+		float mCameraDistanceFactor = 0.015;
 
 		int mFoliageZonesCount = 64;
+		float mFoliageZoneGizmoSphereScale = 10.0f;
 		float mFoliageDynamicLODToCameraDistance = 650.0f;
 
 		bool mRenderFoliage = true;
-		bool mRenderFoliageZonesCenters = true;
-		float mFoliageZoneGizmoSphereScale = 10.0f;
+		bool mRenderFoliageZonesCenters = false;
 
 		float mWindStrength = 1.0f;
 		float mWindFrequency = 1.0f;

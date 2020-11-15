@@ -5,7 +5,7 @@
 #include "DirectionalLight.h"
 #include "PostProcessingStack.h"
 
-static const int NUM_THREADS = 4;
+static const int NUM_THREADS_PER_TERRAIN_SIDE = 4;
 static const int NUM_PATCHES = 8;
 static const int TERRAIN_TILE_RESOLUTION = 512;
 

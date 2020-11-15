@@ -178,7 +178,7 @@ namespace Rendering
 		
 		mTerrain = new Terrain(Utility::GetFilePath("content\\terrain\\terrain"), *mGame, *mCamera, *mDirectionalLight, *mPostProcessingStack, false);
 
-		mCamera->SetPosition(XMFLOAT3(0, 0.0f, 0.0f));
+		mCamera->SetPosition(XMFLOAT3(0, 81.0f, 0.0f));
 		mCamera->SetFarPlaneDistance(100000.0f);
 		//mCamera->ApplyRotation(XMMatrixRotationAxis(mCamera->RightVector(), XMConvertToRadians(18.0f)) * XMMatrixRotationAxis(mCamera->UpVector(), -XMConvertToRadians(70.0f)));
 
@@ -195,7 +195,7 @@ namespace Rendering
 		mRenderingObjects[foliageZoneGizmoName]->LoadInstanceBuffers();
 
 		GenerateFoliageZones(mFoliageZonesCount);
-		for (int i = 0; i < NUM_THREADS * NUM_THREADS; i++)
+		for (int i = 0; i < NUM_THREADS_PER_TERRAIN_SIDE * NUM_THREADS_PER_TERRAIN_SIDE; i++)
 			PlaceFoliageOnTerrainTile(i);
 
 		//mRenderingObjects.insert(std::pair<std::string, RenderingObject*>(testSphereGizmoName, new RenderingObject(testSphereGizmoName, *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), true, true)));
@@ -243,9 +243,9 @@ namespace Rendering
 					{
 						{ "content\\textures\\foliage\\grass_type1.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 15000, Utility::GetFilePath("content\\textures\\foliage\\grass_type1.png"), 2.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::TWO_QUADS_CROSSING)},
 						{ "content\\textures\\foliage\\grass_type4.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 15000, Utility::GetFilePath("content\\textures\\foliage\\grass_type4.png"), 2.0f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::THREE_QUADS_CROSSING) },
-						{ "content\\textures\\foliage\\grass_flower_type1.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 1200, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type1.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) },
-						{ "content\\textures\\foliage\\grass_flower_type3.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 100, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type3.png"), 2.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) },
-						{ "content\\textures\\foliage\\grass_flower_type10.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 80, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type10.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) }
+						{ "content\\textures\\foliage\\grass_flower_type1.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 800, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type1.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) },
+						{ "content\\textures\\foliage\\grass_flower_type3.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 250, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type3.png"), 2.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) },
+						{ "content\\textures\\foliage\\grass_flower_type10.png", new Foliage(*mGame, *mCamera, *mDirectionalLight, 250, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type10.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) }
 					}
 				)
 			);
@@ -273,14 +273,14 @@ namespace Rendering
 		mCamera->Cull(mRenderingObjects);
 		mShadowMapper->Update(gameTime);
 
-		mTerrain->SetWireframeMode(isWireframe);
-		mTerrain->SetTessellationTerrainMode(isTessellationTerrain);
-		mTerrain->SetNormalTerrainMode(isNormalTerrain);
-		mTerrain->SetTessellationFactor(tessellationFactor);
-		mTerrain->SetTessellationFactorDynamic(tessellationFactorDynamic);
-		mTerrain->SetTerrainHeightScale(terrainHeightScale);
-		mTerrain->SetDynamicTessellation(isDynamicTessellation);
-		mTerrain->SetDynamicTessellationDistanceFactor(distanceFactor);
+		mTerrain->SetWireframeMode(mRenderTerrainWireframe);
+		mTerrain->SetTessellationTerrainMode(mRenderTessellatedTerrain);
+		mTerrain->SetNormalTerrainMode(mRenderNonTessellatedTerrain);
+		mTerrain->SetTessellationFactor(mStaticTessellationFactor);
+		mTerrain->SetTessellationFactorDynamic(mTessellationFactorDynamic);
+		mTerrain->SetTerrainHeightScale(mTessellatedTerrainHeightScale);
+		mTerrain->SetDynamicTessellation(mDynamicTessellation);
+		mTerrain->SetDynamicTessellationDistanceFactor(mCameraDistanceFactor);
 
 		for (auto object : mRenderingObjects)
 			object.second->Update(gameTime);
@@ -316,24 +316,25 @@ namespace Rendering
 			ImGui::End();
 		}
 
-		ImGui::Checkbox("Render Wireframe", &isWireframe);
-		ImGui::Checkbox("Render tessellated terrain", &isTessellationTerrain);
-		ImGui::Checkbox("Render non-tessellated terrain", &isNormalTerrain);
-		ImGui::SliderInt("Tessellation factor static", &tessellationFactor, 1, 64);
-		ImGui::SliderInt("Tessellation factor dynamic", &tessellationFactorDynamic, 1, 64);
-		ImGui::Checkbox("Use dynamic tessellation", &isDynamicTessellation);
-		ImGui::SliderFloat("Dynamic LOD distance factor", &distanceFactor, 0.0001f, 0.1f);
-		ImGui::SliderFloat("Tessellated terrain height scale", &terrainHeightScale, 0.0f, 1000.0f);
+		ImGui::Checkbox("Render terrain wireframe", &mRenderTerrainWireframe);
+		ImGui::Checkbox("Render non-tessellated terrain", &mRenderNonTessellatedTerrain);
+		ImGui::Checkbox("Render tessellated terrain", &mRenderTessellatedTerrain);
+		ImGui::SliderInt("Tessellation factor static", &mStaticTessellationFactor, 1, 64);
+		ImGui::SliderInt("Tessellation factor dynamic", &mTessellationFactorDynamic, 1, 64);
+		ImGui::Checkbox("Use dynamic tessellation", &mDynamicTessellation);
+		ImGui::SliderFloat("Dynamic LOD distance factor", &mCameraDistanceFactor, 0.0001f, 0.1f);
+		ImGui::SliderFloat("Tessellated terrain height scale", &mTessellatedTerrainHeightScale, 0.0f, 1000.0f);
+		ImGui::Separator();
 		ImGui::Checkbox("Render foliage", &mRenderFoliage);
 		ImGui::Checkbox("Render foliage zones centers gizmos", &mRenderFoliageZonesCenters);
+		ImGui::SliderFloat("Foliage dynamic LOD max distance", &mFoliageDynamicLODToCameraDistance, 100.0f, 5000.0f);
+		ImGui::Separator();
 		ImGui::SliderFloat("Wind strength", &mWindStrength, 0.0f, 100.0f);
 		ImGui::SliderFloat("Wind gust distance", &mWindGustDistance, 0.0f, 100.0f);
 		ImGui::SliderFloat("Wind frequency", &mWindFrequency, 0.0f, 100.0f);
 
-
 		mRenderingObjects[foliageZoneGizmoName]->Visible(mRenderFoliageZonesCenters);
 
-		ImGui::SliderFloat("Foliage dynamic LOD max distance", &mFoliageDynamicLODToCameraDistance, 100.0f, 5000.0f);
 
 		ImGui::End();
 	}
@@ -503,14 +504,14 @@ namespace Rendering
 		{
 			object->ResetInstanceData(count);
 
-			float tileWidth = NUM_THREADS * TERRAIN_TILE_RESOLUTION / sqrt(count);
+			float tileWidth = NUM_THREADS_PER_TERRAIN_SIDE * TERRAIN_TILE_RESOLUTION / sqrt(count);
 			for (int i = 0; i < sqrt(count); i++)
 			{
 				for (int j = 0; j < sqrt(count); j++)
 				{
 					float x = (float)((int)tileWidth * i - TERRAIN_TILE_RESOLUTION + tileWidth/2);
 					float z = (float)((int)-tileWidth * j + TERRAIN_TILE_RESOLUTION - tileWidth/2);
-					int heightMapIndex = (int)(i / (sqrt(count) / NUM_THREADS)) * (NUM_THREADS) + (int)(j / (sqrt(count) / NUM_THREADS));
+					int heightMapIndex = (int)(i / (sqrt(count) / NUM_THREADS_PER_TERRAIN_SIDE)) * (NUM_THREADS_PER_TERRAIN_SIDE) + (int)(j / (sqrt(count) / NUM_THREADS_PER_TERRAIN_SIDE));
 					float y = mTerrain->GetHeightmap(heightMapIndex)->FindHeightFromPosition(x, z);
 
 					mFoliageZonesCenters.push_back(XMFLOAT3(x, y, z));
@@ -519,7 +520,6 @@ namespace Rendering
 			}
 		}
 	}
-
 	void TerrainDemo::DistributeAcrossTerrainGrid(RenderingObject* object, int count)
 	{
 		object->ResetInstanceData(count);
@@ -549,7 +549,7 @@ namespace Rendering
 		{
 			for (int j = 0; j < sqrt(count); j++)
 			{
-				int heightMapIndex = (int)(i / (sqrt(count) / NUM_THREADS)) * (NUM_THREADS)+(int)(j / (sqrt(count) / NUM_THREADS));
+				int heightMapIndex = (int)(i / (sqrt(count) / NUM_THREADS_PER_TERRAIN_SIDE)) * (NUM_THREADS_PER_TERRAIN_SIDE)+(int)(j / (sqrt(count) / NUM_THREADS_PER_TERRAIN_SIDE));
 				if (heightMapIndex == tileIndex) {
 					for (auto foliageType : mFoliageZonesCollections[i * sqrt(count) + j]) {
 						maxSizeFoliagePatches += foliageType.second->GetPatchesCount();
@@ -576,7 +576,7 @@ namespace Rendering
 		{
 			for (int j = 0; j < sqrt(count); j++)
 			{
-				int heightMapIndex = (int)(i / (sqrt(count) / NUM_THREADS)) * (NUM_THREADS)+(int)(j / (sqrt(count) / NUM_THREADS));
+				int heightMapIndex = (int)(i / (sqrt(count) / NUM_THREADS_PER_TERRAIN_SIDE)) * (NUM_THREADS_PER_TERRAIN_SIDE)+(int)(j / (sqrt(count) / NUM_THREADS_PER_TERRAIN_SIDE));
 				if (heightMapIndex == tileIndex) {
 					for (auto foliageType : mFoliageZonesCollections[i * sqrt(count) + j]) 
 					{
@@ -595,6 +595,7 @@ namespace Rendering
 		}
 	}
 
+	// generic method for displacing object positions by height of the terrain (GPU calculation)
 	void TerrainDemo::PlaceObjectsOnTerrain(XMFLOAT4* objectsPositions, int objectsCount, XMFLOAT4* terrainVertices, int terrainVertexCount)
 	{
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();

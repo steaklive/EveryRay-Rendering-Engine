@@ -23,7 +23,7 @@ namespace Library
 		mPatchesCount(pPatchesCount),
 		mPatchesCountToRender(pPatchesCount),
 		mScale(scale),
-		mDistributionRadius(distributionRadius - 5.0f),
+		mDistributionRadius(distributionRadius - 0.1f),
 		mDistributionCenter(distributionCenter),
 		mType(bType)
 	{
@@ -218,6 +218,9 @@ namespace Library
 	void Foliage::Draw(const GameTime& gameTime)
 	{
 		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
+
+		if (mPatchesCountToRender == 0)
+			return;
 
 		// dont forget to set alpha blend state if not using the one declared in .fx
 		float blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
