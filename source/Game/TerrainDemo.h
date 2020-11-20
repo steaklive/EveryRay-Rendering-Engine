@@ -6,6 +6,8 @@
 
 using namespace Library;
 
+#define PAD16(n) (((n)+15)/16*16)
+
 namespace Library
 {
 	class Effect;
@@ -58,7 +60,7 @@ namespace Rendering
 		void DistributeFoliageZonesAcrossTerrainGrid(RenderingObject* object, int count);
 		void DistributeAcrossTerrainGrid(RenderingObject* object, int count);
 		void PlaceFoliageOnTerrainTile(int tileIndex);
-		void PlaceObjectsOnTerrain(XMFLOAT4* objectsPositions, int objectsCount, XMFLOAT4* terrainVertices, int terrainVertexCount);
+		void PlaceObjectsOnTerrain(int tileIndex, XMFLOAT4* objectsPositions, int objectsCount, XMFLOAT4* terrainVertices, int terrainVertexCount);
 		void UpdateImGui();
 		void Initialize();
 		void GenerateFoliageZones(int count);
@@ -84,12 +86,12 @@ namespace Rendering
 		std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
 
 		bool mRenderTerrainWireframe = false;
-		bool mRenderTessellatedTerrain = false;
-		bool mRenderNonTessellatedTerrain = true;
+		bool mRenderTessellatedTerrain = true;
+		bool mRenderNonTessellatedTerrain = false;
 		int mStaticTessellationFactor = 4;
 		float mTessellatedTerrainHeightScale = 328.0f;
 		int mTessellationFactorDynamic = 64;
-		bool mDynamicTessellation = false;
+		bool mDynamicTessellation = true;
 		float mCameraDistanceFactor = 0.015;
 
 		int mFoliageZonesCount = 64;

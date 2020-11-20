@@ -178,7 +178,7 @@ namespace Rendering
 		
 		mTerrain = new Terrain(Utility::GetFilePath("content\\terrain\\terrain"), *mGame, *mCamera, *mDirectionalLight, *mPostProcessingStack, false);
 
-		mCamera->SetPosition(XMFLOAT3(0, 130.0f, 0.0f));
+		mCamera->SetPosition(XMFLOAT3(10.0f, 108.0f, 0.0f));
 		mCamera->SetFarPlaneDistance(100000.0f);
 		//mCamera->ApplyRotation(XMMatrixRotationAxis(mCamera->RightVector(), XMConvertToRadians(18.0f)) * XMMatrixRotationAxis(mCamera->UpVector(), -XMConvertToRadians(70.0f)));
 
@@ -195,8 +195,8 @@ namespace Rendering
 		mRenderingObjects[foliageZoneGizmoName]->LoadInstanceBuffers();
 
 		GenerateFoliageZones(mFoliageZonesCount);
-		for (int i = 0; i < NUM_THREADS_PER_TERRAIN_SIDE * NUM_THREADS_PER_TERRAIN_SIDE; i++)
-			PlaceFoliageOnTerrainTile(i);
+		//for (int i = 0; i < NUM_THREADS_PER_TERRAIN_SIDE * NUM_THREADS_PER_TERRAIN_SIDE; i++)
+			PlaceFoliageOnTerrainTile(0);
 
 		//mRenderingObjects.insert(std::pair<std::string, RenderingObject*>(testSphereGizmoName, new RenderingObject(testSphereGizmoName, *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), true, true)));
 		//mRenderingObjects[testSphereGizmoName]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, MaterialHelper::lightingMaterialName);
@@ -568,7 +568,7 @@ namespace Rendering
 			terrainVertices.push_back(XMFLOAT4(mTerrain->GetHeightmap(tileIndex)->mVertexList[j].x, mTerrain->GetHeightmap(tileIndex)->mVertexList[j].y, mTerrain->GetHeightmap(tileIndex)->mVertexList[j].z, 1.0f));
 
 		// compute shader pass
-		PlaceObjectsOnTerrain(&foliagePatchesPositions[0], maxSizeFoliagePatches, &terrainVertices[0], maxSizeTerrainVertices);
+		PlaceObjectsOnTerrain(tileIndex, &foliagePatchesPositions[0], maxSizeFoliagePatches, &terrainVertices[0], maxSizeTerrainVertices);
 
 		// read back to foliage
 		int offset = 0;
@@ -596,7 +596,7 @@ namespace Rendering
 	}
 
 	// generic method for displacing object positions by height of the terrain (GPU calculation)
-	void TerrainDemo::PlaceObjectsOnTerrain(XMFLOAT4* objectsPositions, int objectsCount, XMFLOAT4* terrainVertices, int terrainVertexCount)
+	void TerrainDemo::PlaceObjectsOnTerrain(int tileIndex, XMFLOAT4* objectsPositions, int objectsCount, XMFLOAT4* terrainVertices, int terrainVertexCount)
 	{
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
 		UINT initCounts = 0;
@@ -610,6 +610,20 @@ namespace Rendering
 			throw GameException("Failed to create shader from PlaceObjectsOnTerrain.hlsl!");
 		
 		ReleaseObject(placeObjectsOnTerrainCS);
+
+		// cbuffer
+		ID3D11Buffer* cBuffer;
+		float consts[] = { TERRAIN_TILE_RESOLUTION, 0.0f, mTessellatedTerrainHeightScale, 0.0f};
+		D3D11_SUBRESOURCE_DATA init_cb0 = { &consts[0], 0, 0 };
+		D3D11_BUFFER_DESC cb_desc;
+		cb_desc.Usage = D3D11_USAGE_IMMUTABLE;
+		cb_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		cb_desc.CPUAccessFlags = 0;
+		cb_desc.MiscFlags = 0;
+		cb_desc.ByteWidth = PAD16(sizeof(consts));
+
+		if (FAILED(mGame->Direct3DDevice()->CreateBuffer(&cb_desc, &init_cb0, &cBuffer)))
+			throw GameException("Failed to create cbuffer in PlaceObjectsOnTerrain call.");
 
 		// terrain vertex buffer
 		ID3D11ShaderResourceView* terrainBufferSRV;
@@ -669,7 +683,10 @@ namespace Rendering
 
 		// run
 		context->CSSetShader(computeShader, NULL, 0);
+		ID3D11Buffer* CBs[1] = { cBuffer };
+		context->CSSetConstantBuffers(0, 1, CBs);
 		context->CSSetShaderResources(0, 1, &terrainBufferSRV);
+		context->CSSetShaderResources(1, 1, &(mTerrain->GetHeightmap(tileIndex)->mHeightTexture));
 		context->CSSetUnorderedAccessViews(0, 1, &posUAV, &initCounts);
 		context->Dispatch(512, 1, 1);
 
@@ -696,6 +713,7 @@ namespace Rendering
 		context->CSSetShaderResources(0, 1, SRVNULL);
 
 		ReleaseObject(computeShader);
+		ReleaseObject(cBuffer);
 		ReleaseObject(posBuffer);
 		ReleaseObject(outputPosBuffer);
 		ReleaseObject(posUAV);
