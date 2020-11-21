@@ -24,6 +24,7 @@ namespace Library
 	class ShadowMapper;
 	class Terrain;
 	class Foliage;
+	class Scene;
 }
 
 namespace DirectX
@@ -77,6 +78,8 @@ namespace Rendering
 		GBuffer* mGBuffer;
 		PostProcessingStack* mPostProcessingStack;
 		std::vector<Foliage*> mFoliageCollection;
+
+		Scene* mScene;
 
 		ID3D11ShaderResourceView* mIrradianceTextureSRV;
 		ID3D11ShaderResourceView* mRadianceTextureSRV;

@@ -33,6 +33,7 @@
 #include "..\Library\ShadowMapper.h"
 #include "..\Library\Terrain.h"
 #include "..\Library\Foliage.h"
+#include "..\Library\Scene.h"
 
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
@@ -63,7 +64,8 @@ namespace Rendering
 		mGBuffer(nullptr),
 		mSSRQuad(nullptr),
 		mShadowMapper(nullptr),
-		mFoliageCollection(0, nullptr)
+		mFoliageCollection(0, nullptr),
+		mScene(nullptr)
 		//mTerrain(nullptr)
 	{
 	}
@@ -90,6 +92,7 @@ namespace Rendering
 		ReleaseObject(mIrradianceTextureSRV);
 		ReleaseObject(mRadianceTextureSRV);
 		ReleaseObject(mIntegrationMapTextureSRV);
+		DeleteObject(mScene);
 	}
 
 #pragma region COMPONENT_METHODS
@@ -134,7 +137,15 @@ namespace Rendering
 		//effectSSR->CompileFromFile(Utility::GetFilePath(L"content\\effects\\SSR.fx"));
 
 
-		//mTerrain = new Terrain(*mGame, *mCamera, 128, 1.0f, true);
+		mScene = new Scene(*mGame, *mCamera, Utility::GetFilePath("content\\levels\\test.json"));
+		for (auto& object : mScene->objects) {
+			mRenderingObjects.insert(object);
+			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::lightingMaterialName, [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables(object.first, meshIndex); });
+			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables(object.first, meshIndex); });
+			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(0), [&](int meshIndex) { UpdateShadow0MaterialVariables(object.first, meshIndex); });
+			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(1), [&](int meshIndex) { UpdateShadow1MaterialVariables(object.first, meshIndex); });
+			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(2), [&](int meshIndex) { UpdateShadow2MaterialVariables(object.first, meshIndex); });
+		}
 
 		/**/
 		////

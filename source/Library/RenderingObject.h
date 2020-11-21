@@ -155,6 +155,10 @@ namespace Rendering
 		bool IsInstanced() { return mIsInstanced; }
 		bool IsVisible() { return mIsRendered; }
 
+		void SetTransformationMatrix(XMMATRIX mat)
+		{
+			mTransformationMatrix = mat;
+		}
 		void SetTranslation(float x, float y, float z)
 		{
 			mTransformationMatrix *= XMMatrixTranslation(x, y, z);
