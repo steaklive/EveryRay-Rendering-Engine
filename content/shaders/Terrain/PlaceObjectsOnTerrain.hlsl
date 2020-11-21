@@ -238,7 +238,7 @@ void displaceOnTerrainCS(uint3 threadID : SV_DispatchThreadID, uint groupIndex :
     float z = objectsPositions[threadID.x].z;
     
     if (IsOnSplatMap(x, z, SplatChannel))
-        objectsPositions[threadID.x].y = FindHeightFromHeightmap(x, z); //    FindHeightFromPosition(vertexCount, x, z);
+        objectsPositions[threadID.x].y = FindHeightFromHeightmap(x, z); //FindHeightFromPosition(vertexCount, x, z);
     else
         objectsPositions[threadID.x].y = -999.0f;
 }

@@ -1,0 +1,88 @@
+{
+	"rendering_objects": [
+		{
+			"name" : "Test sphere 1",
+			"model_path" : "content\\models\\sphere_lowpoly.fbx",
+			"instanced" : false,
+			"materials" : [
+				{
+					"name" : "DepthMapMaterial",
+					"effect" : "content\\effects\\DepthMap.fx",
+					"technique" : "create_depthmap_w_render_target" 
+				},
+				{
+					"name" : "DeferredMaterial",
+					"effect" : "content\\effects\\DeferredPrepass.fx",
+					"technique" : "deferred" 
+				},
+				{
+					"name" : "StandardLightingMaterial",
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"technique" : "standard_lighting_pbr" 
+				}
+			],
+			"transform" : [
+				1.0, 0.0, 0.0, 0.0,
+				0.0, 1.0, 0.0, 0.0,
+				0.0, 0.0, 1.0, 0.0,
+				0.0, 0.0, 0.0, 1.0
+			]
+		},
+		{
+			"name" : "Test sphere 2",
+			"model_path" : "content\\models\\sphere_lowpoly.fbx",
+			"instanced" : false,
+			"materials" : [
+				{
+					"name" : "DepthMapMaterial",
+					"effect" : "content\\effects\\DepthMap.fx",
+					"technique" : "create_depthmap_w_render_target" 
+				},
+				{
+					"name" : "DeferredMaterial",
+					"effect" : "content\\effects\\DeferredPrepass.fx",
+					"technique" : "deferred" 
+				},
+				{
+					"name" : "StandardLightingMaterial",
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"technique" : "standard_lighting_pbr" 
+				}
+			],
+			"transform" : [
+				3.0, 0.0, 0.0, 6.0,
+				0.0, 3.0, 0.0, 0.0,
+				0.0, 0.0, 3.0, 5.0,
+				0.0, 0.0, 0.0, 1.0
+			]
+		},
+		{
+			"name" : "Test sphere 3",
+			"model_path" : "content\\models\\sphere_lowpoly.fbx",
+			"instanced" : false,
+			"materials" : [
+				{
+					"name" : "DepthMapMaterial",
+					"effect" : "content\\effects\\DepthMap.fx",
+					"technique" : "create_depthmap_w_render_target" 
+				},
+				{
+					"name" : "DeferredMaterial",
+					"effect" : "content\\effects\\DeferredPrepass.fx",
+					"technique" : "deferred" 
+				},
+				{
+					"name" : "StandardLightingMaterial",
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"technique" : "standard_lighting_pbr" 
+				}
+			],
+			"transform" : [
+				2.0, 0.0, 0.0, -12.0,
+				0.0, 2.0, 0.0, 7.0,
+				0.0, 0.0, 2.0, 0.0,
+				0.0, 0.0, 0.0, 1.0
+			]
+		}
+	]
+}
