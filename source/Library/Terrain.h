@@ -13,6 +13,13 @@ namespace Library
 {
 	class TerrainMaterial;
 
+	enum TerrainSplatChannels {
+		MUD,
+		GRASS,
+		ROCK,
+		GROUND
+	};
+
 	struct NormalVector
 	{
 		float x, y, z;

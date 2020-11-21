@@ -92,7 +92,7 @@ namespace Library
 	void Foliage::Initialize()
 	{
 		InitializeBuffersCPU();
-		InitializeBuffersGPU();
+		//InitializeBuffersGPU();
 	}
 
 	void Foliage::CreateBlendStates()
@@ -121,7 +121,7 @@ namespace Library
 			throw GameException("ID3D11Device::CreateBlendState() failed while create no blend state for foliage");
 	}
 
-	void Foliage::InitializeBuffersGPU()
+	void Foliage::InitializeBuffersGPU(int count)
 	{
 		D3D11_BUFFER_DESC vertexBufferDesc, instanceBufferDesc;
 		D3D11_SUBRESOURCE_DATA vertexData, instanceData;
@@ -170,7 +170,7 @@ namespace Library
 #pragma endregion
 
 		// instance buffer
-		int instanceCount = mPatchesCount;
+		int instanceCount = count;
 		mPatchesBufferGPU = new FoliageInstanceData[instanceCount];
 
 		for (int i = 0; i < instanceCount; i++)
@@ -290,7 +290,24 @@ namespace Library
 		CalculateDynamicLOD(distanceToCam);
 	}
 
-	void Foliage::UpdateBufferGPU()
+	void Foliage::CreateBufferGPU()
+	{
+		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
+
+		mPatchesCountVisible = 0;
+		for (int i = 0; i < mPatchesCount; i++)
+		{
+			if (mPatchesBufferCPU[i].yPos != -999.0f /*|| culledPatch */) {
+				mPatchesCountVisible++;
+			}
+		}
+
+		InitializeBuffersGPU(mPatchesCountVisible);
+		UpdateBuffersGPU();
+	}
+
+	// updating world matrices of visible patches
+	void Foliage::UpdateBuffersGPU() 
 	{
 		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
 
@@ -298,7 +315,7 @@ namespace Library
 		float rotation, windRotation;
 		XMMATRIX translationMatrix;
 
-		for (int i = 0; i < mPatchesCount; i++)
+		for (int i = 0; i < mPatchesCountVisible; i++)
 		{
 			translationMatrix = XMMatrixTranslation(mPatchesBufferCPU[i].xPos, mPatchesBufferCPU[i].yPos, mPatchesBufferCPU[i].zPos);
 			mPatchesBufferGPU[i].worldMatrix = XMMatrixScaling(mPatchesBufferCPU[i].scale, mPatchesBufferCPU[i].scale, mPatchesBufferCPU[i].scale) * translationMatrix;
@@ -312,9 +329,8 @@ namespace Library
 
 		instancesPtr = (FoliageInstanceData*)mappedResource.pData;
 
-		memcpy(instancesPtr, (void*)mPatchesBufferGPU, (sizeof(FoliageInstanceData) * mPatchesCount));
+		memcpy(instancesPtr, (void*)mPatchesBufferGPU, (sizeof(FoliageInstanceData) * /*mPatchesCount*/mPatchesCountVisible));
 		context->Unmap(mInstanceBuffer, 0);
-		
 	}
 
 	void Foliage::CalculateDynamicLOD(float distanceToCam)
@@ -326,7 +342,7 @@ namespace Library
 		else if (factor < 0.0f)
 			factor = 0.0f;
 
-		mPatchesCountToRender = mPatchesCount * (1.0f - factor);
+		mPatchesCountToRender = /*mPatchesCount*/mPatchesCountVisible * (1.0f - factor);
 	}
 
 }
