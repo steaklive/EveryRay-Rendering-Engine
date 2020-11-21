@@ -479,6 +479,8 @@ namespace Library
 			return;
 		//assert(tileIndex < mHeightMaps.size());
 
+		mHeightMaps[tileIndex]->mUVOffsetToTextureSpace = XMFLOAT2(TERRAIN_TILE_RESOLUTION - tileIndexX * TERRAIN_TILE_RESOLUTION, tileIndexY * TERRAIN_TILE_RESOLUTION);
+
 		int error, i, j, index;
 		FILE* filePtr;
 		unsigned long long imageSize, count;

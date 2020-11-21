@@ -195,8 +195,8 @@ namespace Rendering
 		mRenderingObjects[foliageZoneGizmoName]->LoadInstanceBuffers();
 
 		GenerateFoliageZones(mFoliageZonesCount);
-		//for (int i = 0; i < NUM_THREADS_PER_TERRAIN_SIDE * NUM_THREADS_PER_TERRAIN_SIDE; i++)
-			PlaceFoliageOnTerrainTile(0);
+		for (int i = 0; i < NUM_THREADS_PER_TERRAIN_SIDE * NUM_THREADS_PER_TERRAIN_SIDE; i++)
+			PlaceFoliageOnTerrainTile(i);
 
 		//mRenderingObjects.insert(std::pair<std::string, RenderingObject*>(testSphereGizmoName, new RenderingObject(testSphereGizmoName, *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), true, true)));
 		//mRenderingObjects[testSphereGizmoName]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, MaterialHelper::lightingMaterialName);
@@ -612,8 +612,14 @@ namespace Rendering
 		ReleaseObject(placeObjectsOnTerrainCS);
 
 		// cbuffer
-		ID3D11Buffer* cBuffer;
-		float consts[] = { TERRAIN_TILE_RESOLUTION, 0.0f, mTessellatedTerrainHeightScale, 0.0f};
+		ID3D11Buffer* cBuffer = NULL;
+		float consts[] = 
+		{ 
+			mTerrain->GetHeightmap(tileIndex)->mUVOffsetToTextureSpace.x,
+			mTerrain->GetHeightmap(tileIndex)->mUVOffsetToTextureSpace.y,
+			mTessellatedTerrainHeightScale,
+			0.0f
+		};
 		D3D11_SUBRESOURCE_DATA init_cb0 = { &consts[0], 0, 0 };
 		D3D11_BUFFER_DESC cb_desc;
 		cb_desc.Usage = D3D11_USAGE_IMMUTABLE;
@@ -626,8 +632,8 @@ namespace Rendering
 			throw GameException("Failed to create cbuffer in PlaceObjectsOnTerrain call.");
 
 		// terrain vertex buffer
-		ID3D11ShaderResourceView* terrainBufferSRV;
-		ID3D11Buffer* terrainBuffer;
+		ID3D11ShaderResourceView* terrainBufferSRV = NULL;
+		ID3D11Buffer* terrainBuffer = NULL;
 		D3D11_SUBRESOURCE_DATA data = { terrainVertices, 0, 0 };
 
 		D3D11_BUFFER_DESC buf_descTerrain;
@@ -649,9 +655,9 @@ namespace Rendering
 			throw GameException("Failed to create terrain vertices SRV buffer in PlaceObjectsOnTerrain call.");
 
 		// positions buffers
-		ID3D11Buffer* posBuffer;
-		ID3D11Buffer* outputPosBuffer;
-		ID3D11UnorderedAccessView* posUAV;
+		ID3D11Buffer* posBuffer = NULL;
+		ID3D11Buffer* outputPosBuffer = NULL;
+		ID3D11UnorderedAccessView* posUAV = NULL;
 		D3D11_SUBRESOURCE_DATA init_data = { objectsPositions, 0, 0 };
 
 		D3D11_BUFFER_DESC buf_desc;
@@ -683,8 +689,7 @@ namespace Rendering
 
 		// run
 		context->CSSetShader(computeShader, NULL, 0);
-		ID3D11Buffer* CBs[1] = { cBuffer };
-		context->CSSetConstantBuffers(0, 1, CBs);
+		context->CSSetConstantBuffers(0, 1, &cBuffer);
 		context->CSSetShaderResources(0, 1, &terrainBufferSRV);
 		context->CSSetShaderResources(1, 1, &(mTerrain->GetHeightmap(tileIndex)->mHeightTexture));
 		context->CSSetUnorderedAccessViews(0, 1, &posUAV, &initCounts);
@@ -711,6 +716,9 @@ namespace Rendering
 		context->CSSetUnorderedAccessViews(0, 1, UAViewNULL, &initCounts);
 		ID3D11ShaderResourceView* SRVNULL[1] = { NULL };
 		context->CSSetShaderResources(0, 1, SRVNULL);
+		context->CSSetShaderResources(1, 1, SRVNULL);
+		ID3D11Buffer* CBNULL[1] = { NULL };
+		context->CSSetConstantBuffers(0, 1, CBNULL);
 
 		ReleaseObject(computeShader);
 		ReleaseObject(cBuffer);

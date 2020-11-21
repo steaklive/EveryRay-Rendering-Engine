@@ -19,9 +19,9 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\l
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(20): note: see declaration of 'Rendering::MotionBlurMaterial'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(198): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(121): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(78): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(79): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(123): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(80): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(81): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\foliage.h(102): warning C4305: 'initializing': truncation from 'double' to 'float'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(50): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(50): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
