@@ -51,6 +51,8 @@ namespace Library
 		XMMATRIX mWorldMatrix = XMMatrixIdentity();
 		XMMATRIX mWorldMatrixTS = XMMatrixIdentity();
 
+		XMFLOAT2 mUVOffsetToTextureSpace;
+
 		Vertex mVertexList[(TERRAIN_TILE_RESOLUTION-1) * (TERRAIN_TILE_RESOLUTION - 1)*6];
 
 		MapData* mData = nullptr;
