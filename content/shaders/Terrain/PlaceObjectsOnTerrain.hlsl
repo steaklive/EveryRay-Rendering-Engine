@@ -3,11 +3,13 @@ static const float TERRAIN_TILE_RESOLUTION = 512.0f;
 RWStructuredBuffer<float4> objectsPositions : register(u0);
 StructuredBuffer<float4> terrainVertices : register(t0);
 Texture2D heightmap : register(t1);
+Texture2D splatmap : register(t2);
 
 cbuffer CBufferPerFrame : register(b0)
 {
     float2 UVoffset;
-    float2 HeightScale;
+    float HeightScale;
+    float SplatChannel;
 }
 
 SamplerState BilinearSampler
@@ -15,6 +17,14 @@ SamplerState BilinearSampler
     Filter = MIN_MAG_LINEAR_MIP_POINT;
     AddressU = CLAMP;
     AddressV = CLAMP;
+};
+
+SamplerState LinearSampler
+{
+    Filter = MIN_MAG_MIP_LINEAR;
+    AddressU = WRAP;
+    AddressV = WRAP;
+    AddressW = WRAP;
 };
 
 bool GetHeightFromTriangle(float x, float z, float v0[3], float v1[3], float v2[3], float normals[3], out float height)
@@ -192,7 +202,29 @@ float2 GetTextureCoordinates(float x, float z)
 float FindHeightFromHeightmap(float x, float z)
 {
     float height = heightmap.SampleLevel(BilinearSampler, GetTextureCoordinates(x, z), 0).r;
-    return height * HeightScale.x;
+    return height * HeightScale;
+}
+
+bool IsOnSplatMap(float x, float z, float channel)
+{
+    float2 uv = GetTextureCoordinates(x, z);
+    uv.y = 1.0f - uv.y;
+    
+    float percentage = 0.2f;
+    
+    float4 value = splatmap.SampleLevel(LinearSampler, uv, 0);
+    if (channel == 0.0f && value.r > percentage)
+        return true;
+    else if (channel == 1.0f && value.g > percentage)
+        return true;
+    else if (channel == 2.0f && value.b > percentage)
+        return true;
+    else if (channel == 3.0f && value.a > percentage)
+        return true;
+    else
+        return false;
+   
+    return false;
 }
 
 [numthreads(512, 1, 1)]
@@ -204,5 +236,9 @@ void displaceOnTerrainCS(uint3 threadID : SV_DispatchThreadID, uint groupIndex :
     
     float x = objectsPositions[threadID.x].x;
     float z = objectsPositions[threadID.x].z;
-    objectsPositions[threadID.x].y = FindHeightFromHeightmap(x, z); //    FindHeightFromPosition(vertexCount, x, z);
+    
+    if (IsOnSplatMap(x, z, SplatChannel))
+        objectsPositions[threadID.x].y = FindHeightFromHeightmap(x, z); //    FindHeightFromPosition(vertexCount, x, z);
+    else
+        objectsPositions[threadID.x].y = -999.0f;
 }

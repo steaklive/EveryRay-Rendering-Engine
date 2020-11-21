@@ -60,7 +60,7 @@ namespace Rendering
 		void DistributeFoliageZonesAcrossTerrainGrid(RenderingObject* object, int count);
 		void DistributeAcrossTerrainGrid(RenderingObject* object, int count);
 		void PlaceFoliageOnTerrainTile(int tileIndex);
-		void PlaceObjectsOnTerrain(int tileIndex, XMFLOAT4* objectsPositions, int objectsCount, XMFLOAT4* terrainVertices, int terrainVertexCount);
+		void PlaceObjectsOnTerrain(int tileIndex, XMFLOAT4* objectsPositions, int objectsCount, XMFLOAT4* terrainVertices, int terrainVertexCount, int splatChannel = -1);
 		void UpdateImGui();
 		void Initialize();
 		void GenerateFoliageZones(int count);
@@ -86,8 +86,8 @@ namespace Rendering
 		std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
 
 		bool mRenderTerrainWireframe = false;
-		bool mRenderTessellatedTerrain = true;
-		bool mRenderNonTessellatedTerrain = false;
+		bool mRenderTessellatedTerrain = false;
+		bool mRenderNonTessellatedTerrain = true;
 		int mStaticTessellationFactor = 4;
 		float mTessellatedTerrainHeightScale = 328.0f;
 		int mTessellationFactorDynamic = 64;

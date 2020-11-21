@@ -64,9 +64,10 @@ namespace Library
 		float GetPatchPositionX(int i) { return mPatchesBufferCPU[i].xPos; }
 		float GetPatchPositionZ(int i) { return mPatchesBufferCPU[i].zPos; }
 
-		void UpdateBufferGPU();
+		void CreateBufferGPU();
+		void UpdateBuffersGPU();
 	private:
-		void InitializeBuffersGPU();
+		void InitializeBuffersGPU(int count);
 		void InitializeBuffersCPU();
 		void LoadBillboardModel(FoliageBillboardType bType);
 		void CalculateDynamicLOD(float distanceToCam);
@@ -90,6 +91,7 @@ namespace Library
 		FoliageBillboardType mType;
 
 		int mPatchesCount;
+		int mPatchesCountVisible;
 		int mPatchesCountToRender;
 
 		bool mIsWireframe = false;

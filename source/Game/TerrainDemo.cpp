@@ -568,7 +568,7 @@ namespace Rendering
 			terrainVertices.push_back(XMFLOAT4(mTerrain->GetHeightmap(tileIndex)->mVertexList[j].x, mTerrain->GetHeightmap(tileIndex)->mVertexList[j].y, mTerrain->GetHeightmap(tileIndex)->mVertexList[j].z, 1.0f));
 
 		// compute shader pass
-		PlaceObjectsOnTerrain(tileIndex, &foliagePatchesPositions[0], maxSizeFoliagePatches, &terrainVertices[0], maxSizeTerrainVertices);
+		PlaceObjectsOnTerrain(tileIndex, &foliagePatchesPositions[0], maxSizeFoliagePatches, &terrainVertices[0], maxSizeTerrainVertices, TerrainSplatChannels::GRASS);
 
 		// read back to foliage
 		int offset = 0;
@@ -588,7 +588,7 @@ namespace Rendering
 								foliageType.second->GetPatchPositionZ(patchIndex));
 						}
 						offset += mFoliageZonesCollections[i * sqrt(count) + j].at(foliageType.first)->GetPatchesCount();
-						foliageType.second->UpdateBufferGPU();
+						foliageType.second->CreateBufferGPU();
 					}
 				}
 			}
@@ -596,7 +596,7 @@ namespace Rendering
 	}
 
 	// generic method for displacing object positions by height of the terrain (GPU calculation)
-	void TerrainDemo::PlaceObjectsOnTerrain(int tileIndex, XMFLOAT4* objectsPositions, int objectsCount, XMFLOAT4* terrainVertices, int terrainVertexCount)
+	void TerrainDemo::PlaceObjectsOnTerrain(int tileIndex, XMFLOAT4* objectsPositions, int objectsCount, XMFLOAT4* terrainVertices, int terrainVertexCount, int splatChannel)
 	{
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
 		UINT initCounts = 0;
@@ -618,7 +618,7 @@ namespace Rendering
 			mTerrain->GetHeightmap(tileIndex)->mUVOffsetToTextureSpace.x,
 			mTerrain->GetHeightmap(tileIndex)->mUVOffsetToTextureSpace.y,
 			mTessellatedTerrainHeightScale,
-			0.0f
+			static_cast<float>(splatChannel)
 		};
 		D3D11_SUBRESOURCE_DATA init_cb0 = { &consts[0], 0, 0 };
 		D3D11_BUFFER_DESC cb_desc;
@@ -692,6 +692,7 @@ namespace Rendering
 		context->CSSetConstantBuffers(0, 1, &cBuffer);
 		context->CSSetShaderResources(0, 1, &terrainBufferSRV);
 		context->CSSetShaderResources(1, 1, &(mTerrain->GetHeightmap(tileIndex)->mHeightTexture));
+		context->CSSetShaderResources(2, 1, &(mTerrain->GetHeightmap(tileIndex)->mSplatTexture));
 		context->CSSetUnorderedAccessViews(0, 1, &posUAV, &initCounts);
 		context->Dispatch(512, 1, 1);
 
@@ -717,6 +718,7 @@ namespace Rendering
 		ID3D11ShaderResourceView* SRVNULL[1] = { NULL };
 		context->CSSetShaderResources(0, 1, SRVNULL);
 		context->CSSetShaderResources(1, 1, SRVNULL);
+		context->CSSetShaderResources(2, 1, SRVNULL);
 		ID3D11Buffer* CBNULL[1] = { NULL };
 		context->CSSetConstantBuffers(0, 1, CBNULL);
 
