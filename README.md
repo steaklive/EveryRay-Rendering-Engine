@@ -55,6 +55,7 @@ Create a folder "external" in the root directory and place these built libraries
 - DirectXTK (https://github.com/Microsoft/DirectXTK)
 - ImGui (https://github.com/ocornut/imgui)
 - Assimp 5.0.1 (https://github.com/assimp/assimp)
+- JsonCpp (https://github.com/open-source-parsers/jsoncpp/)
 
 # References
 - "Real-Time 3D Rendering with DirectX and HLSL: A Practical Guide to Graphics Programming" by Paul Varcholik.
