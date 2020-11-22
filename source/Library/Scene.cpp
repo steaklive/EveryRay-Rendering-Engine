@@ -30,6 +30,51 @@ namespace Library
 			throw GameException(reader.getFormattedErrorMessages().c_str());
 		}
 		else {
+
+			if (root.isMember("camera_position")) {
+				float vec3[3];
+				for (Json::Value::ArrayIndex i = 0; i != root["camera_position"].size(); i++)
+					vec3[i] = root["camera_position"][i].asFloat();
+
+				cameraPosition = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+			}
+
+			if (root.isMember("camera_direction")) {
+				float vec3[3];
+				for (Json::Value::ArrayIndex i = 0; i != root["camera_direction"].size(); i++)
+					vec3[i] = root["camera_direction"][i].asFloat();
+
+				cameraDirection = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+			}
+
+			if (root.isMember("sun_direction")) {
+				float vec3[3];
+				for (Json::Value::ArrayIndex i = 0; i != root["sun_direction"].size(); i++)
+					vec3[i] = root["sun_direction"][i].asFloat();
+
+				sunDirection = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+			}
+
+			if (root.isMember("sun_color")) {
+				float vec3[3];
+				for (Json::Value::ArrayIndex i = 0; i != root["sun_color"].size(); i++)
+					vec3[i] = root["sun_color"][i].asFloat();
+
+				sunColor = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+			}
+
+			if (root.isMember("ambient_color")) {
+				float vec3[3];
+				for (Json::Value::ArrayIndex i = 0; i != root["ambient_color"].size(); i++)
+					vec3[i] = root["ambient_color"][i].asFloat();
+
+				ambientColor = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+			}
+
+			if (root.isMember("skybox_path")) {
+				skyboxPath = root["skybox_path"].asString();
+			}
+
 			for (Json::Value::ArrayIndex i = 0; i != root["rendering_objects"].size(); i++) {
 				std::string name = root["rendering_objects"][i]["name"].asString();
 				std::string modelPath = root["rendering_objects"][i]["model_path"].asString();

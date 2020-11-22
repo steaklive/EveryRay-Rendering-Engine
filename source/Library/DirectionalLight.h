@@ -38,6 +38,16 @@ namespace Library
 		XMFLOAT3 GetDirectionalLightColor() { return XMFLOAT3(mSunColor); }
 		XMFLOAT3 GetAmbientLightColor() { return XMFLOAT3(mAmbientColor); }
 		XMMATRIX GetTransform() { return mTransformMatrix; }
+		void SetSunColor(XMFLOAT3 color) {
+			mSunColor[0] = color.x;
+			mSunColor[1] = color.y;
+			mSunColor[2] = color.z;
+		}
+		void SetAmbientColor(XMFLOAT3 color) {
+			mAmbientColor[0] = color.x;
+			mAmbientColor[1] = color.y;
+			mAmbientColor[2] = color.z;
+		}
 
 		GeneralEvent<Delegate_RotationUpdate>* RotationUpdateEvent = new GeneralEvent<Delegate_RotationUpdate>();
 

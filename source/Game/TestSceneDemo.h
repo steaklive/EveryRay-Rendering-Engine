@@ -65,8 +65,6 @@ namespace Rendering
 		void UpdateImGui();
 		void Initialize();
 
-		//std::map<std::string, RenderingObject*> mRenderingObjects;
-
 		Scene* mScene;
 		Keyboard* mKeyboard;
 		XMFLOAT4X4 mWorldMatrix;
