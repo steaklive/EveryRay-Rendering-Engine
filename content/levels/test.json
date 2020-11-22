@@ -1,8 +1,78 @@
 {
 	"rendering_objects": [
 		{
-			"name" : "Test sphere 1",
-			"model_path" : "content\\models\\sphere_lowpoly.fbx",
+			"name" : "Elm Tree",
+			"model_path" : "content\\models\\vegetation\\trees\\elm\\elm.fbx",
+			"instanced" : true,
+			"materials" : [
+				{
+					"name" : "DepthMapMaterial",
+					"effect" : "content\\effects\\DepthMap.fx",
+					"technique" : "create_depthmap_w_render_target_instanced" 
+				},
+				{
+					"name" : "DeferredMaterial",
+					"effect" : "content\\effects\\DeferredPrepass.fx",
+					"technique" : "deferred_instanced" 
+				},
+				{
+					"name" : "StandardLightingMaterial",
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"technique" : "standard_lighting_pbr_instancing" 
+				}
+			],
+			"transform" : [
+				1.0, 0.0, 0.0, 0.0,
+				0.0, 1.0, 0.0, 0.0,
+				0.0, 0.0, 1.0, 0.0,
+				0.0, 0.0, 0.0, 1.0
+			],
+			"instances_transforms" : [
+				{
+					"transform" : [
+						1.5, 0.0, 0.0, 12.0,
+						0.0, 1.5, 0.0, 0.0,
+						0.0, 0.0, 1.5, 6.0,
+						0.0, 0.0, 0.0, 1.0
+					]
+				},
+				{
+					"transform" : [
+						1.7, 0.0, 0.0, -23.0,
+						0.0, 1.7, 0.0, 0.0,
+						0.0, 0.0, 1.7, 2.0,
+						0.0, 0.0, 0.0, 1.0
+					]
+				},
+				{
+					"transform" : [
+						1.0, 0.0, 0.0, 6.0,
+						0.0, 1.0, 0.0, 0.0,
+						0.0, 0.0, 1.0, 25.0,
+						0.0, 0.0, 0.0, 1.0
+					]
+				},
+				{
+					"transform" : [
+						1.5, 0.0, 0.0, 14.0,
+						0.0, 1.5, 0.0, 0.0,
+						0.0, 0.0, 1.5, 22.0,
+						0.0, 0.0, 0.0, 1.0
+					]
+				},
+				{
+					"transform" : [
+						1.9, 0.0, 0.0, -7.0,
+						0.0, 1.9, 0.0, 0.0,
+						0.0, 0.0, 1.9, -18.0,
+						0.0, 0.0, 0.0, 1.0
+					]
+				}
+			]
+		},
+		{
+			"name" : "Ground Plane",
+			"model_path" : "content\\models\\default_plane\\default_plane.fbx",
 			"instanced" : false,
 			"materials" : [
 				{
@@ -29,6 +99,34 @@
 			]
 		},
 		{
+			"name" : "Test sphere 1",
+			"model_path" : "content\\models\\sphere_lowpoly.fbx",
+			"instanced" : false,
+			"materials" : [
+				{
+					"name" : "DepthMapMaterial",
+					"effect" : "content\\effects\\DepthMap.fx",
+					"technique" : "create_depthmap_w_render_target" 
+				},
+				{
+					"name" : "DeferredMaterial",
+					"effect" : "content\\effects\\DeferredPrepass.fx",
+					"technique" : "deferred" 
+				},
+				{
+					"name" : "StandardLightingMaterial",
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"technique" : "standard_lighting_pbr" 
+				}
+			],
+			"transform" : [
+				1.0, 0.0, 0.0, 0.0,
+				0.0, 1.0, 0.0, 0.0,
+				0.0, 0.0, 1.0, 3.0,
+				0.0, 0.0, 0.0, 1.0
+			]
+		},
+		{
 			"name" : "Test sphere 2",
 			"model_path" : "content\\models\\sphere_lowpoly.fbx",
 			"instanced" : false,
@@ -50,9 +148,9 @@
 				}
 			],
 			"transform" : [
-				3.0, 0.0, 0.0, 6.0,
-				0.0, 3.0, 0.0, 0.0,
-				0.0, 0.0, 3.0, 5.0,
+				1.5, 0.0, 0.0, 6.0,
+				0.0, 1.5, 0.0, 5.0,
+				0.0, 0.0, 1.5, 5.0,
 				0.0, 0.0, 0.0, 1.0
 			]
 		},

@@ -158,6 +158,7 @@ namespace Rendering
 		void SetTransformationMatrix(XMMATRIX mat)
 		{
 			mTransformationMatrix = mat;
+			MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
 		}
 		void SetTranslation(float x, float y, float z)
 		{
