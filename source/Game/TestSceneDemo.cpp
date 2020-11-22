@@ -129,7 +129,7 @@ namespace Rendering
 		//Effect* effectSSR = new Effect(*mGame);
 		//effectSSR->CompileFromFile(Utility::GetFilePath(L"content\\effects\\SSR.fx"));
 
-		mScene = new Scene(*mGame, *mCamera, Utility::GetFilePath("content\\levels\\test.json"));
+		mScene = new Scene(*mGame, *mCamera, Utility::GetFilePath("content\\levels\\testScene.json"));
 		for (auto& object : mScene->objects) {
 			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::lightingMaterialName, [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables(object.first, meshIndex); });
 			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables(object.first, meshIndex); });
@@ -138,39 +138,10 @@ namespace Rendering
 			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(2), [&](int meshIndex) { UpdateShadow2MaterialVariables(object.first, meshIndex); });
 		}
 
-		//mRenderingObjects.insert(std::pair<std::string, RenderingObject*>("Acer Tree Medium", new RenderingObject("Acer Tree Medium", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\vegetation\\trees\\elm\\elm.fbx"), true)), true, true)));
-		//mRenderingObjects["Acer Tree Medium"]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, MaterialHelper::lightingMaterialName);
-		//for (int i = 0; i < MAX_NUM_OF_CASCADES; i++)
-		//{
-		//	const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(i);
-		//	mRenderingObjects["Acer Tree Medium"]->LoadMaterial(new DepthMapMaterial(), effectShadow, name);
-		//}
-		//mRenderingObjects["Acer Tree Medium"]->LoadMaterial(new DeferredMaterial(), effectDeferredPrepass, MaterialHelper::deferredPrepassMaterialName);
-		//
-		//mRenderingObjects["Acer Tree Medium"]->LoadRenderBuffers();
-		//
-		//mRenderingObjects["Acer Tree Medium"]->GetMaterials()[MaterialHelper::lightingMaterialName]->SetCurrentTechnique(mRenderingObjects["Acer Tree Medium"]->GetMaterials()[MaterialHelper::lightingMaterialName]->GetEffect()->TechniquesByName().at("standard_lighting_pbr_instancing"));
-		//for (int i = 0; i < MAX_NUM_OF_CASCADES; i++)
-		//{
-		//	const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(i);
-		//	mRenderingObjects["Acer Tree Medium"]->GetMaterials()[name]->SetCurrentTechnique(mRenderingObjects["Acer Tree Medium"]->GetMaterials()[name]->GetEffect()->TechniquesByName().at("create_depthmap_w_render_target_instanced"));
-		//}
-		//mRenderingObjects["Acer Tree Medium"]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName]->SetCurrentTechnique(mRenderingObjects["Acer Tree Medium"]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName]->GetEffect()->TechniquesByName().at("deferred_instanced"));
-		//
-		//mRenderingObjects["Acer Tree Medium"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::lightingMaterialName, [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables("Acer Tree Medium", meshIndex); });
-		//mRenderingObjects["Acer Tree Medium"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables("Acer Tree Medium", meshIndex); });
-		//mRenderingObjects["Acer Tree Medium"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + std::to_string(0), [&](int meshIndex) { UpdateShadow0MaterialVariables("Acer Tree Medium", meshIndex); });
-		//mRenderingObjects["Acer Tree Medium"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + std::to_string(1), [&](int meshIndex) { UpdateShadow1MaterialVariables("Acer Tree Medium", meshIndex); });
-		//mRenderingObjects["Acer Tree Medium"]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + std::to_string(2), [&](int meshIndex) { UpdateShadow2MaterialVariables("Acer Tree Medium", meshIndex); });
-		//
-		//mRenderingObjects["Acer Tree Medium"]->CalculateInstanceObjectsRandomDistribution(10);
-		//mRenderingObjects["Acer Tree Medium"]->LoadInstanceBuffers();
-
-
 		mKeyboard = (Keyboard*)mGame->Services().GetService(Keyboard::TypeIdClass());
 		assert(mKeyboard != nullptr);
 
-		mSkybox = new Skybox(*mGame, *mCamera, Utility::GetFilePath(L"content\\textures\\Sky_Type_4.dds"), 10000);
+		mSkybox = new Skybox(*mGame, *mCamera, Utility::GetFilePath(Utility::ToWideString(mScene->skyboxPath)), 10000);
 		mSkybox->Initialize();
 
 		mGrid = new Grid(*mGame, *mCamera, 200, 56, XMFLOAT4(0.961f, 0.871f, 0.702f, 1.0f));
@@ -181,6 +152,8 @@ namespace Rendering
 		//directional light
 		mDirectionalLight = new DirectionalLight(*mGame, *mCamera);
 		mDirectionalLight->ApplyRotation(XMMatrixRotationAxis(mDirectionalLight->RightVector(), -XMConvertToRadians(70.0f)) * XMMatrixRotationAxis(mDirectionalLight->UpVector(), -XMConvertToRadians(25.0f)));
+		mDirectionalLight->SetAmbientColor(mScene->ambientColor);
+		mDirectionalLight->SetSunColor(mScene->sunColor);
 
 		mShadowMapper = new ShadowMapper(*mGame, *mCamera, *mDirectionalLight, 4096, 4096);
 		mDirectionalLight->RotationUpdateEvent->AddListener("shadow mapper", [&]() {mShadowMapper->ApplyTransform(); });
@@ -204,9 +177,9 @@ namespace Rendering
 			foliage->CreateBufferGPU();
 		}
 
-		mCamera->SetPosition(XMFLOAT3(0, 8.4f, 60.0f));
+		mCamera->SetPosition(mScene->cameraPosition);
+		mCamera->SetDirection(mScene->cameraDirection);
 		mCamera->SetFarPlaneDistance(100000.0f);
-		//mCamera->ApplyRotation(XMMatrixRotationAxis(mCamera->RightVector(), XMConvertToRadians(18.0f)) * XMMatrixRotationAxis(mCamera->UpVector(), -XMConvertToRadians(70.0f)));
 
 		//IBL
 		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\Sky_Type_4_PBRDiffuseHDR.dds").c_str(), nullptr, &mIrradianceTextureSRV)))
