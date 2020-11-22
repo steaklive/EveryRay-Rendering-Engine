@@ -264,7 +264,7 @@ namespace Library
 		return rotationMatrix;
 	}
 
-	void Camera::Cull(const std::map<std::string, Rendering::RenderingObject*> objects)
+	void Camera::Cull(const std::map<std::string, Rendering::RenderingObject*>& objects)
 	{
 		if (!Utility::IsCameraCulling)
 		{

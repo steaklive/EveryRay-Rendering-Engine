@@ -65,8 +65,9 @@ namespace Rendering
 		void UpdateImGui();
 		void Initialize();
 
-		std::map<std::string, RenderingObject*> mRenderingObjects;
+		//std::map<std::string, RenderingObject*> mRenderingObjects;
 
+		Scene* mScene;
 		Keyboard* mKeyboard;
 		XMFLOAT4X4 mWorldMatrix;
 		RenderStateHelper* mRenderStateHelper;
@@ -78,8 +79,6 @@ namespace Rendering
 		GBuffer* mGBuffer;
 		PostProcessingStack* mPostProcessingStack;
 		std::vector<Foliage*> mFoliageCollection;
-
-		Scene* mScene;
 
 		ID3D11ShaderResourceView* mIrradianceTextureSRV;
 		ID3D11ShaderResourceView* mRadianceTextureSRV;

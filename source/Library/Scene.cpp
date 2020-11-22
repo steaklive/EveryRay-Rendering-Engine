@@ -93,11 +93,37 @@ namespace Library
 				}
 				else
 					it->second->SetTransformationMatrix(XMMatrixIdentity());
+
+				// load instanced data
+				if (isInstanced) {
+					if (root["rendering_objects"][i].isMember("instances_transforms")) {
+						for (Json::Value::ArrayIndex instance = 0; instance != root["rendering_objects"][i]["instances_transforms"].size(); instance++) {
+							float matrix[16];
+							for (Json::Value::ArrayIndex matC = 0; matC != root["rendering_objects"][i]["instances_transforms"][instance]["transform"].size(); matC++) {
+								matrix[matC] = root["rendering_objects"][i]["instances_transforms"][instance]["transform"][matC].asFloat();
+							}
+							XMFLOAT4X4 worldTransform(matrix);
+							it->second->AddInstanceData(XMMatrixTranspose(XMLoadFloat4x4(&worldTransform)));
+						}
+					}
+					else {
+						it->second->AddInstanceData(it->second->GetTransformationMatrix());
+					}
+					it->second->LoadInstanceBuffers();
+				}
 			}
 		}
 	}
 
-	Scene::~Scene() { }
+	Scene::~Scene()
+	{
+		for (auto object : objects)
+		{
+			object.second->MeshMaterialVariablesUpdateEvent->RemoverAllListeners();
+			DeleteObject(object.second);
+		}
+		objects.clear();
+	}
 
 	std::tuple<Material*, Effect*, std::string> Scene::GetMaterialData(std::string matName, std::string effectName, std::string techniqueName) {
 		Material* material = nullptr;
