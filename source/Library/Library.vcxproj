@@ -237,6 +237,7 @@
     <ClInclude Include="NormalMappingMaterial.h" />
     <ClInclude Include="OceanSimulator.h" />
     <ClInclude Include="OctreeStructure.h" />
+    <ClInclude Include="ParallaxMappingTestMaterial.h" />
     <ClInclude Include="Pass.h" />
     <ClInclude Include="PBRMaterial.h" />
     <ClInclude Include="PointLight.h" />
@@ -335,6 +336,7 @@
     <ClCompile Include="NormalMappingMaterial.cpp" />
     <ClCompile Include="OceanSimulator.cpp" />
     <ClCompile Include="OctreeStructure.cpp" />
+    <ClCompile Include="ParallaxMappingTestMaterial.cpp" />
     <ClCompile Include="Pass.cpp" />
     <ClCompile Include="PBRMaterial.cpp" />
     <ClCompile Include="PointLight.cpp" />
@@ -459,6 +461,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\content\effects\ParallaxMapping.fx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\content\effects\PBR.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>

@@ -115,20 +115,6 @@ namespace Rendering
 		mGBuffer = new GBuffer(*mGame, *mCamera, mGame->ScreenWidth(), mGame->ScreenHeight());
 		mGBuffer->Initialize();
 
-		// Initialize the material - lighting
-		Effect* lightingEffect = new Effect(*mGame);
-		lightingEffect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\StandardLighting.fx"));
-
-		// Initialize the material - shadow
-		Effect* effectShadow = new Effect(*mGame);
-		effectShadow->CompileFromFile(Utility::GetFilePath(L"content\\effects\\DepthMap.fx"));
-
-		Effect* effectDeferredPrepass = new Effect(*mGame);
-		effectDeferredPrepass->CompileFromFile(Utility::GetFilePath(L"content\\effects\\DeferredPrepass.fx"));
-
-		//Effect* effectSSR = new Effect(*mGame);
-		//effectSSR->CompileFromFile(Utility::GetFilePath(L"content\\effects\\SSR.fx"));
-
 		mScene = new Scene(*mGame, *mCamera, Utility::GetFilePath("content\\levels\\testScene.json"));
 		for (auto& object : mScene->objects) {
 			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::lightingMaterialName, [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables(object.first, meshIndex); });

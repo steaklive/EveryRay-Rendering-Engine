@@ -93,6 +93,9 @@
     <ClInclude Include="TerrainDemo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ParallaxMappingDemo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -153,6 +156,9 @@
       <Filter>Source Files\Demo Scenes</Filter>
     </ClCompile>
     <ClCompile Include="TerrainDemo.cpp">
+      <Filter>Source Files\Demo Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="ParallaxMappingDemo.cpp">
       <Filter>Source Files\Demo Scenes</Filter>
     </ClCompile>
   </ItemGroup>

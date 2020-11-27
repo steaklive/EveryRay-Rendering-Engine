@@ -27,6 +27,7 @@ namespace Rendering
 	class VolumetricLightingDemo;
 	class CollisionTestDemo;
 	class WaterSimulationDemo;
+	class ParallaxMappingDemo;
 	class TerrainDemo;
 
 	class RenderingGame : public Game
@@ -69,6 +70,7 @@ namespace Rendering
 		CollisionTestDemo* mCollisionTestDemo;
 		WaterSimulationDemo* mWaterSimulationDemo;
 		TerrainDemo* mTerrainDemo;
+		ParallaxMappingDemo* mParallaxOcclusionDemo;
 		RenderStateHelper* mRenderStateHelper;
 
 		std::chrono::duration<double> mElapsedTimeUpdateCPU;

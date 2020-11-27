@@ -369,6 +369,9 @@
     <ClInclude Include="Scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ParallaxMappingTestMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -644,6 +647,9 @@
     <ClCompile Include="Scene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ParallaxMappingTestMaterial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\content\effects\AmbientLighting.fx">
@@ -797,6 +803,7 @@
       <Filter>Effects</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\Terrain\PlaceObjectsOnTerrain.hlsl" />
+    <FxCompile Include="..\..\content\effects\ParallaxMapping.fx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\content\effects\ShaderHelper.hlsli">
