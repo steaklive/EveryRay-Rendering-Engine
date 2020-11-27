@@ -192,6 +192,7 @@
     <ClInclude Include="..\..\external\ImGUI\stb_rect_pack.h" />
     <ClInclude Include="..\..\external\ImGUI\stb_textedit.h" />
     <ClInclude Include="..\..\external\ImGUI\stb_truetype.h" />
+    <ClInclude Include="ParallaxMappingDemo.h" />
     <ClInclude Include="SponzaMainDemo.h" />
     <ClInclude Include="CollisionTestDemo.h" />
     <ClInclude Include="FrustumCullingDemo.h" />
@@ -215,6 +216,7 @@
     <ClCompile Include="..\..\external\ImGUI\imgui_draw.cpp" />
     <ClCompile Include="..\..\external\ImGUI\imgui_impl_dx11.cpp" />
     <ClCompile Include="..\..\external\ImGUI\imgui_impl_win32.cpp" />
+    <ClCompile Include="ParallaxMappingDemo.cpp" />
     <ClCompile Include="SponzaMainDemo.cpp" />
     <ClCompile Include="CollisionTestDemo.cpp" />
     <ClCompile Include="FrustumCullingDemo.cpp" />

@@ -13,6 +13,7 @@
 #include "DepthMapMaterial.h"
 #include "StandardLightingMaterial.h"
 #include "DeferredMaterial.h"
+#include "ParallaxMappingTestMaterial.h"
 
 #include "json/json.h"
 
@@ -191,7 +192,11 @@ namespace Library
 			materialName = MaterialHelper::lightingMaterialName;
 			material = new Rendering::StandardLightingMaterial();
 		}
-		else 
+		else if (matName == "ParallaxMappingTestMaterial") {
+			materialName = MaterialHelper::parallaxMaterialName;
+			material = new Rendering::ParallaxMappingTestMaterial();
+		}
+		else
 			material = nullptr;
 
 		return std::tuple<Material*, Effect*, std::string>(material, effect, materialName);

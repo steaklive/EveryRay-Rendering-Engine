@@ -37,6 +37,7 @@
 #include "VolumetricLightingDemo.h"
 #include "CollisionTestDemo.h"
 #include "WaterSimulationDemo.h"
+#include "ParallaxMappingDemo.h"
 #include "TerrainDemo.h"
 #include "TestSceneDemo.h"
 
@@ -62,6 +63,7 @@ namespace Rendering
 		"Collision Detection",
 		"Cascaded Shadow Mapping",
 		"Water Simulation",
+		"Parallax Occlusion Mapping",
 		"TEST_SCENE",
 	};
 
@@ -94,6 +96,7 @@ namespace Rendering
 		mCollisionTestDemo(nullptr),
 		mWaterSimulationDemo(nullptr),
 		mTerrainDemo(nullptr),
+		mParallaxOcclusionDemo(nullptr),
 		mRenderStateHelper(nullptr)
 
 	{
@@ -153,7 +156,7 @@ namespace Rendering
 #pragma endregion
 
 		Game::Initialize();
-		SetLevel(8);
+		SetLevel(9);
 	}
 
 
@@ -199,6 +202,9 @@ namespace Rendering
 				demoLevel = new WaterSimulationDemo(*this, *mCamera);
 				break;
 			case 8:
+				demoLevel = new ParallaxMappingDemo(*this, *mCamera);
+				break;
+			case 9:
 				demoLevel = new TestSceneDemo(*this, *mCamera);
 				break;
 			}
@@ -321,6 +327,7 @@ namespace Rendering
 		DeleteObject(mCollisionTestDemo);
 		DeleteObject(mWaterSimulationDemo);
 		DeleteObject(mTerrainDemo);
+		DeleteObject(mParallaxOcclusionDemo);
 		DeleteObject(mTestSceneDemo);
 
 		DeleteObject(mKeyboard);

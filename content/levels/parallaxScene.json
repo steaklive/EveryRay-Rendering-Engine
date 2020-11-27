@@ -1,0 +1,124 @@
+{
+	"camera_position" : [0.0, 20.0, 0.0],
+	"camera_direction" : [0.0, 0.0, -1.0],
+	
+	"sun_direction" : [],
+	"sun_color": [1.0, 0.95, 0.86],
+	"ambient_color" : [0.67, 0.66, 0.58],
+	"skybox_path" : "content\\textures\\Sky_Type_4.dds",
+	
+	"rendering_objects": [
+		{
+			"name" : "Ground Plane",
+			"model_path" : "content\\models\\default_plane\\plane.fbx",
+			"instanced" : false,
+			"materials" : [
+				{
+					"name" : "DepthMapMaterial",
+					"effect" : "content\\effects\\DepthMap.fx",
+					"technique" : "create_depthmap_w_render_target" 
+				},
+				{
+					"name" : "DeferredMaterial",
+					"effect" : "content\\effects\\DeferredPrepass.fx",
+					"technique" : "deferred" 
+				},
+				{
+					"name" : "ParallaxMappingTestMaterial",
+					"effect" : "content\\effects\\ParallaxMapping.fx",
+					"technique" : "parallax" 
+				}
+			],
+			"transform" : [
+				1.0, 0.0, 0.0, 0.0,
+				0.0, 1.0, 0.0, 0.0,
+				0.0, 0.0, 1.0, 0.0,
+				0.0, 0.0, 0.0, 1.0
+			]
+		},
+		{
+			"name" : "Test sphere 1",
+			"model_path" : "content\\models\\sphere_lowpoly.fbx",
+			"instanced" : false,
+			"materials" : [
+				{
+					"name" : "DepthMapMaterial",
+					"effect" : "content\\effects\\DepthMap.fx",
+					"technique" : "create_depthmap_w_render_target" 
+				},
+				{
+					"name" : "DeferredMaterial",
+					"effect" : "content\\effects\\DeferredPrepass.fx",
+					"technique" : "deferred" 
+				},
+				{
+					"name" : "StandardLightingMaterial",
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"technique" : "standard_lighting_pbr" 
+				}
+			],
+			"transform" : [
+				1.0, 0.0, 0.0, 0.0,
+				0.0, 1.0, 0.0, 0.0,
+				0.0, 0.0, 1.0, 3.0,
+				0.0, 0.0, 0.0, 1.0
+			]
+		},
+		{
+			"name" : "Test sphere 2",
+			"model_path" : "content\\models\\sphere_lowpoly.fbx",
+			"instanced" : false,
+			"materials" : [
+				{
+					"name" : "DepthMapMaterial",
+					"effect" : "content\\effects\\DepthMap.fx",
+					"technique" : "create_depthmap_w_render_target" 
+				},
+				{
+					"name" : "DeferredMaterial",
+					"effect" : "content\\effects\\DeferredPrepass.fx",
+					"technique" : "deferred" 
+				},
+				{
+					"name" : "StandardLightingMaterial",
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"technique" : "standard_lighting_pbr" 
+				}
+			],
+			"transform" : [
+				1.5, 0.0, 0.0, 6.0,
+				0.0, 1.5, 0.0, 5.0,
+				0.0, 0.0, 1.5, 5.0,
+				0.0, 0.0, 0.0, 1.0
+			]
+		},
+		{
+			"name" : "Test sphere 3",
+			"model_path" : "content\\models\\sphere_lowpoly.fbx",
+			"instanced" : false,
+			"materials" : [
+				{
+					"name" : "DepthMapMaterial",
+					"effect" : "content\\effects\\DepthMap.fx",
+					"technique" : "create_depthmap_w_render_target" 
+				},
+				{
+					"name" : "DeferredMaterial",
+					"effect" : "content\\effects\\DeferredPrepass.fx",
+					"technique" : "deferred" 
+				},
+				{
+					"name" : "StandardLightingMaterial",
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"technique" : "standard_lighting_pbr" 
+				}
+			],
+			"transform" : [
+				2.0, 0.0, 0.0, -12.0,
+				0.0, 2.0, 0.0, 7.0,
+				0.0, 0.0, 2.0, 0.0,
+				0.0, 0.0, 0.0, 1.0
+			]
+		}
+	]
+}
