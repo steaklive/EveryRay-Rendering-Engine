@@ -4,6 +4,7 @@ Rendering engine/framework written in C++/DirectX 11.
 # Some of the features
 - Hybrid Rendering (Deferred Prepass with GBuffer + Forward Pass)
 - 3D model loading (.obj, .fbx and etc.) with Assimp Library
+- Loading/saving to JSON scene files (mainly transforms for now)
 - User Interface with ImGUI, ImGuizmo
 - AABB, OBB, collision detection
 - Normal-Mapping, Environment-Mapping
