@@ -1,194 +1,349 @@
 {
-	"camera_position" : [0.0, 10.0, 86.0],
-	"camera_direction" : [0.0, 0.0, -1.0],
-	
-	"sun_direction" : [],
-	"sun_color": [1.0, 0.95, 0.86],
-	"ambient_color" : [0.67, 0.66, 0.58],
-	"skybox_path" : "content\\textures\\Sky_Type_4.dds",
-	
-	"rendering_objects": [
+	"ambient_color" : 
+	[
+		0.67000000000000004,
+		0.66000000000000003,
+		0.57999999999999996
+	],
+	"camera_direction" : 
+	[
+		0.0,
+		0.0,
+		-1.0
+	],
+	"camera_position" : 
+	[
+		0.0,
+		10.0,
+		86.0
+	],
+	"rendering_objects" : 
+	[
 		{
-			"name" : "Elm Tree",
-			"model_path" : "content\\models\\vegetation\\trees\\elm\\elm.fbx",
 			"instanced" : true,
-			"materials" : [
+			"instances_transforms" : 
+			[
 				{
-					"name" : "DepthMapMaterial",
+					"transform" : 
+					[
+						2.2950000762939453,
+						0.0,
+						0.0,
+						21.265823364257813,
+						0.0,
+						2.2950000762939453,
+						0.0,
+						0.0,
+						0.0,
+						0.0,
+						2.2950000762939453,
+						-6.2784233093261719,
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					]
+				},
+				{
+					"transform" : 
+					[
+						1.7000000476837158,
+						0.0,
+						0.0,
+						-33.0,
+						0.0,
+						1.7000000476837158,
+						0.0,
+						0.0,
+						0.0,
+						0.0,
+						1.7000000476837158,
+						2.0,
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					]
+				},
+				{
+					"transform" : 
+					[
+						1.0,
+						0.0,
+						0.0,
+						6.0,
+						0.0,
+						1.0,
+						0.0,
+						0.0,
+						0.0,
+						0.0,
+						1.0,
+						25.0,
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					]
+				},
+				{
+					"transform" : 
+					[
+						1.5,
+						0.0,
+						0.0,
+						26.0,
+						0.0,
+						1.5,
+						0.0,
+						0.0,
+						0.0,
+						0.0,
+						1.5,
+						22.0,
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					]
+				},
+				{
+					"transform" : 
+					[
+						1.8999999761581421,
+						0.0,
+						0.0,
+						-7.0,
+						0.0,
+						1.8999999761581421,
+						0.0,
+						0.0,
+						0.0,
+						0.0,
+						1.8999999761581421,
+						-18.0,
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					]
+				}
+			],
+			"materials" : 
+			[
+				{
 					"effect" : "content\\effects\\DepthMap.fx",
-					"technique" : "create_depthmap_w_render_target_instanced" 
+					"name" : "DepthMapMaterial",
+					"technique" : "create_depthmap_w_render_target_instanced"
 				},
 				{
-					"name" : "DeferredMaterial",
 					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"technique" : "deferred_instanced" 
+					"name" : "DeferredMaterial",
+					"technique" : "deferred_instanced"
 				},
 				{
-					"name" : "StandardLightingMaterial",
 					"effect" : "content\\effects\\StandardLighting.fx",
-					"technique" : "standard_lighting_pbr_instancing" 
+					"name" : "StandardLightingMaterial",
+					"technique" : "standard_lighting_pbr_instancing"
 				}
 			],
-			"transform" : [
-				1.0, 0.0, 0.0, 0.0,
-				0.0, 1.0, 0.0, 0.0,
-				0.0, 0.0, 1.0, 0.0,
-				0.0, 0.0, 0.0, 1.0
-			],
-			"instances_transforms" : [
-				{
-					"transform" : [
-						1.5, 0.0, 0.0, 12.0,
-						0.0, 1.5, 0.0, 0.0,
-						0.0, 0.0, 1.5, 6.0,
-						0.0, 0.0, 0.0, 1.0
-					]
-				},
-				{
-					"transform" : [
-						1.7, 0.0, 0.0, -33.0,
-						0.0, 1.7, 0.0, 0.0,
-						0.0, 0.0, 1.7, 2.0,
-						0.0, 0.0, 0.0, 1.0
-					]
-				},
-				{
-					"transform" : [
-						1.0, 0.0, 0.0, 6.0,
-						0.0, 1.0, 0.0, 0.0,
-						0.0, 0.0, 1.0, 25.0,
-						0.0, 0.0, 0.0, 1.0
-					]
-				},
-				{
-					"transform" : [
-						1.5, 0.0, 0.0, 26.0,
-						0.0, 1.5, 0.0, 0.0,
-						0.0, 0.0, 1.5, 22.0,
-						0.0, 0.0, 0.0, 1.0
-					]
-				},
-				{
-					"transform" : [
-						1.9, 0.0, 0.0, -7.0,
-						0.0, 1.9, 0.0, 0.0,
-						0.0, 0.0, 1.9, -18.0,
-						0.0, 0.0, 0.0, 1.0
-					]
-				}
+			"model_path" : "content\\models\\vegetation\\trees\\elm\\elm.fbx",
+			"name" : "Elm Tree",
+			"transform" : 
+			[
+				2.2950000762939453,
+				0.0,
+				0.0,
+				21.265823364257813,
+				0.0,
+				2.2950000762939453,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				2.2950000762939453,
+				-6.2784233093261719,
+				0.0,
+				0.0,
+				0.0,
+				1.0
 			]
 		},
 		{
-			"name" : "Ground Plane",
+			"instanced" : false,
+			"materials" : 
+			[
+				{
+					"effect" : "content\\effects\\DepthMap.fx",
+					"name" : "DepthMapMaterial",
+					"technique" : "create_depthmap_w_render_target"
+				},
+				{
+					"effect" : "content\\effects\\DeferredPrepass.fx",
+					"name" : "DeferredMaterial",
+					"technique" : "deferred"
+				},
+				{
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"name" : "StandardLightingMaterial",
+					"technique" : "standard_lighting_pbr"
+				}
+			],
 			"model_path" : "content\\models\\default_plane\\default_plane.fbx",
-			"instanced" : false,
-			"materials" : [
-				{
-					"name" : "DepthMapMaterial",
-					"effect" : "content\\effects\\DepthMap.fx",
-					"technique" : "create_depthmap_w_render_target" 
-				},
-				{
-					"name" : "DeferredMaterial",
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"technique" : "deferred" 
-				},
-				{
-					"name" : "StandardLightingMaterial",
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"technique" : "standard_lighting_pbr" 
-				}
-			],
-			"transform" : [
-				1.0, 0.0, 0.0, 0.0,
-				0.0, 1.0, 0.0, 0.0,
-				0.0, 0.0, 1.0, 0.0,
-				0.0, 0.0, 0.0, 1.0
+			"name" : "Ground Plane",
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
 			]
 		},
 		{
+			"instanced" : false,
+			"materials" : 
+			[
+				{
+					"effect" : "content\\effects\\DepthMap.fx",
+					"name" : "DepthMapMaterial",
+					"technique" : "create_depthmap_w_render_target"
+				},
+				{
+					"effect" : "content\\effects\\DeferredPrepass.fx",
+					"name" : "DeferredMaterial",
+					"technique" : "deferred"
+				},
+				{
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"name" : "StandardLightingMaterial",
+					"technique" : "standard_lighting_pbr"
+				}
+			],
+			"model_path" : "content\\models\\sphere_lowpoly.fbx",
 			"name" : "Test sphere 1",
-			"model_path" : "content\\models\\sphere_lowpoly.fbx",
-			"instanced" : false,
-			"materials" : [
-				{
-					"name" : "DepthMapMaterial",
-					"effect" : "content\\effects\\DepthMap.fx",
-					"technique" : "create_depthmap_w_render_target" 
-				},
-				{
-					"name" : "DeferredMaterial",
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"technique" : "deferred" 
-				},
-				{
-					"name" : "StandardLightingMaterial",
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"technique" : "standard_lighting_pbr" 
-				}
-			],
-			"transform" : [
-				1.0, 0.0, 0.0, 0.0,
-				0.0, 1.0, 0.0, 0.0,
-				0.0, 0.0, 1.0, 3.0,
-				0.0, 0.0, 0.0, 1.0
+			"transform" : 
+			[
+				2.5399999618530273,
+				0.0,
+				0.0,
+				-2.2007489204406738,
+				0.0,
+				2.5399999618530273,
+				0.0,
+				35.183063507080078,
+				0.0,
+				0.0,
+				2.5399999618530273,
+				14.758570671081543,
+				0.0,
+				0.0,
+				0.0,
+				1.0
 			]
 		},
 		{
+			"instanced" : false,
+			"materials" : 
+			[
+				{
+					"effect" : "content\\effects\\DepthMap.fx",
+					"name" : "DepthMapMaterial",
+					"technique" : "create_depthmap_w_render_target"
+				},
+				{
+					"effect" : "content\\effects\\DeferredPrepass.fx",
+					"name" : "DeferredMaterial",
+					"technique" : "deferred"
+				},
+				{
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"name" : "StandardLightingMaterial",
+					"technique" : "standard_lighting_pbr"
+				}
+			],
+			"model_path" : "content\\models\\sphere_lowpoly.fbx",
 			"name" : "Test sphere 2",
-			"model_path" : "content\\models\\sphere_lowpoly.fbx",
-			"instanced" : false,
-			"materials" : [
-				{
-					"name" : "DepthMapMaterial",
-					"effect" : "content\\effects\\DepthMap.fx",
-					"technique" : "create_depthmap_w_render_target" 
-				},
-				{
-					"name" : "DeferredMaterial",
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"technique" : "deferred" 
-				},
-				{
-					"name" : "StandardLightingMaterial",
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"technique" : "standard_lighting_pbr" 
-				}
-			],
-			"transform" : [
-				1.5, 0.0, 0.0, 6.0,
-				0.0, 1.5, 0.0, 5.0,
-				0.0, 0.0, 1.5, 5.0,
-				0.0, 0.0, 0.0, 1.0
+			"transform" : 
+			[
+				1.5,
+				0.0,
+				0.0,
+				6.0,
+				0.0,
+				1.5,
+				0.0,
+				5.0,
+				0.0,
+				0.0,
+				1.5,
+				5.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
 			]
 		},
 		{
-			"name" : "Test sphere 3",
-			"model_path" : "content\\models\\sphere_lowpoly.fbx",
 			"instanced" : false,
-			"materials" : [
+			"materials" : 
+			[
 				{
-					"name" : "DepthMapMaterial",
 					"effect" : "content\\effects\\DepthMap.fx",
-					"technique" : "create_depthmap_w_render_target" 
+					"name" : "DepthMapMaterial",
+					"technique" : "create_depthmap_w_render_target"
 				},
 				{
-					"name" : "DeferredMaterial",
 					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"technique" : "deferred" 
+					"name" : "DeferredMaterial",
+					"technique" : "deferred"
 				},
 				{
-					"name" : "StandardLightingMaterial",
 					"effect" : "content\\effects\\StandardLighting.fx",
-					"technique" : "standard_lighting_pbr" 
+					"name" : "StandardLightingMaterial",
+					"technique" : "standard_lighting_pbr"
 				}
 			],
-			"transform" : [
-				2.0, 0.0, 0.0, -12.0,
-				0.0, 2.0, 0.0, 7.0,
-				0.0, 0.0, 2.0, 0.0,
-				0.0, 0.0, 0.0, 1.0
+			"model_path" : "content\\models\\sphere_lowpoly.fbx",
+			"name" : "Test sphere 3",
+			"transform" : 
+			[
+				2.0,
+				0.0,
+				0.0,
+				-12.0,
+				0.0,
+				2.0,
+				0.0,
+				7.0,
+				0.0,
+				0.0,
+				2.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
 			]
 		}
-	]
+	],
+	"skybox_path" : "content\\textures\\Sky_Type_4.dds",
+	"sun_color" : 
+	[
+		1.0,
+		0.94999999999999996,
+		0.85999999999999999
+	],
+	"sun_direction" : []
 }

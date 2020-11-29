@@ -76,6 +76,7 @@ namespace Rendering
 		std::chrono::duration<double> mElapsedTimeUpdateCPU;
 		std::chrono::duration<double> mElapsedTimeRenderCPU;
 
+		int mCurrentLevelIndex = -1;
 		bool mShowProfiler;
 		bool mShowCameraSettings = true;
 	};

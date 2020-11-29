@@ -6,6 +6,8 @@
 #include "ModelMaterial.h"
 #include "Effect.h"
 
+#include "..\JsonCpp\include\json\json.h"
+
 namespace Rendering
 {
 	class RenderingObject;
@@ -19,6 +21,7 @@ namespace Library
 		Scene(Game& pGame, Camera& pCamera, std::string path);
 		~Scene();
 
+		void SaveRenderingObjectsTransforms();
 		std::map<std::string, Rendering::RenderingObject*> objects;
 		std::string skyboxPath;
 		XMFLOAT3 cameraPosition;
@@ -28,7 +31,10 @@ namespace Library
 		XMFLOAT3 ambientColor;
 
 	private:
+		Json::Value root;
+
 		std::tuple<Material*, Effect*, std::string> GetMaterialData(std::string materialName, std::string effectName, std::string techniqueName);
 		Camera& mCamera;
+		std::string mScenePath;
 	};
 }

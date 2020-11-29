@@ -15,16 +15,12 @@
 #include "DeferredMaterial.h"
 #include "ParallaxMappingTestMaterial.h"
 
-#include "json/json.h"
-
 namespace Library 
 {
 	Scene::Scene(Game& pGame, Camera& pCamera, std::string path) :
-		GameComponent(pGame), mCamera(pCamera)
+		GameComponent(pGame), mCamera(pCamera), mScenePath(path)
 	{
 		Json::Reader reader;
-		Json::Value root;
-
 		std::ifstream scene(path.c_str(), std::ifstream::binary);
 
 		if (!reader.parse(scene, root)) {
@@ -169,6 +165,72 @@ namespace Library
 			DeleteObject(object.second);
 		}
 		objects.clear();
+	}
+
+	void Scene::SaveRenderingObjectsTransforms()
+	{
+		if (mScenePath.empty())
+			throw GameException("Can't save to scene json file! Empty scene name...");
+
+		// store world transform
+		for (Json::Value::ArrayIndex i = 0; i != root["rendering_objects"].size(); i++) {
+			Json::Value content(Json::arrayValue);
+			if (root["rendering_objects"][i].isMember("transform")) {
+				XMFLOAT4X4 mat = objects[root["rendering_objects"][i]["name"].asString()]->GetTransformationMatrix4X4();
+				XMMATRIX matXM  = XMMatrixTranspose(XMLoadFloat4x4(&mat));
+				XMStoreFloat4x4(&mat, matXM);
+				float matF[16];
+				MatrixHelper::GetFloatArray(mat, matF);
+				for (int i = 0; i < 16; i++)
+					content.append(matF[i]);
+				root["rendering_objects"][i]["transform"] = content;
+			}
+			else
+			{
+				float matF[16];
+				XMFLOAT4X4 mat;
+				XMStoreFloat4x4(&mat, XMMatrixTranspose(XMMatrixIdentity()));
+				MatrixHelper::GetFloatArray(mat, matF);
+
+				for (int i = 0; i < 16; i++)
+					content.append(matF[i]);
+				root["rendering_objects"][i]["transform"] = content;
+			}
+
+			if (root["rendering_objects"][i].isMember("instanced")) 
+			{
+				bool isInstanced = root["rendering_objects"][i]["instanced"].asBool();
+				if (isInstanced)
+				{
+					if (root["rendering_objects"][i].isMember("instances_transforms")) {
+
+						if (root["rendering_objects"][i]["instances_transforms"].size() != objects[root["rendering_objects"][i]["name"].asString()]->GetInstanceCount())
+							throw GameException("Can't save instances transforms to scene json file! RenderObject's instance count is not equal to the number of instance transforms in scene file.");
+
+						for (Json::Value::ArrayIndex instance = 0; instance != root["rendering_objects"][i]["instances_transforms"].size(); instance++) {
+							Json::Value contentInstanceTransform(Json::arrayValue);
+
+							XMFLOAT4X4 mat = objects[root["rendering_objects"][i]["name"].asString()]->GetInstancesData()[instance].World;
+							XMMATRIX matXM = XMMatrixTranspose(XMLoadFloat4x4(&mat));
+							XMStoreFloat4x4(&mat, matXM);
+							float matF[16];
+							MatrixHelper::GetFloatArray(mat, matF);
+							for (int i = 0; i < 16; i++)
+								contentInstanceTransform.append(matF[i]);
+
+							root["rendering_objects"][i]["instances_transforms"][instance]["transform"] = contentInstanceTransform;
+						}
+					}
+				}
+			}
+		}
+
+		Json::StreamWriterBuilder builder;
+		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+
+		std::ofstream file_id;
+		file_id.open(mScenePath.c_str());
+		writer->write(root, &file_id);
 	}
 
 	std::tuple<Material*, Effect*, std::string> Scene::GetMaterialData(std::string matName, std::string effectName, std::string techniqueName) {

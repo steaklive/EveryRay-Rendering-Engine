@@ -224,6 +224,10 @@ namespace Rendering
 		{
 			ImGui::Begin("Scene Objects");
 
+			if (ImGui::Button("Save transforms")) {
+				mScene->SaveRenderingObjectsTransforms();
+			}
+
 			const char* listbox_items[] =
 			{
 				"Elm Tree",

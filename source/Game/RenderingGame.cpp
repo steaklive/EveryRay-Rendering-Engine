@@ -166,6 +166,7 @@ namespace Rendering
 	// ...also have you heard of Data-Oriented Design?..
 	void RenderingGame::SetLevel(int level)
 	{
+		mCurrentLevelIndex = level;
 		mCamera->Reset();
 
 		if (demoLevel != nullptr)
@@ -305,10 +306,13 @@ namespace Rendering
 			}
 			ImGui::Separator();
 
-			if (ImGui::CollapsingHeader("Load Demo Level"))
+			if (ImGui::CollapsingHeader("Load demo level"))
 			{
 				if (ImGui::Combo("Level", &currentLevel, displayedLevelNames, IM_ARRAYSIZE(displayedLevelNames)))
 					SetLevel(currentLevel);
+			}
+			if (ImGui::Button("Reload current level")) {
+				SetLevel(mCurrentLevelIndex);
 			}
 		}
 		ImGui::End();
