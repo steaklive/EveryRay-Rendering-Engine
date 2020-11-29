@@ -145,6 +145,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)\external\JsonCpp\include;$(SolutionDir)\external\ImGUI\;$(SolutionDir)\external\Assimp\lib\x86;$(SolutionDir)\external\Assimp\include;$(SolutionDir)\external\Effects11\inc;$(SolutionDir)\external\DirectXTK\Inc;$(WindowsSDK_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -169,6 +170,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)\external\JsonCpp\include;$(SolutionDir)\external\ImGUI\;$(SolutionDir)\external\Assimp\lib\x64;$(SolutionDir)\external\Assimp\include;$(SolutionDir)\external\Effects11\inc;$(SolutionDir)\external\DirectXTK\Inc;$(WindowsSDK_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OmitFramePointers>false</OmitFramePointers>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
