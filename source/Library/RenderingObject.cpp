@@ -409,6 +409,9 @@ namespace Rendering
 		assert(mIsInstanced == true);
 
 		mInstanceCount = mInstanceData.size();
+		for (int i = 0; i < mInstanceCount; i++)
+			mInstancesNames.push_back(mName + " " + std::to_string(i));
+
 		//mMeshesInstanceBuffers.clear();
 		for (size_t i = 0; i < mMeshesCount; i++)
 		{
@@ -463,7 +466,7 @@ namespace Rendering
 
 	void RenderingObject::Update(const GameTime & time)
 	{
-		if (mIsSelected && mIsInstanced && mInstanceCount) 
+		if (mIsSelected && mIsInstanced && mInstanceCount && Utility::IsEditorMode) 
 		{
 			ShowInstancesListUI();
 			MatrixHelper::GetFloatArray(mInstanceData[mSelectedInstancedObjectIndex].World, mCurrentObjectTransformMatrix);
@@ -560,19 +563,11 @@ namespace Rendering
 		std::string title = mName + " instances:";
 		ImGui::Begin(title.c_str());
 
-		char** listbox_items = new char*[mInstanceCount];
-
 		for (int i = 0; i < mInstanceCount; i++)
-		{
-			std::string instanceName = mName;
-			instanceName.append(" " + std::to_string(i));
-			listbox_items[i] = new char[50];
-			std::strcpy(listbox_items[i], instanceName.c_str());
-		}
+			listbox_items[i] = mInstancesNames[i].c_str();
 
 		ImGui::PushItemWidth(-1);
 		ImGui::ListBox("##empty", &mSelectedInstancedObjectIndex, listbox_items, mInstanceCount, 15);
-
 		ImGui::End();
 	}
 	

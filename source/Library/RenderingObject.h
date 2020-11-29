@@ -12,6 +12,8 @@
 #include "RenderableAABB.h"
 #include "MatrixHelper.h"
 
+#define MAX_INSTANCE_COUNT 10000000
+
 namespace Rendering
 {
 	struct RenderBufferData
@@ -211,6 +213,7 @@ namespace Rendering
 		UINT													mInstanceCount;
 		UINT													mInstanceCountToRender;
 		std::vector<InstancedData>								mInstanceData;
+		std::vector<std::string>								mInstancesNames;
 
 		std::string												mName;
 		RenderableAABB*											mDebugAABB;
@@ -233,5 +236,6 @@ namespace Rendering
 		};
 		float													mMatrixTranslation[3], mMatrixRotation[3], mMatrixScale[3];
 		XMMATRIX												mTransformationMatrix;
+		const char* listbox_items[MAX_INSTANCE_COUNT];
 	};
 }

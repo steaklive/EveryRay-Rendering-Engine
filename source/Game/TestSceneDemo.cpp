@@ -8,6 +8,7 @@
 #include "..\Library\ColorHelper.h"
 #include "..\Library\MaterialHelper.h"
 #include "..\Library\Camera.h"
+#include "..\Library\Editor.h"
 #include "..\Library\Model.h"
 #include "..\Library\Mesh.h"
 #include "..\Library\Utility.h"
@@ -49,10 +50,8 @@ namespace Rendering
 {
 	RTTI_DEFINITIONS(TestSceneDemo)
 
-	static int selectedObjectIndex = -1;
-
-	TestSceneDemo::TestSceneDemo(Game& game, Camera& camera)
-		: DrawableGameComponent(game, camera),
+	TestSceneDemo::TestSceneDemo(Game& game, Camera& camera, Editor& editor)
+		: DrawableGameComponent(game, camera, editor),
 		mWorldMatrix(MatrixHelper::Identity),
 		mRenderStateHelper(nullptr),
 		mDirectionalLight(nullptr),
@@ -123,6 +122,7 @@ namespace Rendering
 			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(1), [&](int meshIndex) { UpdateShadow1MaterialVariables(object.first, meshIndex); });
 			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(2), [&](int meshIndex) { UpdateShadow2MaterialVariables(object.first, meshIndex); });
 		}
+		mEditor->LoadScene(mScene);
 
 		mKeyboard = (Keyboard*)mGame->Services().GetService(Keyboard::TypeIdClass());
 		assert(mKeyboard != nullptr);
@@ -208,6 +208,8 @@ namespace Rendering
 
 		for (auto& object : mScene->objects)
 			object.second->Update(gameTime);
+
+		mEditor->Update(gameTime);
 	}
 
 	void TestSceneDemo::UpdateImGui()
@@ -219,37 +221,6 @@ namespace Rendering
 		if (mPostProcessingStack->isWindowOpened) mPostProcessingStack->ShowPostProcessingWindow();
 
 		ImGui::Separator();
-
-		if (Utility::IsEditorMode)
-		{
-			ImGui::Begin("Scene Objects");
-
-			if (ImGui::Button("Save transforms")) {
-				mScene->SaveRenderingObjectsTransforms();
-			}
-
-			const char* listbox_items[] =
-			{
-				"Elm Tree",
-				"Ground Plane",
-				"Test sphere 1",
-				"Test sphere 2",
-				"Test sphere 3"
-			};
-
-			ImGui::PushItemWidth(-1);
-			ImGui::ListBox("##empty", &selectedObjectIndex, listbox_items, IM_ARRAYSIZE(listbox_items));
-
-			for (size_t i = 0; i < IM_ARRAYSIZE(listbox_items); i++)
-			{
-				if (i == selectedObjectIndex)
-					/*mRenderingObjects*/mScene->objects[listbox_items[selectedObjectIndex]]->Selected(true);
-				else
-					/*mRenderingObjects*/mScene->objects[listbox_items[i]]->Selected(false);
-			}
-
-			ImGui::End();
-		}
 
 		ImGui::SliderFloat("Wind strength", &mWindStrength, 0.0f, 100.0f);
 		ImGui::SliderFloat("Wind gust distance", &mWindGustDistance, 0.0f, 100.0f);

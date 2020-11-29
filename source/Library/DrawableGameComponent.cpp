@@ -18,6 +18,11 @@ namespace Library {
 	{
 	}
 
+	DrawableGameComponent::DrawableGameComponent(Game& game, Camera& camera, Editor& editor)
+		: GameComponent(game), mVisible(true), mCamera(&camera), mEditor(&editor)
+	{
+	}
+
 	DrawableGameComponent::~DrawableGameComponent()
 	{
 	}
@@ -41,7 +46,10 @@ namespace Library {
 	{
 		mCamera = camera;
 	}
-
+	void DrawableGameComponent::SetEditor(Editor* editor)
+	{
+		mEditor = editor;
+	}
 	void DrawableGameComponent::Draw(const GameTime& gameTime)
 	{
 	}

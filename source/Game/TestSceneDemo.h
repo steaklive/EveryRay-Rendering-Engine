@@ -43,7 +43,7 @@ namespace Rendering
 		RTTI_DECLARATIONS(TestSceneDemo, DrawableGameComponent)
 
 	public:
-		TestSceneDemo(Game& game, Camera& camera);
+		TestSceneDemo(Game& game, Camera& camera, Editor& editor);
 		~TestSceneDemo();
 
 		virtual void Create() override;
