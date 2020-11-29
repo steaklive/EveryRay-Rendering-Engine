@@ -26,6 +26,7 @@
 #include "..\Library\ColorFilteringMaterial.h"
 #include "..\Library\DemoLevel.h"
 #include "..\Library\PostProcessingStack.h"
+#include "..\Library\Editor.h"
 
 // include scenes
 #include "SponzaMainDemo.h"
@@ -82,7 +83,7 @@ namespace Rendering
 		mKeyboard(nullptr),
 		mMouse(nullptr),
 		mMouseTextPosition(0.0f, 40.0f),
-		mShowProfiler(false), 
+		mShowProfiler(false), mEditor(nullptr),
 
 		//scenes
 		mTestSceneDemo(nullptr),
@@ -137,6 +138,9 @@ namespace Rendering
 		mCamera->SetFarPlaneDistance(farPlaneDist);
 		components.push_back(mCamera);
 		mServices.AddService(Camera::TypeIdClass(), mCamera);
+
+		mEditor = new Editor(*this);
+		mServices.AddService(Editor::TypeIdClass(), mEditor);
 
 		//Render State Helper
 		mRenderStateHelper = new RenderStateHelper(*this);
@@ -206,7 +210,7 @@ namespace Rendering
 				demoLevel = new ParallaxMappingDemo(*this, *mCamera);
 				break;
 			case 9:
-				demoLevel = new TestSceneDemo(*this, *mCamera);
+				demoLevel = new TestSceneDemo(*this, *mCamera, *mEditor);
 				break;
 			}
 		}
@@ -247,7 +251,7 @@ namespace Rendering
 		ImGuizmo::Enable(Utility::IsEditorMode);
 		if (Utility::IsEditorMode)
 		{
-			ImGui::Begin("EveryRay Editor");
+			ImGui::Begin("EveryRay Camera Editor");
 
 			ImGui::Text("Camera Position: (%.1f,%.1f,%.1f)", mCamera->Position().x, mCamera->Position().y, mCamera->Position().z);
 			if (ImGui::Button("Reset Position"))
@@ -264,11 +268,6 @@ namespace Rendering
 			ImGui::SliderFloat("Camera Far Plane", &farPlaneDist, 150.0f, 200000.0f);
 			mCamera->SetFarPlaneDistance(farPlaneDist);
 			ImGui::Checkbox("Enable culling", &Utility::IsCameraCulling);
-
-			ImGui::Separator();
-
-			ImGui::Checkbox("Enable light editor", &Utility::IsLightEditor);
-			
 			ImGui::End();
 		}
 			

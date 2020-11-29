@@ -204,6 +204,7 @@
     <ClInclude Include="DiffuseLightingMaterial.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="DrawableGameComponent.h" />
+    <ClInclude Include="Editor.h" />
     <ClInclude Include="Effect.h" />
     <ClInclude Include="EnvironmentMappingMaterial.h" />
     <ClInclude Include="FastFourierTransform.h" />
@@ -303,6 +304,7 @@
     <ClCompile Include="DiffuseLightingMaterial.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="DrawableGameComponent.cpp" />
+    <ClCompile Include="Editor.cpp" />
     <ClCompile Include="Effect.cpp" />
     <ClCompile Include="EnvironmentMappingMaterial.cpp" />
     <ClCompile Include="FastFourierTransform.cpp" />

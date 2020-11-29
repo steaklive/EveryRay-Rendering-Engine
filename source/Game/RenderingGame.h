@@ -13,6 +13,7 @@ namespace Library
 	class Keyboard;
 	class FirstPersonCamera;
 	class RenderStateHelper;
+	class Editor;
 }
 
 namespace Rendering
@@ -57,6 +58,7 @@ namespace Rendering
 		Mouse* mMouse;
 		XMFLOAT2 mMouseTextPosition;
 		FirstPersonCamera* mCamera;
+		Editor* mEditor;
 		
 		//Demo scenes
 		TestSceneDemo* mTestSceneDemo;
