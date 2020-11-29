@@ -8,6 +8,7 @@
 #include "..\Library\ColorHelper.h"
 #include "..\Library\MaterialHelper.h"
 #include "..\Library\Camera.h"
+#include "..\Library\Editor.h"
 #include "..\Library\Model.h"
 #include "..\Library\Mesh.h"
 #include "..\Library\Utility.h"
@@ -33,6 +34,7 @@
 #include "..\Library\ShadowMapper.h"
 #include "..\Library\Terrain.h"
 #include "..\Library\Foliage.h"
+#include "..\Library\Scene.h"
 #include "..\Library\ShaderCompiler.h"
 
 #include "imgui.h"
@@ -53,8 +55,8 @@ namespace Rendering
 	static std::string foliageZoneGizmoName = "Foliage Zone Gizmo Sphere";
 	static std::string testSphereGizmoName = "Test Gizmo Sphere";
 
-	TerrainDemo::TerrainDemo(Game& game, Camera& camera)
-		: DrawableGameComponent(game, camera),
+	TerrainDemo::TerrainDemo(Game& game, Camera& camera, Editor& editor)
+		: DrawableGameComponent(game, camera, editor),
 		mWorldMatrix(MatrixHelper::Identity),
 		mRenderStateHelper(nullptr),
 		mDirectionalLight(nullptr),
@@ -67,21 +69,13 @@ namespace Rendering
 		mSSRQuad(nullptr),
 		mShadowMapper(nullptr),
 		mTerrain(nullptr),
-		mPostProcessingStack(nullptr)
+		mPostProcessingStack(nullptr),
+		mScene(nullptr)
 	{
 	}
 
 	TerrainDemo::~TerrainDemo()
 	{
-		#pragma region DELETE_RENDEROBJECTS
-		for (auto object : mRenderingObjects)
-		{
-			object.second->MeshMaterialVariablesUpdateEvent->RemoverAllListeners();
-			DeleteObject(object.second);
-		}
-		mRenderingObjects.clear();
-#pragma endregion
-		
 		#pragma region DELETE_FOLIAGE
 		for (auto foliageZone : mFoliageZonesCollections)
 		{
@@ -103,6 +97,7 @@ namespace Rendering
 		DeleteObject(mGBuffer);
 		DeleteObject(mSSRQuad);
 		DeleteObject(mShadowMapper);
+		DeleteObject(mScene);
 
 		ReleaseObject(mIrradianceTextureSRV);
 		ReleaseObject(mRadianceTextureSRV);
@@ -147,25 +142,28 @@ namespace Rendering
 		Effect* effectDeferredPrepass = new Effect(*mGame);
 		effectDeferredPrepass->CompileFromFile(Utility::GetFilePath(L"content\\effects\\DeferredPrepass.fx"));
 
-		//Effect* effectSSR = new Effect(*mGame);
-		//effectSSR->CompileFromFile(Utility::GetFilePath(L"content\\effects\\SSR.fx"));
+		mScene = new Scene(*mGame, *mCamera, Utility::GetFilePath("content\\levels\\terrainScene.json"));
+		for (auto& object : mScene->objects) {
+			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::lightingMaterialName, [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables(object.first, meshIndex); });
+			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables(object.first, meshIndex); });
+			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(0), [&](int meshIndex) { UpdateShadow0MaterialVariables(object.first, meshIndex); });
+			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(1), [&](int meshIndex) { UpdateShadow1MaterialVariables(object.first, meshIndex); });
+			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(2), [&](int meshIndex) { UpdateShadow2MaterialVariables(object.first, meshIndex); });
+		}
+		mEditor->LoadScene(mScene);
 
-		/**/
-		////
-		/**/
-
-		mSkybox = new Skybox(*mGame, *mCamera, Utility::GetFilePath(L"content\\textures\\Sky_Type_4.dds"), 10000);
+		mSkybox = new Skybox(*mGame, *mCamera, Utility::GetFilePath(Utility::ToWideString(mScene->skyboxPath)), 10000);
 		mSkybox->Initialize();
 
 		mGrid = new Grid(*mGame, *mCamera, 200, 56, XMFLOAT4(0.961f, 0.871f, 0.702f, 1.0f));
 		mGrid->Initialize();
 		mGrid->SetColor((XMFLOAT4)ColorHelper::LightGray);
 
-
 		//directional light
 		mDirectionalLight = new DirectionalLight(*mGame, *mCamera);
 		mDirectionalLight->ApplyRotation(XMMatrixRotationAxis(mDirectionalLight->RightVector(), -XMConvertToRadians(70.0f)) * XMMatrixRotationAxis(mDirectionalLight->UpVector(), -XMConvertToRadians(25.0f)));
-
+		mDirectionalLight->SetAmbientColor(mScene->ambientColor);
+		mDirectionalLight->SetSunColor(mScene->sunColor);
 
 		mShadowMapper = new ShadowMapper(*mGame, *mCamera, *mDirectionalLight, 4096, 4096);
 		mDirectionalLight->RotationUpdateEvent->AddListener("shadow mapper", [&]() {mShadowMapper->ApplyTransform(); });
@@ -178,36 +176,20 @@ namespace Rendering
 		
 		mTerrain = new Terrain(Utility::GetFilePath("content\\terrain\\terrain"), *mGame, *mCamera, *mDirectionalLight, *mPostProcessingStack, false);
 
-		mCamera->SetPosition(XMFLOAT3(10.0f, 108.0f, 0.0f));
+		mCamera->SetPosition(mScene->cameraPosition);
 		mCamera->SetFarPlaneDistance(100000.0f);
-		//mCamera->ApplyRotation(XMMatrixRotationAxis(mCamera->RightVector(), XMConvertToRadians(18.0f)) * XMMatrixRotationAxis(mCamera->UpVector(), -XMConvertToRadians(70.0f)));
 
-		// test sphere for foliage zones
-		mRenderingObjects.insert(std::pair<std::string, RenderingObject*>(foliageZoneGizmoName, new RenderingObject(foliageZoneGizmoName, *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), true, true)));
-		mRenderingObjects[foliageZoneGizmoName]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, MaterialHelper::lightingMaterialName);
-		mRenderingObjects[foliageZoneGizmoName]->LoadMaterial(new DeferredMaterial(), effectDeferredPrepass, MaterialHelper::deferredPrepassMaterialName);
-		mRenderingObjects[foliageZoneGizmoName]->LoadRenderBuffers();
-		mRenderingObjects[foliageZoneGizmoName]->GetMaterials()[MaterialHelper::lightingMaterialName]->SetCurrentTechnique(mRenderingObjects[foliageZoneGizmoName]->GetMaterials()[MaterialHelper::lightingMaterialName]->GetEffect()->TechniquesByName().at("standard_lighting_pbr_instancing"));
-		mRenderingObjects[foliageZoneGizmoName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName]->SetCurrentTechnique(mRenderingObjects[foliageZoneGizmoName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName]->GetEffect()->TechniquesByName().at("deferred_instanced"));
-		mRenderingObjects[foliageZoneGizmoName]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::lightingMaterialName, [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables(foliageZoneGizmoName, meshIndex); });
-		mRenderingObjects[foliageZoneGizmoName]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables(foliageZoneGizmoName, meshIndex); });
-		DistributeFoliageZonesAcrossTerrainGrid(mRenderingObjects[foliageZoneGizmoName], mFoliageZonesCount);
-		mRenderingObjects[foliageZoneGizmoName]->LoadInstanceBuffers();
+		// place placable instanced objects on terrain
+		for (int i = 0; i < NUM_THREADS_PER_TERRAIN_SIDE * NUM_THREADS_PER_TERRAIN_SIDE; i++)
+			for (auto object : mScene->objects)
+				if (object.second->IsPlacedOnTerrain() && object.second->IsInstanced())
+					PlaceInstanceObjectOnTerrain(object.second, i);
 
+		// place foliage on terrain
+		DistributeFoliageZonesPositionsAcrossTerrainGrid(nullptr, mFoliageZonesCount);
 		GenerateFoliageZones(mFoliageZonesCount);
 		for (int i = 0; i < NUM_THREADS_PER_TERRAIN_SIDE * NUM_THREADS_PER_TERRAIN_SIDE; i++)
 			PlaceFoliageOnTerrainTile(i);
-
-		//mRenderingObjects.insert(std::pair<std::string, RenderingObject*>(testSphereGizmoName, new RenderingObject(testSphereGizmoName, *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), true, true)));
-		//mRenderingObjects[testSphereGizmoName]->LoadMaterial(new StandardLightingMaterial(), lightingEffect, MaterialHelper::lightingMaterialName);
-		//mRenderingObjects[testSphereGizmoName]->LoadMaterial(new DeferredMaterial(), effectDeferredPrepass, MaterialHelper::deferredPrepassMaterialName);
-		//mRenderingObjects[testSphereGizmoName]->LoadRenderBuffers();
-		//mRenderingObjects[testSphereGizmoName]->GetMaterials()[MaterialHelper::lightingMaterialName]->SetCurrentTechnique(mRenderingObjects[testSphereGizmoName]->GetMaterials()[MaterialHelper::lightingMaterialName]->GetEffect()->TechniquesByName().at("standard_lighting_pbr_instancing"));
-		//mRenderingObjects[testSphereGizmoName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName]->SetCurrentTechnique(mRenderingObjects[testSphereGizmoName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName]->GetEffect()->TechniquesByName().at("deferred_instanced"));
-		//mRenderingObjects[testSphereGizmoName]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::lightingMaterialName, [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables(testSphereGizmoName, meshIndex); });
-		//mRenderingObjects[testSphereGizmoName]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables(testSphereGizmoName, meshIndex); });
-		//DistributeAcrossTerrainGrid(mRenderingObjects[testSphereGizmoName], 100);
-		//mRenderingObjects[testSphereGizmoName]->LoadInstanceBuffers();
 
 		//IBL
 		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\Sky_Type_4_PBRDiffuseHDR.dds").c_str(), nullptr, &mIrradianceTextureSRV)))
@@ -270,7 +252,7 @@ namespace Rendering
 			}
 		}
 
-		mCamera->Cull(mRenderingObjects);
+		mCamera->Cull(mScene->objects);
 		mShadowMapper->Update(gameTime);
 
 		mTerrain->SetWireframeMode(mRenderTerrainWireframe);
@@ -282,8 +264,10 @@ namespace Rendering
 		mTerrain->SetDynamicTessellation(mDynamicTessellation);
 		mTerrain->SetDynamicTessellationDistanceFactor(mCameraDistanceFactor);
 
-		for (auto object : mRenderingObjects)
+		for (auto object : mScene->objects)
 			object.second->Update(gameTime);
+
+		mEditor->Update(gameTime);
 	}
 
 	void TerrainDemo::UpdateImGui()
@@ -295,26 +279,6 @@ namespace Rendering
 		if (mPostProcessingStack->isWindowOpened) mPostProcessingStack->ShowPostProcessingWindow();
 
 		ImGui::Separator();
-
-		if (Utility::IsEditorMode)
-		{
-			ImGui::Begin("Scene Objects");
-
-			const char* listbox_items[] = { /*"Ground Plane", */foliageZoneGizmoName.c_str() };
-
-			ImGui::PushItemWidth(-1);
-			ImGui::ListBox("##empty", &selectedObjectIndex, listbox_items, IM_ARRAYSIZE(listbox_items));
-
-			for (size_t i = 0; i < IM_ARRAYSIZE(listbox_items); i++)
-			{
-				if (i == selectedObjectIndex)
-					mRenderingObjects[listbox_items[selectedObjectIndex]]->Selected(true);
-				else
-					mRenderingObjects[listbox_items[i]]->Selected(false);
-			}
-
-			ImGui::End();
-		}
 
 		ImGui::Checkbox("Render terrain wireframe", &mRenderTerrainWireframe);
 		ImGui::Checkbox("Render non-tessellated terrain", &mRenderNonTessellatedTerrain);
@@ -333,9 +297,6 @@ namespace Rendering
 		ImGui::SliderFloat("Wind gust distance", &mWindGustDistance, 0.0f, 100.0f);
 		ImGui::SliderFloat("Wind frequency", &mWindFrequency, 0.0f, 100.0f);
 
-		mRenderingObjects[foliageZoneGizmoName]->Visible(mRenderFoliageZonesCenters);
-
-
 		ImGui::End();
 	}
 
@@ -351,7 +312,7 @@ namespace Rendering
 #pragma region DEFERRED_PREPASS
 
 		mGBuffer->Start();
-		for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++)
+		for (auto it = mScene->objects.begin(); it != mScene->objects.end(); it++)
 			it->second->Draw(MaterialHelper::deferredPrepassMaterialName, true);
 		mGBuffer->End();
 
@@ -367,7 +328,7 @@ namespace Rendering
 
 			XMMATRIX lvp = mShadowMapper->GetViewMatrix(i) * mShadowMapper->GetProjectionMatrix(i);
 			int objectIndex = 0;
-			for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++, objectIndex++)
+			for (auto it = mScene->objects.begin(); it != mScene->objects.end(); it++, objectIndex++)
 			{
 				if (static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name]))
 				{
@@ -402,7 +363,7 @@ namespace Rendering
 			mDirectionalLight->DrawProxyModel(gameTime);
 
 		//lighting
-		for (auto it = mRenderingObjects.begin(); it != mRenderingObjects.end(); it++)
+		for (auto it = mScene->objects.begin(); it != mScene->objects.end(); it++)
 			it->second->Draw(MaterialHelper::lightingMaterialName);
 
 		//foliage
@@ -431,7 +392,7 @@ namespace Rendering
 
 	void TerrainDemo::UpdateStandardLightingPBRMaterialVariables(const std::string& objectName, int meshIndex)
 	{
-		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mRenderingObjects[objectName]->GetTransformationMatrix4X4()));
+		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mScene->objects[objectName]->GetTransformationMatrix4X4()));
 		XMMATRIX vp = /*worldMatrix * */mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
 		//XMMATRIX shadowMatrix = /*worldMatrix **/ mShadowMapper->GetViewMatrix() * mShadowMapper->GetProjectionMatrix() /*mShadowMapViewMatrix * mShadowMapProjectionMatrix*//* mShadowProjector->ViewMatrix() * mShadowProjector->ProjectionMatrix()*/ * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix());
 
@@ -449,60 +410,60 @@ namespace Rendering
 			mShadowMapper->GetShadowTexture(2)
 		};
 
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->ViewProjection() << vp;
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->World() << worldMatrix;
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, MAX_NUM_OF_CASCADES);
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->CameraPosition() << mCamera->PositionVector();
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->SunDirection() << XMVectorNegate(mDirectionalLight->DirectionVector());
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->SunColor() << XMVECTOR{ mDirectionalLight->GetDirectionalLightColor().x,  mDirectionalLight->GetDirectionalLightColor().y, mDirectionalLight->GetDirectionalLightColor().z , 1.0f };
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->AmbientColor() << XMVECTOR{ mDirectionalLight->GetAmbientLightColor().x,  mDirectionalLight->GetAmbientLightColor().y, mDirectionalLight->GetAmbientLightColor().z , 1.0f };
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->ShadowTexelSize() << XMVECTOR{ 1.0f / mShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->ShadowCascadeDistances() << XMVECTOR{ mCamera->GetCameraFarCascadeDistance(0), mCamera->GetCameraFarCascadeDistance(1), mCamera->GetCameraFarCascadeDistance(2), 1.0f };
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->AlbedoTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).AlbedoMap;
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->NormalTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).NormalMap;
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->SpecularTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).SpecularMap;
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->RoughnessTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).RoughnessMap;
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->MetallicTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).MetallicMap;
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, MAX_NUM_OF_CASCADES);
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->IrradianceTexture() << mIrradianceTextureSRV;
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->RadianceTexture() << mRadianceTextureSRV;
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->IntegrationTexture() << mIntegrationMapTextureSRV;
+		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->ViewProjection() << vp;
+		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->World() << worldMatrix;
+		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, MAX_NUM_OF_CASCADES);
+		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->CameraPosition() << mCamera->PositionVector();
+		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->SunDirection() << XMVectorNegate(mDirectionalLight->DirectionVector());
+		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->SunColor() << XMVECTOR{ mDirectionalLight->GetDirectionalLightColor().x,  mDirectionalLight->GetDirectionalLightColor().y, mDirectionalLight->GetDirectionalLightColor().z , 1.0f };
+		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->AmbientColor() << XMVECTOR{ mDirectionalLight->GetAmbientLightColor().x,  mDirectionalLight->GetAmbientLightColor().y, mDirectionalLight->GetAmbientLightColor().z , 1.0f };
+		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->ShadowTexelSize() << XMVECTOR{ 1.0f / mShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
+		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->ShadowCascadeDistances() << XMVECTOR{ mCamera->GetCameraFarCascadeDistance(0), mCamera->GetCameraFarCascadeDistance(1), mCamera->GetCameraFarCascadeDistance(2), 1.0f };
+		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->AlbedoTexture() << mScene->objects[objectName]->GetTextureData(meshIndex).AlbedoMap;
+		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->NormalTexture() << mScene->objects[objectName]->GetTextureData(meshIndex).NormalMap;
+		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->SpecularTexture() << mScene->objects[objectName]->GetTextureData(meshIndex).SpecularMap;
+		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->RoughnessTexture() << mScene->objects[objectName]->GetTextureData(meshIndex).RoughnessMap;
+		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->MetallicTexture() << mScene->objects[objectName]->GetTextureData(meshIndex).MetallicMap;
+		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, MAX_NUM_OF_CASCADES);
+		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->IrradianceTexture() << mIrradianceTextureSRV;
+		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->RadianceTexture() << mRadianceTextureSRV;
+		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->IntegrationTexture() << mIntegrationMapTextureSRV;
 	}
 	void TerrainDemo::UpdateDeferredPrepassMaterialVariables(const std::string & objectName, int meshIndex)
 	{
-		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mRenderingObjects[objectName]->GetTransformationMatrix4X4()));
+		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mScene->objects[objectName]->GetTransformationMatrix4X4()));
 		XMMATRIX vp = /*worldMatrix * */mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
-		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->ViewProjection() << vp;
-		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->World() << worldMatrix;
-		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->AlbedoMap() << mRenderingObjects[objectName]->GetTextureData(meshIndex).AlbedoMap;
-		static_cast<DeferredMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->ReflectionMaskFactor() << mRenderingObjects[objectName]->GetMeshReflectionFactor(meshIndex);
+		static_cast<DeferredMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->ViewProjection() << vp;
+		static_cast<DeferredMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->World() << worldMatrix;
+		static_cast<DeferredMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->AlbedoMap() << mScene->objects[objectName]->GetTextureData(meshIndex).AlbedoMap;
+		static_cast<DeferredMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->ReflectionMaskFactor() << mScene->objects[objectName]->GetMeshReflectionFactor(meshIndex);
 	}
 	void TerrainDemo::UpdateShadow0MaterialVariables(const std::string & objectName, int meshIndex)
 	{
 		const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(0);
-		static_cast<DepthMapMaterial*>(mRenderingObjects[objectName]->GetMaterials()[name])->AlbedoAlphaMap() << mRenderingObjects[objectName]->GetTextureData(meshIndex).AlbedoMap;
+		static_cast<DepthMapMaterial*>(mScene->objects[objectName]->GetMaterials()[name])->AlbedoAlphaMap() << mScene->objects[objectName]->GetTextureData(meshIndex).AlbedoMap;
 	}
 	void TerrainDemo::UpdateShadow1MaterialVariables(const std::string & objectName, int meshIndex)
 	{
 		const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(1);
-		static_cast<DepthMapMaterial*>(mRenderingObjects[objectName]->GetMaterials()[name])->AlbedoAlphaMap() << mRenderingObjects[objectName]->GetTextureData(meshIndex).AlbedoMap;
+		static_cast<DepthMapMaterial*>(mScene->objects[objectName]->GetMaterials()[name])->AlbedoAlphaMap() << mScene->objects[objectName]->GetTextureData(meshIndex).AlbedoMap;
 	}
 	void TerrainDemo::UpdateShadow2MaterialVariables(const std::string & objectName, int meshIndex)
 	{
 		const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(2);
-		static_cast<DepthMapMaterial*>(mRenderingObjects[objectName]->GetMaterials()[name])->AlbedoAlphaMap() << mRenderingObjects[objectName]->GetTextureData(meshIndex).AlbedoMap;
+		static_cast<DepthMapMaterial*>(mScene->objects[objectName]->GetMaterials()[name])->AlbedoAlphaMap() << mScene->objects[objectName]->GetTextureData(meshIndex).AlbedoMap;
 	}
 
-	void TerrainDemo::DistributeFoliageZonesAcrossTerrainGrid(RenderingObject* object, int count)
+	void TerrainDemo::DistributeFoliageZonesPositionsAcrossTerrainGrid(RenderingObject* object, int count)
 	{
 		if (count & (count - 1) != 0)
 			throw GameException("Can't distribute foliage zones across terrain grid! Number of objects is not a power of two");
 
-		if (!object->IsInstanced())
-			throw GameException("Can't distribute foliage zones across terrain grid! Object has disabled instancing!");
-		else
+		//if (!object->IsInstanced())
+		//	throw GameException("Can't distribute foliage zones across terrain grid! Object has disabled instancing!");
+		//else
 		{
-			object->ResetInstanceData(count);
+			//object->ResetInstanceData(count);
 
 			float tileWidth = NUM_THREADS_PER_TERRAIN_SIDE * TERRAIN_TILE_RESOLUTION / sqrt(count);
 			for (int i = 0; i < sqrt(count); i++)
@@ -515,7 +476,7 @@ namespace Rendering
 					float y = mTerrain->GetHeightmap(heightMapIndex)->FindHeightFromPosition(x, z);
 
 					mFoliageZonesCenters.push_back(XMFLOAT3(x, y, z));
-					object->AddInstanceData(XMMatrixScaling(mFoliageZoneGizmoSphereScale, mFoliageZoneGizmoSphereScale, mFoliageZoneGizmoSphereScale) *  XMMatrixTranslation(x, y, z));
+					//object->AddInstanceData(XMMatrixScaling(mFoliageZoneGizmoSphereScale, mFoliageZoneGizmoSphereScale, mFoliageZoneGizmoSphereScale) *  XMMatrixTranslation(x, y, z));
 				}
 			}
 		}
@@ -593,6 +554,38 @@ namespace Rendering
 				}
 			}
 		}
+	}
+
+	void TerrainDemo::PlaceInstanceObjectOnTerrain(RenderingObject* object, int tileIndex)
+	{
+		// prepare before GPU dispatch on compute shader
+		//std::vector<XMFLOAT4> treesPositions;
+		//int count = object->GetInstanceCount();
+		//
+		//for (int i = 0; i < count; i++) {
+		//	XMFLOAT3 translation;
+		//	MatrixHelper::GetTranslation(XMLoadFloat4x4(&(object->GetInstancesData()[i].World)), translation);
+		//	treesPositions.push_back(XMFLOAT4(translation.x, 0.0f, translation.z, 1.0f));
+		//}
+		//
+		//
+		//std::vector<XMFLOAT4> terrainVertices;
+		//int maxSizeTerrainVertices = mTerrain->GetHeightmap(tileIndex)->mVertexCount;
+		//for (int j = 0; j < maxSizeTerrainVertices; j++)
+		//	terrainVertices.push_back(XMFLOAT4(mTerrain->GetHeightmap(tileIndex)->mVertexList[j].x, mTerrain->GetHeightmap(tileIndex)->mVertexList[j].y, mTerrain->GetHeightmap(tileIndex)->mVertexList[j].z, 1.0f));
+		//
+		//// compute shader pass
+		//PlaceObjectsOnTerrain(tileIndex, &treesPositions[0], count, &terrainVertices[0], maxSizeTerrainVertices, TerrainSplatChannels::GRASS);
+		//
+		//// read back to foliage
+		//for (int i = 0; i < count; i++) {
+		//	if (treesPositions[i].y != -999.0f) {
+		//		object->GetInstancesData()[i].World._41 = treesPositions[i].x;
+		//		object->GetInstancesData()[i].World._42 = treesPositions[i].y;
+		//		object->GetInstancesData()[i].World._43 = treesPositions[i].z;
+		//	}
+		//}
+		//object->UpdateInstanceBuffer(object->GetInstancesData());
 	}
 
 	// generic method for displacing object positions by height of the terrain (GPU calculation)

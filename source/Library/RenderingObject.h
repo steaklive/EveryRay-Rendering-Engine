@@ -139,7 +139,7 @@ namespace Rendering
 		void SetMeshReflectionFactor(int meshIndex, float factor) { mMeshesReflectionFactors[meshIndex] = factor; }
 		float GetMeshReflectionFactor(int meshIndex) { return mMeshesReflectionFactors[meshIndex]; }
 
-		std::map<std::string, Material*> GetMaterials() { return mMaterials; }
+		std::map<std::string, Material*>& GetMaterials() { return mMaterials; }
 		TextureData& GetTextureData(int meshIndex) { return mMeshesTextureBuffers[meshIndex]; }
 		
 		const int GetMeshCount() const { return mMeshesCount; }
@@ -187,6 +187,9 @@ namespace Rendering
 
 		void CalculateInstanceObjectsRandomDistribution(int count);
 
+		void SetPlacedOnTerrain(bool flag) { mPlacedOnTerrain = flag; }
+		bool IsPlacedOnTerrain() { return mPlacedOnTerrain; }
+
 		GeneralEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new GeneralEvent<Delegate_MeshMaterialVariablesUpdate>();
 	private:
 		RenderingObject();
@@ -224,6 +227,7 @@ namespace Rendering
 		bool													mIsRendered = true;
 		bool													mIsInstanced = false;
 		int														mSelectedInstancedObjectIndex = 0;
+		bool													mPlacedOnTerrain = false;
 
 		float													mCameraViewMatrix[16];
 		float													mCameraProjectionMatrix[16];

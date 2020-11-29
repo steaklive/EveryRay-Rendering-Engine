@@ -26,6 +26,8 @@ namespace Library
 	class ShadowMapper;
 	class Terrain;
 	class Foliage;
+	class Scene;
+	class Editor;
 }
 
 namespace Rendering
@@ -38,7 +40,7 @@ namespace Rendering
 		RTTI_DECLARATIONS(TerrainDemo, DrawableGameComponent)
 
 	public:
-		TerrainDemo(Game& game, Camera& camera);
+		TerrainDemo(Game& game, Camera& camera, Editor& editor);
 		~TerrainDemo();
 
 		virtual void Create() override;
@@ -57,15 +59,14 @@ namespace Rendering
 		void UpdateShadow0MaterialVariables(const std::string & objectName, int meshIndex);
 		void UpdateShadow1MaterialVariables(const std::string & objectName, int meshIndex);
 		void UpdateShadow2MaterialVariables(const std::string & objectName, int meshIndex);
-		void DistributeFoliageZonesAcrossTerrainGrid(RenderingObject* object, int count);
+		void DistributeFoliageZonesPositionsAcrossTerrainGrid(RenderingObject* object, int count);
 		void DistributeAcrossTerrainGrid(RenderingObject* object, int count);
 		void PlaceFoliageOnTerrainTile(int tileIndex);
+		void PlaceInstanceObjectOnTerrain(RenderingObject* object, int tileIndex);
 		void PlaceObjectsOnTerrain(int tileIndex, XMFLOAT4* objectsPositions, int objectsCount, XMFLOAT4* terrainVertices, int terrainVertexCount, int splatChannel = -1);
 		void UpdateImGui();
 		void Initialize();
 		void GenerateFoliageZones(int count);
-
-		std::map<std::string, RenderingObject*> mRenderingObjects;
 
 		XMFLOAT4X4 mWorldMatrix;
 		RenderStateHelper* mRenderStateHelper;
@@ -77,6 +78,7 @@ namespace Rendering
 		GBuffer* mGBuffer;
 		PostProcessingStack* mPostProcessingStack;
 		Terrain* mTerrain;
+		Scene* mScene;
 		std::vector<std::map<std::string, Foliage*>> mFoliageZonesCollections;
 		std::vector<XMFLOAT3> mFoliageZonesCenters;
 

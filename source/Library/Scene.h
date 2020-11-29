@@ -29,7 +29,6 @@ namespace Library
 		XMFLOAT3 sunDirection;
 		XMFLOAT3 sunColor;
 		XMFLOAT3 ambientColor;
-
 	private:
 		Json::Value root;
 

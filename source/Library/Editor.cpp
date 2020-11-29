@@ -25,7 +25,6 @@ namespace Library
 
 	Editor::~Editor()
 	{
-		free(editorObjectsNames);
 	}
 
 	void Editor::Initialize()

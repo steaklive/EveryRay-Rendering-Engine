@@ -6,7 +6,7 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\l
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(147): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\editor.cpp(18): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\editor.cpp(18): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\editor.cpp(63): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\editor.cpp(62): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
   GBuffer.cpp
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(147): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
   RenderingObject.cpp
@@ -35,13 +35,13 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\l
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(566): warning C4018: '<': signed/unsigned mismatch
   Scene.cpp
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(147): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\scene.cpp(23): warning C4996: 'Json::Reader': Use CharReader and CharReaderBuilder instead.
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\scene.cpp(24): warning C4996: 'Json::Reader': Use CharReader and CharReaderBuilder instead.
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\external\jsoncpp\include\json\reader.h(37): note: see declaration of 'Json::Reader'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\scene.cpp(23): warning C4996: 'Json::Reader::Reader': Use CharReader and CharReaderBuilder instead
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\scene.cpp(24): warning C4996: 'Json::Reader::Reader': Use CharReader and CharReaderBuilder instead
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\external\jsoncpp\include\json\reader.h(55): note: see declaration of 'Json::Reader::Reader'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\scene.cpp(26): warning C4996: 'Json::Reader::parse': Use CharReader and CharReaderBuilder instead.
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\scene.cpp(27): warning C4996: 'Json::Reader::parse': Use CharReader and CharReaderBuilder instead.
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\external\jsoncpp\include\json\reader.h(101): note: see declaration of 'Json::Reader::parse'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\scene.cpp(27): warning C4996: 'Json::Reader::getFormattedErrorMessages': Use CharReader and CharReaderBuilder instead.
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\scene.cpp(28): warning C4996: 'Json::Reader::getFormattedErrorMessages': Use CharReader and CharReaderBuilder instead.
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\external\jsoncpp\include\json\reader.h(121): note: see declaration of 'Json::Reader::getFormattedErrorMessages'
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Black" (?Black@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Yellow" (?Yellow@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
