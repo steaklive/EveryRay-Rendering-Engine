@@ -8,6 +8,7 @@
 #include "GameException.h"
 #include "Utility.h"
 #include "Model.h"
+#include "Material.h"
 #include "RenderingObject.h"
 #include "MaterialHelper.h"
 #include "DepthMapMaterial.h"
@@ -87,6 +88,10 @@ namespace Library
 				auto it = objects.end();
 				--it;
 
+				if (root["rendering_objects"][i].isMember("placed_on_terrain")) {
+					it->second->SetPlacedOnTerrain(root["rendering_objects"][i]["placed_on_terrain"].asBool());
+				}
+
 				// load materials
 				if (root["rendering_objects"][i].isMember("materials")) {
 
@@ -98,13 +103,18 @@ namespace Library
 						);
 						
 						if (std::get<2>(materialData) == MaterialHelper::shadowMapMaterialName) {
-							for (int i = 0; i < MAX_NUM_OF_CASCADES; i++)
+							for (int cascade = 0; cascade < MAX_NUM_OF_CASCADES; cascade++)
 							{
-								const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(i);
+								const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(cascade);
 								it->second->LoadMaterial(new DepthMapMaterial(), std::get<1>(materialData), name);
-								it->second->GetMaterials()[name]->SetCurrentTechnique(
-									it->second->GetMaterials()[name]->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][mat]["technique"].asString())
-								);
+								std::map<std::string, Material*>::iterator iter = it->second->GetMaterials().find(name);
+
+								if (iter != it->second->GetMaterials().end())
+								{
+									it->second->GetMaterials()[name]->SetCurrentTechnique(
+										it->second->GetMaterials()[name]->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][mat]["technique"].asString())
+									);
+								}
 							}
 						} 
 						else if (std::get<0>(materialData))

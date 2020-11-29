@@ -186,7 +186,7 @@ namespace Rendering
 				demoLevel = new SponzaMainDemo(*this, *mCamera);
 				break;
 			case 1:
-				demoLevel = new TerrainDemo(*this, *mCamera);
+				demoLevel = new TerrainDemo(*this, *mCamera, *mEditor);
 				break;
 			case 2:
 				demoLevel = new PhysicallyBasedRenderingDemo(*this, *mCamera);
