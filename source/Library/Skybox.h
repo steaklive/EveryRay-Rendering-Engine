@@ -20,7 +20,11 @@ namespace Library
 		virtual void Draw(const GameTime& gameTime) override;
 
 		void SetMovable(bool value) { mIsMovable = value; };
-
+		void SetUseCustomColor(bool value) { mUseCustomColor = value; }
+		void SetColors(XMFLOAT4 bottom, XMFLOAT4 top) { 
+			mBottomColor = bottom;
+			mTopColor = top;
+		}
 	private:
 		Skybox();
 		Skybox(const Skybox& rhs);
@@ -38,5 +42,9 @@ namespace Library
 		XMFLOAT4X4 mScaleMatrix;
 
 		bool mIsMovable = false;
+		bool mUseCustomColor = false;
+
+		XMFLOAT4 mBottomColor;
+		XMFLOAT4 mTopColor;
 	};
 }

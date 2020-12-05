@@ -83,8 +83,6 @@ namespace Library
 
 		// add to game components
 		//mGame->components.push_back(this);
-
-
 	}
 
 	void Skybox::Update(const GameTime& gameTime)
@@ -114,6 +112,11 @@ namespace Library
 		XMMATRIX wvp = XMLoadFloat4x4(&mWorldMatrix) * mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
 		mMaterial->WorldViewProjection() << wvp;
 		mMaterial->SkyboxTexture() << mCubeMapShaderResourceView;
+
+		float useCustomColor = (mUseCustomColor) ? 1.0f : 0.0f;
+		mMaterial->UseCustomColor() << useCustomColor;
+		mMaterial->BottomColor() << XMVECTOR{ mBottomColor.x,mBottomColor.y,mBottomColor.z,mBottomColor.w };
+		mMaterial->TopColor() << XMVECTOR{ mTopColor.x,mTopColor.y,mTopColor.z,mTopColor.w };
 
 		pass->Apply(0, direct3DDeviceContext);
 

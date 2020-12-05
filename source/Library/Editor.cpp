@@ -43,8 +43,17 @@ namespace Library
 			ImGui::Begin("Scene Editor");
 			ImGui::Checkbox("Enable light editor", &Utility::IsLightEditor);
 			ImGui::Separator();
-			ImGui::TextColored(ImVec4(0.12f, 0.78f, 0.44f, 1), "Scene objects");
 
+			//skybox
+			ImGui::Checkbox("Enable custom skybox colors", &mUseCustomSkyboxColor);
+			if (mUseCustomSkyboxColor) {
+				ImGui::ColorEdit4("Bottom color", bottomColorSky);
+				ImGui::ColorEdit4("Top color", topColorSky);
+			}
+			ImGui::Separator();
+
+			//objects
+			ImGui::TextColored(ImVec4(0.12f, 0.78f, 0.44f, 1), "Scene objects");
 			if (ImGui::Button("Save transforms")) {
 				mScene->SaveRenderingObjectsTransforms();
 			}
