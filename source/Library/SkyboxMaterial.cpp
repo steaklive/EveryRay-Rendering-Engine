@@ -10,12 +10,20 @@ namespace Library
 
 	SkyboxMaterial::SkyboxMaterial()
 		: Material("main11"),
-	MATERIAL_VARIABLE_INITIALIZATION(WorldViewProjection), MATERIAL_VARIABLE_INITIALIZATION(SkyboxTexture)
+	
+		MATERIAL_VARIABLE_INITIALIZATION(WorldViewProjection),
+		MATERIAL_VARIABLE_INITIALIZATION(SkyboxTexture),
+		MATERIAL_VARIABLE_INITIALIZATION(UseCustomColor),
+		MATERIAL_VARIABLE_INITIALIZATION(BottomColor),
+		MATERIAL_VARIABLE_INITIALIZATION(TopColor)
 	{
 	}
 
 	MATERIAL_VARIABLE_DEFINITION(SkyboxMaterial, WorldViewProjection)
 	MATERIAL_VARIABLE_DEFINITION(SkyboxMaterial, SkyboxTexture)
+	MATERIAL_VARIABLE_DEFINITION(SkyboxMaterial, UseCustomColor)
+	MATERIAL_VARIABLE_DEFINITION(SkyboxMaterial, BottomColor)
+	MATERIAL_VARIABLE_DEFINITION(SkyboxMaterial, TopColor)
 
 	void SkyboxMaterial::Initialize(Effect* effect)
 	{
@@ -23,6 +31,9 @@ namespace Library
 
 		MATERIAL_VARIABLE_RETRIEVE(WorldViewProjection)
 		MATERIAL_VARIABLE_RETRIEVE(SkyboxTexture)
+		MATERIAL_VARIABLE_RETRIEVE(UseCustomColor)
+		MATERIAL_VARIABLE_RETRIEVE(BottomColor)
+		MATERIAL_VARIABLE_RETRIEVE(TopColor)
 
 		D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 		{

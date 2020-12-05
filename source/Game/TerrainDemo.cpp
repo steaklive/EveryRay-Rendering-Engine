@@ -239,6 +239,8 @@ namespace Rendering
 		UpdateImGui();
 
 		mDirectionalLight->UpdateProxyModel(gameTime, mCamera->ViewMatrix4X4(), mCamera->ProjectionMatrix4X4());
+		mSkybox->SetUseCustomColor(mEditor->IsSkyboxUsingCustomColor());
+		mSkybox->SetColors(mEditor->GetBottomSkyColor(), mEditor->GetTopSkyColor());
 		mSkybox->Update(gameTime);
 		mGrid->Update(gameTime);
 		mPostProcessingStack->Update();

@@ -3,6 +3,10 @@
 cbuffer CBufferPerObject
 {
     float4x4 WorldViewProjection : WORLDVIEWPROJECTION < string UIWidget="None"; >;
+    
+    float4 TopColor;
+    float4 BottomColor;
+    float UseCustomColor;
 }
 
 TextureCube SkyboxTexture <
@@ -41,6 +45,7 @@ struct VS_OUTPUT
 {
     float4 Position : SV_Position;
     float3 TextureCoordinate : TEXCOORD;
+    float4 SkyboxPos : TEXCOORD1;
 };
 
 /************* Vertex Shader *************/
@@ -51,7 +56,7 @@ VS_OUTPUT vertex_shader(VS_INPUT IN)
     
     OUT.Position = mul(IN.ObjectPosition, WorldViewProjection);
     OUT.TextureCoordinate = IN.ObjectPosition.xyz;
-    
+    OUT.SkyboxPos = IN.ObjectPosition;
     return OUT;
 }
 
@@ -59,7 +64,18 @@ VS_OUTPUT vertex_shader(VS_INPUT IN)
 
 float4 pixel_shader(VS_OUTPUT IN) : SV_Target
 {
-    return SkyboxTexture.Sample(NoFiltering, IN.TextureCoordinate);
+    if (UseCustomColor == 1.0f)
+    {
+        float4 color;
+        float height = IN.SkyboxPos.y;
+        if (height < 0.0f)
+            height = 0.0f;
+
+        color = lerp(BottomColor, TopColor, height);
+        return color;
+    }
+    else 
+        return SkyboxTexture.Sample(NoFiltering, IN.TextureCoordinate);
 }
 
 /************* Techniques *************/
