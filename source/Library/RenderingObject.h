@@ -12,7 +12,7 @@
 #include "RenderableAABB.h"
 #include "MatrixHelper.h"
 
-#define MAX_INSTANCE_COUNT 10000000
+const UINT MAX_INSTANCE_COUNT = 10000;
 
 namespace Rendering
 {
@@ -182,13 +182,21 @@ namespace Rendering
 		void UpdateInstanceBuffer(std::vector<InstancedData>& instanceData);
 		UINT InstanceSize() const;
 
-		void ResetInstanceData(int count);
+		void ResetInstanceData(int count, bool clear = false);
 		void AddInstanceData(XMMATRIX worldMatrix);
 
 		void CalculateInstanceObjectsRandomDistribution(int count);
 
 		void SetPlacedOnTerrain(bool flag) { mPlacedOnTerrain = flag; }
 		bool IsPlacedOnTerrain() { return mPlacedOnTerrain; }
+
+		bool GetIsSavedOnTerrain() { return mSavedOnTerrain; }
+		void SetSavedOnTerrain(bool flag) { mSavedOnTerrain = flag; }
+		void SetNumInstancesPerVegetationZone(int count) { mNumInstancesPerVegetationZone = count; }
+		int GetNumInstancesPerVegetationZone() { return mNumInstancesPerVegetationZone; }
+
+		void Rename(std::string name) { mName = name; }
+		std::string GetName() { return mName; }
 
 		GeneralEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new GeneralEvent<Delegate_MeshMaterialVariablesUpdate>();
 	private:
@@ -228,6 +236,8 @@ namespace Rendering
 		bool													mIsInstanced = false;
 		int														mSelectedInstancedObjectIndex = 0;
 		bool													mPlacedOnTerrain = false;
+		bool													mSavedOnTerrain = false;
+		int														mNumInstancesPerVegetationZone = 0;
 
 		float													mCameraViewMatrix[16];
 		float													mCameraProjectionMatrix[16];

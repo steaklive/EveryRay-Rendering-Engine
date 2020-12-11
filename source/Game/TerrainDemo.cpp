@@ -180,16 +180,22 @@ namespace Rendering
 		mCamera->SetFarPlaneDistance(100000.0f);
 
 		// place placable instanced objects on terrain
-		for (int i = 0; i < NUM_THREADS_PER_TERRAIN_SIDE * NUM_THREADS_PER_TERRAIN_SIDE; i++)
-			for (auto object : mScene->objects)
-				if (object.second->IsPlacedOnTerrain() && object.second->IsInstanced())
-					PlaceInstanceObjectOnTerrain(object.second, i);
+		DistributeVegetationZonesPositionsAcrossTerrainGrid(nullptr, mVegetationZonesCount);
 
 		// place foliage on terrain
-		DistributeFoliageZonesPositionsAcrossTerrainGrid(nullptr, mFoliageZonesCount);
-		GenerateFoliageZones(mFoliageZonesCount);
+		GenerateFoliageInVegetationZones(mVegetationZonesCount);
 		for (int i = 0; i < NUM_THREADS_PER_TERRAIN_SIDE * NUM_THREADS_PER_TERRAIN_SIDE; i++)
 			PlaceFoliageOnTerrainTile(i);
+		
+		// place trees on terrain
+		GenerateObjectsInVegetationZones(mVegetationZonesCount, mNumTreesPerVegetationZone, "Elm Tree");
+
+		for (int i = 0; i < NUM_THREADS_PER_TERRAIN_SIDE * NUM_THREADS_PER_TERRAIN_SIDE; i++) {
+			for (auto object : mScene->objects) {
+				if (object.second->IsPlacedOnTerrain() && object.second->IsInstanced()/* && !object.second->GetIsSavedOnTerrain()*/)
+					PlaceInstanceObjectOnTerrain(object.second, i, object.second->GetNumInstancesPerVegetationZone());
+			}
+		}
 
 		//IBL
 		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\Sky_Type_4_PBRDiffuseHDR.dds").c_str(), nullptr, &mIrradianceTextureSRV)))
@@ -212,9 +218,9 @@ namespace Rendering
 
 	}
 
-	void TerrainDemo::GenerateFoliageZones(int count)
+	void TerrainDemo::GenerateFoliageInVegetationZones(int count)
 	{
-		if (mFoliageZonesCenters.size() != count)
+		if (mVegetationZonesCenters.size() != count)
 			throw GameException("Failed to foliage zones! Centers collections size is not equal to zones count");
 
 		for (int i = 0; i < count; i++)
@@ -223,15 +229,30 @@ namespace Rendering
 				std::map<std::string, Foliage*>
 				(
 					{
-						{ "content\\textures\\foliage\\grass_type1.png",			new Foliage(*mGame, *mCamera, *mDirectionalLight, 15000, Utility::GetFilePath("content\\textures\\foliage\\grass_type1.png"), 2.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::TWO_QUADS_CROSSING)},
-						{ "content\\textures\\foliage\\grass_type4.png",			new Foliage(*mGame, *mCamera, *mDirectionalLight, 15000, Utility::GetFilePath("content\\textures\\foliage\\grass_type4.png"), 2.0f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::THREE_QUADS_CROSSING) },
-						{ "content\\textures\\foliage\\grass_flower_type1.png",		new Foliage(*mGame, *mCamera, *mDirectionalLight, 800, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type1.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) },
-						{ "content\\textures\\foliage\\grass_flower_type3.png",		new Foliage(*mGame, *mCamera, *mDirectionalLight, 250, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type3.png"), 2.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) },
-						{ "content\\textures\\foliage\\grass_flower_type10.png",	new Foliage(*mGame, *mCamera, *mDirectionalLight, 250, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type10.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mFoliageZonesCenters[i], FoliageBillboardType::SINGLE) }
+						{ "content\\textures\\foliage\\grass_type1.png",			new Foliage(*mGame, *mCamera, *mDirectionalLight, 15000, Utility::GetFilePath("content\\textures\\foliage\\grass_type1.png"), 2.5f, TERRAIN_TILE_RESOLUTION / 2, mVegetationZonesCenters[i], FoliageBillboardType::TWO_QUADS_CROSSING)},
+						{ "content\\textures\\foliage\\grass_type4.png",			new Foliage(*mGame, *mCamera, *mDirectionalLight, 15000, Utility::GetFilePath("content\\textures\\foliage\\grass_type4.png"), 2.0f, TERRAIN_TILE_RESOLUTION / 2, mVegetationZonesCenters[i], FoliageBillboardType::THREE_QUADS_CROSSING) },
+						{ "content\\textures\\foliage\\grass_flower_type1.png",		new Foliage(*mGame, *mCamera, *mDirectionalLight, 800, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type1.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mVegetationZonesCenters[i], FoliageBillboardType::SINGLE) },
+						{ "content\\textures\\foliage\\grass_flower_type3.png",		new Foliage(*mGame, *mCamera, *mDirectionalLight, 250, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type3.png"), 2.5f, TERRAIN_TILE_RESOLUTION / 2, mVegetationZonesCenters[i], FoliageBillboardType::SINGLE) },
+						{ "content\\textures\\foliage\\grass_flower_type10.png",	new Foliage(*mGame, *mCamera, *mDirectionalLight, 250, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type10.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mVegetationZonesCenters[i], FoliageBillboardType::SINGLE) }
 					}
 				)
 			);
 		}
+	}
+
+	void TerrainDemo::GenerateObjectsInVegetationZones(int zonesCount, int instancesCount, std::string nameInScene)
+	{
+		if (mVegetationZonesCenters.size() != zonesCount)
+			throw GameException("Failed to foliage zones! Centers collections size is not equal to zones count");
+
+		if (!mScene->objects.find(nameInScene)->second)
+			return;
+
+		mScene->objects.find(nameInScene)->second->SetNumInstancesPerVegetationZone(instancesCount);
+		mScene->objects.find(nameInScene)->second->ResetInstanceData(0, true);
+
+		for (int i = 0; i < (zonesCount); i++)
+			DistributeAcrossVegetationZones(mScene->objects.find(nameInScene)->second, instancesCount, TERRAIN_TILE_RESOLUTION / 2, mVegetationZonesCenters[i]);
 	}
 
 	void TerrainDemo::UpdateLevel(const GameTime& gameTime)
@@ -292,7 +313,7 @@ namespace Rendering
 		ImGui::SliderFloat("Tessellated terrain height scale", &mTessellatedTerrainHeightScale, 0.0f, 1000.0f);
 		ImGui::Separator();
 		ImGui::Checkbox("Render foliage", &mRenderFoliage);
-		ImGui::Checkbox("Render foliage zones centers gizmos", &mRenderFoliageZonesCenters);
+		ImGui::Checkbox("Render vegetation zones centers gizmos", &mRenderVegetationZonesCenters);
 		ImGui::SliderFloat("Foliage dynamic LOD max distance", &mFoliageDynamicLODToCameraDistance, 100.0f, 5000.0f);
 		ImGui::Separator();
 		ImGui::SliderFloat("Wind strength", &mWindStrength, 0.0f, 100.0f);
@@ -369,13 +390,13 @@ namespace Rendering
 			it->second->Draw(MaterialHelper::lightingMaterialName);
 
 		//foliage
-		if (mRenderFoliage) {
-			for (auto foliageZone : mFoliageZonesCollections)
-			{
-				for (auto foliageType : foliageZone)
-					foliageType.second->Draw(gameTime);
-			}
-		}
+		//if (mRenderFoliage) {
+		//	for (auto foliageZone : mFoliageZonesCollections)
+		//	{
+		//		for (auto foliageType : foliageZone)
+		//			foliageType.second->Draw(gameTime);
+		//	}
+		//}
 
 #pragma endregion
 
@@ -456,7 +477,7 @@ namespace Rendering
 		static_cast<DepthMapMaterial*>(mScene->objects[objectName]->GetMaterials()[name])->AlbedoAlphaMap() << mScene->objects[objectName]->GetTextureData(meshIndex).AlbedoMap;
 	}
 
-	void TerrainDemo::DistributeFoliageZonesPositionsAcrossTerrainGrid(RenderingObject* object, int count)
+	void TerrainDemo::DistributeVegetationZonesPositionsAcrossTerrainGrid(RenderingObject* object, int count)
 	{
 		if (count & (count - 1) != 0)
 			throw GameException("Can't distribute foliage zones across terrain grid! Number of objects is not a power of two");
@@ -477,30 +498,29 @@ namespace Rendering
 					int heightMapIndex = (int)(i / (sqrt(count) / NUM_THREADS_PER_TERRAIN_SIDE)) * (NUM_THREADS_PER_TERRAIN_SIDE) + (int)(j / (sqrt(count) / NUM_THREADS_PER_TERRAIN_SIDE));
 					float y = mTerrain->GetHeightmap(heightMapIndex)->FindHeightFromPosition(x, z);
 
-					mFoliageZonesCenters.push_back(XMFLOAT3(x, y, z));
+					mVegetationZonesCenters.push_back(XMFLOAT3(x, y, z));
 					//object->AddInstanceData(XMMatrixScaling(mFoliageZoneGizmoSphereScale, mFoliageZoneGizmoSphereScale, mFoliageZoneGizmoSphereScale) *  XMMatrixTranslation(x, y, z));
 				}
 			}
 		}
 	}
-	void TerrainDemo::DistributeAcrossTerrainGrid(RenderingObject* object, int count)
+	void TerrainDemo::DistributeAcrossVegetationZones(RenderingObject* object, int count, float radius, XMFLOAT3 center)
 	{
-		object->ResetInstanceData(count);
-		float mDistributionRadius = 150;
+		object->ResetInstanceData(object->GetInstanceCount() + count/*, true*/);
 
 		for (int i = 0; i < count; i++)
 		{
-			float x = mFoliageZonesCenters[0].x + ((float)rand() / (float)(RAND_MAX)) * mDistributionRadius - mDistributionRadius / 2;
-			float z = mFoliageZonesCenters[0].z + ((float)rand() / (float)(RAND_MAX)) * mDistributionRadius - mDistributionRadius / 2;
-			//float heightMapIndex = (int)(i / (sqrt(count) / NUM_THREADS)) * (NUM_THREADS)+(int)(j / (sqrt(count) / NUM_THREADS));
-			float y = mTerrain->GetHeightmap(0)->FindHeightFromPosition(x, z);
-			object->AddInstanceData(XMMatrixScaling(5.0f, 5.0f, 5.0f) *  XMMatrixTranslation(x, y, z));
+			float x = center.x + ((float)rand() / (float)(RAND_MAX)) * radius - radius / 2;
+			float y = 0.0f;
+			float z = center.z + ((float)rand() / (float)(RAND_MAX)) * radius - radius / 2;
+			object->AddInstanceData(XMMatrixTranslation(x, y, z));
 		}
+		object->UpdateInstanceBuffer(object->GetInstancesData());
 	}
 
 	void TerrainDemo::PlaceFoliageOnTerrainTile(int tileIndex)
 	{
-		if (mFoliageZonesCenters.size() == 0)
+		if (mVegetationZonesCenters.size() == 0)
 			throw GameException("Failed to load foliage zones when placing foliage on terrain! No zones!");
 
 		// prepare before GPU dispatch on compute shader
@@ -558,36 +578,70 @@ namespace Rendering
 		}
 	}
 
-	void TerrainDemo::PlaceInstanceObjectOnTerrain(RenderingObject* object, int tileIndex)
+	void TerrainDemo::PlaceInstanceObjectOnTerrain(RenderingObject* object, int tileIndex, int numInstancesPerZone, int splatChannel)
 	{
+		if (/*object->GetIsSavedOnTerrain() ||*/ numInstancesPerZone == 0)
+			return;
+
+		if (mVegetationZonesCenters.size() * numInstancesPerZone != object->GetInstanceCount())
+			throw GameException("Failed to place object instances on terrain! Number of objects' instances != num zones * num instances per zone");
+
 		// prepare before GPU dispatch on compute shader
-		//std::vector<XMFLOAT4> treesPositions;
-		//int count = object->GetInstanceCount();
-		//
-		//for (int i = 0; i < count; i++) {
-		//	XMFLOAT3 translation;
-		//	MatrixHelper::GetTranslation(XMLoadFloat4x4(&(object->GetInstancesData()[i].World)), translation);
-		//	treesPositions.push_back(XMFLOAT4(translation.x, 0.0f, translation.z, 1.0f));
-		//}
-		//
-		//
-		//std::vector<XMFLOAT4> terrainVertices;
-		//int maxSizeTerrainVertices = mTerrain->GetHeightmap(tileIndex)->mVertexCount;
-		//for (int j = 0; j < maxSizeTerrainVertices; j++)
-		//	terrainVertices.push_back(XMFLOAT4(mTerrain->GetHeightmap(tileIndex)->mVertexList[j].x, mTerrain->GetHeightmap(tileIndex)->mVertexList[j].y, mTerrain->GetHeightmap(tileIndex)->mVertexList[j].z, 1.0f));
-		//
-		//// compute shader pass
-		//PlaceObjectsOnTerrain(tileIndex, &treesPositions[0], count, &terrainVertices[0], maxSizeTerrainVertices, TerrainSplatChannels::GRASS);
-		//
-		//// read back to foliage
-		//for (int i = 0; i < count; i++) {
-		//	if (treesPositions[i].y != -999.0f) {
-		//		object->GetInstancesData()[i].World._41 = treesPositions[i].x;
-		//		object->GetInstancesData()[i].World._42 = treesPositions[i].y;
-		//		object->GetInstancesData()[i].World._43 = treesPositions[i].z;
-		//	}
-		//}
-		//object->UpdateInstanceBuffer(object->GetInstancesData());
+		std::vector<XMFLOAT4> positions;
+		int count = numInstancesPerZone;
+		int zonesCount = mVegetationZonesCenters.size();
+		int bufferOffset = 0;
+		for (int i = 0; i < sqrt(zonesCount); i++)
+		{
+			for (int j = 0; j < sqrt(zonesCount); j++)
+			{
+				int heightMapIndex = (int)(i / (sqrt(zonesCount) / NUM_THREADS_PER_TERRAIN_SIDE)) * (NUM_THREADS_PER_TERRAIN_SIDE)+(int)(j / (sqrt(zonesCount) / NUM_THREADS_PER_TERRAIN_SIDE));
+				
+				if (heightMapIndex == tileIndex) {
+					for (int k = 0; k < count; k++) {
+						XMFLOAT3 translation;
+						MatrixHelper::GetTranslation(XMLoadFloat4x4(&(object->GetInstancesData()[k  + (i * sqrt(zonesCount) + j) * numInstancesPerZone].World)), translation);
+						positions.push_back(XMFLOAT4(translation.x, 0.0f, translation.z, 1.0f));
+					}
+					bufferOffset += numInstancesPerZone;
+				}
+			}
+		}
+
+		if (positions.empty())
+			return;
+
+		std::vector<XMFLOAT4> terrainVertices;
+		int maxSizeTerrainVertices = mTerrain->GetHeightmap(tileIndex)->mVertexCount;
+		for (int j = 0; j < maxSizeTerrainVertices; j++)
+			terrainVertices.push_back(XMFLOAT4(mTerrain->GetHeightmap(tileIndex)->mVertexList[j].x, mTerrain->GetHeightmap(tileIndex)->mVertexList[j].y, mTerrain->GetHeightmap(tileIndex)->mVertexList[j].z, 1.0f));
+		
+		// compute shader pass
+		int totalCount = count * zonesCount / (NUM_THREADS_PER_TERRAIN_SIDE * NUM_THREADS_PER_TERRAIN_SIDE);
+		PlaceObjectsOnTerrain(tileIndex, &positions[0], totalCount, &terrainVertices[0], maxSizeTerrainVertices, splatChannel);
+		//object->SetSavedOnTerrain(true);
+
+		// read back to instance data
+		bufferOffset = 0;
+		for (int i = 0; i < sqrt(zonesCount); i++)
+		{
+			for (int j = 0; j < sqrt(zonesCount); j++)
+			{
+				int heightMapIndex = (int)(i / (sqrt(zonesCount) / NUM_THREADS_PER_TERRAIN_SIDE)) * (NUM_THREADS_PER_TERRAIN_SIDE)+(int)(j / (sqrt(zonesCount) / NUM_THREADS_PER_TERRAIN_SIDE));
+				if (heightMapIndex == tileIndex) {
+					for (int posIndex = 0; posIndex < numInstancesPerZone; posIndex++) {
+						if (positions[posIndex].y != -999.0f) {
+							object->GetInstancesData()[(i * sqrt(zonesCount) + j) * numInstancesPerZone + posIndex].World._41 = positions[posIndex + bufferOffset].x;
+							object->GetInstancesData()[(i * sqrt(zonesCount) + j) * numInstancesPerZone + posIndex].World._42 = positions[posIndex + bufferOffset].y;
+							object->GetInstancesData()[(i * sqrt(zonesCount) + j) * numInstancesPerZone + posIndex].World._43 = positions[posIndex + bufferOffset].z;
+						}
+					}
+					bufferOffset += numInstancesPerZone;
+				}
+			}
+		}
+
+		object->UpdateInstanceBuffer(object->GetInstancesData());
 	}
 
 	// generic method for displacing object positions by height of the terrain (GPU calculation)

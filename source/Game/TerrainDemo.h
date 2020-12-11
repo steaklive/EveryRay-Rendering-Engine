@@ -59,14 +59,15 @@ namespace Rendering
 		void UpdateShadow0MaterialVariables(const std::string & objectName, int meshIndex);
 		void UpdateShadow1MaterialVariables(const std::string & objectName, int meshIndex);
 		void UpdateShadow2MaterialVariables(const std::string & objectName, int meshIndex);
-		void DistributeFoliageZonesPositionsAcrossTerrainGrid(RenderingObject* object, int count);
-		void DistributeAcrossTerrainGrid(RenderingObject* object, int count);
+		void DistributeVegetationZonesPositionsAcrossTerrainGrid(RenderingObject* object, int count);
+		void DistributeAcrossVegetationZones(RenderingObject* object, int count, float radius, XMFLOAT3 center);
 		void PlaceFoliageOnTerrainTile(int tileIndex);
-		void PlaceInstanceObjectOnTerrain(RenderingObject* object, int tileIndex);
+		void PlaceInstanceObjectOnTerrain(RenderingObject* object, int tileIndex, int numInstancesPerZone, int splatChannel = -1);
 		void PlaceObjectsOnTerrain(int tileIndex, XMFLOAT4* objectsPositions, int objectsCount, XMFLOAT4* terrainVertices, int terrainVertexCount, int splatChannel = -1);
 		void UpdateImGui();
 		void Initialize();
-		void GenerateFoliageZones(int count);
+		void GenerateFoliageInVegetationZones(int zonesCount);
+		void GenerateObjectsInVegetationZones(int zonesCount, int instancesCount, std::string nameInScene);
 
 		XMFLOAT4X4 mWorldMatrix;
 		RenderStateHelper* mRenderStateHelper;
@@ -80,7 +81,7 @@ namespace Rendering
 		Terrain* mTerrain;
 		Scene* mScene;
 		std::vector<std::map<std::string, Foliage*>> mFoliageZonesCollections;
-		std::vector<XMFLOAT3> mFoliageZonesCenters;
+		std::vector<XMFLOAT3> mVegetationZonesCenters;
 
 		ID3D11ShaderResourceView* mIrradianceTextureSRV;
 		ID3D11ShaderResourceView* mRadianceTextureSRV;
@@ -96,12 +97,13 @@ namespace Rendering
 		bool mDynamicTessellation = true;
 		float mCameraDistanceFactor = 0.015;
 
-		int mFoliageZonesCount = 64;
+		int mVegetationZonesCount = 64;
 		float mFoliageZoneGizmoSphereScale = 10.0f;
 		float mFoliageDynamicLODToCameraDistance = 650.0f;
 
 		bool mRenderFoliage = true;
-		bool mRenderFoliageZonesCenters = false;
+		bool mRenderVegetationZonesCenters = false;
+		int mNumTreesPerVegetationZone = 25;
 
 		float mWindStrength = 1.0f;
 		float mWindFrequency = 1.0f;
