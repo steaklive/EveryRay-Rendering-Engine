@@ -187,15 +187,15 @@ namespace Rendering
 		for (int i = 0; i < NUM_THREADS_PER_TERRAIN_SIDE * NUM_THREADS_PER_TERRAIN_SIDE; i++)
 			PlaceFoliageOnTerrainTile(i);
 		
-		// place trees on terrain
-		GenerateObjectsInVegetationZones(mVegetationZonesCount, mNumTreesPerVegetationZone, "Elm Tree");
+		// place placeable instanced objects on terrain
+		for (auto& object : mScene->objects)
+			if (object.second->IsInstanced() && object.second->IsPlacedOnTerrain())
+				GenerateObjectsInVegetationZones(mVegetationZonesCount, object.first);
 
-		for (int i = 0; i < NUM_THREADS_PER_TERRAIN_SIDE * NUM_THREADS_PER_TERRAIN_SIDE; i++) {
-			for (auto object : mScene->objects) {
-				if (object.second->IsPlacedOnTerrain() && object.second->IsInstanced()/* && !object.second->GetIsSavedOnTerrain()*/)
+		for (int i = 0; i < NUM_THREADS_PER_TERRAIN_SIDE * NUM_THREADS_PER_TERRAIN_SIDE; i++)
+			for (auto& object : mScene->objects)
+				if (object.second->IsPlacedOnTerrain() && object.second->IsInstanced())
 					PlaceInstanceObjectOnTerrain(object.second, i, object.second->GetNumInstancesPerVegetationZone());
-			}
-		}
 
 		//IBL
 		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\Sky_Type_4_PBRDiffuseHDR.dds").c_str(), nullptr, &mIrradianceTextureSRV)))
@@ -240,15 +240,17 @@ namespace Rendering
 		}
 	}
 
-	void TerrainDemo::GenerateObjectsInVegetationZones(int zonesCount, int instancesCount, std::string nameInScene)
+	void TerrainDemo::GenerateObjectsInVegetationZones(int zonesCount, std::string nameInScene)
 	{
+		int instancesCount = mScene->objects.find(nameInScene)->second->GetNumInstancesPerVegetationZone();
+
 		if (mVegetationZonesCenters.size() != zonesCount)
 			throw GameException("Failed to foliage zones! Centers collections size is not equal to zones count");
 
 		if (!mScene->objects.find(nameInScene)->second)
 			return;
 
-		mScene->objects.find(nameInScene)->second->SetNumInstancesPerVegetationZone(instancesCount);
+		//mScene->objects.find(nameInScene)->second->SetNumInstancesPerVegetationZone(instancesCount);
 		mScene->objects.find(nameInScene)->second->ResetInstanceData(0, true);
 
 		for (int i = 0; i < (zonesCount); i++)
@@ -390,13 +392,13 @@ namespace Rendering
 			it->second->Draw(MaterialHelper::lightingMaterialName);
 
 		//foliage
-		//if (mRenderFoliage) {
-		//	for (auto foliageZone : mFoliageZonesCollections)
-		//	{
-		//		for (auto foliageType : foliageZone)
-		//			foliageType.second->Draw(gameTime);
-		//	}
-		//}
+		if (mRenderFoliage) {
+			for (auto foliageZone : mFoliageZonesCollections)
+			{
+				for (auto foliageType : foliageZone)
+					foliageType.second->Draw(gameTime);
+			}
+		}
 
 #pragma endregion
 

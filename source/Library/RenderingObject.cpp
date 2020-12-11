@@ -408,6 +408,10 @@ namespace Rendering
 		assert(mInstanceData.size() != 0);
 		assert(mIsInstanced == true);
 
+		//adding extra instance data until we reach MAX_INSTANCE_COUNT 
+		for (int i = mInstanceData.size(); i < MAX_INSTANCE_COUNT; i++)
+			AddInstanceData(XMMatrixIdentity());
+
 		mInstanceCount = mInstanceData.size();
 		for (int i = 0; i < mInstanceCount; i++)
 			mInstancesNames.push_back(mName + " " + std::to_string(i));
