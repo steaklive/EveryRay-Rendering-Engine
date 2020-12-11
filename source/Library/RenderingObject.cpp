@@ -425,7 +425,7 @@ namespace Rendering
 	{
 		D3D11_BUFFER_DESC instanceBufferDesc;
 		ZeroMemory(&instanceBufferDesc, sizeof(instanceBufferDesc));
-		instanceBufferDesc.ByteWidth = InstanceSize() * instanceCount;
+		instanceBufferDesc.ByteWidth = InstanceSize()/* *instanceCount*/ * MAX_INSTANCE_COUNT;
 		instanceBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 		instanceBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		instanceBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -593,10 +593,17 @@ namespace Rendering
 		}
 	}
 
-	void RenderingObject::ResetInstanceData(int count)
+	void RenderingObject::ResetInstanceData(int count, bool clear)
 	{
 		mInstanceCount = count;
 		mInstanceCountToRender = count;
+
+		mInstancesNames.clear();
+		for (int i = 0; i < mInstanceCount; i++)
+			mInstancesNames.push_back(mName + " " + std::to_string(i));
+
+		if (clear)
+			mInstanceData.clear();
 	}
 	void RenderingObject::AddInstanceData(XMMATRIX worldMatrix)
 	{

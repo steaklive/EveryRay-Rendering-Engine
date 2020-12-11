@@ -39,6 +39,6 @@ namespace Library
 
 		bool mUseCustomSkyboxColor = true;
 		float bottomColorSky[4] = {217.0f / 255.0f, 217.0f / 255.0f, 218.0f / 255.0f, 1.0f};
-		float topColorSky[4] = { 145.0f / 255.0f, 180.0f / 255.0f, 196.0f / 255.0f, 1.0f };
+		float topColorSky[4] = { 175.0f / 255.0f, 200.0f / 255.0f, 211.0f / 255.0f, 1.0f };
 	};
 }
