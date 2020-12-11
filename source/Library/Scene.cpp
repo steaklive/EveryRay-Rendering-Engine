@@ -90,6 +90,9 @@ namespace Library
 
 				if (root["rendering_objects"][i].isMember("placed_on_terrain")) {
 					it->second->SetPlacedOnTerrain(root["rendering_objects"][i]["placed_on_terrain"].asBool());
+
+					if (isInstanced && root["rendering_objects"][i].isMember("num_instances_per_vegetation_zone"))
+						it->second->SetNumInstancesPerVegetationZone(root["rendering_objects"][i]["num_instances_per_vegetation_zone"].asInt());
 				}
 
 				// load materials

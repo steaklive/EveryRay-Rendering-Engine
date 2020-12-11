@@ -45,6 +45,7 @@
 					]
 				}
 			],
+			"num_instances_per_vegetation_zone" : 40,
 			"materials" : 
 			[
 				{

@@ -27,11 +27,12 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\l
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(188): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(300): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(377): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(411): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(412): warning C4018: '<': signed/unsigned mismatch
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(447): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(566): warning C4018: '<': signed/unsigned mismatch
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(602): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(412): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(415): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(416): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(451): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(570): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(606): warning C4018: '<': signed/unsigned mismatch
   Scene.cpp
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(147): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\scene.cpp(24): warning C4996: 'Json::Reader': Use CharReader and CharReaderBuilder instead.

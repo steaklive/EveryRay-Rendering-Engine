@@ -25,21 +25,21 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\l
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\foliage.h(104): warning C4305: 'initializing': truncation from 'double' to 'float'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(52): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(52): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(285): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(482): warning C4554: '&': check operator precedence for possible error; use parentheses to clarify precedence
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(491): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(529): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(537): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(564): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(573): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(592): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(603): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(634): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(635): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(287): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(484): warning C4554: '&': check operator precedence for possible error; use parentheses to clarify precedence
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(493): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(531): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(539): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(566): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(575): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(594): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(605): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(636): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(637): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.cpp(638): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
   Generating code
-  0 of 6442 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
+  185 of 6443 functions ( 2.9%) were compiled, the rest were copied from previous compilation.
+    1 functions were new in current compilation
+    34 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Game.vcxproj -> C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\\bin\x64\Release\EveryRay - Rendering Engine.exe

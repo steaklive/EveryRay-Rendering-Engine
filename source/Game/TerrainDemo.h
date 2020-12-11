@@ -67,7 +67,7 @@ namespace Rendering
 		void UpdateImGui();
 		void Initialize();
 		void GenerateFoliageInVegetationZones(int zonesCount);
-		void GenerateObjectsInVegetationZones(int zonesCount, int instancesCount, std::string nameInScene);
+		void GenerateObjectsInVegetationZones(int zonesCount, std::string nameInScene);
 
 		XMFLOAT4X4 mWorldMatrix;
 		RenderStateHelper* mRenderStateHelper;
@@ -103,7 +103,6 @@ namespace Rendering
 
 		bool mRenderFoliage = true;
 		bool mRenderVegetationZonesCenters = false;
-		int mNumTreesPerVegetationZone = 25;
 
 		float mWindStrength = 1.0f;
 		float mWindFrequency = 1.0f;
