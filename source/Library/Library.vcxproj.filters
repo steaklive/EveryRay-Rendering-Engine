@@ -810,6 +810,7 @@
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\Terrain\PlaceObjectsOnTerrain.hlsl" />
     <FxCompile Include="..\..\content\effects\ParallaxMapping.fx" />
+    <FxCompile Include="..\..\content\shaders\VolumetricClouds\VolumetricClouds.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\content\effects\ShaderHelper.hlsli">

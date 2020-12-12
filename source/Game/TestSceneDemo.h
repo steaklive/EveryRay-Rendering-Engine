@@ -2,6 +2,7 @@
 
 #include "..\Library\DrawableGameComponent.h"
 #include "..\Library\DemoLevel.h"
+#include "..\Library\ConstantBuffer.h"
 #include "..\Library\Frustum.h"
 
 using namespace Library;
@@ -38,6 +39,23 @@ namespace Rendering
 	class RenderingObject;
 	class PostProcessingStack;
 
+	namespace VolumetricCloudsData {
+		struct FrameCB
+		{
+			XMMATRIX	invProj;
+			XMMATRIX	invView;
+			XMVECTOR	lightDir;
+			XMVECTOR	cameraPos;
+		};
+		struct CloudsCB
+		{
+			float Time;
+			float Crispiness;
+			float Coverage;
+			float Speed;
+		};
+	}
+
 	class TestSceneDemo : public DrawableGameComponent, public DemoLevel
 	{
 		RTTI_DECLARATIONS(TestSceneDemo, DrawableGameComponent)
@@ -57,6 +75,7 @@ namespace Rendering
 		TestSceneDemo(const TestSceneDemo& rhs);
 		TestSceneDemo& operator=(const TestSceneDemo& rhs);
 
+		void DrawVolumetricClouds(const GameTime& gameTime);
 		void UpdateStandardLightingPBRMaterialVariables(const std::string& objectName, int meshIndex);
 		void UpdateDeferredPrepassMaterialVariables(const std::string& objectName, int meshIndex);
 		void UpdateShadow0MaterialVariables(const std::string & objectName, int meshIndex);
@@ -65,6 +84,7 @@ namespace Rendering
 		void UpdateImGui();
 		void Initialize();
 
+		ID3D11PixelShader* VCMainPS;
 		Scene* mScene;
 		Keyboard* mKeyboard;
 		XMFLOAT4X4 mWorldMatrix;
@@ -87,5 +107,19 @@ namespace Rendering
 		float mWindFrequency = 1.0f;
 		float mWindGustDistance = 1.0f;
 		//Terrain* mTerrain;
+
+
+		ID3D11ShaderResourceView* mCloudTextureSRV = nullptr;
+		ID3D11ShaderResourceView* mWeatherTextureSRV = nullptr;
+
+		ID3D11SamplerState* mCloudSS = nullptr;
+		ID3D11SamplerState* mWeatherSS = nullptr;
+
+		float mCloudsCrispiness = 40.0f;
+		float mCloudsCoverage = 0.5f;
+		float mCloudsSpeed = 1000;
+
+		ConstantBuffer<VolumetricCloudsData::FrameCB> mVolumetricCloudsFrameConstantBuffer;
+		ConstantBuffer<VolumetricCloudsData::CloudsCB> mVolumetricCloudsCloudsConstantBuffer;
 	};
 }

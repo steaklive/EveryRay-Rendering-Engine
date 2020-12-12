@@ -238,7 +238,7 @@ namespace Rendering
 
 #pragma endregion
 
-		mPostProcessingStack->End(gameTime);
+		mPostProcessingStack->End();
 		mPostProcessingStack->UpdateSSRMaterial(mGBuffer->GetNormals()->getSRV(), mGBuffer->GetDepth()->getSRV(), mGBuffer->GetExtraBuffer()->getSRV(), (float)gameTime.TotalGameTime());
 		mPostProcessingStack->DrawEffects(gameTime);
 

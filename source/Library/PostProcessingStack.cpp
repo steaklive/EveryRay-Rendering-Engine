@@ -477,10 +477,10 @@ namespace Rendering {
 		return mMainRenderTarget->OutputDepthTexture(); 
 	}
 
-	//ID3D11ShaderResourceView * PostProcessingStack::GetPrepassColorOutputTexture()
-	//{
-	//	return mMainRenderTarget->OutputColorTexture();
-	//}
+	ID3D11ShaderResourceView * PostProcessingStack::GetPrepassColorOutputTexture()
+	{
+		return mMainRenderTarget->OutputColorTexture();
+	}
 
 	void PostProcessingStack::ComputeLuminance(ID3D11DeviceContext * pContext, ID3D11ShaderResourceView * pInput, ID3D11RenderTargetView* pOutput)
 	{
@@ -544,14 +544,17 @@ namespace Rendering {
 		DrawFullscreenQuad(pContext);
 	}
 	
-	void PostProcessingStack::Begin()
+	void PostProcessingStack::Begin(bool clear)
 	{
 		mMainRenderTarget->Begin();
-		game.Direct3DDeviceContext()->ClearRenderTargetView(mMainRenderTarget->RenderTargetView(), ClearBackgroundColor);
-		game.Direct3DDeviceContext()->ClearDepthStencilView(mMainRenderTarget->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
+
+		if (clear) {
+			game.Direct3DDeviceContext()->ClearRenderTargetView(mMainRenderTarget->RenderTargetView(), ClearBackgroundColor);
+			game.Direct3DDeviceContext()->ClearDepthStencilView(mMainRenderTarget->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
+		}
 	}
 
-	void PostProcessingStack::End(const GameTime& gameTime)
+	void PostProcessingStack::End()
 	{
 		mMainRenderTarget->End();
 	}
