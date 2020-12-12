@@ -232,8 +232,8 @@ namespace Rendering
 		void UpdateSSRMaterial(ID3D11ShaderResourceView* normal, ID3D11ShaderResourceView* depth, ID3D11ShaderResourceView* extra, float time);
 
 		void Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR = true);
-		void Begin();
-		void End(const GameTime& gameTime);
+		void Begin(bool clear = true);
+		void End();
 
 		void DrawEffects(const GameTime & gameTime);
 
@@ -243,7 +243,7 @@ namespace Rendering
 		void ShowPostProcessingWindow();
 
 		ID3D11ShaderResourceView* GetDepthOutputTexture();
-		//ID3D11ShaderResourceView* GetPrepassColorOutputTexture();
+		ID3D11ShaderResourceView* GetPrepassColorOutputTexture();
 
 		bool isWindowOpened = false;
 
