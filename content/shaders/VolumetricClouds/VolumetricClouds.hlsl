@@ -6,26 +6,28 @@ Texture2D weatherTex : register(t1);
 Texture3D cloudTex : register(t2);
 //Texture3D worleyTex : register(t3);
 
-static const float earthRadius = 600000.0;
-static const float sphereInnerRadius = 5000.0;
-static const float sphereOuterRadius = 17000.0;
+static const float earthRadius = 600000.0f;
+static const float sphereInnerRadius = 5000.0f;
+static const float sphereOuterRadius = 17000.0f;
+
+static float2 SCREEN_RESOLUTION = float2(1920.0f, 1080.0f);
 
 #define EARTH_RADIUS earthRadius
 #define SPHERE_INNER_RADIUS (EARTH_RADIUS + sphereInnerRadius)
 #define SPHERE_OUTER_RADIUS (SPHERE_INNER_RADIUS + sphereOuterRadius)
 #define SPHERE_DELTA float(SPHERE_OUTER_RADIUS - SPHERE_INNER_RADIUS)
-static const float3 sphereCenter = float3(0.0, -EARTH_RADIUS, 0.0);
+static float3 sphereCenter = float3(0.0f, -earthRadius, 0.0f);
 
-#define CLOUDS_MIN_TRANSMITTANCE 1e-1
-#define CLOUDS_TRANSMITTANCE_THRESHOLD 1.0 - CLOUDS_MIN_TRANSMITTANCE
+static const float CLOUDS_MIN_TRANSMITTANCE = 0.1f;
+static const float CLOUDS_TRANSMITTANCE_THRESHOLD = 1.0f - CLOUDS_MIN_TRANSMITTANCE;
 
-#define BAYER_FACTOR 1.0/16.0
+static const float BAYER_FACTOR = 1.0f / 16.0f;
 static const float bayerFilter[16] =
 {
-    0.0 * BAYER_FACTOR, 8.0 * BAYER_FACTOR, 2.0 * BAYER_FACTOR, 10.0 * BAYER_FACTOR,
-	12.0 * BAYER_FACTOR, 4.0 * BAYER_FACTOR, 14.0 * BAYER_FACTOR, 6.0 * BAYER_FACTOR,
-	3.0 * BAYER_FACTOR, 11.0 * BAYER_FACTOR, 1.0 * BAYER_FACTOR, 9.0 * BAYER_FACTOR,
-	15.0 * BAYER_FACTOR, 7.0 * BAYER_FACTOR, 13.0 * BAYER_FACTOR, 5.0 * BAYER_FACTOR
+    0.0f * BAYER_FACTOR, 8.0f * BAYER_FACTOR, 2.0f * BAYER_FACTOR, 10.0f * BAYER_FACTOR,
+	12.0f * BAYER_FACTOR, 4.0f * BAYER_FACTOR, 14.0f * BAYER_FACTOR, 6.0f * BAYER_FACTOR,
+	3.0f * BAYER_FACTOR, 11.0f * BAYER_FACTOR, 1.0f * BAYER_FACTOR, 9.0f * BAYER_FACTOR,
+	15.0f * BAYER_FACTOR, 7.0f * BAYER_FACTOR, 13.0f * BAYER_FACTOR, 5.0f * BAYER_FACTOR
 };
 
 // Cloud types height density gradients
@@ -65,7 +67,7 @@ bool RaySphereIntersection(float3 rayDir, float radius, out float3 posHit)
     float3 center = float3(0.0, 0.0, 0.0);
     float radius2 = radius * radius;
 
-    float3 L = -radius2;
+    float3 L = -center;
     float a = dot(rayDir, rayDir);
     float b = 2.0 * dot(rayDir, L);
     float c = dot(L, L) - radius2;
@@ -82,13 +84,11 @@ bool RaySphereIntersectionFromOriginPoint(float3 rayOrigin, float3 rayDir, float
 {
 	
     float t;
-    float3 center = sphereCenter;
-
-    center.xz = CameraPos.xz;
+    sphereCenter.xz = CameraPos.xz;
 
     float radius2 = radius * radius;
 
-    float3 L = rayOrigin - center;
+    float3 L = rayOrigin - sphereCenter;
     float a = dot(rayDir, rayDir);
     float b = 2.0 * dot(rayDir, L);
     float c = dot(L, L) - radius2;
@@ -109,12 +109,11 @@ bool RaySphereIntersectionFromOriginPoint(float3 rayOrigin, float3 rayDir, float
 bool RaySphereIntersectionFromOriginPoint2(float3 rayOrigin, float3 rayDir, float radius, out float3 posHit)
 {
     float t;
-    float3 center = sphereCenter;
-    center.xz = CameraPos.xz;
+    sphereCenter.xz = CameraPos.xz;
 
     float radius2 = radius * radius;
 
-    float3 L = rayOrigin - center;
+    float3 L = rayOrigin - sphereCenter;
     float a = dot(rayDir, rayDir);
     float b = 2.0 * dot(rayDir, L);
     float c = dot(L, L) - radius2;
@@ -170,8 +169,8 @@ float SampleCloudDensity(float3 p, bool expensive, float lod)
 
     float4 low_frequency_noise = cloudTex.SampleLevel(CloudSampler, float3(UV * Crispiness, heightFraction), lod);
     float lowFreqFBM = dot(low_frequency_noise.gba, float3(0.625, 0.25, 0.125));
-    float base_cloud = remap(low_frequency_noise.r, -(1.0 - lowFreqFBM), 1., 0.0, 1.0);
-	
+    float base_cloud = remap(low_frequency_noise.r, -(1.0f - lowFreqFBM), 1.0f, 0.0f, 1.0f);
+	 
     float density = GetDensityForCloud(heightFraction, 1.0);
     base_cloud *= (density / heightFraction);
 
@@ -204,21 +203,21 @@ float4 RaymarchToCloud(float2 texCoord, float3 startPos, float3 endPos, float3 b
     float len = length(path);
     const int nSteps = 64;
 	
-    float ds = len / nSteps;
+    float ds = len / (float) nSteps;
     float3 dir = path / len;
     dir *= ds;
     float4 col = float4(0.0, 0.0, 0.0, 0.0);
-    float2 fragCoord = texCoord;
+    float2 fragCoord = texCoord * SCREEN_RESOLUTION;
     int a = int(fragCoord.x) % 4;
     int b = int(fragCoord.y) % 4;
     
     startPos += dir * bayerFilter[a * 4 + b];
 	//startPos += dir*abs(Random2D(vec3(a,b,a+b)))*.5;
     float3 pos = startPos;
-    float density = 0.0;
+    float density = 0.0f;
     float lightDotEye = dot(normalize(LightDir.rgb), normalize(dir));
 
-    float T = 1.0;
+    float T = 1.0f;
     float sigma_ds = -ds * densityFactor;
     bool entered = false;
 
@@ -228,8 +227,8 @@ float4 RaymarchToCloud(float2 texCoord, float3 startPos, float3 endPos, float3 b
     {
 		//if( pos.y >= cameraPosition.y - SPHERE_DELTA*1.5 ){
 
-        float density_sample = SampleCloudDensity(pos, true, i / 16);
-        if (density_sample > 0.)
+        float density_sample = SampleCloudDensity(pos, true, i / 16.0f);
+        if (density_sample > 0.0f)
         {
             if (!entered)
             {
@@ -254,10 +253,10 @@ float4 RaymarchToCloud(float2 texCoord, float3 startPos, float3 endPos, float3 b
 
         }
 
-        if (T <= CLOUDS_MIN_TRANSMITTANCE)
-            break;
-
-        pos += dir;
+         if (T <= CLOUDS_MIN_TRANSMITTANCE)
+             break;
+        
+         pos += dir;
 		//}
     }
 	//col.rgb += ambientlight*0.02;
@@ -316,6 +315,7 @@ float4 main(float4 pos : SV_POSITION, float2 tex : TEX_COORD0) : SV_Target
     
     v = RaymarchToCloud(tex, startPos, endPos, finalColor.rgb, cloudDistance);
     finalColor.rgb = finalColor.rgb * (1.0 - v.a) + v.rgb;
+    finalColor.a = 1.0f;
     
     return finalColor;
 }
