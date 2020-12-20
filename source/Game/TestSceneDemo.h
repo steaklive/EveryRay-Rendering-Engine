@@ -58,9 +58,9 @@ namespace Rendering
 			float Crispiness;
 			float Curliness;
 			float Coverage;
-			float Speed;
-			float CloudsLayerSphereInnerRadius;
-			float CloudsLayerSphereOuterRadius;
+			float Absorption;
+			//float CloudsLayerSphereInnerRadius;
+			//float CloudsLayerSphereOuterRadius;
 		};
 	}
 
@@ -92,7 +92,6 @@ namespace Rendering
 		void UpdateImGui();
 		void Initialize();
 
-		ID3D11PixelShader* VCMainPS;
 		Scene* mScene;
 		Keyboard* mKeyboard;
 		XMFLOAT4X4 mWorldMatrix;
@@ -116,6 +115,10 @@ namespace Rendering
 		float mWindGustDistance = 1.0f;
 		//Terrain* mTerrain;
 
+		FullScreenRenderTarget* mVolumetricCloudsRenderTarget;
+		FullScreenRenderTarget* mVolumetricCloudsCompositeRenderTarget;
+		ID3D11PixelShader* VCMainPS;
+		ID3D11PixelShader* VCCompositePS;
 
 		ID3D11ShaderResourceView* mCloudTextureSRV = nullptr;
 		ID3D11ShaderResourceView* mWeatherTextureSRV = nullptr;
@@ -127,10 +130,11 @@ namespace Rendering
 		float mCloudsCrispiness = 40.0f;
 		float mCloudsCurliness = 0.2f;
 		float mCloudsCoverage = 0.5f;
-		float mCloudsAmbientColor[3] = { 0.9f, 0.9f, 0.9f };
+		float mCloudsAmbientColor[3] = { 121.0f/255.0f, 133.0f/255.0f, 138.0f/255.0f };
 		float mCloudsWindSpeedMultiplier = 1000.0f;
-		float mCloudsLayerInnerHeight = 5000.0f;
-		float mCloudsLayerOuterHeight = 17000.0f;
+		//float mCloudsLayerInnerHeight = 5000.0f;
+		//float mCloudsLayerOuterHeight = 17000.0f;
+		float mCloudsLightAbsorption = 0.002f;
 
 		ConstantBuffer<VolumetricCloudsData::FrameCB> mVolumetricCloudsFrameConstantBuffer;
 		ConstantBuffer<VolumetricCloudsData::CloudsCB> mVolumetricCloudsCloudsConstantBuffer;

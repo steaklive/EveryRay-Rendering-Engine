@@ -151,7 +151,9 @@ namespace Library
 
 				// load instanced data
 				if (isInstanced) {
+					it->second->LoadInstanceBuffers();
 					if (root["rendering_objects"][i].isMember("instances_transforms")) {
+						it->second->ResetInstanceData(root["rendering_objects"][i]["instances_transforms"].size(), true);
 						for (Json::Value::ArrayIndex instance = 0; instance != root["rendering_objects"][i]["instances_transforms"].size(); instance++) {
 							float matrix[16];
 							for (Json::Value::ArrayIndex matC = 0; matC != root["rendering_objects"][i]["instances_transforms"][instance]["transform"].size(); matC++) {
@@ -162,9 +164,10 @@ namespace Library
 						}
 					}
 					else {
+						it->second->ResetInstanceData(1, true);
 						it->second->AddInstanceData(it->second->GetTransformationMatrix());
 					}
-					it->second->LoadInstanceBuffers();
+					it->second->UpdateInstanceBuffer(it->second->GetInstancesData());
 				}
 			}
 		}

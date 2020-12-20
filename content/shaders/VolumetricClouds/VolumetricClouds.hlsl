@@ -6,8 +6,35 @@ Texture2D weatherTex : register(t1);
 Texture3D cloudTex : register(t2);
 Texture3D worleyTex : register(t3);
 
-static const float EARTH_RADIUS = 600000.0f;
-static float3 sphereCenter = float3(0.0f, -EARTH_RADIUS, 0.0f);
+cbuffer FrameConstants : register(b0)
+{
+    float4x4 InvProj;
+    float4x4 InvView;
+    float4 LightDir;
+    float4 LightColor;
+    float4 CameraPos;
+    float2 Resolution;
+};
+
+cbuffer CloudsConstants : register(b1)
+{
+    float4 AmbientColor;
+    float4 WindDir;
+    float WindSpeed;
+    float Time;
+    float Crispiness;
+    float Curliness;
+    float Coverage;
+    float Absorption;
+}
+
+static const float PLANET_RADIUS = 600000.0f;
+static const float CLOUDS_BOTTOM_HEIGHT = 8000.0f;
+static const float CLOUDS_TOP_HEIGHT = 19000.0f;
+static float3 PLANET_CENTER = float3(0.0f, -PLANET_RADIUS, 0.0f);
+static float PLANET_INNER_RADIUS = PLANET_RADIUS + CLOUDS_BOTTOM_HEIGHT;
+static float PLANET_OUTER_RADIUS = PLANET_INNER_RADIUS + CLOUDS_TOP_HEIGHT;
+static float PLANET_DELTA = PLANET_OUTER_RADIUS - PLANET_INNER_RADIUS;
 
 static const float BAYER_FACTOR = 1.0f / 16.0f;
 static const float BAYER_FILTER[16] =
@@ -28,34 +55,6 @@ static float3 NOISE_KERNEL_CONE_SAMPLING[6] =
 	float3(0.28128598, 0.42443639, -0.86065785),
 	float3(-0.16852403, 0.14748697, 0.97460106)
 };
-
-
-cbuffer FrameConstants : register(b0)
-{
-    float4x4 InvProj;
-    float4x4 InvView;
-    float4 LightDir;
-    float4 LightColor;
-    float4 CameraPos;
-    float2 Resolution;
-};
-
-cbuffer CloudsConstants : register(b1)
-{
-    float4 AmbientColor;
-    float4 WindDir;
-    float WindSpeed;
-    float Time;
-    float Crispiness;
-    float Curliness;
-    float Coverage;
-    float CloudsLayerSphereInnerRadius;
-    float CloudsLayerSphereOuterRadius;
-}
-
-#define SPHERE_INNER_RADIUS (EARTH_RADIUS + 5000.0f)
-#define SPHERE_OUTER_RADIUS (SPHERE_INNER_RADIUS + 17000.0f)
-#define SPHERE_DELTA float(SPHERE_OUTER_RADIUS - SPHERE_INNER_RADIUS)
 
 // Cloud types height density gradients
 #define STRATUS_GRADIENT float4(0.0f, 0.1f, 0.2f, 0.3f)
@@ -108,13 +107,11 @@ bool RaySphereIntersection(float3 rayDir, float radius, out float3 posHit)
 
 bool RaySphereIntersectionFromOriginPoint(float3 rayOrigin, float3 rayDir, float radius, out float3 posHit)
 {
-	
     float t;
-    sphereCenter.xz = CameraPos.xz;
-
+    PLANET_CENTER.xz = CameraPos.xz;
     float radius2 = radius * radius;
 
-    float3 L = rayOrigin - sphereCenter;
+    float3 L = rayOrigin - PLANET_CENTER;
     float a = dot(rayDir, rayDir);
     float b = 2.0 * dot(rayDir, L);
     float c = dot(L, L) - radius2;
@@ -132,33 +129,9 @@ bool RaySphereIntersectionFromOriginPoint(float3 rayOrigin, float3 rayDir, float
     return true;
 }
 
-bool RaySphereIntersectionFromOriginPoint2(float3 rayOrigin, float3 rayDir, float radius, out float3 posHit)
-{
-    float t;
-    sphereCenter.xz = CameraPos.xz;
-
-    float radius2 = radius * radius;
-
-    float3 L = rayOrigin - sphereCenter;
-    float a = dot(rayDir, rayDir);
-    float b = 2.0 * dot(rayDir, L);
-    float c = dot(L, L) - radius2;
-
-    float discr = b * b - 4.0 * a * c;
-    if (discr < 0.0)
-        return false;
-    t = max(0.0, (-b + sqrt(discr)) / 2);
-    if (t == 0.0)
-    {
-        return false;
-    }
-    posHit = rayOrigin + rayDir * t;
-
-    return true;
-}
 float GetHeightFraction(float3 inPos)
 {
-    return (length(inPos - sphereCenter) - SPHERE_INNER_RADIUS) / (SPHERE_OUTER_RADIUS - SPHERE_INNER_RADIUS);
+    return (length(inPos - PLANET_CENTER) - PLANET_INNER_RADIUS) / (PLANET_OUTER_RADIUS - PLANET_INNER_RADIUS);
 }
 float Remap(float originalValue, float originalMin, float originalMax, float newMin, float newMax)
 {
@@ -167,7 +140,7 @@ float Remap(float originalValue, float originalMin, float originalMax, float new
 
 float2 GetUVProjection(float3 p)
 {
-    return p.xz / SPHERE_INNER_RADIUS + 0.5f;
+    return p.xz / PLANET_INNER_RADIUS + 0.5f;
 }
 
 float GetDensityForCloud(float heightFraction, float cloudType)
@@ -219,7 +192,6 @@ float SampleCloudDensity(float3 p, bool useHighFreq, float lod)
 
 float RaymarchToLight(float3 origin, float stepSize, float3 lightDir, float originalDensity, float lightDotEye)
 {
-    float absorption = 0.15;
     float3 startPos = origin;
     
     float deltaStep = stepSize * 6.0f;
@@ -232,7 +204,7 @@ float RaymarchToLight(float3 origin, float stepSize, float3 lightDir, float orig
     const float densityThreshold = 0.3f;
     
     float invDepth = 1.0 / deltaStep;
-    float sigmaDeltaStep = -deltaStep * absorption;
+    float sigmaDeltaStep = -deltaStep * Absorption;
     float3 pos;
 
     float finalTransmittance = 1.0;
@@ -301,7 +273,7 @@ float4 RaymarchToCloud(float2 texCoord, float3 startPos, float3 endPos, float3 s
             float scattering = max(lerp(HenyeyGreenstein(LdotV, -0.08f), HenyeyGreenstein(LdotV, 0.08f), clamp(LdotV * 0.5f + 0.5f, 0.0f, 1.0f)), 1.0f);
             float powderEffect = SugarPowder(densitySample);
 			
-            float3 S = 0.6f * (lerp(lerp(AmbientColor.rgb * 1.8f, skyColor, 0.2f), scattering * LightColor.rgb, powderEffect * lightDensity)) * densitySample;
+            float3 S = 0.6f * (lerp(lerp(AmbientColor.rgb * 1.8f, skyColor, 0.2f), scattering * LightColor.rgb, lightDensity)) * densitySample;
             float deltaTransmittance = exp(densitySample * sigmaDeltaStep);
             float3 Sint = (S - S * deltaTransmittance) * (1.0f / densitySample);
             finalColor.rgb += finalTransmittance * Sint;
@@ -319,10 +291,11 @@ float4 RaymarchToCloud(float2 texCoord, float3 startPos, float3 endPos, float3 s
 
 float4 main(float4 pos : SV_POSITION, float2 tex : TEX_COORD0) : SV_Target
 {
-    float4 finalColor;
-    float2 texCoord = tex;
-
-	////compute ray direction
+        
+    float4 finalColor = float4(0.0, 0.0, 0.0, 1.0f);
+    float4 cloudsColor = float4(0.0, 0.0, 0.0, 0.0f);
+    
+	//compute ray direction
     float4 rayClipSpace = float4(toClipSpaceCoord(tex), 1.0);
     float4 rayView = mul(InvProj, rayClipSpace);
     rayView = float4(rayView.xy, -1.0, 0.0);
@@ -331,53 +304,28 @@ float4 main(float4 pos : SV_POSITION, float2 tex : TEX_COORD0) : SV_Target
     worldDir = normalize(worldDir);
     
     float3 startPos, endPos;
-    float4 v = float4(0.0, 0.0, 0.0, 0.0);
     
-    float3 stub, cubeMapEndPos;
-    bool hit = RaySphereIntersection(worldDir, 0.5, cubeMapEndPos);
-
-    int case_= 0;
-    
-	//compute raymarching starting and ending point
-    float3 fogRay;
-    float3 cameraPosition = CameraPos.rgb;
-    if (cameraPosition.y < SPHERE_INNER_RADIUS - EARTH_RADIUS)
+    if (CameraPos.y < PLANET_INNER_RADIUS - PLANET_RADIUS)
     {
-        RaySphereIntersectionFromOriginPoint(cameraPosition, worldDir, SPHERE_INNER_RADIUS, startPos);
-        RaySphereIntersectionFromOriginPoint(cameraPosition, worldDir, SPHERE_OUTER_RADIUS, endPos);
-        fogRay = startPos;
+        RaySphereIntersectionFromOriginPoint(CameraPos.rgb, worldDir, PLANET_INNER_RADIUS, startPos);
+        RaySphereIntersectionFromOriginPoint(CameraPos.rgb, worldDir, PLANET_OUTER_RADIUS, endPos);
     }
-    else if (cameraPosition.y > SPHERE_INNER_RADIUS - EARTH_RADIUS && cameraPosition.y < SPHERE_OUTER_RADIUS - EARTH_RADIUS)
+    else if (CameraPos.y > PLANET_INNER_RADIUS - PLANET_RADIUS && CameraPos.y < PLANET_OUTER_RADIUS - PLANET_RADIUS)
     {
-        startPos = cameraPosition;
-        RaySphereIntersectionFromOriginPoint(cameraPosition, worldDir, SPHERE_OUTER_RADIUS, endPos);
-        bool hit = RaySphereIntersectionFromOriginPoint(cameraPosition, worldDir, SPHERE_INNER_RADIUS, fogRay);
-        if (!hit)
-            fogRay = startPos;
-        case_ = 1;
+        startPos = CameraPos.rgb;
+        RaySphereIntersectionFromOriginPoint(CameraPos.rgb, worldDir, PLANET_OUTER_RADIUS, endPos);
     }
     else
     {
-        RaySphereIntersectionFromOriginPoint2(cameraPosition, worldDir, SPHERE_OUTER_RADIUS, startPos);
-        RaySphereIntersectionFromOriginPoint2(cameraPosition, worldDir, SPHERE_INNER_RADIUS, endPos);
-        RaySphereIntersectionFromOriginPoint(cameraPosition, worldDir, SPHERE_OUTER_RADIUS, fogRay);
-        case_ = 2;
+        RaySphereIntersectionFromOriginPoint(CameraPos.rgb, worldDir, PLANET_OUTER_RADIUS, startPos);
+        RaySphereIntersectionFromOriginPoint(CameraPos.rgb, worldDir, PLANET_INNER_RADIUS, endPos);
     }
     
-    finalColor = inputTex.Sample(SimpleSampler, tex);
     float4 cloudDistance;
-    
-    
-    v = RaymarchToCloud(tex, startPos, endPos, finalColor.rgb, cloudDistance);
-    //cloudDistance = float4(distance(cameraPosition, cloudDistance.xyz), 0.0, 0.0, 0.0);
-    
-    // add sun glare to clouds
-    float sun = clamp(dot(LightDir.rgb, normalize(endPos - startPos)), 0.0, 1.0);
-    float3 s = 0.8 * float3(1.0, 0.4, 0.2) * pow(sun, 256.0);
-    v.rgb += s * v.a;
-    
-    finalColor.rgb = finalColor.rgb * (1.0 - v.a) + v.rgb;
-    finalColor.a = 1.0f;
-    
+    cloudsColor = RaymarchToCloud(tex, startPos, endPos, finalColor.rgb, cloudDistance);
+    cloudsColor.rgb = cloudsColor.rgb * 1.8f - 0.1f;
+   
+    finalColor = inputTex.Sample(SimpleSampler, tex);
+    finalColor.rgb = finalColor.rgb * (1.0 - cloudsColor.a) + cloudsColor.rgb;
     return finalColor;
 }

@@ -1,4 +1,28 @@
-﻿  TestSceneDemo.cpp
+﻿  RenderingGame.cpp
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(98): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(18): note: see declaration of 'Rendering::VignetteMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(121): warning C4150: deletion of pointer to incomplete type 'Rendering::FXAAMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(21): note: see declaration of 'Rendering::FXAAMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(142): warning C4150: deletion of pointer to incomplete type 'Rendering::ColorGradingMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(19): note: see declaration of 'Rendering::ColorGradingMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(172): warning C4150: deletion of pointer to incomplete type 'Rendering::ScreenSpaceReflectionsMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(22): note: see declaration of 'Rendering::ScreenSpaceReflectionsMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(197): warning C4150: deletion of pointer to incomplete type 'Rendering::MotionBlurMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(20): note: see declaration of 'Rendering::MotionBlurMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\instancingdemo.h(34): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.h(152): warning C4150: deletion of pointer to incomplete type 'Library::RenderableAABB'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\frustumcullingdemo.h(30): note: see declaration of 'Library::RenderableAABB'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(176): warning C4150: deletion of pointer to incomplete type 'Rendering::NormalMappingMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(154): note: see declaration of 'Rendering::NormalMappingMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(177): warning C4150: deletion of pointer to incomplete type 'Library::DepthMapMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(39): note: see declaration of 'Library::DepthMapMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(216): warning C4150: deletion of pointer to incomplete type 'Library::ShadowMappingDirectionalMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(38): note: see declaration of 'Library::ShadowMappingDirectionalMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(217): warning C4150: deletion of pointer to incomplete type 'Library::DepthMapMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(39): note: see declaration of 'Library::DepthMapMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\volumetriclightingdemo.h(362): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\terraindemo.h(98): warning C4305: 'initializing': truncation from 'double' to 'float'
+  TestSceneDemo.cpp
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(147): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(98): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(18): note: see declaration of 'Rendering::VignetteMaterial'
@@ -24,9 +48,10 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\l
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\foliage.h(104): warning C4305: 'initializing': truncation from 'double' to 'float'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(52): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(52): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(371): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(384): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  Generating Code...
   Generating code
-  0 of 6444 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+  0 of 6451 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
