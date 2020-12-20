@@ -24,6 +24,7 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\l
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\foliage.h(104): warning C4305: 'initializing': truncation from 'double' to 'float'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(52): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(52): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(371): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   Generating code
   0 of 6444 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
