@@ -201,6 +201,9 @@ namespace Rendering
 		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\weather.dds").c_str(), nullptr, &mWeatherTextureSRV)))
 			throw GameException("Failed to create Weather Map.");
 
+		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\worley.dds").c_str(), nullptr, &mWorleyTextureSRV)))
+			throw GameException("Failed to create Worley Map.");
+
 		mVolumetricCloudsFrameConstantBuffer.Initialize(mGame->Direct3DDevice());
 		mVolumetricCloudsCloudsConstantBuffer.Initialize(mGame->Direct3DDevice());
 
@@ -262,9 +265,13 @@ namespace Rendering
 		ImGui::SliderFloat("Wind gust distance", &mWindGustDistance, 0.0f, 100.0f);
 		ImGui::SliderFloat("Wind frequency", &mWindFrequency, 0.0f, 100.0f);
 
+		ImGui::ColorEdit3("Clouds ambient color", mCloudsAmbientColor);
+		ImGui::SliderFloat("Clouds bottom height", &mCloudsLayerInnerHeight, 1000.0f, 10000.0f);
+		ImGui::SliderFloat("Clouds top height", &mCloudsLayerOuterHeight, 10000.0f, 50000.0f);
 		ImGui::SliderFloat("Clouds crispiness", &mCloudsCrispiness, 0.0f, 100.0f);
+		ImGui::SliderFloat("Clouds curliness", &mCloudsCurliness, 0.0f, 5.0f);
 		ImGui::SliderFloat("Clouds coverage", &mCloudsCoverage, 0.0f, 1.0f);
-		ImGui::SliderFloat("Clouds speed", &mCloudsSpeed, 0.0f, 10000.0f);
+		ImGui::SliderFloat("Clouds wind speed factor", &mCloudsWindSpeedMultiplier, 0.0f, 10000.0f);
 
 		ImGui::End();
 	}
@@ -358,20 +365,27 @@ namespace Rendering
 		//mPostProcessingStack->Begin(false);
 		mVolumetricCloudsFrameConstantBuffer.Data.invProj = XMMatrixInverse(nullptr, mCamera->ProjectionMatrix());
 		mVolumetricCloudsFrameConstantBuffer.Data.invView = XMMatrixInverse(nullptr, mCamera->ViewMatrix());
-		mVolumetricCloudsFrameConstantBuffer.Data.lightDir = mDirectionalLight->DirectionVector();
+		mVolumetricCloudsFrameConstantBuffer.Data.lightDir = -mDirectionalLight->DirectionVector();
+		mVolumetricCloudsFrameConstantBuffer.Data.lightCol = XMVECTOR{ mDirectionalLight->GetDirectionalLightColor().x, mDirectionalLight->GetDirectionalLightColor().y, mDirectionalLight->GetDirectionalLightColor().z, 1.0f };
 		mVolumetricCloudsFrameConstantBuffer.Data.cameraPos = mCamera->PositionVector();
+		mVolumetricCloudsFrameConstantBuffer.Data.resolution = XMFLOAT2(mGame->ScreenWidth(), mGame->ScreenHeight());
 		mVolumetricCloudsFrameConstantBuffer.ApplyChanges(context);
 
+		mVolumetricCloudsCloudsConstantBuffer.Data.AmbientColor = XMVECTOR{ mCloudsAmbientColor[0], mCloudsAmbientColor[1], mCloudsAmbientColor[2], 1.0f };
+		mVolumetricCloudsCloudsConstantBuffer.Data.WindDir = XMVECTOR{1.0f, 0.0f, 0.0f, 1.0f};
+		mVolumetricCloudsCloudsConstantBuffer.Data.WindSpeed = mWindStrength * mCloudsWindSpeedMultiplier;
 		mVolumetricCloudsCloudsConstantBuffer.Data.Time = static_cast<float>(gameTime.TotalGameTime());
 		mVolumetricCloudsCloudsConstantBuffer.Data.Crispiness = mCloudsCrispiness;
+		mVolumetricCloudsCloudsConstantBuffer.Data.Curliness = mCloudsCurliness;
 		mVolumetricCloudsCloudsConstantBuffer.Data.Coverage = mCloudsCoverage;
-		mVolumetricCloudsCloudsConstantBuffer.Data.Speed = mCloudsSpeed;
+		mVolumetricCloudsCloudsConstantBuffer.Data.CloudsLayerSphereInnerRadius = mCloudsLayerInnerHeight;
+		mVolumetricCloudsCloudsConstantBuffer.Data.CloudsLayerSphereOuterRadius = mCloudsLayerOuterHeight;
 		mVolumetricCloudsCloudsConstantBuffer.ApplyChanges(context);
 
 		ID3D11Buffer* CBs[2] = { mVolumetricCloudsFrameConstantBuffer.Buffer(), mVolumetricCloudsCloudsConstantBuffer.Buffer() };
-		ID3D11ShaderResourceView* SR[3] = { mPostProcessingStack->GetPrepassColorOutputTexture(), mWeatherTextureSRV, mCloudTextureSRV };
+		ID3D11ShaderResourceView* SR[4] = { mPostProcessingStack->GetPrepassColorOutputTexture(), mWeatherTextureSRV, mCloudTextureSRV, mWorleyTextureSRV };
 		ID3D11SamplerState* SS[2] = { mCloudSS, mWeatherSS };
-		context->PSSetShaderResources(0, 3, SR);
+		context->PSSetShaderResources(0, 4, SR);
 		context->PSSetConstantBuffers(0, 2, CBs);
 		context->PSSetSamplers(0, 2, SS);
 		context->PSSetShader(VCMainPS, NULL, NULL);

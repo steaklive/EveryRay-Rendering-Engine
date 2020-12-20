@@ -45,14 +45,22 @@ namespace Rendering
 			XMMATRIX	invProj;
 			XMMATRIX	invView;
 			XMVECTOR	lightDir;
+			XMVECTOR	lightCol;
 			XMVECTOR	cameraPos;
+			XMFLOAT2	resolution;
 		};
 		struct CloudsCB
 		{
+			XMVECTOR AmbientColor;
+			XMVECTOR WindDir;
+			float WindSpeed;
 			float Time;
 			float Crispiness;
+			float Curliness;
 			float Coverage;
 			float Speed;
+			float CloudsLayerSphereInnerRadius;
+			float CloudsLayerSphereOuterRadius;
 		};
 	}
 
@@ -111,13 +119,18 @@ namespace Rendering
 
 		ID3D11ShaderResourceView* mCloudTextureSRV = nullptr;
 		ID3D11ShaderResourceView* mWeatherTextureSRV = nullptr;
+		ID3D11ShaderResourceView* mWorleyTextureSRV = nullptr;
 
 		ID3D11SamplerState* mCloudSS = nullptr;
 		ID3D11SamplerState* mWeatherSS = nullptr;
 
 		float mCloudsCrispiness = 40.0f;
+		float mCloudsCurliness = 0.2f;
 		float mCloudsCoverage = 0.5f;
-		float mCloudsSpeed = 1000;
+		float mCloudsAmbientColor[3] = { 0.9f, 0.9f, 0.9f };
+		float mCloudsWindSpeedMultiplier = 1000.0f;
+		float mCloudsLayerInnerHeight = 5000.0f;
+		float mCloudsLayerOuterHeight = 17000.0f;
 
 		ConstantBuffer<VolumetricCloudsData::FrameCB> mVolumetricCloudsFrameConstantBuffer;
 		ConstantBuffer<VolumetricCloudsData::CloudsCB> mVolumetricCloudsCloudsConstantBuffer;
