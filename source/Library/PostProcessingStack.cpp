@@ -46,6 +46,7 @@ namespace Rendering {
 		DeleteObject(mVignetteRenderTarget);
 		DeleteObject(mFXAARenderTarget);
 		DeleteObject(mSSRRenderTarget);
+		DeleteObject(mExtraRenderTarget);
 
 		ReleaseObject(mQuadVB);
 		ReleaseObject(mFullScreenQuadVS);
@@ -55,6 +56,9 @@ namespace Rendering {
 	void PostProcessingStack::Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR)
 	{
 		mMainRenderTarget = new FullScreenRenderTarget(game);
+		mOriginalMainRTSRV = mMainRenderTarget->OutputColorTexture();
+
+		mExtraRenderTarget = new FullScreenRenderTarget(game);
 
 		Effect* vignetteEffectFX = new Effect(game);
 		vignetteEffectFX->CompileFromFile(Utility::GetFilePath(L"content\\effects\\Vignette.fx"));
@@ -482,6 +486,11 @@ namespace Rendering {
 		return mMainRenderTarget->OutputColorTexture();
 	}
 
+	ID3D11ShaderResourceView * PostProcessingStack::GetExtraColorOutputTexture()
+	{
+		return mExtraRenderTarget->OutputColorTexture();
+	}
+
 	void PostProcessingStack::ComputeLuminance(ID3D11DeviceContext * pContext, ID3D11ShaderResourceView * pInput, ID3D11RenderTargetView* pOutput)
 	{
 		pContext->OMSetRenderTargets(1, &pOutput, NULL);
@@ -557,6 +566,30 @@ namespace Rendering {
 	void PostProcessingStack::End()
 	{
 		mMainRenderTarget->End();
+	}
+
+	void PostProcessingStack::BeginRenderingToExtraRT(bool clear)
+	{
+		mExtraRenderTarget->Begin();
+
+		if (clear) {
+			game.Direct3DDeviceContext()->ClearRenderTargetView(mExtraRenderTarget->RenderTargetView(), ClearBackgroundColor);
+			game.Direct3DDeviceContext()->ClearDepthStencilView(mExtraRenderTarget->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
+		}
+	}
+
+	void PostProcessingStack::SetMainRT(ID3D11ShaderResourceView* srv)
+	{
+		mMainRenderTarget->SetSRV(srv);
+	}
+	void PostProcessingStack::ResetMainRTtoOriginal()
+	{
+		mMainRenderTarget->SetSRV(mOriginalMainRTSRV);
+	}
+
+	void PostProcessingStack::EndRenderingToExtraRT()
+	{
+		mExtraRenderTarget->End();
 	}
 
 	void PostProcessingStack::DrawEffects(const GameTime& gameTime)

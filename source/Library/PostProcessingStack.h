@@ -234,6 +234,10 @@ namespace Rendering
 		void Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR = true);
 		void Begin(bool clear = true);
 		void End();
+		void BeginRenderingToExtraRT(bool clear);
+		void EndRenderingToExtraRT();
+		void SetMainRT(ID3D11ShaderResourceView* srv);
+		void ResetMainRTtoOriginal();
 
 		void DrawEffects(const GameTime & gameTime);
 
@@ -244,6 +248,7 @@ namespace Rendering
 
 		ID3D11ShaderResourceView* GetDepthOutputTexture();
 		ID3D11ShaderResourceView* GetPrepassColorOutputTexture();
+		ID3D11ShaderResourceView * GetExtraColorOutputTexture();
 
 		bool isWindowOpened = false;
 
@@ -274,9 +279,13 @@ namespace Rendering
 		FullScreenRenderTarget* mTonemapRenderTarget;
 		FullScreenRenderTarget* mSSRRenderTarget;
 
+		FullScreenRenderTarget* mExtraRenderTarget;
+
 		ID3D11Buffer* mQuadVB;
 		ID3D11VertexShader* mFullScreenQuadVS;
 		ID3D11InputLayout* mFullScreenQuadLayout;
+
+		ID3D11ShaderResourceView* mOriginalMainRTSRV = nullptr;
 
 		bool mVignetteLoaded = false;
 		bool mColorGradingLoaded = false;
