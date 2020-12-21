@@ -812,6 +812,7 @@
     <FxCompile Include="..\..\content\effects\ParallaxMapping.fx" />
     <FxCompile Include="..\..\content\shaders\VolumetricClouds\VolumetricClouds.hlsl" />
     <FxCompile Include="..\..\content\shaders\VolumetricClouds\VolumetricCloudsComposite.hlsl" />
+    <FxCompile Include="..\..\content\shaders\VolumetricClouds\VolumetricCloudsBlur.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\content\effects\ShaderHelper.hlsli">

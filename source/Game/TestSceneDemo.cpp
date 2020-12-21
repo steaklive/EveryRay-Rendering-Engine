@@ -202,6 +202,20 @@ namespace Rendering
 			throw GameException("Failed to create shader from VolumetricCloudsComposite.hlsl!");
 		blob->Release();
 
+		blob = nullptr;
+		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsBlur.hlsl").c_str(), "main", "ps_5_0", &blob)))
+			throw GameException("Failed to load main pass from shader: VolumetricCloudsBlur.hlsl!");
+		if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &VCBlurPS)))
+			throw GameException("Failed to create shader from VolumetricCloudsBlur.hlsl!");
+		blob->Release();
+
+		blob = nullptr;
+		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsCS.hlsl").c_str(), "main", "cs_5_0", &blob)))
+			throw GameException("Failed to load main pass from shader: VolumetricCloudsCS.hlsl!");
+		if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &VCMainCS)))
+			throw GameException("Failed to create shader from VolumetricCloudsCS.hlsl!");
+		blob->Release();
+
 		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\cloud.dds").c_str(), nullptr, &mCloudTextureSRV)))
 			throw GameException("Failed to create Cloud Map.");
 
@@ -232,6 +246,8 @@ namespace Rendering
 
 		mVolumetricCloudsRenderTarget = new FullScreenRenderTarget(*mGame);
 		mVolumetricCloudsCompositeRenderTarget = new FullScreenRenderTarget(*mGame);
+		mVolumetricCloudsBlurRenderTarget = new FullScreenRenderTarget(*mGame);
+		mVolumetricCloudsRenderTargetCS = CustomRenderTarget::Create(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
 	}
 
 	void TestSceneDemo::UpdateLevel(const GameTime& gameTime)
@@ -397,20 +413,65 @@ namespace Rendering
 		mVolumetricCloudsCloudsConstantBuffer.ApplyChanges(context);
 
 		//main pass
-		mVolumetricCloudsRenderTarget->Begin();
-		ID3D11Buffer* CBs[2] = { mVolumetricCloudsFrameConstantBuffer.Buffer(), mVolumetricCloudsCloudsConstantBuffer.Buffer() };
-		ID3D11ShaderResourceView* SR[4] = { mPostProcessingStack->GetExtraColorOutputTexture(), mWeatherTextureSRV, mCloudTextureSRV, mWorleyTextureSRV };
+		ID3D11Buffer* CBs[2] = {
+			mVolumetricCloudsFrameConstantBuffer.Buffer(),
+			mVolumetricCloudsCloudsConstantBuffer.Buffer()
+		};
+		ID3D11ShaderResourceView* SR[5] = {
+			mPostProcessingStack->GetExtraColorOutputTexture(),
+			mWeatherTextureSRV,
+			mCloudTextureSRV,
+			mWorleyTextureSRV,
+			mPostProcessingStack->GetDepthOutputTexture(),
+		};
 		ID3D11SamplerState* SS[2] = { mCloudSS, mWeatherSS };
-		context->PSSetShaderResources(0, 4, SR);
-		context->PSSetConstantBuffers(0, 2, CBs);
-		context->PSSetSamplers(0, 2, SS);
-		context->PSSetShader(VCMainPS, NULL, NULL);
+
+
+		if (mUseComputeShaderVolumetricClouds) {
+			context->CSSetShaderResources(0, 5, SR);
+			context->CSSetConstantBuffers(0, 2, CBs);
+			context->CSSetSamplers(0, 2, SS);
+			context->CSSetShader(VCMainCS, NULL, NULL);
+			context->CSSetUnorderedAccessViews(0, 1, &mVolumetricCloudsRenderTargetCS->getUAVs()[0], NULL);
+			context->Dispatch(INT_CEIL(mGame->ScreenWidth(), 32), INT_CEIL(mGame->ScreenHeight(), 32), 1);
+
+			ID3D11ShaderResourceView* nullSRV[] = { NULL };
+			context->CSSetShaderResources(0, 1, nullSRV);
+			ID3D11UnorderedAccessView* nullUAV[] = { NULL };
+			context->CSSetUnorderedAccessViews(0, 1, nullUAV, 0);
+			ID3D11Buffer* nullCBs[] = { NULL };
+			context->CSSetConstantBuffers(0, 1, nullCBs);
+			ID3D11SamplerState* nullSSs[] = { NULL };
+			context->CSSetSamplers(0, 1, nullSSs);
+		}
+		else {
+			mVolumetricCloudsRenderTarget->Begin();
+
+			context->PSSetShaderResources(0, 5, SR);
+			context->PSSetConstantBuffers(0, 2, CBs);
+			context->PSSetSamplers(0, 2, SS);
+			context->PSSetShader(VCMainPS, NULL, NULL);
+			mPostProcessingStack->DrawFullscreenQuad(context);
+			mVolumetricCloudsRenderTarget->End();
+		}
+
+		//blur pass
+		mVolumetricCloudsBlurRenderTarget->Begin();
+		ID3D11ShaderResourceView* SR_Blur[1] = {
+			(mUseComputeShaderVolumetricClouds) ? mVolumetricCloudsRenderTargetCS->getSRV() : mVolumetricCloudsRenderTarget->OutputColorTexture()
+		};
+		context->PSSetShaderResources(0, 1, SR_Blur);
+		context->PSSetShader(VCBlurPS, NULL, NULL);
 		mPostProcessingStack->DrawFullscreenQuad(context);
-		mVolumetricCloudsRenderTarget->End();
+		mVolumetricCloudsBlurRenderTarget->End();
 
 		//composite pass
 		mVolumetricCloudsCompositeRenderTarget->Begin();
-		ID3D11ShaderResourceView* SR_Composite[3] = { mPostProcessingStack->GetPrepassColorOutputTexture(), mPostProcessingStack->GetDepthOutputTexture(), mVolumetricCloudsRenderTarget->OutputColorTexture() };
+		ID3D11ShaderResourceView* SR_Composite[3] = { 
+			mPostProcessingStack->GetPrepassColorOutputTexture(),
+			mPostProcessingStack->GetDepthOutputTexture(),
+			mVolumetricCloudsBlurRenderTarget->OutputColorTexture()
+		};
 		context->PSSetShaderResources(0, 3, SR_Composite);
 		context->PSSetShader(VCCompositePS, NULL, NULL);
 		mPostProcessingStack->DrawFullscreenQuad(context);

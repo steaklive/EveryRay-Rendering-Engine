@@ -4,6 +4,7 @@
 #include "..\Library\DemoLevel.h"
 #include "..\Library\ConstantBuffer.h"
 #include "..\Library\Frustum.h"
+#include "..\Library\CustomRenderTarget.h"
 
 using namespace Library;
 
@@ -115,10 +116,14 @@ namespace Rendering
 		float mWindGustDistance = 1.0f;
 		//Terrain* mTerrain;
 
-		FullScreenRenderTarget* mVolumetricCloudsRenderTarget;
-		FullScreenRenderTarget* mVolumetricCloudsCompositeRenderTarget;
-		ID3D11PixelShader* VCMainPS;
-		ID3D11PixelShader* VCCompositePS;
+		CustomRenderTarget* mVolumetricCloudsRenderTargetCS = nullptr;
+		FullScreenRenderTarget* mVolumetricCloudsRenderTarget = nullptr;
+		FullScreenRenderTarget* mVolumetricCloudsCompositeRenderTarget = nullptr;
+		FullScreenRenderTarget* mVolumetricCloudsBlurRenderTarget = nullptr;
+		ID3D11ComputeShader* VCMainCS = nullptr;
+		ID3D11PixelShader* VCMainPS = nullptr;
+		ID3D11PixelShader* VCCompositePS = nullptr;
+		ID3D11PixelShader* VCBlurPS = nullptr;
 
 		ID3D11ShaderResourceView* mCloudTextureSRV = nullptr;
 		ID3D11ShaderResourceView* mWeatherTextureSRV = nullptr;
@@ -135,6 +140,8 @@ namespace Rendering
 		//float mCloudsLayerInnerHeight = 5000.0f;
 		//float mCloudsLayerOuterHeight = 17000.0f;
 		float mCloudsLightAbsorption = 0.002f;
+
+		bool mUseComputeShaderVolumetricClouds = true;
 
 		ConstantBuffer<VolumetricCloudsData::FrameCB> mVolumetricCloudsFrameConstantBuffer;
 		ConstantBuffer<VolumetricCloudsData::CloudsCB> mVolumetricCloudsCloudsConstantBuffer;
