@@ -22,6 +22,10 @@ namespace Library
 			ZeroMemory(&Data, sizeof(T));
 		}
 
+		~ConstantBuffer() {
+			ReleaseObject(buffer);
+		}
+
 		ID3D11Buffer* Buffer() const
 		{
 			return buffer;

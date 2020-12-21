@@ -14,7 +14,8 @@ public:
 	ID3D11RenderTargetView** getRTVs() { return mRTVs; }
 	ID3D11ShaderResourceView* getSRV() { return mSRV; }
 	ID3D11Texture2D* getTexture2D() { return mTexture2D; }
-	ID3D11UnorderedAccessView** getUAV() { return mUAVs; }
+	ID3D11UnorderedAccessView** getUAVs() { return mUAVs; }
+	ID3D11UnorderedAccessView* getUAV() { return mUAVs[0]; }
 	int getMips() { return mMipLevels; }
 protected:
 	CustomRenderTarget() {};

@@ -32,6 +32,8 @@
 
 #define MAX_NUM_OF_CASCADES 3
 
+#define INT_CEIL(n,d) (int)ceil((float)n/d)
+
 namespace Library
 {
 	typedef unsigned char byte;
