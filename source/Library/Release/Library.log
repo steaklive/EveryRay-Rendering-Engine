@@ -1,4 +1,73 @@
-﻿  VolumetricClouds.cpp
+﻿  Scene.cpp
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(147): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\scene.cpp(24): warning C4996: 'Json::Reader': Use CharReader and CharReaderBuilder instead.
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\external\jsoncpp\include\json\reader.h(37): note: see declaration of 'Json::Reader'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\scene.cpp(24): warning C4996: 'Json::Reader::Reader': Use CharReader and CharReaderBuilder instead
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\external\jsoncpp\include\json\reader.h(55): note: see declaration of 'Json::Reader::Reader'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\scene.cpp(27): warning C4996: 'Json::Reader::parse': Use CharReader and CharReaderBuilder instead.
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\external\jsoncpp\include\json\reader.h(101): note: see declaration of 'Json::Reader::parse'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\scene.cpp(28): warning C4996: 'Json::Reader::getFormattedErrorMessages': Use CharReader and CharReaderBuilder instead.
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\external\jsoncpp\include\json\reader.h(121): note: see declaration of 'Json::Reader::getFormattedErrorMessages'
+  Terrain.cpp
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(98): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(18): note: see declaration of 'Rendering::VignetteMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(99): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(121): warning C4150: deletion of pointer to incomplete type 'Rendering::FXAAMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(21): note: see declaration of 'Rendering::FXAAMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(122): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(142): warning C4150: deletion of pointer to incomplete type 'Rendering::ColorGradingMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(19): note: see declaration of 'Rendering::ColorGradingMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(143): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(172): warning C4150: deletion of pointer to incomplete type 'Rendering::ScreenSpaceReflectionsMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(22): note: see declaration of 'Rendering::ScreenSpaceReflectionsMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(173): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(197): warning C4150: deletion of pointer to incomplete type 'Rendering::MotionBlurMaterial'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(20): note: see declaration of 'Rendering::MotionBlurMaterial'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(198): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(130): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(87): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(88): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(51): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(94): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(120): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(144): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(158): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(172): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(229): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(469): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(474): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(503): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(512): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(513): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(577): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(578): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(579): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(580): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(581): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(582): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(583): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(584): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(585): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(674): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(675): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(676): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(714): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(715): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(716): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(717): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(769): warning C4101: 'index2': unreferenced local variable
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(769): warning C4101: 'index3': unreferenced local variable
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(765): warning C4101: 'vector1': unreferenced local variable
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(765): warning C4101: 'vector2': unreferenced local variable
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(769): warning C4101: 'index1': unreferenced local variable
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(798): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(813): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  VolumetricClouds.cpp
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(98): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(18): note: see declaration of 'Rendering::VignetteMaterial'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(99): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
