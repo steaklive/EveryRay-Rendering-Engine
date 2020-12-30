@@ -22,7 +22,7 @@ namespace Library
 			ZeroMemory(&Data, sizeof(T));
 		}
 
-		~ConstantBuffer() {
+		void Release() {
 			ReleaseObject(buffer);
 		}
 

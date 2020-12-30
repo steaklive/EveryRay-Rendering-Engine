@@ -35,17 +35,8 @@
 #include "..\Library\Terrain.h"
 #include "..\Library\Foliage.h"
 #include "..\Library\Scene.h"
+#include "..\Library\VolumetricClouds.h"
 #include "..\Library\ShaderCompiler.h"
-
-#include "imgui.h"
-#include "imgui_impl_dx11.h"
-#include "imgui_impl_win32.h"
-
-#include <WICTextureLoader.h>
-#include <DDSTextureLoader.h>
-#include <SpriteBatch.h>
-#include <SpriteFont.h>
-#include <sstream>
 
 namespace Rendering
 {
@@ -65,7 +56,8 @@ namespace Rendering
 		mSSRQuad(nullptr),
 		mShadowMapper(nullptr),
 		mFoliageCollection(0, nullptr),
-		mScene(nullptr)
+		mScene(nullptr),
+		mVolumetricClouds(nullptr)
 		//mTerrain(nullptr)
 	{
 	}
@@ -86,6 +78,7 @@ namespace Rendering
 		ReleaseObject(mRadianceTextureSRV);
 		ReleaseObject(mIntegrationMapTextureSRV);
 		DeleteObject(mScene);
+		DeleteObject(mVolumetricClouds);
 	}
 
 #pragma region COMPONENT_METHODS
@@ -186,68 +179,8 @@ namespace Rendering
 		// Load a pre-computed Integration Map
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\ibl_brdf_lut.png").c_str(), nullptr, &mIntegrationMapTextureSRV)))
 			throw GameException("Failed to create Integration Texture.");
-
-		//volumetric clouds
-		ID3DBlob* blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricClouds.hlsl").c_str(), "main", "ps_5_0", &blob)))
-			throw GameException("Failed to load main pass from shader: VolumetricClouds.hlsl!");
-		if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &VCMainPS)))
-			throw GameException("Failed to create shader from VolumetricClouds.hlsl!");
-		blob->Release();
-
-		blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsComposite.hlsl").c_str(), "main", "ps_5_0", &blob)))
-			throw GameException("Failed to load main pass from shader: VolumetricCloudsComposite.hlsl!");
-		if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &VCCompositePS)))
-			throw GameException("Failed to create shader from VolumetricCloudsComposite.hlsl!");
-		blob->Release();
-
-		blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsBlur.hlsl").c_str(), "main", "ps_5_0", &blob)))
-			throw GameException("Failed to load main pass from shader: VolumetricCloudsBlur.hlsl!");
-		if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &VCBlurPS)))
-			throw GameException("Failed to create shader from VolumetricCloudsBlur.hlsl!");
-		blob->Release();
-
-		blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsCS.hlsl").c_str(), "main", "cs_5_0", &blob)))
-			throw GameException("Failed to load main pass from shader: VolumetricCloudsCS.hlsl!");
-		if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &VCMainCS)))
-			throw GameException("Failed to create shader from VolumetricCloudsCS.hlsl!");
-		blob->Release();
-
-		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\cloud.dds").c_str(), nullptr, &mCloudTextureSRV)))
-			throw GameException("Failed to create Cloud Map.");
-
-		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\weather.dds").c_str(), nullptr, &mWeatherTextureSRV)))
-			throw GameException("Failed to create Weather Map.");
-
-		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\worley.dds").c_str(), nullptr, &mWorleyTextureSRV)))
-			throw GameException("Failed to create Worley Map.");
-
-		mVolumetricCloudsFrameConstantBuffer.Initialize(mGame->Direct3DDevice());
-		mVolumetricCloudsCloudsConstantBuffer.Initialize(mGame->Direct3DDevice());
-
-		D3D11_SAMPLER_DESC sam_desc;
-		sam_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-		sam_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-		sam_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		sam_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-		sam_desc.MipLODBias = 0;
-		sam_desc.MaxAnisotropy = 1;
-		sam_desc.MinLOD = -1000.0f;
-		sam_desc.MaxLOD = 1000.0f;
-		if (FAILED(mGame->Direct3DDevice()->CreateSamplerState(&sam_desc, &mCloudSS)))
-			throw GameException("Failed to create sampler mCloudSS!");
-
-		sam_desc.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-		if (FAILED(mGame->Direct3DDevice()->CreateSamplerState(&sam_desc, &mWeatherSS)))
-			throw GameException("Failed to create sampler mWeatherSS!");
-
-		mVolumetricCloudsRenderTarget = new FullScreenRenderTarget(*mGame);
-		mVolumetricCloudsCompositeRenderTarget = new FullScreenRenderTarget(*mGame);
-		mVolumetricCloudsBlurRenderTarget = new FullScreenRenderTarget(*mGame);
-		mVolumetricCloudsRenderTargetCS = CustomRenderTarget::Create(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
+		
+		mVolumetricClouds = new VolumetricClouds(*mGame, *mCamera, *mDirectionalLight, *mPostProcessingStack, *mSkybox);
 	}
 
 	void TestSceneDemo::UpdateLevel(const GameTime& gameTime)
@@ -260,6 +193,7 @@ namespace Rendering
 		mSkybox->Update(gameTime);
 		mGrid->Update(gameTime);
 		mPostProcessingStack->Update();
+		mVolumetricClouds->Update(gameTime);
 
 		for (auto object : mFoliageCollection) 
 		{
@@ -290,28 +224,17 @@ namespace Rendering
 		ImGui::SliderFloat("Wind gust distance", &mWindGustDistance, 0.0f, 100.0f);
 		ImGui::SliderFloat("Wind frequency", &mWindFrequency, 0.0f, 100.0f);
 
-		ImGui::ColorEdit3("Clouds ambient color", mCloudsAmbientColor);
-		ImGui::SliderFloat("Clouds sun light absorption", &mCloudsLightAbsorption, 0.0f, 0.015f);
-		//ImGui::SliderFloat("Clouds bottom height", &mCloudsLayerInnerHeight, 1000.0f, 10000.0f);
-		//ImGui::SliderFloat("Clouds top height", &mCloudsLayerOuterHeight, 10000.0f, 50000.0f);
-		ImGui::SliderFloat("Clouds crispiness", &mCloudsCrispiness, 0.0f, 100.0f);
-		ImGui::SliderFloat("Clouds curliness", &mCloudsCurliness, 0.0f, 5.0f);
-		ImGui::SliderFloat("Clouds coverage", &mCloudsCoverage, 0.0f, 1.0f);
-		ImGui::SliderFloat("Clouds wind speed factor", &mCloudsWindSpeedMultiplier, 0.0f, 10000.0f);
-
 		ImGui::End();
 	}
 
 	void TestSceneDemo::DrawLevel(const GameTime& gameTime)
 	{
-		float clear_color[4] = { 0.0f, 1.0f, 1.0f, 0.0f };
-
 		mRenderStateHelper->SaveRasterizerState();
 
 		ID3D11DeviceContext* direct3DDeviceContext = mGame->Direct3DDeviceContext();
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		
-#pragma region DEFERRED_PREPASS
+		#pragma region GBUFFER_PREPASS
 		
 		mGBuffer->Start();
 		for (auto it = mScene->objects.begin(); it != mScene->objects.end(); it++)
@@ -320,7 +243,7 @@ namespace Rendering
 
 #pragma endregion
 
-#pragma region DRAW_SHADOWS
+		#pragma region DRAW_SHADOWS
 
 		for (int i = 0; i < MAX_NUM_OF_CASCADES; i++)
 		{
@@ -343,16 +266,11 @@ namespace Rendering
 		
 #pragma endregion
 
-		mPostProcessingStack->BeginRenderingToExtraRT(true);
-		
-		//skybox
-		mSkybox->Draw(gameTime);
-		
-		mPostProcessingStack->EndRenderingToExtraRT();
-
 		mPostProcessingStack->Begin(true);
+
 		#pragma region DRAW_LIGHTING
 		mSkybox->Draw(gameTime);
+
 		//grid
 		//if (Utility::IsEditorMode)
 		//	mGrid->Draw(gameTime);
@@ -369,113 +287,26 @@ namespace Rendering
 		for (auto object : mFoliageCollection)
 			object->Draw(gameTime);
 #pragma endregion
+
 		mPostProcessingStack->End();
 
-		DrawVolumetricClouds(gameTime);
-		mPostProcessingStack->SetMainRT(mVolumetricCloudsCompositeRenderTarget->OutputColorTexture());
+		#pragma region DRAW_VOLUMETRIC_CLOUDS
+		mVolumetricClouds->Draw(gameTime);
+#pragma endregion
 
+		#pragma region DRAW_POSTPROCESSING
 		mPostProcessingStack->UpdateSSRMaterial(mGBuffer->GetNormals()->getSRV(), mGBuffer->GetDepth()->getSRV(), mGBuffer->GetExtraBuffer()->getSRV(), (float)gameTime.TotalGameTime());
 		mPostProcessingStack->DrawEffects(gameTime);
 		mPostProcessingStack->ResetMainRTtoOriginal();
-
+#pragma endregion
+		
 		mRenderStateHelper->SaveAll();
 
-#pragma region DRAW_IMGUI
+		#pragma region DRAW_IMGUI
 		ImGui::Render();
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
 #pragma endregion
-	}
-
-	void TestSceneDemo::DrawVolumetricClouds(const GameTime& gameTime)
-	{
-		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
-		
-		//mPostProcessingStack->Begin(false);
-		mVolumetricCloudsFrameConstantBuffer.Data.invProj = XMMatrixInverse(nullptr, mCamera->ProjectionMatrix());
-		mVolumetricCloudsFrameConstantBuffer.Data.invView = XMMatrixInverse(nullptr, mCamera->ViewMatrix());
-		mVolumetricCloudsFrameConstantBuffer.Data.lightDir = -mDirectionalLight->DirectionVector();
-		mVolumetricCloudsFrameConstantBuffer.Data.lightCol = XMVECTOR{ mDirectionalLight->GetDirectionalLightColor().x, mDirectionalLight->GetDirectionalLightColor().y, mDirectionalLight->GetDirectionalLightColor().z, 1.0f };
-		mVolumetricCloudsFrameConstantBuffer.Data.cameraPos = mCamera->PositionVector();
-		mVolumetricCloudsFrameConstantBuffer.Data.resolution = XMFLOAT2(mGame->ScreenWidth(), mGame->ScreenHeight());
-		mVolumetricCloudsFrameConstantBuffer.ApplyChanges(context);
-
-		mVolumetricCloudsCloudsConstantBuffer.Data.AmbientColor = XMVECTOR{ mCloudsAmbientColor[0], mCloudsAmbientColor[1], mCloudsAmbientColor[2], 1.0f };
-		mVolumetricCloudsCloudsConstantBuffer.Data.WindDir = XMVECTOR{1.0f, 0.0f, 0.0f, 1.0f};
-		mVolumetricCloudsCloudsConstantBuffer.Data.WindSpeed = mWindStrength * mCloudsWindSpeedMultiplier;
-		mVolumetricCloudsCloudsConstantBuffer.Data.Time = static_cast<float>(gameTime.TotalGameTime());
-		mVolumetricCloudsCloudsConstantBuffer.Data.Crispiness = mCloudsCrispiness;
-		mVolumetricCloudsCloudsConstantBuffer.Data.Curliness = mCloudsCurliness;
-		mVolumetricCloudsCloudsConstantBuffer.Data.Coverage = mCloudsCoverage;
-		mVolumetricCloudsCloudsConstantBuffer.Data.Absorption = mCloudsLightAbsorption;
-		//mVolumetricCloudsCloudsConstantBuffer.Data.CloudsLayerSphereInnerRadius = mCloudsLayerInnerHeight;
-		//mVolumetricCloudsCloudsConstantBuffer.Data.CloudsLayerSphereOuterRadius = mCloudsLayerOuterHeight;
-		mVolumetricCloudsCloudsConstantBuffer.ApplyChanges(context);
-
-		//main pass
-		ID3D11Buffer* CBs[2] = {
-			mVolumetricCloudsFrameConstantBuffer.Buffer(),
-			mVolumetricCloudsCloudsConstantBuffer.Buffer()
-		};
-		ID3D11ShaderResourceView* SR[5] = {
-			mPostProcessingStack->GetExtraColorOutputTexture(),
-			mWeatherTextureSRV,
-			mCloudTextureSRV,
-			mWorleyTextureSRV,
-			mPostProcessingStack->GetDepthOutputTexture(),
-		};
-		ID3D11SamplerState* SS[2] = { mCloudSS, mWeatherSS };
-
-
-		if (mUseComputeShaderVolumetricClouds) {
-			context->CSSetShaderResources(0, 5, SR);
-			context->CSSetConstantBuffers(0, 2, CBs);
-			context->CSSetSamplers(0, 2, SS);
-			context->CSSetShader(VCMainCS, NULL, NULL);
-			context->CSSetUnorderedAccessViews(0, 1, &mVolumetricCloudsRenderTargetCS->getUAVs()[0], NULL);
-			context->Dispatch(INT_CEIL(mGame->ScreenWidth(), 32), INT_CEIL(mGame->ScreenHeight(), 32), 1);
-
-			ID3D11ShaderResourceView* nullSRV[] = { NULL };
-			context->CSSetShaderResources(0, 1, nullSRV);
-			ID3D11UnorderedAccessView* nullUAV[] = { NULL };
-			context->CSSetUnorderedAccessViews(0, 1, nullUAV, 0);
-			ID3D11Buffer* nullCBs[] = { NULL };
-			context->CSSetConstantBuffers(0, 1, nullCBs);
-			ID3D11SamplerState* nullSSs[] = { NULL };
-			context->CSSetSamplers(0, 1, nullSSs);
-		}
-		else {
-			mVolumetricCloudsRenderTarget->Begin();
-
-			context->PSSetShaderResources(0, 5, SR);
-			context->PSSetConstantBuffers(0, 2, CBs);
-			context->PSSetSamplers(0, 2, SS);
-			context->PSSetShader(VCMainPS, NULL, NULL);
-			mPostProcessingStack->DrawFullscreenQuad(context);
-			mVolumetricCloudsRenderTarget->End();
-		}
-
-		//blur pass
-		mVolumetricCloudsBlurRenderTarget->Begin();
-		ID3D11ShaderResourceView* SR_Blur[1] = {
-			(mUseComputeShaderVolumetricClouds) ? mVolumetricCloudsRenderTargetCS->getSRV() : mVolumetricCloudsRenderTarget->OutputColorTexture()
-		};
-		context->PSSetShaderResources(0, 1, SR_Blur);
-		context->PSSetShader(VCBlurPS, NULL, NULL);
-		mPostProcessingStack->DrawFullscreenQuad(context);
-		mVolumetricCloudsBlurRenderTarget->End();
-
-		//composite pass
-		mVolumetricCloudsCompositeRenderTarget->Begin();
-		ID3D11ShaderResourceView* SR_Composite[3] = { 
-			mPostProcessingStack->GetPrepassColorOutputTexture(),
-			mPostProcessingStack->GetDepthOutputTexture(),
-			mVolumetricCloudsBlurRenderTarget->OutputColorTexture()
-		};
-		context->PSSetShaderResources(0, 3, SR_Composite);
-		context->PSSetShader(VCCompositePS, NULL, NULL);
-		mPostProcessingStack->DrawFullscreenQuad(context);
-		mVolumetricCloudsCompositeRenderTarget->End();
 	}
 
 	void TestSceneDemo::UpdateStandardLightingPBRMaterialVariables(const std::string& objectName, int meshIndex)

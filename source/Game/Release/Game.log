@@ -22,11 +22,10 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\l
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(87): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(88): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\foliage.h(104): warning C4305: 'initializing': truncation from 'double' to 'float'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(52): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(52): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(400): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(43): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(43): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
   Generating code
-  0 of 6453 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+  1 of 6471 functions (<0.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code

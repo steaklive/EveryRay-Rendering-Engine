@@ -37,16 +37,6 @@
 #include "..\Library\Scene.h"
 #include "..\Library\ShaderCompiler.h"
 
-#include "imgui.h"
-#include "imgui_impl_dx11.h"
-#include "imgui_impl_win32.h"
-
-#include <WICTextureLoader.h>
-#include <DDSTextureLoader.h>
-#include <SpriteBatch.h>
-#include <SpriteFont.h>
-#include <sstream>
-
 namespace Rendering
 {
 	RTTI_DEFINITIONS(TerrainDemo)

@@ -14,6 +14,10 @@
 #include <map>
 #include <unordered_map>
 #include <memory>
+#include <sstream>
+#include <thread>
+#include <mutex>
+#include <chrono>
 
 #include "RTTI.h"
 
@@ -23,6 +27,14 @@
 #include <DirectXMath.h>
 #include <DirectXPackedVector.h>
 #include <dinput.h>
+
+#include "TGATextureLoader.h"
+#include <DDSTextureLoader.h>
+#include <WICTextureLoader.h>
+
+#include "imgui.h"
+#include "imgui_impl_dx11.h"
+#include "imgui_impl_win32.h"
 
 #define DeleteObject(object) if((object) != NULL) { delete object; object = NULL; }
 #define DeleteObjects(objects) if((objects) != NULL) { delete[] objects; objects = NULL; }

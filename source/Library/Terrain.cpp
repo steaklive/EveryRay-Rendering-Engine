@@ -12,14 +12,6 @@
 #include "RasterizerStates.h"
 #include "TerrainMaterial.h"
 
-#include "TGATextureLoader.h"
-#include <DDSTextureLoader.h>
-#include <WICTextureLoader.h>
-
-#include <thread>
-#include <mutex>
-#include <chrono>
-
 #define MULTITHREADED_LOAD 1
 
 namespace Library

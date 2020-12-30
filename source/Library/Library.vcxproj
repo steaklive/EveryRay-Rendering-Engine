@@ -286,6 +286,7 @@
     <ClInclude Include="VectorHelper.h" />
     <ClInclude Include="VertexDeclarations.h" />
     <ClInclude Include="VignetteMaterial.h" />
+    <ClInclude Include="VolumetricClouds.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AmbientLightingMaterial.cpp" />
@@ -386,6 +387,7 @@
     <ClCompile Include="Variable.cpp" />
     <ClCompile Include="VectorHelper.cpp" />
     <ClCompile Include="VignetteMaterial.cpp" />
+    <ClCompile Include="VolumetricClouds.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\content\effects\AmbientLighting.fx">
