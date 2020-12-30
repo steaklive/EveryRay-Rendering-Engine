@@ -28,6 +28,7 @@ namespace Library
 	class Foliage;
 	class Scene;
 	class Editor;
+	class VolumetricClouds;
 }
 
 namespace Rendering
@@ -79,6 +80,7 @@ namespace Rendering
 		GBuffer* mGBuffer;
 		PostProcessingStack* mPostProcessingStack;
 		Terrain* mTerrain;
+		VolumetricClouds* mVolumetricClouds;
 		Scene* mScene;
 		std::vector<std::map<std::string, Foliage*>> mFoliageZonesCollections;
 		std::vector<XMFLOAT3> mVegetationZonesCenters;

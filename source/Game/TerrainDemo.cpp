@@ -35,6 +35,7 @@
 #include "..\Library\Terrain.h"
 #include "..\Library\Foliage.h"
 #include "..\Library\Scene.h"
+#include "..\Library\VolumetricClouds.h"
 #include "..\Library\ShaderCompiler.h"
 
 namespace Rendering
@@ -60,7 +61,8 @@ namespace Rendering
 		mShadowMapper(nullptr),
 		mTerrain(nullptr),
 		mPostProcessingStack(nullptr),
-		mScene(nullptr)
+		mScene(nullptr),
+		mVolumetricClouds(nullptr)
 	{
 	}
 
@@ -88,6 +90,7 @@ namespace Rendering
 		DeleteObject(mSSRQuad);
 		DeleteObject(mShadowMapper);
 		DeleteObject(mScene);
+		DeleteObject(mVolumetricClouds);
 
 		ReleaseObject(mIrradianceTextureSRV);
 		ReleaseObject(mRadianceTextureSRV);
@@ -206,6 +209,8 @@ namespace Rendering
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\ibl_brdf_lut.png").c_str(), nullptr, &mIntegrationMapTextureSRV)))
 			throw GameException("Failed to create Integration Texture.");
 
+		// volumetric clouds
+		mVolumetricClouds = new VolumetricClouds(*mGame, *mCamera, *mDirectionalLight, *mPostProcessingStack, *mSkybox);
 	}
 
 	void TerrainDemo::GenerateFoliageInVegetationZones(int count)
@@ -257,6 +262,8 @@ namespace Rendering
 		mSkybox->Update(gameTime);
 		mGrid->Update(gameTime);
 		mPostProcessingStack->Update();
+		mVolumetricClouds->Update(gameTime);
+
 		for (auto foliageZone : mFoliageZonesCollections)
 		{
 			for (auto foliageType : foliageZone)
@@ -324,7 +331,7 @@ namespace Rendering
 		ID3D11DeviceContext* direct3DDeviceContext = mGame->Direct3DDeviceContext();
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-#pragma region DEFERRED_PREPASS
+		#pragma region GBUFFER_PREPASS
 
 		mGBuffer->Start();
 		for (auto it = mScene->objects.begin(); it != mScene->objects.end(); it++)
@@ -333,7 +340,7 @@ namespace Rendering
 
 #pragma endregion
 
-#pragma region DRAW_SHADOWS
+		#pragma region DRAW_SHADOWS
 
 		//shadows
 		for (int i = 0; i < MAX_NUM_OF_CASCADES; i++)
@@ -359,9 +366,9 @@ namespace Rendering
 		mRenderStateHelper->RestoreRasterizerState();
 #pragma endregion
 
-		mPostProcessingStack->Begin();
+		mPostProcessingStack->Begin(true);
 
-#pragma region DRAW_LIGHTING
+		#pragma region DRAW_LIGHTING
 
 		//skybox
 		mSkybox->Draw(gameTime);
@@ -393,9 +400,17 @@ namespace Rendering
 #pragma endregion
 
 		mPostProcessingStack->End();
+
+		#pragma region DRAW_VOLUMETRIC_CLOUDS
+		mVolumetricClouds->Draw(gameTime);
+#pragma endregion
+
+		#pragma region DRAW_POSTPROCESSING
 		mPostProcessingStack->UpdateSSRMaterial(mGBuffer->GetNormals()->getSRV(), mGBuffer->GetDepth()->getSRV(), mGBuffer->GetExtraBuffer()->getSRV(), (float)gameTime.TotalGameTime());
 		mPostProcessingStack->DrawEffects(gameTime);
-
+		mPostProcessingStack->ResetMainRTtoOriginal();
+#pragma endregion
+		
 		mRenderStateHelper->SaveAll();
 
 #pragma region DRAW_IMGUI
