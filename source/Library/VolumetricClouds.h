@@ -88,5 +88,6 @@ namespace Library
 		//float mCloudsLayerOuterHeight = 17000.0f;
 
 		bool mUseComputeShaderVersion = true;
+		bool mEnabled = true;
 	};
 }

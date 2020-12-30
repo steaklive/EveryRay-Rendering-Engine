@@ -117,6 +117,11 @@ namespace Library {
 	
 	void VolumetricClouds::Update(const GameTime& gameTime)
 	{
+		UpdateImGui();
+
+		if (!mEnabled)
+			return;
+
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
 
 		mFrameConstantBuffer.Data.InvProj = XMMatrixInverse(nullptr, mCamera.ProjectionMatrix());
@@ -139,13 +144,13 @@ namespace Library {
 		//mVolumetricCloudsCloudsConstantBuffer.Data.CloudsLayerSphereOuterRadius = mCloudsLayerOuterHeight;
 		mCloudsConstantBuffer.ApplyChanges(context);
 
-		UpdateImGui();
 	}
 
 	void VolumetricClouds::UpdateImGui()
 	{
 		ImGui::Begin("Volumetric Clouds System");
 
+		ImGui::Checkbox("Enabled", &mEnabled);
 		ImGui::ColorEdit3("Ambient color", mAmbientColor);
 		ImGui::SliderFloat("Sun light absorption", &mLightAbsorption, 0.0f, 0.015f);
 		//ImGui::SliderFloat("Clouds bottom height", &mCloudsLayerInnerHeight, 1000.0f, 10000.0f);
@@ -160,6 +165,9 @@ namespace Library {
 
 	void VolumetricClouds::Draw(const GameTime& gametime)
 	{
+		if (!mEnabled)
+			return;
+
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
 
 		//skybox to empty texture
