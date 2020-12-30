@@ -160,7 +160,7 @@ namespace Rendering
 #pragma endregion
 
 		Game::Initialize();
-		SetLevel(9);
+		SetLevel(1);
 	}
 
 
