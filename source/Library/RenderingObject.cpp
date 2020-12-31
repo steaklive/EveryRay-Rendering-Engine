@@ -405,7 +405,7 @@ namespace Rendering
 	{
 		assert(mModel != nullptr);
 		assert(mGame->Direct3DDevice() != nullptr);
-		assert(mInstanceData.size() != 0);
+		//assert(mInstanceData.size() != 0);
 		assert(mIsInstanced == true);
 
 		//adding extra instance data until we reach MAX_INSTANCE_COUNT 

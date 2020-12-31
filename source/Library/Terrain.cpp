@@ -198,6 +198,9 @@ namespace Library
 	void Terrain::DrawTessellated(int tileIndex)
 	{
 		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
+		D3D11_PRIMITIVE_TOPOLOGY originalPrimitiveTopology;
+		context->IAGetPrimitiveTopology(&originalPrimitiveTopology);
+
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST);
 
 		Pass* pass = mMaterial->CurrentTechnique()->Passes().at(1);
@@ -243,9 +246,11 @@ namespace Library
 		else
 			context->Draw(NUM_PATCHES * NUM_PATCHES, 0);
 
-		GetGame()->Direct3DDeviceContext()->ClearState();
-		GetGame()->Direct3DDeviceContext()->RSSetViewports(1, &(GetGame()->Viewport()));
-		mPPStack.ResetOMToMainRenderTarget();
+		//reset back
+		context->IASetPrimitiveTopology(originalPrimitiveTopology);
+		context->VSSetShader(NULL, NULL, 0);
+		context->HSSetShader(NULL, NULL, 0);
+		context->DSSetShader(NULL, NULL, 0);
 	}
 
 	void Terrain::DrawNonTessellated(int tileIndex)
