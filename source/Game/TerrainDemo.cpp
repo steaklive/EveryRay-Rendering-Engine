@@ -174,7 +174,7 @@ namespace Rendering
 
 		// place placable instanced objects on terrain
 		DistributeVegetationZonesPositionsAcrossTerrainGrid(nullptr, mVegetationZonesCount);
-
+		
 		// place foliage on terrain
 		GenerateFoliageInVegetationZones(mVegetationZonesCount);
 		for (int i = 0; i < NUM_THREADS_PER_TERRAIN_SIDE * NUM_THREADS_PER_TERRAIN_SIDE; i++)
@@ -184,7 +184,7 @@ namespace Rendering
 		for (auto& object : mScene->objects)
 			if (object.second->IsInstanced() && object.second->IsPlacedOnTerrain())
 				GenerateObjectsInVegetationZones(mVegetationZonesCount, object.first);
-
+		
 		for (int i = 0; i < NUM_THREADS_PER_TERRAIN_SIDE * NUM_THREADS_PER_TERRAIN_SIDE; i++)
 			for (auto& object : mScene->objects)
 				if (object.second->IsPlacedOnTerrain() && object.second->IsInstanced())
