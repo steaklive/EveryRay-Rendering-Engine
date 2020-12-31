@@ -220,6 +220,9 @@ namespace Rendering
 
 		ImGui::Separator();
 
+		if (ImGui::Button("Volumetric Clouds")) {
+			mVolumetricClouds->Config();
+		}
 		ImGui::SliderFloat("Wind strength", &mWindStrength, 0.0f, 100.0f);
 		ImGui::SliderFloat("Wind gust distance", &mWindGustDistance, 0.0f, 100.0f);
 		ImGui::SliderFloat("Wind frequency", &mWindFrequency, 0.0f, 100.0f);

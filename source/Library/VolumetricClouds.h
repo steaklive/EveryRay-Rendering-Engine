@@ -49,7 +49,7 @@ namespace Library
 
 		void Draw(const GameTime& gametime);
 		void Update(const GameTime& gameTime);
-
+		void Config() { mShowDebug = !mShowDebug; }
 	private:
 		void UpdateImGui();
 
@@ -89,5 +89,6 @@ namespace Library
 
 		bool mUseComputeShaderVersion = true;
 		bool mEnabled = true;
+		bool mShowDebug = false;
 	};
 }

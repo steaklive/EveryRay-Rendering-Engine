@@ -90,15 +90,6 @@ namespace Rendering
 		ID3D11ShaderResourceView* mIntegrationMapTextureSRV;
 		std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
 
-		bool mRenderTerrainWireframe = false;
-		bool mRenderTessellatedTerrain = false;
-		bool mRenderNonTessellatedTerrain = true;
-		int mStaticTessellationFactor = 4;
-		float mTessellatedTerrainHeightScale = 328.0f;
-		int mTessellationFactorDynamic = 64;
-		bool mDynamicTessellation = true;
-		float mCameraDistanceFactor = 0.015;
-
 		int mVegetationZonesCount = 64;
 		float mFoliageZoneGizmoSphereScale = 10.0f;
 		float mFoliageDynamicLODToCameraDistance = 650.0f;

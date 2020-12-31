@@ -148,8 +148,10 @@ namespace Library {
 
 	void VolumetricClouds::UpdateImGui()
 	{
-		ImGui::Begin("Volumetric Clouds System");
+		if (!mShowDebug)
+			return;
 
+		ImGui::Begin("Volumetric Clouds System");
 		ImGui::Checkbox("Enabled", &mEnabled);
 		ImGui::ColorEdit3("Ambient color", mAmbientColor);
 		ImGui::SliderFloat("Sun light absorption", &mLightAbsorption, 0.0f, 0.015f);
@@ -159,7 +161,6 @@ namespace Library {
 		ImGui::SliderFloat("Curliness", &mCurliness, 0.0f, 5.0f);
 		ImGui::SliderFloat("Coverage", &mCoverage, 0.0f, 1.0f);
 		ImGui::SliderFloat("Wind speed factor", &mWindSpeedMultiplier, 0.0f, 10000.0f);
-
 		ImGui::End();
 	}
 
