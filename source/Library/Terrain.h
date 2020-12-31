@@ -75,7 +75,7 @@ namespace Library
 		UINT GetHeight() { return mHeight; }
 
 		void Draw();
-		void Draw(int tileIndex);
+		//void Draw(int tileIndex);
 		void Update();
 
 		void SetWireframeMode(bool flag) { mIsWireframe = flag; }
@@ -83,14 +83,14 @@ namespace Library
 		void SetNormalTerrainMode(bool flag) { mUseNonTessellatedTerrain = flag; }
 		void SetDynamicTessellation(bool flag) { mUseDynamicTessellation = flag; }
 		void SetTessellationFactor(int tessellationFactor) { mTessellationFactor = tessellationFactor; }
-		void SetDynamicTessellationDistanceFactor(float factor) { mDistanceFactor = factor; }
+		void SetDynamicTessellationDistanceFactor(float factor) { mTessellationDistanceFactor = factor; }
 		void SetTessellationFactorDynamic(float factor) { mTessellationFactorDynamic = factor; }
-		void SetTerrainHeightScale(float scale) { mTerrainHeightScale = scale; }
+		void SetTerrainHeightScale(float scale) { mTerrainTessellatedHeightScale = scale; }
 		HeightMap* GetHeightmap(int index) { return mHeightMaps.at(index); }
+		float GetHeightScale(bool tessellated) { if (tessellated) return mTerrainTessellatedHeightScale; else return mTerrainNonTessellatedHeightScale; }
 
+		void Config() { mShowDebug = !mShowDebug; }
 	private:
-		Camera& mCamera;
-
 		void LoadTextures(std::string path);
 		void LoadTileGroup(int threadIndex, std::string path);
 		void GenerateTileMesh(int tileIndex);
@@ -101,12 +101,11 @@ namespace Library
 		void DrawTessellated(int i);
 		void DrawNonTessellated(int i);
 
-		TerrainMaterial* mMaterial;
-
+		Camera& mCamera;
 		DirectionalLight& mDirectionalLight;
-
 		Rendering::PostProcessingStack& mPPStack;
 
+		TerrainMaterial* mMaterial;
 		UINT mWidth = 0;
 		UINT mHeight = 0;
 		
@@ -117,17 +116,17 @@ namespace Library
 		ID3D11ShaderResourceView* mRockTexture = nullptr;
 		ID3D11ShaderResourceView* mMudTexture = nullptr;
 
-		ID3D11Buffer* mVertexPatchBuffer = nullptr;
-
-		float mHeightScale = 200.0f;
 		int mNumTiles = 16;
+		float mTerrainNonTessellatedHeightScale = 200.0f;
+		float mTerrainTessellatedHeightScale = 328.0f;
 		bool mIsWireframe = false;
+		bool mUseNonTessellatedTerrain = false;
 		bool mUseTessellatedTerrain = true;
-		bool mUseNonTessellatedTerrain = true;
-		bool mUseDynamicTessellation = false;
+		bool mUseDynamicTessellation = true;
 		int mTessellationFactor = 4;
 		int mTessellationFactorDynamic = 64;
-		int mTerrainHeightScale = 389.0f;
-		float mDistanceFactor = 0.0001f;
+		float mTessellationDistanceFactor = 0.015f;
+
+		bool mShowDebug = false;
 	};
 }

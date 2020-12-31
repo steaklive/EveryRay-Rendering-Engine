@@ -261,6 +261,7 @@ namespace Rendering
 		mSkybox->SetColors(mEditor->GetBottomSkyColor(), mEditor->GetTopSkyColor());
 		mSkybox->Update(gameTime);
 		mGrid->Update(gameTime);
+		mTerrain->Update();
 		mPostProcessingStack->Update();
 		mVolumetricClouds->Update(gameTime);
 
@@ -276,15 +277,6 @@ namespace Rendering
 
 		mCamera->Cull(mScene->objects);
 		mShadowMapper->Update(gameTime);
-
-		mTerrain->SetWireframeMode(mRenderTerrainWireframe);
-		mTerrain->SetTessellationTerrainMode(mRenderTessellatedTerrain);
-		mTerrain->SetNormalTerrainMode(mRenderNonTessellatedTerrain);
-		mTerrain->SetTessellationFactor(mStaticTessellationFactor);
-		mTerrain->SetTessellationFactorDynamic(mTessellationFactorDynamic);
-		mTerrain->SetTerrainHeightScale(mTessellatedTerrainHeightScale);
-		mTerrain->SetDynamicTessellation(mDynamicTessellation);
-		mTerrain->SetDynamicTessellationDistanceFactor(mCameraDistanceFactor);
 
 		for (auto object : mScene->objects)
 			object.second->Update(gameTime);
@@ -302,17 +294,15 @@ namespace Rendering
 
 		ImGui::Separator();
 
-		ImGui::Checkbox("Render terrain wireframe", &mRenderTerrainWireframe);
-		ImGui::Checkbox("Render non-tessellated terrain", &mRenderNonTessellatedTerrain);
-		ImGui::Checkbox("Render tessellated terrain", &mRenderTessellatedTerrain);
-		ImGui::SliderInt("Tessellation factor static", &mStaticTessellationFactor, 1, 64);
-		ImGui::SliderInt("Tessellation factor dynamic", &mTessellationFactorDynamic, 1, 64);
-		ImGui::Checkbox("Use dynamic tessellation", &mDynamicTessellation);
-		ImGui::SliderFloat("Dynamic LOD distance factor", &mCameraDistanceFactor, 0.0001f, 0.1f);
-		ImGui::SliderFloat("Tessellated terrain height scale", &mTessellatedTerrainHeightScale, 0.0f, 1000.0f);
-		ImGui::Separator();
+		if (ImGui::Button("Terrain")) {
+			mTerrain->Config();
+		}
+		if (ImGui::Button("Volumetric Clouds")) {
+			mVolumetricClouds->Config();
+		}
+
 		ImGui::Checkbox("Render foliage", &mRenderFoliage);
-		ImGui::Checkbox("Render vegetation zones centers gizmos", &mRenderVegetationZonesCenters);
+		//ImGui::Checkbox("Render vegetation zones centers gizmos", &mRenderVegetationZonesCenters);
 		ImGui::SliderFloat("Foliage dynamic LOD max distance", &mFoliageDynamicLODToCameraDistance, 100.0f, 5000.0f);
 		ImGui::Separator();
 		ImGui::SliderFloat("Wind strength", &mWindStrength, 0.0f, 100.0f);
@@ -673,7 +663,7 @@ namespace Rendering
 		{ 
 			mTerrain->GetHeightmap(tileIndex)->mUVOffsetToTextureSpace.x,
 			mTerrain->GetHeightmap(tileIndex)->mUVOffsetToTextureSpace.y,
-			mTessellatedTerrainHeightScale,
+			mTerrain->GetHeightScale(true),
 			static_cast<float>(splatChannel)
 		};
 		D3D11_SUBRESOURCE_DATA init_cb0 = { &consts[0], 0, 0 };

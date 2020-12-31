@@ -195,6 +195,23 @@ namespace Library
 		}
 	}
 
+	void Terrain::Update()
+	{
+		if (mShowDebug) {
+			//imgui
+			ImGui::Begin("Terrain System");
+			ImGui::Checkbox("Render wireframe", &mIsWireframe);
+			ImGui::Checkbox("Render non-tessellated", &mUseNonTessellatedTerrain);
+			ImGui::Checkbox("Render tessellated", &mUseTessellatedTerrain);
+			ImGui::SliderInt("Tessellation factor static", &mTessellationFactor, 1, 64);
+			ImGui::SliderInt("Tessellation factor dynamic", &mTessellationFactorDynamic, 1, 64);
+			ImGui::Checkbox("Use dynamic tessellation", &mUseDynamicTessellation);
+			ImGui::SliderFloat("Dynamic LOD distance factor", &mTessellationDistanceFactor, 0.0001f, 0.1f);
+			ImGui::SliderFloat("Tessellated terrain height scale", &mTerrainTessellatedHeightScale, 0.0f, 1000.0f);
+			ImGui::End();
+		}
+	}
+
 	void Terrain::DrawTessellated(int tileIndex)
 	{
 		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
@@ -229,11 +246,11 @@ namespace Library
 		mMaterial->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
 		mMaterial->CameraPosition() << mCamera.PositionVector();
 		mMaterial->TessellationFactor() << (float)mTessellationFactor;
-		mMaterial->TerrainHeightScale() << mTerrainHeightScale;
+		mMaterial->TerrainHeightScale() << mTerrainTessellatedHeightScale;
 		float val = (mUseDynamicTessellation) ? 1.0f : 0.0f;
 		mMaterial->UseDynamicTessellation() << val;
 		mMaterial->TessellationFactorDynamic() << (float)mTessellationFactorDynamic;
-		mMaterial->DistanceFactor() << mDistanceFactor;
+		mMaterial->DistanceFactor() << mTessellationDistanceFactor;
 
 		pass->Apply(0, context);
 
@@ -548,7 +565,7 @@ namespace Library
 
 				// Store the height at this point in the height map array.
 				mHeightMaps[tileIndex]->mData[index].x = (float)(i + (int)mWidth * (tileIndexX - 1));
-				mHeightMaps[tileIndex]->mData[index].y = (float)rawImage[index] / mHeightScale;
+				mHeightMaps[tileIndex]->mData[index].y = (float)rawImage[index] / mTerrainNonTessellatedHeightScale;
 				mHeightMaps[tileIndex]->mData[index].z = (float)(j - (int)mHeight * tileIndexY);
 
 				if (tileIndex > 0) //a way to fix the seams between tiles...
