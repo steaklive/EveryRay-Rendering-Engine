@@ -217,7 +217,7 @@ CustomRenderTarget::~CustomRenderTarget()
 	{
 		for (int i = 0; i < mMipLevels; i++)
 		{
-			ReleaseObject(mUAVs[i]);
+			//ReleaseObject(mUAVs[i]);
 		}
 	}
 

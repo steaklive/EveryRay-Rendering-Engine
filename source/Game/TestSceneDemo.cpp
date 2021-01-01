@@ -118,6 +118,27 @@ namespace Rendering
 		}
 		mEditor->LoadScene(mScene);
 
+		mScene->objects["Test sphere 3"]->LoadCustomMeshTextures(0,
+			Utility::GetFilePath(L"content\\textures\\PBR\\Gold\\GoldMetal_albedo.jpg"),
+			Utility::GetFilePath(L"content\\textures\\PBR\\Gold\\GoldMetal_nrm.jpg"),
+			Utility::GetFilePath(L""),
+			Utility::GetFilePath(L"content\\textures\\PBR\\Gold\\GoldMetal_rgh.jpg"),
+			Utility::GetFilePath(L"content\\textures\\PBR\\Gold\\GoldMetal_mtl.jpg"),
+			Utility::GetFilePath(L""),
+			Utility::GetFilePath(L""),
+			Utility::GetFilePath(L"")
+		);
+		mScene->objects["Test sphere 3"]->LoadCustomMeshTextures(1,
+			Utility::GetFilePath(L"content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png"),
+			Utility::GetFilePath(L"content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png"),
+			Utility::GetFilePath(L""),
+			Utility::GetFilePath(L"content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"),
+			Utility::GetFilePath(L"content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png"),
+			Utility::GetFilePath(L""),
+			Utility::GetFilePath(L""),
+			Utility::GetFilePath(L"")
+		);
+
 		mKeyboard = (Keyboard*)mGame->Services().GetService(Keyboard::TypeIdClass());
 		assert(mKeyboard != nullptr);
 
@@ -162,24 +183,24 @@ namespace Rendering
 		mCamera->SetFarPlaneDistance(100000.0f);
 
 		//IBL
-		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_4\\textureDiffuseMDR.dds").c_str(), nullptr, &mIrradianceDiffuseTextureSRV)))
+		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(),Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureDiffuseHDR.dds").c_str(), nullptr, &mIrradianceDiffuseTextureSRV)))
 			throw GameException("Failed to create Diffuse Irradiance Map.");
 
-		mIBLRadianceMap.reset(new IBLRadianceMap(*mGame, Utility::GetFilePath(Utility::ToWideString(mScene->skyboxPath))));
+		mIBLRadianceMap.reset(new IBLRadianceMap(*mGame, /*Utility::GetFilePath(Utility::ToWideString(mScene->skyboxPath))*/Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureEnvHDR.dds")));
 		mIBLRadianceMap->Initialize();
 		mIBLRadianceMap->Create(*mGame);
 		
-		//mIrradianceSpecularTextureSRV = *mIBLRadianceMap->GetShaderResourceViewAddress();
-		//if (mIrradianceSpecularTextureSRV == nullptr)
-		//	throw GameException("Failed to create Specular Irradiance Map.");
-		//mIBLRadianceMap.release();
-		//mIBLRadianceMap.reset(nullptr);
-
-		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_4\\textureSpecularMDR.dds").c_str(), nullptr, &mIrradianceSpecularTextureSRV)))
+		mIrradianceSpecularTextureSRV = *mIBLRadianceMap->GetShaderResourceViewAddress();
+		if (mIrradianceSpecularTextureSRV == nullptr)
 			throw GameException("Failed to create Specular Irradiance Map.");
+		mIBLRadianceMap.release();
+		mIBLRadianceMap.reset(nullptr);
+
+		//if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_4\\textureSpecularMDR.dds").c_str(), nullptr, &mIrradianceSpecularTextureSRV)))
+		//	throw GameException("Failed to create Specular Irradiance Map.");
 
 		// Load a pre-computed Integration Map
-		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_1\\textureBrdf.dds").c_str(), nullptr, &mIntegrationMapTextureSRV)))
+		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\ibl_brdf_lut.png").c_str(), nullptr, &mIntegrationMapTextureSRV)))
 			throw GameException("Failed to create Integration Texture.");
 		
 		mVolumetricClouds = new VolumetricClouds(*mGame, *mCamera, *mDirectionalLight, *mPostProcessingStack, *mSkybox);

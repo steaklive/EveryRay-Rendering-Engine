@@ -315,7 +315,7 @@
 					"technique" : "standard_lighting_pbr"
 				}
 			],
-			"model_path" : "content\\models\\sphere.fbx",
+			"model_path" : "content\\models\\shaderball.fbx",
 			"name" : "Test sphere 3",
 			"transform" : 
 			[
@@ -326,7 +326,7 @@
 				0.0,
 				0.92000007629394531,
 				0.0,
-				43.255428314208984,
+				-0.063421785831451416,
 				0.0,
 				0.0,
 				0.92000007629394531,

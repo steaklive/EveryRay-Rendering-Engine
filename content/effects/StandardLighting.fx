@@ -343,11 +343,11 @@ float3 IndirectLightingPBR(float roughness, float3 diffuseAlbedo, float3 specula
     float3 reflectDir = reflect(-viewDir, normalWS);
 
 	// Sample the indirect diffuse lighting from the irradiance environment map. 
-    float3 irradiance = IrradianceDiffuseTexture.Sample(Sampler, normalWS).rgb;
+    float3 irradiance = IrradianceDiffuseTexture.SampleLevel(Sampler, normalWS, 0).rgb;
     float3 F = Schlick_Fresnel_Roughness(nDotV, F0, roughness);
     float3 kD = float3(1.0f, 1.0f, 1.0f) - F;
     kD *= (float3(1.0f, 1.0f, 1.0f) - metalness);
-    float3 indirectDiffuseLighting = kD * irradiance * diffuseAlbedo;
+    float3 indirectDiffuseLighting = /*kD * */irradiance * diffuseAlbedo;
 
     // Split sum approximation of specular lighting.
     float3 indirectSpecularLighting = ApproximateSpecularIBL(F0, reflectDir, nDotV, roughness);
@@ -405,7 +405,7 @@ float3 mainPS_PBR(VS_OUTPUT vsOutput) : SV_Target0
     float4 diffuseAlbedo = pow(AlbedoTexture.Sample(Sampler, vsOutput.UV), 2.2);
     clip(diffuseAlbedo.a < 0.1f ? -1 : 1);
     float metalness = MetallicTexture.Sample(Sampler, vsOutput.UV).r;
-    float roughness = 0.0f;//    RoughnessTexture.Sample(Sampler, vsOutput.UV).r;
+    float roughness = RoughnessTexture.Sample(Sampler, vsOutput.UV).r;
         
     float3 specularAlbedo = float3(metalness, metalness, metalness);
 
@@ -415,9 +415,13 @@ float3 mainPS_PBR(VS_OUTPUT vsOutput) : SV_Target0
     float3 directLighting = DirectLightingPBR(normalWS, SunColor.xyz, diffuseAlbedo.rgb, specularAlbedo, vsOutput.WorldPos, roughness, F0, metalness);
     float3 indirectLighting = IndirectLightingPBR(roughness, diffuseAlbedo.rgb, specularAlbedo, normalWS, vsOutput.WorldPos, metalness, F0);
 
-    float shadow = GetShadow(vsOutput.ShadowCoord0, vsOutput.ShadowCoord1, vsOutput.ShadowCoord2, vsOutput.Position.w);    
-    float3 color = (/*directLighting * shadow + */indirectLighting);
+    float shadow = GetShadow(vsOutput.ShadowCoord0, vsOutput.ShadowCoord1, vsOutput.ShadowCoord2, vsOutput.Position.w);
+    
+    float indirectLightingContribution = 0.8f;
+    float3 color = (directLighting * shadow + indirectLighting * indirectLightingContribution);
             
+    // HDR tonemapping
+    color = color / (color + float3(1.0f, 1.0f, 1.0f));
     return color;
 }
 

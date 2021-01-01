@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <iostream>
 
 #include "RenderingObject.h"
 #include "GameException.h"
@@ -7,13 +8,6 @@
 #include "Game.h"
 #include "MatrixHelper.h"
 #include "Utility.h"
-
-#include "TGATextureLoader.h"
-#include <DDSTextureLoader.h>
-#include <WICTextureLoader.h>
-
-#include "imgui.h"
-#include "ImGuizmo.h"
 
 namespace Rendering
 {
@@ -256,13 +250,15 @@ namespace Rendering
 			break;
 		}
 
+		bool failed = false;
 		if (ddsLoader)
 		{
 			if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), path.c_str(), nullptr, resource)))
 			{
 				std::string status = "Failed to load DDS Texture" + texType;
 				status += errorMessage;
-				throw GameException(status.c_str());
+				std::cout << status;
+				failed = true;
 			}
 		}
 		else if (tgaLoader)
@@ -272,7 +268,8 @@ namespace Rendering
 			{
 				std::string status = "Failed to load TGA Texture" + texType;
 				status += errorMessage;
-				throw GameException(status.c_str());
+				std::cout << status;
+				failed = true;
 			}
 			loader->Shutdown();
 		}
@@ -280,7 +277,20 @@ namespace Rendering
 		{
 			std::string status = "Failed to load WIC Texture" + texType;
 			status += errorMessage;
-			throw GameException(status.c_str());
+			std::cout << status;
+			failed = true;
+		}
+
+		if (failed) {
+			switch (type)
+			{
+			case TextureType::TextureTypeDifffuse:
+				LoadTexture(type, Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), meshIndex);
+				break;
+			case TextureType::TextureTypeNormalMap:
+				LoadTexture(type, Utility::GetFilePath(L"content\\textures\\emptyNormalMap.png"), meshIndex);
+				break;
+			}
 		}
 	}
 

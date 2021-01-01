@@ -36,6 +36,8 @@
 #include "imgui_impl_dx11.h"
 #include "imgui_impl_win32.h"
 
+#include "ImGuizmo.h"
+
 #define DeleteObject(object) if((object) != NULL) { delete object; object = NULL; }
 #define DeleteObjects(objects) if((objects) != NULL) { delete[] objects; objects = NULL; }
 #define ReleaseObject(object) if((object) != NULL) { object->Release(); object = NULL; }

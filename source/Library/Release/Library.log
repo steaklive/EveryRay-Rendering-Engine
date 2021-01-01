@@ -1,63 +1,7 @@
-﻿  stdafx.cpp
-  AmbientLightingMaterial.cpp
+﻿  AmbientLightingMaterial.cpp
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\ambientlightingmaterial.cpp(9): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\ambientlightingmaterial.cpp(9): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\ambientlightingmaterial.cpp(54): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-  BasicMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\basicmaterial.cpp(10): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\basicmaterial.cpp(10): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\basicmaterial.cpp(62): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-  BruteforceStructure.cpp
-  Camera.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(147): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\camera.cpp(15): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\camera.cpp(15): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  ColorFilteringMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\colorfilteringmaterial.cpp(7): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\colorfilteringmaterial.cpp(7): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  ColorGradingMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\colorgradingmaterial.cpp(7): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\colorgradingmaterial.cpp(7): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  ColorHelper.cpp
-  CustomRenderTarget.cpp
-  DeferredMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\deferredmaterial.cpp(9): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\deferredmaterial.cpp(9): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\deferredmaterial.cpp(76): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-  DemoLevel.cpp
-  DepthMap.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\depthmap.cpp(9): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\depthmap.cpp(9): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  DepthMapMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\depthmapmaterial.cpp(9): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\depthmapmaterial.cpp(9): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\depthmapmaterial.cpp(70): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-  DepthTarget.cpp
-  DiffuseLightingMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\diffuselightingmaterial.cpp(8): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\diffuselightingmaterial.cpp(8): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\diffuselightingmaterial.cpp(64): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-  DirectionalLight.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\directionallight.cpp(12): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\directionallight.cpp(12): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  DrawableGameComponent.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\drawablegamecomponent.cpp(6): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\drawablegamecomponent.cpp(6): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  Editor.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(147): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\editor.cpp(18): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\editor.cpp(18): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\editor.cpp(71): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-  Effect.cpp
-  EnvironmentMappingMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\environmentmappingmaterial.cpp(9): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\environmentmappingmaterial.cpp(9): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\environmentmappingmaterial.cpp(71): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-  FastFourierTransform.cpp
-  Compiling...
-  FirstPersonCamera.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\firstpersoncamera.cpp(14): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\firstpersoncamera.cpp(14): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
   Foliage.cpp
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(98): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
   c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(18): note: see declaration of 'Rendering::VignetteMaterial'
@@ -89,345 +33,37 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\l
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\foliage.cpp(315): warning C4101: 'rotation': unreferenced local variable
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\foliage.cpp(314): warning C4101: 'angle': unreferenced local variable
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\foliage.cpp(345): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-  FoliageMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\foliagematerial.cpp(10): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\foliagematerial.cpp(10): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\foliagematerial.cpp(100): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-  FpsComponent.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\fpscomponent.cpp(14): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\fpscomponent.cpp(14): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  Frustum.cpp
-  FullScreenQuad.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\fullscreenquad.cpp(10): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\fullscreenquad.cpp(10): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  FullScreenRenderTarget.cpp
-  FXAAMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\fxaamaterial.cpp(7): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\fxaamaterial.cpp(7): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  Game.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\game.cpp(240): warning C4018: '<': signed/unsigned mismatch
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\game.cpp(289): warning C4838: conversion from 'UINT' to 'LONG' requires a narrowing conversion
-  GameClock.cpp
-  GameComponent.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\gamecomponent.cpp(8): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\gamecomponent.cpp(8): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  GameException.cpp
-  GameTime.cpp
-  GBuffer.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(147): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
-  Grid.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\grid.cpp(17): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\grid.cpp(17): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  IBLCubemap.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\iblcubemap.cpp(43): warning C4156: deletion of an array expression without using the array form of 'delete'; array form substituted
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\iblcubemap.cpp(43): warning C4154: deletion of an array expression; conversion to pointer supplied
-  IBLCubemapFace.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\iblcubemapface.cpp(27): warning C4156: deletion of an array expression without using the array form of 'delete'; array form substituted
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\iblcubemapface.cpp(27): warning C4154: deletion of an array expression; conversion to pointer supplied
-  IBLRadianceMap.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\iblradiancemap.cpp(6): warning C4005: '_WIN32_WINNT': macro redefinition
-  c:\program files (x86)\windows kits\10\include\10.0.18362.0\shared\sdkddkver.h(217): note: see previous definition of '_WIN32_WINNT'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\iblradiancemap.cpp(164): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\iblradiancemap.cpp(165): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-  InstancingMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\instancingmaterial.cpp(7): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\instancingmaterial.cpp(7): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\instancingmaterial.cpp(124): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\instancingmaterial.cpp(151): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-  Keyboard.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\keyboard.cpp(10): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\keyboard.cpp(10): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  Compiling...
-  Light.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\light.cpp(8): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\light.cpp(8): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  Material.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\material.cpp(9): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\material.cpp(9): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  MaterialHelper.cpp
-  MatrixHelper.cpp
   Mesh.cpp
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\mesh.cpp(169): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
-  Model.cpp
-  ModelMaterial.cpp
-  MotionBlurMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\motionblurmaterial.cpp(7): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\motionblurmaterial.cpp(7): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  Mouse.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\mouse.cpp(10): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\mouse.cpp(10): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  NormalMappingMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\normalmappingmaterial.cpp(9): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\normalmappingmaterial.cpp(9): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\normalmappingmaterial.cpp(91): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-  OceanSimulator.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\oceansimulator.cpp(436): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\oceansimulator.cpp(480): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\oceansimulator.cpp(484): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\oceansimulator.cpp(463): warning C4101: 'Kn': unreferenced local variable
-  OctreeStructure.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\octreestructure.h(20): warning C4244: 'return': conversion from '_Rep' to 'float', possible loss of data
-          with
-          [
-              _Rep=double
-          ]
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\octreestructure.h(21): warning C4244: 'return': conversion from '_Rep' to 'float', possible loss of data
-          with
-          [
-              _Rep=double
-          ]
-  ParallaxMappingTestMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\parallaxmappingtestmaterial.cpp(9): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\parallaxmappingtestmaterial.cpp(9): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\parallaxmappingtestmaterial.cpp(104): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-  Pass.cpp
-  PBRMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\pbrmaterial.cpp(9): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\pbrmaterial.cpp(9): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\pbrmaterial.cpp(107): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-  PointLight.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\pointlight.cpp(8): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\pointlight.cpp(8): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  PointLightingMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\pointlightingmaterial.cpp(10): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\pointlightingmaterial.cpp(10): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\pointlightingmaterial.cpp(75): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-  PostProcessingMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingmaterial.cpp(8): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingmaterial.cpp(8): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingmaterial.cpp(53): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-  PostProcessingStack.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(98): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(18): note: see declaration of 'Rendering::VignetteMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(99): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(121): warning C4150: deletion of pointer to incomplete type 'Rendering::FXAAMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(21): note: see declaration of 'Rendering::FXAAMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(122): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(142): warning C4150: deletion of pointer to incomplete type 'Rendering::ColorGradingMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(19): note: see declaration of 'Rendering::ColorGradingMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(143): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(172): warning C4150: deletion of pointer to incomplete type 'Rendering::ScreenSpaceReflectionsMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(22): note: see declaration of 'Rendering::ScreenSpaceReflectionsMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(173): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(197): warning C4150: deletion of pointer to incomplete type 'Rendering::MotionBlurMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(20): note: see declaration of 'Rendering::MotionBlurMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(198): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.cpp(332): warning C4838: conversion from 'unsigned int' to 'int' requires a narrowing conversion
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.cpp(397): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.cpp(404): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.cpp(405): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  Projector.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\projector.cpp(11): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\projector.cpp(11): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  Compiling...
-  ProxyModel.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\proxymodel.cpp(17): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\proxymodel.cpp(17): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\proxymodel.cpp(162): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
-  QuadRenderer.cpp
-  RasterizerStates.cpp
-  Ray.cpp
   RenderableAABB.cpp
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderableaabb.cpp(17): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderableaabb.cpp(17): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  RenderableFrustum.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderablefrustum.cpp(17): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderablefrustum.cpp(17): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  RenderableOBB.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderableobb.cpp(17): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderableobb.cpp(17): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
   RenderingObject.cpp
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(147): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(44): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(38): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(120): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(123): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(126): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(129): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(132): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(134): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(137): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(140): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(143): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(146): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(148): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(151): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(154): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(157): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(160): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(162): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(165): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(168): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(171): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(174): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(176): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(179): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(182): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(185): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(188): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(300): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(377): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(412): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(415): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(416): warning C4018: '<': signed/unsigned mismatch
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(451): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(570): warning C4018: '<': signed/unsigned mismatch
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(606): warning C4018: '<': signed/unsigned mismatch
-  RenderStateHelper.cpp
-  RenderTarget.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\rendertarget.cpp(9): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\rendertarget.cpp(9): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  SamplerStates.cpp
-  Scene.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(147): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\scene.cpp(24): warning C4996: 'Json::Reader': Use CharReader and CharReaderBuilder instead.
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\external\jsoncpp\include\json\reader.h(37): note: see declaration of 'Json::Reader'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\scene.cpp(24): warning C4996: 'Json::Reader::Reader': Use CharReader and CharReaderBuilder instead
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\external\jsoncpp\include\json\reader.h(55): note: see declaration of 'Json::Reader::Reader'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\scene.cpp(27): warning C4996: 'Json::Reader::parse': Use CharReader and CharReaderBuilder instead.
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\external\jsoncpp\include\json\reader.h(101): note: see declaration of 'Json::Reader::parse'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\scene.cpp(28): warning C4996: 'Json::Reader::getFormattedErrorMessages': Use CharReader and CharReaderBuilder instead.
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\external\jsoncpp\include\json\reader.h(121): note: see declaration of 'Json::Reader::getFormattedErrorMessages'
-  ScreenSpaceReflectionsMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\screenspacereflectionsmaterial.cpp(7): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\screenspacereflectionsmaterial.cpp(7): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\screenspacereflectionsmaterial.cpp(89): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-  ServiceContainer.cpp
-  ShadowMapper.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\shadowmapper.cpp(52): warning C4244: '=': conversion from 'float' to 'INT', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\shadowmapper.cpp(71): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\shadowmapper.cpp(74): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-  ShadowMappingDirectionalMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\shadowmappingdirectionalmaterial.cpp(9): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\shadowmappingdirectionalmaterial.cpp(9): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\shadowmappingdirectionalmaterial.cpp(103): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-  ShadowMappingMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\shadowmappingmaterial.cpp(9): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\shadowmappingmaterial.cpp(9): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\shadowmappingmaterial.cpp(85): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-  SkinShadingColorMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\skinshadingcolormaterial.cpp(9): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\skinshadingcolormaterial.cpp(9): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\skinshadingcolormaterial.cpp(151): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-  SkinShadingScatterMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\skinshadingscattermaterial.cpp(9): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\skinshadingscattermaterial.cpp(9): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\skinshadingscattermaterial.cpp(76): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-  Skybox.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\skybox.cpp(18): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\skybox.cpp(18): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\skybox.cpp(61): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\skybox.cpp(93): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\game.h(57): warning C4244: '=': conversion from '__int64' to '_Ty2', possible loss of data
-          with
-          [
-              _Ty2=int
-          ]
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\skybox.cpp(32): note: see reference to function template instantiation 'std::pair<bool,int> Library::Game::FindInGameComponents<Library::Skybox*>(std::vector<Library::GameComponent *,std::allocator<_Ty>> &,const T &)' being compiled
-          with
-          [
-              _Ty=Library::GameComponent *,
-              T=Library::Skybox *
-          ]
-  Compiling...
-  SkyboxMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\skyboxmaterial.cpp(9): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\skyboxmaterial.cpp(9): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\skyboxmaterial.cpp(58): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-  SpatialElement.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\spatialelement.cpp(63): warning C4101: 'tempDot3': unreferenced local variable
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\spatialelement.cpp(62): warning C4101: 'k': unreferenced local variable
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\spatialelement.cpp(62): warning C4101: 'i': unreferenced local variable
-  SpotLight.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\spotlight.cpp(8): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\spotlight.cpp(8): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  StandardLightingMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\standardlightingmaterial.cpp(9): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\standardlightingmaterial.cpp(9): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\standardlightingmaterial.cpp(129): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-  Technique.cpp
-  Terrain.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(98): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(18): note: see declaration of 'Rendering::VignetteMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(99): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(121): warning C4150: deletion of pointer to incomplete type 'Rendering::FXAAMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(21): note: see declaration of 'Rendering::FXAAMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(122): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(142): warning C4150: deletion of pointer to incomplete type 'Rendering::ColorGradingMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(19): note: see declaration of 'Rendering::ColorGradingMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(143): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(172): warning C4150: deletion of pointer to incomplete type 'Rendering::ScreenSpaceReflectionsMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(22): note: see declaration of 'Rendering::ScreenSpaceReflectionsMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(173): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(197): warning C4150: deletion of pointer to incomplete type 'Rendering::MotionBlurMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(20): note: see declaration of 'Rendering::MotionBlurMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(198): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(87): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(51): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(94): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(120): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(144): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(158): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(172): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(491): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(496): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(525): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(534): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(535): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(599): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(600): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(601): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(602): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(603): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(604): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(605): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(606): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(607): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(696): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(697): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(698): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(736): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(737): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(738): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(739): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(791): warning C4101: 'index2': unreferenced local variable
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(791): warning C4101: 'index3': unreferenced local variable
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(787): warning C4101: 'vector1': unreferenced local variable
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(787): warning C4101: 'vector2': unreferenced local variable
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(791): warning C4101: 'index1': unreferenced local variable
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(820): warning C4305: 'initializing': truncation from 'double' to 'float'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(835): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  TerrainMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrainmaterial.cpp(10): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrainmaterial.cpp(10): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  TGATextureLoader.cpp
-  Utility.cpp
-  Variable.cpp
-  VectorHelper.cpp
-  VignetteMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\vignettematerial.cpp(7): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\vignettematerial.cpp(7): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  VolumetricClouds.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(98): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(18): note: see declaration of 'Rendering::VignetteMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(99): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(121): warning C4150: deletion of pointer to incomplete type 'Rendering::FXAAMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(21): note: see declaration of 'Rendering::FXAAMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(122): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(142): warning C4150: deletion of pointer to incomplete type 'Rendering::ColorGradingMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(19): note: see declaration of 'Rendering::ColorGradingMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(143): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(172): warning C4150: deletion of pointer to incomplete type 'Rendering::ScreenSpaceReflectionsMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(22): note: see declaration of 'Rendering::ScreenSpaceReflectionsMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(173): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(197): warning C4150: deletion of pointer to incomplete type 'Rendering::MotionBlurMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(20): note: see declaration of 'Rendering::MotionBlurMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(198): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\volumetricclouds.cpp(132): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(310): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(387): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(422): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(425): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(426): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(461): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(580): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(616): warning C4018: '<': signed/unsigned mismatch
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Black" (?Black@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Yellow" (?Yellow@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Blue" (?Blue@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored

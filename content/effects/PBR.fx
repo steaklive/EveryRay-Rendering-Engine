@@ -184,7 +184,7 @@ float3 ApproximateSpecularIBL(float3 specularAlbedo, float3 reflectDir, float nD
     float mipIndex = roughness * 6;
 
     float3 prefilteredColor = radianceTexture.SampleLevel(SamplerAnisotropic, reflectDir, mipIndex);
-    float3 environmentBRDF = integrationTexture.Sample(SamplerAnisotropic, float2(roughness, nDotV));
+    float3 environmentBRDF = integrationTexture.Sample(SamplerAnisotropic, float2(roughness, roughness));
 
     return prefilteredColor * (specularAlbedo * environmentBRDF.x + environmentBRDF.y);
 }
@@ -257,7 +257,6 @@ float4 pixel_shader(VS_OUTPUT IN) : SV_TARGET
         roughness = roughnessTexture.Sample(SamplerAnisotropic, IN.TextureCoordinate).r;
     }
     
-
     float3 specularAlbedo = float3(metalness, metalness, metalness);
 
     float3 lightPos = LightPosition;
