@@ -107,8 +107,8 @@ namespace Rendering
 		std::vector<Foliage*> mFoliageCollection;
 		VolumetricClouds* mVolumetricClouds;
 
-		ID3D11ShaderResourceView* mIrradianceTextureSRV;
-		ID3D11ShaderResourceView* mRadianceTextureSRV;
+		ID3D11ShaderResourceView* mIrradianceDiffuseTextureSRV;
+		ID3D11ShaderResourceView* mIrradianceSpecularTextureSRV;
 		ID3D11ShaderResourceView* mIntegrationMapTextureSRV;
 		std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
 

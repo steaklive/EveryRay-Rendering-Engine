@@ -25,8 +25,8 @@ namespace Rendering
 		MATERIAL_VARIABLE_INITIALIZATION(MetallicTexture),
 		MATERIAL_VARIABLE_INITIALIZATION(RoughnessTexture),
 		MATERIAL_VARIABLE_INITIALIZATION(CascadedShadowTextures),
-		MATERIAL_VARIABLE_INITIALIZATION(IrradianceTexture),
-		MATERIAL_VARIABLE_INITIALIZATION(RadianceTexture),
+		MATERIAL_VARIABLE_INITIALIZATION(IrradianceDiffuseTexture),
+		MATERIAL_VARIABLE_INITIALIZATION(IrradianceSpecularTexture),
 		MATERIAL_VARIABLE_INITIALIZATION(IntegrationTexture)
 	{
 	}
@@ -46,8 +46,8 @@ namespace Rendering
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, MetallicTexture)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, RoughnessTexture)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, CascadedShadowTextures)
-		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, IrradianceTexture)
-		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, RadianceTexture)
+		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, IrradianceDiffuseTexture)
+		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, IrradianceSpecularTexture)
 		MATERIAL_VARIABLE_DEFINITION(StandardLightingMaterial, IntegrationTexture)
 
 
@@ -70,8 +70,8 @@ namespace Rendering
 			MATERIAL_VARIABLE_RETRIEVE(MetallicTexture)
 			MATERIAL_VARIABLE_RETRIEVE(RoughnessTexture)
 			MATERIAL_VARIABLE_RETRIEVE(CascadedShadowTextures)
-			MATERIAL_VARIABLE_RETRIEVE(IrradianceTexture)
-			MATERIAL_VARIABLE_RETRIEVE(RadianceTexture)
+			MATERIAL_VARIABLE_RETRIEVE(IrradianceDiffuseTexture)
+			MATERIAL_VARIABLE_RETRIEVE(IrradianceSpecularTexture)
 			MATERIAL_VARIABLE_RETRIEVE(IntegrationTexture)
 
 		D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =

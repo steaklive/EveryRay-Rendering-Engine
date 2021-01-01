@@ -48,8 +48,8 @@ namespace Rendering
 		mRenderStateHelper(nullptr),
 		mDirectionalLight(nullptr),
 		mSkybox(nullptr),
-		mIrradianceTextureSRV(nullptr),
-		mRadianceTextureSRV(nullptr),
+		mIrradianceDiffuseTextureSRV(nullptr),
+		mIrradianceSpecularTextureSRV(nullptr),
 		mIntegrationMapTextureSRV(nullptr),
 		mGrid(nullptr),
 		mGBuffer(nullptr),
@@ -74,8 +74,8 @@ namespace Rendering
 		DeleteObject(mSSRQuad);
 		DeleteObject(mShadowMapper);
 		DeletePointerCollection(mFoliageCollection);
-		ReleaseObject(mIrradianceTextureSRV);
-		ReleaseObject(mRadianceTextureSRV);
+		ReleaseObject(mIrradianceDiffuseTextureSRV);
+		ReleaseObject(mIrradianceSpecularTextureSRV);
 		ReleaseObject(mIntegrationMapTextureSRV);
 		DeleteObject(mScene);
 		DeleteObject(mVolumetricClouds);
@@ -162,22 +162,24 @@ namespace Rendering
 		mCamera->SetFarPlaneDistance(100000.0f);
 
 		//IBL
-		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\Sky_Type_4_PBRDiffuseHDR.dds").c_str(), nullptr, &mIrradianceTextureSRV)))
-			throw GameException("Failed to create Irradiance Map.");
+		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_4\\textureDiffuseMDR.dds").c_str(), nullptr, &mIrradianceDiffuseTextureSRV)))
+			throw GameException("Failed to create Diffuse Irradiance Map.");
 
-		// Create an IBL Radiance Map from Environment Map
-		mIBLRadianceMap.reset(new IBLRadianceMap(*mGame, Utility::GetFilePath(L"content\\textures\\Sky_Type_4.dds")));
+		mIBLRadianceMap.reset(new IBLRadianceMap(*mGame, Utility::GetFilePath(Utility::ToWideString(mScene->skyboxPath))));
 		mIBLRadianceMap->Initialize();
 		mIBLRadianceMap->Create(*mGame);
+		
+		//mIrradianceSpecularTextureSRV = *mIBLRadianceMap->GetShaderResourceViewAddress();
+		//if (mIrradianceSpecularTextureSRV == nullptr)
+		//	throw GameException("Failed to create Specular Irradiance Map.");
+		//mIBLRadianceMap.release();
+		//mIBLRadianceMap.reset(nullptr);
 
-		mRadianceTextureSRV = *mIBLRadianceMap->GetShaderResourceViewAddress();
-		if (mRadianceTextureSRV == nullptr)
-			throw GameException("Failed to create Radiance Map.");
-		mIBLRadianceMap.release();
-		mIBLRadianceMap.reset(nullptr);
+		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_4\\textureSpecularMDR.dds").c_str(), nullptr, &mIrradianceSpecularTextureSRV)))
+			throw GameException("Failed to create Specular Irradiance Map.");
 
 		// Load a pre-computed Integration Map
-		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\ibl_brdf_lut.png").c_str(), nullptr, &mIntegrationMapTextureSRV)))
+		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_1\\textureBrdf.dds").c_str(), nullptr, &mIntegrationMapTextureSRV)))
 			throw GameException("Failed to create Integration Texture.");
 		
 		mVolumetricClouds = new VolumetricClouds(*mGame, *mCamera, *mDirectionalLight, *mPostProcessingStack, *mSkybox);
@@ -347,8 +349,8 @@ namespace Rendering
 		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->RoughnessTexture() << mScene->objects[objectName]->GetTextureData(meshIndex).RoughnessMap;
 		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->MetallicTexture() << mScene->objects[objectName]->GetTextureData(meshIndex).MetallicMap;
 		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, MAX_NUM_OF_CASCADES);
-		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->IrradianceTexture() << mIrradianceTextureSRV;
-		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->RadianceTexture() << mRadianceTextureSRV;
+		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->IrradianceDiffuseTexture() << mIrradianceDiffuseTextureSRV;
+		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->IrradianceSpecularTexture() << mIrradianceSpecularTextureSRV;
 		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->IntegrationTexture() << mIntegrationMapTextureSRV;
 	}
 	void TestSceneDemo::UpdateDeferredPrepassMaterialVariables(const std::string & objectName, int meshIndex)

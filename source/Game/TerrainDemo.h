@@ -85,10 +85,10 @@ namespace Rendering
 		std::vector<std::map<std::string, Foliage*>> mFoliageZonesCollections;
 		std::vector<XMFLOAT3> mVegetationZonesCenters;
 
-		ID3D11ShaderResourceView* mIrradianceTextureSRV;
-		ID3D11ShaderResourceView* mRadianceTextureSRV;
+		ID3D11ShaderResourceView* mIrradianceDiffuseTextureSRV;
+		ID3D11ShaderResourceView* mIrradianceSpecularTextureSRV;
 		ID3D11ShaderResourceView* mIntegrationMapTextureSRV;
-		std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
+		//std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
 
 		int mVegetationZonesCount = 64;
 		float mFoliageZoneGizmoSphereScale = 10.0f;

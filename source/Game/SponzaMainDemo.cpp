@@ -57,9 +57,6 @@ namespace Rendering
 		mShadowMapper(nullptr),
 		mDirectionalLight(nullptr),
 		mSkybox(nullptr),
-		mIrradianceTextureSRV(nullptr),
-		mRadianceTextureSRV(nullptr),
-		mIntegrationMapTextureSRV(nullptr),
 		mGrid(nullptr),
 		mGBuffer(nullptr),
 		mSSRQuad(nullptr),
@@ -85,8 +82,8 @@ namespace Rendering
 		DeleteObject(mSSRQuad);
 		DeleteObject(mShadowMapper);
 
-		ReleaseObject(mIrradianceTextureSRV);
-		ReleaseObject(mRadianceTextureSRV);
+		ReleaseObject(mIrradianceDiffuseTextureSRV);
+		ReleaseObject(mIrradianceSpecularTextureSRV);
 		ReleaseObject(mIntegrationMapTextureSRV);
 	}
 
@@ -202,7 +199,7 @@ namespace Rendering
 		mSSRQuad = new FullScreenQuad(*mGame, *(mRenderingObjects["Sponza"]->GetMaterials()[MaterialHelper::ssrMaterialName]));
 		mSSRQuad->Initialize();
 
-		mSkybox = new Skybox(*mGame, *mCamera, Utility::GetFilePath(L"content\\textures\\Sky_Type_4.dds"), 100);
+		mSkybox = new Skybox(*mGame, *mCamera, Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_4\\textureEnv.dds"), 100);
 		mSkybox->Initialize();
 
 		mGrid = new Grid(*mGame, *mCamera, 100, 64, XMFLOAT4(0.961f, 0.871f, 0.702f, 1.0f));
@@ -217,7 +214,7 @@ namespace Rendering
 
 		//PP
 		mPostProcessingStack = new PostProcessingStack(*mGame, *mCamera);
-		mPostProcessingStack->Initialize(true, false, true, true, true, true);
+		mPostProcessingStack->Initialize(false, false, true, true, true, true);
 
 		//shadows
 		mShadowMapper = new ShadowMapper(*mGame, *mCamera, *mDirectionalLight, 4096, 4096, false);
@@ -229,23 +226,23 @@ namespace Rendering
 		mCamera->SetFarPlaneDistance(600.0f);
 
 		//IBL
-		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\sponzaCubeDiffuseHDR.dds").c_str(), nullptr, &mIrradianceTextureSRV)))
-			throw GameException("Failed to create Irradiance Map.");
+		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_4\\textureDiffuseMDR.dds").c_str(), nullptr, &mIrradianceDiffuseTextureSRV)))
+			throw GameException("Failed to create Diffuse Irradiance Map.");
 
-		// Create an IBL Radiance Map from Environment Map
-		mIBLRadianceMap.reset(new IBLRadianceMap(*mGame, Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\sponzaCubemap.dds")));
+		mIBLRadianceMap.reset(new IBLRadianceMap(*mGame, Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_4\\textureEnv.dds")));
 		mIBLRadianceMap->Initialize();
 		mIBLRadianceMap->Create(*mGame);
 
-		mRadianceTextureSRV = *mIBLRadianceMap->GetShaderResourceViewAddress();
-		if (mRadianceTextureSRV == nullptr)
-			throw GameException("Failed to create Radiance Map.");
+		mIrradianceSpecularTextureSRV = *mIBLRadianceMap->GetShaderResourceViewAddress();
+		if (mIrradianceSpecularTextureSRV == nullptr)
+			throw GameException("Failed to create Specular Irradiance Map.");
 		mIBLRadianceMap.release();
 		mIBLRadianceMap.reset(nullptr);
 
 		// Load a pre-computed Integration Map
-		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\sponzaCubeBrdf.dds").c_str(), nullptr, &mIntegrationMapTextureSRV)))
+		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\ibl_brdf_lut.png").c_str(), nullptr, &mIntegrationMapTextureSRV)))
 			throw GameException("Failed to create Integration Texture.");
+
 	}
 
 	void SponzaMainDemo::UpdateLevel(const GameTime& gameTime)
@@ -416,8 +413,8 @@ namespace Rendering
 		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->RoughnessTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).RoughnessMap;
 		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->MetallicTexture() << mRenderingObjects[objectName]->GetTextureData(meshIndex).MetallicMap;
 		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, MAX_NUM_OF_CASCADES);
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->IrradianceTexture() << mIrradianceTextureSRV;
-		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->RadianceTexture() << mRadianceTextureSRV;
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->IrradianceDiffuseTexture() << mIrradianceDiffuseTextureSRV;
+		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->IrradianceSpecularTexture() << mIrradianceSpecularTextureSRV;
 		static_cast<StandardLightingMaterial*>(mRenderingObjects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->IntegrationTexture() << mIntegrationMapTextureSRV;
 	}
 
