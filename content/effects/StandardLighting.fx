@@ -28,8 +28,8 @@ Texture2D RoughnessTexture;
 
 Texture2D CascadedShadowTextures[NUM_OF_SHADOW_CASCADES];
 
-TextureCube IrradianceTexture;
-TextureCube RadianceTexture;
+TextureCube IrradianceDiffuseTexture;
+TextureCube IrradianceSpecularTexture;
 Texture2D IntegrationTexture;
 
 SamplerState Sampler
@@ -213,20 +213,40 @@ float3 ApplyDirectionalLight(float3 diffuseColor,float3 specularColor, float spe
 // ===============================================================================================
 // http://graphicrants.blogspot.com.au/2013/08/specular-brdf-reference.html
 // ===============================================================================================
-float GGX(float NdotV, float a)
+
+float DistributionGGX(float3 N, float3 H, float roughness)
 {
-    float k = a / 2;
-    return NdotV / (NdotV * (1.0f - k) + k);
+    float a = roughness * roughness;
+    float a2 = a * a;
+    float NdotH = max(dot(N, H), 0.0);
+    float NdotH2 = NdotH * NdotH;
+
+    float nom = a2;
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    denom = Pi * denom * denom;
+
+    return nom / max(denom, 0.001); // prevent divide by zero for roughness=0.0 and NdotH=1.0
 }
 
-// ===============================================================================================
-// Geometry with Smith approximation:
-// http://blog.selfshadow.com/publications/s2013-shading-course/rad/s2013_pbs_rad_notes.pdf
-// http://graphicrants.blogspot.fr/2013/08/specular-brdf-reference.html
-// ===============================================================================================
-float G_Smith(float a, float nDotV, float nDotL)
+float GeometrySchlickGGX(float NdotV, float roughness)
 {
-    return GGX(nDotL, a * a) * GGX(nDotV, a * a);
+    float r = (roughness + 1.0);
+    float k = (r * r) / 8.0;
+
+    float nom = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+
+    return nom / denom;
+}
+// ----------------------------------------------------------------------------
+float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
+{
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float ggx2 = GeometrySchlickGGX(NdotV, roughness);
+    float ggx1 = GeometrySchlickGGX(NdotL, roughness);
+
+    return ggx1 * ggx2;
 }
 
 // ================================================================================================
@@ -234,18 +254,34 @@ float G_Smith(float a, float nDotV, float nDotL)
 // http://blog.selfshadow.com/publications/s2013-shading-course/rad/s2013_pbs_rad_notes.pdf
 // http://graphicrants.blogspot.fr/2013/08/specular-brdf-reference.html
 // ================================================================================================
-float3 Schlick_Fresnel(float3 f0, float3 h, float3 l)
+float3 Schlick_Fresnel(float3 f0, float cosTheta)
 {
-    return f0 + (1.0f - f0) * pow((1.0f - dot(l, h)), 5.0f);
+    return f0 + (1.0f - f0) * pow((1.0f - cosTheta), 5.0f);
 }
 float3 Schlick_Fresnel_Roughness(float cosTheta, float3 F0, float roughness)
 {
-    return F0 + (max(float3(1.0 - roughness, 1.0f - roughness, 1.0f - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+    return F0 + (max(float3(1.0f - roughness, 1.0f - roughness, 1.0f - roughness), F0) - F0) * pow(1.0f - cosTheta, 5.0f);
 }
+
 // ================================================================================================
-// Lambertian BRDF
-// http://en.wikipedia.org/wiki/Lambertian_reflectance
-// ================================================================================================
+float3 DirectDiffuseBRDF(float3 diffuseAlbedo, float3 lightDir, float3 viewDir, float3 F0, float metallic)
+{
+    float3 halfVec = normalize(viewDir + lightDir);
+   
+    float3 F = Schlick_Fresnel(F0, max(dot(halfVec, viewDir), 0.0));
+    float3 kS = F;
+    // for energy conservation, the diffuse and specular light can't
+    // be above 1.0 (unless the surface emits light); to preserve this
+    // relationship the diffuse component (kD) should equal 1.0 - kS.
+    float3 kD = float3(1.0f, 1.0f, 1.0f) - kS;
+    // multiply kD by the inverse metalness such that only non-metals 
+    // have diffuse lighting, or a linear blend if partly metal (pure metals
+    // have no diffuse light).
+    kD *= (float3(1.0f, 1.0f, 1.0f) - metallic);
+    
+    return (diffuseAlbedo * kD) / Pi;
+}
+
 float3 DirectDiffuseBRDF(float3 diffuseAlbedo, float nDotL)
 {
     return (diffuseAlbedo * nDotL) / Pi;
@@ -253,73 +289,70 @@ float3 DirectDiffuseBRDF(float3 diffuseAlbedo, float nDotL)
 
 // ================================================================================================
 // Cook-Torrence BRDF
-float3 DirectSpecularBRDF(float3 specularAlbedo, float3 positionWS, float3 normalWS, float3 lightDir, float roughness)
+float3 DirectSpecularBRDF(float3 normalWS, float3 lightDir, float3 viewDir, float roughness, float3 F0)
 {
-    float3 viewDir = normalize(CameraPosition.xyz - positionWS);
     float3 halfVec = normalize(viewDir + lightDir);
-
-    float nDotH = saturate(dot(normalWS, halfVec));
-    float nDotL = saturate(dot(normalWS, lightDir));
-    float nDotV = max(dot(normalWS, viewDir), 0.0001f);
-
-    float alpha2 = roughness * roughness;
-
-	// Normal distribution term with Trowbridge-Reitz/GGX.
-    float D = alpha2 / (Pi * pow(nDotH * nDotH * (alpha2 - 1) + 1, 2.0f));
- 
-	// Fresnel term with Schlick's approximation.
-    float3 F = Schlick_Fresnel(specularAlbedo, halfVec, lightDir);
-
-	// Geometry term with Smith's approximation.
-    float G = G_Smith(roughness, nDotV, nDotL);
-
-    return D * F * G;
+    // Cook-Torrance BRDF
+    float NDF = DistributionGGX(normalWS, halfVec, roughness);
+    float G = GeometrySmith(normalWS, viewDir, lightDir, roughness);
+    float3 F = Schlick_Fresnel(F0, max(dot(halfVec, viewDir), 0.0));
+           
+    float3 nominator = NDF * G * F;
+    float denominator = 4 * max(dot(normalWS, viewDir), 0.0) * max(dot(normalWS, lightDir), 0.0);
+    float3 specular = nominator / max(denominator, 0.001); // prevent divide by zero for NdotV=0.0 or NdotL=0.0
+       
+    return specular;
 }
 // ================================================================================================
 
 float3 DirectLightingPBR(float3 normalWS, float3 lightColor, float3 diffuseAlbedo,
-	float3 specularAlbedo, float3 positionWS, float roughness, float attenuation)
+	float3 specularAlbedo, float3 positionWS, float roughness, float3 F0, float metallic)
 {
-    float3 lighting = 0.0f;
     float3 lightDir = SunDirection.xyz;
+    float3 viewDir = normalize(CameraPosition.xyz - positionWS).rgb;
+    float nDotL = max(dot(normalWS, lightDir), 0.0);
 
-    float nDotL = saturate(dot(normalWS, lightDir));
+    //float3 lighting = DirectDiffuseBRDF(diffuseAlbedo, lightDir, viewDir, F0, metallic) + DirectSpecularBRDF(normalWS, lightDir, viewDir, roughness, F0);
+    //return lighting * nDotL * lightColor;
+    
+    float3 lighting = DirectDiffuseBRDF(diffuseAlbedo, lightDir, viewDir, F0, metallic) + DirectSpecularBRDF(normalWS, lightDir, viewDir, roughness, F0);
 
-    if (nDotL > 0.0f)
-    {
-        lighting = DirectDiffuseBRDF(diffuseAlbedo, nDotL) * attenuation + DirectSpecularBRDF(specularAlbedo, positionWS, normalWS, lightDir, roughness) * attenuation;
-    }
-
-    return max(lighting, 0.0f) * lightColor;
+    return max(lighting, 0.0f) * nDotL * lightColor;
 }
 
 // ================================================================================================
 // Split sum approximation 
 // http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
 // ================================================================================================
-float3 ApproximateSpecularIBL(float3 specularAlbedo, float3 reflectDir, float nDotV, float roughness)
+float3 ApproximateSpecularIBL(float3 F0, float3 reflectDir, float nDotV, float roughness)
 {
-	// Mip level is in [0, 6] range and roughness is [0, 1].
-    float mipIndex = roughness * 6;
-    float3 prefilteredColor = RadianceTexture.SampleLevel(Sampler, reflectDir, mipIndex);
-    float3 environmentBRDF = IntegrationTexture.Sample(Sampler, float2(roughness, nDotV));
+    uint width, height, levels;
+    IrradianceSpecularTexture.GetDimensions(0, width, height, levels);
+    float mipIndex = roughness * levels;
+    
+    float3 prefilteredColor = IrradianceSpecularTexture.SampleLevel(Sampler, reflectDir, mipIndex);
+    float3 environmentBRDF = IntegrationTexture.Sample(Sampler, float2(nDotV, roughness));
 
-    return prefilteredColor * (specularAlbedo * environmentBRDF.x + environmentBRDF.y);
+    return prefilteredColor * (F0 * environmentBRDF.x + environmentBRDF.y);
 
 }
-float3 IndirectLighting(float roughness, float3 diffuseAlbedo, float3 specularAlbedo, float3 normalWS, float3 positionWS)
+float3 IndirectLightingPBR(float roughness, float3 diffuseAlbedo, float3 specularAlbedo, float3 normalWS, float3 positionWS, float metalness, float3 F0)
 {
     float3 viewDir = normalize(CameraPosition.xyz - positionWS);
-    float3 reflectDir = normalize(reflect(-viewDir, normalWS));
     float nDotV = max(dot(normalWS, viewDir), 0.0001f);
+    float3 reflectDir = reflect(-viewDir, normalWS);
 
 	// Sample the indirect diffuse lighting from the irradiance environment map. 
-    float3 indirectDiffuseLighting = IrradianceTexture.SampleLevel(Sampler, normalWS, 0).rgb * diffuseAlbedo;
-	
-    // Split sum approximation of specular lighting.
-    float3 indirectSpecularLighting = ApproximateSpecularIBL(specularAlbedo, reflectDir, nDotV, roughness);
+    float3 irradiance = IrradianceDiffuseTexture.Sample(Sampler, normalWS).rgb;
+    float3 F = Schlick_Fresnel_Roughness(nDotV, F0, roughness);
+    float3 kD = float3(1.0f, 1.0f, 1.0f) - F;
+    kD *= (float3(1.0f, 1.0f, 1.0f) - metalness);
+    float3 indirectDiffuseLighting = kD * irradiance * diffuseAlbedo;
 
-    return indirectDiffuseLighting + indirectSpecularLighting;
+    // Split sum approximation of specular lighting.
+    float3 indirectSpecularLighting = ApproximateSpecularIBL(F0, reflectDir, nDotV, roughness);
+    
+    return (indirectDiffuseLighting + indirectSpecularLighting) /*ao*/;
 }
 
 float3 mainPS(VS_OUTPUT vsOutput) : SV_Target0
@@ -329,7 +362,7 @@ float3 mainPS(VS_OUTPUT vsOutput) : SV_Target0
     clip(diffuseAlbedo.a < 0.1f ? -1 : 1);
     float3 colorSum = 0;
     {
-        float ao = 1;//texSSAO[ pixelPos];
+        float ao = 1;
         colorSum += ApplyAmbientLight(diffuseAlbedo.rgb, ao, AmbientColor.xyz);
     }
 
@@ -363,7 +396,6 @@ float3 mainPS(VS_OUTPUT vsOutput) : SV_Target0
 
 float3 mainPS_PBR(VS_OUTPUT vsOutput) : SV_Target0
 {
-
     float3 sampledNormal = (2 * NormalTexture.Sample(Sampler, vsOutput.UV).xyz) - 1.0; // Map normal from [0..1] to [-1..1]
     float3x3 tbn = float3x3(vsOutput.Tangent, cross(vsOutput.Normal, vsOutput.Tangent), vsOutput.Normal);
     sampledNormal = mul(sampledNormal, tbn); // Transform normal to world space
@@ -372,23 +404,20 @@ float3 mainPS_PBR(VS_OUTPUT vsOutput) : SV_Target0
 
     float4 diffuseAlbedo = pow(AlbedoTexture.Sample(Sampler, vsOutput.UV), 2.2);
     clip(diffuseAlbedo.a < 0.1f ? -1 : 1);
-    float  metalness = MetallicTexture.Sample(Sampler, vsOutput.UV).r;
-    float roughness = RoughnessTexture.Sample(Sampler, vsOutput.UV).r;
+    float metalness = MetallicTexture.Sample(Sampler, vsOutput.UV).r;
+    float roughness = 0.0f;//    RoughnessTexture.Sample(Sampler, vsOutput.UV).r;
         
     float3 specularAlbedo = float3(metalness, metalness, metalness);
 
-    float3 directLighting = DirectLightingPBR(normalWS, SunColor.xyz, diffuseAlbedo.rgb, specularAlbedo, vsOutput.WorldPos, roughness, 1.0f);
-    
     float3 F0 = float3(0.04, 0.04, 0.04);
     F0 = lerp(F0, diffuseAlbedo.rgb, metalness);
-    specularAlbedo = Schlick_Fresnel_Roughness(max(dot(normalWS, normalize(CameraPosition.xyz - vsOutput.WorldPos)), 0.0001f), F0, roughness);
-    
-    float3 indirectLighting = IndirectLighting(roughness, diffuseAlbedo.rgb, specularAlbedo, normalWS, vsOutput.WorldPos);
 
-    float shadow = GetShadow(vsOutput.ShadowCoord0, vsOutput.ShadowCoord1, vsOutput.ShadowCoord2, vsOutput.Position.w);
-    float3 ambient = AmbientColor.rgb * diffuseAlbedo.rgb;
-    
-    float3 color = ambient + float3(directLighting + indirectLighting) * shadow;    
+    float3 directLighting = DirectLightingPBR(normalWS, SunColor.xyz, diffuseAlbedo.rgb, specularAlbedo, vsOutput.WorldPos, roughness, F0, metalness);
+    float3 indirectLighting = IndirectLightingPBR(roughness, diffuseAlbedo.rgb, specularAlbedo, normalWS, vsOutput.WorldPos, metalness, F0);
+
+    float shadow = GetShadow(vsOutput.ShadowCoord0, vsOutput.ShadowCoord1, vsOutput.ShadowCoord2, vsOutput.Position.w);    
+    float3 color = (/*directLighting * shadow + */indirectLighting);
+            
     return color;
 }
 
