@@ -418,7 +418,8 @@ float3 mainPS_PBR(VS_OUTPUT vsOutput) : SV_Target0
     float shadow = GetShadow(vsOutput.ShadowCoord0, vsOutput.ShadowCoord1, vsOutput.ShadowCoord2, vsOutput.Position.w);
     
     float indirectLightingContribution = 0.8f;
-    float3 color = (directLighting * shadow + indirectLighting * indirectLightingContribution);
+    float indirectLightingShadowFactor = 0.2f; //not phyisically accurate
+    float3 color = (directLighting * shadow + indirectLighting * indirectLightingContribution * clamp(indirectLightingShadowFactor + shadow, indirectLightingShadowFactor, 1.0f));
             
     // HDR tonemapping
     color = color / (color + float3(1.0f, 1.0f, 1.0f));

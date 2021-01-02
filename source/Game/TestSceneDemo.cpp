@@ -167,9 +167,8 @@ namespace Rendering
 
 		//foliage
 		mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 1500, Utility::GetFilePath("content\\textures\\foliage\\grass_type1.png"), 2.5f, 100.0f));
-		//mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 10000, Utility::GetFilePath("content\\textures\\foliage\\grass_type2.png"), 1.3f, 100.0f));
-		//mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 1000, Utility::GetFilePath("content\\textures\\foliage\\grass_type3.png"), 1.5f, 100.0f));
-		mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 3500, Utility::GetFilePath("content\\textures\\foliage\\grass_type4.png"), 2.0f, 100.0f));
+		mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 2000, Utility::GetFilePath("content\\textures\\foliage\\grass_type4.png"), 2.0f, 100.0f));
+		mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 2000, Utility::GetFilePath("content\\textures\\foliage\\grass_type6.png"), 2.0f, 100.0f));
 		mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 100, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type1.png"), 3.5f, 100.0f));
 		mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 50, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type3.png"), 2.5f, 100.0f));
 		mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 100, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type10.png"), 3.5f, 100.0f));
