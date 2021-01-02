@@ -125,6 +125,7 @@ namespace Rendering
 		~RenderingObject();
 
 		void LoadCustomMeshTextures(int meshIndex, std::wstring albedoPath, std::wstring normalPath, std::wstring specularPath, std::wstring roughnessPath, std::wstring metallicPath, std::wstring extra1Path, std::wstring extra2Path, std::wstring extra3Path);
+		void LoadCustomMeshTextures(int meshIndex);
 		void LoadMaterial(Material* pMaterial, Effect* pEffect, std::string materialName);
 		void LoadRenderBuffers();
 		void LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData, std::string materialName);
@@ -199,6 +200,11 @@ namespace Rendering
 		std::string GetName() { return mName; }
 
 		GeneralEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new GeneralEvent<Delegate_MeshMaterialVariablesUpdate>();
+
+		std::vector<std::string>								mCustomAlbedoTextures;
+		std::vector<std::string>								mCustomNormalTextures;
+		std::vector<std::string>								mCustomRoughnessTextures;
+		std::vector<std::string>								mCustomMetalnessTextures;
 	private:
 		RenderingObject();
 		RenderingObject(const RenderingObject& rhs);
@@ -225,7 +231,7 @@ namespace Rendering
 		UINT													mInstanceCountToRender;
 		std::vector<InstancedData>								mInstanceData;
 		std::vector<std::string>								mInstancesNames;
-
+	
 		std::string												mName;
 		RenderableAABB*											mDebugAABB;
 		bool													mEnableAABBDebug = true;

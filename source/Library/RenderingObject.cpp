@@ -41,6 +41,11 @@ namespace Rendering
 			mMeshVertices.push_back(mModel->Meshes().at(i)->Vertices());
 			mMeshesTextureBuffers.push_back(TextureData());
 			mMeshesReflectionFactors.push_back(0.0f);
+
+			mCustomAlbedoTextures.push_back("");
+			mCustomNormalTextures.push_back("");
+			mCustomRoughnessTextures.push_back("");
+			mCustomMetalnessTextures.push_back("");
 		}
 
 		for (size_t i = 0; i < mMeshVertices.size(); i++)
@@ -211,6 +216,32 @@ namespace Rendering
 		//TODO
 		//if (!extra3Path.empty())
 	}
+
+	//from custom collections
+	void RenderingObject::LoadCustomMeshTextures(int meshIndex)
+	{
+		assert(meshIndex < mMeshesCount);
+		std::string errorMessage = mModel->GetFileName() + " of mesh index: " + std::to_string(meshIndex);
+
+		if (!mCustomAlbedoTextures[meshIndex].empty() && mCustomAlbedoTextures[meshIndex].back() != '\\')
+			LoadTexture(TextureType::TextureTypeDifffuse, Utility::GetFilePath(Utility::ToWideString(mCustomAlbedoTextures[meshIndex])), meshIndex);
+
+		if (!mCustomNormalTextures[meshIndex].empty() && mCustomNormalTextures[meshIndex].back() != '\\')
+			LoadTexture(TextureType::TextureTypeNormalMap, Utility::GetFilePath(Utility::ToWideString(mCustomNormalTextures[meshIndex])), meshIndex);
+
+		if (!mCustomRoughnessTextures[meshIndex].empty() && mCustomRoughnessTextures[meshIndex].back() != '\\')
+			LoadTexture(TextureType::TextureTypeDisplacementMap, Utility::GetFilePath(Utility::ToWideString(mCustomRoughnessTextures[meshIndex])), meshIndex);
+
+		if (!mCustomMetalnessTextures[meshIndex].empty() && mCustomMetalnessTextures[meshIndex].back() != '\\')
+			LoadTexture(TextureType::TextureTypeEmissive, Utility::GetFilePath(Utility::ToWideString(mCustomMetalnessTextures[meshIndex])), meshIndex);
+
+		//TODO
+		//if (!extra1Path.empty())
+		//TODO
+		//if (!extra2Path.empty())
+		//TODO
+		//if (!extra3Path.empty())
+	}
 	
 	void RenderingObject::LoadTexture(TextureType type, std::wstring path, int meshIndex)
 	{
@@ -289,6 +320,12 @@ namespace Rendering
 				break;
 			case TextureType::TextureTypeNormalMap:
 				LoadTexture(type, Utility::GetFilePath(L"content\\textures\\emptyNormalMap.png"), meshIndex);
+				break;
+			case TextureType::TextureTypeEmissive:
+				LoadTexture(type, Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), meshIndex);
+				break;
+			case TextureType::TextureTypeDisplacementMap:
+				LoadTexture(type, Utility::GetFilePath(L"content\\textures\\emptyRoughness.png"), meshIndex);
 				break;
 			}
 		}

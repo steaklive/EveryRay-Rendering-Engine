@@ -118,27 +118,6 @@ namespace Rendering
 		}
 		mEditor->LoadScene(mScene);
 
-		mScene->objects["Test sphere 3"]->LoadCustomMeshTextures(0,
-			Utility::GetFilePath(L"content\\textures\\PBR\\Gold\\GoldMetal_albedo.jpg"),
-			Utility::GetFilePath(L"content\\textures\\PBR\\Gold\\GoldMetal_nrm.jpg"),
-			Utility::GetFilePath(L""),
-			Utility::GetFilePath(L"content\\textures\\PBR\\Gold\\GoldMetal_rgh.jpg"),
-			Utility::GetFilePath(L"content\\textures\\PBR\\Gold\\GoldMetal_mtl.jpg"),
-			Utility::GetFilePath(L""),
-			Utility::GetFilePath(L""),
-			Utility::GetFilePath(L"")
-		);
-		mScene->objects["Test sphere 3"]->LoadCustomMeshTextures(1,
-			Utility::GetFilePath(L"content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png"),
-			Utility::GetFilePath(L"content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png"),
-			Utility::GetFilePath(L""),
-			Utility::GetFilePath(L"content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"),
-			Utility::GetFilePath(L"content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png"),
-			Utility::GetFilePath(L""),
-			Utility::GetFilePath(L""),
-			Utility::GetFilePath(L"")
-		);
-
 		mKeyboard = (Keyboard*)mGame->Services().GetService(Keyboard::TypeIdClass());
 		assert(mKeyboard != nullptr);
 
@@ -279,8 +258,11 @@ namespace Rendering
 			int objectIndex = 0;
 			for (auto it = mScene->objects.begin(); it != mScene->objects.end(); it++, objectIndex++)
 			{
-				static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->LightViewProjection() << lvp;
-				//static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->AlbedoAlphaMap() << it->second->GetTextureData(objectIndex).AlbedoMap;
+				XMMATRIX worldMatrix = XMLoadFloat4x4(&(it->second->GetTransformationMatrix4X4()));
+				if (it->second->IsInstanced())
+					static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->LightViewProjection() << lvp;
+				else
+					static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->WorldLightViewProjection() << worldMatrix * lvp;
 				it->second->Draw(name, true);
 			}
 		

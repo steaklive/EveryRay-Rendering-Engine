@@ -26,17 +26,17 @@
 				{
 					"transform" : 
 					[
-						2.2947187423706055,
+						1.5831161737442017,
 						0.0,
 						0.0,
-						-18.865562438964844,
+						-32.573905944824219,
 						0.0,
-						-1.0031767772034073e-07,
-						-2.2950010299682617,
+						-6.9219261433772772e-08,
+						-1.5835521221160889,
 						0.0,
 						0.0,
-						2.2950010299682617,
-						-1.0031767772034073e-07,
+						1.5835521221160889,
+						-6.9219261433772772e-08,
 						-6.2784233093261719,
 						0.0,
 						0.0,
@@ -47,17 +47,17 @@
 				{
 					"transform" : 
 					[
-						1.6998298168182373,
-						0.0,
-						0.0,
-						-33.0,
+						1.5976508855819702,
+						-0.5800740122795105,
+						2.5355840094221094e-08,
+						-21.112157821655273,
 						0.0,
 						-7.4309362219082686e-08,
 						-1.7000000476837158,
 						0.0,
-						0.0,
-						1.7000000476837158,
-						-7.4309362219082686e-08,
+						0.57995742559432983,
+						1.5979719161987305,
+						-6.9849569683810842e-08,
 						-29.536291122436523,
 						0.0,
 						0.0,
@@ -151,18 +151,18 @@
 			"name" : "Acer Tree",
 			"transform" : 
 			[
-				0.99993902444839478,
+				1.5976508855819702,
+				-0.5800740122795105,
+				2.5355840094221094e-08,
+				-21.112157821655273,
 				0.0,
+				-7.4309362219082686e-08,
+				-1.7000000476837158,
 				0.0,
-				-34.9249267578125,
-				0.0,
-				-4.3711388286737929e-08,
-				-1.0,
-				0.0,
-				0.0,
-				1.0,
-				-4.3711388286737929e-08,
-				32.064674377441406,
+				0.57995742559432983,
+				1.5979719161987305,
+				-6.9849569683810842e-08,
+				-29.536291122436523,
 				0.0,
 				0.0,
 				0.0,
@@ -231,64 +231,37 @@
 					"technique" : "standard_lighting_pbr"
 				}
 			],
-			"model_path" : "content\\models\\sphere.fbx",
-			"name" : "Test sphere 1",
-			"transform" : 
-			[
-				0.58420002460479736,
-				0.0,
-				0.0,
-				-27.674488067626953,
-				0.0,
-				0.58420002460479736,
-				0.0,
-				7.1017065048217773,
-				0.0,
-				0.0,
-				0.58420002460479736,
-				14.758570671081543,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"instanced" : false,
-			"materials" : 
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Pavement",
+			"textures" : 
 			[
 				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
+					"albedo" : "content\\textures\\PBR\\Pavement\\PavingStones077_2K_Color.jpg",
+					"metalness" : "content\\textures\\PBR\\Pavement\\EmptyMetalMap.png",
+					"normal" : "content\\textures\\PBR\\Pavement\\PavingStones077_2K_Normal.jpg",
+					"roughness" : "content\\textures\\PBR\\Pavement\\PavingStones077_2K_Roughness.jpg"
 				},
 				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
-				},
-				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingMaterial",
-					"technique" : "standard_lighting_pbr"
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
 				}
 			],
-			"model_path" : "content\\models\\sphere.fbx",
-			"name" : "Test sphere 2",
 			"transform" : 
 			[
-				1.0049999952316284,
+				1.0,
 				0.0,
 				0.0,
-				22.884361267089844,
+				-12.0,
 				0.0,
-				1.0049999952316284,
-				0.0,
-				-0.28352832794189453,
+				1.0,
 				0.0,
 				0.0,
-				1.0049999952316284,
-				-14.831348419189453,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
 				0.0,
 				0.0,
 				0.0,
@@ -316,20 +289,92 @@
 				}
 			],
 			"model_path" : "content\\models\\shaderball.fbx",
-			"name" : "Test sphere 3",
+			"name" : "Shader Ball Marble",
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Marble\\Marble_col.jpg",
+					"metalness" : "content\\textures\\PBR\\Marble\\EmptyMetalMap.png",
+					"normal" : "content\\textures\\PBR\\Marble\\Marble_nrm.jpg",
+					"roughness" : "content\\textures\\PBR\\Marble\\Marble_rgh.jpg"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
 			"transform" : 
 			[
-				0.92000007629394531,
+				1.0,
 				0.0,
 				0.0,
-				-2.8697218894958496,
+				12.0,
 				0.0,
-				0.92000007629394531,
-				0.0,
-				-0.063421785831451416,
+				1.0,
 				0.0,
 				0.0,
-				0.92000007629394531,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"instanced" : false,
+			"materials" : 
+			[
+				{
+					"effect" : "content\\effects\\DepthMap.fx",
+					"name" : "DepthMapMaterial",
+					"technique" : "create_depthmap_w_render_target"
+				},
+				{
+					"effect" : "content\\effects\\DeferredPrepass.fx",
+					"name" : "DeferredMaterial",
+					"technique" : "deferred"
+				},
+				{
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"name" : "StandardLightingMaterial",
+					"technique" : "standard_lighting_pbr"
+				}
+			],
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Gold",
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Gold\\GoldMetal_albedo.jpg",
+					"metalness" : "content\\textures\\PBR\\Gold\\GoldMetal_mtl.jpg",
+					"normal" : "content\\textures\\PBR\\Gold\\GoldMetal_nrm.jpg",
+					"roughness" : "content\\textures\\PBR\\Gold\\GoldMetal_rgh.jpg"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
 				0.0,
 				0.0,
 				0.0,

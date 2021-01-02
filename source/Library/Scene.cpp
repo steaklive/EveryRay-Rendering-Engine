@@ -85,8 +85,7 @@ namespace Library
 					)
 				);
 
-				auto it = objects.end();
-				--it;
+				auto it = objects.find(name);
 
 				if (root["rendering_objects"][i].isMember("placed_on_terrain")) {
 					it->second->SetPlacedOnTerrain(root["rendering_objects"][i]["placed_on_terrain"].asBool());
@@ -129,6 +128,27 @@ namespace Library
 						}
 					}
 					it->second->LoadRenderBuffers();
+				}
+
+				//load custom textures
+				if (root["rendering_objects"][i].isMember("textures")) {
+					if (it->second->GetMeshCount() < root["rendering_objects"][i]["textures"].size()) {
+						//std::string msg = "More custom textures in scene .json than actual meshes in " + it->second->GetName();
+						//throw GameException(msg.c_str());
+					}
+
+					for (Json::Value::ArrayIndex mesh = 0; mesh != root["rendering_objects"][i]["textures"].size(); mesh++) {
+						if (root["rendering_objects"][i]["textures"][mesh].isMember("albedo"))
+							it->second->mCustomAlbedoTextures[mesh] = root["rendering_objects"][i]["textures"][mesh]["albedo"].asString();
+						if (root["rendering_objects"][i]["textures"][mesh].isMember("normal"))
+							it->second->mCustomNormalTextures[mesh] = root["rendering_objects"][i]["textures"][mesh]["normal"].asString();
+						if (root["rendering_objects"][i]["textures"][mesh].isMember("roughness"))
+							it->second->mCustomRoughnessTextures[mesh] = root["rendering_objects"][i]["textures"][mesh]["roughness"].asString();
+						if (root["rendering_objects"][i]["textures"][mesh].isMember("metalness"))
+							it->second->mCustomMetalnessTextures[mesh] = root["rendering_objects"][i]["textures"][mesh]["metalness"].asString();
+
+						it->second->LoadCustomMeshTextures(mesh);
+					}
 				}
 
 				// load world transform
