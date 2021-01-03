@@ -88,7 +88,7 @@ namespace Rendering
 		ID3D11ShaderResourceView* mIrradianceDiffuseTextureSRV;
 		ID3D11ShaderResourceView* mIrradianceSpecularTextureSRV;
 		ID3D11ShaderResourceView* mIntegrationMapTextureSRV;
-		//std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
+		std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
 
 		int mVegetationZonesCount = 64;
 		float mFoliageZoneGizmoSphereScale = 10.0f;

@@ -26,15 +26,13 @@ cbuffer CloudsConstants : register(b1)
     float Curliness;
     float Coverage;
     float Absorption;
+    float BottomHeight;
+    float TopHeight;
+    float DensityFactor;
 }
 
 static const float PLANET_RADIUS = 600000.0f;
-static const float CLOUDS_BOTTOM_HEIGHT = 8000.0f;
-static const float CLOUDS_TOP_HEIGHT = 19000.0f;
 static float3 PLANET_CENTER = float3(0.0f, -PLANET_RADIUS, 0.0f);
-static float PLANET_INNER_RADIUS = PLANET_RADIUS + CLOUDS_BOTTOM_HEIGHT;
-static float PLANET_OUTER_RADIUS = PLANET_INNER_RADIUS + CLOUDS_TOP_HEIGHT;
-static float PLANET_DELTA = PLANET_OUTER_RADIUS - PLANET_INNER_RADIUS;
 
 static const float BAYER_FACTOR = 1.0f / 16.0f;
 static const float BAYER_FILTER[16] =
@@ -131,6 +129,8 @@ bool RaySphereIntersectionFromOriginPoint(float3 rayOrigin, float3 rayDir, float
 
 float GetHeightFraction(float3 inPos)
 {
+    float PLANET_INNER_RADIUS = PLANET_RADIUS + BottomHeight;
+    float PLANET_OUTER_RADIUS = PLANET_INNER_RADIUS + TopHeight;
     return (length(inPos - PLANET_CENTER) - PLANET_INNER_RADIUS) / (PLANET_OUTER_RADIUS - PLANET_INNER_RADIUS);
 }
 float Remap(float originalValue, float originalMin, float originalMax, float newMin, float newMax)
@@ -140,6 +140,7 @@ float Remap(float originalValue, float originalMin, float originalMax, float new
 
 float2 GetUVProjection(float3 p)
 {
+    float PLANET_INNER_RADIUS = PLANET_RADIUS + BottomHeight;
     return p.xz / PLANET_INNER_RADIUS + 0.5f;
 }
 
@@ -236,7 +237,6 @@ float4 RaymarchToCloud(float2 texCoord, float3 startPos, float3 endPos, float3 s
     const int steps = 16;
     float4 finalColor = float4(0.0, 0.0, 0.0, 0.0);
     
-    float densityFactor = 0.02;
     float3 path = endPos - startPos;
     float len = length(path);
 	
@@ -254,7 +254,7 @@ float4 RaymarchToCloud(float2 texCoord, float3 startPos, float3 endPos, float3 s
     float LdotV = dot(normalize(LightDir.rgb), normalize(dir));
 
     float finalTransmittance = 1.0f;
-    float sigmaDeltaStep = -deltaStep * densityFactor;
+    float sigmaDeltaStep = -deltaStep * DensityFactor;
     bool entered = false;
 
     int zero_density_sample = 0;
@@ -304,6 +304,8 @@ float4 main(float4 pos : SV_POSITION, float2 tex : TEX_COORD0) : SV_Target
     worldDir = normalize(worldDir);
     
     float3 startPos, endPos;
+    float PLANET_INNER_RADIUS = PLANET_RADIUS + BottomHeight;
+    float PLANET_OUTER_RADIUS = PLANET_INNER_RADIUS + TopHeight;
     
     if (CameraPos.y < PLANET_INNER_RADIUS - PLANET_RADIUS)
     {

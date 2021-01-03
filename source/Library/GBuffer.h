@@ -27,12 +27,12 @@ namespace Library
 
 	private:
 	
-		DepthTarget* mDepthBuffer;
-		CustomRenderTarget* mAlbedoBuffer;
-		CustomRenderTarget* mNormalBuffer;
-		CustomRenderTarget* mPositionsBuffer;
-		CustomRenderTarget* mExtraBuffer;
-		ID3D11RasterizerState* mRS;
+		DepthTarget* mDepthBuffer = nullptr;
+		CustomRenderTarget* mAlbedoBuffer= nullptr;
+		CustomRenderTarget* mNormalBuffer= nullptr;
+		CustomRenderTarget* mPositionsBuffer = nullptr;
+		CustomRenderTarget* mExtraBuffer = nullptr;
+		ID3D11RasterizerState* mRS = nullptr;
 
 		int mWidth;
 		int mHeight;

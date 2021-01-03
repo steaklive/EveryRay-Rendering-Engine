@@ -156,12 +156,12 @@ namespace Rendering {
 		float minDim = (float)std::min(game.ScreenHeight(), game.ScreenWidth());
 		int log2min = std::min((int)floor(log(minDim) / log(2.0f)), 9);
 		int lumDim = 1 << log2min;
-		mTonemapEffect->LuminanceResource = CustomRenderTarget::Create(game.Direct3DDevice(), lumDim, lumDim, 0, DXGI_FORMAT_R16_FLOAT, bindFlags, log2min + 1);
-		mTonemapEffect->AvgLuminanceResource = CustomRenderTarget::Create(game.Direct3DDevice(), 16, 16, 0, DXGI_FORMAT_R16_FLOAT, bindFlags, 1);
-		mTonemapEffect->BrightResource = CustomRenderTarget::Create(game.Direct3DDevice(), game.ScreenWidth()/2, game.ScreenHeight()/2, 0, DXGI_FORMAT_R11G11B10_FLOAT, bindFlags, 4);
-		mTonemapEffect->BlurSummedResource = CustomRenderTarget::Create(game.Direct3DDevice(), game.ScreenWidth() / 2, game.ScreenHeight() / 2, 0, DXGI_FORMAT_R11G11B10_FLOAT, bindFlags, 4);
-		mTonemapEffect->BlurHorizontalResource = CustomRenderTarget::Create(game.Direct3DDevice(), game.ScreenWidth() / 2, game.ScreenHeight() / 2, 0, DXGI_FORMAT_R11G11B10_FLOAT, bindFlags, 4);
-		mTonemapEffect->BlurVerticalResource = CustomRenderTarget::Create(game.Direct3DDevice(), game.ScreenWidth() / 2, game.ScreenHeight() / 2, 0, DXGI_FORMAT_R11G11B10_FLOAT, bindFlags, 4);
+		mTonemapEffect->LuminanceResource = new CustomRenderTarget(game.Direct3DDevice(), lumDim, lumDim, 0, DXGI_FORMAT_R16_FLOAT, bindFlags, log2min + 1);
+		mTonemapEffect->AvgLuminanceResource = new CustomRenderTarget(game.Direct3DDevice(), 16, 16, 0, DXGI_FORMAT_R16_FLOAT, bindFlags, 1);
+		mTonemapEffect->BrightResource = new CustomRenderTarget(game.Direct3DDevice(), game.ScreenWidth()/2, game.ScreenHeight()/2, 0, DXGI_FORMAT_R11G11B10_FLOAT, bindFlags, 4);
+		mTonemapEffect->BlurSummedResource = new CustomRenderTarget(game.Direct3DDevice(), game.ScreenWidth() / 2, game.ScreenHeight() / 2, 0, DXGI_FORMAT_R11G11B10_FLOAT, bindFlags, 4);
+		mTonemapEffect->BlurHorizontalResource = new CustomRenderTarget(game.Direct3DDevice(), game.ScreenWidth() / 2, game.ScreenHeight() / 2, 0, DXGI_FORMAT_R11G11B10_FLOAT, bindFlags, 4);
+		mTonemapEffect->BlurVerticalResource = new CustomRenderTarget(game.Direct3DDevice(), game.ScreenWidth() / 2, game.ScreenHeight() / 2, 0, DXGI_FORMAT_R11G11B10_FLOAT, bindFlags, 4);
 
 		D3D11_BUFFER_DESC BufferDesc;
 		ZeroMemory(&BufferDesc, sizeof(BufferDesc));

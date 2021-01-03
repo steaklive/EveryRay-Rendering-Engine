@@ -124,17 +124,6 @@ namespace Rendering
 		mGBuffer = new GBuffer(*mGame, *mCamera, mGame->ScreenWidth(), mGame->ScreenHeight());
 		mGBuffer->Initialize();
 
-		// Initialize the material - lighting
-		Effect* lightingEffect = new Effect(*mGame);
-		lightingEffect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\StandardLighting.fx"));
-
-		// Initialize the material - shadow
-		Effect* effectShadow = new Effect(*mGame);
-		effectShadow->CompileFromFile(Utility::GetFilePath(L"content\\effects\\DepthMap.fx"));
-
-		Effect* effectDeferredPrepass = new Effect(*mGame);
-		effectDeferredPrepass->CompileFromFile(Utility::GetFilePath(L"content\\effects\\DeferredPrepass.fx"));
-
 		mScene = new Scene(*mGame, *mCamera, Utility::GetFilePath("content\\levels\\terrainScene.json"));
 		for (auto& object : mScene->objects) {
 			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::lightingMaterialName, [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables(object.first, meshIndex); });
@@ -191,10 +180,19 @@ namespace Rendering
 					PlaceInstanceObjectOnTerrain(object.second, i, object.second->GetNumInstancesPerVegetationZone());
 
 		//IBL
-		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_4\\textureDiffuseHDR.dds").c_str(), nullptr, &mIrradianceDiffuseTextureSRV)))
+		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureDiffuseHDR.dds").c_str(), nullptr, &mIrradianceDiffuseTextureSRV)))
 			throw GameException("Failed to create Diffuse Irradiance Map.");
-		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_4\\textureSpecularHDR.dds").c_str(), nullptr, &mIrradianceSpecularTextureSRV)))
+		//if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureSpecularHDR.dds").c_str(), nullptr, &mIrradianceSpecularTextureSRV)))
+		//	throw GameException("Failed to create Specular Irradiance Map.");
+		mIBLRadianceMap.reset(new IBLRadianceMap(*mGame, Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureEnvHDR.dds")));
+		mIBLRadianceMap->Initialize();
+		mIBLRadianceMap->Create(*mGame);
+
+		mIrradianceSpecularTextureSRV = *mIBLRadianceMap->GetShaderResourceViewAddress();
+		if (mIrradianceSpecularTextureSRV == nullptr)
 			throw GameException("Failed to create Specular Irradiance Map.");
+		mIBLRadianceMap.release();
+		mIBLRadianceMap.reset(nullptr);
 
 		// Load a pre-computed Integration Map
 		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_4\\textureBrdf.dds").c_str(), nullptr, &mIntegrationMapTextureSRV)))
@@ -216,7 +214,8 @@ namespace Rendering
 				(
 					{
 						{ "content\\textures\\foliage\\grass_type1.png",			new Foliage(*mGame, *mCamera, *mDirectionalLight, 15000, Utility::GetFilePath("content\\textures\\foliage\\grass_type1.png"), 2.5f, TERRAIN_TILE_RESOLUTION / 2, mVegetationZonesCenters[i], FoliageBillboardType::TWO_QUADS_CROSSING)},
-						{ "content\\textures\\foliage\\grass_type4.png",			new Foliage(*mGame, *mCamera, *mDirectionalLight, 15000, Utility::GetFilePath("content\\textures\\foliage\\grass_type4.png"), 2.0f, TERRAIN_TILE_RESOLUTION / 2, mVegetationZonesCenters[i], FoliageBillboardType::THREE_QUADS_CROSSING) },
+						{ "content\\textures\\foliage\\grass_type4.png",			new Foliage(*mGame, *mCamera, *mDirectionalLight, 7500, Utility::GetFilePath("content\\textures\\foliage\\grass_type4.png"), 2.0f, TERRAIN_TILE_RESOLUTION / 2, mVegetationZonesCenters[i], FoliageBillboardType::THREE_QUADS_CROSSING) },
+						{ "content\\textures\\foliage\\grass_type6.png",			new Foliage(*mGame, *mCamera, *mDirectionalLight, 7500, Utility::GetFilePath("content\\textures\\foliage\\grass_type6.png"), 2.0f, TERRAIN_TILE_RESOLUTION / 2, mVegetationZonesCenters[i], FoliageBillboardType::THREE_QUADS_CROSSING) },
 						{ "content\\textures\\foliage\\grass_flower_type1.png",		new Foliage(*mGame, *mCamera, *mDirectionalLight, 800, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type1.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mVegetationZonesCenters[i], FoliageBillboardType::SINGLE) },
 						{ "content\\textures\\foliage\\grass_flower_type3.png",		new Foliage(*mGame, *mCamera, *mDirectionalLight, 250, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type3.png"), 2.5f, TERRAIN_TILE_RESOLUTION / 2, mVegetationZonesCenters[i], FoliageBillboardType::SINGLE) },
 						{ "content\\textures\\foliage\\grass_flower_type10.png",	new Foliage(*mGame, *mCamera, *mDirectionalLight, 250, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type10.png"), 3.5f, TERRAIN_TILE_RESOLUTION / 2, mVegetationZonesCenters[i], FoliageBillboardType::SINGLE) }
@@ -335,8 +334,11 @@ namespace Rendering
 			{
 				if (static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name]))
 				{
-					static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->LightViewProjection() << lvp;
-					//static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->AlbedoAlphaMap() << it->second->GetTextureData(objectIndex).AlbedoMap;
+					XMMATRIX worldMatrix = XMLoadFloat4x4(&(it->second->GetTransformationMatrix4X4()));
+					if (it->second->IsInstanced())
+						static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->LightViewProjection() << lvp;
+					else
+						static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->WorldLightViewProjection() << worldMatrix * lvp;
 					it->second->Draw(name, true);
 				}
 			}

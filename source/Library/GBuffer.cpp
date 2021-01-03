@@ -18,16 +18,18 @@ namespace Library {
 	{
 		DeleteObject(mAlbedoBuffer);
 		DeleteObject(mNormalBuffer);
-		DeleteObject(mDepthBuffer);
+		DeleteObject(mPositionsBuffer);
 		DeleteObject(mExtraBuffer);
+		DeleteObject(mDepthBuffer);
+		ReleaseObject(mRS);
 	}
 
 	void GBuffer::Initialize()
 	{
-		mAlbedoBuffer = CustomRenderTarget::Create(mGame->Direct3DDevice(), mWidth, mHeight, 4, DXGI_FORMAT_R32G32B32A32_FLOAT);
-		mNormalBuffer = CustomRenderTarget::Create(mGame->Direct3DDevice(), mWidth, mHeight, 4, DXGI_FORMAT_R16G16B16A16_FLOAT);
-		mPositionsBuffer = CustomRenderTarget::Create(mGame->Direct3DDevice(), mWidth, mHeight, 4, DXGI_FORMAT_R16G16B16A16_FLOAT);
-		mExtraBuffer = CustomRenderTarget::Create(mGame->Direct3DDevice(), mWidth, mHeight, 4, DXGI_FORMAT_R16G16B16A16_FLOAT);
+		mAlbedoBuffer = new CustomRenderTarget(mGame->Direct3DDevice(), mWidth, mHeight, 4, DXGI_FORMAT_R32G32B32A32_FLOAT);
+		mNormalBuffer = new CustomRenderTarget(mGame->Direct3DDevice(), mWidth, mHeight, 4, DXGI_FORMAT_R16G16B16A16_FLOAT);
+		mPositionsBuffer = new CustomRenderTarget(mGame->Direct3DDevice(), mWidth, mHeight, 4, DXGI_FORMAT_R16G16B16A16_FLOAT);
+		mExtraBuffer = new CustomRenderTarget(mGame->Direct3DDevice(), mWidth, mHeight, 4, DXGI_FORMAT_R16G16B16A16_FLOAT);
 		
 		mDepthBuffer = DepthTarget::Create(mGame->Direct3DDevice(), mGame->ScreenWidth(), mGame->ScreenHeight(), mGame->GetMultisampleCount(), DXGI_FORMAT_D24_UNORM_S8_UINT);
 
@@ -45,7 +47,6 @@ namespace Library {
 
 	void GBuffer::Update(const GameTime& time)
 	{
-
 	}
 
 	void GBuffer::Start()

@@ -34,8 +34,9 @@ namespace Library
 			float Curliness;
 			float Coverage;
 			float Absorption;
-			//float CloudsLayerSphereInnerRadius;
-			//float CloudsLayerSphereOuterRadius;
+			float CloudsBottomHeight;
+			float CloudsTopHeight;
+			float DensityFactor;
 		};
 	}
 
@@ -61,7 +62,7 @@ namespace Library
 		ConstantBuffer<VolumetricCloudsCBufferData::FrameCB> mFrameConstantBuffer;
 		ConstantBuffer<VolumetricCloudsCBufferData::CloudsCB> mCloudsConstantBuffer;
 
-		CustomRenderTarget* mMainRenderTargetCS_Custom;
+		CustomRenderTarget* mCustomMainRenderTargetCS = nullptr;
 		FullScreenRenderTarget* mMainRenderTargetPS = nullptr;
 		FullScreenRenderTarget* mCompositeRenderTarget = nullptr;
 		FullScreenRenderTarget* mBlurRenderTarget = nullptr;
@@ -84,8 +85,9 @@ namespace Library
 		float mAmbientColor[3] = { 121.0f / 255.0f, 133.0f / 255.0f, 138.0f / 255.0f };
 		float mWindSpeedMultiplier = 1000.0f;
 		float mLightAbsorption = 0.002f;
-		//float mCloudsLayerInnerHeight = 5000.0f;
-		//float mCloudsLayerOuterHeight = 17000.0f;
+		float mCloudsBottomHeight = 4000.0f;
+		float mCloudsTopHeight = 10000.0f;
+		float mDensityFactor = 0.02f;
 
 		bool mUseComputeShaderVersion = true;
 		bool mEnabled = true;

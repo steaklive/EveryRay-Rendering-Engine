@@ -39,7 +39,7 @@ namespace Library {
 		ReleaseObject(mMainPS);
 		ReleaseObject(mCompositePS);
 		ReleaseObject(mBlurPS);
-		DeleteObject(mMainRenderTargetCS_Custom);
+		DeleteObject(mCustomMainRenderTargetCS);
 		DeleteObject(mMainRenderTargetPS);
 		DeleteObject(mCompositeRenderTarget);
 		DeleteObject(mBlurRenderTarget);
@@ -112,7 +112,7 @@ namespace Library {
 		mMainRenderTargetPS = new FullScreenRenderTarget(*mGame);
 		mCompositeRenderTarget = new FullScreenRenderTarget(*mGame);
 		mBlurRenderTarget = new FullScreenRenderTarget(*mGame);
-		mMainRenderTargetCS_Custom = CustomRenderTarget::Create(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
+		mCustomMainRenderTargetCS = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
 	}
 	
 	void VolumetricClouds::Update(const GameTime& gameTime)
@@ -140,8 +140,9 @@ namespace Library {
 		mCloudsConstantBuffer.Data.Curliness = mCurliness;
 		mCloudsConstantBuffer.Data.Coverage = mCoverage;
 		mCloudsConstantBuffer.Data.Absorption = mLightAbsorption;
-		//mVolumetricCloudsCloudsConstantBuffer.Data.CloudsLayerSphereInnerRadius = mCloudsLayerInnerHeight;
-		//mVolumetricCloudsCloudsConstantBuffer.Data.CloudsLayerSphereOuterRadius = mCloudsLayerOuterHeight;
+		mCloudsConstantBuffer.Data.CloudsBottomHeight = mCloudsBottomHeight;
+		mCloudsConstantBuffer.Data.CloudsTopHeight = mCloudsTopHeight;
+		mCloudsConstantBuffer.Data.DensityFactor = mDensityFactor;
 		mCloudsConstantBuffer.ApplyChanges(context);
 
 	}
@@ -155,8 +156,9 @@ namespace Library {
 		ImGui::Checkbox("Enabled", &mEnabled);
 		ImGui::ColorEdit3("Ambient color", mAmbientColor);
 		ImGui::SliderFloat("Sun light absorption", &mLightAbsorption, 0.0f, 0.015f);
-		//ImGui::SliderFloat("Clouds bottom height", &mCloudsLayerInnerHeight, 1000.0f, 10000.0f);
-		//ImGui::SliderFloat("Clouds top height", &mCloudsLayerOuterHeight, 10000.0f, 50000.0f);
+		ImGui::SliderFloat("Clouds bottom height", &mCloudsBottomHeight, 1000.0f, 10000.0f);
+		ImGui::SliderFloat("Clouds top height", &mCloudsTopHeight, 10000.0f, 50000.0f);
+		ImGui::SliderFloat("Density", &mDensityFactor, 0.0f, 0.5f);
 		ImGui::SliderFloat("Crispiness", &mCrispiness, 0.0f, 100.0f);
 		ImGui::SliderFloat("Curliness", &mCurliness, 0.0f, 5.0f);
 		ImGui::SliderFloat("Coverage", &mCoverage, 0.0f, 1.0f);
@@ -192,7 +194,7 @@ namespace Library {
 
 
 		if (mUseComputeShaderVersion) {
-			ID3D11UnorderedAccessView* UAV[1] = { mMainRenderTargetCS_Custom->getUAV() };
+			ID3D11UnorderedAccessView* UAV[1] = { mCustomMainRenderTargetCS->getUAV() };
 
 			context->CSSetShaderResources(0, 5, SR);
 			context->CSSetConstantBuffers(0, 2, CBs);
@@ -224,7 +226,7 @@ namespace Library {
 		//blur pass
 		mBlurRenderTarget->Begin();
 		ID3D11ShaderResourceView* SR_Blur[1] = {
-			(mUseComputeShaderVersion) ? mMainRenderTargetCS_Custom->getSRV() : mMainRenderTargetPS->OutputColorTexture()
+			(mUseComputeShaderVersion) ? mCustomMainRenderTargetCS->getSRV() : mMainRenderTargetPS->OutputColorTexture()
 		};
 		context->PSSetShaderResources(0, 1, SR_Blur);
 		context->PSSetShader(mBlurPS, NULL, NULL);

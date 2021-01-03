@@ -185,8 +185,7 @@ float4 pixel_shader(VS_OUTPUT IN) : SV_Target
 {
     float4 albedo = albedoTexture.Sample(ColorSampler, IN.TextureCoordinates);
 
-    float4 color = albedo * SunColor * float4(0.8f, 0.8f, 0.8, 1.0f);
-    
+    float4 color = albedo * SunColor ;
     // Saturate the final color result.
     color = saturate(color);
 

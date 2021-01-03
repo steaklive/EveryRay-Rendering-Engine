@@ -88,7 +88,7 @@
 			]
 		}
 	],
-	"skybox_path" : "content\\textures\\Sky_Type_4.dds",
+	"skybox_path" : "content\\textures\\skyboxes\\Sky_5\\textureEnvHDR.dds",
 	"sun_color" : 
 	[
 		1.0,

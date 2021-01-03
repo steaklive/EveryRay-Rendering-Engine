@@ -41,31 +41,6 @@ namespace Rendering
 	class RenderingObject;
 	class PostProcessingStack;
 
-	namespace VolumetricCloudsData {
-		struct FrameCB
-		{
-			XMMATRIX	invProj;
-			XMMATRIX	invView;
-			XMVECTOR	lightDir;
-			XMVECTOR	lightCol;
-			XMVECTOR	cameraPos;
-			XMFLOAT2	resolution;
-		};
-		struct CloudsCB
-		{
-			XMVECTOR AmbientColor;
-			XMVECTOR WindDir;
-			float WindSpeed;
-			float Time;
-			float Crispiness;
-			float Curliness;
-			float Coverage;
-			float Absorption;
-			//float CloudsLayerSphereInnerRadius;
-			//float CloudsLayerSphereOuterRadius;
-		};
-	}
-
 	class TestSceneDemo : public DrawableGameComponent, public DemoLevel
 	{
 		RTTI_DECLARATIONS(TestSceneDemo, DrawableGameComponent)
@@ -116,6 +91,5 @@ namespace Rendering
 		float mWindFrequency = 1.0f;
 		float mWindGustDistance = 1.0f;
 		//Terrain* mTerrain;
-
 	};
 }

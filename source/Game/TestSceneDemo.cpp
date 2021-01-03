@@ -77,8 +77,8 @@ namespace Rendering
 		ReleaseObject(mIrradianceDiffuseTextureSRV);
 		ReleaseObject(mIrradianceSpecularTextureSRV);
 		ReleaseObject(mIntegrationMapTextureSRV);
-		DeleteObject(mScene);
 		DeleteObject(mVolumetricClouds);
+		DeleteObject(mScene);
 	}
 
 #pragma region COMPONENT_METHODS

@@ -60,25 +60,25 @@ namespace Rendering
 				ReleaseObject(EmptyPassPS);
 			}
 
-			CustomRenderTarget* LuminanceResource;
-			CustomRenderTarget* AvgLuminanceResource;
-			CustomRenderTarget* BrightResource;
-			CustomRenderTarget* BlurHorizontalResource;
-			CustomRenderTarget* BlurVerticalResource;
-			CustomRenderTarget* BlurSummedResource;
+			CustomRenderTarget* LuminanceResource = nullptr;
+			CustomRenderTarget* AvgLuminanceResource = nullptr;
+			CustomRenderTarget* BrightResource = nullptr;
+			CustomRenderTarget* BlurHorizontalResource = nullptr;
+			CustomRenderTarget* BlurVerticalResource = nullptr;
+			CustomRenderTarget* BlurSummedResource = nullptr;
 
-			ID3D11PixelShader* CalcLumPS;
-			ID3D11PixelShader* AvgLumPS;
-			ID3D11PixelShader* BrightPS;
-			ID3D11PixelShader* AddPS;
-			ID3D11PixelShader* BlurHPS;
-			ID3D11PixelShader* BlurVPS;
-			ID3D11PixelShader* ToneMapWithBloomPS;
-			ID3D11PixelShader* EmptyPassPS;
+			ID3D11PixelShader* CalcLumPS = nullptr;
+			ID3D11PixelShader* AvgLumPS = nullptr;
+			ID3D11PixelShader* BrightPS = nullptr;
+			ID3D11PixelShader* AddPS = nullptr;
+			ID3D11PixelShader* BlurHPS = nullptr;
+			ID3D11PixelShader* BlurVPS = nullptr;
+			ID3D11PixelShader* ToneMapWithBloomPS = nullptr;
+			ID3D11PixelShader* EmptyPassPS = nullptr;
 
-			ID3D11Buffer* BloomConstants;
-			ID3D11Buffer* ConstBuffer;	
-			ID3D11SamplerState* LinearSampler;
+			ID3D11Buffer* BloomConstants = nullptr;
+			ID3D11Buffer* ConstBuffer = nullptr;
+			ID3D11SamplerState* LinearSampler = nullptr;
 
 			float middlegrey = 0.053f;
 			float bloomthreshold = 0.342f;
