@@ -8,7 +8,7 @@ Rendering engine/framework written in C++/DirectX 11.
 - User Interface with ImGUI, ImGuizmo
 - AABB, OBB, collision detection
 - Normal-Mapping, Environment-Mapping
-- Post Processing: Motion Blur, Vignette, LUT color grading, FXAA, Tonemap, Bloom
+- Post Processing: Motion Blur, Vignette, LUT color grading, FXAA, Tonemap, Bloom, Fog
 - Physically Based Rendering with IBL
 - Cascaded Shadow Mapping
 - GPU Instancing
