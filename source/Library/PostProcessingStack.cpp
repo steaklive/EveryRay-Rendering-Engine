@@ -4,6 +4,7 @@
 #include "ColorGradingMaterial.h"
 #include "ScreenSpaceReflectionsMaterial.h"
 #include "FXAAMaterial.h"
+#include "FogMaterial.h"
 #include "FullScreenQuad.h"
 #include "FullScreenRenderTarget.h"
 #include "ShaderCompiler.h"
@@ -27,6 +28,7 @@ namespace Rendering {
 		mMotionBlurEffect(nullptr),
 		mFXAAEffect(nullptr),
 		mSSREffect(nullptr),
+		mFogEffect(nullptr),
 		game(pGame), camera(pCamera)
 	{
 	}
@@ -39,6 +41,7 @@ namespace Rendering {
 		DeleteObject(mMotionBlurEffect);
 		DeleteObject(mTonemapEffect);
 		DeleteObject(mSSREffect);
+		DeleteObject(mFogEffect);
 
 		DeleteObject(mMainRenderTarget);
 		DeleteObject(mColorGradingRenderTarget);
@@ -46,6 +49,7 @@ namespace Rendering {
 		DeleteObject(mVignetteRenderTarget);
 		DeleteObject(mFXAARenderTarget);
 		DeleteObject(mSSRRenderTarget);
+		DeleteObject(mFogRenderTarget);
 		DeleteObject(mExtraRenderTarget);
 
 		ReleaseObject(mQuadVB);
@@ -53,7 +57,7 @@ namespace Rendering {
 		ReleaseObject(mFullScreenQuadLayout);
 	}
 
-	void PostProcessingStack::Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR)
+	void PostProcessingStack::Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR, bool pFog)
 	{
 		mMainRenderTarget = new FullScreenRenderTarget(game);
 		mOriginalMainRTSRV = mMainRenderTarget->OutputColorTexture();
@@ -147,6 +151,19 @@ namespace Rendering {
 		mFXAARenderTarget = new FullScreenRenderTarget(game);
 		mFXAAEffect->isActive = pFXAA;
 		mFXAALoaded = true;
+
+		Effect* fogFX = new Effect(game);
+		fogFX->CompileFromFile(Utility::GetFilePath(L"content\\effects\\Fog.fx"));
+		mFogEffect = new EffectElements::FogEffect();
+		mFogEffect->Material = new FogMaterial();
+		mFogEffect->Material->Initialize(fogFX);
+		mFogEffect->Quad = new FullScreenQuad(game, *mFogEffect->Material);
+		mFogEffect->Quad->Initialize();
+		mFogEffect->Quad->SetActiveTechnique("fog", "p0");
+		mFogEffect->Quad->SetCustomUpdateMaterial(std::bind(&PostProcessingStack::UpdateFogMaterial, this));
+		mFogRenderTarget = new FullScreenRenderTarget(game);
+		mFogEffect->isActive = pFog;
+		mFogLoaded = true;
 
 		// Tonemapping
 		mTonemapEffect = new EffectElements::TonemapEffect();
@@ -325,6 +342,13 @@ namespace Rendering {
 				mSSREffect->Quad->SetActiveTechnique("no_ssr", "p0");
 		}
 
+		if (mFogLoaded)
+		{
+			if (mFogEffect->isActive)
+				mFogEffect->Quad->SetActiveTechnique("fog", "p0");
+			else
+				mFogEffect->Quad->SetActiveTechnique("no_filter", "p0");
+		}
 	}
 
 	void PostProcessingStack::UpdateTonemapConstantBuffer(ID3D11DeviceContext* pD3DImmediateContext, ID3D11Buffer* buffer, int mipLevel0, int mipLevel1, unsigned int width, unsigned int height)
@@ -397,6 +421,16 @@ namespace Rendering {
 		mSSREffect->Material->MaxRayCount() << mSSREffect->rayCount;
 	}
 	
+	void PostProcessingStack::UpdateFogMaterial()
+	{
+		mFogEffect->Material->ColorTexture() << mFogEffect->OutputTexture;
+		mFogEffect->Material->DepthTexture() << mFogEffect->DepthTexture;
+		mFogEffect->Material->FogColor() << XMVECTOR{ mFogEffect->color[0], mFogEffect->color[1], mFogEffect->color[2], 1.0f };
+		mFogEffect->Material->FogNear() << camera.NearPlaneDistance();
+		mFogEffect->Material->FogFar() << camera.FarPlaneDistance();
+		mFogEffect->Material->FogDensity() << mFogEffect->density;
+	}
+
 	void PostProcessingStack::UpdateFXAAMaterial()
 	{
 		mFXAAEffect->Material->ColorTexture() << mFXAAEffect->OutputTexture;
@@ -418,6 +452,15 @@ namespace Rendering {
 				ImGui::SliderInt("Ray count", &mSSREffect->rayCount, 0, 100);
 				ImGui::SliderFloat("Step Size", &mSSREffect->stepSize, 0.0f, 10.0f);
 				ImGui::SliderFloat("Max Thickness", &mSSREffect->maxThickness, 0.0f, 0.01f);
+			}
+		}
+		if (mFogLoaded)
+		{
+			if (ImGui::CollapsingHeader("Fog"))
+			{
+				ImGui::Checkbox("Fog - On", &mFogEffect->isActive);
+				ImGui::ColorEdit3("Color", mFogEffect->color);
+				ImGui::SliderFloat("Density", &mFogEffect->density, 1.0f, 10000.0f);
 			}
 		}
 
@@ -604,6 +647,14 @@ namespace Rendering {
 		mSSREffect->Quad->Draw(gameTime);
 		mSSRRenderTarget->End();
 
+		// FOG
+		mFogRenderTarget->Begin();
+		mFogEffect->OutputTexture = mSSRRenderTarget->OutputColorTexture();
+		mFogEffect->DepthTexture = mMainRenderTarget->OutputDepthTexture();
+		game.Direct3DDeviceContext()->ClearRenderTargetView(mFogRenderTarget->RenderTargetView(), ClearBackgroundColor);
+		game.Direct3DDeviceContext()->ClearDepthStencilView(mFogRenderTarget->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
+		mFogEffect->Quad->Draw(gameTime);
+		mFogRenderTarget->End();
 
 		// TONEMAP
 		mTonemapRenderTarget->Begin();
@@ -646,13 +697,13 @@ namespace Rendering {
 			context->RSSetViewports(1, &quadViewPort);
 
 			UpdateTonemapConstantBuffer(context, mTonemapEffect->ConstBuffer, 0, 0, width, height);
-			ComputeLuminance(context, mSSRRenderTarget->OutputColorTexture(), *mTonemapEffect->LuminanceResource->getRTVs());
+			ComputeLuminance(context, mFogRenderTarget->OutputColorTexture(), *mTonemapEffect->LuminanceResource->getRTVs());
 
 			quadViewPort.Height = (float)(gameHeight / 2);
 			quadViewPort.Width = (float)(gameWidth / 2);
 			context->RSSetViewports(1, &quadViewPort);
 
-			ComputeBrightPass(context, mSSRRenderTarget->OutputColorTexture(), *mTonemapEffect->BrightResource->getRTVs());
+			ComputeBrightPass(context, mFogRenderTarget->OutputColorTexture(), *mTonemapEffect->BrightResource->getRTVs());
 			ID3D11RenderTargetView* pNULLRT[] = { NULL };
 			context->OMSetRenderTargets(1, pNULLRT, NULL);
 			context->GenerateMips(mTonemapEffect->BrightResource->getSRV());
@@ -720,11 +771,11 @@ namespace Rendering {
 			ComputeVerticalBlur(context, mTonemapEffect->BlurHorizontalResource->getSRV(), mTonemapEffect->BlurVerticalResource->getRTVs()[mipLevel0]);
 
 			context->RSSetViewports(1, &viewport);
-			ComputeToneMapWithBloom(context, mSSRRenderTarget->OutputColorTexture(), mTonemapEffect->AvgLuminanceResource->getSRV(), mTonemapEffect->BlurVerticalResource->getSRV(), mTonemapRenderTarget->RenderTargetView());
+			ComputeToneMapWithBloom(context, mFogRenderTarget->OutputColorTexture(), mTonemapEffect->AvgLuminanceResource->getSRV(), mTonemapEffect->BlurVerticalResource->getSRV(), mTonemapRenderTarget->RenderTargetView());
 		}
 		else
 		{
-			PerformEmptyPass(context, mSSRRenderTarget->OutputColorTexture(), mTonemapRenderTarget->RenderTargetView());
+			PerformEmptyPass(context, mFogRenderTarget->OutputColorTexture(), mTonemapRenderTarget->RenderTargetView());
 		}
 		mTonemapRenderTarget->End();
 

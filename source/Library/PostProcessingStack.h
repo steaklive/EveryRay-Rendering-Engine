@@ -19,6 +19,7 @@ namespace Rendering
 	class ColorGradingMaterial;
 	class MotionBlurMaterial;
 	class FXAAMaterial;
+	class FogMaterial;
 	class ScreenSpaceReflectionsMaterial;
 
 	namespace EffectElements
@@ -161,6 +162,30 @@ namespace Rendering
 
 		};
 
+		struct FogEffect
+		{
+			FogEffect() :
+				Material(nullptr), Quad(nullptr), OutputTexture(nullptr), DepthTexture(nullptr)
+			{}
+
+			~FogEffect()
+			{
+				DeleteObject(Material);
+				DeleteObject(Quad);
+				ReleaseObject(OutputTexture);
+				ReleaseObject(DepthTexture);
+			}
+
+			FogMaterial* Material;
+			FullScreenQuad* Quad;
+			ID3D11ShaderResourceView* OutputTexture;
+			ID3D11ShaderResourceView* DepthTexture;
+			bool isActive = true;
+			float color[3] = { 166.0f / 255.0f, 188.0f / 255.0f, 196.0f / 255.0f };
+			float density = 730.0f;
+			float nearZ = 0.0f;
+			float farZ = 0.0f;
+		};
 		struct SSREffect
 		{
 			SSREffect() :
@@ -230,8 +255,9 @@ namespace Rendering
 		void UpdateMotionBlurMaterial();
 		void UpdateFXAAMaterial();
 		void UpdateSSRMaterial(ID3D11ShaderResourceView* normal, ID3D11ShaderResourceView* depth, ID3D11ShaderResourceView* extra, float time);
+		void UpdateFogMaterial();
 
-		void Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR = true);
+		void Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR = true, bool pFog = false);
 		void Begin(bool clear = true);
 		void End();
 		void BeginRenderingToExtraRT(bool clear);
@@ -270,6 +296,7 @@ namespace Rendering
 		EffectElements::FXAAEffect* mFXAAEffect;
 		EffectElements::TonemapEffect* mTonemapEffect;
 		EffectElements::SSREffect* mSSREffect;
+		EffectElements::FogEffect* mFogEffect;
 		
 		FullScreenRenderTarget* mMainRenderTarget;
 		FullScreenRenderTarget* mVignetteRenderTarget;
@@ -278,6 +305,7 @@ namespace Rendering
 		FullScreenRenderTarget* mFXAARenderTarget;
 		FullScreenRenderTarget* mTonemapRenderTarget;
 		FullScreenRenderTarget* mSSRRenderTarget;
+		FullScreenRenderTarget* mFogRenderTarget;
 
 		FullScreenRenderTarget* mExtraRenderTarget;
 
@@ -292,6 +320,7 @@ namespace Rendering
 		bool mMotionBlurLoaded = false;
 		bool mFXAALoaded = false;
 		bool mSSRLoaded = false;
+		bool mFogLoaded = false;
 
 	};
 }

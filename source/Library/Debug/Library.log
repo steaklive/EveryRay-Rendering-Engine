@@ -1,59 +1,19 @@
-﻿  Terrain.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(98): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(18): note: see declaration of 'Rendering::VignetteMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(99): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(121): warning C4150: deletion of pointer to incomplete type 'Rendering::FXAAMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(21): note: see declaration of 'Rendering::FXAAMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(122): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(142): warning C4150: deletion of pointer to incomplete type 'Rendering::ColorGradingMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(19): note: see declaration of 'Rendering::ColorGradingMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(143): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(172): warning C4150: deletion of pointer to incomplete type 'Rendering::ScreenSpaceReflectionsMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(22): note: see declaration of 'Rendering::ScreenSpaceReflectionsMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(173): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(197): warning C4150: deletion of pointer to incomplete type 'Rendering::MotionBlurMaterial'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(20): note: see declaration of 'Rendering::MotionBlurMaterial'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(198): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
-  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\postprocessingstack.h(12): note: see declaration of 'Library::FullScreenQuad'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(130): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(87): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.h(88): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(51): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(94): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(120): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(144): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(158): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(172): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(232): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(474): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(479): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(508): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(517): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(518): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(582): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(583): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(584): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(585): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(586): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(587): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(588): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(589): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(590): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(679): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(680): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(681): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(719): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(720): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(721): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(722): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(774): warning C4101: 'index2': unreferenced local variable
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(774): warning C4101: 'index3': unreferenced local variable
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(770): warning C4101: 'vector1': unreferenced local variable
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(770): warning C4101: 'vector2': unreferenced local variable
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(774): warning C4101: 'index1': unreferenced local variable
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(803): warning C4305: 'initializing': truncation from 'double' to 'float'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\terrain.cpp(818): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+﻿  CustomRenderTarget.cpp
+ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 __cdecl Library::ColorHelper::RandomColor(void)" (?RandomColor@ColorHelper@Library@@SA?AUXMVECTORF32@DirectX@@XZ) already defined in FpsComponent.obj; second definition ignored
+ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Black" (?Black@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
+ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::White" (?White@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
+ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Red" (?Red@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
+ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Green" (?Green@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
+ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Blue" (?Blue@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
+ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Yellow" (?Yellow@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
+ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::BlueGreen" (?BlueGreen@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
+ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Purple" (?Purple@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
+ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::CornflowerBlue" (?CornflowerBlue@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
+ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Wheat" (?Wheat@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
+ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::LightGray" (?LightGray@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
+ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Orange" (?Orange@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
+ColorHelper.obj : warning LNK4006: "private: static class std::random_device Library::ColorHelper::sDevice" (?sDevice@ColorHelper@Library@@0Vrandom_device@std@@A) already defined in FpsComponent.obj; second definition ignored
+ColorHelper.obj : warning LNK4006: "private: static class std::mersenne_twister_engine<unsigned int,32,624,397,31,2567483615,11,4294967295,7,2636928640,15,4022730752,18,1812433253> Library::ColorHelper::sGenerator" (?sGenerator@ColorHelper@Library@@0V?$mersenne_twister_engine@I$0CA@$0CHA@$0BIN@$0BP@$0JJAILANP@$0L@$0PPPPPPPP@$06$0JNCMFGIA@$0P@$0OPMGAAAA@$0BC@$0GMAHIJGF@@std@@A) already defined in FpsComponent.obj; second definition ignored
+ColorHelper.obj : warning LNK4006: "private: static class std::uniform_real_distribution<float> Library::ColorHelper::sDistribution" (?sDistribution@ColorHelper@Library@@0V?$uniform_real_distribution@M@std@@A) already defined in FpsComponent.obj; second definition ignored
+ColorHelper.obj : warning LNK4221: This object file does not define any previously undefined public symbols, so it will not be used by any link operation that consumes this library
+  Library.vcxproj -> C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\\bin\x64\Debug\Library.lib

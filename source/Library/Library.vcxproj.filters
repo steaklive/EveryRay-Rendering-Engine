@@ -378,6 +378,9 @@
     <ClInclude Include="VolumetricClouds.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FogMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -662,6 +665,9 @@
     <ClCompile Include="VolumetricClouds.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FogMaterial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\content\effects\AmbientLighting.fx">
@@ -820,6 +826,7 @@
     <FxCompile Include="..\..\content\shaders\VolumetricClouds\VolumetricCloudsComposite.hlsl" />
     <FxCompile Include="..\..\content\shaders\VolumetricClouds\VolumetricCloudsBlur.hlsl" />
     <FxCompile Include="..\..\content\shaders\VolumetricClouds\VolumetricCloudsCS.hlsl" />
+    <FxCompile Include="..\..\content\effects\Fog.fx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\content\effects\ShaderHelper.hlsli">

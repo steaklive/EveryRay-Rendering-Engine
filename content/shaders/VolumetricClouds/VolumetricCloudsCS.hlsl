@@ -132,9 +132,9 @@ bool RaySphereIntersectionFromOriginPoint(float3 rayOrigin, float3 rayDir, float
 
 float GetHeightFraction(float3 inPos)
 {
-    float PLANET_INNER_RADIUS = PLANET_RADIUS + BottomHeight;
-    float PLANET_OUTER_RADIUS = PLANET_INNER_RADIUS + TopHeight;
-    return (length(inPos - PLANET_CENTER) - PLANET_INNER_RADIUS) / (PLANET_OUTER_RADIUS - PLANET_INNER_RADIUS);
+    float innerRadius = PLANET_RADIUS + BottomHeight;
+    float outerRadius = innerRadius + TopHeight;
+    return (length(inPos - PLANET_CENTER) - innerRadius) / (outerRadius - innerRadius);
 }
 float Remap(float originalValue, float originalMin, float originalMax, float newMin, float newMax)
 {
@@ -143,8 +143,8 @@ float Remap(float originalValue, float originalMin, float originalMax, float new
 
 float2 GetUVProjection(float3 p)
 {
-    float PLANET_INNER_RADIUS = PLANET_RADIUS + BottomHeight;
-    return p.xz / PLANET_INNER_RADIUS + 0.5f;
+    float innerRadius = PLANET_RADIUS + BottomHeight;
+    return p.xz / innerRadius + 0.5f;
 }
 
 float GetDensityForCloud(float heightFraction, float cloudType)
@@ -315,23 +315,23 @@ void main(int3 dispatchThreadID : SV_DispatchThreadID) // Thread ID
     worldDir = normalize(worldDir);
     
     float3 startPos, endPos;
-    float PLANET_INNER_RADIUS = PLANET_RADIUS + BottomHeight;
-    float PLANET_OUTER_RADIUS = PLANET_INNER_RADIUS + TopHeight;
+    float innerRadius = PLANET_RADIUS + BottomHeight;
+    float outerRadius = innerRadius + TopHeight;
     
-    if (CameraPos.y < PLANET_INNER_RADIUS - PLANET_RADIUS)
+    if (CameraPos.y < innerRadius - PLANET_RADIUS)
     {
-        RaySphereIntersectionFromOriginPoint(CameraPos.rgb, worldDir, PLANET_INNER_RADIUS, startPos);
-        RaySphereIntersectionFromOriginPoint(CameraPos.rgb, worldDir, PLANET_OUTER_RADIUS, endPos);
+        RaySphereIntersectionFromOriginPoint(CameraPos.rgb, worldDir, innerRadius, startPos);
+        RaySphereIntersectionFromOriginPoint(CameraPos.rgb, worldDir, outerRadius, endPos);
     }
-    else if (CameraPos.y > PLANET_INNER_RADIUS - PLANET_RADIUS && CameraPos.y < PLANET_OUTER_RADIUS - PLANET_RADIUS)
+    else if (CameraPos.y > innerRadius - PLANET_RADIUS && CameraPos.y < outerRadius - PLANET_RADIUS)
     {
         startPos = CameraPos.rgb;
-        RaySphereIntersectionFromOriginPoint(CameraPos.rgb, worldDir, PLANET_OUTER_RADIUS, endPos);
+        RaySphereIntersectionFromOriginPoint(CameraPos.rgb, worldDir, outerRadius, endPos);
     }
     else
     {
-        RaySphereIntersectionFromOriginPoint(CameraPos.rgb, worldDir, PLANET_OUTER_RADIUS, startPos);
-        RaySphereIntersectionFromOriginPoint(CameraPos.rgb, worldDir, PLANET_INNER_RADIUS, endPos);
+        RaySphereIntersectionFromOriginPoint(CameraPos.rgb, worldDir, outerRadius, startPos);
+        RaySphereIntersectionFromOriginPoint(CameraPos.rgb, worldDir, innerRadius, endPos);
     }
     
     float4 cloudDistance;

@@ -44,7 +44,7 @@ CustomRenderTarget::CustomRenderTarget(ID3D11Device * device, UINT width, UINT h
 	{
 		D3D11_RENDER_TARGET_VIEW_DESC rDesc;
 		rDesc.Format = format;
-		rDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+		rDesc.ViewDimension = (samples > 1 ) ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D;
 		rtv = (ID3D11RenderTargetView**)malloc(sizeof(ID3D11RenderTargetView*) * mips);
 		for (int i = 0; i < mips; i++)
 		{
@@ -76,7 +76,7 @@ CustomRenderTarget::CustomRenderTarget(ID3D11Device * device, UINT width, UINT h
 		sDesc.Format = format;
 		sDesc.Texture2D.MipLevels = mips;
 		sDesc.Texture2D.MostDetailedMip = 0;
-		sDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		sDesc.ViewDimension = (samples > 1) ? D3D11_SRV_DIMENSION_TEXTURE2DMS : D3D11_SRV_DIMENSION_TEXTURE2D;
 		device->CreateShaderResourceView(tex, &sDesc, &srv);
 	}
 

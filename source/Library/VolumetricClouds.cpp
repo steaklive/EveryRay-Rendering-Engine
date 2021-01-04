@@ -154,6 +154,7 @@ namespace Library {
 
 		ImGui::Begin("Volumetric Clouds System");
 		ImGui::Checkbox("Enabled", &mEnabled);
+		ImGui::Checkbox("Compute Shader", &mUseComputeShaderVersion);
 		ImGui::ColorEdit3("Ambient color", mAmbientColor);
 		ImGui::SliderFloat("Sun light absorption", &mLightAbsorption, 0.0f, 0.015f);
 		ImGui::SliderFloat("Clouds bottom height", &mCloudsBottomHeight, 1000.0f, 10000.0f);

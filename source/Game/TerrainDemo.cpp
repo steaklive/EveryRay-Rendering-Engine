@@ -154,7 +154,7 @@ namespace Rendering
 
 		//PP
 		mPostProcessingStack = new PostProcessingStack(*mGame, *mCamera);
-		mPostProcessingStack->Initialize(false, false, true, true, true, false);
+		mPostProcessingStack->Initialize(false, false, true, true, true, false, true);
 		
 		mTerrain = new Terrain(Utility::GetFilePath("content\\terrain\\terrain"), *mGame, *mCamera, *mDirectionalLight, *mPostProcessingStack, false);
 
