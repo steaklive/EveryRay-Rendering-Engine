@@ -300,7 +300,7 @@ void main(int3 dispatchThreadID : SV_DispatchThreadID) // Thread ID
     finalColor = inputTex.SampleLevel(SimpleSampler, tex, 0);
     float4 cloudsColor = float4(0.0, 0.0, 0.0, 0.0f);
     
-    if (sceneDepthTex.SampleLevel(SimpleSampler, tex, 0).r < 0.998f)
+    if (sceneDepthTex.Load(float3(dispatchThreadID.xy, 0)).r < 0.999f)
     {
         output[dispatchThreadID.xy] = finalColor;
         return;

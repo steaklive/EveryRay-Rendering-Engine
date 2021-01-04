@@ -142,7 +142,7 @@ namespace Rendering
 
 		//PP
 		mPostProcessingStack = new PostProcessingStack(*mGame, *mCamera);
-		mPostProcessingStack->Initialize(false, false, true, true, true, false);
+		mPostProcessingStack->Initialize(false, false, true, true, true, false, true);
 
 		//foliage
 		mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 1500, Utility::GetFilePath("content\\textures\\foliage\\grass_type1.png"), 2.5f, 100.0f));

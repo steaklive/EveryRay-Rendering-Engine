@@ -226,10 +226,11 @@ namespace Library {
 
 		//blur pass
 		mBlurRenderTarget->Begin();
-		ID3D11ShaderResourceView* SR_Blur[1] = {
-			(mUseComputeShaderVersion) ? mCustomMainRenderTargetCS->getSRV() : mMainRenderTargetPS->OutputColorTexture()
+		ID3D11ShaderResourceView* SR_Blur[2] = {
+			(mUseComputeShaderVersion) ? mCustomMainRenderTargetCS->getSRV() : mMainRenderTargetPS->OutputColorTexture(),
+			mPostProcessingStack.GetDepthOutputTexture(),
 		};
-		context->PSSetShaderResources(0, 1, SR_Blur);
+		context->PSSetShaderResources(0, 2, SR_Blur);
 		context->PSSetShader(mBlurPS, NULL, NULL);
 		mPostProcessingStack.DrawFullscreenQuad(context);
 		mBlurRenderTarget->End();

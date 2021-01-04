@@ -79,15 +79,15 @@ namespace Library
 		ID3D11SamplerState* mCloudSS = nullptr;
 		ID3D11SamplerState* mWeatherSS = nullptr;
 
-		float mCrispiness = 40.0f;
-		float mCurliness = 0.2f;
-		float mCoverage = 0.273f;
-		float mAmbientColor[3] = { 121.0f / 255.0f, 133.0f / 255.0f, 138.0f / 255.0f };
+		float mCrispiness = 43.0f;
+		float mCurliness = 1.1f;
+		float mCoverage = 0.305f;
+		float mAmbientColor[3] = { 102.0f / 255.0f, 104.0f / 255.0f, 105.0f / 255.0f };
 		float mWindSpeedMultiplier = 175.0f;
-		float mLightAbsorption = 0.002f;
+		float mLightAbsorption = 0.003f;
 		float mCloudsBottomHeight = 2340.0f;
-		float mCloudsTopHeight = 10000.0f;
-		float mDensityFactor = 0.02f;
+		float mCloudsTopHeight = 16400.0f;
+		float mDensityFactor = 0.012f;
 
 		bool mUseComputeShaderVersion = true;
 		bool mEnabled = true;

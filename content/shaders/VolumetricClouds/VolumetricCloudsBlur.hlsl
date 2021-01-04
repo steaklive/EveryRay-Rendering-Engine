@@ -1,9 +1,10 @@
 SamplerState SimpleSampler;
 Texture2D cloudsColorTex : register(t0);
+Texture2D sceneDepthTex : register(t1);
 
 static const float KERNEL_RADIUS = 16.0f;
 
-float4 onepass_blur(Texture2D tex, float2 uv, uint2 resolution)
+float4 onepass_blur(float2 uv, uint2 resolution)
 {
     float offset_x = 1.0f / (float)resolution.x;
     float offset_y = 1.0f / (float)resolution.y;
@@ -29,11 +30,23 @@ float4 onepass_blur(Texture2D tex, float2 uv, uint2 resolution)
     };
     
     float4 sampleTex[9];
+    bool foundOccluder = false;
     for (int i = 0; i < 9; i++)
     {
-        float4 pixel = tex.Sample(SimpleSampler, uv + offsets[i]);
+        float4 pixel = cloudsColorTex.Sample(SimpleSampler, uv + offsets[i]);
+        float depth = sceneDepthTex.Sample(SimpleSampler, uv + offsets[i]).r;
+        if (depth < 0.999f)
+        {
+            foundOccluder = true;
+            break;
+        }
+        
         sampleTex[i] = pixel;
     }
+    
+    if (foundOccluder)
+        return cloudsColorTex.Sample(SimpleSampler, uv);
+    
     float4 col = float4(0.0f, 0.0f, 0.0f, 0.0f);
     for (int j = 0; j < 9; j++)
         col += sampleTex[j] * kernel[j];
@@ -47,5 +60,9 @@ float4 main(float4 pos : SV_POSITION, float2 tex : TEX_COORD0) : SV_Target
     uint width, height;
     cloudsColorTex.GetDimensions(width, height);
     
-    return onepass_blur(cloudsColorTex, tex, uint2(width, height));
+    float depth = sceneDepthTex.Sample(SimpleSampler, tex).r;
+    if (depth < 0.999f)
+        return cloudsColorTex.Sample(SimpleSampler, tex);
+    else 
+        return onepass_blur(tex, uint2(width, height));
 }
