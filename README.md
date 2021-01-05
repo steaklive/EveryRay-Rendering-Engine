@@ -16,6 +16,7 @@ Rendering engine/framework written in C++/DirectX 11.
 - Separable Subsurface Scattering (based on the work of J.Jimenez and D.Gutierrez)
 - Screen Space Reflections
 - Terrain with tessellation and foliage rendering
+- Volumetric clouds rendering
 
 Other features based on NVIDIA techniques (no code provided here)
 - Volumetric Lighting (from "Fast, Flexible, Physically-Based Volumetric Light Scattering")
