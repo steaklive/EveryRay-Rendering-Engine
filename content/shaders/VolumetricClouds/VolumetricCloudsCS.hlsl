@@ -1,3 +1,6 @@
+// Volumetric clouds shader inspired by https://www.guerrilla-games.com/read/the-real-time-volumetric-cloudscapes-of-horizon-zero-dawn
+// Also inspired by https://github.com/fede-vaccaro/TerrainEngine-OpenGL
+
 SamplerState CloudSampler : register(s0);
 SamplerState SimpleSampler : register(s1);
 
