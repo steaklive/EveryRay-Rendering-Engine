@@ -168,6 +168,11 @@ namespace Library
 			ImGui::InputFloat3("Rotate", mMatrixRotation, 3);
 			ImGuizmo::RecomposeMatrixFromComponents(mMatrixTranslation, mMatrixRotation, mMatrixScale, matrix);
 
+			ImGui::Checkbox("Render Sun", &mDrawSun);
+			if (mDrawSun) {
+				ImGui::SliderFloat("Sun Exponent", &mSunExponent, 1.0f, 10000.0f);
+				ImGui::SliderFloat("Sun Brightness", &mSunBrightness, 0.0f, 10.0f);
+			}
 			ImGui::End();
 
 			ImGuiIO& io = ImGui::GetIO();

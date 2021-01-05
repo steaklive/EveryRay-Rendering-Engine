@@ -48,6 +48,9 @@ namespace Library
 			mAmbientColor[1] = color.y;
 			mAmbientColor[2] = color.z;
 		}
+		bool IsSunRendered() { return mDrawSun; }
+		float GetSunBrightness() { return mSunBrightness; }
+		float GetSunExponent() { return mSunExponent; }
 
 		GeneralEvent<Delegate_RotationUpdate>* RotationUpdateEvent = new GeneralEvent<Delegate_RotationUpdate>();
 
@@ -78,5 +81,9 @@ namespace Library
 		float mAmbientColor[3] = { 0.08f, 0.08f, 0.08f };
 
 		XMMATRIX mTransformMatrix = XMMatrixIdentity();
+		bool mDrawSun = true;
+
+		float mSunExponent = 10000;
+		float mSunBrightness = 2.637f;
 	};
 }

@@ -9,8 +9,8 @@
 #include "Model.h"
 #include "Mesh.h"
 #include "Utility.h"
-#include <DDSTextureLoader.h>
-#include <WICTextureLoader.h>
+#include "ShaderCompiler.h"
+#include "FullScreenRenderTarget.h"
 
 
 namespace Library
@@ -40,7 +40,9 @@ namespace Library
 		DeleteObject(mEffect);
 		ReleaseObject(mVertexBuffer);
 		ReleaseObject(mIndexBuffer);
-
+		ReleaseObject(mSunPS);
+		DeleteObject(mSunRenderTarget);
+		mSunConstantBuffer.Release();
 	}
 
 	void Skybox::Initialize()
@@ -81,18 +83,37 @@ namespace Library
 
 		}
 
+		//init sun shader
+		ID3DBlob* blob = nullptr;
+		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Sun.hlsl").c_str(), "main", "ps_5_0", &blob)))
+			throw GameException("Failed to load main pass from shader: Sun.hlsl!");
+		if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSunPS)))
+			throw GameException("Failed to create shader from Sun.hlsl!");
+		blob->Release();
+
+		mSunConstantBuffer.Initialize(mGame->Direct3DDevice());
+		mSunRenderTarget = new FullScreenRenderTarget(*mGame);
+
 		// add to game components
 		//mGame->components.push_back(this);
 	}
 
 	void Skybox::Update(const GameTime& gameTime)
 	{
+		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
 		const XMFLOAT3& position = mCamera->Position();
 
 		if (mIsMovable) 
 			XMStoreFloat4x4(&mWorldMatrix, XMLoadFloat4x4(&mScaleMatrix) * XMMatrixTranslation(position.x, position.y - 50.0f, position.z) * XMMatrixRotationAxis(XMVECTOR{ 0,1,0 }, gameTime.TotalGameTime()*0.003f));
 		else XMStoreFloat4x4(&mWorldMatrix, XMLoadFloat4x4(&mScaleMatrix) * XMMatrixTranslation(position.x, position.y, position.z));
 
+		mSunConstantBuffer.Data.InvProj = XMMatrixInverse(nullptr, mCamera->ProjectionMatrix());
+		mSunConstantBuffer.Data.InvView = XMMatrixInverse(nullptr, mCamera->ViewMatrix());
+		mSunConstantBuffer.Data.SunDir = mSunDir;
+		mSunConstantBuffer.Data.SunColor = mSunColor;
+		mSunConstantBuffer.Data.SunBrightness = mSunBrightness;
+		mSunConstantBuffer.Data.SunExponent = mSunExponent;
+		mSunConstantBuffer.ApplyChanges(context);
 	}
 
 	void Skybox::Draw(const GameTime& gametime)
@@ -122,6 +143,41 @@ namespace Library
 
 		direct3DDeviceContext->DrawIndexed(mIndexCount, 0, 0);
 		mGame->UnbindPixelShaderResources(0, 3);
-
 	}
+
+	void Skybox::DrawSun(const GameTime& gametime, Rendering::PostProcessingStack* postprocess) {
+		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+
+		postprocess->BeginRenderingToExtraRT(true);
+		Draw(gametime);
+		postprocess->EndRenderingToExtraRT();
+
+		if (mDrawSun && postprocess) {
+			ID3D11Buffer* CBs[1] = {
+				mSunConstantBuffer.Buffer()
+			};
+
+			ID3D11ShaderResourceView* SR[3] = {
+				postprocess->GetExtraColorOutputTexture(),
+				postprocess->GetPrepassColorOutputTexture(),
+				postprocess->GetDepthOutputTexture()
+			};
+
+			mSunRenderTarget->Begin();
+			context->PSSetConstantBuffers(0, 1, CBs);
+			context->PSSetShaderResources(0, 3, SR);
+			//context->PSSetSamplers(0, 2, SS);
+			context->PSSetShader(mSunPS, NULL, NULL);
+			postprocess->DrawFullscreenQuad(context);
+			mSunRenderTarget->End();
+			//reset main RT 
+			postprocess->SetMainRT(mSunRenderTarget->OutputColorTexture());
+		}
+	}
+
+	ID3D11ShaderResourceView* Skybox::GetSunOutputTexture()
+	{
+		return mSunRenderTarget->OutputColorTexture();
+	}
+
 }

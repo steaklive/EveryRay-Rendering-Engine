@@ -189,8 +189,12 @@ namespace Rendering
 		UpdateImGui();
 
 		mDirectionalLight->UpdateProxyModel(gameTime, mCamera->ViewMatrix4X4(), mCamera->ProjectionMatrix4X4());
-		mSkybox->SetUseCustomColor(mEditor->IsSkyboxUsingCustomColor());
-		mSkybox->SetColors(mEditor->GetBottomSkyColor(), mEditor->GetTopSkyColor());
+		mSkybox->SetUseCustomSkyColor(mEditor->IsSkyboxUsingCustomColor());
+		mSkybox->SetSkyColors(mEditor->GetBottomSkyColor(), mEditor->GetTopSkyColor());
+		mSkybox->SetSunData(mDirectionalLight->IsSunRendered(), 
+			mDirectionalLight->DirectionVector(),
+			XMVECTOR{ mDirectionalLight->GetDirectionalLightColor().x, mDirectionalLight->GetDirectionalLightColor().y, mDirectionalLight->GetDirectionalLightColor().z, 1.0 },
+			mDirectionalLight->GetSunBrightness(), mDirectionalLight->GetSunExponent());
 		mSkybox->Update(gameTime);
 		mGrid->Update(gameTime);
 		mPostProcessingStack->Update();
@@ -296,6 +300,10 @@ namespace Rendering
 #pragma endregion
 
 		mPostProcessingStack->End();
+
+		#pragma region DRAW_SUN
+		mSkybox->DrawSun(gameTime, mPostProcessingStack);
+#pragma endregion
 
 		#pragma region DRAW_VOLUMETRIC_CLOUDS
 		mVolumetricClouds->Draw(gameTime);

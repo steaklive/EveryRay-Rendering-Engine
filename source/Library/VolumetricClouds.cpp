@@ -175,9 +175,11 @@ namespace Library {
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
 
 		//skybox to empty texture
-		mPostProcessingStack.BeginRenderingToExtraRT(true);
-		mSkybox.Draw(gametime);
-		mPostProcessingStack.EndRenderingToExtraRT();
+		if (!mDirectionalLight.IsSunRendered()) {
+			mPostProcessingStack.BeginRenderingToExtraRT(true);
+			mSkybox.Draw(gametime);
+			mPostProcessingStack.EndRenderingToExtraRT();
+		}
 
 		//main pass
 		ID3D11Buffer* CBs[2] = {
@@ -185,7 +187,7 @@ namespace Library {
 			mCloudsConstantBuffer.Buffer()
 		};
 		ID3D11ShaderResourceView* SR[5] = {
-			mPostProcessingStack.GetExtraColorOutputTexture(),
+			(mDirectionalLight.IsSunRendered()) ? mSkybox.GetSunOutputTexture() : mPostProcessingStack.GetExtraColorOutputTexture(),
 			mWeatherTextureSRV,
 			mCloudTextureSRV,
 			mWorleyTextureSRV,
