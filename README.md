@@ -13,7 +13,7 @@ Rendering engine/framework written in C++/DirectX 11.
 - Cascaded Shadow Mapping
 - GPU Instancing
 - Frustum Culling
-- Separable Subsurface Scattering (based on the work of J.Jimenez and D.Gutierrez)
+- Separable Subsurface Scattering
 - Screen Space Reflections
 - Terrain with tessellation and foliage rendering
 - Volumetric clouds rendering
