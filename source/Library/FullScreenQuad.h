@@ -25,6 +25,7 @@ namespace Library
 		virtual void Initialize() override;
 		virtual void Draw(const GameTime& gameTime) override;
 
+		Pass* GetPass() { return mPass; }
 	private:
 		FullScreenQuad();
 		FullScreenQuad(const FullScreenQuad& rhs);

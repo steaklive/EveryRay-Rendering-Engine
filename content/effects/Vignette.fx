@@ -1,7 +1,3 @@
-
-
-
-
 Texture2D ColorTexture;
 
 cbuffer CBufferPerObject

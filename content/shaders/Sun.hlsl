@@ -27,10 +27,13 @@ float3 toClipSpaceCoord(float2 tex)
     return float3(ray, 1.0);
 }
 
-float4 renderSun(float3 worldDir)
+float4 renderSun(float3 worldDir, bool occlusion = false)
 {
     float sun = clamp(dot(-SunDir.rgb, worldDir), 0.0f, 1.0f);
-    return SunBrightness * /*SunColor*/ SUN_COLOR * pow(sun, SunExponent);
+    if (occlusion)
+        return SunBrightness * pow(sun, SunExponent);
+    else
+        return SunBrightness * /*SunColor*/SUN_COLOR * pow(sun, SunExponent);
 }
 
 float4 main(float4 pos : SV_POSITION, float2 tex : TEX_COORD0) : SV_Target
@@ -50,4 +53,26 @@ float4 main(float4 pos : SV_POSITION, float2 tex : TEX_COORD0) : SV_Target
     float sceneDepth = sceneDepthTex.Sample(DefaultSampler, tex).r;
     
     return lerp(sceneCol, sunColor, ((sceneDepth < 0.9998f) ? 0.0 : 1.0));
+}
+
+// for light shafts
+float4 occlusion(float4 pos : SV_POSITION, float2 tex : TEX_COORD0) : SV_Target
+{
+    //compute ray direction
+    float4 rayClipSpace = float4(toClipSpaceCoord(tex), 1.0);
+    float4 rayView = mul(InvProj, rayClipSpace);
+    rayView = float4(rayView.xy, -1.0, 0.0);
+    
+    float3 worldDir = mul(InvView, rayView).xyz;
+    worldDir = normalize(worldDir);
+    
+    float4 color = float4(0.1, 0.1, 0.1, 1.0);
+    color += renderSun(worldDir, true);
+    float depth = sceneDepthTex.Sample(DefaultSampler, tex).r;
+    color = lerp(float4(0.1, 0.1, 0.1, 1.0), color, (depth < 0.9998f) ? 0.0f : 1.0f);
+    
+    if (depth < 0.9998f)
+        color = float4(0.0, 0.0, 0.0, 1.0);
+    
+    return color;
 }

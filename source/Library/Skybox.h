@@ -48,10 +48,12 @@ namespace Library
 			mSunExponent = exponent;
 		}
 		ID3D11ShaderResourceView* GetSunOutputTexture();
+		ID3D11ShaderResourceView* GetSunOcclusionOutputTexture();
 	private:
 		Skybox();
 		Skybox(const Skybox& rhs);
 		Skybox& operator=(const Skybox& rhs);
+		XMFLOAT4 CalculateSunPositionOnSkybox(XMFLOAT3 dir);
 
 		std::wstring mCubeMapFileName;
 		Effect* mEffect;
@@ -72,6 +74,7 @@ namespace Library
 
 		bool mDrawSun = true;
 		ID3D11PixelShader* mSunPS = nullptr;
+		ID3D11PixelShader* mSunOcclusionPS = nullptr;
 		ConstantBuffer<SunCBufferData::SunData> mSunConstantBuffer;
 
 		XMVECTOR mSunDir;
@@ -79,6 +82,7 @@ namespace Library
 		float mSunExponent;
 		float mSunBrightness;
 		FullScreenRenderTarget* mSunRenderTarget = nullptr;
-
+		FullScreenRenderTarget* mSunOcclusionRenderTarget = nullptr;
+		float mScale;
 	};
 }

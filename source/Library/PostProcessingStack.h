@@ -10,6 +10,7 @@ namespace Library
 	class Effect;
 	class FullScreenRenderTarget;
 	class FullScreenQuad;
+	class DirectionalLight;
 }
 
 namespace Rendering
@@ -21,6 +22,7 @@ namespace Rendering
 	class FXAAMaterial;
 	class FogMaterial;
 	class ScreenSpaceReflectionsMaterial;
+	class LightShaftsMaterial;
 
 	namespace EffectElements
 	{
@@ -186,6 +188,37 @@ namespace Rendering
 			float nearZ = 0.0f;
 			float farZ = 0.0f;
 		};
+
+		struct LightShaftsEffect
+		{
+			LightShaftsEffect() :
+				Material(nullptr), Quad(nullptr), OutputTexture(nullptr), DepthTexture(nullptr)
+			{}
+
+			~LightShaftsEffect()
+			{
+				DeleteObject(Material);
+				DeleteObject(Quad);
+				ReleaseObject(OutputTexture);
+				ReleaseObject(DepthTexture);
+			}
+
+			LightShaftsMaterial* Material;
+			FullScreenQuad* Quad;
+			ID3D11ShaderResourceView* OutputTexture;
+			ID3D11ShaderResourceView* DepthTexture;
+			bool isActive = true;
+			bool isForceEnable = true;
+			bool isSunOnScreen = false;
+
+			float decay = 0.995f;
+			float weight = 6.65f;
+			float exposure = 0.011f;
+			float density = 0.94f;
+			float maxSunDistanceDelta = 10.0f;
+			float intensity = 0.1f;
+		};
+
 		struct SSREffect
 		{
 			SSREffect() :
@@ -256,8 +289,9 @@ namespace Rendering
 		void UpdateFXAAMaterial();
 		void UpdateSSRMaterial(ID3D11ShaderResourceView* normal, ID3D11ShaderResourceView* depth, ID3D11ShaderResourceView* extra, float time);
 		void UpdateFogMaterial();
+		void UpdateLightShaftsMaterial();
 
-		void Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR = true, bool pFog = false);
+		void Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR = true, bool pFog = false, bool pLightShafts = false);
 		void Begin(bool clear = true);
 		void End();
 		void BeginRenderingToExtraRT(bool clear);
@@ -271,6 +305,10 @@ namespace Rendering
 		void DrawFullscreenQuad(ID3D11DeviceContext* pContext);
 		void ResetOMToMainRenderTarget();
 		void ShowPostProcessingWindow();
+
+		void SetDirectionalLight(const DirectionalLight* pLight) { light = pLight; }
+		void SetSunOcclusionSRV(ID3D11ShaderResourceView* srv) { mSunOcclusionSRV = srv; }
+		void SetSunNDCPos(XMFLOAT2 pos) { mSunNDCPos = pos; }
 
 		ID3D11ShaderResourceView* GetDepthOutputTexture();
 		ID3D11ShaderResourceView* GetPrepassColorOutputTexture();
@@ -289,6 +327,7 @@ namespace Rendering
 
 		Game& game;
 		Camera& camera;
+		const DirectionalLight* light;
 
 		EffectElements::VignetteEffect* mVignetteEffect;
 		EffectElements::ColorGradingEffect* mColorGradingEffect;
@@ -297,6 +336,7 @@ namespace Rendering
 		EffectElements::TonemapEffect* mTonemapEffect;
 		EffectElements::SSREffect* mSSREffect;
 		EffectElements::FogEffect* mFogEffect;
+		EffectElements::LightShaftsEffect* mLightShaftsEffect;
 		
 		FullScreenRenderTarget* mMainRenderTarget;
 		FullScreenRenderTarget* mVignetteRenderTarget;
@@ -306,6 +346,7 @@ namespace Rendering
 		FullScreenRenderTarget* mTonemapRenderTarget;
 		FullScreenRenderTarget* mSSRRenderTarget;
 		FullScreenRenderTarget* mFogRenderTarget;
+		FullScreenRenderTarget* mLightShaftsRenderTarget;
 
 		FullScreenRenderTarget* mExtraRenderTarget;
 
@@ -315,12 +356,16 @@ namespace Rendering
 
 		ID3D11ShaderResourceView* mOriginalMainRTSRV = nullptr;
 
+		ID3D11ShaderResourceView* mSunOcclusionSRV = nullptr;
+
 		bool mVignetteLoaded = false;
 		bool mColorGradingLoaded = false;
 		bool mMotionBlurLoaded = false;
 		bool mFXAALoaded = false;
 		bool mSSRLoaded = false;
 		bool mFogLoaded = false;
+		bool mLightShaftsLoaded = false;
 
+		XMFLOAT2 mSunNDCPos;
 	};
 }

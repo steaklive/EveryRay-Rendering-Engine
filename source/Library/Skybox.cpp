@@ -21,7 +21,7 @@ namespace Library
 		: DrawableGameComponent(game, camera),
 		mCubeMapFileName(cubeMapFileName), mEffect(nullptr), mMaterial(nullptr),
 		mCubeMapShaderResourceView(nullptr), mVertexBuffer(nullptr), mIndexBuffer(nullptr), mIndexCount(0),
-		mWorldMatrix(MatrixHelper::Identity), mScaleMatrix(MatrixHelper::Identity)
+		mWorldMatrix(MatrixHelper::Identity), mScaleMatrix(MatrixHelper::Identity), mScale(scale)
 	{
 		XMStoreFloat4x4(&mScaleMatrix, XMMatrixScaling(scale, scale, scale));
 	}
@@ -41,7 +41,9 @@ namespace Library
 		ReleaseObject(mVertexBuffer);
 		ReleaseObject(mIndexBuffer);
 		ReleaseObject(mSunPS);
+		ReleaseObject(mSunOcclusionPS);
 		DeleteObject(mSunRenderTarget);
+		DeleteObject(mSunOcclusionRenderTarget);
 		mSunConstantBuffer.Release();
 	}
 
@@ -91,8 +93,16 @@ namespace Library
 			throw GameException("Failed to create shader from Sun.hlsl!");
 		blob->Release();
 
+		blob = nullptr;
+		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Sun.hlsl").c_str(), "occlusion", "ps_5_0", &blob)))
+			throw GameException("Failed to load occlusion pass from shader: Sun.hlsl!");
+		if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSunOcclusionPS)))
+			throw GameException("Failed to create shader from Sun.hlsl!");
+		blob->Release();
+
 		mSunConstantBuffer.Initialize(mGame->Direct3DDevice());
 		mSunRenderTarget = new FullScreenRenderTarget(*mGame);
+		mSunOcclusionRenderTarget = new FullScreenRenderTarget(*mGame);
 
 		// add to game components
 		//mGame->components.push_back(this);
@@ -172,12 +182,55 @@ namespace Library
 			mSunRenderTarget->End();
 			//reset main RT 
 			postprocess->SetMainRT(mSunRenderTarget->OutputColorTexture());
+		
+			//draw occlusion texture for light shafts
+			mSunOcclusionRenderTarget->Begin();
+			context->PSSetConstantBuffers(0, 1, CBs);
+			context->PSSetShaderResources(0, 3, SR);
+			//context->PSSetSamplers(0, 2, SS);
+			context->PSSetShader(mSunOcclusionPS, NULL, NULL);
+			postprocess->DrawFullscreenQuad(context);
+			mSunOcclusionRenderTarget->End();
+
+			XMFLOAT3 mSunDirection;
+			XMStoreFloat3(&mSunDirection, mSunDir);
+			XMFLOAT4 posWorld = CalculateSunPositionOnSkybox(XMFLOAT3(-mSunDirection.x,-mSunDirection.y,-mSunDirection.z));
+			XMVECTOR ndc = XMVector3Transform(XMLoadFloat4(&posWorld), mCamera->ViewProjectionMatrix());
+			XMFLOAT4 ndcF;
+			XMStoreFloat4(&ndcF, ndc);
+			ndcF = XMFLOAT4(ndcF.x / ndcF.w, ndcF.y / ndcF.w, ndcF.z / ndcF.w, ndcF.w / ndcF.w);
+			XMFLOAT2 ndcPos = XMFLOAT2(ndcF.x * 0.5f + 0.5f, -ndcF.y * 0.5f + 0.5f);
+			//XMFLOAT2 screenPos = XMFLOAT2(ndcPos.x * mGame->ScreenWidth(), (1 - ndcPos.y) * mGame->ScreenHeight());
+			postprocess->SetSunNDCPos(ndcPos);
 		}
 	}
 
 	ID3D11ShaderResourceView* Skybox::GetSunOutputTexture()
 	{
 		return mSunRenderTarget->OutputColorTexture();
+	}
+
+	ID3D11ShaderResourceView* Skybox::GetSunOcclusionOutputTexture()
+	{
+		return mSunOcclusionRenderTarget->OutputColorTexture();
+	}
+
+	XMFLOAT4 Skybox::CalculateSunPositionOnSkybox(XMFLOAT3 dir)
+	{
+		float t = 0.0f;
+
+		XMFLOAT3 sphereCenter = mCamera->Position();
+		float radius2 = mScale * mScale;
+
+		XMFLOAT3 L = XMFLOAT3(-sphereCenter.x,-sphereCenter.y,-sphereCenter.z);
+		float a = dir.x * dir.x + dir.y * dir.y + dir.z * dir.z;
+		float b = 2.0f * (dir.x * L.x + dir.y * L.y + dir.z * L.z);
+		float c = L.x * L.x + L.y * L.y + L.z * L.z - radius2;
+
+		float discr = b * b - 4.0 * a * c;
+		t = (-b + sqrt(discr)) / 2;
+
+		return XMFLOAT4(dir.x * t, dir.y * t, dir.z * t, 1.0f);
 	}
 
 }

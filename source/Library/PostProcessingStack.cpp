@@ -5,18 +5,16 @@
 #include "ScreenSpaceReflectionsMaterial.h"
 #include "FXAAMaterial.h"
 #include "FogMaterial.h"
+#include "LightShaftsMaterial.h"
 #include "FullScreenQuad.h"
 #include "FullScreenRenderTarget.h"
 #include "ShaderCompiler.h"
 #include "GameException.h"
-#include <WICTextureLoader.h>
 #include "Utility.h"
 #include "ColorHelper.h"
-
 #include "MatrixHelper.h"
-#include "imgui.h"
-#include "imgui_impl_dx11.h"
-#include "imgui_impl_win32.h"
+#include "DirectionalLight.h"
+
 
 namespace Rendering {
 	const XMVECTORF32 ClearBackgroundColor = ColorHelper::Black;
@@ -29,6 +27,7 @@ namespace Rendering {
 		mFXAAEffect(nullptr),
 		mSSREffect(nullptr),
 		mFogEffect(nullptr),
+		mLightShaftsEffect(nullptr),
 		game(pGame), camera(pCamera)
 	{
 	}
@@ -42,6 +41,7 @@ namespace Rendering {
 		DeleteObject(mTonemapEffect);
 		DeleteObject(mSSREffect);
 		DeleteObject(mFogEffect);
+		DeleteObject(mLightShaftsEffect);
 
 		DeleteObject(mMainRenderTarget);
 		DeleteObject(mColorGradingRenderTarget);
@@ -50,6 +50,7 @@ namespace Rendering {
 		DeleteObject(mFXAARenderTarget);
 		DeleteObject(mSSRRenderTarget);
 		DeleteObject(mFogRenderTarget);
+		DeleteObject(mLightShaftsRenderTarget);
 		DeleteObject(mExtraRenderTarget);
 
 		ReleaseObject(mQuadVB);
@@ -57,12 +58,26 @@ namespace Rendering {
 		ReleaseObject(mFullScreenQuadLayout);
 	}
 
-	void PostProcessingStack::Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR, bool pFog)
+	void PostProcessingStack::Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR, bool pFog, bool pLightShafts)
 	{
 		mMainRenderTarget = new FullScreenRenderTarget(game);
 		mOriginalMainRTSRV = mMainRenderTarget->OutputColorTexture();
 
 		mExtraRenderTarget = new FullScreenRenderTarget(game);
+
+		Effect* lightShaftsFX = new Effect(game);
+ 		lightShaftsFX->CompileFromFile(Utility::GetFilePath(L"content\\effects\\LightShafts.fx"));
+		mLightShaftsEffect = new EffectElements::LightShaftsEffect();
+		mLightShaftsEffect->Material = new LightShaftsMaterial();
+		mLightShaftsEffect->Material->Initialize(lightShaftsFX);
+		mLightShaftsEffect->Quad = new FullScreenQuad(game, *mLightShaftsEffect->Material);
+		mLightShaftsEffect->Quad->Initialize();
+		mLightShaftsEffect->Quad->SetActiveTechnique("light_shafts", "p0");
+		mLightShaftsEffect->Quad->SetCustomUpdateMaterial(std::bind(&PostProcessingStack::UpdateLightShaftsMaterial, this));
+		mLightShaftsLoaded = true;
+		mLightShaftsRenderTarget = new FullScreenRenderTarget(game);
+		mLightShaftsEffect->OutputTexture = mLightShaftsRenderTarget->OutputColorTexture();
+		mLightShaftsEffect->isActive = pLightShafts;
 
 		Effect* vignetteEffectFX = new Effect(game);
 		vignetteEffectFX->CompileFromFile(Utility::GetFilePath(L"content\\effects\\Vignette.fx"));
@@ -349,6 +364,20 @@ namespace Rendering {
 			else
 				mFogEffect->Quad->SetActiveTechnique("no_filter", "p0");
 		}
+
+		if (mLightShaftsLoaded)
+		{
+			if (mLightShaftsEffect->isActive) {
+				if (mLightShaftsEffect->isForceEnable && mLightShaftsEffect->isSunOnScreen)
+					mLightShaftsEffect->Quad->SetActiveTechnique("light_shafts", "p0");
+				else if (mLightShaftsEffect->isForceEnable && !mLightShaftsEffect->isSunOnScreen)
+					mLightShaftsEffect->Quad->SetActiveTechnique("no_filter", "p0");
+				else if (!mLightShaftsEffect->isForceEnable)
+					mLightShaftsEffect->Quad->SetActiveTechnique("light_shafts", "p0");
+			}
+			else 
+				mLightShaftsEffect->Quad->SetActiveTechnique("no_filter", "p0");
+		}
 	}
 
 	void PostProcessingStack::UpdateTonemapConstantBuffer(ID3D11DeviceContext* pD3DImmediateContext, ID3D11Buffer* buffer, int mipLevel0, int mipLevel1, unsigned int width, unsigned int height)
@@ -431,6 +460,22 @@ namespace Rendering {
 		mFogEffect->Material->FogDensity() << mFogEffect->density;
 	}
 
+	void PostProcessingStack::UpdateLightShaftsMaterial()
+	{
+		mLightShaftsEffect->isSunOnScreen = (mSunNDCPos.x >= 0.0f && mSunNDCPos.x <= 1.0f && mSunNDCPos.y >= 0.0f && mSunNDCPos.y <= 1.0f);
+
+		mLightShaftsEffect->Material->ColorTexture() << mLightShaftsEffect->OutputTexture;
+		mLightShaftsEffect->Material->DepthTexture() << mLightShaftsEffect->DepthTexture;
+		mLightShaftsEffect->Material->OcclusionTexture() << mSunOcclusionSRV;
+		mLightShaftsEffect->Material->SunPosNDC() << XMVECTOR{ mSunNDCPos.x,mSunNDCPos.y, 0, 0 };
+		mLightShaftsEffect->Material->Decay() << mLightShaftsEffect->decay;
+		mLightShaftsEffect->Material->Exposure() << mLightShaftsEffect->exposure;
+		mLightShaftsEffect->Material->Weight() << mLightShaftsEffect->weight;
+		mLightShaftsEffect->Material->Density() << mLightShaftsEffect->density;
+		mLightShaftsEffect->Material->MaxSunDistanceDelta() << mLightShaftsEffect->maxSunDistanceDelta;
+		mLightShaftsEffect->Material->Intensity() << mLightShaftsEffect->intensity;
+	}
+
 	void PostProcessingStack::UpdateFXAAMaterial()
 	{
 		mFXAAEffect->Material->ColorTexture() << mFXAAEffect->OutputTexture;
@@ -444,6 +489,22 @@ namespace Rendering {
 	{
 		ImGui::Begin("Post Processing Stack Config");
 
+		if (mLightShaftsLoaded)
+		{
+			if (ImGui::CollapsingHeader("Light Shafts"))
+			{
+				ImGui::Checkbox("Light Shafts - On", &mLightShaftsEffect->isActive);
+				ImGui::Checkbox("Enabled when sun is on screen", &mLightShaftsEffect->isForceEnable);
+				ImGui::Text("Sun Screen Position: (%.1f,%.1f)", mSunNDCPos.x, mSunNDCPos.y);
+				//ImGui::SliderInt("Ray count", &mSSREffect->rayCount, 0, 100);
+				ImGui::SliderFloat("Decay", &mLightShaftsEffect->decay, 0.5f, 1.0f);
+				ImGui::SliderFloat("Weight", &mLightShaftsEffect->weight, 0.0f, 25.0f);
+				ImGui::SliderFloat("Exposure", &mLightShaftsEffect->exposure, 0.0f, 0.01f);
+				ImGui::SliderFloat("Density", &mLightShaftsEffect->density, 0.0f, 1.0f);
+				//ImGui::SliderFloat("Max Sun Distance Delta", &mLightShaftsEffect->maxSunDistanceDelta, 0.01f, 100.0f);
+				ImGui::SliderFloat("Intensity", &mLightShaftsEffect->intensity, 0.0f, 1.0f);
+			}
+		}
 		if (mSSRLoaded)
 		{
 			if (ImGui::CollapsingHeader("Screen Space Reflections"))
@@ -639,9 +700,18 @@ namespace Rendering {
 	{
 		ID3D11DeviceContext* context = game.Direct3DDeviceContext();
 
+		// LIGHT SHAFTS
+		mLightShaftsRenderTarget->Begin();
+		mLightShaftsEffect->OutputTexture = mMainRenderTarget->OutputColorTexture();
+		mLightShaftsEffect->DepthTexture = mMainRenderTarget->OutputDepthTexture();
+		game.Direct3DDeviceContext()->ClearRenderTargetView(mLightShaftsRenderTarget->RenderTargetView(), ClearBackgroundColor);
+		game.Direct3DDeviceContext()->ClearDepthStencilView(mLightShaftsRenderTarget->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
+		mLightShaftsEffect->Quad->Draw(gameTime);
+		mLightShaftsRenderTarget->End();
+
 		// SSR
 		mSSRRenderTarget->Begin();
-		mSSREffect->InputColor = mMainRenderTarget->OutputColorTexture();
+		mSSREffect->InputColor = mLightShaftsRenderTarget->OutputColorTexture();
 		game.Direct3DDeviceContext()->ClearRenderTargetView(mSSRRenderTarget->RenderTargetView(), ClearBackgroundColor);
 		game.Direct3DDeviceContext()->ClearDepthStencilView(mSSRRenderTarget->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
 		mSSREffect->Quad->Draw(gameTime);
@@ -832,11 +902,3 @@ namespace Rendering {
 			mMainRenderTarget->Begin();
 	}
 }
-
-
-
-
-
-
-
-
