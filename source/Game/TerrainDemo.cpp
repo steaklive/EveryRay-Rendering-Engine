@@ -155,7 +155,9 @@ namespace Rendering
 		//PP
 		mPostProcessingStack = new PostProcessingStack(*mGame, *mCamera);
 		mPostProcessingStack->Initialize(false, false, true, true, true, false, true);
-		
+		mPostProcessingStack->SetDirectionalLight(mDirectionalLight);
+		mPostProcessingStack->SetSunOcclusionSRV(mSkybox->GetSunOcclusionOutputTexture());
+
 		mTerrain = new Terrain(Utility::GetFilePath("content\\terrain\\terrain"), *mGame, *mCamera, *mDirectionalLight, *mPostProcessingStack, false);
 
 		mCamera->SetPosition(mScene->cameraPosition);
