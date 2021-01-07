@@ -1,10 +1,13 @@
 static const float PI = 3.141592654f;
+#define NUM_OF_SHADOW_CASCADES 3
+static const float4 ColorWhite = { 1, 1, 1, 1 };
 
 cbuffer CBufferPerObject
 {
     float4x4 World;
     float4x4 View;
     float4x4 Projection;
+    float4x4 ShadowMatrices[NUM_OF_SHADOW_CASCADES];
 }
 
 cbuffer CBufferPerFrame
@@ -31,7 +34,17 @@ SamplerState ColorSampler
     AddressW = WRAP;
 };
 
+SamplerComparisonState CascadedPcfShadowMapSampler
+{
+    Filter = COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+    AddressU = BORDER;
+    AddressV = BORDER;
+    BorderColor = ColorWhite;
+    ComparisonFunc = LESS_EQUAL;
+};
+
 Texture2D albedoTexture;
+Texture2D cascadedShadowTextures[NUM_OF_SHADOW_CASCADES];
 
 struct VS_INPUT
 {
@@ -46,6 +59,9 @@ struct VS_OUTPUT
     float4 Position : SV_Position;
     float2 TextureCoordinates : TEXCOORD0;
     float3 Color : TEXCOORD1;
+    float3 ShadowCoord0 : TEXCOORD2;
+    float3 ShadowCoord1 : TEXCOORD3;
+    float3 ShadowCoord2 : TEXCOORD4;
 };
 
 VS_OUTPUT vertex_shader(VS_INPUT IN)
@@ -178,15 +194,55 @@ VS_OUTPUT vertex_shader(VS_INPUT IN)
     OUT.Position = mul(OUT.Position, Projection);
     OUT.TextureCoordinates = IN.TextureCoordinates;
     OUT.Color = IN.Color;
+    OUT.ShadowCoord0 = mul(IN.Position, mul(IN.World, ShadowMatrices[0])).xyz;
+    OUT.ShadowCoord1 = mul(IN.Position, mul(IN.World, ShadowMatrices[1])).xyz;
+    OUT.ShadowCoord2 = mul(IN.Position, mul(IN.World, ShadowMatrices[2])).xyz;
     
     return OUT;
 }
+
+float CalculateShadow(float3 ShadowCoord, int index)
+{
+    const float Dilation = 2.0;
+    float d1 = Dilation * ShadowTexelSize.x * 0.125;
+    float d2 = Dilation * ShadowTexelSize.x * 0.875;
+    float d3 = Dilation * ShadowTexelSize.x * 0.625;
+    float d4 = Dilation * ShadowTexelSize.x * 0.375;
+    float result = (
+        2.0 *
+        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy, ShadowCoord.z) +
+        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d2, d1), ShadowCoord.z) +
+        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d1, -d2), ShadowCoord.z) +
+        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d2, -d1), ShadowCoord.z) +
+        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d1, d2), ShadowCoord.z) +
+        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d4, d3), ShadowCoord.z) +
+        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d3, -d4), ShadowCoord.z) +
+        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d4, -d3), ShadowCoord.z) +
+        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d3, d4), ShadowCoord.z)
+        ) / 10.0;
+
+    return result * result;
+}
+float GetShadow(float3 ShadowCoord0, float3 ShadowCoord1, float3 ShadowCoord2, float depthDistance)
+{
+    if (depthDistance < ShadowCascadeDistances.x)
+        return CalculateShadow(ShadowCoord0, 0);
+    else if (depthDistance < ShadowCascadeDistances.y)
+        return CalculateShadow(ShadowCoord1, 1);
+    else if (depthDistance < ShadowCascadeDistances.z)
+        return CalculateShadow(ShadowCoord2, 2);
+    else
+        return 1.0f;
+    
+}
+
 float4 pixel_shader(VS_OUTPUT IN) : SV_Target
 {
     float4 albedo = albedoTexture.Sample(ColorSampler, IN.TextureCoordinates);
-
-    float4 color = albedo * SunColor ;
-    // Saturate the final color result.
+    float shadow = GetShadow(IN.ShadowCoord0, IN.ShadowCoord1, IN.ShadowCoord2, IN.Position.w);
+    shadow = clamp(shadow, 0.5f, 1.0f);
+    
+    float4 color = albedo * SunColor * float4(shadow, shadow, shadow, 1.0f);
     color = saturate(color);
 
     return color;

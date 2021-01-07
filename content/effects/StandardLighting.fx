@@ -57,8 +57,6 @@ SamplerComparisonState CascadedPcfShadowMapSampler
     ComparisonFunc = LESS_EQUAL;
 };
 
-
-
 struct LightData
 {
     float3 Pos;

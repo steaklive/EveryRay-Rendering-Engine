@@ -255,7 +255,7 @@ namespace Rendering
 			mDirectionalLight->GetSunBrightness(), mDirectionalLight->GetSunExponent());
 		mSkybox->Update(gameTime);
 		mGrid->Update(gameTime);
-		mTerrain->Update();
+		mTerrain->Update(gameTime);
 		mPostProcessingStack->Update();
 		mVolumetricClouds->Update(gameTime);
 
@@ -360,7 +360,7 @@ namespace Rendering
 		mSkybox->Draw(gameTime);
 
 		//terrain
-		mTerrain->Draw();
+		mTerrain->Draw(mShadowMapper);
 
 		//grid
 		//if (Utility::IsEditorMode)
@@ -379,7 +379,7 @@ namespace Rendering
 			for (auto foliageZone : mFoliageZonesCollections)
 			{
 				for (auto foliageType : foliageZone)
-					foliageType.second->Draw(gameTime);
+					foliageType.second->Draw(gameTime, mShadowMapper);
 			}
 		}
 

@@ -298,7 +298,7 @@ namespace Rendering
 
 		//foliage 
 		for (auto object : mFoliageCollection)
-			object->Draw(gameTime);
+			object->Draw(gameTime, mShadowMapper);
 #pragma endregion
 
 		mPostProcessingStack->End();

@@ -215,7 +215,7 @@ namespace Library
 		}
 	}
 
-	void Foliage::Draw(const GameTime& gameTime)
+	void Foliage::Draw(const GameTime& gameTime, ShadowMapper* worldShadowMapper)
 	{
 		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
 
@@ -248,14 +248,29 @@ namespace Library
 		ID3D11InputLayout* inputLayout = mMaterial->InputLayouts().at(pass);
 		context->IASetInputLayout(inputLayout);
 
+		XMMATRIX shadowMatrices[MAX_NUM_OF_CASCADES];
+		ID3D11ShaderResourceView* shadowMaps[MAX_NUM_OF_CASCADES];
+		if (worldShadowMapper) {
+			for (int cascade = 0; cascade < MAX_NUM_OF_CASCADES; cascade++)
+			{
+				shadowMatrices[cascade] = worldShadowMapper->GetViewMatrix(cascade) *  worldShadowMapper->GetProjectionMatrix(cascade) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix());
+				shadowMaps[cascade] = worldShadowMapper->GetShadowTexture(cascade);
+			}
+		}
+
 		mMaterial->World() << XMMatrixIdentity();
 		mMaterial->View() << mCamera.ViewMatrix();
 		mMaterial->Projection() << mCamera.ProjectionMatrix();
+		mMaterial->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, MAX_NUM_OF_CASCADES);
 		mMaterial->albedoTexture() << mAlbedoTexture;
+		mMaterial->cascadedShadowTextures().SetResourceArray(shadowMaps, 0, MAX_NUM_OF_CASCADES);
 		mMaterial->SunDirection() << XMVectorNegate(mDirectionalLight.DirectionVector());
 		mMaterial->SunColor() << XMVECTOR{ mDirectionalLight.GetDirectionalLightColor().x,  mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z , 1.0f };
 		mMaterial->AmbientColor() << XMVECTOR{ mDirectionalLight.GetAmbientLightColor().x,  mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
-		mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f, 1.0f, 1.0f , 1.0f }; //todo
+		if (worldShadowMapper)
+			mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f / worldShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
+		else
+			mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f , 1.0f, 1.0f , 1.0f };
 		mMaterial->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
 		mMaterial->CameraDirection() << mCamera.DirectionVector();
 		float rotateToCamera = (mIsRotating) ? 1.0f : 0.0f;

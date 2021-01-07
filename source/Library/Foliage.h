@@ -5,6 +5,7 @@
 #include "DirectionalLight.h"
 #include "PostProcessingStack.h"
 #include "FoliageMaterial.h"
+#include "ShadowMapper.h"
 
 namespace Library
 {
@@ -41,7 +42,7 @@ namespace Library
 		~Foliage();
 
 		void Initialize();
-		void Draw(const GameTime& gameTime);
+		void Draw(const GameTime& gameTime, ShadowMapper* worldShadowMapper = nullptr);
 		void Update(const GameTime& gameTime);
 
 		int GetPatchesCount() { return mPatchesCount; }

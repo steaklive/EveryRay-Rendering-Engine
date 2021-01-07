@@ -12,6 +12,8 @@ static const int TERRAIN_TILE_RESOLUTION = 512;
 namespace Library 
 {
 	class TerrainMaterial;
+	class ShadowMapper;
+	class GameTime;
 
 	enum TerrainSplatChannels {
 		MUD,
@@ -74,9 +76,9 @@ namespace Library
 		UINT GetWidth() { return mWidth; }
 		UINT GetHeight() { return mHeight; }
 
-		void Draw();
+		void Draw(ShadowMapper* worldShadowMapper = nullptr);
 		//void Draw(int tileIndex);
-		void Update();
+		void Update(const GameTime& gameTime);
 
 		void SetWireframeMode(bool flag) { mIsWireframe = flag; }
 		void SetTessellationTerrainMode(bool flag) { mUseTessellatedTerrain = flag; }
@@ -98,12 +100,14 @@ namespace Library
 		void LoadSplatmapPerTileGPU(int tileIndexX, int tileIndexY, std::string path);
 		void LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, std::string path);
 		void LoadNormalmapPerTileGPU(int tileIndexX, int tileIndexY, std::string path);
-		void DrawTessellated(int i);
-		void DrawNonTessellated(int i);
+		void DrawTessellated(int i, ShadowMapper* worldShadowMapper = nullptr);
+		void DrawNonTessellated(int i, ShadowMapper* worldShadowMapper = nullptr);
 
 		Camera& mCamera;
 		DirectionalLight& mDirectionalLight;
 		Rendering::PostProcessingStack& mPPStack;
+
+		ShadowMapper* mTerrainShadowMapper = nullptr; // for terrain shadows 
 
 		TerrainMaterial* mMaterial;
 		UINT mWidth = 0;

@@ -1,10 +1,14 @@
 static const int TILE_SIZE = 512;
 static const int DETAIL_TEXTURE_REPEAT = 32;
+#define NUM_OF_SHADOW_CASCADES 3
+static const float4 ColorWhite = { 1, 1, 1, 1 };
+
 cbuffer CBufferPerObject 
 {
     float4x4 World;
     float4x4 View;
     float4x4 Projection;
+    float4x4 ShadowMatrices[NUM_OF_SHADOW_CASCADES];
 }
 
 cbuffer CBufferPerFrame
@@ -58,6 +62,9 @@ struct DS_OUTPUT
     float4 position : SV_Position;
     centroid float2 texcoord : TEXCOORD0;
     centroid float3 normal : NORMAL;
+    float3 shadowCoord0 : TEXCOORD2;
+    float3 shadowCoord1 : TEXCOORD3;
+    float3 shadowCoord2 : TEXCOORD4;
 };
 
 struct PatchData
@@ -100,12 +107,23 @@ SamplerState BilinearSampler
     AddressU = CLAMP;
     AddressV = CLAMP;
 };
+
+SamplerComparisonState CascadedPcfShadowMapSampler
+{
+    Filter = COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+    AddressU = BORDER;
+    AddressV = BORDER;
+    BorderColor = ColorWhite;
+    ComparisonFunc = LESS_EQUAL;
+};
+
 Texture2D heightTexture;
 Texture2D splatTexture;
 Texture2D groundTexture;
 Texture2D grassTexture;
 Texture2D rockTexture;
 Texture2D mudTexture;
+Texture2D cascadedShadowTextures[NUM_OF_SHADOW_CASCADES];
 
 VS_OUTPUT vertex_shader(VS_INPUT IN)
 {
@@ -126,6 +144,41 @@ HS_INPUT vertex_shader_ts(VS_INPUT_TS IN)
     OUT.origin = IN.PatchInfo.xy;
     OUT.size = IN.PatchInfo.zw;
     return OUT;
+}
+
+float CalculateShadow(float3 ShadowCoord, int index)
+{
+    const float Dilation = 2.0;
+    float d1 = Dilation * ShadowTexelSize.x * 0.125;
+    float d2 = Dilation * ShadowTexelSize.x * 0.875;
+    float d3 = Dilation * ShadowTexelSize.x * 0.625;
+    float d4 = Dilation * ShadowTexelSize.x * 0.375;
+    float result = (
+        2.0 *
+        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy, ShadowCoord.z) +
+        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d2, d1), ShadowCoord.z) +
+        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d1, -d2), ShadowCoord.z) +
+        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d2, -d1), ShadowCoord.z) +
+        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d1, d2), ShadowCoord.z) +
+        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d4, d3), ShadowCoord.z) +
+        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d3, -d4), ShadowCoord.z) +
+        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d4, -d3), ShadowCoord.z) +
+        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d3, d4), ShadowCoord.z)
+        ) / 10.0;
+
+    return result * result;
+}
+float GetShadow(float3 ShadowCoord0, float3 ShadowCoord1, float3 ShadowCoord2, float depthDistance)
+{
+    if (depthDistance < ShadowCascadeDistances.x)
+        return CalculateShadow(ShadowCoord0, 0);
+    else if (depthDistance < ShadowCascadeDistances.y)
+        return CalculateShadow(ShadowCoord1, 1);
+    else if (depthDistance < ShadowCascadeDistances.z)
+        return CalculateShadow(ShadowCoord2, 2);
+    else
+        return 1.0f;
+    
 }
 
 // hyperbolic function that determines a factor
@@ -231,6 +284,9 @@ DS_OUTPUT domain_shader(PatchData input, float2 uv : SV_DomainLocation, OutputPa
     output.position = mul(output.position, Projection);
     output.texcoord = texcoord01;
     output.normal = float3(0, 0, 0);
+    output.shadowCoord0 = mul(float4(vertexPosition, 1.0), mul(World, ShadowMatrices[0])).xyz;
+    output.shadowCoord1 = mul(float4(vertexPosition, 1.0), mul(World, ShadowMatrices[1])).xyz;
+    output.shadowCoord2 = mul(float4(vertexPosition, 1.0), mul(World, ShadowMatrices[2])).xyz;
     return output;
 }
 
@@ -278,13 +334,16 @@ float4 pixel_shader_ts(DS_OUTPUT IN) : SV_Target
     
     float3 color = AmbientColor.rgb;
 
+    float shadow = GetShadow(IN.shadowCoord0, IN.shadowCoord1, IN.shadowCoord2, IN.position.w);
+    shadow = clamp(shadow, 0.5f, 1.0f);
+    
     float lightIntensity = saturate(dot(normal, SunDirection.rgb));
 
     if (lightIntensity > 0.0f)
         color += SunColor.rgb * lightIntensity;
 
     color = saturate(color);
-    color *= albedo;
+    color *= albedo * shadow;
     
     return float4(color, 1.0f);
 }
