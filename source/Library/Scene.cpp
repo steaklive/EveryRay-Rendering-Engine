@@ -169,25 +169,59 @@ namespace Library
 				else
 					it->second->SetTransformationMatrix(XMMatrixIdentity());
 
+				// load lods
+				bool hasLODs = root["rendering_objects"][i].isMember("model_lods");
+				if (hasLODs) {
+					for (Json::Value::ArrayIndex lod = 1 /* 0 is main model loaded before */; lod != root["rendering_objects"][i]["model_lods"].size(); lod++) {
+						std::string path = root["rendering_objects"][i]["model_lods"][lod]["path"].asString();
+						it->second->LoadLOD(std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath(path), true)));
+					}
+				}
+
 				// load instanced data
 				if (isInstanced) {
-					it->second->LoadInstanceBuffers();
-					if (root["rendering_objects"][i].isMember("instances_transforms")) {
-						it->second->ResetInstanceData(root["rendering_objects"][i]["instances_transforms"].size(), true);
-						for (Json::Value::ArrayIndex instance = 0; instance != root["rendering_objects"][i]["instances_transforms"].size(); instance++) {
-							float matrix[16];
-							for (Json::Value::ArrayIndex matC = 0; matC != root["rendering_objects"][i]["instances_transforms"][instance]["transform"].size(); matC++) {
-								matrix[matC] = root["rendering_objects"][i]["instances_transforms"][instance]["transform"][matC].asFloat();
+					if (hasLODs)
+					{
+						for (int lod = 0; lod < root["rendering_objects"][i]["model_lods"].size(); lod++)
+						{
+							it->second->LoadInstanceBuffers(lod);
+							if (root["rendering_objects"][i].isMember("instances_transforms")) {
+								it->second->ResetInstanceData(root["rendering_objects"][i]["instances_transforms"].size(), true, lod);
+								for (Json::Value::ArrayIndex instance = 0; instance != root["rendering_objects"][i]["instances_transforms"].size(); instance++) {
+									float matrix[16];
+									for (Json::Value::ArrayIndex matC = 0; matC != root["rendering_objects"][i]["instances_transforms"][instance]["transform"].size(); matC++) {
+										matrix[matC] = root["rendering_objects"][i]["instances_transforms"][instance]["transform"][matC].asFloat();
+									}
+									XMFLOAT4X4 worldTransform(matrix);
+									it->second->AddInstanceData(XMMatrixTranspose(XMLoadFloat4x4(&worldTransform)), lod);
+								}
 							}
-							XMFLOAT4X4 worldTransform(matrix);
-							it->second->AddInstanceData(XMMatrixTranspose(XMLoadFloat4x4(&worldTransform)));
+							else {
+								it->second->ResetInstanceData(1, true, lod);
+								it->second->AddInstanceData(it->second->GetTransformationMatrix(), lod);
+							}
+							it->second->UpdateInstanceBuffer(it->second->GetInstancesData(), lod);
 						}
 					}
 					else {
-						it->second->ResetInstanceData(1, true);
-						it->second->AddInstanceData(it->second->GetTransformationMatrix());
+						it->second->LoadInstanceBuffers();
+						if (root["rendering_objects"][i].isMember("instances_transforms")) {
+							it->second->ResetInstanceData(root["rendering_objects"][i]["instances_transforms"].size(), true);
+							for (Json::Value::ArrayIndex instance = 0; instance != root["rendering_objects"][i]["instances_transforms"].size(); instance++) {
+								float matrix[16];
+								for (Json::Value::ArrayIndex matC = 0; matC != root["rendering_objects"][i]["instances_transforms"][instance]["transform"].size(); matC++) {
+									matrix[matC] = root["rendering_objects"][i]["instances_transforms"][instance]["transform"][matC].asFloat();
+								}
+								XMFLOAT4X4 worldTransform(matrix);
+								it->second->AddInstanceData(XMMatrixTranspose(XMLoadFloat4x4(&worldTransform)));
+							}
+						}
+						else {
+							it->second->ResetInstanceData(1, true);
+							it->second->AddInstanceData(it->second->GetTransformationMatrix());
+						}
+						it->second->UpdateInstanceBuffer(it->second->GetInstancesData());
 					}
-					it->second->UpdateInstanceBuffer(it->second->GetInstancesData());
 				}
 			}
 		}

@@ -54,11 +54,6 @@
 					"technique" : "create_depthmap_w_render_target_instanced"
 				},
 				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred_instanced"
-				},
-				{
 					"effect" : "content\\effects\\StandardLighting.fx",
 					"name" : "StandardLightingMaterial",
 					"technique" : "standard_lighting_pbr_instancing"

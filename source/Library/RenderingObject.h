@@ -13,6 +13,9 @@
 #include "MatrixHelper.h"
 
 const UINT MAX_INSTANCE_COUNT = 10000;
+const float LOD_0_DISTANCE = 50.0f;
+const float LOD_1_DISTANCE = 150.0f;
+const float LOD_2_DISTANCE = 450.0f;
 
 namespace Rendering
 {
@@ -127,11 +130,12 @@ namespace Rendering
 		void LoadCustomMeshTextures(int meshIndex, std::wstring albedoPath, std::wstring normalPath, std::wstring specularPath, std::wstring roughnessPath, std::wstring metallicPath, std::wstring extra1Path, std::wstring extra2Path, std::wstring extra3Path);
 		void LoadCustomMeshTextures(int meshIndex);
 		void LoadMaterial(Material* pMaterial, Effect* pEffect, std::string materialName);
-		void LoadRenderBuffers();
-		void LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData, std::string materialName);
+		void LoadRenderBuffers(int lod = 0);
+		void LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData, std::string materialName, int lod = 0);
 		void Draw(std::string materialName,bool toDepth = false, int meshIndex = -1);
+		void DrawLOD(std::string materialName, bool toDepth, int meshIndex, int lod);
 		void DrawAABB();
-		void UpdateInstanceData(std::vector<InstancingMaterial::InstancedData> pInstanceData, std::string materialName);
+		void UpdateInstanceData(std::vector<InstancingMaterial::InstancedData> pInstanceData, std::string materialName, int lod = 0);
 		void UpdateGizmos();
 		void Update(const GameTime& time);
 		void Selected(bool val) { mIsSelected = val; }
@@ -143,10 +147,10 @@ namespace Rendering
 		std::map<std::string, Material*>& GetMaterials() { return mMaterials; }
 		TextureData& GetTextureData(int meshIndex) { return mMeshesTextureBuffers[meshIndex]; }
 		
-		const int GetMeshCount() const { return mMeshesCount; }
-		const std::vector<XMFLOAT3>& GetVertices() { return mMeshAllVertices; }
-		const UINT GetInstanceCount() { return mInstanceData.size(); }
-		std::vector<InstancedData>& GetInstancesData() { return mInstanceData; }
+		const int GetMeshCount(int lod = 0) const { return mMeshesCount[lod]; }
+		const std::vector<XMFLOAT3>& GetVertices(int lod = 0) { return mMeshAllVertices[lod]; }
+		const UINT GetInstanceCount(int lod = 0) { return (mIsInstanced ? mInstanceData[lod].size() : 0); }
+		std::vector<InstancedData>& GetInstancesData(int lod = 0) { return mInstanceData[lod]; }
 		
 		XMFLOAT4X4 GetTransformationMatrix4X4() const { return XMFLOAT4X4(mCurrentObjectTransformMatrix); }
 		XMMATRIX GetTransformationMatrix() const { return mTransformationMatrix; }
@@ -179,14 +183,12 @@ namespace Rendering
 			MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
 		}
 
-		void LoadInstanceBuffers();
-		void UpdateInstanceBuffer(std::vector<InstancedData>& instanceData);
+		void LoadInstanceBuffers(int lod = 0);
+		void UpdateInstanceBuffer(std::vector<InstancedData>& instanceData, int lod = 0);
 		UINT InstanceSize() const;
 
-		void ResetInstanceData(int count, bool clear = false);
-		void AddInstanceData(XMMATRIX worldMatrix);
-
-		void CalculateInstanceObjectsRandomDistribution(int count);
+		void ResetInstanceData(int count, bool clear = false, int lod = 0);
+		void AddInstanceData(XMMATRIX worldMatrix, int lod = -1);
 
 		void SetPlacedOnTerrain(bool flag) { mPlacedOnTerrain = flag; }
 		bool IsPlacedOnTerrain() { return mPlacedOnTerrain; }
@@ -199,8 +201,14 @@ namespace Rendering
 		void Rename(std::string name) { mName = name; }
 		std::string GetName() { return mName; }
 
-		GeneralEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new GeneralEvent<Delegate_MeshMaterialVariablesUpdate>();
+		void UpdateLODs();
+		void LoadLOD(std::unique_ptr<Model> pModel);
+		int GetLODCount() {
+			return 1 + mModelLODs.size();
+		}
 
+		GeneralEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new GeneralEvent<Delegate_MeshMaterialVariablesUpdate>();
+	
 		std::vector<std::string>								mCustomAlbedoTextures;
 		std::vector<std::string>								mCustomNormalTextures;
 		std::vector<std::string>								mCustomRoughnessTextures;
@@ -213,24 +221,26 @@ namespace Rendering
 		void LoadAssignedMeshTextures();
 		void LoadTexture(TextureType type, std::wstring path, int meshIndex);
 		void CreateInstanceBuffer(ID3D11Device* device, InstancedData* instanceData, UINT instanceCount, ID3D11Buffer** instanceBuffer);
-		void ShowInstancesListUI();
+		void ShowInstancesListUI(int lod);
 		void UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix);
 		
 		Camera& mCamera;
 		std::vector<TextureData>								mMeshesTextureBuffers;
-		std::vector<InstanceBufferData*>						mMeshesInstanceBuffers;
-		std::vector<std::vector<XMFLOAT3>>						mMeshVertices;
-		std::vector<XMFLOAT3>									mMeshAllVertices;
-		std::map<std::string, std::vector<RenderBufferData*>>	mMeshesRenderBuffers;
-		std::vector<float>										mMeshesReflectionFactors;
+		std::vector<std::vector<InstanceBufferData*>>			mMeshesInstanceBuffers; // LODed +
+		std::vector<std::vector<std::vector<XMFLOAT3>>>			mMeshVertices; // LODed +
+		std::vector<std::vector<XMFLOAT3>>						mMeshAllVertices; // LODed +
+		std::vector<std::map<std::string, std::vector<RenderBufferData*>>>	mMeshesRenderBuffers; // LODed +
+		std::vector<float>										mMeshesReflectionFactors; 
 		std::map<std::string, Material*>						mMaterials;
 		std::vector<XMFLOAT3>									mAABB;
 		std::unique_ptr<Model>									mModel;
-		int														mMeshesCount;
-		UINT													mInstanceCount;
-		UINT													mInstanceCountToRender;
-		std::vector<InstancedData>								mInstanceData;
-		std::vector<std::string>								mInstancesNames;
+		std::vector<std::unique_ptr<Model>>						mModelLODs;
+		//int														mNumLODs;
+		std::vector<int>										mMeshesCount; // LODed +
+		std::vector<UINT>										mInstanceCount;// LODed +
+		std::vector<UINT>										mInstanceCountToRender; // LODed +
+		std::vector<std::vector<InstancedData>>					mInstanceData; // LODed +
+		std::vector<std::vector<std::string>>					mInstancesNames; // LODed
 	
 		std::string												mName;
 		RenderableAABB*											mDebugAABB;

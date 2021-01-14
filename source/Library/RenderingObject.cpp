@@ -16,13 +16,13 @@ namespace Rendering
 		GameComponent(pGame),
 		mCamera(pCamera),
 		mModel(std::move(pModel)),
-		mMeshesInstanceBuffers(0, nullptr),
+		//mMeshesInstanceBuffers(0, {}),
 		mMeshesReflectionFactors(0),
 		/*mMaterials(0, nullptr),*/
 		//mMeshesRenderBuffers(0, std::vector<RenderBufferData*>(0, nullptr)),
-		mMeshVertices(0),
+		//mMeshVertices(0),
 		mName(pName),
-		mInstanceCount(0),
+		//mInstanceCount(0),
 		mDebugAABB(nullptr),
 		mAvailableInEditorMode(availableInEditor),
 		mTransformationMatrix(XMMatrixIdentity()),
@@ -35,10 +35,14 @@ namespace Rendering
 			throw GameException(message.c_str());
 		}
 
-		mMeshesCount = mModel->Meshes().size();
-		for (size_t i = 0; i < mMeshesCount; i++)
+		mMeshesCount.push_back(0); // main LOD
+		mMeshVertices.push_back({}); // main LOD
+		mMeshAllVertices.push_back({}); // main LOD
+
+		mMeshesCount[0] = mModel->Meshes().size();
+		for (size_t i = 0; i < mMeshesCount[0]; i++)
 		{
-			mMeshVertices.push_back(mModel->Meshes().at(i)->Vertices());
+			mMeshVertices[0].push_back(mModel->Meshes().at(i)->Vertices());
 			mMeshesTextureBuffers.push_back(TextureData());
 			mMeshesReflectionFactors.push_back(0.0f);
 
@@ -48,11 +52,11 @@ namespace Rendering
 			mCustomMetalnessTextures.push_back("");
 		}
 
-		for (size_t i = 0; i < mMeshVertices.size(); i++)
+		for (size_t i = 0; i < mMeshVertices[0].size(); i++)
 		{
-			for (size_t j = 0; j < mMeshVertices[i].size(); j++)
+			for (size_t j = 0; j < mMeshVertices[0][i].size(); j++)
 			{
-				mMeshAllVertices.push_back(mMeshVertices[i][j]);
+				mMeshAllVertices[0].push_back(mMeshVertices[0][i][j]);
 			}
 		}
 
@@ -78,11 +82,15 @@ namespace Rendering
 			DeleteObject(object.second);
 		mMaterials.clear();
 
-		for (auto meshRenderBuffer : mMeshesRenderBuffers)
-			DeletePointerCollection(meshRenderBuffer.second);
+		for (auto lod : mMeshesRenderBuffers)
+			for (auto meshRenderBuffer : lod)
+				DeletePointerCollection(meshRenderBuffer.second);
 		mMeshesRenderBuffers.clear();
 
-		DeletePointerCollection(mMeshesInstanceBuffers);
+		for (auto meshesInstanceBuffersLOD : mMeshesInstanceBuffers)
+			DeletePointerCollection(meshesInstanceBuffersLOD);
+		mMeshesInstanceBuffers.clear();
+
 		mMeshesTextureBuffers.clear();
 
 		DeleteObject(mDebugAABB);
@@ -111,7 +119,7 @@ namespace Rendering
 			return resultPath;
 		};
 
-		for (size_t i = 0; i < mMeshesCount; i++)
+		for (size_t i = 0; i < mMeshesCount[0]; i++)
 		{
 			//if (mModel->Meshes()[i]->GetMaterial()->Textures().size() == 0) 
 			//	continue;
@@ -190,7 +198,7 @@ namespace Rendering
 	
 	void RenderingObject::LoadCustomMeshTextures(int meshIndex, std::wstring albedoPath, std::wstring normalPath, std::wstring specularPath, std::wstring roughnessPath, std::wstring metallicPath, std::wstring extra1Path, std::wstring extra2Path, std::wstring extra3Path)
 	{
-		assert(meshIndex < mMeshesCount);
+		assert(meshIndex < mMeshesCount[0]);
 		
 		std::string errorMessage = mModel->GetFileName() + " of mesh index: " + std::to_string(meshIndex);
 
@@ -220,7 +228,7 @@ namespace Rendering
 	//from custom collections
 	void RenderingObject::LoadCustomMeshTextures(int meshIndex)
 	{
-		assert(meshIndex < mMeshesCount);
+		assert(meshIndex < mMeshesCount[0]);
 		std::string errorMessage = mModel->GetFileName() + " of mesh index: " + std::to_string(meshIndex);
 
 		if (!mCustomAlbedoTextures[meshIndex].empty() && mCustomAlbedoTextures[meshIndex].back() != '\\')
@@ -331,39 +339,59 @@ namespace Rendering
 		}
 	}
 
-	void RenderingObject::LoadRenderBuffers()
+	void RenderingObject::LoadRenderBuffers(int lod)
 	{
-		assert(mModel != nullptr);
+		assert(lod < GetLODCount());
+		assert(mModel);
+		if (lod > 0)
+			assert(mModelLODs[lod - 1]);
 		assert(mGame->Direct3DDevice() != nullptr);
+
+		mMeshesRenderBuffers.push_back({});
+		assert(mMeshesRenderBuffers.size() - 1 == lod);
 
 		for (auto material : mMaterials)
 		{
-			mMeshesRenderBuffers.insert(std::pair<std::string, std::vector<RenderBufferData*>>(material.first, std::vector<RenderBufferData*>()));
-			for (size_t i = 0; i < mMeshesCount; i++)
+			mMeshesRenderBuffers[lod].insert(std::pair<std::string, std::vector<RenderBufferData*>>(material.first, std::vector<RenderBufferData*>()));
+			for (size_t i = 0; i < mMeshesCount[lod]; i++)
 			{
-				mMeshesRenderBuffers[material.first].push_back(new RenderBufferData());
-				material.second->CreateVertexBuffer(mGame->Direct3DDevice(), *mModel->Meshes()[i], &(mMeshesRenderBuffers[material.first][i]->VertexBuffer));
-				mModel->Meshes()[i]->CreateIndexBuffer(&(mMeshesRenderBuffers[material.first][i]->IndexBuffer));
-				mMeshesRenderBuffers[material.first][i]->IndicesCount = mModel->Meshes()[i]->Indices().size();
-				mMeshesRenderBuffers[material.first][i]->Stride = mMaterials[material.first]->VertexSize();
-				mMeshesRenderBuffers[material.first][i]->Offset = 0;
+				mMeshesRenderBuffers[lod][material.first].push_back(new RenderBufferData());
+				if (lod == 0) {
+					material.second->CreateVertexBuffer(mGame->Direct3DDevice(), *mModel->Meshes()[i], &(mMeshesRenderBuffers[lod][material.first][i]->VertexBuffer));
+					mModel->Meshes()[i]->CreateIndexBuffer(&(mMeshesRenderBuffers[lod][material.first][i]->IndexBuffer));
+					mMeshesRenderBuffers[lod][material.first][i]->IndicesCount = mModel->Meshes()[i]->Indices().size();
+				}
+				else
+				{
+					material.second->CreateVertexBuffer(mGame->Direct3DDevice(), *mModelLODs[lod - 1]->Meshes()[i], &(mMeshesRenderBuffers[lod][material.first][i]->VertexBuffer));
+					mModelLODs[lod - 1]->Meshes()[i]->CreateIndexBuffer(&(mMeshesRenderBuffers[lod][material.first][i]->IndexBuffer));
+					mMeshesRenderBuffers[lod][material.first][i]->IndicesCount = mModelLODs[lod - 1]->Meshes()[i]->Indices().size();
+				}
+				
+				mMeshesRenderBuffers[lod][material.first][i]->Stride = mMaterials[material.first]->VertexSize();
+				mMeshesRenderBuffers[lod][material.first][i]->Offset = 0;
 			}
 		}
 
 	}
 	
-	void RenderingObject::Draw(std::string materialName, bool toDepth, int meshIndex)
+	void RenderingObject::Draw(std::string materialName, bool toDepth, int meshIndex) {
+		for (int lod = 0; lod < GetLODCount(); lod++)
+			DrawLOD(materialName, toDepth, meshIndex, lod);
+	}
+
+	void RenderingObject::DrawLOD(std::string materialName, bool toDepth, int meshIndex, int lod)
 	{
 		if (mMaterials.find(materialName) == mMaterials.end())
 			return;
 
 		if (mIsRendered)
 		{
-			if (!mMaterials.size() || mMeshesRenderBuffers.size() == 0)
+			if (!mMaterials.size() || mMeshesRenderBuffers[lod].size() == 0)
 				return;
 			
 			bool isSpecificMesh = (meshIndex != -1);
-			for (int i = (isSpecificMesh) ? meshIndex : 0; i < ((isSpecificMesh) ? 1 : mMeshesCount); i++)
+			for (int i = (isSpecificMesh) ? meshIndex : 0; i < ((isSpecificMesh) ? 1 : mMeshesCount[lod]); i++)
 			{
 				ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
 				if (mWireframeMode)
@@ -376,19 +404,19 @@ namespace Rendering
 
 				if (mIsInstanced)
 				{
-					ID3D11Buffer* vertexBuffers[2] = { mMeshesRenderBuffers[materialName][i]->VertexBuffer, mMeshesInstanceBuffers[i]->InstanceBuffer };
-					UINT strides[2] = { mMeshesRenderBuffers[materialName][i]->Stride, mMeshesInstanceBuffers[i]->Stride };
-					UINT offsets[2] = { mMeshesRenderBuffers[materialName][i]->Offset, mMeshesInstanceBuffers[i]->Offset };
+					ID3D11Buffer* vertexBuffers[2] = { mMeshesRenderBuffers[lod][materialName][i]->VertexBuffer, mMeshesInstanceBuffers[lod][i]->InstanceBuffer };
+					UINT strides[2] = { mMeshesRenderBuffers[lod][materialName][i]->Stride, mMeshesInstanceBuffers[lod][i]->Stride };
+					UINT offsets[2] = { mMeshesRenderBuffers[lod][materialName][i]->Offset, mMeshesInstanceBuffers[lod][i]->Offset };
 
 					context->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
-					context->IASetIndexBuffer(mMeshesRenderBuffers[materialName][i]->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+					context->IASetIndexBuffer(mMeshesRenderBuffers[lod][materialName][i]->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 				}
 				else
 				{
-					UINT stride = mMeshesRenderBuffers[materialName][i]->Stride;
-					UINT offset = mMeshesRenderBuffers[materialName][i]->Offset;
-					context->IASetVertexBuffers(0, 1, &(mMeshesRenderBuffers[materialName][i]->VertexBuffer), &stride, &offset);
-					context->IASetIndexBuffer(mMeshesRenderBuffers[materialName][i]->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+					UINT stride = mMeshesRenderBuffers[lod][materialName][i]->Stride;
+					UINT offset = mMeshesRenderBuffers[lod][materialName][i]->Offset;
+					context->IASetVertexBuffers(0, 1, &(mMeshesRenderBuffers[lod][materialName][i]->VertexBuffer), &stride, &offset);
+					context->IASetIndexBuffer(mMeshesRenderBuffers[lod][materialName][i]->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 				}
 
 				for (auto listener : MeshMaterialVariablesUpdateEvent->GetListeners())
@@ -397,9 +425,13 @@ namespace Rendering
 				pass->Apply(0, context);
 
 				if (mIsInstanced)
-					context->DrawIndexedInstanced(mMeshesRenderBuffers[materialName][i]->IndicesCount, mInstanceCountToRender, 0, 0, 0);
+				{
+					if (mInstanceCountToRender[lod] > 0)
+						context->DrawIndexedInstanced(mMeshesRenderBuffers[lod][materialName][i]->IndicesCount, mInstanceCountToRender[lod], 0, 0, 0);
+					else continue;
+				}
 				else
-					context->DrawIndexed(mMeshesRenderBuffers[materialName][i]->IndicesCount, 0, 0);
+					context->DrawIndexed(mMeshesRenderBuffers[lod][materialName][i]->IndicesCount, 0, 0);
 			}
 
 
@@ -416,59 +448,80 @@ namespace Rendering
 
 
 	// legacy instancing code [DEPRECATED]
-	void RenderingObject::LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData, std::string materialName)
+	void RenderingObject::LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData, std::string materialName, int lod)
 	{
 		assert(mModel != nullptr);
 		assert(mGame->Direct3DDevice() != nullptr);
 
-		mInstanceCount = pInstanceData.size();
-		for (size_t i = 0; i < mMeshesCount; i++)
+		mMeshesInstanceBuffers.push_back({});
+		assert(lod == mMeshesInstanceBuffers.size() - 1);
+
+		mInstanceCount.push_back(pInstanceData.size());
+		assert(lod == mInstanceCount.size() - 1);
+
+		for (size_t i = 0; i < mMeshesCount[lod]; i++)
 		{
-			mMeshesInstanceBuffers.push_back(new InstanceBufferData());
-			static_cast<InstancingMaterial*>(mMaterials[materialName])->CreateInstanceBuffer(mGame->Direct3DDevice(), pInstanceData, &(mMeshesInstanceBuffers[i]->InstanceBuffer));
-			mMeshesInstanceBuffers[i]->Stride = sizeof(InstancingMaterial::InstancedData);
+			mMeshesInstanceBuffers[lod].push_back(new InstanceBufferData());
+			static_cast<InstancingMaterial*>(mMaterials[materialName])->CreateInstanceBuffer(mGame->Direct3DDevice(), pInstanceData, &(mMeshesInstanceBuffers[lod][i]->InstanceBuffer));
+			mMeshesInstanceBuffers[lod][i]->Stride = sizeof(InstancingMaterial::InstancedData);
 		}
 	}
 	// legacy instancing code [DEPRECATED]
-	void RenderingObject::UpdateInstanceData(std::vector<InstancingMaterial::InstancedData> pInstanceData, std::string materialName)
+	void RenderingObject::UpdateInstanceData(std::vector<InstancingMaterial::InstancedData> pInstanceData, std::string materialName, int lod)
 	{
-		for (size_t i = 0; i < mMeshesCount; i++)
+		assert(lod < mMeshesInstanceBuffers.size());
+		assert(lod < mInstanceCount.size());
+
+		for (size_t i = 0; i < mMeshesCount[lod]; i++)
 		{
-			static_cast<InstancingMaterial*>(mMaterials[materialName])->CreateInstanceBuffer(mGame->Direct3DDevice(), pInstanceData, &(mMeshesInstanceBuffers[i]->InstanceBuffer));
+			static_cast<InstancingMaterial*>(mMaterials[materialName])->CreateInstanceBuffer(mGame->Direct3DDevice(), pInstanceData, &(mMeshesInstanceBuffers[lod][i]->InstanceBuffer));
 			
 			// dynamically update instance buffer
 			D3D11_MAPPED_SUBRESOURCE mappedResource;
 			ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
 			
-			mGame->Direct3DDeviceContext()->Map(mMeshesInstanceBuffers[i]->InstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-			memcpy(mappedResource.pData, &pInstanceData[0], sizeof(pInstanceData[0]) * mInstanceCount);
-			mGame->Direct3DDeviceContext()->Unmap(mMeshesInstanceBuffers[i]->InstanceBuffer, 0);
+			mGame->Direct3DDeviceContext()->Map(mMeshesInstanceBuffers[lod][i]->InstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+			memcpy(mappedResource.pData, &pInstanceData[0], sizeof(pInstanceData[0]) * mInstanceCount[lod]);
+			mGame->Direct3DDeviceContext()->Unmap(mMeshesInstanceBuffers[lod][i]->InstanceBuffer, 0);
 
 		}
 	}
 
 	// new instancing code
-	void RenderingObject::LoadInstanceBuffers()
+	void RenderingObject::LoadInstanceBuffers(int lod)
 	{
 		assert(mModel != nullptr);
 		assert(mGame->Direct3DDevice() != nullptr);
-		//assert(mInstanceData.size() != 0);
 		assert(mIsInstanced == true);
 
-		//adding extra instance data until we reach MAX_INSTANCE_COUNT 
-		for (int i = mInstanceData.size(); i < MAX_INSTANCE_COUNT; i++)
-			AddInstanceData(XMMatrixIdentity());
+		mInstanceData.push_back({});
+		assert(lod < mInstanceData.size());
 
-		mInstanceCount = mInstanceData.size();
-		for (int i = 0; i < mInstanceCount; i++)
-			mInstancesNames.push_back(mName + " " + std::to_string(i));
+		mInstanceCount.push_back(mInstanceData[lod].size());
+		assert(lod == mInstanceCount.size() - 1);
+		
+		mInstanceCountToRender.push_back(mInstanceData.size());
+		assert(lod == mInstanceCountToRender.size() - 1);
+
+		mMeshesInstanceBuffers.push_back({});
+		assert(lod == mMeshesInstanceBuffers.size() - 1);
+
+		mInstancesNames.push_back({});
+		assert(lod == mInstancesNames.size() - 1);
+
+		//adding extra instance data until we reach MAX_INSTANCE_COUNT 
+		for (int i = mInstanceData[lod].size(); i < MAX_INSTANCE_COUNT; i++)
+			AddInstanceData(XMMatrixIdentity(), lod);
+
+		for (int i = 0; i < mInstanceCount[lod]; i++)
+			mInstancesNames[lod].push_back(mName + " LOD " + std::to_string(lod) + " #" + std::to_string(i));
 
 		//mMeshesInstanceBuffers.clear();
-		for (size_t i = 0; i < mMeshesCount; i++)
+		for (size_t i = 0; i < mMeshesCount[lod]; i++)
 		{
-			mMeshesInstanceBuffers.push_back(new InstanceBufferData());
-			CreateInstanceBuffer(mGame->Direct3DDevice(), &mInstanceData[0], mInstanceCount, &(mMeshesInstanceBuffers[i]->InstanceBuffer));
-			mMeshesInstanceBuffers[i]->Stride = sizeof(InstancedData);
+			mMeshesInstanceBuffers[lod].push_back(new InstanceBufferData());
+			CreateInstanceBuffer(mGame->Direct3DDevice(), &mInstanceData[lod][0], mInstanceCount[lod], &(mMeshesInstanceBuffers[lod][i]->InstanceBuffer));
+			mMeshesInstanceBuffers[lod][i]->Stride = sizeof(InstancedData);
 		}
 	}
 	// new instancing code
@@ -490,20 +543,22 @@ namespace Rendering
 		}
 	}
 	// new instancing code
-	void RenderingObject::UpdateInstanceBuffer(std::vector<InstancedData>& instanceData)
+	void RenderingObject::UpdateInstanceBuffer(std::vector<InstancedData>& instanceData, int lod)
 	{
-		for (size_t i = 0; i < mMeshesCount; i++)
+		assert(lod < mMeshesInstanceBuffers.size());
+
+		for (size_t i = 0; i < mMeshesCount[lod]; i++)
 		{
 			//CreateInstanceBuffer(instanceData);
-			mInstanceCountToRender = instanceData.size();
+			mInstanceCountToRender[lod] = instanceData.size();
 
 			// dynamically update instance buffer
 			D3D11_MAPPED_SUBRESOURCE mappedResource;
 			ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
 
-			mGame->Direct3DDeviceContext()->Map(mMeshesInstanceBuffers[i]->InstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-			memcpy(mappedResource.pData, &instanceData[0], sizeof(instanceData[0]) * mInstanceCountToRender);
-			mGame->Direct3DDeviceContext()->Unmap(mMeshesInstanceBuffers[i]->InstanceBuffer, 0);
+			mGame->Direct3DDeviceContext()->Map(mMeshesInstanceBuffers[lod][i]->InstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+			memcpy(mappedResource.pData, (instanceData.size() != 0) ? &instanceData[0] : NULL, InstanceSize() * mInstanceCountToRender[lod]);
+			mGame->Direct3DDeviceContext()->Unmap(mMeshesInstanceBuffers[lod][i]->InstanceBuffer, 0);
 
 		}
 	}
@@ -517,20 +572,24 @@ namespace Rendering
 
 	void RenderingObject::Update(const GameTime & time)
 	{
-		if (mIsSelected && mIsInstanced && mInstanceCount && Utility::IsEditorMode) 
-		{
-			ShowInstancesListUI();
-			MatrixHelper::GetFloatArray(mInstanceData[mSelectedInstancedObjectIndex].World, mCurrentObjectTransformMatrix);
+		for (int lod = 0; lod < GetLODCount(); lod++) {
+			if (mIsSelected && mIsInstanced && mInstanceCount[lod] && Utility::IsEditorMode)
+			{
+				ShowInstancesListUI(lod);
+				MatrixHelper::GetFloatArray(mInstanceData[lod][mSelectedInstancedObjectIndex].World, mCurrentObjectTransformMatrix);
+			}
 		}
 
 		if (mIsSelected)
 			UpdateGizmos();
 
-		if (mIsSelected && mIsInstanced)
-		{
-			mInstanceData[mSelectedInstancedObjectIndex].World = XMFLOAT4X4(mCurrentObjectTransformMatrix);
-			if (!Utility::IsCameraCulling) //otherwise camera will load proper instance data
-				UpdateInstanceBuffer(mInstanceData);
+		for (int lod = 0; lod < GetLODCount(); lod++) {
+			if (mIsSelected && mIsInstanced)
+			{
+				mInstanceData[lod][mSelectedInstancedObjectIndex].World = XMFLOAT4X4(mCurrentObjectTransformMatrix);
+				if (!Utility::IsCameraCulling) //otherwise camera will load proper instance data
+					UpdateInstanceBuffer(mInstanceData[lod], lod);
+			}
 		}
 
 		if (mAvailableInEditorMode && mEnableAABBDebug && Utility::IsEditorMode && mIsSelected)
@@ -540,6 +599,8 @@ namespace Rendering
 			mDebugAABB->SetRotationMatrix(XMMatrixRotationRollPitchYaw(XMConvertToRadians(mMatrixRotation[0]), XMConvertToRadians(mMatrixRotation[1]), XMConvertToRadians(mMatrixRotation[2])));
 			mDebugAABB->Update(time);
 		}
+
+		UpdateLODs();
 
 	}
 	
@@ -607,58 +668,117 @@ namespace Rendering
 		}
 	}
 	
-	void RenderingObject::ShowInstancesListUI()
+	void RenderingObject::ShowInstancesListUI(int lod)
 	{
-		assert(mInstanceCount != 0);
+		assert(mInstanceCount.size() != 0);
+		assert(mInstanceCount[lod] != 0);
 
-		std::string title = mName + " instances:";
+		std::string title = mName + "LOD " +std::to_string(lod) + " instances:";
 		ImGui::Begin(title.c_str());
 
-		for (int i = 0; i < mInstanceCount; i++)
-			listbox_items[i] = mInstancesNames[i].c_str();
+		for (int i = 0; i < mInstanceCount[lod]; i++)
+			listbox_items[i] = mInstancesNames[lod][i].c_str();
 
 		ImGui::PushItemWidth(-1);
-		ImGui::ListBox("##empty", &mSelectedInstancedObjectIndex, listbox_items, mInstanceCount, 15);
+		ImGui::ListBox("##empty", &mSelectedInstancedObjectIndex, listbox_items, mInstanceCount[lod], 15);
 		ImGui::End();
 	}
 	
-	// temp for testing
-	// TODO move to Utility
-	void RenderingObject::CalculateInstanceObjectsRandomDistribution(int count)
+	void RenderingObject::LoadLOD(std::unique_ptr<Model> pModel)
 	{
-		mInstanceCount = count;
-		mInstanceCountToRender = count;
-		const float size = 100.0f;
-		for (size_t i = 0; i < count; i++)
+		//assert();
+		mMeshesCount.push_back(pModel->Meshes().size());
+		mModelLODs.push_back(std::move(pModel));
+		mMeshVertices.push_back({});
+		mMeshAllVertices.push_back({}); 
+
+		int lodIndex = mMeshesCount.size() - 1;
+
+		for (size_t i = 0; i < mMeshesCount[lodIndex]; i++)
+			mMeshVertices[lodIndex].push_back(mModelLODs[lodIndex - 1]->Meshes().at(i)->Vertices());
+
+		for (size_t i = 0; i < mMeshVertices[lodIndex].size(); i++)
 		{
-			// random position
-			float x = (rand() / (float)(RAND_MAX)) * size - size / 2;
-			float y = 0.0f;
-			float z = (rand() / (float)(RAND_MAX)) * size - size / 2;
-
-			float scale = 0.5f + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (1.0f - 0.5f)));
-
-			mInstanceData.push_back(InstancedData(XMMatrixScaling(scale, scale, scale) *  XMMatrixTranslation(x, y, z)));
-			//mDynamicObjectInstancesPositions.push_back(XMFLOAT3(x, y, z));
-
+			for (size_t j = 0; j < mMeshVertices[lodIndex][i].size(); j++)
+			{
+				mMeshAllVertices[lodIndex].push_back(mMeshVertices[lodIndex][i][j]);
+			}
 		}
+
+		LoadRenderBuffers(lodIndex);
 	}
 
-	void RenderingObject::ResetInstanceData(int count, bool clear)
+	void RenderingObject::ResetInstanceData(int count, bool clear, int lod)
 	{
-		mInstanceCount = count;
-		mInstanceCountToRender = count;
+		assert(lod < GetLODCount());
 
-		mInstancesNames.clear();
-		for (int i = 0; i < mInstanceCount; i++)
-			mInstancesNames.push_back(mName + " " + std::to_string(i));
+		mInstancesNames[lod].clear();
+		mInstanceCount[lod] = count;
+		mInstanceCountToRender[lod] = count;
+
+		for (int i = 0; i < mInstanceCount[lod]; i++)
+			mInstancesNames[lod].push_back(mName + " LOD " + std::to_string(lod) + " #" + std::to_string(i));
 
 		if (clear)
-			mInstanceData.clear();
+			mInstanceData[lod].clear();
+		
 	}
-	void RenderingObject::AddInstanceData(XMMATRIX worldMatrix)
+	void RenderingObject::AddInstanceData(XMMATRIX worldMatrix, int lod)
 	{
-		mInstanceData.push_back(InstancedData(worldMatrix));
+		if (lod == -1) {
+			for (int lod = 0; lod < GetLODCount(); lod++)
+				mInstanceData[lod].push_back(InstancedData(worldMatrix));
+			return;
+		}
+
+		assert(lod < mInstanceData.size());
+		mInstanceData[lod].push_back(InstancedData(worldMatrix));
+	}
+
+	void RenderingObject::UpdateLODs()
+	{
+		if (mInstanceData.size() == 0)
+			return;
+
+		int lod = 0;
+		std::vector<InstancedData> emptyInstanceData;
+		for (int i = 0; i < mInstanceData[lod].size(); i++)
+		{
+			XMFLOAT3 pos;
+			XMMATRIX mat = XMLoadFloat4x4(&mInstanceData[lod][i].World);
+			MatrixHelper::GetTranslation(mat, pos);
+
+			float distanceToCameraSqr = 
+				(mCamera.Position().x - pos.x) * (mCamera.Position().x - pos.x) + 
+				(mCamera.Position().y - pos.y) * (mCamera.Position().y - pos.y) +
+				(mCamera.Position().z - pos.z) * (mCamera.Position().z - pos.z);
+
+			if (distanceToCameraSqr < LOD_0_DISTANCE * LOD_0_DISTANCE) {
+				UpdateInstanceBuffer(GetInstancesData(), 0);
+				UpdateInstanceBuffer(emptyInstanceData, 1);
+				UpdateInstanceBuffer(emptyInstanceData, 2);
+			}
+			else if (distanceToCameraSqr < LOD_1_DISTANCE * LOD_1_DISTANCE) {
+				UpdateInstanceBuffer(emptyInstanceData, 0);
+				UpdateInstanceBuffer(GetInstancesData(), 1);
+				UpdateInstanceBuffer(emptyInstanceData, 2);
+			}
+			else if (distanceToCameraSqr < LOD_2_DISTANCE * LOD_2_DISTANCE) {
+				UpdateInstanceBuffer(emptyInstanceData, 0);
+				UpdateInstanceBuffer(emptyInstanceData, 1);
+				UpdateInstanceBuffer(GetInstancesData(), 2);
+			}
+			else {
+				UpdateInstanceBuffer(emptyInstanceData, 0);
+				UpdateInstanceBuffer(emptyInstanceData, 1);
+				UpdateInstanceBuffer(emptyInstanceData, 2);
+			}
+		}
+		
+
+		// TODO
+		//mInstanceCountToRender;
+		//UpdateInstanceBufferss...
 	}
 }
 
