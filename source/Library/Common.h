@@ -45,6 +45,7 @@
 #define ReleasePointerCollection(objects) {for (auto &it: objects) it->Release(); objects.clear();}
 
 #define MAX_NUM_OF_CASCADES 3
+#define MAX_LOD 3
 
 #define INT_CEIL(n,d) (int)ceil((float)n/d)
 

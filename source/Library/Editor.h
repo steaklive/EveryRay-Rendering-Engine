@@ -2,6 +2,7 @@
 
 #include "GameComponent.h"
 #define MAX_OBJECTS_COUNT 1000
+#define MAX_LOD 3
 
 namespace Rendering
 {
@@ -28,7 +29,6 @@ namespace Library
 		XMFLOAT4 GetBottomSkyColor() { return XMFLOAT4(bottomColorSky[0],bottomColorSky[1],bottomColorSky[2],bottomColorSky[3]); }
 		XMFLOAT4 GetTopSkyColor() { return XMFLOAT4(topColorSky[0], topColorSky[1], topColorSky[2], topColorSky[3]); }
 		bool IsSkyboxUsingCustomColor() { return mUseCustomSkyboxColor; }
-
 	private:
 		Scene* mScene;
 

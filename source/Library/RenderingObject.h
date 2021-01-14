@@ -13,9 +13,6 @@
 #include "MatrixHelper.h"
 
 const UINT MAX_INSTANCE_COUNT = 10000;
-const float LOD_0_DISTANCE = 50.0f;
-const float LOD_1_DISTANCE = 150.0f;
-const float LOD_2_DISTANCE = 450.0f;
 
 namespace Rendering
 {
@@ -226,21 +223,21 @@ namespace Rendering
 		
 		Camera& mCamera;
 		std::vector<TextureData>								mMeshesTextureBuffers;
-		std::vector<std::vector<InstanceBufferData*>>			mMeshesInstanceBuffers; // LODed +
-		std::vector<std::vector<std::vector<XMFLOAT3>>>			mMeshVertices; // LODed +
-		std::vector<std::vector<XMFLOAT3>>						mMeshAllVertices; // LODed +
-		std::vector<std::map<std::string, std::vector<RenderBufferData*>>>	mMeshesRenderBuffers; // LODed +
+		std::vector<std::vector<InstanceBufferData*>>			mMeshesInstanceBuffers;
+		std::vector<std::vector<std::vector<XMFLOAT3>>>			mMeshVertices; 
+		std::vector<std::vector<XMFLOAT3>>						mMeshAllVertices; 
+		std::vector<std::map<std::string, std::vector<RenderBufferData*>>>	mMeshesRenderBuffers;
 		std::vector<float>										mMeshesReflectionFactors; 
 		std::map<std::string, Material*>						mMaterials;
 		std::vector<XMFLOAT3>									mAABB;
 		std::unique_ptr<Model>									mModel;
 		std::vector<std::unique_ptr<Model>>						mModelLODs;
-		//int														mNumLODs;
-		std::vector<int>										mMeshesCount; // LODed +
-		std::vector<UINT>										mInstanceCount;// LODed +
-		std::vector<UINT>										mInstanceCountToRender; // LODed +
-		std::vector<std::vector<InstancedData>>					mInstanceData; // LODed +
-		std::vector<std::vector<std::string>>					mInstancesNames; // LODed
+		std::vector<int>										mMeshesCount;
+		std::vector<UINT>										mInstanceCount;
+		std::vector<UINT>										mInstanceCountToRender;
+		std::vector<std::vector<InstancedData>>					mInstanceData;
+		std::vector<std::vector<std::string>>					mInstancesNames;
+		std::vector<std::vector<InstancedData>>					mTempInstanceDataPerLOD;
 	
 		std::string												mName;
 		RenderableAABB*											mDebugAABB;

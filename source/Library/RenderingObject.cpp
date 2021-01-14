@@ -740,12 +740,15 @@ namespace Rendering
 		if (mInstanceData.size() == 0)
 			return;
 
-		int lod = 0;
-		std::vector<InstancedData> emptyInstanceData;
-		for (int i = 0; i < mInstanceData[lod].size(); i++)
+		mTempInstanceDataPerLOD.clear();
+		for (int lod = 0; lod < GetLODCount(); lod++)
+			mTempInstanceDataPerLOD.push_back({});
+
+		//traverse through original instance data (sort of "read-only") to rebalance LOD's instance buffers
+		for (int i = 0; i < mInstanceData[0].size(); i++)
 		{
 			XMFLOAT3 pos;
-			XMMATRIX mat = XMLoadFloat4x4(&mInstanceData[lod][i].World);
+			XMMATRIX mat = XMLoadFloat4x4(&mInstanceData[0][i].World);
 			MatrixHelper::GetTranslation(mat, pos);
 
 			float distanceToCameraSqr = 
@@ -753,32 +756,20 @@ namespace Rendering
 				(mCamera.Position().y - pos.y) * (mCamera.Position().y - pos.y) +
 				(mCamera.Position().z - pos.z) * (mCamera.Position().z - pos.z);
 
-			if (distanceToCameraSqr < LOD_0_DISTANCE * LOD_0_DISTANCE) {
-				UpdateInstanceBuffer(GetInstancesData(), 0);
-				UpdateInstanceBuffer(emptyInstanceData, 1);
-				UpdateInstanceBuffer(emptyInstanceData, 2);
+			XMMATRIX newMat;
+			if (distanceToCameraSqr <= Utility::DistancesLOD[0] * Utility::DistancesLOD[0]) {
+				mTempInstanceDataPerLOD[0].push_back(mInstanceData[0][i].World);
 			}
-			else if (distanceToCameraSqr < LOD_1_DISTANCE * LOD_1_DISTANCE) {
-				UpdateInstanceBuffer(emptyInstanceData, 0);
-				UpdateInstanceBuffer(GetInstancesData(), 1);
-				UpdateInstanceBuffer(emptyInstanceData, 2);
+			else if (Utility::DistancesLOD[0] * Utility::DistancesLOD[0] < distanceToCameraSqr && distanceToCameraSqr <= Utility::DistancesLOD[1] * Utility::DistancesLOD[1]) {
+				mTempInstanceDataPerLOD[1].push_back(mInstanceData[0][i].World);
 			}
-			else if (distanceToCameraSqr < LOD_2_DISTANCE * LOD_2_DISTANCE) {
-				UpdateInstanceBuffer(emptyInstanceData, 0);
-				UpdateInstanceBuffer(emptyInstanceData, 1);
-				UpdateInstanceBuffer(GetInstancesData(), 2);
-			}
-			else {
-				UpdateInstanceBuffer(emptyInstanceData, 0);
-				UpdateInstanceBuffer(emptyInstanceData, 1);
-				UpdateInstanceBuffer(emptyInstanceData, 2);
+			else if (Utility::DistancesLOD[1] * Utility::DistancesLOD[1] < distanceToCameraSqr && distanceToCameraSqr <= Utility::DistancesLOD[2] * Utility::DistancesLOD[2]) {
+				mTempInstanceDataPerLOD[2].push_back(mInstanceData[0][i].World);
 			}
 		}
-		
 
-		// TODO
-		//mInstanceCountToRender;
-		//UpdateInstanceBufferss...
+		for (int i =0 ; i< GetLODCount(); i++)
+			UpdateInstanceBuffer(mTempInstanceDataPerLOD[i], i);
 	}
 }
 

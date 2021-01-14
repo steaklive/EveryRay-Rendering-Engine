@@ -23,6 +23,7 @@ namespace Library
 		static bool IsEditorMode;
 		static bool IsLightEditor;
 		static bool IsCameraCulling;
+		static float DistancesLOD[MAX_LOD];
 	private:
 		Utility();
 		Utility(const Utility& rhs);
