@@ -11,7 +11,7 @@ namespace Library
 	bool Utility::IsEditorMode = false;
 	bool Utility::IsLightEditor = false;
 	bool Utility::IsCameraCulling = false;
-	float Utility::DistancesLOD[MAX_LOD] = { 75.0f, 150.0f, 400.0f };
+	float Utility::DistancesLOD[MAX_LOD] = { 100.0f, 240.0f, 450.0f };
 
 	std::string Utility::CurrentDirectory()
 	{

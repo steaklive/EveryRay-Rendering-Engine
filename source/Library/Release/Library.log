@@ -1,19 +1,4 @@
-﻿  AmbientLightingMaterial.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\ambientlightingmaterial.cpp(9): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\ambientlightingmaterial.cpp(9): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\ambientlightingmaterial.cpp(54): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-  Editor.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(149): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(204): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\editor.cpp(18): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\editor.cpp(18): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\editor.cpp(78): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-  Effect.cpp
-  FirstPersonCamera.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\firstpersoncamera.cpp(14): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\firstpersoncamera.cpp(14): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  MaterialHelper.cpp
-  RasterizerStates.cpp
+﻿  Utility.cpp
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Black" (?Black@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Yellow" (?Yellow@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Blue" (?Blue@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored

@@ -331,8 +331,6 @@ namespace Library
 						cull = true;
 						object.second->Visible(true);
 						// Skip remaining planes to check and move on 
-
-
 						break;
 					}
 				}
@@ -344,8 +342,10 @@ namespace Library
 
 			}
 
-			if (isInstanced)
-				object.second->UpdateInstanceBuffer(newInstanceData);
+			if (isInstanced) {
+				//object.second->UpdateInstanceBuffer(newInstanceData);
+				object.second->LoadPostCullingInstanceData(newInstanceData);
+			}
 		
 		}
 

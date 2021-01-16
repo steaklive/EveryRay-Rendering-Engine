@@ -59,8 +59,53 @@
 					"technique" : "standard_lighting_pbr_instancing"
 				}
 			],
-			"model_path" : "content\\models\\vegetation\\trees\\elm\\elm.fbx",
-			"name" : "Elm Tree",
+			"model_path" : "content\\models\\vegetation\\trees\\pine\\pine_small_2.fbx",
+			"model_lods" : 
+			[
+				{
+					"path" : "content\\models\\vegetation\\trees\\pine\\pine_small_2.fbx"
+				},
+				{
+					"path" : "content\\models\\vegetation\\trees\\pine\\pine_small_2_lod_middle.fbx"
+				},
+				{
+					"path" : "content\\models\\vegetation\\trees\\pine\\pine_small_2_lod_low.fbx"
+				}
+			],
+			"name" : "Pine Small 2",
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\models\\vegetation\\trees\\pine\\Bark\\bark_Diffuse.png",
+					"metalness" : "content\\textures\\emptyMetallicMap.png",
+					"normal" : "content\\models\\vegetation\\trees\\pine\\Bark\\Bark_Normal.png",
+					"roughness" : "content\\models\\vegetation\\trees\\pine\\Bark\\Bark_Roughness.png"
+				},
+				{
+					"albedo" : "content\\models\\vegetation\\trees\\pine\\Branches_1\\branches_1_Diffuse_a.png",
+					"metalness" : "content\\textures\\emptyMetallicMap.png",
+					"normal" : "content\\models\\vegetation\\trees\\pine\\Branches_1\\branches_1_Normal.png",
+					"roughness" : "content\\models\\vegetation\\trees\\pine\\Branches_1\\branches_1_roughness.png"
+				},
+				{
+					"albedo" : "content\\models\\vegetation\\trees\\pine\\Branches_2\\branches_2_Diffuse_a.png",
+					"metalness" : "content\\textures\\emptyMetallicMap.png",
+					"normal" : "content\\models\\vegetation\\trees\\pine\\Branches_2\\branches_2_Normal.png",
+					"roughness" : "content\\models\\vegetation\\trees\\pine\\Branches_2\\branches_2_roughness.png"
+				},
+								{
+					"albedo" : "content\\models\\vegetation\\trees\\pine\\Bark\\bark_Diffuse.png",
+					"metalness" : "content\\textures\\emptyMetallicMap.png",
+					"normal" : "content\\models\\vegetation\\trees\\pine\\Bark\\Bark_Normal.png",
+					"roughness" : "content\\models\\vegetation\\trees\\pine\\Bark\\Bark_Roughness.png"
+				},
+				{
+					"albedo" : "content\\models\\vegetation\\trees\\pine\\Needles\\needles_Diffuse_a.png",
+					"metalness" : "content\\textures\\emptyMetallicMap.png",
+					"normal" : "content\\models\\vegetation\\trees\\pine\\Needles\\needles_Normal.png",
+					"roughness" : "content\\models\\vegetation\\trees\\pine\\Needles\\needles_roughness.png"
+				}
+			],
 			"placed_on_terrain" : true,
 			"transform" : 
 			[

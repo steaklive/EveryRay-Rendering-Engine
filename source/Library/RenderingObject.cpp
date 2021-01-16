@@ -16,13 +16,8 @@ namespace Rendering
 		GameComponent(pGame),
 		mCamera(pCamera),
 		mModel(std::move(pModel)),
-		//mMeshesInstanceBuffers(0, {}),
 		mMeshesReflectionFactors(0),
-		/*mMaterials(0, nullptr),*/
-		//mMeshesRenderBuffers(0, std::vector<RenderBufferData*>(0, nullptr)),
-		//mMeshVertices(0),
 		mName(pName),
-		//mInstanceCount(0),
 		mDebugAABB(nullptr),
 		mAvailableInEditorMode(availableInEditor),
 		mTransformationMatrix(XMMatrixIdentity()),
@@ -584,11 +579,15 @@ namespace Rendering
 			UpdateGizmos();
 
 		for (int lod = 0; lod < GetLODCount(); lod++) {
-			if (mIsSelected && mIsInstanced)
+			if (/*mIsSelected &&*/ mIsInstanced)
 			{
 				mInstanceData[lod][mSelectedInstancedObjectIndex].World = XMFLOAT4X4(mCurrentObjectTransformMatrix);
-				if (!Utility::IsCameraCulling) //otherwise camera will load proper instance data
+				if (!Utility::IsCameraCulling)
 					UpdateInstanceBuffer(mInstanceData[lod], lod);
+				else {
+					if (mPostCullingInstanceDataPerLOD[lod].size() > 0)
+						UpdateInstanceBuffer(mPostCullingInstanceDataPerLOD[lod], lod);
+				}
 			}
 		}
 
@@ -600,8 +599,8 @@ namespace Rendering
 			mDebugAABB->Update(time);
 		}
 
-		UpdateLODs();
-
+		if (GetLODCount() > 1)
+			UpdateLODs();
 	}
 	
 	void RenderingObject::UpdateGizmos()
@@ -737,39 +736,45 @@ namespace Rendering
 
 	void RenderingObject::UpdateLODs()
 	{
-		if (mInstanceData.size() == 0)
-			return;
+		if (mIsInstanced) {
+			if (!Utility::IsCameraCulling && mInstanceData.size() == 0)
+				return;
+			if (Utility::IsCameraCulling && mPostCullingInstanceDataPerLOD.size() == 0)
+				return;
 
-		mTempInstanceDataPerLOD.clear();
-		for (int lod = 0; lod < GetLODCount(); lod++)
-			mTempInstanceDataPerLOD.push_back({});
+			mTempInstanceDataPerLOD.clear();
+			for (int lod = 0; lod < GetLODCount(); lod++)
+				mTempInstanceDataPerLOD.push_back({});
 
-		//traverse through original instance data (sort of "read-only") to rebalance LOD's instance buffers
-		for (int i = 0; i < mInstanceData[0].size(); i++)
-		{
-			XMFLOAT3 pos;
-			XMMATRIX mat = XMLoadFloat4x4(&mInstanceData[0][i].World);
-			MatrixHelper::GetTranslation(mat, pos);
+			//traverse through original or culled instance data (sort of "read-only") to rebalance LOD's instance buffers
+			int length = (Utility::IsCameraCulling) ? mPostCullingInstanceDataPerLOD[0].size() : mInstanceData[0].size();
+			for (int i = 0; i < length; i++)
+			{
+				XMFLOAT3 pos;
+				XMMATRIX mat = (Utility::IsCameraCulling) ? XMLoadFloat4x4(&mPostCullingInstanceDataPerLOD[0][i].World) : XMLoadFloat4x4(&mInstanceData[0][i].World);
+				MatrixHelper::GetTranslation(mat, pos);
 
-			float distanceToCameraSqr = 
-				(mCamera.Position().x - pos.x) * (mCamera.Position().x - pos.x) + 
-				(mCamera.Position().y - pos.y) * (mCamera.Position().y - pos.y) +
-				(mCamera.Position().z - pos.z) * (mCamera.Position().z - pos.z);
+				float distanceToCameraSqr =
+					(mCamera.Position().x - pos.x) * (mCamera.Position().x - pos.x) +
+					(mCamera.Position().y - pos.y) * (mCamera.Position().y - pos.y) +
+					(mCamera.Position().z - pos.z) * (mCamera.Position().z - pos.z);
 
-			XMMATRIX newMat;
-			if (distanceToCameraSqr <= Utility::DistancesLOD[0] * Utility::DistancesLOD[0]) {
-				mTempInstanceDataPerLOD[0].push_back(mInstanceData[0][i].World);
+				XMMATRIX newMat;
+				if (distanceToCameraSqr <= Utility::DistancesLOD[0] * Utility::DistancesLOD[0]) {
+					mTempInstanceDataPerLOD[0].push_back((Utility::IsCameraCulling) ? mPostCullingInstanceDataPerLOD[0][i].World : mInstanceData[0][i].World);
+				}
+				else if (Utility::DistancesLOD[0] * Utility::DistancesLOD[0] < distanceToCameraSqr && distanceToCameraSqr <= Utility::DistancesLOD[1] * Utility::DistancesLOD[1]) {
+					mTempInstanceDataPerLOD[1].push_back((Utility::IsCameraCulling) ? mPostCullingInstanceDataPerLOD[0][i].World : mInstanceData[0][i].World);
+				}
+				else if (Utility::DistancesLOD[1] * Utility::DistancesLOD[1] < distanceToCameraSqr && distanceToCameraSqr <= Utility::DistancesLOD[2] * Utility::DistancesLOD[2]) {
+					mTempInstanceDataPerLOD[2].push_back((Utility::IsCameraCulling) ? mPostCullingInstanceDataPerLOD[0][i].World : mInstanceData[0][i].World);
+				}
 			}
-			else if (Utility::DistancesLOD[0] * Utility::DistancesLOD[0] < distanceToCameraSqr && distanceToCameraSqr <= Utility::DistancesLOD[1] * Utility::DistancesLOD[1]) {
-				mTempInstanceDataPerLOD[1].push_back(mInstanceData[0][i].World);
-			}
-			else if (Utility::DistancesLOD[1] * Utility::DistancesLOD[1] < distanceToCameraSqr && distanceToCameraSqr <= Utility::DistancesLOD[2] * Utility::DistancesLOD[2]) {
-				mTempInstanceDataPerLOD[2].push_back(mInstanceData[0][i].World);
-			}
+
+			for (int i = 0; i < GetLODCount(); i++)
+				UpdateInstanceBuffer(mTempInstanceDataPerLOD[i], i);
 		}
-
-		for (int i =0 ; i< GetLODCount(); i++)
-			UpdateInstanceBuffer(mTempInstanceDataPerLOD[i], i);
+		//TODO add LOD support for non-instanced objects
 	}
 }
 

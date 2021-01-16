@@ -203,6 +203,11 @@ namespace Rendering
 		int GetLODCount() {
 			return 1 + mModelLODs.size();
 		}
+		void LoadPostCullingInstanceData(std::vector<InstancedData>& instanceData) {
+			mPostCullingInstanceDataPerLOD.clear();
+			for (int i = 0; i < GetLODCount(); i++)
+				mPostCullingInstanceDataPerLOD.push_back(instanceData);
+		}
 
 		GeneralEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new GeneralEvent<Delegate_MeshMaterialVariablesUpdate>();
 	
@@ -238,6 +243,7 @@ namespace Rendering
 		std::vector<std::vector<InstancedData>>					mInstanceData;
 		std::vector<std::vector<std::string>>					mInstancesNames;
 		std::vector<std::vector<InstancedData>>					mTempInstanceDataPerLOD;
+		std::vector<std::vector<InstancedData>>					mPostCullingInstanceDataPerLOD;
 	
 		std::string												mName;
 		RenderableAABB*											mDebugAABB;

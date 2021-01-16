@@ -26,18 +26,18 @@
 				{
 					"transform" : 
 					[
-						1.4998879432678223,
+						1.899813175201416,
 						0.0,
 						0.0,
-						29.423507690429688,
+						-32.41839599609375,
 						0.0,
-						1.5,
-						0.0,
-						0.0,
+						1.8999999761581421,
 						0.0,
 						0.0,
-						1.5,
-						22.0,
+						0.0,
+						0.0,
+						1.8999999761581421,
+						-13.051471710205078,
 						0.0,
 						0.0,
 						0.0,
@@ -317,6 +317,168 @@
 				0.0,
 				0.0,
 				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"instanced" : false,
+			"materials" : 
+			[
+				{
+					"effect" : "content\\effects\\DepthMap.fx",
+					"name" : "DepthMapMaterial",
+					"technique" : "create_depthmap_w_render_target"
+				},
+				{
+					"effect" : "content\\effects\\DeferredPrepass.fx",
+					"name" : "DeferredMaterial",
+					"technique" : "deferred"
+				},
+				{
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"name" : "StandardLightingMaterial",
+					"technique" : "standard_lighting_pbr"
+				}
+			],
+			"model_path" : "content\\models\\rocks\\rock_1\\rock_1.fbx",
+			"name" : "Rock 1",
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\models\\rocks\\rock_1\\rock_low_Base_Color.png",
+					"metalness" : "content\\models\\rocks\\rock_1\\rock_low_Metallic.png",
+					"normal" : "content\\models\\rocks\\rock_1\\rock_low_Normal_DirectX.png",
+					"roughness" : "content\\models\\rocks\\rock_1\\rock_low_Roughness.png"
+				}
+			],
+			"transform" : 
+			[
+				3.2202990055084229,
+				9.4628790975548327e-05,
+				2.1417686939239502,
+				0.0,
+				-1.7058948278427124,
+				2.3386032581329346,
+				2.564835786819458,
+				0.45780479907989502,
+				-1.2950228452682495,
+				-3.080336332321167,
+				1.9472990036010742,
+				23.227426528930664,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"instanced" : true,
+			"instances_transforms" : 
+			[
+				{
+					"transform" : 
+					[
+						1.0,
+						0.0,
+						0.0,
+						25.0,
+						0.0,
+						1.0,
+						0.0,
+						0.0,
+						0.0,
+						0.0,
+						1.0,
+						0.0,
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					]
+				}
+			],
+			"materials" : 
+			[
+				{
+					"effect" : "content\\effects\\DepthMap.fx",
+					"name" : "DepthMapMaterial",
+					"technique" : "create_depthmap_w_render_target"
+				},
+				{
+					"effect" : "content\\effects\\DeferredPrepass.fx",
+					"name" : "DeferredMaterial",
+					"technique" : "deferred"
+				},
+				{
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"name" : "StandardLightingMaterial",
+					"technique" : "standard_lighting_pbr"
+				}
+			],
+			"model_lods" : 
+			[
+				{
+					"path" : "content\\models\\vegetation\\trees\\pine\\pine_small_2.fbx"
+				},
+				{
+					"path" : "content\\models\\vegetation\\trees\\pine\\pine_small_2_lod_middle.fbx"
+				},
+				{
+					"path" : "content\\models\\vegetation\\trees\\pine\\pine_small_2_lod_low.fbx"
+				}
+			],
+			"model_path" : "content\\models\\vegetation\\trees\\pine\\pine_small_2.fbx",
+			"name" : "Pine Small 2",
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\models\\vegetation\\trees\\pine\\Bark\\bark_Diffuse.png",
+					"metalness" : "content\\textures\\emptyMetallicMap.png",
+					"normal" : "content\\models\\vegetation\\trees\\pine\\Bark\\Bark_Normal.png",
+					"roughness" : "content\\models\\vegetation\\trees\\pine\\Bark\\Bark_Roughness.png"
+				},
+				{
+					"albedo" : "content\\models\\vegetation\\trees\\pine\\Branches_1\\branches_1_Diffuse_a.png",
+					"metalness" : "content\\textures\\emptyMetallicMap.png",
+					"normal" : "content\\models\\vegetation\\trees\\pine\\Branches_1\\branches_1_Normal.png",
+					"roughness" : "content\\models\\vegetation\\trees\\pine\\Branches_1\\branches_1_roughness.png"
+				},
+				{
+					"albedo" : "content\\models\\vegetation\\trees\\pine\\Branches_2\\branches_2_Diffuse_a.png",
+					"metalness" : "content\\textures\\emptyMetallicMap.png",
+					"normal" : "content\\models\\vegetation\\trees\\pine\\Branches_2\\branches_2_Normal.png",
+					"roughness" : "content\\models\\vegetation\\trees\\pine\\Branches_2\\branches_2_roughness.png"
+				},
+				{
+					"albedo" : "content\\models\\vegetation\\trees\\pine\\Bark\\bark_Diffuse.png",
+					"metalness" : "content\\textures\\emptyMetallicMap.png",
+					"normal" : "content\\models\\vegetation\\trees\\pine\\Bark\\Bark_Normal.png",
+					"roughness" : "content\\models\\vegetation\\trees\\pine\\Bark\\Bark_Roughness.png"
+				},
+				{
+					"albedo" : "content\\models\\vegetation\\trees\\pine\\Needles\\needles_Diffuse_a.png",
+					"metalness" : "content\\textures\\emptyMetallicMap.png",
+					"normal" : "content\\models\\vegetation\\trees\\pine\\Needles\\needles_Normal.png",
+					"roughness" : "content\\models\\vegetation\\trees\\pine\\Needles\\needles_roughness.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				25.0,
 				0.0,
 				1.0,
 				0.0,
