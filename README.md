@@ -4,11 +4,11 @@ Rendering engine/framework written in C++/DirectX 11.
 # Some of the features
 - Hybrid Rendering (Deferred Prepass with GBuffer + Forward Pass)
 - 3D model loading (.obj, .fbx and etc.) with Assimp Library
-- Loading/saving to JSON scene files (mainly transforms for now)
+- Loading/saving to JSON scene files
 - User Interface with ImGUI, ImGuizmo
 - AABB, OBB, collision detection
 - Normal-Mapping, Environment-Mapping
-- Post Processing: Motion Blur, Vignette, LUT color grading, FXAA, Tonemap, Bloom, Fog
+- Post Processing: Motion Blur, Vignette, LUT color grading, FXAA, Tonemap, Bloom, Fog, Light Shafts
 - Physically Based Rendering with IBL
 - Cascaded Shadow Mapping
 - GPU Instancing
@@ -47,9 +47,9 @@ Other features based on NVIDIA techniques (no code provided here)
 # Notes
 Only "Sponza Main Demo", "Test Scene", "Terrain Demo Scene" have almost all the features and are up-to-date with the changes to the codebase. Other levels suffer from legacy issues and might not have, for example, up to date code, such as RenderingObjects, working editor or post processing stack... I will be refactoring those when possible. 
 
-If you would like to run "Terrain Demo Scene", then you might increase TDR time of your GPU driver (explained here https://docs.substance3d.com/spdoc/gpu-drivers-crash-with-long-computations-128745489.html). In this particular level I currently place objects on the terrain during loading and exectue several compute shader dispatches for that. It takes around 2 minutes to load a level on my RTX2060 and Ryzen 5 3550H.
+The framework is NOT API-agnostic and, thus, has been tighly bound to DX11 since the beginning of its development. Hopefully, I will be changing that in the future and adding DX12 support for it. It will undeniably improve the perfomance in many scenarios. 
 
-The framework is NOT API-agnostic and, thus, has been tighly bound to DX11 since the beginning of its development. Hopefully, I will be changing that in the future and adding DX12 support for it. It will undeniably improve the perfomance in many scenarios (like loading a command-buffer list of several comptue shader dispatches for terrain loading etc.)
+You might increase TDR time of your GPU driver (explained here https://docs.substance3d.com/spdoc/gpu-drivers-crash-with-long-computations-128745489.html).
 
 # External Dependencies
 Create a folder "external" in the root directory and place these built libraries
