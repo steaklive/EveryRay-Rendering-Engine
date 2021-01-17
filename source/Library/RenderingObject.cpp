@@ -380,7 +380,7 @@ namespace Rendering
 		if (mMaterials.find(materialName) == mMaterials.end())
 			return;
 
-		if (mIsRendered)
+		if (mIsRendered && !mIsCulled)
 		{
 			if (!mMaterials.size() || mMeshesRenderBuffers[lod].size() == 0)
 				return;
@@ -612,6 +612,9 @@ namespace Rendering
 		MatrixHelper::GetFloatArray(mCamera.ProjectionMatrix4X4(), mCameraProjectionMatrix);
 
 		UpdateGizmoTransform(mCameraViewMatrix, mCameraProjectionMatrix, mCurrentObjectTransformMatrix);
+
+		XMFLOAT4X4 mat(mCurrentObjectTransformMatrix);
+		mTransformationMatrix = XMLoadFloat4x4(&mat);
 	}
 	
 	void RenderingObject::UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix)
@@ -630,7 +633,11 @@ namespace Rendering
 			Utility::IsLightEditor = false;
 
 			ImGui::Begin("Object Editor");
-			ImGui::TextColored(ImVec4(0.8f, 0.2f, 0.24f, 1), mName.c_str());
+			std::string name = mName;
+			if (mIsCulled)
+				name += " (Culled)";
+
+			ImGui::TextColored(ImVec4(0.8f, 0.2f, 0.24f, 1), name.c_str());
 			ImGui::Separator();
 			if (!mIsInstanced)
 				ImGui::Checkbox("Visible", &mIsRendered);

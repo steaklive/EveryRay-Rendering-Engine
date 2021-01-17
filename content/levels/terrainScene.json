@@ -45,7 +45,7 @@
 					]
 				}
 			],
-			"num_instances_per_vegetation_zone" : 40,
+			"num_instances_per_vegetation_zone" : 80,
 			"materials" : 
 			[
 				{
@@ -59,6 +59,8 @@
 					"technique" : "standard_lighting_pbr_instancing"
 				}
 			],
+			"min_scale" : 0.5,
+			"max_scale" : 1.0,
 			"model_path" : "content\\models\\vegetation\\trees\\pine\\pine_small_2.fbx",
 			"model_lods" : 
 			[
@@ -121,6 +123,80 @@
 				0.0,
 				1.1563922166824341,
 				-85.949607849121094,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"instanced" : true,
+			"instances_transforms" : 
+			[
+				{
+					"transform" : 
+					[
+						1.8006445169448853,
+						0.0,
+						0.60636359453201294,
+						76.146034240722656,
+						0.0,
+						1.8999999761581421,
+						0.0,
+						90.317802429199219,
+						-0.60636359453201294,
+						0.0,
+						1.8006445169448853,
+						-3.147437572479248,
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					]
+				}
+			],
+			"materials" : 
+			[
+				{
+					"effect" : "content\\effects\\DepthMap.fx",
+					"name" : "DepthMapMaterial",
+					"technique" : "create_depthmap_w_render_target_instanced"
+				},
+				{
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"name" : "StandardLightingMaterial",
+					"technique" : "standard_lighting_pbr_instancing"
+				}
+			],
+			"min_scale" : 0.2,
+			"max_scale" : 0.6,
+			"model_path" : "content\\models\\rocks\\rock_1\\rock_1.fbx",
+			"name" : "Rock 1",
+			"num_instances_per_vegetation_zone" : 120,
+			"placed_on_terrain" : true,
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\models\\rocks\\rock_1\\rock_low_Base_Color.png",
+					"metalness" : "content\\models\\rocks\\rock_1\\rock_low_Metallic.png",
+					"normal" : "content\\models\\rocks\\rock_1\\rock_low_Normal_DirectX.png",
+					"roughness" : "content\\models\\rocks\\rock_1\\rock_low_Roughness.png"
+				}
+			],
+			"transform" : 
+			[
+				0.90517723560333252,
+				0.0,
+				0.4250321090221405,
+				-38.242660522460938,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				-0.4250321090221405,
+				0.0,
+				0.90517723560333252,
+				41.258087158203125,
 				0.0,
 				0.0,
 				0.0,

@@ -3,6 +3,7 @@
 #include "..\Library\DrawableGameComponent.h"
 #include "..\Library\DemoLevel.h"
 #include "..\Library\Frustum.h"
+#include "..\Library\RenderingObject.h"
 
 using namespace Library;
 
@@ -61,7 +62,7 @@ namespace Rendering
 		void UpdateShadow1MaterialVariables(const std::string & objectName, int meshIndex);
 		void UpdateShadow2MaterialVariables(const std::string & objectName, int meshIndex);
 		void DistributeVegetationZonesPositionsAcrossTerrainGrid(RenderingObject* object, int count);
-		void DistributeAcrossVegetationZones(RenderingObject* object, int count, float radius, XMFLOAT3 center);
+		void DistributeAcrossVegetationZones(std::vector<InstancedData>& data, int count, float radius, XMFLOAT3 center, float minScale, float maxScale);
 		void PlaceFoliageOnTerrainTile(int tileIndex);
 		void PlaceInstanceObjectOnTerrain(RenderingObject* object, int tileIndex, int numInstancesPerZone, int splatChannel = -1);
 		void PlaceObjectsOnTerrain(int tileIndex, XMFLOAT4* objectsPositions, int objectsCount, XMFLOAT4* terrainVertices, int terrainVertexCount, int splatChannel = -1);

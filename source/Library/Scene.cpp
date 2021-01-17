@@ -78,6 +78,7 @@ namespace Library
 				std::string modelPath = root["rendering_objects"][i]["model_path"].asString();
 				bool isInstanced = root["rendering_objects"][i]["instanced"].asBool();
 
+
 				objects.insert(
 					std::pair<std::string, Rendering::RenderingObject*>(
 						name,
@@ -93,6 +94,11 @@ namespace Library
 					if (isInstanced && root["rendering_objects"][i].isMember("num_instances_per_vegetation_zone"))
 						it->second->SetNumInstancesPerVegetationZone(root["rendering_objects"][i]["num_instances_per_vegetation_zone"].asInt());
 				}
+
+				if (root["rendering_objects"][i].isMember("min_scale"))
+					it->second->SetMinScale(root["rendering_objects"][i]["min_scale"].asFloat());
+				if (root["rendering_objects"][i].isMember("max_scale"))
+					it->second->SetMaxScale(root["rendering_objects"][i]["max_scale"].asFloat());
 
 				// load materials
 				if (root["rendering_objects"][i].isMember("materials")) {

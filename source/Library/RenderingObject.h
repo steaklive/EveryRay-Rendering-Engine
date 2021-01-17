@@ -136,7 +136,8 @@ namespace Rendering
 		void UpdateGizmos();
 		void Update(const GameTime& time);
 		void Selected(bool val) { mIsSelected = val; }
-		void Visible(bool val) { mIsRendered = val; }
+		void SetVisible(bool val) { mIsRendered = val; }
+		void SetCulled(bool val) { mIsCulled = val; }
 
 		void SetMeshReflectionFactor(int meshIndex, float factor) { mMeshesReflectionFactors[meshIndex] = factor; }
 		float GetMeshReflectionFactor(int meshIndex) { return mMeshesReflectionFactors[meshIndex]; }
@@ -208,6 +209,11 @@ namespace Rendering
 			for (int i = 0; i < GetLODCount(); i++)
 				mPostCullingInstanceDataPerLOD.push_back(instanceData);
 		}
+		
+		void SetMinScale(float v) { mMinScale = v; }
+		void SetMaxScale(float v) { mMaxScale = v; }
+		float GetMinScale() { return mMinScale; }
+		float GetMaxScale() { return mMaxScale; }
 
 		GeneralEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new GeneralEvent<Delegate_MeshMaterialVariablesUpdate>();
 	
@@ -257,6 +263,9 @@ namespace Rendering
 		bool													mPlacedOnTerrain = false;
 		bool													mSavedOnTerrain = false;
 		int														mNumInstancesPerVegetationZone = 0;
+		bool													mIsCulled = false;
+		float													mMinScale = 1.0f;
+		float													mMaxScale = 1.0f;
 
 		float													mCameraViewMatrix[16];
 		float													mCameraProjectionMatrix[16];

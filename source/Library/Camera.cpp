@@ -273,7 +273,7 @@ namespace Library
 				if (object.second->IsInstanced())
 					object.second->UpdateInstanceBuffer((object.second->GetInstancesData()));
 				else
-					object.second->Visible(true);
+					object.second->SetCulled(false);
 			}
 			
 			return;
@@ -329,14 +329,14 @@ namespace Library
 					if (XMVectorGetX(XMVector3Dot(planeNormal, XMLoadFloat3(&axisVert))) + planeConstant > 0.0f)
 					{
 						cull = true;
-						object.second->Visible(true);
+						object.second->SetCulled(false);
 						// Skip remaining planes to check and move on 
 						break;
 					}
 				}
 				
 				if (!isInstanced)
-					object.second->Visible(!cull);
+					object.second->SetCulled(cull);
 				else if (!cull)
 					newInstanceData.push_back(instanceWorldMatrix);
 

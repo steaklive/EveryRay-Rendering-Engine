@@ -240,8 +240,15 @@ namespace Rendering
 		//mScene->objects.find(nameInScene)->second->SetNumInstancesPerVegetationZone(instancesCount);
 		mScene->objects.find(nameInScene)->second->ResetInstanceData(0, true);
 
+		std::vector<InstancedData> data;
 		for (int i = 0; i < (zonesCount); i++)
-			DistributeAcrossVegetationZones(mScene->objects.find(nameInScene)->second, instancesCount, TERRAIN_TILE_RESOLUTION / 2, mVegetationZonesCenters[i]);
+			DistributeAcrossVegetationZones(data, instancesCount, TERRAIN_TILE_RESOLUTION / 2, mVegetationZonesCenters[i],
+				mScene->objects.find(nameInScene)->second->GetMinScale(), mScene->objects.find(nameInScene)->second->GetMaxScale());
+		
+		for (int i = 0; i < data.size(); i++)
+			mScene->objects.find(nameInScene)->second->AddInstanceData(XMLoadFloat4x4(&data[i].World));
+
+		mScene->objects.find(nameInScene)->second->UpdateInstanceBuffer(data);
 	}
 
 	void TerrainDemo::UpdateLevel(const GameTime& gameTime)
@@ -507,18 +514,19 @@ namespace Rendering
 			}
 		}
 	}
-	void TerrainDemo::DistributeAcrossVegetationZones(RenderingObject* object, int count, float radius, XMFLOAT3 center)
+	void TerrainDemo::DistributeAcrossVegetationZones(std::vector<InstancedData>& data, int count, float radius, XMFLOAT3 center, float minScale, float maxScale)
 	{
-		object->ResetInstanceData(object->GetInstanceCount() + count/*, true*/);
-
 		for (int i = 0; i < count; i++)
 		{
 			float x = center.x + ((float)rand() / (float)(RAND_MAX)) * radius - radius / 2;
 			float y = 0.0f;
 			float z = center.z + ((float)rand() / (float)(RAND_MAX)) * radius - radius / 2;
-			object->AddInstanceData(XMMatrixTranslation(x, y, z));
+
+			float scale = Utility::RandomFloat(minScale, maxScale);
+			float angle = Utility::RandomFloat(0.0f, 360.0f);
+
+			data.push_back(XMMatrixRotationY(XMConvertToRadians(angle)) * XMMatrixScaling(scale, scale, scale) * XMMatrixTranslation(x, y, z));
 		}
-		object->UpdateInstanceBuffer(object->GetInstancesData());
 	}
 
 	void TerrainDemo::PlaceFoliageOnTerrainTile(int tileIndex)
