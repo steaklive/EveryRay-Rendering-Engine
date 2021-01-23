@@ -1,4 +1,88 @@
-﻿  ShadowMapper.cpp
+﻿  Camera.cpp
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(150): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(205): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\camera.cpp(15): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\camera.cpp(15): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
+  Editor.cpp
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(150): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(205): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\editor.cpp(18): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\editor.cpp(18): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\editor.cpp(78): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  GBuffer.cpp
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(150): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(205): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+  RenderingObject.cpp
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(150): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(205): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(37): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(128): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(131): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(134): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(142): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(145): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(148): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(156): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(159): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(162): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(170): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(173): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(176): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(184): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(187): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(190): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(357): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(363): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(454): warning C4267: 'argument': conversion from 'size_t' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=UINT
+          ]
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(495): warning C4267: 'argument': conversion from 'size_t' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=UINT
+          ]
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(498): warning C4267: 'argument': conversion from 'size_t' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=UINT
+          ]
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(508): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(511): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(548): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=UINT
+          ]
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(685): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(696): warning C4267: 'argument': conversion from 'size_t' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(701): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(725): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(757): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(769): warning C4101: 'newMat': unreferenced local variable
+  Scene.cpp
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(150): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(205): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\scene.cpp(24): warning C4996: 'Json::Reader': Use CharReader and CharReaderBuilder instead.
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\external\jsoncpp\include\json\reader.h(37): note: see declaration of 'Json::Reader'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\scene.cpp(141): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\scene.cpp(191): warning C4018: '<': signed/unsigned mismatch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\scene.cpp(24): warning C4996: 'Json::Reader::Reader': Use CharReader and CharReaderBuilder instead
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\external\jsoncpp\include\json\reader.h(55): note: see declaration of 'Json::Reader::Reader'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\scene.cpp(27): warning C4996: 'Json::Reader::parse': Use CharReader and CharReaderBuilder instead.
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\external\jsoncpp\include\json\reader.h(101): note: see declaration of 'Json::Reader::parse'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\scene.cpp(28): warning C4996: 'Json::Reader::getFormattedErrorMessages': Use CharReader and CharReaderBuilder instead.
+  c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\external\jsoncpp\include\json\reader.h(121): note: see declaration of 'Json::Reader::getFormattedErrorMessages'
+  ShadowMapper.cpp
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(150): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(205): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\shadowmapper.cpp(56): warning C4244: '=': conversion from 'float' to 'INT', possible loss of data
