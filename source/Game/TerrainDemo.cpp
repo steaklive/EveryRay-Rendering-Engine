@@ -333,31 +333,7 @@ namespace Rendering
 #pragma endregion
 
 		#pragma region DRAW_SHADOWS
-
-		//shadows
-		for (int i = 0; i < MAX_NUM_OF_CASCADES; i++)
-		{
-			mShadowMapper->BeginRenderingToShadowMap(i);
-			const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(i);
-
-			XMMATRIX lvp = mShadowMapper->GetViewMatrix(i) * mShadowMapper->GetProjectionMatrix(i);
-			int objectIndex = 0;
-			for (auto it = mScene->objects.begin(); it != mScene->objects.end(); it++, objectIndex++)
-			{
-				if (static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name]))
-				{
-					XMMATRIX worldMatrix = XMLoadFloat4x4(&(it->second->GetTransformationMatrix4X4()));
-					if (it->second->IsInstanced())
-						static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->LightViewProjection() << lvp;
-					else
-						static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->WorldLightViewProjection() << worldMatrix * lvp;
-					it->second->Draw(name, true);
-				}
-			}
-
-			mShadowMapper->StopRenderingToShadowMap(i);
-		}
-
+		mShadowMapper->Draw(mScene);
 		mRenderStateHelper->RestoreRasterizerState();
 #pragma endregion
 

@@ -9,6 +9,7 @@ namespace Library
 	class Projector;
 	class Camera;
 	class DirectionalLight;
+	class Scene;
 
 	class ShadowMapper : public GameComponent 
 	{
@@ -17,6 +18,7 @@ namespace Library
 		ShadowMapper(Game& pGame, Camera& camera, DirectionalLight& dirLight, UINT pWidth, UINT pHeight, bool isCascaded = true);
 		~ShadowMapper();
 
+		void Draw(const Scene* scene);
 		void Update(const GameTime& gameTime);
 		void BeginRenderingToShadowMap(int cascadeIndex = 0);
 		void StopRenderingToShadowMap(int cascadeIndex = 0);

@@ -9,6 +9,10 @@
 #include "Game.h"
 #include "DepthMap.h"
 #include "GameException.h"
+#include "Scene.h"
+#include "MaterialHelper.h"
+#include "DepthMapMaterial.h"
+#include "RenderingObject.h"
 
 #include <sstream>
 #include <iomanip>
@@ -226,5 +230,27 @@ namespace Library
 		return projectionMatrix;
 	}
 
+	void ShadowMapper::Draw(const Scene* scene)
+	{
+		for (int i = 0; i < MAX_NUM_OF_CASCADES; i++)
+		{
+			BeginRenderingToShadowMap(i);
+			const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(i);
+
+			XMMATRIX lvp = GetViewMatrix(i) * GetProjectionMatrix(i);
+			int objectIndex = 0;
+			for (auto it = scene->objects.begin(); it != scene->objects.end(); it++, objectIndex++)
+			{
+				XMMATRIX worldMatrix = XMLoadFloat4x4(&(it->second->GetTransformationMatrix4X4()));
+				if (it->second->IsInstanced())
+					static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->LightViewProjection() << lvp;
+				else
+					static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->WorldLightViewProjection() << worldMatrix * lvp;
+				it->second->Draw(name, true);
+			}
+
+			StopRenderingToShadowMap(i);
+		}
+	}
 
 }

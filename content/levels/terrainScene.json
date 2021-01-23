@@ -170,7 +170,19 @@
 			],
 			"min_scale" : 0.2,
 			"max_scale" : 0.6,
-			"model_path" : "content\\models\\rocks\\rock_1\\rock_1.fbx",
+			"model_path" : "content\\models\\rocks\\rock_1\\rock_1_lod_high.fbx",
+			"model_lods" : 
+			[
+				{
+					"path" : "content\\models\\rocks\\rock_1\\rock_1_lod_high.fbx"
+				},
+				{
+					"path" : "content\\models\\rocks\\rock_1\\rock_1_lod_mid.fbx"
+				},
+				{
+					"path" : "content\\models\\rocks\\rock_1\\rock_1_lod_low.fbx"
+				}
+			],
 			"name" : "Rock 1",
 			"num_instances_per_vegetation_zone" : 120,
 			"placed_on_terrain" : true,
