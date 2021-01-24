@@ -24,18 +24,16 @@ Other features based on NVIDIA techniques (no code provided here)
 
 # Screenshots
 
+![picture](screenshots/EveryRayTerrain.png)
 ![picture](screenshots/EveryRayEditor.png)
 ![picture](screenshots/EveryRayPBR.png)
-![picture](screenshots/EveryRayCSM.png)
 ![picture](screenshots/EveryRayInstancing.png)
-![picture](screenshots/EveryRayFrustumCulling.png)
 ![picture](screenshots/EveryRaySSSS.png)
 ![picture](screenshots/EveryRayPostProcessing.png)
 ![picture](screenshots/EveryRayWater.png)
 ![picture](screenshots/EveryRayCollisionDetection.png)
 ![picture](screenshots/EveryRaySSR.png)
 ![picture](screenshots/EveryRayTestScene.png)
-![picture](screenshots/EveryRayTerrain2.png)
 
 # Controls
 - Mouse + Right Click - camera rotation
