@@ -259,7 +259,7 @@ namespace Rendering
 			ImGui::SameLine();
 			if (ImGui::Button("Reset Direction"))
 				mCamera->SetDirection(XMFLOAT3(0, 0, 1));
-			ImGui::SliderFloat("Camera Speed", &movementRate, 10.0f, 2000.0f);
+			ImGui::SliderFloat("Camera Speed", &movementRate, 0.0f, 2000.0f);
 			mCamera->SetMovementRate(movementRate);
 			ImGui::SliderFloat("Camera FOV", &fov, 1.0f, 90.0f);
 			mCamera->SetFOV(fov*XM_PI / 180.0f);

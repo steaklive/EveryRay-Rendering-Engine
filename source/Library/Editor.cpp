@@ -58,7 +58,7 @@ namespace Library
 			{
 				ImGui::SliderFloat("LOD #0 distance", &Utility::DistancesLOD[0], 0.0f, 100.0f);
 				ImGui::SliderFloat("LOD #1 distance", &Utility::DistancesLOD[1], Utility::DistancesLOD[0], 250.0f);
-				ImGui::SliderFloat("LOD #2 distance", &Utility::DistancesLOD[2], Utility::DistancesLOD[1], 500.0f);
+				ImGui::SliderFloat("LOD #2 distance", &Utility::DistancesLOD[2], Utility::DistancesLOD[1], 1000.0f);
 				//add more if needed
 			}
 			if (ImGui::Button("Save transforms")) {

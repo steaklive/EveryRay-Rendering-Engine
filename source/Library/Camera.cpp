@@ -284,15 +284,16 @@ namespace Library
 			bool isInstanced = object.second->IsInstanced();
 			std::vector<Rendering::InstancedData> newInstanceData;
 			int instanceCount = object.second->GetInstanceCount();
+			std::vector<XMFLOAT3> aabb = object.second->GetAABB();
+			XMFLOAT3 position; 
+			XMMATRIX instanceWorldMatrix = XMMatrixIdentity();
 
 			for (int i = 0; i < ((isInstanced) ? (instanceCount) : 1); i++)
 			{
 				bool cull = false;
-				std::vector<XMFLOAT3> aabb = object.second->GetAABB();
-				XMFLOAT3 position; 
 				MatrixHelper::GetTranslation(object.second->GetTransformationMatrix(), position);
-				XMMATRIX instanceWorldMatrix = XMMatrixIdentity();
-				
+				instanceWorldMatrix = XMMatrixIdentity();
+
 				if (isInstanced)
 				{
 					instanceWorldMatrix = XMLoadFloat4x4(&(object.second->GetInstancesData()[i].World));
@@ -346,9 +347,7 @@ namespace Library
 				//object.second->UpdateInstanceBuffer(newInstanceData);
 				object.second->LoadPostCullingInstanceData(newInstanceData);
 			}
-		
 		}
-
 	}
 
 	float Camera::GetCameraFarCascadeDistance(int index)

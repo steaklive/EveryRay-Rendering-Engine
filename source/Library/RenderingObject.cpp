@@ -567,12 +567,11 @@ namespace Rendering
 
 	void RenderingObject::Update(const GameTime & time)
 	{
-		for (int lod = 0; lod < GetLODCount(); lod++) {
-			if (mIsSelected && mIsInstanced && mInstanceCount[lod] && Utility::IsEditorMode)
-			{
-				ShowInstancesListUI(lod);
-				MatrixHelper::GetFloatArray(mInstanceData[lod][mSelectedInstancedObjectIndex].World, mCurrentObjectTransformMatrix);
-			}
+
+		if (mIsSelected && mIsInstanced /*&& mInstanceCount[0]*/ && Utility::IsEditorMode)
+		{
+			ShowInstancesListUI();
+			MatrixHelper::GetFloatArray(mInstanceData[0][mSelectedInstancedObjectIndex].World, mCurrentObjectTransformMatrix);
 		}
 
 		if (mIsSelected)
@@ -639,8 +638,8 @@ namespace Rendering
 
 			ImGui::TextColored(ImVec4(0.8f, 0.2f, 0.24f, 1), name.c_str());
 			ImGui::Separator();
-			if (!mIsInstanced)
-				ImGui::Checkbox("Visible", &mIsRendered);
+			//if (!mIsInstanced)
+				ImGui::Checkbox("Rendered", &mIsRendered);
 			ImGui::Checkbox("Show AABB", &mEnableAABBDebug);
 			ImGui::Checkbox("Wireframe", &mWireframeMode);
 
@@ -674,19 +673,20 @@ namespace Rendering
 		}
 	}
 	
-	void RenderingObject::ShowInstancesListUI(int lod)
+	void RenderingObject::ShowInstancesListUI()
 	{
 		assert(mInstanceCount.size() != 0);
-		assert(mInstanceCount[lod] != 0);
+		assert(mInstanceData[0] != 0);
 
-		std::string title = mName + "LOD " +std::to_string(lod) + " instances:";
+		std::string title = mName + " instances:";
 		ImGui::Begin(title.c_str());
 
-		for (int i = 0; i < mInstanceCount[lod]; i++)
-			listbox_items[i] = mInstancesNames[lod][i].c_str();
+		//for (int i = 0; i < mInstanceData[0].size(); i++) {
+		//	listbox_items[i] = dynamic_cast<char*>(i);
+		//}
 
 		ImGui::PushItemWidth(-1);
-		ImGui::ListBox("##empty", &mSelectedInstancedObjectIndex, listbox_items, mInstanceCount[lod], 15);
+		ImGui::ListBox("##empty", &mSelectedInstancedObjectIndex, listbox_items, mInstanceData[0].size(), 15);
 		ImGui::End();
 	}
 	

@@ -680,7 +680,7 @@ namespace Rendering
 		buf_descTerrain.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
 		buf_descTerrain.StructureByteStride = sizeof(XMFLOAT4);
 		if (FAILED(mGame->Direct3DDevice()->CreateBuffer(&buf_descTerrain, terrainVertices != NULL ? &data : NULL, &terrainBuffer)))
-			throw GameException("Failed to create terrain vertices buffer in PlaceObjectsOnTerrain call.");
+			throw GameException("Failed to create terrain vertices buffer in PlaceObjectsOnTerrain call. Maybe increase TDR of your graphics driver...");
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc;
 		srv_desc.Format = DXGI_FORMAT_UNKNOWN;

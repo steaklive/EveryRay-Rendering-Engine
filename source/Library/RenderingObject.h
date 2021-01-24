@@ -153,7 +153,7 @@ namespace Rendering
 		XMFLOAT4X4 GetTransformationMatrix4X4() const { return XMFLOAT4X4(mCurrentObjectTransformMatrix); }
 		XMMATRIX GetTransformationMatrix() const { return mTransformationMatrix; }
 
-		std::vector<XMFLOAT3> GetAABB() { return mAABB; }
+		std::vector<XMFLOAT3>& GetAABB() { return mAABB; }
 
 		bool IsAvailableInEditor() { return mAvailableInEditorMode; }
 		bool IsSelected() { return mIsSelected; }
@@ -229,7 +229,8 @@ namespace Rendering
 		void LoadAssignedMeshTextures();
 		void LoadTexture(TextureType type, std::wstring path, int meshIndex);
 		void CreateInstanceBuffer(ID3D11Device* device, InstancedData* instanceData, UINT instanceCount, ID3D11Buffer** instanceBuffer);
-		void ShowInstancesListUI(int lod);
+		
+		void ShowInstancesListUI();
 		void UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix);
 		
 		Camera& mCamera;

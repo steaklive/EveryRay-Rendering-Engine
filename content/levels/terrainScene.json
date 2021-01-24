@@ -155,7 +155,7 @@
 					]
 				}
 			],
-			"num_instances_per_vegetation_zone" : 10,
+			"num_instances_per_vegetation_zone" : 15,
 			"materials" : 
 			[
 				{
@@ -172,7 +172,7 @@
 			"model_lods" : 
 			[
 				{
-					"path" : "content\\models\\vegetation\\trees\\pine\\pine_mid_2_lod_high.fbx"
+					"path" : "content\\models\\vegetation\\trees\\pine\\pine_mid_2_lod_mid.fbx"
 				},
 				{
 					"path" : "content\\models\\vegetation\\trees\\pine\\pine_mid_2_lod_mid.fbx"
@@ -183,7 +183,7 @@
 			],
 			"min_scale" : 0.5,
 			"max_scale" : 0.8,
-			"model_path" : "content\\models\\vegetation\\trees\\pine\\pine_mid_2_lod_high.fbx",
+			"model_path" : "content\\models\\vegetation\\trees\\pine\\pine_mid_2_lod_mid.fbx",
 			"name" : "Pine Mid 2",
 			"textures" : 
 			[
