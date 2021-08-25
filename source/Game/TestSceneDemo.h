@@ -28,6 +28,7 @@ namespace Library
 	class Foliage;
 	class Scene;
 	class VolumetricClouds;
+	class Illumination;
 }
 
 namespace DirectX
@@ -81,6 +82,7 @@ namespace Rendering
 		PostProcessingStack* mPostProcessingStack;
 		std::vector<Foliage*> mFoliageCollection;
 		VolumetricClouds* mVolumetricClouds;
+		Illumination* mGI;
 
 		ID3D11ShaderResourceView* mIrradianceDiffuseTextureSRV;
 		ID3D11ShaderResourceView* mIrradianceSpecularTextureSRV;

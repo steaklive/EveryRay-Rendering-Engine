@@ -67,6 +67,9 @@
     <Filter Include="Shaders\Tonemap">
       <UniqueIdentifier>{e9c80043-00e9-441c-9f00-d0bbbd826f22}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\VolumetricClouds">
+      <UniqueIdentifier>{cd99af59-6c4f-42d7-b590-1eb659325193}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -384,6 +387,12 @@
     <ClInclude Include="LightShaftsMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Illumination.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VoxelizationGIMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -659,20 +668,26 @@
     <ClCompile Include="Scene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ParallaxMappingTestMaterial.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Editor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VolumetricClouds.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FogMaterial.cpp">
+    <ClCompile Include="Illumination.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="VoxelizationGIMaterial.cpp">
+      <Filter>Source Files\Materials</Filter>
+    </ClCompile>
     <ClCompile Include="LightShaftsMaterial.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="ParallaxMappingTestMaterial.cpp">
+      <Filter>Source Files\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="FogMaterial.cpp">
+      <Filter>Source Files\Materials</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -826,15 +841,36 @@
     <FxCompile Include="..\..\content\effects\Foliage.fx">
       <Filter>Effects</Filter>
     </FxCompile>
-    <FxCompile Include="..\..\content\shaders\Terrain\PlaceObjectsOnTerrain.hlsl" />
-    <FxCompile Include="..\..\content\effects\ParallaxMapping.fx" />
-    <FxCompile Include="..\..\content\shaders\VolumetricClouds\VolumetricClouds.hlsl" />
-    <FxCompile Include="..\..\content\shaders\VolumetricClouds\VolumetricCloudsComposite.hlsl" />
-    <FxCompile Include="..\..\content\shaders\VolumetricClouds\VolumetricCloudsBlur.hlsl" />
-    <FxCompile Include="..\..\content\shaders\VolumetricClouds\VolumetricCloudsCS.hlsl" />
-    <FxCompile Include="..\..\content\effects\Fog.fx" />
-    <FxCompile Include="..\..\content\shaders\Sun.hlsl" />
-    <FxCompile Include="..\..\content\effects\LightShafts.fx" />
+    <FxCompile Include="..\..\content\effects\Fog.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\effects\LightShafts.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\Sun.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\Terrain\PlaceObjectsOnTerrain.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\effects\ParallaxMapping.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\VolumetricClouds\VolumetricClouds.hlsl">
+      <Filter>Shaders\VolumetricClouds</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\VolumetricClouds\VolumetricCloudsBlur.hlsl">
+      <Filter>Shaders\VolumetricClouds</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\VolumetricClouds\VolumetricCloudsComposite.hlsl">
+      <Filter>Shaders\VolumetricClouds</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\VolumetricClouds\VolumetricCloudsCS.hlsl">
+      <Filter>Shaders\VolumetricClouds</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\effects\VoxelizationGI.fx">
+      <Filter>Effects</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\content\effects\ShaderHelper.hlsli">

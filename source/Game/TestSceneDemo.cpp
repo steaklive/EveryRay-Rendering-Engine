@@ -36,6 +36,7 @@
 #include "..\Library\Foliage.h"
 #include "..\Library\Scene.h"
 #include "..\Library\VolumetricClouds.h"
+#include "..\Library\Illumination.h"
 #include "..\Library\ShaderCompiler.h"
 
 namespace Rendering
@@ -57,7 +58,8 @@ namespace Rendering
 		mShadowMapper(nullptr),
 		mFoliageCollection(0, nullptr),
 		mScene(nullptr),
-		mVolumetricClouds(nullptr)
+		mVolumetricClouds(nullptr),
+		mGI(nullptr)
 		//mTerrain(nullptr)
 	{
 	}
@@ -78,6 +80,7 @@ namespace Rendering
 		ReleaseObject(mIrradianceSpecularTextureSRV);
 		ReleaseObject(mIntegrationMapTextureSRV);
 		DeleteObject(mVolumetricClouds);
+		DeleteObject(mGI);
 		DeleteObject(mScene);
 	}
 
@@ -183,7 +186,8 @@ namespace Rendering
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\ibl_brdf_lut.png").c_str(), nullptr, &mIntegrationMapTextureSRV)))
 			throw GameException("Failed to create Integration Texture.");
 		
-		mVolumetricClouds = new VolumetricClouds(*mGame, *mCamera, *mDirectionalLight, *mPostProcessingStack, *mSkybox);
+		//mVolumetricClouds = new VolumetricClouds(*mGame, *mCamera, *mDirectionalLight, *mPostProcessingStack, *mSkybox);
+		mGI = new Illumination(*mGame, *mCamera, *mDirectionalLight, mScene);
 	}
 
 	void TestSceneDemo::UpdateLevel(const GameTime& gameTime)
@@ -200,7 +204,7 @@ namespace Rendering
 		mSkybox->Update(gameTime);
 		mGrid->Update(gameTime);
 		mPostProcessingStack->Update();
-		mVolumetricClouds->Update(gameTime);
+		//mVolumetricClouds->Update(gameTime);
 
 		for (auto object : mFoliageCollection) 
 		{
@@ -259,6 +263,10 @@ namespace Rendering
 		
 #pragma endregion
 
+		#pragma region DRAW_GI
+		mGI->Draw(gameTime, mScene);
+#pragma endregion
+
 		mPostProcessingStack->Begin(true);
 
 		#pragma region DRAW_LIGHTING
@@ -288,7 +296,7 @@ namespace Rendering
 #pragma endregion
 
 		#pragma region DRAW_VOLUMETRIC_CLOUDS
-		mVolumetricClouds->Draw(gameTime);
+		//mVolumetricClouds->Draw(gameTime);
 #pragma endregion
 
 		#pragma region DRAW_POSTPROCESSING

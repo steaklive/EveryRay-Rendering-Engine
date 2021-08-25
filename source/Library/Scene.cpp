@@ -15,6 +15,7 @@
 #include "StandardLightingMaterial.h"
 #include "DeferredMaterial.h"
 #include "ParallaxMappingTestMaterial.h"
+#include "VoxelizationGIMaterial.h"
 
 namespace Library 
 {
@@ -333,6 +334,10 @@ namespace Library
 		else if (matName == "ParallaxMappingTestMaterial") {
 			materialName = MaterialHelper::parallaxMaterialName;
 			material = new Rendering::ParallaxMappingTestMaterial();
+		}
+		else if (matName == "VoxelizationGIMaterial") {
+			materialName = MaterialHelper::voxelizationGIMaterialName;
+			material = new Rendering::VoxelizationGIMaterial();
 		}
 		else
 			material = nullptr;

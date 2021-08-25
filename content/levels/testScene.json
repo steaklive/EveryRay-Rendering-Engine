@@ -82,6 +82,11 @@
 					"effect" : "content\\effects\\StandardLighting.fx",
 					"name" : "StandardLightingMaterial",
 					"technique" : "standard_lighting_pbr_instancing"
+				},
+				{
+					"effect" : "content\\effects\\VoxelizationGI.fx",
+					"name" : "VoxelizationGIMaterial",
+					"technique" : "voxelizationGI"
 				}
 			],
 			"model_lods" : 
@@ -136,6 +141,11 @@
 					"effect" : "content\\effects\\StandardLighting.fx",
 					"name" : "StandardLightingMaterial",
 					"technique" : "standard_lighting_pbr"
+				},
+				{
+					"effect" : "content\\effects\\VoxelizationGI.fx",
+					"name" : "VoxelizationGIMaterial",
+					"technique" : "voxelizationGI"
 				}
 			],
 			"model_path" : "content\\models\\default_plane\\default_plane.fbx",
@@ -178,6 +188,11 @@
 					"effect" : "content\\effects\\StandardLighting.fx",
 					"name" : "StandardLightingMaterial",
 					"technique" : "standard_lighting_pbr"
+				},
+				{
+					"effect" : "content\\effects\\VoxelizationGI.fx",
+					"name" : "VoxelizationGIMaterial",
+					"technique" : "voxelizationGI"
 				}
 			],
 			"model_path" : "content\\models\\shaderball.fbx",
@@ -235,6 +250,11 @@
 					"effect" : "content\\effects\\StandardLighting.fx",
 					"name" : "StandardLightingMaterial",
 					"technique" : "standard_lighting_pbr"
+				},
+				{
+					"effect" : "content\\effects\\VoxelizationGI.fx",
+					"name" : "VoxelizationGIMaterial",
+					"technique" : "voxelizationGI"
 				}
 			],
 			"model_path" : "content\\models\\shaderball.fbx",
@@ -292,6 +312,11 @@
 					"effect" : "content\\effects\\StandardLighting.fx",
 					"name" : "StandardLightingMaterial",
 					"technique" : "standard_lighting_pbr"
+				},
+				{
+					"effect" : "content\\effects\\VoxelizationGI.fx",
+					"name" : "VoxelizationGIMaterial",
+					"technique" : "voxelizationGI"
 				}
 			],
 			"model_path" : "content\\models\\shaderball.fbx",
@@ -349,6 +374,11 @@
 					"effect" : "content\\effects\\StandardLighting.fx",
 					"name" : "StandardLightingMaterial",
 					"technique" : "standard_lighting_pbr"
+				},
+				{
+					"effect" : "content\\effects\\VoxelizationGI.fx",
+					"name" : "VoxelizationGIMaterial",
+					"technique" : "voxelizationGI"
 				}
 			],
 			"model_lods" : 
@@ -436,6 +466,11 @@
 					"effect" : "content\\effects\\StandardLighting.fx",
 					"name" : "StandardLightingMaterial",
 					"technique" : "standard_lighting_pbr"
+				},
+				{
+					"effect" : "content\\effects\\VoxelizationGI.fx",
+					"name" : "VoxelizationGIMaterial",
+					"technique" : "voxelizationGI"
 				}
 			],
 			"model_lods" : 

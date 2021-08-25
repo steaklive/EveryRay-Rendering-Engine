@@ -227,6 +227,7 @@
     <ClInclude Include="IBLCubemap.h" />
     <ClInclude Include="IBLCubemapFace.h" />
     <ClInclude Include="IBLRadianceMap.h" />
+    <ClInclude Include="Illumination.h" />
     <ClInclude Include="InstancingMaterial.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Light.h" />
@@ -289,6 +290,7 @@
     <ClInclude Include="VertexDeclarations.h" />
     <ClInclude Include="VignetteMaterial.h" />
     <ClInclude Include="VolumetricClouds.h" />
+    <ClInclude Include="VoxelizationGIMaterial.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AmbientLightingMaterial.cpp" />
@@ -330,6 +332,7 @@
     <ClCompile Include="IBLCubemap.cpp" />
     <ClCompile Include="IBLCubemapFace.cpp" />
     <ClCompile Include="IBLRadianceMap.cpp" />
+    <ClCompile Include="Illumination.cpp" />
     <ClCompile Include="InstancingMaterial.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Light.cpp" />
@@ -392,6 +395,7 @@
     <ClCompile Include="VectorHelper.cpp" />
     <ClCompile Include="VignetteMaterial.cpp" />
     <ClCompile Include="VolumetricClouds.cpp" />
+    <ClCompile Include="VoxelizationGIMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\content\effects\AmbientLighting.fx">
@@ -563,6 +567,20 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\content\effects\Vignette.fx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\content\effects\VoxelizationGI.fx">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

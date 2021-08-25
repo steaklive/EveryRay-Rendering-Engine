@@ -12,5 +12,6 @@ namespace Library
 		static const std::string deferredPrepassMaterialName;
 		static const std::string ssrMaterialName;
 		static const std::string parallaxMaterialName;
+		static const std::string voxelizationGIMaterialName;
 	};
 }
