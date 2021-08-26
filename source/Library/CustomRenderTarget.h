@@ -4,7 +4,7 @@
 class CustomRenderTarget 
 {
 public:
-	CustomRenderTarget(ID3D11Device * device, UINT width, UINT height, UINT samples, DXGI_FORMAT format, UINT bindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, int mip = 1, UINT depth = -1);
+	CustomRenderTarget(ID3D11Device * device, UINT width, UINT height, UINT samples, DXGI_FORMAT format, UINT bindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, int mip = 1, int depth = -1);
 	~CustomRenderTarget();
 
 	ID3D11RenderTargetView* getRTV() { return mRTVs[0]; }

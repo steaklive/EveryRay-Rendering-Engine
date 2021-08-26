@@ -29,10 +29,12 @@ namespace Library
 		XMFLOAT3 sunDirection;
 		XMFLOAT3 sunColor;
 		XMFLOAT3 ambientColor;
+
+		Material* GetMaterial(const std::string& materialName);
 	private:
 		Json::Value root;
 
-		std::tuple<Material*, Effect*, std::string> GetMaterialData(std::string materialName, std::string effectName, std::string techniqueName);
+		std::tuple<Material*, Effect*, std::string> CreateMaterialData(const std::string& materialName, const std::string& effectName, const std::string& techniqueName);
 		Camera& mCamera;
 		std::string mScenePath;
 	};

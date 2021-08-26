@@ -38,8 +38,8 @@ namespace Library {
 		DeleteObject(mVCTVoxelizationDebugRT);
 		DeleteObject(mVCTMainRT);
 		DeleteObject(mVCTMainUpsampleAndBlurRT);
-		//mFrameConstantBuffer.Release();
-		//mCloudsConstantBuffer.Release();
+		//mVoxelizationMainConstantBuffer.Release();
+		//mVoxelizationModelConstantBuffer.Release();
 	}
 
 	void Illumination::Initialize(const Scene* scene)
@@ -48,35 +48,46 @@ namespace Library {
 			obj.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::voxelizationGIMaterialName, [&](int meshIndex) { UpdateVoxelizationGIMaterialVariables(obj.second, meshIndex); });
 		}
 
-		////shaders
-		//{
-		//	ID3DBlob* blob = nullptr;
-		//	if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingVoxelization.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
-		//		throw GameException("Failed to load VSMain from shader: VoxelConeTracingVoxelization.hlsl!");
-		//	if (FAILED(mGame->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTVoxelizationVS)))
-		//		throw GameException("Failed to create vertex shader from VoxelConeTracingVoxelization.hlsl!");
-		//	blob->Release();
-
-		//	if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingVoxelization.hlsl").c_str(), "GSMain", "gs_5_0", &blob)))
-		//		throw GameException("Failed to load GSMain from shader: VoxelConeTracingVoxelization.hlsl!");
-		//	if (FAILED(mGame->Direct3DDevice()->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTVoxelizationGS)))
-		//		throw GameException("Failed to create geometry shader from VoxelConeTracingVoxelization.hlsl!");
-		//	blob->Release();
-
-		//	blob = nullptr;
-		//	if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingVoxelization.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
-		//		throw GameException("Failed to load PSMain from shader: VoxelConeTracingVoxelization.hlsl!");
-		//	if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTVoxelizationPS)))
-		//		throw GameException("Failed to create pixel shader from VoxelConeTracingVoxelization.hlsl!");
-		//	blob->Release();
-
-		//	blob = nullptr;
-		//	if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingMain.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
-		//		throw GameException("Failed to load CSMain from shader: VoxelConeTracingMain.hlsl!");
-		//	if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTMainCS)))
-		//		throw GameException("Failed to create shader from VoxelConeTracingMain.hlsl!");
-		//	blob->Release();
-		//}
+		//shaders
+		{
+			//ID3DBlob* blob = nullptr;
+			//if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingVoxelization.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
+			//	throw GameException("Failed to load VSMain from shader: VoxelConeTracingVoxelization.hlsl!");
+			//if (FAILED(mGame->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTVoxelizationVS)))
+			//	throw GameException("Failed to create vertex shader from VoxelConeTracingVoxelization.hlsl!");
+			//
+			//// Define the vertex input layout.
+			//D3D11_INPUT_ELEMENT_DESC inputElementDescs[] =
+			//{
+			//	{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			//	{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			//	{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			//	{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 36, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+			//};
+			//
+			//mGame.Direct3DDevice()->CreateInputLayout(inputElementDescs, sizeof(inputElementDescs) / sizeof(inputElementDescs[0]), blob->GetBufferPointer(), blob->GetBufferSize(), &mVCTVoxelizationInputLayout);
+			//blob->Release();
+			//
+			//if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingVoxelization.hlsl").c_str(), "GSMain", "gs_5_0", &blob)))
+			//	throw GameException("Failed to load GSMain from shader: VoxelConeTracingVoxelization.hlsl!");
+			//if (FAILED(mGame->Direct3DDevice()->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTVoxelizationGS)))
+			//	throw GameException("Failed to create geometry shader from VoxelConeTracingVoxelization.hlsl!");
+			//blob->Release();
+			//
+			//blob = nullptr;
+			//if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingVoxelization.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
+			//	throw GameException("Failed to load PSMain from shader: VoxelConeTracingVoxelization.hlsl!");
+			//if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTVoxelizationPS)))
+			//	throw GameException("Failed to create pixel shader from VoxelConeTracingVoxelization.hlsl!");
+			//blob->Release();
+			//
+			//blob = nullptr;
+			//if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingMain.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
+			//	throw GameException("Failed to load CSMain from shader: VoxelConeTracingMain.hlsl!");
+			//if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTMainCS)))
+			//	throw GameException("Failed to create shader from VoxelConeTracingMain.hlsl!");
+			//blob->Release();
+		}
 		
 		DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
@@ -95,23 +106,36 @@ namespace Library {
 
 		//voxelization
 		{
-			D3D11_VIEWPORT vctViewport = { 0.0f, 0.0f, VCT_SCENE_VOLUME_SIZE, VCT_SCENE_VOLUME_SIZE };
+			//ID3D11Buffer* CBs[2] = {
+			//	mVoxelizationMainConstantBuffer.Buffer(),
+			//	mVoxelizationModelConstantBuffer.Buffer()
+			//};
+
+			D3D11_VIEWPORT vctViewport = { 0.0f, 0.0f, VCT_SCENE_VOLUME_SIZE, VCT_SCENE_VOLUME_SIZE};
 			D3D11_RECT vctRect = { 0.0f, 0.0f, VCT_SCENE_VOLUME_SIZE, VCT_SCENE_VOLUME_SIZE };
 			ID3D11UnorderedAccessView* UAV[1] = { mVCTVoxelization3DRT->getUAV() };
 
+			context->RSSetState(RasterizerStates::NoCullingNoDepthEnabledScissorRect);
 			context->RSSetViewports(1, &vctViewport);
 			context->RSSetScissorRects(1, &vctRect);
-			context->OMSetRenderTargetsAndUnorderedAccessViews(0, nullptr, nullptr, 0, 1, UAV, NULL);
+			context->OMSetRenderTargets(0, nullptr, nullptr);
+			//context->OMSetDepthStencilState(nullptr, 0);
 			context->ClearUnorderedAccessViewFloat(UAV[0], clearColorBlack);
 
 			//context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			//context->IASetInputLayout(mVCTVoxelizationInputLayout);
-
+			//
 			//context->VSSetShader(mVCTVoxelizationVS, NULL, NULL);
+			//context->VSSetConstantBuffers(0, 2, CBs);
+			//
 			//context->GSSetShader(mVCTVoxelizationGS, NULL, NULL);
 			//context->PSSetShader(mVCTVoxelizationPS, NULL, NULL);
 
 			for (auto& obj : scene->objects) {
+
+				obj.second->GetMaterials()[MaterialHelper::voxelizationGIMaterialName]->GetEffect()->
+					GetEffect()->GetVariableByName("outputTexture")->AsUnorderedAccessView()->SetUnorderedAccessView(UAV[0]);
+				
 				obj.second->Draw(MaterialHelper::voxelizationGIMaterialName);
 			}
 

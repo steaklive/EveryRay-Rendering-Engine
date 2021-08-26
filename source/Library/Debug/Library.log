@@ -1,60 +1,12 @@
-﻿  RenderingObject.cpp
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(149): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(204): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(42): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
-          with
-          [
-              _Ty=int
-          ]
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(133): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(136): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(139): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(147): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(150): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(153): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(161): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(164): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(167): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(175): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(178): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(181): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(189): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(192): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(195): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(362): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(368): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(459): warning C4267: 'argument': conversion from 'size_t' to '_Ty', possible loss of data
-          with
-          [
-              _Ty=UINT
-          ]
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(500): warning C4267: 'argument': conversion from 'size_t' to '_Ty', possible loss of data
-          with
-          [
-              _Ty=UINT
-          ]
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(503): warning C4267: 'argument': conversion from 'size_t' to '_Ty', possible loss of data
-          with
-          [
-              _Ty=UINT
-          ]
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(513): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(516): warning C4018: '<': signed/unsigned mismatch
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(553): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
-          with
-          [
-              _Ty=UINT
-          ]
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(683): warning C4018: '<': signed/unsigned mismatch
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(694): warning C4267: 'argument': conversion from 'size_t' to '_Ty', possible loss of data
-          with
-          [
-              _Ty=int
-          ]
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(699): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(723): warning C4018: '<': signed/unsigned mismatch
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(754): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.cpp(766): warning C4101: 'newMat': unreferenced local variable
+﻿  Illumination.cpp
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(150): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(205): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\illumination.cpp(104): warning C4838: conversion from 'int' to 'FLOAT' requires a narrowing conversion
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\illumination.cpp(104): warning C4244: 'initializing': conversion from 'int' to 'FLOAT', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\illumination.cpp(105): warning C4838: conversion from 'float' to 'LONG' requires a narrowing conversion
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\illumination.cpp(105): warning C4244: 'initializing': conversion from 'float' to 'LONG', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\illumination.cpp(115): warning C4838: conversion from 'float' to 'LONG' requires a narrowing conversion
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\illumination.cpp(115): warning C4244: 'initializing': conversion from 'float' to 'LONG', possible loss of data
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 __cdecl Library::ColorHelper::RandomColor(void)" (?RandomColor@ColorHelper@Library@@SA?AUXMVECTORF32@DirectX@@XZ) already defined in FpsComponent.obj; second definition ignored
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Black" (?Black@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::White" (?White@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored

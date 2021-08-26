@@ -676,7 +676,7 @@ namespace Rendering
 	void RenderingObject::ShowInstancesListUI()
 	{
 		assert(mInstanceCount.size() != 0);
-		assert(mInstanceData[0] != 0);
+		assert(mInstanceData[0].size() != 0);
 
 		std::string title = mName + " instances:";
 		ImGui::Begin(title.c_str());

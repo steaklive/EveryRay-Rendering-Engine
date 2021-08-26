@@ -103,9 +103,9 @@ namespace Library
 
 				// load materials
 				if (root["rendering_objects"][i].isMember("materials")) {
-
+					//TODO optimize similar materials loading
 					for (Json::Value::ArrayIndex mat = 0; mat != root["rendering_objects"][i]["materials"].size(); mat++) {
-						auto materialData = GetMaterialData(
+						auto materialData = CreateMaterialData(
 							root["rendering_objects"][i]["materials"][mat]["name"].asString(),
 							root["rendering_objects"][i]["materials"][mat]["effect"].asString(),
 							root["rendering_objects"][i]["materials"][mat]["technique"].asString()
@@ -310,7 +310,13 @@ namespace Library
 		writer->write(root, &file_id);
 	}
 
-	std::tuple<Material*, Effect*, std::string> Scene::GetMaterialData(std::string matName, std::string effectName, std::string techniqueName) {
+	Library::Material* Scene::GetMaterial(const std::string& materialName)
+	{
+		//TODO load from materials container
+		return nullptr;
+	}
+
+	std::tuple<Material*, Effect*, std::string> Scene::CreateMaterialData(const std::string& matName, const std::string& effectName, const std::string& techniqueName) {
 		Material* material = nullptr;
 
 		Effect* effect = new Effect(*mGame);

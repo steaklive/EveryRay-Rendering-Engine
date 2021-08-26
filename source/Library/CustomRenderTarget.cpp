@@ -1,6 +1,6 @@
 #include "..\Library\CustomRenderTarget.h"
 
-CustomRenderTarget::CustomRenderTarget(ID3D11Device * device, UINT width, UINT height, UINT samples, DXGI_FORMAT format, UINT bindFlags, int mips, UINT depth)
+CustomRenderTarget::CustomRenderTarget(ID3D11Device * device, UINT width, UINT height, UINT samples, DXGI_FORMAT format, UINT bindFlags, int mips, int depth)
 {
 	ID3D11Texture2D* tex2D = nullptr;
 	ID3D11Texture3D* tex3D = nullptr;
@@ -69,6 +69,8 @@ CustomRenderTarget::CustomRenderTarget(ID3D11Device * device, UINT width, UINT h
 		{
 			if (depth > 0) {
 				rDesc.Texture3D.MipSlice = i;
+				rDesc.Texture3D.FirstWSlice = 0;
+				rDesc.Texture3D.WSize = depth; //TODO change for proper mip support
 				device->CreateRenderTargetView(tex3D, &rDesc, &rtv[i]);
 			}
 			else {
@@ -94,6 +96,8 @@ CustomRenderTarget::CustomRenderTarget(ID3D11Device * device, UINT width, UINT h
 		{
 			if (depth > 0) {
 				uavDesc.Texture3D.MipSlice = i;
+				uavDesc.Texture3D.FirstWSlice = 0;
+				uavDesc.Texture3D.WSize = depth; //TODO change for proper mip support
 				device->CreateUnorderedAccessView(tex3D, &uavDesc, &(uav[i]));
 			}
 			else {
