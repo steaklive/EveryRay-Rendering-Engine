@@ -16,6 +16,10 @@ public:
 	ID3D11UnorderedAccessView** getUAVs() { return mUAVs; }
 	int getMips() { return mMipLevels; }
 
+	UINT GetWidth() { return mWidth; }
+	UINT GetHeight() { return mHeight; }
+	UINT GetDepth() { return mDepth; }
+
 private:
 	ID3D11RenderTargetView** mRTVs = nullptr;
 	ID3D11UnorderedAccessView** mUAVs = nullptr;
@@ -26,4 +30,8 @@ private:
 
 	UINT mBindFlags;
 	int mMipLevels;
+
+	UINT mWidth;
+	UINT mHeight;
+	UINT mDepth;
 };

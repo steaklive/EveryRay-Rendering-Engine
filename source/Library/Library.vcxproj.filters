@@ -659,9 +659,6 @@
     <ClCompile Include="Editor.cpp">
       <Filter>Source Files\Objects</Filter>
     </ClCompile>
-    <ClCompile Include="GBuffer.cpp">
-      <Filter>Source Files\Helpers</Filter>
-    </ClCompile>
     <ClCompile Include="Scene.cpp">
       <Filter>Source Files\Objects</Filter>
     </ClCompile>
@@ -693,6 +690,9 @@
       <Filter>Source Files\Objects\Rendering systems</Filter>
     </ClCompile>
     <ClCompile Include="FastFourierTransform.cpp">
+      <Filter>Source Files\Objects\Rendering systems</Filter>
+    </ClCompile>
+    <ClCompile Include="GBuffer.cpp">
       <Filter>Source Files\Objects\Rendering systems</Filter>
     </ClCompile>
   </ItemGroup>
@@ -878,6 +878,9 @@
       <Filter>Effects</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\GI\VoxelConeTracingVoxelizationDebug.hlsl">
+      <Filter>Shaders\GI</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\GI\VoxelConeTracingMain.hlsl">
       <Filter>Shaders\GI</Filter>
     </FxCompile>
   </ItemGroup>

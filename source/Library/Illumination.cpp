@@ -19,6 +19,8 @@
 #include "ShaderCompiler.h"
 #include "VoxelizationGIMaterial.h"
 #include "Scene.h"
+#include "GBuffer.h"
+
 namespace Library {
 	Illumination::Illumination(Game& game, Camera& camera, DirectionalLight& light, const Scene* scene)
 		: 
@@ -38,8 +40,12 @@ namespace Library {
 		DeleteObject(mVCTMainRT);
 		DeleteObject(mVCTMainUpsampleAndBlurRT);
 		DeleteObject(mDepthBuffer);
+		ReleaseObject(mDepthStencilStateRW);
+		ReleaseObject(mLinearSamplerState);
+
 		//mVoxelizationMainConstantBuffer.Release();
 		mVoxelizationDebugConstantBuffer.Release();
+		mVoxelConeTracingConstantBuffer.Release();
 	}
 
 	void Illumination::Initialize(const Scene* scene)
@@ -70,32 +76,45 @@ namespace Library {
 				throw GameException("Failed to create pixel shader from VoxelConeTracingVoxelization.hlsl!");
 			blob->Release();
 			
-			//blob = nullptr;
-			//if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingMain.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
-			//	throw GameException("Failed to load CSMain from shader: VoxelConeTracingMain.hlsl!");
-			//if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTMainCS)))
-			//	throw GameException("Failed to create shader from VoxelConeTracingMain.hlsl!");
-			//blob->Release();
+			blob = nullptr;
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingMain.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
+				throw GameException("Failed to load CSMain from shader: VoxelConeTracingMain.hlsl!");
+			if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTMainCS)))
+				throw GameException("Failed to create shader from VoxelConeTracingMain.hlsl!");
+			blob->Release();
 		}
-		
+		//sampler states
+		D3D11_SAMPLER_DESC sam_desc;
+		sam_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		sam_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		sam_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		sam_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		sam_desc.MipLODBias = 0;
+		sam_desc.MaxAnisotropy = 1;
+		sam_desc.MinLOD = -1000.0f;
+		sam_desc.MaxLOD = 1000.0f;
+		if (FAILED(mGame->Direct3DDevice()->CreateSamplerState(&sam_desc, &mLinearSamplerState)))
+			throw GameException("Failed to create sampler mLinearSamplerState!");
+
 		CD3D11_DEPTH_STENCIL_DESC dsDesc((CD3D11_DEFAULT()));
 		dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 		mGame->Direct3DDevice()->CreateDepthStencilState(&dsDesc, &mDepthStencilStateRW);
 
 		//cbuffers
 		mVoxelizationDebugConstantBuffer.Initialize(mGame->Direct3DDevice());
+		mVoxelConeTracingConstantBuffer.Initialize(mGame->Direct3DDevice());
 
 		DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 		//TODO 3D
-		mVCTVoxelization3DRT = new CustomRenderTarget(mGame->Direct3DDevice(), VCT_SCENE_VOLUME_SIZE, VCT_SCENE_VOLUME_SIZE, 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1, VCT_SCENE_VOLUME_SIZE);
+		mVCTVoxelization3DRT = new CustomRenderTarget(mGame->Direct3DDevice(), VCT_SCENE_VOLUME_SIZE, VCT_SCENE_VOLUME_SIZE, 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS, 6, VCT_SCENE_VOLUME_SIZE);
 		mVCTMainRT = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
 		mVCTVoxelizationDebugRT = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 	
 		mDepthBuffer = DepthTarget::Create(mGame->Direct3DDevice(), mGame->ScreenWidth(), mGame->ScreenHeight(), 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
 	}
 
-	void Illumination::Draw(const GameTime& gameTime, const Scene* scene)
+	void Illumination::Draw(const GameTime& gameTime, const Scene* scene, GBuffer* gbuffer)
 	{
 		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
@@ -167,7 +186,43 @@ namespace Library {
 
 		//main vct
 		{
+			context->GenerateMips(mVCTVoxelization3DRT->getSRV());
 
+			mVoxelConeTracingConstantBuffer.Data.CameraPos = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1);
+			mVoxelConeTracingConstantBuffer.Data.UpsampleRatio = XMFLOAT2(/*mGbufferRTs[0]->GetWidth() / mVCTMainRT->GetWidth(), mGbufferRTs[0]->GetHeight() / mVCTMainRT->GetHeight()*/1.0f, 1.0f);
+			mVoxelConeTracingConstantBuffer.Data.IndirectDiffuseStrength = mVCTIndirectDiffuseStrength;
+			mVoxelConeTracingConstantBuffer.Data.IndirectSpecularStrength = mVCTIndirectSpecularStrength;
+			mVoxelConeTracingConstantBuffer.Data.MaxConeTraceDistance = mVCTMaxConeTraceDistance;
+			mVoxelConeTracingConstantBuffer.Data.AOFalloff = mVCTAoFalloff;
+			mVoxelConeTracingConstantBuffer.Data.SamplingFactor = mVCTSamplingFactor;
+			mVoxelConeTracingConstantBuffer.Data.VoxelSampleOffset = mVCTVoxelSampleOffset;
+			mVoxelConeTracingConstantBuffer.ApplyChanges(context);
+
+			ID3D11UnorderedAccessView* UAV[1] = { mVCTMainRT->getUAV() };
+			ID3D11Buffer* CBs[2] = { /*TODO temp buffer*/ mVoxelizationDebugConstantBuffer.Buffer(), mVoxelConeTracingConstantBuffer.Buffer() };
+			ID3D11ShaderResourceView* SR[4] = {
+				gbuffer->GetAlbedo()->getSRV(),
+				gbuffer->GetNormals()->getSRV(),
+				gbuffer->GetPositions()->getSRV(),
+				mVCTVoxelization3DRT->getSRV(),
+			};
+			ID3D11SamplerState* SSs[] = { mLinearSamplerState };
+			context->CSSetSamplers(0, 1, SSs);
+			context->CSSetShaderResources(0, 4, SR);
+			context->CSSetConstantBuffers(0, 2, CBs);
+
+			context->CSSetShader(mVCTMainCS, NULL, NULL);
+			context->CSSetUnorderedAccessViews(0, 1, UAV, NULL);
+			context->Dispatch(DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetHeight()), 8u), 1u);
+
+			ID3D11ShaderResourceView* nullSRV[] = { NULL };
+			context->CSSetShaderResources(0, 1, nullSRV);
+			ID3D11UnorderedAccessView* nullUAV[] = { NULL };
+			context->CSSetUnorderedAccessViews(0, 1, nullUAV, 0);
+			ID3D11Buffer* nullCBs[] = { NULL };
+			context->CSSetConstantBuffers(0, 1, nullCBs);
+			ID3D11SamplerState* nullSSs[] = { NULL };
+			context->CSSetSamplers(0, 1, nullSSs);
 		}
 
 		//upsample & blur

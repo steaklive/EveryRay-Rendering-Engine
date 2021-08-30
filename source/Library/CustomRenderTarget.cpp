@@ -10,6 +10,9 @@ CustomRenderTarget::CustomRenderTarget(ID3D11Device * device, UINT width, UINT h
 
 	mMipLevels = mips;
 	mBindFlags = bindFlags;
+	mDepth = depth;
+	mWidth = width;
+	mHeight = height;
 
 	if (depth > 0) {
 		CD3D11_TEXTURE3D_DESC texDesc;
@@ -65,13 +68,15 @@ CustomRenderTarget::CustomRenderTarget(ID3D11Device * device, UINT width, UINT h
 		rDesc.Format = format;
 		rDesc.ViewDimension = (depth > 0) ? D3D11_RTV_DIMENSION_TEXTURE3D : ((samples > 1 ) ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D);
 		rtv = (ID3D11RenderTargetView**)malloc(sizeof(ID3D11RenderTargetView*) * mips);
+		int currentDepth = depth;
 		for (int i = 0; i < mips; i++)
 		{
 			if (depth > 0) {
 				rDesc.Texture3D.MipSlice = i;
 				rDesc.Texture3D.FirstWSlice = 0;
-				rDesc.Texture3D.WSize = depth; //TODO change for proper mip support
+				rDesc.Texture3D.WSize = currentDepth;
 				device->CreateRenderTargetView(tex3D, &rDesc, &rtv[i]);
+				currentDepth >>= 1;
 			}
 			else {
 				rDesc.Texture2D.MipSlice = i;
@@ -92,13 +97,15 @@ CustomRenderTarget::CustomRenderTarget(ID3D11Device * device, UINT width, UINT h
 		uavDesc.Format = format;
 		uav = (ID3D11UnorderedAccessView**)malloc(sizeof(ID3D11UnorderedAccessView*) * mips);
 
+		int currentDepth = depth;
 		for (int i = 0; i < mips; i++)
 		{
-			if (depth > 0) {
+			if (currentDepth > 0) {
 				uavDesc.Texture3D.MipSlice = i;
 				uavDesc.Texture3D.FirstWSlice = 0;
-				uavDesc.Texture3D.WSize = depth; //TODO change for proper mip support
+				uavDesc.Texture3D.WSize = currentDepth; //TODO change for proper mip support
 				device->CreateUnorderedAccessView(tex3D, &uavDesc, &(uav[i]));
+				currentDepth >>= 1;
 			}
 			else {
 				uavDesc.Texture2D.MipSlice = i;
