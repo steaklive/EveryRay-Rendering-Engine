@@ -49,7 +49,7 @@ GS_IN VSMain(VS_IN input)
 {
     GS_IN output = (GS_IN) 0;
     
-    output.Position = mul(MeshWorld, float4(input.Position.xyz, 1));
+    output.Position = mul(float4(input.Position.xyz, 1), MeshWorld);
     output.UV = input.UV;
     return output;
 }

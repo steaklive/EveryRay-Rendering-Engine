@@ -294,7 +294,7 @@ namespace Rendering
 		mPostProcessingStack->End();
 
 		#pragma region DRAW_SUN
-		mSkybox->DrawSun(gameTime, mPostProcessingStack);
+		//mSkybox->DrawSun(gameTime, mPostProcessingStack);
 #pragma endregion
 
 		#pragma region DRAW_VOLUMETRIC_CLOUDS
@@ -302,6 +302,7 @@ namespace Rendering
 #pragma endregion
 
 		#pragma region DRAW_POSTPROCESSING
+		mPostProcessingStack->SetMainRT(mGI->GetGISRV());
 		mPostProcessingStack->UpdateSSRMaterial(mGBuffer->GetNormals()->getSRV(), mGBuffer->GetDepth()->getSRV(), mGBuffer->GetExtraBuffer()->getSRV(), (float)gameTime.TotalGameTime());
 		mPostProcessingStack->DrawEffects(gameTime);
 		mPostProcessingStack->ResetMainRTtoOriginal();

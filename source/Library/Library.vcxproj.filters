@@ -70,6 +70,9 @@
     <Filter Include="Shaders\VolumetricClouds">
       <UniqueIdentifier>{cd99af59-6c4f-42d7-b590-1eb659325193}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\GI">
+      <UniqueIdentifier>{383364e3-aa61-4922-8f23-087b18a5d123}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -870,6 +873,9 @@
     </FxCompile>
     <FxCompile Include="..\..\content\effects\VoxelizationGI.fx">
       <Filter>Effects</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\GI\VoxelConeTracingVoxelizationDebug.hlsl">
+      <Filter>Shaders\GI</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

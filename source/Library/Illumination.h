@@ -2,6 +2,7 @@
 #include "Common.h"
 #include "ConstantBuffer.h"
 #include "CustomRenderTarget.h"
+#include "DepthTarget.h"
 #include "RenderingObject.h"
 
 #define VCT_SCENE_VOLUME_SIZE 256
@@ -23,9 +24,11 @@ namespace Library
 			XMMATRIX LightViewProjection;
 			float WorldVoxelScale;
 		};
-		struct VoxelizationModelCB
+		struct VoxelizationDebugCB
 		{
-			XMMATRIX MeshWorld;
+			XMMATRIX WorldVoxelCube;
+			XMMATRIX ViewProjection;
+			float WorldVoxelScale;
 		};
 	}
 
@@ -41,6 +44,7 @@ namespace Library
 		void Update(const GameTime& gameTime);
 
 		void SetShadowMapSRV(ID3D11ShaderResourceView* srv) { mShadowMapSRV = srv; }
+		ID3D11ShaderResourceView* GetGISRV() { return mVCTVoxelizationDebugRT->getSRV(); }
 	private:
 		void UpdateVoxelizationGIMaterialVariables(Rendering::RenderingObject* obj, int meshIndex);
 		void UpdateImGui();
@@ -49,16 +53,18 @@ namespace Library
 		DirectionalLight& mDirectionalLight;
 
 		ConstantBuffer<IlluminationCBufferData::VoxelizationCB> mVoxelizationMainConstantBuffer;
-		ConstantBuffer<IlluminationCBufferData::VoxelizationModelCB> mVoxelizationModelConstantBuffer;
+		ConstantBuffer<IlluminationCBufferData::VoxelizationDebugCB> mVoxelizationDebugConstantBuffer;
 
 		CustomRenderTarget* mVCTVoxelization3DRT = nullptr;
 		CustomRenderTarget* mVCTVoxelizationDebugRT = nullptr;
 		CustomRenderTarget* mVCTMainRT = nullptr;
 		CustomRenderTarget* mVCTMainUpsampleAndBlurRT = nullptr;
 
-		ID3D11VertexShader* mVCTVoxelizationVS = nullptr;
-		ID3D11GeometryShader* mVCTVoxelizationGS = nullptr;
-		ID3D11PixelShader* mVCTVoxelizationPS = nullptr;
+		DepthTarget* mDepthBuffer = nullptr;
+
+		ID3D11VertexShader* mVCTVoxelizationDebugVS = nullptr;
+		ID3D11GeometryShader* mVCTVoxelizationDebugGS = nullptr;
+		ID3D11PixelShader* mVCTVoxelizationDebugPS = nullptr;
 		ID3D11ComputeShader* mVCTMainCS = nullptr;
 
 		ID3D11ShaderResourceView* mShadowMapSRV = nullptr;
@@ -66,7 +72,7 @@ namespace Library
 		ID3D11SamplerState* mCloudSS = nullptr;
 		ID3D11SamplerState* mWeatherSS = nullptr;
 
-		ID3D11InputLayout* mVCTVoxelizationInputLayout = nullptr;
+		ID3D11DepthStencilState* mDepthStencilStateRW = nullptr;
 
 		float mWorldVoxelScale = VCT_SCENE_VOLUME_SIZE * 0.5f;
 	};
