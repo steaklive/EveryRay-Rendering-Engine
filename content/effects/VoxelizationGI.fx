@@ -12,8 +12,8 @@ cbuffer ModelCB : register(b1)
 
 RWTexture3D<float4> outputTexture : register(u0);
 
-Texture2D<float> MeshAlbedo : register(t0);
-Texture2D<float> ShadowMap : register(t1);
+Texture2D MeshAlbedo : register(t0);
+Texture2D ShadowMap : register(t1);
 //SamplerComparisonState PcfShadowMapSampler : register(s0);
 
 SamplerState LinearSampler
