@@ -86,7 +86,7 @@
 				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
+					"technique" : "voxelizationGI_instancing"
 				}
 			],
 			"model_lods" : 

@@ -73,6 +73,9 @@
     <Filter Include="Shaders\GI">
       <UniqueIdentifier>{383364e3-aa61-4922-8f23-087b18a5d123}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Objects\Rendering systems">
+      <UniqueIdentifier>{9d10d195-ac34-4ffc-a620-8bdacc58889a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -467,14 +470,8 @@
     <ClCompile Include="Mesh.cpp">
       <Filter>Source Files\Objects</Filter>
     </ClCompile>
-    <ClCompile Include="Grid.cpp">
-      <Filter>Source Files\Objects</Filter>
-    </ClCompile>
     <ClCompile Include="ModelMaterial.cpp">
       <Filter>Source Files\Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="Skybox.cpp">
-      <Filter>Source Files\Objects</Filter>
     </ClCompile>
     <ClCompile Include="SkyboxMaterial.cpp">
       <Filter>Source Files\Materials</Filter>
@@ -599,9 +596,6 @@
     <ClCompile Include="CustomRenderTarget.cpp">
       <Filter>Source Files\Objects\RenderTarget</Filter>
     </ClCompile>
-    <ClCompile Include="PostProcessingStack.cpp">
-      <Filter>Source Files\Objects</Filter>
-    </ClCompile>
     <ClCompile Include="VignetteMaterial.cpp">
       <Filter>Source Files\Materials</Filter>
     </ClCompile>
@@ -623,12 +617,6 @@
     <ClCompile Include="BruteforceStructure.cpp">
       <Filter>Source Files\Objects\Spatial hierarchies</Filter>
     </ClCompile>
-    <ClCompile Include="OceanSimulator.cpp">
-      <Filter>Source Files\Objects</Filter>
-    </ClCompile>
-    <ClCompile Include="FastFourierTransform.cpp">
-      <Filter>Source Files\Objects</Filter>
-    </ClCompile>
     <ClCompile Include="RenderingObject.cpp">
       <Filter>Source Files\Objects</Filter>
     </ClCompile>
@@ -641,9 +629,6 @@
     <ClCompile Include="FXAAMaterial.cpp">
       <Filter>Source Files\Materials</Filter>
     </ClCompile>
-    <ClCompile Include="GBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DeferredMaterial.cpp">
       <Filter>Source Files\Materials</Filter>
     </ClCompile>
@@ -653,32 +638,11 @@
     <ClCompile Include="MaterialHelper.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
-    <ClCompile Include="ShadowMapper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Terrain.cpp">
-      <Filter>Source Files\Objects</Filter>
-    </ClCompile>
     <ClCompile Include="TerrainMaterial.cpp">
       <Filter>Source Files\Materials</Filter>
     </ClCompile>
-    <ClCompile Include="Foliage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="FoliageMaterial.cpp">
       <Filter>Source Files\Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Editor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VolumetricClouds.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Illumination.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VoxelizationGIMaterial.cpp">
       <Filter>Source Files\Materials</Filter>
@@ -691,6 +655,45 @@
     </ClCompile>
     <ClCompile Include="FogMaterial.cpp">
       <Filter>Source Files\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor.cpp">
+      <Filter>Source Files\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="GBuffer.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Source Files\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Skybox.cpp">
+      <Filter>Source Files\Objects\Rendering systems</Filter>
+    </ClCompile>
+    <ClCompile Include="Terrain.cpp">
+      <Filter>Source Files\Objects\Rendering systems</Filter>
+    </ClCompile>
+    <ClCompile Include="VolumetricClouds.cpp">
+      <Filter>Source Files\Objects\Rendering systems</Filter>
+    </ClCompile>
+    <ClCompile Include="ShadowMapper.cpp">
+      <Filter>Source Files\Objects\Rendering systems</Filter>
+    </ClCompile>
+    <ClCompile Include="PostProcessingStack.cpp">
+      <Filter>Source Files\Objects\Rendering systems</Filter>
+    </ClCompile>
+    <ClCompile Include="OceanSimulator.cpp">
+      <Filter>Source Files\Objects\Rendering systems</Filter>
+    </ClCompile>
+    <ClCompile Include="Illumination.cpp">
+      <Filter>Source Files\Objects\Rendering systems</Filter>
+    </ClCompile>
+    <ClCompile Include="Grid.cpp">
+      <Filter>Source Files\Objects\Rendering systems</Filter>
+    </ClCompile>
+    <ClCompile Include="Foliage.cpp">
+      <Filter>Source Files\Objects\Rendering systems</Filter>
+    </ClCompile>
+    <ClCompile Include="FastFourierTransform.cpp">
+      <Filter>Source Files\Objects\Rendering systems</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

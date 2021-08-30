@@ -31,6 +31,17 @@ struct VS_IN
     float3 Tangent : TANGENT;
 };
 
+struct VS_IN_INSTANCING
+{
+    float4 Position : POSITION;
+    float2 UV : TEXCOORD;
+    float3 Normal : NORMAL;
+    float3 Tangent : TANGENT;
+    
+    //instancing
+    row_major float4x4 World : WORLD;
+};
+
 struct GS_IN
 {
     float4 Position : SV_POSITION;
@@ -41,8 +52,8 @@ struct GS_IN
 struct PS_IN
 {
     float4 Position : SV_POSITION;
-    float3 VoxelPos : VOXEL_POSITION;
     float2 UV : TEXCOORD0;
+    float3 VoxelPos : TEXCOORD1;
 };
 
 GS_IN VSMain(VS_IN input)
@@ -50,6 +61,15 @@ GS_IN VSMain(VS_IN input)
     GS_IN output = (GS_IN) 0;
     
     output.Position = mul(float4(input.Position.xyz, 1), MeshWorld);
+    output.UV = input.UV;
+    return output;
+}
+
+GS_IN VSMain_Instancing(VS_IN_INSTANCING input)
+{
+    GS_IN output = (GS_IN) 0;
+    
+    output.Position = mul(float4(input.Position.xyz, 1), input.World);
     output.UV = input.UV;
     return output;
 }
@@ -125,6 +145,16 @@ technique11 voxelizationGI
     pass p0
     {
         SetVertexShader(CompileShader(vs_5_0, VSMain()));
+        SetGeometryShader(CompileShader(gs_5_0, GSMain()));
+        SetPixelShader(CompileShader(ps_5_0, PSMain()));
+    }
+}
+
+technique11 voxelizationGI_instancing
+{
+    pass p0
+    {
+        SetVertexShader(CompileShader(vs_5_0, VSMain_Instancing()));
         SetGeometryShader(CompileShader(gs_5_0, GSMain()));
         SetPixelShader(CompileShader(ps_5_0, PSMain()));
     }
