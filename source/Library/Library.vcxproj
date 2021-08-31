@@ -194,6 +194,7 @@
     <ClInclude Include="ColorGradingMaterial.h" />
     <ClInclude Include="ColorHelper.h" />
     <ClInclude Include="Common.h" />
+    <ClInclude Include="CompositeLightingMaterial.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="CustomRenderTarget.h" />
     <ClInclude Include="DeferredMaterial.h" />
@@ -300,6 +301,7 @@
     <ClCompile Include="ColorFilteringMaterial.cpp" />
     <ClCompile Include="ColorGradingMaterial.cpp" />
     <ClCompile Include="ColorHelper.cpp" />
+    <ClCompile Include="CompositeLightingMaterial.cpp" />
     <ClCompile Include="CustomRenderTarget.cpp" />
     <ClCompile Include="DeferredMaterial.cpp" />
     <ClCompile Include="DemoLevel.cpp" />
@@ -417,6 +419,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\content\effects\ColorGrading.fx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\content\effects\CompositeLighting.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

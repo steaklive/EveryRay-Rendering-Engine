@@ -54,6 +54,7 @@ namespace Library
 
 		void Draw(const GameTime& gameTime, const Scene* scene, GBuffer* gbuffer);
 		void Update(const GameTime& gameTime);
+		void Config() { mShowDebug = !mShowDebug; }
 
 		void SetShadowMapSRV(ID3D11ShaderResourceView* srv) { mShadowMapSRV = srv; }
 		ID3D11ShaderResourceView* GetGISRV() { return /*mVCTVoxelizationDebugRT*/mVCTMainRT->getSRV(); }
@@ -96,5 +97,10 @@ namespace Library
 		bool mVCTUseMainCompute = true;
 		bool mVCTMainRTUseUpsampleAndBlur = true;
 		float mVCTGIPower = 1.0f;
+
+		bool mVoxelizationDebugView = false;
+
+		bool mEnabled = false;
+		bool mShowDebug = false;
 	};
 }

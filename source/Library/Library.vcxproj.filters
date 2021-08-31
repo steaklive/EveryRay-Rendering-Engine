@@ -399,6 +399,9 @@
     <ClInclude Include="VoxelizationGIMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CompositeLightingMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -695,6 +698,9 @@
     <ClCompile Include="GBuffer.cpp">
       <Filter>Source Files\Objects\Rendering systems</Filter>
     </ClCompile>
+    <ClCompile Include="CompositeLightingMaterial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\content\effects\AmbientLighting.fx">
@@ -882,6 +888,9 @@
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\GI\VoxelConeTracingMain.hlsl">
       <Filter>Shaders\GI</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\effects\CompositeLighting.fx">
+      <Filter>Effects</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

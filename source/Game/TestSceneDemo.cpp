@@ -186,7 +186,7 @@ namespace Rendering
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\ibl_brdf_lut.png").c_str(), nullptr, &mIntegrationMapTextureSRV)))
 			throw GameException("Failed to create Integration Texture.");
 		
-		//mVolumetricClouds = new VolumetricClouds(*mGame, *mCamera, *mDirectionalLight, *mPostProcessingStack, *mSkybox);
+		mVolumetricClouds = new VolumetricClouds(*mGame, *mCamera, *mDirectionalLight, *mPostProcessingStack, *mSkybox);
 		mGI = new Illumination(*mGame, *mCamera, *mDirectionalLight, mScene);
 	}
 
@@ -204,7 +204,8 @@ namespace Rendering
 		mSkybox->Update(gameTime);
 		mGrid->Update(gameTime);
 		mPostProcessingStack->Update();
-		//mVolumetricClouds->Update(gameTime);
+		mVolumetricClouds->Update(gameTime);
+		mGI->Update(gameTime);
 
 		for (auto object : mFoliageCollection) 
 		{
@@ -223,7 +224,6 @@ namespace Rendering
 
 	void TestSceneDemo::UpdateImGui()
 	{
-
 		ImGui::Begin("Test Demo Scene");
 
 		ImGui::Checkbox("Show Post Processing Stack", &mPostProcessingStack->isWindowOpened);
@@ -233,6 +233,9 @@ namespace Rendering
 
 		if (ImGui::Button("Volumetric Clouds")) {
 			mVolumetricClouds->Config();
+		}
+		if (ImGui::Button("Global Illumination")) {
+			mGI->Config();
 		}
 		ImGui::SliderFloat("Wind strength", &mWindStrength, 0.0f, 100.0f);
 		ImGui::SliderFloat("Wind gust distance", &mWindGustDistance, 0.0f, 100.0f);
@@ -274,10 +277,6 @@ namespace Rendering
 		#pragma region DRAW_LIGHTING
 		mSkybox->Draw(gameTime);
 
-		//grid
-		//if (Utility::IsEditorMode)
-		//	mGrid->Draw(gameTime);
-
 		//gizmo
 		if (Utility::IsEditorMode)
 			mDirectionalLight->DrawProxyModel(gameTime);
@@ -294,15 +293,16 @@ namespace Rendering
 		mPostProcessingStack->End();
 
 		#pragma region DRAW_SUN
-		//mSkybox->DrawSun(gameTime, mPostProcessingStack);
+		mSkybox->DrawSun(gameTime, mPostProcessingStack);
 #pragma endregion
 
 		#pragma region DRAW_VOLUMETRIC_CLOUDS
-		//mVolumetricClouds->Draw(gameTime);
+		mVolumetricClouds->Draw(gameTime);
 #pragma endregion
 
 		#pragma region DRAW_POSTPROCESSING
-		mPostProcessingStack->SetMainRT(mGI->GetGISRV());
+		//mPostProcessingStack->SetMainRT(mGI->GetGISRV());
+		mPostProcessingStack->UpdateCompositeLightingMaterial(mGI->GetGISRV());
 		mPostProcessingStack->UpdateSSRMaterial(mGBuffer->GetNormals()->getSRV(), mGBuffer->GetDepth()->getSRV(), mGBuffer->GetExtraBuffer()->getSRV(), (float)gameTime.TotalGameTime());
 		mPostProcessingStack->DrawEffects(gameTime);
 		mPostProcessingStack->ResetMainRTtoOriginal();

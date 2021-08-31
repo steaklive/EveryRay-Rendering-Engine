@@ -6,6 +6,7 @@
 #include "FXAAMaterial.h"
 #include "FogMaterial.h"
 #include "LightShaftsMaterial.h"
+#include "CompositeLightingMaterial.h"
 #include "FullScreenQuad.h"
 #include "FullScreenRenderTarget.h"
 #include "ShaderCompiler.h"
@@ -28,6 +29,7 @@ namespace Rendering {
 		mSSREffect(nullptr),
 		mFogEffect(nullptr),
 		mLightShaftsEffect(nullptr),
+		mCompositeLightingEffect(nullptr),
 		game(pGame), camera(pCamera)
 	{
 	}
@@ -42,6 +44,7 @@ namespace Rendering {
 		DeleteObject(mSSREffect);
 		DeleteObject(mFogEffect);
 		DeleteObject(mLightShaftsEffect);
+		DeleteObject(mCompositeLightingEffect);
 
 		DeleteObject(mMainRenderTarget);
 		DeleteObject(mColorGradingRenderTarget);
@@ -51,6 +54,7 @@ namespace Rendering {
 		DeleteObject(mSSRRenderTarget);
 		DeleteObject(mFogRenderTarget);
 		DeleteObject(mLightShaftsRenderTarget);
+		DeleteObject(mCompositeLightingRenderTarget);
 		DeleteObject(mExtraRenderTarget);
 
 		ReleaseObject(mQuadVB);
@@ -64,6 +68,19 @@ namespace Rendering {
 		mOriginalMainRTSRV = mMainRenderTarget->OutputColorTexture();
 
 		mExtraRenderTarget = new FullScreenRenderTarget(game);
+
+		Effect* compositeLightingFX = new Effect(game);
+		compositeLightingFX->CompileFromFile(Utility::GetFilePath(L"content\\effects\\CompositeLighting.fx"));
+		mCompositeLightingEffect = new EffectElements::CompositeLightingEffect();
+		mCompositeLightingEffect->Material = new CompositeLightingMaterial();
+		mCompositeLightingEffect->Material->Initialize(compositeLightingFX);
+		mCompositeLightingEffect->Quad = new FullScreenQuad(game, *mCompositeLightingEffect->Material);
+		mCompositeLightingEffect->Quad->Initialize();
+		mCompositeLightingEffect->Quad->SetActiveTechnique("composite_filter", "p0");
+		//mCompositeLightingEffect->Quad->SetCustomUpdateMaterial(std::bind(&PostProcessingStack::UpdateCompositeLightingMaterial, this));
+		mCompositeLightingLoaded = true;
+		mCompositeLightingRenderTarget = new FullScreenRenderTarget(game);
+		mCompositeLightingEffect->isActive = true;
 
 		Effect* lightShaftsFX = new Effect(game);
  		lightShaftsFX->CompileFromFile(Utility::GetFilePath(L"content\\effects\\LightShafts.fx"));
@@ -378,6 +395,14 @@ namespace Rendering {
 			else 
 				mLightShaftsEffect->Quad->SetActiveTechnique("no_filter", "p0");
 		}
+
+		if (mCompositeLightingLoaded)
+		{
+			if (mCompositeLightingEffect->isActive)
+				mCompositeLightingEffect->Quad->SetActiveTechnique("composite_filter", "p0");
+			else
+				mCompositeLightingEffect->Quad->SetActiveTechnique("no_filter", "p0");
+		}
 	}
 
 	void PostProcessingStack::UpdateTonemapConstantBuffer(ID3D11DeviceContext* pD3DImmediateContext, ID3D11Buffer* buffer, int mipLevel0, int mipLevel1, unsigned int width, unsigned int height)
@@ -484,10 +509,26 @@ namespace Rendering {
 		mFXAAEffect->Material->Height() << game.ScreenHeight();
 
 	}
-	
+
+	void PostProcessingStack::UpdateCompositeLightingMaterial(ID3D11ShaderResourceView* indirectLightingSRV)
+	{
+		mCompositeLightingEffect->Material->ColorTexture() << mCompositeLightingEffect->InputDirectLightingTexture;
+		mCompositeLightingEffect->Material->InputDirectTexture() << mCompositeLightingEffect->InputDirectLightingTexture;
+		mCompositeLightingEffect->Material->InputIndirectTexture() << indirectLightingSRV;
+	}
+
 	void PostProcessingStack::ShowPostProcessingWindow()
 	{
 		ImGui::Begin("Post Processing Stack Config");
+
+		if (mCompositeLightingLoaded) 
+		{
+			if (ImGui::CollapsingHeader("Composite Lighting"))
+			{
+				ImGui::Checkbox("Composite Lighting - On", &mCompositeLightingEffect->isActive);
+
+			}
+		}
 
 		if (mLightShaftsLoaded)
 		{
@@ -700,9 +741,18 @@ namespace Rendering {
 	{
 		ID3D11DeviceContext* context = game.Direct3DDeviceContext();
 
+		// COMPOSITE LIGHTING
+		mCompositeLightingRenderTarget->Begin();
+		mCompositeLightingEffect->InputDirectLightingTexture = mMainRenderTarget->OutputColorTexture();
+		//mCompositeLightingEffect->InputIndirectLightingTexture = mMainRenderTarget->OutputColorTexture();
+		game.Direct3DDeviceContext()->ClearRenderTargetView(mCompositeLightingRenderTarget->RenderTargetView(), ClearBackgroundColor);
+		game.Direct3DDeviceContext()->ClearDepthStencilView(mCompositeLightingRenderTarget->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
+		mCompositeLightingEffect->Quad->Draw(gameTime);
+		mCompositeLightingRenderTarget->End();
+
 		// LIGHT SHAFTS
 		mLightShaftsRenderTarget->Begin();
-		mLightShaftsEffect->OutputTexture = mMainRenderTarget->OutputColorTexture();
+		mLightShaftsEffect->OutputTexture = mCompositeLightingRenderTarget->OutputColorTexture();
 		mLightShaftsEffect->DepthTexture = mMainRenderTarget->OutputDepthTexture();
 		game.Direct3DDeviceContext()->ClearRenderTargetView(mLightShaftsRenderTarget->RenderTargetView(), ClearBackgroundColor);
 		game.Direct3DDeviceContext()->ClearDepthStencilView(mLightShaftsRenderTarget->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);

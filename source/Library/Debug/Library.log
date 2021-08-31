@@ -1,10 +1,10 @@
 ﻿  Illumination.cpp
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(150): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\renderingobject.h(205): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\illumination.cpp(122): warning C4838: conversion from 'float' to 'LONG' requires a narrowing conversion
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\illumination.cpp(122): warning C4244: 'initializing': conversion from 'float' to 'LONG', possible loss of data
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\illumination.cpp(132): warning C4838: conversion from 'float' to 'LONG' requires a narrowing conversion
-c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\illumination.cpp(132): warning C4244: 'initializing': conversion from 'float' to 'LONG', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\illumination.cpp(126): warning C4838: conversion from 'float' to 'LONG' requires a narrowing conversion
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\illumination.cpp(126): warning C4244: 'initializing': conversion from 'float' to 'LONG', possible loss of data
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\illumination.cpp(139): warning C4838: conversion from 'float' to 'LONG' requires a narrowing conversion
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\illumination.cpp(139): warning C4244: 'initializing': conversion from 'float' to 'LONG', possible loss of data
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 __cdecl Library::ColorHelper::RandomColor(void)" (?RandomColor@ColorHelper@Library@@SA?AUXMVECTORF32@DirectX@@XZ) already defined in FpsComponent.obj; second definition ignored
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::Black" (?Black@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored
 ColorHelper.obj : warning LNK4006: "public: static struct DirectX::XMVECTORF32 const Library::ColorHelper::White" (?White@ColorHelper@Library@@2UXMVECTORF32@DirectX@@B) already defined in FpsComponent.obj; second definition ignored

@@ -83,6 +83,7 @@ namespace Library {
 				throw GameException("Failed to create shader from VoxelConeTracingMain.hlsl!");
 			blob->Release();
 		}
+
 		//sampler states
 		D3D11_SAMPLER_DESC sam_desc;
 		sam_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -104,13 +105,10 @@ namespace Library {
 		mVoxelizationDebugConstantBuffer.Initialize(mGame->Direct3DDevice());
 		mVoxelConeTracingConstantBuffer.Initialize(mGame->Direct3DDevice());
 
-		DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
-
-		//TODO 3D
+		//RTs
 		mVCTVoxelization3DRT = new CustomRenderTarget(mGame->Direct3DDevice(), VCT_SCENE_VOLUME_SIZE, VCT_SCENE_VOLUME_SIZE, 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS, 6, VCT_SCENE_VOLUME_SIZE);
 		mVCTMainRT = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
 		mVCTVoxelizationDebugRT = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
-	
 		mDepthBuffer = DepthTarget::Create(mGame->Direct3DDevice(), mGame->ScreenWidth(), mGame->ScreenHeight(), 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
 	}
 
@@ -119,15 +117,24 @@ namespace Library {
 		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
 
-		D3D11_RECT rect = { 0.0f, 0.0f, mGame->ScreenWidth(), mGame->ScreenHeight() };
+		if (!mEnabled)
+		{
+			context->ClearUnorderedAccessViewFloat(mVCTMainRT->getUAV(), clearColorBlack);
+			return;
+		}
 
+		D3D11_RECT rect = { 0.0f, 0.0f, mGame->ScreenWidth(), mGame->ScreenHeight() };
 		D3D11_VIEWPORT viewport;
 		UINT num_viewport = 1;
 		context->RSGetViewports(&num_viewport, &viewport);
 
+		ID3D11RasterizerState* oldRS;
+		context->RSGetState(&oldRS);
+
+		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
+
 		//voxelization
 		{
-		
 			D3D11_VIEWPORT vctViewport = { 0.0f, 0.0f, VCT_SCENE_VOLUME_SIZE, VCT_SCENE_VOLUME_SIZE};
 			D3D11_RECT vctRect = { 0.0f, 0.0f, VCT_SCENE_VOLUME_SIZE, VCT_SCENE_VOLUME_SIZE };
 			ID3D11UnorderedAccessView* UAV[1] = { mVCTVoxelization3DRT->getUAV() };
@@ -135,7 +142,7 @@ namespace Library {
 			context->RSSetState(RasterizerStates::NoCullingNoDepthEnabledScissorRect);
 			context->RSSetViewports(1, &vctViewport);
 			context->RSSetScissorRects(1, &vctRect);
-			context->OMSetRenderTargets(0, nullptr, nullptr);
+			context->OMSetRenderTargets(1, nullRTVs, nullptr);
 			context->ClearUnorderedAccessViewFloat(UAV[0], clearColorBlack);
 
 			for (auto& obj : scene->objects) {
@@ -143,6 +150,11 @@ namespace Library {
 					GetEffect()->GetVariableByName("outputTexture")->AsUnorderedAccessView()->SetUnorderedAccessView(UAV[0]);
 				
 				obj.second->Draw(MaterialHelper::voxelizationGIMaterialName);
+
+				obj.second->GetMaterials()[MaterialHelper::voxelizationGIMaterialName]->GetEffect()->
+					GetEffect()->GetVariableByName("outputTexture")->AsUnorderedAccessView()->SetUnorderedAccessView(nullptr);
+				obj.second->GetMaterials()[MaterialHelper::voxelizationGIMaterialName]->GetEffect()->
+					GetEffect()->GetTechniqueByIndex(0)->GetPassByIndex(0)->Apply(0, context);
 			}
 		
 			//reset back
@@ -151,6 +163,7 @@ namespace Library {
 		}
 
 		//voxelization debug 
+		if (mVoxelizationDebugView)
 		{
 			float scale = 1.0f;
 			mVoxelizationDebugConstantBuffer.Data.WorldVoxelCube = XMMatrixTranslation(-VCT_SCENE_VOLUME_SIZE * 0.25f, -VCT_SCENE_VOLUME_SIZE * 0.25f, -VCT_SCENE_VOLUME_SIZE * 0.25f) * XMMatrixScaling(scale, -scale, scale);;
@@ -182,9 +195,11 @@ namespace Library {
 			context->PSSetConstantBuffers(0, 1, CBs);
 
 			context->DrawInstanced(VCT_SCENE_VOLUME_SIZE * VCT_SCENE_VOLUME_SIZE * VCT_SCENE_VOLUME_SIZE, 1, 0, 0);
-		}
-
-		//main vct
+			
+			context->RSSetState(oldRS);
+			context->OMSetRenderTargets(1, nullRTVs, NULL);
+		} 
+		else
 		{
 			context->GenerateMips(mVCTVoxelization3DRT->getSRV());
 
@@ -200,15 +215,16 @@ namespace Library {
 
 			ID3D11UnorderedAccessView* UAV[1] = { mVCTMainRT->getUAV() };
 			ID3D11Buffer* CBs[2] = { /*TODO temp buffer*/ mVoxelizationDebugConstantBuffer.Buffer(), mVoxelConeTracingConstantBuffer.Buffer() };
-			ID3D11ShaderResourceView* SR[4] = {
+			ID3D11ShaderResourceView* SRVs[4] = {
 				gbuffer->GetAlbedo()->getSRV(),
 				gbuffer->GetNormals()->getSRV(),
 				gbuffer->GetPositions()->getSRV(),
 				mVCTVoxelization3DRT->getSRV(),
 			};
 			ID3D11SamplerState* SSs[] = { mLinearSamplerState };
+
 			context->CSSetSamplers(0, 1, SSs);
-			context->CSSetShaderResources(0, 4, SR);
+			context->CSSetShaderResources(0, 4, SRVs);
 			context->CSSetConstantBuffers(0, 2, CBs);
 
 			context->CSSetShader(mVCTMainCS, NULL, NULL);
@@ -233,7 +249,25 @@ namespace Library {
 
 	void Illumination::Update(const GameTime& gameTime)
 	{
+		UpdateImGui();
+	}
 
+	void Illumination::UpdateImGui()
+	{
+		if (!mShowDebug)
+			return;
+
+		ImGui::Begin("Global Illumination System");
+		ImGui::Checkbox("Enabled", &mEnabled);
+		ImGui::Checkbox("Show voxelization debug view", &mVoxelizationDebugView);
+		ImGui::SliderFloat("VCT GI Intensity", &mVCTGIPower, 0.0f, 15.0f);
+		ImGui::SliderFloat("VCT Diffuse Strength", &mVCTIndirectDiffuseStrength, 0.0f, 1.0f);
+		ImGui::SliderFloat("VCT Specular Strength", &mVCTIndirectSpecularStrength, 0.0f, 1.0f);
+		ImGui::SliderFloat("VCT Max Cone Trace Dist", &mVCTMaxConeTraceDistance, 0.0f, 2500.0f);
+		ImGui::SliderFloat("VCT AO Falloff", &mVCTAoFalloff, 0.0f, 2.0f);
+		ImGui::SliderFloat("VCT Sampling Factor", &mVCTSamplingFactor, 0.01f, 3.0f);
+		ImGui::SliderFloat("VCT Sample Offset", &mVCTVoxelSampleOffset, -0.1f, 0.1f);
+		ImGui::End();
 	}
 
 	void Illumination::UpdateVoxelizationGIMaterialVariables(Rendering::RenderingObject* obj, int meshIndex)

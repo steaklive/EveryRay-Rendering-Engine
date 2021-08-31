@@ -23,9 +23,34 @@ namespace Rendering
 	class FogMaterial;
 	class ScreenSpaceReflectionsMaterial;
 	class LightShaftsMaterial;
+	class CompositeLightingMaterial;
 
 	namespace EffectElements
 	{
+		struct CompositeLightingEffect
+		{
+			CompositeLightingEffect() :
+				Material(nullptr), Quad(nullptr),
+				InputDirectLightingTexture(nullptr),
+				InputIndirectLightingTexture(nullptr)
+			{}
+
+			~CompositeLightingEffect()
+			{
+				DeleteObject(Material);
+				DeleteObject(Quad);
+				ReleaseObject(InputDirectLightingTexture);
+				ReleaseObject(InputIndirectLightingTexture);
+			}
+
+			CompositeLightingMaterial* Material;
+			FullScreenQuad* Quad;
+			ID3D11ShaderResourceView* InputDirectLightingTexture;
+			ID3D11ShaderResourceView* InputIndirectLightingTexture;
+
+			bool isActive = false;
+		};
+
 		struct TonemapEffect
 		{
 			TonemapEffect():
@@ -290,6 +315,7 @@ namespace Rendering
 		void UpdateSSRMaterial(ID3D11ShaderResourceView* normal, ID3D11ShaderResourceView* depth, ID3D11ShaderResourceView* extra, float time);
 		void UpdateFogMaterial();
 		void UpdateLightShaftsMaterial();
+		void UpdateCompositeLightingMaterial(ID3D11ShaderResourceView* indirectLightingSRV);
 
 		void Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR = true, bool pFog = false, bool pLightShafts = false);
 		void Begin(bool clear = true);
@@ -337,6 +363,7 @@ namespace Rendering
 		EffectElements::SSREffect* mSSREffect;
 		EffectElements::FogEffect* mFogEffect;
 		EffectElements::LightShaftsEffect* mLightShaftsEffect;
+		EffectElements::CompositeLightingEffect* mCompositeLightingEffect;
 		
 		FullScreenRenderTarget* mMainRenderTarget;
 		FullScreenRenderTarget* mVignetteRenderTarget;
@@ -347,6 +374,7 @@ namespace Rendering
 		FullScreenRenderTarget* mSSRRenderTarget;
 		FullScreenRenderTarget* mFogRenderTarget;
 		FullScreenRenderTarget* mLightShaftsRenderTarget;
+		FullScreenRenderTarget* mCompositeLightingRenderTarget;
 
 		FullScreenRenderTarget* mExtraRenderTarget;
 
@@ -365,6 +393,7 @@ namespace Rendering
 		bool mSSRLoaded = false;
 		bool mFogLoaded = false;
 		bool mLightShaftsLoaded = false;
+		bool mCompositeLightingLoaded = false;
 
 		XMFLOAT2 mSunNDCPos;
 	};
