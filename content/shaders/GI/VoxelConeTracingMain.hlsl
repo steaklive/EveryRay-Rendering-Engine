@@ -22,7 +22,7 @@ static const int specularMaxDegreesCount = 2;
 Texture2DMS<float4> albedoBuffer : register(t0);
 Texture2DMS<float4> normalBuffer : register(t1);
 Texture2DMS<float4> worldPosBuffer : register(t2);
-Texture3D voxelTexture : register(t3);
+Texture3D<float4> voxelTexture : register(t3);
 
 RWTexture2D<float4> outputTexture : register(u0);
 
@@ -51,6 +51,7 @@ cbuffer VCTMainCB : register(b1)
     float AOFalloff;
     float SamplingFactor;
     float VoxelSampleOffset;
+    float GIPower;
 };
 
 float4 GetVoxel(float3 worldPosition, float3 weight, float lod, bool posX, bool posY, bool posZ)
@@ -154,5 +155,5 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     float4 indirectDiffuse = CalculateIndirectDiffuse(worldPos.rgb, normal.rgb, ao, width);
     float4 indirectSpecular = CalculateIndirectSpecular(worldPos.rgb, normal.rgb, albedo, width);
 
-    outputTexture[inPos] = saturate(float4(indirectDiffuse.rgb * albedo.rgb + indirectSpecular.rgb, ao));
+    outputTexture[inPos] = GIPower * saturate(float4(indirectDiffuse.rgb * albedo.rgb + indirectSpecular.rgb, ao));
 }

@@ -43,8 +43,7 @@ namespace Library {
 		ReleaseObject(mDepthStencilStateRW);
 		ReleaseObject(mLinearSamplerState);
 
-		//mVoxelizationMainConstantBuffer.Release();
-		mVoxelizationDebugConstantBuffer.Release();
+		mVoxelizationConstantBuffer.Release();
 		mVoxelConeTracingConstantBuffer.Release();
 	}
 
@@ -102,7 +101,7 @@ namespace Library {
 		mGame->Direct3DDevice()->CreateDepthStencilState(&dsDesc, &mDepthStencilStateRW);
 
 		//cbuffers
-		mVoxelizationDebugConstantBuffer.Initialize(mGame->Direct3DDevice());
+		mVoxelizationConstantBuffer.Initialize(mGame->Direct3DDevice());
 		mVoxelConeTracingConstantBuffer.Initialize(mGame->Direct3DDevice());
 
 		//RTs
@@ -151,10 +150,10 @@ namespace Library {
 				
 				obj.second->Draw(MaterialHelper::voxelizationGIMaterialName);
 
-				obj.second->GetMaterials()[MaterialHelper::voxelizationGIMaterialName]->GetEffect()->
-					GetEffect()->GetVariableByName("outputTexture")->AsUnorderedAccessView()->SetUnorderedAccessView(nullptr);
-				obj.second->GetMaterials()[MaterialHelper::voxelizationGIMaterialName]->GetEffect()->
-					GetEffect()->GetTechniqueByIndex(0)->GetPassByIndex(0)->Apply(0, context);
+				//obj.second->GetMaterials()[MaterialHelper::voxelizationGIMaterialName]->GetEffect()->
+				//	GetEffect()->GetVariableByName("outputTexture")->AsUnorderedAccessView()->SetUnorderedAccessView(nullptr);
+				//obj.second->GetMaterials()[MaterialHelper::voxelizationGIMaterialName]->GetEffect()->
+				//	GetEffect()->GetTechniqueByIndex(0)->GetPassByIndex(0)->Apply(0, context);
 			}
 		
 			//reset back
@@ -162,16 +161,15 @@ namespace Library {
 			context->RSSetScissorRects(1, &rect);
 		}
 
+		mVoxelizationConstantBuffer.Data.WorldVoxelCube = XMMatrixTranslation(-VCT_SCENE_VOLUME_SIZE * 0.25f, -VCT_SCENE_VOLUME_SIZE * 0.25f, -VCT_SCENE_VOLUME_SIZE * 0.25f) * XMMatrixScaling(1.0f, -1.0f, 1.0f);;
+		mVoxelizationConstantBuffer.Data.ViewProjection = mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
+		mVoxelizationConstantBuffer.Data.WorldVoxelScale = mWorldVoxelScale;
+		mVoxelizationConstantBuffer.ApplyChanges(context);
+
 		//voxelization debug 
 		if (mVoxelizationDebugView)
 		{
-			float scale = 1.0f;
-			mVoxelizationDebugConstantBuffer.Data.WorldVoxelCube = XMMatrixTranslation(-VCT_SCENE_VOLUME_SIZE * 0.25f, -VCT_SCENE_VOLUME_SIZE * 0.25f, -VCT_SCENE_VOLUME_SIZE * 0.25f) * XMMatrixScaling(scale, -scale, scale);;
-			mVoxelizationDebugConstantBuffer.Data.ViewProjection = mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
-			mVoxelizationDebugConstantBuffer.Data.WorldVoxelScale = mWorldVoxelScale;
-			mVoxelizationDebugConstantBuffer.ApplyChanges(context);
-
-			ID3D11Buffer* CBs[1] = { mVoxelizationDebugConstantBuffer.Buffer() };
+			ID3D11Buffer* CBs[1] = { mVoxelizationConstantBuffer.Buffer() };
 			ID3D11ShaderResourceView* SRVs[1] = { mVCTVoxelization3DRT->getSRV() };
 			ID3D11RenderTargetView* RTVs[1] = { mVCTVoxelizationDebugRT->getRTV() };
 
@@ -201,6 +199,8 @@ namespace Library {
 		} 
 		else
 		{
+			context->OMSetRenderTargets(1, nullRTVs, NULL);
+
 			context->GenerateMips(mVCTVoxelization3DRT->getSRV());
 
 			mVoxelConeTracingConstantBuffer.Data.CameraPos = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1);
@@ -211,24 +211,25 @@ namespace Library {
 			mVoxelConeTracingConstantBuffer.Data.AOFalloff = mVCTAoFalloff;
 			mVoxelConeTracingConstantBuffer.Data.SamplingFactor = mVCTSamplingFactor;
 			mVoxelConeTracingConstantBuffer.Data.VoxelSampleOffset = mVCTVoxelSampleOffset;
+			mVoxelConeTracingConstantBuffer.Data.GIPower = mVCTGIPower;
 			mVoxelConeTracingConstantBuffer.ApplyChanges(context);
 
 			ID3D11UnorderedAccessView* UAV[1] = { mVCTMainRT->getUAV() };
-			ID3D11Buffer* CBs[2] = { /*TODO temp buffer*/ mVoxelizationDebugConstantBuffer.Buffer(), mVoxelConeTracingConstantBuffer.Buffer() };
+			ID3D11Buffer* CBs[2] = { mVoxelizationConstantBuffer.Buffer(), mVoxelConeTracingConstantBuffer.Buffer() };
 			ID3D11ShaderResourceView* SRVs[4] = {
 				gbuffer->GetAlbedo()->getSRV(),
 				gbuffer->GetNormals()->getSRV(),
 				gbuffer->GetPositions()->getSRV(),
-				mVCTVoxelization3DRT->getSRV(),
+				mVCTVoxelization3DRT->getSRV()
 			};
 			ID3D11SamplerState* SSs[] = { mLinearSamplerState };
 
 			context->CSSetSamplers(0, 1, SSs);
 			context->CSSetShaderResources(0, 4, SRVs);
 			context->CSSetConstantBuffers(0, 2, CBs);
-
 			context->CSSetShader(mVCTMainCS, NULL, NULL);
 			context->CSSetUnorderedAccessViews(0, 1, UAV, NULL);
+
 			context->Dispatch(DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetHeight()), 8u), 1u);
 
 			ID3D11ShaderResourceView* nullSRV[] = { NULL };
@@ -260,7 +261,7 @@ namespace Library {
 		ImGui::Begin("Global Illumination System");
 		ImGui::Checkbox("Enabled", &mEnabled);
 		ImGui::Checkbox("Show voxelization debug view", &mVoxelizationDebugView);
-		ImGui::SliderFloat("VCT GI Intensity", &mVCTGIPower, 0.0f, 15.0f);
+		ImGui::SliderFloat("VCT GI Intensity", &mVCTGIPower, 0.0f, 5.0f);
 		ImGui::SliderFloat("VCT Diffuse Strength", &mVCTIndirectDiffuseStrength, 0.0f, 1.0f);
 		ImGui::SliderFloat("VCT Specular Strength", &mVCTIndirectSpecularStrength, 0.0f, 1.0f);
 		ImGui::SliderFloat("VCT Max Cone Trace Dist", &mVCTMaxConeTraceDistance, 0.0f, 2500.0f);

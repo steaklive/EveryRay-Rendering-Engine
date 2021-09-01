@@ -21,14 +21,9 @@ namespace Library
 	namespace IlluminationCBufferData {
 		struct VoxelizationCB
 		{
-			XMMATRIX ViewProjection;
-			XMMATRIX LightViewProjection;
-			float WorldVoxelScale;
-		};
-		struct VoxelizationDebugCB
-		{
 			XMMATRIX WorldVoxelCube;
 			XMMATRIX ViewProjection;
+			//XMMATRIX LightViewProjection; TODO
 			float WorldVoxelScale;
 		};
 		struct VoxelConeTracingCB
@@ -41,6 +36,7 @@ namespace Library
 			float AOFalloff;
 			float SamplingFactor;
 			float VoxelSampleOffset;
+			float GIPower;
 		};
 	}
 
@@ -57,7 +53,12 @@ namespace Library
 		void Config() { mShowDebug = !mShowDebug; }
 
 		void SetShadowMapSRV(ID3D11ShaderResourceView* srv) { mShadowMapSRV = srv; }
-		ID3D11ShaderResourceView* GetGISRV() { return /*mVCTVoxelizationDebugRT*/mVCTMainRT->getSRV(); }
+		ID3D11ShaderResourceView* GetGISRV() { 
+			if (mVoxelizationDebugView)
+				return mVCTVoxelizationDebugRT->getSRV();
+			else 
+				mVCTMainRT->getSRV();
+		}
 	private:
 		void UpdateVoxelizationGIMaterialVariables(Rendering::RenderingObject* obj, int meshIndex);
 		void UpdateImGui();
@@ -65,8 +66,7 @@ namespace Library
 		Camera& mCamera;
 		DirectionalLight& mDirectionalLight;
 
-		ConstantBuffer<IlluminationCBufferData::VoxelizationCB> mVoxelizationMainConstantBuffer;
-		ConstantBuffer<IlluminationCBufferData::VoxelizationDebugCB> mVoxelizationDebugConstantBuffer;
+		ConstantBuffer<IlluminationCBufferData::VoxelizationCB> mVoxelizationConstantBuffer;
 		ConstantBuffer<IlluminationCBufferData::VoxelConeTracingCB> mVoxelConeTracingConstantBuffer;
 
 		CustomRenderTarget* mVCTVoxelization3DRT = nullptr;

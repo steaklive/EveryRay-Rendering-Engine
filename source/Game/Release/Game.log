@@ -37,9 +37,10 @@ c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\l
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\foliage.h(105): warning C4305: 'initializing': truncation from 'double' to 'float'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(44): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
 c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\testscenedemo.cpp(44): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\library\illumination.h(61): warning C4715: 'Library::Illumination::GetGISRV': not all control paths return a value
   Generating code
-  38 of 7351 functions ( 0.5%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
+  51 of 7350 functions ( 0.7%) were compiled, the rest were copied from previous compilation.
+    4 functions were new in current compilation
     33 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
 imgui_impl_win32.obj : warning LNK4099: PDB 'vc141.pdb' was not found with 'imgui_impl_win32.obj' or at 'C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\bin\x64\Release\vc141.pdb'; linking object as if no debug info

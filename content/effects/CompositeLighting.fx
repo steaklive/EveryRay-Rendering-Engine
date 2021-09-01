@@ -43,7 +43,7 @@ float4 composite_pixel_shader(VS_OUTPUT IN) : SV_Target
     float4 indirectLighting = InputIndirectTexture.Sample(TrilinearSampler, IN.TextureCoordinate);
     float ao = 1.0f - indirectLighting.a;
 
-    return saturate(directLighting + ao * indirectLighting);
+    return saturate(directLighting + indirectLighting);
 }
 
 
