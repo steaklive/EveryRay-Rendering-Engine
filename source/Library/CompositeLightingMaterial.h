@@ -13,6 +13,7 @@ namespace Rendering
 
 		MATERIAL_VARIABLE_DECLARATION(InputDirectTexture)
 		MATERIAL_VARIABLE_DECLARATION(InputIndirectTexture)
+		MATERIAL_VARIABLE_DECLARATION(DebugVoxel)
 
 
 	public:

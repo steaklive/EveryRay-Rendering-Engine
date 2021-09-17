@@ -510,11 +510,12 @@ namespace Rendering {
 
 	}
 
-	void PostProcessingStack::UpdateCompositeLightingMaterial(ID3D11ShaderResourceView* indirectLightingSRV)
+	void PostProcessingStack::UpdateCompositeLightingMaterial(ID3D11ShaderResourceView* indirectLightingSRV, bool debugVoxel)
 	{
 		mCompositeLightingEffect->Material->ColorTexture() << mCompositeLightingEffect->InputDirectLightingTexture;
 		mCompositeLightingEffect->Material->InputDirectTexture() << mCompositeLightingEffect->InputDirectLightingTexture;
 		mCompositeLightingEffect->Material->InputIndirectTexture() << indirectLightingSRV;
+		mCompositeLightingEffect->Material->DebugVoxel() << debugVoxel;
 	}
 
 	void PostProcessingStack::ShowPostProcessingWindow()

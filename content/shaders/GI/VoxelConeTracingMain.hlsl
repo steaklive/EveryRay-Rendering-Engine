@@ -1,6 +1,8 @@
 #define NUM_CONES 6
 #define PI 3.141592654
+#define NUM_OF_SHADOW_CASCADES 3
 
+static const float4 colorWhite = { 1, 1, 1, 1 };
 static const float coneAperture = 0.577f; // 6 cones, 60deg each, tan(30deg) = aperture
 static const float3 diffuseConeDirections[] =
 {
@@ -37,7 +39,9 @@ cbuffer VoxelizationCB : register(b0)
 {
     float4x4 WorldVoxelCube;
     float4x4 ViewProjection;
-   // float4x4 ShadowViewProjection;
+    float4x4 ShadowMatrices[NUM_OF_SHADOW_CASCADES];
+    float4 ShadowTexelSize;
+    float4 ShadowCascadeDistances;
     float WorldVoxelScale;
 };
 

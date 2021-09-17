@@ -187,7 +187,7 @@ namespace Rendering
 			throw GameException("Failed to create Integration Texture.");
 		
 		mVolumetricClouds = new VolumetricClouds(*mGame, *mCamera, *mDirectionalLight, *mPostProcessingStack, *mSkybox);
-		mGI = new Illumination(*mGame, *mCamera, *mDirectionalLight, mScene);
+		mGI = new Illumination(*mGame, *mCamera, *mDirectionalLight, *mShadowMapper, mScene);
 	}
 
 	void TestSceneDemo::UpdateLevel(const GameTime& gameTime)
@@ -286,8 +286,9 @@ namespace Rendering
 			it->second->Draw(MaterialHelper::lightingMaterialName);
 
 		//foliage 
-		for (auto object : mFoliageCollection)
-			object->Draw(gameTime, mShadowMapper);
+		// TODO add GI support (i.e, separate with stencil)
+		//for (auto object : mFoliageCollection)
+		//	object->Draw(gameTime, mShadowMapper);
 #pragma endregion
 
 		mPostProcessingStack->End();
@@ -301,8 +302,7 @@ namespace Rendering
 #pragma endregion
 
 		#pragma region DRAW_POSTPROCESSING
-		//mPostProcessingStack->SetMainRT(mGI->GetGISRV());
-		mPostProcessingStack->UpdateCompositeLightingMaterial(mGI->GetGISRV());
+		mPostProcessingStack->UpdateCompositeLightingMaterial(mGI->GetGISRV(), mGI->GetDebugVoxels());
 		mPostProcessingStack->UpdateSSRMaterial(mGBuffer->GetNormals()->getSRV(), mGBuffer->GetDepth()->getSRV(), mGBuffer->GetExtraBuffer()->getSRV(), (float)gameTime.TotalGameTime());
 		mPostProcessingStack->DrawEffects(gameTime);
 		mPostProcessingStack->ResetMainRTtoOriginal();

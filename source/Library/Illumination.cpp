@@ -20,13 +20,15 @@
 #include "VoxelizationGIMaterial.h"
 #include "Scene.h"
 #include "GBuffer.h"
+#include "ShadowMapper.h"
 
 namespace Library {
-	Illumination::Illumination(Game& game, Camera& camera, DirectionalLight& light, const Scene* scene)
+	Illumination::Illumination(Game& game, Camera& camera, DirectionalLight& light, ShadowMapper& shadowMapper, const Scene* scene)
 		: 
 		GameComponent(game),
 		mCamera(camera),
-		mDirectionalLight(light)
+		mDirectionalLight(light),
+		mShadowMapper(shadowMapper)
 	{
 		Initialize(scene);
 	}
@@ -275,26 +277,29 @@ namespace Library {
 	{
 		XMMATRIX vp = mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
 
-		///XMMATRIX shadowMatrices[3] =
-		///{
-		///	mShadowMapper->GetViewMatrix(0) *  mShadowMapper->GetProjectionMatrix(0) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()) ,
-		///	mShadowMapper->GetViewMatrix(1) *  mShadowMapper->GetProjectionMatrix(1) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()) ,
-		///	mShadowMapper->GetViewMatrix(2) *  mShadowMapper->GetProjectionMatrix(2) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix())
-		///};
-		///
-		///ID3D11ShaderResourceView* shadowMaps[3] =
-		///{
-		///	mShadowMapper->GetShadowTexture(0),
-		///	mShadowMapper->GetShadowTexture(1),
-		///	mShadowMapper->GetShadowTexture(2)
-		///};
+		XMMATRIX shadowMatrices[3] =
+		{
+			mShadowMapper.GetViewMatrix(0) *  mShadowMapper.GetProjectionMatrix(0) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()) ,
+			mShadowMapper.GetViewMatrix(1) *  mShadowMapper.GetProjectionMatrix(1) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()) ,
+			mShadowMapper.GetViewMatrix(2) *  mShadowMapper.GetProjectionMatrix(2) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix())
+		};
+
+		ID3D11ShaderResourceView* shadowMaps[3] =
+		{
+			mShadowMapper.GetShadowTexture(0),
+			mShadowMapper.GetShadowTexture(1),
+			mShadowMapper.GetShadowTexture(2)
+		};
 		ID3D11ShaderResourceView* shadowMap = nullptr;
 
 		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[MaterialHelper::voxelizationGIMaterialName])->ViewProjection() << vp;
-		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[MaterialHelper::voxelizationGIMaterialName])->LightViewProjection() << vp;
+		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[MaterialHelper::voxelizationGIMaterialName])->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, MAX_NUM_OF_CASCADES);
+		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[MaterialHelper::voxelizationGIMaterialName])->ShadowTexelSize() << XMVECTOR{ 1.0f / mShadowMapper.GetResolution(), 1.0f, 1.0f , 1.0f };
+		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[MaterialHelper::voxelizationGIMaterialName])->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
 		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[MaterialHelper::voxelizationGIMaterialName])->WorldVoxelScale() << mWorldVoxelScale;
 		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[MaterialHelper::voxelizationGIMaterialName])->MeshWorld() << obj->GetTransformationMatrix();
 		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[MaterialHelper::voxelizationGIMaterialName])->MeshAlbedo() << obj->GetTextureData(meshIndex).AlbedoMap;
-		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[MaterialHelper::voxelizationGIMaterialName])->ShadowMap() << shadowMap;
+		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[MaterialHelper::voxelizationGIMaterialName])->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, MAX_NUM_OF_CASCADES);
+
 	}
 }

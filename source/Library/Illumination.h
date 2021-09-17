@@ -17,13 +17,16 @@ namespace Library
 	class Camera;
 	class Scene;
 	class GBuffer;
+	class ShadowMapper;
 
 	namespace IlluminationCBufferData {
 		struct VoxelizationCB
 		{
 			XMMATRIX WorldVoxelCube;
 			XMMATRIX ViewProjection;
-			//XMMATRIX LightViewProjection; TODO
+			XMMATRIX ShadowMatrices[MAX_NUM_OF_CASCADES];
+			XMFLOAT4 ShadowTexelSize;
+			XMFLOAT4 ShadowCascadeDistances;
 			float WorldVoxelScale;
 		};
 		struct VoxelConeTracingCB
@@ -43,7 +46,7 @@ namespace Library
 	class Illumination : public GameComponent
 	{
 	public:
-		Illumination(Game& game, Camera& camera, DirectionalLight& light, const Scene* scene);
+		Illumination(Game& game, Camera& camera, DirectionalLight& light, ShadowMapper& shadowMapper, const Scene* scene);
 		~Illumination();
 
 		void Initialize(const Scene* scene);
@@ -53,11 +56,13 @@ namespace Library
 		void Config() { mShowDebug = !mShowDebug; }
 
 		void SetShadowMapSRV(ID3D11ShaderResourceView* srv) { mShadowMapSRV = srv; }
+		bool GetDebugVoxels() { return mVoxelizationDebugView; }
+
 		ID3D11ShaderResourceView* GetGISRV() { 
 			if (mVoxelizationDebugView)
 				return mVCTVoxelizationDebugRT->getSRV();
 			else 
-				mVCTMainRT->getSRV();
+				return mVCTMainRT->getSRV();
 		}
 	private:
 		void UpdateVoxelizationGIMaterialVariables(Rendering::RenderingObject* obj, int meshIndex);
@@ -65,6 +70,7 @@ namespace Library
 
 		Camera& mCamera;
 		DirectionalLight& mDirectionalLight;
+		ShadowMapper& mShadowMapper;
 
 		ConstantBuffer<IlluminationCBufferData::VoxelizationCB> mVoxelizationConstantBuffer;
 		ConstantBuffer<IlluminationCBufferData::VoxelConeTracingCB> mVoxelConeTracingConstantBuffer;
