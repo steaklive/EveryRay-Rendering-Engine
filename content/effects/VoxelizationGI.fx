@@ -201,7 +201,8 @@ void PSMain(PS_IN input)
     voxelPos.y = -voxelPos.y;
     
     float4 worldPos = float4(VoxelToWorld(voxelPos), 1.0f);
-    outputTexture[finalVoxelPos] = colorRes * GetShadow(input.ShadowCoord0, input.ShadowCoord1, input.ShadowCoord2, input.PosWVP.w);
+    float shadow = GetShadow(input.ShadowCoord0, input.ShadowCoord1, input.ShadowCoord2, input.PosWVP.w);
+    outputTexture[finalVoxelPos] = colorRes * float4(shadow, shadow, shadow, 1.0f);
 }
 
 technique11 voxelizationGI

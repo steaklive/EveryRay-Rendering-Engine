@@ -244,7 +244,7 @@ namespace Library {
 			context->CSSetSamplers(0, 1, nullSSs);
 		}
 
-		//upsample & blur
+		//TODO upsample & blur
 		{
 
 		}
