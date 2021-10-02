@@ -31,9 +31,10 @@ RWTexture2D<float4> outputTexture : register(u0);
 SamplerState LinearSampler
 {
     Filter = MIN_MAG_MIP_LINEAR;
-    AddressU = Wrap;
-    AddressV = Wrap;
-    AddressW = Wrap;
+    AddressU = BORDER;
+    AddressV = BORDER;
+    AddressW = BORDER;
+    BorderColor = colorWhite;
 };
 cbuffer VoxelizationCB : register(b0)
 {
@@ -60,6 +61,11 @@ cbuffer VCTMainCB : register(b1)
 
 float4 GetVoxel(float3 worldPosition, float3 weight, float lod, bool posX, bool posY, bool posZ)
 {
+    float3 voxelGridBounds = float3(WorldVoxelScale * 0.5f, WorldVoxelScale * 0.5f, WorldVoxelScale * 0.5f);
+    if (worldPosition.x < -voxelGridBounds.x || worldPosition.y < -voxelGridBounds.y || worldPosition.z < -voxelGridBounds.z || 
+        worldPosition.x > voxelGridBounds.x || worldPosition.y > voxelGridBounds.y || worldPosition.z > voxelGridBounds.z)
+        return float4(0.0, 0.0, 0.0, 1.0f);
+    
     float3 offset = float3(VoxelSampleOffset, VoxelSampleOffset, VoxelSampleOffset);
     float3 voxelTextureUV = worldPosition / WorldVoxelScale * 2.0f;
     voxelTextureUV.y = -voxelTextureUV.y;
