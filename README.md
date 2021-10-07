@@ -50,7 +50,6 @@ The framework is NOT API-agnostic and, thus, has been tighly bound to DX11 since
 You might increase TDR time of your GPU driver (explained here https://docs.substance3d.com/spdoc/gpu-drivers-crash-with-long-computations-128745489.html).
 
 # External Dependencies
-Create a folder "external" in the root directory and place these built libraries
 - DirectX Effects 11 (https://github.com/Microsoft/FX11)
 - DirectXTK (https://github.com/Microsoft/DirectXTK)
 - ImGui (https://github.com/ocornut/imgui)
