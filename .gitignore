@@ -1,13 +1,6 @@
 # ignore visual studio folder
 .vs/
 
-# ignore external libraries
-external/Assimp
-external/DirectXTK
-external/Effects11
-!external/ImGUI
-*.lib
-
 # taken from NVIDIA GameWorks
 content/shaders/VolumetricLight
 source/Game/VolumetricLightingDemo.h

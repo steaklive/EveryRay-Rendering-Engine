@@ -1,0 +1,8 @@
+﻿  d3dxGlobal.cpp
+  EffectAPI.cpp
+  EffectLoad.cpp
+  EffectNonRuntime.cpp
+  EffectReflection.cpp
+  EffectRuntime.cpp
+  Generating Code...
+  Effects11_2019_Win10.vcxproj -> C:\Users\Zhenya\Downloads\FX11-master\FX11-master\Bin\Desktop_2019_Win10\x64\Release\Effects11.lib

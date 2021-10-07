@@ -1,0 +1,788 @@
+﻿  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" AlphaTestEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSAlphaTest /FhCompiled\AlphaTestEffect_VSAlphaTest.inc /FdCompiled\AlphaTestEffect_VSAlphaTest.pdb /VnAlphaTestEffect_VSAlphaTest
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\AlphaTestEffect_VSAlphaTest.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\AlphaTestEffect_VSAlphaTest.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" AlphaTestEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSAlphaTestNoFog /FhCompiled\AlphaTestEffect_VSAlphaTestNoFog.inc /FdCompiled\AlphaTestEffect_VSAlphaTestNoFog.pdb /VnAlphaTestEffect_VSAlphaTestNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\AlphaTestEffect_VSAlphaTestNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\AlphaTestEffect_VSAlphaTestNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" AlphaTestEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSAlphaTestVc /FhCompiled\AlphaTestEffect_VSAlphaTestVc.inc /FdCompiled\AlphaTestEffect_VSAlphaTestVc.pdb /VnAlphaTestEffect_VSAlphaTestVc
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\AlphaTestEffect_VSAlphaTestVc.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\AlphaTestEffect_VSAlphaTestVc.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" AlphaTestEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSAlphaTestVcNoFog /FhCompiled\AlphaTestEffect_VSAlphaTestVcNoFog.inc /FdCompiled\AlphaTestEffect_VSAlphaTestVcNoFog.pdb /VnAlphaTestEffect_VSAlphaTestVcNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\AlphaTestEffect_VSAlphaTestVcNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\AlphaTestEffect_VSAlphaTestVcNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" AlphaTestEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSAlphaTestLtGt /FhCompiled\AlphaTestEffect_PSAlphaTestLtGt.inc /FdCompiled\AlphaTestEffect_PSAlphaTestLtGt.pdb /VnAlphaTestEffect_PSAlphaTestLtGt
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\AlphaTestEffect_PSAlphaTestLtGt.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\AlphaTestEffect_PSAlphaTestLtGt.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" AlphaTestEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSAlphaTestLtGtNoFog /FhCompiled\AlphaTestEffect_PSAlphaTestLtGtNoFog.inc /FdCompiled\AlphaTestEffect_PSAlphaTestLtGtNoFog.pdb /VnAlphaTestEffect_PSAlphaTestLtGtNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\AlphaTestEffect_PSAlphaTestLtGtNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\AlphaTestEffect_PSAlphaTestLtGtNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" AlphaTestEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSAlphaTestEqNe /FhCompiled\AlphaTestEffect_PSAlphaTestEqNe.inc /FdCompiled\AlphaTestEffect_PSAlphaTestEqNe.pdb /VnAlphaTestEffect_PSAlphaTestEqNe
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\AlphaTestEffect_PSAlphaTestEqNe.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\AlphaTestEffect_PSAlphaTestEqNe.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" AlphaTestEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSAlphaTestEqNeNoFog /FhCompiled\AlphaTestEffect_PSAlphaTestEqNeNoFog.inc /FdCompiled\AlphaTestEffect_PSAlphaTestEqNeNoFog.pdb /VnAlphaTestEffect_PSAlphaTestEqNeNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\AlphaTestEffect_PSAlphaTestEqNeNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\AlphaTestEffect_PSAlphaTestEqNeNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasic /FhCompiled\BasicEffect_VSBasic.inc /FdCompiled\BasicEffect_VSBasic.pdb /VnBasicEffect_VSBasic
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasic.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasic.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicNoFog /FhCompiled\BasicEffect_VSBasicNoFog.inc /FdCompiled\BasicEffect_VSBasicNoFog.pdb /VnBasicEffect_VSBasicNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicVc /FhCompiled\BasicEffect_VSBasicVc.inc /FdCompiled\BasicEffect_VSBasicVc.pdb /VnBasicEffect_VSBasicVc
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicVc.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicVc.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicVcNoFog /FhCompiled\BasicEffect_VSBasicVcNoFog.inc /FdCompiled\BasicEffect_VSBasicVcNoFog.pdb /VnBasicEffect_VSBasicVcNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicVcNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicVcNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicTx /FhCompiled\BasicEffect_VSBasicTx.inc /FdCompiled\BasicEffect_VSBasicTx.pdb /VnBasicEffect_VSBasicTx
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicTx.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicTx.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicTxNoFog /FhCompiled\BasicEffect_VSBasicTxNoFog.inc /FdCompiled\BasicEffect_VSBasicTxNoFog.pdb /VnBasicEffect_VSBasicTxNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicTxNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicTxNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicTxVc /FhCompiled\BasicEffect_VSBasicTxVc.inc /FdCompiled\BasicEffect_VSBasicTxVc.pdb /VnBasicEffect_VSBasicTxVc
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicTxVc.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicTxVc.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicTxVcNoFog /FhCompiled\BasicEffect_VSBasicTxVcNoFog.inc /FdCompiled\BasicEffect_VSBasicTxVcNoFog.pdb /VnBasicEffect_VSBasicTxVcNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicTxVcNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicTxVcNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicVertexLighting /FhCompiled\BasicEffect_VSBasicVertexLighting.inc /FdCompiled\BasicEffect_VSBasicVertexLighting.pdb /VnBasicEffect_VSBasicVertexLighting
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicVertexLighting.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicVertexLighting.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicVertexLightingBn /FhCompiled\BasicEffect_VSBasicVertexLightingBn.inc /FdCompiled\BasicEffect_VSBasicVertexLightingBn.pdb /VnBasicEffect_VSBasicVertexLightingBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicVertexLightingVc /FhCompiled\BasicEffect_VSBasicVertexLightingVc.inc /FdCompiled\BasicEffect_VSBasicVertexLightingVc.pdb /VnBasicEffect_VSBasicVertexLightingVc
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingVc.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingVc.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicVertexLightingVcBn /FhCompiled\BasicEffect_VSBasicVertexLightingVcBn.inc /FdCompiled\BasicEffect_VSBasicVertexLightingVcBn.pdb /VnBasicEffect_VSBasicVertexLightingVcBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingVcBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingVcBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicVertexLightingTx /FhCompiled\BasicEffect_VSBasicVertexLightingTx.inc /FdCompiled\BasicEffect_VSBasicVertexLightingTx.pdb /VnBasicEffect_VSBasicVertexLightingTx
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingTx.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingTx.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicVertexLightingTxBn /FhCompiled\BasicEffect_VSBasicVertexLightingTxBn.inc /FdCompiled\BasicEffect_VSBasicVertexLightingTxBn.pdb /VnBasicEffect_VSBasicVertexLightingTxBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingTxBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingTxBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicVertexLightingTxVc /FhCompiled\BasicEffect_VSBasicVertexLightingTxVc.inc /FdCompiled\BasicEffect_VSBasicVertexLightingTxVc.pdb /VnBasicEffect_VSBasicVertexLightingTxVc
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingTxVc.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingTxVc.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicVertexLightingTxVcBn /FhCompiled\BasicEffect_VSBasicVertexLightingTxVcBn.inc /FdCompiled\BasicEffect_VSBasicVertexLightingTxVcBn.pdb /VnBasicEffect_VSBasicVertexLightingTxVcBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingTxVcBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingTxVcBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicOneLight /FhCompiled\BasicEffect_VSBasicOneLight.inc /FdCompiled\BasicEffect_VSBasicOneLight.pdb /VnBasicEffect_VSBasicOneLight
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicOneLight.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicOneLight.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicOneLightBn /FhCompiled\BasicEffect_VSBasicOneLightBn.inc /FdCompiled\BasicEffect_VSBasicOneLightBn.pdb /VnBasicEffect_VSBasicOneLightBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicOneLightBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicOneLightBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicOneLightVc /FhCompiled\BasicEffect_VSBasicOneLightVc.inc /FdCompiled\BasicEffect_VSBasicOneLightVc.pdb /VnBasicEffect_VSBasicOneLightVc
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicOneLightVc.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicOneLightVc.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicOneLightVcBn /FhCompiled\BasicEffect_VSBasicOneLightVcBn.inc /FdCompiled\BasicEffect_VSBasicOneLightVcBn.pdb /VnBasicEffect_VSBasicOneLightVcBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicOneLightVcBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicOneLightVcBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicOneLightTx /FhCompiled\BasicEffect_VSBasicOneLightTx.inc /FdCompiled\BasicEffect_VSBasicOneLightTx.pdb /VnBasicEffect_VSBasicOneLightTx
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicOneLightTx.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicOneLightTx.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicOneLightTxBn /FhCompiled\BasicEffect_VSBasicOneLightTxBn.inc /FdCompiled\BasicEffect_VSBasicOneLightTxBn.pdb /VnBasicEffect_VSBasicOneLightTxBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicOneLightTxBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicOneLightTxBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicOneLightTxVc /FhCompiled\BasicEffect_VSBasicOneLightTxVc.inc /FdCompiled\BasicEffect_VSBasicOneLightTxVc.pdb /VnBasicEffect_VSBasicOneLightTxVc
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicOneLightTxVc.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicOneLightTxVc.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicOneLightTxVcBn /FhCompiled\BasicEffect_VSBasicOneLightTxVcBn.inc /FdCompiled\BasicEffect_VSBasicOneLightTxVcBn.pdb /VnBasicEffect_VSBasicOneLightTxVcBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicOneLightTxVcBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicOneLightTxVcBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicPixelLighting /FhCompiled\BasicEffect_VSBasicPixelLighting.inc /FdCompiled\BasicEffect_VSBasicPixelLighting.pdb /VnBasicEffect_VSBasicPixelLighting
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicPixelLighting.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicPixelLighting.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicPixelLightingBn /FhCompiled\BasicEffect_VSBasicPixelLightingBn.inc /FdCompiled\BasicEffect_VSBasicPixelLightingBn.pdb /VnBasicEffect_VSBasicPixelLightingBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicPixelLightingVc /FhCompiled\BasicEffect_VSBasicPixelLightingVc.inc /FdCompiled\BasicEffect_VSBasicPixelLightingVc.pdb /VnBasicEffect_VSBasicPixelLightingVc
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingVc.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingVc.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicPixelLightingVcBn /FhCompiled\BasicEffect_VSBasicPixelLightingVcBn.inc /FdCompiled\BasicEffect_VSBasicPixelLightingVcBn.pdb /VnBasicEffect_VSBasicPixelLightingVcBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingVcBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingVcBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicPixelLightingTx /FhCompiled\BasicEffect_VSBasicPixelLightingTx.inc /FdCompiled\BasicEffect_VSBasicPixelLightingTx.pdb /VnBasicEffect_VSBasicPixelLightingTx
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingTx.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingTx.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicPixelLightingTxBn /FhCompiled\BasicEffect_VSBasicPixelLightingTxBn.inc /FdCompiled\BasicEffect_VSBasicPixelLightingTxBn.pdb /VnBasicEffect_VSBasicPixelLightingTxBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingTxBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingTxBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicPixelLightingTxVc /FhCompiled\BasicEffect_VSBasicPixelLightingTxVc.inc /FdCompiled\BasicEffect_VSBasicPixelLightingTxVc.pdb /VnBasicEffect_VSBasicPixelLightingTxVc
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingTxVc.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingTxVc.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSBasicPixelLightingTxVcBn /FhCompiled\BasicEffect_VSBasicPixelLightingTxVcBn.inc /FdCompiled\BasicEffect_VSBasicPixelLightingTxVcBn.pdb /VnBasicEffect_VSBasicPixelLightingTxVcBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingTxVcBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingTxVcBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSBasic /FhCompiled\BasicEffect_PSBasic.inc /FdCompiled\BasicEffect_PSBasic.pdb /VnBasicEffect_PSBasic
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_PSBasic.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_PSBasic.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSBasicNoFog /FhCompiled\BasicEffect_PSBasicNoFog.inc /FdCompiled\BasicEffect_PSBasicNoFog.pdb /VnBasicEffect_PSBasicNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_PSBasicNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_PSBasicNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSBasicTx /FhCompiled\BasicEffect_PSBasicTx.inc /FdCompiled\BasicEffect_PSBasicTx.pdb /VnBasicEffect_PSBasicTx
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_PSBasicTx.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_PSBasicTx.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSBasicTxNoFog /FhCompiled\BasicEffect_PSBasicTxNoFog.inc /FdCompiled\BasicEffect_PSBasicTxNoFog.pdb /VnBasicEffect_PSBasicTxNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_PSBasicTxNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_PSBasicTxNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSBasicVertexLighting /FhCompiled\BasicEffect_PSBasicVertexLighting.inc /FdCompiled\BasicEffect_PSBasicVertexLighting.pdb /VnBasicEffect_PSBasicVertexLighting
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_PSBasicVertexLighting.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_PSBasicVertexLighting.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSBasicVertexLightingNoFog /FhCompiled\BasicEffect_PSBasicVertexLightingNoFog.inc /FdCompiled\BasicEffect_PSBasicVertexLightingNoFog.pdb /VnBasicEffect_PSBasicVertexLightingNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_PSBasicVertexLightingNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_PSBasicVertexLightingNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSBasicVertexLightingTx /FhCompiled\BasicEffect_PSBasicVertexLightingTx.inc /FdCompiled\BasicEffect_PSBasicVertexLightingTx.pdb /VnBasicEffect_PSBasicVertexLightingTx
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_PSBasicVertexLightingTx.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_PSBasicVertexLightingTx.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSBasicVertexLightingTxNoFog /FhCompiled\BasicEffect_PSBasicVertexLightingTxNoFog.inc /FdCompiled\BasicEffect_PSBasicVertexLightingTxNoFog.pdb /VnBasicEffect_PSBasicVertexLightingTxNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_PSBasicVertexLightingTxNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_PSBasicVertexLightingTxNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSBasicPixelLighting /FhCompiled\BasicEffect_PSBasicPixelLighting.inc /FdCompiled\BasicEffect_PSBasicPixelLighting.pdb /VnBasicEffect_PSBasicPixelLighting
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_PSBasicPixelLighting.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_PSBasicPixelLighting.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" BasicEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSBasicPixelLightingTx /FhCompiled\BasicEffect_PSBasicPixelLightingTx.inc /FdCompiled\BasicEffect_PSBasicPixelLightingTx.pdb /VnBasicEffect_PSBasicPixelLightingTx
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_PSBasicPixelLightingTx.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\BasicEffect_PSBasicPixelLightingTx.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DualTextureEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSDualTexture /FhCompiled\DualTextureEffect_VSDualTexture.inc /FdCompiled\DualTextureEffect_VSDualTexture.pdb /VnDualTextureEffect_VSDualTexture
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DualTextureEffect_VSDualTexture.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DualTextureEffect_VSDualTexture.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DualTextureEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSDualTextureNoFog /FhCompiled\DualTextureEffect_VSDualTextureNoFog.inc /FdCompiled\DualTextureEffect_VSDualTextureNoFog.pdb /VnDualTextureEffect_VSDualTextureNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DualTextureEffect_VSDualTextureNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DualTextureEffect_VSDualTextureNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DualTextureEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSDualTextureVc /FhCompiled\DualTextureEffect_VSDualTextureVc.inc /FdCompiled\DualTextureEffect_VSDualTextureVc.pdb /VnDualTextureEffect_VSDualTextureVc
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DualTextureEffect_VSDualTextureVc.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DualTextureEffect_VSDualTextureVc.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DualTextureEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSDualTextureVcNoFog /FhCompiled\DualTextureEffect_VSDualTextureVcNoFog.inc /FdCompiled\DualTextureEffect_VSDualTextureVcNoFog.pdb /VnDualTextureEffect_VSDualTextureVcNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DualTextureEffect_VSDualTextureVcNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DualTextureEffect_VSDualTextureVcNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DualTextureEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSDualTexture /FhCompiled\DualTextureEffect_PSDualTexture.inc /FdCompiled\DualTextureEffect_PSDualTexture.pdb /VnDualTextureEffect_PSDualTexture
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DualTextureEffect_PSDualTexture.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DualTextureEffect_PSDualTexture.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DualTextureEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSDualTextureNoFog /FhCompiled\DualTextureEffect_PSDualTextureNoFog.inc /FdCompiled\DualTextureEffect_PSDualTextureNoFog.pdb /VnDualTextureEffect_PSDualTextureNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DualTextureEffect_PSDualTextureNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DualTextureEffect_PSDualTextureNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSEnvMap /FhCompiled\EnvironmentMapEffect_VSEnvMap.inc /FdCompiled\EnvironmentMapEffect_VSEnvMap.pdb /VnEnvironmentMapEffect_VSEnvMap
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMap.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMap.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSEnvMapBn /FhCompiled\EnvironmentMapEffect_VSEnvMapBn.inc /FdCompiled\EnvironmentMapEffect_VSEnvMapBn.pdb /VnEnvironmentMapEffect_VSEnvMapBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSEnvMapFresnel /FhCompiled\EnvironmentMapEffect_VSEnvMapFresnel.inc /FdCompiled\EnvironmentMapEffect_VSEnvMapFresnel.pdb /VnEnvironmentMapEffect_VSEnvMapFresnel
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapFresnel.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapFresnel.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSEnvMapFresnelBn /FhCompiled\EnvironmentMapEffect_VSEnvMapFresnelBn.inc /FdCompiled\EnvironmentMapEffect_VSEnvMapFresnelBn.pdb /VnEnvironmentMapEffect_VSEnvMapFresnelBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapFresnelBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapFresnelBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSEnvMapOneLight /FhCompiled\EnvironmentMapEffect_VSEnvMapOneLight.inc /FdCompiled\EnvironmentMapEffect_VSEnvMapOneLight.pdb /VnEnvironmentMapEffect_VSEnvMapOneLight
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapOneLight.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapOneLight.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSEnvMapOneLightBn /FhCompiled\EnvironmentMapEffect_VSEnvMapOneLightBn.inc /FdCompiled\EnvironmentMapEffect_VSEnvMapOneLightBn.pdb /VnEnvironmentMapEffect_VSEnvMapOneLightBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapOneLightBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapOneLightBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSEnvMapOneLightFresnel /FhCompiled\EnvironmentMapEffect_VSEnvMapOneLightFresnel.inc /FdCompiled\EnvironmentMapEffect_VSEnvMapOneLightFresnel.pdb /VnEnvironmentMapEffect_VSEnvMapOneLightFresnel
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapOneLightFresnel.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapOneLightFresnel.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSEnvMapOneLightFresnelBn /FhCompiled\EnvironmentMapEffect_VSEnvMapOneLightFresnelBn.inc /FdCompiled\EnvironmentMapEffect_VSEnvMapOneLightFresnelBn.pdb /VnEnvironmentMapEffect_VSEnvMapOneLightFresnelBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapOneLightFresnelBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapOneLightFresnelBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSEnvMapPixelLighting /FhCompiled\EnvironmentMapEffect_VSEnvMapPixelLighting.inc /FdCompiled\EnvironmentMapEffect_VSEnvMapPixelLighting.pdb /VnEnvironmentMapEffect_VSEnvMapPixelLighting
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapPixelLighting.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapPixelLighting.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSEnvMapPixelLightingBn /FhCompiled\EnvironmentMapEffect_VSEnvMapPixelLightingBn.inc /FdCompiled\EnvironmentMapEffect_VSEnvMapPixelLightingBn.pdb /VnEnvironmentMapEffect_VSEnvMapPixelLightingBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapPixelLightingBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapPixelLightingBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSEnvMapPixelLightingSM4 /FhCompiled\EnvironmentMapEffect_VSEnvMapPixelLightingSM4.inc /FdCompiled\EnvironmentMapEffect_VSEnvMapPixelLightingSM4.pdb /VnEnvironmentMapEffect_VSEnvMapPixelLightingSM4
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapPixelLightingSM4.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapPixelLightingSM4.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSEnvMapPixelLightingBnSM4 /FhCompiled\EnvironmentMapEffect_VSEnvMapPixelLightingBnSM4.inc /FdCompiled\EnvironmentMapEffect_VSEnvMapPixelLightingBnSM4.pdb /VnEnvironmentMapEffect_VSEnvMapPixelLightingBnSM4
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapPixelLightingBnSM4.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapPixelLightingBnSM4.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSEnvMap /FhCompiled\EnvironmentMapEffect_PSEnvMap.inc /FdCompiled\EnvironmentMapEffect_PSEnvMap.pdb /VnEnvironmentMapEffect_PSEnvMap
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMap.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMap.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSEnvMapNoFog /FhCompiled\EnvironmentMapEffect_PSEnvMapNoFog.inc /FdCompiled\EnvironmentMapEffect_PSEnvMapNoFog.pdb /VnEnvironmentMapEffect_PSEnvMapNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSEnvMapSpecular /FhCompiled\EnvironmentMapEffect_PSEnvMapSpecular.inc /FdCompiled\EnvironmentMapEffect_PSEnvMapSpecular.pdb /VnEnvironmentMapEffect_PSEnvMapSpecular
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpecular.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpecular.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSEnvMapSpecularNoFog /FhCompiled\EnvironmentMapEffect_PSEnvMapSpecularNoFog.inc /FdCompiled\EnvironmentMapEffect_PSEnvMapSpecularNoFog.pdb /VnEnvironmentMapEffect_PSEnvMapSpecularNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpecularNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpecularNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSEnvMapPixelLighting /FhCompiled\EnvironmentMapEffect_PSEnvMapPixelLighting.inc /FdCompiled\EnvironmentMapEffect_PSEnvMapPixelLighting.pdb /VnEnvironmentMapEffect_PSEnvMapPixelLighting
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapPixelLighting.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapPixelLighting.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSEnvMapPixelLightingNoFog /FhCompiled\EnvironmentMapEffect_PSEnvMapPixelLightingNoFog.inc /FdCompiled\EnvironmentMapEffect_PSEnvMapPixelLightingNoFog.pdb /VnEnvironmentMapEffect_PSEnvMapPixelLightingNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapPixelLightingNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapPixelLightingNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSEnvMapPixelLightingFresnel /FhCompiled\EnvironmentMapEffect_PSEnvMapPixelLightingFresnel.inc /FdCompiled\EnvironmentMapEffect_PSEnvMapPixelLightingFresnel.pdb /VnEnvironmentMapEffect_PSEnvMapPixelLightingFresnel
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapPixelLightingFresnel.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapPixelLightingFresnel.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSEnvMapPixelLightingFresnelNoFog /FhCompiled\EnvironmentMapEffect_PSEnvMapPixelLightingFresnelNoFog.inc /FdCompiled\EnvironmentMapEffect_PSEnvMapPixelLightingFresnelNoFog.pdb /VnEnvironmentMapEffect_PSEnvMapPixelLightingFresnelNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapPixelLightingFresnelNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapPixelLightingFresnelNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSEnvMapSpherePixelLighting /FhCompiled\EnvironmentMapEffect_PSEnvMapSpherePixelLighting.inc /FdCompiled\EnvironmentMapEffect_PSEnvMapSpherePixelLighting.pdb /VnEnvironmentMapEffect_PSEnvMapSpherePixelLighting
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpherePixelLighting.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpherePixelLighting.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSEnvMapSpherePixelLightingNoFog /FhCompiled\EnvironmentMapEffect_PSEnvMapSpherePixelLightingNoFog.inc /FdCompiled\EnvironmentMapEffect_PSEnvMapSpherePixelLightingNoFog.pdb /VnEnvironmentMapEffect_PSEnvMapSpherePixelLightingNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpherePixelLightingNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpherePixelLightingNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSEnvMapSpherePixelLightingFresnel /FhCompiled\EnvironmentMapEffect_PSEnvMapSpherePixelLightingFresnel.inc /FdCompiled\EnvironmentMapEffect_PSEnvMapSpherePixelLightingFresnel.pdb /VnEnvironmentMapEffect_PSEnvMapSpherePixelLightingFresnel
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpherePixelLightingFresnel.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpherePixelLightingFresnel.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSEnvMapSpherePixelLightingFresnelNoFog /FhCompiled\EnvironmentMapEffect_PSEnvMapSpherePixelLightingFresnelNoFog.inc /FdCompiled\EnvironmentMapEffect_PSEnvMapSpherePixelLightingFresnelNoFog.pdb /VnEnvironmentMapEffect_PSEnvMapSpherePixelLightingFresnelNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpherePixelLightingFresnelNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpherePixelLightingFresnelNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSEnvMapDualParabolaPixelLighting /FhCompiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLighting.inc /FdCompiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLighting.pdb /VnEnvironmentMapEffect_PSEnvMapDualParabolaPixelLighting
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLighting.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLighting.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSEnvMapDualParabolaPixelLightingNoFog /FhCompiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingNoFog.inc /FdCompiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingNoFog.pdb /VnEnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSEnvMapDualParabolaPixelLightingFresnel /FhCompiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingFresnel.inc /FdCompiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingFresnel.pdb /VnEnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingFresnel
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingFresnel.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingFresnel.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" EnvironmentMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSEnvMapDualParabolaPixelLightingFresnelNoFog /FhCompiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingFresnelNoFog.inc /FdCompiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingFresnelNoFog.pdb /VnEnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingFresnelNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingFresnelNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingFresnelNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" SkinnedEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSSkinnedVertexLightingOneBone /FhCompiled\SkinnedEffect_VSSkinnedVertexLightingOneBone.inc /FdCompiled\SkinnedEffect_VSSkinnedVertexLightingOneBone.pdb /VnSkinnedEffect_VSSkinnedVertexLightingOneBone
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedVertexLightingOneBone.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedVertexLightingOneBone.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" SkinnedEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSSkinnedVertexLightingOneBoneBn /FhCompiled\SkinnedEffect_VSSkinnedVertexLightingOneBoneBn.inc /FdCompiled\SkinnedEffect_VSSkinnedVertexLightingOneBoneBn.pdb /VnSkinnedEffect_VSSkinnedVertexLightingOneBoneBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedVertexLightingOneBoneBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedVertexLightingOneBoneBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" SkinnedEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSSkinnedVertexLightingTwoBones /FhCompiled\SkinnedEffect_VSSkinnedVertexLightingTwoBones.inc /FdCompiled\SkinnedEffect_VSSkinnedVertexLightingTwoBones.pdb /VnSkinnedEffect_VSSkinnedVertexLightingTwoBones
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedVertexLightingTwoBones.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedVertexLightingTwoBones.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" SkinnedEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSSkinnedVertexLightingTwoBonesBn /FhCompiled\SkinnedEffect_VSSkinnedVertexLightingTwoBonesBn.inc /FdCompiled\SkinnedEffect_VSSkinnedVertexLightingTwoBonesBn.pdb /VnSkinnedEffect_VSSkinnedVertexLightingTwoBonesBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedVertexLightingTwoBonesBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedVertexLightingTwoBonesBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" SkinnedEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSSkinnedVertexLightingFourBones /FhCompiled\SkinnedEffect_VSSkinnedVertexLightingFourBones.inc /FdCompiled\SkinnedEffect_VSSkinnedVertexLightingFourBones.pdb /VnSkinnedEffect_VSSkinnedVertexLightingFourBones
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedVertexLightingFourBones.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedVertexLightingFourBones.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" SkinnedEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSSkinnedVertexLightingFourBonesBn /FhCompiled\SkinnedEffect_VSSkinnedVertexLightingFourBonesBn.inc /FdCompiled\SkinnedEffect_VSSkinnedVertexLightingFourBonesBn.pdb /VnSkinnedEffect_VSSkinnedVertexLightingFourBonesBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedVertexLightingFourBonesBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedVertexLightingFourBonesBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" SkinnedEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSSkinnedOneLightOneBone /FhCompiled\SkinnedEffect_VSSkinnedOneLightOneBone.inc /FdCompiled\SkinnedEffect_VSSkinnedOneLightOneBone.pdb /VnSkinnedEffect_VSSkinnedOneLightOneBone
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedOneLightOneBone.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedOneLightOneBone.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" SkinnedEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSSkinnedOneLightOneBoneBn /FhCompiled\SkinnedEffect_VSSkinnedOneLightOneBoneBn.inc /FdCompiled\SkinnedEffect_VSSkinnedOneLightOneBoneBn.pdb /VnSkinnedEffect_VSSkinnedOneLightOneBoneBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedOneLightOneBoneBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedOneLightOneBoneBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" SkinnedEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSSkinnedOneLightTwoBones /FhCompiled\SkinnedEffect_VSSkinnedOneLightTwoBones.inc /FdCompiled\SkinnedEffect_VSSkinnedOneLightTwoBones.pdb /VnSkinnedEffect_VSSkinnedOneLightTwoBones
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedOneLightTwoBones.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedOneLightTwoBones.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" SkinnedEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSSkinnedOneLightTwoBonesBn /FhCompiled\SkinnedEffect_VSSkinnedOneLightTwoBonesBn.inc /FdCompiled\SkinnedEffect_VSSkinnedOneLightTwoBonesBn.pdb /VnSkinnedEffect_VSSkinnedOneLightTwoBonesBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedOneLightTwoBonesBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedOneLightTwoBonesBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" SkinnedEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSSkinnedOneLightFourBones /FhCompiled\SkinnedEffect_VSSkinnedOneLightFourBones.inc /FdCompiled\SkinnedEffect_VSSkinnedOneLightFourBones.pdb /VnSkinnedEffect_VSSkinnedOneLightFourBones
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedOneLightFourBones.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedOneLightFourBones.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" SkinnedEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSSkinnedOneLightFourBonesBn /FhCompiled\SkinnedEffect_VSSkinnedOneLightFourBonesBn.inc /FdCompiled\SkinnedEffect_VSSkinnedOneLightFourBonesBn.pdb /VnSkinnedEffect_VSSkinnedOneLightFourBonesBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedOneLightFourBonesBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedOneLightFourBonesBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" SkinnedEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSSkinnedPixelLightingOneBone /FhCompiled\SkinnedEffect_VSSkinnedPixelLightingOneBone.inc /FdCompiled\SkinnedEffect_VSSkinnedPixelLightingOneBone.pdb /VnSkinnedEffect_VSSkinnedPixelLightingOneBone
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedPixelLightingOneBone.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedPixelLightingOneBone.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" SkinnedEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSSkinnedPixelLightingOneBoneBn /FhCompiled\SkinnedEffect_VSSkinnedPixelLightingOneBoneBn.inc /FdCompiled\SkinnedEffect_VSSkinnedPixelLightingOneBoneBn.pdb /VnSkinnedEffect_VSSkinnedPixelLightingOneBoneBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedPixelLightingOneBoneBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedPixelLightingOneBoneBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" SkinnedEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSSkinnedPixelLightingTwoBones /FhCompiled\SkinnedEffect_VSSkinnedPixelLightingTwoBones.inc /FdCompiled\SkinnedEffect_VSSkinnedPixelLightingTwoBones.pdb /VnSkinnedEffect_VSSkinnedPixelLightingTwoBones
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedPixelLightingTwoBones.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedPixelLightingTwoBones.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" SkinnedEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSSkinnedPixelLightingTwoBonesBn /FhCompiled\SkinnedEffect_VSSkinnedPixelLightingTwoBonesBn.inc /FdCompiled\SkinnedEffect_VSSkinnedPixelLightingTwoBonesBn.pdb /VnSkinnedEffect_VSSkinnedPixelLightingTwoBonesBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedPixelLightingTwoBonesBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedPixelLightingTwoBonesBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" SkinnedEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSSkinnedPixelLightingFourBones /FhCompiled\SkinnedEffect_VSSkinnedPixelLightingFourBones.inc /FdCompiled\SkinnedEffect_VSSkinnedPixelLightingFourBones.pdb /VnSkinnedEffect_VSSkinnedPixelLightingFourBones
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedPixelLightingFourBones.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedPixelLightingFourBones.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" SkinnedEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EVSSkinnedPixelLightingFourBonesBn /FhCompiled\SkinnedEffect_VSSkinnedPixelLightingFourBonesBn.inc /FdCompiled\SkinnedEffect_VSSkinnedPixelLightingFourBonesBn.pdb /VnSkinnedEffect_VSSkinnedPixelLightingFourBonesBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedPixelLightingFourBonesBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_VSSkinnedPixelLightingFourBonesBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" SkinnedEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSSkinnedVertexLighting /FhCompiled\SkinnedEffect_PSSkinnedVertexLighting.inc /FdCompiled\SkinnedEffect_PSSkinnedVertexLighting.pdb /VnSkinnedEffect_PSSkinnedVertexLighting
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_PSSkinnedVertexLighting.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_PSSkinnedVertexLighting.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" SkinnedEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSSkinnedVertexLightingNoFog /FhCompiled\SkinnedEffect_PSSkinnedVertexLightingNoFog.inc /FdCompiled\SkinnedEffect_PSSkinnedVertexLightingNoFog.pdb /VnSkinnedEffect_PSSkinnedVertexLightingNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_PSSkinnedVertexLightingNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_PSSkinnedVertexLightingNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" SkinnedEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EPSSkinnedPixelLighting /FhCompiled\SkinnedEffect_PSSkinnedPixelLighting.inc /FdCompiled\SkinnedEffect_PSSkinnedPixelLighting.pdb /VnSkinnedEffect_PSSkinnedPixelLighting
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_PSSkinnedPixelLighting.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SkinnedEffect_PSSkinnedPixelLighting.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" NormalMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSNormalPixelLightingTx /FhCompiled\NormalMapEffect_VSNormalPixelLightingTx.inc /FdCompiled\NormalMapEffect_VSNormalPixelLightingTx.pdb /VnNormalMapEffect_VSNormalPixelLightingTx
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTx.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTx.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" NormalMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSNormalPixelLightingTxBn /FhCompiled\NormalMapEffect_VSNormalPixelLightingTxBn.inc /FdCompiled\NormalMapEffect_VSNormalPixelLightingTxBn.pdb /VnNormalMapEffect_VSNormalPixelLightingTxBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" NormalMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSNormalPixelLightingTxVc /FhCompiled\NormalMapEffect_VSNormalPixelLightingTxVc.inc /FdCompiled\NormalMapEffect_VSNormalPixelLightingTxVc.pdb /VnNormalMapEffect_VSNormalPixelLightingTxVc
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVc.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVc.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" NormalMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSNormalPixelLightingTxVcBn /FhCompiled\NormalMapEffect_VSNormalPixelLightingTxVcBn.inc /FdCompiled\NormalMapEffect_VSNormalPixelLightingTxVcBn.pdb /VnNormalMapEffect_VSNormalPixelLightingTxVcBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" NormalMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSNormalPixelLightingTxInst /FhCompiled\NormalMapEffect_VSNormalPixelLightingTxInst.inc /FdCompiled\NormalMapEffect_VSNormalPixelLightingTxInst.pdb /VnNormalMapEffect_VSNormalPixelLightingTxInst
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxInst.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxInst.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" NormalMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSNormalPixelLightingTxBnInst /FhCompiled\NormalMapEffect_VSNormalPixelLightingTxBnInst.inc /FdCompiled\NormalMapEffect_VSNormalPixelLightingTxBnInst.pdb /VnNormalMapEffect_VSNormalPixelLightingTxBnInst
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxBnInst.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxBnInst.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" NormalMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSNormalPixelLightingTxVcInst /FhCompiled\NormalMapEffect_VSNormalPixelLightingTxVcInst.inc /FdCompiled\NormalMapEffect_VSNormalPixelLightingTxVcInst.pdb /VnNormalMapEffect_VSNormalPixelLightingTxVcInst
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcInst.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcInst.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" NormalMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSNormalPixelLightingTxVcBnInst /FhCompiled\NormalMapEffect_VSNormalPixelLightingTxVcBnInst.inc /FdCompiled\NormalMapEffect_VSNormalPixelLightingTxVcBnInst.pdb /VnNormalMapEffect_VSNormalPixelLightingTxVcBnInst
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcBnInst.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcBnInst.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" NormalMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSNormalPixelLightingTx /FhCompiled\NormalMapEffect_PSNormalPixelLightingTx.inc /FdCompiled\NormalMapEffect_PSNormalPixelLightingTx.pdb /VnNormalMapEffect_PSNormalPixelLightingTx
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_PSNormalPixelLightingTx.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_PSNormalPixelLightingTx.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" NormalMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSNormalPixelLightingTxNoFog /FhCompiled\NormalMapEffect_PSNormalPixelLightingTxNoFog.inc /FdCompiled\NormalMapEffect_PSNormalPixelLightingTxNoFog.pdb /VnNormalMapEffect_PSNormalPixelLightingTxNoFog
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_PSNormalPixelLightingTxNoFog.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_PSNormalPixelLightingTxNoFog.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" NormalMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSNormalPixelLightingTxNoSpec /FhCompiled\NormalMapEffect_PSNormalPixelLightingTxNoSpec.inc /FdCompiled\NormalMapEffect_PSNormalPixelLightingTxNoSpec.pdb /VnNormalMapEffect_PSNormalPixelLightingTxNoSpec
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_PSNormalPixelLightingTxNoSpec.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_PSNormalPixelLightingTxNoSpec.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" NormalMapEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSNormalPixelLightingTxNoFogSpec /FhCompiled\NormalMapEffect_PSNormalPixelLightingTxNoFogSpec.inc /FdCompiled\NormalMapEffect_PSNormalPixelLightingTxNoFogSpec.pdb /VnNormalMapEffect_PSNormalPixelLightingTxNoFogSpec
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_PSNormalPixelLightingTxNoFogSpec.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\NormalMapEffect_PSNormalPixelLightingTxNoFogSpec.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" PBREffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSConstant /FhCompiled\PBREffect_VSConstant.inc /FdCompiled\PBREffect_VSConstant.pdb /VnPBREffect_VSConstant
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PBREffect_VSConstant.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PBREffect_VSConstant.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" PBREffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSConstantInst /FhCompiled\PBREffect_VSConstantInst.inc /FdCompiled\PBREffect_VSConstantInst.pdb /VnPBREffect_VSConstantInst
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PBREffect_VSConstantInst.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PBREffect_VSConstantInst.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" PBREffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSConstantVelocity /FhCompiled\PBREffect_VSConstantVelocity.inc /FdCompiled\PBREffect_VSConstantVelocity.pdb /VnPBREffect_VSConstantVelocity
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PBREffect_VSConstantVelocity.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PBREffect_VSConstantVelocity.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" PBREffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSConstantBn /FhCompiled\PBREffect_VSConstantBn.inc /FdCompiled\PBREffect_VSConstantBn.pdb /VnPBREffect_VSConstantBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PBREffect_VSConstantBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PBREffect_VSConstantBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" PBREffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSConstantBnInst /FhCompiled\PBREffect_VSConstantBnInst.inc /FdCompiled\PBREffect_VSConstantBnInst.pdb /VnPBREffect_VSConstantBnInst
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PBREffect_VSConstantBnInst.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PBREffect_VSConstantBnInst.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" PBREffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSConstantVelocityBn /FhCompiled\PBREffect_VSConstantVelocityBn.inc /FdCompiled\PBREffect_VSConstantVelocityBn.pdb /VnPBREffect_VSConstantVelocityBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PBREffect_VSConstantVelocityBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PBREffect_VSConstantVelocityBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" PBREffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSConstant /FhCompiled\PBREffect_PSConstant.inc /FdCompiled\PBREffect_PSConstant.pdb /VnPBREffect_PSConstant
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PBREffect_PSConstant.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PBREffect_PSConstant.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" PBREffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSTextured /FhCompiled\PBREffect_PSTextured.inc /FdCompiled\PBREffect_PSTextured.pdb /VnPBREffect_PSTextured
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PBREffect_PSTextured.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PBREffect_PSTextured.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" PBREffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSTexturedEmissive /FhCompiled\PBREffect_PSTexturedEmissive.inc /FdCompiled\PBREffect_PSTexturedEmissive.pdb /VnPBREffect_PSTexturedEmissive
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PBREffect_PSTexturedEmissive.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PBREffect_PSTexturedEmissive.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" PBREffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSTexturedVelocity /FhCompiled\PBREffect_PSTexturedVelocity.inc /FdCompiled\PBREffect_PSTexturedVelocity.pdb /VnPBREffect_PSTexturedVelocity
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PBREffect_PSTexturedVelocity.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PBREffect_PSTexturedVelocity.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" PBREffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSTexturedEmissiveVelocity /FhCompiled\PBREffect_PSTexturedEmissiveVelocity.inc /FdCompiled\PBREffect_PSTexturedEmissiveVelocity.pdb /VnPBREffect_PSTexturedEmissiveVelocity
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PBREffect_PSTexturedEmissiveVelocity.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PBREffect_PSTexturedEmissiveVelocity.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DebugEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSDebug /FhCompiled\DebugEffect_VSDebug.inc /FdCompiled\DebugEffect_VSDebug.pdb /VnDebugEffect_VSDebug
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_VSDebug.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_VSDebug.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DebugEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSDebugBn /FhCompiled\DebugEffect_VSDebugBn.inc /FdCompiled\DebugEffect_VSDebugBn.pdb /VnDebugEffect_VSDebugBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_VSDebugBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_VSDebugBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DebugEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSDebugVc /FhCompiled\DebugEffect_VSDebugVc.inc /FdCompiled\DebugEffect_VSDebugVc.pdb /VnDebugEffect_VSDebugVc
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_VSDebugVc.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_VSDebugVc.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DebugEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSDebugVcBn /FhCompiled\DebugEffect_VSDebugVcBn.inc /FdCompiled\DebugEffect_VSDebugVcBn.pdb /VnDebugEffect_VSDebugVcBn
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_VSDebugVcBn.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_VSDebugVcBn.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DebugEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSDebugInst /FhCompiled\DebugEffect_VSDebugInst.inc /FdCompiled\DebugEffect_VSDebugInst.pdb /VnDebugEffect_VSDebugInst
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_VSDebugInst.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_VSDebugInst.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DebugEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSDebugBnInst /FhCompiled\DebugEffect_VSDebugBnInst.inc /FdCompiled\DebugEffect_VSDebugBnInst.pdb /VnDebugEffect_VSDebugBnInst
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_VSDebugBnInst.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_VSDebugBnInst.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DebugEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSDebugVcInst /FhCompiled\DebugEffect_VSDebugVcInst.inc /FdCompiled\DebugEffect_VSDebugVcInst.pdb /VnDebugEffect_VSDebugVcInst
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_VSDebugVcInst.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_VSDebugVcInst.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DebugEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSDebugVcBnInst /FhCompiled\DebugEffect_VSDebugVcBnInst.inc /FdCompiled\DebugEffect_VSDebugVcBnInst.pdb /VnDebugEffect_VSDebugVcBnInst
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_VSDebugVcBnInst.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_VSDebugVcBnInst.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DebugEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSHemiAmbient /FhCompiled\DebugEffect_PSHemiAmbient.inc /FdCompiled\DebugEffect_PSHemiAmbient.pdb /VnDebugEffect_PSHemiAmbient
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_PSHemiAmbient.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_PSHemiAmbient.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DebugEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSRGBNormals /FhCompiled\DebugEffect_PSRGBNormals.inc /FdCompiled\DebugEffect_PSRGBNormals.pdb /VnDebugEffect_PSRGBNormals
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_PSRGBNormals.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_PSRGBNormals.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DebugEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSRGBTangents /FhCompiled\DebugEffect_PSRGBTangents.inc /FdCompiled\DebugEffect_PSRGBTangents.pdb /VnDebugEffect_PSRGBTangents
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_PSRGBTangents.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_PSRGBTangents.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DebugEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSRGBBiTangents /FhCompiled\DebugEffect_PSRGBBiTangents.inc /FdCompiled\DebugEffect_PSRGBBiTangents.pdb /VnDebugEffect_PSRGBBiTangents
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_PSRGBBiTangents.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DebugEffect_PSRGBBiTangents.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" SpriteEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /ESpriteVertexShader /FhCompiled\SpriteEffect_SpriteVertexShader.inc /FdCompiled\SpriteEffect_SpriteVertexShader.pdb /VnSpriteEffect_SpriteVertexShader
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SpriteEffect_SpriteVertexShader.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SpriteEffect_SpriteVertexShader.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" SpriteEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /ESpritePixelShader /FhCompiled\SpriteEffect_SpritePixelShader.inc /FdCompiled\SpriteEffect_SpritePixelShader.pdb /VnSpriteEffect_SpritePixelShader
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SpriteEffect_SpritePixelShader.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\SpriteEffect_SpritePixelShader.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DGSLEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /Emain /FhCompiled\DGSLEffect_main.inc /FdCompiled\DGSLEffect_main.pdb /VnDGSLEffect_main
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLEffect_main.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLEffect_main.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DGSLEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /EmainVc /FhCompiled\DGSLEffect_mainVc.inc /FdCompiled\DGSLEffect_mainVc.pdb /VnDGSLEffect_mainVc
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLEffect_mainVc.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLEffect_mainVc.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DGSLEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /Emain1Bones /FhCompiled\DGSLEffect_main1Bones.inc /FdCompiled\DGSLEffect_main1Bones.pdb /VnDGSLEffect_main1Bones
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLEffect_main1Bones.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLEffect_main1Bones.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DGSLEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /Emain1BonesVc /FhCompiled\DGSLEffect_main1BonesVc.inc /FdCompiled\DGSLEffect_main1BonesVc.pdb /VnDGSLEffect_main1BonesVc
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLEffect_main1BonesVc.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLEffect_main1BonesVc.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DGSLEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /Emain2Bones /FhCompiled\DGSLEffect_main2Bones.inc /FdCompiled\DGSLEffect_main2Bones.pdb /VnDGSLEffect_main2Bones
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLEffect_main2Bones.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLEffect_main2Bones.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DGSLEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /Emain2BonesVc /FhCompiled\DGSLEffect_main2BonesVc.inc /FdCompiled\DGSLEffect_main2BonesVc.pdb /VnDGSLEffect_main2BonesVc
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLEffect_main2BonesVc.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLEffect_main2BonesVc.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DGSLEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /Emain4Bones /FhCompiled\DGSLEffect_main4Bones.inc /FdCompiled\DGSLEffect_main4Bones.pdb /VnDGSLEffect_main4Bones
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLEffect_main4Bones.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLEffect_main4Bones.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DGSLEffect.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0_level_9_1 /Emain4BonesVc /FhCompiled\DGSLEffect_main4BonesVc.inc /FdCompiled\DGSLEffect_main4BonesVc.pdb /VnDGSLEffect_main4BonesVc
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLEffect_main4BonesVc.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLEffect_main4BonesVc.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DGSLUnlit.hlsl /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /Emain /FhCompiled\DGSLUnlit_main.inc /FdCompiled\DGSLUnlit_main.pdb /VnDGSLUnlit_main
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLUnlit_main.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLUnlit_main.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DGSLLambert.hlsl /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /Emain /FhCompiled\DGSLLambert_main.inc /FdCompiled\DGSLLambert_main.pdb /VnDGSLLambert_main
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLLambert_main.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLLambert_main.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DGSLPhong.hlsl /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /Emain /FhCompiled\DGSLPhong_main.inc /FdCompiled\DGSLPhong_main.pdb /VnDGSLPhong_main
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLPhong_main.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLPhong_main.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DGSLUnlit.hlsl /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EmainTk /FhCompiled\DGSLUnlit_mainTk.inc /FdCompiled\DGSLUnlit_mainTk.pdb /VnDGSLUnlit_mainTk
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLUnlit_mainTk.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLUnlit_mainTk.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DGSLLambert.hlsl /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EmainTk /FhCompiled\DGSLLambert_mainTk.inc /FdCompiled\DGSLLambert_mainTk.pdb /VnDGSLLambert_mainTk
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLLambert_mainTk.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLLambert_mainTk.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DGSLPhong.hlsl /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EmainTk /FhCompiled\DGSLPhong_mainTk.inc /FdCompiled\DGSLPhong_mainTk.pdb /VnDGSLPhong_mainTk
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLPhong_mainTk.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLPhong_mainTk.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DGSLUnlit.hlsl /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EmainTx /FhCompiled\DGSLUnlit_mainTx.inc /FdCompiled\DGSLUnlit_mainTx.pdb /VnDGSLUnlit_mainTx
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLUnlit_mainTx.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLUnlit_mainTx.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DGSLLambert.hlsl /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EmainTx /FhCompiled\DGSLLambert_mainTx.inc /FdCompiled\DGSLLambert_mainTx.pdb /VnDGSLLambert_mainTx
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLLambert_mainTx.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLLambert_mainTx.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DGSLPhong.hlsl /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EmainTx /FhCompiled\DGSLPhong_mainTx.inc /FdCompiled\DGSLPhong_mainTx.pdb /VnDGSLPhong_mainTx
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLPhong_mainTx.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLPhong_mainTx.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DGSLUnlit.hlsl /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EmainTxTk /FhCompiled\DGSLUnlit_mainTxTk.inc /FdCompiled\DGSLUnlit_mainTxTk.pdb /VnDGSLUnlit_mainTxTk
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLUnlit_mainTxTk.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLUnlit_mainTxTk.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DGSLLambert.hlsl /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EmainTxTk /FhCompiled\DGSLLambert_mainTxTk.inc /FdCompiled\DGSLLambert_mainTxTk.pdb /VnDGSLLambert_mainTxTk
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLLambert_mainTxTk.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLLambert_mainTxTk.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" DGSLPhong.hlsl /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0_level_9_1 /EmainTxTk /FhCompiled\DGSLPhong_mainTxTk.inc /FdCompiled\DGSLPhong_mainTxTk.pdb /VnDGSLPhong_mainTxTk
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLPhong_mainTxTk.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\DGSLPhong_mainTxTk.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" PostProcess.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSQuad /FhCompiled\PostProcess_VSQuad.inc /FdCompiled\PostProcess_VSQuad.pdb /VnPostProcess_VSQuad
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PostProcess_VSQuad.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PostProcess_VSQuad.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" PostProcess.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSCopy /FhCompiled\PostProcess_PSCopy.inc /FdCompiled\PostProcess_PSCopy.pdb /VnPostProcess_PSCopy
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PostProcess_PSCopy.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PostProcess_PSCopy.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" PostProcess.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSMonochrome /FhCompiled\PostProcess_PSMonochrome.inc /FdCompiled\PostProcess_PSMonochrome.pdb /VnPostProcess_PSMonochrome
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PostProcess_PSMonochrome.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PostProcess_PSMonochrome.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" PostProcess.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSSepia /FhCompiled\PostProcess_PSSepia.inc /FdCompiled\PostProcess_PSSepia.pdb /VnPostProcess_PSSepia
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PostProcess_PSSepia.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PostProcess_PSSepia.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" PostProcess.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSDownScale2x2 /FhCompiled\PostProcess_PSDownScale2x2.inc /FdCompiled\PostProcess_PSDownScale2x2.pdb /VnPostProcess_PSDownScale2x2
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PostProcess_PSDownScale2x2.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PostProcess_PSDownScale2x2.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" PostProcess.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSDownScale4x4 /FhCompiled\PostProcess_PSDownScale4x4.inc /FdCompiled\PostProcess_PSDownScale4x4.pdb /VnPostProcess_PSDownScale4x4
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PostProcess_PSDownScale4x4.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PostProcess_PSDownScale4x4.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" PostProcess.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSGaussianBlur5x5 /FhCompiled\PostProcess_PSGaussianBlur5x5.inc /FdCompiled\PostProcess_PSGaussianBlur5x5.pdb /VnPostProcess_PSGaussianBlur5x5
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PostProcess_PSGaussianBlur5x5.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PostProcess_PSGaussianBlur5x5.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" PostProcess.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSBloomExtract /FhCompiled\PostProcess_PSBloomExtract.inc /FdCompiled\PostProcess_PSBloomExtract.pdb /VnPostProcess_PSBloomExtract
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PostProcess_PSBloomExtract.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PostProcess_PSBloomExtract.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" PostProcess.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSBloomBlur /FhCompiled\PostProcess_PSBloomBlur.inc /FdCompiled\PostProcess_PSBloomBlur.pdb /VnPostProcess_PSBloomBlur
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PostProcess_PSBloomBlur.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PostProcess_PSBloomBlur.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" PostProcess.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSMerge /FhCompiled\PostProcess_PSMerge.inc /FdCompiled\PostProcess_PSMerge.pdb /VnPostProcess_PSMerge
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PostProcess_PSMerge.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PostProcess_PSMerge.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" PostProcess.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSBloomCombine /FhCompiled\PostProcess_PSBloomCombine.inc /FdCompiled\PostProcess_PSBloomCombine.pdb /VnPostProcess_PSBloomCombine
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PostProcess_PSBloomCombine.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\PostProcess_PSBloomCombine.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" ToneMap.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tvs_4_0 /EVSQuad /FhCompiled\ToneMap_VSQuad.inc /FdCompiled\ToneMap_VSQuad.pdb /VnToneMap_VSQuad
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\ToneMap_VSQuad.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\ToneMap_VSQuad.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" ToneMap.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSCopy /FhCompiled\ToneMap_PSCopy.inc /FdCompiled\ToneMap_PSCopy.pdb /VnToneMap_PSCopy
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\ToneMap_PSCopy.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\ToneMap_PSCopy.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" ToneMap.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSSaturate /FhCompiled\ToneMap_PSSaturate.inc /FdCompiled\ToneMap_PSSaturate.pdb /VnToneMap_PSSaturate
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\ToneMap_PSSaturate.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\ToneMap_PSSaturate.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" ToneMap.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSReinhard /FhCompiled\ToneMap_PSReinhard.inc /FdCompiled\ToneMap_PSReinhard.pdb /VnToneMap_PSReinhard
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\ToneMap_PSReinhard.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\ToneMap_PSReinhard.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" ToneMap.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSACESFilmic /FhCompiled\ToneMap_PSACESFilmic.inc /FdCompiled\ToneMap_PSACESFilmic.pdb /VnToneMap_PSACESFilmic
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\ToneMap_PSACESFilmic.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\ToneMap_PSACESFilmic.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" ToneMap.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPS_SRGB /FhCompiled\ToneMap_PS_SRGB.inc /FdCompiled\ToneMap_PS_SRGB.pdb /VnToneMap_PS_SRGB
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\ToneMap_PS_SRGB.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\ToneMap_PS_SRGB.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" ToneMap.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSSaturate_SRGB /FhCompiled\ToneMap_PSSaturate_SRGB.inc /FdCompiled\ToneMap_PSSaturate_SRGB.pdb /VnToneMap_PSSaturate_SRGB
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\ToneMap_PSSaturate_SRGB.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\ToneMap_PSSaturate_SRGB.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" ToneMap.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSReinhard_SRGB /FhCompiled\ToneMap_PSReinhard_SRGB.inc /FdCompiled\ToneMap_PSReinhard_SRGB.pdb /VnToneMap_PSReinhard_SRGB
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\ToneMap_PSReinhard_SRGB.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\ToneMap_PSReinhard_SRGB.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" ToneMap.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSACESFilmic_SRGB /FhCompiled\ToneMap_PSACESFilmic_SRGB.inc /FdCompiled\ToneMap_PSACESFilmic_SRGB.pdb /VnToneMap_PSACESFilmic_SRGB
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\ToneMap_PSACESFilmic_SRGB.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\ToneMap_PSACESFilmic_SRGB.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86\fxc.exe" ToneMap.fx /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tps_4_0 /EPSHDR10 /FhCompiled\ToneMap_PSHDR10.inc /FdCompiled\ToneMap_PSHDR10.pdb /VnToneMap_PSHDR10
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\ToneMap_PSHDR10.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\src\Shaders\Compiled\ToneMap_PSHDR10.inc
+  
+  Shaders compiled ok
+  pch.cpp
+  AudioEngine.cpp
+  DynamicSoundEffectInstance.cpp
+  SoundCommon.cpp
+  SoundEffect.cpp
+  SoundEffectInstance.cpp
+  SoundStreamInstance.cpp
+  WaveBank.cpp
+  WaveBankReader.cpp
+  WAVFileReader.cpp
+  AlphaTestEffect.cpp
+  BasicEffect.cpp
+  BasicPostProcess.cpp
+  BufferHelpers.cpp
+  CommonStates.cpp
+  DDSTextureLoader.cpp
+  DebugEffect.cpp
+  DGSLEffect.cpp
+  DGSLEffectFactory.cpp
+  DirectXHelpers.cpp
+  DualPostProcess.cpp
+  Generating Code...
+  Compiling...
+  DualTextureEffect.cpp
+  BinaryReader.cpp
+  EffectCommon.cpp
+  EffectFactory.cpp
+  EnvironmentMapEffect.cpp
+  GamePad.cpp
+  GeometricPrimitive.cpp
+  Geometry.cpp
+  GraphicsMemory.cpp
+  Keyboard.cpp
+  Model.cpp
+  ModelLoadCMO.cpp
+  ModelLoadSDKMESH.cpp
+  ModelLoadVBO.cpp
+  Mouse.cpp
+  NormalMapEffect.cpp
+  PBREffect.cpp
+  PBREffectFactory.cpp
+  ScreenGrab.cpp
+  SimpleMath.cpp
+  Generating Code...
+  Compiling...
+  SkinnedEffect.cpp
+  SpriteBatch.cpp
+  PrimitiveBatch.cpp
+  SpriteFont.cpp
+  ToneMapPostProcess.cpp
+  VertexTypes.cpp
+  WICTextureLoader.cpp
+  Generating Code...
+  DirectXTK_Desktop_2019_Win10.vcxproj -> C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\Bin\Desktop_2019_Win10\x64\Debug\DirectXTK.lib

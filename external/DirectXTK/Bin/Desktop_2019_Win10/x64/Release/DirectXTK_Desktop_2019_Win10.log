@@ -1,0 +1,54 @@
+﻿  pch.cpp
+  AudioEngine.cpp
+  DynamicSoundEffectInstance.cpp
+  SoundCommon.cpp
+  SoundEffect.cpp
+  SoundEffectInstance.cpp
+  SoundStreamInstance.cpp
+  WaveBank.cpp
+  WaveBankReader.cpp
+  WAVFileReader.cpp
+  AlphaTestEffect.cpp
+  BasicEffect.cpp
+  BasicPostProcess.cpp
+  BufferHelpers.cpp
+  CommonStates.cpp
+  DDSTextureLoader.cpp
+  DebugEffect.cpp
+  DGSLEffect.cpp
+  DGSLEffectFactory.cpp
+  DirectXHelpers.cpp
+  DualPostProcess.cpp
+  Generating Code...
+  Compiling...
+  DualTextureEffect.cpp
+  BinaryReader.cpp
+  EffectCommon.cpp
+  EffectFactory.cpp
+  EnvironmentMapEffect.cpp
+  GamePad.cpp
+  GeometricPrimitive.cpp
+  Geometry.cpp
+  GraphicsMemory.cpp
+  Keyboard.cpp
+  Model.cpp
+  ModelLoadCMO.cpp
+  ModelLoadSDKMESH.cpp
+  ModelLoadVBO.cpp
+  Mouse.cpp
+  NormalMapEffect.cpp
+  PBREffect.cpp
+  PBREffectFactory.cpp
+  ScreenGrab.cpp
+  SimpleMath.cpp
+  Generating Code...
+  Compiling...
+  SkinnedEffect.cpp
+  SpriteBatch.cpp
+  PrimitiveBatch.cpp
+  SpriteFont.cpp
+  ToneMapPostProcess.cpp
+  VertexTypes.cpp
+  WICTextureLoader.cpp
+  Generating Code...
+  DirectXTK_Desktop_2019_Win10.vcxproj -> C:\Users\Zhenya\Downloads\DirectXTK-master\DirectXTK-master\Bin\Desktop_2019_Win10\x64\Release\DirectXTK.lib
