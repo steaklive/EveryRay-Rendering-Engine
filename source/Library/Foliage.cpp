@@ -7,7 +7,6 @@
 #include "Mesh.h"
 #include "VertexDeclarations.h"
 #include "RasterizerStates.h"
-#include "FoliageMaterial.h"
 
 #include "TGATextureLoader.h"
 #include <DDSTextureLoader.h>
@@ -36,6 +35,16 @@ namespace Library
 
 		LoadBillboardModel(mType);
 
+        Effect* effectDeferredPrepass = new Effect(pGame);
+        effectDeferredPrepass->CompileFromFile(Utility::GetFilePath(L"content\\effects\\DeferredPrepass.fx"));
+        mDeferredPrepassMaterial = new DeferredMaterial();
+        mDeferredPrepassMaterial->Initialize(effectDeferredPrepass);
+        
+        Effect* effectVoxelizationGI = new Effect(pGame);
+		effectVoxelizationGI->CompileFromFile(Utility::GetFilePath(L"content\\effects\\VoxelizationGI.fx"));
+        mVoxelizationGIMaterial = new Rendering::VoxelizationGIMaterial();
+		mVoxelizationGIMaterial->Initialize(effectVoxelizationGI);
+
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::ToWideString(textureName).c_str(), nullptr, &mAlbedoTexture)))
 		{
 			std::string message = "Failed to create Foliage Albedo Map: ";
@@ -58,6 +67,8 @@ namespace Library
 		DeleteObject(mPatchesBufferCPU);
 		DeleteObject(mPatchesBufferGPU);
 		DeleteObject(mMaterial);
+		DeleteObject(mDeferredPrepassMaterial);
+		DeleteObject(mVoxelizationGIMaterial);
 	}
 
 	void Foliage::LoadBillboardModel(FoliageBillboardType bType)
@@ -215,7 +226,7 @@ namespace Library
 		}
 	}
 
-	void Foliage::Draw(const GameTime& gameTime, ShadowMapper* worldShadowMapper)
+	void Foliage::Draw(const GameTime& gameTime, ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass)
 	{
 		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
 
@@ -244,53 +255,105 @@ namespace Library
 		context->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		Pass* pass = mMaterial->CurrentTechnique()->Passes().at(0);
-		ID3D11InputLayout* inputLayout = mMaterial->InputLayouts().at(pass);
-		context->IASetInputLayout(inputLayout);
-
-		XMMATRIX shadowMatrices[MAX_NUM_OF_CASCADES];
-		ID3D11ShaderResourceView* shadowMaps[MAX_NUM_OF_CASCADES];
-		if (worldShadowMapper) {
-			for (int cascade = 0; cascade < MAX_NUM_OF_CASCADES; cascade++)
-			{
-				shadowMatrices[cascade] = worldShadowMapper->GetViewMatrix(cascade) *  worldShadowMapper->GetProjectionMatrix(cascade) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix());
-				shadowMaps[cascade] = worldShadowMapper->GetShadowTexture(cascade);
-			}
-		}
-
-		mMaterial->World() << XMMatrixIdentity();
-		mMaterial->View() << mCamera.ViewMatrix();
-		mMaterial->Projection() << mCamera.ProjectionMatrix();
-		mMaterial->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, MAX_NUM_OF_CASCADES);
-		mMaterial->albedoTexture() << mAlbedoTexture;
-		mMaterial->cascadedShadowTextures().SetResourceArray(shadowMaps, 0, MAX_NUM_OF_CASCADES);
-		mMaterial->SunDirection() << XMVectorNegate(mDirectionalLight.DirectionVector());
-		mMaterial->SunColor() << XMVECTOR{ mDirectionalLight.GetDirectionalLightColor().x,  mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z , 1.0f };
-		mMaterial->AmbientColor() << XMVECTOR{ mDirectionalLight.GetAmbientLightColor().x,  mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
-		if (worldShadowMapper)
-			mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f / worldShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
-		else
-			mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f , 1.0f, 1.0f , 1.0f };
-		mMaterial->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
-		mMaterial->CameraDirection() << mCamera.DirectionVector();
-		float rotateToCamera = (mIsRotating) ? 1.0f : 0.0f;
-		mMaterial->RotateToCamera() << rotateToCamera;
-		mMaterial->Time() << static_cast<float>(gameTime.TotalGameTime());
-		mMaterial->WindStrength() << mWindStrength;
-		mMaterial->WindDirection() << XMVECTOR{ 0.0f, 0.0f, 1.0f , 1.0f };
-		mMaterial->WindFrequency() << mWindFrequency;
-		mMaterial->WindGustDistance() << mWindGustDistance;
-
-		pass->Apply(0, context);
-
-		if (mIsWireframe)
+		if (renderPass == FoliageRenderingPass::TO_GBUFFER)
 		{
-			context->RSSetState(RasterizerStates::Wireframe);
-			context->DrawIndexedInstanced(mVerticesCount, mPatchesCountToRender, 0, 0, 0);
-			context->RSSetState(nullptr);
+			mDeferredPrepassMaterial->SetCurrentTechnique(mDeferredPrepassMaterial->GetEffect()->TechniquesByName().at("deferred_instanced"));
+            Pass* pass = mDeferredPrepassMaterial->CurrentTechnique()->Passes().at(0);
+            ID3D11InputLayout* inputLayout = mDeferredPrepassMaterial->InputLayouts().at(pass);
+            context->IASetInputLayout(inputLayout);
+
+			XMMATRIX viewProj = mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
+			mDeferredPrepassMaterial->ViewProjection() << viewProj;
+			mDeferredPrepassMaterial->World() << XMMatrixIdentity();
+			mDeferredPrepassMaterial->AlbedoMap() << mAlbedoTexture;
+			mDeferredPrepassMaterial->ReflectionMaskFactor() << 0.0f;
+
+            pass->Apply(0, context);
+            context->DrawIndexedInstanced(mVerticesCount, mPatchesCountToRender, 0, 0, 0);
 		}
-		else
+		else if (renderPass == FoliageRenderingPass::VOXELIZATION)
+		{
+			mVoxelizationGIMaterial->SetCurrentTechnique(mVoxelizationGIMaterial->GetEffect()->TechniquesByName().at("voxelizationGI_instancing"));
+			Pass* pass = mVoxelizationGIMaterial->CurrentTechnique()->Passes().at(0);
+			ID3D11InputLayout* inputLayout = mVoxelizationGIMaterial->InputLayouts().at(pass);
+			context->IASetInputLayout(inputLayout);
+
+            XMMATRIX shadowMatrices[MAX_NUM_OF_CASCADES];
+            ID3D11ShaderResourceView* shadowMaps[MAX_NUM_OF_CASCADES];
+            if (worldShadowMapper) {
+                for (int cascade = 0; cascade < MAX_NUM_OF_CASCADES; cascade++)
+                {
+                    shadowMatrices[cascade] = worldShadowMapper->GetViewMatrix(cascade) * worldShadowMapper->GetProjectionMatrix(cascade) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix());
+                    shadowMaps[cascade] = worldShadowMapper->GetShadowTexture(cascade);
+                }
+            }
+
+			XMMATRIX viewProj = mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
+            mVoxelizationGIMaterial->ViewProjection() << viewProj;
+            mVoxelizationGIMaterial->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, MAX_NUM_OF_CASCADES);
+            mVoxelizationGIMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f / worldShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
+            mVoxelizationGIMaterial->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), -1.0f };
+            mVoxelizationGIMaterial->WorldVoxelScale() << mWorldVoxelScale;
+            mVoxelizationGIMaterial->MeshWorld() << XMMatrixIdentity();
+            mVoxelizationGIMaterial->MeshAlbedo() << mAlbedoTexture;
+            mVoxelizationGIMaterial->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, MAX_NUM_OF_CASCADES);
+
+			mVoxelizationGIMaterial->GetEffect()->GetEffect()->GetVariableByName("outputTexture")->AsUnorderedAccessView()->SetUnorderedAccessView(mVoxelizationTexture);
+
+			pass->Apply(0, context);
 			context->DrawIndexedInstanced(mVerticesCount, mPatchesCountToRender, 0, 0, 0);
+		}
+		else if (renderPass == FoliageRenderingPass::STANDARD)
+		{
+			Pass* pass = mMaterial->CurrentTechnique()->Passes().at(0);
+			ID3D11InputLayout* inputLayout = mMaterial->InputLayouts().at(pass);
+			context->IASetInputLayout(inputLayout);
+
+			XMMATRIX shadowMatrices[MAX_NUM_OF_CASCADES];
+			ID3D11ShaderResourceView* shadowMaps[MAX_NUM_OF_CASCADES];
+			if (worldShadowMapper) {
+				for (int cascade = 0; cascade < MAX_NUM_OF_CASCADES; cascade++)
+				{
+					shadowMatrices[cascade] = worldShadowMapper->GetViewMatrix(cascade) * worldShadowMapper->GetProjectionMatrix(cascade) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix());
+					shadowMaps[cascade] = worldShadowMapper->GetShadowTexture(cascade);
+				}
+			}
+
+			mMaterial->World() << XMMatrixIdentity();
+			mMaterial->View() << mCamera.ViewMatrix();
+			mMaterial->Projection() << mCamera.ProjectionMatrix();
+			mMaterial->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, MAX_NUM_OF_CASCADES);
+			mMaterial->albedoTexture() << mAlbedoTexture;
+			mMaterial->cascadedShadowTextures().SetResourceArray(shadowMaps, 0, MAX_NUM_OF_CASCADES);
+			mMaterial->SunDirection() << XMVectorNegate(mDirectionalLight.DirectionVector());
+			mMaterial->SunColor() << XMVECTOR{ mDirectionalLight.GetDirectionalLightColor().x,  mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z , 1.0f };
+			mMaterial->AmbientColor() << XMVECTOR{ mDirectionalLight.GetAmbientLightColor().x,  mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
+			if (worldShadowMapper)
+				mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f / worldShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
+			else
+				mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f , 1.0f, 1.0f , 1.0f };
+			mMaterial->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
+			mMaterial->CameraDirection() << mCamera.DirectionVector();
+			float rotateToCamera = (mIsRotating) ? 1.0f : 0.0f;
+			mMaterial->RotateToCamera() << rotateToCamera;
+			mMaterial->Time() << static_cast<float>(gameTime.TotalGameTime());
+			mMaterial->WindStrength() << mWindStrength;
+			mMaterial->WindDirection() << XMVECTOR{ 0.0f, 0.0f, 1.0f , 1.0f };
+			mMaterial->WindFrequency() << mWindFrequency;
+			mMaterial->WindGustDistance() << mWindGustDistance;
+
+			pass->Apply(0, context);
+
+			if (mIsWireframe)
+			{
+				context->RSSetState(RasterizerStates::Wireframe);
+				context->DrawIndexedInstanced(mVerticesCount, mPatchesCountToRender, 0, 0, 0);
+				context->RSSetState(nullptr);
+			}
+			else
+				context->DrawIndexedInstanced(mVerticesCount, mPatchesCountToRender, 0, 0, 0);
+
+		}
 
 		context->OMSetBlendState(mNoBlendState, blendFactor, 0xffffffff);
 	}

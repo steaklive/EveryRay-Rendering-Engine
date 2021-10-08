@@ -18,6 +18,7 @@ namespace Library
 	class Scene;
 	class GBuffer;
 	class ShadowMapper;
+	class Foliage;
 
 	namespace IlluminationCBufferData {
 		struct VoxelizationCB
@@ -51,7 +52,7 @@ namespace Library
 
 		void Initialize(const Scene* scene);
 
-		void Draw(const GameTime& gameTime, const Scene* scene, GBuffer* gbuffer);
+		void Draw(const GameTime& gameTime, const Scene* scene, GBuffer* gbuffer, const std::vector<Foliage*>& foliages);
 		void Update(const GameTime& gameTime);
 		void Config() { mShowDebug = !mShowDebug; }
 

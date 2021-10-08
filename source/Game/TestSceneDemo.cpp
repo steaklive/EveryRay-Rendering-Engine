@@ -254,8 +254,15 @@ namespace Rendering
 		#pragma region GBUFFER_PREPASS
 		
 		mGBuffer->Start();
+
+		//draw scene objects in gbuffer
 		for (auto it = mScene->objects.begin(); it != mScene->objects.end(); it++)
 			it->second->Draw(MaterialHelper::deferredPrepassMaterialName, true);
+
+		//draw foliage in gbuffer
+        for (auto object : mFoliageCollection)
+            object->Draw(gameTime, nullptr, FoliageRenderingPass::TO_GBUFFER);
+
 		mGBuffer->End();
 
 #pragma endregion
@@ -268,7 +275,7 @@ namespace Rendering
 
 		#pragma region DRAW_GI
 		mRenderStateHelper->SaveAll();
-		mGI->Draw(gameTime, mScene, mGBuffer);
+		mGI->Draw(gameTime, mScene, mGBuffer, mFoliageCollection);
 		mRenderStateHelper->RestoreAll();
 #pragma endregion
 
@@ -286,9 +293,8 @@ namespace Rendering
 			it->second->Draw(MaterialHelper::lightingMaterialName);
 
 		//foliage 
-		// TODO add GI support (i.e, separate with stencil)
-		//for (auto object : mFoliageCollection)
-		//	object->Draw(gameTime, mShadowMapper);
+		for (auto object : mFoliageCollection)
+			object->Draw(gameTime, mShadowMapper);
 #pragma endregion
 
 		mPostProcessingStack->End();

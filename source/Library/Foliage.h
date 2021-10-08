@@ -5,10 +5,19 @@
 #include "DirectionalLight.h"
 #include "PostProcessingStack.h"
 #include "FoliageMaterial.h"
+#include "DeferredMaterial.h"
+#include "VoxelizationGIMaterial.h"
 #include "ShadowMapper.h"
+#include "Illumination.h"
 
 namespace Library
 {
+	enum FoliageRenderingPass
+	{
+		STANDARD,
+		TO_GBUFFER,
+		VOXELIZATION
+	};
 	enum FoliageBillboardType
 	{
 		SINGLE,
@@ -42,7 +51,7 @@ namespace Library
 		~Foliage();
 
 		void Initialize();
-		void Draw(const GameTime& gameTime, ShadowMapper* worldShadowMapper = nullptr);
+		void Draw(const GameTime& gameTime, ShadowMapper* worldShadowMapper = nullptr, FoliageRenderingPass renderPass = FoliageRenderingPass::STANDARD);
 		void Update(const GameTime& gameTime);
 
 		int GetPatchesCount() { return mPatchesCount; }
@@ -67,6 +76,8 @@ namespace Library
 
 		void CreateBufferGPU();
 		void UpdateBuffersGPU();
+
+		void SetVoxelizationTextureOutput(ID3D11UnorderedAccessView* uav) { mVoxelizationTexture = uav; }
 	private:
 		void InitializeBuffersGPU(int count);
 		void InitializeBuffersCPU();
@@ -78,6 +89,8 @@ namespace Library
 		DirectionalLight& mDirectionalLight;
 
 		FoliageMaterial* mMaterial;
+		DeferredMaterial* mDeferredPrepassMaterial;
+		Rendering::VoxelizationGIMaterial* mVoxelizationGIMaterial;
 
 		ID3D11Buffer* mVertexBuffer = nullptr;
 		ID3D11Buffer* mIndexBuffer = nullptr;
@@ -85,6 +98,8 @@ namespace Library
 		ID3D11ShaderResourceView* mAlbedoTexture = nullptr;
 		ID3D11BlendState* mAlphaToCoverageState = nullptr;
 		ID3D11BlendState* mNoBlendState = nullptr;
+
+		ID3D11UnorderedAccessView* mVoxelizationTexture;
 
 		FoliageInstanceData* mPatchesBufferGPU;
 		FoliageData* mPatchesBufferCPU;
@@ -112,5 +127,7 @@ namespace Library
 		float mWindStrength;
 		float mWindFrequency;
 		float mWindGustDistance;
+
+		float mWorldVoxelScale = 0.5f * VCT_SCENE_VOLUME_SIZE;
 	};
 }

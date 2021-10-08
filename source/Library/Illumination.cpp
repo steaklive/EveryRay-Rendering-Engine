@@ -21,6 +21,7 @@
 #include "Scene.h"
 #include "GBuffer.h"
 #include "ShadowMapper.h"
+#include "Foliage.h"
 
 namespace Library {
 	Illumination::Illumination(Game& game, Camera& camera, DirectionalLight& light, ShadowMapper& shadowMapper, const Scene* scene)
@@ -113,7 +114,7 @@ namespace Library {
 		mDepthBuffer = DepthTarget::Create(mGame->Direct3DDevice(), mGame->ScreenWidth(), mGame->ScreenHeight(), 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
 	}
 
-	void Illumination::Draw(const GameTime& gameTime, const Scene* scene, GBuffer* gbuffer)
+	void Illumination::Draw(const GameTime& gameTime, const Scene* scene, GBuffer* gbuffer, const std::vector<Foliage*>& foliages /*dirty way to pass non-scene objects, like foliage; needs to be changed with templates or smth*/)
 	{
 		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
@@ -156,6 +157,12 @@ namespace Library {
 				//	GetEffect()->GetVariableByName("outputTexture")->AsUnorderedAccessView()->SetUnorderedAccessView(nullptr);
 				//obj.second->GetMaterials()[MaterialHelper::voxelizationGIMaterialName]->GetEffect()->
 				//	GetEffect()->GetTechniqueByIndex(0)->GetPassByIndex(0)->Apply(0, context);
+			}
+
+			//voxelize extra objects
+			for (auto foliage : foliages) {
+				foliage->SetVoxelizationTextureOutput(mVCTVoxelization3DRT->getUAV());
+                foliage->Draw(gameTime, &mShadowMapper, FoliageRenderingPass::VOXELIZATION);
 			}
 		
 			//reset back
