@@ -25,9 +25,9 @@ namespace Rendering
 	class InstancingDemo;
 	class FrustumCullingDemo;
 	class SubsurfaceScatteringDemo;
-	class VolumetricLightingDemo;
+	//class VolumetricLightingDemo;
 	class CollisionTestDemo;
-	class WaterSimulationDemo;
+	//class WaterSimulationDemo;
 	class ParallaxMappingDemo;
 	class TerrainDemo;
 
@@ -68,9 +68,9 @@ namespace Rendering
 		InstancingDemo* mInstancingDemo;
 		FrustumCullingDemo* mFrustumCullingDemo;
 		SubsurfaceScatteringDemo* mSubsurfaceScatteringDemo;
-		VolumetricLightingDemo* mVolumetricLightingDemo;
+		//VolumetricLightingDemo* mVolumetricLightingDemo;
 		CollisionTestDemo* mCollisionTestDemo;
-		WaterSimulationDemo* mWaterSimulationDemo;
+		//WaterSimulationDemo* mWaterSimulationDemo;
 		TerrainDemo* mTerrainDemo;
 		ParallaxMappingDemo* mParallaxOcclusionDemo;
 		RenderStateHelper* mRenderStateHelper;

@@ -680,9 +680,6 @@
     <ClCompile Include="PostProcessingStack.cpp">
       <Filter>Source Files\Objects\Rendering systems</Filter>
     </ClCompile>
-    <ClCompile Include="OceanSimulator.cpp">
-      <Filter>Source Files\Objects\Rendering systems</Filter>
-    </ClCompile>
     <ClCompile Include="Illumination.cpp">
       <Filter>Source Files\Objects\Rendering systems</Filter>
     </ClCompile>
@@ -690,9 +687,6 @@
       <Filter>Source Files\Objects\Rendering systems</Filter>
     </ClCompile>
     <ClCompile Include="Foliage.cpp">
-      <Filter>Source Files\Objects\Rendering systems</Filter>
-    </ClCompile>
-    <ClCompile Include="FastFourierTransform.cpp">
       <Filter>Source Files\Objects\Rendering systems</Filter>
     </ClCompile>
     <ClCompile Include="GBuffer.cpp">

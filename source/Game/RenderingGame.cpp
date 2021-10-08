@@ -35,9 +35,9 @@
 #include "InstancingDemo.h"
 #include "FrustumCullingDemo.h"
 #include "SubsurfaceScatteringDemo.h"
-#include "VolumetricLightingDemo.h"
+//#include "VolumetricLightingDemo.h"
 #include "CollisionTestDemo.h"
-#include "WaterSimulationDemo.h"
+//#include "WaterSimulationDemo.h"
 #include "ParallaxMappingDemo.h"
 #include "TerrainDemo.h"
 #include "TestSceneDemo.h"
@@ -93,9 +93,9 @@ namespace Rendering
 		mInstancingDemo(nullptr),
 		mFrustumCullingDemo(nullptr),
 		mSubsurfaceScatteringDemo(nullptr),
-		mVolumetricLightingDemo(nullptr),
+		//mVolumetricLightingDemo(nullptr),
 		mCollisionTestDemo(nullptr),
-		mWaterSimulationDemo(nullptr),
+		//mWaterSimulationDemo(nullptr),
 		mTerrainDemo(nullptr),
 		mParallaxOcclusionDemo(nullptr),
 		mRenderStateHelper(nullptr)
@@ -195,7 +195,7 @@ namespace Rendering
 				demoLevel = new SubsurfaceScatteringDemo(*this, *mCamera);
 				break;
 			case 4:
-				demoLevel = new VolumetricLightingDemo(*this, *mCamera);
+				//demoLevel = new VolumetricLightingDemo(*this, *mCamera);
 				break;
 			case 5:
 				demoLevel = new CollisionTestDemo(*this, *mCamera);
@@ -204,7 +204,7 @@ namespace Rendering
 				demoLevel = new ShadowMappingDemo(*this, *mCamera);
 				break;
 			case 7:
-				demoLevel = new WaterSimulationDemo(*this, *mCamera);
+				//demoLevel = new WaterSimulationDemo(*this, *mCamera);
 				break;
 			case 8:
 				demoLevel = new ParallaxMappingDemo(*this, *mCamera);
@@ -326,9 +326,9 @@ namespace Rendering
 		//DeleteObject(mInstancingDemo);
 		//DeleteObject(mFrustumCullingDemo);
 		DeleteObject(mSubsurfaceScatteringDemo);
-		DeleteObject(mVolumetricLightingDemo);
+		//DeleteObject(mVolumetricLightingDemo);
 		DeleteObject(mCollisionTestDemo);
-		DeleteObject(mWaterSimulationDemo);
+		//DeleteObject(mWaterSimulationDemo);
 		DeleteObject(mTerrainDemo);
 		DeleteObject(mParallaxOcclusionDemo);
 		DeleteObject(mTestSceneDemo);

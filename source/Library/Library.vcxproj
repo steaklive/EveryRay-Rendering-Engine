@@ -23,7 +23,7 @@
     <ProjectGuid>{75B93070-9C02-4198-A910-BEBF070FCF07}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Library</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -314,7 +314,6 @@
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="Effect.cpp" />
     <ClCompile Include="EnvironmentMappingMaterial.cpp" />
-    <ClCompile Include="FastFourierTransform.cpp" />
     <ClCompile Include="FirstPersonCamera.cpp" />
     <ClCompile Include="FogMaterial.cpp" />
     <ClCompile Include="Foliage.cpp" />
@@ -348,7 +347,6 @@
     <ClCompile Include="MotionBlurMaterial.cpp" />
     <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="NormalMappingMaterial.cpp" />
-    <ClCompile Include="OceanSimulator.cpp" />
     <ClCompile Include="OctreeStructure.cpp" />
     <ClCompile Include="ParallaxMappingTestMaterial.cpp" />
     <ClCompile Include="Pass.cpp" />
