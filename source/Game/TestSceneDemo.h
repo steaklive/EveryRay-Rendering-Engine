@@ -25,7 +25,7 @@ namespace Library
 	class GBuffer;
 	class ShadowMapper;
 	class Terrain;
-	class Foliage;
+	class FoliageSystem;
 	class Scene;
 	class VolumetricClouds;
 	class Illumination;
@@ -80,7 +80,7 @@ namespace Rendering
 		DirectionalLight* mDirectionalLight;
 		GBuffer* mGBuffer;
 		PostProcessingStack* mPostProcessingStack;
-		std::vector<Foliage*> mFoliageCollection;
+		FoliageSystem* mFoliageSystem;
 		VolumetricClouds* mVolumetricClouds;
 		Illumination* mGI;
 

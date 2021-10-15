@@ -693,7 +693,7 @@
       <Filter>Source Files\Objects\Rendering systems</Filter>
     </ClCompile>
     <ClCompile Include="CompositeLightingMaterial.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Materials</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

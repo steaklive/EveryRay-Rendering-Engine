@@ -1,0 +1,63 @@
+t:\everyray-rendering-engine\source\game\debug\everyray - rendering engine.pch
+t:\everyray-rendering-engine\source\game\debug\vc142.pdb
+t:\everyray-rendering-engine\source\game\debug\vc142.idb
+t:\everyray-rendering-engine\source\game\debug\stdafx.obj
+t:\everyray-rendering-engine\source\game\debug\testscenedemo.obj
+t:\everyray-rendering-engine\source\game\debug\terraindemo.obj
+t:\everyray-rendering-engine\source\game\debug\subsurfacescatteringdemo.obj
+t:\everyray-rendering-engine\source\game\debug\shadowmappingdemo.obj
+t:\everyray-rendering-engine\source\game\debug\program.obj
+t:\everyray-rendering-engine\source\game\debug\physicallybasedrenderingdemo.obj
+t:\everyray-rendering-engine\source\game\debug\instancingdemo.obj
+t:\everyray-rendering-engine\source\game\debug\frustumcullingdemo.obj
+t:\everyray-rendering-engine\source\game\debug\collisiontestdemo.obj
+t:\everyray-rendering-engine\source\game\debug\sponzamaindemo.obj
+t:\everyray-rendering-engine\source\game\debug\parallaxmappingdemo.obj
+t:\everyray-rendering-engine\source\game\debug\imgui_impl_win32.obj
+t:\everyray-rendering-engine\source\game\debug\imgui_impl_dx11.obj
+t:\everyray-rendering-engine\source\game\debug\imgui_draw.obj
+t:\everyray-rendering-engine\source\game\debug\imgui_demo.obj
+t:\everyray-rendering-engine\source\game\debug\imguizmo.obj
+t:\everyray-rendering-engine\source\game\debug\imgui.obj
+t:\everyray-rendering-engine\source\game\debug\renderinggame.obj
+t:\everyray-rendering-engine\bin\x64\debug\everyray - rendering engine.exe
+t:\everyray-rendering-engine\source\game\debug\everyray - rendering engine.ilk
+t:\everyray-rendering-engine\bin\x64\debug\everyray - rendering engine.pdb
+t:\everyray-rendering-engine\source\game\debug\game.res
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\collisiontestdemo.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\frustumcullingdemo.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\imgui.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\imguizmo.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\imgui_demo.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\imgui_draw.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\imgui_impl_dx11.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\imgui_impl_win32.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\instancingdemo.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\parallaxmappingdemo.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\physicallybasedrenderingdemo.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\program.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\renderinggame.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\shadowmappingdemo.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\sponzamaindemo.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\stdafx.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\subsurfacescatteringdemo.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\terraindemo.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\testscenedemo.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\volumetriclightingdemo.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\watersimulationdemo.obj
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\game.res
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\everyray - rendering engine.pch
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\vc142.idb
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\vc142.pdb
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\\bin\x64\debug\everyray - rendering engine.pdb
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\bin\x64\debug\everyray - rendering engine.exe
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\\bin\x64\debug\everyray - rendering engine.ilk
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\game.tlog\cl.command.1.tlog
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\game.tlog\cl.read.1.tlog
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\game.tlog\cl.write.1.tlog
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\game.tlog\link.command.1.tlog
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\game.tlog\link.read.1.tlog
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\game.tlog\link.write.1.tlog
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\game.tlog\rc.command.1.tlog
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\game.tlog\rc.read.1.tlog
+c:\users\zhenya\documents\graphicsprogramming\everyray-rendering-engine\source\game\debug\game.tlog\rc.write.1.tlog

@@ -14,7 +14,7 @@ namespace Library
 {
 	enum FoliageRenderingPass
 	{
-		STANDARD,
+		FORWARD_SHADING,
 		TO_GBUFFER,
 		VOXELIZATION
 	};
@@ -51,7 +51,7 @@ namespace Library
 		~Foliage();
 
 		void Initialize();
-		void Draw(const GameTime& gameTime, ShadowMapper* worldShadowMapper = nullptr, FoliageRenderingPass renderPass = FoliageRenderingPass::STANDARD);
+		void Draw(const GameTime& gameTime, ShadowMapper* worldShadowMapper = nullptr, FoliageRenderingPass renderPass = FoliageRenderingPass::FORWARD_SHADING);
 		void Update(const GameTime& gameTime);
 
 		int GetPatchesCount() { return mPatchesCount; }
@@ -129,5 +129,23 @@ namespace Library
 		float mWindGustDistance;
 
 		float mWorldVoxelScale = 0.5f * VCT_SCENE_VOLUME_SIZE;
+	};
+
+	class FoliageSystem
+	{
+	public:
+		FoliageSystem();
+		FoliageSystem(const FoliageSystem& rhs);
+		FoliageSystem& operator=(const FoliageSystem& rhs);
+		~FoliageSystem();
+
+		void Initialize();
+		void Update(const GameTime& gameTime, float gustDistance, float strength, float frequency);
+		void Draw(const GameTime& gameTime, ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass = FoliageRenderingPass::FORWARD_SHADING);
+		void AddFoliage(Foliage* foliage) { mFoliageCollection.emplace_back(foliage); }
+		void SetVoxelizationTextureOutput(ID3D11UnorderedAccessView* uav);
+
+	private:
+		std::vector<Foliage*> mFoliageCollection;
 	};
 }

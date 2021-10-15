@@ -114,7 +114,7 @@ namespace Library {
 		mDepthBuffer = DepthTarget::Create(mGame->Direct3DDevice(), mGame->ScreenWidth(), mGame->ScreenHeight(), 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
 	}
 
-	void Illumination::Draw(const GameTime& gameTime, const Scene* scene, GBuffer* gbuffer, const std::vector<Foliage*>& foliages /*dirty way to pass non-scene objects, like foliage; needs to be changed with templates or smth*/)
+	void Illumination::Draw(const GameTime& gameTime, const Scene* scene, GBuffer* gbuffer)
 	{
 		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
@@ -152,18 +152,10 @@ namespace Library {
 					GetEffect()->GetVariableByName("outputTexture")->AsUnorderedAccessView()->SetUnorderedAccessView(UAV[0]);
 				
 				obj.second->Draw(MaterialHelper::voxelizationGIMaterialName);
-
-				//obj.second->GetMaterials()[MaterialHelper::voxelizationGIMaterialName]->GetEffect()->
-				//	GetEffect()->GetVariableByName("outputTexture")->AsUnorderedAccessView()->SetUnorderedAccessView(nullptr);
-				//obj.second->GetMaterials()[MaterialHelper::voxelizationGIMaterialName]->GetEffect()->
-				//	GetEffect()->GetTechniqueByIndex(0)->GetPassByIndex(0)->Apply(0, context);
 			}
 
 			//voxelize extra objects
-			for (auto foliage : foliages) {
-				foliage->SetVoxelizationTextureOutput(mVCTVoxelization3DRT->getUAV());
-                foliage->Draw(gameTime, &mShadowMapper, FoliageRenderingPass::VOXELIZATION);
-			}
+			mFoliageSystem->Draw(gameTime, &mShadowMapper, FoliageRenderingPass::VOXELIZATION);
 		
 			//reset back
 			context->RSSetViewports(1, &viewport);
@@ -308,5 +300,11 @@ namespace Library {
 		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[MaterialHelper::voxelizationGIMaterialName])->MeshAlbedo() << obj->GetTextureData(meshIndex).AlbedoMap;
 		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[MaterialHelper::voxelizationGIMaterialName])->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, MAX_NUM_OF_CASCADES);
 
+	}
+
+	void Illumination::SetFoliageSystem(FoliageSystem* foliageSystem)
+	{
+		mFoliageSystem = foliageSystem;
+		mFoliageSystem->SetVoxelizationTextureOutput(mVCTVoxelization3DRT->getUAV());
 	}
 }

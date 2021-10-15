@@ -14,6 +14,43 @@
 
 namespace Library
 {
+	FoliageSystem::FoliageSystem() { }
+
+	FoliageSystem::~FoliageSystem()
+	{
+		DeletePointerCollection(mFoliageCollection);
+	}
+
+	void FoliageSystem::Initialize()
+	{
+		for (auto& foliage : mFoliageCollection) {
+			foliage->CreateBufferGPU();
+		}
+	}
+
+	void FoliageSystem::Update(const GameTime& gameTime, float gustDistance, float strength, float frequency)
+	{
+		for (auto& foliage : mFoliageCollection)
+		{
+			foliage->SetWindParams(gustDistance, strength, frequency);
+			foliage->Update(gameTime);
+		}
+	}
+
+	void FoliageSystem::Draw(const GameTime& gameTime, ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass)
+	{
+		for (auto& object : mFoliageCollection)
+			object->Draw(gameTime, worldShadowMapper, renderPass);
+	}
+
+	void FoliageSystem::SetVoxelizationTextureOutput(ID3D11UnorderedAccessView* uav)
+	{
+		for (auto& object : mFoliageCollection)
+			object->SetVoxelizationTextureOutput(uav);
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	Foliage::Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale, float distributionRadius, XMFLOAT3 distributionCenter, FoliageBillboardType bType)
 		:
 		GameComponent(pGame),
@@ -303,7 +340,7 @@ namespace Library
 			pass->Apply(0, context);
 			context->DrawIndexedInstanced(mVerticesCount, mPatchesCountToRender, 0, 0, 0);
 		}
-		else if (renderPass == FoliageRenderingPass::STANDARD)
+		else if (renderPass == FoliageRenderingPass::FORWARD_SHADING)
 		{
 			Pass* pass = mMaterial->CurrentTechnique()->Passes().at(0);
 			ID3D11InputLayout* inputLayout = mMaterial->InputLayouts().at(pass);

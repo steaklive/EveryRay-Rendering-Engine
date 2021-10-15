@@ -56,7 +56,7 @@ namespace Rendering
 		mGBuffer(nullptr),
 		mSSRQuad(nullptr),
 		mShadowMapper(nullptr),
-		mFoliageCollection(0, nullptr),
+		mFoliageSystem(nullptr),
 		mScene(nullptr),
 		mVolumetricClouds(nullptr),
 		mGI(nullptr)
@@ -75,7 +75,7 @@ namespace Rendering
 		DeleteObject(mGBuffer);
 		DeleteObject(mSSRQuad);
 		DeleteObject(mShadowMapper);
-		DeletePointerCollection(mFoliageCollection);
+		DeleteObject(mFoliageSystem);
 		ReleaseObject(mIrradianceDiffuseTextureSRV);
 		ReleaseObject(mIrradianceSpecularTextureSRV);
 		ReleaseObject(mIntegrationMapTextureSRV);
@@ -150,16 +150,14 @@ namespace Rendering
 		mPostProcessingStack->SetSunOcclusionSRV(mSkybox->GetSunOcclusionOutputTexture());
 
 		//foliage
-		mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 1500, Utility::GetFilePath("content\\textures\\foliage\\grass_type1.png"), 2.5f, 100.0f));
-		mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 2000, Utility::GetFilePath("content\\textures\\foliage\\grass_type4.png"), 2.0f, 100.0f));
-		mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 2000, Utility::GetFilePath("content\\textures\\foliage\\grass_type6.png"), 2.0f, 100.0f));
-		mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 100, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type1.png"), 3.5f, 100.0f));
-		mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 50, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type3.png"), 2.5f, 100.0f));
-		mFoliageCollection.push_back(new Foliage(*mGame, *mCamera, *mDirectionalLight, 100, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type10.png"), 3.5f, 100.0f));
-
-		for (auto& foliage : mFoliageCollection) {
-			foliage->CreateBufferGPU();
-		}
+		mFoliageSystem = new FoliageSystem();
+		mFoliageSystem->AddFoliage(new Foliage(*mGame, *mCamera, *mDirectionalLight, 1500, Utility::GetFilePath("content\\textures\\foliage\\grass_type1.png"), 2.5f, 100.0f));
+		mFoliageSystem->AddFoliage(new Foliage(*mGame, *mCamera, *mDirectionalLight, 2000, Utility::GetFilePath("content\\textures\\foliage\\grass_type4.png"), 2.0f, 100.0f));
+		mFoliageSystem->AddFoliage(new Foliage(*mGame, *mCamera, *mDirectionalLight, 2000, Utility::GetFilePath("content\\textures\\foliage\\grass_type6.png"), 2.0f, 100.0f));
+		mFoliageSystem->AddFoliage(new Foliage(*mGame, *mCamera, *mDirectionalLight, 100, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type1.png"), 3.5f, 100.0f));
+		mFoliageSystem->AddFoliage(new Foliage(*mGame, *mCamera, *mDirectionalLight, 50, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type3.png"), 2.5f, 100.0f));
+		mFoliageSystem->AddFoliage(new Foliage(*mGame, *mCamera, *mDirectionalLight, 100, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type10.png"), 3.5f, 100.0f));
+		mFoliageSystem->Initialize();
 
 		mCamera->SetPosition(mScene->cameraPosition);
 		mCamera->SetDirection(mScene->cameraDirection);
@@ -187,7 +185,9 @@ namespace Rendering
 			throw GameException("Failed to create Integration Texture.");
 		
 		mVolumetricClouds = new VolumetricClouds(*mGame, *mCamera, *mDirectionalLight, *mPostProcessingStack, *mSkybox);
+		
 		mGI = new Illumination(*mGame, *mCamera, *mDirectionalLight, *mShadowMapper, mScene);
+		mGI->SetFoliageSystem(mFoliageSystem);
 	}
 
 	void TestSceneDemo::UpdateLevel(const GameTime& gameTime)
@@ -206,12 +206,7 @@ namespace Rendering
 		mPostProcessingStack->Update();
 		mVolumetricClouds->Update(gameTime);
 		mGI->Update(gameTime);
-
-		for (auto object : mFoliageCollection) 
-		{
-			object->SetWindParams(mWindGustDistance, mWindStrength, mWindFrequency);
-			object->Update(gameTime);
-		}
+		mFoliageSystem->Update(gameTime, mWindGustDistance, mWindStrength, mWindFrequency);
 		
 		mCamera->Cull(mScene->objects);
 		mShadowMapper->Update(gameTime);
@@ -260,8 +255,7 @@ namespace Rendering
 			it->second->Draw(MaterialHelper::deferredPrepassMaterialName, true);
 
 		//draw foliage in gbuffer
-        for (auto object : mFoliageCollection)
-            object->Draw(gameTime, nullptr, FoliageRenderingPass::TO_GBUFFER);
+		mFoliageSystem->Draw(gameTime, nullptr, FoliageRenderingPass::TO_GBUFFER);
 
 		mGBuffer->End();
 
@@ -275,7 +269,7 @@ namespace Rendering
 
 		#pragma region DRAW_GI
 		mRenderStateHelper->SaveAll();
-		mGI->Draw(gameTime, mScene, mGBuffer, mFoliageCollection);
+		mGI->Draw(gameTime, mScene, mGBuffer);
 		mRenderStateHelper->RestoreAll();
 #pragma endregion
 
@@ -293,8 +287,7 @@ namespace Rendering
 			it->second->Draw(MaterialHelper::lightingMaterialName);
 
 		//foliage 
-		for (auto object : mFoliageCollection)
-			object->Draw(gameTime, mShadowMapper);
+		mFoliageSystem->Draw(gameTime, mShadowMapper);
 #pragma endregion
 
 		mPostProcessingStack->End();

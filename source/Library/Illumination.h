@@ -18,7 +18,7 @@ namespace Library
 	class Scene;
 	class GBuffer;
 	class ShadowMapper;
-	class Foliage;
+	class FoliageSystem;
 
 	namespace IlluminationCBufferData {
 		struct VoxelizationCB
@@ -52,12 +52,14 @@ namespace Library
 
 		void Initialize(const Scene* scene);
 
-		void Draw(const GameTime& gameTime, const Scene* scene, GBuffer* gbuffer, const std::vector<Foliage*>& foliages);
+		void Draw(const GameTime& gameTime, const Scene* scene, GBuffer* gbuffer);
 		void Update(const GameTime& gameTime);
 		void Config() { mShowDebug = !mShowDebug; }
 
 		void SetShadowMapSRV(ID3D11ShaderResourceView* srv) { mShadowMapSRV = srv; }
 		bool GetDebugVoxels() { return mVoxelizationDebugView; }
+
+		void SetFoliageSystem(FoliageSystem* foliageSystem);
 
 		ID3D11ShaderResourceView* GetGISRV() { 
 			if (mVoxelizationDebugView)
@@ -72,6 +74,8 @@ namespace Library
 		Camera& mCamera;
 		DirectionalLight& mDirectionalLight;
 		ShadowMapper& mShadowMapper;
+
+		FoliageSystem* mFoliageSystem = nullptr;
 
 		ConstantBuffer<IlluminationCBufferData::VoxelizationCB> mVoxelizationConstantBuffer;
 		ConstantBuffer<IlluminationCBufferData::VoxelConeTracingCB> mVoxelConeTracingConstantBuffer;
