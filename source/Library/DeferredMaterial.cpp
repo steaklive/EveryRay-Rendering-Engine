@@ -13,6 +13,7 @@ namespace Library
 		MATERIAL_VARIABLE_INITIALIZATION(ViewProjection),
 		MATERIAL_VARIABLE_INITIALIZATION(World),
 		MATERIAL_VARIABLE_INITIALIZATION(AlbedoMap),
+		MATERIAL_VARIABLE_INITIALIZATION(RoughnessMap),
 		MATERIAL_VARIABLE_INITIALIZATION(ReflectionMaskFactor)
 	{
 	}
@@ -20,6 +21,7 @@ namespace Library
 	MATERIAL_VARIABLE_DEFINITION(DeferredMaterial, ViewProjection)
 	MATERIAL_VARIABLE_DEFINITION(DeferredMaterial, World)
 	MATERIAL_VARIABLE_DEFINITION(DeferredMaterial, AlbedoMap)
+	MATERIAL_VARIABLE_DEFINITION(DeferredMaterial, RoughnessMap)
 	MATERIAL_VARIABLE_DEFINITION(DeferredMaterial, ReflectionMaskFactor)
 
 	void DeferredMaterial::Initialize(Effect* effect)
@@ -29,6 +31,7 @@ namespace Library
 		MATERIAL_VARIABLE_RETRIEVE(ViewProjection)
 		MATERIAL_VARIABLE_RETRIEVE(World)
 		MATERIAL_VARIABLE_RETRIEVE(AlbedoMap)
+		MATERIAL_VARIABLE_RETRIEVE(RoughnessMap)
 		MATERIAL_VARIABLE_RETRIEVE(ReflectionMaskFactor)
 
 		D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =

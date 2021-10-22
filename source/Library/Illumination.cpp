@@ -232,16 +232,17 @@ namespace Library {
 
 			ID3D11UnorderedAccessView* UAV[1] = { mVCTMainRT->getUAV() };
 			ID3D11Buffer* CBs[2] = { mVoxelizationConstantBuffer.Buffer(), mVoxelConeTracingConstantBuffer.Buffer() };
-			ID3D11ShaderResourceView* SRVs[4] = {
+			ID3D11ShaderResourceView* SRVs[5] = {
 				gbuffer->GetAlbedo()->getSRV(),
 				gbuffer->GetNormals()->getSRV(),
 				gbuffer->GetPositions()->getSRV(),
+				gbuffer->GetExtraBuffer()->getSRV(),
 				mVCTVoxelization3DRT->getSRV()
 			};
 			ID3D11SamplerState* SSs[] = { mLinearSamplerState };
 
 			context->CSSetSamplers(0, 1, SSs);
-			context->CSSetShaderResources(0, 4, SRVs);
+			context->CSSetShaderResources(0, 5, SRVs);
 			context->CSSetConstantBuffers(0, 2, CBs);
 			context->CSSetShader(mVCTMainCS, NULL, NULL);
 			context->CSSetUnorderedAccessViews(0, 1, UAV, NULL);

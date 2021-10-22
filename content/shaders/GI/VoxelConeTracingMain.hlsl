@@ -24,7 +24,8 @@ static const int specularMaxDegreesCount = 2;
 Texture2DMS<float4> albedoBuffer : register(t0);
 Texture2DMS<float4> normalBuffer : register(t1);
 Texture2DMS<float4> worldPosBuffer : register(t2);
-Texture3D<float4> voxelTexture : register(t3);
+Texture2DMS<float4> extraGBuffer : register(t3);
+Texture3D<float4> voxelTexture : register(t4);
 
 RWTexture2D<float4> outputTexture : register(u0);
 
@@ -109,7 +110,7 @@ float4 CalculateIndirectSpecular(float3 worldPos, float3 normal, float4 specular
     float3 viewDirection = normalize(CameraPos.rgb - worldPos);
     float3 coneDirection = normalize(reflect(-viewDirection, normal));
         
-    float aperture = clamp(tan(PI * 0.5 * (1.0f - /*specular.a*/0.9f)), specularOneDegree * specularMaxDegreesCount, PI);
+    float aperture = clamp(tan(PI * 0.5 * specular.a), specularOneDegree * specularMaxDegreesCount, PI);
 
     float ao = -1.0f;
     result = TraceCone(worldPos, normal, coneDirection, aperture, ao, false, voxelResolution);
@@ -155,6 +156,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     float3 normal = normalize(normalBuffer.Load(inPos * UpsampleRatio, 0).rgb);
     float4 worldPos = worldPosBuffer.Load(inPos * UpsampleRatio, 0);
     float4 albedo = albedoBuffer.Load(inPos * UpsampleRatio, 0);
+    float4 extraGbuffer = extraGBuffer.Load(inPos * UpsampleRatio, 0);
     
     uint width;
     uint height;
@@ -163,7 +165,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     
     float ao = 0.0f;
     float4 indirectDiffuse = CalculateIndirectDiffuse(worldPos.rgb, normal.rgb, ao, width);
-    float4 indirectSpecular = CalculateIndirectSpecular(worldPos.rgb, normal.rgb, albedo, width);
+    float4 indirectSpecular = CalculateIndirectSpecular(worldPos.rgb, normal.rgb, float4(albedo.rgb, extraGbuffer.g), width);
 
     outputTexture[inPos] = GIPower * saturate(float4(indirectDiffuse.rgb * albedo.rgb + indirectSpecular.rgb, ao));
 }

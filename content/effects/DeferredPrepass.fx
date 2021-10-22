@@ -1,4 +1,5 @@
 Texture2D AlbedoMap;
+Texture2D RoughnessMap;
 
 cbuffer CBufferPerObject
 {
@@ -78,7 +79,8 @@ PS_OUTPUT pixel_shader(VS_OUTPUT IN) : SV_Target
     OUT.Color = AlbedoMap.Sample(Sampler, IN.TextureCoordinate);
     OUT.Normal = float4(IN.Normal, 1.0f);
     OUT.WorldPos = IN.WorldPos;
-    OUT.Extra = float4(ReflectionMaskFactor, 0.0, 0.0, 0.0);
+    float roughnessMask = RoughnessMap.Sample(Sampler, IN.TextureCoordinate).r;
+    OUT.Extra = float4(ReflectionMaskFactor, roughnessMask, 0.0, 0.0);
     return OUT;
 
 }
