@@ -160,8 +160,8 @@ VS_OUTPUT vertex_shader(VS_INPUT IN)
         localPos = mul(localPos, newRotationMat);
     localPos = mul(localPos, translateMat);
     OUT.Position = localPos;
-
     {
+        
         //OUT.Position = mul(localPos, IN.World);
         //OUT.Position = mul(OUT.Position, rotationMat);
         if (IN.Position.y > vertexHeight)
@@ -169,7 +169,7 @@ VS_OUTPUT vertex_shader(VS_INPUT IN)
             OUT.Position.x += sin(Time * WindFrequency + OUT.Position.x * WindGustDistance) * vertexHeight * WindStrength * WindDirection.x;
             OUT.Position.z += sin(Time * WindFrequency + OUT.Position.z * WindGustDistance) * vertexHeight * WindStrength * WindDirection.z;
         }
-        OUT.WorldPos = mul(IN.Position, IN.World).xyz;
+        OUT.WorldPos = OUT.Position;
         OUT.Position = mul(OUT.Position, View);
     }
 
