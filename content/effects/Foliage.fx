@@ -24,6 +24,7 @@ cbuffer CBufferPerFrame
     float WindStrength;
     float WindGustDistance;
     float4 WindDirection;
+    float WorldVoxelScale;
 }
 
 SamplerState ColorSampler
@@ -46,22 +47,26 @@ SamplerComparisonState CascadedPcfShadowMapSampler
 Texture2D albedoTexture;
 Texture2D cascadedShadowTextures[NUM_OF_SHADOW_CASCADES];
 
+RWTexture3D<float4> outputVoxelGITexture : register(u0);
+
 struct VS_INPUT
 {
     float4 Position : POSITION;
     float2 TextureCoordinates : TEXCOORD0;
+    float3 Normal : NORMAL;
+    
     row_major float4x4 World : WORLD;
-    float3 Color : TEXCOORD1;
 };
 
 struct VS_OUTPUT
 {
     float4 Position : SV_Position;
     float2 TextureCoordinates : TEXCOORD0;
-    float3 Color : TEXCOORD1;
+    float3 Normal : Normal;
     float3 ShadowCoord0 : TEXCOORD2;
     float3 ShadowCoord1 : TEXCOORD3;
     float3 ShadowCoord2 : TEXCOORD4;
+    float3 WorldPos : WorldPos;
 };
 
 VS_OUTPUT vertex_shader(VS_INPUT IN)
@@ -156,30 +161,6 @@ VS_OUTPUT vertex_shader(VS_INPUT IN)
     localPos = mul(localPos, translateMat);
     OUT.Position = localPos;
 
-    //if (RotateToCamera > 0.0f)
-    //{
-    //    float scaleX = sqrt(IN.World[0][0] * IN.World[0][0] + IN.World[0][1] * IN.World[0][1] + IN.World[0][2] * IN.World[0][2]);
-    //    //float scaleY = sqrt(IN.World[1][0] * IN.World[1][0] + IN.World[1][1] * IN.World[1][1] + IN.World[1][2] * IN.World[1][2]);
-    //    //float scaleZ = sqrt(IN.World[2][0] * IN.World[2][0] + IN.World[2][1] * IN.World[2][1] + IN.World[2][2] * IN.World[2][2]);
-    //
-    //    float4x4 modelView = mul(IN.World, View);
-    //
-    //    //cylindrical rotation to camera trick from https://www.geeks3d.com/20140807/billboarding-vertex-shader-glsl/
-    //    modelView[0][0] = scaleX;
-    //    modelView[0][1] = 0.0f;
-    //    modelView[0][2] = 0.0f;
-    //
-    //    //modelView[1][0] = 0.0f; //uncomment for spherical rotation
-    //    //modelView[1][1] = 1.0f; //uncomment for spherical rotation
-    //    //modelView[1][2] = 0.0f; //uncomment for spherical rotation
-    //
-    //    modelView[2][0] = 0.0f;
-    //    modelView[2][1] = 0.0f;
-    //    modelView[2][2] = 1.0f; //dont care bout z scale in a billboard
-    //
-    //    OUT.Position = mul(IN.Position, modelView);
-    //}
-    //else
     {
         //OUT.Position = mul(localPos, IN.World);
         //OUT.Position = mul(OUT.Position, rotationMat);
@@ -188,12 +169,13 @@ VS_OUTPUT vertex_shader(VS_INPUT IN)
             OUT.Position.x += sin(Time * WindFrequency + OUT.Position.x * WindGustDistance) * vertexHeight * WindStrength * WindDirection.x;
             OUT.Position.z += sin(Time * WindFrequency + OUT.Position.z * WindGustDistance) * vertexHeight * WindStrength * WindDirection.z;
         }
+        OUT.WorldPos = mul(IN.Position, IN.World).xyz;
         OUT.Position = mul(OUT.Position, View);
     }
 
     OUT.Position = mul(OUT.Position, Projection);
+    OUT.Normal = normalize(mul(float4(IN.Normal, 0), IN.World).xyz);
     OUT.TextureCoordinates = IN.TextureCoordinates;
-    OUT.Color = IN.Color;
     OUT.ShadowCoord0 = mul(IN.Position, mul(IN.World, ShadowMatrices[0])).xyz;
     OUT.ShadowCoord1 = mul(IN.Position, mul(IN.World, ShadowMatrices[1])).xyz;
     OUT.ShadowCoord2 = mul(IN.Position, mul(IN.World, ShadowMatrices[2])).xyz;
@@ -248,6 +230,106 @@ float4 pixel_shader(VS_OUTPUT IN) : SV_Target
     return color;
 }
 
+struct PS_OUTPUT_GBUFFER
+{
+    float4 Color : SV_Target0;
+    float4 Normal : SV_Target1;
+    float4 WorldPos : SV_Target2;
+    float4 Extra : SV_Target3;
+};
+
+PS_OUTPUT_GBUFFER pixel_shader_gbuffer(VS_OUTPUT IN) : SV_Target
+{
+    PS_OUTPUT_GBUFFER OUT;
+
+    OUT.Color = albedoTexture.Sample(ColorSampler, IN.TextureCoordinates);
+    OUT.Normal = float4(IN.Normal, 1.0f);
+    OUT.WorldPos = float4(IN.WorldPos, 1.0f);
+    OUT.Extra = float4(0.0, 0.0, 0.0, 0.0);
+    return OUT;
+
+}
+
+struct PS_GI_IN
+{
+    float4 Position : SV_POSITION;
+    float2 UV : TEXCOORD0;
+    float3 VoxelPos : TEXCOORD1;
+    float3 ShadowCoord0 : TEXCOORD2;
+    float3 ShadowCoord1 : TEXCOORD3;
+    float3 ShadowCoord2 : TEXCOORD4;
+    float4 PosWVP : TEXCOORD5;
+};
+
+[maxvertexcount(3)]
+void geometry_shader_voxel_gi(triangle VS_OUTPUT input[3], inout TriangleStream<PS_GI_IN> OutputStream)
+{
+    PS_GI_IN output[3];
+    output[0] = (PS_GI_IN) 0;
+    output[1] = (PS_GI_IN) 0;
+    output[2] = (PS_GI_IN) 0;
+    
+    float3 p1 = input[1].WorldPos.rgb - input[0].WorldPos.rgb;
+    float3 p2 = input[2].WorldPos.rgb - input[0].WorldPos.rgb;
+    float3 n = abs(normalize(cross(p1, p2)));
+       
+    float axis = max(n.x, max(n.y, n.z));
+    
+    [unroll]
+    for (uint i = 0; i < 3; i++)
+    {
+        output[0].VoxelPos = input[i].WorldPos.xyz / WorldVoxelScale * 2.0f;
+        output[1].VoxelPos = input[i].WorldPos.xyz / WorldVoxelScale * 2.0f;
+        output[2].VoxelPos = input[i].WorldPos.xyz / WorldVoxelScale * 2.0f;
+        if (axis == n.z)
+            output[i].Position = float4(output[i].VoxelPos.x, output[i].VoxelPos.y, 0, 1);
+        else if (axis == n.x)
+            output[i].Position = float4(output[i].VoxelPos.y, output[i].VoxelPos.z, 0, 1);
+        else
+            output[i].Position = float4(output[i].VoxelPos.x, output[i].VoxelPos.z, 0, 1);
+    
+        //output[i].normal = input[i].normal;
+        output[i].UV = input[i].TextureCoordinates;
+        output[i].ShadowCoord0 = input[i].ShadowCoord0;
+        output[i].ShadowCoord1 = input[i].ShadowCoord1;
+        output[i].ShadowCoord2 = input[i].ShadowCoord2;
+        OutputStream.Append(output[i]);
+    }
+    OutputStream.RestartStrip();
+}
+
+float3 VoxelToWorld(float3 pos)
+{
+    float3 result = pos;
+    result *= WorldVoxelScale;
+
+    return result * 0.5f;
+}
+
+void pixel_shader_voxel_gi(PS_GI_IN input)
+{
+    uint width;
+    uint height;
+    uint depth;
+    
+    outputVoxelGITexture.GetDimensions(width, height, depth);
+    float3 voxelPos = input.VoxelPos.rgb;
+    voxelPos.y = -voxelPos.y;
+    
+    int3 finalVoxelPos = width * float3(0.5f * voxelPos + float3(0.5f, 0.5f, 0.5f));
+    float4 colorRes = albedoTexture.Sample(ColorSampler, input.UV);
+    voxelPos.y = -voxelPos.y;
+    
+    float4 worldPos = float4(VoxelToWorld(voxelPos), 1.0f);
+    if (ShadowCascadeDistances.a < 1.0f)
+        outputVoxelGITexture[finalVoxelPos] = colorRes;
+    else
+    {
+        float shadow = GetShadow(input.ShadowCoord0, input.ShadowCoord1, input.ShadowCoord2, input.PosWVP.w);
+        outputVoxelGITexture[finalVoxelPos] = colorRes * float4(shadow, shadow, shadow, 1.0f);
+    }
+}
+
 /************* Techniques *************/
 technique11 main
 {
@@ -257,5 +339,26 @@ technique11 main
         SetGeometryShader(NULL);
         SetPixelShader(CompileShader(ps_5_0, pixel_shader()));
 
+    }
+}
+
+technique11 to_gbuffer
+{
+    pass p0
+    {
+        SetVertexShader(CompileShader(vs_5_0, vertex_shader()));
+        SetGeometryShader(NULL);
+        SetPixelShader(CompileShader(ps_5_0, pixel_shader_gbuffer()));
+
+    }
+}
+
+technique11 to_voxel_gi
+{
+    pass p0
+    {
+        SetVertexShader(CompileShader(vs_5_0, vertex_shader()));
+        SetGeometryShader(CompileShader(gs_5_0, geometry_shader_voxel_gi()));
+        SetPixelShader(CompileShader(ps_5_0, pixel_shader_voxel_gi()));
     }
 }

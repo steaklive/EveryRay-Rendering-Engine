@@ -29,12 +29,12 @@ namespace Library
 	{
 		XMFLOAT4 pos;
 		XMFLOAT2 uv;
+		XMFLOAT3 normals;
 	};
 
 	struct FoliageInstanceData //for GPU instance buffer
 	{
 		XMMATRIX worldMatrix = XMMatrixIdentity();
-		XMFLOAT3 color;
 	};
 
 	struct FoliageData //for CPU buffer
@@ -88,9 +88,7 @@ namespace Library
 		Camera& mCamera;
 		DirectionalLight& mDirectionalLight;
 
-		FoliageMaterial* mMaterial;
-		DeferredMaterial* mDeferredPrepassMaterial;
-		Rendering::VoxelizationGIMaterial* mVoxelizationGIMaterial;
+		FoliageMaterial* mFoliageMaterial = nullptr;
 
 		ID3D11Buffer* mVertexBuffer = nullptr;
 		ID3D11Buffer* mIndexBuffer = nullptr;

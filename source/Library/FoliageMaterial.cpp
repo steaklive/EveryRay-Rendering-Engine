@@ -28,7 +28,8 @@ namespace Library
 		MATERIAL_VARIABLE_INITIALIZATION(WindFrequency),
 		MATERIAL_VARIABLE_INITIALIZATION(WindStrength),
 		MATERIAL_VARIABLE_INITIALIZATION(WindGustDistance),
-		MATERIAL_VARIABLE_INITIALIZATION(WindDirection)
+		MATERIAL_VARIABLE_INITIALIZATION(WindDirection),
+		MATERIAL_VARIABLE_INITIALIZATION(WorldVoxelScale)
 
 	{
 	}
@@ -51,6 +52,7 @@ namespace Library
 	MATERIAL_VARIABLE_DEFINITION(FoliageMaterial, WindStrength)
 	MATERIAL_VARIABLE_DEFINITION(FoliageMaterial, WindGustDistance)
 	MATERIAL_VARIABLE_DEFINITION(FoliageMaterial, WindDirection)
+	MATERIAL_VARIABLE_DEFINITION(FoliageMaterial, WorldVoxelScale)
 
 	void FoliageMaterial::Initialize(Effect* effect)
 	{
@@ -74,39 +76,47 @@ namespace Library
 		MATERIAL_VARIABLE_RETRIEVE(WindStrength)
 		MATERIAL_VARIABLE_RETRIEVE(WindGustDistance)
 		MATERIAL_VARIABLE_RETRIEVE(WindDirection)
+		MATERIAL_VARIABLE_RETRIEVE(WorldVoxelScale)
 
 		D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] = 
 		{
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "WORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
 			{ "WORLD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
 			{ "WORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-			{ "WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-			{ "TEXCOORD", 1, DXGI_FORMAT_R32G32B32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+			{ "WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
 		};
 
 		CreateInputLayout("main", "p0", inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
+		CreateInputLayout("to_gbuffer", "p0", inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
+		CreateInputLayout("to_voxel_gi", "p0", inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
 	}
 
 	void FoliageMaterial::CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const
 	{
 		const std::vector<XMFLOAT3>& sourceVertices = mesh.Vertices();
 		std::vector<XMFLOAT3>* textureCoordinates = mesh.TextureCoordinates().at(0);
-		
-		std::vector<VertexPositionTexture> vertices;
+
+		const std::vector<XMFLOAT3>& normals = mesh.Normals();
+		assert(normals.size() == sourceVertices.size());
+
+		std::vector<VertexPositionTextureNormal> vertices;
 		vertices.reserve(sourceVertices.size());
 		for (UINT i = 0; i < sourceVertices.size(); i++)
 		{
 			XMFLOAT3 position = sourceVertices.at(i);
 			XMFLOAT3 uv = textureCoordinates->at(i);
-			vertices.push_back(VertexPositionTexture(XMFLOAT4(position.x, position.y, position.z, 1.0f), XMFLOAT2(uv.x, uv.y)));
+			XMFLOAT3 normal = normals.at(i);
+
+			vertices.push_back(VertexPositionTextureNormal(XMFLOAT4(position.x, position.y, position.z, 1.0f), XMFLOAT2(uv.x, uv.y), normal));
 		}
 		
 		CreateVertexBuffer(device, &vertices[0], vertices.size(), vertexBuffer);
 	}
 
-	void FoliageMaterial::CreateVertexBuffer(ID3D11Device* device, VertexPositionTexture* vertices, UINT vertexCount, ID3D11Buffer** vertexBuffer) const
+	void FoliageMaterial::CreateVertexBuffer(ID3D11Device* device, VertexPositionTextureNormal* vertices, UINT vertexCount, ID3D11Buffer** vertexBuffer) const
 	{
 		D3D11_BUFFER_DESC vertexBufferDesc;
 		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
@@ -130,6 +140,6 @@ namespace Library
 
 	UINT FoliageMaterial::VertexSize() const
 	{
-		return sizeof(VertexPositionTexture);
+		return sizeof(VertexPositionTextureNormal);
 	}
 }

@@ -27,13 +27,14 @@ namespace Library
 			MATERIAL_VARIABLE_DECLARATION(WindStrength)
 			MATERIAL_VARIABLE_DECLARATION(WindGustDistance)
 			MATERIAL_VARIABLE_DECLARATION(WindDirection)
+			MATERIAL_VARIABLE_DECLARATION(WorldVoxelScale)
 
 	public:
 		FoliageMaterial();
 
 		virtual void Initialize(Effect* effect) override;
 		virtual void CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const override;
-		void CreateVertexBuffer(ID3D11Device* device, VertexPositionTexture* vertices, UINT vertexCount, ID3D11Buffer** vertexBuffer) const;
+		void CreateVertexBuffer(ID3D11Device* device, VertexPositionTextureNormal* vertices, UINT vertexCount, ID3D11Buffer** vertexBuffer) const;
 		void CreateIndexBuffer(Mesh& mesh, ID3D11Buffer** indexBuffer);
 		virtual UINT VertexSize() const override;
 	};

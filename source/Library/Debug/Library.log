@@ -33,16 +33,16 @@ C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\L
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(150,44): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(205,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.h(120,27): warning C4305: 'initializing': truncation from 'double' to 'float'
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.cpp(121,67): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.cpp(129,67): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.cpp(137,67): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.cpp(175,26): warning C4101: 'vertexData': unreferenced local variable
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.cpp(174,21): warning C4101: 'vertexBufferDesc': unreferenced local variable
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.cpp(430,19): warning C4101: 'windRotation': unreferenced local variable
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.cpp(430,9): warning C4101: 'rotation': unreferenced local variable
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.cpp(429,10): warning C4101: 'angle': unreferenced local variable
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.cpp(460,65): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.h(118,27): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.cpp(110,67): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.cpp(118,67): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.cpp(126,67): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.cpp(164,26): warning C4101: 'vertexData': unreferenced local variable
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.cpp(163,21): warning C4101: 'vertexBufferDesc': unreferenced local variable
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.cpp(381,19): warning C4101: 'windRotation': unreferenced local variable
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.cpp(381,9): warning C4101: 'rotation': unreferenced local variable
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.cpp(380,10): warning C4101: 'angle': unreferenced local variable
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.cpp(411,65): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
   Illumination.cpp
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(150,44): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(205,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
@@ -78,7 +78,7 @@ C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\L
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(21): message : see declaration of 'Rendering::MotionBlurMaterial'
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(281,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.h(120,27): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.h(118,27): warning C4305: 'initializing': truncation from 'double' to 'float'
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(128,23): warning C4838: conversion from 'float' to 'LONG' requires a narrowing conversion
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(128,23): warning C4244: 'initializing': conversion from 'float' to 'LONG', possible loss of data
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(128,29): warning C4838: conversion from 'float' to 'LONG' requires a narrowing conversion

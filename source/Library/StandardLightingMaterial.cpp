@@ -108,10 +108,10 @@ namespace Rendering
 		assert(textureCoordinates->size() == sourceVertices.size());
 
 		const std::vector<XMFLOAT3>& normals = mesh.Normals();
-		assert(textureCoordinates->size() == sourceVertices.size());
+		assert(normals.size() == sourceVertices.size());
 
 		const std::vector<XMFLOAT3>& tangents = mesh.Tangents();
-		assert(textureCoordinates->size() == sourceVertices.size());
+		assert(tangents.size() == sourceVertices.size());
 
 		std::vector<VertexPositionTextureNormalTangent> vertices;
 		vertices.reserve(sourceVertices.size());
