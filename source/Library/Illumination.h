@@ -7,6 +7,7 @@
 
 #define VCT_SCENE_VOLUME_SIZE 256
 #define VCT_MIPS 6
+#define VCT_MAIN_RT_DOWNSCALE 0.5
 
 namespace Library
 {
@@ -42,6 +43,10 @@ namespace Library
 			float VoxelSampleOffset;
 			float GIPower;
 		};
+		struct UpsampleBlurCB
+		{
+			bool Upsample;
+		};
 	}
 
 	class Illumination : public GameComponent
@@ -64,8 +69,8 @@ namespace Library
 		ID3D11ShaderResourceView* GetGISRV() { 
 			if (mVoxelizationDebugView)
 				return mVCTVoxelizationDebugRT->getSRV();
-			else 
-				return mVCTMainRT->getSRV();
+			else
+				return mVCTUpsampleAndBlurRT->getSRV();
 		}
 	private:
 		void UpdateVoxelizationGIMaterialVariables(Rendering::RenderingObject* obj, int meshIndex);
@@ -79,11 +84,12 @@ namespace Library
 
 		ConstantBuffer<IlluminationCBufferData::VoxelizationCB> mVoxelizationConstantBuffer;
 		ConstantBuffer<IlluminationCBufferData::VoxelConeTracingCB> mVoxelConeTracingConstantBuffer;
+		ConstantBuffer<IlluminationCBufferData::UpsampleBlurCB> mUpsampleBlurConstantBuffer;
 
 		CustomRenderTarget* mVCTVoxelization3DRT = nullptr;
 		CustomRenderTarget* mVCTVoxelizationDebugRT = nullptr;
 		CustomRenderTarget* mVCTMainRT = nullptr;
-		CustomRenderTarget* mVCTMainUpsampleAndBlurRT = nullptr;
+		CustomRenderTarget* mVCTUpsampleAndBlurRT = nullptr;
 
 		DepthTarget* mDepthBuffer = nullptr;
 
@@ -91,6 +97,7 @@ namespace Library
 		ID3D11GeometryShader* mVCTVoxelizationDebugGS = nullptr;
 		ID3D11PixelShader* mVCTVoxelizationDebugPS = nullptr;
 		ID3D11ComputeShader* mVCTMainCS = nullptr;
+		ID3D11ComputeShader* mUpsampleBlurCS = nullptr;
 
 		ID3D11ShaderResourceView* mShadowMapSRV = nullptr;
 
@@ -106,7 +113,6 @@ namespace Library
 		float mVCTVoxelSampleOffset = 0.0f;
 		float mVCTRTRatio = 0.5f; // from MAX_SCREEN_WIDTH/HEIGHT
 		bool mVCTUseMainCompute = true;
-		bool mVCTMainRTUseUpsampleAndBlur = true;
 		float mVCTGIPower = 1.0f;
 
 		bool mVoxelizationDebugView = false;

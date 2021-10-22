@@ -1,6 +1,135 @@
-﻿  Generating code
-  1 of 5777 functions (<0.1%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    10 functions had inline decision re-evaluated but remain unchanged
+﻿  ParallaxMappingDemo.cpp
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(40,1): warning C4150: deletion of pointer to incomplete type 'Rendering::CompositeLightingMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(26): message : see declaration of 'Rendering::CompositeLightingMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(41,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(126,1): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(19): message : see declaration of 'Rendering::VignetteMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(127,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(149,1): warning C4150: deletion of pointer to incomplete type 'Rendering::FXAAMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(22): message : see declaration of 'Rendering::FXAAMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(150,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(170,1): warning C4150: deletion of pointer to incomplete type 'Rendering::ColorGradingMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(20): message : see declaration of 'Rendering::ColorGradingMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(171,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(200,1): warning C4150: deletion of pointer to incomplete type 'Rendering::FogMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(23): message : see declaration of 'Rendering::FogMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(201,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(225,1): warning C4150: deletion of pointer to incomplete type 'Rendering::LightShaftsMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(25): message : see declaration of 'Rendering::LightShaftsMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(226,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(255,1): warning C4150: deletion of pointer to incomplete type 'Rendering::ScreenSpaceReflectionsMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(24): message : see declaration of 'Rendering::ScreenSpaceReflectionsMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(256,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(280,1): warning C4150: deletion of pointer to incomplete type 'Rendering::MotionBlurMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(21): message : see declaration of 'Rendering::MotionBlurMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(281,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(150,44): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(205,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Terrain.h(89,82): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.h(118,27): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Game\ParallaxMappingDemo.cpp(51,2): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Game\ParallaxMappingDemo.cpp(51,2): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
+  TerrainDemo.cpp
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(150,44): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(205,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(40,1): warning C4150: deletion of pointer to incomplete type 'Rendering::CompositeLightingMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(26): message : see declaration of 'Rendering::CompositeLightingMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(41,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(126,1): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(19): message : see declaration of 'Rendering::VignetteMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(127,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(149,1): warning C4150: deletion of pointer to incomplete type 'Rendering::FXAAMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(22): message : see declaration of 'Rendering::FXAAMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(150,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(170,1): warning C4150: deletion of pointer to incomplete type 'Rendering::ColorGradingMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(20): message : see declaration of 'Rendering::ColorGradingMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(171,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(200,1): warning C4150: deletion of pointer to incomplete type 'Rendering::FogMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(23): message : see declaration of 'Rendering::FogMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(201,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(225,1): warning C4150: deletion of pointer to incomplete type 'Rendering::LightShaftsMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(25): message : see declaration of 'Rendering::LightShaftsMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(226,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(255,1): warning C4150: deletion of pointer to incomplete type 'Rendering::ScreenSpaceReflectionsMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(24): message : see declaration of 'Rendering::ScreenSpaceReflectionsMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(256,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(280,1): warning C4150: deletion of pointer to incomplete type 'Rendering::MotionBlurMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(21): message : see declaration of 'Rendering::MotionBlurMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(281,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Terrain.h(89,82): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.h(118,27): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Game\TerrainDemo.cpp(43,2): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Game\TerrainDemo.cpp(43,2): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Game\TerrainDemo.cpp(468,31): warning C4554: '&': check operator precedence for possible error; use parentheses to clarify precedence
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Game\TerrainDemo.cpp(477,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Game\TerrainDemo.cpp(516,46): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Game\TerrainDemo.cpp(524,71): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Game\TerrainDemo.cpp(551,71): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Game\TerrainDemo.cpp(560,58): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Game\TerrainDemo.cpp(579,50): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Game\TerrainDemo.cpp(590,83): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Game\TerrainDemo.cpp(621,84): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Game\TerrainDemo.cpp(622,84): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Game\TerrainDemo.cpp(623,84): warning C4244: 'argument': conversion from 'double' to 'const unsigned __int64', possible loss of data
+  TestSceneDemo.cpp
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(40,1): warning C4150: deletion of pointer to incomplete type 'Rendering::CompositeLightingMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(26): message : see declaration of 'Rendering::CompositeLightingMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(41,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(126,1): warning C4150: deletion of pointer to incomplete type 'Rendering::VignetteMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(19): message : see declaration of 'Rendering::VignetteMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(127,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(149,1): warning C4150: deletion of pointer to incomplete type 'Rendering::FXAAMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(22): message : see declaration of 'Rendering::FXAAMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(150,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(170,1): warning C4150: deletion of pointer to incomplete type 'Rendering::ColorGradingMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(20): message : see declaration of 'Rendering::ColorGradingMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(171,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(200,1): warning C4150: deletion of pointer to incomplete type 'Rendering::FogMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(23): message : see declaration of 'Rendering::FogMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(201,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(225,1): warning C4150: deletion of pointer to incomplete type 'Rendering::LightShaftsMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(25): message : see declaration of 'Rendering::LightShaftsMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(226,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(255,1): warning C4150: deletion of pointer to incomplete type 'Rendering::ScreenSpaceReflectionsMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(24): message : see declaration of 'Rendering::ScreenSpaceReflectionsMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(256,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(280,1): warning C4150: deletion of pointer to incomplete type 'Rendering::MotionBlurMaterial'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(21): message : see declaration of 'Rendering::MotionBlurMaterial'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(281,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(150,44): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(205,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Terrain.h(89,82): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.h(118,27): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Game\TestSceneDemo.cpp(44,2): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Game\TestSceneDemo.cpp(44,2): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
+  Generating Code...
+  Generating code
+  64 of 5784 functions ( 1.1%) were compiled, the rest were copied from previous compilation.
+    7 functions were new in current compilation
+    85 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Game.vcxproj -> C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\bin\x64\Release\EveryRay - Rendering Engine.exe

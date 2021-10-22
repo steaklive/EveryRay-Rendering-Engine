@@ -37,17 +37,22 @@ namespace Library {
 	Illumination::~Illumination()
 	{
 		ReleaseObject(mVCTMainCS);
+		ReleaseObject(mUpsampleBlurCS);
+		ReleaseObject(mVCTVoxelizationDebugVS);
+		ReleaseObject(mVCTVoxelizationDebugGS);
+		ReleaseObject(mVCTVoxelizationDebugPS);
+		ReleaseObject(mDepthStencilStateRW);
+		ReleaseObject(mLinearSamplerState);
 
 		DeleteObject(mVCTVoxelization3DRT);
 		DeleteObject(mVCTVoxelizationDebugRT);
 		DeleteObject(mVCTMainRT);
-		DeleteObject(mVCTMainUpsampleAndBlurRT);
+		DeleteObject(mVCTUpsampleAndBlurRT);
 		DeleteObject(mDepthBuffer);
-		ReleaseObject(mDepthStencilStateRW);
-		ReleaseObject(mLinearSamplerState);
 
 		mVoxelizationConstantBuffer.Release();
 		mVoxelConeTracingConstantBuffer.Release();
+		mUpsampleBlurConstantBuffer.Release();
 	}
 
 	void Illumination::Initialize(const Scene* scene)
@@ -84,6 +89,13 @@ namespace Library {
 			if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTMainCS)))
 				throw GameException("Failed to create shader from VoxelConeTracingMain.hlsl!");
 			blob->Release();
+
+			blob = nullptr;
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\UpsampleBlur.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
+				throw GameException("Failed to load CSMain from shader: UpsampleBlur.hlsl!");
+			if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mUpsampleBlurCS)))
+				throw GameException("Failed to create shader from UpsampleBlur.hlsl!");
+			blob->Release();
 		}
 
 		//sampler states
@@ -106,10 +118,12 @@ namespace Library {
 		//cbuffers
 		mVoxelizationConstantBuffer.Initialize(mGame->Direct3DDevice());
 		mVoxelConeTracingConstantBuffer.Initialize(mGame->Direct3DDevice());
+		mUpsampleBlurConstantBuffer.Initialize(mGame->Direct3DDevice());
 
 		//RTs
 		mVCTVoxelization3DRT = new CustomRenderTarget(mGame->Direct3DDevice(), VCT_SCENE_VOLUME_SIZE, VCT_SCENE_VOLUME_SIZE, 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS, 6, VCT_SCENE_VOLUME_SIZE);
-		mVCTMainRT = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
+		mVCTMainRT = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()) * VCT_MAIN_RT_DOWNSCALE, static_cast<UINT>(mGame->ScreenHeight()) * VCT_MAIN_RT_DOWNSCALE, 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
+		mVCTUpsampleAndBlurRT = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
 		mVCTVoxelizationDebugRT = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 		mDepthBuffer = DepthTarget::Create(mGame->Direct3DDevice(), mGame->ScreenWidth(), mGame->ScreenHeight(), 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
 	}
@@ -122,6 +136,7 @@ namespace Library {
 		if (!mEnabled)
 		{
 			context->ClearUnorderedAccessViewFloat(mVCTMainRT->getUAV(), clearColorBlack);
+			context->ClearUnorderedAccessViewFloat(mVCTUpsampleAndBlurRT->getUAV(), clearColorBlack);
 			return;
 		}
 
@@ -205,7 +220,7 @@ namespace Library {
 			context->GenerateMips(mVCTVoxelization3DRT->getSRV());
 
 			mVoxelConeTracingConstantBuffer.Data.CameraPos = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1);
-			mVoxelConeTracingConstantBuffer.Data.UpsampleRatio = XMFLOAT2(/*mGbufferRTs[0]->GetWidth() / mVCTMainRT->GetWidth(), mGbufferRTs[0]->GetHeight() / mVCTMainRT->GetHeight()*/1.0f, 1.0f);
+			mVoxelConeTracingConstantBuffer.Data.UpsampleRatio = XMFLOAT2(1.0f / VCT_MAIN_RT_DOWNSCALE, 1.0f / VCT_MAIN_RT_DOWNSCALE);
 			mVoxelConeTracingConstantBuffer.Data.IndirectDiffuseStrength = mVCTIndirectDiffuseStrength;
 			mVoxelConeTracingConstantBuffer.Data.IndirectSpecularStrength = mVCTIndirectSpecularStrength;
 			mVoxelConeTracingConstantBuffer.Data.MaxConeTraceDistance = mVCTMaxConeTraceDistance;
@@ -243,9 +258,32 @@ namespace Library {
 			context->CSSetSamplers(0, 1, nullSSs);
 		}
 
-		//TODO upsample & blur
+		//upsample & blur
 		{
+			mUpsampleBlurConstantBuffer.Data.Upsample = true;
+			mUpsampleBlurConstantBuffer.ApplyChanges(context);
 
+			ID3D11UnorderedAccessView* UAV[1] = { mVCTUpsampleAndBlurRT->getUAV() };
+			ID3D11Buffer* CBs[1] = { mUpsampleBlurConstantBuffer.Buffer() };
+			ID3D11ShaderResourceView* SRVs[1] = { mVCTMainRT->getSRV() };
+			ID3D11SamplerState* SSs[] = { mLinearSamplerState };
+
+			context->CSSetSamplers(0, 1, SSs);
+			context->CSSetShaderResources(0, 1, SRVs);
+			context->CSSetConstantBuffers(0, 1, CBs);
+			context->CSSetShader(mUpsampleBlurCS, NULL, NULL);
+			context->CSSetUnorderedAccessViews(0, 1, UAV, NULL);
+
+			context->Dispatch(DivideByMultiple(static_cast<UINT>(mVCTUpsampleAndBlurRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mVCTUpsampleAndBlurRT->GetHeight()), 8u), 1u);
+
+			ID3D11ShaderResourceView* nullSRV[] = { NULL };
+			context->CSSetShaderResources(0, 1, nullSRV);
+			ID3D11UnorderedAccessView* nullUAV[] = { NULL };
+			context->CSSetUnorderedAccessViews(0, 1, nullUAV, 0);
+			ID3D11Buffer* nullCBs[] = { NULL };
+			context->CSSetConstantBuffers(0, 1, nullCBs);
+			ID3D11SamplerState* nullSSs[] = { NULL };
+			context->CSSetSamplers(0, 1, nullSSs);
 		}
 	}
 
