@@ -1,43 +1,10 @@
 #include "stdafx.h"
 
 #include "TestSceneDemo.h"
-#include "..\Library\Game.h"
-#include "..\Library\GameException.h"
-#include "..\Library\VectorHelper.h"
-#include "..\Library\MatrixHelper.h"
-#include "..\Library\ColorHelper.h"
-#include "..\Library\MaterialHelper.h"
-#include "..\Library\Camera.h"
-#include "..\Library\Editor.h"
-#include "..\Library\Model.h"
-#include "..\Library\Mesh.h"
+#include "..\Library\Systems.inl"
+#include "..\Library\Materials.inl"
 #include "..\Library\Utility.h"
-#include "..\Library\DirectionalLight.h"
-#include "..\Library\Keyboard.h"
-#include "..\Library\Light.h"
-#include "..\Library\Skybox.h"
-#include "..\Library\Grid.h"
-#include "..\Library\DemoLevel.h"
-#include "..\Library\RenderStateHelper.h"
-#include "..\Library\RenderingObject.h"
-#include "..\Library\DepthMap.h"
-#include "..\Library\Frustum.h"
-#include "..\Library\StandardLightingMaterial.h"
-#include "..\Library\ScreenSpaceReflectionsMaterial.h"
-#include "..\Library\DepthMapMaterial.h"
-#include "..\Library\PostProcessingStack.h"
-#include "..\Library\FullScreenRenderTarget.h"
 #include "..\Library\IBLRadianceMap.h"
-#include "..\Library\DeferredMaterial.h"
-#include "..\Library\GBuffer.h"
-#include "..\Library\FullScreenQuad.h"
-#include "..\Library\ShadowMapper.h"
-#include "..\Library\Terrain.h"
-#include "..\Library\Foliage.h"
-#include "..\Library\Scene.h"
-#include "..\Library\VolumetricClouds.h"
-#include "..\Library\Illumination.h"
-#include "..\Library\ShaderCompiler.h"
 
 namespace Rendering
 {
@@ -45,112 +12,50 @@ namespace Rendering
 
 	TestSceneDemo::TestSceneDemo(Game& game, Camera& camera, Editor& editor)
 		: DrawableGameComponent(game, camera, editor),
-		mWorldMatrix(MatrixHelper::Identity),
-		mRenderStateHelper(nullptr),
-		mDirectionalLight(nullptr),
-		mSkybox(nullptr),
 		mIrradianceDiffuseTextureSRV(nullptr),
 		mIrradianceSpecularTextureSRV(nullptr),
-		mIntegrationMapTextureSRV(nullptr),
-		mGrid(nullptr),
-		mGBuffer(nullptr),
-		mSSRQuad(nullptr),
-		mShadowMapper(nullptr),
-		mFoliageSystem(nullptr),
-		mScene(nullptr),
-		mVolumetricClouds(nullptr),
-		mGI(nullptr)
-		//mTerrain(nullptr)
+		mIntegrationMapTextureSRV(nullptr)
 	{
 	}
 
 	TestSceneDemo::~TestSceneDemo()
 	{
-		//DeleteObject(mTerrain)
-		DeleteObject(mRenderStateHelper);
-		DeleteObject(mDirectionalLight);
-		DeleteObject(mSkybox);
-		DeleteObject(mGrid);
-		DeleteObject(mPostProcessingStack);
-		DeleteObject(mGBuffer);
-		DeleteObject(mSSRQuad);
-		DeleteObject(mShadowMapper);
-		DeleteObject(mFoliageSystem);
 		ReleaseObject(mIrradianceDiffuseTextureSRV);
 		ReleaseObject(mIrradianceSpecularTextureSRV);
 		ReleaseObject(mIntegrationMapTextureSRV);
-		DeleteObject(mVolumetricClouds);
-		DeleteObject(mGI);
-		DeleteObject(mScene);
 	}
 
-#pragma region COMPONENT_METHODS
-	/////////////////////////////////////////////////////////////
-	// 'DemoLevel' ugly methods...
 	bool TestSceneDemo::IsComponent()
 	{
 		return mGame->IsInGameLevels<TestSceneDemo*>(mGame->levels, this);
 	}
 	void TestSceneDemo::Create()
 	{
+		DemoLevel::Initialize(*mGame, *mCamera, Utility::GetFilePath("content\\levels\\testScene.json"));
 		Initialize();
 		mGame->levels.push_back(this);
 	}
 	void TestSceneDemo::Destroy()
 	{
+		DemoLevel::Destroy();
 		this->~TestSceneDemo();
 		mGame->levels.clear();
 	}
-	/////////////////////////////////////////////////////////////  
-#pragma endregion
 
 	void TestSceneDemo::Initialize()
 	{
 		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
 
-		mGBuffer = new GBuffer(*mGame, *mCamera, mGame->ScreenWidth(), mGame->ScreenHeight());
-		mGBuffer->Initialize();
+        for (auto& object : mScene->objects) {
+            object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::lightingMaterialName, [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables(object.first, meshIndex); });
+            object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables(object.first, meshIndex); });
+            object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(0), [&](int meshIndex) { UpdateShadow0MaterialVariables(object.first, meshIndex); });
+            object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(1), [&](int meshIndex) { UpdateShadow1MaterialVariables(object.first, meshIndex); });
+            object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(2), [&](int meshIndex) { UpdateShadow2MaterialVariables(object.first, meshIndex); });
+        }
 
-		mScene = new Scene(*mGame, *mCamera, Utility::GetFilePath("content\\levels\\testScene.json"));
-		for (auto& object : mScene->objects) {
-			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::lightingMaterialName, [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables(object.first, meshIndex); });
-			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables(object.first, meshIndex); });
-			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(0), [&](int meshIndex) { UpdateShadow0MaterialVariables(object.first, meshIndex); });
-			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(1), [&](int meshIndex) { UpdateShadow1MaterialVariables(object.first, meshIndex); });
-			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(2), [&](int meshIndex) { UpdateShadow2MaterialVariables(object.first, meshIndex); });
-		}
 		mEditor->LoadScene(mScene);
 
-		mKeyboard = (Keyboard*)mGame->Services().GetService(Keyboard::TypeIdClass());
-		assert(mKeyboard != nullptr);
-
-		mSkybox = new Skybox(*mGame, *mCamera, Utility::GetFilePath(Utility::ToWideString(mScene->skyboxPath)), 10000);
-		mSkybox->Initialize();
-
-		mGrid = new Grid(*mGame, *mCamera, 200, 56, XMFLOAT4(0.961f, 0.871f, 0.702f, 1.0f));
-		mGrid->Initialize();
-		mGrid->SetColor((XMFLOAT4)ColorHelper::LightGray);
-
-
-		//directional light
-		mDirectionalLight = new DirectionalLight(*mGame, *mCamera);
-		mDirectionalLight->ApplyRotation(XMMatrixRotationAxis(mDirectionalLight->RightVector(), -XMConvertToRadians(70.0f)) * XMMatrixRotationAxis(mDirectionalLight->UpVector(), -XMConvertToRadians(25.0f)));
-		mDirectionalLight->SetAmbientColor(mScene->ambientColor);
-		mDirectionalLight->SetSunColor(mScene->sunColor);
-
-		mShadowMapper = new ShadowMapper(*mGame, *mCamera, *mDirectionalLight, 4096, 4096);
-		mDirectionalLight->RotationUpdateEvent->AddListener("shadow mapper", [&]() {mShadowMapper->ApplyTransform(); });
-
-		mRenderStateHelper = new RenderStateHelper(*mGame);
-
-		//PP
-		mPostProcessingStack = new PostProcessingStack(*mGame, *mCamera);
-		mPostProcessingStack->Initialize(false, false, true, true, true, false, true, false);
-		mPostProcessingStack->SetDirectionalLight(mDirectionalLight);
-		mPostProcessingStack->SetSunOcclusionSRV(mSkybox->GetSunOcclusionOutputTexture());
-
-		//foliage
-		mFoliageSystem = new FoliageSystem();
 		mFoliageSystem->AddFoliage(new Foliage(*mGame, *mCamera, *mDirectionalLight, 1500, Utility::GetFilePath("content\\textures\\foliage\\grass_type1.png"), 2.5f, 100.0f, XMFLOAT3(0.0, 0.0, 0.0), FoliageBillboardType::SINGLE));
 		mFoliageSystem->AddFoliage(new Foliage(*mGame, *mCamera, *mDirectionalLight, 2000, Utility::GetFilePath("content\\textures\\foliage\\grass_type4.png"), 2.0f, 100.0f, XMFLOAT3(0.0, 0.0, 0.0), FoliageBillboardType::SINGLE));
 		mFoliageSystem->AddFoliage(new Foliage(*mGame, *mCamera, *mDirectionalLight, 2000, Utility::GetFilePath("content\\textures\\foliage\\grass_type6.png"), 2.0f, 100.0f, XMFLOAT3(0.0, 0.0, 0.0), FoliageBillboardType::SINGLE));
@@ -158,10 +63,6 @@ namespace Rendering
 		mFoliageSystem->AddFoliage(new Foliage(*mGame, *mCamera, *mDirectionalLight, 50, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type3.png"), 2.5f, 100.0f, XMFLOAT3(0.0, 0.0, 0.0), FoliageBillboardType::SINGLE));
 		mFoliageSystem->AddFoliage(new Foliage(*mGame, *mCamera, *mDirectionalLight, 100, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type10.png"), 3.5f, 100.0f, XMFLOAT3(0.0, 0.0, 0.0), FoliageBillboardType::SINGLE));
 		mFoliageSystem->Initialize();
-
-		mCamera->SetPosition(mScene->cameraPosition);
-		mCamera->SetDirection(mScene->cameraDirection);
-		mCamera->SetFarPlaneDistance(100000.0f);
 
 		//IBL
 		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(),Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureDiffuseHDR.dds").c_str(), nullptr, &mIrradianceDiffuseTextureSRV)))
@@ -183,11 +84,6 @@ namespace Rendering
 		// Load a pre-computed Integration Map
 		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\ibl_brdf_lut.png").c_str(), nullptr, &mIntegrationMapTextureSRV)))
 			throw GameException("Failed to create Integration Texture.");
-		
-		mVolumetricClouds = new VolumetricClouds(*mGame, *mCamera, *mDirectionalLight, *mPostProcessingStack, *mSkybox);
-		
-		mGI = new Illumination(*mGame, *mCamera, *mDirectionalLight, *mShadowMapper, mScene);
-		mGI->SetFoliageSystem(mFoliageSystem);
 	}
 
 	void TestSceneDemo::UpdateLevel(const GameTime& gameTime)

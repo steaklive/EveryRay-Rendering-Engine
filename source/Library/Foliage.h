@@ -97,10 +97,10 @@ namespace Library
 		ID3D11BlendState* mAlphaToCoverageState = nullptr;
 		ID3D11BlendState* mNoBlendState = nullptr;
 
-		ID3D11UnorderedAccessView* mVoxelizationTexture;
+		ID3D11UnorderedAccessView* mVoxelizationTexture = nullptr;
 
-		FoliageInstanceData* mPatchesBufferGPU;
-		FoliageData* mPatchesBufferCPU;
+		FoliageInstanceData* mPatchesBufferGPU = nullptr;
+		FoliageData* mPatchesBufferCPU = nullptr;
 
 		FoliageBillboardType mType;
 

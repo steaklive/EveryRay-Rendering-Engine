@@ -2,6 +2,11 @@
 
 #include "Common.h"
 
+#include "VectorHelper.h"
+#include "MatrixHelper.h"
+#include "ColorHelper.h"
+#include "MaterialHelper.h"
+
 namespace Library
 {
 	class Utility
