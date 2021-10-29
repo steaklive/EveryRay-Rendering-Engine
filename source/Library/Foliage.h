@@ -9,6 +9,7 @@
 #include "VoxelizationGIMaterial.h"
 #include "ShadowMapper.h"
 #include "Illumination.h"
+#include "GeneralEvent.h"
 
 namespace Library
 {
@@ -46,6 +47,7 @@ namespace Library
 
 	class Foliage : public GameComponent
 	{
+
 	public:
 		Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale = 1.0f, float distributionRadius = 100, XMFLOAT3 distributionCenter = XMFLOAT3(0.0f, 0.0f, 0.0f), FoliageBillboardType bType = FoliageBillboardType::SINGLE);
 		~Foliage();
@@ -78,6 +80,7 @@ namespace Library
 		void UpdateBuffersGPU();
 
 		void SetVoxelizationTextureOutput(ID3D11UnorderedAccessView* uav) { mVoxelizationTexture = uav; }
+
 	private:
 		void InitializeBuffersGPU(int count);
 		void InitializeBuffersCPU();
@@ -143,6 +146,8 @@ namespace Library
 		void AddFoliage(Foliage* foliage) { mFoliageCollection.emplace_back(foliage); }
 		void SetVoxelizationTextureOutput(ID3D11UnorderedAccessView* uav);
 
+		using Delegate_FoliageSystemInitialized = std::function<void()>;
+		GeneralEvent<Delegate_FoliageSystemInitialized>* FoliageSystemInitializedEvent = new GeneralEvent<Delegate_FoliageSystemInitialized>();
 	private:
 		std::vector<Foliage*> mFoliageCollection;
 	};

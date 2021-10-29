@@ -23,10 +23,37 @@ namespace Library {
 	{
 	}
 
-	void DemoLevel::UpdateLevel(const GameTime& time)
+	void DemoLevel::UpdateLevel(const GameTime& gameTime)
 	{
+		mSkybox->Update(gameTime);
+		mGrid->Update(gameTime);
+		mPostProcessingStack->Update();
+		mVolumetricClouds->Update(gameTime);
+		mGI->Update(gameTime);
+		mShadowMapper->Update(gameTime);
 
+		mScene->GetCamera().Cull(mScene->objects);
+		for (auto& object : mScene->objects)
+			object.second->Update(gameTime);
+
+        UpdateImGui();
 	}
+
+    void DemoLevel::UpdateImGui()
+    {
+        ImGui::Begin("Systems Config");
+
+        if (ImGui::Button("Post Processing Stack")) 
+            mPostProcessingStack->ShowPostProcessingWindow();
+
+		if (ImGui::Button("Volumetric Clouds"))
+			mVolumetricClouds->Config();
+
+        if (ImGui::Button("Global Illumination"))
+			mGI->Config();
+
+        ImGui::End();
+    }
 
 	void DemoLevel::DrawLevel(const GameTime& time)
 	{
@@ -45,6 +72,10 @@ namespace Library {
 
         mScene = new Scene(game, camera, sceneName);
 
+        camera.SetPosition(mScene->cameraPosition);
+        camera.SetDirection(mScene->cameraDirection);
+        camera.SetFarPlaneDistance(100000.0f);
+
         mKeyboard = (Keyboard*)game.Services().GetService(Keyboard::TypeIdClass());
         assert(mKeyboard != nullptr);
 
@@ -61,7 +92,7 @@ namespace Library {
         mDirectionalLight->SetSunColor(mScene->sunColor);
 
         mShadowMapper = new ShadowMapper(game, camera, *mDirectionalLight, 4096, 4096);
-        mDirectionalLight->RotationUpdateEvent->AddListener("shadow mapper", [&]() {mShadowMapper->ApplyTransform(); });
+        mDirectionalLight->RotationUpdateEvent->AddListener("shadow mapper", [&]() { mShadowMapper->ApplyTransform(); });
 
         mRenderStateHelper = new RenderStateHelper(game);
 
@@ -70,16 +101,12 @@ namespace Library {
         mPostProcessingStack->SetDirectionalLight(mDirectionalLight);
         mPostProcessingStack->SetSunOcclusionSRV(mSkybox->GetSunOcclusionOutputTexture());
 
-        mFoliageSystem = new FoliageSystem();
-
-        camera.SetPosition(mScene->cameraPosition);
-        camera.SetDirection(mScene->cameraDirection);
-        camera.SetFarPlaneDistance(100000.0f);
-
         mVolumetricClouds = new VolumetricClouds(game, camera, *mDirectionalLight, *mPostProcessingStack, *mSkybox);
 
         mGI = new Illumination(game, camera, *mDirectionalLight, *mShadowMapper, mScene);
-        mGI->SetFoliageSystem(mFoliageSystem);
+
+        mFoliageSystem = new FoliageSystem();
+        mFoliageSystem->FoliageSystemInitializedEvent->AddListener("foliage initialized for GI",  [&]() { mGI->SetFoliageSystem(mFoliageSystem); });
     }
 
 }

@@ -41,11 +41,6 @@ namespace Rendering
 		void UpdateImGui();
 		void Initialize();
 
-		ID3D11ShaderResourceView* mIrradianceDiffuseTextureSRV;
-		ID3D11ShaderResourceView* mIrradianceSpecularTextureSRV;
-		ID3D11ShaderResourceView* mIntegrationMapTextureSRV;
-		std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
-
 		float mWindStrength = 1.0f;
 		float mWindFrequency = 1.0f;
 		float mWindGustDistance = 1.0f;

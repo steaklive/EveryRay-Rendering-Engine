@@ -31,6 +31,7 @@ namespace Library
 		XMFLOAT3 ambientColor;
 
 		Material* GetMaterial(const std::string& materialName);
+		Camera& GetCamera() { return mCamera; }
 	private:
 		Json::Value root;
 

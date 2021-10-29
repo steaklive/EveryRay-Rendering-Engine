@@ -19,6 +19,7 @@ namespace Library
 	FoliageSystem::~FoliageSystem()
 	{
 		DeletePointerCollection(mFoliageCollection);
+		DeleteObject(FoliageSystemInitializedEvent);
 	}
 
 	void FoliageSystem::Initialize()
@@ -26,6 +27,9 @@ namespace Library
 		for (auto& foliage : mFoliageCollection) {
 			foliage->CreateBufferGPU();
 		}
+
+		for (auto listener : FoliageSystemInitializedEvent->GetListeners())
+			listener();
 	}
 
 	void FoliageSystem::Update(const GameTime& gameTime, float gustDistance, float strength, float frequency)

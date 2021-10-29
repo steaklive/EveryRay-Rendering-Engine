@@ -22,6 +22,7 @@
 #include "GBuffer.h"
 #include "ShadowMapper.h"
 #include "Foliage.h"
+#include "IBLRadianceMap.h"
 
 namespace Library {
 	Illumination::Illumination(Game& game, Camera& camera, DirectionalLight& light, ShadowMapper& shadowMapper, const Scene* scene)
@@ -43,6 +44,10 @@ namespace Library {
 		ReleaseObject(mVCTVoxelizationDebugPS);
 		ReleaseObject(mDepthStencilStateRW);
 		ReleaseObject(mLinearSamplerState);
+
+		ReleaseObject(mIrradianceDiffuseTextureSRV);
+		ReleaseObject(mIrradianceSpecularTextureSRV);
+		ReleaseObject(mIntegrationMapTextureSRV);
 
 		DeleteObject(mVCTVoxelization3DRT);
 		DeleteObject(mVCTVoxelizationDebugRT);
@@ -126,6 +131,30 @@ namespace Library {
 		mVCTUpsampleAndBlurRT = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
 		mVCTVoxelizationDebugRT = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 		mDepthBuffer = DepthTarget::Create(mGame->Direct3DDevice(), mGame->ScreenWidth(), mGame->ScreenHeight(), 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
+	
+		//IBL
+		{
+			if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureDiffuseHDR.dds").c_str(), nullptr, &mIrradianceDiffuseTextureSRV)))
+				throw GameException("Failed to create Diffuse Irradiance Map.");
+
+			mIBLRadianceMap.reset(new IBLRadianceMap(*mGame, /*Utility::GetFilePath(Utility::ToWideString(mScene->skyboxPath))*/Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureEnvHDR.dds")));
+			mIBLRadianceMap->Initialize();
+			mIBLRadianceMap->Create(*mGame);
+
+			mIrradianceSpecularTextureSRV = *mIBLRadianceMap->GetShaderResourceViewAddress();
+			if (mIrradianceSpecularTextureSRV == nullptr)
+				throw GameException("Failed to create Specular Irradiance Map.");
+			mIBLRadianceMap.release();
+			mIBLRadianceMap.reset(nullptr);
+
+			//if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_4\\textureSpecularMDR.dds").c_str(), nullptr, &mIrradianceSpecularTextureSRV)))
+			//	throw GameException("Failed to create Specular Irradiance Map.");
+
+			// Load a pre-computed Integration Map
+			if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\ibl_brdf_lut.png").c_str(), nullptr, &mIntegrationMapTextureSRV)))
+				throw GameException("Failed to create Integration Texture.");
+
+		}
 	}
 
 	void Illumination::Draw(const GameTime& gameTime, const Scene* scene, GBuffer* gbuffer)

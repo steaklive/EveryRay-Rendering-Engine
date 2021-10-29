@@ -1,5 +1,4 @@
-﻿  stdafx.cpp
-  ParallaxMappingDemo.cpp
+﻿  TestSceneDemo.cpp
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(40,1): warning C4150: deletion of pointer to incomplete type 'Rendering::CompositeLightingMaterial'; no destructor called
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(26): message : see declaration of 'Rendering::CompositeLightingMaterial'
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(41,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
@@ -32,31 +31,21 @@ C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\L
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(21): message : see declaration of 'Rendering::MotionBlurMaterial'
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(281,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(12): message : see declaration of 'Library::FullScreenQuad'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Terrain.h(89,82): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(150,44): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(205,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Terrain.h(89,82): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.h(118,27): warning C4305: 'initializing': truncation from 'double' to 'float'
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Game\ParallaxMappingDemo.cpp(51,2): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Game\ParallaxMappingDemo.cpp(51,2): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.h(121,27): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Game\TestSceneDemo.cpp(10,2): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Game\TestSceneDemo.cpp(10,2): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
   Generating code
-  Previous IPDB and IOBJ mismatch, fall back to full compilation.
-  All 5786 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  232 of 5846 functions ( 4.0%) were compiled, the rest were copied from previous compilation.
+    4 functions were new in current compilation
+    75 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
-TestSceneDemo.obj : warning LNK4099: PDB 'vc142.pdb' was not found with 'TestSceneDemo.obj' or at 'C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\bin\x64\Release\vc142.pdb'; linking object as if no debug info
-TerrainDemo.obj : warning LNK4099: PDB '' was not found with 'TerrainDemo.obj' or at ''; linking object as if no debug info
-SubsurfaceScatteringDemo.obj : warning LNK4099: PDB 'vc142.pdb' was not found with 'SubsurfaceScatteringDemo.obj' or at 'C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\bin\x64\Release\vc142.pdb'; linking object as if no debug info
-ShadowMappingDemo.obj : warning LNK4099: PDB 'vc142.pdb' was not found with 'ShadowMappingDemo.obj' or at 'C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\bin\x64\Release\vc142.pdb'; linking object as if no debug info
-RenderingGame.obj : warning LNK4099: PDB 'vc142.pdb' was not found with 'RenderingGame.obj' or at 'C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\bin\x64\Release\vc142.pdb'; linking object as if no debug info
-Program.obj : warning LNK4099: PDB 'vc142.pdb' was not found with 'Program.obj' or at 'C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\bin\x64\Release\vc142.pdb'; linking object as if no debug info
-PhysicallyBasedRenderingDemo.obj : warning LNK4099: PDB 'vc142.pdb' was not found with 'PhysicallyBasedRenderingDemo.obj' or at 'C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\bin\x64\Release\vc142.pdb'; linking object as if no debug info
-InstancingDemo.obj : warning LNK4099: PDB 'vc142.pdb' was not found with 'InstancingDemo.obj' or at 'C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\bin\x64\Release\vc142.pdb'; linking object as if no debug info
-FrustumCullingDemo.obj : warning LNK4099: PDB 'vc142.pdb' was not found with 'FrustumCullingDemo.obj' or at 'C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\bin\x64\Release\vc142.pdb'; linking object as if no debug info
-CollisionTestDemo.obj : warning LNK4099: PDB 'vc142.pdb' was not found with 'CollisionTestDemo.obj' or at 'C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\bin\x64\Release\vc142.pdb'; linking object as if no debug info
-SponzaMainDemo.obj : warning LNK4099: PDB 'vc142.pdb' was not found with 'SponzaMainDemo.obj' or at 'C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\bin\x64\Release\vc142.pdb'; linking object as if no debug info
 imgui_impl_win32.obj : warning LNK4099: PDB 'vc142.pdb' was not found with 'imgui_impl_win32.obj' or at 'C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\bin\x64\Release\vc142.pdb'; linking object as if no debug info
 imgui_impl_dx11.obj : warning LNK4099: PDB 'vc142.pdb' was not found with 'imgui_impl_dx11.obj' or at 'C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\bin\x64\Release\vc142.pdb'; linking object as if no debug info
-imgui_draw.obj : warning LNK4099: PDB 'vc142.pdb' was not found with 'imgui_draw.obj' or at 'C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\bin\x64\Release\vc142.pdb'; linking object as if no debug info
+imgui_draw.obj : warning LNK4099: PDB '' was not found with 'imgui_draw.obj' or at ''; linking object as if no debug info
 imgui_demo.obj : warning LNK4099: PDB 'vc142.pdb' was not found with 'imgui_demo.obj' or at 'C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\bin\x64\Release\vc142.pdb'; linking object as if no debug info
-ImGuizmo.obj : warning LNK4099: PDB '' was not found with 'ImGuizmo.obj' or at ''; linking object as if no debug info
+ImGuizmo.obj : warning LNK4099: PDB 'vc142.pdb' was not found with 'ImGuizmo.obj' or at 'C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\bin\x64\Release\vc142.pdb'; linking object as if no debug info
 imgui.obj : warning LNK4099: PDB 'vc142.pdb' was not found with 'imgui.obj' or at 'C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\bin\x64\Release\vc142.pdb'; linking object as if no debug info
   Game.vcxproj -> C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\bin\x64\Release\EveryRay - Rendering Engine.exe

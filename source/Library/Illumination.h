@@ -20,6 +20,7 @@ namespace Library
 	class GBuffer;
 	class ShadowMapper;
 	class FoliageSystem;
+	class IBLRadianceMap;
 
 	namespace IlluminationCBufferData {
 		struct VoxelizationCB
@@ -72,6 +73,10 @@ namespace Library
 			else
 				return mVCTUpsampleAndBlurRT->getSRV();
 		}
+
+		ID3D11ShaderResourceView* GetIBLIrradianceDiffuseSRV() { return mIrradianceDiffuseTextureSRV; }
+		ID3D11ShaderResourceView* GetIBLIrradianceSpecularSRV() { return mIrradianceSpecularTextureSRV; }
+		ID3D11ShaderResourceView* GetIBLIntegrationSRV() { return mIrradianceDiffuseTextureSRV; }
 	private:
 		void UpdateVoxelizationGIMaterialVariables(Rendering::RenderingObject* obj, int meshIndex);
 		void UpdateImGui();
@@ -119,5 +124,10 @@ namespace Library
 
 		bool mEnabled = false;
 		bool mShowDebug = false;
+
+		ID3D11ShaderResourceView* mIrradianceDiffuseTextureSRV = nullptr;
+		ID3D11ShaderResourceView* mIrradianceSpecularTextureSRV = nullptr;
+		ID3D11ShaderResourceView* mIntegrationMapTextureSRV = nullptr;
+		std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
 	};
 }

@@ -49,6 +49,8 @@ namespace Library
         Illumination* mGI = nullptr;
 
         Rendering::PostProcessingStack* mPostProcessingStack = nullptr;
+    private:
+        void UpdateImGui();
 	};
 
 }

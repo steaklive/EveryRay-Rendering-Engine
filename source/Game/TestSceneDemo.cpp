@@ -4,25 +4,19 @@
 #include "..\Library\Systems.inl"
 #include "..\Library\Materials.inl"
 #include "..\Library\Utility.h"
-#include "..\Library\IBLRadianceMap.h"
 
 namespace Rendering
 {
 	RTTI_DEFINITIONS(TestSceneDemo)
 
 	TestSceneDemo::TestSceneDemo(Game& game, Camera& camera, Editor& editor)
-		: DrawableGameComponent(game, camera, editor),
-		mIrradianceDiffuseTextureSRV(nullptr),
-		mIrradianceSpecularTextureSRV(nullptr),
-		mIntegrationMapTextureSRV(nullptr)
+		: DrawableGameComponent(game, camera, editor)
 	{
 	}
 
 	TestSceneDemo::~TestSceneDemo()
 	{
-		ReleaseObject(mIrradianceDiffuseTextureSRV);
-		ReleaseObject(mIrradianceSpecularTextureSRV);
-		ReleaseObject(mIntegrationMapTextureSRV);
+
 	}
 
 	bool TestSceneDemo::IsComponent()
@@ -38,7 +32,7 @@ namespace Rendering
 	void TestSceneDemo::Destroy()
 	{
 		DemoLevel::Destroy();
-		this->~TestSceneDemo();
+		TestSceneDemo::~TestSceneDemo();
 		mGame->levels.clear();
 	}
 
@@ -63,75 +57,32 @@ namespace Rendering
 		mFoliageSystem->AddFoliage(new Foliage(*mGame, *mCamera, *mDirectionalLight, 50, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type3.png"), 2.5f, 100.0f, XMFLOAT3(0.0, 0.0, 0.0), FoliageBillboardType::SINGLE));
 		mFoliageSystem->AddFoliage(new Foliage(*mGame, *mCamera, *mDirectionalLight, 100, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type10.png"), 3.5f, 100.0f, XMFLOAT3(0.0, 0.0, 0.0), FoliageBillboardType::SINGLE));
 		mFoliageSystem->Initialize();
-
-		//IBL
-		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(),Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureDiffuseHDR.dds").c_str(), nullptr, &mIrradianceDiffuseTextureSRV)))
-			throw GameException("Failed to create Diffuse Irradiance Map.");
-
-		mIBLRadianceMap.reset(new IBLRadianceMap(*mGame, /*Utility::GetFilePath(Utility::ToWideString(mScene->skyboxPath))*/Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureEnvHDR.dds")));
-		mIBLRadianceMap->Initialize();
-		mIBLRadianceMap->Create(*mGame);
-		
-		mIrradianceSpecularTextureSRV = *mIBLRadianceMap->GetShaderResourceViewAddress();
-		if (mIrradianceSpecularTextureSRV == nullptr)
-			throw GameException("Failed to create Specular Irradiance Map.");
-		mIBLRadianceMap.release();
-		mIBLRadianceMap.reset(nullptr);
-
-		//if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_4\\textureSpecularMDR.dds").c_str(), nullptr, &mIrradianceSpecularTextureSRV)))
-		//	throw GameException("Failed to create Specular Irradiance Map.");
-
-		// Load a pre-computed Integration Map
-		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\ibl_brdf_lut.png").c_str(), nullptr, &mIntegrationMapTextureSRV)))
-			throw GameException("Failed to create Integration Texture.");
 	}
 
 	void TestSceneDemo::UpdateLevel(const GameTime& gameTime)
 	{
-		UpdateImGui();
+		DemoLevel::UpdateLevel(gameTime);
+		mFoliageSystem->Update(gameTime, mWindGustDistance, mWindStrength, mWindFrequency);
 
 		mDirectionalLight->UpdateProxyModel(gameTime, mCamera->ViewMatrix4X4(), mCamera->ProjectionMatrix4X4());
 		mSkybox->SetUseCustomSkyColor(mEditor->IsSkyboxUsingCustomColor());
 		mSkybox->SetSkyColors(mEditor->GetBottomSkyColor(), mEditor->GetTopSkyColor());
-		mSkybox->SetSunData(mDirectionalLight->IsSunRendered(), 
+		mSkybox->SetSunData(mDirectionalLight->IsSunRendered(),
 			mDirectionalLight->DirectionVector(),
 			XMVECTOR{ mDirectionalLight->GetDirectionalLightColor().x, mDirectionalLight->GetDirectionalLightColor().y, mDirectionalLight->GetDirectionalLightColor().z, 1.0 },
 			mDirectionalLight->GetSunBrightness(), mDirectionalLight->GetSunExponent());
-		mSkybox->Update(gameTime);
-		mGrid->Update(gameTime);
-		mPostProcessingStack->Update();
-		mVolumetricClouds->Update(gameTime);
-		mGI->Update(gameTime);
-		mFoliageSystem->Update(gameTime, mWindGustDistance, mWindStrength, mWindFrequency);
 		
-		mCamera->Cull(mScene->objects);
-		mShadowMapper->Update(gameTime);
-
-		for (auto& object : mScene->objects)
-			object.second->Update(gameTime);
-
 		mEditor->Update(gameTime);
+		
+		UpdateImGui();
 	}
 
 	void TestSceneDemo::UpdateImGui()
 	{
 		ImGui::Begin("Test Demo Scene");
-
-		ImGui::Checkbox("Show Post Processing Stack", &mPostProcessingStack->isWindowOpened);
-		if (mPostProcessingStack->isWindowOpened) mPostProcessingStack->ShowPostProcessingWindow();
-
-		ImGui::Separator();
-
-		if (ImGui::Button("Volumetric Clouds")) {
-			mVolumetricClouds->Config();
-		}
-		if (ImGui::Button("Global Illumination")) {
-			mGI->Config();
-		}
 		ImGui::SliderFloat("Wind strength", &mWindStrength, 0.0f, 100.0f);
 		ImGui::SliderFloat("Wind gust distance", &mWindGustDistance, 0.0f, 100.0f);
 		ImGui::SliderFloat("Wind frequency", &mWindFrequency, 0.0f, 100.0f);
-
 		ImGui::End();
 	}
 
@@ -247,9 +198,9 @@ namespace Rendering
 		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->RoughnessTexture() << mScene->objects[objectName]->GetTextureData(meshIndex).RoughnessMap;
 		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->MetallicTexture() << mScene->objects[objectName]->GetTextureData(meshIndex).MetallicMap;
 		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, MAX_NUM_OF_CASCADES);
-		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->IrradianceDiffuseTexture() << mIrradianceDiffuseTextureSRV;
-		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->IrradianceSpecularTexture() << mIrradianceSpecularTextureSRV;
-		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->IntegrationTexture() << mIntegrationMapTextureSRV;
+		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->IrradianceDiffuseTexture() << mGI->GetIBLIrradianceDiffuseSRV();
+		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->IrradianceSpecularTexture() << mGI->GetIBLIrradianceSpecularSRV();
+		static_cast<StandardLightingMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::lightingMaterialName])->IntegrationTexture() << mGI->GetIBLIntegrationSRV();
 	}
 	void TestSceneDemo::UpdateDeferredPrepassMaterialVariables(const std::string & objectName, int meshIndex)
 	{
