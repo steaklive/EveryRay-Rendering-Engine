@@ -1,9 +1,4 @@
-﻿  Camera.cpp
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(150,44): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(205,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Camera.cpp(15,2): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Camera.cpp(15,2): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  DemoLevel.cpp
+﻿  DemoLevel.cpp
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(40,1): warning C4150: deletion of pointer to incomplete type 'Rendering::CompositeLightingMaterial'; no destructor called
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(26): message : see declaration of 'Rendering::CompositeLightingMaterial'
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(41,1): warning C4150: deletion of pointer to incomplete type 'Library::FullScreenQuad'; no destructor called
@@ -40,58 +35,6 @@ C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\L
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(150,44): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(205,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.h(121,27): warning C4305: 'initializing': truncation from 'double' to 'float'
-  DepthMap.cpp
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\DepthMap.cpp(9,2): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\DepthMap.cpp(9,2): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  Editor.cpp
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(150,44): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(205,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Editor.cpp(18,2): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Editor.cpp(18,2): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Editor.cpp(78,94): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-  Effect.cpp
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\xstring(2468,23): warning C4244: 'argument': conversion from 'wchar_t' to 'const _Elem', possible loss of data
-          with
-          [
-              _Elem=char
-          ]
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\xstring(2479): message : see reference to function template instantiation 'void std::basic_string<char,std::char_traits<char>,std::allocator<char>>::_Construct<wchar_t*>(_Iter,const _Iter,std::input_iterator_tag)' being compiled
-          with
-          [
-              _Iter=wchar_t *
-          ]
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\xstring(2479): message : see reference to function template instantiation 'void std::basic_string<char,std::char_traits<char>,std::allocator<char>>::_Construct<wchar_t*>(_Iter,const _Iter,std::input_iterator_tag)' being compiled
-          with
-          [
-              _Iter=wchar_t *
-          ]
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\xstring(2459): message : see reference to function template instantiation 'void std::basic_string<char,std::char_traits<char>,std::allocator<char>>::_Construct<wchar_t*>(const _Iter,const _Iter,std::forward_iterator_tag)' being compiled
-          with
-          [
-              _Iter=wchar_t *
-          ]
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\xstring(2459): message : see reference to function template instantiation 'void std::basic_string<char,std::char_traits<char>,std::allocator<char>>::_Construct<wchar_t*>(const _Iter,const _Iter,std::forward_iterator_tag)' being compiled
-          with
-          [
-              _Iter=wchar_t *
-          ]
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Effect.cpp(51): message : see reference to function template instantiation 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string<std::_String_iterator<std::_String_val<std::_Simple_types<_Elem>>>,0>(_Iter,_Iter,const _Alloc &)' being compiled
-          with
-          [
-              _Elem=wchar_t,
-              _Iter=std::_String_iterator<std::_String_val<std::_Simple_types<wchar_t>>>,
-              _Alloc=std::allocator<char>
-          ]
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Effect.cpp(51): message : see reference to function template instantiation 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string<std::_String_iterator<std::_String_val<std::_Simple_types<_Elem>>>,0>(_Iter,_Iter,const _Alloc &)' being compiled
-          with
-          [
-              _Elem=wchar_t,
-              _Iter=std::_String_iterator<std::_String_val<std::_Simple_types<wchar_t>>>,
-              _Alloc=std::allocator<char>
-          ]
-  FirstPersonCamera.cpp
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\FirstPersonCamera.cpp(14,2): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\FirstPersonCamera.cpp(14,2): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
   Foliage.cpp
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(40,1): warning C4150: deletion of pointer to incomplete type 'Rendering::CompositeLightingMaterial'; no destructor called
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(26): message : see declaration of 'Rendering::CompositeLightingMaterial'
@@ -137,25 +80,6 @@ C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\L
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.cpp(385,9): warning C4101: 'rotation': unreferenced local variable
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.cpp(384,10): warning C4101: 'angle': unreferenced local variable
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Foliage.cpp(415,65): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-  FullScreenQuad.cpp
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\FullScreenQuad.cpp(10,2): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\FullScreenQuad.cpp(10,2): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  FullScreenRenderTarget.cpp
-  Game.cpp
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Game.cpp(240,20): warning C4018: '<': signed/unsigned mismatch
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Game.cpp(289,34): warning C4838: conversion from 'UINT' to 'LONG' requires a narrowing conversion
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Game.cpp(289,48): warning C4838: conversion from 'UINT' to 'LONG' requires a narrowing conversion
-  GBuffer.cpp
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(150,44): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(205,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
-  Grid.cpp
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Grid.cpp(17,2): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Grid.cpp(17,2): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  IBLRadianceMap.cpp
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\IBLRadianceMap.cpp(6,1): warning C4005: '_WIN32_WINNT': macro redefinition
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\SDKDDKVer.h(218): message : see previous definition of '_WIN32_WINNT'
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\IBLRadianceMap.cpp(164,31): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\IBLRadianceMap.cpp(165,35): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
   Illumination.cpp
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(150,44): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(205,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
@@ -202,16 +126,6 @@ C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\L
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(185,27): warning C4244: 'initializing': conversion from 'float' to 'LONG', possible loss of data
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(185,33): warning C4838: conversion from 'float' to 'LONG' requires a narrowing conversion
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(185,33): warning C4244: 'initializing': conversion from 'float' to 'LONG', possible loss of data
-  Keyboard.cpp
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Keyboard.cpp(10,2): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Keyboard.cpp(10,2): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  Mesh.cpp
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Mesh.cpp(169,61): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
-  Model.cpp
-  Mouse.cpp
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Mouse.cpp(10,2): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Mouse.cpp(10,2): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  Pass.cpp
   PostProcessingStack.cpp
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(40,1): warning C4150: deletion of pointer to incomplete type 'Rendering::CompositeLightingMaterial'; no destructor called
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(26): message : see declaration of 'Rendering::CompositeLightingMaterial'
@@ -250,99 +164,6 @@ C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\L
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.cpp(475,52): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.cpp(508,53): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.cpp(509,55): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  Compiling...
-  Projector.cpp
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Projector.cpp(11,2): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Projector.cpp(11,2): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  ProxyModel.cpp
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\ProxyModel.cpp(17,2): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\ProxyModel.cpp(17,2): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\ProxyModel.cpp(162,39): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
-  RenderableAABB.cpp
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderableAABB.cpp(17,2): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderableAABB.cpp(17,2): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  RenderableFrustum.cpp
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderableFrustum.cpp(17,2): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderableFrustum.cpp(17,2): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  RenderableOBB.cpp
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderableOBB.cpp(17,2): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderableOBB.cpp(17,2): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  RenderingObject.cpp
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(150,44): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(205,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(37,44): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
-          with
-          [
-              _Ty=int
-          ]
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(128,61): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(131,118): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(134,117): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(142,62): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(145,118): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(148,117): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(156,64): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(159,122): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(162,121): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(170,68): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(173,127): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(176,126): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(184,61): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(187,119): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(190,118): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(357,104): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(363,117): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(454,48): warning C4267: 'argument': conversion from 'size_t' to '_Ty', possible loss of data
-          with
-          [
-              _Ty=UINT
-          ]
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(495,53): warning C4267: 'argument': conversion from 'size_t' to '_Ty', possible loss of data
-          with
-          [
-              _Ty=UINT
-          ]
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(498,56): warning C4267: 'argument': conversion from 'size_t' to '_Ty', possible loss of data
-          with
-          [
-              _Ty=UINT
-          ]
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(508,3): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(511,21): warning C4018: '<': signed/unsigned mismatch
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(548,53): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
-          with
-          [
-              _Ty=UINT
-          ]
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(689,103): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(696,49): warning C4267: 'argument': conversion from 'size_t' to '_Ty', possible loss of data
-          with
-          [
-              _Ty=int
-          ]
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(701,41): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(725,21): warning C4018: '<': signed/unsigned mismatch
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(757,112): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.cpp(769,14): warning C4101: 'newMat': unreferenced local variable
-  RenderStateHelper.cpp
-  RenderTarget.cpp
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderTarget.cpp(9,2): warning C4311: 'type cast': pointer truncation from 'unsigned int *' to 'unsigned int'
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderTarget.cpp(9,2): warning C4302: 'type cast': truncation from 'unsigned int *' to 'unsigned int'
-  Scene.cpp
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(150,44): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(205,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Scene.cpp(25,9): warning C4996: 'Json::Reader': Use CharReader and CharReaderBuilder instead.
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Scene.cpp(142,37): warning C4018: '<': signed/unsigned mismatch
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Scene.cpp(192,29): warning C4018: '<': signed/unsigned mismatch
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Scene.cpp(25,16): warning C4996: 'Json::Reader::Reader': Use CharReader and CharReaderBuilder instead
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Scene.cpp(28,14): warning C4996: 'Json::Reader::parse': Use CharReader and CharReaderBuilder instead.
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Scene.cpp(29,30): warning C4996: 'Json::Reader::getFormattedErrorMessages': Use CharReader and CharReaderBuilder instead.
-  ShadowMapper.cpp
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(150,44): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(205,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\ShadowMapper.cpp(56,35): warning C4244: '=': conversion from 'float' to 'INT', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\ShadowMapper.cpp(75,106): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\ShadowMapper.cpp(78,74): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
   Skybox.cpp
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(40,1): warning C4150: deletion of pointer to incomplete type 'Rendering::CompositeLightingMaterial'; no destructor called
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(26): message : see declaration of 'Rendering::CompositeLightingMaterial'
@@ -391,7 +212,6 @@ C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\L
           [
               T=Library::Skybox *
           ]
-  Technique.cpp
   Terrain.cpp
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(40,1): warning C4150: deletion of pointer to incomplete type 'Rendering::CompositeLightingMaterial'; no destructor called
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\PostProcessingStack.h(26): message : see declaration of 'Rendering::CompositeLightingMaterial'

@@ -338,7 +338,7 @@ namespace Rendering
 
 		ID3D11ShaderResourceView* GetDepthOutputTexture();
 		ID3D11ShaderResourceView* GetPrepassColorOutputTexture();
-		ID3D11ShaderResourceView * GetExtraColorOutputTexture();
+		ID3D11ShaderResourceView* GetExtraColorOutputTexture();
 
 		bool isWindowOpened = false;
 

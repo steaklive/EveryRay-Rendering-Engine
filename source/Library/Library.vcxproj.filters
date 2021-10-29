@@ -897,5 +897,11 @@
     <None Include="..\..\content\effects\ShaderHelper.hlsli">
       <Filter>Effects</Filter>
     </None>
+    <None Include="Systems.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="Materials.inl">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
