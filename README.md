@@ -20,6 +20,7 @@ Other features based on NVIDIA techniques (no code provided here)
 # Some of the engine features
 - 3D model loading (.obj, .fbx and etc.) with Assimp Library
 - Loading/saving to JSON scene files
+- Simple objects editor
 - AABB, OBB, collision detection
 - ImGUI, ImGuizmo
  
