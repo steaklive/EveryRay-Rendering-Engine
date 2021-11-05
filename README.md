@@ -8,16 +8,14 @@ https://youtu.be/_htQNxesr9U
 - Loading/saving to JSON scene files
 - User Interface with ImGUI, ImGuizmo
 - AABB, OBB, collision detection
-- Normal-Mapping, Environment-Mapping
 - Post Processing: Motion Blur, Vignette, LUT color grading, FXAA, Tonemap, Bloom, Fog, Light Shafts
 - Physically Based Rendering with IBL
 - Cascaded Shadow Mapping
-- GPU Instancing
-- Frustum Culling
 - Separable Subsurface Scattering
 - Screen Space Reflections
 - Terrain with tessellation and foliage rendering
 - Volumetric clouds rendering
+- Cascaded Voxel Cone Tracing GI (WIP)
 
 Other features based on NVIDIA techniques (no code provided here)
 - Volumetric Lighting (from "Fast, Flexible, Physically-Based Volumetric Light Scattering")
