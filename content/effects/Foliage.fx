@@ -18,6 +18,7 @@ cbuffer CBufferPerFrame
     float4 ShadowTexelSize;
     float4 ShadowCascadeDistances;
     float4 CameraDirection;
+    float4 CameraPos;
     float RotateToCamera;
     float Time;
     float WindFrequency;
@@ -278,9 +279,9 @@ void geometry_shader_voxel_gi(triangle VS_OUTPUT input[3], inout TriangleStream<
     [unroll]
     for (uint i = 0; i < 3; i++)
     {
-        output[0].VoxelPos = input[i].WorldPos.xyz / WorldVoxelScale * 2.0f;
-        output[1].VoxelPos = input[i].WorldPos.xyz / WorldVoxelScale * 2.0f;
-        output[2].VoxelPos = input[i].WorldPos.xyz / WorldVoxelScale * 2.0f;
+        output[0].VoxelPos = (input[i].WorldPos.xyz - CameraPos.xyz) / WorldVoxelScale * 2.0f;
+        output[1].VoxelPos = (input[i].WorldPos.xyz - CameraPos.xyz) / WorldVoxelScale * 2.0f;
+        output[2].VoxelPos = (input[i].WorldPos.xyz - CameraPos.xyz) / WorldVoxelScale * 2.0f;
         if (axis == n.z)
             output[i].Position = float4(output[i].VoxelPos.x, output[i].VoxelPos.y, 0, 1);
         else if (axis == n.x)

@@ -1,6 +1,7 @@
 #define NUM_OF_SHADOW_CASCADES 3
 
 static const float4 colorWhite = { 1, 1, 1, 1 };
+static const float3 CascadeBBSide = { 256.0f, 256.0f, 256.0f };
 
 cbuffer VoxelizationCB : register(b0)
 {
@@ -8,6 +9,7 @@ cbuffer VoxelizationCB : register(b0)
     float4x4 ShadowMatrices[NUM_OF_SHADOW_CASCADES];
     float4 ShadowTexelSize;
     float4 ShadowCascadeDistances;
+    float4 CameraPos;
     float WorldVoxelScale;
 };
 
@@ -123,9 +125,9 @@ void GSMain(triangle GS_IN input[3], inout TriangleStream<PS_IN> OutputStream)
     [unroll]
     for (uint i = 0; i < 3; i++)
     {
-        output[0].VoxelPos = input[i].Position.xyz / WorldVoxelScale * 2.0f;
-        output[1].VoxelPos = input[i].Position.xyz / WorldVoxelScale * 2.0f;
-        output[2].VoxelPos = input[i].Position.xyz / WorldVoxelScale * 2.0f;
+        output[0].VoxelPos = (input[i].Position.xyz - CameraPos.xyz) / WorldVoxelScale * 2.0f;
+        output[1].VoxelPos = (input[i].Position.xyz - CameraPos.xyz) / WorldVoxelScale * 2.0f;
+        output[2].VoxelPos = (input[i].Position.xyz - CameraPos.xyz) / WorldVoxelScale * 2.0f;
         if (axis == n.z)
             output[i].Position = float4(output[i].VoxelPos.x, output[i].VoxelPos.y, 0, 1);
         else if (axis == n.x)
@@ -147,7 +149,6 @@ float3 VoxelToWorld(float3 pos)
 {
     float3 result = pos;
     result *= WorldVoxelScale;
-
     return result * 0.5f;
 }
 

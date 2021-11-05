@@ -68,7 +68,7 @@ void GSMain(point GS_IN input[1], inout TriangleStream<PS_IN> OutputStream)
     float4 v6 = mul(WorldVoxelCube, (input[0].position + float4(0.5, 0.5, -0.5, 0)));
     float4 v7 = mul(WorldVoxelCube, (input[0].position + float4(-0.5, -0.5, -0.5, 0)));
     float4 v8 = mul(WorldVoxelCube, (input[0].position + float4(0.5, -0.5, -0.5, 0)));
-    
+
     v1 = mul(ViewProjection, v1);
     v2 = mul(ViewProjection, v2);
     v3 = mul(ViewProjection, v3);

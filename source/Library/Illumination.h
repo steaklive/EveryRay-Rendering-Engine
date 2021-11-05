@@ -30,6 +30,7 @@ namespace Library
 			XMMATRIX ShadowMatrices[MAX_NUM_OF_CASCADES];
 			XMFLOAT4 ShadowTexelSize;
 			XMFLOAT4 ShadowCascadeDistances;
+			XMFLOAT4 CameraPos;
 			float WorldVoxelScale;
 		};
 		struct VoxelConeTracingCB

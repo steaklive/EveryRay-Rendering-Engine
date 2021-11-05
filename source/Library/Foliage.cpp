@@ -316,6 +316,7 @@ namespace Library
 				mFoliageMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f , 1.0f, 1.0f , 1.0f };
 			mFoliageMaterial->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
 			mFoliageMaterial->CameraDirection() << mCamera.DirectionVector();
+			mFoliageMaterial->CameraPos() << mCamera.PositionVector();
 			float rotateToCamera = (mIsRotating) ? 1.0f : 0.0f;
 			mFoliageMaterial->RotateToCamera() << rotateToCamera;
 			mFoliageMaterial->Time() << static_cast<float>(gameTime.TotalGameTime());

@@ -44,6 +44,7 @@ cbuffer VoxelizationCB : register(b0)
     float4x4 ShadowMatrices[NUM_OF_SHADOW_CASCADES];
     float4 ShadowTexelSize;
     float4 ShadowCascadeDistances;
+    float4 CameraPos0;
     float WorldVoxelScale;
 };
 
@@ -62,13 +63,14 @@ cbuffer VCTMainCB : register(b1)
 
 float4 GetVoxel(float3 worldPosition, float3 weight, float lod, bool posX, bool posY, bool posZ)
 {
-    float3 voxelGridBounds = float3(WorldVoxelScale * 0.5f, WorldVoxelScale * 0.5f, WorldVoxelScale * 0.5f);
-    if (worldPosition.x < -voxelGridBounds.x || worldPosition.y < -voxelGridBounds.y || worldPosition.z < -voxelGridBounds.z || 
-        worldPosition.x > voxelGridBounds.x || worldPosition.y > voxelGridBounds.y || worldPosition.z > voxelGridBounds.z)
+    float3 voxelGridBoundsMax = CameraPos.xyz + float3(WorldVoxelScale * 0.5f, WorldVoxelScale * 0.5f, WorldVoxelScale * 0.5f);
+    float3 voxelGridBoundsMin = CameraPos.xyz - float3(WorldVoxelScale * 0.5f, WorldVoxelScale * 0.5f, WorldVoxelScale * 0.5f);
+    if (worldPosition.x < voxelGridBoundsMin.x || worldPosition.y < voxelGridBoundsMin.y || worldPosition.z < voxelGridBoundsMin.z ||
+        worldPosition.x > voxelGridBoundsMax.x || worldPosition.y > voxelGridBoundsMax.y || worldPosition.z > voxelGridBoundsMax.z)
         return float4(0.0, 0.0, 0.0, 1.0f);
     
     float3 offset = float3(VoxelSampleOffset, VoxelSampleOffset, VoxelSampleOffset);
-    float3 voxelTextureUV = worldPosition / WorldVoxelScale * 2.0f;
+    float3 voxelTextureUV = (worldPosition - CameraPos.xyz) / WorldVoxelScale * 2.0f;
     voxelTextureUV.y = -voxelTextureUV.y;
     voxelTextureUV = voxelTextureUV * 0.5f + 0.5f + offset;
     
