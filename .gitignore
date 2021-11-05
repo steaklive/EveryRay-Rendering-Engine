@@ -4,6 +4,10 @@
 bin/x64/Debug/Library.lib
 bin/x64/Release/Library.lib
 
+# ignore files
+*.obj
+!content/models/*.obj
+
 # taken from NVIDIA GameWorks
 content/shaders/VolumetricLight
 source/Game/VolumetricLightingDemo.h
