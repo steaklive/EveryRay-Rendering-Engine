@@ -2,27 +2,28 @@
 Rendering engine/framework written in C++/DirectX 11. 
 https://youtu.be/_htQNxesr9U
 
-# Some of the features
+# Some of the rendering features
 - Hybrid Rendering (Deferred Prepass with GBuffer + Forward Pass)
-- 3D model loading (.obj, .fbx and etc.) with Assimp Library
-- Loading/saving to JSON scene files
-- User Interface with ImGUI, ImGuizmo
-- AABB, OBB, collision detection
-- Normal-Mapping, Environment-Mapping
-- Post Processing: Motion Blur, Vignette, LUT color grading, FXAA, Tonemap, Bloom, Fog, Light Shafts
 - Physically Based Rendering with IBL
 - Cascaded Shadow Mapping
-- GPU Instancing
-- Frustum Culling
+- Post Processing: SSR, Motion Blur, Vignette, LUT color grading, FXAA, Tonemap, Bloom, Fog, Light Shafts
 - Separable Subsurface Scattering
-- Screen Space Reflections
-- Terrain with tessellation and foliage rendering
-- Volumetric clouds rendering
+- Terrain with GPU tessellation
+- Foliage
+- Volumetric clouds
+- Cascaded Voxel Cone Tracing GI (WIP)
 
 Other features based on NVIDIA techniques (no code provided here)
 - Volumetric Lighting (from "Fast, Flexible, Physically-Based Volumetric Light Scattering")
 - Ocean Simulation (from DX11 archive samples)
 
+# Some of the engine features
+- 3D model loading (.obj, .fbx and etc.) with Assimp Library
+- Loading/saving to JSON scene files
+- Simple objects editor
+- AABB, OBB, collision detection
+- ImGUI, ImGuizmo
+ 
 # Screenshots
 
 ![picture](screenshots/EveryRayTerrain.png)
