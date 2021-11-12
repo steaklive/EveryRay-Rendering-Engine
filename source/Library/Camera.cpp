@@ -18,7 +18,7 @@ namespace Library
 	const float Camera::DefaultNearPlaneDistance = 0.01f;
 	const float Camera::DefaultFarPlaneDistance = 600;
 
-	const float cascadeDistances[MAX_NUM_CASCADES] = { 125.0f, 500.0f, 1200.0f };
+	const float cameraCascadeDistances[MAX_NUM_CASCADES] = { 125.0f, 500.0f, 1200.0f };
 	//const float cascadeDistances[MAX_NUM_CASCADES] = { 75.0f, 150.0f, 600.0f };
 
 	Camera::Camera(Game& game)
@@ -166,18 +166,18 @@ namespace Library
 		switch (cascadeIndex)
 		{
 		case 0:
-			projectionMatrix = XMMatrixPerspectiveFovRH(mFieldOfView, mAspectRatio, mNearPlaneDistance, cascadeDistances[0]);
+			projectionMatrix = XMMatrixPerspectiveFovRH(mFieldOfView, mAspectRatio, mNearPlaneDistance, cameraCascadeDistances[0]);
 			break;
 		case 1:
-			projectionMatrix = XMMatrixPerspectiveFovRH(mFieldOfView, mAspectRatio, cascadeDistances[0], cascadeDistances[1]);
+			projectionMatrix = XMMatrixPerspectiveFovRH(mFieldOfView, mAspectRatio, cameraCascadeDistances[0], cameraCascadeDistances[1]);
 			break;
 		case 2:
-			projectionMatrix = XMMatrixPerspectiveFovRH(mFieldOfView, mAspectRatio, cascadeDistances[1], cascadeDistances[2]);
+			projectionMatrix = XMMatrixPerspectiveFovRH(mFieldOfView, mAspectRatio, cameraCascadeDistances[1], cameraCascadeDistances[2]);
 			break;
 
 
 		default:
-			projectionMatrix = XMMatrixPerspectiveFovRH(mFieldOfView, mAspectRatio, mNearPlaneDistance, cascadeDistances[2]);
+			projectionMatrix = XMMatrixPerspectiveFovRH(mFieldOfView, mAspectRatio, mNearPlaneDistance, cameraCascadeDistances[2]);
 		}
 
 		XMMATRIX viewMatrix = XMLoadFloat4x4(&mViewMatrix);
@@ -352,15 +352,15 @@ namespace Library
 
 	float Camera::GetCameraFarCascadeDistance(int index)
 	{
-		assert(index < (sizeof(cascadeDistances) / sizeof(cascadeDistances[0])));
-		return cascadeDistances[index];
+		assert(index < (sizeof(cameraCascadeDistances) / sizeof(cameraCascadeDistances[0])));
+		return cameraCascadeDistances[index];
 	}
 	float Camera::GetCameraNearCascadeDistance(int index)
 	{
-		assert(index < (sizeof(cascadeDistances) / sizeof(cascadeDistances[0])));
+		assert(index < (sizeof(cameraCascadeDistances) / sizeof(cameraCascadeDistances[0])));
 		if (index == 0)
 			return mNearPlaneDistance;
 		else
-			return cascadeDistances[index - 1];
+			return cameraCascadeDistances[index - 1];
 	}
 }

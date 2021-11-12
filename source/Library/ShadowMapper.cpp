@@ -33,7 +33,7 @@ namespace Library
 		mResolution(pWidth),
 		mIsCascaded(isCascaded)
 	{
-		for (int i = 0; i < MAX_NUM_OF_CASCADES; i++)
+		for (int i = 0; i < MAX_NUM_OF_SHADOW_CASCADES; i++)
 		{
 			mLightProjectorCenteredPositions.push_back(XMFLOAT3(0, 0, 0));
 			mShadowMaps.push_back(new DepthMap(pGame, pWidth, pHeight));
@@ -70,7 +70,7 @@ namespace Library
 
 	void ShadowMapper::Update(const GameTime& gameTime)
 	{
-		for (size_t i = 0; i < MAX_NUM_OF_CASCADES; i++)
+		for (size_t i = 0; i < MAX_NUM_OF_SHADOW_CASCADES; i++)
 		{
 			(mIsCascaded) ? mCameraCascadesFrustums[i].SetMatrix(mCamera.GetCustomViewProjectionMatrixForCascade(i)) : mCameraCascadesFrustums[i].SetMatrix(mCamera.ProjectionMatrix());
 
@@ -83,7 +83,7 @@ namespace Library
 
 	void ShadowMapper::BeginRenderingToShadowMap(int cascadeIndex)
 	{
-		assert(cascadeIndex < MAX_NUM_OF_CASCADES);
+		assert(cascadeIndex < MAX_NUM_OF_SHADOW_CASCADES);
 
 		mShadowMaps[cascadeIndex]->Begin();
 		mGame.Direct3DDeviceContext()->ClearDepthStencilView(mShadowMaps[cascadeIndex]->DepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
@@ -92,25 +92,25 @@ namespace Library
 
 	void ShadowMapper::StopRenderingToShadowMap(int cascadeIndex)
 	{
-		assert(cascadeIndex < MAX_NUM_OF_CASCADES);
+		assert(cascadeIndex < MAX_NUM_OF_SHADOW_CASCADES);
 
 		mShadowMaps[cascadeIndex]->End();
 	}
 
 	XMMATRIX ShadowMapper::GetViewMatrix(int cascadeIndex /*= 0*/)
 	{
-		assert(cascadeIndex < MAX_NUM_OF_CASCADES);
+		assert(cascadeIndex < MAX_NUM_OF_SHADOW_CASCADES);
 		return mLightProjectors.at(cascadeIndex)->ViewMatrix();
 	}
 	XMMATRIX ShadowMapper::GetProjectionMatrix(int cascadeIndex /*= 0*/)
 	{
-		assert(cascadeIndex < MAX_NUM_OF_CASCADES);
+		assert(cascadeIndex < MAX_NUM_OF_SHADOW_CASCADES);
 		return mLightProjectors.at(cascadeIndex)->ProjectionMatrix();
 	}
 
 	ID3D11ShaderResourceView* ShadowMapper::GetShadowTexture(int cascadeIndex)
 	{
-		assert(cascadeIndex < MAX_NUM_OF_CASCADES);
+		assert(cascadeIndex < MAX_NUM_OF_SHADOW_CASCADES);
 		return mShadowMaps.at(cascadeIndex)->OutputTexture();
 	}
 
@@ -121,13 +121,13 @@ namespace Library
 	//}	
 	void ShadowMapper::ApplyTransform()
 	{
-		for (int i = 0; i < MAX_NUM_OF_CASCADES; i++)
+		for (int i = 0; i < MAX_NUM_OF_SHADOW_CASCADES; i++)
 			mLightProjectors[i]->ApplyTransform(mDirectionalLight.GetTransform());
 	}
 
 	XMMATRIX ShadowMapper::GetLightProjectionMatrixInFrustum(int index, Frustum& cameraFrustum, DirectionalLight& light)
 	{
-		assert(index < MAX_NUM_OF_CASCADES);
+		assert(index < MAX_NUM_OF_SHADOW_CASCADES);
 
 		//create corners
 		XMFLOAT3 frustumCorners[8] = {};
@@ -232,7 +232,7 @@ namespace Library
 
 	void ShadowMapper::Draw(const Scene* scene)
 	{
-		for (int i = 0; i < MAX_NUM_OF_CASCADES; i++)
+		for (int i = 0; i < MAX_NUM_OF_SHADOW_CASCADES; i++)
 		{
 			BeginRenderingToShadowMap(i);
 			const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(i);

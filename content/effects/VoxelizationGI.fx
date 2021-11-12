@@ -1,7 +1,7 @@
 #define NUM_OF_SHADOW_CASCADES 3
 
 static const float4 colorWhite = { 1, 1, 1, 1 };
-static const float3 CascadeBBSide = { 256.0f, 256.0f, 256.0f };
+//static const float3 CascadeBBSide = { 256.0f, 256.0f, 256.0f };
 
 cbuffer VoxelizationCB : register(b0)
 {
@@ -110,7 +110,10 @@ GS_IN VSMain_Instancing(VS_IN_INSTANCING input)
 
 [maxvertexcount(3)]
 void GSMain(triangle GS_IN input[3], inout TriangleStream<PS_IN> OutputStream)
-{
+{   
+    uint voxelTexWidth, voxelTexHeight, voxTexDepth;
+    outputTexture.GetDimensions(voxelTexWidth, voxelTexHeight, voxTexDepth);
+    
     PS_IN output[3];
     output[0] = (PS_IN) 0;
     output[1] = (PS_IN) 0;
@@ -125,9 +128,9 @@ void GSMain(triangle GS_IN input[3], inout TriangleStream<PS_IN> OutputStream)
     [unroll]
     for (uint i = 0; i < 3; i++)
     {
-        output[0].VoxelPos = (input[i].Position.xyz - CameraPos.xyz) / WorldVoxelScale * 2.0f;
-        output[1].VoxelPos = (input[i].Position.xyz - CameraPos.xyz) / WorldVoxelScale * 2.0f;
-        output[2].VoxelPos = (input[i].Position.xyz - CameraPos.xyz) / WorldVoxelScale * 2.0f;
+        output[0].VoxelPos = (input[i].Position.xyz - CameraPos.xyz) / (0.5f * voxelTexWidth) * WorldVoxelScale;
+        output[1].VoxelPos = (input[i].Position.xyz - CameraPos.xyz) / (0.5f * voxelTexWidth) * WorldVoxelScale;
+        output[2].VoxelPos = (input[i].Position.xyz - CameraPos.xyz) / (0.5f * voxelTexWidth) * WorldVoxelScale;
         if (axis == n.z)
             output[i].Position = float4(output[i].VoxelPos.x, output[i].VoxelPos.y, 0, 1);
         else if (axis == n.x)
@@ -145,12 +148,12 @@ void GSMain(triangle GS_IN input[3], inout TriangleStream<PS_IN> OutputStream)
     OutputStream.RestartStrip();
 }
 
-float3 VoxelToWorld(float3 pos)
-{
-    float3 result = pos;
-    result *= WorldVoxelScale;
-    return result * 0.5f;
-}
+//float3 VoxelToWorld(float3 pos)
+//{
+//    float3 result = pos;
+//    result *= WorldVoxelScale;
+//    return result * 0.5f;
+//}
 
 float CalculateShadow(float3 ShadowCoord, int index)
 {
@@ -201,7 +204,7 @@ void PSMain(PS_IN input)
     float4 colorRes = MeshAlbedo.Sample(LinearSampler, input.UV);
     voxelPos.y = -voxelPos.y;
     
-    float4 worldPos = float4(VoxelToWorld(voxelPos), 1.0f);
+    //float4 worldPos = float4(VoxelToWorld(voxelPos), 1.0f);
     if (ShadowCascadeDistances.a < 1.0f)
         outputTexture[finalVoxelPos] = colorRes;
     else

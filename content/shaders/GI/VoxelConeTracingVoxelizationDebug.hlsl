@@ -44,7 +44,7 @@ GS_IN VSMain(VS_IN input)
     centerVoxelPos.y = input.vertexID / (width * width);
     centerVoxelPos.z = (input.vertexID / width) % width;
     
-    output.position = float4(0.5f * centerVoxelPos + float3(0.5f, 0.5f, 0.5f), 1.0f);
+    output.position = float4(0.5f * centerVoxelPos, 1.0f);
     output.color = voxelTexture.Load(int4(centerVoxelPos, 0));
     return output;
 }
@@ -58,7 +58,6 @@ void GSMain(point GS_IN input[1], inout TriangleStream<PS_IN> OutputStream)
         output[i] = (PS_IN) 0;
         output[i].color = input[0].color;
     }
-    input[0].position.rgb -= float3(0.5f, 0.5f, 0.5f);
 
     float4 v1 = mul(WorldVoxelCube, (input[0].position + float4(-0.5, 0.5, 0.5, 0)));
     float4 v2 = mul(WorldVoxelCube, (input[0].position + float4(0.5, 0.5, 0.5, 0)));

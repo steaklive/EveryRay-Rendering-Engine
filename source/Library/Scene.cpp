@@ -16,6 +16,7 @@
 #include "DeferredMaterial.h"
 #include "ParallaxMappingTestMaterial.h"
 #include "VoxelizationGIMaterial.h"
+#include "Illumination.h"
 
 namespace Library 
 {
@@ -111,8 +112,9 @@ namespace Library
 							root["rendering_objects"][i]["materials"][mat]["technique"].asString()
 						);
 						
+						//shadow materials 
 						if (std::get<2>(materialData) == MaterialHelper::shadowMapMaterialName) {
-							for (int cascade = 0; cascade < MAX_NUM_OF_CASCADES; cascade++)
+							for (int cascade = 0; cascade < MAX_NUM_OF_SHADOW_CASCADES; cascade++)
 							{
 								const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(cascade);
 								it->second->LoadMaterial(new DepthMapMaterial(), std::get<1>(materialData), name);
@@ -126,6 +128,22 @@ namespace Library
 								}
 							}
 						} 
+						//voxelization gi materials
+						else if (std::get<2>(materialData) == MaterialHelper::voxelizationGIMaterialName) {
+							for (int cascade = 0; cascade < MAX_NUM_VOXEL_CASCADES; cascade++)
+							{
+								const std::string name = MaterialHelper::voxelizationGIMaterialName + "_" + std::to_string(cascade);
+								it->second->LoadMaterial(new Rendering::VoxelizationGIMaterial(), std::get<1>(materialData), name);
+								std::map<std::string, Material*>::iterator iter = it->second->GetMaterials().find(name);
+
+								if (iter != it->second->GetMaterials().end())
+								{
+									it->second->GetMaterials()[name]->SetCurrentTechnique(
+										it->second->GetMaterials()[name]->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][mat]["technique"].asString())
+									);
+								}
+							}
+						}
 						else if (std::get<0>(materialData))
 						{
 							it->second->LoadMaterial(std::get<0>(materialData), std::get<1>(materialData), std::get<2>(materialData));
@@ -343,7 +361,7 @@ namespace Library
 		}
 		else if (matName == "VoxelizationGIMaterial") {
 			materialName = MaterialHelper::voxelizationGIMaterialName;
-			material = new Rendering::VoxelizationGIMaterial();
+			//material = new Rendering::VoxelizationGIMaterial();//processed later as we need cascades
 		}
 		else
 			material = nullptr;

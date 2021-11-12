@@ -5,7 +5,9 @@
 #include "DepthTarget.h"
 #include "RenderingObject.h"
 
-#define VCT_SCENE_VOLUME_SIZE 256
+#define MAX_NUM_VOXEL_CASCADES 2
+//#define VOXEL_TEXTURE_CASCADE_0 256
+
 #define VCT_MIPS 6
 #define VCT_MAIN_RT_DOWNSCALE 0.5
 
@@ -25,9 +27,9 @@ namespace Library
 	namespace IlluminationCBufferData {
 		struct VoxelizationCB
 		{
-			XMMATRIX WorldVoxelCube;
+			XMMATRIX WorldVoxelCubeTransform;
 			XMMATRIX ViewProjection;
-			XMMATRIX ShadowMatrices[MAX_NUM_OF_CASCADES];
+			XMMATRIX ShadowMatrices[MAX_NUM_OF_SHADOW_CASCADES];
 			XMFLOAT4 ShadowTexelSize;
 			XMFLOAT4 ShadowCascadeDistances;
 			XMFLOAT4 CameraPos;
@@ -79,7 +81,7 @@ namespace Library
 		ID3D11ShaderResourceView* GetIBLIrradianceSpecularSRV() { return mIrradianceSpecularTextureSRV; }
 		ID3D11ShaderResourceView* GetIBLIntegrationSRV() { return mIrradianceDiffuseTextureSRV; }
 	private:
-		void UpdateVoxelizationGIMaterialVariables(Rendering::RenderingObject* obj, int meshIndex);
+		void UpdateVoxelizationGIMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int voxelCascadeIndex);
 		void UpdateImGui();
 
 		Camera& mCamera;
@@ -92,7 +94,7 @@ namespace Library
 		ConstantBuffer<IlluminationCBufferData::VoxelConeTracingCB> mVoxelConeTracingConstantBuffer;
 		ConstantBuffer<IlluminationCBufferData::UpsampleBlurCB> mUpsampleBlurConstantBuffer;
 
-		CustomRenderTarget* mVCTVoxelization3DRT = nullptr;
+		std::vector<CustomRenderTarget*> mVCTVoxelCascades3DRTs;
 		CustomRenderTarget* mVCTVoxelizationDebugRT = nullptr;
 		CustomRenderTarget* mVCTMainRT = nullptr;
 		CustomRenderTarget* mVCTUpsampleAndBlurRT = nullptr;
@@ -110,7 +112,8 @@ namespace Library
 		ID3D11DepthStencilState* mDepthStencilStateRW = nullptr;
 		ID3D11SamplerState* mLinearSamplerState = nullptr;
 
-		float mWorldVoxelScale = VCT_SCENE_VOLUME_SIZE * 0.5f;
+		float mWorldVoxelScales[MAX_NUM_VOXEL_CASCADES] = { 1.0f, 1.0f };
+
 		float mVCTIndirectDiffuseStrength = 1.0f;
 		float mVCTIndirectSpecularStrength = 1.0f;
 		float mVCTMaxConeTraceDistance = 100.0f;

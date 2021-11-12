@@ -129,7 +129,7 @@ namespace Library
 		float mWindFrequency;
 		float mWindGustDistance;
 
-		float mWorldVoxelScale = 0.5f * VCT_SCENE_VOLUME_SIZE;
+		float mWorldVoxelScale = 1.0f; //TODO parse correctly
 	};
 
 	class FoliageSystem
