@@ -128,9 +128,9 @@ void GSMain(triangle GS_IN input[3], inout TriangleStream<PS_IN> OutputStream)
     [unroll]
     for (uint i = 0; i < 3; i++)
     {
-        output[0].VoxelPos = (input[i].Position.xyz - CameraPos.xyz) / (0.5f * voxelTexWidth) * WorldVoxelScale;
-        output[1].VoxelPos = (input[i].Position.xyz - CameraPos.xyz) / (0.5f * voxelTexWidth) * WorldVoxelScale;
-        output[2].VoxelPos = (input[i].Position.xyz - CameraPos.xyz) / (0.5f * voxelTexWidth) * WorldVoxelScale;
+        output[0].VoxelPos = (input[i].Position.xyz - CameraPos.xyz) / (0.5f * (float)voxelTexWidth) * WorldVoxelScale;
+        output[1].VoxelPos = (input[i].Position.xyz - CameraPos.xyz) / (0.5f * (float)voxelTexWidth) * WorldVoxelScale;
+        output[2].VoxelPos = (input[i].Position.xyz - CameraPos.xyz) / (0.5f * (float)voxelTexWidth) * WorldVoxelScale;
         if (axis == n.z)
             output[i].Position = float4(output[i].VoxelPos.x, output[i].VoxelPos.y, 0, 1);
         else if (axis == n.x)
@@ -200,10 +200,10 @@ void PSMain(PS_IN input)
     float3 voxelPos = input.VoxelPos.rgb;
     voxelPos.y = -voxelPos.y;
     
-    int3 finalVoxelPos = width * float3(0.5f * voxelPos + float3(0.5f, 0.5f, 0.5f));
+    int3 finalVoxelPos = int3((float) width * float3(0.5f * voxelPos + float3(0.5f, 0.5f, 0.5f)));
     float4 colorRes = MeshAlbedo.Sample(LinearSampler, input.UV);
-    voxelPos.y = -voxelPos.y;
     
+    //voxelPos.y = -voxelPos.y;
     //float4 worldPos = float4(VoxelToWorld(voxelPos), 1.0f);
     if (ShadowCascadeDistances.a < 1.0f)
         outputTexture[finalVoxelPos] = colorRes;

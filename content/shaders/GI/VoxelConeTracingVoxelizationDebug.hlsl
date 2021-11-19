@@ -24,7 +24,6 @@ cbuffer VoxelizationDebug : register(b0)
 {
     float4x4 WorldVoxelCube;
     float4x4 ViewProjection;
-    float WorldVoxelScale;
 };
 
 Texture3D<float4> voxelTexture : register(t0);
@@ -68,6 +67,15 @@ void GSMain(point GS_IN input[1], inout TriangleStream<PS_IN> OutputStream)
     float4 v7 = mul(WorldVoxelCube, (input[0].position + float4(-0.5, -0.5, -0.5, 0)));
     float4 v8 = mul(WorldVoxelCube, (input[0].position + float4(0.5, -0.5, -0.5, 0)));
 
+    v1.y = -v1.y;
+    v2.y = -v2.y;
+    v3.y = -v3.y;
+    v4.y = -v4.y;
+    v5.y = -v5.y;
+    v6.y = -v6.y;
+    v7.y = -v7.y;
+    v8.y = -v8.y;
+    
     v1 = mul(ViewProjection, v1);
     v2 = mul(ViewProjection, v2);
     v3 = mul(ViewProjection, v3);
@@ -178,7 +186,7 @@ PS_OUT PSMain(PS_IN input)
 {
     PS_OUT output = (PS_OUT) 0;
     
-    if (input.color.a < 0.5f)
+    if (input.color.a == 0.0f)
         discard;
     
     output.result = float4(input.color.rgb, 1.0f);

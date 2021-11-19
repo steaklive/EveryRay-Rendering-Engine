@@ -125,15 +125,16 @@ C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\L
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(178,23): warning C4244: 'initializing': conversion from 'float' to 'LONG', possible loss of data
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(178,29): warning C4838: conversion from 'float' to 'LONG' requires a narrowing conversion
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(178,29): warning C4244: 'initializing': conversion from 'float' to 'LONG', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(192,27): warning C4838: conversion from 'float' to 'LONG' requires a narrowing conversion
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(192,27): warning C4244: 'initializing': conversion from 'float' to 'LONG', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(192,33): warning C4838: conversion from 'float' to 'LONG' requires a narrowing conversion
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(192,33): warning C4244: 'initializing': conversion from 'float' to 'LONG', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(192,65): warning C4838: conversion from 'const float' to 'LONG' requires a narrowing conversion
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(192,65): warning C4244: 'initializing': conversion from 'const float' to 'LONG', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(192,94): warning C4838: conversion from 'const float' to 'LONG' requires a narrowing conversion
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(192,94): warning C4244: 'initializing': conversion from 'const float' to 'LONG', possible loss of data
-C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(261,86): warning C4244: 'argument': conversion from 'float' to 'UINT', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(195,28): warning C4838: conversion from 'float' to 'LONG' requires a narrowing conversion
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(195,28): warning C4244: 'initializing': conversion from 'float' to 'LONG', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(195,34): warning C4838: conversion from 'float' to 'LONG' requires a narrowing conversion
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(195,34): warning C4244: 'initializing': conversion from 'float' to 'LONG', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(195,66): warning C4838: conversion from 'const float' to 'LONG' requires a narrowing conversion
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(195,66): warning C4244: 'initializing': conversion from 'const float' to 'LONG', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(195,95): warning C4838: conversion from 'const float' to 'LONG' requires a narrowing conversion
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(195,95): warning C4244: 'initializing': conversion from 'const float' to 'LONG', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(269,86): warning C4244: 'argument': conversion from 'float' to 'UINT', possible loss of data
+C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\Illumination.cpp(312,76): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
   Scene.cpp
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(150,44): warning C4267: 'return': conversion from 'size_t' to 'const UINT', possible loss of data
 C:\Users\Zhenya\Documents\GraphicsProgramming\EveryRay-Rendering-Engine\source\Library\RenderingObject.h(205,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data

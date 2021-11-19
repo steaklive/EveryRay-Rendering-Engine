@@ -33,7 +33,7 @@ namespace Library
 			XMFLOAT4 ShadowTexelSize;
 			XMFLOAT4 ShadowCascadeDistances;
 			XMFLOAT4 CameraPos;
-			float WorldVoxelScale;
+			XMFLOAT4 WorldVoxelScale;
 		};
 		struct VoxelConeTracingCB
 		{
@@ -112,7 +112,7 @@ namespace Library
 		ID3D11DepthStencilState* mDepthStencilStateRW = nullptr;
 		ID3D11SamplerState* mLinearSamplerState = nullptr;
 
-		float mWorldVoxelScales[MAX_NUM_VOXEL_CASCADES] = { 1.0f, 1.0f };
+		float mWorldVoxelScales[MAX_NUM_VOXEL_CASCADES] = { 2.0f, 0.5f };
 
 		float mVCTIndirectDiffuseStrength = 1.0f;
 		float mVCTIndirectSpecularStrength = 1.0f;
@@ -123,6 +123,7 @@ namespace Library
 		float mVCTRTRatio = 0.5f; // from MAX_SCREEN_WIDTH/HEIGHT
 		bool mVCTUseMainCompute = true;
 		float mVCTGIPower = 1.0f;
+		bool mShowClosestCascadeDebug = true;
 
 		bool mVoxelizationDebugView = false;
 
@@ -133,5 +134,7 @@ namespace Library
 		ID3D11ShaderResourceView* mIrradianceSpecularTextureSRV = nullptr;
 		ID3D11ShaderResourceView* mIntegrationMapTextureSRV = nullptr;
 		std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
+
+		int mVoxelizationCooldownFrames = 0;
 	};
 }

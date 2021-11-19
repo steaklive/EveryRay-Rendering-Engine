@@ -186,39 +186,49 @@ namespace Library {
 		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
 
 		//voxelization
-		for (int cascade = 0; cascade < MAX_NUM_VOXEL_CASCADES; cascade++)
+		//if (mVoxelizationCooldownFrames > 1)
 		{
-			D3D11_VIEWPORT vctViewport = { 0.0f, 0.0f, voxelCascadesSizes[cascade], voxelCascadesSizes[cascade] };
-			D3D11_RECT vctRect = { 0.0f, 0.0f, voxelCascadesSizes[cascade], voxelCascadesSizes[cascade] };
-			ID3D11UnorderedAccessView* UAV[1] = { mVCTVoxelCascades3DRTs[cascade]->getUAV() };
-		
-			context->RSSetState(RasterizerStates::NoCullingNoDepthEnabledScissorRect);
-			context->RSSetViewports(1, &vctViewport);
-			context->RSSetScissorRects(1, &vctRect);
-			context->OMSetRenderTargets(1, nullRTVs, nullptr);
-			context->ClearUnorderedAccessViewFloat(UAV[0], clearColorBlack);
-			
-			std::string materialName = MaterialHelper::voxelizationGIMaterialName + "_" + std::to_string(cascade);
+			mVoxelizationCooldownFrames = 0;
+			for (int cascade = 0; cascade < MAX_NUM_VOXEL_CASCADES; cascade++)
+			{
+				D3D11_VIEWPORT vctViewport = { 0.0f, 0.0f, voxelCascadesSizes[cascade], voxelCascadesSizes[cascade] };
+				D3D11_RECT vctRect = { 0.0f, 0.0f, voxelCascadesSizes[cascade], voxelCascadesSizes[cascade] };
+				ID3D11UnorderedAccessView* UAV[1] = { mVCTVoxelCascades3DRTs[cascade]->getUAV() };
 
-			for (auto& obj : scene->objects) {
-				obj.second->GetMaterials()[materialName]->GetEffect()->
-					GetEffect()->GetVariableByName("outputTexture")->AsUnorderedAccessView()->SetUnorderedAccessView(UAV[0]);
-				
-				obj.second->Draw(materialName);
+				context->RSSetState(RasterizerStates::NoCullingNoDepthEnabledScissorRect);
+				context->RSSetViewports(1, &vctViewport);
+				context->RSSetScissorRects(1, &vctRect);
+				context->OMSetRenderTargets(1, nullRTVs, nullptr);
+				context->ClearUnorderedAccessViewFloat(UAV[0], clearColorBlack);
+
+				std::string materialName = MaterialHelper::voxelizationGIMaterialName + "_" + std::to_string(cascade);
+
+				for (auto& obj : scene->objects) {
+					static_cast<Rendering::VoxelizationGIMaterial*>(obj.second->GetMaterials()[materialName])->WorldVoxelScale() << mWorldVoxelScales[cascade];
+					obj.second->GetMaterials()[materialName]->GetEffect()->
+						GetEffect()->GetVariableByName("outputTexture")->AsUnorderedAccessView()->SetUnorderedAccessView(UAV[0]);
+
+					obj.second->Draw(materialName);
+				}
+
+				//voxelize extra objects TODO refix
+				//mFoliageSystem->Draw(gameTime, &mShadowMapper, FoliageRenderingPass::VOXELIZATION);
+
+				//reset back
+				context->RSSetViewports(1, &viewport);
+				context->RSSetScissorRects(1, &rect);
 			}
 
-			//voxelize extra objects
-			//mFoliageSystem->Draw(gameTime, &mShadowMapper, FoliageRenderingPass::VOXELIZATION);
-		
-			//reset back
-			context->RSSetViewports(1, &viewport);
-			context->RSSetScissorRects(1, &rect);
 		}
+		//else
+		//	mVoxelizationCooldownFrames++;
 
 		//voxelization debug 
 		if (mVoxelizationDebugView)
 		{
-			for (int cascade = 0; cascade < MAX_NUM_VOXEL_CASCADES; cascade++) {
+			int cascade = (mShowClosestCascadeDebug) ? 0 : 1; //TODO remove
+			//for (int cascade = 0; cascade < MAX_NUM_VOXEL_CASCADES; cascade++)
+			{
 
 				mVoxelizationConstantBuffer.Data.CameraPos = XMFLOAT4{ mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f };
 				for (int i = 0; i < MAX_NUM_VOXEL_CASCADES; i++)
@@ -228,10 +238,8 @@ namespace Library {
 							-voxelCascadesSizes[cascade] * 0.25f + mCamera.Position().x,
 							-voxelCascadesSizes[cascade] * 0.25f - mCamera.Position().y,
 							-voxelCascadesSizes[cascade] * 0.25f + mCamera.Position().z) *
-						XMMatrixScaling(1.0f, -1.0f, 1.0f);
-					mVoxelizationConstantBuffer.Data.WorldVoxelScale = mWorldVoxelScales[cascade];
+						XMMatrixScaling(1.0f, 1.0f, 1.0f);
 				}
-
 				mVoxelizationConstantBuffer.Data.ViewProjection = mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
 				mVoxelizationConstantBuffer.ApplyChanges(context);
 
@@ -264,51 +272,59 @@ namespace Library {
 				context->OMSetRenderTargets(1, nullRTVs, NULL);
 			}
 		} 
-		//else
-		//{
-		//	context->OMSetRenderTargets(1, nullRTVs, NULL);
-		//
-		//	context->GenerateMips(mVCTVoxelCascades3DRTs[0]->getSRV());
-		//
-		//	mVoxelConeTracingConstantBuffer.Data.CameraPos = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1);
-		//	mVoxelConeTracingConstantBuffer.Data.UpsampleRatio = XMFLOAT2(1.0f / VCT_MAIN_RT_DOWNSCALE, 1.0f / VCT_MAIN_RT_DOWNSCALE);
-		//	mVoxelConeTracingConstantBuffer.Data.IndirectDiffuseStrength = mVCTIndirectDiffuseStrength;
-		//	mVoxelConeTracingConstantBuffer.Data.IndirectSpecularStrength = mVCTIndirectSpecularStrength;
-		//	mVoxelConeTracingConstantBuffer.Data.MaxConeTraceDistance = mVCTMaxConeTraceDistance;
-		//	mVoxelConeTracingConstantBuffer.Data.AOFalloff = mVCTAoFalloff;
-		//	mVoxelConeTracingConstantBuffer.Data.SamplingFactor = mVCTSamplingFactor;
-		//	mVoxelConeTracingConstantBuffer.Data.VoxelSampleOffset = mVCTVoxelSampleOffset;
-		//	mVoxelConeTracingConstantBuffer.Data.GIPower = mVCTGIPower;
-		//	mVoxelConeTracingConstantBuffer.ApplyChanges(context);
-		//
-		//	ID3D11UnorderedAccessView* UAV[1] = { mVCTMainRT->getUAV() };
-		//	ID3D11Buffer* CBs[2] = { mVoxelizationConstantBuffer.Buffer(), mVoxelConeTracingConstantBuffer.Buffer() };
-		//	ID3D11ShaderResourceView* SRVs[5] = {
-		//		gbuffer->GetAlbedo()->getSRV(),
-		//		gbuffer->GetNormals()->getSRV(),
-		//		gbuffer->GetPositions()->getSRV(),
-		//		gbuffer->GetExtraBuffer()->getSRV(),
-		//		mVCTVoxelCascades3DRTs[0]->getSRV()
-		//	};
-		//	ID3D11SamplerState* SSs[] = { mLinearSamplerState };
-		//
-		//	context->CSSetSamplers(0, 1, SSs);
-		//	context->CSSetShaderResources(0, 5, SRVs);
-		//	context->CSSetConstantBuffers(0, 2, CBs);
-		//	context->CSSetShader(mVCTMainCS, NULL, NULL);
-		//	context->CSSetUnorderedAccessViews(0, 1, UAV, NULL);
-		//
-		//	context->Dispatch(DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetHeight()), 8u), 1u);
-		//
-		//	ID3D11ShaderResourceView* nullSRV[] = { NULL };
-		//	context->CSSetShaderResources(0, 1, nullSRV);
-		//	ID3D11UnorderedAccessView* nullUAV[] = { NULL };
-		//	context->CSSetUnorderedAccessViews(0, 1, nullUAV, 0);
-		//	ID3D11Buffer* nullCBs[] = { NULL };
-		//	context->CSSetConstantBuffers(0, 1, nullCBs);
-		//	ID3D11SamplerState* nullSSs[] = { NULL };
-		//	context->CSSetSamplers(0, 1, nullSSs);
-		//}
+		else
+		{
+			int cascade = (mShowClosestCascadeDebug) ? 0 : 1; //TODO remove
+
+			mVoxelizationConstantBuffer.Data.CameraPos = XMFLOAT4{ mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f };
+			mVoxelizationConstantBuffer.Data.WorldVoxelScale = XMFLOAT4{mWorldVoxelScales[0], mWorldVoxelScales[1], 0.0f, 0.0f};
+			mVoxelizationConstantBuffer.Data.ViewProjection = mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
+			mVoxelizationConstantBuffer.ApplyChanges(context);
+
+			context->OMSetRenderTargets(1, nullRTVs, NULL);
+
+			context->GenerateMips(mVCTVoxelCascades3DRTs[0]->getSRV());
+
+			mVoxelConeTracingConstantBuffer.Data.CameraPos = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1);
+			mVoxelConeTracingConstantBuffer.Data.UpsampleRatio = XMFLOAT2(1.0f / VCT_MAIN_RT_DOWNSCALE, 1.0f / VCT_MAIN_RT_DOWNSCALE);
+			mVoxelConeTracingConstantBuffer.Data.IndirectDiffuseStrength = mVCTIndirectDiffuseStrength;
+			mVoxelConeTracingConstantBuffer.Data.IndirectSpecularStrength = mVCTIndirectSpecularStrength;
+			mVoxelConeTracingConstantBuffer.Data.MaxConeTraceDistance = mVCTMaxConeTraceDistance;
+			mVoxelConeTracingConstantBuffer.Data.AOFalloff = mVCTAoFalloff;
+			mVoxelConeTracingConstantBuffer.Data.SamplingFactor = mVCTSamplingFactor;
+			mVoxelConeTracingConstantBuffer.Data.VoxelSampleOffset = mVCTVoxelSampleOffset;
+			mVoxelConeTracingConstantBuffer.Data.GIPower = mVCTGIPower;
+			mVoxelConeTracingConstantBuffer.ApplyChanges(context);
+
+			ID3D11UnorderedAccessView* UAV[1] = { mVCTMainRT->getUAV() };
+			ID3D11Buffer* CBs[2] = { mVoxelizationConstantBuffer.Buffer(), mVoxelConeTracingConstantBuffer.Buffer() };
+			ID3D11ShaderResourceView** SRVs = new ID3D11ShaderResourceView*[4 + mVCTVoxelCascades3DRTs.size()];
+			SRVs[0] = gbuffer->GetAlbedo()->getSRV();
+			SRVs[1] = gbuffer->GetNormals()->getSRV();
+			SRVs[2] = gbuffer->GetPositions()->getSRV();
+			SRVs[3] = gbuffer->GetExtraBuffer()->getSRV();
+			for (int i = 0; i < mVCTVoxelCascades3DRTs.size(); i++)
+				SRVs[4 + i] = mVCTVoxelCascades3DRTs[i]->getSRV();
+
+			ID3D11SamplerState* SSs[] = { mLinearSamplerState };
+
+			context->CSSetSamplers(0, 1, SSs);
+			context->CSSetShaderResources(0, 4 + mVCTVoxelCascades3DRTs.size(), SRVs);
+			context->CSSetConstantBuffers(0, 2, CBs);
+			context->CSSetShader(mVCTMainCS, NULL, NULL);
+			context->CSSetUnorderedAccessViews(0, 1, UAV, NULL);
+
+			context->Dispatch(DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetHeight()), 8u), 1u);
+
+			ID3D11ShaderResourceView* nullSRV[] = { NULL };
+			context->CSSetShaderResources(0, 1, nullSRV);
+			ID3D11UnorderedAccessView* nullUAV[] = { NULL };
+			context->CSSetUnorderedAccessViews(0, 1, nullUAV, 0);
+			ID3D11Buffer* nullCBs[] = { NULL };
+			context->CSSetConstantBuffers(0, 1, nullCBs);
+			ID3D11SamplerState* nullSSs[] = { NULL };
+			context->CSSetSamplers(0, 1, nullSSs);
+		}
 
 		//upsample & blur
 		{
@@ -352,6 +368,8 @@ namespace Library {
 		ImGui::Begin("Global Illumination System");
 		ImGui::Checkbox("Enabled", &mEnabled);
 		ImGui::Checkbox("Show voxelization debug view", &mVoxelizationDebugView);
+		if (mVoxelizationDebugView)
+			ImGui::Checkbox("Show closest voxel cascade", &mShowClosestCascadeDebug);
 		ImGui::SliderFloat("VCT GI Intensity", &mVCTGIPower, 0.0f, 5.0f);
 		ImGui::SliderFloat("VCT Diffuse Strength", &mVCTIndirectDiffuseStrength, 0.0f, 1.0f);
 		ImGui::SliderFloat("VCT Specular Strength", &mVCTIndirectSpecularStrength, 0.0f, 1.0f);
@@ -373,9 +391,9 @@ namespace Library {
 
 		XMMATRIX shadowMatrices[3] =
 		{
-			mShadowMapper.GetViewMatrix(0) *  mShadowMapper.GetProjectionMatrix(0) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()) ,
-			mShadowMapper.GetViewMatrix(1) *  mShadowMapper.GetProjectionMatrix(1) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()) ,
-			mShadowMapper.GetViewMatrix(2) *  mShadowMapper.GetProjectionMatrix(2) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix())
+			mShadowMapper.GetViewMatrix(0) * mShadowMapper.GetProjectionMatrix(0) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()) ,
+			mShadowMapper.GetViewMatrix(1) * mShadowMapper.GetProjectionMatrix(1) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()) ,
+			mShadowMapper.GetViewMatrix(2) * mShadowMapper.GetProjectionMatrix(2) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix())
 		};
 
 		ID3D11ShaderResourceView* shadowMaps[3] =
@@ -391,7 +409,7 @@ namespace Library {
 		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->ShadowTexelSize() << XMVECTOR{ 1.0f / mShadowMapper.GetResolution(), 1.0f, 1.0f , 1.0f };
 		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
 		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->CameraPos() << mCamera.PositionVector();
-		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->WorldVoxelScale() << mWorldVoxelScales[voxelCascadeIndex];
+		//static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->WorldVoxelScale() << mWorldVoxelScales[voxelCascadeIndex];
 		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->MeshWorld() << obj->GetTransformationMatrix();
 		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->MeshAlbedo() << obj->GetTextureData(meshIndex).AlbedoMap;
 		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, MAX_NUM_OF_SHADOW_CASCADES);
