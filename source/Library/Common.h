@@ -44,7 +44,7 @@
 #define DeletePointerCollection(objects) {for (auto &it: objects) delete it; objects.clear();}
 #define ReleasePointerCollection(objects) {for (auto &it: objects) it->Release(); objects.clear();}
 
-#define MAX_NUM_OF_SHADOW_CASCADES 3 //TODO remove from here
+#define NUM_SHADOW_CASCADES 3 //TODO remove from here
 #define MAX_LOD 3
 
 #define INT_CEIL(n,d) (int)ceil((float)n/d)

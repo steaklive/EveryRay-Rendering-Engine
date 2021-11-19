@@ -234,10 +234,10 @@ namespace Library
 		UINT offset = 0;
 		context->IASetVertexBuffers(0, 1, &(mHeightMaps[tileIndex]->mVertexBufferTS), &stride, &offset);
 
-		XMMATRIX shadowMatrices[MAX_NUM_OF_SHADOW_CASCADES];
-		ID3D11ShaderResourceView* shadowMaps[MAX_NUM_OF_SHADOW_CASCADES];
+		XMMATRIX shadowMatrices[NUM_SHADOW_CASCADES];
+		ID3D11ShaderResourceView* shadowMaps[NUM_SHADOW_CASCADES];
 		if (worldShadowMapper) {
-			for (int cascade = 0; cascade < MAX_NUM_OF_SHADOW_CASCADES; cascade++)
+			for (int cascade = 0; cascade < NUM_SHADOW_CASCADES; cascade++)
 			{
 				shadowMatrices[cascade] = worldShadowMapper->GetViewMatrix(cascade) *  worldShadowMapper->GetProjectionMatrix(cascade) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix());
 				shadowMaps[cascade] = worldShadowMapper->GetShadowTexture(cascade);
@@ -248,13 +248,13 @@ namespace Library
 		mMaterial->World() << mHeightMaps[tileIndex]->mWorldMatrixTS;
 		mMaterial->View() << mCamera.ViewMatrix();
 		mMaterial->Projection() << mCamera.ProjectionMatrix();
-		mMaterial->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, MAX_NUM_OF_SHADOW_CASCADES);
+		mMaterial->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, NUM_SHADOW_CASCADES);
 		mMaterial->heightTexture() << mHeightMaps[tileIndex]->mHeightTexture;
 		mMaterial->grassTexture() << mGrassTexture;
 		mMaterial->groundTexture() << mGroundTexture;
 		mMaterial->rockTexture() << mRockTexture;
 		mMaterial->mudTexture() << mMudTexture;
-		mMaterial->cascadedShadowTextures().SetResourceArray(shadowMaps, 0, MAX_NUM_OF_SHADOW_CASCADES);
+		mMaterial->cascadedShadowTextures().SetResourceArray(shadowMaps, 0, NUM_SHADOW_CASCADES);
 		//mMaterial->normalTexture() << mHeightMaps[tileIndex]->mNormalTexture;
 		mMaterial->splatTexture() << mHeightMaps[tileIndex]->mSplatTexture;
 		mMaterial->SunDirection() << XMVectorNegate(mDirectionalLight.DirectionVector());

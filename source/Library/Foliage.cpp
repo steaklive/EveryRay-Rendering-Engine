@@ -288,10 +288,10 @@ namespace Library
 			ID3D11InputLayout* inputLayout = mFoliageMaterial->InputLayouts().at(pass);
 			context->IASetInputLayout(inputLayout);
 
-			XMMATRIX shadowMatrices[MAX_NUM_OF_SHADOW_CASCADES];
-			ID3D11ShaderResourceView* shadowMaps[MAX_NUM_OF_SHADOW_CASCADES];
+			XMMATRIX shadowMatrices[NUM_SHADOW_CASCADES];
+			ID3D11ShaderResourceView* shadowMaps[NUM_SHADOW_CASCADES];
 			if (worldShadowMapper) {
-				for (int cascade = 0; cascade < MAX_NUM_OF_SHADOW_CASCADES; cascade++)
+				for (int cascade = 0; cascade < NUM_SHADOW_CASCADES; cascade++)
 				{
 					shadowMatrices[cascade] = worldShadowMapper->GetViewMatrix(cascade) * worldShadowMapper->GetProjectionMatrix(cascade) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix());
 					shadowMaps[cascade] = worldShadowMapper->GetShadowTexture(cascade);
@@ -306,8 +306,8 @@ namespace Library
 			mFoliageMaterial->AmbientColor() << XMVECTOR{ mDirectionalLight.GetAmbientLightColor().x,  mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
 			if (worldShadowMapper) 
 			{
-				mFoliageMaterial->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, MAX_NUM_OF_SHADOW_CASCADES);
-				mFoliageMaterial->cascadedShadowTextures().SetResourceArray(shadowMaps, 0, MAX_NUM_OF_SHADOW_CASCADES);
+				mFoliageMaterial->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, NUM_SHADOW_CASCADES);
+				mFoliageMaterial->cascadedShadowTextures().SetResourceArray(shadowMaps, 0, NUM_SHADOW_CASCADES);
 				mFoliageMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f / worldShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
 			}
 			else

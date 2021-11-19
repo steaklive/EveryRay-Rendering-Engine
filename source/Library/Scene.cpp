@@ -114,7 +114,7 @@ namespace Library
 						
 						//shadow materials 
 						if (std::get<2>(materialData) == MaterialHelper::shadowMapMaterialName) {
-							for (int cascade = 0; cascade < MAX_NUM_OF_SHADOW_CASCADES; cascade++)
+							for (int cascade = 0; cascade < NUM_SHADOW_CASCADES; cascade++)
 							{
 								const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(cascade);
 								it->second->LoadMaterial(new DepthMapMaterial(), std::get<1>(materialData), name);
@@ -130,7 +130,7 @@ namespace Library
 						} 
 						//voxelization gi materials
 						else if (std::get<2>(materialData) == MaterialHelper::voxelizationGIMaterialName) {
-							for (int cascade = 0; cascade < MAX_NUM_VOXEL_CASCADES; cascade++)
+							for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
 							{
 								const std::string name = MaterialHelper::voxelizationGIMaterialName + "_" + std::to_string(cascade);
 								it->second->LoadMaterial(new Rendering::VoxelizationGIMaterial(), std::get<1>(materialData), name);

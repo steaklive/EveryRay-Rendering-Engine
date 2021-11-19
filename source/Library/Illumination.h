@@ -5,11 +5,9 @@
 #include "DepthTarget.h"
 #include "RenderingObject.h"
 
-#define MAX_NUM_VOXEL_CASCADES 2
-//#define VOXEL_TEXTURE_CASCADE_0 256
-
-#define VCT_MIPS 6
-#define VCT_MAIN_RT_DOWNSCALE 0.5
+#define NUM_VOXEL_GI_CASCADES 2
+#define NUM_VOXEL_GI_TEX_MIPS 6
+#define VCT_GI_MAIN_PASS_DOWNSCALE 0.5
 
 namespace Library
 {
@@ -29,7 +27,7 @@ namespace Library
 		{
 			XMMATRIX WorldVoxelCubeTransform;
 			XMMATRIX ViewProjection;
-			XMMATRIX ShadowMatrices[MAX_NUM_OF_SHADOW_CASCADES];
+			XMMATRIX ShadowMatrices[NUM_SHADOW_CASCADES];
 			XMFLOAT4 ShadowTexelSize;
 			XMFLOAT4 ShadowCascadeDistances;
 			XMFLOAT4 CameraPos;
@@ -112,7 +110,7 @@ namespace Library
 		ID3D11DepthStencilState* mDepthStencilStateRW = nullptr;
 		ID3D11SamplerState* mLinearSamplerState = nullptr;
 
-		float mWorldVoxelScales[MAX_NUM_VOXEL_CASCADES] = { 2.0f, 0.5f };
+		float mWorldVoxelScales[NUM_VOXEL_GI_CASCADES] = { 2.0f, 0.5f };
 
 		float mVCTIndirectDiffuseStrength = 1.0f;
 		float mVCTIndirectSpecularStrength = 1.0f;
