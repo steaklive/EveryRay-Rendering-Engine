@@ -161,6 +161,8 @@ namespace Library {
 				throw GameException("Failed to create Integration Texture.");
 
 		}
+
+		mVoxelCameraPos = mCamera.Position();
 	}
 
 	void Illumination::Draw(const GameTime& gameTime, const Scene* scene, GBuffer* gbuffer)
@@ -230,14 +232,14 @@ namespace Library {
 			//for (int cascade = 0; cascade < MAX_NUM_VOXEL_CASCADES; cascade++)
 			{
 
-				mVoxelizationConstantBuffer.Data.CameraPos = XMFLOAT4{ mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f };
+				mVoxelizationConstantBuffer.Data.VoxelCameraPos = XMFLOAT4{ mVoxelCameraPos.x, mVoxelCameraPos.y, mVoxelCameraPos.z, 1.0f };
 				for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 				{
 					mVoxelizationConstantBuffer.Data.WorldVoxelCubeTransform =
 						XMMatrixTranslation(
-							-voxelCascadesSizes[cascade] * 0.25f + mCamera.Position().x,
-							-voxelCascadesSizes[cascade] * 0.25f - mCamera.Position().y,
-							-voxelCascadesSizes[cascade] * 0.25f + mCamera.Position().z) *
+							-voxelCascadesSizes[cascade] * 0.25f + mVoxelCameraPos.x,
+							-voxelCascadesSizes[cascade] * 0.25f - mVoxelCameraPos.y,
+							-voxelCascadesSizes[cascade] * 0.25f + mVoxelCameraPos.z) *
 						XMMatrixScaling(1.0f, 1.0f, 1.0f);
 				}
 				mVoxelizationConstantBuffer.Data.ViewProjection = mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
@@ -276,7 +278,7 @@ namespace Library {
 		{
 			int cascade = (mShowClosestCascadeDebug) ? 0 : 1; //TODO remove
 
-			mVoxelizationConstantBuffer.Data.CameraPos = XMFLOAT4{ mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f };
+			mVoxelizationConstantBuffer.Data.VoxelCameraPos = XMFLOAT4{ mVoxelCameraPos.x, mVoxelCameraPos.y, mVoxelCameraPos.z, 1.0f };
 			mVoxelizationConstantBuffer.Data.WorldVoxelScale = XMFLOAT4{mWorldVoxelScales[0], mWorldVoxelScales[1], 0.0f, 0.0f};
 			mVoxelizationConstantBuffer.Data.ViewProjection = mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
 			mVoxelizationConstantBuffer.ApplyChanges(context);
@@ -357,6 +359,7 @@ namespace Library {
 
 	void Illumination::Update(const GameTime& gameTime)
 	{
+		UpdateVoxelCameraPosition();
 		UpdateImGui();
 	}
 
@@ -408,7 +411,7 @@ namespace Library {
 		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, NUM_SHADOW_CASCADES);
 		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->ShadowTexelSize() << XMVECTOR{ 1.0f / mShadowMapper.GetResolution(), 1.0f, 1.0f , 1.0f };
 		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
-		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->CameraPos() << mCamera.PositionVector();
+		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->CameraPos() << XMVECTOR{ mVoxelCameraPos.x,mVoxelCameraPos.y,mVoxelCameraPos.z, 1.0f };
 		//static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->WorldVoxelScale() << mWorldVoxelScales[voxelCascadeIndex];
 		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->MeshWorld() << obj->GetTransformationMatrix();
 		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->MeshAlbedo() << obj->GetTextureData(meshIndex).AlbedoMap;
@@ -420,5 +423,16 @@ namespace Library {
 	{
 		mFoliageSystem = foliageSystem;
 		mFoliageSystem->SetVoxelizationTextureOutput(mVCTVoxelCascades3DRTs[0]->getUAV());
+	}
+
+	void Illumination::UpdateVoxelCameraPosition()
+	{
+		float halfCascadeBox = 0.5f * (voxelCascadesSizes[0] / mWorldVoxelScales[0] * 0.5f);
+		XMFLOAT3 voxelGridBoundsMax = XMFLOAT3{ mVoxelCameraPos.x + halfCascadeBox, mVoxelCameraPos.y + halfCascadeBox, mVoxelCameraPos.z + halfCascadeBox };
+		XMFLOAT3 voxelGridBoundsMin = XMFLOAT3{ mVoxelCameraPos.x - halfCascadeBox, mVoxelCameraPos.y - halfCascadeBox, mVoxelCameraPos.z - halfCascadeBox };
+
+		if (mCamera.Position().x < voxelGridBoundsMin.x || mCamera.Position().y < voxelGridBoundsMin.y || mCamera.Position().z < voxelGridBoundsMin.z ||
+			mCamera.Position().x > voxelGridBoundsMax.x || mCamera.Position().y > voxelGridBoundsMax.y || mCamera.Position().z > voxelGridBoundsMax.z)
+			mVoxelCameraPos = mCamera.Position();
 	}
 }

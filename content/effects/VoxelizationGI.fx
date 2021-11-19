@@ -9,7 +9,7 @@ cbuffer VoxelizationCB : register(b0)
     float4x4 ShadowMatrices[NUM_OF_SHADOW_CASCADES];
     float4 ShadowTexelSize;
     float4 ShadowCascadeDistances;
-    float4 CameraPos;
+    float4 VoxelCameraPos;
     float WorldVoxelScale;
 };
 
@@ -128,9 +128,10 @@ void GSMain(triangle GS_IN input[3], inout TriangleStream<PS_IN> OutputStream)
     [unroll]
     for (uint i = 0; i < 3; i++)
     {
-        output[0].VoxelPos = (input[i].Position.xyz - CameraPos.xyz) / (0.5f * (float)voxelTexWidth) * WorldVoxelScale;
-        output[1].VoxelPos = (input[i].Position.xyz - CameraPos.xyz) / (0.5f * (float)voxelTexWidth) * WorldVoxelScale;
-        output[2].VoxelPos = (input[i].Position.xyz - CameraPos.xyz) / (0.5f * (float)voxelTexWidth) * WorldVoxelScale;
+        float3 vPos = (input[i].Position.xyz - VoxelCameraPos.xyz) / (0.5f * (float) voxelTexWidth) * WorldVoxelScale;
+        output[0].VoxelPos = vPos;
+        output[1].VoxelPos = vPos;
+        output[2].VoxelPos = vPos;
         if (axis == n.z)
             output[i].Position = float4(output[i].VoxelPos.x, output[i].VoxelPos.y, 0, 1);
         else if (axis == n.x)

@@ -30,7 +30,7 @@ namespace Library
 			XMMATRIX ShadowMatrices[NUM_SHADOW_CASCADES];
 			XMFLOAT4 ShadowTexelSize;
 			XMFLOAT4 ShadowCascadeDistances;
-			XMFLOAT4 CameraPos;
+			XMFLOAT4 VoxelCameraPos;
 			XMFLOAT4 WorldVoxelScale;
 		};
 		struct VoxelConeTracingCB
@@ -68,7 +68,7 @@ namespace Library
 
 		void SetFoliageSystem(FoliageSystem* foliageSystem);
 
-		ID3D11ShaderResourceView* GetGISRV() { 
+		ID3D11ShaderResourceView* GetGISRV() {
 			if (mVoxelizationDebugView)
 				return mVCTVoxelizationDebugRT->getSRV();
 			else
@@ -81,6 +81,7 @@ namespace Library
 	private:
 		void UpdateVoxelizationGIMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int voxelCascadeIndex);
 		void UpdateImGui();
+		void UpdateVoxelCameraPosition();
 
 		Camera& mCamera;
 		DirectionalLight& mDirectionalLight;
@@ -134,5 +135,6 @@ namespace Library
 		std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
 
 		int mVoxelizationCooldownFrames = 0;
+		XMFLOAT3 mVoxelCameraPos;
 	};
 }
