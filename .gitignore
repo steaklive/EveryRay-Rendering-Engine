@@ -1,6 +1,11 @@
 # ignore visual studio folder
 .vs/
 
+source/Library/Debug/
+source/Library/Release/
+source/Game/Debug/
+source/Game/Release
+
 bin/x64/Debug/Library.lib
 bin/x64/Release/Library.lib
 
