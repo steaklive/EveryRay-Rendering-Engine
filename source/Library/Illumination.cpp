@@ -411,7 +411,7 @@ namespace Library {
 		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, NUM_SHADOW_CASCADES);
 		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->ShadowTexelSize() << XMVECTOR{ 1.0f / mShadowMapper.GetResolution(), 1.0f, 1.0f , 1.0f };
 		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
-		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->CameraPos() << XMVECTOR{ mVoxelCameraPos.x,mVoxelCameraPos.y,mVoxelCameraPos.z, 1.0f };
+		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->VoxelCameraPos() << XMVECTOR{ mVoxelCameraPos.x,mVoxelCameraPos.y,mVoxelCameraPos.z, 1.0f };
 		//static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->WorldVoxelScale() << mWorldVoxelScales[voxelCascadeIndex];
 		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->MeshWorld() << obj->GetTransformationMatrix();
 		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->MeshAlbedo() << obj->GetTextureData(meshIndex).AlbedoMap;

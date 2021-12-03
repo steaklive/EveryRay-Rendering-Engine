@@ -217,7 +217,7 @@
 				1.0,
 				0.0,
 				0.0,
-				-12.0,
+				-109.76650238037109,
 				0.0,
 				1.0,
 				0.0,
@@ -324,7 +324,7 @@
 			"textures" : 
 			[
 				{
-					"albedo" : "content\\textures\\PBR\\Gold\\GoldMetal_albedo.jpg",
+					"albedo" : "content\\textures\\PBR\\Gold\\GoldMetdal_albedo.jpg",
 					"metalness" : "content\\textures\\PBR\\Gold\\GoldMetal_mtl.jpg",
 					"normal" : "content\\textures\\PBR\\Gold\\GoldMetal_nrm.jpg",
 					"roughness" : "content\\textures\\PBR\\Gold\\GoldMetal_rgh.jpg"
@@ -341,7 +341,7 @@
 				1.0,
 				0.0,
 				0.0,
-				0.0,
+				-94.03912353515625,
 				0.0,
 				1.0,
 				0.0,
@@ -539,9 +539,56 @@
 				0.0,
 				1.0
 			]
+		},
+		{
+			"instanced" : false,
+			"materials" : 
+			[
+				{
+					"effect" : "content\\effects\\DepthMap.fx",
+					"name" : "DepthMapMaterial",
+					"technique" : "create_depthmap_w_render_target"
+				},
+				{
+					"effect" : "content\\effects\\DeferredPrepass.fx",
+					"name" : "DeferredMaterial",
+					"technique" : "deferred"
+				},
+				{
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"name" : "StandardLightingMaterial",
+					"technique" : "standard_lighting_pbr"
+				},
+				{
+					"effect" : "content\\effects\\VoxelizationGI.fx",
+					"name" : "VoxelizationGIMaterial",
+					"technique" : "voxelizationGI"
+				}
+			],
+			"model_path" : "content\\models\\cube.fbx",
+			"name" : "Simple cube",
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
 		}
 	],
-	"skybox_path" : "content\\textures\\skyboxes\\Sky_2\\textureEnv.dds",
+	"skybox_path" : "content\\textures\\skyboxes\\Sky_5\\textureEnvHDR.dds",
 	"sun_color" : 
 	[
 		1.0,
