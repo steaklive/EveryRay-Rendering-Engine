@@ -58,19 +58,22 @@ namespace Library {
 		DeleteObject(mVCTUpsampleAndBlurRT);
 		DeleteObject(mDepthBuffer);
 
-		mVoxelizationConstantBuffer.Release();
+		mVoxelizationDebugConstantBuffer.Release();
 		mVoxelConeTracingConstantBuffer.Release();
 		mUpsampleBlurConstantBuffer.Release();
 	}
 
 	void Illumination::Initialize(const Scene* scene)
 	{
-		for (auto& obj: scene->objects) {
-			for (int voxelCascadeIndex = 0; voxelCascadeIndex < NUM_VOXEL_GI_CASCADES; voxelCascadeIndex++)
-				obj.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::voxelizationGIMaterialName + "_" + std::to_string(voxelCascadeIndex),
-					[&, voxelCascadeIndex](int meshIndex) { UpdateVoxelizationGIMaterialVariables(obj.second, meshIndex, voxelCascadeIndex); });
+		//calbacks
+		{
+			for (auto& obj : scene->objects) {
+				for (int voxelCascadeIndex = 0; voxelCascadeIndex < NUM_VOXEL_GI_CASCADES; voxelCascadeIndex++)
+					obj.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::voxelizationGIMaterialName + "_" + std::to_string(voxelCascadeIndex),
+						[&, voxelCascadeIndex](int meshIndex) { UpdateVoxelizationGIMaterialVariables(obj.second, meshIndex, voxelCascadeIndex); });
+			}
 		}
-
+		
 		//shaders
 		{
 			ID3DBlob* blob = nullptr;
@@ -109,41 +112,55 @@ namespace Library {
 		}
 
 		//sampler states
-		D3D11_SAMPLER_DESC sam_desc;
-		sam_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-		sam_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-		sam_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		sam_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-		sam_desc.MipLODBias = 0;
-		sam_desc.MaxAnisotropy = 1;
-		sam_desc.MinLOD = -1000.0f;
-		sam_desc.MaxLOD = 1000.0f;
-		if (FAILED(mGame->Direct3DDevice()->CreateSamplerState(&sam_desc, &mLinearSamplerState)))
-			throw GameException("Failed to create sampler mLinearSamplerState!");
+		{
+			D3D11_SAMPLER_DESC sam_desc;
+			sam_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+			sam_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+			sam_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+			sam_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+			sam_desc.MipLODBias = 0;
+			sam_desc.MaxAnisotropy = 1;
+			sam_desc.MinLOD = -1000.0f;
+			sam_desc.MaxLOD = 1000.0f;
+			if (FAILED(mGame->Direct3DDevice()->CreateSamplerState(&sam_desc, &mLinearSamplerState)))
+				throw GameException("Failed to create sampler mLinearSamplerState!");
 
-		CD3D11_DEPTH_STENCIL_DESC dsDesc((CD3D11_DEFAULT()));
-		dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-		mGame->Direct3DDevice()->CreateDepthStencilState(&dsDesc, &mDepthStencilStateRW);
-
+			CD3D11_DEPTH_STENCIL_DESC dsDesc((CD3D11_DEFAULT()));
+			dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+			mGame->Direct3DDevice()->CreateDepthStencilState(&dsDesc, &mDepthStencilStateRW);
+		}
+		
 		//cbuffers
-		mVoxelizationConstantBuffer.Initialize(mGame->Direct3DDevice());
-		mVoxelConeTracingConstantBuffer.Initialize(mGame->Direct3DDevice());
-		mUpsampleBlurConstantBuffer.Initialize(mGame->Direct3DDevice());
+		{
+			mVoxelizationDebugConstantBuffer.Initialize(mGame->Direct3DDevice());
+			mVoxelConeTracingConstantBuffer.Initialize(mGame->Direct3DDevice());
+			mUpsampleBlurConstantBuffer.Initialize(mGame->Direct3DDevice());
+		}
 
 		//RTs
-		for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
-			mVCTVoxelCascades3DRTs.push_back(new CustomRenderTarget(mGame->Direct3DDevice(), voxelCascadesSizes[i], voxelCascadesSizes[i], 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS, 6, voxelCascadesSizes[i]));
-		mVCTMainRT = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()) * VCT_GI_MAIN_PASS_DOWNSCALE, static_cast<UINT>(mGame->ScreenHeight()) * VCT_GI_MAIN_PASS_DOWNSCALE, 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
-		mVCTUpsampleAndBlurRT = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
-		mVCTVoxelizationDebugRT = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
-		mDepthBuffer = DepthTarget::Create(mGame->Direct3DDevice(), mGame->ScreenWidth(), mGame->ScreenHeight(), 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
-	
+		{
+			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
+			{
+				mVoxelCameraPositions[i] = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f);
+				mVCTVoxelCascades3DRTs.push_back(new CustomRenderTarget(mGame->Direct3DDevice(), voxelCascadesSizes[i], voxelCascadesSizes[i], 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS, 6, voxelCascadesSizes[i]));
+			}
+			mVCTMainRT = new CustomRenderTarget(mGame->Direct3DDevice(), 
+				static_cast<UINT>(mGame->ScreenWidth()) * VCT_GI_MAIN_PASS_DOWNSCALE, static_cast<UINT>(mGame->ScreenHeight()) * VCT_GI_MAIN_PASS_DOWNSCALE, 1u, 
+				DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
+			mVCTUpsampleAndBlurRT = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u,
+				DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
+			mVCTVoxelizationDebugRT = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u,
+				DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+			mDepthBuffer = DepthTarget::Create(mGame->Direct3DDevice(), mGame->ScreenWidth(), mGame->ScreenHeight(), 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
+		}
+		
 		//IBL
 		{
-			if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureDiffuseHDR.dds").c_str(), nullptr, &mIrradianceDiffuseTextureSRV)))
+			if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), 
+				Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureDiffuseHDR.dds").c_str(), nullptr, &mIrradianceDiffuseTextureSRV)))
 				throw GameException("Failed to create Diffuse Irradiance Map.");
 
-			mIBLRadianceMap.reset(new IBLRadianceMap(*mGame, /*Utility::GetFilePath(Utility::ToWideString(mScene->skyboxPath))*/Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureEnvHDR.dds")));
+			mIBLRadianceMap.reset(new IBLRadianceMap(*mGame, Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureEnvHDR.dds")));
 			mIBLRadianceMap->Initialize();
 			mIBLRadianceMap->Create(*mGame);
 
@@ -153,16 +170,12 @@ namespace Library {
 			mIBLRadianceMap.release();
 			mIBLRadianceMap.reset(nullptr);
 
-			//if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_4\\textureSpecularMDR.dds").c_str(), nullptr, &mIrradianceSpecularTextureSRV)))
-			//	throw GameException("Failed to create Specular Irradiance Map.");
-
 			// Load a pre-computed Integration Map
-			if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\ibl_brdf_lut.png").c_str(), nullptr, &mIntegrationMapTextureSRV)))
+			if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), 
+				Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\ibl_brdf_lut.png").c_str(), nullptr, &mIntegrationMapTextureSRV)))
 				throw GameException("Failed to create Integration Texture.");
 
 		}
-
-		mVoxelCameraPos = mCamera.Position();
 	}
 
 	void Illumination::Draw(const GameTime& gameTime, const Scene* scene, GBuffer* gbuffer)
@@ -188,9 +201,7 @@ namespace Library {
 		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
 
 		//voxelization
-		//if (mVoxelizationCooldownFrames > 1)
 		{
-			mVoxelizationCooldownFrames = 0;
 			for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
 			{
 				D3D11_VIEWPORT vctViewport = { 0.0f, 0.0f, voxelCascadesSizes[cascade], voxelCascadesSizes[cascade] };
@@ -204,12 +215,17 @@ namespace Library {
 				context->ClearUnorderedAccessViewFloat(UAV[0], clearColorBlack);
 
 				std::string materialName = MaterialHelper::voxelizationGIMaterialName + "_" + std::to_string(cascade);
-
 				for (auto& obj : scene->objects) {
-					static_cast<Rendering::VoxelizationGIMaterial*>(obj.second->GetMaterials()[materialName])->WorldVoxelScale() << mWorldVoxelScales[cascade];
-					obj.second->GetMaterials()[materialName]->GetEffect()->
-						GetEffect()->GetVariableByName("outputTexture")->AsUnorderedAccessView()->SetUnorderedAccessView(UAV[0]);
-
+					auto material = static_cast<Rendering::VoxelizationGIMaterial*>(obj.second->GetMaterials()[materialName]);
+					if (material)
+					{
+						material->VoxelCameraPos() << XMVECTOR{ 
+							mVoxelCameraPositions[cascade].x,
+							mVoxelCameraPositions[cascade].y,
+							mVoxelCameraPositions[cascade].z, 1.0f };
+						material->WorldVoxelScale() << mWorldVoxelScales[cascade];
+						material->GetEffect()->GetEffect()->GetVariableByName("outputTexture")->AsUnorderedAccessView()->SetUnorderedAccessView(UAV[0]);
+					}
 					obj.second->Draw(materialName);
 				}
 
@@ -220,10 +236,7 @@ namespace Library {
 				context->RSSetViewports(1, &viewport);
 				context->RSSetScissorRects(1, &rect);
 			}
-
 		}
-		//else
-		//	mVoxelizationCooldownFrames++;
 
 		//voxelization debug 
 		if (mVoxelizationDebugView)
@@ -231,21 +244,16 @@ namespace Library {
 			int cascade = (mShowClosestCascadeDebug) ? 0 : 1; //TODO remove
 			//for (int cascade = 0; cascade < MAX_NUM_VOXEL_CASCADES; cascade++)
 			{
+				mVoxelizationDebugConstantBuffer.Data.WorldVoxelCube =
+					XMMatrixTranslation(
+						-voxelCascadesSizes[cascade] * 0.25f + mVoxelCameraPositions[cascade].x,
+						-voxelCascadesSizes[cascade] * 0.25f - mVoxelCameraPositions[cascade].y,
+						-voxelCascadesSizes[cascade] * 0.25f + mVoxelCameraPositions[cascade].z) *
+					XMMatrixScaling(1.0f, 1.0f, 1.0f);
+				mVoxelizationDebugConstantBuffer.Data.ViewProjection = mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
+				mVoxelizationDebugConstantBuffer.ApplyChanges(context);
 
-				mVoxelizationConstantBuffer.Data.VoxelCameraPos = XMFLOAT4{ mVoxelCameraPos.x, mVoxelCameraPos.y, mVoxelCameraPos.z, 1.0f };
-				for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
-				{
-					mVoxelizationConstantBuffer.Data.WorldVoxelCubeTransform =
-						XMMatrixTranslation(
-							-voxelCascadesSizes[cascade] * 0.25f + mVoxelCameraPos.x,
-							-voxelCascadesSizes[cascade] * 0.25f - mVoxelCameraPos.y,
-							-voxelCascadesSizes[cascade] * 0.25f + mVoxelCameraPos.z) *
-						XMMatrixScaling(1.0f, 1.0f, 1.0f);
-				}
-				mVoxelizationConstantBuffer.Data.ViewProjection = mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
-				mVoxelizationConstantBuffer.ApplyChanges(context);
-
-				ID3D11Buffer* CBs[1] = { mVoxelizationConstantBuffer.Buffer() };
+				ID3D11Buffer* CBs[1] = { mVoxelizationDebugConstantBuffer.Buffer() };
 				ID3D11ShaderResourceView* SRVs[1] = { mVCTVoxelCascades3DRTs[cascade]->getSRV() };
 				ID3D11RenderTargetView* RTVs[1] = { mVCTVoxelizationDebugRT->getRTV() };
 
@@ -276,17 +284,13 @@ namespace Library {
 		} 
 		else
 		{
-			int cascade = (mShowClosestCascadeDebug) ? 0 : 1; //TODO remove
-
-			mVoxelizationConstantBuffer.Data.VoxelCameraPos = XMFLOAT4{ mVoxelCameraPos.x, mVoxelCameraPos.y, mVoxelCameraPos.z, 1.0f };
-			mVoxelizationConstantBuffer.Data.WorldVoxelScale = XMFLOAT4{mWorldVoxelScales[0], mWorldVoxelScales[1], 0.0f, 0.0f};
-			mVoxelizationConstantBuffer.Data.ViewProjection = mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
-			mVoxelizationConstantBuffer.ApplyChanges(context);
-
 			context->OMSetRenderTargets(1, nullRTVs, NULL);
-
-			context->GenerateMips(mVCTVoxelCascades3DRTs[0]->getSRV());
-
+			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
+			{
+				context->GenerateMips(mVCTVoxelCascades3DRTs[i]->getSRV());
+				mVoxelConeTracingConstantBuffer.Data.VoxelCameraPositions[i] = mVoxelCameraPositions[i];
+			}
+			mVoxelConeTracingConstantBuffer.Data.WorldVoxelScale = XMFLOAT4{mWorldVoxelScales[0], mWorldVoxelScales[1], 0.0f, 0.0f};
 			mVoxelConeTracingConstantBuffer.Data.CameraPos = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1);
 			mVoxelConeTracingConstantBuffer.Data.UpsampleRatio = XMFLOAT2(1.0f / VCT_GI_MAIN_PASS_DOWNSCALE, 1.0f / VCT_GI_MAIN_PASS_DOWNSCALE);
 			mVoxelConeTracingConstantBuffer.Data.IndirectDiffuseStrength = mVCTIndirectDiffuseStrength;
@@ -299,7 +303,7 @@ namespace Library {
 			mVoxelConeTracingConstantBuffer.ApplyChanges(context);
 
 			ID3D11UnorderedAccessView* UAV[1] = { mVCTMainRT->getUAV() };
-			ID3D11Buffer* CBs[2] = { mVoxelizationConstantBuffer.Buffer(), mVoxelConeTracingConstantBuffer.Buffer() };
+			ID3D11Buffer* CBs[1] = { mVoxelConeTracingConstantBuffer.Buffer() };
 			ID3D11ShaderResourceView* SRVs[4 + NUM_VOXEL_GI_CASCADES];
 			SRVs[0] = gbuffer->GetAlbedo()->getSRV();
 			SRVs[1] = gbuffer->GetNormals()->getSRV();
@@ -312,7 +316,7 @@ namespace Library {
 
 			context->CSSetSamplers(0, 1, SSs);
 			context->CSSetShaderResources(0, 4 + mVCTVoxelCascades3DRTs.size(), SRVs);
-			context->CSSetConstantBuffers(0, 2, CBs);
+			context->CSSetConstantBuffers(0, 1, CBs);
 			context->CSSetShader(mVCTMainCS, NULL, NULL);
 			context->CSSetUnorderedAccessViews(0, 1, UAV, NULL);
 
@@ -407,15 +411,17 @@ namespace Library {
 		};
 
 		std::string materialName = MaterialHelper::voxelizationGIMaterialName + "_" + std::to_string(voxelCascadeIndex);
-		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->ViewProjection() << vp;
-		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, NUM_SHADOW_CASCADES);
-		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->ShadowTexelSize() << XMVECTOR{ 1.0f / mShadowMapper.GetResolution(), 1.0f, 1.0f , 1.0f };
-		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
-		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->VoxelCameraPos() << XMVECTOR{ mVoxelCameraPos.x,mVoxelCameraPos.y,mVoxelCameraPos.z, 1.0f };
-		//static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->WorldVoxelScale() << mWorldVoxelScales[voxelCascadeIndex];
-		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->MeshWorld() << obj->GetTransformationMatrix();
-		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->MeshAlbedo() << obj->GetTextureData(meshIndex).AlbedoMap;
-		static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName])->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, NUM_SHADOW_CASCADES);
+		auto material = static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName]);
+		if (material)
+		{
+			material->ViewProjection() << vp;
+			material->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, NUM_SHADOW_CASCADES);
+			material->ShadowTexelSize() << XMVECTOR{ 1.0f / mShadowMapper.GetResolution(), 1.0f, 1.0f , 1.0f };
+			material->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
+			material->MeshWorld() << obj->GetTransformationMatrix();
+			material->MeshAlbedo() << obj->GetTextureData(meshIndex).AlbedoMap;
+			material->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, NUM_SHADOW_CASCADES);
+		}
 
 	}
 
@@ -427,12 +433,15 @@ namespace Library {
 
 	void Illumination::UpdateVoxelCameraPosition()
 	{
-		float halfCascadeBox = 0.5f * (voxelCascadesSizes[0] / mWorldVoxelScales[0] * 0.5f);
-		XMFLOAT3 voxelGridBoundsMax = XMFLOAT3{ mVoxelCameraPos.x + halfCascadeBox, mVoxelCameraPos.y + halfCascadeBox, mVoxelCameraPos.z + halfCascadeBox };
-		XMFLOAT3 voxelGridBoundsMin = XMFLOAT3{ mVoxelCameraPos.x - halfCascadeBox, mVoxelCameraPos.y - halfCascadeBox, mVoxelCameraPos.z - halfCascadeBox };
-
-		if (mCamera.Position().x < voxelGridBoundsMin.x || mCamera.Position().y < voxelGridBoundsMin.y || mCamera.Position().z < voxelGridBoundsMin.z ||
-			mCamera.Position().x > voxelGridBoundsMax.x || mCamera.Position().y > voxelGridBoundsMax.y || mCamera.Position().z > voxelGridBoundsMax.z)
-			mVoxelCameraPos = mCamera.Position();
+		for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
+		{
+			float halfCascadeBox = 0.5f * (voxelCascadesSizes[i] / mWorldVoxelScales[i] * 0.5f);
+			XMFLOAT3 voxelGridBoundsMax = XMFLOAT3{ mVoxelCameraPositions[i].x + halfCascadeBox, mVoxelCameraPositions[i].y + halfCascadeBox, mVoxelCameraPositions[i].z + halfCascadeBox };
+			XMFLOAT3 voxelGridBoundsMin = XMFLOAT3{ mVoxelCameraPositions[i].x - halfCascadeBox, mVoxelCameraPositions[i].y - halfCascadeBox, mVoxelCameraPositions[i].z - halfCascadeBox };
+			
+			if (mCamera.Position().x < voxelGridBoundsMin.x || mCamera.Position().y < voxelGridBoundsMin.y || mCamera.Position().z < voxelGridBoundsMin.z ||
+				mCamera.Position().x > voxelGridBoundsMax.x || mCamera.Position().y > voxelGridBoundsMax.y || mCamera.Position().z > voxelGridBoundsMax.z)
+				mVoxelCameraPositions[i] = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f);
+		}
 	}
 }

@@ -38,19 +38,11 @@ SamplerState LinearSampler
     AddressW = BORDER;
     BorderColor = colorWhite;
 };
-cbuffer VoxelizationCB : register(b0)
-{
-    float4x4 WorldVoxelCube;
-    float4x4 ViewProjection;
-    float4x4 ShadowMatrices[NUM_SHADOW_CASCADES];
-    float4 ShadowTexelSize;
-    float4 ShadowCascadeDistances;
-    float4 VoxelCameraPosition;
-    float4 WorldVoxelScale;
-};
 
 cbuffer VCTMainCB : register(b1)
 {
+    float4 VoxelCameraPositions[NUM_VOXEL_CASCADES];
+    float4 WorldVoxelScale;
     float4 CameraPos;
     float2 UpsampleRatio;
     float IndirectDiffuseStrength;
@@ -64,7 +56,7 @@ cbuffer VCTMainCB : register(b1)
 
 float4 GetVoxel(float3 worldPosition, float3 weight, float lod, uint voxelResolution, int cascade)
 {   
-    float3 voxelTextureUV = (worldPosition - VoxelCameraPosition.xyz) / (0.5f * (float) voxelResolution) * (cascade == 0 ? WorldVoxelScale.x : WorldVoxelScale.y);
+    float3 voxelTextureUV = (worldPosition - VoxelCameraPositions[cascade].xyz) / (0.5f * (float) voxelResolution) * (cascade == 0 ? WorldVoxelScale.x : WorldVoxelScale.y);
     voxelTextureUV.y = -voxelTextureUV.y;
     voxelTextureUV = voxelTextureUV * 0.5f + 0.5f + float3(VoxelSampleOffset, VoxelSampleOffset, VoxelSampleOffset);
     return voxelTextures[cascade].SampleLevel(LinearSampler, voxelTextureUV, lod);
@@ -78,8 +70,8 @@ float4 GetVoxelCascadeSample(float3 worldPosition, float3 weight, float lod)
         voxelTextures[cascade].GetDimensions(voxelResolution, height, depth);
         
         float shift = voxelResolution / (cascade == 0 ? WorldVoxelScale.x : WorldVoxelScale.y) * 0.5f;
-        float3 voxelGridBoundsMax = VoxelCameraPosition.xyz + float3(shift, shift, shift);
-        float3 voxelGridBoundsMin = VoxelCameraPosition.xyz - float3(shift, shift, shift);
+        float3 voxelGridBoundsMax = VoxelCameraPositions[cascade].xyz + float3(shift, shift, shift);
+        float3 voxelGridBoundsMin = VoxelCameraPositions[cascade].xyz - float3(shift, shift, shift);
         
         if (worldPosition.x < voxelGridBoundsMin.x || worldPosition.y < voxelGridBoundsMin.y || worldPosition.z < voxelGridBoundsMin.z ||
             worldPosition.x > voxelGridBoundsMax.x || worldPosition.y > voxelGridBoundsMax.y || worldPosition.z > voxelGridBoundsMax.z)

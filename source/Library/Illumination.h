@@ -23,18 +23,15 @@ namespace Library
 	class IBLRadianceMap;
 
 	namespace IlluminationCBufferData {
-		struct VoxelizationCB
+		struct VoxelizationDebugCB
 		{
-			XMMATRIX WorldVoxelCubeTransform;
+			XMMATRIX WorldVoxelCube;
 			XMMATRIX ViewProjection;
-			XMMATRIX ShadowMatrices[NUM_SHADOW_CASCADES];
-			XMFLOAT4 ShadowTexelSize;
-			XMFLOAT4 ShadowCascadeDistances;
-			XMFLOAT4 VoxelCameraPos;
-			XMFLOAT4 WorldVoxelScale;
 		};
 		struct VoxelConeTracingCB
 		{
+			XMFLOAT4 VoxelCameraPositions[NUM_VOXEL_GI_CASCADES];
+			XMFLOAT4 WorldVoxelScale;
 			XMFLOAT4 CameraPos;
 			XMFLOAT2 UpsampleRatio;
 			float IndirectDiffuseStrength;
@@ -89,7 +86,7 @@ namespace Library
 
 		FoliageSystem* mFoliageSystem = nullptr;
 
-		ConstantBuffer<IlluminationCBufferData::VoxelizationCB> mVoxelizationConstantBuffer;
+		ConstantBuffer<IlluminationCBufferData::VoxelizationDebugCB> mVoxelizationDebugConstantBuffer;
 		ConstantBuffer<IlluminationCBufferData::VoxelConeTracingCB> mVoxelConeTracingConstantBuffer;
 		ConstantBuffer<IlluminationCBufferData::UpsampleBlurCB> mUpsampleBlurConstantBuffer;
 
@@ -134,7 +131,6 @@ namespace Library
 		ID3D11ShaderResourceView* mIntegrationMapTextureSRV = nullptr;
 		std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
 
-		int mVoxelizationCooldownFrames = 0;
-		XMFLOAT3 mVoxelCameraPos;
+		XMFLOAT4 mVoxelCameraPositions[NUM_VOXEL_GI_CASCADES];
 	};
 }
