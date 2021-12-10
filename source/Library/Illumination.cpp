@@ -300,6 +300,7 @@ namespace Library {
 			mVoxelConeTracingConstantBuffer.Data.SamplingFactor = mVCTSamplingFactor;
 			mVoxelConeTracingConstantBuffer.Data.VoxelSampleOffset = mVCTVoxelSampleOffset;
 			mVoxelConeTracingConstantBuffer.Data.GIPower = mVCTGIPower;
+			mVoxelConeTracingConstantBuffer.Data.pad = XMFLOAT3(0,0,0);
 			mVoxelConeTracingConstantBuffer.ApplyChanges(context);
 
 			ID3D11UnorderedAccessView* UAV[1] = { mVCTMainRT->getUAV() };

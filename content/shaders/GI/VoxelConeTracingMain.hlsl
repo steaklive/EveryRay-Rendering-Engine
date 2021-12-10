@@ -39,7 +39,7 @@ SamplerState LinearSampler
     BorderColor = colorWhite;
 };
 
-cbuffer VCTMainCB : register(b1)
+cbuffer VCTMainCB : register(b0)
 {
     float4 VoxelCameraPositions[NUM_VOXEL_CASCADES];
     float4 WorldVoxelScale;
@@ -52,6 +52,7 @@ cbuffer VCTMainCB : register(b1)
     float SamplingFactor;
     float VoxelSampleOffset;
     float GIPower;
+    float3 pad;
 };
 
 float4 GetVoxel(float3 worldPosition, float3 weight, float lod, uint voxelResolution, int cascade)

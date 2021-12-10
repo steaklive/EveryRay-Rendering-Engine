@@ -41,6 +41,7 @@ namespace Library
 			float SamplingFactor;
 			float VoxelSampleOffset;
 			float GIPower;
+			XMFLOAT3 pad;
 		};
 		struct UpsampleBlurCB
 		{
