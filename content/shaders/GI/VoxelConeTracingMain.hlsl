@@ -42,7 +42,7 @@ SamplerState LinearSampler
 cbuffer VCTMainCB : register(b0)
 {
     float4 VoxelCameraPositions[NUM_VOXEL_CASCADES];
-    float4 WorldVoxelScale;
+    float4 WorldVoxelScales[NUM_VOXEL_CASCADES];
     float4 CameraPos;
     float2 UpsampleRatio;
     float IndirectDiffuseStrength;
@@ -52,47 +52,23 @@ cbuffer VCTMainCB : register(b0)
     float SamplingFactor;
     float VoxelSampleOffset;
     float GIPower;
-    float3 pad;
+    float3 pad1;
 };
 
-float4 GetVoxel(float3 worldPosition, float3 weight, float lod, uint voxelResolution, int cascade)
+float4 GetVoxel(float3 worldPosition, float3 weight, float lod, int cascadeIndex, int cascadeResolution)
 {   
-    float3 voxelTextureUV = (worldPosition - VoxelCameraPositions[cascade].xyz) / (0.5f * (float) voxelResolution) * (cascade == 0 ? WorldVoxelScale.x : WorldVoxelScale.y);
+    float3 voxelTextureUV = (worldPosition - VoxelCameraPositions[cascadeIndex].xyz) / (0.5f * (float) cascadeResolution) * WorldVoxelScales[cascadeIndex].r;
     voxelTextureUV.y = -voxelTextureUV.y;
     voxelTextureUV = voxelTextureUV * 0.5f + 0.5f + float3(VoxelSampleOffset, VoxelSampleOffset, VoxelSampleOffset);
-    return voxelTextures[cascade].SampleLevel(LinearSampler, voxelTextureUV, lod);
+    return voxelTextures[cascadeIndex].SampleLevel(LinearSampler, voxelTextureUV, lod);
 }
 
-float4 GetVoxelCascadeSample(float3 worldPosition, float3 weight, float lod)
-{
-    for (int cascade = 0; cascade < NUM_VOXEL_CASCADES; cascade++)
-    {
-        uint voxelResolution, height, depth;
-        voxelTextures[cascade].GetDimensions(voxelResolution, height, depth);
-        
-        float shift = voxelResolution / (cascade == 0 ? WorldVoxelScale.x : WorldVoxelScale.y) * 0.5f;
-        float3 voxelGridBoundsMax = VoxelCameraPositions[cascade].xyz + float3(shift, shift, shift);
-        float3 voxelGridBoundsMin = VoxelCameraPositions[cascade].xyz - float3(shift, shift, shift);
-        
-        if (worldPosition.x < voxelGridBoundsMin.x || worldPosition.y < voxelGridBoundsMin.y || worldPosition.z < voxelGridBoundsMin.z ||
-            worldPosition.x > voxelGridBoundsMax.x || worldPosition.y > voxelGridBoundsMax.y || worldPosition.z > voxelGridBoundsMax.z)
-            continue; //try to sample from next cascade
-        else
-        {
-            return GetVoxel(worldPosition, weight, lod, voxelResolution, cascade);
-        }
-        
-    }
-    
-    return float4(0.0f, 0.0f, 0.0f, 0.0f);
-}
-
-float4 TraceCone(float3 pos, float3 normal, float3 direction, float aperture, out float occlusion, bool calculateAO)
+float4 TraceCone(float3 pos, float3 normal, float3 direction, float aperture, out float occlusion, bool calculateAO, int cascadeIndex, int cascadeResolution)
 {
     float4 color = float4(0.0f, 0.0f, 0.0f, 0.0f);
     occlusion = 0.0f;
     
-    float voxelWorldSize = 1.0f / WorldVoxelScale.x;
+    float voxelWorldSize = 1.0f / WorldVoxelScales[cascadeIndex].r;
     float dist = voxelWorldSize;
     float3 startPos = pos + normal * dist;
     
@@ -102,7 +78,7 @@ float4 TraceCone(float3 pos, float3 normal, float3 direction, float aperture, ou
     {
         float diameter = 2.0f * aperture * dist;
         float lodLevel = log2(diameter / voxelWorldSize);
-        float4 voxelColor = GetVoxelCascadeSample(startPos + dist * direction, weight, lodLevel);
+        float4 voxelColor = GetVoxel(startPos + dist * direction, weight, lodLevel, cascadeIndex, cascadeResolution);
     
         // front-to-back
         color += (1.0 - color.a) * voxelColor;
@@ -117,21 +93,35 @@ float4 TraceCone(float3 pos, float3 normal, float3 direction, float aperture, ou
 
 float4 CalculateIndirectSpecular(float3 worldPos, float3 normal, float4 specular)
 {
-    float4 result;
+    float4 result = float4(0.0, 0.0, 0.0, 1.0);
     float3 viewDirection = normalize(CameraPos.rgb - worldPos);
     float3 coneDirection = normalize(reflect(-viewDirection, normal));
         
     float aperture = clamp(tan(PI * 0.5 * specular.a), specularOneDegree * specularMaxDegreesCount, PI);
-
     float ao = -1.0f;
-    result = TraceCone(worldPos, normal, coneDirection, aperture, ao, false);
+    
+    uint voxelCascadeResolutions[NUM_VOXEL_CASCADES], empty1, empty2;
+    for (int cascadeIndex = 0; cascadeIndex < NUM_VOXEL_CASCADES; cascadeIndex++)
+    {
+        voxelTextures[cascadeIndex].GetDimensions(voxelCascadeResolutions[cascadeIndex], empty1, empty2);
+
+        float shift = voxelCascadeResolutions[cascadeIndex] / WorldVoxelScales[cascadeIndex].r * 0.5f;
+        float3 voxelGridBoundsMax = VoxelCameraPositions[cascadeIndex].xyz + float3(shift, shift, shift);
+        float3 voxelGridBoundsMin = VoxelCameraPositions[cascadeIndex].xyz - float3(shift, shift, shift);
+        
+        if (worldPos.x < voxelGridBoundsMin.x || worldPos.y < voxelGridBoundsMin.y || worldPos.z < voxelGridBoundsMin.z ||
+            worldPos.x > voxelGridBoundsMax.x || worldPos.y > voxelGridBoundsMax.y || worldPos.z > voxelGridBoundsMax.z)
+            continue; //try to trace from next cascade
+        else
+            result += TraceCone(worldPos, normal, coneDirection, aperture, ao, false, cascadeIndex, voxelCascadeResolutions[cascadeIndex]);
+    }
     
     return IndirectSpecularStrength * result * float4(specular.rgb, 1.0f) * specular.a;
 }
 
 float4 CalculateIndirectDiffuse(float3 worldPos, float3 normal, out float ao)
 {
-    float4 result;
+    float4 result = float4(0.0, 0.0, 0.0, 1.0);
     float3 coneDirection;
     
     float3 upDir = float3(0.0f, 1.0f, 0.0f);
@@ -144,14 +134,31 @@ float4 CalculateIndirectDiffuse(float3 worldPos, float3 normal, out float ao)
     float finalAo = 0.0f;
     float tempAo = 0.0f;
     
+    uint voxelCascadeResolutions[NUM_VOXEL_CASCADES], empty1, empty2;
+    for (int cascadeIndex = 0; cascadeIndex < NUM_VOXEL_CASCADES; cascadeIndex++)
+        voxelTextures[cascadeIndex].GetDimensions(voxelCascadeResolutions[cascadeIndex], empty1, empty2);
+    
     for (int i = 0; i < NUM_VOXEL_CONES; i++)
     {
         coneDirection = normal;
         coneDirection += diffuseConeDirections[i].x * right + diffuseConeDirections[i].z * up;
         coneDirection = normalize(coneDirection);
 
-        result += TraceCone(worldPos, normal, coneDirection, coneAperture, tempAo, true) * diffuseConeWeights[i];
-        finalAo += tempAo * diffuseConeWeights[i];
+        for (int cascadeIndex = 0; cascadeIndex < NUM_VOXEL_CASCADES; cascadeIndex++)
+        {
+            float shift = voxelCascadeResolutions[cascadeIndex] / WorldVoxelScales[cascadeIndex].r * 0.5f;
+            float3 voxelGridBoundsMax = VoxelCameraPositions[cascadeIndex].xyz + float3(shift, shift, shift);
+            float3 voxelGridBoundsMin = VoxelCameraPositions[cascadeIndex].xyz - float3(shift, shift, shift);
+        
+            if (worldPos.x < voxelGridBoundsMin.x || worldPos.y < voxelGridBoundsMin.y || worldPos.z < voxelGridBoundsMin.z ||
+                worldPos.x > voxelGridBoundsMax.x || worldPos.y > voxelGridBoundsMax.y || worldPos.z > voxelGridBoundsMax.z)
+                continue; //try to trace from next cascade
+            else
+            {
+                result += TraceCone(worldPos, normal, coneDirection, coneAperture, tempAo, true, cascadeIndex, voxelCascadeResolutions[cascadeIndex]) * diffuseConeWeights[i];
+                finalAo += tempAo * diffuseConeWeights[i];
+            }
+        }
     }
     
     ao = finalAo;

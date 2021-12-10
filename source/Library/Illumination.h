@@ -31,7 +31,7 @@ namespace Library
 		struct VoxelConeTracingCB
 		{
 			XMFLOAT4 VoxelCameraPositions[NUM_VOXEL_GI_CASCADES];
-			XMFLOAT4 WorldVoxelScale;
+			XMFLOAT4 WorldVoxelScales[NUM_VOXEL_GI_CASCADES];
 			XMFLOAT4 CameraPos;
 			XMFLOAT2 UpsampleRatio;
 			float IndirectDiffuseStrength;
@@ -41,7 +41,7 @@ namespace Library
 			float SamplingFactor;
 			float VoxelSampleOffset;
 			float GIPower;
-			XMFLOAT3 pad;
+			XMFLOAT3 pad0;
 		};
 		struct UpsampleBlurCB
 		{

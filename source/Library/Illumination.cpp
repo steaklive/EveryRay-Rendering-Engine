@@ -26,7 +26,7 @@
 
 namespace Library {
 
-	const float voxelCascadesSizes[NUM_VOXEL_GI_CASCADES] = { 256.0f, 128.0f };
+	const float voxelCascadesSizes[NUM_VOXEL_GI_CASCADES] = { 256.0f, 256.0f };
 
 	Illumination::Illumination(Game& game, Camera& camera, DirectionalLight& light, ShadowMapper& shadowMapper, const Scene* scene)
 		: 
@@ -241,15 +241,14 @@ namespace Library {
 		//voxelization debug 
 		if (mVoxelizationDebugView)
 		{
-			int cascade = (mShowClosestCascadeDebug) ? 0 : 1; //TODO remove
-			//for (int cascade = 0; cascade < MAX_NUM_VOXEL_CASCADES; cascade++)
+			int cascade = 0; //TODO fix for multiple cascades
 			{
+				float sizeTranslateShift = -voxelCascadesSizes[cascade] / mWorldVoxelScales[cascade] * 0.5f;
 				mVoxelizationDebugConstantBuffer.Data.WorldVoxelCube =
 					XMMatrixTranslation(
-						-voxelCascadesSizes[cascade] * 0.25f + mVoxelCameraPositions[cascade].x,
-						-voxelCascadesSizes[cascade] * 0.25f - mVoxelCameraPositions[cascade].y,
-						-voxelCascadesSizes[cascade] * 0.25f + mVoxelCameraPositions[cascade].z) *
-					XMMatrixScaling(1.0f, 1.0f, 1.0f);
+						sizeTranslateShift + mVoxelCameraPositions[cascade].x,
+						sizeTranslateShift - mVoxelCameraPositions[cascade].y,
+						sizeTranslateShift + mVoxelCameraPositions[cascade].z);
 				mVoxelizationDebugConstantBuffer.Data.ViewProjection = mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
 				mVoxelizationDebugConstantBuffer.ApplyChanges(context);
 
@@ -289,8 +288,8 @@ namespace Library {
 			{
 				context->GenerateMips(mVCTVoxelCascades3DRTs[i]->getSRV());
 				mVoxelConeTracingConstantBuffer.Data.VoxelCameraPositions[i] = mVoxelCameraPositions[i];
+				mVoxelConeTracingConstantBuffer.Data.WorldVoxelScales[i] = XMFLOAT4(mWorldVoxelScales[i], 0.0, 0.0, 0.0);
 			}
-			mVoxelConeTracingConstantBuffer.Data.WorldVoxelScale = XMFLOAT4{mWorldVoxelScales[0], mWorldVoxelScales[1], 0.0f, 0.0f};
 			mVoxelConeTracingConstantBuffer.Data.CameraPos = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1);
 			mVoxelConeTracingConstantBuffer.Data.UpsampleRatio = XMFLOAT2(1.0f / VCT_GI_MAIN_PASS_DOWNSCALE, 1.0f / VCT_GI_MAIN_PASS_DOWNSCALE);
 			mVoxelConeTracingConstantBuffer.Data.IndirectDiffuseStrength = mVCTIndirectDiffuseStrength;
@@ -300,7 +299,7 @@ namespace Library {
 			mVoxelConeTracingConstantBuffer.Data.SamplingFactor = mVCTSamplingFactor;
 			mVoxelConeTracingConstantBuffer.Data.VoxelSampleOffset = mVCTVoxelSampleOffset;
 			mVoxelConeTracingConstantBuffer.Data.GIPower = mVCTGIPower;
-			mVoxelConeTracingConstantBuffer.Data.pad = XMFLOAT3(0,0,0);
+			mVoxelConeTracingConstantBuffer.Data.pad0 = XMFLOAT3(0,0,0);
 			mVoxelConeTracingConstantBuffer.ApplyChanges(context);
 
 			ID3D11UnorderedAccessView* UAV[1] = { mVCTMainRT->getUAV() };
