@@ -131,7 +131,7 @@ namespace Library
 		InitializeIndexBuffer();
 	}
 
-	void RenderableAABB::Update(const GameTime& gameTime)
+	void RenderableAABB::Update()
 	{
 		ResizeAABB();
 

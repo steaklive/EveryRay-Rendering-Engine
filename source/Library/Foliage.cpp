@@ -51,6 +51,11 @@ namespace Library
 			object->SetVoxelizationTextureOutput(uav);
 	}
 
+	void FoliageSystem::SetVoxelizationParams(float* scale, XMFLOAT4* voxelCamera)
+	{
+		for (auto& object : mFoliageCollection)
+			object->SetVoxelizationParams(scale, voxelCamera);
+	}
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	Foliage::Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale, float distributionRadius, XMFLOAT3 distributionCenter, FoliageBillboardType bType)
@@ -322,7 +327,8 @@ namespace Library
 			mFoliageMaterial->WindDirection() << XMVECTOR{ 0.0f, 0.0f, 1.0f , 1.0f };
 			mFoliageMaterial->WindFrequency() << mWindFrequency;
 			mFoliageMaterial->WindGustDistance() << mWindGustDistance;
-			mFoliageMaterial->WorldVoxelScale() << mWorldVoxelScale;
+			mFoliageMaterial->VoxelCameraPos() << XMVECTOR{ mVoxelCameraPos->x, mVoxelCameraPos->y, mVoxelCameraPos->z, 1.0 };
+			mFoliageMaterial->WorldVoxelScale() << *mWorldVoxelScale;
 
 			mFoliageMaterial->GetEffect()->GetEffect()->GetVariableByName("outputVoxelGITexture")->AsUnorderedAccessView()->SetUnorderedAccessView(mVoxelizationTexture);
 

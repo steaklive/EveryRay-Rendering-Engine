@@ -76,14 +76,14 @@ void GSMain(point GS_IN input[1], inout TriangleStream<PS_IN> OutputStream)
     v7.y = -v7.y;
     v8.y = -v8.y;
     
-    v1 = mul(ViewProjection, v1);
-    v2 = mul(ViewProjection, v2);
-    v3 = mul(ViewProjection, v3);
-    v4 = mul(ViewProjection, v4);
-    v5 = mul(ViewProjection, v5);
-    v6 = mul(ViewProjection, v6);
-    v7 = mul(ViewProjection, v7);
-    v8 = mul(ViewProjection, v8);
+    v1 = mul(v1, ViewProjection);
+    v2 = mul(v2, ViewProjection);
+    v3 = mul(v3, ViewProjection);
+    v4 = mul(v4, ViewProjection);
+    v5 = mul(v5, ViewProjection);
+    v6 = mul(v6, ViewProjection);
+    v7 = mul(v7, ViewProjection);
+    v8 = mul(v8, ViewProjection);
     
     // +Z
     output[0].pos = v1;

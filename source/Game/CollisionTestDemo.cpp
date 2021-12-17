@@ -220,7 +220,7 @@ namespace Rendering
 	{
 		UpdateDirectionalLight(gameTime);
 
-		mVolumeDebugAABB->Update(gameTime);
+		mVolumeDebugAABB->Update();
 
 		if (mIsDynamic)
 		{
@@ -636,7 +636,7 @@ namespace Rendering
 		{
 			if (mCollisionMethodNumber == 0)
 			{
-				elements[i]->AABB->Update(gameTime);
+				elements[i]->AABB->Update();
 				elements[i]->CollisionType = CollisionDetectionTypes::AABBvsAABB;
 				elements[i]->SetBoundsAABB(const_cast<XMFLOAT3&>(elements[i]->AABB->GetAABB().at(0)), const_cast<XMFLOAT3&>(elements[i]->AABB->GetAABB().at(1))); // oof... const_cast... bad design
 

@@ -80,7 +80,11 @@ namespace Library
 		void UpdateBuffersGPU();
 
 		void SetVoxelizationTextureOutput(ID3D11UnorderedAccessView* uav) { mVoxelizationTexture = uav; }
-
+		void SetVoxelizationParams(float* worldVoxelScale, XMFLOAT4* voxelCameraPos)
+		{
+			mWorldVoxelScale = worldVoxelScale;
+			mVoxelCameraPos = voxelCameraPos;
+		}
 	private:
 		void InitializeBuffersGPU(int count);
 		void InitializeBuffersCPU();
@@ -129,7 +133,8 @@ namespace Library
 		float mWindFrequency;
 		float mWindGustDistance;
 
-		float mWorldVoxelScale = 1.0f; //TODO parse correctly
+		float* mWorldVoxelScale;
+		XMFLOAT4* mVoxelCameraPos;
 	};
 
 	class FoliageSystem
@@ -145,6 +150,7 @@ namespace Library
 		void Draw(const GameTime& gameTime, ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass = FoliageRenderingPass::FORWARD_SHADING);
 		void AddFoliage(Foliage* foliage) { mFoliageCollection.emplace_back(foliage); }
 		void SetVoxelizationTextureOutput(ID3D11UnorderedAccessView* uav);
+		void SetVoxelizationParams(float* scale, XMFLOAT4* voxelCamera);
 
 		using Delegate_FoliageSystemInitialized = std::function<void()>;
 		GeneralEvent<Delegate_FoliageSystemInitialized>* FoliageSystemInitializedEvent = new GeneralEvent<Delegate_FoliageSystemInitialized>();

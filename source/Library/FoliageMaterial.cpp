@@ -30,6 +30,7 @@ namespace Library
 		MATERIAL_VARIABLE_INITIALIZATION(WindStrength),
 		MATERIAL_VARIABLE_INITIALIZATION(WindGustDistance),
 		MATERIAL_VARIABLE_INITIALIZATION(WindDirection),
+		MATERIAL_VARIABLE_INITIALIZATION(VoxelCameraPos),
 		MATERIAL_VARIABLE_INITIALIZATION(WorldVoxelScale)
 
 	{
@@ -54,6 +55,7 @@ namespace Library
 	MATERIAL_VARIABLE_DEFINITION(FoliageMaterial, WindStrength)
 	MATERIAL_VARIABLE_DEFINITION(FoliageMaterial, WindGustDistance)
 	MATERIAL_VARIABLE_DEFINITION(FoliageMaterial, WindDirection)
+	MATERIAL_VARIABLE_DEFINITION(FoliageMaterial, VoxelCameraPos)
 	MATERIAL_VARIABLE_DEFINITION(FoliageMaterial, WorldVoxelScale)
 
 	void FoliageMaterial::Initialize(Effect* effect)
@@ -79,6 +81,7 @@ namespace Library
 		MATERIAL_VARIABLE_RETRIEVE(WindStrength)
 		MATERIAL_VARIABLE_RETRIEVE(WindGustDistance)
 		MATERIAL_VARIABLE_RETRIEVE(WindDirection)
+		MATERIAL_VARIABLE_RETRIEVE(VoxelCameraPos)
 		MATERIAL_VARIABLE_RETRIEVE(WorldVoxelScale)
 
 		D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] = 

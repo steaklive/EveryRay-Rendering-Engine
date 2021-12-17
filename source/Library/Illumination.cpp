@@ -23,6 +23,7 @@
 #include "ShadowMapper.h"
 #include "Foliage.h"
 #include "IBLRadianceMap.h"
+#include "RenderableAABB.h"
 
 namespace Library {
 
@@ -53,6 +54,7 @@ namespace Library {
 		ReleaseObject(mIntegrationMapTextureSRV);
 
 		DeletePointerCollection(mVCTVoxelCascades3DRTs);
+		DeletePointerCollection(mDebugVoxelZonesGizmos);
 		DeleteObject(mVCTVoxelizationDebugRT);
 		DeleteObject(mVCTMainRT);
 		DeleteObject(mVCTUpsampleAndBlurRT);
@@ -65,7 +67,7 @@ namespace Library {
 
 	void Illumination::Initialize(const Scene* scene)
 	{
-		//calbacks
+		//callbacks
 		{
 			for (auto& obj : scene->objects) {
 				for (int voxelCascadeIndex = 0; voxelCascadeIndex < NUM_VOXEL_GI_CASCADES; voxelCascadeIndex++)
@@ -137,12 +139,20 @@ namespace Library {
 			mUpsampleBlurConstantBuffer.Initialize(mGame->Direct3DDevice());
 		}
 
-		//RTs
+		//RTs and gizmos
 		{
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 			{
+				mVCTVoxelCascades3DRTs.push_back(new CustomRenderTarget(mGame->Direct3DDevice(), voxelCascadesSizes[i], voxelCascadesSizes[i], 1u, 
+					DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS, 6, voxelCascadesSizes[i]));
+				
 				mVoxelCameraPositions[i] = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f);
-				mVCTVoxelCascades3DRTs.push_back(new CustomRenderTarget(mGame->Direct3DDevice(), voxelCascadesSizes[i], voxelCascadesSizes[i], 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS, 6, voxelCascadesSizes[i]));
+				
+				mDebugVoxelZonesGizmos.push_back(new RenderableAABB(*mGame, mCamera, XMFLOAT4(0.1f, 0.34f, 0.1f, 1.0f)));
+				mDebugVoxelZonesGizmos[i]->Initialize();
+				float maxBB = voxelCascadesSizes[i] / mWorldVoxelScales[i] * 0.5f;
+				mDebugVoxelZonesGizmos[i]->InitializeGeometry({ XMFLOAT3(-maxBB, -maxBB, -maxBB), XMFLOAT3(maxBB, maxBB, maxBB) }, XMMatrixScaling(1, 1, 1));
+				mDebugVoxelZonesGizmos[i]->SetPosition(XMFLOAT3(mVoxelCameraPositions[i].x, mVoxelCameraPositions[i].y, mVoxelCameraPositions[i].z));
 			}
 			mVCTMainRT = new CustomRenderTarget(mGame->Direct3DDevice(), 
 				static_cast<UINT>(mGame->ScreenWidth()) * VCT_GI_MAIN_PASS_DOWNSCALE, static_cast<UINT>(mGame->ScreenHeight()) * VCT_GI_MAIN_PASS_DOWNSCALE, 1u, 
@@ -154,7 +164,7 @@ namespace Library {
 			mDepthBuffer = DepthTarget::Create(mGame->Direct3DDevice(), mGame->ScreenWidth(), mGame->ScreenHeight(), 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
 		}
 		
-		//IBL
+		//IBL - not used atm
 		{
 			if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), 
 				Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureDiffuseHDR.dds").c_str(), nullptr, &mIrradianceDiffuseTextureSRV)))
@@ -219,7 +229,7 @@ namespace Library {
 					auto material = static_cast<Rendering::VoxelizationGIMaterial*>(obj.second->GetMaterials()[materialName]);
 					if (material)
 					{
-						material->VoxelCameraPos() << XMVECTOR{ 
+						material->VoxelCameraPos() << XMVECTOR{
 							mVoxelCameraPositions[cascade].x,
 							mVoxelCameraPositions[cascade].y,
 							mVoxelCameraPositions[cascade].z, 1.0f };
@@ -229,8 +239,11 @@ namespace Library {
 					obj.second->Draw(materialName);
 				}
 
-				//voxelize extra objects TODO refix
-				//mFoliageSystem->Draw(gameTime, &mShadowMapper, FoliageRenderingPass::VOXELIZATION);
+				//voxelize extra objects
+				{
+					if (cascade == 0)
+						mFoliageSystem->Draw(gameTime, &mShadowMapper, FoliageRenderingPass::VOXELIZATION);
+				}
 
 				//reset back
 				context->RSSetViewports(1, &viewport);
@@ -239,7 +252,7 @@ namespace Library {
 		}
 
 		//voxelization debug 
-		if (mVoxelizationDebugView)
+		if (mDrawVoxelization)
 		{
 			int cascade = 0; //TODO fix for multiple cascades
 			{
@@ -249,7 +262,7 @@ namespace Library {
 						sizeTranslateShift + mVoxelCameraPositions[cascade].x,
 						sizeTranslateShift - mVoxelCameraPositions[cascade].y,
 						sizeTranslateShift + mVoxelCameraPositions[cascade].z);
-				mVoxelizationDebugConstantBuffer.Data.ViewProjection = mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
+				mVoxelizationDebugConstantBuffer.Data.ViewProjection = XMMatrixTranspose(mCamera.ViewMatrix() * mCamera.ProjectionMatrix());
 				mVoxelizationDebugConstantBuffer.ApplyChanges(context);
 
 				ID3D11Buffer* CBs[1] = { mVoxelizationDebugConstantBuffer.Buffer() };
@@ -361,6 +374,17 @@ namespace Library {
 		}
 	}
 
+	void Illumination::DrawDebugGizmos()
+	{
+		if (mDrawVoxelZonesGizmos) 
+		{
+			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
+			{
+				mDebugVoxelZonesGizmos[i]->Draw();
+			}
+		}
+	}
+
 	void Illumination::Update(const GameTime& gameTime)
 	{
 		UpdateVoxelCameraPosition();
@@ -374,9 +398,6 @@ namespace Library {
 
 		ImGui::Begin("Global Illumination System");
 		ImGui::Checkbox("Enabled", &mEnabled);
-		ImGui::Checkbox("Show voxelization debug view", &mVoxelizationDebugView);
-		if (mVoxelizationDebugView)
-			ImGui::Checkbox("Show closest voxel cascade", &mShowClosestCascadeDebug);
 		ImGui::SliderFloat("VCT GI Intensity", &mVCTGIPower, 0.0f, 5.0f);
 		ImGui::SliderFloat("VCT Diffuse Strength", &mVCTIndirectDiffuseStrength, 0.0f, 1.0f);
 		ImGui::SliderFloat("VCT Specular Strength", &mVCTIndirectSpecularStrength, 0.0f, 1.0f);
@@ -389,6 +410,10 @@ namespace Library {
 			std::string name = "VCT Voxel Scale Cascade " + std::to_string(cascade);
 			ImGui::SliderFloat(name.c_str(), &mWorldVoxelScales[cascade], 0.1f, 10.0f);
 		}
+		ImGui::Separator();
+		ImGui::Checkbox("DEBUG - Voxel Texture", &mDrawVoxelization);
+		ImGui::Checkbox("DEBUG - Voxel Cascades Gizmos (Editor)", &mDrawVoxelZonesGizmos);
+
 		ImGui::End();
 	}
 
@@ -428,7 +453,12 @@ namespace Library {
 	void Illumination::SetFoliageSystem(FoliageSystem* foliageSystem)
 	{
 		mFoliageSystem = foliageSystem;
-		mFoliageSystem->SetVoxelizationTextureOutput(mVCTVoxelCascades3DRTs[0]->getUAV());
+		if (mFoliageSystem)
+		{
+			//only first cascade due to performance
+			mFoliageSystem->SetVoxelizationTextureOutput(mVCTVoxelCascades3DRTs[0]->getUAV()); 
+			mFoliageSystem->SetVoxelizationParams(&mWorldVoxelScales[0], &mVoxelCameraPositions[0]);
+		}
 	}
 
 	void Illumination::UpdateVoxelCameraPosition()
@@ -442,6 +472,9 @@ namespace Library {
 			if (mCamera.Position().x < voxelGridBoundsMin.x || mCamera.Position().y < voxelGridBoundsMin.y || mCamera.Position().z < voxelGridBoundsMin.z ||
 				mCamera.Position().x > voxelGridBoundsMax.x || mCamera.Position().y > voxelGridBoundsMax.y || mCamera.Position().z > voxelGridBoundsMax.z)
 				mVoxelCameraPositions[i] = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f);
+
+			mDebugVoxelZonesGizmos[i]->SetPosition(XMFLOAT3(mVoxelCameraPositions[i].x, mVoxelCameraPositions[i].y, mVoxelCameraPositions[i].z));
+			mDebugVoxelZonesGizmos[i]->Update();
 		}
 	}
 }

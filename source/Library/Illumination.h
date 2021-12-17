@@ -21,6 +21,7 @@ namespace Library
 	class ShadowMapper;
 	class FoliageSystem;
 	class IBLRadianceMap;
+	class RenderableAABB;
 
 	namespace IlluminationCBufferData {
 		struct VoxelizationDebugCB
@@ -58,16 +59,17 @@ namespace Library
 		void Initialize(const Scene* scene);
 
 		void Draw(const GameTime& gameTime, const Scene* scene, GBuffer* gbuffer);
+		void DrawDebugGizmos();
 		void Update(const GameTime& gameTime);
 		void Config() { mShowDebug = !mShowDebug; }
 
 		void SetShadowMapSRV(ID3D11ShaderResourceView* srv) { mShadowMapSRV = srv; }
-		bool GetDebugVoxels() { return mVoxelizationDebugView; }
+		bool GetDebugVoxels() { return mDrawVoxelization; }
 
 		void SetFoliageSystem(FoliageSystem* foliageSystem);
 
 		ID3D11ShaderResourceView* GetGISRV() {
-			if (mVoxelizationDebugView)
+			if (mDrawVoxelization)
 				return mVCTVoxelizationDebugRT->getSRV();
 			else
 				return mVCTUpsampleAndBlurRT->getSRV();
@@ -110,6 +112,9 @@ namespace Library
 		ID3D11SamplerState* mLinearSamplerState = nullptr;
 
 		float mWorldVoxelScales[NUM_VOXEL_GI_CASCADES] = { 2.0f, 0.5f };
+		XMFLOAT4 mVoxelCameraPositions[NUM_VOXEL_GI_CASCADES];
+		
+		std::vector<RenderableAABB*> mDebugVoxelZonesGizmos;
 
 		float mVCTIndirectDiffuseStrength = 1.0f;
 		float mVCTIndirectSpecularStrength = 1.0f;
@@ -117,12 +122,10 @@ namespace Library
 		float mVCTAoFalloff = 2.0f;
 		float mVCTSamplingFactor = 0.5f;
 		float mVCTVoxelSampleOffset = 0.0f;
-		float mVCTRTRatio = 0.5f; // from MAX_SCREEN_WIDTH/HEIGHT
-		bool mVCTUseMainCompute = true;
 		float mVCTGIPower = 1.0f;
-		bool mShowClosestCascadeDebug = true;
 
-		bool mVoxelizationDebugView = false;
+		bool mDrawVoxelization = false;
+		bool mDrawVoxelZonesGizmos = false;
 
 		bool mEnabled = false;
 		bool mShowDebug = false;
@@ -131,7 +134,5 @@ namespace Library
 		ID3D11ShaderResourceView* mIrradianceSpecularTextureSRV = nullptr;
 		ID3D11ShaderResourceView* mIntegrationMapTextureSRV = nullptr;
 		std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
-
-		XMFLOAT4 mVoxelCameraPositions[NUM_VOXEL_GI_CASCADES];
 	};
 }

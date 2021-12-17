@@ -275,7 +275,7 @@ namespace Rendering
 			mDebugFrustum->Reset();
 		}
 		
-		std::for_each(mInstancedObject->DebugInstancesAABBs.begin(), mInstancedObject->DebugInstancesAABBs.end(), [&](RenderableAABB* a) {a->Update(gameTime); });
+		std::for_each(mInstancedObject->DebugInstancesAABBs.begin(), mInstancedObject->DebugInstancesAABBs.end(), [&](RenderableAABB* a) {a->Update(); });
 		
 		currentLightSource.ProxyModel->Update(gameTime);
 		

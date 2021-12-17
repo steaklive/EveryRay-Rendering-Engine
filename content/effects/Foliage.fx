@@ -25,6 +25,7 @@ cbuffer CBufferPerFrame
     float WindStrength;
     float WindGustDistance;
     float4 WindDirection;
+    float4 VoxelCameraPos;
     float WorldVoxelScale;
 }
 
@@ -276,12 +277,16 @@ void geometry_shader_voxel_gi(triangle VS_OUTPUT input[3], inout TriangleStream<
        
     float axis = max(n.x, max(n.y, n.z));
     
+    uint voxelTexWidth, voxelTexHeight, voxTexDepth;
+    outputVoxelGITexture.GetDimensions(voxelTexWidth, voxelTexHeight, voxTexDepth);
+    
     [unroll]
     for (uint i = 0; i < 3; i++)
     {
-        output[0].VoxelPos = (input[i].WorldPos.xyz - CameraPos.xyz) / WorldVoxelScale * 2.0f;
-        output[1].VoxelPos = (input[i].WorldPos.xyz - CameraPos.xyz) / WorldVoxelScale * 2.0f;
-        output[2].VoxelPos = (input[i].WorldPos.xyz - CameraPos.xyz) / WorldVoxelScale * 2.0f;
+        float3 vPos = (input[i].WorldPos.xyz - VoxelCameraPos.xyz) / (0.5f * (float) voxelTexWidth) * WorldVoxelScale;
+        output[0].VoxelPos = vPos;
+        output[1].VoxelPos = vPos;
+        output[2].VoxelPos = vPos;
         if (axis == n.z)
             output[i].Position = float4(output[i].VoxelPos.x, output[i].VoxelPos.y, 0, 1);
         else if (axis == n.x)

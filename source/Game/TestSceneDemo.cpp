@@ -127,7 +127,10 @@ namespace Rendering
 
 		//gizmo
 		if (Utility::IsEditorMode)
+		{
 			mDirectionalLight->DrawProxyModel(gameTime);
+			mGI->DrawDebugGizmos();
+		}
 
 		//lighting
 		for (auto it = mScene->objects.begin(); it != mScene->objects.end(); it++)
@@ -166,8 +169,7 @@ namespace Rendering
 	void TestSceneDemo::UpdateStandardLightingPBRMaterialVariables(const std::string& objectName, int meshIndex)
 	{
 		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mScene->objects[objectName]->GetTransformationMatrix4X4()));
-		XMMATRIX vp = /*worldMatrix * */mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
-		//XMMATRIX shadowMatrix = /*worldMatrix **/ mShadowMapper->GetViewMatrix() * mShadowMapper->GetProjectionMatrix() /*mShadowMapViewMatrix * mShadowMapProjectionMatrix*//* mShadowProjector->ViewMatrix() * mShadowProjector->ProjectionMatrix()*/ * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix());
+		XMMATRIX vp = mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
 
 		XMMATRIX shadowMatrices[3] = 
 		{ 

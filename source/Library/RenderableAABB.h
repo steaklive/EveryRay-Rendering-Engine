@@ -30,7 +30,7 @@ namespace Library
 		const std::vector<XMFLOAT3>& GetAABB() { return mModifiedAABB; };
 
 		virtual void Initialize() override;
-		virtual void Update(const GameTime& gameTime) override;
+		void Update();
 		void Draw();
 
 		bool isColliding = false;

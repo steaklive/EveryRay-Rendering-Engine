@@ -472,7 +472,7 @@ namespace Library
 			mChildNodes[i]->UpdateCellsAABBs(gameTime);
 		}
 		mCellAABB->SetPosition(mCenter);
-		mCellAABB->Update(gameTime);
+		mCellAABB->Update();
 	}
 	void OctreeNode::DrawCells(const GameTime& gameTime)
 	{
