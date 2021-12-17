@@ -153,7 +153,7 @@ namespace Rendering
 
 		ImGui::Begin("Parallax Occlusion Mapping Scene");
 		ImGui::Checkbox("Show Post Processing Stack", &mPostProcessingStack->isWindowOpened);
-		if (mPostProcessingStack->isWindowOpened) mPostProcessingStack->ShowPostProcessingWindow();
+		//if (mPostProcessingStack->isWindowOpened) mPostProcessingStack->ShowPostProcessingWindow();
 		ImGui::End();
 
 		ImGui::Begin("Object data");

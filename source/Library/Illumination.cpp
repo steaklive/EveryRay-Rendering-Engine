@@ -411,6 +411,7 @@ namespace Library {
 			ImGui::SliderFloat(name.c_str(), &mWorldVoxelScales[cascade], 0.1f, 10.0f);
 		}
 		ImGui::Separator();
+		ImGui::Checkbox("DEBUG - Ambient Occlusion", &mDrawAmbientOcclusionOnly);
 		ImGui::Checkbox("DEBUG - Voxel Texture", &mDrawVoxelization);
 		ImGui::Checkbox("DEBUG - Voxel Cascades Gizmos (Editor)", &mDrawVoxelZonesGizmos);
 

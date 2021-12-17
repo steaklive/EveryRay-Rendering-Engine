@@ -64,9 +64,10 @@ namespace Library
 		void Config() { mShowDebug = !mShowDebug; }
 
 		void SetShadowMapSRV(ID3D11ShaderResourceView* srv) { mShadowMapSRV = srv; }
-		bool GetDebugVoxels() { return mDrawVoxelization; }
-
 		void SetFoliageSystem(FoliageSystem* foliageSystem);
+
+		bool GetDebugVoxels() { return mDrawVoxelization; }
+		bool GetDebugAO() { return mDrawAmbientOcclusionOnly; }
 
 		ID3D11ShaderResourceView* GetGISRV() {
 			if (mDrawVoxelization)
@@ -126,6 +127,7 @@ namespace Library
 
 		bool mDrawVoxelization = false;
 		bool mDrawVoxelZonesGizmos = false;
+		bool mDrawAmbientOcclusionOnly = false;
 
 		bool mEnabled = false;
 		bool mShowDebug = false;

@@ -151,7 +151,7 @@ namespace Rendering
 #pragma endregion
 
 		#pragma region DRAW_POSTPROCESSING
-		mPostProcessingStack->UpdateCompositeLightingMaterial(mGI->GetGISRV(), mGI->GetDebugVoxels());
+		mPostProcessingStack->UpdateCompositeLightingMaterial(mGI->GetGISRV(), mGI->GetDebugVoxels(), mGI->GetDebugAO());
 		mPostProcessingStack->UpdateSSRMaterial(mGBuffer->GetNormals()->getSRV(), mGBuffer->GetDepth()->getSRV(), mGBuffer->GetExtraBuffer()->getSRV(), (float)gameTime.TotalGameTime());
 		mPostProcessingStack->DrawEffects(gameTime);
 		mPostProcessingStack->ResetMainRTtoOriginal();

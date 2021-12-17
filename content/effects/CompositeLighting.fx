@@ -5,6 +5,7 @@ Texture2D InputIndirectTexture;
 cbuffer ConstantBuffer
 {
     bool DebugVoxel;
+    bool DebugAO;
 };
 
 SamplerState TrilinearSampler
@@ -48,6 +49,9 @@ float4 composite_pixel_shader(VS_OUTPUT IN) : SV_Target
     float4 indirectLighting = InputIndirectTexture.Sample(TrilinearSampler, IN.TextureCoordinate);
     float ao = 1.0f - indirectLighting.a;
 
+    if (DebugAO)
+        return float4(ao, ao, ao, 1.0f);
+    
     if (!DebugVoxel)
         return saturate(directLighting + float4(indirectLighting.rgb * ao, 1.0f));
     else

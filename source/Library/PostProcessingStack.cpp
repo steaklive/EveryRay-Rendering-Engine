@@ -403,6 +403,8 @@ namespace Rendering {
 			else
 				mCompositeLightingEffect->Quad->SetActiveTechnique("no_filter", "p0");
 		}
+
+		ShowPostProcessingWindow();
 	}
 
 	void PostProcessingStack::UpdateTonemapConstantBuffer(ID3D11DeviceContext* pD3DImmediateContext, ID3D11Buffer* buffer, int mipLevel0, int mipLevel1, unsigned int width, unsigned int height)
@@ -510,16 +512,20 @@ namespace Rendering {
 
 	}
 
-	void PostProcessingStack::UpdateCompositeLightingMaterial(ID3D11ShaderResourceView* indirectLightingSRV, bool debugVoxel)
+	void PostProcessingStack::UpdateCompositeLightingMaterial(ID3D11ShaderResourceView* indirectLightingSRV, bool debugVoxel, bool debugAO)
 	{
 		mCompositeLightingEffect->Material->ColorTexture() << mCompositeLightingEffect->InputDirectLightingTexture;
 		mCompositeLightingEffect->Material->InputDirectTexture() << mCompositeLightingEffect->InputDirectLightingTexture;
 		mCompositeLightingEffect->Material->InputIndirectTexture() << indirectLightingSRV;
 		mCompositeLightingEffect->Material->DebugVoxel() << debugVoxel;
+		mCompositeLightingEffect->Material->DebugAO() << debugAO;
 	}
 
 	void PostProcessingStack::ShowPostProcessingWindow()
 	{
+		if (!mShowDebug)
+			return;
+
 		ImGui::Begin("Post Processing Stack Config");
 
 		if (mCompositeLightingLoaded) 
@@ -527,7 +533,7 @@ namespace Rendering {
 			if (ImGui::CollapsingHeader("Composite Lighting"))
 			{
 				ImGui::Checkbox("Composite Lighting - On", &mCompositeLightingEffect->isActive);
-
+				ImGui::Checkbox("Debug GI", &mCompositeLightingEffect->debugGI);
 			}
 		}
 
@@ -750,6 +756,8 @@ namespace Rendering {
 		game.Direct3DDeviceContext()->ClearDepthStencilView(mCompositeLightingRenderTarget->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
 		mCompositeLightingEffect->Quad->Draw(gameTime);
 		mCompositeLightingRenderTarget->End();
+		if (mCompositeLightingEffect->debugGI)
+			return;
 
 		// LIGHT SHAFTS
 		mLightShaftsRenderTarget->Begin();

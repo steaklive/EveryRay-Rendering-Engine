@@ -292,7 +292,7 @@ namespace Rendering
 		ImGui::Begin("Terrain Demo Scene");
 
 		ImGui::Checkbox("Show Post Processing Stack", &mPostProcessingStack->isWindowOpened);
-		if (mPostProcessingStack->isWindowOpened) mPostProcessingStack->ShowPostProcessingWindow();
+		//if (mPostProcessingStack->isWindowOpened) mPostProcessingStack->ShowPostProcessingWindow();
 
 		ImGui::Separator();
 

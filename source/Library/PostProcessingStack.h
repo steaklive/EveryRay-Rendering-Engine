@@ -49,6 +49,7 @@ namespace Rendering
 			ID3D11ShaderResourceView* InputIndirectLightingTexture;
 
 			bool isActive = false;
+			bool debugGI = false;
 		};
 
 		struct TonemapEffect
@@ -315,7 +316,7 @@ namespace Rendering
 		void UpdateSSRMaterial(ID3D11ShaderResourceView* normal, ID3D11ShaderResourceView* depth, ID3D11ShaderResourceView* extra, float time);
 		void UpdateFogMaterial();
 		void UpdateLightShaftsMaterial();
-		void UpdateCompositeLightingMaterial(ID3D11ShaderResourceView* indirectLightingSRV, bool debugVoxel);
+		void UpdateCompositeLightingMaterial(ID3D11ShaderResourceView* indirectLightingSRV, bool debugVoxel, bool debugAO);
 
 		void Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR = true, bool pFog = false, bool pLightShafts = false);
 		void Begin(bool clear = true);
@@ -330,11 +331,12 @@ namespace Rendering
 		void Update();
 		void DrawFullscreenQuad(ID3D11DeviceContext* pContext);
 		void ResetOMToMainRenderTarget();
-		void ShowPostProcessingWindow();
 
 		void SetDirectionalLight(const DirectionalLight* pLight) { light = pLight; }
 		void SetSunOcclusionSRV(ID3D11ShaderResourceView* srv) { mSunOcclusionSRV = srv; }
 		void SetSunNDCPos(XMFLOAT2 pos) { mSunNDCPos = pos; }
+
+		void Config() { mShowDebug = !mShowDebug; }
 
 		ID3D11ShaderResourceView* GetDepthOutputTexture();
 		ID3D11ShaderResourceView* GetPrepassColorOutputTexture();
@@ -350,6 +352,7 @@ namespace Rendering
 		void ComputeVerticalBlur(ID3D11DeviceContext* pContext, ID3D11ShaderResourceView* pInput, ID3D11RenderTargetView* pOutput);
 		void ComputeToneMapWithBloom(ID3D11DeviceContext* pContext, ID3D11ShaderResourceView* pInput, ID3D11ShaderResourceView* pAVG, ID3D11ShaderResourceView* pBloom, ID3D11RenderTargetView* pOutput);
 		void PerformEmptyPass(ID3D11DeviceContext * pContext, ID3D11ShaderResourceView * pInput, ID3D11RenderTargetView * pOutput);
+		void ShowPostProcessingWindow();
 
 		Game& game;
 		Camera& camera;
@@ -396,5 +399,7 @@ namespace Rendering
 		bool mCompositeLightingLoaded = false;
 
 		XMFLOAT2 mSunNDCPos;
+
+		bool mShowDebug = false;
 	};
 }

@@ -44,7 +44,7 @@ namespace Library {
         ImGui::Begin("Systems Config");
 
         if (ImGui::Button("Post Processing Stack")) 
-            mPostProcessingStack->ShowPostProcessingWindow();
+            mPostProcessingStack->Config();
 
 		if (ImGui::Button("Volumetric Clouds"))
 			mVolumetricClouds->Config();
