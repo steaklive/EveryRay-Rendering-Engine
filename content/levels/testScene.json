@@ -565,7 +565,7 @@
 					"technique" : "voxelizationGI"
 				}
 			],
-			"model_path" : "content\\models\\cube.fbx",
+			"model_path" : "content\\models\\sphere.fbx",
 			"name" : "Simple cube",
 			"transform" : 
 			[
