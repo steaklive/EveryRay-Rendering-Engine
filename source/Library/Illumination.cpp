@@ -422,33 +422,19 @@ namespace Library {
 	{
 		XMMATRIX vp = mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
 
-		XMMATRIX shadowMatrices[3] =
-		{
-			mShadowMapper.GetViewMatrix(0) * mShadowMapper.GetProjectionMatrix(0) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()) ,
-			mShadowMapper.GetViewMatrix(1) * mShadowMapper.GetProjectionMatrix(1) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()) ,
-			mShadowMapper.GetViewMatrix(2) * mShadowMapper.GetProjectionMatrix(2) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix())
-		};
-
-		ID3D11ShaderResourceView* shadowMaps[3] =
-		{
-			mShadowMapper.GetShadowTexture(0),
-			mShadowMapper.GetShadowTexture(1),
-			mShadowMapper.GetShadowTexture(2)
-		};
-
+		const int shadowCascade = 1;
 		std::string materialName = MaterialHelper::voxelizationGIMaterialName + "_" + std::to_string(voxelCascadeIndex);
 		auto material = static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName]);
 		if (material)
 		{
 			material->ViewProjection() << vp;
-			material->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, NUM_SHADOW_CASCADES);
+			material->ShadowMatrix() << mShadowMapper.GetViewMatrix(shadowCascade) * mShadowMapper.GetProjectionMatrix(shadowCascade) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix());
 			material->ShadowTexelSize() << XMVECTOR{ 1.0f / mShadowMapper.GetResolution(), 1.0f, 1.0f , 1.0f };
 			material->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
 			material->MeshWorld() << obj->GetTransformationMatrix();
 			material->MeshAlbedo() << obj->GetTextureData(meshIndex).AlbedoMap;
-			material->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, NUM_SHADOW_CASCADES);
+			material->ShadowTexture() << mShadowMapper.GetShadowTexture(shadowCascade);
 		}
-
 	}
 
 	void Illumination::SetFoliageSystem(FoliageSystem* foliageSystem)

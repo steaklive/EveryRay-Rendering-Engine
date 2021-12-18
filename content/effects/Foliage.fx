@@ -1,5 +1,5 @@
-static const float PI = 3.141592654f;
 #define NUM_OF_SHADOW_CASCADES 3
+static const float PI = 3.141592654f;
 static const float4 ColorWhite = { 1, 1, 1, 1 };
 
 cbuffer CBufferPerObject
@@ -257,10 +257,8 @@ struct PS_GI_IN
     float4 Position : SV_POSITION;
     float2 UV : TEXCOORD0;
     float3 VoxelPos : TEXCOORD1;
-    float3 ShadowCoord0 : TEXCOORD2;
-    float3 ShadowCoord1 : TEXCOORD3;
-    float3 ShadowCoord2 : TEXCOORD4;
-    float4 PosWVP : TEXCOORD5;
+    float3 ShadowCoord : TEXCOORD2;
+    float4 PosWVP : TEXCOORD3;
 };
 
 [maxvertexcount(3)]
@@ -296,9 +294,7 @@ void geometry_shader_voxel_gi(triangle VS_OUTPUT input[3], inout TriangleStream<
     
         //output[i].normal = input[i].normal;
         output[i].UV = input[i].TextureCoordinates;
-        output[i].ShadowCoord0 = input[i].ShadowCoord0;
-        output[i].ShadowCoord1 = input[i].ShadowCoord1;
-        output[i].ShadowCoord2 = input[i].ShadowCoord2;
+        output[i].ShadowCoord = input[i].ShadowCoord1;
         OutputStream.Append(output[i]);
     }
     OutputStream.RestartStrip();
@@ -331,8 +327,8 @@ void pixel_shader_voxel_gi(PS_GI_IN input)
         outputVoxelGITexture[finalVoxelPos] = colorRes;
     else
     {
-        float shadow = GetShadow(input.ShadowCoord0, input.ShadowCoord1, input.ShadowCoord2, input.PosWVP.w);
-        outputVoxelGITexture[finalVoxelPos] = colorRes * float4(shadow, shadow, shadow, 1.0f);
+        float shadow = CalculateShadow(input.ShadowCoord, 1);
+        outputVoxelGITexture[finalVoxelPos] = colorRes * SunColor * float4(shadow, shadow, shadow, 1.0f);
     }
 }
 

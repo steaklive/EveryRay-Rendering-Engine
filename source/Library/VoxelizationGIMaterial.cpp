@@ -11,40 +11,40 @@ namespace Rendering
 	VoxelizationGIMaterial::VoxelizationGIMaterial()
 		: Material("voxelizationGI"),
 		MATERIAL_VARIABLE_INITIALIZATION(ViewProjection),
-		MATERIAL_VARIABLE_INITIALIZATION(ShadowMatrices),
+		MATERIAL_VARIABLE_INITIALIZATION(ShadowMatrix),
 		MATERIAL_VARIABLE_INITIALIZATION(ShadowTexelSize),
 		MATERIAL_VARIABLE_INITIALIZATION(ShadowCascadeDistances),
 		MATERIAL_VARIABLE_INITIALIZATION(VoxelCameraPos),
 		MATERIAL_VARIABLE_INITIALIZATION(WorldVoxelScale),
 		MATERIAL_VARIABLE_INITIALIZATION(MeshWorld),
 		MATERIAL_VARIABLE_INITIALIZATION(MeshAlbedo),
-		MATERIAL_VARIABLE_INITIALIZATION(CascadedShadowTextures)
+		MATERIAL_VARIABLE_INITIALIZATION(ShadowTexture)
 	{
 	}
 
 	MATERIAL_VARIABLE_DEFINITION(VoxelizationGIMaterial, ViewProjection)
-	MATERIAL_VARIABLE_DEFINITION(VoxelizationGIMaterial, ShadowMatrices)
+	MATERIAL_VARIABLE_DEFINITION(VoxelizationGIMaterial, ShadowMatrix)
 	MATERIAL_VARIABLE_DEFINITION(VoxelizationGIMaterial, ShadowTexelSize)
 	MATERIAL_VARIABLE_DEFINITION(VoxelizationGIMaterial, ShadowCascadeDistances)
 	MATERIAL_VARIABLE_DEFINITION(VoxelizationGIMaterial, VoxelCameraPos)
 	MATERIAL_VARIABLE_DEFINITION(VoxelizationGIMaterial, WorldVoxelScale)
 	MATERIAL_VARIABLE_DEFINITION(VoxelizationGIMaterial, MeshWorld)
 	MATERIAL_VARIABLE_DEFINITION(VoxelizationGIMaterial, MeshAlbedo)
-	MATERIAL_VARIABLE_DEFINITION(VoxelizationGIMaterial, CascadedShadowTextures)
+	MATERIAL_VARIABLE_DEFINITION(VoxelizationGIMaterial, ShadowTexture)
 
 	void VoxelizationGIMaterial::Initialize(Effect* effect)
 	{
 		Material::Initialize(effect);
 
 		MATERIAL_VARIABLE_RETRIEVE(ViewProjection)
-		MATERIAL_VARIABLE_RETRIEVE(ShadowMatrices)
+		MATERIAL_VARIABLE_RETRIEVE(ShadowMatrix)
 		MATERIAL_VARIABLE_RETRIEVE(ShadowTexelSize)
 		MATERIAL_VARIABLE_RETRIEVE(ShadowCascadeDistances)
 		MATERIAL_VARIABLE_RETRIEVE(VoxelCameraPos)
 		MATERIAL_VARIABLE_RETRIEVE(WorldVoxelScale)
 		MATERIAL_VARIABLE_RETRIEVE(MeshWorld)
 		MATERIAL_VARIABLE_RETRIEVE(MeshAlbedo)
-		MATERIAL_VARIABLE_RETRIEVE(CascadedShadowTextures)
+		MATERIAL_VARIABLE_RETRIEVE(ShadowTexture)
 
 		D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 		{
