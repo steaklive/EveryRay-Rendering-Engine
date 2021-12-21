@@ -62,3 +62,5 @@ namespace Library
 
 using namespace DirectX;
 using namespace DirectX::PackedVector;
+
+using ER_AABB = std::pair<XMFLOAT3, XMFLOAT3>;

@@ -153,7 +153,7 @@ namespace Rendering
 		XMFLOAT4X4 GetTransformationMatrix4X4() const { return XMFLOAT4X4(mCurrentObjectTransformMatrix); }
 		XMMATRIX GetTransformationMatrix() const { return mTransformationMatrix; }
 
-		std::vector<XMFLOAT3>& GetAABB() { return mAABB; }
+		std::vector<XMFLOAT3>& GetLocalAABB() { return mLocalAABB; } //TODO change to 'ER_AABB'
 
 		bool IsAvailableInEditor() { return mAvailableInEditorMode; }
 		bool IsSelected() { return mIsSelected; }
@@ -241,7 +241,7 @@ namespace Rendering
 		std::vector<std::map<std::string, std::vector<RenderBufferData*>>>	mMeshesRenderBuffers;
 		std::vector<float>										mMeshesReflectionFactors; 
 		std::map<std::string, Material*>						mMaterials;
-		std::vector<XMFLOAT3>									mAABB;
+		std::vector<XMFLOAT3>									mLocalAABB;
 		std::unique_ptr<Model>									mModel;
 		std::vector<std::unique_ptr<Model>>						mModelLODs;
 		std::vector<int>										mMeshesCount;

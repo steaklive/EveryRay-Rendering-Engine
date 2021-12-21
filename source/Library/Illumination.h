@@ -22,6 +22,7 @@ namespace Library
 	class FoliageSystem;
 	class IBLRadianceMap;
 	class RenderableAABB;
+	class RenderingObject;
 
 	namespace IlluminationCBufferData {
 		struct VoxelizationDebugCB
@@ -58,9 +59,9 @@ namespace Library
 
 		void Initialize(const Scene* scene);
 
-		void Draw(const GameTime& gameTime, const Scene* scene, GBuffer* gbuffer);
+		void Draw(const GameTime& gameTime, GBuffer* gbuffer);
 		void DrawDebugGizmos();
-		void Update(const GameTime& gameTime);
+		void Update(const GameTime& gameTime, const Scene* scene);
 		void Config() { mShowDebug = !mShowDebug; }
 
 		void SetShadowMapSRV(ID3D11ShaderResourceView* srv) { mShadowMapSRV = srv; }
@@ -83,12 +84,16 @@ namespace Library
 		void UpdateVoxelizationGIMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int voxelCascadeIndex);
 		void UpdateImGui();
 		void UpdateVoxelCameraPosition();
+		void CullObjectsAgainstVoxelCascades(const Scene* scene);
 
 		Camera& mCamera;
 		DirectionalLight& mDirectionalLight;
 		ShadowMapper& mShadowMapper;
 
 		FoliageSystem* mFoliageSystem = nullptr;
+
+		using RenderingObjectInfo = std::map<std::string, Rendering::RenderingObject*>;
+		RenderingObjectInfo mVoxelizationObjects[NUM_VOXEL_GI_CASCADES];
 
 		ConstantBuffer<IlluminationCBufferData::VoxelizationDebugCB> mVoxelizationDebugConstantBuffer;
 		ConstantBuffer<IlluminationCBufferData::VoxelConeTracingCB> mVoxelConeTracingConstantBuffer;
@@ -114,6 +119,7 @@ namespace Library
 
 		float mWorldVoxelScales[NUM_VOXEL_GI_CASCADES] = { 2.0f, 0.5f };
 		XMFLOAT4 mVoxelCameraPositions[NUM_VOXEL_GI_CASCADES];
+		ER_AABB mVoxelCascadesAABBs[NUM_VOXEL_GI_CASCADES];
 		
 		std::vector<RenderableAABB*> mDebugVoxelZonesGizmos;
 

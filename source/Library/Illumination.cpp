@@ -151,7 +151,9 @@ namespace Library {
 				mDebugVoxelZonesGizmos.push_back(new RenderableAABB(*mGame, mCamera, XMFLOAT4(0.1f, 0.34f, 0.1f, 1.0f)));
 				mDebugVoxelZonesGizmos[i]->Initialize();
 				float maxBB = voxelCascadesSizes[i] / mWorldVoxelScales[i] * 0.5f;
-				mDebugVoxelZonesGizmos[i]->InitializeGeometry({ XMFLOAT3(-maxBB, -maxBB, -maxBB), XMFLOAT3(maxBB, maxBB, maxBB) }, XMMatrixScaling(1, 1, 1));
+				mVoxelCascadesAABBs[i].first = XMFLOAT3(-maxBB, -maxBB, -maxBB);
+				mVoxelCascadesAABBs[i].second = XMFLOAT3(maxBB, maxBB, maxBB);
+				mDebugVoxelZonesGizmos[i]->InitializeGeometry({ mVoxelCascadesAABBs[i].first, mVoxelCascadesAABBs[i].second }, XMMatrixScaling(1, 1, 1));
 				mDebugVoxelZonesGizmos[i]->SetPosition(XMFLOAT3(mVoxelCameraPositions[i].x, mVoxelCameraPositions[i].y, mVoxelCameraPositions[i].z));
 			}
 			mVCTMainRT = new CustomRenderTarget(mGame->Direct3DDevice(), 
@@ -188,7 +190,7 @@ namespace Library {
 		}
 	}
 
-	void Illumination::Draw(const GameTime& gameTime, const Scene* scene, GBuffer* gbuffer)
+	void Illumination::Draw(const GameTime& gameTime, GBuffer* gbuffer)
 	{
 		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
@@ -225,7 +227,7 @@ namespace Library {
 				context->ClearUnorderedAccessViewFloat(UAV[0], clearColorBlack);
 
 				std::string materialName = MaterialHelper::voxelizationGIMaterialName + "_" + std::to_string(cascade);
-				for (auto& obj : scene->objects) {
+				for (auto& obj : mVoxelizationObjects[cascade]) {
 					auto material = static_cast<Rendering::VoxelizationGIMaterial*>(obj.second->GetMaterials()[materialName]);
 					if (material)
 					{
@@ -385,8 +387,9 @@ namespace Library {
 		}
 	}
 
-	void Illumination::Update(const GameTime& gameTime)
+	void Illumination::Update(const GameTime& gameTime, const Scene* scene)
 	{
+		CullObjectsAgainstVoxelCascades(scene);
 		UpdateVoxelCameraPosition();
 		UpdateImGui();
 	}
@@ -462,6 +465,55 @@ namespace Library {
 
 			mDebugVoxelZonesGizmos[i]->SetPosition(XMFLOAT3(mVoxelCameraPositions[i].x, mVoxelCameraPositions[i].y, mVoxelCameraPositions[i].z));
 			mDebugVoxelZonesGizmos[i]->Update();
+		}
+	}
+
+	void Illumination::CullObjectsAgainstVoxelCascades(const Scene* scene)
+	{
+		//TODO add instancing support
+		//TODO add indirect drawing support (GPU cull)
+		//TODO add multithreading per cascade
+		for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
+		{
+			for (auto& objectInfo : scene->objects)
+			{
+				auto aabbObj = objectInfo.second->GetLocalAABB();
+				XMFLOAT3 position;
+				MatrixHelper::GetTranslation(objectInfo.second->GetTransformationMatrix(), position);
+				aabbObj[0].x += position.x;
+				aabbObj[0].y += position.y;
+				aabbObj[0].z += position.z;
+				aabbObj[1].x += position.x;
+				aabbObj[1].y += position.y;
+				aabbObj[1].z += position.z;
+
+				//check if exists in previous cascade container
+				if (cascade > 0)
+				{
+					auto it = mVoxelizationObjects[cascade - 1].find(objectInfo.first);
+					if (it != mVoxelizationObjects[cascade - 1].end())
+					{
+						//check if should be removed from current cascade container
+						auto it2 = mVoxelizationObjects[cascade].find(objectInfo.first);
+						if (it2 != mVoxelizationObjects[cascade].end())
+							mVoxelizationObjects[cascade].erase(it2);
+						
+						continue;
+					}
+				}
+
+				auto aabbCascade = mVoxelCascadesAABBs[cascade];
+				bool isColliding =
+					(aabbObj[0].x <= aabbCascade.second.x && aabbObj[1].x >= aabbCascade.first.x) &&
+					(aabbObj[0].y <= aabbCascade.second.y && aabbObj[1].y >= aabbCascade.first.y) &&
+					(aabbObj[0].z <= aabbCascade.second.z && aabbObj[1].z >= aabbCascade.first.z);
+
+				auto it = mVoxelizationObjects[cascade].find(objectInfo.first);
+				if (isColliding && (it == mVoxelizationObjects[cascade].end()))
+					mVoxelizationObjects[cascade].insert(objectInfo);
+				else if (!isColliding && (it != mVoxelizationObjects[cascade].end()))
+					mVoxelizationObjects[cascade].erase(it);
+			}
 		}
 	}
 }

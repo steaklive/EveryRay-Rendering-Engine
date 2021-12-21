@@ -284,7 +284,7 @@ namespace Library
 			bool isInstanced = object.second->IsInstanced();
 			std::vector<Rendering::InstancedData> newInstanceData;
 			int instanceCount = object.second->GetInstanceCount();
-			std::vector<XMFLOAT3> aabb = object.second->GetAABB();
+			std::vector<XMFLOAT3> aabb = object.second->GetLocalAABB();
 			XMFLOAT3 position; 
 			XMMATRIX instanceWorldMatrix = XMMatrixIdentity();
 

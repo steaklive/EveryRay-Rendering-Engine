@@ -116,7 +116,7 @@ namespace Rendering
 
 		#pragma region DRAW_GI
 		mRenderStateHelper->SaveAll();
-		mGI->Draw(gameTime, mScene, mGBuffer);
+		mGI->Draw(gameTime, mGBuffer);
 		mRenderStateHelper->RestoreAll();
 #pragma endregion
 

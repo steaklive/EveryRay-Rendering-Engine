@@ -29,7 +29,7 @@ namespace Library {
 		mGrid->Update(gameTime);
 		mPostProcessingStack->Update();
 		mVolumetricClouds->Update(gameTime);
-		mGI->Update(gameTime);
+		mGI->Update(gameTime, mScene);
 		mShadowMapper->Update(gameTime);
 
 		mScene->GetCamera().Cull(mScene->objects);
