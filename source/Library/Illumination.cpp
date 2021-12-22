@@ -480,12 +480,12 @@ namespace Library {
 				auto aabbObj = objectInfo.second->GetLocalAABB();
 				XMFLOAT3 position;
 				MatrixHelper::GetTranslation(objectInfo.second->GetTransformationMatrix(), position);
-				aabbObj[0].x += position.x;
-				aabbObj[0].y += position.y;
-				aabbObj[0].z += position.z;
-				aabbObj[1].x += position.x;
-				aabbObj[1].y += position.y;
-				aabbObj[1].z += position.z;
+				aabbObj.first.x += position.x;
+				aabbObj.first.y += position.y;
+				aabbObj.first.z += position.z;
+				aabbObj.second.x += position.x;
+				aabbObj.second.y += position.y;
+				aabbObj.second.z += position.z;
 
 				//check if exists in previous cascade container
 				if (cascade > 0)
@@ -504,9 +504,9 @@ namespace Library {
 
 				auto aabbCascade = mVoxelCascadesAABBs[cascade];
 				bool isColliding =
-					(aabbObj[0].x <= aabbCascade.second.x && aabbObj[1].x >= aabbCascade.first.x) &&
-					(aabbObj[0].y <= aabbCascade.second.y && aabbObj[1].y >= aabbCascade.first.y) &&
-					(aabbObj[0].z <= aabbCascade.second.z && aabbObj[1].z >= aabbCascade.first.z);
+					(aabbObj.first.x <= aabbCascade.second.x && aabbObj.second.x >= aabbCascade.first.x) &&
+					(aabbObj.first.y <= aabbCascade.second.y && aabbObj.second.y >= aabbCascade.first.y) &&
+					(aabbObj.first.z <= aabbCascade.second.z && aabbObj.second.z >= aabbCascade.first.z);
 
 				auto it = mVoxelizationObjects[cascade].find(objectInfo.first);
 				if (isColliding && (it == mVoxelizationObjects[cascade].end()))

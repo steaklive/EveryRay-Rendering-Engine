@@ -284,7 +284,7 @@ namespace Library
 			bool isInstanced = object.second->IsInstanced();
 			std::vector<Rendering::InstancedData> newInstanceData;
 			int instanceCount = object.second->GetInstanceCount();
-			std::vector<XMFLOAT3> aabb = object.second->GetLocalAABB();
+			auto aabb = object.second->GetLocalAABB();
 			XMFLOAT3 position; 
 			XMMATRIX instanceWorldMatrix = XMMatrixIdentity();
 
@@ -310,21 +310,21 @@ namespace Library
 
 					// x-axis
 					if (mFrustum.Planes()[planeID].x > 0.0f)
-						axisVert.x = aabb[0].x + position.x;
+						axisVert.x = aabb.first.x + position.x;
 					else
-						axisVert.x = aabb[1].x + position.x;
+						axisVert.x = aabb.second.x + position.x;
 
 					// y-axis
 					if (mFrustum.Planes()[planeID].y > 0.0f)
-						axisVert.y = aabb[0].y + position.y;
+						axisVert.y = aabb.first.y + position.y;
 					else
-						axisVert.y = aabb[1].y + position.y;
+						axisVert.y = aabb.second.y + position.y;
 
 					// z-axis
 					if (mFrustum.Planes()[planeID].z > 0.0f)
-						axisVert.z = aabb[0].z + position.z;
+						axisVert.z = aabb.first.z + position.z;
 					else
-						axisVert.z = aabb[1].z + position.z;
+						axisVert.z = aabb.second.z + position.z;
 
 
 					if (XMVectorGetX(XMVector3Dot(planeNormal, XMLoadFloat3(&axisVert))) + planeConstant > 0.0f)

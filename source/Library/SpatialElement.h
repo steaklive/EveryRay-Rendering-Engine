@@ -17,7 +17,7 @@ namespace Library
 
 
 		std::pair<XMFLOAT3&, XMFLOAT3&> GetBoundsAABB() { return std::make_pair(std::ref(mMinBounds), std::ref(mMaxBounds)); };
-		void SetBoundsAABB(XMFLOAT3& min, XMFLOAT3& max) { mMinBounds = min; mMaxBounds = max; };
+		void SetBoundsAABB(const XMFLOAT3& min, const XMFLOAT3& max) { mMinBounds = min; mMaxBounds = max; };
 		
 		int GetID() { return mId; };
 

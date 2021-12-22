@@ -136,8 +136,8 @@ namespace Rendering
 		float dynObjRad = CalculateObjectRadius(mDynamicInstancedObject->GetVertices());
 		for (size_t i = 0; i < NUM_DYNAMIC_INSTANCES; i++)
 		{
-			mDynamicMeshAABBs.push_back(mDynamicInstancedObject->GetLocalAABB());
-			mDynamicMeshOBBs.push_back(mDynamicInstancedObject->GetLocalAABB());
+			mDynamicMeshAABBs.push_back({ mDynamicInstancedObject->GetLocalAABB().first, mDynamicInstancedObject->GetLocalAABB().second });
+			mDynamicMeshOBBs.push_back({ mDynamicInstancedObject->GetLocalAABB().first, mDynamicInstancedObject->GetLocalAABB().second });
 			mSpatialElements[i] = new SpatialElement(i);
 			mSpatialElements[i]->SetRadius(dynObjRad);
 		}
@@ -169,8 +169,8 @@ namespace Rendering
 		float staticObjRad = CalculateObjectRadius(mStaticInstancedObject->GetVertices());
 		for (size_t i = 0; i < NUM_STATIC_INSTANCES; i++)
 		{
-			mStaticMeshAABBs.push_back(mStaticInstancedObject->GetLocalAABB());
-			mStaticMeshOBBs.push_back(mStaticInstancedObject->GetLocalAABB());
+			mStaticMeshAABBs.push_back({ mStaticInstancedObject->GetLocalAABB().first, mStaticInstancedObject->GetLocalAABB().second });
+			mStaticMeshOBBs.push_back({ mStaticInstancedObject->GetLocalAABB().first, mStaticInstancedObject->GetLocalAABB().second });
 			mSpatialElements[i + NUM_DYNAMIC_INSTANCES] = new SpatialElement(i + NUM_DYNAMIC_INSTANCES);
 			mSpatialElements[i + NUM_DYNAMIC_INSTANCES]->SetRadius(staticObjRad);
 		}
@@ -351,7 +351,7 @@ namespace Rendering
 
 			#pragma region WALL_COLLISION
 
-			if (mDynamicObjectInstancesPositions.at(i).x + mDynamicInstancedObject->GetLocalAABB().at(0).x <= -25.0f)
+			if (mDynamicObjectInstancesPositions.at(i).x + mDynamicInstancedObject->GetLocalAABB().first.x <= -25.0f)
 			{
 				// Left wall
 				XMVECTOR normal = { 1.0f, 0.0f, 0.0f };
@@ -362,7 +362,7 @@ namespace Rendering
 				XMStoreFloat3(&mDynamicObjectInstancesDirections.at(i), newDirection);
 			}
 
-			if (mDynamicObjectInstancesPositions.at(i).x + mDynamicInstancedObject->GetLocalAABB().at(1).x >= 25.0f)
+			if (mDynamicObjectInstancesPositions.at(i).x + mDynamicInstancedObject->GetLocalAABB().second.x >= 25.0f)
 			{
 				// Right wall
 				XMVECTOR normal = { -1.0f, 0.0f, 0.0f };
@@ -373,7 +373,7 @@ namespace Rendering
 				XMStoreFloat3(&mDynamicObjectInstancesDirections.at(i), newDirection);
 			}
 
-			if (mDynamicObjectInstancesPositions.at(i).z + mDynamicInstancedObject->GetLocalAABB().at(0).z <= -25.0f)
+			if (mDynamicObjectInstancesPositions.at(i).z + mDynamicInstancedObject->GetLocalAABB().first.z <= -25.0f)
 			{
 				// Front Wall
 
@@ -385,7 +385,7 @@ namespace Rendering
 				XMStoreFloat3(&mDynamicObjectInstancesDirections.at(i), newDirection);
 			}
 
-			if (mDynamicObjectInstancesPositions.at(i).z + mDynamicInstancedObject->GetLocalAABB().at(1).z >= 25.0f)
+			if (mDynamicObjectInstancesPositions.at(i).z + mDynamicInstancedObject->GetLocalAABB().second.z >= 25.0f)
 			{
 				// Back wall
 				XMVECTOR normal = { 0.0f, 0.0f, -1.0f };
@@ -396,7 +396,7 @@ namespace Rendering
 				XMStoreFloat3(&mDynamicObjectInstancesDirections.at(i), newDirection);
 			}
 
-			if (mDynamicObjectInstancesPositions.at(i).y + mDynamicInstancedObject->GetLocalAABB().at(0).y <= -25.0f)
+			if (mDynamicObjectInstancesPositions.at(i).y + mDynamicInstancedObject->GetLocalAABB().first.y <= -25.0f)
 			{
 				// Bottom wall
 				XMVECTOR normal = { 0.0f, 1.0f, 0.0f };
@@ -407,7 +407,7 @@ namespace Rendering
 				XMStoreFloat3(&mDynamicObjectInstancesDirections.at(i), newDirection);
 			}
 
-			if (mDynamicObjectInstancesPositions.at(i).y + mDynamicInstancedObject->GetLocalAABB().at(1).y >= 25.0f)
+			if (mDynamicObjectInstancesPositions.at(i).y + mDynamicInstancedObject->GetLocalAABB().second.y >= 25.0f)
 			{
 				// Top wall
 				XMVECTOR normal = { 0.0f, -1.0f, 0.0f };
@@ -494,7 +494,7 @@ namespace Rendering
 
 			#pragma region WALL_COLLISION
 
-			if (mDynamicObjectInstancesPositions[i].x + mDynamicInstancedObject->GetLocalAABB().at(0).x <= -25.0f)
+			if (mDynamicObjectInstancesPositions[i].x + mDynamicInstancedObject->GetLocalAABB().first.x <= -25.0f)
 			{
 				// Left wall
 				XMVECTOR normal = { 1.0f, 0.0f, 0.0f };
@@ -505,7 +505,7 @@ namespace Rendering
 				XMStoreFloat3(&mDynamicObjectInstancesDirections[i], newDirection);
 			}
 
-			if (mDynamicObjectInstancesPositions[i].x + mDynamicInstancedObject->GetLocalAABB().at(1).x >= 25.0f)
+			if (mDynamicObjectInstancesPositions[i].x + mDynamicInstancedObject->GetLocalAABB().second.x >= 25.0f)
 			{
 				// Right wall
 				XMVECTOR normal = { -1.0f, 0.0f, 0.0f };
@@ -516,7 +516,7 @@ namespace Rendering
 				XMStoreFloat3(&mDynamicObjectInstancesDirections[i], newDirection);
 			}
 
-			if (mDynamicObjectInstancesPositions[i].z + mDynamicInstancedObject->GetLocalAABB().at(0).z <= -25.0f)
+			if (mDynamicObjectInstancesPositions[i].z + mDynamicInstancedObject->GetLocalAABB().first.z <= -25.0f)
 			{
 				// Front Wall
 
@@ -528,7 +528,7 @@ namespace Rendering
 				XMStoreFloat3(&mDynamicObjectInstancesDirections[i], newDirection);
 			}
 
-			if (mDynamicObjectInstancesPositions[i].z + mDynamicInstancedObject->GetLocalAABB().at(1).z >= 25.0f)
+			if (mDynamicObjectInstancesPositions[i].z + mDynamicInstancedObject->GetLocalAABB().second.z >= 25.0f)
 			{
 				// Back wall
 				XMVECTOR normal = { 0.0f, 0.0f, -1.0f };
@@ -539,7 +539,7 @@ namespace Rendering
 				XMStoreFloat3(&mDynamicObjectInstancesDirections[i], newDirection);
 			}
 
-			if (mDynamicObjectInstancesPositions[i].y + mDynamicInstancedObject->GetLocalAABB().at(0).y <= -25.0f)
+			if (mDynamicObjectInstancesPositions[i].y + mDynamicInstancedObject->GetLocalAABB().first.y <= -25.0f)
 			{
 				// Bottom wall
 				XMVECTOR normal = { 0.0f, 1.0f, 0.0f };
@@ -550,7 +550,7 @@ namespace Rendering
 				XMStoreFloat3(&mDynamicObjectInstancesDirections[i], newDirection);
 			}
 
-			if (mDynamicObjectInstancesPositions[i].y + mDynamicInstancedObject->GetLocalAABB().at(1).y >= 25.0f)
+			if (mDynamicObjectInstancesPositions[i].y + mDynamicInstancedObject->GetLocalAABB().second.y >= 25.0f)
 			{
 				// Top wall
 				XMVECTOR normal = { 0.0f, -1.0f, 0.0f };
@@ -638,7 +638,7 @@ namespace Rendering
 			{
 				elements[i]->AABB->Update();
 				elements[i]->CollisionType = CollisionDetectionTypes::AABBvsAABB;
-				elements[i]->SetBoundsAABB(const_cast<XMFLOAT3&>(elements[i]->AABB->GetAABB().at(0)), const_cast<XMFLOAT3&>(elements[i]->AABB->GetAABB().at(1))); // oof... const_cast... bad design
+				elements[i]->SetBoundsAABB(elements[i]->AABB->GetAABB()[0], elements[i]->AABB->GetAABB()[1]);
 
 			}
 			else if (mCollisionMethodNumber == 1)
@@ -810,19 +810,19 @@ namespace Rendering
 			float dirZ = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) * (25.0f - (-25.0f)) + (-25.0f);
 			mDynamicObjectInstancesDirections.push_back(XMFLOAT3(dirX, dirY, dirZ));
 
-			mSpatialElements.at(i)->SetBoundsAABB(mDynamicInstancedObject->GetLocalAABB().at(0), mDynamicInstancedObject->GetLocalAABB().at(1));
+			mSpatialElements.at(i)->SetBoundsAABB(mDynamicInstancedObject->GetLocalAABB().first, mDynamicInstancedObject->GetLocalAABB().second);
 			mSpatialElements.at(i)->SetPosition(mDynamicObjectInstancesPositions[i]);
 
 			// create a debug AABB & OBB visualization for every instance
 			mSpatialElements.at(i)->AABB = new RenderableAABB(*mGame, *mCamera);
 			mSpatialElements.at(i)->AABB->Initialize();
-			mSpatialElements.at(i)->AABB->InitializeGeometry(mDynamicInstancedObject->GetLocalAABB(), XMMatrixScaling(1, 1, 1));
+			mSpatialElements.at(i)->AABB->InitializeGeometry({ mDynamicInstancedObject->GetLocalAABB().first, mDynamicInstancedObject->GetLocalAABB().second }, XMMatrixScaling(1, 1, 1));
 			mSpatialElements.at(i)->AABB->SetPosition(XMFLOAT3(x, y, z));
 			mSpatialElements.at(i)->AABB->SetAABB(mDynamicMeshAABBs[i]);
 
 			mSpatialElements.at(i)->OBB = new RenderableOBB(*mGame, *mCamera);
 			mSpatialElements.at(i)->OBB->Initialize();
-			mSpatialElements.at(i)->OBB->InitializeGeometry(mDynamicInstancedObject->GetLocalAABB(), XMMatrixScaling(1, 1, 1));
+			mSpatialElements.at(i)->OBB->InitializeGeometry({ mDynamicInstancedObject->GetLocalAABB().first, mDynamicInstancedObject->GetLocalAABB().second }, XMMatrixScaling(1, 1, 1));
 			mSpatialElements.at(i)->OBB->SetPosition(XMFLOAT3(x, y, z));
 			mSpatialElements.at(i)->OBB->SetRotationMatrix(XMMatrixRotationAxis(XMVECTOR{ 1.0, 0.0, 0.0f }, 0.0f));
 		}
@@ -837,19 +837,19 @@ namespace Rendering
 			float z = (rand() / (static_cast<float>(RAND_MAX) + 1.0f)) * (25.0f - (-25.0f) - 2.0f * 5.0f) + (-25.0f) + 5.0f;
 			mStaticObjectInstanceData.push_back(InstancingMaterial::InstancedData(XMMatrixTranslation(x, y, z)));
 			mStaticObjectInstancesPositions.push_back(XMFLOAT3(x, y, z));
-			mSpatialElements.at(i)->SetBoundsAABB(mStaticInstancedObject->GetLocalAABB().at(0), mStaticInstancedObject->GetLocalAABB().at(1));
+			mSpatialElements.at(i)->SetBoundsAABB(mStaticInstancedObject->GetLocalAABB().first, mStaticInstancedObject->GetLocalAABB().second);
 			mSpatialElements.at(i)->SetPosition(mStaticObjectInstancesPositions[i - NUM_DYNAMIC_INSTANCES]);
 
 			// create a debug AABB & OBB visualization for every instance
 			mSpatialElements.at(i)->AABB = new RenderableAABB(*mGame, *mCamera);
 			mSpatialElements.at(i)->AABB->Initialize();
-			mSpatialElements.at(i)->AABB->InitializeGeometry(mStaticInstancedObject->GetLocalAABB(), XMMatrixScaling(1, 1, 1));
+			mSpatialElements.at(i)->AABB->InitializeGeometry({ mStaticInstancedObject->GetLocalAABB().first, mStaticInstancedObject->GetLocalAABB().second }, XMMatrixScaling(1, 1, 1));
 			mSpatialElements.at(i)->AABB->SetPosition(XMFLOAT3(x, y, z));
 			mSpatialElements.at(i)->AABB->SetAABB(mStaticMeshAABBs[i - NUM_DYNAMIC_INSTANCES]);
 
 			mSpatialElements.at(i)->OBB = new RenderableOBB(*mGame, *mCamera);
 			mSpatialElements.at(i)->OBB->Initialize();
-			mSpatialElements.at(i)->OBB->InitializeGeometry(mStaticInstancedObject->GetLocalAABB(), XMMatrixScaling(1, 1, 1));
+			mSpatialElements.at(i)->OBB->InitializeGeometry({ mStaticInstancedObject->GetLocalAABB().first, mStaticInstancedObject->GetLocalAABB().second }, XMMatrixScaling(1, 1, 1));
 			mSpatialElements.at(i)->OBB->SetPosition(XMFLOAT3(x, y, z));
 			mSpatialElements.at(i)->OBB->SetRotationMatrix(XMMatrixRotationAxis(XMVECTOR{ 1.0, 0.0, 0.0f }, 0.0f));
 		}

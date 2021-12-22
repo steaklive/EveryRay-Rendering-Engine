@@ -56,12 +56,12 @@ namespace Rendering
 		}
 
 		LoadAssignedMeshTextures();
-		mLocalAABB = mModel->GenerateAABB();
+		mLocalAABB = std::make_pair(mModel->GenerateAABB()[0], mModel->GenerateAABB()[1]);
 
 		if (mAvailableInEditorMode) {
 			mDebugAABB = new RenderableAABB(*mGame, mCamera);
 			mDebugAABB->Initialize();
-			mDebugAABB->InitializeGeometry(mLocalAABB, XMMatrixScaling(1, 1, 1));
+			mDebugAABB->InitializeGeometry({ mLocalAABB.first, mLocalAABB.second }, XMMatrixScaling(1, 1, 1));
 			mDebugAABB->SetPosition(XMFLOAT3(0,0,0));
 		}
 
