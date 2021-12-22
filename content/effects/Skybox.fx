@@ -4,6 +4,7 @@ cbuffer CBufferPerObject
 {
     float4x4 WorldViewProjection : WORLDVIEWPROJECTION < string UIWidget="None"; >;
     
+    float4 SunColor;
     float4 TopColor;
     float4 BottomColor;
     float UseCustomColor;
@@ -72,10 +73,10 @@ float4 pixel_shader(VS_OUTPUT IN) : SV_Target
             height = 0.0f;
 
         color = lerp(BottomColor, TopColor, height);
-        return color;
+        return saturate(color * SunColor);
     }
     else 
-        return SkyboxTexture.Sample(NoFiltering, IN.TextureCoordinate);
+        return saturate(SkyboxTexture.Sample(NoFiltering, IN.TextureCoordinate) * SunColor);
 }
 
 /************* Techniques *************/

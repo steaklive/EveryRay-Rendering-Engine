@@ -145,6 +145,7 @@ namespace Library
 		mMaterial->SkyboxTexture() << mCubeMapShaderResourceView;
 
 		float useCustomColor = (mUseCustomColor) ? 1.0f : 0.0f;
+		mMaterial->SunColor() << mSunColor;
 		mMaterial->UseCustomColor() << useCustomColor;
 		mMaterial->BottomColor() << XMVECTOR{ mBottomColor.x,mBottomColor.y,mBottomColor.z,mBottomColor.w };
 		mMaterial->TopColor() << XMVECTOR{ mTopColor.x,mTopColor.y,mTopColor.z,mTopColor.w };

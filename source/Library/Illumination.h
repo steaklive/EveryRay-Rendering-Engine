@@ -79,7 +79,9 @@ namespace Library
 
 		ID3D11ShaderResourceView* GetIBLIrradianceDiffuseSRV() { return mIrradianceDiffuseTextureSRV; }
 		ID3D11ShaderResourceView* GetIBLIrradianceSpecularSRV() { return mIrradianceSpecularTextureSRV; }
-		ID3D11ShaderResourceView* GetIBLIntegrationSRV() { return mIrradianceDiffuseTextureSRV; }
+		ID3D11ShaderResourceView* GetIBLIntegrationSRV() { return mIntegrationMapTextureSRV; }
+
+		float GetDirectionalLightIntensity() { return mDirectionalLightIntensity; }
 	private:
 		void UpdateVoxelizationGIMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int voxelCascadeIndex);
 		void UpdateImGui();
@@ -137,6 +139,8 @@ namespace Library
 
 		bool mEnabled = false;
 		bool mShowDebug = false;
+
+		float mDirectionalLightIntensity = 5.0f;
 
 		ID3D11ShaderResourceView* mIrradianceDiffuseTextureSRV = nullptr;
 		ID3D11ShaderResourceView* mIrradianceSpecularTextureSRV = nullptr;

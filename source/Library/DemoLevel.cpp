@@ -97,7 +97,7 @@ namespace Library {
         mRenderStateHelper = new RenderStateHelper(game);
 
         mPostProcessingStack = new Rendering::PostProcessingStack(game, camera);
-        mPostProcessingStack->Initialize(false, false, true, true, true, false, true, false);
+        mPostProcessingStack->Initialize(false, false, true, true, true, false, false, false);
         mPostProcessingStack->SetDirectionalLight(mDirectionalLight);
         mPostProcessingStack->SetSunOcclusionSRV(mSkybox->GetSunOcclusionOutputTexture());
 

@@ -166,25 +166,29 @@ namespace Library {
 			mDepthBuffer = DepthTarget::Create(mGame->Direct3DDevice(), mGame->ScreenWidth(), mGame->ScreenHeight(), 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
 		}
 		
-		//IBL - not used atm
+		//IBL
 		{
 			if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), 
-				Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureDiffuseHDR.dds").c_str(), nullptr, &mIrradianceDiffuseTextureSRV)))
+				Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\milkmill_diffuse_cube_map.dds").c_str(), nullptr, &mIrradianceDiffuseTextureSRV)))
 				throw GameException("Failed to create Diffuse Irradiance Map.");
 
 			mIBLRadianceMap.reset(new IBLRadianceMap(*mGame, Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureEnvHDR.dds")));
 			mIBLRadianceMap->Initialize();
 			mIBLRadianceMap->Create(*mGame);
 
-			mIrradianceSpecularTextureSRV = *mIBLRadianceMap->GetShaderResourceViewAddress();
-			if (mIrradianceSpecularTextureSRV == nullptr)
-				throw GameException("Failed to create Specular Irradiance Map.");
+			//mIrradianceSpecularTextureSRV = *mIBLRadianceMap->GetShaderResourceViewAddress();
+			//if (mIrradianceSpecularTextureSRV == nullptr)
+			//	throw GameException("Failed to create Specular Irradiance Map.");
 			mIBLRadianceMap.release();
 			mIBLRadianceMap.reset(nullptr);
 
+			if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(),
+				Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\milkmill_cube_map.dds").c_str(), nullptr, &mIrradianceSpecularTextureSRV)))
+				throw GameException("Failed to create Specular Irradiance Map.");
+
 			// Load a pre-computed Integration Map
-			if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), 
-				Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\ibl_brdf_lut.png").c_str(), nullptr, &mIntegrationMapTextureSRV)))
+			if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(),
+				Utility::GetFilePath(L"content\\textures\\skyboxes\\textureBrdf.dds").c_str(), nullptr, &mIntegrationMapTextureSRV)))
 				throw GameException("Failed to create Integration Texture.");
 
 		}
@@ -399,25 +403,32 @@ namespace Library {
 		if (!mShowDebug)
 			return;
 
-		ImGui::Begin("Global Illumination System");
-		ImGui::Checkbox("Enabled", &mEnabled);
-		ImGui::SliderFloat("VCT GI Intensity", &mVCTGIPower, 0.0f, 5.0f);
-		ImGui::SliderFloat("VCT Diffuse Strength", &mVCTIndirectDiffuseStrength, 0.0f, 1.0f);
-		ImGui::SliderFloat("VCT Specular Strength", &mVCTIndirectSpecularStrength, 0.0f, 1.0f);
-		ImGui::SliderFloat("VCT Max Cone Trace Dist", &mVCTMaxConeTraceDistance, 0.0f, 2500.0f);
-		ImGui::SliderFloat("VCT AO Falloff", &mVCTAoFalloff, 0.0f, 2.0f);
-		ImGui::SliderFloat("VCT Sampling Factor", &mVCTSamplingFactor, 0.01f, 3.0f);
-		ImGui::SliderFloat("VCT Sample Offset", &mVCTVoxelSampleOffset, -0.1f, 0.1f);
-		for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
+		ImGui::Begin("Illumination System");
+		if (ImGui::CollapsingHeader("Global Illumination"))
 		{
-			std::string name = "VCT Voxel Scale Cascade " + std::to_string(cascade);
-			ImGui::SliderFloat(name.c_str(), &mWorldVoxelScales[cascade], 0.1f, 10.0f);
+			ImGui::Checkbox("GI Enabled", &mEnabled);
+			ImGui::SliderFloat("VCT GI Intensity", &mVCTGIPower, 0.0f, 5.0f);
+			ImGui::SliderFloat("VCT Diffuse Strength", &mVCTIndirectDiffuseStrength, 0.0f, 1.0f);
+			ImGui::SliderFloat("VCT Specular Strength", &mVCTIndirectSpecularStrength, 0.0f, 1.0f);
+			ImGui::SliderFloat("VCT Max Cone Trace Dist", &mVCTMaxConeTraceDistance, 0.0f, 2500.0f);
+			ImGui::SliderFloat("VCT AO Falloff", &mVCTAoFalloff, 0.0f, 2.0f);
+			ImGui::SliderFloat("VCT Sampling Factor", &mVCTSamplingFactor, 0.01f, 3.0f);
+			ImGui::SliderFloat("VCT Sample Offset", &mVCTVoxelSampleOffset, -0.1f, 0.1f);
+			for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
+			{
+				std::string name = "VCT Voxel Scale Cascade " + std::to_string(cascade);
+				ImGui::SliderFloat(name.c_str(), &mWorldVoxelScales[cascade], 0.1f, 10.0f);
+			}
+			ImGui::Separator();
+			ImGui::Checkbox("DEBUG - Ambient Occlusion", &mDrawAmbientOcclusionOnly);
+			ImGui::Checkbox("DEBUG - Voxel Texture", &mDrawVoxelization);
+			ImGui::Checkbox("DEBUG - Voxel Cascades Gizmos (Editor)", &mDrawVoxelZonesGizmos);
 		}
-		ImGui::Separator();
-		ImGui::Checkbox("DEBUG - Ambient Occlusion", &mDrawAmbientOcclusionOnly);
-		ImGui::Checkbox("DEBUG - Voxel Texture", &mDrawVoxelization);
-		ImGui::Checkbox("DEBUG - Voxel Cascades Gizmos (Editor)", &mDrawVoxelZonesGizmos);
-
+		if (ImGui::CollapsingHeader("Local Illumination"))
+		{
+			ImGui::SliderFloat("Directional Light Intensity", &mDirectionalLightIntensity, 0.0f, 50.0f);
+			ImGui::Separator();
+		}
 		ImGui::End();
 	}
 

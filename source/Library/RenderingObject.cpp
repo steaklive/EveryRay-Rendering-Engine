@@ -322,7 +322,7 @@ namespace Rendering
 				LoadTexture(type, Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), meshIndex);
 				break;
 			case TextureType::TextureTypeNormalMap:
-				LoadTexture(type, Utility::GetFilePath(L"content\\textures\\emptyNormalMap.png"), meshIndex);
+				LoadTexture(type, Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"), meshIndex);
 				break;
 			case TextureType::TextureTypeEmissive:
 				LoadTexture(type, Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), meshIndex);
