@@ -147,7 +147,7 @@ float CalculateShadow(float3 ShadowCoord, int index)
     float d3 = Dilation * ShadowTexelSize.x * 0.625;
     float d4 = Dilation * ShadowTexelSize.x * 0.375;
     float result = (
-        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy, ShadowCoord.z) +
+        2.0 * CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy, ShadowCoord.z) +
         CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d2, d1), ShadowCoord.z) +
         CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d1, -d2), ShadowCoord.z) +
         CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d2, -d1), ShadowCoord.z) +
@@ -156,7 +156,7 @@ float CalculateShadow(float3 ShadowCoord, int index)
         CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d3, -d4), ShadowCoord.z) +
         CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d4, -d3), ShadowCoord.z) +
         CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d3, d4), ShadowCoord.z)
-        ) / 9.0;
+        ) / 10.0;
 
     return result;
 }
@@ -170,7 +170,6 @@ float GetShadow(float3 ShadowCoord0, float3 ShadowCoord1, float3 ShadowCoord2, f
         return CalculateShadow(ShadowCoord2, 2);
     else
         return 1.0f;
-    
 }
 
 // Apply fresnel to modulate the specular albedo

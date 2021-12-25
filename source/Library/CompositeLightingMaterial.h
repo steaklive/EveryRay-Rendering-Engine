@@ -11,8 +11,8 @@ namespace Rendering
 	{
 		RTTI_DECLARATIONS(PostProcessingMaterial, CompositeLightingMaterial)
 
-		MATERIAL_VARIABLE_DECLARATION(InputDirectTexture)
-		MATERIAL_VARIABLE_DECLARATION(InputIndirectTexture)
+		MATERIAL_VARIABLE_DECLARATION(InputLocalIlluminationTexture)
+		MATERIAL_VARIABLE_DECLARATION(InputGlobalIlluminationTexture)
 		MATERIAL_VARIABLE_DECLARATION(DebugVoxel)
 		MATERIAL_VARIABLE_DECLARATION(DebugAO)
 

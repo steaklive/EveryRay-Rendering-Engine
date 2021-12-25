@@ -46,7 +46,7 @@ namespace Library
         GBuffer* mGBuffer = nullptr;
         FoliageSystem* mFoliageSystem = nullptr;
         VolumetricClouds* mVolumetricClouds = nullptr;
-        Illumination* mGI = nullptr;
+        Illumination* mIllumination = nullptr;
 
         Rendering::PostProcessingStack* mPostProcessingStack = nullptr;
     private:

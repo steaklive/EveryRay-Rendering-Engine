@@ -49,6 +49,15 @@ namespace Library
 		{
 			bool Upsample;
 		};
+		struct DeferredLightingCB
+		{
+			XMMATRIX ShadowMatrices[NUM_SHADOW_CASCADES];
+			XMFLOAT4 ShadowCascadeDistances;
+			XMFLOAT4 ShadowTexelSize;
+			XMFLOAT4 SunDirection;
+			XMFLOAT4 SunColor;
+			XMFLOAT4 CameraPosition;
+		};
 	}
 
 	class Illumination : public GameComponent
@@ -70,12 +79,13 @@ namespace Library
 		bool GetDebugVoxels() { return mDrawVoxelization; }
 		bool GetDebugAO() { return mDrawAmbientOcclusionOnly; }
 
-		ID3D11ShaderResourceView* GetGISRV() {
+		ID3D11ShaderResourceView* GetGlobaIlluminationSRV() {
 			if (mDrawVoxelization)
 				return mVCTVoxelizationDebugRT->getSRV();
 			else
 				return mVCTUpsampleAndBlurRT->getSRV();
 		}
+		ID3D11ShaderResourceView* GetLocalIlluminationSRV() { return mDeferredLightingOutputRT->getSRV(); }
 
 		ID3D11ShaderResourceView* GetIBLIrradianceDiffuseSRV() { return mIrradianceDiffuseTextureSRV; }
 		ID3D11ShaderResourceView* GetIBLIrradianceSpecularSRV() { return mIrradianceSpecularTextureSRV; }
@@ -83,9 +93,15 @@ namespace Library
 
 		float GetDirectionalLightIntensity() { return mDirectionalLightIntensity; }
 	private:
+		void DrawLocalIllumination(GBuffer* gbuffer);
+		void DrawGlobalIllumination(GBuffer* gbuffer, const GameTime& gameTime);
+		
+		void DrawDeferredLighting(GBuffer* gbuffer);
+
 		void UpdateVoxelizationGIMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int voxelCascadeIndex);
 		void UpdateImGui();
 		void UpdateVoxelCameraPosition();
+
 		void CullObjectsAgainstVoxelCascades(const Scene* scene);
 
 		Camera& mCamera;
@@ -100,11 +116,15 @@ namespace Library
 		ConstantBuffer<IlluminationCBufferData::VoxelizationDebugCB> mVoxelizationDebugConstantBuffer;
 		ConstantBuffer<IlluminationCBufferData::VoxelConeTracingCB> mVoxelConeTracingConstantBuffer;
 		ConstantBuffer<IlluminationCBufferData::UpsampleBlurCB> mUpsampleBlurConstantBuffer;
+		ConstantBuffer<IlluminationCBufferData::DeferredLightingCB> mDeferredLightingConstantBuffer;
 
 		std::vector<CustomRenderTarget*> mVCTVoxelCascades3DRTs;
 		CustomRenderTarget* mVCTVoxelizationDebugRT = nullptr;
 		CustomRenderTarget* mVCTMainRT = nullptr;
 		CustomRenderTarget* mVCTUpsampleAndBlurRT = nullptr;
+
+		CustomRenderTarget* mDeferredLightingOutputRT = nullptr;
+		GBuffer* mGbuffer = nullptr;
 
 		DepthTarget* mDepthBuffer = nullptr;
 
@@ -113,11 +133,13 @@ namespace Library
 		ID3D11PixelShader* mVCTVoxelizationDebugPS = nullptr;
 		ID3D11ComputeShader* mVCTMainCS = nullptr;
 		ID3D11ComputeShader* mUpsampleBlurCS = nullptr;
+		ID3D11ComputeShader* mDeferredLightingCS = nullptr;
 
 		ID3D11ShaderResourceView* mShadowMapSRV = nullptr;
 
 		ID3D11DepthStencilState* mDepthStencilStateRW = nullptr;
 		ID3D11SamplerState* mLinearSamplerState = nullptr;
+		ID3D11SamplerState* mShadowSamplerState = nullptr;
 
 		float mWorldVoxelScales[NUM_VOXEL_GI_CASCADES] = { 2.0f, 0.5f };
 		XMFLOAT4 mVoxelCameraPositions[NUM_VOXEL_GI_CASCADES];

@@ -1,6 +1,6 @@
-Texture2D ColorTexture;
-Texture2D InputDirectTexture;
-Texture2D InputIndirectTexture;
+Texture2D ColorTexture;//empty
+Texture2D InputLocalIlluminationTexture;
+Texture2D InputGlobalIlluminationTexture;
 
 cbuffer ConstantBuffer
 {
@@ -45,8 +45,8 @@ VS_OUTPUT vertex_shader(VS_INPUT IN)
 
 float4 composite_pixel_shader(VS_OUTPUT IN) : SV_Target
 {
-    float4 directLighting = InputDirectTexture.Sample(TrilinearSampler, IN.TextureCoordinate);
-    float4 indirectLighting = InputIndirectTexture.Sample(TrilinearSampler, IN.TextureCoordinate);
+    float4 directLighting = InputLocalIlluminationTexture.Sample(TrilinearSampler, IN.TextureCoordinate);
+    float4 indirectLighting = InputGlobalIlluminationTexture.Sample(TrilinearSampler, IN.TextureCoordinate);
     float ao = 1.0f - indirectLighting.a;
 
     if (DebugAO)
@@ -61,7 +61,7 @@ float4 composite_pixel_shader(VS_OUTPUT IN) : SV_Target
 
 float4 no_filter_pixel_shader(VS_OUTPUT IN) : SV_Target
 {
-    return InputDirectTexture.Sample(TrilinearSampler, IN.TextureCoordinate);
+    return InputLocalIlluminationTexture.Sample(TrilinearSampler, IN.TextureCoordinate);
 
 }
 

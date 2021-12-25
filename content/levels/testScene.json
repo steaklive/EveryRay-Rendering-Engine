@@ -20,6 +20,7 @@
 	"rendering_objects" : 
 	[
 		{
+			"foliageMask" : true,
 			"instanced" : true,
 			"instances_transforms" : 
 			[
@@ -79,11 +80,6 @@
 					"technique" : "deferred_instanced"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingMaterial",
-					"technique" : "standard_lighting_pbr_instancing"
-				},
-				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI_instancing"
@@ -138,11 +134,6 @@
 					"technique" : "deferred"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingMaterial",
-					"technique" : "standard_lighting_pbr"
-				},
-				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
@@ -185,11 +176,6 @@
 					"technique" : "deferred"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingMaterial",
-					"technique" : "standard_lighting_pbr"
-				},
-				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
@@ -230,11 +216,6 @@
 					"effect" : "content\\effects\\DeferredPrepass.fx",
 					"name" : "DeferredMaterial",
 					"technique" : "deferred"
-				},
-				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingMaterial",
-					"technique" : "standard_lighting_pbr"
 				},
 				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
@@ -294,11 +275,6 @@
 					"technique" : "deferred"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingMaterial",
-					"technique" : "standard_lighting_pbr"
-				},
-				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
@@ -354,11 +330,6 @@
 					"effect" : "content\\effects\\DeferredPrepass.fx",
 					"name" : "DeferredMaterial",
 					"technique" : "deferred"
-				},
-				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingMaterial",
-					"technique" : "standard_lighting_pbr"
 				},
 				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
@@ -418,11 +389,6 @@
 					"technique" : "deferred"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingMaterial",
-					"technique" : "standard_lighting_pbr"
-				},
-				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
@@ -472,6 +438,7 @@
 			]
 		},
 		{
+			"foliageMask" : true,
 			"instanced" : true,
 			"instances_transforms" : 
 			[
@@ -508,11 +475,6 @@
 					"effect" : "content\\effects\\DeferredPrepass.fx",
 					"name" : "DeferredMaterial",
 					"technique" : "deferred"
-				},
-				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingMaterial",
-					"technique" : "standard_lighting_pbr"
 				},
 				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
@@ -602,11 +564,6 @@
 					"technique" : "deferred"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingMaterial",
-					"technique" : "standard_lighting_pbr"
-				},
-				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
@@ -647,11 +604,6 @@
 					"effect" : "content\\effects\\DeferredPrepass.fx",
 					"name" : "DeferredMaterial",
 					"technique" : "deferred"
-				},
-				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingMaterial",
-					"technique" : "standard_lighting_pbr"
 				},
 				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",

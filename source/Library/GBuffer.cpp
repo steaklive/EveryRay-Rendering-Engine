@@ -26,12 +26,12 @@ namespace Library {
 
 	void GBuffer::Initialize()
 	{
-		mAlbedoBuffer = new CustomRenderTarget(mGame->Direct3DDevice(), mWidth, mHeight, 4, DXGI_FORMAT_R32G32B32A32_FLOAT);
-		mNormalBuffer = new CustomRenderTarget(mGame->Direct3DDevice(), mWidth, mHeight, 4, DXGI_FORMAT_R16G16B16A16_FLOAT);
-		mPositionsBuffer = new CustomRenderTarget(mGame->Direct3DDevice(), mWidth, mHeight, 4, DXGI_FORMAT_R16G16B16A16_FLOAT);
-		mExtraBuffer = new CustomRenderTarget(mGame->Direct3DDevice(), mWidth, mHeight, 4, DXGI_FORMAT_R16G16B16A16_FLOAT);
+		mAlbedoBuffer = new CustomRenderTarget(mGame->Direct3DDevice(), mWidth, mHeight, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+		mNormalBuffer = new CustomRenderTarget(mGame->Direct3DDevice(), mWidth, mHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
+		mPositionsBuffer = new CustomRenderTarget(mGame->Direct3DDevice(), mWidth, mHeight, 1, DXGI_FORMAT_R32G32B32A32_FLOAT);
+		mExtraBuffer = new CustomRenderTarget(mGame->Direct3DDevice(), mWidth, mHeight, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
 		
-		mDepthBuffer = DepthTarget::Create(mGame->Direct3DDevice(), mGame->ScreenWidth(), mGame->ScreenHeight(), mGame->GetMultisampleCount(), DXGI_FORMAT_D24_UNORM_S8_UINT);
+		mDepthBuffer = DepthTarget::Create(mGame->Direct3DDevice(), mWidth, mHeight, 1, DXGI_FORMAT_D24_UNORM_S8_UINT);
 
 		D3D11_RASTERIZER_DESC rasterizerStateDesc;
 		ZeroMemory(&rasterizerStateDesc, sizeof(rasterizerStateDesc));

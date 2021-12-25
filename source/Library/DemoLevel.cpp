@@ -15,7 +15,7 @@ namespace Library {
         DeleteObject(mShadowMapper);
         DeleteObject(mFoliageSystem);
         DeleteObject(mVolumetricClouds);
-        DeleteObject(mGI);
+        DeleteObject(mIllumination);
         DeleteObject(mScene);
 	}
 
@@ -29,7 +29,7 @@ namespace Library {
 		mGrid->Update(gameTime);
 		mPostProcessingStack->Update();
 		mVolumetricClouds->Update(gameTime);
-		mGI->Update(gameTime, mScene);
+		mIllumination->Update(gameTime, mScene);
 		mShadowMapper->Update(gameTime);
 
 		mScene->GetCamera().Cull(mScene->objects);
@@ -50,7 +50,7 @@ namespace Library {
 			mVolumetricClouds->Config();
 
         if (ImGui::Button("Global Illumination"))
-			mGI->Config();
+			mIllumination->Config();
 
         ImGui::End();
     }
@@ -103,10 +103,10 @@ namespace Library {
 
         mVolumetricClouds = new VolumetricClouds(game, camera, *mDirectionalLight, *mPostProcessingStack, *mSkybox);
 
-        mGI = new Illumination(game, camera, *mDirectionalLight, *mShadowMapper, mScene);
+        mIllumination = new Illumination(game, camera, *mDirectionalLight, *mShadowMapper, mScene);
 
         mFoliageSystem = new FoliageSystem();
-        mFoliageSystem->FoliageSystemInitializedEvent->AddListener("foliage initialized for GI",  [&]() { mGI->SetFoliageSystem(mFoliageSystem); });
+        mFoliageSystem->FoliageSystemInitializedEvent->AddListener("foliage initialized for GI",  [&]() { mIllumination->SetFoliageSystem(mFoliageSystem); });
     }
 
 }

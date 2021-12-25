@@ -30,23 +30,19 @@ namespace Rendering
 		struct CompositeLightingEffect
 		{
 			CompositeLightingEffect() :
-				Material(nullptr), Quad(nullptr),
-				InputDirectLightingTexture(nullptr),
-				InputIndirectLightingTexture(nullptr)
+				Material(nullptr), Quad(nullptr)
 			{}
 
 			~CompositeLightingEffect()
 			{
 				DeleteObject(Material);
 				DeleteObject(Quad);
-				ReleaseObject(InputDirectLightingTexture);
-				ReleaseObject(InputIndirectLightingTexture);
 			}
 
 			CompositeLightingMaterial* Material;
 			FullScreenQuad* Quad;
-			ID3D11ShaderResourceView* InputDirectLightingTexture;
-			ID3D11ShaderResourceView* InputIndirectLightingTexture;
+			//ID3D11ShaderResourceView* InputDirectLightingTexture;
+			//ID3D11ShaderResourceView* InputIndirectLightingTexture;
 
 			bool isActive = false;
 			bool debugGI = false;
@@ -316,7 +312,7 @@ namespace Rendering
 		void UpdateSSRMaterial(ID3D11ShaderResourceView* normal, ID3D11ShaderResourceView* depth, ID3D11ShaderResourceView* extra, float time);
 		void UpdateFogMaterial();
 		void UpdateLightShaftsMaterial();
-		void UpdateCompositeLightingMaterial(ID3D11ShaderResourceView* indirectLightingSRV, bool debugVoxel, bool debugAO);
+		void UpdateCompositeLightingMaterial(ID3D11ShaderResourceView* localIlluminationSRV, ID3D11ShaderResourceView* globalIlluminationSRV, bool debugVoxel, bool debugAO);
 
 		void Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR = true, bool pFog = false, bool pLightShafts = false);
 		void Begin(bool clear = true);

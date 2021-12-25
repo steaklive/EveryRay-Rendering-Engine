@@ -892,6 +892,9 @@
     <FxCompile Include="..\..\content\shaders\Terrain\PlaceObjectsOnTerrain.hlsl">
       <Filter>Shaders\Terrain</Filter>
     </FxCompile>
+    <FxCompile Include="..\..\content\shaders\DeferredLighting.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\content\effects\ShaderHelper.hlsli">

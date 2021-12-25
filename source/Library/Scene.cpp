@@ -79,7 +79,7 @@ namespace Library
 				std::string name = root["rendering_objects"][i]["name"].asString();
 				std::string modelPath = root["rendering_objects"][i]["model_path"].asString();
 				bool isInstanced = root["rendering_objects"][i]["instanced"].asBool();
-
+				bool isFoliageMask = root["rendering_objects"][i]["foliageMask"].asBool();
 
 				objects.insert(
 					std::pair<std::string, Rendering::RenderingObject*>(
@@ -89,6 +89,7 @@ namespace Library
 				);
 
 				auto it = objects.find(name);
+				it->second->SetFoliageMask(isFoliageMask);
 
 				if (root["rendering_objects"][i].isMember("placed_on_terrain")) {
 					it->second->SetPlacedOnTerrain(root["rendering_objects"][i]["placed_on_terrain"].asBool());

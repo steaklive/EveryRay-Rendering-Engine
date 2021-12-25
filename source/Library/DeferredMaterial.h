@@ -12,15 +12,18 @@ namespace Library
 		MATERIAL_VARIABLE_DECLARATION(ViewProjection)
 		MATERIAL_VARIABLE_DECLARATION(World)
 		MATERIAL_VARIABLE_DECLARATION(AlbedoMap)
+		MATERIAL_VARIABLE_DECLARATION(NormalMap)
 		MATERIAL_VARIABLE_DECLARATION(RoughnessMap)
+		MATERIAL_VARIABLE_DECLARATION(MetallicMap)
 		MATERIAL_VARIABLE_DECLARATION(ReflectionMaskFactor)
+		MATERIAL_VARIABLE_DECLARATION(FoliageMaskFactor)
 
 	public:
 		DeferredMaterial();
 
 		virtual void Initialize(Effect* effect) override;
 		virtual void CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const override;
-		void CreateVertexBuffer(ID3D11Device* device, VertexPositionTextureNormal* vertices, UINT vertexCount, ID3D11Buffer** vertexBuffer) const;
+		void CreateVertexBuffer(ID3D11Device* device, VertexPositionTextureNormalTangent* vertices, UINT vertexCount, ID3D11Buffer** vertexBuffer) const;
 		virtual UINT VertexSize() const override;
 	};
 }

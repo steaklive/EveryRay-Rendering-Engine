@@ -46,8 +46,11 @@ namespace Library {
 		ReleaseObject(mVCTVoxelizationDebugVS);
 		ReleaseObject(mVCTVoxelizationDebugGS);
 		ReleaseObject(mVCTVoxelizationDebugPS);
+		ReleaseObject(mDeferredLightingCS);
+
 		ReleaseObject(mDepthStencilStateRW);
 		ReleaseObject(mLinearSamplerState);
+		ReleaseObject(mShadowSamplerState);
 
 		ReleaseObject(mIrradianceDiffuseTextureSRV);
 		ReleaseObject(mIrradianceSpecularTextureSRV);
@@ -59,10 +62,12 @@ namespace Library {
 		DeleteObject(mVCTMainRT);
 		DeleteObject(mVCTUpsampleAndBlurRT);
 		DeleteObject(mDepthBuffer);
+		DeleteObject(mDeferredLightingOutputRT);
 
 		mVoxelizationDebugConstantBuffer.Release();
 		mVoxelConeTracingConstantBuffer.Release();
 		mUpsampleBlurConstantBuffer.Release();
+		mDeferredLightingConstantBuffer.Release();
 	}
 
 	void Illumination::Initialize(const Scene* scene)
@@ -111,6 +116,13 @@ namespace Library {
 			if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mUpsampleBlurCS)))
 				throw GameException("Failed to create shader from UpsampleBlur.hlsl!");
 			blob->Release();
+
+			blob = nullptr;
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\DeferredLighting.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
+				throw GameException("Failed to load CSMain from shader: DeferredLighting.hlsl!");
+			if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mDeferredLightingCS)))
+				throw GameException("Failed to create shader from DeferredLighting.hlsl!");
+			blob->Release();
 		}
 
 		//sampler states
@@ -127,6 +139,16 @@ namespace Library {
 			if (FAILED(mGame->Direct3DDevice()->CreateSamplerState(&sam_desc, &mLinearSamplerState)))
 				throw GameException("Failed to create sampler mLinearSamplerState!");
 
+			sam_desc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+			sam_desc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+			sam_desc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+			sam_desc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+			float white[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+			memcpy(sam_desc.BorderColor, reinterpret_cast<FLOAT*>(&white), sizeof(FLOAT) * 4);
+			sam_desc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
+			if (FAILED(mGame->Direct3DDevice()->CreateSamplerState(&sam_desc, &mShadowSamplerState)))
+				throw GameException("Failed to create sampler mShadowSamplerState!");
+
 			CD3D11_DEPTH_STENCIL_DESC dsDesc((CD3D11_DEFAULT()));
 			dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 			mGame->Direct3DDevice()->CreateDepthStencilState(&dsDesc, &mDepthStencilStateRW);
@@ -137,6 +159,7 @@ namespace Library {
 			mVoxelizationDebugConstantBuffer.Initialize(mGame->Direct3DDevice());
 			mVoxelConeTracingConstantBuffer.Initialize(mGame->Direct3DDevice());
 			mUpsampleBlurConstantBuffer.Initialize(mGame->Direct3DDevice());
+			mDeferredLightingConstantBuffer.Initialize(mGame->Direct3DDevice());
 		}
 
 		//RTs and gizmos
@@ -164,12 +187,14 @@ namespace Library {
 			mVCTVoxelizationDebugRT = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u,
 				DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 			mDepthBuffer = DepthTarget::Create(mGame->Direct3DDevice(), mGame->ScreenWidth(), mGame->ScreenHeight(), 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
+			mDeferredLightingOutputRT = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u,
+				DXGI_FORMAT_R10G10B10A2_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
 		}
 		
 		//IBL
 		{
 			if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), 
-				Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\milkmill_diffuse_cube_map.dds").c_str(), nullptr, &mIrradianceDiffuseTextureSRV)))
+				Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureDiffuseHDR.dds").c_str(), nullptr, &mIrradianceDiffuseTextureSRV)))
 				throw GameException("Failed to create Diffuse Irradiance Map.");
 
 			mIBLRadianceMap.reset(new IBLRadianceMap(*mGame, Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureEnvHDR.dds")));
@@ -183,7 +208,7 @@ namespace Library {
 			mIBLRadianceMap.reset(nullptr);
 
 			if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(),
-				Utility::GetFilePath(L"content\\textures\\PBR\\Skyboxes\\milkmill_cube_map.dds").c_str(), nullptr, &mIrradianceSpecularTextureSRV)))
+				Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureSpecularHDR.dds").c_str(), nullptr, &mIrradianceSpecularTextureSRV)))
 				throw GameException("Failed to create Specular Irradiance Map.");
 
 			// Load a pre-computed Integration Map
@@ -194,7 +219,15 @@ namespace Library {
 		}
 	}
 
-	void Illumination::Draw(const GameTime& gameTime, GBuffer* gbuffer)
+	//deferred rendering approach
+	void Illumination::DrawLocalIllumination(GBuffer* gbuffer)
+	{
+		DrawDeferredLighting(gbuffer);
+	}
+
+	//voxel GI based on "Interactive Indirect Illumination Using Voxel Cone Tracing" by C.Crassin et al.
+	//https://research.nvidia.com/sites/default/files/pubs/2011-09_Interactive-Indirect-Illumination/GIVoxels-pg2011-authors.pdf
+	void Illumination::DrawGlobalIllumination(GBuffer* gbuffer, const GameTime& gameTime)
 	{
 		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
@@ -299,7 +332,7 @@ namespace Library {
 				context->RSSetState(oldRS);
 				context->OMSetRenderTargets(1, nullRTVs, NULL);
 			}
-		} 
+		}
 		else
 		{
 			context->OMSetRenderTargets(1, nullRTVs, NULL);
@@ -318,7 +351,7 @@ namespace Library {
 			mVoxelConeTracingConstantBuffer.Data.SamplingFactor = mVCTSamplingFactor;
 			mVoxelConeTracingConstantBuffer.Data.VoxelSampleOffset = mVCTVoxelSampleOffset;
 			mVoxelConeTracingConstantBuffer.Data.GIPower = mVCTGIPower;
-			mVoxelConeTracingConstantBuffer.Data.pad0 = XMFLOAT3(0,0,0);
+			mVoxelConeTracingConstantBuffer.Data.pad0 = XMFLOAT3(0, 0, 0);
 			mVoxelConeTracingConstantBuffer.ApplyChanges(context);
 
 			ID3D11UnorderedAccessView* UAV[1] = { mVCTMainRT->getUAV() };
@@ -378,6 +411,12 @@ namespace Library {
 			ID3D11SamplerState* nullSSs[] = { NULL };
 			context->CSSetSamplers(0, 1, nullSSs);
 		}
+	}
+
+	void Illumination::Draw(const GameTime& gameTime, GBuffer* gbuffer)
+	{
+		DrawGlobalIllumination(gbuffer, gameTime);
+		DrawLocalIllumination(gbuffer);
 	}
 
 	void Illumination::DrawDebugGizmos()
@@ -477,6 +516,56 @@ namespace Library {
 			mDebugVoxelZonesGizmos[i]->SetPosition(XMFLOAT3(mVoxelCameraPositions[i].x, mVoxelCameraPositions[i].y, mVoxelCameraPositions[i].z));
 			mDebugVoxelZonesGizmos[i]->Update();
 		}
+	}
+
+	void Illumination::DrawDeferredLighting(GBuffer* gbuffer)
+	{
+		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+		context->ClearUnorderedAccessViewFloat(mDeferredLightingOutputRT->getUAV(), clearColorBlack);
+
+		for (size_t i = 0; i < NUM_SHADOW_CASCADES; i++)
+			mDeferredLightingConstantBuffer.Data.ShadowMatrices[i] = mShadowMapper.GetViewMatrix(i) * mShadowMapper.GetProjectionMatrix(i) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix());;
+		mDeferredLightingConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
+		mDeferredLightingConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / mShadowMapper.GetResolution(), 1.0f, 1.0f , 1.0f };
+		mDeferredLightingConstantBuffer.Data.SunDirection = XMFLOAT4{ -mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f };
+		mDeferredLightingConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLightIntensity };
+		mDeferredLightingConstantBuffer.Data.CameraPosition = XMFLOAT4{ mCamera.Position().x,mCamera.Position().y,mCamera.Position().z, 1.0f };
+		mDeferredLightingConstantBuffer.ApplyChanges(context);
+
+		ID3D11UnorderedAccessView* UAV[1] = { mDeferredLightingOutputRT->getUAV() };
+		ID3D11Buffer* CBs[1] = { mDeferredLightingConstantBuffer.Buffer() };
+
+		ID3D11ShaderResourceView* SRs[10] = {
+			gbuffer->GetAlbedo()->getSRV(),
+			gbuffer->GetNormals()->getSRV(),
+			gbuffer->GetPositions()->getSRV(),
+			gbuffer->GetExtraBuffer()->getSRV(),
+			mIrradianceDiffuseTextureSRV,
+			mIrradianceSpecularTextureSRV,
+			mIntegrationMapTextureSRV
+		};
+		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
+			SRs[7 + i] = mShadowMapper.GetShadowTexture(i);
+		
+		ID3D11SamplerState* SS[2] = { mLinearSamplerState, mShadowSamplerState };
+
+		context->CSSetShaderResources(0, 10, SRs);
+		context->CSSetConstantBuffers(0, 1, CBs);
+		context->CSSetSamplers(0, 2, SS);
+		context->CSSetShader(mDeferredLightingCS, NULL, NULL);
+		context->CSSetUnorderedAccessViews(0, 1, UAV, NULL);
+		context->Dispatch(DivideByMultiple(static_cast<UINT>(mDeferredLightingOutputRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mDeferredLightingOutputRT->GetHeight()), 8u), 1u);
+
+		ID3D11ShaderResourceView* nullSRV[] = { NULL };
+		context->CSSetShaderResources(0, 1, nullSRV);
+		ID3D11UnorderedAccessView* nullUAV[] = { NULL };
+		context->CSSetUnorderedAccessViews(0, 1, nullUAV, 0);
+		ID3D11Buffer* nullCBs[] = { NULL };
+		context->CSSetConstantBuffers(0, 1, nullCBs);
+		ID3D11SamplerState* nullSSs[] = { NULL };
+		context->CSSetSamplers(0, 1, nullSSs);
 	}
 
 	void Illumination::CullObjectsAgainstVoxelCascades(const Scene* scene)

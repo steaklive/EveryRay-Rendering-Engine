@@ -247,7 +247,7 @@ PS_OUTPUT_GBUFFER pixel_shader_gbuffer(VS_OUTPUT IN) : SV_Target
     OUT.Color = albedoTexture.Sample(ColorSampler, IN.TextureCoordinates);
     OUT.Normal = float4(IN.Normal, 1.0f);
     OUT.WorldPos = float4(IN.WorldPos, 1.0f);
-    OUT.Extra = float4(0.0, 0.0, 0.0, 0.0);
+    OUT.Extra = float4(0.0, 0.0, 0.0, 1.0f);
     return OUT;
 
 }

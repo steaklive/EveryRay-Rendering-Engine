@@ -215,6 +215,9 @@ namespace Rendering
 		float GetMinScale() { return mMinScale; }
 		float GetMaxScale() { return mMaxScale; }
 
+		void SetFoliageMask(bool value) { mFoliageMask = value; }
+		bool GetFoliageMask() { return mFoliageMask; }
+
 		GeneralEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new GeneralEvent<Delegate_MeshMaterialVariablesUpdate>();
 	
 		std::vector<std::string>								mCustomAlbedoTextures;
@@ -267,7 +270,7 @@ namespace Rendering
 		bool													mIsCulled = false;
 		float													mMinScale = 1.0f;
 		float													mMaxScale = 1.0f;
-
+		bool													mFoliageMask = false;
 		float													mCameraViewMatrix[16];
 		float													mCameraProjectionMatrix[16];
 		float													mCurrentObjectTransformMatrix[16] = 

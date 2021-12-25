@@ -512,11 +512,10 @@ namespace Rendering {
 
 	}
 
-	void PostProcessingStack::UpdateCompositeLightingMaterial(ID3D11ShaderResourceView* indirectLightingSRV, bool debugVoxel, bool debugAO)
+	void PostProcessingStack::UpdateCompositeLightingMaterial(ID3D11ShaderResourceView* localIlluminationSRV, ID3D11ShaderResourceView* globalIlluminationSRV, bool debugVoxel, bool debugAO)
 	{
-		mCompositeLightingEffect->Material->ColorTexture() << mCompositeLightingEffect->InputDirectLightingTexture;
-		mCompositeLightingEffect->Material->InputDirectTexture() << mCompositeLightingEffect->InputDirectLightingTexture;
-		mCompositeLightingEffect->Material->InputIndirectTexture() << indirectLightingSRV;
+		mCompositeLightingEffect->Material->InputLocalIlluminationTexture() << localIlluminationSRV;
+		mCompositeLightingEffect->Material->InputGlobalIlluminationTexture() << globalIlluminationSRV;
 		mCompositeLightingEffect->Material->DebugVoxel() << debugVoxel;
 		mCompositeLightingEffect->Material->DebugAO() << debugAO;
 	}
@@ -750,8 +749,7 @@ namespace Rendering {
 
 		// COMPOSITE LIGHTING
 		mCompositeLightingRenderTarget->Begin();
-		mCompositeLightingEffect->InputDirectLightingTexture = mMainRenderTarget->OutputColorTexture();
-		//mCompositeLightingEffect->InputIndirectLightingTexture = mMainRenderTarget->OutputColorTexture();
+		//mCompositeLightingEffect->InputDirectLightingTexture = mMainRenderTarget->OutputColorTexture();
 		game.Direct3DDeviceContext()->ClearRenderTargetView(mCompositeLightingRenderTarget->RenderTargetView(), ClearBackgroundColor);
 		game.Direct3DDeviceContext()->ClearDepthStencilView(mCompositeLightingRenderTarget->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
 		mCompositeLightingEffect->Quad->Draw(gameTime);
