@@ -152,6 +152,9 @@ namespace Library
 								it->second->GetMaterials()[std::get<2>(materialData)]->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][mat]["technique"].asString())
 							);
 						}
+
+						if (std::get<2>(materialData) == MaterialHelper::forwardLightingMaterialName)
+							it->second->SetForwardShading(true);
 					}
 					it->second->LoadRenderBuffers();
 				}
@@ -353,7 +356,7 @@ namespace Library
 			material = new DeferredMaterial();
 		}
 		else if (matName == "StandardLightingMaterial") {
-			materialName = MaterialHelper::lightingMaterialName;
+			materialName = MaterialHelper::forwardLightingMaterialName;
 			material = new Rendering::StandardLightingMaterial();
 		}
 		else if (matName == "ParallaxMappingTestMaterial") {

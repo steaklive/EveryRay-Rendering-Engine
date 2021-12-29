@@ -28,7 +28,7 @@ cbuffer DeferredLightingCBuffer : register(b0)
 
 float CalculateShadow(float3 worldPos, float4x4 svp, int index)
 {
-    float4 lightSpacePos = mul(float4(worldPos, 1.0f), svp);
+    float4 lightSpacePos = mul(svp, float4(worldPos, 1.0f));
     float4 ShadowCoord = lightSpacePos / lightSpacePos.w;
     ShadowCoord.rg = ShadowCoord.rg * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
     
@@ -49,7 +49,7 @@ float CalculateShadow(float3 worldPos, float4x4 svp, int index)
         CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d3, d4), ShadowCoord.z)
         ) / 10.0;
 
-    return result;
+    return result * result;
 }
 float GetShadow(float4 worldPos)
 {
@@ -79,7 +79,7 @@ float DistributionGGX(float3 N, float3 H, float roughness)
     float denom = (NdotH2 * (a2 - 1.0) + 1.0);
     denom = Pi * denom * denom;
 
-    return nom / max(denom, 0.001); // prevent divide by zero for roughness=0.0 and NdotH=1.0
+    return nom / max(denom, 0.001);
 }
 
 float GeometrySchlickGGX(float NdotV, float roughness)
@@ -92,7 +92,7 @@ float GeometrySchlickGGX(float NdotV, float roughness)
 
     return nom / denom;
 }
-// ----------------------------------------------------------------------------
+
 float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
 {
     float NdotV = max(dot(N, V), 0.0);
@@ -110,7 +110,7 @@ float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
 // ================================================================================================
 float3 Schlick_Fresnel(float3 f0, float cosTheta)
 {
-    return f0 + (1.0f - f0) * pow((1.0f - cosTheta), 5.0f);
+    return f0 + (float3(1.0f - f0.r, 1.0f - f0.g, 1.0f - f0.b)) * pow((1.0f - cosTheta), 5.0f);
 }
 float3 Schlick_Fresnel_UE(float3 baseReflectivity, float cosTheta)
 {
@@ -123,28 +123,19 @@ float3 Schlick_Fresnel_Roughness(float cosTheta, float3 F0, float roughness)
 }
 
 // ================================================================================================
-float3 DirectDiffuseBRDF(float3 diffuseAlbedo, float3 lightDir, float3 viewDir, float3 F0, float metallic)
+float3 DirectDiffuseBRDF(float3 diffuseAlbedo, float3 lightDir, float3 viewDir, float3 F0, float metallic, float3 halfVec)
 {
-    float3 halfVec = normalize(viewDir + lightDir);
-   
     float3 F = Schlick_Fresnel(F0, max(dot(halfVec, viewDir), 0.0));
-    // for energy conservation, the diffuse and specular light can't
-    // be above 1.0 (unless the surface emits light); to preserve this
-    // relationship the diffuse component (kD) should equal 1.0 - kS.
     float3 kD = float3(1.0f, 1.0f, 1.0f) - F;
-    // multiply kD by the inverse metalness such that only non-metals 
-    // have diffuse lighting, or a linear blend if partly metal (pure metals
-    // have no diffuse light).
-    kD *= float3(1.0f - metallic, 1.0f - metallic, 1.0f - metallic);
+    kD *= (1.0f - metallic);
     
     return (diffuseAlbedo * kD) / Pi;
 }
 
 // ================================================================================================
 // Cook-Torrence BRDF
-float3 DirectSpecularBRDF(float3 normalWS, float3 lightDir, float3 viewDir, float roughness, float3 F0)
+float3 DirectSpecularBRDF(float3 normalWS, float3 lightDir, float3 viewDir, float roughness, float3 F0, float3 halfVec)
 {
-    float3 halfVec = normalize(viewDir + lightDir);
     // Cook-Torrance BRDF
     float NDF = DistributionGGX(normalWS, halfVec, roughness);
     float G = GeometrySmith(normalWS, viewDir, lightDir, roughness);
@@ -152,7 +143,7 @@ float3 DirectSpecularBRDF(float3 normalWS, float3 lightDir, float3 viewDir, floa
            
     float3 nominator = NDF * G * F;
     float denominator = 4 * max(dot(normalWS, viewDir), 0.0) * max(dot(normalWS, lightDir), 0.0);
-    float3 specular = nominator / max(denominator, 0.001); // prevent divide by zero for NdotV=0.0 or NdotL=0.0
+    float3 specular = nominator / max(denominator, 0.001);
        
     return specular;
 }
@@ -163,9 +154,11 @@ float3 DirectLightingPBR(float3 normalWS, float3 lightColor, float3 diffuseAlbed
 {
     float3 lightDir = SunDirection.xyz;
     float3 viewDir = normalize(CameraPosition.xyz - positionWS).rgb;
+    float3 halfVec = normalize(viewDir + lightDir);
+    
     float nDotL = max(dot(normalWS, lightDir), 0.0);
    
-    float3 lighting = DirectDiffuseBRDF(diffuseAlbedo, lightDir, viewDir, F0, metallic) + DirectSpecularBRDF(normalWS, lightDir, viewDir, roughness, F0);
+    float3 lighting = DirectDiffuseBRDF(diffuseAlbedo, lightDir, viewDir, F0, metallic, halfVec) + DirectSpecularBRDF(normalWS, lightDir, viewDir, roughness, F0, halfVec);
 
     float lightIntensity = SunColor.a;
     return max(lighting, 0.0f) * nDotL * lightColor * lightIntensity;
@@ -234,9 +227,9 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     
     float shadow = GetShadow(worldPos);
     
-    float3 color = (directLighting * shadow) + indirectLighting;
+    float3 color = (directLighting * shadow) /*+ indirectLighting*/;
             
-    // HDR tonemapping
-    color = color / (color + float3(1.0f, 1.0f, 1.0f));
+    //color = color / (color + float3(1.0f, 1.0f, 1.0f));
+    //color = pow(color, float3(1.0f / 2.2f, 1.0f / 2.2f, 1.0f / 2.2f));
     OutputTexture[inPos] = saturate(float4(color, 1.0f));
 }

@@ -18,6 +18,7 @@
 #include "RasterizerStates.h"
 #include "ShaderCompiler.h"
 #include "VoxelizationGIMaterial.h"
+#include "StandardLightingMaterial.h"
 #include "Scene.h"
 #include "GBuffer.h"
 #include "ShadowMapper.h"
@@ -214,15 +215,24 @@ namespace Library {
 				throw GameException("Failed to create Integration Texture.");
 
 		}
+
+		for (auto& obj : scene->objects) {
+			if (obj.second->IsForwardShading())
+			{
+				mForwardPassObjects.insert(obj);
+				obj.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::forwardLightingMaterialName,
+					[&](int meshIndex) { UpdateForwardLightingMaterial(obj.second, meshIndex); });
+			}
+		}
 	}
 
 	//deferred rendering approach
 	void Illumination::DrawLocalIllumination(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget, bool isEditorMode)
 	{
 		DrawDeferredLighting(gbuffer, aRenderTarget);
-		DrawForwardLighting();
+		DrawForwardLighting(gbuffer, aRenderTarget);
 
-		if (isEditorMode)
+		if (isEditorMode) //todo move to a separate debug renderer
 			DrawDebugGizmos();
 	}
 
@@ -485,6 +495,50 @@ namespace Library {
 		}
 	}
 
+	void Illumination::UpdateForwardLightingMaterial(Rendering::RenderingObject* obj, int meshIndex)
+	{
+		XMMATRIX worldMatrix = XMLoadFloat4x4(&(obj->GetTransformationMatrix4X4()));
+		XMMATRIX vp = mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
+
+		XMMATRIX shadowMatrices[3] =
+		{
+			mShadowMapper.GetViewMatrix(0) * mShadowMapper.GetProjectionMatrix(0) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()) ,
+			mShadowMapper.GetViewMatrix(1) * mShadowMapper.GetProjectionMatrix(1) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()) ,
+			mShadowMapper.GetViewMatrix(2) * mShadowMapper.GetProjectionMatrix(2) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix())
+		};
+
+		ID3D11ShaderResourceView* shadowMaps[3] =
+		{
+			mShadowMapper.GetShadowTexture(0),
+			mShadowMapper.GetShadowTexture(1),
+			mShadowMapper.GetShadowTexture(2)
+		};
+
+		auto material = static_cast<Rendering::StandardLightingMaterial*>(obj->GetMaterials()[MaterialHelper::forwardLightingMaterialName]);
+		if (material)
+		{
+			material->ViewProjection() << vp;
+			material->World() << worldMatrix;
+			material->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, NUM_SHADOW_CASCADES);
+			material->CameraPosition() << mCamera.PositionVector();
+			material->SunDirection() << XMVectorNegate(mDirectionalLight.DirectionVector());
+			material->SunColor() << XMVECTOR{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z , mDirectionalLightIntensity };
+			material->AmbientColor() << XMVECTOR{ mDirectionalLight.GetAmbientLightColor().x, mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
+			material->ShadowTexelSize() << XMVECTOR{ 1.0f / mShadowMapper.GetResolution(), 1.0f, 1.0f , 1.0f };
+			material->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
+			material->AlbedoTexture() << obj->GetTextureData(meshIndex).AlbedoMap;
+			material->NormalTexture() << obj->GetTextureData(meshIndex).NormalMap;
+			material->SpecularTexture() << obj->GetTextureData(meshIndex).SpecularMap;
+			material->RoughnessTexture() << obj->GetTextureData(meshIndex).RoughnessMap;
+			material->MetallicTexture() << obj->GetTextureData(meshIndex).MetallicMap;
+			material->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, NUM_SHADOW_CASCADES);
+			material->IrradianceDiffuseTexture() << mIrradianceDiffuseTextureSRV;
+			material->IrradianceSpecularTexture() << mIrradianceSpecularTextureSRV;
+			material->IntegrationTexture() << mIntegrationMapTextureSRV;
+		}
+	}
+
+
 	void Illumination::SetFoliageSystemForGI(FoliageSystem* foliageSystem)
 	{
 		mFoliageSystem = foliageSystem;
@@ -525,7 +579,7 @@ namespace Library {
 			context->ClearUnorderedAccessViewFloat(aRenderTarget->getUAV(), clearColorBlack);
 
 			for (size_t i = 0; i < NUM_SHADOW_CASCADES; i++)
-				mDeferredLightingConstantBuffer.Data.ShadowMatrices[i] = mShadowMapper.GetViewMatrix(i) * mShadowMapper.GetProjectionMatrix(i) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix());;
+				mDeferredLightingConstantBuffer.Data.ShadowMatrices[i] = mShadowMapper.GetViewMatrix(i) * mShadowMapper.GetProjectionMatrix(i) /** XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix())*/;
 			mDeferredLightingConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
 			mDeferredLightingConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / mShadowMapper.GetResolution(), 1.0f, 1.0f , 1.0f };
 			mDeferredLightingConstantBuffer.Data.SunDirection = XMFLOAT4{ -mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f };
@@ -568,10 +622,15 @@ namespace Library {
 		}
 	}
 
-	void Illumination::DrawForwardLighting()
+	void Illumination::DrawForwardLighting(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget)
 	{
-		//TODO
-		//mForwardPassObjects
+		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+		context->OMSetRenderTargets(1, aRenderTarget->getRTVs(), gbuffer->GetDepth()->getDSV());
+
+		for (auto& obj : mForwardPassObjects)
+		{
+			obj.second->Draw(MaterialHelper::forwardLightingMaterialName);
+		}
 	}
 
 	void Illumination::CPUCullObjectsAgainstVoxelCascades(const Scene* scene)

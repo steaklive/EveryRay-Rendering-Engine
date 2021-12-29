@@ -559,9 +559,9 @@
 					"technique" : "create_depthmap_w_render_target"
 				},
 				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"name" : "StandardLightingMaterial",
+					"technique" : "standard_lighting_no_pbr"
 				},
 				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",

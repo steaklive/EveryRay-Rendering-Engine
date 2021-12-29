@@ -94,10 +94,12 @@ namespace Library
 		float GetDirectionalLightIntensity() { return mDirectionalLightIntensity; }
 	private:
 		void DrawDeferredLighting(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget);
-		void DrawForwardLighting();
+		void DrawForwardLighting(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget);
 		void DrawDebugGizmos();
 
 		void UpdateVoxelizationGIMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int voxelCascadeIndex);
+		void UpdateForwardLightingMaterial(Rendering::RenderingObject* obj, int meshIndex);
+	
 		void UpdateImGui();
 		void UpdateVoxelCameraPosition();
 
@@ -160,7 +162,7 @@ namespace Library
 		bool mEnabled = false;
 		bool mShowDebug = false;
 
-		float mDirectionalLightIntensity = 5.0f;
+		float mDirectionalLightIntensity = 8.4f;
 
 		ID3D11ShaderResourceView* mIrradianceDiffuseTextureSRV = nullptr;
 		ID3D11ShaderResourceView* mIrradianceSpecularTextureSRV = nullptr;

@@ -3,7 +3,7 @@
 
 namespace Library
 {
-	const std::string MaterialHelper::lightingMaterialName = "lighting";
+	const std::string MaterialHelper::forwardLightingMaterialName = "lighting";
 	const std::string MaterialHelper::shadowMapMaterialName = "shadowMap";
 	const std::string MaterialHelper::deferredPrepassMaterialName = "deferredPrepass";
 	const std::string MaterialHelper::ssrMaterialName = "ssr";

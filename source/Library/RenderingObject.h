@@ -218,6 +218,9 @@ namespace Rendering
 		void SetFoliageMask(bool value) { mFoliageMask = value; }
 		bool GetFoliageMask() { return mFoliageMask; }
 
+		bool IsForwardShading() { return mIsForwardShading; }
+		void SetForwardShading(bool value) { mIsForwardShading = value; }
+
 		GeneralEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new GeneralEvent<Delegate_MeshMaterialVariablesUpdate>();
 	
 		std::vector<std::string>								mCustomAlbedoTextures;
@@ -263,6 +266,7 @@ namespace Rendering
 		bool													mIsSelected = false;
 		bool													mIsRendered = true;
 		bool													mIsInstanced = false;
+		bool													mIsForwardShading = false;
 		int														mSelectedInstancedObjectIndex = 0;
 		bool													mPlacedOnTerrain = false;
 		bool													mSavedOnTerrain = false;
