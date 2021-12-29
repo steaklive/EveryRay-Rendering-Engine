@@ -64,8 +64,10 @@ namespace Rendering {
 
 	void PostProcessingStack::Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR, bool pFog, bool pLightShafts)
 	{
-		mMainRenderTarget = new FullScreenRenderTarget(game);
-		mOriginalMainRTSRV = mMainRenderTarget->OutputColorTexture();
+		mMainRenderTarget = new CustomRenderTarget(game.Direct3DDevice(), game.ScreenWidth(), game.ScreenHeight(), 1,
+			DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS);
+		
+		mOriginalMainRTSRV = mMainRenderTarget->getSRV();
 
 		mExtraRenderTarget = new FullScreenRenderTarget(game);
 
@@ -167,7 +169,6 @@ namespace Rendering {
 		mMotionBlurEffect->Quad->SetActiveTechnique("blur_filter", "p0");
 		mMotionBlurEffect->Quad->SetCustomUpdateMaterial(std::bind(&PostProcessingStack::UpdateMotionBlurMaterial, this));
 		mMotionBlurRenderTarget = new FullScreenRenderTarget(game);
-		mMotionBlurEffect->OutputTexture = mMainRenderTarget->OutputColorTexture();
 		mMotionBlurEffect->isActive = pMotionBlur;
 		mMotionBlurLoaded = true;
 
@@ -629,12 +630,12 @@ namespace Rendering {
 
 	ID3D11ShaderResourceView * PostProcessingStack::GetDepthOutputTexture()
 	{
-		return mMainRenderTarget->OutputDepthTexture(); 
+		return mMainDepthTarget->getSRV(); 
 	}
 
 	ID3D11ShaderResourceView * PostProcessingStack::GetPrepassColorOutputTexture()
 	{
-		return mMainRenderTarget->OutputColorTexture();
+		return mMainRenderTarget->getSRV();
 	}
 
 	ID3D11ShaderResourceView * PostProcessingStack::GetExtraColorOutputTexture()
@@ -704,19 +705,22 @@ namespace Rendering {
 		DrawFullscreenQuad(pContext);
 	}
 	
-	void PostProcessingStack::Begin(bool clear)
+	void PostProcessingStack::Begin(bool clear, DepthTarget* aDepthTarget, bool clearDepth)
 	{
-		mMainRenderTarget->Begin();
+		mMainDepthTarget = aDepthTarget;
 
-		if (clear) {
-			game.Direct3DDeviceContext()->ClearRenderTargetView(mMainRenderTarget->RenderTargetView(), ClearBackgroundColor);
-			game.Direct3DDeviceContext()->ClearDepthStencilView(mMainRenderTarget->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
-		}
+		game.Direct3DDeviceContext()->OMSetRenderTargets(1, mMainRenderTarget->getRTVs(), mMainDepthTarget->getDSV());
+		//TODO maybe set viewport
+		
+		if (clear)
+			game.Direct3DDeviceContext()->ClearRenderTargetView(mMainRenderTarget->getRTV(), ClearBackgroundColor);
+		if (clearDepth)
+			game.Direct3DDeviceContext()->ClearDepthStencilView(mMainDepthTarget->getDSV(), D3D11_CLEAR_DEPTH, 1.0, 0);
 	}
 
 	void PostProcessingStack::End()
 	{
-		mMainRenderTarget->End();
+		game.ResetRenderTargets();
 	}
 
 	void PostProcessingStack::BeginRenderingToExtraRT(bool clear)
@@ -760,7 +764,7 @@ namespace Rendering {
 		// LIGHT SHAFTS
 		mLightShaftsRenderTarget->Begin();
 		mLightShaftsEffect->OutputTexture = mCompositeLightingRenderTarget->OutputColorTexture();
-		mLightShaftsEffect->DepthTexture = mMainRenderTarget->OutputDepthTexture();
+		mLightShaftsEffect->DepthTexture = mMainDepthTarget->getSRV();
 		game.Direct3DDeviceContext()->ClearRenderTargetView(mLightShaftsRenderTarget->RenderTargetView(), ClearBackgroundColor);
 		game.Direct3DDeviceContext()->ClearDepthStencilView(mLightShaftsRenderTarget->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
 		mLightShaftsEffect->Quad->Draw(gameTime);
@@ -777,7 +781,7 @@ namespace Rendering {
 		// FOG
 		mFogRenderTarget->Begin();
 		mFogEffect->OutputTexture = mSSRRenderTarget->OutputColorTexture();
-		mFogEffect->DepthTexture = mMainRenderTarget->OutputDepthTexture();
+		mFogEffect->DepthTexture = mMainDepthTarget->getSRV();
 		game.Direct3DDeviceContext()->ClearRenderTargetView(mFogRenderTarget->RenderTargetView(), ClearBackgroundColor);
 		game.Direct3DDeviceContext()->ClearDepthStencilView(mFogRenderTarget->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
 		mFogEffect->Quad->Draw(gameTime);
@@ -911,7 +915,7 @@ namespace Rendering {
 		game.Direct3DDeviceContext()->ClearRenderTargetView(mMotionBlurRenderTarget->RenderTargetView(), ClearBackgroundColor);
 		game.Direct3DDeviceContext()->ClearDepthStencilView(mMotionBlurRenderTarget->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
 		mMotionBlurEffect->OutputTexture = mTonemapRenderTarget->OutputColorTexture();
-		mMotionBlurEffect->DepthMap = mMainRenderTarget->OutputDepthTexture();
+		mMotionBlurEffect->DepthMap = mMainDepthTarget->getSRV();
 		mMotionBlurEffect->Quad->Draw(gameTime);
 		mMotionBlurRenderTarget->End();
 
@@ -939,6 +943,8 @@ namespace Rendering {
 		mFXAAEffect->OutputTexture = mVignetteRenderTarget->OutputColorTexture();
 		mFXAAEffect->Quad->Draw(gameTime);
 		//mFXAARenderTarget->End();
+
+		ResetMainRTtoOriginal();
 	}
 
 	void PostProcessingStack::DrawFullscreenQuad(ID3D11DeviceContext* pContext)
@@ -951,11 +957,5 @@ namespace Rendering {
 		pContext->IASetVertexBuffers(0, 1, pVBs, strides, offsets);
 		pContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 		pContext->Draw(4, 0);
-	}
-
-	void PostProcessingStack::ResetOMToMainRenderTarget()
-	{
-		if (mMainRenderTarget)
-			mMainRenderTarget->Begin();
 	}
 }

@@ -15,6 +15,11 @@ public:
 	ID3D11UnorderedAccessView* getUAV() { return mUAVs[0]; }
 	ID3D11UnorderedAccessView** getUAVs() { return mUAVs; }
 	int getMips() { return mMipLevels; }
+	
+	void SetSRV(ID3D11ShaderResourceView* SRV)
+	{
+		mSRV = SRV;
+	}
 
 	UINT GetWidth() { return mWidth; }
 	UINT GetHeight() { return mHeight; }

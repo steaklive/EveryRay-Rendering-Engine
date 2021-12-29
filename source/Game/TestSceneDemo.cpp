@@ -116,28 +116,20 @@ namespace Rendering
 
 		#pragma region DRAW_GI
 		mRenderStateHelper->SaveAll();
-		mIllumination->Draw(gameTime, mGBuffer);
+		mIllumination->DrawGlobalIllumination(mGBuffer, gameTime);
 		mRenderStateHelper->RestoreAll();
 #pragma endregion
 
-		mPostProcessingStack->Begin(true);
+		mPostProcessingStack->Begin(true, mGBuffer->GetDepth());
 
 		#pragma region DRAW_LIGHTING
 		mSkybox->Draw(gameTime);
+		mIllumination->DrawLocalIllumination(mGBuffer, mPostProcessingStack->GetMainRenderTarget(), Utility::IsEditorMode);
 
-		//gizmo
 		if (Utility::IsEditorMode)
 		{
-			mDirectionalLight->DrawProxyModel(gameTime);
-			mIllumination->DrawDebugGizmos();
+			mDirectionalLight->DrawProxyModel(gameTime); //todo move to Illumination() or better to separate debug renderer system
 		}
-
-		//lighting
-		for (auto it = mScene->objects.begin(); it != mScene->objects.end(); it++)
-			it->second->Draw(MaterialHelper::lightingMaterialName);
-
-		//foliage 
-		mFoliageSystem->Draw(gameTime, mShadowMapper);
 #pragma endregion
 
 		mPostProcessingStack->End();
@@ -151,10 +143,9 @@ namespace Rendering
 #pragma endregion
 
 		#pragma region DRAW_POSTPROCESSING
-		mPostProcessingStack->UpdateCompositeLightingMaterial(mIllumination->GetLocalIlluminationSRV(), mIllumination->GetGlobaIlluminationSRV(), mIllumination->GetDebugVoxels(), mIllumination->GetDebugAO());
+		mPostProcessingStack->UpdateCompositeLightingMaterial(mPostProcessingStack->GetMainRenderTarget()->getSRV(), mIllumination->GetGlobaIlluminationSRV(), mIllumination->GetDebugVoxels(), mIllumination->GetDebugAO());
 		mPostProcessingStack->UpdateSSRMaterial(mGBuffer->GetNormals()->getSRV(), mGBuffer->GetDepth()->getSRV(), mGBuffer->GetExtraBuffer()->getSRV(), (float)gameTime.TotalGameTime());
 		mPostProcessingStack->DrawEffects(gameTime);
-		mPostProcessingStack->ResetMainRTtoOriginal();
 #pragma endregion
 		
 		mRenderStateHelper->SaveAll();

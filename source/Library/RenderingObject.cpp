@@ -430,6 +430,7 @@ namespace Rendering
 			}
 
 
+			//broken after the change to deferred shading (TODO move to a separate debug render system)
 			if (!toDepth && mAvailableInEditorMode && mIsSelected)
 				DrawAABB();
 		}

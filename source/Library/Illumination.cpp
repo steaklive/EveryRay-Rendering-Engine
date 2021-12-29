@@ -62,7 +62,6 @@ namespace Library {
 		DeleteObject(mVCTMainRT);
 		DeleteObject(mVCTUpsampleAndBlurRT);
 		DeleteObject(mDepthBuffer);
-		DeleteObject(mDeferredLightingOutputRT);
 
 		mVoxelizationDebugConstantBuffer.Release();
 		mVoxelConeTracingConstantBuffer.Release();
@@ -187,8 +186,6 @@ namespace Library {
 			mVCTVoxelizationDebugRT = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u,
 				DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 			mDepthBuffer = DepthTarget::Create(mGame->Direct3DDevice(), mGame->ScreenWidth(), mGame->ScreenHeight(), 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
-			mDeferredLightingOutputRT = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u,
-				DXGI_FORMAT_R10G10B10A2_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
 		}
 		
 		//IBL
@@ -220,9 +217,13 @@ namespace Library {
 	}
 
 	//deferred rendering approach
-	void Illumination::DrawLocalIllumination(GBuffer* gbuffer)
+	void Illumination::DrawLocalIllumination(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget, bool isEditorMode)
 	{
-		DrawDeferredLighting(gbuffer);
+		DrawDeferredLighting(gbuffer, aRenderTarget);
+		DrawForwardLighting();
+
+		if (isEditorMode)
+			DrawDebugGizmos();
 	}
 
 	//voxel GI based on "Interactive Indirect Illumination Using Voxel Cone Tracing" by C.Crassin et al.
@@ -413,12 +414,6 @@ namespace Library {
 		}
 	}
 
-	void Illumination::Draw(const GameTime& gameTime, GBuffer* gbuffer)
-	{
-		DrawGlobalIllumination(gbuffer, gameTime);
-		DrawLocalIllumination(gbuffer);
-	}
-
 	void Illumination::DrawDebugGizmos()
 	{
 		if (mDrawVoxelZonesGizmos) 
@@ -432,7 +427,7 @@ namespace Library {
 
 	void Illumination::Update(const GameTime& gameTime, const Scene* scene)
 	{
-		CullObjectsAgainstVoxelCascades(scene);
+		CPUCullObjectsAgainstVoxelCascades(scene);
 		UpdateVoxelCameraPosition();
 		UpdateImGui();
 	}
@@ -490,7 +485,7 @@ namespace Library {
 		}
 	}
 
-	void Illumination::SetFoliageSystem(FoliageSystem* foliageSystem)
+	void Illumination::SetFoliageSystemForGI(FoliageSystem* foliageSystem)
 	{
 		mFoliageSystem = foliageSystem;
 		if (mFoliageSystem)
@@ -518,57 +513,68 @@ namespace Library {
 		}
 	}
 
-	void Illumination::DrawDeferredLighting(GBuffer* gbuffer)
+	void Illumination::DrawDeferredLighting(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget)
 	{
 		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
-		context->ClearUnorderedAccessViewFloat(mDeferredLightingOutputRT->getUAV(), clearColorBlack);
 
-		for (size_t i = 0; i < NUM_SHADOW_CASCADES; i++)
-			mDeferredLightingConstantBuffer.Data.ShadowMatrices[i] = mShadowMapper.GetViewMatrix(i) * mShadowMapper.GetProjectionMatrix(i) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix());;
-		mDeferredLightingConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
-		mDeferredLightingConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / mShadowMapper.GetResolution(), 1.0f, 1.0f , 1.0f };
-		mDeferredLightingConstantBuffer.Data.SunDirection = XMFLOAT4{ -mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f };
-		mDeferredLightingConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLightIntensity };
-		mDeferredLightingConstantBuffer.Data.CameraPosition = XMFLOAT4{ mCamera.Position().x,mCamera.Position().y,mCamera.Position().z, 1.0f };
-		mDeferredLightingConstantBuffer.ApplyChanges(context);
+		//compute pass
+		if (aRenderTarget)
+		{
+			context->ClearUnorderedAccessViewFloat(aRenderTarget->getUAV(), clearColorBlack);
 
-		ID3D11UnorderedAccessView* UAV[1] = { mDeferredLightingOutputRT->getUAV() };
-		ID3D11Buffer* CBs[1] = { mDeferredLightingConstantBuffer.Buffer() };
+			for (size_t i = 0; i < NUM_SHADOW_CASCADES; i++)
+				mDeferredLightingConstantBuffer.Data.ShadowMatrices[i] = mShadowMapper.GetViewMatrix(i) * mShadowMapper.GetProjectionMatrix(i) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix());;
+			mDeferredLightingConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
+			mDeferredLightingConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / mShadowMapper.GetResolution(), 1.0f, 1.0f , 1.0f };
+			mDeferredLightingConstantBuffer.Data.SunDirection = XMFLOAT4{ -mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f };
+			mDeferredLightingConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLightIntensity };
+			mDeferredLightingConstantBuffer.Data.CameraPosition = XMFLOAT4{ mCamera.Position().x,mCamera.Position().y,mCamera.Position().z, 1.0f };
+			mDeferredLightingConstantBuffer.ApplyChanges(context);
 
-		ID3D11ShaderResourceView* SRs[10] = {
-			gbuffer->GetAlbedo()->getSRV(),
-			gbuffer->GetNormals()->getSRV(),
-			gbuffer->GetPositions()->getSRV(),
-			gbuffer->GetExtraBuffer()->getSRV(),
-			mIrradianceDiffuseTextureSRV,
-			mIrradianceSpecularTextureSRV,
-			mIntegrationMapTextureSRV
-		};
-		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
-			SRs[7 + i] = mShadowMapper.GetShadowTexture(i);
-		
-		ID3D11SamplerState* SS[2] = { mLinearSamplerState, mShadowSamplerState };
+			ID3D11UnorderedAccessView* UAV[1] = { aRenderTarget->getUAV() };
+			ID3D11Buffer* CBs[1] = { mDeferredLightingConstantBuffer.Buffer() };
 
-		context->CSSetShaderResources(0, 10, SRs);
-		context->CSSetConstantBuffers(0, 1, CBs);
-		context->CSSetSamplers(0, 2, SS);
-		context->CSSetShader(mDeferredLightingCS, NULL, NULL);
-		context->CSSetUnorderedAccessViews(0, 1, UAV, NULL);
-		context->Dispatch(DivideByMultiple(static_cast<UINT>(mDeferredLightingOutputRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mDeferredLightingOutputRT->GetHeight()), 8u), 1u);
+			ID3D11ShaderResourceView* SRs[10] = {
+				gbuffer->GetAlbedo()->getSRV(),
+				gbuffer->GetNormals()->getSRV(),
+				gbuffer->GetPositions()->getSRV(),
+				gbuffer->GetExtraBuffer()->getSRV(),
+				mIrradianceDiffuseTextureSRV,
+				mIrradianceSpecularTextureSRV,
+				mIntegrationMapTextureSRV
+			};
+			for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
+				SRs[7 + i] = mShadowMapper.GetShadowTexture(i);
 
-		ID3D11ShaderResourceView* nullSRV[] = { NULL };
-		context->CSSetShaderResources(0, 1, nullSRV);
-		ID3D11UnorderedAccessView* nullUAV[] = { NULL };
-		context->CSSetUnorderedAccessViews(0, 1, nullUAV, 0);
-		ID3D11Buffer* nullCBs[] = { NULL };
-		context->CSSetConstantBuffers(0, 1, nullCBs);
-		ID3D11SamplerState* nullSSs[] = { NULL };
-		context->CSSetSamplers(0, 1, nullSSs);
+			ID3D11SamplerState* SS[2] = { mLinearSamplerState, mShadowSamplerState };
+
+			context->CSSetShaderResources(0, 10, SRs);
+			context->CSSetConstantBuffers(0, 1, CBs);
+			context->CSSetSamplers(0, 2, SS);
+			context->CSSetShader(mDeferredLightingCS, NULL, NULL);
+			context->CSSetUnorderedAccessViews(0, 1, UAV, NULL);
+			context->Dispatch(DivideByMultiple(static_cast<UINT>(aRenderTarget->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(aRenderTarget->GetHeight()), 8u), 1u);
+
+			ID3D11ShaderResourceView* nullSRV[] = { NULL };
+			context->CSSetShaderResources(0, 1, nullSRV);
+			ID3D11UnorderedAccessView* nullUAV[] = { NULL };
+			context->CSSetUnorderedAccessViews(0, 1, nullUAV, 0);
+			ID3D11Buffer* nullCBs[] = { NULL };
+			context->CSSetConstantBuffers(0, 1, nullCBs);
+			ID3D11SamplerState* nullSSs[] = { NULL };
+			context->CSSetSamplers(0, 1, nullSSs);
+		}
 	}
 
-	void Illumination::CullObjectsAgainstVoxelCascades(const Scene* scene)
+	void Illumination::DrawForwardLighting()
+	{
+		//TODO
+		//mForwardPassObjects
+	}
+
+	void Illumination::CPUCullObjectsAgainstVoxelCascades(const Scene* scene)
 	{
 		//TODO add instancing support
 		//TODO add indirect drawing support (GPU cull)

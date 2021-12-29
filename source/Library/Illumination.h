@@ -68,13 +68,14 @@ namespace Library
 
 		void Initialize(const Scene* scene);
 
-		void Draw(const GameTime& gameTime, GBuffer* gbuffer);
-		void DrawDebugGizmos();
+		void DrawLocalIllumination(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget, bool isEditorMode = false);
+		void DrawGlobalIllumination(GBuffer* gbuffer, const GameTime& gameTime);
+
 		void Update(const GameTime& gameTime, const Scene* scene);
 		void Config() { mShowDebug = !mShowDebug; }
 
 		void SetShadowMapSRV(ID3D11ShaderResourceView* srv) { mShadowMapSRV = srv; }
-		void SetFoliageSystem(FoliageSystem* foliageSystem);
+		void SetFoliageSystemForGI(FoliageSystem* foliageSystem);
 
 		bool GetDebugVoxels() { return mDrawVoxelization; }
 		bool GetDebugAO() { return mDrawAmbientOcclusionOnly; }
@@ -85,7 +86,6 @@ namespace Library
 			else
 				return mVCTUpsampleAndBlurRT->getSRV();
 		}
-		ID3D11ShaderResourceView* GetLocalIlluminationSRV() { return mDeferredLightingOutputRT->getSRV(); }
 
 		ID3D11ShaderResourceView* GetIBLIrradianceDiffuseSRV() { return mIrradianceDiffuseTextureSRV; }
 		ID3D11ShaderResourceView* GetIBLIrradianceSpecularSRV() { return mIrradianceSpecularTextureSRV; }
@@ -93,16 +93,15 @@ namespace Library
 
 		float GetDirectionalLightIntensity() { return mDirectionalLightIntensity; }
 	private:
-		void DrawLocalIllumination(GBuffer* gbuffer);
-		void DrawGlobalIllumination(GBuffer* gbuffer, const GameTime& gameTime);
-		
-		void DrawDeferredLighting(GBuffer* gbuffer);
+		void DrawDeferredLighting(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget);
+		void DrawForwardLighting();
+		void DrawDebugGizmos();
 
 		void UpdateVoxelizationGIMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int voxelCascadeIndex);
 		void UpdateImGui();
 		void UpdateVoxelCameraPosition();
 
-		void CullObjectsAgainstVoxelCascades(const Scene* scene);
+		void CPUCullObjectsAgainstVoxelCascades(const Scene* scene);
 
 		Camera& mCamera;
 		DirectionalLight& mDirectionalLight;
@@ -123,7 +122,6 @@ namespace Library
 		CustomRenderTarget* mVCTMainRT = nullptr;
 		CustomRenderTarget* mVCTUpsampleAndBlurRT = nullptr;
 
-		CustomRenderTarget* mDeferredLightingOutputRT = nullptr;
 		GBuffer* mGbuffer = nullptr;
 
 		DepthTarget* mDepthBuffer = nullptr;
@@ -168,5 +166,7 @@ namespace Library
 		ID3D11ShaderResourceView* mIrradianceSpecularTextureSRV = nullptr;
 		ID3D11ShaderResourceView* mIntegrationMapTextureSRV = nullptr;
 		std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
+
+		RenderingObjectInfo mForwardPassObjects;
 	};
 }

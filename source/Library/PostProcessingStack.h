@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "GameTime.h"
 #include "CustomRenderTarget.h"
+#include "DepthTarget.h"
 
 namespace Library
 {
@@ -315,7 +316,7 @@ namespace Rendering
 		void UpdateCompositeLightingMaterial(ID3D11ShaderResourceView* localIlluminationSRV, ID3D11ShaderResourceView* globalIlluminationSRV, bool debugVoxel, bool debugAO);
 
 		void Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR = true, bool pFog = false, bool pLightShafts = false);
-		void Begin(bool clear = true);
+		void Begin(bool clear = true, DepthTarget* aDepthTarget = nullptr, bool clearDepth = false);
 		void End();
 		void BeginRenderingToExtraRT(bool clear);
 		void EndRenderingToExtraRT();
@@ -326,13 +327,14 @@ namespace Rendering
 
 		void Update();
 		void DrawFullscreenQuad(ID3D11DeviceContext* pContext);
-		void ResetOMToMainRenderTarget();
 
 		void SetDirectionalLight(const DirectionalLight* pLight) { light = pLight; }
 		void SetSunOcclusionSRV(ID3D11ShaderResourceView* srv) { mSunOcclusionSRV = srv; }
 		void SetSunNDCPos(XMFLOAT2 pos) { mSunNDCPos = pos; }
 
 		void Config() { mShowDebug = !mShowDebug; }
+
+		CustomRenderTarget* GetMainRenderTarget() { return mMainRenderTarget; }
 
 		ID3D11ShaderResourceView* GetDepthOutputTexture();
 		ID3D11ShaderResourceView* GetPrepassColorOutputTexture();
@@ -364,7 +366,9 @@ namespace Rendering
 		EffectElements::LightShaftsEffect* mLightShaftsEffect;
 		EffectElements::CompositeLightingEffect* mCompositeLightingEffect;
 		
-		FullScreenRenderTarget* mMainRenderTarget;
+		CustomRenderTarget* mMainRenderTarget = nullptr;
+		DepthTarget* mMainDepthTarget = nullptr;
+
 		FullScreenRenderTarget* mVignetteRenderTarget;
 		FullScreenRenderTarget* mColorGradingRenderTarget;
 		FullScreenRenderTarget* mMotionBlurRenderTarget;

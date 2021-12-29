@@ -348,8 +348,10 @@ namespace Library
 		}
 		else if (renderPass == FoliageRenderingPass::FORWARD_SHADING)
 		{
-			mFoliageMaterial->SetCurrentTechnique(mFoliageMaterial->GetEffect()->TechniquesByName().at("main"));
-			updateMaterial();
+			//not used in recent version, since deferred shading is used
+			// 
+			//mFoliageMaterial->SetCurrentTechnique(mFoliageMaterial->GetEffect()->TechniquesByName().at("main"));
+			//updateMaterial();
 		}
 
 		context->OMSetBlendState(mNoBlendState, blendFactor, 0xffffffff);

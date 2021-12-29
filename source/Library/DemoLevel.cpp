@@ -106,7 +106,7 @@ namespace Library {
         mIllumination = new Illumination(game, camera, *mDirectionalLight, *mShadowMapper, mScene);
 
         mFoliageSystem = new FoliageSystem();
-        mFoliageSystem->FoliageSystemInitializedEvent->AddListener("foliage initialized for GI",  [&]() { mIllumination->SetFoliageSystem(mFoliageSystem); });
+        mFoliageSystem->FoliageSystemInitializedEvent->AddListener("foliage initialized for GI",  [&]() { mIllumination->SetFoliageSystemForGI(mFoliageSystem); });
     }
 
 }

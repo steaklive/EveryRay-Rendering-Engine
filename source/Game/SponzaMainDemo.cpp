@@ -341,7 +341,7 @@ namespace Rendering
 		mRenderStateHelper->RestoreRasterizerState();
 		#pragma endregion
 
-		mPostProcessingStack->Begin();
+		mPostProcessingStack->Begin(true);
 
 		//gizmo
 		if (Utility::IsEditorMode)
