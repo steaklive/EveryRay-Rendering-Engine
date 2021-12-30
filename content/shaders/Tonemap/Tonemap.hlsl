@@ -105,12 +105,12 @@ float4 BlurVertical(float4 pos : SV_POSITION) : SV_TARGET
 
 float4 ToneMapWithBloom(float4 pos: SV_POSITION, float2 tex : TEX_COORD0) : SV_Target
 {
-	float3 Lw = g_Input0.Load(float3(pos.xy, 0), 0).xyz;
+    float3 Lw = g_Input0.Load(float3(pos.xy, 0), 0).xyz;
     Lw += bloomMultiplier * g_Input1.SampleLevel(samLinear, tex, 0).xyz;
-	float scale = g_ToneMapScale.Load(float3(0, 0, 0)).r;
-	float3 L = scale * Lw; 
-	float3 Ld = (L/(1+L)); 
-	return float4(Ld, 1.0f); 
+    float scale = g_ToneMapScale.Load(float3(0, 0, 0)).r;
+    float3 L = scale * Lw;
+    float3 Ld = (L / (1 + L));
+    return float4(Ld, 1.0f);
 }
 
 float4 EmptyPass(float4 pos : SV_POSITION, float2 tex : TEX_COORD0) : SV_Target

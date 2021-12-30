@@ -154,6 +154,7 @@ namespace Library
 		float mVCTSamplingFactor = 0.5f;
 		float mVCTVoxelSampleOffset = 0.0f;
 		float mVCTGIPower = 1.0f;
+		bool mVoxelCameraPositionsUpdated = true;
 
 		bool mDrawVoxelization = false;
 		bool mDrawVoxelZonesGizmos = false;
@@ -162,7 +163,7 @@ namespace Library
 		bool mEnabled = false;
 		bool mShowDebug = false;
 
-		float mDirectionalLightIntensity = 8.4f;
+		float mDirectionalLightIntensity = 6.4f;
 
 		ID3D11ShaderResourceView* mIrradianceDiffuseTextureSRV = nullptr;
 		ID3D11ShaderResourceView* mIrradianceSpecularTextureSRV = nullptr;

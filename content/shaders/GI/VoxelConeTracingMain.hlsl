@@ -178,7 +178,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
        
     float ao = 0.0f;
     float4 indirectDiffuse = CalculateIndirectDiffuse(worldPos.rgb, normal.rgb, ao);
-    float4 indirectSpecular = CalculateIndirectSpecular(worldPos.rgb, normal.rgb, float4(albedo.rgb, extraGbuffer.g));
+    //float4 indirectSpecular = CalculateIndirectSpecular(worldPos.rgb, normal.rgb, float4(albedo.rgb, extraGbuffer.g));
 
-    outputTexture[inPos] = GIPower * saturate(float4(indirectDiffuse.rgb * albedo.rgb + indirectSpecular.rgb, ao));
+    outputTexture[inPos] = GIPower * saturate(float4(indirectDiffuse.rgb * albedo.rgb /*+ indirectSpecular.rgb*/, ao));
 }

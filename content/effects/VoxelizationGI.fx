@@ -189,7 +189,9 @@ void PSMain(PS_IN input)
     else
     {
         float shadow = GetShadow(input.ShadowCoord, input.PosWVP.w);
-        outputTexture[finalVoxelPos] = colorRes * float4(shadow, shadow, shadow, 1.0f);
+        float4 newColor = colorRes * float4(shadow, shadow, shadow, 1.0f);
+        outputTexture[finalVoxelPos] = newColor;
+        //lerp(outputTexture[finalVoxelPos], newColor, 0.5f);
     }
 }
 

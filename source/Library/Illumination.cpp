@@ -192,7 +192,7 @@ namespace Library {
 		//IBL
 		{
 			if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), 
-				Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureDiffuseHDR.dds").c_str(), nullptr, &mIrradianceDiffuseTextureSRV)))
+				Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureEnvHDR.dds").c_str(), nullptr, &mIrradianceDiffuseTextureSRV)))
 				throw GameException("Failed to create Diffuse Irradiance Map.");
 
 			mIBLRadianceMap.reset(new IBLRadianceMap(*mGame, Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureEnvHDR.dds")));
@@ -272,7 +272,8 @@ namespace Library {
 				context->RSSetViewports(1, &vctViewport);
 				context->RSSetScissorRects(1, &vctRect);
 				context->OMSetRenderTargets(1, nullRTVs, nullptr);
-				context->ClearUnorderedAccessViewFloat(UAV[0], clearColorBlack);
+				/*if (mVoxelCameraPositionsUpdated)
+					*/context->ClearUnorderedAccessViewFloat(UAV[0], clearColorBlack);
 
 				std::string materialName = MaterialHelper::voxelizationGIMaterialName + "_" + std::to_string(cascade);
 				for (auto& obj : mVoxelizationObjects[cascade]) {
@@ -538,7 +539,6 @@ namespace Library {
 		}
 	}
 
-
 	void Illumination::SetFoliageSystemForGI(FoliageSystem* foliageSystem)
 	{
 		mFoliageSystem = foliageSystem;
@@ -560,7 +560,12 @@ namespace Library {
 			
 			if (mCamera.Position().x < voxelGridBoundsMin.x || mCamera.Position().y < voxelGridBoundsMin.y || mCamera.Position().z < voxelGridBoundsMin.z ||
 				mCamera.Position().x > voxelGridBoundsMax.x || mCamera.Position().y > voxelGridBoundsMax.y || mCamera.Position().z > voxelGridBoundsMax.z)
+			{
 				mVoxelCameraPositions[i] = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f);
+				mVoxelCameraPositionsUpdated = true;
+			}
+			else
+				mVoxelCameraPositionsUpdated = false;
 
 			mDebugVoxelZonesGizmos[i]->SetPosition(XMFLOAT3(mVoxelCameraPositions[i].x, mVoxelCameraPositions[i].y, mVoxelCameraPositions[i].z));
 			mDebugVoxelZonesGizmos[i]->Update();
@@ -636,6 +641,8 @@ namespace Library {
 	void Illumination::CPUCullObjectsAgainstVoxelCascades(const Scene* scene)
 	{
 		//TODO add instancing support
+		//TODO fix repetition checks when the object AABB is bigger than the lower cascade (i.e. sponza)
+		//TODO add optimization for culling objects by checking its volume size in second+ cascades
 		//TODO add indirect drawing support (GPU cull)
 		//TODO add multithreading per cascade
 		for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
@@ -668,6 +675,13 @@ namespace Library {
 				}
 
 				auto aabbCascade = mVoxelCascadesAABBs[cascade];
+				aabbCascade.first.x += mVoxelCameraPositions[cascade].x;
+				aabbCascade.first.y += mVoxelCameraPositions[cascade].y;
+				aabbCascade.first.z += mVoxelCameraPositions[cascade].z;		
+				aabbCascade.second.x += mVoxelCameraPositions[cascade].x;
+				aabbCascade.second.y += mVoxelCameraPositions[cascade].y;
+				aabbCascade.second.z += mVoxelCameraPositions[cascade].z;
+
 				bool isColliding =
 					(aabbObj.first.x <= aabbCascade.second.x && aabbObj.second.x >= aabbCascade.first.x) &&
 					(aabbObj.first.y <= aabbCascade.second.y && aabbObj.second.y >= aabbCascade.first.y) &&
