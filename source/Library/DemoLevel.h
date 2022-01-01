@@ -24,6 +24,7 @@ namespace Library
     class FoliageSystem;
     class VolumetricClouds;
     class Illumination;
+    class ER_IlluminationProbeManager;
 
 	class DemoLevel
 	{
@@ -47,7 +48,7 @@ namespace Library
         FoliageSystem* mFoliageSystem = nullptr;
         VolumetricClouds* mVolumetricClouds = nullptr;
         Illumination* mIllumination = nullptr;
-
+        ER_IlluminationProbeManager* mIlluminationProbesManager = nullptr;
         Rendering::PostProcessingStack* mPostProcessingStack = nullptr;
     private:
         void UpdateImGui();

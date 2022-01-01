@@ -208,6 +208,7 @@
     <ClInclude Include="Editor.h" />
     <ClInclude Include="Effect.h" />
     <ClInclude Include="EnvironmentMappingMaterial.h" />
+    <ClInclude Include="ER_IlluminationProbeManager.h" />
     <ClInclude Include="FastFourierTransform.h" />
     <ClInclude Include="FirstPersonCamera.h" />
     <ClInclude Include="FogMaterial.h" />
@@ -314,6 +315,7 @@
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="Effect.cpp" />
     <ClCompile Include="EnvironmentMappingMaterial.cpp" />
+    <ClCompile Include="ER_IlluminationProbeManager.cpp" />
     <ClCompile Include="FirstPersonCamera.cpp" />
     <ClCompile Include="FogMaterial.cpp" />
     <ClCompile Include="Foliage.cpp" />

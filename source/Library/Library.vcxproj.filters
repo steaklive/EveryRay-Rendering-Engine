@@ -405,6 +405,9 @@
     <ClInclude Include="CompositeLightingMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_IlluminationProbeManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -697,6 +700,9 @@
     </ClCompile>
     <ClCompile Include="CompositeLightingMaterial.cpp">
       <Filter>Source Files\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_IlluminationProbeManager.cpp">
+      <Filter>Source Files\Objects\Rendering systems</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

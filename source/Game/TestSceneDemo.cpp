@@ -94,6 +94,10 @@ namespace Rendering
 		ID3D11DeviceContext* direct3DDeviceContext = mGame->Direct3DDeviceContext();
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		
+		//TODO temp
+		{
+			mIlluminationProbesManager->ComputeProbes(*mGame, mScene->objects);
+		}
 		#pragma region GBUFFER_PREPASS
 		
 		mGBuffer->Start();

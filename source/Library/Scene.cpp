@@ -79,7 +79,6 @@ namespace Library
 				std::string name = root["rendering_objects"][i]["name"].asString();
 				std::string modelPath = root["rendering_objects"][i]["model_path"].asString();
 				bool isInstanced = root["rendering_objects"][i]["instanced"].asBool();
-				bool isFoliageMask = root["rendering_objects"][i]["foliageMask"].asBool();
 
 				objects.insert(
 					std::pair<std::string, Rendering::RenderingObject*>(
@@ -89,15 +88,19 @@ namespace Library
 				);
 
 				auto it = objects.find(name);
-				it->second->SetFoliageMask(isFoliageMask);
+				
+				// set flags
 
+				if (root["rendering_objects"][i].isMember("foliageMask"))
+					it->second->SetFoliageMask(root["rendering_objects"][i]["foliageMask"].asBool());
+				if (root["rendering_objects"][i].isMember("inLightProbe"))
+					it->second->SetInLightProbe(root["rendering_objects"][i]["inLightProbe"].asBool());
 				if (root["rendering_objects"][i].isMember("placed_on_terrain")) {
 					it->second->SetPlacedOnTerrain(root["rendering_objects"][i]["placed_on_terrain"].asBool());
 
 					if (isInstanced && root["rendering_objects"][i].isMember("num_instances_per_vegetation_zone"))
 						it->second->SetNumInstancesPerVegetationZone(root["rendering_objects"][i]["num_instances_per_vegetation_zone"].asInt());
 				}
-
 				if (root["rendering_objects"][i].isMember("min_scale"))
 					it->second->SetMinScale(root["rendering_objects"][i]["min_scale"].asFloat());
 				if (root["rendering_objects"][i].isMember("max_scale"))
@@ -357,6 +360,10 @@ namespace Library
 		}
 		else if (matName == "StandardLightingMaterial") {
 			materialName = MaterialHelper::forwardLightingMaterialName;
+			material = new Rendering::StandardLightingMaterial();
+		}
+		else if (matName == "StandardLightingForProbeMaterial") {
+			materialName = MaterialHelper::forwardLightingForProbesMaterialName;
 			material = new Rendering::StandardLightingMaterial();
 		}
 		else if (matName == "ParallaxMappingTestMaterial") {

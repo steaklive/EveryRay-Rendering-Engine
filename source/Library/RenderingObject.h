@@ -221,6 +221,9 @@ namespace Rendering
 		bool IsForwardShading() { return mIsForwardShading; }
 		void SetForwardShading(bool value) { mIsForwardShading = value; }
 
+		bool IsInLightProbe() { return mIsInLightProbe; }
+		void SetInLightProbe(bool value) { mIsInLightProbe = value; }
+
 		GeneralEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new GeneralEvent<Delegate_MeshMaterialVariablesUpdate>();
 	
 		std::vector<std::string>								mCustomAlbedoTextures;
@@ -275,6 +278,7 @@ namespace Rendering
 		float													mMinScale = 1.0f;
 		float													mMaxScale = 1.0f;
 		bool													mFoliageMask = false;
+		bool													mIsInLightProbe = false;
 		float													mCameraViewMatrix[16];
 		float													mCameraProjectionMatrix[16];
 		float													mCurrentObjectTransformMatrix[16] = 

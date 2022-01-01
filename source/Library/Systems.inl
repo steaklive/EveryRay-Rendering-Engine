@@ -17,4 +17,5 @@
 #include "..\Library\Scene.h"
 #include "..\Library\VolumetricClouds.h"
 #include "..\Library\Illumination.h"
+#include "..\Library\ER_IlluminationProbeManager.h"
 #include "..\Library\RenderStateHelper.h"
