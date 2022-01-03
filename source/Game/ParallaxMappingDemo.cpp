@@ -219,7 +219,7 @@ namespace Rendering
 #pragma region DRAW_LIGHTING
 
 		//skybox
-		mSkybox->Draw(gameTime);
+		mSkybox->Draw();
 
 		//grid
 		if (Utility::IsEditorMode)

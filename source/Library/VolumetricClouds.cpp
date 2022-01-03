@@ -177,7 +177,7 @@ namespace Library {
 		//skybox to empty texture
 		if (!mDirectionalLight.IsSunRendered()) {
 			mPostProcessingStack.BeginRenderingToExtraRT(true);
-			mSkybox.Draw(gametime);
+			mSkybox.Draw();
 			mPostProcessingStack.EndRenderingToExtraRT();
 		}
 

@@ -108,17 +108,36 @@ namespace Library
 		//mGame->components.push_back(this);
 	}
 
-	void Skybox::Update(const GameTime& gameTime)
+	void Skybox::Update(const GameTime& gameTime, Camera* aCustomCamera)
 	{
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
-		const XMFLOAT3& position = mCamera->Position();
+		XMFLOAT3 position;
+		if (aCustomCamera)
+			position = aCustomCamera->Position();
+		else
+			position = mCamera->Position();
 
-		if (mIsMovable) 
-			XMStoreFloat4x4(&mWorldMatrix, XMLoadFloat4x4(&mScaleMatrix) * XMMatrixTranslation(position.x, position.y - 50.0f, position.z) * XMMatrixRotationAxis(XMVECTOR{ 0,1,0 }, gameTime.TotalGameTime()*0.003f));
-		else XMStoreFloat4x4(&mWorldMatrix, XMLoadFloat4x4(&mScaleMatrix) * XMMatrixTranslation(position.x, position.y, position.z));
+		if (mIsMovable)
+			XMStoreFloat4x4(&mWorldMatrix, XMLoadFloat4x4(&mScaleMatrix) * XMMatrixTranslation(position.x, position.y - 50.0f, position.z) * XMMatrixRotationAxis(XMVECTOR{ 0,1,0 }, gameTime.TotalGameTime() * 0.003f));
+		else
+			XMStoreFloat4x4(&mWorldMatrix, XMLoadFloat4x4(&mScaleMatrix) * XMMatrixTranslation(position.x, position.y, position.z));
 
-		mSunConstantBuffer.Data.InvProj = XMMatrixInverse(nullptr, mCamera->ProjectionMatrix());
-		mSunConstantBuffer.Data.InvView = XMMatrixInverse(nullptr, mCamera->ViewMatrix());
+	}
+
+	void Skybox::UpdateSun(const GameTime& gameTime, Camera* aCustomCamera)
+	{
+		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+
+		if (aCustomCamera)
+		{
+			mSunConstantBuffer.Data.InvProj = XMMatrixInverse(nullptr, aCustomCamera->ProjectionMatrix());
+			mSunConstantBuffer.Data.InvView = XMMatrixInverse(nullptr, aCustomCamera->ViewMatrix());
+		}
+		else
+		{
+			mSunConstantBuffer.Data.InvProj = XMMatrixInverse(nullptr, mCamera->ProjectionMatrix());
+			mSunConstantBuffer.Data.InvView = XMMatrixInverse(nullptr, mCamera->ViewMatrix());
+		}
 		mSunConstantBuffer.Data.SunDir = mSunDir;
 		mSunConstantBuffer.Data.SunColor = mSunColor;
 		mSunConstantBuffer.Data.SunBrightness = mSunBrightness;
@@ -126,7 +145,7 @@ namespace Library
 		mSunConstantBuffer.ApplyChanges(context);
 	}
 
-	void Skybox::Draw(const GameTime& gametime)
+	void Skybox::Draw(Camera* aCustomCamera)
 	{
 		ID3D11DeviceContext* direct3DDeviceContext = mGame->Direct3DDeviceContext();
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -140,7 +159,11 @@ namespace Library
 		direct3DDeviceContext->IASetVertexBuffers(0, 1, &mVertexBuffer, &stride, &offset);
 		direct3DDeviceContext->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
-		XMMATRIX wvp = XMLoadFloat4x4(&mWorldMatrix) * mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
+		XMMATRIX wvp;
+		if (aCustomCamera)
+			wvp = XMLoadFloat4x4(&mWorldMatrix) * aCustomCamera->ViewMatrix() * aCustomCamera->ProjectionMatrix();
+		else
+			wvp = XMLoadFloat4x4(&mWorldMatrix) * mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
 		mMaterial->WorldViewProjection() << wvp;
 		mMaterial->SkyboxTexture() << mCubeMapShaderResourceView;
 
@@ -156,11 +179,11 @@ namespace Library
 		mGame->UnbindPixelShaderResources(0, 3);
 	}
 
-	void Skybox::DrawSun(const GameTime& gametime, Rendering::PostProcessingStack* postprocess) {
+	void Skybox::DrawSun(Camera* aCustomCamera, Rendering::PostProcessingStack* postprocess) {
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
 
 		postprocess->BeginRenderingToExtraRT(true);
-		Draw(gametime);
+		Draw(aCustomCamera);
 		postprocess->EndRenderingToExtraRT();
 
 		if (mDrawSun && postprocess) {
@@ -196,7 +219,12 @@ namespace Library
 			XMFLOAT3 mSunDirection;
 			XMStoreFloat3(&mSunDirection, mSunDir);
 			XMFLOAT4 posWorld = CalculateSunPositionOnSkybox(XMFLOAT3(-mSunDirection.x,-mSunDirection.y,-mSunDirection.z));
-			XMVECTOR ndc = XMVector3Transform(XMLoadFloat4(&posWorld), mCamera->ViewProjectionMatrix());
+			XMVECTOR ndc;
+			if (aCustomCamera)
+				ndc = XMVector3Transform(XMLoadFloat4(&posWorld), aCustomCamera->ViewProjectionMatrix());
+			else
+				ndc = XMVector3Transform(XMLoadFloat4(&posWorld), mCamera->ViewProjectionMatrix());
+
 			XMFLOAT4 ndcF;
 			XMStoreFloat4(&ndcF, ndc);
 			ndcF = XMFLOAT4(ndcF.x / ndcF.w, ndcF.y / ndcF.w, ndcF.z / ndcF.w, ndcF.w / ndcF.w);

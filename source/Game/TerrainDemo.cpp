@@ -342,7 +342,7 @@ namespace Rendering
 		#pragma region DRAW_LIGHTING
 
 		//skybox
-		mSkybox->Draw(gameTime);
+		mSkybox->Draw();
 
 		//terrain
 		mTerrain->Draw(mShadowMapper);
@@ -373,7 +373,7 @@ namespace Rendering
 		mPostProcessingStack->End();
 
 		#pragma region DRAW_SUN
-		mSkybox->DrawSun(gameTime, mPostProcessingStack);
+		mSkybox->DrawSun(nullptr, mPostProcessingStack);
 #pragma endregion
 
 		#pragma region DRAW_VOLUMETRIC_CLOUDS

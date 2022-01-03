@@ -141,10 +141,17 @@ namespace Library
 	{
 		mPosition = position;
 	}
+
 	void Camera::SetDirection(const XMFLOAT3& direction)
 	{
 		mDirection = direction;
 	}
+
+	void Camera::SetUp(const XMFLOAT3& up)
+	{
+		mUp = up;
+	}
+
 	void Camera::SetFOV(float fov)
 	{
 		mFieldOfView = fov;

@@ -10,6 +10,8 @@ namespace Library
 	class Camera;
 	class ShadowMapper;
 	class DirectionalLight;
+	class Skybox;
+	class GameTime;
 
 	class ER_LightProbe
 	{
@@ -18,8 +20,8 @@ namespace Library
 		ER_LightProbe(Game& game, DirectionalLight& light, ShadowMapper& shadowMapper, const XMFLOAT3& position, int size);
 		~ER_LightProbe();
 
-		void DrawProbe(Game& game, const LightProbeRenderingObjectsInfo& objectsToRender);
-		void UpdateProbe();
+		void DrawProbe(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox = nullptr);
+		void UpdateProbe(const GameTime& gameTime);
 	private:
 		void UpdateStandardLightingPBRMaterialVariables(Rendering::RenderingObject* obj, int cubeFaceIndex);
 		void PrecullObjectsPerFace();
@@ -49,7 +51,7 @@ namespace Library
 		~ER_IlluminationProbeManager();
 
 		void Initialize();
-		void ComputeProbes(Game& game, ProbesRenderingObjectsInfo& aObjects);
+		void ComputeProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox = nullptr);
 
 	private:
 		void ComputeLightProbes(int aIndex = -1);

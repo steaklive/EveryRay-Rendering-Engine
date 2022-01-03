@@ -350,7 +350,7 @@ namespace Rendering
 		#pragma region LIGHTING_PASS
 		
 		//skybox
-		mSkybox->Draw(gameTime);
+		mSkybox->Draw();
 
 		//grid
 		if (Utility::IsEditorMode)

@@ -72,7 +72,7 @@ namespace Rendering
 			mDirectionalLight->DirectionVector(),
 			XMVECTOR{ mDirectionalLight->GetDirectionalLightColor().x, mDirectionalLight->GetDirectionalLightColor().y, mDirectionalLight->GetDirectionalLightColor().z, 1.0 },
 			mDirectionalLight->GetSunBrightness(), mDirectionalLight->GetSunExponent());
-		
+		mSkybox->Update(gameTime);
 		mEditor->Update(gameTime);
 		
 		UpdateImGui();
@@ -96,7 +96,7 @@ namespace Rendering
 		
 		//TODO temp
 		{
-			mIlluminationProbesManager->ComputeProbes(*mGame, mScene->objects);
+			mIlluminationProbesManager->ComputeProbes(*mGame, gameTime, mScene->objects, mSkybox);
 		}
 		#pragma region GBUFFER_PREPASS
 		
@@ -128,7 +128,7 @@ namespace Rendering
 		mPostProcessingStack->Begin(true, mGBuffer->GetDepth());
 
 		#pragma region DRAW_LIGHTING
-		mSkybox->Draw(gameTime);
+		mSkybox->Draw();
 		mIllumination->DrawLocalIllumination(mGBuffer, mPostProcessingStack->GetMainRenderTarget(), Utility::IsEditorMode);
 
 		if (Utility::IsEditorMode)
@@ -140,7 +140,7 @@ namespace Rendering
 		mPostProcessingStack->End();
 
 		#pragma region DRAW_SUN
-		mSkybox->DrawSun(gameTime, mPostProcessingStack);
+		mSkybox->DrawSun(nullptr, mPostProcessingStack);
 #pragma endregion
 
 		#pragma region DRAW_VOLUMETRIC_CLOUDS

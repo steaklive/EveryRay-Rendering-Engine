@@ -1,11 +1,13 @@
 #include "ER_IlluminationProbeManager.h"
 #include "Game.h"
+#include "GameTime.h"
 #include "ShadowMapper.h"
 #include "DirectionalLight.h"
 #include "MatrixHelper.h"
 #include "MaterialHelper.h"
 #include "VectorHelper.h"
 #include "StandardLightingMaterial.h"
+#include "Skybox.h"
 
 namespace Library
 {
@@ -20,11 +22,11 @@ namespace Library
 		DeletePointerCollection(mLightProbes);
 	}
 
-	void ER_IlluminationProbeManager::ComputeProbes(Game& game, ProbesRenderingObjectsInfo& aObjects)
+	void ER_IlluminationProbeManager::ComputeProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox)
 	{
 		for (auto& lightProbe : mLightProbes)
 		{
-			lightProbe->DrawProbe(game, aObjects);
+			lightProbe->DrawProbe(game, gameTime, aObjects, skybox);
 		}
 	}
 
@@ -47,10 +49,14 @@ namespace Library
 		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
 		{
 			mCubemapFacesRTs[i] = new CustomRenderTarget(game.Direct3DDevice(), size, size, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
-			mCubemapCameras[i] = new Camera(game, 90.0f, 1.0f, 0.01f, 600.0f); //copied from FPS camera for now
+			mCubemapCameras[i] = new Camera(game, 90.0f, 1.0f, 0.5f, 600.0f);
 			mCubemapCameras[i]->Initialize();
 			mCubemapCameras[i]->SetPosition(mPosition);
 			mCubemapCameras[i]->SetDirection(facesDirections[i]);
+			if (i == CUBEMAP_FACES_COUNT - 2)
+				mCubemapCameras[i]->SetUp(Vector3Helper::Forward);
+			else if (i == CUBEMAP_FACES_COUNT - 1)
+				mCubemapCameras[i]->SetUp(Vector3Helper::Backward);
 			mCubemapCameras[i]->UpdateViewMatrix();
 			mCubemapCameras[i]->UpdateProjectionMatrix();
 
@@ -67,7 +73,7 @@ namespace Library
 
 	}
 
-	void ER_LightProbe::DrawProbe(Game& game, const LightProbeRenderingObjectsInfo& objectsToRender)
+	void ER_LightProbe::DrawProbe(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox)
 	{
 		auto context = game.Direct3DDeviceContext();
 		float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -78,11 +84,20 @@ namespace Library
 		CD3D11_VIEWPORT newViewPort(0.0f, 0.0f, static_cast<float>(mSize), static_cast<float>(mSize));
 		context->RSSetViewports(viewportsCount, &newViewPort);
 
-		for (int cubeMapFace = 0; cubeMapFace < 6; cubeMapFace++)
+		for (int cubeMapFace = 0; cubeMapFace < CUBEMAP_FACES_COUNT; cubeMapFace++)
 		{
 			// Set the render target and clear it.
 			context->OMSetRenderTargets(1, mCubemapFacesRTs[cubeMapFace]->getRTVs(), NULL);
 			context->ClearRenderTargetView(mCubemapFacesRTs[cubeMapFace]->getRTV(), clearColor);
+
+			if (skybox)
+			{
+				skybox->Update(gameTime, mCubemapCameras[cubeMapFace]);
+				skybox->Draw(mCubemapCameras[cubeMapFace]);
+				//TODO draw sun
+				//...
+				//skybox->UpdateSun(gameTime, mCubemapCameras[cubeMapFace]);
+			}
 
 			//TODO change to culled objects per face
 			for (auto& object : objectsToRender)

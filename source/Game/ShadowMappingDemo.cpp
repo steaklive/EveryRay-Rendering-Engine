@@ -461,7 +461,7 @@ namespace Rendering
 #pragma endregion
 
 		#pragma region DRAW_SKYBOX
-		mSkybox->Draw(gameTime);
+		mSkybox->Draw();
 		#pragma endregion
 
 		// Projective texture mapping directional pass

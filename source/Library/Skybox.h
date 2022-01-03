@@ -30,9 +30,10 @@ namespace Library
 		~Skybox();
 
 		virtual void Initialize() override;
-		virtual void Update(const GameTime& gameTime) override;
-		virtual void Draw(const GameTime& gameTime) override;
-		void DrawSun(const GameTime& gametime, Rendering::PostProcessingStack* postprocess = nullptr);
+		void Draw(Camera* aCustomCamera = nullptr);
+		void Update(const GameTime& gameTime, Camera* aCustomCamera = nullptr);
+		void UpdateSun(const GameTime& gameTime, Camera* aCustomCamera = nullptr);
+		void DrawSun(Camera* aCustomCamera = nullptr, Rendering::PostProcessingStack* postprocess = nullptr);
 
 		void SetMovable(bool value) { mIsMovable = value; };
 		void SetUseCustomSkyColor(bool value) { mUseCustomColor = value; }

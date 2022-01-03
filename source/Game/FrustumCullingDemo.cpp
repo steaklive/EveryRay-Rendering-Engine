@@ -383,7 +383,7 @@ namespace Rendering
 		mRenderStateHelper.SaveRasterizerState();
 
 		#pragma region DRAW_SKYBOX
-		mSkybox->Draw(gameTime);
+		mSkybox->Draw();
 #pragma endregion
 
 		ID3D11DeviceContext* direct3DDeviceContext = mGame->Direct3DDeviceContext();
