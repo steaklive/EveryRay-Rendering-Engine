@@ -21,15 +21,13 @@ namespace Library
 		};
 	}
 
-	class Skybox : public DrawableGameComponent
+	class Skybox
 	{
-		RTTI_DECLARATIONS(Skybox, DrawableGameComponent)
-
 	public:
 		Skybox(Game& game, Camera& camera, const std::wstring& cubeMapFileName, float scale);
 		~Skybox();
 
-		virtual void Initialize() override;
+		void Initialize();
 		void Draw(Camera* aCustomCamera = nullptr);
 		void Update(const GameTime& gameTime, Camera* aCustomCamera = nullptr);
 		void UpdateSun(const GameTime& gameTime, Camera* aCustomCamera = nullptr);
@@ -54,7 +52,9 @@ namespace Library
 		Skybox();
 		Skybox(const Skybox& rhs);
 		Skybox& operator=(const Skybox& rhs);
-		XMFLOAT4 CalculateSunPositionOnSkybox(XMFLOAT3 dir);
+		XMFLOAT4 CalculateSunPositionOnSkybox(XMFLOAT3 dir, Camera* aCustomCamera = nullptr);
+		Game& mGame;
+		Camera& mCamera;
 
 		std::wstring mCubeMapFileName;
 		Effect* mEffect;

@@ -15,10 +15,8 @@
 
 namespace Library
 {
-	RTTI_DEFINITIONS(Skybox)
-
 	Skybox::Skybox(Game& game, Camera& camera, const std::wstring& cubeMapFileName, float scale)
-		: DrawableGameComponent(game, camera),
+		: mGame(game), mCamera(camera),
 		mCubeMapFileName(cubeMapFileName), mEffect(nullptr), mMaterial(nullptr),
 		mCubeMapShaderResourceView(nullptr), mVertexBuffer(nullptr), mIndexBuffer(nullptr), mIndexCount(0),
 		mWorldMatrix(MatrixHelper::Identity), mScaleMatrix(MatrixHelper::Identity), mScale(scale)
@@ -29,11 +27,11 @@ namespace Library
 	Skybox::~Skybox()
 	{
 		//delete skybox from components
-		std::pair<bool, int> isSkyboxComponent = mGame->FindInGameComponents<Skybox*>(mGame->components, this);
-		if (isSkyboxComponent.first)
-		{
-			mGame->components.erase(mGame->components.begin() + isSkyboxComponent.second);
-		}
+		//std::pair<bool, int> isSkyboxComponent = mGame->FindInGameComponents<Skybox*>(mGame->components, this);
+		//if (isSkyboxComponent.first)
+		//{
+		//	mGame->components.erase(mGame->components.begin() + isSkyboxComponent.second);
+		//}
 
 		ReleaseObject(mCubeMapShaderResourceView);
 		DeleteObject(mMaterial);
@@ -51,23 +49,22 @@ namespace Library
 	{
 		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
 
-		std::unique_ptr<Model> model(new Model(*mGame, Utility::GetFilePath("content\\models\\SphereSkybox.obj"), true));
+		std::unique_ptr<Model> model(new Model(mGame, Utility::GetFilePath("content\\models\\SphereSkybox.obj"), true));
 
-		mEffect = new Effect(*mGame);
+		mEffect = new Effect(mGame);
 		mEffect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\Skybox.fx"));
 
 		mMaterial = new SkyboxMaterial();
 		mMaterial->Initialize(mEffect);
 
 		Mesh* mesh = model->Meshes().at(0);
-		mMaterial->CreateVertexBuffer(mGame->Direct3DDevice(), *mesh, &mVertexBuffer);
+		mMaterial->CreateVertexBuffer(mGame.Direct3DDevice(), *mesh, &mVertexBuffer);
 		mesh->CreateIndexBuffer(&mIndexBuffer);
 		mIndexCount = mesh->Indices().size();
-		
 
 		if (mCubeMapFileName.find(std::wstring(L".dds")) != std::string::npos) {
 			
-			HRESULT hr = DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mCubeMapFileName.c_str(), nullptr, &mCubeMapShaderResourceView);
+			HRESULT hr = DirectX::CreateDDSTextureFromFile(mGame.Direct3DDevice(), mCubeMapFileName.c_str(), nullptr, &mCubeMapShaderResourceView);
 			if (FAILED(hr))
 			{
 				throw GameException("Failed to load a Skybox texture!", hr);
@@ -76,7 +73,7 @@ namespace Library
 		}
 		else
 		{
-			HRESULT hr = DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mCubeMapFileName.c_str(), nullptr, &mCubeMapShaderResourceView);
+			HRESULT hr = DirectX::CreateWICTextureFromFile(mGame.Direct3DDevice(), mCubeMapFileName.c_str(), nullptr, &mCubeMapShaderResourceView);
 			if (FAILED(hr))
 			{
 				throw GameException("Failed to load a Skybox texture!", hr);
@@ -89,20 +86,20 @@ namespace Library
 		ID3DBlob* blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Sun.hlsl").c_str(), "main", "ps_5_0", &blob)))
 			throw GameException("Failed to load main pass from shader: Sun.hlsl!");
-		if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSunPS)))
+		if (FAILED(mGame.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSunPS)))
 			throw GameException("Failed to create shader from Sun.hlsl!");
 		blob->Release();
 
 		blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Sun.hlsl").c_str(), "occlusion", "ps_5_0", &blob)))
 			throw GameException("Failed to load occlusion pass from shader: Sun.hlsl!");
-		if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSunOcclusionPS)))
+		if (FAILED(mGame.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSunOcclusionPS)))
 			throw GameException("Failed to create shader from Sun.hlsl!");
 		blob->Release();
 
-		mSunConstantBuffer.Initialize(mGame->Direct3DDevice());
-		mSunRenderTarget = new FullScreenRenderTarget(*mGame);
-		mSunOcclusionRenderTarget = new FullScreenRenderTarget(*mGame);
+		mSunConstantBuffer.Initialize(mGame.Direct3DDevice());
+		mSunRenderTarget = new FullScreenRenderTarget(mGame);
+		mSunOcclusionRenderTarget = new FullScreenRenderTarget(mGame);
 
 		// add to game components
 		//mGame->components.push_back(this);
@@ -110,12 +107,12 @@ namespace Library
 
 	void Skybox::Update(const GameTime& gameTime, Camera* aCustomCamera)
 	{
-		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
 		XMFLOAT3 position;
 		if (aCustomCamera)
 			position = aCustomCamera->Position();
 		else
-			position = mCamera->Position();
+			position = mCamera.Position();
 
 		if (mIsMovable)
 			XMStoreFloat4x4(&mWorldMatrix, XMLoadFloat4x4(&mScaleMatrix) * XMMatrixTranslation(position.x, position.y - 50.0f, position.z) * XMMatrixRotationAxis(XMVECTOR{ 0,1,0 }, gameTime.TotalGameTime() * 0.003f));
@@ -126,7 +123,7 @@ namespace Library
 
 	void Skybox::UpdateSun(const GameTime& gameTime, Camera* aCustomCamera)
 	{
-		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
 
 		if (aCustomCamera)
 		{
@@ -135,8 +132,8 @@ namespace Library
 		}
 		else
 		{
-			mSunConstantBuffer.Data.InvProj = XMMatrixInverse(nullptr, mCamera->ProjectionMatrix());
-			mSunConstantBuffer.Data.InvView = XMMatrixInverse(nullptr, mCamera->ViewMatrix());
+			mSunConstantBuffer.Data.InvProj = XMMatrixInverse(nullptr, mCamera.ProjectionMatrix());
+			mSunConstantBuffer.Data.InvView = XMMatrixInverse(nullptr, mCamera.ViewMatrix());
 		}
 		mSunConstantBuffer.Data.SunDir = mSunDir;
 		mSunConstantBuffer.Data.SunColor = mSunColor;
@@ -147,7 +144,7 @@ namespace Library
 
 	void Skybox::Draw(Camera* aCustomCamera)
 	{
-		ID3D11DeviceContext* direct3DDeviceContext = mGame->Direct3DDeviceContext();
+		ID3D11DeviceContext* direct3DDeviceContext = mGame.Direct3DDeviceContext();
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		Pass* pass = mMaterial->CurrentTechnique()->Passes().at(0);
@@ -163,7 +160,7 @@ namespace Library
 		if (aCustomCamera)
 			wvp = XMLoadFloat4x4(&mWorldMatrix) * aCustomCamera->ViewMatrix() * aCustomCamera->ProjectionMatrix();
 		else
-			wvp = XMLoadFloat4x4(&mWorldMatrix) * mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
+			wvp = XMLoadFloat4x4(&mWorldMatrix) * mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
 		mMaterial->WorldViewProjection() << wvp;
 		mMaterial->SkyboxTexture() << mCubeMapShaderResourceView;
 
@@ -176,11 +173,11 @@ namespace Library
 		pass->Apply(0, direct3DDeviceContext);
 
 		direct3DDeviceContext->DrawIndexed(mIndexCount, 0, 0);
-		mGame->UnbindPixelShaderResources(0, 3);
+		mGame.UnbindPixelShaderResources(0, 3);
 	}
 
 	void Skybox::DrawSun(Camera* aCustomCamera, Rendering::PostProcessingStack* postprocess) {
-		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
 
 		postprocess->BeginRenderingToExtraRT(true);
 		Draw(aCustomCamera);
@@ -218,12 +215,12 @@ namespace Library
 
 			XMFLOAT3 mSunDirection;
 			XMStoreFloat3(&mSunDirection, mSunDir);
-			XMFLOAT4 posWorld = CalculateSunPositionOnSkybox(XMFLOAT3(-mSunDirection.x,-mSunDirection.y,-mSunDirection.z));
+			XMFLOAT4 posWorld = CalculateSunPositionOnSkybox(XMFLOAT3(-mSunDirection.x,-mSunDirection.y,-mSunDirection.z), aCustomCamera);
 			XMVECTOR ndc;
 			if (aCustomCamera)
 				ndc = XMVector3Transform(XMLoadFloat4(&posWorld), aCustomCamera->ViewProjectionMatrix());
 			else
-				ndc = XMVector3Transform(XMLoadFloat4(&posWorld), mCamera->ViewProjectionMatrix());
+				ndc = XMVector3Transform(XMLoadFloat4(&posWorld), mCamera.ViewProjectionMatrix());
 
 			XMFLOAT4 ndcF;
 			XMStoreFloat4(&ndcF, ndc);
@@ -244,11 +241,16 @@ namespace Library
 		return mSunOcclusionRenderTarget->OutputColorTexture();
 	}
 
-	XMFLOAT4 Skybox::CalculateSunPositionOnSkybox(XMFLOAT3 dir)
+	XMFLOAT4 Skybox::CalculateSunPositionOnSkybox(XMFLOAT3 dir, Camera* aCustomCamera)
 	{
 		float t = 0.0f;
 
-		XMFLOAT3 sphereCenter = mCamera->Position();
+		XMFLOAT3 sphereCenter;
+		if (aCustomCamera )
+			sphereCenter = aCustomCamera->Position();
+		else 
+			sphereCenter = mCamera.Position();
+
 		float radius2 = mScale * mScale;
 
 		XMFLOAT3 L = XMFLOAT3(-sphereCenter.x,-sphereCenter.y,-sphereCenter.z);

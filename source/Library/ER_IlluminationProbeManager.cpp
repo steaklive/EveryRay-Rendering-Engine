@@ -49,7 +49,7 @@ namespace Library
 		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
 		{
 			mCubemapFacesRTs[i] = new CustomRenderTarget(game.Direct3DDevice(), size, size, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
-			mCubemapCameras[i] = new Camera(game, 90.0f, 1.0f, 0.5f, 600.0f);
+			mCubemapCameras[i] = new Camera(game, 90.0f, 1.0f, 0.1f, 600.0f);
 			mCubemapCameras[i]->Initialize();
 			mCubemapCameras[i]->SetPosition(mPosition);
 			mCubemapCameras[i]->SetDirection(facesDirections[i]);

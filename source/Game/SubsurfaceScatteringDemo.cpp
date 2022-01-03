@@ -249,7 +249,7 @@ namespace Rendering
 		//Skybox initialization
 		mSkybox = new Skybox(*mGame, *mCamera, Utility::GetFilePath(L"content\\models\\lpshead\\IrradianceMap.dds"), 100.0f);
 		mSkybox->Initialize();
-		mSkybox->SetVisible(false);
+		//mSkybox->SetVisible(false);
 
 
 		mDepthMap = new DepthMap(*mGame, 2048, 2048);
