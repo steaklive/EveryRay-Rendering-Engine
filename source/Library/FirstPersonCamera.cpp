@@ -136,12 +136,10 @@ namespace Library
 		XMVECTOR rotationVector = XMLoadFloat2(&rotationAmount) * mRotationRate * elapsedTime;
 		XMVECTOR right = XMLoadFloat3(&mRight);
 
-
 		XMMATRIX pitchMatrix = XMMatrixRotationAxis(right, XMVectorGetY(rotationVector));
 		XMMATRIX yawMatrix = XMMatrixRotationY(XMVectorGetX(rotationVector));
 
 		ApplyRotation(XMMatrixMultiply(pitchMatrix, yawMatrix));
-
 
 		XMVECTOR position = XMLoadFloat3(&mPosition);
 		XMVECTOR movement = XMLoadFloat3(&movementAmount) * mMovementRate * elapsedTime;

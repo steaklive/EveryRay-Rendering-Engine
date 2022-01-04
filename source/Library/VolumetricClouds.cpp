@@ -187,11 +187,11 @@ namespace Library {
 			mCloudsConstantBuffer.Buffer()
 		};
 		ID3D11ShaderResourceView* SR[5] = {
-			(mDirectionalLight.IsSunRendered()) ? mSkybox.GetSunOutputTexture() : mPostProcessingStack.GetExtraColorOutputTexture(),
+			(mDirectionalLight.IsSunRendered()) ? mSkybox.GetSunOutputTexture() : mPostProcessingStack.GetExtraColorSRV(),
 			mWeatherTextureSRV,
 			mCloudTextureSRV,
 			mWorleyTextureSRV,
-			mPostProcessingStack.GetDepthOutputTexture(),
+			mPostProcessingStack.GetDepthSRV(),
 		};
 		ID3D11SamplerState* SS[2] = { mCloudSS, mWeatherSS };
 
@@ -230,7 +230,7 @@ namespace Library {
 		mBlurRenderTarget->Begin();
 		ID3D11ShaderResourceView* SR_Blur[2] = {
 			(mUseComputeShaderVersion) ? mCustomMainRenderTargetCS->getSRV() : mMainRenderTargetPS->OutputColorTexture(),
-			mPostProcessingStack.GetDepthOutputTexture(),
+			mPostProcessingStack.GetDepthSRV(),
 		};
 		context->PSSetShaderResources(0, 2, SR_Blur);
 		context->PSSetShader(mBlurPS, NULL, NULL);
@@ -240,8 +240,8 @@ namespace Library {
 		//composite pass
 		mCompositeRenderTarget->Begin();
 		ID3D11ShaderResourceView* SR_Composite[3] = {
-			mPostProcessingStack.GetPrepassColorOutputTexture(),
-			mPostProcessingStack.GetDepthOutputTexture(),
+			mPostProcessingStack.GetPrepassColorSRV(),
+			mPostProcessingStack.GetDepthSRV(),
 			mBlurRenderTarget->OutputColorTexture()
 		};
 		context->PSSetShaderResources(0, 3, SR_Composite);

@@ -49,7 +49,7 @@ namespace Library
 		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
 		{
 			mCubemapFacesRTs[i] = new CustomRenderTarget(game.Direct3DDevice(), size, size, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
-			mCubemapCameras[i] = new Camera(game, 90.0f, 1.0f, 0.1f, 600.0f);
+			mCubemapCameras[i] = new Camera(game, XM_PIDIV2, 1.0f, 0.1f, 100000.0f);
 			mCubemapCameras[i]->Initialize();
 			mCubemapCameras[i]->SetPosition(mPosition);
 			mCubemapCameras[i]->SetDirection(facesDirections[i]);
@@ -82,7 +82,7 @@ namespace Library
 		CD3D11_VIEWPORT oldViewPort;
 		context->RSGetViewports(&viewportsCount, &oldViewPort);
 		CD3D11_VIEWPORT newViewPort(0.0f, 0.0f, static_cast<float>(mSize), static_cast<float>(mSize));
-		context->RSSetViewports(viewportsCount, &newViewPort);
+		context->RSSetViewports(1, &newViewPort);
 
 		for (int cubeMapFace = 0; cubeMapFace < CUBEMAP_FACES_COUNT; cubeMapFace++)
 		{
@@ -90,6 +90,7 @@ namespace Library
 			context->OMSetRenderTargets(1, mCubemapFacesRTs[cubeMapFace]->getRTVs(), NULL);
 			context->ClearRenderTargetView(mCubemapFacesRTs[cubeMapFace]->getRTV(), clearColor);
 
+			//TODO preferably once in the future
 			if (skybox)
 			{
 				skybox->Update(gameTime, mCubemapCameras[cubeMapFace]);

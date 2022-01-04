@@ -227,9 +227,9 @@ namespace Library {
 	}
 
 	//deferred rendering approach
-	void Illumination::DrawLocalIllumination(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget, bool isEditorMode)
+	void Illumination::DrawLocalIllumination(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget, bool isEditorMode, bool clearInitTarget)
 	{
-		DrawDeferredLighting(gbuffer, aRenderTarget);
+		DrawDeferredLighting(gbuffer, aRenderTarget, clearInitTarget);
 		DrawForwardLighting(gbuffer, aRenderTarget);
 
 		if (isEditorMode) //todo move to a separate debug renderer
@@ -572,7 +572,7 @@ namespace Library {
 		}
 	}
 
-	void Illumination::DrawDeferredLighting(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget)
+	void Illumination::DrawDeferredLighting(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget, bool clearTarget)
 	{
 		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
@@ -581,7 +581,9 @@ namespace Library {
 		//compute pass
 		if (aRenderTarget)
 		{
-			context->ClearUnorderedAccessViewFloat(aRenderTarget->getUAV(), clearColorBlack);
+			//might be cleared before (i.e., in PP)
+			if (clearTarget) 
+				context->ClearUnorderedAccessViewFloat(aRenderTarget->getUAV(), clearColorBlack);
 
 			for (size_t i = 0; i < NUM_SHADOW_CASCADES; i++)
 				mDeferredLightingConstantBuffer.Data.ShadowMatrices[i] = mShadowMapper.GetViewMatrix(i) * mShadowMapper.GetProjectionMatrix(i) /** XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix())*/;

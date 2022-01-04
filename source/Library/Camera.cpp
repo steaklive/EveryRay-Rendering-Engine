@@ -156,7 +156,6 @@ namespace Library
 	{
 		mFieldOfView = fov;
 		UpdateProjectionMatrix();
-
 	}
 
 	void Camera::SetFarPlaneDistance(float value)
@@ -256,19 +255,18 @@ namespace Library
 		XMStoreFloat3(&mUp, up);
 		XMStoreFloat3(&mRight, right);
 
-		rotationMatrix = transform;
+		mRotationMatrix = transform;
 	}
 
 	void Camera::ApplyRotation(const XMFLOAT4X4& transform)
 	{
 		XMMATRIX transformMatrix = XMLoadFloat4x4(&transform);
 		ApplyRotation(transformMatrix);
-
 	}
 
 	XMMATRIX Camera::RotationTransformMatrix() const
 	{
-		return rotationMatrix;
+		return mRotationMatrix;
 	}
 
 	void Camera::Cull(const std::map<std::string, Rendering::RenderingObject*>& objects)

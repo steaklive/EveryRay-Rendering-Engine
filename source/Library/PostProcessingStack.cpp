@@ -628,17 +628,17 @@ namespace Rendering {
 		ImGui::End();
 	}
 
-	ID3D11ShaderResourceView * PostProcessingStack::GetDepthOutputTexture()
+	ID3D11ShaderResourceView* PostProcessingStack::GetDepthSRV()
 	{
-		return mMainDepthTarget->getSRV(); 
+		return mMainDepthTarget->getSRV();
 	}
 
-	ID3D11ShaderResourceView * PostProcessingStack::GetPrepassColorOutputTexture()
+	ID3D11ShaderResourceView* PostProcessingStack::GetPrepassColorSRV()
 	{
 		return mMainRenderTarget->getSRV();
 	}
 
-	ID3D11ShaderResourceView * PostProcessingStack::GetExtraColorOutputTexture()
+	ID3D11ShaderResourceView* PostProcessingStack::GetExtraColorSRV()
 	{
 		return mExtraRenderTarget->OutputColorTexture();
 	}

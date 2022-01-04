@@ -68,7 +68,7 @@ namespace Library
 
 		void Initialize(const Scene* scene);
 
-		void DrawLocalIllumination(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget, bool isEditorMode = false);
+		void DrawLocalIllumination(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget, bool isEditorMode = false, bool clearInitTarget = false);
 		void DrawGlobalIllumination(GBuffer* gbuffer, const GameTime& gameTime);
 
 		void Update(const GameTime& gameTime, const Scene* scene);
@@ -93,7 +93,7 @@ namespace Library
 
 		float GetDirectionalLightIntensity() { return mDirectionalLightIntensity; }
 	private:
-		void DrawDeferredLighting(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget);
+		void DrawDeferredLighting(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget, bool clearTarget = false);
 		void DrawForwardLighting(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget);
 		void DrawDebugGizmos();
 

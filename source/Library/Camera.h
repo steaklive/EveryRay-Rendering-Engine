@@ -48,8 +48,6 @@ namespace Library
 		float GetCameraFarCascadeDistance(int index);
 		float GetCameraNearCascadeDistance(int index);
 
-		XMMATRIX rotationMatrix;
-
 		virtual void SetPosition(FLOAT x, FLOAT y, FLOAT z);
 		virtual void SetPosition(FXMVECTOR position);
 		virtual void SetPosition(const XMFLOAT3& position);
@@ -85,6 +83,7 @@ namespace Library
 		XMFLOAT3 mUp;
 		XMFLOAT3 mRight;
 
+		XMMATRIX mRotationMatrix;
 		XMFLOAT4X4 mViewMatrix;
 		XMFLOAT4X4 mProjectionMatrix;
 

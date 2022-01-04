@@ -26,13 +26,6 @@ namespace Library
 
 	Skybox::~Skybox()
 	{
-		//delete skybox from components
-		//std::pair<bool, int> isSkyboxComponent = mGame->FindInGameComponents<Skybox*>(mGame->components, this);
-		//if (isSkyboxComponent.first)
-		//{
-		//	mGame->components.erase(mGame->components.begin() + isSkyboxComponent.second);
-		//}
-
 		ReleaseObject(mCubeMapShaderResourceView);
 		DeleteObject(mMaterial);
 		DeleteObject(mEffect);
@@ -100,9 +93,6 @@ namespace Library
 		mSunConstantBuffer.Initialize(mGame.Direct3DDevice());
 		mSunRenderTarget = new FullScreenRenderTarget(mGame);
 		mSunOcclusionRenderTarget = new FullScreenRenderTarget(mGame);
-
-		// add to game components
-		//mGame->components.push_back(this);
 	}
 
 	void Skybox::Update(const GameTime& gameTime, Camera* aCustomCamera)
@@ -156,19 +146,18 @@ namespace Library
 		direct3DDeviceContext->IASetVertexBuffers(0, 1, &mVertexBuffer, &stride, &offset);
 		direct3DDeviceContext->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
-		XMMATRIX wvp;
+		XMMATRIX wvp = XMMatrixIdentity();
 		if (aCustomCamera)
 			wvp = XMLoadFloat4x4(&mWorldMatrix) * aCustomCamera->ViewMatrix() * aCustomCamera->ProjectionMatrix();
 		else
 			wvp = XMLoadFloat4x4(&mWorldMatrix) * mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
 		mMaterial->WorldViewProjection() << wvp;
 		mMaterial->SkyboxTexture() << mCubeMapShaderResourceView;
-
-		float useCustomColor = (mUseCustomColor) ? 1.0f : 0.0f;
 		mMaterial->SunColor() << mSunColor;
-		mMaterial->UseCustomColor() << useCustomColor;
 		mMaterial->BottomColor() << XMVECTOR{ mBottomColor.x,mBottomColor.y,mBottomColor.z,mBottomColor.w };
 		mMaterial->TopColor() << XMVECTOR{ mTopColor.x,mTopColor.y,mTopColor.z,mTopColor.w };
+		float useCustomColor = (mUseCustomColor) ? 1.0f : 0.0f;
+		mMaterial->UseCustomColor() << useCustomColor;
 
 		pass->Apply(0, direct3DDeviceContext);
 
@@ -179,6 +168,7 @@ namespace Library
 	void Skybox::DrawSun(Camera* aCustomCamera, Rendering::PostProcessingStack* postprocess) {
 		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
 
+		//dirty way (re-rendering skybox)
 		postprocess->BeginRenderingToExtraRT(true);
 		Draw(aCustomCamera);
 		postprocess->EndRenderingToExtraRT();
@@ -189,9 +179,9 @@ namespace Library
 			};
 
 			ID3D11ShaderResourceView* SR[3] = {
-				postprocess->GetExtraColorOutputTexture(),
-				postprocess->GetPrepassColorOutputTexture(),
-				postprocess->GetDepthOutputTexture()
+				postprocess->GetExtraColorSRV(),
+				postprocess->GetPrepassColorSRV(),
+				postprocess->GetDepthSRV()
 			};
 
 			mSunRenderTarget->Begin();
@@ -201,6 +191,7 @@ namespace Library
 			context->PSSetShader(mSunPS, NULL, NULL);
 			postprocess->DrawFullscreenQuad(context);
 			mSunRenderTarget->End();
+			
 			//reset main RT 
 			postprocess->SetMainRT(mSunRenderTarget->OutputColorTexture());
 		

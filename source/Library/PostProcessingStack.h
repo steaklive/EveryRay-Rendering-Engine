@@ -336,9 +336,9 @@ namespace Rendering
 
 		CustomRenderTarget* GetMainRenderTarget() { return mMainRenderTarget; }
 
-		ID3D11ShaderResourceView* GetDepthOutputTexture();
-		ID3D11ShaderResourceView* GetPrepassColorOutputTexture();
-		ID3D11ShaderResourceView* GetExtraColorOutputTexture();
+		ID3D11ShaderResourceView* GetDepthSRV();
+		ID3D11ShaderResourceView* GetPrepassColorSRV();
+		ID3D11ShaderResourceView* GetExtraColorSRV();
 
 		bool isWindowOpened = false;
 
@@ -369,6 +369,7 @@ namespace Rendering
 		CustomRenderTarget* mMainRenderTarget = nullptr;
 		DepthTarget* mMainDepthTarget = nullptr;
 
+		//TODO change to custom render targets
 		FullScreenRenderTarget* mVignetteRenderTarget;
 		FullScreenRenderTarget* mColorGradingRenderTarget;
 		FullScreenRenderTarget* mMotionBlurRenderTarget;
@@ -378,7 +379,6 @@ namespace Rendering
 		FullScreenRenderTarget* mFogRenderTarget;
 		FullScreenRenderTarget* mLightShaftsRenderTarget;
 		FullScreenRenderTarget* mCompositeLightingRenderTarget;
-
 		FullScreenRenderTarget* mExtraRenderTarget;
 
 		ID3D11Buffer* mQuadVB;
@@ -386,7 +386,6 @@ namespace Rendering
 		ID3D11InputLayout* mFullScreenQuadLayout;
 
 		ID3D11ShaderResourceView* mOriginalMainRTSRV = nullptr;
-
 		ID3D11ShaderResourceView* mSunOcclusionSRV = nullptr;
 
 		bool mVignetteLoaded = false;

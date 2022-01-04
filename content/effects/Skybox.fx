@@ -1,41 +1,19 @@
-/************* Resources *************/
-
 cbuffer CBufferPerObject
 {
-    float4x4 WorldViewProjection : WORLDVIEWPROJECTION < string UIWidget="None"; >;
-    
+    float4x4 WorldViewProjection;
     float4 SunColor;
     float4 TopColor;
     float4 BottomColor;
     float UseCustomColor;
 }
 
-TextureCube SkyboxTexture <
-    string UIName =  "Skybox Texture";
-    string ResourceType = "3D";
->;
-
-SamplerState TrilinearSampler
-{
-    Filter = MIN_MAG_MIP_LINEAR;
-};
-
-SamplerState SamplerAnisotropic
-{
-    Filter = ANISOTROPIC;
-    MaxAnisotropy = 16;
-    AddressU = Wrap;
-    AddressV = Wrap;
-};
-
+TextureCube SkyboxTexture;
 SamplerState NoFiltering;
 
 RasterizerState DisableCulling
 {
     CullMode = NONE;
 };
-
-/************* Data Structures *************/
 
 struct VS_INPUT
 {
@@ -49,8 +27,6 @@ struct VS_OUTPUT
     float4 SkyboxPos : TEXCOORD1;
 };
 
-/************* Vertex Shader *************/
-
 VS_OUTPUT vertex_shader(VS_INPUT IN)
 {
     VS_OUTPUT OUT = (VS_OUTPUT)0;
@@ -60,8 +36,6 @@ VS_OUTPUT vertex_shader(VS_INPUT IN)
     OUT.SkyboxPos = IN.ObjectPosition;
     return OUT;
 }
-
-/************* Pixel Shader *************/
 
 float4 pixel_shader(VS_OUTPUT IN) : SV_Target
 {
@@ -78,8 +52,6 @@ float4 pixel_shader(VS_OUTPUT IN) : SV_Target
     else 
         return saturate(SkyboxTexture.Sample(NoFiltering, IN.TextureCoordinate) * SunColor);
 }
-
-/************* Techniques *************/
 
 technique11 main11
 {
