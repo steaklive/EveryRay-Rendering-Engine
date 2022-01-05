@@ -23,6 +23,7 @@ namespace Library
 	class IBLRadianceMap;
 	class RenderableAABB;
 	class RenderingObject;
+	class ER_IlluminationProbeManager;
 
 	namespace IlluminationCBufferData {
 		struct VoxelizationDebugCB
@@ -77,6 +78,8 @@ namespace Library
 		void SetShadowMapSRV(ID3D11ShaderResourceView* srv) { mShadowMapSRV = srv; }
 		void SetFoliageSystemForGI(FoliageSystem* foliageSystem);
 
+		void SetProbesManager(ER_IlluminationProbeManager* manager) { mProbesManager = manager; }
+
 		bool GetDebugVoxels() { return mDrawVoxelization; }
 		bool GetDebugAO() { return mDrawAmbientOcclusionOnly; }
 
@@ -109,6 +112,7 @@ namespace Library
 		DirectionalLight& mDirectionalLight;
 		ShadowMapper& mShadowMapper;
 
+		ER_IlluminationProbeManager* mProbesManager = nullptr;
 		FoliageSystem* mFoliageSystem = nullptr;
 
 		using RenderingObjectInfo = std::map<std::string, Rendering::RenderingObject*>;

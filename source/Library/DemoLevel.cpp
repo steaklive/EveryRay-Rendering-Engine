@@ -107,6 +107,7 @@ namespace Library {
         mIllumination = new Illumination(game, camera, *mDirectionalLight, *mShadowMapper, mScene);
 
         mIlluminationProbesManager = new ER_IlluminationProbeManager(game, *mDirectionalLight, *mShadowMapper);
+		mIllumination->SetProbesManager(mIlluminationProbesManager);
 
         mFoliageSystem = new FoliageSystem();
         mFoliageSystem->FoliageSystemInitializedEvent->AddListener("foliage initialized for GI",  [&]() { mIllumination->SetFoliageSystemForGI(mFoliageSystem); });

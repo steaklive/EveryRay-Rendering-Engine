@@ -22,6 +22,8 @@ namespace Library
 
 		void DrawProbe(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox = nullptr);
 		void UpdateProbe(const GameTime& gameTime);
+
+		ID3D11ShaderResourceView* GetCubemapSRV() { return mCubemapFacesRT->getSRV(); }
 	private:
 		void UpdateStandardLightingPBRMaterialVariables(Rendering::RenderingObject* obj, int cubeFaceIndex);
 		void PrecullObjectsPerFace();
@@ -30,11 +32,12 @@ namespace Library
 		ShadowMapper& mShadowMapper;
 
 		LightProbeRenderingObjectsInfo mObjectsToRenderPerFace[CUBEMAP_FACES_COUNT];
-		CustomRenderTarget* mCubemapFacesRTs[CUBEMAP_FACES_COUNT];
+		CustomRenderTarget* mCubemapFacesRT;
 		Camera* mCubemapCameras[CUBEMAP_FACES_COUNT];
 
 		XMFLOAT3 mPosition;
 		int mSize;
+		bool mIsComputed = false;
 	};
 
 	class ER_ReflectionProbe
@@ -52,7 +55,7 @@ namespace Library
 
 		void Initialize();
 		void ComputeProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox = nullptr);
-
+		ER_LightProbe* GetLightProbe(int index) { return mLightProbes[index]; }
 	private:
 		void ComputeLightProbes(int aIndex = -1);
 		void ComputeReflectionProbes(int aIndex = -1);

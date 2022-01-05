@@ -25,6 +25,7 @@
 #include "Foliage.h"
 #include "IBLRadianceMap.h"
 #include "RenderableAABB.h"
+#include "ER_IlluminationProbeManager.h"
 
 namespace Library {
 
@@ -533,8 +534,8 @@ namespace Library {
 			material->RoughnessTexture() << obj->GetTextureData(meshIndex).RoughnessMap;
 			material->MetallicTexture() << obj->GetTextureData(meshIndex).MetallicMap;
 			material->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, NUM_SHADOW_CASCADES);
-			material->IrradianceDiffuseTexture() << mIrradianceDiffuseTextureSRV;
-			material->IrradianceSpecularTexture() << mIrradianceSpecularTextureSRV;
+			material->IrradianceDiffuseTexture() << mProbesManager->GetLightProbe(0)->GetCubemapSRV(); //TODO
+			material->IrradianceSpecularTexture() << mProbesManager->GetLightProbe(0)->GetCubemapSRV();//TODO
 			material->IntegrationTexture() << mIntegrationMapTextureSRV;
 		}
 	}

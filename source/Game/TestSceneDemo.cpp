@@ -140,7 +140,7 @@ namespace Rendering
 		mPostProcessingStack->End();
 
 		#pragma region DRAW_SUN
-		mSkybox->DrawSun(nullptr, mPostProcessingStack);
+		//mSkybox->DrawSun(nullptr, mPostProcessingStack);
 #pragma endregion
 
 		#pragma region DRAW_VOLUMETRIC_CLOUDS

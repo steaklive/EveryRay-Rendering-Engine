@@ -4,7 +4,8 @@
 class CustomRenderTarget 
 {
 public:
-	CustomRenderTarget(ID3D11Device * device, UINT width, UINT height, UINT samples, DXGI_FORMAT format, UINT bindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, int mip = 1, int depth = -1);
+	CustomRenderTarget(ID3D11Device * device, UINT width, UINT height, UINT samples, DXGI_FORMAT format, UINT bindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET,
+		int mip = 1, int depth = -1, int arraySize = 1, bool isCubemap = false);
 	~CustomRenderTarget();
 
 	ID3D11RenderTargetView* getRTV() { return mRTVs[0]; }
@@ -32,11 +33,12 @@ private:
 	ID3D11Texture2D* mTexture2D = nullptr;
 	ID3D11Texture3D* mTexture3D = nullptr;
 	bool mLegacyCode;
-
+	bool mIsCubemap;
 	UINT mBindFlags;
 	int mMipLevels;
 
 	UINT mWidth;
 	UINT mHeight;
 	UINT mDepth;
+	UINT mArraySize;
 };

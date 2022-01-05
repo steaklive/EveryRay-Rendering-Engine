@@ -32,19 +32,11 @@ TextureCube IrradianceDiffuseTexture;
 TextureCube IrradianceSpecularTexture;
 Texture2D IntegrationTexture;
 
-SamplerState Sampler_Linear
+SamplerState SamplerLinear
 {
     Filter = MIN_MAG_MIP_LINEAR;
     AddressU = WRAP;
     AddressV = WRAP;
-};
-
-SamplerState Sampler
-{
-    Filter = ANISOTROPIC;
-    MaxAnisotropy = 16;
-    AddressU = Wrap;
-    AddressV = Wrap;
 };
 
 SamplerComparisonState ShadowSampler
@@ -216,7 +208,6 @@ float3 ApplyDirectionalLight(float3 diffuseColor,float3 specularColor, float spe
 // ===============================================================================================
 // http://graphicrants.blogspot.com.au/2013/08/specular-brdf-reference.html
 // ===============================================================================================
-
 float DistributionGGX(float3 N, float3 H, float roughness)
 {
     float a = roughness * roughness;
@@ -228,7 +219,7 @@ float DistributionGGX(float3 N, float3 H, float roughness)
     float denom = (NdotH2 * (a2 - 1.0) + 1.0);
     denom = Pi * denom * denom;
 
-    return nom / max(denom, 0.001); // prevent divide by zero for roughness=0.0 and NdotH=1.0
+    return nom / max(denom, 0.001);
 }
 
 float GeometrySchlickGGX(float NdotV, float roughness)
@@ -241,7 +232,7 @@ float GeometrySchlickGGX(float NdotV, float roughness)
 
     return nom / denom;
 }
-// ----------------------------------------------------------------------------
+
 float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
 {
     float NdotV = max(dot(N, V), 0.0);
@@ -259,11 +250,11 @@ float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
 // ================================================================================================
 float3 Schlick_Fresnel(float3 f0, float cosTheta)
 {
-    return f0 + (1.0f - f0) * pow((1.0f - cosTheta), 5.0f);
+    return f0 + (float3(1.0f - f0.r, 1.0f - f0.g, 1.0f - f0.b)) * pow((1.0f - cosTheta), 5.0f);
 }
 float3 Schlick_Fresnel_UE(float3 baseReflectivity, float cosTheta)
 {
-    return max(baseReflectivity + float3(1.0 - baseReflectivity.x,1.0 - baseReflectivity.y,1.0 - baseReflectivity.z) * pow(2, (-5.55473 * cosTheta - 6.98316) * cosTheta), 0.0);
+    return max(baseReflectivity + float3(1.0 - baseReflectivity.x, 1.0 - baseReflectivity.y, 1.0 - baseReflectivity.z) * pow(2, (-5.55473 * cosTheta - 6.98316) * cosTheta), 0.0);
 }
 float3 Schlick_Fresnel_Roughness(float cosTheta, float3 F0, float roughness)
 {
@@ -272,28 +263,19 @@ float3 Schlick_Fresnel_Roughness(float cosTheta, float3 F0, float roughness)
 }
 
 // ================================================================================================
-float3 DirectDiffuseBRDF(float3 diffuseAlbedo, float3 lightDir, float3 viewDir, float3 F0, float metallic)
+float3 DirectDiffuseBRDF(float3 diffuseAlbedo, float3 lightDir, float3 viewDir, float3 F0, float metallic, float3 halfVec)
 {
-    float3 halfVec = normalize(viewDir + lightDir);
-   
     float3 F = Schlick_Fresnel(F0, max(dot(halfVec, viewDir), 0.0));
-    // for energy conservation, the diffuse and specular light can't
-    // be above 1.0 (unless the surface emits light); to preserve this
-    // relationship the diffuse component (kD) should equal 1.0 - kS.
     float3 kD = float3(1.0f, 1.0f, 1.0f) - F;
-    // multiply kD by the inverse metalness such that only non-metals 
-    // have diffuse lighting, or a linear blend if partly metal (pure metals
-    // have no diffuse light).
-    kD *= float3(1.0f - metallic, 1.0f - metallic, 1.0f - metallic);
+    kD *= (1.0f - metallic);
     
     return (diffuseAlbedo * kD) / Pi;
 }
 
 // ================================================================================================
 // Cook-Torrence BRDF
-float3 DirectSpecularBRDF(float3 normalWS, float3 lightDir, float3 viewDir, float roughness, float3 F0)
+float3 DirectSpecularBRDF(float3 normalWS, float3 lightDir, float3 viewDir, float roughness, float3 F0, float3 halfVec)
 {
-    float3 halfVec = normalize(viewDir + lightDir);
     // Cook-Torrance BRDF
     float NDF = DistributionGGX(normalWS, halfVec, roughness);
     float G = GeometrySmith(normalWS, viewDir, lightDir, roughness);
@@ -301,7 +283,7 @@ float3 DirectSpecularBRDF(float3 normalWS, float3 lightDir, float3 viewDir, floa
            
     float3 nominator = NDF * G * F;
     float denominator = 4 * max(dot(normalWS, viewDir), 0.0) * max(dot(normalWS, lightDir), 0.0);
-    float3 specular = nominator / max(denominator, 0.001); // prevent divide by zero for NdotV=0.0 or NdotL=0.0
+    float3 specular = nominator / max(denominator, 0.001);
        
     return specular;
 }
@@ -312,9 +294,11 @@ float3 DirectLightingPBR(float3 normalWS, float3 lightColor, float3 diffuseAlbed
 {
     float3 lightDir = SunDirection.xyz;
     float3 viewDir = normalize(CameraPosition.xyz - positionWS).rgb;
+    float3 halfVec = normalize(viewDir + lightDir);
+    
     float nDotL = max(dot(normalWS, lightDir), 0.0);
    
-    float3 lighting = DirectDiffuseBRDF(diffuseAlbedo, lightDir, viewDir, F0, metallic) + DirectSpecularBRDF(normalWS, lightDir, viewDir, roughness, F0);
+    float3 lighting = DirectDiffuseBRDF(diffuseAlbedo, lightDir, viewDir, F0, metallic, halfVec) + DirectSpecularBRDF(normalWS, lightDir, viewDir, roughness, F0, halfVec);
 
     float lightIntensity = SunColor.a;
     return max(lighting, 0.0f) * nDotL * lightColor * lightIntensity;
@@ -330,20 +314,21 @@ float3 ApproximateSpecularIBL(float3 F0, float3 reflectDir, float nDotV, float r
     IrradianceSpecularTexture.GetDimensions(0, width, height, levels);
     float mipIndex = roughness * levels;
     
-    float3 prefilteredColor = IrradianceSpecularTexture.SampleLevel(Sampler_Linear, reflectDir, mipIndex);
-    float2 environmentBRDF = IntegrationTexture.Sample(Sampler_Linear, float2(nDotV, roughness)).rg;
+    float3 prefilteredColor = IrradianceSpecularTexture.SampleLevel(SamplerLinear, reflectDir, mipIndex);
+    float2 environmentBRDF = IntegrationTexture.SampleLevel(SamplerLinear, float2(nDotV, roughness), 0).rg;
 
     return prefilteredColor * (F0 * environmentBRDF.x + environmentBRDF.y);
 
 }
+
 float3 IndirectLightingPBR(float3 diffuseAlbedo, float3 normalWS, float3 positionWS, float roughness, float3 F0, float metalness)
 {
     float3 viewDir = normalize(CameraPosition.xyz - positionWS);
     float nDotV = max(dot(normalWS, viewDir), 0.0);
-    float3 reflectDir = reflect(-viewDir, normalWS);
+    float3 reflectDir = normalize(reflect(-viewDir, normalWS));
     float ao = 1.0f;
 
-    float3 irradiance = IrradianceDiffuseTexture.Sample(Sampler_Linear, normalWS).rgb;
+    float3 irradiance = IrradianceDiffuseTexture.SampleLevel(SamplerLinear, normalWS, 0).rgb;
     
     float3 F = Schlick_Fresnel_UE(F0, nDotV);
     float3 kD = float3(1.0f, 1.0f, 1.0f) - F;
@@ -358,7 +343,7 @@ float3 IndirectLightingPBR(float3 diffuseAlbedo, float3 normalWS, float3 positio
 float3 mainPS(VS_OUTPUT vsOutput) : SV_Target0
 {
     uint2 pixelPos = vsOutput.Position.xy;
-    float4 diffuseAlbedo = AlbedoTexture.Sample(Sampler, vsOutput.UV);
+    float4 diffuseAlbedo = AlbedoTexture.Sample(SamplerLinear, vsOutput.UV);
     clip(diffuseAlbedo.a < 0.1f ? -1 : 1);
     float3 colorSum = 0;
     {
@@ -369,7 +354,7 @@ float3 mainPS(VS_OUTPUT vsOutput) : SV_Target0
     float gloss = 128.0;
     float3 normal;
     {
-        normal = NormalTexture.Sample(Sampler, vsOutput.UV) * 2.0 - 1.0;
+        normal = NormalTexture.Sample(SamplerLinear, vsOutput.UV) * 2.0 - 1.0;
         AntiAliasSpecular(normal, gloss);
         float3 bitangent = cross(vsOutput.Normal, vsOutput.Tangent);
         float3x3 tbn = float3x3(vsOutput.Tangent, bitangent, vsOutput.Normal);
@@ -377,9 +362,9 @@ float3 mainPS(VS_OUTPUT vsOutput) : SV_Target0
     }
     
     //float3 specularAlbedo = float3(0.56, 0.56, 0.56);
-    float metalness = MetallicTexture.Sample(Sampler, vsOutput.UV).r;
+    float metalness = MetallicTexture.Sample(SamplerLinear, vsOutput.UV).r;
     float3 specularAlbedo = float3(metalness, metalness, metalness);
-    float specularMask = SpecularTexture.Sample(Sampler, vsOutput.UV).g;
+    float specularMask = SpecularTexture.Sample(SamplerLinear, vsOutput.UV).g;
     float3 viewDir = normalize(vsOutput.ViewDir);
     colorSum += ApplyDirectionalLight(diffuseAlbedo.rgb, specularAlbedo, specularMask, gloss, normal, viewDir, SunDirection.xyz, SunColor.xyz, vsOutput.ShadowCoord0, vsOutput.ShadowCoord1, vsOutput.ShadowCoord2, vsOutput.Position.w);
 
@@ -396,16 +381,16 @@ float3 mainPS(VS_OUTPUT vsOutput) : SV_Target0
 
 float3 mainPS_PBR(VS_OUTPUT vsOutput) : SV_Target0
 {
-    float3 sampledNormal = (2 * NormalTexture.Sample(Sampler_Linear, vsOutput.UV).xyz) - 1.0; // Map normal from [0..1] to [-1..1]
+    float3 sampledNormal = (2 * NormalTexture.Sample(SamplerLinear, vsOutput.UV).xyz) - 1.0; // Map normal from [0..1] to [-1..1]
     float3x3 tbn = float3x3(vsOutput.Tangent, cross(vsOutput.Normal, vsOutput.Tangent), vsOutput.Normal);
     sampledNormal = mul(sampledNormal, tbn); // Transform normal to world space
 
     float3 normalWS = sampledNormal;
 
-    float4 diffuseAlbedo = pow(AlbedoTexture.Sample(Sampler, vsOutput.UV), 2.2);
+    float4 diffuseAlbedo = pow(AlbedoTexture.Sample(SamplerLinear, vsOutput.UV), 2.2);
     clip(diffuseAlbedo.a < 0.1f ? -1 : 1);
-    float metalness = MetallicTexture.Sample(Sampler, vsOutput.UV).r;
-    float roughness = RoughnessTexture.Sample(Sampler, vsOutput.UV).r;
+    float metalness = 0.0f;//MetallicTexture.Sample(SamplerLinear, vsOutput.UV).r;
+    float roughness = 0.0f;//RoughnessTexture.Sample(SamplerLinear, vsOutput.UV).r;
         
     //reflectance at normal incidence for dia-electic or metal
     float3 F0 = float3(0.04, 0.04, 0.04);
@@ -416,7 +401,7 @@ float3 mainPS_PBR(VS_OUTPUT vsOutput) : SV_Target0
 
     float shadow = GetShadow(vsOutput.ShadowCoord0, vsOutput.ShadowCoord1, vsOutput.ShadowCoord2, vsOutput.Position.w);
     
-    float3 color = (directLighting * shadow) /*+ indirectLighting*/;
+    float3 color = (directLighting * shadow) + indirectLighting;
             
     // HDR tonemapping
     color = color / (color + float3(1.0f, 1.0f, 1.0f));

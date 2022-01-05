@@ -65,7 +65,7 @@ namespace Rendering {
 	void PostProcessingStack::Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR, bool pFog, bool pLightShafts)
 	{
 		mMainRenderTarget = new CustomRenderTarget(game.Direct3DDevice(), game.ScreenWidth(), game.ScreenHeight(), 1,
-			DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS);
+			DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS);
 		
 		mOriginalMainRTSRV = mMainRenderTarget->getSRV();
 

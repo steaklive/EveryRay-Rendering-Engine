@@ -37,25 +37,28 @@ namespace Library
 		, mShadowMapper(shadowMapper)
 	{
 
+		//X+, X-, Y+, Y-, Z+, Z-
 		const XMFLOAT3 facesDirections[CUBEMAP_FACES_COUNT] = {
-			Vector3Helper::Left,
-			Vector3Helper::Forward,
 			Vector3Helper::Right,
-			Vector3Helper::Backward,
+			Vector3Helper::Left,
+			Vector3Helper::Up,
 			Vector3Helper::Down,
-			Vector3Helper::Up
+			Vector3Helper::Backward,
+			Vector3Helper::Forward
 		};
 
+		mCubemapFacesRT = new CustomRenderTarget(game.Direct3DDevice(), size, size, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
+			D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1, -1, 6, true);
+		
 		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
 		{
-			mCubemapFacesRTs[i] = new CustomRenderTarget(game.Direct3DDevice(), size, size, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
 			mCubemapCameras[i] = new Camera(game, XM_PIDIV2, 1.0f, 0.1f, 100000.0f);
 			mCubemapCameras[i]->Initialize();
 			mCubemapCameras[i]->SetPosition(mPosition);
 			mCubemapCameras[i]->SetDirection(facesDirections[i]);
-			if (i == CUBEMAP_FACES_COUNT - 2)
+			if (i == 2)
 				mCubemapCameras[i]->SetUp(Vector3Helper::Forward);
-			else if (i == CUBEMAP_FACES_COUNT - 1)
+			if (i == 3)
 				mCubemapCameras[i]->SetUp(Vector3Helper::Backward);
 			mCubemapCameras[i]->UpdateViewMatrix();
 			mCubemapCameras[i]->UpdateProjectionMatrix();
@@ -65,9 +68,9 @@ namespace Library
 
 	ER_LightProbe::~ER_LightProbe()
 	{
+		DeleteObject(mCubemapFacesRT);
 		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
 		{
-			DeleteObject(mCubemapFacesRTs[i]);
 			DeleteObject(mCubemapCameras[i]);
 		}
 
@@ -75,6 +78,9 @@ namespace Library
 
 	void ER_LightProbe::DrawProbe(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox)
 	{
+		//if (mIsComputed)
+		//	return;
+
 		auto context = game.Direct3DDeviceContext();
 		float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		UINT viewportsCount = 1;
@@ -83,12 +89,12 @@ namespace Library
 		context->RSGetViewports(&viewportsCount, &oldViewPort);
 		CD3D11_VIEWPORT newViewPort(0.0f, 0.0f, static_cast<float>(mSize), static_cast<float>(mSize));
 		context->RSSetViewports(1, &newViewPort);
-
+		//X+, X-, Y+, Y-, Z+, Z-
 		for (int cubeMapFace = 0; cubeMapFace < CUBEMAP_FACES_COUNT; cubeMapFace++)
 		{
 			// Set the render target and clear it.
-			context->OMSetRenderTargets(1, mCubemapFacesRTs[cubeMapFace]->getRTVs(), NULL);
-			context->ClearRenderTargetView(mCubemapFacesRTs[cubeMapFace]->getRTV(), clearColor);
+			context->OMSetRenderTargets(1, &mCubemapFacesRT->getRTVs()[cubeMapFace], NULL);
+			context->ClearRenderTargetView(mCubemapFacesRT->getRTVs()[cubeMapFace], clearColor);
 
 			//TODO preferably once in the future
 			if (skybox)
@@ -112,6 +118,8 @@ namespace Library
 		}
 
 		context->RSSetViewports(1, &oldViewPort);
+
+		mIsComputed = true;
 	}
 
 	void ER_LightProbe::UpdateStandardLightingPBRMaterialVariables(Rendering::RenderingObject* obj, int cubeFaceIndex)

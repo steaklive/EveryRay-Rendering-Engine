@@ -567,7 +567,7 @@
 				{
 					"effect" : "content\\effects\\StandardLighting.fx",
 					"name" : "StandardLightingMaterial",
-					"technique" : "standard_lighting_no_pbr"
+					"technique" : "standard_lighting_pbr"
 				},
 				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
