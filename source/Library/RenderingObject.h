@@ -196,7 +196,7 @@ namespace Rendering
 		void SetNumInstancesPerVegetationZone(int count) { mNumInstancesPerVegetationZone = count; }
 		int GetNumInstancesPerVegetationZone() { return mNumInstancesPerVegetationZone; }
 
-		void Rename(std::string name) { mName = name; }
+		void Rename(const std::string& name) { mName = name; }
 		std::string GetName() { return mName; }
 
 		void UpdateLODs();

@@ -32,7 +32,7 @@ namespace Library
 	{
 		DeleteObject(mProxyModel);
 
-		RotationUpdateEvent->RemoverAllListeners();
+		RotationUpdateEvent->RemoveAllListeners();
 		DeleteObject(RotationUpdateEvent);
 	}
 

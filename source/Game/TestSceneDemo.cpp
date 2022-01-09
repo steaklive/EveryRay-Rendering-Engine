@@ -41,7 +41,6 @@ namespace Rendering
 		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
 
         for (auto& object : mScene->objects) {
-            //object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::lightingMaterialName, [&](int meshIndex) { UpdateStandardLightingPBRMaterialVariables(object.first, meshIndex); });
             if (!object.second->IsForwardShading())
 				object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables(object.first, meshIndex); });
             object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(0), [&](int meshIndex) { UpdateShadow0MaterialVariables(object.first, meshIndex); });
@@ -94,10 +93,6 @@ namespace Rendering
 		ID3D11DeviceContext* direct3DDeviceContext = mGame->Direct3DDeviceContext();
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		
-		//TODO temp
-		{
-			mIlluminationProbesManager->ComputeProbes(*mGame, gameTime, mScene->objects, mSkybox);
-		}
 		#pragma region GBUFFER_PREPASS
 		
 		mGBuffer->Start();
@@ -118,6 +113,11 @@ namespace Rendering
 		mRenderStateHelper->RestoreRasterizerState();
 		
 #pragma endregion
+
+		//TODO temp
+		{
+			mIlluminationProbesManager->ComputeProbes(*mGame, gameTime, mScene->objects, mSkybox);
+		}
 
 		#pragma region DRAW_GI
 		mRenderStateHelper->SaveAll();

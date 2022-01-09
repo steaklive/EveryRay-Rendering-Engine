@@ -65,7 +65,7 @@ namespace Rendering
 
 	InstancingDemo::~InstancingDemo()
 	{
-		mStatueRenderingObject->MeshMaterialVariablesUpdateEvent->RemoverAllListeners();
+		mStatueRenderingObject->MeshMaterialVariablesUpdateEvent->RemoveAllListeners();
 
 		DeleteObject(mRenderStateHelper);
 

@@ -17,6 +17,7 @@
 #include "ParallaxMappingTestMaterial.h"
 #include "VoxelizationGIMaterial.h"
 #include "Illumination.h"
+#include "ER_IlluminationProbeManager.h"
 
 namespace Library 
 {
@@ -75,6 +76,7 @@ namespace Library
 				skyboxPath = root["skybox_path"].asString();
 			}
 
+			//TODO add multithreading
 			for (Json::Value::ArrayIndex i = 0; i != root["rendering_objects"].size(); i++) {
 				std::string name = root["rendering_objects"][i]["name"].asString();
 				std::string modelPath = root["rendering_objects"][i]["model_path"].asString();
@@ -90,7 +92,6 @@ namespace Library
 				auto it = objects.find(name);
 				
 				// set flags
-
 				if (root["rendering_objects"][i].isMember("foliageMask"))
 					it->second->SetFoliageMask(root["rendering_objects"][i]["foliageMask"].asBool());
 				if (root["rendering_objects"][i].isMember("inLightProbe"))
@@ -116,7 +117,6 @@ namespace Library
 							root["rendering_objects"][i]["materials"][mat]["technique"].asString()
 						);
 						
-						//shadow materials 
 						if (std::get<2>(materialData) == MaterialHelper::shadowMapMaterialName) {
 							for (int cascade = 0; cascade < NUM_SHADOW_CASCADES; cascade++)
 							{
@@ -132,12 +132,26 @@ namespace Library
 								}
 							}
 						} 
-						//voxelization gi materials
 						else if (std::get<2>(materialData) == MaterialHelper::voxelizationGIMaterialName) {
 							for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
 							{
 								const std::string name = MaterialHelper::voxelizationGIMaterialName + "_" + std::to_string(cascade);
 								it->second->LoadMaterial(new Rendering::VoxelizationGIMaterial(), std::get<1>(materialData), name);
+								std::map<std::string, Material*>::iterator iter = it->second->GetMaterials().find(name);
+
+								if (iter != it->second->GetMaterials().end())
+								{
+									it->second->GetMaterials()[name]->SetCurrentTechnique(
+										it->second->GetMaterials()[name]->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][mat]["technique"].asString())
+									);
+								}
+							}
+						}
+						else if (std::get<2>(materialData) == MaterialHelper::forwardLightingForProbesMaterialName) {
+							for (int cubemapFaceIndex = 0; cubemapFaceIndex < CUBEMAP_FACES_COUNT; cubemapFaceIndex++)
+							{
+								const std::string name = MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubemapFaceIndex);
+								it->second->LoadMaterial(new Rendering::StandardLightingMaterial(), std::get<1>(materialData), name);
 								std::map<std::string, Material*>::iterator iter = it->second->GetMaterials().find(name);
 
 								if (iter != it->second->GetMaterials().end())
@@ -156,6 +170,7 @@ namespace Library
 							);
 						}
 
+						//TODO maybe parse from a separate flag instead?
 						if (std::get<2>(materialData) == MaterialHelper::forwardLightingMaterialName)
 							it->second->SetForwardShading(true);
 					}
@@ -263,7 +278,7 @@ namespace Library
 	{
 		for (auto object : objects)
 		{
-			object.second->MeshMaterialVariablesUpdateEvent->RemoverAllListeners();
+			object.second->MeshMaterialVariablesUpdateEvent->RemoveAllListeners();
 			DeleteObject(object.second);
 		}
 		objects.clear();
@@ -364,7 +379,7 @@ namespace Library
 		}
 		else if (matName == "StandardLightingForProbeMaterial") {
 			materialName = MaterialHelper::forwardLightingForProbesMaterialName;
-			material = new Rendering::StandardLightingMaterial();
+			//material = new Rendering::StandardLightingMaterial(); //processed later as we have cubemap faces
 		}
 		else if (matName == "ParallaxMappingTestMaterial") {
 			materialName = MaterialHelper::parallaxMaterialName;

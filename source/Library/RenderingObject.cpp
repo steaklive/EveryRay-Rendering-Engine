@@ -414,8 +414,8 @@ namespace Rendering
 					context->IASetIndexBuffer(mMeshesRenderBuffers[lod][materialName][i]->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 				}
 
-				for (auto listener : MeshMaterialVariablesUpdateEvent->GetListeners())
-					listener(i);
+				auto listener = MeshMaterialVariablesUpdateEvent->GetListener(materialName);
+				listener(i);
 
 				pass->Apply(0, context);
 

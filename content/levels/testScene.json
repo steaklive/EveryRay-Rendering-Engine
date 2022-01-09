@@ -22,6 +22,7 @@
 		{
 			"foliageMask" : true,
 			"instanced" : true,
+			"inLightProbe" : true,
 			"instances_transforms" : 
 			[
 				{
@@ -83,6 +84,11 @@
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI_instancing"
+				},
+				{
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"name" : "StandardLightingForProbeMaterial",
+					"technique" : "standard_lighting_pbr_instancing"
 				}
 			],
 			"model_lods" : 
@@ -169,6 +175,7 @@
 		},
 		{
 			"instanced" : false,
+			"inLightProbe" : true,
 			"materials" : 
 			[
 				{
@@ -185,6 +192,11 @@
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
+				},
+				{
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"name" : "StandardLightingForProbeMaterial",
+					"technique" : "standard_lighting_pbr"
 				}
 			],
 			"model_path" : "content\\models\\Sponza\\sponza.fbx",
@@ -211,6 +223,7 @@
 		},
 		{
 			"instanced" : false,
+			"inLightProbe" : true,
 			"materials" : 
 			[
 				{
@@ -227,6 +240,11 @@
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
+				},
+				{
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"name" : "StandardLightingForProbeMaterial",
+					"technique" : "standard_lighting_pbr"
 				}
 			],
 			"model_path" : "content\\models\\shaderball.fbx",
@@ -268,6 +286,7 @@
 		},
 		{
 			"instanced" : false,
+			"inLightProbe" : true,
 			"materials" : 
 			[
 				{
@@ -284,6 +303,11 @@
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
+				},
+				{
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"name" : "StandardLightingForProbeMaterial",
+					"technique" : "standard_lighting_pbr"
 				}
 			],
 			"model_path" : "content\\models\\shaderball.fbx",
@@ -325,6 +349,7 @@
 		},
 		{
 			"instanced" : false,
+			"inLightProbe" : true,
 			"materials" : 
 			[
 				{
@@ -341,6 +366,11 @@
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
+				},
+				{
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"name" : "StandardLightingForProbeMaterial",
+					"technique" : "standard_lighting_pbr"
 				}
 			],
 			"model_path" : "content\\models\\shaderball.fbx",
@@ -382,6 +412,7 @@
 		},
 		{
 			"instanced" : false,
+			"inLightProbe" : true,
 			"materials" : 
 			[
 				{
@@ -398,6 +429,11 @@
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
+				},
+				{
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"name" : "StandardLightingForProbeMaterial",
+					"technique" : "standard_lighting_pbr"
 				}
 			],
 			"model_lods" : 
@@ -445,6 +481,7 @@
 		},
 		{
 			"foliageMask" : true,
+			"inLightProbe" : true,
 			"instanced" : true,
 			"instances_transforms" : 
 			[
@@ -486,6 +523,11 @@
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
+				},
+				{
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"name" : "StandardLightingForProbeMaterial",
+					"technique" : "standard_lighting_pbr_instancing"
 				}
 			],
 			"model_lods" : 
@@ -557,6 +599,7 @@
 		},
 		{
 			"instanced" : false,
+			"inLightProbe" : true,
 			"materials" : 
 			[
 				{
@@ -573,6 +616,11 @@
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
+				},
+				{
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"name" : "StandardLightingForProbeMaterial",
+					"technique" : "standard_lighting_pbr"
 				}
 			],
 			"model_path" : "content\\models\\sphere.fbx",
@@ -599,6 +647,7 @@
 		},
 		{
 			"instanced" : false,
+			"inLightProbe" : true,
 			"materials" : 
 			[
 				{
@@ -615,6 +664,11 @@
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
+				},
+				{
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"name" : "StandardLightingForProbeMaterial",
+					"technique" : "standard_lighting_pbr"
 				}
 			],
 			"model_path" : "content\\models\\couch\\couch.fbx",

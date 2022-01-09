@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <vector>
 #include <functional>
+#include "GameException.h"
 
 template<typename T>
 class GeneralEvent
@@ -20,12 +21,12 @@ public:
 	{
 		mAnonymousListeners.push_back(pEventHandlerMethod);
 	}
-	void RemoverListener(const std::string& pName)
+	void RemoveListener(const std::string& pName)
 	{
 		if (mNamedListeners.find(pName) != mNamedListeners.end())
 			mNamedListeners.erase(pName);
 	}
-	void RemoverAllListeners()
+	void RemoveAllListeners()
 	{
 		mNamedListeners.clear();
 		mAnonymousListeners.clear();
@@ -42,6 +43,18 @@ public:
 		return allListeners;
 	}
 
+	T GetListener(const std::string& pName)
+	{
+		auto it = mNamedListeners.find(pName);
+		if (it != mNamedListeners.end())
+			return it->second;
+		else
+		{
+			std::string msg = "Listener was not found: " + pName;
+			throw GameException(msg.c_str());
+		}
+	}
+	
 
 private:
 	std::unordered_map<std::string, T> mNamedListeners;

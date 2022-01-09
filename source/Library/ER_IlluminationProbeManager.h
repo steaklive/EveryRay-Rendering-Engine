@@ -2,6 +2,7 @@
 #include "Common.h"
 #include "RenderingObject.h"
 #include "CustomRenderTarget.h"
+#include "DepthTarget.h"
 
 #define CUBEMAP_FACES_COUNT 6
 
@@ -25,7 +26,7 @@ namespace Library
 
 		ID3D11ShaderResourceView* GetCubemapSRV() { return mCubemapFacesRT->getSRV(); }
 	private:
-		void UpdateStandardLightingPBRMaterialVariables(Rendering::RenderingObject* obj, int cubeFaceIndex);
+		void UpdateStandardLightingPBRMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int cubeFaceIndex);
 		void PrecullObjectsPerFace();
 		
 		DirectionalLight& mDirectionalLight;
@@ -33,6 +34,7 @@ namespace Library
 
 		LightProbeRenderingObjectsInfo mObjectsToRenderPerFace[CUBEMAP_FACES_COUNT];
 		CustomRenderTarget* mCubemapFacesRT;
+		DepthTarget* mDepthBuffers[CUBEMAP_FACES_COUNT];
 		Camera* mCubemapCameras[CUBEMAP_FACES_COUNT];
 
 		XMFLOAT3 mPosition;

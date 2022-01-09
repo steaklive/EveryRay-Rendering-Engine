@@ -39,6 +39,15 @@ SamplerState SamplerLinear
     AddressV = WRAP;
 };
 
+SamplerState AnisotropicSampler
+{
+    Filter = ANISOTROPIC;
+    MaxAnisotropy = 16;
+    AddressU = Wrap;
+    AddressV = Wrap;
+    AddressW = Wrap;
+};
+
 SamplerComparisonState ShadowSampler
 {
     Filter = COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
@@ -314,17 +323,17 @@ float3 ApproximateSpecularIBL(float3 F0, float3 reflectDir, float nDotV, float r
     IrradianceSpecularTexture.GetDimensions(0, width, height, levels);
     float mipIndex = roughness * levels;
     
-    float3 prefilteredColor = IrradianceSpecularTexture.SampleLevel(SamplerLinear, reflectDir, mipIndex);
+    float3 prefilteredColor = IrradianceSpecularTexture.SampleLevel(AnisotropicSampler, reflectDir, mipIndex);
     float2 environmentBRDF = IntegrationTexture.SampleLevel(SamplerLinear, float2(nDotV, roughness), 0).rg;
 
-    return prefilteredColor * (F0 * environmentBRDF.x + environmentBRDF.y);
+    return prefilteredColor;// * (F0 * environmentBRDF.x + environmentBRDF.y);
 
 }
 
 float3 IndirectLightingPBR(float3 diffuseAlbedo, float3 normalWS, float3 positionWS, float roughness, float3 F0, float metalness)
 {
     float3 viewDir = normalize(CameraPosition.xyz - positionWS);
-    float nDotV = max(dot(normalWS, viewDir), 0.0);
+    float nDotV = max(dot(viewDir, normalWS), 0.0);
     float3 reflectDir = normalize(reflect(-viewDir, normalWS));
     float ao = 1.0f;
 
@@ -337,7 +346,7 @@ float3 IndirectLightingPBR(float3 diffuseAlbedo, float3 normalWS, float3 positio
 
     float3 indirectSpecularLighting = ApproximateSpecularIBL(F, reflectDir, nDotV, roughness);
     
-    return (indirectDiffuseLighting + indirectSpecularLighting) * ao;
+    return (/*indirectDiffuseLighting + */indirectSpecularLighting) * ao;
 }
 
 float3 mainPS(VS_OUTPUT vsOutput) : SV_Target0
@@ -385,7 +394,7 @@ float3 mainPS_PBR(VS_OUTPUT vsOutput) : SV_Target0
     float3x3 tbn = float3x3(vsOutput.Tangent, cross(vsOutput.Normal, vsOutput.Tangent), vsOutput.Normal);
     sampledNormal = mul(sampledNormal, tbn); // Transform normal to world space
 
-    float3 normalWS = sampledNormal;
+    float3 normalWS = normalize(sampledNormal);
 
     float4 diffuseAlbedo = pow(AlbedoTexture.Sample(SamplerLinear, vsOutput.UV), 2.2);
     clip(diffuseAlbedo.a < 0.1f ? -1 : 1);

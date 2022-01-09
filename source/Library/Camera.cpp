@@ -221,19 +221,23 @@ namespace Library
 		mFrustum.SetMatrix(ViewProjectionMatrix());
 	}
 
-	void Camera::UpdateViewMatrix()
+	void Camera::UpdateViewMatrix(bool leftHanded)
 	{
 		XMVECTOR eyePosition = XMLoadFloat3(&mPosition);
 		XMVECTOR direction = XMLoadFloat3(&mDirection);
 		XMVECTOR upDirection = XMLoadFloat3(&mUp);
 
-		XMMATRIX viewMatrix = XMMatrixLookToRH(eyePosition, direction, upDirection);
+		XMMATRIX viewMatrix = (leftHanded) 
+			? XMMatrixLookToLH(eyePosition, direction, upDirection) 
+			: XMMatrixLookToRH(eyePosition, direction, upDirection);
 		XMStoreFloat4x4(&mViewMatrix, viewMatrix);
 	}
 
-	void Camera::UpdateProjectionMatrix()
+	void Camera::UpdateProjectionMatrix(bool leftHanded)
 	{
-		XMMATRIX projectionMatrix = XMMatrixPerspectiveFovRH(mFieldOfView, mAspectRatio, mNearPlaneDistance, mFarPlaneDistance);
+		XMMATRIX projectionMatrix = (leftHanded) 
+			? XMMatrixPerspectiveFovLH(mFieldOfView, mAspectRatio, mNearPlaneDistance, mFarPlaneDistance)
+			: XMMatrixPerspectiveFovRH(mFieldOfView, mAspectRatio, mNearPlaneDistance, mFarPlaneDistance);
 		XMStoreFloat4x4(&mProjectionMatrix, projectionMatrix);
 	}
 

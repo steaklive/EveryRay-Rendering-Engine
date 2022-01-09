@@ -68,7 +68,7 @@ namespace Rendering
 	{
 		for (auto object : mRenderingObjects)
 		{
-			object.second->MeshMaterialVariablesUpdateEvent->RemoverAllListeners();
+			object.second->MeshMaterialVariablesUpdateEvent->RemoveAllListeners();
 			DeleteObject(object.second);
 		}
 		mRenderingObjects.clear();
