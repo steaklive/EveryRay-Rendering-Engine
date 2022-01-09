@@ -379,7 +379,7 @@ namespace Rendering
 	{
 		if (mMaterials.find(materialName) == mMaterials.end())
 			return;
-
+		
 		if (mIsRendered && !mIsCulled)
 		{
 			if (!mMaterials.size() || mMeshesRenderBuffers[lod].size() == 0)

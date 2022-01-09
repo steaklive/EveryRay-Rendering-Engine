@@ -26,7 +26,7 @@ namespace Library
 	{
 		for (auto& lightProbe : mLightProbes)
 		{
-			lightProbe->DrawProbe(game, gameTime, aObjects, skybox);
+			lightProbe->Compute(game, gameTime, aObjects, skybox);
 		}
 	}
 
@@ -83,6 +83,19 @@ namespace Library
 
 	}
 
+	void ER_LightProbe::Compute(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox)
+	{
+		bool alreadyExistsInFile = false;
+		//TODO parse from file
+
+		if (!alreadyExistsInFile)
+			DrawProbe(game, gameTime, objectsToRender, skybox);
+		else
+		{
+			//store probe
+		}
+	}
+
 	void ER_LightProbe::DrawProbe(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox)
 	{
 		if (mIsComputed)
@@ -118,11 +131,16 @@ namespace Library
 				//skybox->UpdateSun(gameTime, mCubemapCameras[cubeMapFace]);
 			}
 
-			//TODO change to culled objects per face
+			// We dont do lodding because it is bound to main camera... We force pick lod 0.
+			// This is incorrect and might cause issues like: 
+			// Probe P is next to object A, but object A is far from main camera => A does not have lod 0, probe P can not render A.
+			const int lod = 0;
+			
+			//TODO change to culled objects per face (not a priority since we compute probes once)
 			for (auto& object : objectsToRender)
 			{
 				if (object.second->IsInLightProbe())
-					object.second->DrawLOD(MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubeMapFace), false, -1, object.second->GetLODCount() - 1);
+					object.second->DrawLOD(MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubeMapFace), false, -1, lod);
 			}
 		}
 
@@ -133,6 +151,7 @@ namespace Library
 			for (auto& object : objectsToRender)
 				object.second->MeshMaterialVariablesUpdateEvent->RemoveListener(MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubeMapFaceIndex));
 
+		//TODO save to dds file
 		//TODO release depth maps
 		//TODO release custom render targets
 		//TODO release cubemap cameras
