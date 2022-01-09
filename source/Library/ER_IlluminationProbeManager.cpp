@@ -9,6 +9,8 @@
 #include "StandardLightingMaterial.h"
 #include "Skybox.h"
 
+#include "DirectXTex.h"
+
 namespace Library
 {
 	ER_IlluminationProbeManager::ER_IlluminationProbeManager(Game& game, DirectionalLight& light, ShadowMapper& shadowMapper)
@@ -22,12 +24,10 @@ namespace Library
 		DeletePointerCollection(mLightProbes);
 	}
 
-	void ER_IlluminationProbeManager::ComputeProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox)
+	void ER_IlluminationProbeManager::ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox)
 	{
 		for (auto& lightProbe : mLightProbes)
-		{
-			lightProbe->Compute(game, gameTime, aObjects, skybox);
-		}
+			lightProbe->Compute(game, gameTime, aObjects, skybox, mLevelPath);
 	}
 
 	ER_LightProbe::ER_LightProbe(Game& game, DirectionalLight& light, ShadowMapper& shadowMapper, const XMFLOAT3& position, int size)
@@ -83,20 +83,20 @@ namespace Library
 
 	}
 
-	void ER_LightProbe::Compute(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox)
+	void ER_LightProbe::Compute(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox, const std::wstring& levelPath)
 	{
 		bool alreadyExistsInFile = false;
 		//TODO parse from file
 
 		if (!alreadyExistsInFile)
-			DrawProbe(game, gameTime, objectsToRender, skybox);
+			DrawProbe(game, gameTime, levelPath, objectsToRender, skybox);
 		else
 		{
 			//store probe
 		}
 	}
 
-	void ER_LightProbe::DrawProbe(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox)
+	void ER_LightProbe::DrawProbe(Game& game, const GameTime& gameTime, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox)
 	{
 		if (mIsComputed)
 			return;
@@ -151,12 +151,45 @@ namespace Library
 			for (auto& object : objectsToRender)
 				object.second->MeshMaterialVariablesUpdateEvent->RemoveListener(MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubeMapFaceIndex));
 
-		//TODO save to dds file
+		SaveProbeOnDisk(game, levelPath, LIGHT_PROBE);
 		//TODO release depth maps
-		//TODO release custom render targets
 		//TODO release cubemap cameras
 
 		mIsComputed = true;
+	}
+
+	void ER_LightProbe::SaveProbeOnDisk(Game& game, const std::wstring& levelPath, ER_ProbeType aType)
+	{
+		DirectX::ScratchImage tempImage;
+		HRESULT res = DirectX::CaptureTexture(game.Direct3DDevice(), game.Direct3DDeviceContext(), mCubemapFacesRT->getTexture2D(), tempImage);
+		if (FAILED(res))
+			throw GameException("Failed to capture a probe texture when saving!", res);
+
+		std::wstring fileName = GetConstructedProbeName(levelPath, aType);
+
+		res = DirectX::SaveToDDSFile(tempImage.GetImages(), tempImage.GetImageCount(), tempImage.GetMetadata(), DDS_FLAGS_NONE, fileName.c_str());
+		if (FAILED(res))
+		{
+			std::string str(fileName.begin(), fileName.end());
+			std::string msg = "Failed to save a probe texture: " + str;
+			throw GameException(msg.c_str());
+		}
+	}
+
+	std::wstring ER_LightProbe::GetConstructedProbeName(const std::wstring& levelPath, ER_ProbeType aType)
+	{
+		std::wstring fileName = levelPath;
+		if (aType == LIGHT_PROBE)
+			fileName += L"light_probe";
+		else if (aType == REFLECTION_PROBE)
+			fileName += L"reflection_probe";
+
+		fileName += L"_"
+			+ std::to_wstring(static_cast<int>(mCubemapCameras[0]->Position().x)) + L"_"
+			+ std::to_wstring(static_cast<int>(mCubemapCameras[0]->Position().y)) + L"_"
+			+ std::to_wstring(static_cast<int>(mCubemapCameras[0]->Position().z)) + L".dds";
+
+		return fileName;
 	}
 
 	void ER_LightProbe::UpdateStandardLightingPBRMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int cubeFaceIndex)

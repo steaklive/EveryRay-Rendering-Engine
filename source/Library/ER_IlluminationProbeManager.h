@@ -14,6 +14,12 @@ namespace Library
 	class Skybox;
 	class GameTime;
 
+	enum ER_ProbeType
+	{
+		LIGHT_PROBE,
+		REFLECTION_PROBE
+	};
+
 	class ER_LightProbe
 	{
 		using LightProbeRenderingObjectsInfo = std::map<std::string, Rendering::RenderingObject*>;
@@ -21,14 +27,16 @@ namespace Library
 		ER_LightProbe(Game& game, DirectionalLight& light, ShadowMapper& shadowMapper, const XMFLOAT3& position, int size);
 		~ER_LightProbe();
 
-		void Compute(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox);
+		void Compute(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox, const std::wstring& levelPath);
 		void UpdateProbe(const GameTime& gameTime);
 
 		ID3D11ShaderResourceView* GetCubemapSRV() { return mCubemapFacesRT->getSRV(); }
 	private:
-		void DrawProbe(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox = nullptr);
+		void DrawProbe(Game& game, const GameTime& gameTime, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox = nullptr);
 		void UpdateStandardLightingPBRMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int cubeFaceIndex);
 		void PrecullObjectsPerFace();
+		void SaveProbeOnDisk(Game& game, const std::wstring& levelPath, ER_ProbeType aType);
+		std::wstring GetConstructedProbeName(const std::wstring& levelPath, ER_ProbeType aType);
 		
 		DirectionalLight& mDirectionalLight;
 		ShadowMapper& mShadowMapper;
@@ -56,13 +64,15 @@ namespace Library
 		ER_IlluminationProbeManager(Game& game, DirectionalLight& light, ShadowMapper& shadowMapper);
 		~ER_IlluminationProbeManager();
 
-		void Initialize();
-		void ComputeProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox = nullptr);
+		void SetLevelPath(const std::wstring& aPath) { mLevelPath = aPath; };
+		void ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox = nullptr);
 		ER_LightProbe* GetLightProbe(int index) { return mLightProbes[index]; }
 	private:
 		void ComputeLightProbes(int aIndex = -1);
 		void ComputeReflectionProbes(int aIndex = -1);
 
 		std::vector<ER_LightProbe*> mLightProbes;
+
+		std::wstring mLevelPath;
 	};
 }

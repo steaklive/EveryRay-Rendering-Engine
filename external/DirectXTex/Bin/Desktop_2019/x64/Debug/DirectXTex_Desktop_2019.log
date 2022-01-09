@@ -1,0 +1,52 @@
+﻿  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x86\fxc.exe" BC7Encode.hlsl /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tcs_4_0 /ETryMode456CS "/FhCompiled\BC7Encode_TryMode456CS.inc" "/FdCompiled\BC7Encode_TryMode456CS.pdb" /VnBC7Encode_TryMode456CS
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTex-main\DirectXTex-main\DirectXTex\Shaders\Compiled\BC7Encode_TryMode456CS.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTex-main\DirectXTex-main\DirectXTex\Shaders\Compiled\BC7Encode_TryMode456CS.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x86\fxc.exe" BC7Encode.hlsl /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tcs_4_0 /ETryMode137CS "/FhCompiled\BC7Encode_TryMode137CS.inc" "/FdCompiled\BC7Encode_TryMode137CS.pdb" /VnBC7Encode_TryMode137CS
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTex-main\DirectXTex-main\DirectXTex\Shaders\Compiled\BC7Encode_TryMode137CS.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTex-main\DirectXTex-main\DirectXTex\Shaders\Compiled\BC7Encode_TryMode137CS.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x86\fxc.exe" BC7Encode.hlsl /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tcs_4_0 /ETryMode02CS "/FhCompiled\BC7Encode_TryMode02CS.inc" "/FdCompiled\BC7Encode_TryMode02CS.pdb" /VnBC7Encode_TryMode02CS
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTex-main\DirectXTex-main\DirectXTex\Shaders\Compiled\BC7Encode_TryMode02CS.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTex-main\DirectXTex-main\DirectXTex\Shaders\Compiled\BC7Encode_TryMode02CS.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x86\fxc.exe" BC7Encode.hlsl /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tcs_4_0 /EEncodeBlockCS "/FhCompiled\BC7Encode_EncodeBlockCS.inc" "/FdCompiled\BC7Encode_EncodeBlockCS.pdb" /VnBC7Encode_EncodeBlockCS
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTex-main\DirectXTex-main\DirectXTex\Shaders\Compiled\BC7Encode_EncodeBlockCS.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTex-main\DirectXTex-main\DirectXTex\Shaders\Compiled\BC7Encode_EncodeBlockCS.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x86\fxc.exe" BC6HEncode.hlsl /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tcs_4_0 /ETryModeG10CS "/FhCompiled\BC6HEncode_TryModeG10CS.inc" "/FdCompiled\BC6HEncode_TryModeG10CS.pdb" /VnBC6HEncode_TryModeG10CS
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTex-main\DirectXTex-main\DirectXTex\Shaders\Compiled\BC6HEncode_TryModeG10CS.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTex-main\DirectXTex-main\DirectXTex\Shaders\Compiled\BC6HEncode_TryModeG10CS.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x86\fxc.exe" BC6HEncode.hlsl /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tcs_4_0 /ETryModeLE10CS "/FhCompiled\BC6HEncode_TryModeLE10CS.inc" "/FdCompiled\BC6HEncode_TryModeLE10CS.pdb" /VnBC6HEncode_TryModeLE10CS
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTex-main\DirectXTex-main\DirectXTex\Shaders\Compiled\BC6HEncode_TryModeLE10CS.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTex-main\DirectXTex-main\DirectXTex\Shaders\Compiled\BC6HEncode_TryModeLE10CS.inc
+  
+  "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x86\fxc.exe" BC6HEncode.hlsl /nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug /Tcs_4_0 /EEncodeBlockCS "/FhCompiled\BC6HEncode_EncodeBlockCS.inc" "/FdCompiled\BC6HEncode_EncodeBlockCS.pdb" /VnBC6HEncode_EncodeBlockCS
+  compilation PDB save succeeded; see C:\Users\Zhenya\Downloads\DirectXTex-main\DirectXTex-main\DirectXTex\Shaders\Compiled\BC6HEncode_EncodeBlockCS.pdb
+  compilation header save succeeded; see C:\Users\Zhenya\Downloads\DirectXTex-main\DirectXTex-main\DirectXTex\Shaders\Compiled\BC6HEncode_EncodeBlockCS.inc
+  
+  Shaders compiled ok
+  DirectXTexUtil.cpp
+  BC.cpp
+  BC4BC5.cpp
+  BC6HBC7.cpp
+  BCDirectCompute.cpp
+  DirectXTexCompress.cpp
+  DirectXTexCompressGPU.cpp
+  DirectXTexConvert.cpp
+  DirectXTexD3D11.cpp
+  DirectXTexDDS.cpp
+  DirectXTexFlipRotate.cpp
+  DirectXTexHDR.cpp
+  DirectXTexImage.cpp
+  DirectXTexMipMaps.cpp
+  DirectXTexMisc.cpp
+  DirectXTexNormalMaps.cpp
+  DirectXTexPMAlpha.cpp
+  DirectXTexResize.cpp
+  DirectXTexTGA.cpp
+  DirectXTexWIC.cpp
+  Generating Code...
+  DirectXTex_Desktop_2019.vcxproj -> C:\Users\Zhenya\Downloads\DirectXTex-main\DirectXTex-main\DirectXTex\Bin\Desktop_2019\x64\Debug\DirectXTex.lib

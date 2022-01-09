@@ -120,7 +120,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\external\JsonCpp\include;$(SolutionDir)\external\ImGUI\;$(SolutionDir)\external\Assimp\lib\x64;$(SolutionDir)\external\Assimp\include;$(SolutionDir)\external\Effects11\inc;$(SolutionDir)\external\DirectXTK\Inc;$(WindowsSDK_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\external\JsonCpp\include;$(SolutionDir)\external\ImGUI\;$(SolutionDir)\external\Assimp\lib\x64;$(SolutionDir)\external\Assimp\include;$(SolutionDir)\external\Effects11\inc;$(SolutionDir)\external\DirectXTex\;$(SolutionDir)\external\DirectXTK\Inc;$(WindowsSDK_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OmitFramePointers>false</OmitFramePointers>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>

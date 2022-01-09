@@ -25,7 +25,7 @@ namespace Rendering
 	}
 	void TestSceneDemo::Create()
 	{
-		DemoLevel::Initialize(*mGame, *mCamera, Utility::GetFilePath("content\\levels\\testScene.json"));
+		DemoLevel::Initialize(*mGame, *mCamera, Utility::GetFilePath("content\\levels\\testScene\\testScene.json"));
 		Initialize();
 		mGame->levels.push_back(this);
 	}
@@ -57,6 +57,8 @@ namespace Rendering
 		mFoliageSystem->AddFoliage(new Foliage(*mGame, *mCamera, *mDirectionalLight, 50, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type3.png"), 2.5f, 100.0f, XMFLOAT3(0.0, 0.0, 0.0), FoliageBillboardType::SINGLE));
 		mFoliageSystem->AddFoliage(new Foliage(*mGame, *mCamera, *mDirectionalLight, 100, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type10.png"), 3.5f, 100.0f, XMFLOAT3(0.0, 0.0, 0.0), FoliageBillboardType::SINGLE));
 		mFoliageSystem->Initialize();
+
+		mIlluminationProbesManager->SetLevelPath(Utility::GetFilePath(L"content\\levels\\testScene\\"));
 	}
 
 	void TestSceneDemo::UpdateLevel(const GameTime& gameTime)
@@ -116,7 +118,7 @@ namespace Rendering
 
 		//TODO temp
 		{
-			mIlluminationProbesManager->ComputeProbes(*mGame, gameTime, mScene->objects, mSkybox);
+			mIlluminationProbesManager->ComputeOrLoadProbes(*mGame, gameTime, mScene->objects, mSkybox);
 		}
 
 		#pragma region DRAW_GI
