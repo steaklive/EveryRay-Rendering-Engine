@@ -83,17 +83,31 @@ namespace Library
 
 	}
 
-	void ER_LightProbe::Compute(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox, const std::wstring& levelPath)
+	void ER_LightProbe::Compute(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox, const std::wstring& levelPath, bool forceRecompute)
 	{
-		bool alreadyExistsInFile = false;
-		//TODO parse from file
+		if (mIsComputed && !forceRecompute)
+			return;
 
-		if (!alreadyExistsInFile)
-			DrawProbe(game, gameTime, levelPath, objectsToRender, skybox);
-		else
+		bool alreadyExistsInFile = false;
+		std::wstring probeName = GetConstructedProbeName(levelPath, LIGHT_PROBE);
+
+		if (!forceRecompute)
 		{
-			//store probe
+			ID3D11ShaderResourceView* srv = mCubemapFacesRT->getSRV();
+			if (FAILED(DirectX::CreateDDSTextureFromFile(game.Direct3DDevice(), game.Direct3DDeviceContext(), probeName.c_str(), nullptr, &srv)))
+			{
+				//std::wstring status = L"Failed to load DDS probe texture: " + probeName;
+				//output to LOG (not exception)
+			}
+			else
+			{
+				alreadyExistsInFile = true;
+				mIsComputed = true;
+			}
 		}
+
+		if (!alreadyExistsInFile || forceRecompute)
+			DrawProbe(game, gameTime, levelPath, objectsToRender, skybox);
 	}
 
 	void ER_LightProbe::DrawProbe(Game& game, const GameTime& gameTime, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox)
@@ -146,14 +160,17 @@ namespace Library
 
 		context->RSSetViewports(1, &oldViewPort);
 
-		//release resources & events
 		for (int cubeMapFaceIndex = 0; cubeMapFaceIndex < CUBEMAP_FACES_COUNT; cubeMapFaceIndex++)
 			for (auto& object : objectsToRender)
 				object.second->MeshMaterialVariablesUpdateEvent->RemoveListener(MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubeMapFaceIndex));
 
 		SaveProbeOnDisk(game, levelPath, LIGHT_PROBE);
-		//TODO release depth maps
-		//TODO release cubemap cameras
+		
+		//for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
+		//{
+		//	DeleteObject(mCubemapCameras[i]);
+		//	DeleteObject(mDepthBuffers[i]);
+		//}
 
 		mIsComputed = true;
 	}
