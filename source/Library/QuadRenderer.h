@@ -1,5 +1,7 @@
 #pragma once
 
+//TODO clean up headers
+//TODO clean up math in Vertex
 #include <windows.h>
 #include <wrl/client.h>
 

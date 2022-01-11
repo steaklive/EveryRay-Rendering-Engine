@@ -1,10 +1,11 @@
 #pragma once
+#define CUBEMAP_FACES_COUNT 6
+
 #include "Common.h"
 #include "RenderingObject.h"
 #include "CustomRenderTarget.h"
 #include "DepthTarget.h"
-
-#define CUBEMAP_FACES_COUNT 6
+#include "ConstantBuffer.h"
 
 namespace Library
 {
@@ -13,12 +14,22 @@ namespace Library
 	class DirectionalLight;
 	class Skybox;
 	class GameTime;
+	class QuadRenderer;
 
 	enum ER_ProbeType
 	{
 		LIGHT_PROBE,
 		REFLECTION_PROBE
 	};
+
+	namespace LightProbeCBufferData {
+		struct DiffuseProbeConvolutionCB
+		{
+			XMFLOAT4 WorldPos;
+			int FaceIndex;
+			XMFLOAT3 pad;
+		};
+	}
 
 	class ER_LightProbe
 	{
@@ -30,12 +41,13 @@ namespace Library
 		void Compute(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox, const std::wstring& levelPath, bool forceRecompute = false);
 		void UpdateProbe(const GameTime& gameTime);
 
-		ID3D11ShaderResourceView* GetCubemapSRV() { return mCubemapFacesRT->getSRV(); }
+		ID3D11ShaderResourceView* GetCubemapSRV() { return mCubemapFacesConvolutedRT->getSRV(); }
 	private:
 		void DrawProbe(Game& game, const GameTime& gameTime, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox = nullptr);
 		void UpdateStandardLightingPBRMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int cubeFaceIndex);
 		void PrecullObjectsPerFace();
 		void SaveProbeOnDisk(Game& game, const std::wstring& levelPath, ER_ProbeType aType);
+		bool LoadProbeFromDisk(Game& game, const std::wstring& levelPath, ER_ProbeType aType);
 		std::wstring GetConstructedProbeName(const std::wstring& levelPath, ER_ProbeType aType);
 		
 		DirectionalLight& mDirectionalLight;
@@ -43,8 +55,15 @@ namespace Library
 
 		LightProbeRenderingObjectsInfo mObjectsToRenderPerFace[CUBEMAP_FACES_COUNT];
 		CustomRenderTarget* mCubemapFacesRT;
+		CustomRenderTarget* mCubemapFacesConvolutedRT;
 		DepthTarget* mDepthBuffers[CUBEMAP_FACES_COUNT];
 		Camera* mCubemapCameras[CUBEMAP_FACES_COUNT];
+		QuadRenderer* mQuadRenderer;
+		ConstantBuffer<LightProbeCBufferData::DiffuseProbeConvolutionCB> mDiffuseConvolutionCB;
+
+		ID3D11VertexShader* mDiffuseConvolutionVS = nullptr;
+		ID3D11PixelShader* mDiffuseConvolutionPS = nullptr;
+		ID3D11SamplerState* mLinearSamplerState = nullptr;
 
 		XMFLOAT3 mPosition;
 		int mSize;

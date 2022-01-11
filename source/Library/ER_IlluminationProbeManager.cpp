@@ -1,6 +1,8 @@
 #include "ER_IlluminationProbeManager.h"
 #include "Game.h"
 #include "GameTime.h"
+#include "GameException.h"
+#include "Utility.h"
 #include "ShadowMapper.h"
 #include "DirectionalLight.h"
 #include "MatrixHelper.h"
@@ -8,6 +10,8 @@
 #include "VectorHelper.h"
 #include "StandardLightingMaterial.h"
 #include "Skybox.h"
+#include "QuadRenderer.h"
+#include "ShaderCompiler.h"
 
 #include "DirectXTex.h"
 
@@ -55,9 +59,13 @@ namespace Library
 			Vector3Helper::Up
 		};
 
+		mQuadRenderer = new QuadRenderer(game.Direct3DDevice());
+
 		mCubemapFacesRT = new CustomRenderTarget(game.Direct3DDevice(), size, size, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
 			D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1, -1, 6, true);
-		
+		mCubemapFacesConvolutedRT = new CustomRenderTarget(game.Direct3DDevice(), size, size, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
+			D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1, -1, 6, true);
+
 		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
 		{
 			mCubemapCameras[i] = new Camera(game, XM_PIDIV2, 1.0f, 0.1f, 100000.0f);
@@ -70,17 +78,51 @@ namespace Library
 
 			mDepthBuffers[i] = DepthTarget::Create(game.Direct3DDevice(), size, size, 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
 		}
+
+		ID3DBlob* blob = nullptr;
+		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\IBL\\ProbeDiffuseConvolution.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
+			throw GameException("Failed to load VSMain from shader: ProbeDiffuseConvolution.hlsl!");
+		if (FAILED(game.Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mDiffuseConvolutionVS)))
+			throw GameException("Failed to create vertex shader from ProbeDiffuseConvolution.hlsl!");
+		blob->Release();
+
+		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\IBL\\ProbeDiffuseConvolution.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
+			throw GameException("Failed to load PSMain from shader: ProbeDiffuseConvolution.hlsl!");
+		if (FAILED(game.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mDiffuseConvolutionPS)))
+			throw GameException("Failed to create pixel shader from ProbeDiffuseConvolution.hlsl!");
+		blob->Release();
+
+		mDiffuseConvolutionCB.Initialize(game.Direct3DDevice());
+
+		{
+			D3D11_SAMPLER_DESC sam_desc;
+			sam_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+			sam_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+			sam_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+			sam_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+			sam_desc.MipLODBias = 0;
+			sam_desc.MaxAnisotropy = 1;
+			sam_desc.MinLOD = -1000.0f;
+			sam_desc.MaxLOD = 1000.0f;
+			if (FAILED(game.Direct3DDevice()->CreateSamplerState(&sam_desc, &mLinearSamplerState)))
+				throw GameException("Failed to create sampler mLinearSamplerState!");
+		}
 	}
 
 	ER_LightProbe::~ER_LightProbe()
 	{
+		ReleaseObject(mLinearSamplerState);
+		ReleaseObject(mDiffuseConvolutionVS);
+		ReleaseObject(mDiffuseConvolutionPS);
+		DeleteObject(mQuadRenderer);
 		DeleteObject(mCubemapFacesRT);
+		DeleteObject(mCubemapFacesConvolutedRT);
 		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
 		{
 			DeleteObject(mCubemapCameras[i]);
 			DeleteObject(mDepthBuffers[i]);
 		}
-
+		mDiffuseConvolutionCB.Release();
 	}
 
 	void ER_LightProbe::Compute(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox, const std::wstring& levelPath, bool forceRecompute)
@@ -89,22 +131,9 @@ namespace Library
 			return;
 
 		bool alreadyExistsInFile = false;
-		std::wstring probeName = GetConstructedProbeName(levelPath, LIGHT_PROBE);
 
 		if (!forceRecompute)
-		{
-			ID3D11ShaderResourceView* srv = mCubemapFacesRT->getSRV();
-			if (FAILED(DirectX::CreateDDSTextureFromFile(game.Direct3DDevice(), game.Direct3DDeviceContext(), probeName.c_str(), nullptr, &srv)))
-			{
-				//std::wstring status = L"Failed to load DDS probe texture: " + probeName;
-				//output to LOG (not exception)
-			}
-			else
-			{
-				alreadyExistsInFile = true;
-				mIsComputed = true;
-			}
-		}
+			alreadyExistsInFile = LoadProbeFromDisk(game, levelPath, LIGHT_PROBE);
 
 		if (!alreadyExistsInFile || forceRecompute)
 			DrawProbe(game, gameTime, levelPath, objectsToRender, skybox);
@@ -136,25 +165,59 @@ namespace Library
 			context->ClearRenderTargetView(mCubemapFacesRT->getRTVs()[cubeMapFace], clearColor);
 			context->ClearDepthStencilView(mDepthBuffers[cubeMapFace]->getDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-			if (skybox)
+			//rendering objects and sky
 			{
-				skybox->Update(gameTime, mCubemapCameras[cubeMapFace]);
-				skybox->Draw(mCubemapCameras[cubeMapFace]);
-				//TODO draw sun
-				//...
-				//skybox->UpdateSun(gameTime, mCubemapCameras[cubeMapFace]);
+				if (skybox)
+				{
+					skybox->Update(gameTime, mCubemapCameras[cubeMapFace]);
+					skybox->Draw(mCubemapCameras[cubeMapFace]);
+					//TODO draw sun
+					//...
+					//skybox->UpdateSun(gameTime, mCubemapCameras[cubeMapFace]);
+				}
+
+				// We dont do lodding because it is bound to main camera... We force pick lod 0.
+				// This is incorrect and might cause issues like: 
+				// Probe P is next to object A, but object A is far from main camera => A does not have lod 0, probe P can not render A.
+				const int lod = 0;
+
+				//TODO change to culled objects per face (not a priority since we compute probes once)
+				for (auto& object : objectsToRender)
+				{
+					if (object.second->IsInLightProbe())
+						object.second->DrawLOD(MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubeMapFace), false, -1, lod);
+				}
 			}
 
-			// We dont do lodding because it is bound to main camera... We force pick lod 0.
-			// This is incorrect and might cause issues like: 
-			// Probe P is next to object A, but object A is far from main camera => A does not have lod 0, probe P can not render A.
-			const int lod = 0;
-			
-			//TODO change to culled objects per face (not a priority since we compute probes once)
-			for (auto& object : objectsToRender)
+			//convolution diffuse
 			{
-				if (object.second->IsInLightProbe())
-					object.second->DrawLOD(MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubeMapFace), false, -1, lod);
+				//for (int cubeFace = 0; cubeFace < CUBEMAP_FACES_COUNT; cubeFace++)
+				{
+					mDiffuseConvolutionCB.Data.WorldPos = XMFLOAT4(
+						mCubemapCameras[0]->Position().x, 
+						mCubemapCameras[0]->Position().y,
+						mCubemapCameras[0]->Position().z, 1.0f);
+					mDiffuseConvolutionCB.Data.FaceIndex = cubeMapFace;
+					mDiffuseConvolutionCB.Data.pad = XMFLOAT3(0.0, 0.0, 0.0);
+					mDiffuseConvolutionCB.ApplyChanges(context);
+
+					context->OMSetRenderTargets(1, &mCubemapFacesConvolutedRT->getRTVs()[cubeMapFace], NULL);
+					context->ClearRenderTargetView(mCubemapFacesConvolutedRT->getRTVs()[cubeMapFace], clearColor);
+
+					ID3D11Buffer* CBs[1] = { mDiffuseConvolutionCB.Buffer() };
+					ID3D11ShaderResourceView* SRVs[1] = { mCubemapFacesRT->getSRV() };
+					ID3D11SamplerState* SSs[1] = { mLinearSamplerState };
+
+					context->VSSetShader(mDiffuseConvolutionVS, NULL, NULL);
+					context->VSSetConstantBuffers(0, 1, CBs);
+
+					context->PSSetShader(mDiffuseConvolutionPS, NULL, NULL);
+					context->PSSetSamplers(0, 1, SSs);
+					context->PSSetConstantBuffers(0, 1, CBs);
+					context->PSSetShaderResources(0, 1, SRVs);
+
+					mQuadRenderer->Draw(context);
+				}
 			}
 		}
 
@@ -165,20 +228,34 @@ namespace Library
 				object.second->MeshMaterialVariablesUpdateEvent->RemoveListener(MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubeMapFaceIndex));
 
 		SaveProbeOnDisk(game, levelPath, LIGHT_PROBE);
-		
-		//for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
-		//{
-		//	DeleteObject(mCubemapCameras[i]);
-		//	DeleteObject(mDepthBuffers[i]);
-		//}
-
 		mIsComputed = true;
+	}
+
+	bool ER_LightProbe::LoadProbeFromDisk(Game& game, const std::wstring& levelPath, ER_ProbeType aType)
+	{
+		bool result = false;
+		std::wstring probeName = GetConstructedProbeName(levelPath, aType);
+
+		ID3D11ShaderResourceView* srv = mCubemapFacesConvolutedRT->getSRV();
+		if (FAILED(DirectX::CreateDDSTextureFromFile(game.Direct3DDevice(), game.Direct3DDeviceContext(), probeName.c_str(), nullptr, &srv)))
+		{
+			//std::wstring status = L"Failed to load DDS probe texture: " + probeName;
+			//TODO output to LOG (not exception)
+			result = false;
+		}
+		else
+		{
+			mCubemapFacesConvolutedRT->SetSRV(srv);
+			result = true;
+		}
+
+		return result;
 	}
 
 	void ER_LightProbe::SaveProbeOnDisk(Game& game, const std::wstring& levelPath, ER_ProbeType aType)
 	{
 		DirectX::ScratchImage tempImage;
-		HRESULT res = DirectX::CaptureTexture(game.Direct3DDevice(), game.Direct3DDeviceContext(), mCubemapFacesRT->getTexture2D(), tempImage);
+		HRESULT res = DirectX::CaptureTexture(game.Direct3DDevice(), game.Direct3DDeviceContext(), mCubemapFacesConvolutedRT->getTexture2D(), tempImage);
 		if (FAILED(res))
 			throw GameException("Failed to capture a probe texture when saving!", res);
 

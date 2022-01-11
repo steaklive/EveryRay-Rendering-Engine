@@ -79,6 +79,9 @@
     <Filter Include="Shaders\Terrain">
       <UniqueIdentifier>{7d19fae2-7ed1-459f-aae0-1dbda9fcb484}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\IBL">
+      <UniqueIdentifier>{4b3f255c-5fa4-4203-ad59-f5019d27f013}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -900,6 +903,9 @@
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\DeferredLighting.hlsl">
       <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\IBL\ProbeDiffuseConvolution.hlsl">
+      <Filter>Shaders\IBL</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
