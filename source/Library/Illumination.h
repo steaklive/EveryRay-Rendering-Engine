@@ -64,7 +64,7 @@ namespace Library
 	class Illumination : public GameComponent
 	{
 	public:
-		Illumination(Game& game, Camera& camera, DirectionalLight& light, ShadowMapper& shadowMapper, const Scene* scene);
+		Illumination(Game& game, Camera& camera, const DirectionalLight& light, const ShadowMapper& shadowMapper, const Scene* scene);
 		~Illumination();
 
 		void Initialize(const Scene* scene);
@@ -83,18 +83,18 @@ namespace Library
 		bool GetDebugVoxels() { return mDrawVoxelization; }
 		bool GetDebugAO() { return mDrawAmbientOcclusionOnly; }
 
-		ID3D11ShaderResourceView* GetGlobaIlluminationSRV() {
+		ID3D11ShaderResourceView* GetGlobaIlluminationSRV() const {
 			if (mDrawVoxelization)
 				return mVCTVoxelizationDebugRT->getSRV();
 			else
 				return mVCTUpsampleAndBlurRT->getSRV();
 		}
 
-		ID3D11ShaderResourceView* GetIBLIrradianceDiffuseSRV() { return mIrradianceDiffuseTextureSRV; }
-		ID3D11ShaderResourceView* GetIBLIrradianceSpecularSRV() { return mIrradianceSpecularTextureSRV; }
-		ID3D11ShaderResourceView* GetIBLIntegrationSRV() { return mIntegrationMapTextureSRV; }
+		ID3D11ShaderResourceView* GetIBLIrradianceDiffuseSRV() const { return mIrradianceDiffuseTextureSRV; }
+		ID3D11ShaderResourceView* GetIBLIrradianceSpecularSRV() const { return mIrradianceSpecularTextureSRV; }
+		ID3D11ShaderResourceView* GetIBLIntegrationSRV() const { return mIntegrationMapTextureSRV; }
 
-		float GetDirectionalLightIntensity() { return mDirectionalLightIntensity; }
+		float GetDirectionalLightIntensity() const { return mDirectionalLightIntensity; }
 	private:
 		void DrawDeferredLighting(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget, bool clearTarget = false);
 		void DrawForwardLighting(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget);
@@ -109,8 +109,8 @@ namespace Library
 		void CPUCullObjectsAgainstVoxelCascades(const Scene* scene);
 
 		Camera& mCamera;
-		DirectionalLight& mDirectionalLight;
-		ShadowMapper& mShadowMapper;
+		const DirectionalLight& mDirectionalLight;
+		const ShadowMapper& mShadowMapper;
 
 		ER_IlluminationProbeManager* mProbesManager = nullptr;
 		FoliageSystem* mFoliageSystem = nullptr;

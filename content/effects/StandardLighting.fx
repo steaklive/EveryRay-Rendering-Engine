@@ -326,7 +326,7 @@ float3 ApproximateSpecularIBL(float3 F0, float3 reflectDir, float nDotV, float r
     float3 prefilteredColor = IrradianceSpecularTexture.SampleLevel(AnisotropicSampler, reflectDir, mipIndex);
     float2 environmentBRDF = IntegrationTexture.SampleLevel(SamplerLinear, float2(nDotV, roughness), 0).rg;
 
-    return prefilteredColor;// * (F0 * environmentBRDF.x + environmentBRDF.y);
+    return prefilteredColor * (F0 * environmentBRDF.x + environmentBRDF.y);
 
 }
 
@@ -338,6 +338,7 @@ float3 IndirectLightingPBR(float3 diffuseAlbedo, float3 normalWS, float3 positio
     float ao = 1.0f;
 
     float3 irradiance = IrradianceDiffuseTexture.SampleLevel(SamplerLinear, normalWS, 0).rgb;
+	return irradiance;
     
     float3 F = Schlick_Fresnel_UE(F0, nDotV);
     float3 kD = float3(1.0f, 1.0f, 1.0f) - F;
@@ -346,7 +347,7 @@ float3 IndirectLightingPBR(float3 diffuseAlbedo, float3 normalWS, float3 positio
 
     float3 indirectSpecularLighting = ApproximateSpecularIBL(F, reflectDir, nDotV, roughness);
     
-    return (/*indirectDiffuseLighting + */indirectSpecularLighting) * ao;
+    return (indirectDiffuseLighting + indirectSpecularLighting) * ao;
 }
 
 float3 mainPS(VS_OUTPUT vsOutput) : SV_Target0
@@ -410,7 +411,7 @@ float3 mainPS_PBR(VS_OUTPUT vsOutput) : SV_Target0
 
     float shadow = GetShadow(vsOutput.ShadowCoord0, vsOutput.ShadowCoord1, vsOutput.ShadowCoord2, vsOutput.Position.w);
     
-    float3 color = (directLighting * shadow) + indirectLighting;
+	float3 color = (directLighting * shadow);//	+indirectLighting;
             
     // HDR tonemapping
     color = color / (color + float3(1.0f, 1.0f, 1.0f));

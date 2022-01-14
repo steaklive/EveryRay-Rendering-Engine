@@ -35,8 +35,8 @@ namespace Library
 		void DrawProxyModel(const GameTime& time);
 		void UpdateProxyModel(const GameTime& time, XMFLOAT4X4 viewMatrix, XMFLOAT4X4 projectionMatrix);
 		void UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix);
-		XMFLOAT3 GetDirectionalLightColor() { return XMFLOAT3(mSunColor); }
-		XMFLOAT3 GetAmbientLightColor() { return XMFLOAT3(mAmbientColor); }
+		XMFLOAT3 GetDirectionalLightColor() const { return XMFLOAT3(mSunColor); }
+		XMFLOAT3 GetAmbientLightColor() const { return XMFLOAT3(mAmbientColor); }
 		XMMATRIX GetTransform() { return mTransformMatrix; }
 		void SetSunColor(XMFLOAT3 color) {
 			mSunColor[0] = color.x;

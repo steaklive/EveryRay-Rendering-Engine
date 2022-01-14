@@ -31,7 +31,7 @@ namespace Library {
 
 	const float voxelCascadesSizes[NUM_VOXEL_GI_CASCADES] = { 256.0f, 256.0f };
 
-	Illumination::Illumination(Game& game, Camera& camera, DirectionalLight& light, ShadowMapper& shadowMapper, const Scene* scene)
+	Illumination::Illumination(Game& game, Camera& camera, const DirectionalLight& light, const ShadowMapper& shadowMapper, const Scene* scene)
 		: 
 		GameComponent(game),
 		mCamera(camera),
@@ -73,6 +73,9 @@ namespace Library {
 
 	void Illumination::Initialize(const Scene* scene)
 	{
+		if (!scene)
+			return;
+
 		//callbacks
 		{
 			for (auto& obj : scene->objects) {
@@ -534,8 +537,8 @@ namespace Library {
 			material->RoughnessTexture() << obj->GetTextureData(meshIndex).RoughnessMap;
 			material->MetallicTexture() << obj->GetTextureData(meshIndex).MetallicMap;
 			material->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, NUM_SHADOW_CASCADES);
-			material->IrradianceDiffuseTexture() << mProbesManager->GetLightProbe(0)->GetCubemapSRV(); //TODO
-			material->IrradianceSpecularTexture() << mProbesManager->GetLightProbe(0)->GetCubemapSRV();//TODO
+			material->IrradianceDiffuseTexture() << mProbesManager->GetDiffuseLightProbe(0)->GetCubemapSRV(); //TODO
+			material->IrradianceSpecularTexture() << mProbesManager->GetDiffuseLightProbe(0)->GetCubemapSRV();//TODO
 			material->IntegrationTexture() << mIntegrationMapTextureSRV;
 		}
 	}

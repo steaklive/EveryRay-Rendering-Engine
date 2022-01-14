@@ -22,11 +22,11 @@ namespace Library
 		void Update(const GameTime& gameTime);
 		void BeginRenderingToShadowMap(int cascadeIndex = 0);
 		void StopRenderingToShadowMap(int cascadeIndex = 0);
-		XMMATRIX GetViewMatrix(int cascadeIndex = 0);
-		XMMATRIX GetProjectionMatrix(int cascadeIndex = 0);
-		ID3D11ShaderResourceView* GetShadowTexture(int cascadeIndex = 0);
+		XMMATRIX GetViewMatrix(int cascadeIndex = 0) const;
+		XMMATRIX GetProjectionMatrix(int cascadeIndex = 0) const;
+		ID3D11ShaderResourceView* GetShadowTexture(int cascadeIndex = 0) const;
+		UINT GetResolution() const { return mResolution; }
 		void ApplyTransform();
-		UINT GetResolution() { return mResolution; }
 		//void ApplyRotation();
 
 	private:

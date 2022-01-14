@@ -97,18 +97,18 @@ namespace Library
 		mShadowMaps[cascadeIndex]->End();
 	}
 
-	XMMATRIX ShadowMapper::GetViewMatrix(int cascadeIndex /*= 0*/)
+	XMMATRIX ShadowMapper::GetViewMatrix(int cascadeIndex /*= 0*/) const
 	{
 		assert(cascadeIndex < NUM_SHADOW_CASCADES);
 		return mLightProjectors.at(cascadeIndex)->ViewMatrix();
 	}
-	XMMATRIX ShadowMapper::GetProjectionMatrix(int cascadeIndex /*= 0*/)
+	XMMATRIX ShadowMapper::GetProjectionMatrix(int cascadeIndex /*= 0*/) const
 	{
 		assert(cascadeIndex < NUM_SHADOW_CASCADES);
 		return mLightProjectors.at(cascadeIndex)->ProjectionMatrix();
 	}
 
-	ID3D11ShaderResourceView* ShadowMapper::GetShadowTexture(int cascadeIndex)
+	ID3D11ShaderResourceView* ShadowMapper::GetShadowTexture(int cascadeIndex) const
 	{
 		assert(cascadeIndex < NUM_SHADOW_CASCADES);
 		return mShadowMaps.at(cascadeIndex)->OutputTexture();
