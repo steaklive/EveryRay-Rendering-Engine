@@ -93,9 +93,9 @@ namespace Rendering
 
 	void RenderingObject::LoadMaterial(Material* pMaterial, Effect* pEffect, std::string materialName)
 	{
-		assert(mModel != nullptr);
-		assert(pMaterial != nullptr);
-		assert(pEffect != nullptr);
+		assert(mModel);
+		assert(pMaterial);
+		assert(pEffect);
 
 		mMaterials.insert(std::pair<std::string, Material*>(materialName, pMaterial));
 		mMaterials[materialName]->Initialize(pEffect);

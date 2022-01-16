@@ -12,15 +12,65 @@
 #include "Skybox.h"
 #include "QuadRenderer.h"
 #include "ShaderCompiler.h"
+#include "RenderingObject.h"
+#include "Model.h"
+#include "Scene.h"
+#include "Material.h"
+#include "Effect.h"
+#include "DebugLightProbeMaterial.h"
 
 #include "DirectXTex.h"
 
 namespace Library
 {
-	ER_IlluminationProbeManager::ER_IlluminationProbeManager(Game& game, DirectionalLight& light, ShadowMapper& shadowMapper)
+	ER_IlluminationProbeManager::ER_IlluminationProbeManager(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ShadowMapper& shadowMapper)
+		: mMainCamera(camera)
 	{
 		//TODO temp
-		mDiffuseProbes.push_back(new ER_LightProbe(game, light, shadowMapper, XMFLOAT3(0.0f, 10.0f, 35.0f), 64, DIFFUSE_PROBE));
+		int probesCountX = 10;
+		int probesCountZ = 6;
+
+		int probesCount = probesCountX * probesCountZ;
+
+		//TODO move distribution to a separate function
+		{
+			const float distanceBetweenProbes = 5.0f;
+			for (int probesX = 0; probesX < probesCountX; probesX++)
+			{
+				for (int probesZ = 0; probesZ < probesCountZ; probesZ++)
+				{
+					XMFLOAT3 pos = XMFLOAT3(probesX * distanceBetweenProbes, /*TEMP*/ 15.0f, probesZ * distanceBetweenProbes);
+					int index = probesX * probesCountZ + probesZ;
+					mDiffuseProbes.push_back(new ER_LightProbe(game, light, shadowMapper, pos, 64, DIFFUSE_PROBE, index));
+				}
+			}
+		}
+
+		if (scene)
+		{
+			auto result = scene->objects.insert(
+				std::pair<std::string, Rendering::RenderingObject*>(
+					"Debug_diffuse_lightprobe",
+					new Rendering::RenderingObject("Debug_diffuse_lightprobe", game, camera,
+						std::unique_ptr<Model>(new Model(game, Utility::GetFilePath("content\\models\\cube.fbx"), true)), true, true)
+					)
+			);
+
+			Effect* effect = new Effect(game); // deleted when material is deleted
+			effect->CompileFromFile(Utility::GetFilePath(Utility::ToWideString("content\\effects\\DebugLightProbe.fx")));
+			auto insertedObject = result.first->second;
+			insertedObject->LoadMaterial(new Rendering::DebugLightProbeMaterial(), effect, MaterialHelper::debugLightProbeMaterialName);
+			insertedObject->LoadRenderBuffers();
+			insertedObject->LoadInstanceBuffers();
+			insertedObject->ResetInstanceData(probesCount, true);
+			for (int i = 0; i < probesCount; i++) {
+				XMMATRIX worldT = XMMatrixTranslation(mDiffuseProbes[i]->GetPosition().x, mDiffuseProbes[i]->GetPosition().y, mDiffuseProbes[i]->GetPosition().z);
+				insertedObject->AddInstanceData(worldT);
+			}
+			insertedObject->UpdateInstanceBuffer(insertedObject->GetInstancesData());
+			insertedObject->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::debugLightProbeMaterialName,
+				[&, insertedObject](int meshIndex) { UpdateDebugLightProbeMaterialVariables(insertedObject, meshIndex); });
+		}
 	}
 
 	ER_IlluminationProbeManager::~ER_IlluminationProbeManager()
@@ -38,12 +88,36 @@ namespace Library
 			lightProbe->ComputeOrLoad(game, gameTime, aObjects, skybox, mLevelPath);
 	}
 
-	ER_LightProbe::ER_LightProbe(Game& game, DirectionalLight& light, ShadowMapper& shadowMapper, const XMFLOAT3& position, int size, ER_ProbeType aType)
+	void ER_IlluminationProbeManager::DrawDebugProbes(Game& game, Scene* scene, ER_ProbeType aType)
+	{
+		auto it = scene->objects.find("Debug_diffuse_lightprobe");
+		if (it != scene->objects.end())
+		{
+			it->second->Draw(MaterialHelper::debugLightProbeMaterialName);
+		}
+	}
+
+	void ER_IlluminationProbeManager::UpdateDebugLightProbeMaterialVariables(Rendering::RenderingObject* obj, int meshIndex)
+	{
+		XMMATRIX vp = mMainCamera.ViewMatrix() * mMainCamera.ProjectionMatrix();
+
+		auto material = static_cast<Rendering::DebugLightProbeMaterial*>(obj->GetMaterials()[MaterialHelper::debugLightProbeMaterialName]);
+		if (material)
+		{
+			material->ViewProjection() << vp;
+			material->World() << XMMatrixIdentity();
+			material->CameraPosition() << mMainCamera.PositionVector();
+			//material->CubemapTexture() << mProbesManager->GetDiffuseLightProbe(0)->GetCubemapSRV(); //TODO
+		}
+	}
+
+	ER_LightProbe::ER_LightProbe(Game& game, DirectionalLight& light, ShadowMapper& shadowMapper, const XMFLOAT3& position, int size, ER_ProbeType aType, int index)
 		: mPosition(position)
 		, mSize(size)
 		, mDirectionalLight(light)
 		, mShadowMapper(shadowMapper)
 		, mProbeType(aType)
+		, mIndex(index)
 	{
 
 		//X+, X-, Y+, Y-, Z+, Z-

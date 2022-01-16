@@ -106,7 +106,7 @@ namespace Library {
 
         mIllumination = new Illumination(game, camera, *mDirectionalLight, *mShadowMapper, mScene);
 
-        mIlluminationProbesManager = new ER_IlluminationProbeManager(game, *mDirectionalLight, *mShadowMapper);
+        mIlluminationProbesManager = new ER_IlluminationProbeManager(game, camera, mScene, *mDirectionalLight, *mShadowMapper);
 		mIllumination->SetProbesManager(mIlluminationProbesManager);
 
         mFoliageSystem = new FoliageSystem();

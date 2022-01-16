@@ -16,6 +16,7 @@ namespace Library
 	class Skybox;
 	class GameTime;
 	class QuadRenderer;
+	class Scene;
 
 	enum ER_ProbeType
 	{
@@ -35,12 +36,13 @@ namespace Library
 	{
 		using LightProbeRenderingObjectsInfo = std::map<std::string, Rendering::RenderingObject*>;
 	public:
-		ER_LightProbe(Game& game, DirectionalLight& light, ShadowMapper& shadowMapper, const XMFLOAT3& position, int size, ER_ProbeType aType);
+		ER_LightProbe(Game& game, DirectionalLight& light, ShadowMapper& shadowMapper, const XMFLOAT3& position, int size, ER_ProbeType aType, int index);
 		~ER_LightProbe();
 
 		void ComputeOrLoad(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox, const std::wstring& levelPath, bool forceRecompute = false);
 		void UpdateProbe(const GameTime& gameTime);
-
+		void SetPosition(const XMFLOAT3& position) { mPosition = position; }
+		const XMFLOAT3& GetPosition() { return mPosition; }
 		ID3D11ShaderResourceView* GetCubemapSRV() const { return mCubemapFacesConvolutedRT->getSRV(); }
 	private:
 		void Compute(Game& game, const GameTime& gameTime, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox = nullptr);
@@ -75,23 +77,27 @@ namespace Library
 		XMFLOAT3 mPosition;
 		int mSize;
 		bool mIsComputed = false;
+		int mIndex;
 	};
 
 	class ER_IlluminationProbeManager
 	{
 	public:
 		using ProbesRenderingObjectsInfo = std::map<std::string, Rendering::RenderingObject*>;
-		ER_IlluminationProbeManager(Game& game, DirectionalLight& light, ShadowMapper& shadowMapper);
+		ER_IlluminationProbeManager(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ShadowMapper& shadowMapper);
 		~ER_IlluminationProbeManager();
 
 		void SetLevelPath(const std::wstring& aPath) { mLevelPath = aPath; };
 		void ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox = nullptr);
+		void DrawDebugProbes(Game& game, Scene* scene, ER_ProbeType aType);
+		void UpdateDebugLightProbeMaterialVariables(Rendering::RenderingObject* obj, int meshIndex);
 		const ER_LightProbe* GetDiffuseLightProbe(int index) const { return mDiffuseProbes[index]; }
 		const ER_LightProbe* GetSpecularLightProbe(int index) const { return mSpecularProbes[index]; }
 	private:
+		Camera& mMainCamera;
+
 		std::vector<ER_LightProbe*> mDiffuseProbes;
 		std::vector<ER_LightProbe*> mSpecularProbes;
-
 		std::wstring mLevelPath;
 	};
 }

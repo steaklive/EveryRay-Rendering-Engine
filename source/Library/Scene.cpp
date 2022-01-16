@@ -89,7 +89,7 @@ namespace Library
 					)
 				);
 
-				auto it = objects.find(name);
+				auto it = objects.find(name); //TODO no need to find
 				
 				// set flags
 				if (root["rendering_objects"][i].isMember("foliageMask"))

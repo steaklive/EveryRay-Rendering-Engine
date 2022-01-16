@@ -411,6 +411,9 @@
     <ClInclude Include="ER_IlluminationProbeManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DebugLightProbeMaterial.h">
+      <Filter>Source Files\Materials</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -707,6 +710,9 @@
     <ClCompile Include="ER_IlluminationProbeManager.cpp">
       <Filter>Source Files\Objects\Rendering systems</Filter>
     </ClCompile>
+    <ClCompile Include="DebugLightProbeMaterial.cpp">
+      <Filter>Source Files\Materials</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\content\effects\AmbientLighting.fx">
@@ -906,6 +912,9 @@
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\IBL\ProbeConvolution.hlsl">
       <Filter>Shaders\IBL</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\effects\DebugLightProbe.fx">
+      <Filter>Effects</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

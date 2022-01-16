@@ -42,7 +42,7 @@ namespace Library
 	{
 		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
 
-		std::unique_ptr<Model> model(new Model(mGame, Utility::GetFilePath("content\\models\\SphereSkybox.obj"), true));
+		std::unique_ptr<Model> model(new Model(mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.obj"), true));
 
 		mEffect = new Effect(mGame);
 		mEffect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\Skybox.fx"));

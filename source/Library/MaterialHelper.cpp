@@ -10,5 +10,5 @@ namespace Library
 	const std::string MaterialHelper::ssrMaterialName = "ssr";
 	const std::string MaterialHelper::parallaxMaterialName = "parallax";
 	const std::string MaterialHelper::voxelizationGIMaterialName = "voxelizationGI";
-
+	const std::string MaterialHelper::debugLightProbeMaterialName = "debugLightProbe";
 }

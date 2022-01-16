@@ -241,12 +241,16 @@ namespace Library
 			int objectIndex = 0;
 			for (auto it = scene->objects.begin(); it != scene->objects.end(); it++, objectIndex++)
 			{
-				XMMATRIX worldMatrix = XMLoadFloat4x4(&(it->second->GetTransformationMatrix4X4()));
-				if (it->second->IsInstanced())
-					static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->LightViewProjection() << lvp;
-				else
-					static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->WorldLightViewProjection() << worldMatrix * lvp;
-				it->second->Draw(name, true);
+				auto materialInfo = it->second->GetMaterials().find(name);
+				if (materialInfo != it->second->GetMaterials().end())
+				{
+					XMMATRIX worldMatrix = XMLoadFloat4x4(&(it->second->GetTransformationMatrix4X4()));
+					if (it->second->IsInstanced())
+						static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->LightViewProjection() << lvp;
+					else
+						static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->WorldLightViewProjection() << worldMatrix * lvp;
+					it->second->Draw(name, true);
+				}
 			}
 
 			StopRenderingToShadowMap(i);

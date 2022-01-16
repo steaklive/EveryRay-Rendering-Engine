@@ -197,6 +197,7 @@
     <ClInclude Include="CompositeLightingMaterial.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="CustomRenderTarget.h" />
+    <ClInclude Include="DebugLightProbeMaterial.h" />
     <ClInclude Include="DeferredMaterial.h" />
     <ClInclude Include="DemoLevel.h" />
     <ClInclude Include="DepthMap.h" />
@@ -304,6 +305,7 @@
     <ClCompile Include="ColorHelper.cpp" />
     <ClCompile Include="CompositeLightingMaterial.cpp" />
     <ClCompile Include="CustomRenderTarget.cpp" />
+    <ClCompile Include="DebugLightProbeMaterial.cpp" />
     <ClCompile Include="DeferredMaterial.cpp" />
     <ClCompile Include="DemoLevel.cpp" />
     <ClCompile Include="DepthMap.cpp" />
@@ -427,6 +429,10 @@
     <FxCompile Include="..\..\content\effects\CompositeLighting.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\content\effects\DebugLightProbe.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

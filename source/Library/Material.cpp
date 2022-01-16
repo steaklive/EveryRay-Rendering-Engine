@@ -24,6 +24,8 @@ namespace Library
 		{
 			ReleaseObject(inputLayout.second);
 		}
+		DeleteObject(mEffect);
+		DeleteObject(mCurrentTechnique);
 	}
 
 	Variable* Material::operator[](const std::string& variableName)

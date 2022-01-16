@@ -14,5 +14,6 @@ namespace Library
 		static const std::string ssrMaterialName;
 		static const std::string parallaxMaterialName;
 		static const std::string voxelizationGIMaterialName;
+		static const std::string debugLightProbeMaterialName;
 	};
 }
