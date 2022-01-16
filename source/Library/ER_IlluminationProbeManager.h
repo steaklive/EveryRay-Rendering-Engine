@@ -1,6 +1,8 @@
 #pragma once
 #define CUBEMAP_FACES_COUNT 6
 #define SPECULAR_PROBE_MIP_COUNT 6
+#define DIFFUSE_PROBE_SIZE 32
+#define MAIN_CAMERA_PROBE_VOLUME_SIZE 100
 
 #include "Common.h"
 #include "RenderingObject.h"
@@ -17,6 +19,7 @@ namespace Library
 	class GameTime;
 	class QuadRenderer;
 	class Scene;
+	class RenderableAABB;
 
 	enum ER_ProbeType
 	{
@@ -44,6 +47,9 @@ namespace Library
 		void SetPosition(const XMFLOAT3& position) { mPosition = position; }
 		const XMFLOAT3& GetPosition() { return mPosition; }
 		ID3D11ShaderResourceView* GetCubemapSRV() const { return mCubemapFacesConvolutedRT->getSRV(); }
+		
+		void CPUCullAgainstProbeBoundingVolume(const XMFLOAT3& aMin, const XMFLOAT3& aMax);
+		bool IsCulled() { return mIsCulled; };
 	private:
 		void Compute(Game& game, const GameTime& gameTime, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox = nullptr);
 		void DrawGeometryToProbe(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox);
@@ -76,8 +82,9 @@ namespace Library
 
 		XMFLOAT3 mPosition;
 		int mSize;
-		bool mIsComputed = false;
 		int mIndex;
+		bool mIsComputed = false;
+		bool mIsCulled = false; //i.e., we can cull-check against custom bounding box positioned at main camera
 	};
 
 	class ER_IlluminationProbeManager
@@ -90,11 +97,16 @@ namespace Library
 		void SetLevelPath(const std::wstring& aPath) { mLevelPath = aPath; };
 		void ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox = nullptr);
 		void DrawDebugProbes(Game& game, Scene* scene, ER_ProbeType aType);
+		void DrawDebugProbesVolumeGizmo();
+		void UpdateProbes();
 		void UpdateDebugLightProbeMaterialVariables(Rendering::RenderingObject* obj, int meshIndex);
 		const ER_LightProbe* GetDiffuseLightProbe(int index) const { return mDiffuseProbes[index]; }
 		const ER_LightProbe* GetSpecularLightProbe(int index) const { return mSpecularProbes[index]; }
 	private:
 		Camera& mMainCamera;
+		RenderableAABB* mDebugProbeVolumeGizmo;
+
+		Rendering::RenderingObject* mDiffuseProbeRenderingObject; // deleted in scene
 
 		std::vector<ER_LightProbe*> mDiffuseProbes;
 		std::vector<ER_LightProbe*> mSpecularProbes;

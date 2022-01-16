@@ -18,8 +18,7 @@
 #include "Material.h"
 #include "Effect.h"
 #include "DebugLightProbeMaterial.h"
-
-#include "DirectXTex.h"
+#include "RenderableAABB.h"
 
 namespace Library
 {
@@ -34,14 +33,14 @@ namespace Library
 
 		//TODO move distribution to a separate function
 		{
-			const float distanceBetweenProbes = 5.0f;
+			const float distanceBetweenProbes = 15.0f;
 			for (int probesX = 0; probesX < probesCountX; probesX++)
 			{
 				for (int probesZ = 0; probesZ < probesCountZ; probesZ++)
 				{
 					XMFLOAT3 pos = XMFLOAT3(probesX * distanceBetweenProbes, /*TEMP*/ 15.0f, probesZ * distanceBetweenProbes);
 					int index = probesX * probesCountZ + probesZ;
-					mDiffuseProbes.push_back(new ER_LightProbe(game, light, shadowMapper, pos, 64, DIFFUSE_PROBE, index));
+					mDiffuseProbes.push_back(new ER_LightProbe(game, light, shadowMapper, pos, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE, index));
 				}
 			}
 		}
@@ -58,25 +57,33 @@ namespace Library
 
 			Effect* effect = new Effect(game); // deleted when material is deleted
 			effect->CompileFromFile(Utility::GetFilePath(Utility::ToWideString("content\\effects\\DebugLightProbe.fx")));
-			auto insertedObject = result.first->second;
-			insertedObject->LoadMaterial(new Rendering::DebugLightProbeMaterial(), effect, MaterialHelper::debugLightProbeMaterialName);
-			insertedObject->LoadRenderBuffers();
-			insertedObject->LoadInstanceBuffers();
-			insertedObject->ResetInstanceData(probesCount, true);
+			mDiffuseProbeRenderingObject = result.first->second;
+			mDiffuseProbeRenderingObject->LoadMaterial(new Rendering::DebugLightProbeMaterial(), effect, MaterialHelper::debugLightProbeMaterialName);
+			mDiffuseProbeRenderingObject->LoadRenderBuffers();
+			mDiffuseProbeRenderingObject->LoadInstanceBuffers();
+			mDiffuseProbeRenderingObject->ResetInstanceData(probesCount, true);
 			for (int i = 0; i < probesCount; i++) {
 				XMMATRIX worldT = XMMatrixTranslation(mDiffuseProbes[i]->GetPosition().x, mDiffuseProbes[i]->GetPosition().y, mDiffuseProbes[i]->GetPosition().z);
-				insertedObject->AddInstanceData(worldT);
+				mDiffuseProbeRenderingObject->AddInstanceData(worldT);
 			}
-			insertedObject->UpdateInstanceBuffer(insertedObject->GetInstancesData());
-			insertedObject->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::debugLightProbeMaterialName,
-				[&, insertedObject](int meshIndex) { UpdateDebugLightProbeMaterialVariables(insertedObject, meshIndex); });
+			mDiffuseProbeRenderingObject->UpdateInstanceBuffer(mDiffuseProbeRenderingObject->GetInstancesData());
+			mDiffuseProbeRenderingObject->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::debugLightProbeMaterialName,
+				[&](int meshIndex) { UpdateDebugLightProbeMaterialVariables(mDiffuseProbeRenderingObject, meshIndex); });
 		}
+
+		mDebugProbeVolumeGizmo = new RenderableAABB(game, mMainCamera, XMFLOAT4(0.44f, 0.2f, 0.64f, 1.0f));
+		mDebugProbeVolumeGizmo->Initialize();
+		mDebugProbeVolumeGizmo->InitializeGeometry({ 
+			XMFLOAT3(-MAIN_CAMERA_PROBE_VOLUME_SIZE, -MAIN_CAMERA_PROBE_VOLUME_SIZE, -MAIN_CAMERA_PROBE_VOLUME_SIZE),
+			XMFLOAT3(MAIN_CAMERA_PROBE_VOLUME_SIZE, MAIN_CAMERA_PROBE_VOLUME_SIZE, MAIN_CAMERA_PROBE_VOLUME_SIZE) }, XMMatrixScaling(1, 1, 1));
+		mDebugProbeVolumeGizmo->SetPosition(mMainCamera.Position());
 	}
 
 	ER_IlluminationProbeManager::~ER_IlluminationProbeManager()
 	{
 		DeletePointerCollection(mDiffuseProbes);
 		DeletePointerCollection(mSpecularProbes);
+		DeleteObject(mDebugProbeVolumeGizmo);
 	}
 
 	void ER_IlluminationProbeManager::ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox)
@@ -90,11 +97,49 @@ namespace Library
 
 	void ER_IlluminationProbeManager::DrawDebugProbes(Game& game, Scene* scene, ER_ProbeType aType)
 	{
-		auto it = scene->objects.find("Debug_diffuse_lightprobe");
-		if (it != scene->objects.end())
+		if (mDiffuseProbeRenderingObject)
+			mDiffuseProbeRenderingObject->Draw(MaterialHelper::debugLightProbeMaterialName);
+	}
+
+	void ER_IlluminationProbeManager::DrawDebugProbesVolumeGizmo()
+	{
+		mDebugProbeVolumeGizmo->Draw();
+	}
+
+	void ER_IlluminationProbeManager::UpdateProbes()
+	{
+		mDebugProbeVolumeGizmo->SetPosition(mMainCamera.Position());
+		mDebugProbeVolumeGizmo->Update();
+
+		XMFLOAT3 maxBounds = XMFLOAT3(
+			MAIN_CAMERA_PROBE_VOLUME_SIZE + mMainCamera.Position().x,
+			MAIN_CAMERA_PROBE_VOLUME_SIZE + mMainCamera.Position().y,
+			MAIN_CAMERA_PROBE_VOLUME_SIZE + mMainCamera.Position().z);
+
+		XMFLOAT3 minBounds = XMFLOAT3(
+			-MAIN_CAMERA_PROBE_VOLUME_SIZE + mMainCamera.Position().x,
+			-MAIN_CAMERA_PROBE_VOLUME_SIZE + mMainCamera.Position().y,
+			-MAIN_CAMERA_PROBE_VOLUME_SIZE + mMainCamera.Position().z);
+
+		for (auto& lightProbe : mDiffuseProbes)
+			lightProbe->CPUCullAgainstProbeBoundingVolume(minBounds, maxBounds);
+
+		if (mDiffuseProbeRenderingObject)
 		{
-			it->second->Draw(MaterialHelper::debugLightProbeMaterialName);
+			auto& oldInstancedData = mDiffuseProbeRenderingObject->GetInstancesData();
+			assert(oldInstancedData.size() == mDiffuseProbes.size());
+
+			//writing culling flag to [4][4] of world instanced matrix
+			for (int i = 0; i < oldInstancedData.size(); i++)
+				oldInstancedData[i].World._44 = mDiffuseProbes[i]->IsCulled() ? 1.0f : 0.0f;
+
+			mDiffuseProbeRenderingObject->UpdateInstanceBuffer(oldInstancedData);
 		}
+		else
+		{
+			//TODO output to LOG
+		}
+
 	}
 
 	void ER_IlluminationProbeManager::UpdateDebugLightProbeMaterialVariables(Rendering::RenderingObject* obj, int meshIndex)
@@ -239,6 +284,14 @@ namespace Library
 
 		if (!alreadyExistsInFile || forceRecompute)
 			Compute(game, gameTime, levelPath, objectsToRender, skybox);
+	}
+
+	void ER_LightProbe::CPUCullAgainstProbeBoundingVolume(const XMFLOAT3& aMin, const XMFLOAT3& aMax)
+	{
+		mIsCulled = 
+			(mPosition.x > aMax.x || mPosition.x < aMin.x) ||
+			(mPosition.y > aMax.y || mPosition.y < aMin.y) ||
+			(mPosition.z > aMax.z || mPosition.z < aMin.z);
 	}
 
 	void ER_LightProbe::Compute(Game& game, const GameTime& gameTime, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox)

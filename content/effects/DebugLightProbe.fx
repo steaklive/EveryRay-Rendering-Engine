@@ -42,6 +42,7 @@ struct VS_OUTPUT
     float2 UV : TexCoord0;
     float3 Normal : Normal;
     float3 Tangent : Tangent;
+    float CullingFlag : TexCoord1; // 1.0f - culled, 0.0f - not culled
 };
 
 
@@ -54,6 +55,7 @@ VS_OUTPUT mainVS(VS_INPUT IN)
     OUT.UV = IN.Texcoord0;
     OUT.Normal = normalize(mul(float4(IN.Normal, 0), World).xyz);
     OUT.Tangent = IN.Tangent;
+    OUT.CullingFlag = 0.0f;
 
     return OUT;
 }
@@ -67,6 +69,7 @@ VS_OUTPUT mainVS_Instancing(VS_INPUT_INSTANCING IN)
     OUT.UV = IN.Texcoord0;
     OUT.Normal = normalize(mul(float4(IN.Normal, 0), IN.World).xyz);
     OUT.Tangent = IN.Tangent;
+    OUT.CullingFlag = IN.World[3][3];
 
     return OUT;
 }
@@ -81,7 +84,8 @@ float3 mainPS(VS_OUTPUT vsOutput) : SV_Target0
 
 float3 recomputePS(VS_OUTPUT vsOutput) : SV_Target0
 {
-    return float3(1.0f, 0.0f, 0.0f);
+    float3 color = (vsOutput.CullingFlag > 0.0f) ? float3(1.0f, 0.0f, 0.0f) : float3(0.5f, 0.5f, 0.5f);
+    return color;
 }
 
 /************* Techniques *************/

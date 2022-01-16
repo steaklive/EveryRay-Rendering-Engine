@@ -31,7 +31,8 @@
 #include "TGATextureLoader.h"
 #include <DDSTextureLoader.h>
 #include <WICTextureLoader.h>
-#include <ScreenGrab.h>
+
+#include "DirectXTex.h"
 
 #include "imgui.h"
 #include "imgui_impl_dx11.h"

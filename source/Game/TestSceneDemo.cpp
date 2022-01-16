@@ -74,6 +74,7 @@ namespace Rendering
 			XMVECTOR{ mDirectionalLight->GetDirectionalLightColor().x, mDirectionalLight->GetDirectionalLightColor().y, mDirectionalLight->GetDirectionalLightColor().z, 1.0 },
 			mDirectionalLight->GetSunBrightness(), mDirectionalLight->GetSunExponent());
 		mSkybox->Update(gameTime);
+		mIlluminationProbesManager->UpdateProbes();
 		mEditor->Update(gameTime);
 		
 		UpdateImGui();
@@ -137,6 +138,7 @@ namespace Rendering
 		{
 			mDirectionalLight->DrawProxyModel(gameTime); //todo move to Illumination() or better to separate debug renderer system
 			mIlluminationProbesManager->DrawDebugProbes(*mGame, mScene, DIFFUSE_PROBE);
+			mIlluminationProbesManager->DrawDebugProbesVolumeGizmo();
 		}
 #pragma endregion
 
