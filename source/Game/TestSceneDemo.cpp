@@ -74,7 +74,7 @@ namespace Rendering
 			XMVECTOR{ mDirectionalLight->GetDirectionalLightColor().x, mDirectionalLight->GetDirectionalLightColor().y, mDirectionalLight->GetDirectionalLightColor().z, 1.0 },
 			mDirectionalLight->GetSunBrightness(), mDirectionalLight->GetSunExponent());
 		mSkybox->Update(gameTime);
-		mIlluminationProbesManager->UpdateProbes();
+		mIlluminationProbesManager->UpdateProbes(*mGame);
 		mEditor->Update(gameTime);
 		
 		UpdateImGui();

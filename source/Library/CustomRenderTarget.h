@@ -4,8 +4,8 @@
 class CustomRenderTarget 
 {
 public:
-	CustomRenderTarget(ID3D11Device * device, UINT width, UINT height, UINT samples, DXGI_FORMAT format, UINT bindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET,
-		int mip = 1, int depth = -1, int arraySize = 1, bool isCubemap = false);
+	CustomRenderTarget(ID3D11Device* device, UINT width, UINT height, UINT samples, DXGI_FORMAT format, UINT bindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET,
+		int mip = 1, int depth = -1, int arraySize = 1, bool isCubemap = false, int cubemapArraySize = -1);
 	~CustomRenderTarget();
 
 	ID3D11RenderTargetView* getRTV() { return mRTVs[0]; }
@@ -17,10 +17,8 @@ public:
 	ID3D11UnorderedAccessView** getUAVs() { return mUAVs; }
 	int getMips() { return mMipLevels; }
 	
-	void SetSRV(ID3D11ShaderResourceView* SRV)
-	{
-		mSRV = SRV;
-	}
+	void SetSRV(ID3D11ShaderResourceView* SRV) { mSRV = SRV; }
+	void SetTexture2D(ID3D11Texture2D* t2d) { mTexture2D = t2d; }
 
 	UINT GetWidth() { return mWidth; }
 	UINT GetHeight() { return mHeight; }

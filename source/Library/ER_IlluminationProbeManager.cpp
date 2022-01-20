@@ -33,12 +33,11 @@ namespace Library
 
 		//TODO move distribution to a separate function
 		{
-			const float distanceBetweenProbes = 15.0f;
 			for (int probesX = 0; probesX < probesCountX; probesX++)
 			{
 				for (int probesZ = 0; probesZ < probesCountZ; probesZ++)
 				{
-					XMFLOAT3 pos = XMFLOAT3(probesX * distanceBetweenProbes, /*TEMP*/ 15.0f, probesZ * distanceBetweenProbes);
+					XMFLOAT3 pos = XMFLOAT3(probesX * DISTANCE_BETWEEN_DIFFUSE_PROBES, /*TEMP*/ 15.0f, probesZ * DISTANCE_BETWEEN_DIFFUSE_PROBES);
 					int index = probesX * probesCountZ + probesZ;
 					mDiffuseProbes.push_back(new ER_LightProbe(game, light, shadowMapper, pos, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE, index));
 				}
@@ -77,6 +76,9 @@ namespace Library
 			XMFLOAT3(-MAIN_CAMERA_PROBE_VOLUME_SIZE, -MAIN_CAMERA_PROBE_VOLUME_SIZE, -MAIN_CAMERA_PROBE_VOLUME_SIZE),
 			XMFLOAT3(MAIN_CAMERA_PROBE_VOLUME_SIZE, MAIN_CAMERA_PROBE_VOLUME_SIZE, MAIN_CAMERA_PROBE_VOLUME_SIZE) }, XMMatrixScaling(1, 1, 1));
 		mDebugProbeVolumeGizmo->SetPosition(mMainCamera.Position());
+
+		mDiffuseCubemapArrayRT = new CustomRenderTarget(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
+			D3D11_BIND_SHADER_RESOURCE , 1, -1, 6, true, maxNonCulledProbesCount);
 	}
 
 	ER_IlluminationProbeManager::~ER_IlluminationProbeManager()
@@ -91,13 +93,17 @@ namespace Library
 		for (auto& lightProbe : mDiffuseProbes)
 			lightProbe->ComputeOrLoad(game, gameTime, aObjects, skybox, mLevelPath);
 
+		mDiffuseProbesReady = true;
+
 		for (auto& lightProbe : mSpecularProbes)
 			lightProbe->ComputeOrLoad(game, gameTime, aObjects, skybox, mLevelPath);
+
+		mSpecularProbesReady = true;
 	}
 
 	void ER_IlluminationProbeManager::DrawDebugProbes(Game& game, Scene* scene, ER_ProbeType aType)
 	{
-		if (mDiffuseProbeRenderingObject)
+		if (mDiffuseProbeRenderingObject && mDiffuseProbesReady)
 			mDiffuseProbeRenderingObject->Draw(MaterialHelper::debugLightProbeMaterialName);
 	}
 
@@ -106,8 +112,14 @@ namespace Library
 		mDebugProbeVolumeGizmo->Draw();
 	}
 
-	void ER_IlluminationProbeManager::UpdateProbes()
+	void ER_IlluminationProbeManager::UpdateProbes(Game& game)
 	{
+		if (!mDiffuseProbesReady)
+			return;
+
+		mNonCulledDiffuseProbesCount = 0;
+		mNonCulledDiffuseProbesIndices.clear();
+
 		mDebugProbeVolumeGizmo->SetPosition(mMainCamera.Position());
 		mDebugProbeVolumeGizmo->Update();
 
@@ -129,15 +141,38 @@ namespace Library
 			auto& oldInstancedData = mDiffuseProbeRenderingObject->GetInstancesData();
 			assert(oldInstancedData.size() == mDiffuseProbes.size());
 
-			//writing culling flag to [4][4] of world instanced matrix
 			for (int i = 0; i < oldInstancedData.size(); i++)
+			{
+				//writing culling flag to [4][4] of world instanced matrix
 				oldInstancedData[i].World._44 = mDiffuseProbes[i]->IsCulled() ? 1.0f : 0.0f;
+				//writing cubemap index to [1][4] of world instanced matrix
+				oldInstancedData[i].World._14 = 0.0f;
+				if (!mDiffuseProbes[i]->IsCulled())
+				{
+					oldInstancedData[i].World._14 = static_cast<float>(mNonCulledDiffuseProbesCount);
+					mNonCulledDiffuseProbesCount++;
+					mNonCulledDiffuseProbesIndices.push_back(i);
+				}
+			}
 
 			mDiffuseProbeRenderingObject->UpdateInstanceBuffer(oldInstancedData);
+
 		}
 		else
 		{
 			//TODO output to LOG
+		}
+
+		auto context = game.Direct3DDeviceContext();
+		for (int i = 0; i < maxNonCulledProbesCount; i++)
+		{
+			if (i < mNonCulledDiffuseProbesIndices.size() && i < mDiffuseProbes.size())
+			{
+				for	(int cubeI = 0; cubeI < CUBEMAP_FACES_COUNT; cubeI++)
+					context->CopySubresourceRegion(mDiffuseCubemapArrayRT->getTexture2D(), D3D11CalcSubresource(0, cubeI + CUBEMAP_FACES_COUNT * i, 1), 0, 0, 0,
+						mDiffuseProbes[mNonCulledDiffuseProbesIndices[i]]->GetCubemapTexture2D(), D3D11CalcSubresource(0, cubeI, 1), NULL);
+			}
+			//TODO clear remaining texture subregions with solid color (PINK)
 		}
 
 	}
@@ -152,7 +187,7 @@ namespace Library
 			material->ViewProjection() << vp;
 			material->World() << XMMatrixIdentity();
 			material->CameraPosition() << mMainCamera.PositionVector();
-			//material->CubemapTexture() << mProbesManager->GetDiffuseLightProbe(0)->GetCubemapSRV(); //TODO
+			material->CubemapTexture() << mDiffuseCubemapArrayRT->getSRV();
 		}
 	}
 
@@ -410,14 +445,22 @@ namespace Library
 		std::wstring probeName = GetConstructedProbeName(levelPath);
 
 		ID3D11ShaderResourceView* srv = mCubemapFacesConvolutedRT->getSRV();
-		if (FAILED(DirectX::CreateDDSTextureFromFile(game.Direct3DDevice(), game.Direct3DDeviceContext(), probeName.c_str(), nullptr, &srv)))
+		ID3D11Resource* resourceTex = NULL;
+
+		//[WARNING] CreateDDSTextureFromFile() auto-generates mips, so we need to be careful when doing GPU copy of the resource...
+		if (FAILED(DirectX::CreateDDSTextureFromFile(game.Direct3DDevice(), game.Direct3DDeviceContext(), probeName.c_str(), &resourceTex, &srv)))
 		{
 			//std::wstring status = L"Failed to load DDS probe texture: " + probeName;
 			//TODO output to LOG (not exception)
 			result = false;
 		}
-		else
+		//else
 		{
+			//doing 6 CopySubresourceRegion for each face, since CopyResource() wont work due to auto generated mips in src texture...
+			for (int i = 0; i< CUBEMAP_FACES_COUNT; i++)
+				game.Direct3DDeviceContext()->CopySubresourceRegion(mCubemapFacesConvolutedRT->getTexture2D(), 
+					D3D11CalcSubresource(0, i, 1), 0,0,0, resourceTex, D3D11CalcSubresource(0, i, 6), NULL);
+
 			mCubemapFacesConvolutedRT->SetSRV(srv);
 			result = true;
 		}

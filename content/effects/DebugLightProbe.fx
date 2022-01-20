@@ -1,10 +1,12 @@
+#define MAX_CUBEMAPS_PER_VOLUME 169 // (volume size / distance between probes) ^ 3 (^2 for now)
+
 cbuffer CBufferPerObject
 {
     float4x4 ViewProjection;
     float4x4 World;
     float4 CameraPosition;
 }
-TextureCube CubemapTexture;
+TextureCubeArray<float4> CubemapTexture;
 
 SamplerState AnisotropicSampler
 {
@@ -43,6 +45,7 @@ struct VS_OUTPUT
     float3 Normal : Normal;
     float3 Tangent : Tangent;
     float CullingFlag : TexCoord1; // 1.0f - culled, 0.0f - not culled
+    float CubemapIndex : TexCoord2;
 };
 
 
@@ -56,6 +59,7 @@ VS_OUTPUT mainVS(VS_INPUT IN)
     OUT.Normal = normalize(mul(float4(IN.Normal, 0), World).xyz);
     OUT.Tangent = IN.Tangent;
     OUT.CullingFlag = 0.0f;
+    OUT.CubemapIndex = 0.0f;
 
     return OUT;
 }
@@ -70,6 +74,7 @@ VS_OUTPUT mainVS_Instancing(VS_INPUT_INSTANCING IN)
     OUT.Normal = normalize(mul(float4(IN.Normal, 0), IN.World).xyz);
     OUT.Tangent = IN.Tangent;
     OUT.CullingFlag = IN.World[3][3];
+    OUT.CubemapIndex = IN.World[3][0];
 
     return OUT;
 }
@@ -79,7 +84,8 @@ float3 mainPS(VS_OUTPUT vsOutput) : SV_Target0
     float3 viewDir = normalize(CameraPosition.xyz - vsOutput.WorldPos);
     float3 reflectDir = normalize(reflect(-viewDir, vsOutput.Normal));
     
-    return CubemapTexture.SampleLevel(AnisotropicSampler, reflectDir, 0).rgb;
+    int index = vsOutput.CubemapIndex;
+    return CubemapTexture.SampleLevel(AnisotropicSampler, float4(reflectDir, index), 0).rgb;
 }
 
 float3 recomputePS(VS_OUTPUT vsOutput) : SV_Target0

@@ -1,8 +1,11 @@
 #pragma once
 #define CUBEMAP_FACES_COUNT 6
-#define SPECULAR_PROBE_MIP_COUNT 6
-#define DIFFUSE_PROBE_SIZE 32
 #define MAIN_CAMERA_PROBE_VOLUME_SIZE 100
+
+#define DIFFUSE_PROBE_SIZE 32
+#define DISTANCE_BETWEEN_DIFFUSE_PROBES 15
+
+#define SPECULAR_PROBE_MIP_COUNT 6
 
 #include "Common.h"
 #include "RenderingObject.h"
@@ -47,6 +50,7 @@ namespace Library
 		void SetPosition(const XMFLOAT3& position) { mPosition = position; }
 		const XMFLOAT3& GetPosition() { return mPosition; }
 		ID3D11ShaderResourceView* GetCubemapSRV() const { return mCubemapFacesConvolutedRT->getSRV(); }
+		ID3D11Texture2D* GetCubemapTexture2D() const { return mCubemapFacesConvolutedRT->getTexture2D(); }
 		
 		void CPUCullAgainstProbeBoundingVolume(const XMFLOAT3& aMin, const XMFLOAT3& aMax);
 		bool IsCulled() { return mIsCulled; };
@@ -98,7 +102,7 @@ namespace Library
 		void ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox = nullptr);
 		void DrawDebugProbes(Game& game, Scene* scene, ER_ProbeType aType);
 		void DrawDebugProbesVolumeGizmo();
-		void UpdateProbes();
+		void UpdateProbes(Game& game);
 		void UpdateDebugLightProbeMaterialVariables(Rendering::RenderingObject* obj, int meshIndex);
 		const ER_LightProbe* GetDiffuseLightProbe(int index) const { return mDiffuseProbes[index]; }
 		const ER_LightProbe* GetSpecularLightProbe(int index) const { return mSpecularProbes[index]; }
@@ -107,9 +111,21 @@ namespace Library
 		RenderableAABB* mDebugProbeVolumeGizmo;
 
 		Rendering::RenderingObject* mDiffuseProbeRenderingObject; // deleted in scene
-
+		
+		
 		std::vector<ER_LightProbe*> mDiffuseProbes;
 		std::vector<ER_LightProbe*> mSpecularProbes;
+
+		std::vector<int> mNonCulledDiffuseProbesIndices;
+		std::vector<int> mNonCulledSpecularProbesIndices;
 		std::wstring mLevelPath;
+		int mNonCulledDiffuseProbesCount = 0;
+
+		static const int maxNonCulledProbesCountPerAxis = MAIN_CAMERA_PROBE_VOLUME_SIZE * 2 / DISTANCE_BETWEEN_DIFFUSE_PROBES;
+		static const int maxNonCulledProbesCount = maxNonCulledProbesCountPerAxis * maxNonCulledProbesCountPerAxis/* * maxNonCulledProbesCountPerAxis*/;
+		CustomRenderTarget* mDiffuseCubemapArrayRT;
+
+		bool mDiffuseProbesReady = false;
+		bool mSpecularProbesReady = false;
 	};
 }

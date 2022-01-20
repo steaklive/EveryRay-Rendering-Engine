@@ -9,7 +9,7 @@ namespace Rendering
 	RTTI_DEFINITIONS(DebugLightProbeMaterial)
 
 	DebugLightProbeMaterial::DebugLightProbeMaterial()
-		: Material("recompute_instancing"),
+		: Material("main_instancing"),
 		MATERIAL_VARIABLE_INITIALIZATION(ViewProjection),
 		MATERIAL_VARIABLE_INITIALIZATION(World),
 		MATERIAL_VARIABLE_INITIALIZATION(CameraPosition),

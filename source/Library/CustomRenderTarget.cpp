@@ -1,6 +1,7 @@
 #include "..\Library\CustomRenderTarget.h"
 
-CustomRenderTarget::CustomRenderTarget(ID3D11Device * device, UINT width, UINT height, UINT samples, DXGI_FORMAT format, UINT bindFlags, int mips, int depth, int arraySize, bool isCubemap)
+CustomRenderTarget::CustomRenderTarget(ID3D11Device* device, UINT width, UINT height, UINT samples, DXGI_FORMAT format, UINT bindFlags,
+	int mips, int depth, int arraySize, bool isCubemap, int cubemapArraySize)
 {
 	ID3D11Texture2D* tex2D = nullptr;
 	ID3D11Texture3D* tex3D = nullptr;
@@ -35,7 +36,7 @@ CustomRenderTarget::CustomRenderTarget(ID3D11Device * device, UINT width, UINT h
 	}
 	else {
 		CD3D11_TEXTURE2D_DESC texDesc;
-		texDesc.ArraySize = arraySize;
+		texDesc.ArraySize = (mIsCubemap && cubemapArraySize > 0) ? 6 * cubemapArraySize : arraySize;
 
 		texDesc.BindFlags = bindFlags;
 		if (samples == 1)
@@ -153,8 +154,19 @@ CustomRenderTarget::CustomRenderTarget(ID3D11Device * device, UINT width, UINT h
 		{
 			if (mIsCubemap)
 			{
-				sDesc.TextureCube.MipLevels = 1;
-				sDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
+				if (cubemapArraySize > 0)
+				{
+					sDesc.TextureCubeArray.MipLevels = 1;
+					sDesc.TextureCubeArray.MostDetailedMip = 0;
+					sDesc.TextureCubeArray.NumCubes = cubemapArraySize;
+					sDesc.TextureCubeArray.First2DArrayFace = 0;
+					sDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBEARRAY;
+				}
+				else
+				{
+					sDesc.TextureCube.MipLevels = 1;
+					sDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
+				}
 				device->CreateShaderResourceView(tex2D, &sDesc, &srv);
 			}
 			else {
