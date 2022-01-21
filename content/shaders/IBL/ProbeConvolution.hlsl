@@ -137,7 +137,7 @@ float4 PSMain(VS_OUT input) : SV_TARGET
 {
 	float3 N = GetNormal(FaceIndex, input.TexCoord);
 	if (MipIndex == -1) // diffuse
-		return float4(PrefilterEnvMap(1.0, N), 1.0f);
+		return float4(PrefilterEnvMap(0.0, N), 1.0f);
 	else // specular
 		return float4(PrefilterEnvMap(saturate(MipIndex / 6.0f), N), 1.0f);
 }

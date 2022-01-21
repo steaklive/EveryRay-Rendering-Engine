@@ -45,7 +45,7 @@ struct VS_OUTPUT
     float3 Normal : Normal;
     float3 Tangent : Tangent;
     float CullingFlag : TexCoord1; // 1.0f - culled, 0.0f - not culled
-    float CubemapIndex : TexCoord2;
+    float CubemapIndex : TexCoord2; //index to sample from TextureCubeArray
 };
 
 
@@ -68,29 +68,37 @@ VS_OUTPUT mainVS_Instancing(VS_INPUT_INSTANCING IN)
 {
     VS_OUTPUT OUT = (VS_OUTPUT) 0;
 
-    OUT.WorldPos = mul(IN.Position, IN.World).xyz;
+    float4x4 correctWorld = IN.World;
+    correctWorld[0][0] = 1.0f; // since we dont need scale
+    
+    OUT.WorldPos = mul(IN.Position, correctWorld).xyz;
     OUT.Position = mul(float4(OUT.WorldPos, 1.0f), ViewProjection);
     OUT.UV = IN.Texcoord0;
-    OUT.Normal = normalize(mul(float4(IN.Normal, 0), IN.World).xyz);
+    OUT.Normal = normalize(mul(float4(IN.Normal, 0), correctWorld).xyz);
     OUT.Tangent = IN.Tangent;
     OUT.CullingFlag = IN.World[3][3];
-    OUT.CubemapIndex = IN.World[3][0];
+    OUT.CubemapIndex = IN.World[0][0];
 
     return OUT;
 }
 
 float3 mainPS(VS_OUTPUT vsOutput) : SV_Target0
 {
+   
     float3 viewDir = normalize(CameraPosition.xyz - vsOutput.WorldPos);
     float3 reflectDir = normalize(reflect(-viewDir, vsOutput.Normal));
-    
+
     int index = vsOutput.CubemapIndex;
-    return CubemapTexture.SampleLevel(AnisotropicSampler, float4(reflectDir, index), 0).rgb;
+    
+    if (vsOutput.CullingFlag > 0.0f) 
+        return float3(0.5f, 0.5f, 0.5f);
+    else
+        return CubemapTexture.Sample(AnisotropicSampler, float4(reflectDir, index)).rgb;
 }
 
 float3 recomputePS(VS_OUTPUT vsOutput) : SV_Target0
 {
-    float3 color = (vsOutput.CullingFlag > 0.0f) ? float3(1.0f, 0.0f, 0.0f) : float3(0.5f, 0.5f, 0.5f);
+    float3 color = float3(1.0f, 0.0f, 0.0f);
     return color;
 }
 

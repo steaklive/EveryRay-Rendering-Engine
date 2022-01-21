@@ -9,7 +9,7 @@ namespace Rendering
 	RTTI_DEFINITIONS(StandardLightingMaterial)
 
 		StandardLightingMaterial::StandardLightingMaterial()
-		: Material("standard_lighting_no_pbr"),
+		: Material("standard_lighting_pbr"),
 		MATERIAL_VARIABLE_INITIALIZATION(ViewProjection),
 		MATERIAL_VARIABLE_INITIALIZATION(World),
 		MATERIAL_VARIABLE_INITIALIZATION(ShadowMatrices),
@@ -94,11 +94,11 @@ namespace Rendering
 			{ "WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
 		};
 
-		CreateInputLayout("standard_lighting_no_pbr", "p0", inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
 		CreateInputLayout("standard_lighting_pbr", "p0", inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
+		CreateInputLayout("standard_lighting_pbr_no_ibl", "p0", inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
 
-		CreateInputLayout("standard_lighting_no_pbr_instancing", "p0", inputElementDescriptionsInstancing, ARRAYSIZE(inputElementDescriptionsInstancing));
 		CreateInputLayout("standard_lighting_pbr_instancing", "p0", inputElementDescriptionsInstancing, ARRAYSIZE(inputElementDescriptionsInstancing));
+		CreateInputLayout("standard_lighting_pbr_no_ibl_instancing", "p0", inputElementDescriptionsInstancing, ARRAYSIZE(inputElementDescriptionsInstancing));
 	}
 
 	void StandardLightingMaterial::CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const

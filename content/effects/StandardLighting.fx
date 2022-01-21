@@ -173,47 +173,6 @@ float GetShadow(float3 ShadowCoord0, float3 ShadowCoord1, float3 ShadowCoord2, f
         return 1.0f;
 }
 
-// Apply fresnel to modulate the specular albedo
-void FSchlick(inout float3 specular, inout float3 diffuse, float3 lightDir, float3 halfVec)
-{
-    float fresnel = pow(1.0 - saturate(dot(lightDir, halfVec)), 5.0);
-    specular = lerp(specular, 1, fresnel);
-    diffuse = lerp(diffuse, 0, fresnel);
-}
-
-float3 ApplyLightCommon(float3 diffuseColor, float3 specularColor, float specularMask, float gloss, float3 normal, float3 viewDir, float3 lightDir, float3 lightColor)
-{
-    float3 halfVec = normalize(lightDir - viewDir);
-    float nDotH = saturate(dot(halfVec, normal));
-
-    FSchlick(diffuseColor, specularColor, lightDir, halfVec);
-
-    float specularFactor = specularMask * pow(nDotH, gloss) * (gloss + 2) / 8;
-
-    float nDotL = saturate(dot(normal, lightDir));
-    return nDotL * lightColor * (diffuseColor + specularFactor * specularColor);
-}
-
-void AntiAliasSpecular(inout float3 texNormal, inout float gloss)
-{
-    float normalLenSq = dot(texNormal, texNormal);
-    float invNormalLen = rsqrt(normalLenSq);
-    texNormal *= invNormalLen;
-    gloss = lerp(1, gloss, rcp(invNormalLen));
-}
-
-float3 ApplyAmbientLight(float3 diffuse, float ao, float3 lightColor)
-{
-    return ao * diffuse * lightColor;
-}
-
-float3 ApplyDirectionalLight(float3 diffuseColor,float3 specularColor, float specularMask, float gloss, float3 normal,
-    float3 viewDir, float3 lightDir, float3 lightColor, float3 shadowCoord0,float3 shadowCoord1,float3 shadowCoord2, float depthPosition)
-{
-    float shadow = GetShadow(shadowCoord0, shadowCoord1, shadowCoord2, depthPosition);
-    return shadow * ApplyLightCommon(diffuseColor, specularColor, specularMask, gloss, normal, viewDir, lightDir, lightColor);
-}
-
 // ===============================================================================================
 // http://graphicrants.blogspot.com.au/2013/08/specular-brdf-reference.html
 // ===============================================================================================
@@ -350,46 +309,7 @@ float3 IndirectLightingPBR(float3 diffuseAlbedo, float3 normalWS, float3 positio
     return (indirectDiffuseLighting/* + indirectSpecularLighting*/) * ao;
 }
 
-float3 mainPS(VS_OUTPUT vsOutput) : SV_Target0
-{
-    uint2 pixelPos = vsOutput.Position.xy;
-    float4 diffuseAlbedo = AlbedoTexture.Sample(SamplerLinear, vsOutput.UV);
-    clip(diffuseAlbedo.a < 0.1f ? -1 : 1);
-    float3 colorSum = 0;
-    {
-        float ao = 1;
-        colorSum += ApplyAmbientLight(diffuseAlbedo.rgb, ao, AmbientColor.xyz);
-    }
-
-    float gloss = 128.0;
-    float3 normal;
-    {
-        normal = NormalTexture.Sample(SamplerLinear, vsOutput.UV) * 2.0 - 1.0;
-        AntiAliasSpecular(normal, gloss);
-        float3 bitangent = cross(vsOutput.Normal, vsOutput.Tangent);
-        float3x3 tbn = float3x3(vsOutput.Tangent, bitangent, vsOutput.Normal);
-        normal = normalize(mul(normal, tbn));
-    }
-    
-    //float3 specularAlbedo = float3(0.56, 0.56, 0.56);
-    float metalness = MetallicTexture.Sample(SamplerLinear, vsOutput.UV).r;
-    float3 specularAlbedo = float3(metalness, metalness, metalness);
-    float specularMask = SpecularTexture.Sample(SamplerLinear, vsOutput.UV).g;
-    float3 viewDir = normalize(vsOutput.ViewDir);
-    colorSum += ApplyDirectionalLight(diffuseAlbedo.rgb, specularAlbedo, specularMask, gloss, normal, viewDir, SunDirection.xyz, SunColor.xyz, vsOutput.ShadowCoord0, vsOutput.ShadowCoord1, vsOutput.ShadowCoord2, vsOutput.Position.w);
-
-    //// point
-    //for (uint n = 0; n < tileLightCountSphere; n++, tileLightLoadOffset += 4)
-    //{
-    //    uint lightIndex = lightGrid.Load(tileLightLoadOffset);
-    //    LightData lightData = lightBuffer[lightIndex];
-    //    colorSum += ApplyPointLight(POINT_LIGHT_ARGS);
-    //}
-
-    return colorSum;
-}
-
-float3 mainPS_PBR(VS_OUTPUT vsOutput) : SV_Target0
+float3 GetFinalPBRColor(VS_OUTPUT vsOutput, bool IBL)
 {
     float3 sampledNormal = (2 * NormalTexture.Sample(SamplerLinear, vsOutput.UV).xyz) - 1.0; // Map normal from [0..1] to [-1..1]
     float3x3 tbn = float3x3(vsOutput.Tangent, cross(vsOutput.Normal, vsOutput.Tangent), vsOutput.Normal);
@@ -399,36 +319,39 @@ float3 mainPS_PBR(VS_OUTPUT vsOutput) : SV_Target0
 
     float4 diffuseAlbedo = pow(AlbedoTexture.Sample(SamplerLinear, vsOutput.UV), 2.2);
     clip(diffuseAlbedo.a < 0.1f ? -1 : 1);
-    float metalness = 0.0f;//MetallicTexture.Sample(SamplerLinear, vsOutput.UV).r;
-    float roughness = 0.0f;//RoughnessTexture.Sample(SamplerLinear, vsOutput.UV).r;
+    float metalness = MetallicTexture.Sample(SamplerLinear, vsOutput.UV).r;
+    float roughness = RoughnessTexture.Sample(SamplerLinear, vsOutput.UV).r;
         
     //reflectance at normal incidence for dia-electic or metal
     float3 F0 = float3(0.04, 0.04, 0.04);
     F0 = lerp(F0, diffuseAlbedo.rgb, metalness);
 
     float3 directLighting = DirectLightingPBR(normalWS, SunColor.xyz, diffuseAlbedo.rgb, vsOutput.WorldPos, roughness, F0, metalness);
-    float3 indirectLighting = IndirectLightingPBR(diffuseAlbedo.rgb, normalWS, vsOutput.WorldPos, roughness, F0, metalness);
+    float3 indirectLighting = float3(0, 0, 0);
+    
+    if (IBL)
+        indirectLighting += IndirectLightingPBR(diffuseAlbedo.rgb, normalWS, vsOutput.WorldPos, roughness, F0, metalness);
 
     float shadow = GetShadow(vsOutput.ShadowCoord0, vsOutput.ShadowCoord1, vsOutput.ShadowCoord2, vsOutput.Position.w);
     
-	float3 color = /*(directLighting * shadow);//	+*/indirectLighting;
+    float3 color = (directLighting * shadow) + indirectLighting;
             
     // HDR tonemapping
     color = color / (color + float3(1.0f, 1.0f, 1.0f));
     return color;
 }
 
-/************* Techniques *************/
-
-technique11 standard_lighting_no_pbr
+float3 mainPS_PBR(VS_OUTPUT vsOutput) : SV_Target0
 {
-    pass p0
-    {
-        SetVertexShader(CompileShader(vs_5_0, mainVS()));
-        SetGeometryShader(NULL);
-        SetPixelShader(CompileShader(ps_5_0, mainPS()));
-    }
+    return GetFinalPBRColor(vsOutput, true);
 }
+
+float3 mainPS_PBR_noIBL(VS_OUTPUT vsOutput) : SV_Target0
+{
+    return GetFinalPBRColor(vsOutput, false);
+}
+
+/************* Techniques *************/
 
 technique11 standard_lighting_pbr
 {
@@ -440,16 +363,6 @@ technique11 standard_lighting_pbr
     }
 }
 
-technique11 standard_lighting_no_pbr_instancing
-{
-    pass p0
-    {
-        SetVertexShader(CompileShader(vs_5_0, mainVS_Instancing()));
-        SetGeometryShader(NULL);
-        SetPixelShader(CompileShader(ps_5_0, mainPS()));
-    }
-}
-
 technique11 standard_lighting_pbr_instancing
 {
     pass p0
@@ -457,5 +370,25 @@ technique11 standard_lighting_pbr_instancing
         SetVertexShader(CompileShader(vs_5_0, mainVS_Instancing()));
         SetGeometryShader(NULL);
         SetPixelShader(CompileShader(ps_5_0, mainPS_PBR()));
+    }
+}
+
+technique11 standard_lighting_pbr_no_ibl
+{
+    pass p0
+    {
+        SetVertexShader(CompileShader(vs_5_0, mainVS()));
+        SetGeometryShader(NULL);
+        SetPixelShader(CompileShader(ps_5_0, mainPS_PBR_noIBL()));
+    }
+}
+
+technique11 standard_lighting_pbr_no_ibl_instancing
+{
+    pass p0
+    {
+        SetVertexShader(CompileShader(vs_5_0, mainVS_Instancing()));
+        SetGeometryShader(NULL);
+        SetPixelShader(CompileShader(ps_5_0, mainPS_PBR_noIBL()));
     }
 }

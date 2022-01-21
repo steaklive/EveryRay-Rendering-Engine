@@ -60,7 +60,7 @@ namespace Library
 		void ConvoluteProbe(Game& game);
 		
 		void PrecullObjectsPerFace();
-		void UpdateStandardLightingPBRMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int cubeFaceIndex);
+		void UpdateStandardLightingPBRnoIBLMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int cubeFaceIndex);
 		
 		void SaveProbeOnDisk(Game& game, const std::wstring& levelPath);
 		bool LoadProbeFromDisk(Game& game, const std::wstring& levelPath);

@@ -522,6 +522,11 @@ namespace Library {
 		auto material = static_cast<Rendering::StandardLightingMaterial*>(obj->GetMaterials()[MaterialHelper::forwardLightingMaterialName]);
 		if (material)
 		{
+			if (obj->IsInstanced())
+				material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at("standard_lighting_pbr_instancing"));
+			else
+				material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at("standard_lighting_pbr"));
+
 			material->ViewProjection() << vp;
 			material->World() << worldMatrix;
 			material->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, NUM_SHADOW_CASCADES);
@@ -539,7 +544,7 @@ namespace Library {
 			material->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, NUM_SHADOW_CASCADES);
 			material->IrradianceDiffuseTexture() << mProbesManager->GetDiffuseLightProbe(0)->GetCubemapSRV(); //TODO
 			material->IrradianceSpecularTexture() << mProbesManager->GetDiffuseLightProbe(0)->GetCubemapSRV();//TODO
-			material->IntegrationTexture() << mIntegrationMapTextureSRV;
+			material->IntegrationTexture() << mIntegrationMapTextureSRV; //TODO
 		}
 	}
 

@@ -50,7 +50,7 @@ namespace Library
 				std::pair<std::string, Rendering::RenderingObject*>(
 					"Debug_diffuse_lightprobe",
 					new Rendering::RenderingObject("Debug_diffuse_lightprobe", game, camera,
-						std::unique_ptr<Model>(new Model(game, Utility::GetFilePath("content\\models\\cube.fbx"), true)), true, true)
+						std::unique_ptr<Model>(new Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), true, true)
 					)
 			);
 
@@ -145,11 +145,11 @@ namespace Library
 			{
 				//writing culling flag to [4][4] of world instanced matrix
 				oldInstancedData[i].World._44 = mDiffuseProbes[i]->IsCulled() ? 1.0f : 0.0f;
-				//writing cubemap index to [1][4] of world instanced matrix
-				oldInstancedData[i].World._14 = 0.0f;
+				//writing cubemap index to [0][0] of world instanced matrix (since we dont need scale)
+				oldInstancedData[i].World._11 = -1.0f;
 				if (!mDiffuseProbes[i]->IsCulled())
 				{
-					oldInstancedData[i].World._14 = static_cast<float>(mNonCulledDiffuseProbesCount);
+					oldInstancedData[i].World._11 = static_cast<float>(mNonCulledDiffuseProbesCount);
 					mNonCulledDiffuseProbesCount++;
 					mNonCulledDiffuseProbesIndices.push_back(i);
 				}
@@ -337,7 +337,7 @@ namespace Library
 		for (int cubemapFaceIndex = 0; cubemapFaceIndex < CUBEMAP_FACES_COUNT; cubemapFaceIndex++)
 			for (auto& object : objectsToRender)
 				object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubemapFaceIndex),
-					[&, cubemapFaceIndex](int meshIndex) { UpdateStandardLightingPBRMaterialVariables(object.second, meshIndex, cubemapFaceIndex); });
+					[&, cubemapFaceIndex](int meshIndex) { UpdateStandardLightingPBRnoIBLMaterialVariables(object.second, meshIndex, cubemapFaceIndex); });
 
 		auto context = game.Direct3DDeviceContext();
 		
@@ -454,7 +454,7 @@ namespace Library
 			//TODO output to LOG (not exception)
 			result = false;
 		}
-		//else
+		else
 		{
 			//doing 6 CopySubresourceRegion for each face, since CopyResource() wont work due to auto generated mips in src texture...
 			for (int i = 0; i< CUBEMAP_FACES_COUNT; i++)
@@ -502,8 +502,7 @@ namespace Library
 		return fileName;
 	}
 
-	//TODO add technique "no_ibl"
-	void ER_LightProbe::UpdateStandardLightingPBRMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int cubeFaceIndex)
+	void ER_LightProbe::UpdateStandardLightingPBRnoIBLMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int cubeFaceIndex)
 	{
 		assert(mCubemapCameras);
 
@@ -526,8 +525,14 @@ namespace Library
 
 		std::string materialName = MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubeFaceIndex);
 		auto material = static_cast<Rendering::StandardLightingMaterial*>(obj->GetMaterials()[materialName]);
+		
 		if (material)
 		{
+			if (obj->IsInstanced())
+				material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at("standard_lighting_pbr_no_ibl_instancing"));
+			else
+				material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at("standard_lighting_pbr_no_ibl"));
+
 			material->ViewProjection() << vp;
 			material->World() << worldMatrix;
 			material->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, NUM_SHADOW_CASCADES);
@@ -546,9 +551,6 @@ namespace Library
 			material->RoughnessTexture() << obj->GetTextureData(meshIndex).RoughnessMap;
 			material->MetallicTexture() << obj->GetTextureData(meshIndex).MetallicMap;
 			material->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, NUM_SHADOW_CASCADES);
-			//material->IrradianceDiffuseTexture() << mIllumination->GetIBLIrradianceDiffuseSRV();
-			//material->IrradianceSpecularTexture() << mIllumination->GetIBLIrradianceSpecularSRV();
-			//material->IntegrationTexture() << mIllumination->GetIBLIntegrationSRV();
 		}
 	}
 }
