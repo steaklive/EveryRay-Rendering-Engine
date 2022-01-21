@@ -457,14 +457,19 @@ namespace Library
 		else
 		{
 			//doing 6 CopySubresourceRegion for each face, since CopyResource() wont work due to auto generated mips in src texture...
-			for (int i = 0; i< CUBEMAP_FACES_COUNT; i++)
-				game.Direct3DDeviceContext()->CopySubresourceRegion(mCubemapFacesConvolutedRT->getTexture2D(), 
-					D3D11CalcSubresource(0, i, 1), 0,0,0, resourceTex, D3D11CalcSubresource(0, i, 6), NULL);
+			for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
+			{
+				game.Direct3DDeviceContext()->CopySubresourceRegion(mCubemapFacesConvolutedRT->getTexture2D(),
+					D3D11CalcSubresource(0, i, 1), 0, 0, 0, resourceTex, D3D11CalcSubresource(0, i, 6), NULL);
+			}
 
 			mCubemapFacesConvolutedRT->SetSRV(srv);
-			result = true;
-		}
 
+			resourceTex->Release();
+
+			result = true;
+			mIsComputed = true;
+		}
 		return result;
 	}
 

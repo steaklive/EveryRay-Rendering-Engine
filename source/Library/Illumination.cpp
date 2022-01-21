@@ -290,8 +290,8 @@ namespace Library {
 							mVoxelCameraPositions[cascade].z, 1.0f };
 						material->WorldVoxelScale() << mWorldVoxelScales[cascade];
 						material->GetEffect()->GetEffect()->GetVariableByName("outputTexture")->AsUnorderedAccessView()->SetUnorderedAccessView(UAV[0]);
+						obj.second->Draw(materialName);
 					}
-					obj.second->Draw(materialName);
 				}
 
 				//voxelize extra objects
