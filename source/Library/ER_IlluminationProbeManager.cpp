@@ -22,83 +22,165 @@
 
 namespace Library
 {
+	//X+, X-, Y+, Y-, Z+, Z-
+	static const XMFLOAT3 cubemapFacesDirections[CUBEMAP_FACES_COUNT] = {
+		Vector3Helper::Right,
+		Vector3Helper::Left,
+		Vector3Helper::Up,
+		Vector3Helper::Down,
+		Vector3Helper::Backward,
+		Vector3Helper::Forward
+	};
+	static const XMFLOAT3 cubemapUpDirections[CUBEMAP_FACES_COUNT] = {
+		Vector3Helper::Up,
+		Vector3Helper::Up,
+		Vector3Helper::Forward,
+		Vector3Helper::Backward,
+		Vector3Helper::Up,
+		Vector3Helper::Up
+	};
+
 	ER_IlluminationProbeManager::ER_IlluminationProbeManager(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ShadowMapper& shadowMapper)
 		: mMainCamera(camera)
 	{
 		//TODO temp
-		int probesCountX = 10;
-		int probesCountZ = 6;
 
-		int probesCount = probesCountX * probesCountZ;
+		if (!scene)
+			throw GameException("No scene to load light probes for!");
 
-		//TODO move distribution to a separate function
+		mQuadRenderer = new QuadRenderer(game.Direct3DDevice());
 		{
-			for (int probesX = 0; probesX < probesCountX; probesX++)
+			ID3DBlob* blob = nullptr;
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\IBL\\ProbeConvolution.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
+				throw GameException("Failed to load VSMain from shader: ProbeConvolution.hlsl!");
+			if (FAILED(game.Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mConvolutionVS)))
+				throw GameException("Failed to create vertex shader from ProbeConvolution.hlsl!");
+
+			//TODO move to QuadRenderer
 			{
-				for (int probesZ = 0; probesZ < probesCountZ; probesZ++)
+				D3D11_INPUT_ELEMENT_DESC inputLayoutDesc[2];
+				inputLayoutDesc[0].SemanticName = "POSITION";
+				inputLayoutDesc[0].SemanticIndex = 0;
+				inputLayoutDesc[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+				inputLayoutDesc[0].InputSlot = 0;
+				inputLayoutDesc[0].AlignedByteOffset = 0;
+				inputLayoutDesc[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+				inputLayoutDesc[0].InstanceDataStepRate = 0;
+
+				inputLayoutDesc[1].SemanticName = "TEXCOORD";
+				inputLayoutDesc[1].SemanticIndex = 0;
+				inputLayoutDesc[1].Format = DXGI_FORMAT_R32G32_FLOAT;
+				inputLayoutDesc[1].InputSlot = 0;
+				inputLayoutDesc[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+				inputLayoutDesc[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+				inputLayoutDesc[1].InstanceDataStepRate = 0;
+
+				int numElements = sizeof(inputLayoutDesc) / sizeof(inputLayoutDesc[0]);
+				game.Direct3DDevice()->CreateInputLayout(inputLayoutDesc, numElements, blob->GetBufferPointer(), blob->GetBufferSize(), &mInputLayout);
+			}
+			blob->Release();
+
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\IBL\\ProbeConvolution.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
+				throw GameException("Failed to load PSMain from shader: ProbeConvolution.hlsl!");
+			if (FAILED(game.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mConvolutionPS)))
+				throw GameException("Failed to create pixel shader from ProbeConvolution.hlsl!");
+			blob->Release(); 
+		}
+
+		XMFLOAT3 minBounds = scene->GetLightProbesVolumeMinBounds();
+		XMFLOAT3 maxBounds = scene->GetLightProbesVolumeMinBounds();
+
+		mDiffuseProbesCountX = (maxBounds.x - minBounds.x) / DISTANCE_BETWEEN_DIFFUSE_PROBES;
+		mDiffuseProbesCountY = (maxBounds.y - minBounds.y) / DISTANCE_BETWEEN_DIFFUSE_PROBES;
+		mDiffuseProbesCountZ = (maxBounds.z - minBounds.z) / DISTANCE_BETWEEN_DIFFUSE_PROBES;
+		mDiffuseProbesCountTotal = mDiffuseProbesCountX * mDiffuseProbesCountY * mDiffuseProbesCountZ;
+
+		//simple 3D grid distribution
+		{
+			for (int probesY = 0; probesY < mDiffuseProbesCountY; probesY++)
+			{
+				for (int probesX = 0; probesX < mDiffuseProbesCountX; probesX++)
 				{
-					XMFLOAT3 pos = XMFLOAT3(probesX * DISTANCE_BETWEEN_DIFFUSE_PROBES, /*TEMP*/ 15.0f, probesZ * DISTANCE_BETWEEN_DIFFUSE_PROBES);
-					int index = probesX * probesCountZ + probesZ;
-					mDiffuseProbes.push_back(new ER_LightProbe(game, light, shadowMapper, pos, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE, index));
+					for (int probesZ = 0; probesZ < mDiffuseProbesCountZ; probesZ++)
+					{
+						XMFLOAT3 pos = XMFLOAT3(
+							minBounds.x + probesX * DISTANCE_BETWEEN_DIFFUSE_PROBES,
+							minBounds.y + probesY * DISTANCE_BETWEEN_DIFFUSE_PROBES,
+							minBounds.z + probesZ * DISTANCE_BETWEEN_DIFFUSE_PROBES);
+						int index = probesY * (mDiffuseProbesCountX * mDiffuseProbesCountZ) + probesX * mDiffuseProbesCountZ + probesZ;
+						mDiffuseProbes.push_back(new ER_LightProbe(game, light, shadowMapper, pos, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE, index));
+						mDiffuseProbes[index]->SetShaderInfoForConvolution(mConvolutionVS, mConvolutionPS, mInputLayout);
+					}
 				}
 			}
 		}
+		
+		auto result = scene->objects.insert(
+			std::pair<std::string, Rendering::RenderingObject*>(
+				"Debug_diffuse_lightprobe",
+				new Rendering::RenderingObject("Debug_diffuse_lightprobe", game, camera,
+					std::unique_ptr<Model>(new Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), true, true)
+				)
+		);
 
-		if (scene)
-		{
-			auto result = scene->objects.insert(
-				std::pair<std::string, Rendering::RenderingObject*>(
-					"Debug_diffuse_lightprobe",
-					new Rendering::RenderingObject("Debug_diffuse_lightprobe", game, camera,
-						std::unique_ptr<Model>(new Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), true, true)
-					)
-			);
-
-			Effect* effect = new Effect(game); // deleted when material is deleted
-			effect->CompileFromFile(Utility::GetFilePath(Utility::ToWideString("content\\effects\\DebugLightProbe.fx")));
-			mDiffuseProbeRenderingObject = result.first->second;
-			mDiffuseProbeRenderingObject->LoadMaterial(new Rendering::DebugLightProbeMaterial(), effect, MaterialHelper::debugLightProbeMaterialName);
-			mDiffuseProbeRenderingObject->LoadRenderBuffers();
-			mDiffuseProbeRenderingObject->LoadInstanceBuffers();
-			mDiffuseProbeRenderingObject->ResetInstanceData(probesCount, true);
-			for (int i = 0; i < probesCount; i++) {
-				XMMATRIX worldT = XMMatrixTranslation(mDiffuseProbes[i]->GetPosition().x, mDiffuseProbes[i]->GetPosition().y, mDiffuseProbes[i]->GetPosition().z);
-				mDiffuseProbeRenderingObject->AddInstanceData(worldT);
-			}
-			mDiffuseProbeRenderingObject->UpdateInstanceBuffer(mDiffuseProbeRenderingObject->GetInstancesData());
-			mDiffuseProbeRenderingObject->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::debugLightProbeMaterialName,
-				[&](int meshIndex) { UpdateDebugLightProbeMaterialVariables(mDiffuseProbeRenderingObject, meshIndex); });
+		Effect* effect = new Effect(game); // deleted when material is deleted
+		effect->CompileFromFile(Utility::GetFilePath(Utility::ToWideString("content\\effects\\DebugLightProbe.fx")));
+		mDiffuseProbeRenderingObject = result.first->second;
+		mDiffuseProbeRenderingObject->LoadMaterial(new Rendering::DebugLightProbeMaterial(), effect, MaterialHelper::debugLightProbeMaterialName);
+		mDiffuseProbeRenderingObject->LoadRenderBuffers();
+		mDiffuseProbeRenderingObject->LoadInstanceBuffers();
+		mDiffuseProbeRenderingObject->ResetInstanceData(mDiffuseProbesCountTotal, true);
+		for (int i = 0; i < mDiffuseProbesCountTotal; i++) {
+			XMMATRIX worldT = XMMatrixTranslation(mDiffuseProbes[i]->GetPosition().x, mDiffuseProbes[i]->GetPosition().y, mDiffuseProbes[i]->GetPosition().z);
+			mDiffuseProbeRenderingObject->AddInstanceData(worldT);
 		}
-
+		mDiffuseProbeRenderingObject->UpdateInstanceBuffer(mDiffuseProbeRenderingObject->GetInstancesData());
+		mDiffuseProbeRenderingObject->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::debugLightProbeMaterialName,
+			[&](int meshIndex) { UpdateDebugLightProbeMaterialVariables(mDiffuseProbeRenderingObject, meshIndex); });
+		
 		mDebugProbeVolumeGizmo = new RenderableAABB(game, mMainCamera, XMFLOAT4(0.44f, 0.2f, 0.64f, 1.0f));
 		mDebugProbeVolumeGizmo->Initialize();
-		mDebugProbeVolumeGizmo->InitializeGeometry({ 
+		mDebugProbeVolumeGizmo->InitializeGeometry({
 			XMFLOAT3(-MAIN_CAMERA_PROBE_VOLUME_SIZE, -MAIN_CAMERA_PROBE_VOLUME_SIZE, -MAIN_CAMERA_PROBE_VOLUME_SIZE),
 			XMFLOAT3(MAIN_CAMERA_PROBE_VOLUME_SIZE, MAIN_CAMERA_PROBE_VOLUME_SIZE, MAIN_CAMERA_PROBE_VOLUME_SIZE) }, XMMatrixScaling(1, 1, 1));
 		mDebugProbeVolumeGizmo->SetPosition(mMainCamera.Position());
 
 		mDiffuseCubemapArrayRT = new CustomRenderTarget(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
-			D3D11_BIND_SHADER_RESOURCE , 1, -1, 6, true, maxNonCulledProbesCount);
+			D3D11_BIND_SHADER_RESOURCE, 1, -1, CUBEMAP_FACES_COUNT, true, MaxNonCulledProbesCount);
+		
 	}
 
 	ER_IlluminationProbeManager::~ER_IlluminationProbeManager()
 	{
 		DeletePointerCollection(mDiffuseProbes);
 		DeletePointerCollection(mSpecularProbes);
+		DeleteObject(mDiffuseCubemapArrayRT);
+		DeleteObject(mSpecularCubemapArrayRT);
 		DeleteObject(mDebugProbeVolumeGizmo);
+		DeleteObject(mQuadRenderer);
+		ReleaseObject(mInputLayout);
+		ReleaseObject(mConvolutionVS);
+		ReleaseObject(mConvolutionPS);
 	}
 
 	void ER_IlluminationProbeManager::ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox)
 	{
-		for (auto& lightProbe : mDiffuseProbes)
-			lightProbe->ComputeOrLoad(game, gameTime, aObjects, skybox, mLevelPath);
+		if (!mDiffuseProbesReady)
+		{
+			for (auto& lightProbe : mDiffuseProbes)
+				lightProbe->ComputeOrLoad(game, gameTime, aObjects, mQuadRenderer, skybox, mLevelPath);
 
-		mDiffuseProbesReady = true;
+			mDiffuseProbesReady = true;
+		}
 
-		for (auto& lightProbe : mSpecularProbes)
-			lightProbe->ComputeOrLoad(game, gameTime, aObjects, skybox, mLevelPath);
-
-		mSpecularProbesReady = true;
+		//TODO
+		//if (!mSpecularProbesReady)
+		//{
+		//	for (auto& lightProbe : mSpecularProbes)
+		//		lightProbe->ComputeOrLoad(game, gameTime, aObjects, mQuadRenderer, skybox, mLevelPath);
+		//
+		//	mSpecularProbesReady = true;
+		//}
 	}
 
 	void ER_IlluminationProbeManager::DrawDebugProbes(Game& game, Scene* scene, ER_ProbeType aType)
@@ -156,7 +238,6 @@ namespace Library
 			}
 
 			mDiffuseProbeRenderingObject->UpdateInstanceBuffer(oldInstancedData);
-
 		}
 		else
 		{
@@ -164,7 +245,7 @@ namespace Library
 		}
 
 		auto context = game.Direct3DDeviceContext();
-		for (int i = 0; i < maxNonCulledProbesCount; i++)
+		for (int i = 0; i < MaxNonCulledProbesCount; i++)
 		{
 			if (i < mNonCulledDiffuseProbesIndices.size() && i < mDiffuseProbes.size())
 			{
@@ -200,26 +281,6 @@ namespace Library
 		, mIndex(index)
 	{
 
-		//X+, X-, Y+, Y-, Z+, Z-
-		const XMFLOAT3 facesDirections[CUBEMAP_FACES_COUNT] = {
-			Vector3Helper::Right,
-			Vector3Helper::Left,
-			Vector3Helper::Up,
-			Vector3Helper::Down,
-			Vector3Helper::Backward,
-			Vector3Helper::Forward
-		};
-		const XMFLOAT3 upDirections[CUBEMAP_FACES_COUNT] = {
-			Vector3Helper::Up,
-			Vector3Helper::Up,
-			Vector3Helper::Forward,
-			Vector3Helper::Backward,
-			Vector3Helper::Up,
-			Vector3Helper::Up
-		};
-
-		mQuadRenderer = new QuadRenderer(game.Direct3DDevice());
-
 		mCubemapFacesRT = new CustomRenderTarget(game.Direct3DDevice(), size, size, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
 			D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1, -1, 6, true);
 		mCubemapFacesConvolutedRT = new CustomRenderTarget(game.Direct3DDevice(), size, size, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
@@ -230,49 +291,13 @@ namespace Library
 			mCubemapCameras[i] = new Camera(game, XM_PIDIV2, 1.0f, 0.1f, 100000.0f);
 			mCubemapCameras[i]->Initialize();
 			mCubemapCameras[i]->SetPosition(mPosition);
-			mCubemapCameras[i]->SetDirection(facesDirections[i]);
-			mCubemapCameras[i]->SetUp(upDirections[i]);
+			mCubemapCameras[i]->SetDirection(cubemapFacesDirections[i]);
+			mCubemapCameras[i]->SetUp(cubemapUpDirections[i]);
 			mCubemapCameras[i]->UpdateViewMatrix(true); //fix for mirrored result due to right-hand coordinate system
 			mCubemapCameras[i]->UpdateProjectionMatrix(true); //fix for mirrored result due to right-hand coordinate system
 
 			mDepthBuffers[i] = DepthTarget::Create(game.Direct3DDevice(), size, size, 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
 		}
-
-		ID3DBlob* blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\IBL\\ProbeConvolution.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
-			throw GameException("Failed to load VSMain from shader: ProbeConvolution.hlsl!");
-		if (FAILED(game.Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mConvolutionVS)))
-			throw GameException("Failed to create vertex shader from ProbeConvolution.hlsl!");
-
-		//TODO move to QuadRenderer
-		{
-			D3D11_INPUT_ELEMENT_DESC inputLayoutDesc[2];
-			inputLayoutDesc[0].SemanticName = "POSITION";
-			inputLayoutDesc[0].SemanticIndex = 0;
-			inputLayoutDesc[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-			inputLayoutDesc[0].InputSlot = 0;
-			inputLayoutDesc[0].AlignedByteOffset = 0;
-			inputLayoutDesc[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-			inputLayoutDesc[0].InstanceDataStepRate = 0;
-
-			inputLayoutDesc[1].SemanticName = "TEXCOORD";
-			inputLayoutDesc[1].SemanticIndex = 0;
-			inputLayoutDesc[1].Format = DXGI_FORMAT_R32G32_FLOAT;
-			inputLayoutDesc[1].InputSlot = 0;
-			inputLayoutDesc[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
-			inputLayoutDesc[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-			inputLayoutDesc[1].InstanceDataStepRate = 0;
-
-			int numElements = sizeof(inputLayoutDesc) / sizeof(inputLayoutDesc[0]);
-			game.Direct3DDevice()->CreateInputLayout(inputLayoutDesc, numElements, blob->GetBufferPointer(), blob->GetBufferSize(), &mInputLayout);
-		}
-		blob->Release();
-
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\IBL\\ProbeConvolution.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
-			throw GameException("Failed to load PSMain from shader: ProbeConvolution.hlsl!");
-		if (FAILED(game.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mConvolutionPS)))
-			throw GameException("Failed to create pixel shader from ProbeConvolution.hlsl!");
-		blob->Release();
 
 		mConvolutionCB.Initialize(game.Direct3DDevice());
 
@@ -292,10 +317,6 @@ namespace Library
 	ER_LightProbe::~ER_LightProbe()
 	{
 		ReleaseObject(mLinearSamplerState);
-		ReleaseObject(mInputLayout);
-		ReleaseObject(mConvolutionVS);
-		ReleaseObject(mConvolutionPS);
-		DeleteObject(mQuadRenderer);
 		DeleteObject(mCubemapFacesRT);
 		DeleteObject(mCubemapFacesConvolutedRT);
 		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
@@ -306,7 +327,7 @@ namespace Library
 		mConvolutionCB.Release();
 	}
 
-	void ER_LightProbe::ComputeOrLoad(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox,
+	void ER_LightProbe::ComputeOrLoad(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, QuadRenderer* quadRenderer, Skybox* skybox,
 		const std::wstring& levelPath, bool forceRecompute)
 	{
 		if (mIsComputed && !forceRecompute)
@@ -318,7 +339,7 @@ namespace Library
 			alreadyExistsInFile = LoadProbeFromDisk(game, levelPath);
 
 		if (!alreadyExistsInFile || forceRecompute)
-			Compute(game, gameTime, levelPath, objectsToRender, skybox);
+			Compute(game, gameTime, levelPath, objectsToRender, quadRenderer, skybox);
 	}
 
 	void ER_LightProbe::CPUCullAgainstProbeBoundingVolume(const XMFLOAT3& aMin, const XMFLOAT3& aMax)
@@ -329,7 +350,7 @@ namespace Library
 			(mPosition.z > aMax.z || mPosition.z < aMin.z);
 	}
 
-	void ER_LightProbe::Compute(Game& game, const GameTime& gameTime, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox)
+	void ER_LightProbe::Compute(Game& game, const GameTime& gameTime, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, QuadRenderer* quadRenderer, Skybox* skybox)
 	{
 		if (mIsComputed)
 			return;
@@ -349,7 +370,7 @@ namespace Library
 		
 		//sadly, we can't combine or multi-thread these two functions, because of the artifacts on edges of the convoluted faces of the cubemap...
 		DrawGeometryToProbe(game, gameTime, objectsToRender, skybox);
-		ConvoluteProbe(game);
+		ConvoluteProbe(game, quadRenderer);
 
 		context->RSSetViewports(1, &oldViewPort);
 
@@ -400,7 +421,7 @@ namespace Library
 		}
 	}
 
-	void ER_LightProbe::ConvoluteProbe(Game& game)
+	void ER_LightProbe::ConvoluteProbe(Game& game, QuadRenderer* quadRenderer)
 	{
 		int mipCount = -1;
 		if (mProbeType == SPECULAR_PROBE)
@@ -434,7 +455,8 @@ namespace Library
 				context->PSSetConstantBuffers(0, 1, CBs);
 				context->PSSetShaderResources(0, 1, SRVs);
 
-				mQuadRenderer->Draw(context);
+				if(quadRenderer)
+					quadRenderer->Draw(context);
 			}
 		}
 	}

@@ -8,10 +8,9 @@ cbuffer CBufferPerObject
 }
 TextureCubeArray<float4> CubemapTexture;
 
-SamplerState AnisotropicSampler
+SamplerState LinearSampler
 {
-    Filter = ANISOTROPIC;
-    MaxAnisotropy = 16;
+    Filter = MIN_MAG_MIP_LINEAR;
     AddressU = Wrap;
     AddressV = Wrap;
     AddressW = Wrap;
@@ -84,16 +83,13 @@ VS_OUTPUT mainVS_Instancing(VS_INPUT_INSTANCING IN)
 
 float3 mainPS(VS_OUTPUT vsOutput) : SV_Target0
 {
-   
     float3 viewDir = normalize(CameraPosition.xyz - vsOutput.WorldPos);
     float3 reflectDir = normalize(reflect(-viewDir, vsOutput.Normal));
-
-    int index = vsOutput.CubemapIndex;
-    
+   
     if (vsOutput.CullingFlag > 0.0f) 
         return float3(0.5f, 0.5f, 0.5f);
     else
-        return CubemapTexture.Sample(AnisotropicSampler, float4(reflectDir, index)).rgb;
+        return CubemapTexture.Sample(LinearSampler, float4(reflectDir, vsOutput.CubemapIndex)).rgb;
 }
 
 float3 recomputePS(VS_OUTPUT vsOutput) : SV_Target0

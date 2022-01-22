@@ -22,7 +22,15 @@ namespace Library
 		~Scene();
 
 		void SaveRenderingObjectsTransforms();
+
+		Material* GetMaterial(const std::string& materialName);
+		Camera& GetCamera() { return mCamera; }
+		const XMFLOAT3& GetLightProbesVolumeMinBounds() const { return mLightProbesVolumeMinBounds; }
+		const XMFLOAT3& GetLightProbesVolumeMaxBounds() const { return mLightProbesVolumeMaxBounds; }
+
 		std::map<std::string, Rendering::RenderingObject*> objects;
+
+		//TODO remove to private and make public methods
 		std::string skyboxPath;
 		XMFLOAT3 cameraPosition;
 		XMFLOAT3 cameraDirection;
@@ -30,13 +38,13 @@ namespace Library
 		XMFLOAT3 sunColor;
 		XMFLOAT3 ambientColor;
 
-		Material* GetMaterial(const std::string& materialName);
-		Camera& GetCamera() { return mCamera; }
 	private:
-		Json::Value root;
-
 		std::tuple<Material*, Effect*, std::string> CreateMaterialData(const std::string& materialName, const std::string& effectName, const std::string& techniqueName);
+		Json::Value root;
 		Camera& mCamera;
 		std::string mScenePath;
+
+		XMFLOAT3 mLightProbesVolumeMinBounds = { 0,0,0 };
+		XMFLOAT3 mLightProbesVolumeMaxBounds = { 0,0,0 };
 	};
 }

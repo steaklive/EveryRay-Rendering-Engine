@@ -12,7 +12,7 @@
 #include "RenderableAABB.h"
 #include "MatrixHelper.h"
 
-const UINT MAX_INSTANCE_COUNT = 10000;
+const UINT MAX_INSTANCE_COUNT = 20000;
 
 namespace Rendering
 {

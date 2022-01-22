@@ -17,6 +17,18 @@
 		10.0,
 		35.0
 	],
+	"light_probes_volume_bounds_min" : 
+	[
+		-300.0,
+		5.0,
+		-300.0
+	],
+	"light_probes_volume_bounds_max" : 
+	[
+		300.0,
+		155.0,
+		300.0
+	],
 	"rendering_objects" : 
 	[
 		{

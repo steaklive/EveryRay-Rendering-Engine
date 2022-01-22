@@ -76,6 +76,22 @@ namespace Library
 				skyboxPath = root["skybox_path"].asString();
 			}
 
+			if (root.isMember("light_probes_volume_bounds_min")) {
+				float vec3[3];
+				for (Json::Value::ArrayIndex i = 0; i != root["light_probes_volume_bounds_min"].size(); i++)
+					vec3[i] = root["light_probes_volume_bounds_min"][i].asFloat();
+
+				mLightProbesVolumeMinBounds = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+			}
+
+			if (root.isMember("light_probes_volume_bounds_max")) {
+				float vec3[3];
+				for (Json::Value::ArrayIndex i = 0; i != root["light_probes_volume_bounds_max"].size(); i++)
+					vec3[i] = root["light_probes_volume_bounds_max"][i].asFloat();
+
+				mLightProbesVolumeMinBounds = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+			}
+
 			//TODO add multithreading
 			for (Json::Value::ArrayIndex i = 0; i != root["rendering_objects"].size(); i++) {
 				std::string name = root["rendering_objects"][i]["name"].asString();
@@ -111,7 +127,7 @@ namespace Library
 				if (root["rendering_objects"][i].isMember("materials")) {
 					//TODO optimize similar materials loading
 					for (Json::Value::ArrayIndex mat = 0; mat != root["rendering_objects"][i]["materials"].size(); mat++) {
-						auto materialData = CreateMaterialData(
+						std::tuple<Material*, Effect*, std::string> materialData = CreateMaterialData(
 							root["rendering_objects"][i]["materials"][mat]["name"].asString(),
 							root["rendering_objects"][i]["materials"][mat]["effect"].asString(),
 							root["rendering_objects"][i]["materials"][mat]["technique"].asString()
@@ -356,7 +372,8 @@ namespace Library
 		return nullptr;
 	}
 
-	std::tuple<Material*, Effect*, std::string> Scene::CreateMaterialData(const std::string& matName, const std::string& effectName, const std::string& techniqueName) {
+	std::tuple<Material*, Effect*, std::string> Scene::CreateMaterialData(const std::string& matName, const std::string& effectName, const std::string& techniqueName)
+	{
 		Material* material = nullptr;
 
 		Effect* effect = new Effect(*mGame);

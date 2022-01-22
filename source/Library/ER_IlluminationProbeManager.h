@@ -7,6 +7,9 @@
 
 #define SPECULAR_PROBE_MIP_COUNT 6
 
+static const int MaxNonCulledProbesCountPerAxis = MAIN_CAMERA_PROBE_VOLUME_SIZE * 2 / DISTANCE_BETWEEN_DIFFUSE_PROBES;
+static const int MaxNonCulledProbesCount = MaxNonCulledProbesCountPerAxis * MaxNonCulledProbesCountPerAxis/* * maxNonCulledProbesCountPerAxis*/;
+
 #include "Common.h"
 #include "RenderingObject.h"
 #include "CustomRenderTarget.h"
@@ -45,19 +48,27 @@ namespace Library
 		ER_LightProbe(Game& game, DirectionalLight& light, ShadowMapper& shadowMapper, const XMFLOAT3& position, int size, ER_ProbeType aType, int index);
 		~ER_LightProbe();
 
-		void ComputeOrLoad(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox, const std::wstring& levelPath, bool forceRecompute = false);
+		void ComputeOrLoad(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, QuadRenderer* quadRenderer, Skybox* skybox, const std::wstring& levelPath, bool forceRecompute = false);
 		void UpdateProbe(const GameTime& gameTime);
 		void SetPosition(const XMFLOAT3& position) { mPosition = position; }
 		const XMFLOAT3& GetPosition() { return mPosition; }
 		ID3D11ShaderResourceView* GetCubemapSRV() const { return mCubemapFacesConvolutedRT->getSRV(); }
 		ID3D11Texture2D* GetCubemapTexture2D() const { return mCubemapFacesConvolutedRT->getTexture2D(); }
 		
+		//TODO refactor
+		void SetShaderInfoForConvolution(ID3D11VertexShader* vs, ID3D11PixelShader* ps, ID3D11InputLayout* il)
+		{
+			mConvolutionVS = vs;
+			mConvolutionPS = ps;
+			mInputLayout = il;
+		}
+
 		void CPUCullAgainstProbeBoundingVolume(const XMFLOAT3& aMin, const XMFLOAT3& aMax);
 		bool IsCulled() { return mIsCulled; };
 	private:
-		void Compute(Game& game, const GameTime& gameTime, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox = nullptr);
+		void Compute(Game& game, const GameTime& gameTime, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, QuadRenderer* quadRenderer, Skybox* skybox = nullptr);
 		void DrawGeometryToProbe(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox);
-		void ConvoluteProbe(Game& game);
+		void ConvoluteProbe(Game& game, QuadRenderer* quadRenderer);
 		
 		void PrecullObjectsPerFace();
 		void UpdateStandardLightingPBRnoIBLMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int cubeFaceIndex);
@@ -76,12 +87,12 @@ namespace Library
 		CustomRenderTarget* mCubemapFacesConvolutedRT;
 		DepthTarget* mDepthBuffers[CUBEMAP_FACES_COUNT];
 		Camera* mCubemapCameras[CUBEMAP_FACES_COUNT];
-		QuadRenderer* mQuadRenderer; //TODO maybe move to manager
+
 		ConstantBuffer<LightProbeCBufferData::ProbeConvolutionCB> mConvolutionCB;
 
+		ID3D11SamplerState* mLinearSamplerState = nullptr; //TODO remove
 		ID3D11VertexShader* mConvolutionVS = nullptr;
 		ID3D11PixelShader* mConvolutionPS = nullptr;
-		ID3D11SamplerState* mLinearSamplerState = nullptr; //TODO remove
 		ID3D11InputLayout* mInputLayout = nullptr; //TODO remove
 
 		XMFLOAT3 mPosition;
@@ -107,25 +118,37 @@ namespace Library
 		const ER_LightProbe* GetDiffuseLightProbe(int index) const { return mDiffuseProbes[index]; }
 		const ER_LightProbe* GetSpecularLightProbe(int index) const { return mSpecularProbes[index]; }
 	private:
+		QuadRenderer* mQuadRenderer = nullptr;
 		Camera& mMainCamera;
 		RenderableAABB* mDebugProbeVolumeGizmo;
 
 		Rendering::RenderingObject* mDiffuseProbeRenderingObject; // deleted in scene
-		
-		
+		Rendering::RenderingObject* mSpecularProbeRenderingObject; // deleted in scene
+
 		std::vector<ER_LightProbe*> mDiffuseProbes;
 		std::vector<ER_LightProbe*> mSpecularProbes;
 
 		std::vector<int> mNonCulledDiffuseProbesIndices;
 		std::vector<int> mNonCulledSpecularProbesIndices;
-		std::wstring mLevelPath;
-		int mNonCulledDiffuseProbesCount = 0;
 
-		static const int maxNonCulledProbesCountPerAxis = MAIN_CAMERA_PROBE_VOLUME_SIZE * 2 / DISTANCE_BETWEEN_DIFFUSE_PROBES;
-		static const int maxNonCulledProbesCount = maxNonCulledProbesCountPerAxis * maxNonCulledProbesCountPerAxis/* * maxNonCulledProbesCountPerAxis*/;
+		int mNonCulledDiffuseProbesCount = 0;
+		int mNonCulledSpecularProbesCount = 0;
+
 		CustomRenderTarget* mDiffuseCubemapArrayRT;
+		CustomRenderTarget* mSpecularCubemapArrayRT;
 
 		bool mDiffuseProbesReady = false;
 		bool mSpecularProbesReady = false;
+
+		std::wstring mLevelPath;
+
+		ID3D11VertexShader* mConvolutionVS = nullptr;
+		ID3D11PixelShader* mConvolutionPS = nullptr;
+		ID3D11InputLayout* mInputLayout = nullptr; //TODO remove
+
+		int mDiffuseProbesCountTotal = 0;
+		int mDiffuseProbesCountX = 0;
+		int mDiffuseProbesCountY = 0;
+		int mDiffuseProbesCountZ = 0;
 	};
 }
