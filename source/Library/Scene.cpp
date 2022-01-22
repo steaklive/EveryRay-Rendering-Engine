@@ -89,7 +89,7 @@ namespace Library
 				for (Json::Value::ArrayIndex i = 0; i != root["light_probes_volume_bounds_max"].size(); i++)
 					vec3[i] = root["light_probes_volume_bounds_max"][i].asFloat();
 
-				mLightProbesVolumeMinBounds = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+				mLightProbesVolumeMaxBounds = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
 			}
 
 			//TODO add multithreading

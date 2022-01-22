@@ -237,7 +237,9 @@ namespace Library {
 		DrawForwardLighting(gbuffer, aRenderTarget);
 
 		if (isEditorMode) //todo move to a separate debug renderer
+		{
 			DrawDebugGizmos();
+		}
 	}
 
 	//voxel GI based on "Interactive Indirect Illumination Using Voxel Cone Tracing" by C.Crassin et al.
@@ -431,12 +433,22 @@ namespace Library {
 
 	void Illumination::DrawDebugGizmos()
 	{
+		//voxel GI
 		if (mDrawVoxelZonesGizmos) 
 		{
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 			{
 				mDebugVoxelZonesGizmos[i]->Draw();
 			}
+		}
+
+		//light probe system
+		if (mProbesManager) {
+			if (mDrawDiffuseProbes)
+				mProbesManager->DrawDebugProbes(DIFFUSE_PROBE);
+
+			if (mDrawProbesVolumeGizmo)
+				mProbesManager->DrawDebugProbesVolumeGizmo();
 		}
 	}
 
@@ -455,23 +467,34 @@ namespace Library {
 		ImGui::Begin("Illumination System");
 		if (ImGui::CollapsingHeader("Global Illumination"))
 		{
-			ImGui::Checkbox("GI Enabled", &mEnabled);
-			ImGui::SliderFloat("VCT GI Intensity", &mVCTGIPower, 0.0f, 5.0f);
-			ImGui::SliderFloat("VCT Diffuse Strength", &mVCTIndirectDiffuseStrength, 0.0f, 1.0f);
-			ImGui::SliderFloat("VCT Specular Strength", &mVCTIndirectSpecularStrength, 0.0f, 1.0f);
-			ImGui::SliderFloat("VCT Max Cone Trace Dist", &mVCTMaxConeTraceDistance, 0.0f, 2500.0f);
-			ImGui::SliderFloat("VCT AO Falloff", &mVCTAoFalloff, 0.0f, 2.0f);
-			ImGui::SliderFloat("VCT Sampling Factor", &mVCTSamplingFactor, 0.01f, 3.0f);
-			ImGui::SliderFloat("VCT Sample Offset", &mVCTVoxelSampleOffset, -0.1f, 0.1f);
-			for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
+			if (ImGui::CollapsingHeader("Dynamic - Voxel Cone Tracing"))
 			{
-				std::string name = "VCT Voxel Scale Cascade " + std::to_string(cascade);
-				ImGui::SliderFloat(name.c_str(), &mWorldVoxelScales[cascade], 0.1f, 10.0f);
+				ImGui::Checkbox("VCT GI Enabled", &mEnabled);
+				ImGui::SliderFloat("VCT GI Intensity", &mVCTGIPower, 0.0f, 5.0f);
+				ImGui::SliderFloat("VCT Diffuse Strength", &mVCTIndirectDiffuseStrength, 0.0f, 1.0f);
+				ImGui::SliderFloat("VCT Specular Strength", &mVCTIndirectSpecularStrength, 0.0f, 1.0f);
+				ImGui::SliderFloat("VCT Max Cone Trace Dist", &mVCTMaxConeTraceDistance, 0.0f, 2500.0f);
+				ImGui::SliderFloat("VCT AO Falloff", &mVCTAoFalloff, 0.0f, 2.0f);
+				ImGui::SliderFloat("VCT Sampling Factor", &mVCTSamplingFactor, 0.01f, 3.0f);
+				ImGui::SliderFloat("VCT Sample Offset", &mVCTVoxelSampleOffset, -0.1f, 0.1f);
+				for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
+				{
+					std::string name = "VCT Voxel Scale Cascade " + std::to_string(cascade);
+					ImGui::SliderFloat(name.c_str(), &mWorldVoxelScales[cascade], 0.1f, 10.0f);
+				}
+				ImGui::Separator();
+				ImGui::Checkbox("DEBUG - Ambient Occlusion", &mDrawAmbientOcclusionOnly);
+				ImGui::Checkbox("DEBUG - Voxel Texture", &mDrawVoxelization);
+				ImGui::Checkbox("DEBUG - Voxel Cascades Gizmos (Editor)", &mDrawVoxelZonesGizmos);
 			}
-			ImGui::Separator();
-			ImGui::Checkbox("DEBUG - Ambient Occlusion", &mDrawAmbientOcclusionOnly);
-			ImGui::Checkbox("DEBUG - Voxel Texture", &mDrawVoxelization);
-			ImGui::Checkbox("DEBUG - Voxel Cascades Gizmos (Editor)", &mDrawVoxelZonesGizmos);
+			if (ImGui::CollapsingHeader("Static - Light Probes"))
+			{
+				//TODO add on/off for probe system
+				//TODO add rebake etc.
+				ImGui::Checkbox("DEBUG - Probe Volume", &mDrawProbesVolumeGizmo);
+				ImGui::Checkbox("DEBUG - Diffuse Probes", &mDrawDiffuseProbes);
+				ImGui::Checkbox("DEBUG - Specular Probes", &mDrawSpecularProbes);
+			}
 		}
 		if (ImGui::CollapsingHeader("Local Illumination"))
 		{

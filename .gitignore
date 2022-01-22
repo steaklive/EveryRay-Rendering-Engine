@@ -1,6 +1,7 @@
 # ignore visual studio folder
 .vs/
 
+# ignore unnecessary build files
 source/Library/Debug/
 source/Library/Release/
 source/Game/Debug/
@@ -9,9 +10,12 @@ source/Game/Release
 bin/x64/Debug/Library.lib
 bin/x64/Release/Library.lib
 
-# ignore files
+# ignore files debug files
 *.obj
 !content/models/*.obj
+
+# ignore light probes in levels
+content/levels/testScene/diffuse_probes
 
 # taken from NVIDIA GameWorks
 content/shaders/VolumetricLight

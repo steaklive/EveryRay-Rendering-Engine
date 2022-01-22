@@ -1,6 +1,6 @@
 #pragma once
 #define CUBEMAP_FACES_COUNT 6
-#define MAIN_CAMERA_PROBE_VOLUME_SIZE 100
+#define MAIN_CAMERA_PROBE_VOLUME_SIZE 45
 
 #define DIFFUSE_PROBE_SIZE 32
 #define DISTANCE_BETWEEN_DIFFUSE_PROBES 15
@@ -8,7 +8,7 @@
 #define SPECULAR_PROBE_MIP_COUNT 6
 
 static const int MaxNonCulledProbesCountPerAxis = MAIN_CAMERA_PROBE_VOLUME_SIZE * 2 / DISTANCE_BETWEEN_DIFFUSE_PROBES;
-static const int MaxNonCulledProbesCount = MaxNonCulledProbesCountPerAxis * MaxNonCulledProbesCountPerAxis/* * maxNonCulledProbesCountPerAxis*/;
+static const int MaxNonCulledProbesCount = MaxNonCulledProbesCountPerAxis * MaxNonCulledProbesCountPerAxis * MaxNonCulledProbesCountPerAxis;
 
 #include "Common.h"
 #include "RenderingObject.h"
@@ -111,7 +111,7 @@ namespace Library
 
 		void SetLevelPath(const std::wstring& aPath) { mLevelPath = aPath; };
 		void ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox = nullptr);
-		void DrawDebugProbes(Game& game, Scene* scene, ER_ProbeType aType);
+		void DrawDebugProbes(ER_ProbeType aType);
 		void DrawDebugProbesVolumeGizmo();
 		void UpdateProbes(Game& game);
 		void UpdateDebugLightProbeMaterialVariables(Rendering::RenderingObject* obj, int meshIndex);

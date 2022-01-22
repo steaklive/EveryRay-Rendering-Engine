@@ -1,5 +1,3 @@
-#define MAX_CUBEMAPS_PER_VOLUME 169 // (volume size / distance between probes) ^ 3 (^2 for now)
-
 cbuffer CBufferPerObject
 {
     float4x4 ViewProjection;

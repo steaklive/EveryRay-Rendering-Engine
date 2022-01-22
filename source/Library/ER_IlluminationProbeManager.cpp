@@ -88,7 +88,7 @@ namespace Library
 		}
 
 		XMFLOAT3 minBounds = scene->GetLightProbesVolumeMinBounds();
-		XMFLOAT3 maxBounds = scene->GetLightProbesVolumeMinBounds();
+		XMFLOAT3 maxBounds = scene->GetLightProbesVolumeMaxBounds();
 
 		mDiffuseProbesCountX = (maxBounds.x - minBounds.x) / DISTANCE_BETWEEN_DIFFUSE_PROBES;
 		mDiffuseProbesCountY = (maxBounds.y - minBounds.y) / DISTANCE_BETWEEN_DIFFUSE_PROBES;
@@ -168,7 +168,7 @@ namespace Library
 		if (!mDiffuseProbesReady)
 		{
 			for (auto& lightProbe : mDiffuseProbes)
-				lightProbe->ComputeOrLoad(game, gameTime, aObjects, mQuadRenderer, skybox, mLevelPath);
+				lightProbe->ComputeOrLoad(game, gameTime, aObjects, mQuadRenderer, skybox, mLevelPath + L"diffuse_probes\\");
 
 			mDiffuseProbesReady = true;
 		}
@@ -177,16 +177,18 @@ namespace Library
 		//if (!mSpecularProbesReady)
 		//{
 		//	for (auto& lightProbe : mSpecularProbes)
-		//		lightProbe->ComputeOrLoad(game, gameTime, aObjects, mQuadRenderer, skybox, mLevelPath);
+		//		lightProbe->ComputeOrLoad(game, gameTime, aObjects, mQuadRenderer, skybox, mLevelPath + L"specular_probes\\");
 		//
 		//	mSpecularProbesReady = true;
 		//}
 	}
 
-	void ER_IlluminationProbeManager::DrawDebugProbes(Game& game, Scene* scene, ER_ProbeType aType)
+	void ER_IlluminationProbeManager::DrawDebugProbes(ER_ProbeType aType)
 	{
-		if (mDiffuseProbeRenderingObject && mDiffuseProbesReady)
-			mDiffuseProbeRenderingObject->Draw(MaterialHelper::debugLightProbeMaterialName);
+		if (aType == DIFFUSE_PROBE) {
+			if (mDiffuseProbeRenderingObject && mDiffuseProbesReady)
+				mDiffuseProbeRenderingObject->Draw(MaterialHelper::debugLightProbeMaterialName);
+		}
 	}
 
 	void ER_IlluminationProbeManager::DrawDebugProbesVolumeGizmo()

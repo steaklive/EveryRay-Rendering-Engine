@@ -137,8 +137,6 @@ namespace Rendering
 		if (Utility::IsEditorMode)
 		{
 			mDirectionalLight->DrawProxyModel(gameTime); //todo move to Illumination() or better to separate debug renderer system
-			mIlluminationProbesManager->DrawDebugProbes(*mGame, mScene, DIFFUSE_PROBE);
-			mIlluminationProbesManager->DrawDebugProbesVolumeGizmo();
 		}
 #pragma endregion
 

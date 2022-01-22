@@ -163,6 +163,9 @@ namespace Library
 		bool mDrawVoxelization = false;
 		bool mDrawVoxelZonesGizmos = false;
 		bool mDrawAmbientOcclusionOnly = false;
+		bool mDrawDiffuseProbes = false;
+		bool mDrawSpecularProbes = false;
+		bool mDrawProbesVolumeGizmo = false;
 
 		bool mEnabled = false;
 		bool mShowDebug = false;
