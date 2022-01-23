@@ -60,11 +60,12 @@ namespace Library
 		ID3D11Texture2D* GetCubemapTexture2D() const { return mCubemapFacesConvolutedRT->getTexture2D(); }
 		
 		//TODO refactor
-		void SetShaderInfoForConvolution(ID3D11VertexShader* vs, ID3D11PixelShader* ps, ID3D11InputLayout* il)
+		void SetShaderInfoForConvolution(ID3D11VertexShader* vs, ID3D11PixelShader* ps, ID3D11InputLayout* il, ID3D11SamplerState* ss)
 		{
 			mConvolutionVS = vs;
 			mConvolutionPS = ps;
 			mInputLayout = il;
+			mLinearSamplerState = ss;
 		}
 
 		void CPUCullAgainstProbeBoundingVolume(const XMFLOAT3& aMin, const XMFLOAT3& aMax);
@@ -150,6 +151,7 @@ namespace Library
 		ID3D11VertexShader* mConvolutionVS = nullptr;
 		ID3D11PixelShader* mConvolutionPS = nullptr;
 		ID3D11InputLayout* mInputLayout = nullptr; //TODO remove
+		ID3D11SamplerState* mLinearSamplerState = nullptr;
 
 		int mDiffuseProbesCountTotal = 0;
 		int mDiffuseProbesCountX = 0;

@@ -48,6 +48,16 @@ namespace Library
 		if (!scene)
 			throw GameException("No scene to load light probes for!");
 
+		D3D11_SAMPLER_DESC sam_desc;
+		sam_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		sam_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		sam_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		sam_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		sam_desc.MipLODBias = 0;
+		sam_desc.MaxAnisotropy = 1;
+		if (FAILED(game.Direct3DDevice()->CreateSamplerState(&sam_desc, &mLinearSamplerState)))
+			throw GameException("Failed to create sampler mLinearSamplerState!");
+
 		mQuadRenderer = new QuadRenderer(game.Direct3DDevice());
 		{
 			ID3DBlob* blob = nullptr;
@@ -97,7 +107,6 @@ namespace Library
 			XMFLOAT3(MAIN_CAMERA_PROBE_VOLUME_SIZE, MAIN_CAMERA_PROBE_VOLUME_SIZE, MAIN_CAMERA_PROBE_VOLUME_SIZE) }, XMMatrixScaling(1, 1, 1));
 		mDebugProbeVolumeGizmo->SetPosition(mMainCamera.Position());
 
-
 		// diffuse probes setup
 		{
 			mDiffuseProbesCountX = (maxBounds.x - minBounds.x) / DISTANCE_BETWEEN_DIFFUSE_PROBES;
@@ -118,8 +127,8 @@ namespace Library
 								minBounds.y + probesY * DISTANCE_BETWEEN_DIFFUSE_PROBES,
 								minBounds.z + probesZ * DISTANCE_BETWEEN_DIFFUSE_PROBES);
 							int index = probesY * (mDiffuseProbesCountX * mDiffuseProbesCountZ) + probesX * mDiffuseProbesCountZ + probesZ;
-							mDiffuseProbes.push_back(new ER_LightProbe(game, light, shadowMapper, pos, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE, index));
-							mDiffuseProbes[index]->SetShaderInfoForConvolution(mConvolutionVS, mConvolutionPS, mInputLayout);
+							mDiffuseProbes.emplace_back(new ER_LightProbe(game, light, shadowMapper, pos, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE, index));
+							mDiffuseProbes[index]->SetShaderInfoForConvolution(mConvolutionVS, mConvolutionPS, mInputLayout, mLinearSamplerState);
 						}
 					}
 				}
@@ -152,8 +161,8 @@ namespace Library
 			mDiffuseCubemapArrayRT = new CustomRenderTarget(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
 				D3D11_BIND_SHADER_RESOURCE, 1, -1, CUBEMAP_FACES_COUNT, true, MaxNonCulledDiffuseProbesCount);
 		}
-
-		//specular
+		
+		// specular probes setup
 		{
 			mSpecularProbesCountX = (maxBounds.x - minBounds.x) / DISTANCE_BETWEEN_SPECULAR_PROBES;
 			mSpecularProbesCountY = (maxBounds.y - minBounds.y) / DISTANCE_BETWEEN_SPECULAR_PROBES;
@@ -173,8 +182,8 @@ namespace Library
 								minBounds.y + probesY * DISTANCE_BETWEEN_SPECULAR_PROBES,
 								minBounds.z + probesZ * DISTANCE_BETWEEN_SPECULAR_PROBES);
 							int index = probesY * (mSpecularProbesCountX * mSpecularProbesCountZ) + probesX * mSpecularProbesCountZ + probesZ;
-							mSpecularProbes.push_back(new ER_LightProbe(game, light, shadowMapper, pos, SPECULAR_PROBE_SIZE, SPECULAR_PROBE, index));
-							mSpecularProbes[index]->SetShaderInfoForConvolution(mConvolutionVS, mConvolutionPS, mInputLayout);
+							mSpecularProbes.emplace_back(new ER_LightProbe(game, light, shadowMapper, pos, SPECULAR_PROBE_SIZE, SPECULAR_PROBE, index));
+							mSpecularProbes[index]->SetShaderInfoForConvolution(mConvolutionVS, mConvolutionPS, mInputLayout, mLinearSamplerState);
 						}
 					}
 				}
@@ -218,9 +227,10 @@ namespace Library
 		DeleteObject(mSpecularCubemapArrayRT);
 		DeleteObject(mDebugProbeVolumeGizmo);
 		DeleteObject(mQuadRenderer);
-		ReleaseObject(mInputLayout);
 		ReleaseObject(mConvolutionVS);
 		ReleaseObject(mConvolutionPS);
+		ReleaseObject(mInputLayout);
+		ReleaseObject(mLinearSamplerState);
 	}
 
 	void ER_IlluminationProbeManager::ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox)
@@ -230,7 +240,7 @@ namespace Library
 			std::wstring diffuseProbesPath = mLevelPath + L"diffuse_probes\\";
 			for (auto& lightProbe : mDiffuseProbes)
 				lightProbe->ComputeOrLoad(game, gameTime, aObjects, mQuadRenderer, skybox, diffuseProbesPath);
-
+		
 			mDiffuseProbesReady = true;
 		}
 
@@ -422,18 +432,6 @@ namespace Library
 		}
 
 		mConvolutionCB.Initialize(game.Direct3DDevice());
-
-		{
-			D3D11_SAMPLER_DESC sam_desc;
-			sam_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-			sam_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-			sam_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-			sam_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-			sam_desc.MipLODBias = 0;
-			sam_desc.MaxAnisotropy = 1;
-			if (FAILED(game.Direct3DDevice()->CreateSamplerState(&sam_desc, &mLinearSamplerState)))
-				throw GameException("Failed to create sampler mLinearSamplerState!");
-		}
 	}
 
 	ER_LightProbe::~ER_LightProbe()
@@ -515,8 +513,8 @@ namespace Library
 		//draw world to probe
 		for (int cubeMapFace = 0; cubeMapFace < CUBEMAP_FACES_COUNT; cubeMapFace++)
 		{
-			int rtvShift = (mProbeType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT;
 			// Set the render target and clear it.
+			int rtvShift = (mProbeType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT;
 			context->OMSetRenderTargets(1, &mCubemapFacesRT->getRTVs()[cubeMapFace * rtvShift], mDepthBuffers[cubeMapFace]->getDSV());
 			context->ClearRenderTargetView(mCubemapFacesRT->getRTVs()[cubeMapFace], clearColor);
 			context->ClearDepthStencilView(mDepthBuffers[cubeMapFace]->getDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
@@ -562,32 +560,40 @@ namespace Library
 		int totalMips = (mipCount == -1) ? 1 : mipCount;
 		int rtvShift = (mProbeType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT;
 
+		ID3D11ShaderResourceView* SRVs[1] = { mCubemapFacesRT->getSRV() };
+		ID3D11SamplerState* SSs[1] = { mLinearSamplerState };
+
 		for (int cubeMapFace = 0; cubeMapFace < CUBEMAP_FACES_COUNT; cubeMapFace++)
 		{
+			int currentSize = mSize;
+
 			for (int mip = 0; mip < totalMips; mip++)
 			{
 				mConvolutionCB.Data.FaceIndex = cubeMapFace;
 				mConvolutionCB.Data.MipIndex = (mProbeType == DIFFUSE_PROBE) ? -1 : mip;
 				mConvolutionCB.ApplyChanges(context);
 
+				CD3D11_VIEWPORT newViewPort(0.0f, 0.0f, static_cast<float>(currentSize), static_cast<float>(currentSize));
+				context->RSSetViewports(1, &newViewPort);
+
 				context->OMSetRenderTargets(1, &mCubemapFacesConvolutedRT->getRTVs()[cubeMapFace * rtvShift + mip], NULL);
 				context->ClearRenderTargetView(mCubemapFacesConvolutedRT->getRTVs()[cubeMapFace * rtvShift + mip], clearColor);
 
 				ID3D11Buffer* CBs[1] = { mConvolutionCB.Buffer() };
-				ID3D11ShaderResourceView* SRVs[1] = { mCubemapFacesRT->getSRV() };
-				ID3D11SamplerState* SSs[1] = { mLinearSamplerState };
 
 				context->IASetInputLayout(mInputLayout);
 				context->VSSetShader(mConvolutionVS, NULL, NULL);
 				context->VSSetConstantBuffers(0, 1, CBs);
-
+				
 				context->PSSetShader(mConvolutionPS, NULL, NULL);
 				context->PSSetSamplers(0, 1, SSs);
-				context->PSSetConstantBuffers(0, 1, CBs);
 				context->PSSetShaderResources(0, 1, SRVs);
+				context->PSSetConstantBuffers(0, 1, CBs);
 
 				if(quadRenderer)
 					quadRenderer->Draw(context);
+
+				currentSize >>= 1;
 			}
 		}
 	}
@@ -609,11 +615,23 @@ namespace Library
 		}
 		else
 		{
-			//doing 6 CopySubresourceRegion for each face, since CopyResource() wont work due to auto generated mips in src texture...
+			// Copying loaded resource into the convoluted resource of the probe
+			// 
+			// [WARNING] For diffuse we calculate subresource with src mip count = 6 due to auto generated mips in the src texture...
+			// [WARNING] DirectX::SaveToDDSFile() is the reason for such behaviour which can not be controlled :(
+
+			const int srcDiffuseAutogeneratedMipCount = 6;
+
+			int mips = (mProbeType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT;
+
 			for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
 			{
-				game.Direct3DDeviceContext()->CopySubresourceRegion(mCubemapFacesConvolutedRT->getTexture2D(),
-					D3D11CalcSubresource(0, i, 1), 0, 0, 0, resourceTex, D3D11CalcSubresource(0, i, 6), NULL);
+				for (int mip = 0; mip < mips; mip++)
+				{
+					game.Direct3DDeviceContext()->CopySubresourceRegion(mCubemapFacesConvolutedRT->getTexture2D(),
+						D3D11CalcSubresource(mip, i, mips), 0, 0, 0, resourceTex,
+						D3D11CalcSubresource(mip, i, (mProbeType == DIFFUSE_PROBE) ? srcDiffuseAutogeneratedMipCount : mips), NULL);
+				}
 			}
 
 			mCubemapFacesConvolutedRT->SetSRV(srv);
