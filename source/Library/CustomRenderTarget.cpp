@@ -98,21 +98,24 @@ CustomRenderTarget::CustomRenderTarget(ID3D11Device* device, UINT width, UINT he
 		else
 		{
 			rDesc.ViewDimension = (samples > 1) ? D3D11_RTV_DIMENSION_TEXTURE2DMSARRAY : D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
-			rtv = (ID3D11RenderTargetView**)malloc(sizeof(ID3D11RenderTargetView*) * arraySize);
+			rtv = (ID3D11RenderTargetView**)malloc(sizeof(ID3D11RenderTargetView*) * arraySize * mips);
 			for (int i = 0; i < arraySize; i++)
 			{
-				if (samples > 1)
+				for (int j = 0; j < mips; j++)
 				{
-					rDesc.Texture2DMSArray.FirstArraySlice = i;
-					rDesc.Texture2DMSArray.ArraySize = 1;
+					if (samples > 1)
+					{
+						rDesc.Texture2DMSArray.FirstArraySlice = i;
+						rDesc.Texture2DMSArray.ArraySize = 1;
+					}
+					else
+					{
+						rDesc.Texture2DArray.MipSlice = j;
+						rDesc.Texture2DArray.FirstArraySlice = i;
+						rDesc.Texture2DArray.ArraySize = 1;
+					}
+					device->CreateRenderTargetView(tex2D, &rDesc, &rtv[i * mips + j]);
 				}
-				else
-				{
-					rDesc.Texture2DArray.MipSlice = 0;
-					rDesc.Texture2DArray.FirstArraySlice = i;
-					rDesc.Texture2DArray.ArraySize = 1;
-				}
-				device->CreateRenderTargetView(tex2D, &rDesc, &rtv[i]);
 			}
 		}
 
@@ -156,7 +159,7 @@ CustomRenderTarget::CustomRenderTarget(ID3D11Device* device, UINT width, UINT he
 			{
 				if (cubemapArraySize > 0)
 				{
-					sDesc.TextureCubeArray.MipLevels = 1;
+					sDesc.TextureCubeArray.MipLevels = mips;
 					sDesc.TextureCubeArray.MostDetailedMip = 0;
 					sDesc.TextureCubeArray.NumCubes = cubemapArraySize;
 					sDesc.TextureCubeArray.First2DArrayFace = 0;
@@ -164,7 +167,7 @@ CustomRenderTarget::CustomRenderTarget(ID3D11Device* device, UINT width, UINT he
 				}
 				else
 				{
-					sDesc.TextureCube.MipLevels = 1;
+					sDesc.TextureCube.MipLevels = mips;
 					sDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
 				}
 				device->CreateShaderResourceView(tex2D, &sDesc, &srv);
@@ -178,7 +181,7 @@ CustomRenderTarget::CustomRenderTarget(ID3D11Device* device, UINT width, UINT he
 				}
 				else
 				{
-					sDesc.Texture2DArray.MipLevels = 1;
+					sDesc.Texture2DArray.MipLevels = mips;
 					sDesc.Texture2DArray.ArraySize = arraySize;
 					sDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
 				}
@@ -214,19 +217,9 @@ CustomRenderTarget::~CustomRenderTarget()
 
 	if (mBindFlags & D3D11_BIND_RENDER_TARGET)
 	{
-		if (mArraySize > 1)
+		for (int i = 0; i < mArraySize * mMipLevels; i++)
 		{
-			for (int i = 0; i < mArraySize; i++)
-			{
-				ReleaseObject(mRTVs[i]);
-			}
-		}
-		else
-		{
-			for (int i = 0; i < mMipLevels; i++)
-			{
-				ReleaseObject(mRTVs[i]);
-			}
+			ReleaseObject(mRTVs[i]);
 		}
 	}
 	if (mBindFlags & D3D11_BIND_UNORDERED_ACCESS)

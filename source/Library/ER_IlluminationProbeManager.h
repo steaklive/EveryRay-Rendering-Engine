@@ -5,10 +5,14 @@
 #define DIFFUSE_PROBE_SIZE 32
 #define DISTANCE_BETWEEN_DIFFUSE_PROBES 15
 
+#define SPECULAR_PROBE_SIZE 128
+#define DISTANCE_BETWEEN_SPECULAR_PROBES 30
 #define SPECULAR_PROBE_MIP_COUNT 6
 
-static const int MaxNonCulledProbesCountPerAxis = MAIN_CAMERA_PROBE_VOLUME_SIZE * 2 / DISTANCE_BETWEEN_DIFFUSE_PROBES;
-static const int MaxNonCulledProbesCount = MaxNonCulledProbesCountPerAxis * MaxNonCulledProbesCountPerAxis * MaxNonCulledProbesCountPerAxis;
+static const int MaxNonCulledDiffuseProbesCountPerAxis = MAIN_CAMERA_PROBE_VOLUME_SIZE * 2 / DISTANCE_BETWEEN_DIFFUSE_PROBES;
+static const int MaxNonCulledDiffuseProbesCount = MaxNonCulledDiffuseProbesCountPerAxis * MaxNonCulledDiffuseProbesCountPerAxis * MaxNonCulledDiffuseProbesCountPerAxis;
+static const int MaxNonCulledSpecularProbesCountPerAxis = MAIN_CAMERA_PROBE_VOLUME_SIZE * 2 / DISTANCE_BETWEEN_SPECULAR_PROBES;
+static const int MaxNonCulledSpecularProbesCount = MaxNonCulledSpecularProbesCountPerAxis * MaxNonCulledSpecularProbesCountPerAxis * MaxNonCulledSpecularProbesCountPerAxis;
 
 #include "Common.h"
 #include "RenderingObject.h"
@@ -71,7 +75,7 @@ namespace Library
 		void ConvoluteProbe(Game& game, QuadRenderer* quadRenderer);
 		
 		void PrecullObjectsPerFace();
-		void UpdateStandardLightingPBRnoIBLMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int cubeFaceIndex);
+		void UpdateStandardLightingPBRProbeMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int cubeFaceIndex);
 		
 		void SaveProbeOnDisk(Game& game, const std::wstring& levelPath);
 		bool LoadProbeFromDisk(Game& game, const std::wstring& levelPath);
@@ -114,10 +118,11 @@ namespace Library
 		void DrawDebugProbes(ER_ProbeType aType);
 		void DrawDebugProbesVolumeGizmo();
 		void UpdateProbes(Game& game);
-		void UpdateDebugLightProbeMaterialVariables(Rendering::RenderingObject* obj, int meshIndex);
+		void UpdateDebugLightProbeMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, ER_ProbeType aType);
 		const ER_LightProbe* GetDiffuseLightProbe(int index) const { return mDiffuseProbes[index]; }
 		const ER_LightProbe* GetSpecularLightProbe(int index) const { return mSpecularProbes[index]; }
 	private:
+		void UpdateProbesByType(Game& game, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds);
 		QuadRenderer* mQuadRenderer = nullptr;
 		Camera& mMainCamera;
 		RenderableAABB* mDebugProbeVolumeGizmo;
@@ -150,5 +155,10 @@ namespace Library
 		int mDiffuseProbesCountX = 0;
 		int mDiffuseProbesCountY = 0;
 		int mDiffuseProbesCountZ = 0;
+
+		int mSpecularProbesCountTotal = 0;
+		int mSpecularProbesCountX = 0;
+		int mSpecularProbesCountY = 0;
+		int mSpecularProbesCountZ = 0;
 	};
 }

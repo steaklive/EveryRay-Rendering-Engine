@@ -95,10 +95,12 @@ namespace Rendering
 		};
 
 		CreateInputLayout("standard_lighting_pbr", "p0", inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
-		CreateInputLayout("standard_lighting_pbr_no_ibl", "p0", inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
+		CreateInputLayout("standard_lighting_pbr_diffuse_probes", "p0", inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
+		CreateInputLayout("standard_lighting_pbr_specular_probes", "p0", inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
 
 		CreateInputLayout("standard_lighting_pbr_instancing", "p0", inputElementDescriptionsInstancing, ARRAYSIZE(inputElementDescriptionsInstancing));
-		CreateInputLayout("standard_lighting_pbr_no_ibl_instancing", "p0", inputElementDescriptionsInstancing, ARRAYSIZE(inputElementDescriptionsInstancing));
+		CreateInputLayout("standard_lighting_pbr_diffuse_probes_instancing", "p0", inputElementDescriptionsInstancing, ARRAYSIZE(inputElementDescriptionsInstancing));
+		CreateInputLayout("standard_lighting_pbr_specular_probes_instancing", "p0", inputElementDescriptionsInstancing, ARRAYSIZE(inputElementDescriptionsInstancing));
 	}
 
 	void StandardLightingMaterial::CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const

@@ -161,16 +161,42 @@ float CalculateShadow(float3 ShadowCoord, int index)
 
     return result;
 }
-float GetShadow(float3 ShadowCoord0, float3 ShadowCoord1, float3 ShadowCoord2, float depthDistance)
+float GetShadow(float3 ShadowCoord0, float3 ShadowCoord1, float3 ShadowCoord2, float depthDistance, int nthCascade = -1)
 {
-    if (depthDistance < ShadowCascadeDistances.x)
-        return CalculateShadow(ShadowCoord0, 0);
-    else if (depthDistance < ShadowCascadeDistances.y)
-        return CalculateShadow(ShadowCoord1, 1);
-    else if (depthDistance < ShadowCascadeDistances.z)
-        return CalculateShadow(ShadowCoord2, 2);
+    if (nthCascade == -1)
+    {
+        if (depthDistance < ShadowCascadeDistances.x)
+            return CalculateShadow(ShadowCoord0, 0);
+        else if (depthDistance < ShadowCascadeDistances.y)
+            return CalculateShadow(ShadowCoord1, 1);
+        else if (depthDistance < ShadowCascadeDistances.z)
+            return CalculateShadow(ShadowCoord2, 2);
+        else
+            return 1.0f;
+    }
+    
+    if (nthCascade == 0 )
+    {
+        if (depthDistance < ShadowCascadeDistances.x)
+            return CalculateShadow(ShadowCoord0, 0);
+        else
+            return 1.0f;
+    }
+    else if (nthCascade == 1)
+    {
+        if (depthDistance < ShadowCascadeDistances.y)
+            return CalculateShadow(ShadowCoord1, 1);
+        return
+            1.0f;
+    }
     else
-        return 1.0f;
+    {
+        if (depthDistance < ShadowCascadeDistances.z)
+            return CalculateShadow(ShadowCoord2, 2);
+        return
+            1.0f;
+    }
+
 }
 
 // ===============================================================================================
@@ -309,7 +335,7 @@ float3 IndirectLightingPBR(float3 diffuseAlbedo, float3 normalWS, float3 positio
     return (indirectDiffuseLighting/* + indirectSpecularLighting*/) * ao;
 }
 
-float3 GetFinalPBRColor(VS_OUTPUT vsOutput, bool IBL)
+float3 GetFinalPBRColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadow = -1)
 {
     float3 sampledNormal = (2 * NormalTexture.Sample(SamplerLinear, vsOutput.UV).xyz) - 1.0; // Map normal from [0..1] to [-1..1]
     float3x3 tbn = float3x3(vsOutput.Tangent, cross(vsOutput.Normal, vsOutput.Tangent), vsOutput.Normal);
@@ -332,7 +358,13 @@ float3 GetFinalPBRColor(VS_OUTPUT vsOutput, bool IBL)
     if (IBL)
         indirectLighting += IndirectLightingPBR(diffuseAlbedo.rgb, normalWS, vsOutput.WorldPos, roughness, F0, metalness);
 
-    float shadow = GetShadow(vsOutput.ShadowCoord0, vsOutput.ShadowCoord1, vsOutput.ShadowCoord2, vsOutput.Position.w);
+    float shadow = 0.0f;
+    if (forcedCascadeShadow == -2) // disabled shadows
+        shadow = 1.0f;
+    else if (forcedCascadeShadow == -1) // standard 3 cascades
+        shadow = GetShadow(vsOutput.ShadowCoord0, vsOutput.ShadowCoord1, vsOutput.ShadowCoord2, vsOutput.Position.w);
+    else // only N'th cascade
+        shadow = GetShadow(vsOutput.ShadowCoord0, vsOutput.ShadowCoord1, vsOutput.ShadowCoord2, vsOutput.Position.w, forcedCascadeShadow);
     
     float3 color = (directLighting * shadow) + indirectLighting;
             
@@ -346,9 +378,14 @@ float3 mainPS_PBR(VS_OUTPUT vsOutput) : SV_Target0
     return GetFinalPBRColor(vsOutput, true);
 }
 
-float3 mainPS_PBR_noIBL(VS_OUTPUT vsOutput) : SV_Target0
+float3 mainPS_PBR_DiffuseProbes(VS_OUTPUT vsOutput) : SV_Target0
 {
-    return GetFinalPBRColor(vsOutput, false);
+    return GetFinalPBRColor(vsOutput, false, -2);
+}
+
+float3 mainPS_PBR_SpecularProbes(VS_OUTPUT vsOutput) : SV_Target0
+{
+    return GetFinalPBRColor(vsOutput, false, NUM_OF_SHADOW_CASCADES - 1);
 }
 
 /************* Techniques *************/
@@ -373,22 +410,42 @@ technique11 standard_lighting_pbr_instancing
     }
 }
 
-technique11 standard_lighting_pbr_no_ibl
+technique11 standard_lighting_pbr_diffuse_probes
 {
     pass p0
     {
         SetVertexShader(CompileShader(vs_5_0, mainVS()));
         SetGeometryShader(NULL);
-        SetPixelShader(CompileShader(ps_5_0, mainPS_PBR_noIBL()));
+        SetPixelShader(CompileShader(ps_5_0, mainPS_PBR_DiffuseProbes()));
     }
 }
 
-technique11 standard_lighting_pbr_no_ibl_instancing
+technique11 standard_lighting_pbr_diffuse_probes_instancing
 {
     pass p0
     {
         SetVertexShader(CompileShader(vs_5_0, mainVS_Instancing()));
         SetGeometryShader(NULL);
-        SetPixelShader(CompileShader(ps_5_0, mainPS_PBR_noIBL()));
+        SetPixelShader(CompileShader(ps_5_0, mainPS_PBR_DiffuseProbes()));
+    }
+}
+
+technique11 standard_lighting_pbr_specular_probes
+{
+    pass p0
+    {
+        SetVertexShader(CompileShader(vs_5_0, mainVS()));
+        SetGeometryShader(NULL);
+        SetPixelShader(CompileShader(ps_5_0, mainPS_PBR_SpecularProbes()));
+    }
+}
+
+technique11 standard_lighting_pbr_specular_probes_instancing
+{
+    pass p0
+    {
+        SetVertexShader(CompileShader(vs_5_0, mainVS_Instancing()));
+        SetGeometryShader(NULL);
+        SetPixelShader(CompileShader(ps_5_0, mainPS_PBR_SpecularProbes()));
     }
 }

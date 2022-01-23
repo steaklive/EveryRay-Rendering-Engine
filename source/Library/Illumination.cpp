@@ -446,6 +446,8 @@ namespace Library {
 		if (mProbesManager) {
 			if (mDrawDiffuseProbes)
 				mProbesManager->DrawDebugProbes(DIFFUSE_PROBE);
+			if (mDrawSpecularProbes)
+				mProbesManager->DrawDebugProbes(SPECULAR_PROBE);
 
 			if (mDrawProbesVolumeGizmo)
 				mProbesManager->DrawDebugProbesVolumeGizmo();

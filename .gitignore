@@ -16,6 +16,7 @@ bin/x64/Release/Library.lib
 
 # ignore light probes in levels
 content/levels/testScene/diffuse_probes
+content/levels/testScene/specular_probes
 
 # taken from NVIDIA GameWorks
 content/shaders/VolumetricLight

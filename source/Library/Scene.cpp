@@ -166,9 +166,22 @@ namespace Library
 						else if (std::get<2>(materialData) == MaterialHelper::forwardLightingForProbesMaterialName) {
 							for (int cubemapFaceIndex = 0; cubemapFaceIndex < CUBEMAP_FACES_COUNT; cubemapFaceIndex++)
 							{
-								const std::string name = MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubemapFaceIndex);
+								//diffuse
+								std::string name = "diffuse_" + MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubemapFaceIndex);
 								it->second->LoadMaterial(new Rendering::StandardLightingMaterial(), std::get<1>(materialData), name);
 								std::map<std::string, Material*>::iterator iter = it->second->GetMaterials().find(name);
+
+								if (iter != it->second->GetMaterials().end())
+								{
+									it->second->GetMaterials()[name]->SetCurrentTechnique(
+										it->second->GetMaterials()[name]->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][mat]["technique"].asString())
+									);
+								}
+
+								//specular
+								name = "specular_" + MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubemapFaceIndex);
+								it->second->LoadMaterial(new Rendering::StandardLightingMaterial(), std::get<1>(materialData), name);
+								iter = it->second->GetMaterials().find(name);
 
 								if (iter != it->second->GetMaterials().end())
 								{
