@@ -63,12 +63,10 @@ namespace Library
 		ConstantBuffer<VolumetricCloudsCBufferData::CloudsCB> mCloudsConstantBuffer;
 
 		CustomRenderTarget* mCustomMainRenderTargetCS = nullptr;
-		FullScreenRenderTarget* mMainRenderTargetPS = nullptr;
 		FullScreenRenderTarget* mCompositeRenderTarget = nullptr;
 		FullScreenRenderTarget* mBlurRenderTarget = nullptr;
 
 		ID3D11ComputeShader* mMainCS = nullptr;
-		ID3D11PixelShader* mMainPS = nullptr;
 		ID3D11PixelShader* mCompositePS = nullptr;
 		ID3D11PixelShader* mBlurPS = nullptr;
 
@@ -89,7 +87,6 @@ namespace Library
 		float mCloudsTopHeight = 16400.0f;
 		float mDensityFactor = 0.012f;
 
-		bool mUseComputeShaderVersion = true;
 		bool mEnabled = true;
 		bool mShowDebug = false;
 	};

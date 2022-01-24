@@ -119,7 +119,9 @@ namespace Rendering
 
 		//TODO temp
 		{
+			mGame->CPUProfiler()->BeginCPUTime("Compute or load light probes");
 			mIlluminationProbesManager->ComputeOrLoadProbes(*mGame, gameTime, mScene->objects, mSkybox);
+			mGame->CPUProfiler()->EndCPUTime("Compute or load light probes");
 		}
 
 		#pragma region DRAW_GI

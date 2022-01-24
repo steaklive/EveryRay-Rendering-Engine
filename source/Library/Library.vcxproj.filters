@@ -414,6 +414,9 @@
     <ClInclude Include="DebugLightProbeMaterial.h">
       <Filter>Source Files\Materials</Filter>
     </ClInclude>
+    <ClInclude Include="ER_CPUProfiler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -712,6 +715,9 @@
     </ClCompile>
     <ClCompile Include="DebugLightProbeMaterial.cpp">
       <Filter>Source Files\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_CPUProfiler.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

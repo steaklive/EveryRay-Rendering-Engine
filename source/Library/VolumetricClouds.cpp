@@ -36,11 +36,9 @@ namespace Library {
 		ReleaseObject(mWeatherTextureSRV);
 		ReleaseObject(mWorleyTextureSRV);
 		ReleaseObject(mMainCS);
-		ReleaseObject(mMainPS);
 		ReleaseObject(mCompositePS);
 		ReleaseObject(mBlurPS);
 		DeleteObject(mCustomMainRenderTargetCS);
-		DeleteObject(mMainRenderTargetPS);
 		DeleteObject(mCompositeRenderTarget);
 		DeleteObject(mBlurRenderTarget);
 		mFrameConstantBuffer.Release();
@@ -50,13 +48,6 @@ namespace Library {
 	void VolumetricClouds::Initialize() {
 		//shaders
 		ID3DBlob* blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricClouds.hlsl").c_str(), "main", "ps_5_0", &blob)))
-			throw GameException("Failed to load main pass from shader: VolumetricClouds.hlsl!");
-		if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mMainPS)))
-			throw GameException("Failed to create shader from VolumetricClouds.hlsl!");
-		blob->Release();
-
-		blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsComposite.hlsl").c_str(), "main", "ps_5_0", &blob)))
 			throw GameException("Failed to load main pass from shader: VolumetricCloudsComposite.hlsl!");
 		if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mCompositePS)))
@@ -109,7 +100,6 @@ namespace Library {
 			throw GameException("Failed to create sampler mWeatherSS!");
 
 		//render targets
-		mMainRenderTargetPS = new FullScreenRenderTarget(*mGame);
 		mCompositeRenderTarget = new FullScreenRenderTarget(*mGame);
 		mBlurRenderTarget = new FullScreenRenderTarget(*mGame);
 		mCustomMainRenderTargetCS = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
@@ -154,7 +144,6 @@ namespace Library {
 
 		ImGui::Begin("Volumetric Clouds System");
 		ImGui::Checkbox("Enabled", &mEnabled);
-		ImGui::Checkbox("Compute Shader", &mUseComputeShaderVersion);
 		ImGui::ColorEdit3("Ambient color", mAmbientColor);
 		ImGui::SliderFloat("Sun light absorption", &mLightAbsorption, 0.0f, 0.015f);
 		ImGui::SliderFloat("Clouds bottom height", &mCloudsBottomHeight, 1000.0f, 10000.0f);
@@ -195,8 +184,8 @@ namespace Library {
 		};
 		ID3D11SamplerState* SS[2] = { mCloudSS, mWeatherSS };
 
-
-		if (mUseComputeShaderVersion) {
+		// main pass
+		{
 			ID3D11UnorderedAccessView* UAV[1] = { mCustomMainRenderTargetCS->getUAV() };
 
 			context->CSSetShaderResources(0, 5, SR);
@@ -215,21 +204,11 @@ namespace Library {
 			ID3D11SamplerState* nullSSs[] = { NULL };
 			context->CSSetSamplers(0, 1, nullSSs);
 		}
-		else {
-			mMainRenderTargetPS->Begin();
-
-			context->PSSetShaderResources(0, 5, SR);
-			context->PSSetConstantBuffers(0, 2, CBs);
-			context->PSSetSamplers(0, 2, SS);
-			context->PSSetShader(mMainPS, NULL, NULL);
-			mPostProcessingStack.DrawFullscreenQuad(context);
-			mMainRenderTargetPS->End();
-		}
 
 		//blur pass
 		mBlurRenderTarget->Begin();
 		ID3D11ShaderResourceView* SR_Blur[2] = {
-			(mUseComputeShaderVersion) ? mCustomMainRenderTargetCS->getSRV() : mMainRenderTargetPS->OutputColorTexture(),
+			mCustomMainRenderTargetCS->getSRV(),
 			mPostProcessingStack.GetDepthSRV(),
 		};
 		context->PSSetShaderResources(0, 2, SR_Blur);

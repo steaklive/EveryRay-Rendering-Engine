@@ -51,6 +51,13 @@
 
 #define INT_CEIL(n,d) (int)ceil((float)n/d)
 
+#define ER_DEBUG_OUTPUT_LOG( s )            \
+{                             \
+   std::ostringstream os_;    \
+   os_ << s;                   \
+   OutputDebugString( os_.str().c_str() );  \
+}
+
 template <typename T>
 inline T DivideByMultiple(T value, size_t alignment)
 {
