@@ -111,7 +111,7 @@ namespace Rendering
 		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
 
 		// Load the model
-		mStatueRenderingObject = new RenderingObject("Statue", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\statue\\statue.fbx"), true)));
+		mStatueRenderingObject = new RenderingObject("Statue", -1, *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\statue\\statue.fbx"), true)));
 
 		// Load the effect
 		Effect* effect = new Effect(*mGame);

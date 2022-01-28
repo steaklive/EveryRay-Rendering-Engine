@@ -11,7 +11,7 @@
 
 namespace Rendering
 {
-	RenderingObject::RenderingObject(std::string pName, Game& pGame, Camera& pCamera, std::unique_ptr<Model> pModel, bool availableInEditor, bool isInstanced)
+	RenderingObject::RenderingObject(const std::string& pName, int index, Game& pGame, Camera& pCamera, std::unique_ptr<Model> pModel, bool availableInEditor, bool isInstanced)
 		:
 		GameComponent(pGame),
 		mCamera(pCamera),
@@ -21,7 +21,8 @@ namespace Rendering
 		mDebugAABB(nullptr),
 		mAvailableInEditorMode(availableInEditor),
 		mTransformationMatrix(XMMatrixIdentity()),
-		mIsInstanced(isInstanced)
+		mIsInstanced(isInstanced),
+		mIndexInScene(index)
 	{
 		if (!mModel)
 		{
@@ -287,7 +288,7 @@ namespace Rendering
 		bool failed = false;
 		if (ddsLoader)
 		{
-			if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), path.c_str(), nullptr, resource)))
+			if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), path.c_str(), nullptr, resource)))
 			{
 				std::string status = "Failed to load DDS Texture" + texType;
 				status += errorMessage;
@@ -297,6 +298,7 @@ namespace Rendering
 		}
 		else if (tgaLoader)
 		{
+			//TODO This will not work if accessed from multiple threads, since we need a device context for TGA loader (not thread safe)
 			TGATextureLoader* loader = new TGATextureLoader();
 			if (!loader->Initialize(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), path.c_str(), resource))
 			{
@@ -307,7 +309,7 @@ namespace Rendering
 			}
 			loader->Shutdown();
 		}
-		else if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), path.c_str(), nullptr, resource)))
+		else if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), path.c_str(), nullptr, resource)))
 		{
 			std::string status = "Failed to load WIC Texture" + texType;
 			status += errorMessage;

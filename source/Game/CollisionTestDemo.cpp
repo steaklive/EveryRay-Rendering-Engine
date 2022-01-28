@@ -114,11 +114,11 @@ namespace Rendering
 		Effect* instancingEffect = new Effect(*mGame);
 		instancingEffect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\Instancing.fx"));
 		
-		mDynamicConvexHullObject = new RenderingObject("Bunny Convex Hull", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\bunny\\bunny_convexhull.fbx"), true)), false, true);
+		mDynamicConvexHullObject = new RenderingObject("Bunny Convex Hull", -1, *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\bunny\\bunny_convexhull.fbx"), true)), false, true);
 
 		#pragma region DYNAMIC_OBJECT_INITIALIZATION
 	
-		mDynamicInstancedObject = new RenderingObject("Bunny Dynamic", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\bunny\\bunny.fbx"), true)), false, true);
+		mDynamicInstancedObject = new RenderingObject("Bunny Dynamic", -1, *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\bunny\\bunny.fbx"), true)), false, true);
 		mDynamicInstancedObject->LoadMaterial(new InstancingMaterial(), instancingEffect, "instancing");
 		mDynamicInstancedObject->LoadRenderBuffers();
 		for (size_t i = 0; i < mDynamicInstancedObject->GetMeshCount(); i++)
@@ -151,7 +151,7 @@ namespace Rendering
 
 		#pragma region STATIC_OBJECT_INITIALIZATION
 
-		mStaticInstancedObject = new RenderingObject("Bunny Dynamic", *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true);
+		mStaticInstancedObject = new RenderingObject("Bunny Dynamic", -1, *mGame, *mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true);
 		mStaticInstancedObject->LoadMaterial(new InstancingMaterial(), instancingEffect, "instancing");
 		mStaticInstancedObject->LoadRenderBuffers();
 		for (size_t i = 0; i < mStaticInstancedObject->GetMeshCount(); i++)

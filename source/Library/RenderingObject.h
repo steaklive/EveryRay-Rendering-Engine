@@ -121,7 +121,7 @@ namespace Rendering
 		using Delegate_MeshMaterialVariablesUpdate = std::function<void(int)>; // mesh index for input
 
 	public:
-		RenderingObject(std::string pName, Game& pGame, Camera& pCamera, std::unique_ptr<Model> pModel, bool availableInEditor = false, bool isInstanced = false);
+		RenderingObject(const std::string& pName, int index, Game& pGame, Camera& pCamera, std::unique_ptr<Model> pModel, bool availableInEditor = false, bool isInstanced = false);
 		~RenderingObject();
 
 		void LoadCustomMeshTextures(int meshIndex, std::wstring albedoPath, std::wstring normalPath, std::wstring specularPath, std::wstring roughnessPath, std::wstring metallicPath, std::wstring extra1Path, std::wstring extra2Path, std::wstring extra3Path);
@@ -224,6 +224,8 @@ namespace Rendering
 		bool IsInLightProbe() { return mIsInLightProbe; }
 		void SetInLightProbe(bool value) { mIsInLightProbe = value; }
 
+		int GetIndexInScene() { return mIndexInScene; }
+
 		GeneralEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new GeneralEvent<Delegate_MeshMaterialVariablesUpdate>();
 	
 		std::vector<std::string>								mCustomAlbedoTextures;
@@ -231,10 +233,6 @@ namespace Rendering
 		std::vector<std::string>								mCustomRoughnessTextures;
 		std::vector<std::string>								mCustomMetalnessTextures;
 	private:
-		RenderingObject();
-		RenderingObject(const RenderingObject& rhs);
-		RenderingObject& operator=(const RenderingObject& rhs);
-
 		void LoadAssignedMeshTextures();
 		void LoadTexture(TextureType type, std::wstring path, int meshIndex);
 		void CreateInstanceBuffer(ID3D11Device* device, InstancedData* instanceData, UINT instanceCount, ID3D11Buffer** instanceBuffer);
@@ -291,5 +289,7 @@ namespace Rendering
 		float													mMatrixTranslation[3], mMatrixRotation[3], mMatrixScale[3];
 		XMMATRIX												mTransformationMatrix;
 		const char* listbox_items[MAX_INSTANCE_COUNT];
+
+		int mIndexInScene = -1;
 	};
 }

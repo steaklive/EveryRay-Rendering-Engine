@@ -39,6 +39,8 @@ namespace Library
 		XMFLOAT3 ambientColor;
 
 	private:
+		void LoadRenderingObjectData(Rendering::RenderingObject* aObject);
+		void LoadRenderingObjectInstancedData(Rendering::RenderingObject* aObject);
 		std::tuple<Material*, Effect*, std::string> CreateMaterialData(const std::string& materialName, const std::string& effectName, const std::string& techniqueName);
 		Json::Value root;
 		Camera& mCamera;

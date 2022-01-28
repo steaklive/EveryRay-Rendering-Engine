@@ -142,7 +142,7 @@ namespace Library
 			auto result = scene->objects.insert(
 				std::pair<std::string, Rendering::RenderingObject*>(
 					"Debug diffuse lightprobes",
-					new Rendering::RenderingObject("Debug diffuse lightprobes", game, camera,
+					new Rendering::RenderingObject("Debug diffuse lightprobes", scene->objects.size(), game, camera,
 						std::unique_ptr<Model>(new Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), true, true)
 					)
 			);
@@ -205,7 +205,7 @@ namespace Library
 			auto result = scene->objects.insert(
 				std::pair<std::string, Rendering::RenderingObject*>(
 					"Debug specular lightprobes",
-					new Rendering::RenderingObject("Debug specular lightprobes", game, camera,
+					new Rendering::RenderingObject("Debug specular lightprobes", scene->objects.size(), game, camera,
 						std::unique_ptr<Model>(new Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), true, true)
 					)
 			);

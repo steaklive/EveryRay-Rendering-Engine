@@ -175,7 +175,7 @@ namespace Library
 		indexSubResourceData.pSysMem = &mIndices[0];
 		if (FAILED(mModel.GetGame().Direct3DDevice()->CreateBuffer(&indexBufferDesc, &indexSubResourceData, indexBuffer)))
 		{
-			throw GameException("ID3D11Device::CreateBuffer() failed.");
+			throw GameException("ID3D11Device::CreateBuffer() failed during the creation of the index buffer in Mesh.");
 		}
 	}
 
