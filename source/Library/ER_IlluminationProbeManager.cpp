@@ -113,6 +113,10 @@ namespace Library
 			mDiffuseProbesCountY = (maxBounds.y - minBounds.y) / DISTANCE_BETWEEN_DIFFUSE_PROBES;
 			mDiffuseProbesCountZ = (maxBounds.z - minBounds.z) / DISTANCE_BETWEEN_DIFFUSE_PROBES;
 			mDiffuseProbesCountTotal = mDiffuseProbesCountX * mDiffuseProbesCountY * mDiffuseProbesCountZ;
+			mDiffuseProbes.reserve(mDiffuseProbesCountTotal);
+			
+			for (size_t i = 0; i < mDiffuseProbesCountTotal; i++)
+				mDiffuseProbes.emplace_back(new ER_LightProbe(game, light, shadowMapper, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE));
 
 			//simple 3D grid distribution
 			{
@@ -127,7 +131,8 @@ namespace Library
 								minBounds.y + probesY * DISTANCE_BETWEEN_DIFFUSE_PROBES,
 								minBounds.z + probesZ * DISTANCE_BETWEEN_DIFFUSE_PROBES);
 							int index = probesY * (mDiffuseProbesCountX * mDiffuseProbesCountZ) + probesX * mDiffuseProbesCountZ + probesZ;
-							mDiffuseProbes.emplace_back(new ER_LightProbe(game, light, shadowMapper, pos, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE, index));
+							mDiffuseProbes[index]->SetIndex(index);
+							mDiffuseProbes[index]->SetPosition(pos);
 							mDiffuseProbes[index]->SetShaderInfoForConvolution(mConvolutionVS, mConvolutionPS, mInputLayout, mLinearSamplerState);
 						}
 					}
@@ -158,6 +163,10 @@ namespace Library
 			mDiffuseProbeRenderingObject->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::debugLightProbeMaterialName,
 				[&](int meshIndex) { UpdateDebugLightProbeMaterialVariables(mDiffuseProbeRenderingObject, meshIndex, DIFFUSE_PROBE); });
 
+			mDiffuseCubemapFacesRT = new CustomRenderTarget(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
+				D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1, -1, CUBEMAP_FACES_COUNT, true);
+			mDiffuseCubemapFacesConvolutedRT = new CustomRenderTarget(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
+				D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1, -1, CUBEMAP_FACES_COUNT, true);
 			mDiffuseCubemapArrayRT = new CustomRenderTarget(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
 				D3D11_BIND_SHADER_RESOURCE, 1, -1, CUBEMAP_FACES_COUNT, true, MaxNonCulledDiffuseProbesCount);
 		}
@@ -168,6 +177,9 @@ namespace Library
 			mSpecularProbesCountY = (maxBounds.y - minBounds.y) / DISTANCE_BETWEEN_SPECULAR_PROBES;
 			mSpecularProbesCountZ = (maxBounds.z - minBounds.z) / DISTANCE_BETWEEN_SPECULAR_PROBES;
 			mSpecularProbesCountTotal = mSpecularProbesCountX * mSpecularProbesCountY * mSpecularProbesCountZ;
+			mSpecularProbes.reserve(mSpecularProbesCountTotal);
+			for (size_t i = 0; i < mSpecularProbesCountTotal; i++)
+				mSpecularProbes.emplace_back(new ER_LightProbe(game, light, shadowMapper, SPECULAR_PROBE_SIZE, SPECULAR_PROBE));
 
 			//simple 3D grid distribution
 			{
@@ -182,7 +194,8 @@ namespace Library
 								minBounds.y + probesY * DISTANCE_BETWEEN_SPECULAR_PROBES,
 								minBounds.z + probesZ * DISTANCE_BETWEEN_SPECULAR_PROBES);
 							int index = probesY * (mSpecularProbesCountX * mSpecularProbesCountZ) + probesX * mSpecularProbesCountZ + probesZ;
-							mSpecularProbes.emplace_back(new ER_LightProbe(game, light, shadowMapper, pos, SPECULAR_PROBE_SIZE, SPECULAR_PROBE, index));
+							mSpecularProbes[index]->SetIndex(index);
+							mSpecularProbes[index]->SetPosition(pos);
 							mSpecularProbes[index]->SetShaderInfoForConvolution(mConvolutionVS, mConvolutionPS, mInputLayout, mLinearSamplerState);
 						}
 					}
@@ -213,10 +226,19 @@ namespace Library
 			mSpecularProbeRenderingObject->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::debugLightProbeMaterialName,
 				[&](int meshIndex) { UpdateDebugLightProbeMaterialVariables(mSpecularProbeRenderingObject, meshIndex, SPECULAR_PROBE); });
 
+			mSpecularCubemapFacesRT = new CustomRenderTarget(game.Direct3DDevice(), SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
+				D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
+			mSpecularCubemapFacesConvolutedRT = new CustomRenderTarget(game.Direct3DDevice(), SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
+				D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
 			mSpecularCubemapArrayRT = new CustomRenderTarget(game.Direct3DDevice(), SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
 				D3D11_BIND_SHADER_RESOURCE, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true, MaxNonCulledSpecularProbesCount);
 		}
-		
+
+		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
+		{
+			mDiffuseCubemapDepthBuffers[i] = DepthTarget::Create(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
+			mSpecularCubemapDepthBuffers[i] = DepthTarget::Create(game.Direct3DDevice(), SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
+		}
 	}
 
 	ER_IlluminationProbeManager::~ER_IlluminationProbeManager()
@@ -231,16 +253,48 @@ namespace Library
 		ReleaseObject(mConvolutionPS);
 		ReleaseObject(mInputLayout);
 		ReleaseObject(mLinearSamplerState);
+		DeleteObject(mDiffuseCubemapFacesRT);
+		DeleteObject(mDiffuseCubemapFacesConvolutedRT);
+		DeleteObject(mSpecularCubemapFacesRT);
+		DeleteObject(mSpecularCubemapFacesConvolutedRT);
+		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
+		{	
+			DeleteObject(mDiffuseCubemapDepthBuffers[i]);
+			DeleteObject(mSpecularCubemapDepthBuffers[i]);
+		}
 	}
 
 	void ER_IlluminationProbeManager::ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox)
 	{
+		int numThreads = std::thread::hardware_concurrency();
+		assert(numThreads > 0);
+
 		if (!mDiffuseProbesReady)
 		{
 			std::wstring diffuseProbesPath = mLevelPath + L"diffuse_probes\\";
-			for (auto& lightProbe : mDiffuseProbes)
-				lightProbe->ComputeOrLoad(game, gameTime, aObjects, mQuadRenderer, skybox, diffuseProbesPath);
-		
+			
+			std::vector<std::thread> threads;
+			threads.reserve(numThreads);
+
+			int probesPerThread = mDiffuseProbes.size() / numThreads;
+
+			for (int i = 0; i < numThreads; i++)
+			{
+				threads.push_back(std::thread([&, diffuseProbesPath, i]
+				{ 
+					int endRange = (i < numThreads - 1) ? (i + 1) * probesPerThread : mDiffuseProbes.size();
+					for (int j = i * probesPerThread; j < endRange; j++)
+						mDiffuseProbes[j]->LoadProbeFromDisk(game, diffuseProbesPath);
+				}));
+			}
+			for (auto& t : threads) t.join();
+
+			for (auto& probe : mDiffuseProbes)
+			{
+				if (!probe->IsLoadedFromDisk())
+					probe->Compute(game, gameTime, mDiffuseCubemapFacesRT, mDiffuseCubemapFacesConvolutedRT, mDiffuseCubemapDepthBuffers, diffuseProbesPath, aObjects, mQuadRenderer, skybox);
+			}
+			
 			mDiffuseProbesReady = true;
 		}
 
@@ -248,9 +302,28 @@ namespace Library
 		{
 			std::wstring specularProbesPath = mLevelPath + L"specular_probes\\";
 
-			for (auto& lightProbe : mSpecularProbes)
-				lightProbe->ComputeOrLoad(game, gameTime, aObjects, mQuadRenderer, skybox, specularProbesPath);
+			std::vector<std::thread> threads;
+			int numThreads = std::thread::hardware_concurrency();
+			threads.reserve(numThreads);
 
+			int probesPerThread = mSpecularProbes.size() / numThreads;
+
+			for (int i = 0; i < numThreads; i++)
+			{
+				threads.push_back(std::thread([&, specularProbesPath, i]
+				{
+					int endRange = (i < numThreads - 1) ? (i + 1) * probesPerThread : mSpecularProbes.size();
+					for (int j = i * probesPerThread; j < endRange; j++)
+						mSpecularProbes[j]->LoadProbeFromDisk(game, specularProbesPath);
+				}));
+			}
+			for (auto& t : threads) t.join();
+
+			for (auto& probe : mSpecularProbes)
+			{
+				if (!probe->IsLoadedFromDisk())
+					probe->Compute(game, gameTime, mSpecularCubemapFacesRT, mSpecularCubemapFacesConvolutedRT, mSpecularCubemapDepthBuffers, specularProbesPath, aObjects, mQuadRenderer, skybox);
+			}
 			mSpecularProbesReady = true;
 		}
 	}
@@ -404,31 +477,23 @@ namespace Library
 		}
 	}
 
-	ER_LightProbe::ER_LightProbe(Game& game, DirectionalLight& light, ShadowMapper& shadowMapper, const XMFLOAT3& position, int size, ER_ProbeType aType, int index)
-		: mPosition(position)
-		, mSize(size)
+	ER_LightProbe::ER_LightProbe(Game& game, DirectionalLight& light, ShadowMapper& shadowMapper, int size, ER_ProbeType aType)
+		: mSize(size)
 		, mDirectionalLight(light)
 		, mShadowMapper(shadowMapper)
 		, mProbeType(aType)
-		, mIndex(index)
 	{
-
-		mCubemapFacesRT = new CustomRenderTarget(game.Direct3DDevice(), size, size, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
-			D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, (aType == SPECULAR_PROBE) ? SPECULAR_PROBE_MIP_COUNT : 1, -1, CUBEMAP_FACES_COUNT, true);
-		mCubemapFacesConvolutedRT = new CustomRenderTarget(game.Direct3DDevice(), size, size, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
-			D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, (aType == SPECULAR_PROBE) ? SPECULAR_PROBE_MIP_COUNT : 1, -1, CUBEMAP_FACES_COUNT, true);
-
+		mCubemapTexture = new CustomRenderTarget(game.Direct3DDevice(), size, size, 1, DXGI_FORMAT_R8G8B8A8_UNORM, 0,
+			(aType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
+		
 		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
 		{
 			mCubemapCameras[i] = new Camera(game, XM_PIDIV2, 1.0f, 0.1f, 100000.0f);
 			mCubemapCameras[i]->Initialize();
-			mCubemapCameras[i]->SetPosition(mPosition);
 			mCubemapCameras[i]->SetDirection(cubemapFacesDirections[i]);
 			mCubemapCameras[i]->SetUp(cubemapUpDirections[i]);
 			mCubemapCameras[i]->UpdateViewMatrix(true); //fix for mirrored result due to right-hand coordinate system
 			mCubemapCameras[i]->UpdateProjectionMatrix(true); //fix for mirrored result due to right-hand coordinate system
-
-			mDepthBuffers[i] = DepthTarget::Create(game.Direct3DDevice(), size, size, 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
 		}
 
 		mConvolutionCB.Initialize(game.Direct3DDevice());
@@ -437,29 +502,23 @@ namespace Library
 	ER_LightProbe::~ER_LightProbe()
 	{
 		ReleaseObject(mLinearSamplerState);
-		DeleteObject(mCubemapFacesRT);
-		DeleteObject(mCubemapFacesConvolutedRT);
+		DeleteObject(mCubemapTexture);
 		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
 		{
 			DeleteObject(mCubemapCameras[i]);
-			DeleteObject(mDepthBuffers[i]);
 		}
 		mConvolutionCB.Release();
 	}
 
-	void ER_LightProbe::ComputeOrLoad(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, QuadRenderer* quadRenderer, Skybox* skybox,
-		const std::wstring& levelPath, bool forceRecompute)
+	void ER_LightProbe::SetPosition(const XMFLOAT3& pos)
 	{
-		if (mIsComputed && !forceRecompute)
-			return;
-
-		bool alreadyExistsInFile = false;
-
-		if (!forceRecompute)
-			alreadyExistsInFile = LoadProbeFromDisk(game, levelPath);
-
-		if (!alreadyExistsInFile || forceRecompute)
-			Compute(game, gameTime, levelPath, objectsToRender, quadRenderer, skybox);
+		mPosition = pos;
+		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
+		{
+			mCubemapCameras[i]->SetPosition(pos);
+			mCubemapCameras[i]->UpdateViewMatrix(true); //fix for mirrored result due to right-hand coordinate system
+			mCubemapCameras[i]->UpdateProjectionMatrix(true); //fix for mirrored result due to right-hand coordinate system
+		}
 	}
 
 	void ER_LightProbe::CPUCullAgainstProbeBoundingVolume(const XMFLOAT3& aMin, const XMFLOAT3& aMax)
@@ -470,9 +529,10 @@ namespace Library
 			(mPosition.z > aMax.z || mPosition.z < aMin.z);
 	}
 
-	void ER_LightProbe::Compute(Game& game, const GameTime& gameTime, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, QuadRenderer* quadRenderer, Skybox* skybox)
+	void ER_LightProbe::Compute(Game& game, const GameTime& gameTime, CustomRenderTarget* aTextureNonConvoluted, CustomRenderTarget* aTextureConvoluted,
+		DepthTarget** aDepthBuffers, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, QuadRenderer* quadRenderer, Skybox* skybox)
 	{
-		if (mIsComputed)
+		if (mIsProbeLoadedFromDisk)
 			return;
 
 		std::string materialListenerName = ((mProbeType == DIFFUSE_PROBE) ? "diffuse_" : "specular_") + MaterialHelper::forwardLightingForProbesMaterialName;
@@ -491,8 +551,8 @@ namespace Library
 		context->RSSetViewports(1, &newViewPort);
 		
 		//sadly, we can't combine or multi-thread these two functions, because of the artifacts on edges of the convoluted faces of the cubemap...
-		DrawGeometryToProbe(game, gameTime, objectsToRender, skybox);
-		ConvoluteProbe(game, quadRenderer);
+		DrawGeometryToProbe(game, gameTime, aTextureNonConvoluted, aDepthBuffers, objectsToRender, skybox);
+		ConvoluteProbe(game, quadRenderer, aTextureNonConvoluted, aTextureConvoluted);
 
 		context->RSSetViewports(1, &oldViewPort);
 
@@ -500,11 +560,12 @@ namespace Library
 			for (auto& object : objectsToRender)
 				object.second->MeshMaterialVariablesUpdateEvent->RemoveListener(materialListenerName + "_" + std::to_string(cubeMapFaceIndex));
 
-		SaveProbeOnDisk(game, levelPath);
-		mIsComputed = true;
+		SaveProbeOnDisk(game, levelPath, aTextureConvoluted);
+		mIsProbeLoadedFromDisk = true;
 	}
 
-	void ER_LightProbe::DrawGeometryToProbe(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox)
+	void ER_LightProbe::DrawGeometryToProbe(Game& game, const GameTime& gameTime, CustomRenderTarget* aTextureNonConvoluted, DepthTarget** aDepthBuffers,
+		const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox)
 	{
 		auto context = game.Direct3DDeviceContext();
 		float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -515,9 +576,9 @@ namespace Library
 		{
 			// Set the render target and clear it.
 			int rtvShift = (mProbeType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT;
-			context->OMSetRenderTargets(1, &mCubemapFacesRT->getRTVs()[cubeMapFace * rtvShift], mDepthBuffers[cubeMapFace]->getDSV());
-			context->ClearRenderTargetView(mCubemapFacesRT->getRTVs()[cubeMapFace], clearColor);
-			context->ClearDepthStencilView(mDepthBuffers[cubeMapFace]->getDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+			context->OMSetRenderTargets(1, &aTextureNonConvoluted->getRTVs()[cubeMapFace * rtvShift], aDepthBuffers[cubeMapFace]->getDSV());
+			context->ClearRenderTargetView(aTextureNonConvoluted->getRTVs()[cubeMapFace], clearColor);
+			context->ClearDepthStencilView(aDepthBuffers[cubeMapFace]->getDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 			//rendering objects and sky
 			{
@@ -545,10 +606,10 @@ namespace Library
 		}
 
 		if (mProbeType == SPECULAR_PROBE)
-			context->GenerateMips(mCubemapFacesRT->getSRV());
+			context->GenerateMips(aTextureNonConvoluted->getSRV());
 	}
 
-	void ER_LightProbe::ConvoluteProbe(Game& game, QuadRenderer* quadRenderer)
+	void ER_LightProbe::ConvoluteProbe(Game& game, QuadRenderer* quadRenderer, CustomRenderTarget* aTextureNonConvoluted, CustomRenderTarget* aTextureConvoluted)
 	{
 		int mipCount = -1;
 		if (mProbeType == SPECULAR_PROBE)
@@ -560,7 +621,7 @@ namespace Library
 		int totalMips = (mipCount == -1) ? 1 : mipCount;
 		int rtvShift = (mProbeType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT;
 
-		ID3D11ShaderResourceView* SRVs[1] = { mCubemapFacesRT->getSRV() };
+		ID3D11ShaderResourceView* SRVs[1] = { aTextureNonConvoluted->getSRV() };
 		ID3D11SamplerState* SSs[1] = { mLinearSamplerState };
 
 		for (int cubeMapFace = 0; cubeMapFace < CUBEMAP_FACES_COUNT; cubeMapFace++)
@@ -576,8 +637,8 @@ namespace Library
 				CD3D11_VIEWPORT newViewPort(0.0f, 0.0f, static_cast<float>(currentSize), static_cast<float>(currentSize));
 				context->RSSetViewports(1, &newViewPort);
 
-				context->OMSetRenderTargets(1, &mCubemapFacesConvolutedRT->getRTVs()[cubeMapFace * rtvShift + mip], NULL);
-				context->ClearRenderTargetView(mCubemapFacesConvolutedRT->getRTVs()[cubeMapFace * rtvShift + mip], clearColor);
+				context->OMSetRenderTargets(1, &aTextureConvoluted->getRTVs()[cubeMapFace * rtvShift + mip], NULL);
+				context->ClearRenderTargetView(aTextureConvoluted->getRTVs()[cubeMapFace * rtvShift + mip], clearColor);
 
 				ID3D11Buffer* CBs[1] = { mConvolutionCB.Buffer() };
 
@@ -600,54 +661,53 @@ namespace Library
 
 	bool ER_LightProbe::LoadProbeFromDisk(Game& game, const std::wstring& levelPath)
 	{
-		bool result = false;
 		std::wstring probeName = GetConstructedProbeName(levelPath);
 
-		ID3D11ShaderResourceView* srv = mCubemapFacesConvolutedRT->getSRV();
+		ID3D11Texture2D* tex2d = NULL;
+		ID3D11ShaderResourceView* srv = NULL;
 		ID3D11Resource* resourceTex = NULL;
 
-		//[WARNING] CreateDDSTextureFromFile() auto-generates mips, so we need to be careful when doing GPU copy of the resource...
-		if (FAILED(DirectX::CreateDDSTextureFromFile(game.Direct3DDevice(), game.Direct3DDeviceContext(), probeName.c_str(), &resourceTex, &srv)))
+		if (FAILED(DirectX::CreateDDSTextureFromFile(game.Direct3DDevice(), probeName.c_str(), &resourceTex, &srv)))
 		{
 			//std::wstring status = L"Failed to load DDS probe texture: " + probeName;
 			//TODO output to LOG (not exception)
-			result = false;
+			mIsProbeLoadedFromDisk = false;
 		}
 		else
 		{
-			// Copying loaded resource into the convoluted resource of the probe
-			// 
-			// [WARNING] For diffuse we calculate subresource with src mip count = 6 due to auto generated mips in the src texture...
-			// [WARNING] DirectX::SaveToDDSFile() is the reason for such behaviour which can not be controlled :(
-
-			const int srcDiffuseAutogeneratedMipCount = 6;
 			
-			int mips = (mProbeType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT;
-
-			for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
-			{
-				for (int mip = 0; mip < mips; mip++)
-				{
-					game.Direct3DDeviceContext()->CopySubresourceRegion(mCubemapFacesConvolutedRT->getTexture2D(),
-						D3D11CalcSubresource(mip, i, mips), 0, 0, 0, resourceTex,
-						D3D11CalcSubresource(mip, i, (mProbeType == DIFFUSE_PROBE) ? srcDiffuseAutogeneratedMipCount : mips), NULL);
-				}
+			if (FAILED(resourceTex->QueryInterface(IID_ID3D11Texture2D, (void**)&tex2d))) {
+				mIsProbeLoadedFromDisk = false;
+				return false;
 			}
 
-			mCubemapFacesConvolutedRT->SetSRV(srv);
+			// Copying loaded resource into the convoluted resource of the probe
+			//int mips = (mProbeType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT;
+			//const int srcDiffuseAutogeneratedMipCount = 6;
+			//for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
+			//{
+			//	for (int mip = 0; mip < mips; mip++)
+			//	{
+			//		game.Direct3DDeviceContext()->CopySubresourceRegion(mCubemapTexture->getTexture2D(),
+			//			D3D11CalcSubresource(mip, i, mips), 0, 0, 0, resourceTex,
+			//			D3D11CalcSubresource(mip, i, (mProbeType == DIFFUSE_PROBE) ? srcDiffuseAutogeneratedMipCount : mips), NULL);
+			//	}
+			//}
+
+			mCubemapTexture->SetSRV(srv);
+			mCubemapTexture->SetTexture2D(tex2d);
 
 			resourceTex->Release();
 
-			result = true;
-			mIsComputed = true;
+			mIsProbeLoadedFromDisk = true;
 		}
-		return result;
+		return mIsProbeLoadedFromDisk;
 	}
 
-	void ER_LightProbe::SaveProbeOnDisk(Game& game, const std::wstring& levelPath)
+	void ER_LightProbe::SaveProbeOnDisk(Game& game, const std::wstring& levelPath, CustomRenderTarget* aTextureConvoluted)
 	{
 		DirectX::ScratchImage tempImage;
-		HRESULT res = DirectX::CaptureTexture(game.Direct3DDevice(), game.Direct3DDeviceContext(), mCubemapFacesConvolutedRT->getTexture2D(), tempImage);
+		HRESULT res = DirectX::CaptureTexture(game.Direct3DDevice(), game.Direct3DDeviceContext(), aTextureConvoluted->getTexture2D(), tempImage);
 		if (FAILED(res))
 			throw GameException("Failed to capture a probe texture when saving!", res);
 
@@ -671,9 +731,9 @@ namespace Library
 			fileName += L"specular_probe";
 
 		fileName += L"_"
-			+ std::to_wstring(static_cast<int>(mCubemapCameras[0]->Position().x)) + L"_"
-			+ std::to_wstring(static_cast<int>(mCubemapCameras[0]->Position().y)) + L"_"
-			+ std::to_wstring(static_cast<int>(mCubemapCameras[0]->Position().z)) + L".dds";
+			+ std::to_wstring(static_cast<int>(mPosition.x)) + L"_"
+			+ std::to_wstring(static_cast<int>(mPosition.y)) + L"_"
+			+ std::to_wstring(static_cast<int>(mPosition.z)) + L".dds";
 
 		return fileName;
 	}

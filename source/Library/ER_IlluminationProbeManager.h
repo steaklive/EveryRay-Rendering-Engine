@@ -49,15 +49,15 @@ namespace Library
 	{
 		using LightProbeRenderingObjectsInfo = std::map<std::string, Rendering::RenderingObject*>;
 	public:
-		ER_LightProbe(Game& game, DirectionalLight& light, ShadowMapper& shadowMapper, const XMFLOAT3& position, int size, ER_ProbeType aType, int index);
+		ER_LightProbe(Game& game, DirectionalLight& light, ShadowMapper& shadowMapper, int size, ER_ProbeType aType);
 		~ER_LightProbe();
 
-		void ComputeOrLoad(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, QuadRenderer* quadRenderer, Skybox* skybox, const std::wstring& levelPath, bool forceRecompute = false);
+		void Compute(Game& game, const GameTime& gameTime, CustomRenderTarget* aTextureNonConvoluted, CustomRenderTarget* aTextureConvoluted, DepthTarget** aDepthBuffers,
+			const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, QuadRenderer* quadRenderer, Skybox* skybox = nullptr);
 		void UpdateProbe(const GameTime& gameTime);
-		void SetPosition(const XMFLOAT3& position) { mPosition = position; }
-		const XMFLOAT3& GetPosition() { return mPosition; }
-		ID3D11ShaderResourceView* GetCubemapSRV() const { return mCubemapFacesConvolutedRT->getSRV(); }
-		ID3D11Texture2D* GetCubemapTexture2D() const { return mCubemapFacesConvolutedRT->getTexture2D(); }
+		bool LoadProbeFromDisk(Game& game, const std::wstring& levelPath);
+		ID3D11ShaderResourceView* GetCubemapSRV() const { return mCubemapTexture->getSRV(); }
+		ID3D11Texture2D* GetCubemapTexture2D() const { return mCubemapTexture->getTexture2D(); }
 		
 		//TODO refactor
 		void SetShaderInfoForConvolution(ID3D11VertexShader* vs, ID3D11PixelShader* ps, ID3D11InputLayout* il, ID3D11SamplerState* ss)
@@ -68,18 +68,21 @@ namespace Library
 			mLinearSamplerState = ss;
 		}
 
+		void SetPosition(const XMFLOAT3& pos);
+		const XMFLOAT3& GetPosition() { return mPosition; }
+		void SetIndex(int index) { mIndex = index; }
+
 		void CPUCullAgainstProbeBoundingVolume(const XMFLOAT3& aMin, const XMFLOAT3& aMax);
-		bool IsCulled() { return mIsCulled; };
+		bool IsCulled() { return mIsCulled; }
+		bool IsLoadedFromDisk() { return mIsProbeLoadedFromDisk; }
 	private:
-		void Compute(Game& game, const GameTime& gameTime, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, QuadRenderer* quadRenderer, Skybox* skybox = nullptr);
-		void DrawGeometryToProbe(Game& game, const GameTime& gameTime, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox);
-		void ConvoluteProbe(Game& game, QuadRenderer* quadRenderer);
+		void DrawGeometryToProbe(Game& game, const GameTime& gameTime, CustomRenderTarget* aTextureNonConvoluted, DepthTarget** aDepthBuffers, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox);
+		void ConvoluteProbe(Game& game, QuadRenderer* quadRenderer, CustomRenderTarget* aTextureNonConvoluted, CustomRenderTarget* aTextureConvoluted);
 		
 		void PrecullObjectsPerFace();
 		void UpdateStandardLightingPBRProbeMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int cubeFaceIndex);
 		
-		void SaveProbeOnDisk(Game& game, const std::wstring& levelPath);
-		bool LoadProbeFromDisk(Game& game, const std::wstring& levelPath);
+		void SaveProbeOnDisk(Game& game, const std::wstring& levelPath, CustomRenderTarget* aTextureConvoluted);
 		std::wstring GetConstructedProbeName(const std::wstring& levelPath);
 		
 		ER_ProbeType mProbeType;
@@ -88,11 +91,9 @@ namespace Library
 		ShadowMapper& mShadowMapper;
 
 		LightProbeRenderingObjectsInfo mObjectsToRenderPerFace[CUBEMAP_FACES_COUNT];
-		CustomRenderTarget* mCubemapFacesRT;
-		CustomRenderTarget* mCubemapFacesConvolutedRT;
-		DepthTarget* mDepthBuffers[CUBEMAP_FACES_COUNT];
 		Camera* mCubemapCameras[CUBEMAP_FACES_COUNT];
 
+		CustomRenderTarget* mCubemapTexture = nullptr;
 		ConstantBuffer<LightProbeCBufferData::ProbeConvolutionCB> mConvolutionCB;
 
 		ID3D11SamplerState* mLinearSamplerState = nullptr; //TODO remove
@@ -103,6 +104,7 @@ namespace Library
 		XMFLOAT3 mPosition;
 		int mSize;
 		int mIndex;
+		bool mIsProbeLoadedFromDisk = false;
 		bool mIsComputed = false;
 		bool mIsCulled = false; //i.e., we can cull-check against custom bounding box positioned at main camera
 	};
@@ -114,6 +116,7 @@ namespace Library
 		ER_IlluminationProbeManager(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ShadowMapper& shadowMapper);
 		~ER_IlluminationProbeManager();
 
+		bool AreProbesReady() { return mDiffuseProbesReady && mSpecularProbesReady; }
 		void SetLevelPath(const std::wstring& aPath) { mLevelPath = aPath; };
 		void ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox = nullptr);
 		void DrawDebugProbes(ER_ProbeType aType);
@@ -142,6 +145,13 @@ namespace Library
 
 		CustomRenderTarget* mDiffuseCubemapArrayRT;
 		CustomRenderTarget* mSpecularCubemapArrayRT;
+
+		CustomRenderTarget* mDiffuseCubemapFacesRT;
+		CustomRenderTarget* mDiffuseCubemapFacesConvolutedRT;
+		CustomRenderTarget* mSpecularCubemapFacesRT;
+		CustomRenderTarget* mSpecularCubemapFacesConvolutedRT;
+		DepthTarget* mDiffuseCubemapDepthBuffers[CUBEMAP_FACES_COUNT];
+		DepthTarget* mSpecularCubemapDepthBuffers[CUBEMAP_FACES_COUNT];
 
 		bool mDiffuseProbesReady = false;
 		bool mSpecularProbesReady = false;

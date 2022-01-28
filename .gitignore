@@ -14,16 +14,18 @@ bin/x64/Release/Library.lib
 *.obj
 !content/models/*.obj
 
-# ignore light probes in levels
-content/levels/testScene/diffuse_probes
-content/levels/testScene/specular_probes
+# ignore generated light probes in levels
+content/levels/testScene/diffuse_probes/*
+content/levels/testScene/specular_probes/*
+!content/levels/testScene/diffuse_probes/empty.file
+!content/levels/testScene/specular_probes/empty.file
 
-# taken from NVIDIA GameWorks
+# taken from NVIDIA GameWorks - VolumetricLight
 content/shaders/VolumetricLight
 source/Game/VolumetricLightingDemo.h
 source/Game/VolumetricLightingDemo.cpp
 
-# taken from NVIDIA GameWorks
+# taken from NVIDIA GameWorks - WaterSimulation
 content/shaders/WaterSimulation
 source/Game/WaterSimulationDemo.cpp
 source/Game/WaterSimulationDemo.h

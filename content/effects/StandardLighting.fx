@@ -323,7 +323,6 @@ float3 IndirectLightingPBR(float3 diffuseAlbedo, float3 normalWS, float3 positio
     float ao = 1.0f;
 
     float3 irradiance = IrradianceDiffuseTexture.SampleLevel(SamplerLinear, normalWS, 0).rgb;
-	return irradiance;
     
     float3 F = Schlick_Fresnel_UE(F0, nDotV);
     float3 kD = float3(1.0f, 1.0f, 1.0f) - F;
@@ -332,7 +331,7 @@ float3 IndirectLightingPBR(float3 diffuseAlbedo, float3 normalWS, float3 positio
 
     float3 indirectSpecularLighting = ApproximateSpecularIBL(F, reflectDir, nDotV, roughness);
     
-    return (indirectDiffuseLighting/* + indirectSpecularLighting*/) * ao;
+    return (indirectDiffuseLighting + indirectSpecularLighting) * ao;
 }
 
 float3 GetFinalPBRColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadow = -1)

@@ -1,7 +1,7 @@
 #include "..\Library\CustomRenderTarget.h"
 
 CustomRenderTarget::CustomRenderTarget(ID3D11Device* device, UINT width, UINT height, UINT samples, DXGI_FORMAT format, UINT bindFlags,
-	int mips, int depth, int arraySize, bool isCubemap, int cubemapArraySize)
+	int mips, int depth, int arraySize, bool isCubemap, int cubemapArraySize) 
 {
 	ID3D11Texture2D* tex2D = nullptr;
 	ID3D11Texture3D* tex3D = nullptr;
@@ -37,17 +37,12 @@ CustomRenderTarget::CustomRenderTarget(ID3D11Device* device, UINT width, UINT he
 	else {
 		CD3D11_TEXTURE2D_DESC texDesc;
 		texDesc.ArraySize = (mIsCubemap && cubemapArraySize > 0) ? 6 * cubemapArraySize : arraySize;
-
-		texDesc.BindFlags = bindFlags;
-		if (samples == 1)
-			texDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
-		
+		texDesc.BindFlags = bindFlags;	
 		texDesc.MiscFlags = 0;
 		if (mIsCubemap)
 			texDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
 		if (mMipLevels > 1 && (D3D11_BIND_RENDER_TARGET & bindFlags) != 0)
 			texDesc.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
-		
 		texDesc.CPUAccessFlags = 0;
 		texDesc.Format = format;
 		texDesc.Width = width;

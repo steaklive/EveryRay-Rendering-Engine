@@ -568,7 +568,7 @@ namespace Library {
 			material->MetallicTexture() << obj->GetTextureData(meshIndex).MetallicMap;
 			material->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, NUM_SHADOW_CASCADES);
 			material->IrradianceDiffuseTexture() << mProbesManager->GetDiffuseLightProbe(0)->GetCubemapSRV(); //TODO
-			material->IrradianceSpecularTexture() << mProbesManager->GetDiffuseLightProbe(0)->GetCubemapSRV();//TODO
+			material->IrradianceSpecularTexture() << mProbesManager->GetSpecularLightProbe(0)->GetCubemapSRV();//TODO
 			material->IntegrationTexture() << mIntegrationMapTextureSRV; //TODO
 		}
 	}
@@ -636,8 +636,8 @@ namespace Library {
 				gbuffer->GetNormals()->getSRV(),
 				gbuffer->GetPositions()->getSRV(),
 				gbuffer->GetExtraBuffer()->getSRV(),
-				mIrradianceDiffuseTextureSRV,
-				mIrradianceSpecularTextureSRV,
+				/*mIrradianceDiffuseTextureSRV,*/mProbesManager->GetDiffuseLightProbe(0)->GetCubemapSRV(),
+				/*mIrradianceSpecularTextureSRV,*/mProbesManager->GetSpecularLightProbe(0)->GetCubemapSRV(),
 				mIntegrationMapTextureSRV
 			};
 			for (int i = 0; i < NUM_SHADOW_CASCADES; i++)

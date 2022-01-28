@@ -227,6 +227,6 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     
     float shadow = GetShadow(worldPos);
     
-    float3 color = (directLighting * shadow)/* + indirectLighting*/;
+    float3 color = (directLighting * shadow) + indirectLighting;
     OutputTexture[inPos] += float4(color, 1.0f);
 }
