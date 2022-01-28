@@ -27,6 +27,7 @@ namespace Library {
 	void DemoLevel::UpdateLevel(const GameTime& gameTime)
 	{
 		mSkybox->Update(gameTime);
+		mSkybox->UpdateSun(gameTime);
 		mGrid->Update(gameTime);
 		mPostProcessingStack->Update();
 		mVolumetricClouds->Update(gameTime);

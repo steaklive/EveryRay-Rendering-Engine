@@ -209,7 +209,8 @@ namespace Library
 	void RenderableAABB::ResizeAABB()
 	{
 
-		if (mVertices.size() != 8 || mAABB->size()!=2) return;
+		if (mVertices.size() != 8 || mAABB->size()!= 2)
+			return;
 
 		// update the vertices of AABB (due to tranformation we had to recalculate AABB)
 		mVertices.at(0) = (XMFLOAT3(mAABB->at(0).x, mAABB->at(1).y, mAABB->at(0).z));
