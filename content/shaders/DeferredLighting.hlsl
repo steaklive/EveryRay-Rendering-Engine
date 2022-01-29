@@ -187,13 +187,10 @@ float3 IndirectLightingPBR(float3 diffuseAlbedo, float3 normalWS, float3 positio
     float3 reflectDir = normalize(reflect(-viewDir, normalWS));
     float ao = 1.0f;
 
-    float3 irradiance = IrradianceDiffuseTexture.SampleLevel(SamplerLinear, normalWS, 0).rgb;
-    
-    float3 F = Schlick_Fresnel_UE(F0, nDotV);
-    float3 kD = float3(1.0f, 1.0f, 1.0f) - F;
-    kD *= float3(1.0f - metalness, 1.0f - metalness, 1.0f - metalness);
-    float3 indirectDiffuseLighting = kD * irradiance * diffuseAlbedo;
+    float3 irradiance = IrradianceDiffuseTexture.SampleLevel(SamplerLinear, normalWS, 0).rgb / Pi;
+    float3 indirectDiffuseLighting = irradiance * diffuseAlbedo * float3(1.0f - metalness, 1.0f - metalness, 1.0f - metalness);
 
+    float3 F = Schlick_Fresnel_UE(F0, nDotV);
     float3 indirectSpecularLighting = ApproximateSpecularIBL(F, reflectDir, nDotV, roughness);
     
     return (indirectDiffuseLighting + indirectSpecularLighting) * ao;
@@ -228,5 +225,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     float shadow = GetShadow(worldPos);
     
     float3 color = (directLighting * shadow) + indirectLighting;
+    color = color / (color + float3(1.0f, 1.0f, 1.0f));
+
     OutputTexture[inPos] += float4(color, 1.0f);
 }

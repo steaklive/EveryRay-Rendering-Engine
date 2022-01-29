@@ -234,6 +234,12 @@ namespace Library
 				D3D11_BIND_SHADER_RESOURCE, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true, MaxNonCulledSpecularProbesCount);
 		}
 
+		// TODO Load a pre-computed Integration Map
+		if (FAILED(DirectX::CreateDDSTextureFromFile(game.Direct3DDevice(), game.Direct3DDeviceContext(),
+			Utility::GetFilePath(L"content\\textures\\skyboxes\\textureBrdf.dds").c_str(), nullptr, &mIntegrationMapTextureSRV)))
+			throw GameException("Failed to create Integration Texture.");
+
+
 		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
 		{
 			mDiffuseCubemapDepthBuffers[i] = DepthTarget::Create(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
@@ -262,6 +268,8 @@ namespace Library
 			DeleteObject(mDiffuseCubemapDepthBuffers[i]);
 			DeleteObject(mSpecularCubemapDepthBuffers[i]);
 		}
+		ReleaseObject(mIntegrationMapTextureSRV);
+
 	}
 
 	void ER_IlluminationProbeManager::ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox)

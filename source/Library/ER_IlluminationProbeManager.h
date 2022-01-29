@@ -125,6 +125,7 @@ namespace Library
 		void UpdateDebugLightProbeMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, ER_ProbeType aType);
 		const ER_LightProbe* GetDiffuseLightProbe(int index) const { return mDiffuseProbes[index]; }
 		const ER_LightProbe* GetSpecularLightProbe(int index) const { return mSpecularProbes[index]; }
+		ID3D11ShaderResourceView* GetIntegrationMap() { return mIntegrationMapTextureSRV; }
 	private:
 		void UpdateProbesByType(Game& game, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds);
 		QuadRenderer* mQuadRenderer = nullptr;
@@ -162,6 +163,8 @@ namespace Library
 		ID3D11PixelShader* mConvolutionPS = nullptr;
 		ID3D11InputLayout* mInputLayout = nullptr; //TODO remove
 		ID3D11SamplerState* mLinearSamplerState = nullptr;
+
+		ID3D11ShaderResourceView* mIntegrationMapTextureSRV; //TEMP
 
 		int mDiffuseProbesCountTotal = 0;
 		int mDiffuseProbesCountX = 0;

@@ -309,7 +309,7 @@ namespace Rendering
 			}
 			loader->Shutdown();
 		}
-		else if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), path.c_str(), nullptr, resource)))
+		else if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), path.c_str(), nullptr, resource)))
 		{
 			std::string status = "Failed to load WIC Texture" + texType;
 			status += errorMessage;

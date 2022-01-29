@@ -33,7 +33,6 @@ namespace Rendering
 		TestSceneDemo(const TestSceneDemo& rhs);
 		TestSceneDemo& operator=(const TestSceneDemo& rhs);
 
-		void UpdateStandardLightingPBRMaterialVariables(const std::string& objectName, int meshIndex);
 		void UpdateDeferredPrepassMaterialVariables(const std::string& objectName, int meshIndex);
 		void UpdateShadow0MaterialVariables(const std::string & objectName, int meshIndex);
 		void UpdateShadow1MaterialVariables(const std::string & objectName, int meshIndex);

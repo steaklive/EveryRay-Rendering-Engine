@@ -24,10 +24,7 @@ namespace Library
 		void SetRotationMatrix(const XMMATRIX& rotationMat);
 		void SetAABB(const std::vector<XMFLOAT3>& aabb);
 
-
 		void UpdateColor(XMFLOAT4 color);
-
-		const std::vector<XMFLOAT3>& GetAABB() { return mModifiedAABB; };
 
 		virtual void Initialize() override;
 		void Update();
@@ -40,13 +37,9 @@ namespace Library
 		RenderableAABB(const RenderableAABB& rhs);
 		RenderableAABB& operator=(const RenderableAABB& rhs);
 
-
 		void InitializeVertexBuffer(const std::vector<XMFLOAT3>& aabb);
 		void InitializeIndexBuffer();
-		
-
 		void ResizeAABB();
-
 
 		static const XMVECTORF32 DefaultColor;
 		static const UINT AABBVertexCount;
@@ -74,9 +67,6 @@ namespace Library
 
 		std::vector<XMFLOAT3> mVertices;
 
-		const std::vector<XMFLOAT3>* mAABB;
-
-		std::vector<XMFLOAT3> mModifiedAABB;
-		std::vector<XMFLOAT3> mModifiedAABB2;
+		ER_AABB mAABB;
 	};
 }

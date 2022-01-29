@@ -82,15 +82,12 @@ namespace Library
 
 	void RenderableAABB::SetAABB(const std::vector<XMFLOAT3>& aabb)
 	{
-		mAABB = &aabb;
+		mAABB = std::make_pair(aabb[0], aabb[1]);
 	}
 
 	void RenderableAABB::InitializeGeometry(const std::vector<XMFLOAT3>& aabb, XMMATRIX matrix)
 	{
-		mAABB = &aabb;
-
-		mModifiedAABB = aabb;
-		mModifiedAABB2 = aabb;
+		mAABB = std::make_pair(aabb[0], aabb[1]);
 
 		XMVECTOR scaleVector;
 		XMVECTOR rotQuatVector;
@@ -133,8 +130,6 @@ namespace Library
 
 	void RenderableAABB::Update()
 	{
-		ResizeAABB();
-
 		XMMATRIX worldMatrix = XMMatrixIdentity();
 		MatrixHelper::SetForward(worldMatrix, mDirection);
 		MatrixHelper::SetUp(worldMatrix, mUp);
@@ -146,18 +141,9 @@ namespace Library
 
 		XMStoreFloat4x4(&mWorldMatrix, worldMatrix);
 
-		//XMVECTOR minAABB = XMLoadFloat3(&mModifiedAABB.at(0));
-		//XMVECTOR maxAABB = XMLoadFloat3(&mModifiedAABB.at(1));
-
-		if (mAABB->size() == 2)
-		{
-			XMVECTOR minAABB = XMVector3Transform(XMLoadFloat3(&mAABB->at(0)), worldMatrix);
-			XMVECTOR maxAABB = XMVector3Transform(XMLoadFloat3(&mAABB->at(1)), worldMatrix);
-
-			XMStoreFloat3(&mModifiedAABB.at(0), minAABB);
-			XMStoreFloat3(&mModifiedAABB.at(1), maxAABB);
-		}
-
+		//mAABB.first = XMVector3Transform(XMLoadFloat3(&mAABB.first), worldMatrix);
+		//mAABB.second = XMVector3Transform(XMLoadFloat3(&mAABB.second), worldMatrix);
+		//ResizeAABB();
 	}
 
 	void RenderableAABB::Draw()
@@ -208,20 +194,18 @@ namespace Library
 
 	void RenderableAABB::ResizeAABB()
 	{
-
-		if (mVertices.size() != 8 || mAABB->size()!= 2)
+		if (mVertices.size() != 8)
 			return;
 
 		// update the vertices of AABB (due to tranformation we had to recalculate AABB)
-		mVertices.at(0) = (XMFLOAT3(mAABB->at(0).x, mAABB->at(1).y, mAABB->at(0).z));
-		mVertices.at(1) = (XMFLOAT3(mAABB->at(1).x, mAABB->at(1).y, mAABB->at(0).z));
-		mVertices.at(2) = (XMFLOAT3(mAABB->at(1).x, mAABB->at(0).y, mAABB->at(0).z));
-		mVertices.at(3) = (XMFLOAT3(mAABB->at(0).x, mAABB->at(0).y, mAABB->at(0).z));
-		mVertices.at(4) = (XMFLOAT3(mAABB->at(0).x, mAABB->at(1).y, mAABB->at(1).z));
-		mVertices.at(5) = (XMFLOAT3(mAABB->at(1).x, mAABB->at(1).y, mAABB->at(1).z));
-		mVertices.at(6) = (XMFLOAT3(mAABB->at(1).x, mAABB->at(0).y, mAABB->at(1).z));
-		mVertices.at(7) = (XMFLOAT3(mAABB->at(0).x, mAABB->at(0).y, mAABB->at(1).z));
-
+		mVertices.at(0) = (XMFLOAT3(mAABB.first.x, mAABB.second.y, mAABB.first.z));
+		mVertices.at(1) = (XMFLOAT3(mAABB.second.x, mAABB.second.y, mAABB.first.z));
+		mVertices.at(2) = (XMFLOAT3(mAABB.second.x, mAABB.first.y, mAABB.first.z));
+		mVertices.at(3) = (XMFLOAT3(mAABB.first.x, mAABB.first.y, mAABB.first.z));
+		mVertices.at(4) = (XMFLOAT3(mAABB.first.x, mAABB.second.y, mAABB.second.z));
+		mVertices.at(5) = (XMFLOAT3(mAABB.second.x, mAABB.second.y, mAABB.second.z));
+		mVertices.at(6) = (XMFLOAT3(mAABB.second.x, mAABB.first.y, mAABB.second.z));
+		mVertices.at(7) = (XMFLOAT3(mAABB.first.x, mAABB.first.y, mAABB.second.z));
 	}
 
 

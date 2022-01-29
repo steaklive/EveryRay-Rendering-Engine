@@ -226,7 +226,7 @@ float4 pixel_shader(VS_OUTPUT IN) : SV_Target
     float shadow = GetShadow(IN.ShadowCoord0, IN.ShadowCoord1, IN.ShadowCoord2, IN.Position.w);
     shadow = clamp(shadow, 0.5f, 1.0f);
     
-    float4 color = albedo * SunColor * float4(shadow, shadow, shadow, 1.0f);
+    float4 color = albedo * SunColor * float4(shadow, shadow, shadow, 1.0f) * SunColor.a;
     color = saturate(color);
 
     return color;

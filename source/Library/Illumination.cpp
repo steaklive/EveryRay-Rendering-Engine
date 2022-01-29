@@ -54,10 +54,6 @@ namespace Library {
 		ReleaseObject(mLinearSamplerState);
 		ReleaseObject(mShadowSamplerState);
 
-		ReleaseObject(mIrradianceDiffuseTextureSRV);
-		ReleaseObject(mIrradianceSpecularTextureSRV);
-		ReleaseObject(mIntegrationMapTextureSRV);
-
 		DeletePointerCollection(mVCTVoxelCascades3DRTs);
 		DeletePointerCollection(mDebugVoxelZonesGizmos);
 		DeleteObject(mVCTVoxelizationDebugRT);
@@ -193,33 +189,6 @@ namespace Library {
 			mDepthBuffer = DepthTarget::Create(mGame->Direct3DDevice(), mGame->ScreenWidth(), mGame->ScreenHeight(), 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
 		}
 		
-		//IBL
-		{
-			if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), 
-				Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureEnvHDR.dds").c_str(), nullptr, &mIrradianceDiffuseTextureSRV)))
-				throw GameException("Failed to create Diffuse Irradiance Map.");
-
-			mIBLRadianceMap.reset(new IBLRadianceMap(*mGame, Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureEnvHDR.dds")));
-			mIBLRadianceMap->Initialize();
-			mIBLRadianceMap->Create(*mGame);
-
-			//mIrradianceSpecularTextureSRV = *mIBLRadianceMap->GetShaderResourceViewAddress();
-			//if (mIrradianceSpecularTextureSRV == nullptr)
-			//	throw GameException("Failed to create Specular Irradiance Map.");
-			mIBLRadianceMap.release();
-			mIBLRadianceMap.reset(nullptr);
-
-			if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(),
-				Utility::GetFilePath(L"content\\textures\\skyboxes\\Sky_5\\textureSpecularHDR.dds").c_str(), nullptr, &mIrradianceSpecularTextureSRV)))
-				throw GameException("Failed to create Specular Irradiance Map.");
-
-			// Load a pre-computed Integration Map
-			if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(),
-				Utility::GetFilePath(L"content\\textures\\skyboxes\\textureBrdf.dds").c_str(), nullptr, &mIntegrationMapTextureSRV)))
-				throw GameException("Failed to create Integration Texture.");
-
-		}
-
 		for (auto& obj : scene->objects) {
 			if (obj.second->IsForwardShading())
 			{
@@ -569,7 +538,7 @@ namespace Library {
 			material->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, NUM_SHADOW_CASCADES);
 			material->IrradianceDiffuseTexture() << mProbesManager->GetDiffuseLightProbe(0)->GetCubemapSRV(); //TODO
 			material->IrradianceSpecularTexture() << mProbesManager->GetSpecularLightProbe(0)->GetCubemapSRV();//TODO
-			material->IntegrationTexture() << mIntegrationMapTextureSRV; //TODO
+			material->IntegrationTexture() << mProbesManager->GetIntegrationMap(); //TODO
 		}
 	}
 
@@ -638,7 +607,7 @@ namespace Library {
 				gbuffer->GetExtraBuffer()->getSRV(),
 				/*mIrradianceDiffuseTextureSRV,*/mProbesManager->GetDiffuseLightProbe(0)->GetCubemapSRV(),
 				/*mIrradianceSpecularTextureSRV,*/mProbesManager->GetSpecularLightProbe(0)->GetCubemapSRV(),
-				mIntegrationMapTextureSRV
+				mProbesManager->GetIntegrationMap()
 			};
 			for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 				SRs[7 + i] = mShadowMapper.GetShadowTexture(i);

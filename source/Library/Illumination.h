@@ -90,10 +90,6 @@ namespace Library
 				return mVCTUpsampleAndBlurRT->getSRV();
 		}
 
-		ID3D11ShaderResourceView* GetIBLIrradianceDiffuseSRV() const { return mIrradianceDiffuseTextureSRV; }
-		ID3D11ShaderResourceView* GetIBLIrradianceSpecularSRV() const { return mIrradianceSpecularTextureSRV; }
-		ID3D11ShaderResourceView* GetIBLIntegrationSRV() const { return mIntegrationMapTextureSRV; }
-
 		float GetDirectionalLightIntensity() const { return mDirectionalLightIntensity; }
 	private:
 		void DrawDeferredLighting(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget, bool clearTarget = false);
@@ -170,12 +166,7 @@ namespace Library
 		bool mEnabled = false;
 		bool mShowDebug = false;
 
-		float mDirectionalLightIntensity = 6.4f;
-
-		ID3D11ShaderResourceView* mIrradianceDiffuseTextureSRV = nullptr;
-		ID3D11ShaderResourceView* mIrradianceSpecularTextureSRV = nullptr;
-		ID3D11ShaderResourceView* mIntegrationMapTextureSRV = nullptr;
-		std::unique_ptr<IBLRadianceMap> mIBLRadianceMap;
+		float mDirectionalLightIntensity = 10.0f;
 
 		RenderingObjectInfo mForwardPassObjects;
 	};

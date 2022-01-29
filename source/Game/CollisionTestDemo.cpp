@@ -638,7 +638,7 @@ namespace Rendering
 			{
 				elements[i]->AABB->Update();
 				elements[i]->CollisionType = CollisionDetectionTypes::AABBvsAABB;
-				elements[i]->SetBoundsAABB(elements[i]->AABB->GetAABB()[0], elements[i]->AABB->GetAABB()[1]);
+				//elements[i]->SetBoundsAABB(elements[i]->AABB->GetAABB()[0], elements[i]->AABB->GetAABB()[1]);
 
 			}
 			else if (mCollisionMethodNumber == 1)
