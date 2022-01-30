@@ -196,7 +196,7 @@
     <ClInclude Include="Common.h" />
     <ClInclude Include="CompositeLightingMaterial.h" />
     <ClInclude Include="ConstantBuffer.h" />
-    <ClInclude Include="CustomRenderTarget.h" />
+    <ClInclude Include="ER_GPUTexture.h" />
     <ClInclude Include="DebugLightProbeMaterial.h" />
     <ClInclude Include="DeferredMaterial.h" />
     <ClInclude Include="DemoLevel.h" />
@@ -210,6 +210,7 @@
     <ClInclude Include="Effect.h" />
     <ClInclude Include="EnvironmentMappingMaterial.h" />
     <ClInclude Include="ER_CPUProfiler.h" />
+    <ClInclude Include="ER_GPUBuffer.h" />
     <ClInclude Include="ER_IlluminationProbeManager.h" />
     <ClInclude Include="FastFourierTransform.h" />
     <ClInclude Include="FirstPersonCamera.h" />
@@ -305,7 +306,7 @@
     <ClCompile Include="ColorGradingMaterial.cpp" />
     <ClCompile Include="ColorHelper.cpp" />
     <ClCompile Include="CompositeLightingMaterial.cpp" />
-    <ClCompile Include="CustomRenderTarget.cpp" />
+    <ClCompile Include="ER_GPUTexture.cpp" />
     <ClCompile Include="DebugLightProbeMaterial.cpp" />
     <ClCompile Include="DeferredMaterial.cpp" />
     <ClCompile Include="DemoLevel.cpp" />
@@ -319,6 +320,7 @@
     <ClCompile Include="Effect.cpp" />
     <ClCompile Include="EnvironmentMappingMaterial.cpp" />
     <ClCompile Include="ER_CPUProfiler.cpp" />
+    <ClCompile Include="ER_GPUBuffer.cpp" />
     <ClCompile Include="ER_IlluminationProbeManager.cpp" />
     <ClCompile Include="FirstPersonCamera.cpp" />
     <ClCompile Include="FogMaterial.cpp" />

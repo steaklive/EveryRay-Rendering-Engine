@@ -1,7 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "ConstantBuffer.h"
-#include "CustomRenderTarget.h"
+#include "ER_GPUTexture.h"
 #include "DepthTarget.h"
 #include "RenderingObject.h"
 
@@ -69,7 +69,7 @@ namespace Library
 
 		void Initialize(const Scene* scene);
 
-		void DrawLocalIllumination(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget, bool isEditorMode = false, bool clearInitTarget = false);
+		void DrawLocalIllumination(GBuffer* gbuffer, ER_GPUTexture* aRenderTarget, bool isEditorMode = false, bool clearInitTarget = false);
 		void DrawGlobalIllumination(GBuffer* gbuffer, const GameTime& gameTime);
 
 		void Update(const GameTime& gameTime, const Scene* scene);
@@ -85,15 +85,15 @@ namespace Library
 
 		ID3D11ShaderResourceView* GetGlobaIlluminationSRV() const {
 			if (mDrawVoxelization)
-				return mVCTVoxelizationDebugRT->getSRV();
+				return mVCTVoxelizationDebugRT->GetSRV();
 			else
-				return mVCTUpsampleAndBlurRT->getSRV();
+				return mVCTUpsampleAndBlurRT->GetSRV();
 		}
 
 		float GetDirectionalLightIntensity() const { return mDirectionalLightIntensity; }
 	private:
-		void DrawDeferredLighting(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget, bool clearTarget = false);
-		void DrawForwardLighting(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget);
+		void DrawDeferredLighting(GBuffer* gbuffer, ER_GPUTexture* aRenderTarget, bool clearTarget = false);
+		void DrawForwardLighting(GBuffer* gbuffer, ER_GPUTexture* aRenderTarget);
 		void DrawDebugGizmos();
 
 		void UpdateVoxelizationGIMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int voxelCascadeIndex);
@@ -119,10 +119,10 @@ namespace Library
 		ConstantBuffer<IlluminationCBufferData::UpsampleBlurCB> mUpsampleBlurConstantBuffer;
 		ConstantBuffer<IlluminationCBufferData::DeferredLightingCB> mDeferredLightingConstantBuffer;
 
-		std::vector<CustomRenderTarget*> mVCTVoxelCascades3DRTs;
-		CustomRenderTarget* mVCTVoxelizationDebugRT = nullptr;
-		CustomRenderTarget* mVCTMainRT = nullptr;
-		CustomRenderTarget* mVCTUpsampleAndBlurRT = nullptr;
+		std::vector<ER_GPUTexture*> mVCTVoxelCascades3DRTs;
+		ER_GPUTexture* mVCTVoxelizationDebugRT = nullptr;
+		ER_GPUTexture* mVCTMainRT = nullptr;
+		ER_GPUTexture* mVCTUpsampleAndBlurRT = nullptr;
 
 		GBuffer* mGbuffer = nullptr;
 

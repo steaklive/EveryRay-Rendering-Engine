@@ -166,7 +166,7 @@ namespace Library {
 		{
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 			{
-				mVCTVoxelCascades3DRTs.push_back(new CustomRenderTarget(mGame->Direct3DDevice(), voxelCascadesSizes[i], voxelCascadesSizes[i], 1u, 
+				mVCTVoxelCascades3DRTs.push_back(new ER_GPUTexture(mGame->Direct3DDevice(), voxelCascadesSizes[i], voxelCascadesSizes[i], 1u, 
 					DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS, 6, voxelCascadesSizes[i]));
 				
 				mVoxelCameraPositions[i] = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f);
@@ -179,12 +179,12 @@ namespace Library {
 				mDebugVoxelZonesGizmos[i]->InitializeGeometry({ mVoxelCascadesAABBs[i].first, mVoxelCascadesAABBs[i].second }, XMMatrixScaling(1, 1, 1));
 				mDebugVoxelZonesGizmos[i]->SetPosition(XMFLOAT3(mVoxelCameraPositions[i].x, mVoxelCameraPositions[i].y, mVoxelCameraPositions[i].z));
 			}
-			mVCTMainRT = new CustomRenderTarget(mGame->Direct3DDevice(), 
+			mVCTMainRT = new ER_GPUTexture(mGame->Direct3DDevice(), 
 				static_cast<UINT>(mGame->ScreenWidth()) * VCT_GI_MAIN_PASS_DOWNSCALE, static_cast<UINT>(mGame->ScreenHeight()) * VCT_GI_MAIN_PASS_DOWNSCALE, 1u, 
 				DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
-			mVCTUpsampleAndBlurRT = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u,
+			mVCTUpsampleAndBlurRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u,
 				DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
-			mVCTVoxelizationDebugRT = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u,
+			mVCTVoxelizationDebugRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u,
 				DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 			mDepthBuffer = DepthTarget::Create(mGame->Direct3DDevice(), mGame->ScreenWidth(), mGame->ScreenHeight(), 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
 		}
@@ -200,7 +200,7 @@ namespace Library {
 	}
 
 	//deferred rendering approach
-	void Illumination::DrawLocalIllumination(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget, bool isEditorMode, bool clearInitTarget)
+	void Illumination::DrawLocalIllumination(GBuffer* gbuffer, ER_GPUTexture* aRenderTarget, bool isEditorMode, bool clearInitTarget)
 	{
 		DrawDeferredLighting(gbuffer, aRenderTarget, clearInitTarget);
 		DrawForwardLighting(gbuffer, aRenderTarget);
@@ -220,8 +220,8 @@ namespace Library {
 
 		if (!mEnabled)
 		{
-			context->ClearUnorderedAccessViewFloat(mVCTMainRT->getUAV(), clearColorBlack);
-			context->ClearUnorderedAccessViewFloat(mVCTUpsampleAndBlurRT->getUAV(), clearColorBlack);
+			context->ClearUnorderedAccessViewFloat(mVCTMainRT->GetUAV(), clearColorBlack);
+			context->ClearUnorderedAccessViewFloat(mVCTUpsampleAndBlurRT->GetUAV(), clearColorBlack);
 			return;
 		}
 
@@ -241,7 +241,7 @@ namespace Library {
 			{
 				D3D11_VIEWPORT vctViewport = { 0.0f, 0.0f, voxelCascadesSizes[cascade], voxelCascadesSizes[cascade] };
 				D3D11_RECT vctRect = { 0.0f, 0.0f, voxelCascadesSizes[cascade], voxelCascadesSizes[cascade] };
-				ID3D11UnorderedAccessView* UAV[1] = { mVCTVoxelCascades3DRTs[cascade]->getUAV() };
+				ID3D11UnorderedAccessView* UAV[1] = { mVCTVoxelCascades3DRTs[cascade]->GetUAV() };
 
 				context->RSSetState(RasterizerStates::NoCullingNoDepthEnabledScissorRect);
 				context->RSSetViewports(1, &vctViewport);
@@ -292,13 +292,13 @@ namespace Library {
 				mVoxelizationDebugConstantBuffer.ApplyChanges(context);
 
 				ID3D11Buffer* CBs[1] = { mVoxelizationDebugConstantBuffer.Buffer() };
-				ID3D11ShaderResourceView* SRVs[1] = { mVCTVoxelCascades3DRTs[cascade]->getSRV() };
-				ID3D11RenderTargetView* RTVs[1] = { mVCTVoxelizationDebugRT->getRTV() };
+				ID3D11ShaderResourceView* SRVs[1] = { mVCTVoxelCascades3DRTs[cascade]->GetSRV() };
+				ID3D11RenderTargetView* RTVs[1] = { mVCTVoxelizationDebugRT->GetRTV() };
 
 				context->RSSetState(RasterizerStates::BackCulling);
 				context->OMSetRenderTargets(1, RTVs, mDepthBuffer->getDSV());
 				context->OMSetDepthStencilState(mDepthStencilStateRW, 0);
-				context->ClearRenderTargetView(mVCTVoxelizationDebugRT->getRTV(), clearColorBlack);
+				context->ClearRenderTargetView(mVCTVoxelizationDebugRT->GetRTV(), clearColorBlack);
 				context->ClearDepthStencilView(mDepthBuffer->getDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 				context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_POINTLIST);
@@ -325,7 +325,7 @@ namespace Library {
 			context->OMSetRenderTargets(1, nullRTVs, NULL);
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 			{
-				context->GenerateMips(mVCTVoxelCascades3DRTs[i]->getSRV());
+				context->GenerateMips(mVCTVoxelCascades3DRTs[i]->GetSRV());
 				mVoxelConeTracingConstantBuffer.Data.VoxelCameraPositions[i] = mVoxelCameraPositions[i];
 				mVoxelConeTracingConstantBuffer.Data.WorldVoxelScales[i] = XMFLOAT4(mWorldVoxelScales[i], 0.0, 0.0, 0.0);
 			}
@@ -341,15 +341,15 @@ namespace Library {
 			mVoxelConeTracingConstantBuffer.Data.pad0 = XMFLOAT3(0, 0, 0);
 			mVoxelConeTracingConstantBuffer.ApplyChanges(context);
 
-			ID3D11UnorderedAccessView* UAV[1] = { mVCTMainRT->getUAV() };
+			ID3D11UnorderedAccessView* UAV[1] = { mVCTMainRT->GetUAV() };
 			ID3D11Buffer* CBs[1] = { mVoxelConeTracingConstantBuffer.Buffer() };
 			ID3D11ShaderResourceView* SRVs[4 + NUM_VOXEL_GI_CASCADES];
-			SRVs[0] = gbuffer->GetAlbedo()->getSRV();
-			SRVs[1] = gbuffer->GetNormals()->getSRV();
-			SRVs[2] = gbuffer->GetPositions()->getSRV();
-			SRVs[3] = gbuffer->GetExtraBuffer()->getSRV();
+			SRVs[0] = gbuffer->GetAlbedo()->GetSRV();
+			SRVs[1] = gbuffer->GetNormals()->GetSRV();
+			SRVs[2] = gbuffer->GetPositions()->GetSRV();
+			SRVs[3] = gbuffer->GetExtraBuffer()->GetSRV();
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
-				SRVs[4 + i] = mVCTVoxelCascades3DRTs[i]->getSRV();
+				SRVs[4 + i] = mVCTVoxelCascades3DRTs[i]->GetSRV();
 
 			ID3D11SamplerState* SSs[] = { mLinearSamplerState };
 
@@ -376,9 +376,9 @@ namespace Library {
 			mUpsampleBlurConstantBuffer.Data.Upsample = true;
 			mUpsampleBlurConstantBuffer.ApplyChanges(context);
 
-			ID3D11UnorderedAccessView* UAV[1] = { mVCTUpsampleAndBlurRT->getUAV() };
+			ID3D11UnorderedAccessView* UAV[1] = { mVCTUpsampleAndBlurRT->GetUAV() };
 			ID3D11Buffer* CBs[1] = { mUpsampleBlurConstantBuffer.Buffer() };
-			ID3D11ShaderResourceView* SRVs[1] = { mVCTMainRT->getSRV() };
+			ID3D11ShaderResourceView* SRVs[1] = { mVCTMainRT->GetSRV() };
 			ID3D11SamplerState* SSs[] = { mLinearSamplerState };
 
 			context->CSSetSamplers(0, 1, SSs);
@@ -548,7 +548,7 @@ namespace Library {
 		if (mFoliageSystem)
 		{
 			//only first cascade due to performance
-			mFoliageSystem->SetVoxelizationTextureOutput(mVCTVoxelCascades3DRTs[0]->getUAV()); 
+			mFoliageSystem->SetVoxelizationTextureOutput(mVCTVoxelCascades3DRTs[0]->GetUAV()); 
 			mFoliageSystem->SetVoxelizationParams(&mWorldVoxelScales[0], &mVoxelCameraPositions[0]);
 		}
 	}
@@ -575,7 +575,7 @@ namespace Library {
 		}
 	}
 
-	void Illumination::DrawDeferredLighting(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget, bool clearTarget)
+	void Illumination::DrawDeferredLighting(GBuffer* gbuffer, ER_GPUTexture* aRenderTarget, bool clearTarget)
 	{
 		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
@@ -586,7 +586,7 @@ namespace Library {
 		{
 			//might be cleared before (i.e., in PP)
 			if (clearTarget) 
-				context->ClearUnorderedAccessViewFloat(aRenderTarget->getUAV(), clearColorBlack);
+				context->ClearUnorderedAccessViewFloat(aRenderTarget->GetUAV(), clearColorBlack);
 
 			for (size_t i = 0; i < NUM_SHADOW_CASCADES; i++)
 				mDeferredLightingConstantBuffer.Data.ShadowMatrices[i] = mShadowMapper.GetViewMatrix(i) * mShadowMapper.GetProjectionMatrix(i) /** XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix())*/;
@@ -597,14 +597,14 @@ namespace Library {
 			mDeferredLightingConstantBuffer.Data.CameraPosition = XMFLOAT4{ mCamera.Position().x,mCamera.Position().y,mCamera.Position().z, 1.0f };
 			mDeferredLightingConstantBuffer.ApplyChanges(context);
 
-			ID3D11UnorderedAccessView* UAV[1] = { aRenderTarget->getUAV() };
+			ID3D11UnorderedAccessView* UAV[1] = { aRenderTarget->GetUAV() };
 			ID3D11Buffer* CBs[1] = { mDeferredLightingConstantBuffer.Buffer() };
 
 			ID3D11ShaderResourceView* SRs[10] = {
-				gbuffer->GetAlbedo()->getSRV(),
-				gbuffer->GetNormals()->getSRV(),
-				gbuffer->GetPositions()->getSRV(),
-				gbuffer->GetExtraBuffer()->getSRV(),
+				gbuffer->GetAlbedo()->GetSRV(),
+				gbuffer->GetNormals()->GetSRV(),
+				gbuffer->GetPositions()->GetSRV(),
+				gbuffer->GetExtraBuffer()->GetSRV(),
 				/*mIrradianceDiffuseTextureSRV,*/mProbesManager->GetDiffuseLightProbe(0)->GetCubemapSRV(),
 				/*mIrradianceSpecularTextureSRV,*/mProbesManager->GetSpecularLightProbe(0)->GetCubemapSRV(),
 				mProbesManager->GetIntegrationMap()
@@ -632,10 +632,10 @@ namespace Library {
 		}
 	}
 
-	void Illumination::DrawForwardLighting(GBuffer* gbuffer, CustomRenderTarget* aRenderTarget)
+	void Illumination::DrawForwardLighting(GBuffer* gbuffer, ER_GPUTexture* aRenderTarget)
 	{
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
-		context->OMSetRenderTargets(1, aRenderTarget->getRTVs(), gbuffer->GetDepth()->getDSV());
+		context->OMSetRenderTargets(1, aRenderTarget->GetRTVs(), gbuffer->GetDepth()->getDSV());
 
 		for (auto& obj : mForwardPassObjects)
 		{

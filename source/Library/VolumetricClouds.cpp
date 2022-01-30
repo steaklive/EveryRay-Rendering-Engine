@@ -102,7 +102,7 @@ namespace Library {
 		//render targets
 		mCompositeRenderTarget = new FullScreenRenderTarget(*mGame);
 		mBlurRenderTarget = new FullScreenRenderTarget(*mGame);
-		mCustomMainRenderTargetCS = new CustomRenderTarget(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
+		mCustomMainRenderTargetCS = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
 	}
 	
 	void VolumetricClouds::Update(const GameTime& gameTime)
@@ -186,7 +186,7 @@ namespace Library {
 
 		// main pass
 		{
-			ID3D11UnorderedAccessView* UAV[1] = { mCustomMainRenderTargetCS->getUAV() };
+			ID3D11UnorderedAccessView* UAV[1] = { mCustomMainRenderTargetCS->GetUAV() };
 
 			context->CSSetShaderResources(0, 5, SR);
 			context->CSSetConstantBuffers(0, 2, CBs);
@@ -208,7 +208,7 @@ namespace Library {
 		//blur pass
 		mBlurRenderTarget->Begin();
 		ID3D11ShaderResourceView* SR_Blur[2] = {
-			mCustomMainRenderTargetCS->getSRV(),
+			mCustomMainRenderTargetCS->GetSRV(),
 			mPostProcessingStack.GetDepthSRV(),
 		};
 		context->PSSetShaderResources(0, 2, SR_Blur);

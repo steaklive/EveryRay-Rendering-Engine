@@ -2,7 +2,7 @@
 #include "Common.h"
 #include "ConstantBuffer.h"
 #include "PostProcessingStack.h"
-#include "CustomRenderTarget.h"
+#include "ER_GPUTexture.h"
 
 namespace Library
 {
@@ -62,7 +62,7 @@ namespace Library
 		ConstantBuffer<VolumetricCloudsCBufferData::FrameCB> mFrameConstantBuffer;
 		ConstantBuffer<VolumetricCloudsCBufferData::CloudsCB> mCloudsConstantBuffer;
 
-		CustomRenderTarget* mCustomMainRenderTargetCS = nullptr;
+		ER_GPUTexture* mCustomMainRenderTargetCS = nullptr;
 		FullScreenRenderTarget* mCompositeRenderTarget = nullptr;
 		FullScreenRenderTarget* mBlurRenderTarget = nullptr;
 

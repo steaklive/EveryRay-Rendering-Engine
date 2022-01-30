@@ -3,7 +3,7 @@
 #include "Game.h"
 #include "Camera.h"
 #include "GameTime.h"
-#include "CustomRenderTarget.h"
+#include "ER_GPUTexture.h"
 #include "DepthTarget.h"
 
 namespace Library
@@ -86,12 +86,12 @@ namespace Rendering
 				ReleaseObject(EmptyPassPS);
 			}
 
-			CustomRenderTarget* LuminanceResource = nullptr;
-			CustomRenderTarget* AvgLuminanceResource = nullptr;
-			CustomRenderTarget* BrightResource = nullptr;
-			CustomRenderTarget* BlurHorizontalResource = nullptr;
-			CustomRenderTarget* BlurVerticalResource = nullptr;
-			CustomRenderTarget* BlurSummedResource = nullptr;
+			ER_GPUTexture* LuminanceResource = nullptr;
+			ER_GPUTexture* AvgLuminanceResource = nullptr;
+			ER_GPUTexture* BrightResource = nullptr;
+			ER_GPUTexture* BlurHorizontalResource = nullptr;
+			ER_GPUTexture* BlurVerticalResource = nullptr;
+			ER_GPUTexture* BlurSummedResource = nullptr;
 
 			ID3D11PixelShader* CalcLumPS = nullptr;
 			ID3D11PixelShader* AvgLumPS = nullptr;
@@ -334,7 +334,7 @@ namespace Rendering
 
 		void Config() { mShowDebug = !mShowDebug; }
 
-		CustomRenderTarget* GetMainRenderTarget() { return mMainRenderTarget; }
+		ER_GPUTexture* GetMainRenderTarget() { return mMainRenderTarget; }
 
 		ID3D11ShaderResourceView* GetDepthSRV();
 		ID3D11ShaderResourceView* GetPrepassColorSRV();
@@ -366,7 +366,7 @@ namespace Rendering
 		EffectElements::LightShaftsEffect* mLightShaftsEffect;
 		EffectElements::CompositeLightingEffect* mCompositeLightingEffect;
 		
-		CustomRenderTarget* mMainRenderTarget = nullptr;
+		ER_GPUTexture* mMainRenderTarget = nullptr;
 		DepthTarget* mMainDepthTarget = nullptr;
 
 		//TODO change to custom render targets

@@ -16,7 +16,7 @@ static const int MaxNonCulledSpecularProbesCount = MaxNonCulledSpecularProbesCou
 
 #include "Common.h"
 #include "RenderingObject.h"
-#include "CustomRenderTarget.h"
+#include "ER_GPUTexture.h"
 #include "DepthTarget.h"
 #include "ConstantBuffer.h"
 
@@ -52,12 +52,12 @@ namespace Library
 		ER_LightProbe(Game& game, DirectionalLight& light, ShadowMapper& shadowMapper, int size, ER_ProbeType aType);
 		~ER_LightProbe();
 
-		void Compute(Game& game, const GameTime& gameTime, CustomRenderTarget* aTextureNonConvoluted, CustomRenderTarget* aTextureConvoluted, DepthTarget** aDepthBuffers,
+		void Compute(Game& game, const GameTime& gameTime, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted, DepthTarget** aDepthBuffers,
 			const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, QuadRenderer* quadRenderer, Skybox* skybox = nullptr);
 		void UpdateProbe(const GameTime& gameTime);
 		bool LoadProbeFromDisk(Game& game, const std::wstring& levelPath);
-		ID3D11ShaderResourceView* GetCubemapSRV() const { return mCubemapTexture->getSRV(); }
-		ID3D11Texture2D* GetCubemapTexture2D() const { return mCubemapTexture->getTexture2D(); }
+		ID3D11ShaderResourceView* GetCubemapSRV() const { return mCubemapTexture->GetSRV(); }
+		ID3D11Texture2D* GetCubemapTexture2D() const { return mCubemapTexture->GetTexture2D(); }
 		
 		//TODO refactor
 		void SetShaderInfoForConvolution(ID3D11VertexShader* vs, ID3D11PixelShader* ps, ID3D11InputLayout* il, ID3D11SamplerState* ss)
@@ -76,13 +76,13 @@ namespace Library
 		bool IsCulled() { return mIsCulled; }
 		bool IsLoadedFromDisk() { return mIsProbeLoadedFromDisk; }
 	private:
-		void DrawGeometryToProbe(Game& game, const GameTime& gameTime, CustomRenderTarget* aTextureNonConvoluted, DepthTarget** aDepthBuffers, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox);
-		void ConvoluteProbe(Game& game, QuadRenderer* quadRenderer, CustomRenderTarget* aTextureNonConvoluted, CustomRenderTarget* aTextureConvoluted);
+		void DrawGeometryToProbe(Game& game, const GameTime& gameTime, ER_GPUTexture* aTextureNonConvoluted, DepthTarget** aDepthBuffers, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox);
+		void ConvoluteProbe(Game& game, QuadRenderer* quadRenderer, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted);
 		
 		void PrecullObjectsPerFace();
 		void UpdateStandardLightingPBRProbeMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int cubeFaceIndex);
 		
-		void SaveProbeOnDisk(Game& game, const std::wstring& levelPath, CustomRenderTarget* aTextureConvoluted);
+		void SaveProbeOnDisk(Game& game, const std::wstring& levelPath, ER_GPUTexture* aTextureConvoluted);
 		std::wstring GetConstructedProbeName(const std::wstring& levelPath);
 		
 		ER_ProbeType mProbeType;
@@ -93,7 +93,7 @@ namespace Library
 		LightProbeRenderingObjectsInfo mObjectsToRenderPerFace[CUBEMAP_FACES_COUNT];
 		Camera* mCubemapCameras[CUBEMAP_FACES_COUNT];
 
-		CustomRenderTarget* mCubemapTexture = nullptr;
+		ER_GPUTexture* mCubemapTexture = nullptr;
 		ConstantBuffer<LightProbeCBufferData::ProbeConvolutionCB> mConvolutionCB;
 
 		ID3D11SamplerState* mLinearSamplerState = nullptr; //TODO remove
@@ -144,13 +144,13 @@ namespace Library
 		int mNonCulledDiffuseProbesCount = 0;
 		int mNonCulledSpecularProbesCount = 0;
 
-		CustomRenderTarget* mDiffuseCubemapArrayRT;
-		CustomRenderTarget* mSpecularCubemapArrayRT;
+		ER_GPUTexture* mDiffuseCubemapArrayRT;
+		ER_GPUTexture* mSpecularCubemapArrayRT;
 
-		CustomRenderTarget* mDiffuseCubemapFacesRT;
-		CustomRenderTarget* mDiffuseCubemapFacesConvolutedRT;
-		CustomRenderTarget* mSpecularCubemapFacesRT;
-		CustomRenderTarget* mSpecularCubemapFacesConvolutedRT;
+		ER_GPUTexture* mDiffuseCubemapFacesRT;
+		ER_GPUTexture* mDiffuseCubemapFacesConvolutedRT;
+		ER_GPUTexture* mSpecularCubemapFacesRT;
+		ER_GPUTexture* mSpecularCubemapFacesConvolutedRT;
 		DepthTarget* mDiffuseCubemapDepthBuffers[CUBEMAP_FACES_COUNT];
 		DepthTarget* mSpecularCubemapDepthBuffers[CUBEMAP_FACES_COUNT];
 

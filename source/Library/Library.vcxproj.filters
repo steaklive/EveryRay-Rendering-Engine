@@ -19,20 +19,11 @@
     <Filter Include="Source Files\Helpers">
       <UniqueIdentifier>{3277bcd5-4b62-4be5-a4f4-a1b8cff1a9ae}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Materials">
-      <UniqueIdentifier>{b5ad1c8e-a7e4-495c-97ab-98e3b928f8ba}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Materials\Effects">
-      <UniqueIdentifier>{1b9f0c31-d964-4307-9d45-a9ccf343642d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Components">
       <UniqueIdentifier>{29680abb-8006-4c10-b2a3-389f1d0cd8a5}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Objects">
       <UniqueIdentifier>{e5657760-8042-479c-9f78-93af2408e19a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Lights">
-      <UniqueIdentifier>{c7d93f20-369b-4d5a-b0c3-b3b6b4b5da84}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Objects\IBL">
       <UniqueIdentifier>{6a1f9583-954a-4b21-a09b-668715fcab93}</UniqueIdentifier>
@@ -73,14 +64,29 @@
     <Filter Include="Shaders\GI">
       <UniqueIdentifier>{383364e3-aa61-4922-8f23-087b18a5d123}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Objects\Rendering systems">
-      <UniqueIdentifier>{9d10d195-ac34-4ffc-a620-8bdacc58889a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shaders\Terrain">
       <UniqueIdentifier>{7d19fae2-7ed1-459f-aae0-1dbda9fcb484}</UniqueIdentifier>
     </Filter>
     <Filter Include="Shaders\IBL">
       <UniqueIdentifier>{4b3f255c-5fa4-4203-ad59-f5019d27f013}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Graphics">
+      <UniqueIdentifier>{f1520c41-25d2-47eb-b915-cc360648e8cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Graphics\Graphics API">
+      <UniqueIdentifier>{99f23602-21b2-4c73-b8d7-5cb9369c4d4b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Graphics\Rendering systems">
+      <UniqueIdentifier>{9d10d195-ac34-4ffc-a620-8bdacc58889a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Graphics\Materials">
+      <UniqueIdentifier>{b5ad1c8e-a7e4-495c-97ab-98e3b928f8ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Graphics\Materials\Effects">
+      <UniqueIdentifier>{1b9f0c31-d964-4307-9d45-a9ccf343642d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Graphics\Lights">
+      <UniqueIdentifier>{c7d93f20-369b-4d5a-b0c3-b3b6b4b5da84}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -300,7 +306,7 @@
     <ClInclude Include="DepthTarget.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CustomRenderTarget.h">
+    <ClInclude Include="ER_GPUTexture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PostProcessingStack.h">
@@ -412,9 +418,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DebugLightProbeMaterial.h">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClInclude>
     <ClInclude Include="ER_CPUProfiler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ER_GPUBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -438,7 +447,7 @@
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="BasicMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="Keyboard.cpp">
       <Filter>Source Files\Controls</Filter>
@@ -447,16 +456,16 @@
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="Effect.cpp">
-      <Filter>Source Files\Materials\Effects</Filter>
+      <Filter>Source Files\Graphics\Materials\Effects</Filter>
     </ClCompile>
     <ClCompile Include="Material.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="Variable.cpp">
-      <Filter>Source Files\Materials\Effects</Filter>
+      <Filter>Source Files\Graphics\Materials\Effects</Filter>
     </ClCompile>
     <ClCompile Include="Technique.cpp">
-      <Filter>Source Files\Materials\Effects</Filter>
+      <Filter>Source Files\Graphics\Materials\Effects</Filter>
     </ClCompile>
     <ClCompile Include="Utility.cpp">
       <Filter>Source Files\Helpers</Filter>
@@ -477,28 +486,22 @@
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="Pass.cpp">
-      <Filter>Source Files\Materials\Effects</Filter>
+      <Filter>Source Files\Graphics\Materials\Effects</Filter>
     </ClCompile>
     <ClCompile Include="Mouse.cpp">
       <Filter>Source Files\Controls</Filter>
     </ClCompile>
-    <ClCompile Include="Model.cpp">
-      <Filter>Source Files\Objects</Filter>
-    </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Source Files\Objects</Filter>
-    </ClCompile>
     <ClCompile Include="ModelMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="SkyboxMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="Light.cpp">
-      <Filter>Source Files\Lights</Filter>
+      <Filter>Source Files\Graphics\Lights</Filter>
     </ClCompile>
     <ClCompile Include="DirectionalLight.cpp">
-      <Filter>Source Files\Lights</Filter>
+      <Filter>Source Files\Graphics\Lights</Filter>
     </ClCompile>
     <ClCompile Include="RasterizerStates.cpp">
       <Filter>Source Files\Helpers</Filter>
@@ -510,49 +513,49 @@
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="DiffuseLightingMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="SamplerStates.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="PointLight.cpp">
-      <Filter>Source Files\Lights</Filter>
+      <Filter>Source Files\Graphics\Lights</Filter>
     </ClCompile>
     <ClCompile Include="SpotLight.cpp">
-      <Filter>Source Files\Lights</Filter>
+      <Filter>Source Files\Graphics\Lights</Filter>
     </ClCompile>
     <ClCompile Include="AmbientLightingMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="PointLightingMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="EnvironmentMappingMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="NormalMappingMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="PostProcessingMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="ColorFilteringMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="Ray.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="DepthMapMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="ShadowMappingMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="ShadowMappingDirectionalMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="PBRMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="IBLRadianceMap.cpp">
       <Filter>Source Files\Objects\IBL</Filter>
@@ -597,34 +600,25 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="InstancingMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderableAABB.cpp">
-      <Filter>Source Files\Objects</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="SkinShadingColorMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="SkinShadingScatterMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="DepthTarget.cpp">
       <Filter>Source Files\Objects\RenderTarget</Filter>
     </ClCompile>
-    <ClCompile Include="CustomRenderTarget.cpp">
-      <Filter>Source Files\Objects\RenderTarget</Filter>
-    </ClCompile>
     <ClCompile Include="VignetteMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="ColorGradingMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="MotionBlurMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderableOBB.cpp">
-      <Filter>Source Files\Objects</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="OctreeStructure.cpp">
       <Filter>Source Files\Objects\Spatial hierarchies</Filter>
@@ -642,37 +636,37 @@
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="StandardLightingMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="FXAAMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="DeferredMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="ScreenSpaceReflectionsMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="MaterialHelper.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="TerrainMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="FoliageMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="VoxelizationGIMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="LightShaftsMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="ParallaxMappingTestMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="FogMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="Editor.cpp">
       <Filter>Source Files\Objects</Filter>
@@ -681,43 +675,61 @@
       <Filter>Source Files\Objects</Filter>
     </ClCompile>
     <ClCompile Include="Skybox.cpp">
-      <Filter>Source Files\Objects\Rendering systems</Filter>
+      <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
     <ClCompile Include="Terrain.cpp">
-      <Filter>Source Files\Objects\Rendering systems</Filter>
+      <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
     <ClCompile Include="VolumetricClouds.cpp">
-      <Filter>Source Files\Objects\Rendering systems</Filter>
+      <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
     <ClCompile Include="ShadowMapper.cpp">
-      <Filter>Source Files\Objects\Rendering systems</Filter>
+      <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
     <ClCompile Include="PostProcessingStack.cpp">
-      <Filter>Source Files\Objects\Rendering systems</Filter>
+      <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
     <ClCompile Include="Illumination.cpp">
-      <Filter>Source Files\Objects\Rendering systems</Filter>
+      <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
     <ClCompile Include="Grid.cpp">
-      <Filter>Source Files\Objects\Rendering systems</Filter>
+      <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
     <ClCompile Include="Foliage.cpp">
-      <Filter>Source Files\Objects\Rendering systems</Filter>
+      <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
     <ClCompile Include="GBuffer.cpp">
-      <Filter>Source Files\Objects\Rendering systems</Filter>
+      <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
     <ClCompile Include="CompositeLightingMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="ER_IlluminationProbeManager.cpp">
-      <Filter>Source Files\Objects\Rendering systems</Filter>
+      <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
     <ClCompile Include="DebugLightProbeMaterial.cpp">
-      <Filter>Source Files\Materials</Filter>
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="ER_CPUProfiler.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_GPUBuffer.cpp">
+      <Filter>Source Files\Graphics\Graphics API</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_GPUTexture.cpp">
+      <Filter>Source Files\Graphics\Graphics API</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderableAABB.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderableOBB.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>Source Files\Graphics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

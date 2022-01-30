@@ -163,11 +163,11 @@ namespace Library
 			mDiffuseProbeRenderingObject->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::debugLightProbeMaterialName,
 				[&](int meshIndex) { UpdateDebugLightProbeMaterialVariables(mDiffuseProbeRenderingObject, meshIndex, DIFFUSE_PROBE); });
 
-			mDiffuseCubemapFacesRT = new CustomRenderTarget(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
+			mDiffuseCubemapFacesRT = new ER_GPUTexture(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
 				D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1, -1, CUBEMAP_FACES_COUNT, true);
-			mDiffuseCubemapFacesConvolutedRT = new CustomRenderTarget(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
+			mDiffuseCubemapFacesConvolutedRT = new ER_GPUTexture(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
 				D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1, -1, CUBEMAP_FACES_COUNT, true);
-			mDiffuseCubemapArrayRT = new CustomRenderTarget(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
+			mDiffuseCubemapArrayRT = new ER_GPUTexture(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
 				D3D11_BIND_SHADER_RESOURCE, 1, -1, CUBEMAP_FACES_COUNT, true, MaxNonCulledDiffuseProbesCount);
 		}
 		
@@ -226,11 +226,11 @@ namespace Library
 			mSpecularProbeRenderingObject->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::debugLightProbeMaterialName,
 				[&](int meshIndex) { UpdateDebugLightProbeMaterialVariables(mSpecularProbeRenderingObject, meshIndex, SPECULAR_PROBE); });
 
-			mSpecularCubemapFacesRT = new CustomRenderTarget(game.Direct3DDevice(), SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
+			mSpecularCubemapFacesRT = new ER_GPUTexture(game.Direct3DDevice(), SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
 				D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
-			mSpecularCubemapFacesConvolutedRT = new CustomRenderTarget(game.Direct3DDevice(), SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
+			mSpecularCubemapFacesConvolutedRT = new ER_GPUTexture(game.Direct3DDevice(), SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
 				D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
-			mSpecularCubemapArrayRT = new CustomRenderTarget(game.Direct3DDevice(), SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
+			mSpecularCubemapArrayRT = new ER_GPUTexture(game.Direct3DDevice(), SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
 				D3D11_BIND_SHADER_RESOURCE, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true, MaxNonCulledSpecularProbesCount);
 		}
 
@@ -422,7 +422,7 @@ namespace Library
 				if (i < mNonCulledDiffuseProbesIndices.size() && i < probes.size())
 				{
 					for (int cubeI = 0; cubeI < CUBEMAP_FACES_COUNT; cubeI++)
-						context->CopySubresourceRegion(mDiffuseCubemapArrayRT->getTexture2D(), D3D11CalcSubresource(0, cubeI + CUBEMAP_FACES_COUNT * i, 1), 0, 0, 0,
+						context->CopySubresourceRegion(mDiffuseCubemapArrayRT->GetTexture2D(), D3D11CalcSubresource(0, cubeI + CUBEMAP_FACES_COUNT * i, 1), 0, 0, 0,
 							probes[mNonCulledDiffuseProbesIndices[i]]->GetCubemapTexture2D(), D3D11CalcSubresource(0, cubeI, 1), NULL);
 				}
 				//TODO clear remaining texture subregions with solid color (PINK)
@@ -438,7 +438,7 @@ namespace Library
 					{
 						for (int mip = 0; mip < SPECULAR_PROBE_MIP_COUNT; mip++)
 						{
-							context->CopySubresourceRegion(mSpecularCubemapArrayRT->getTexture2D(), D3D11CalcSubresource(mip, cubeI + CUBEMAP_FACES_COUNT * i, SPECULAR_PROBE_MIP_COUNT), 0, 0, 0,
+							context->CopySubresourceRegion(mSpecularCubemapArrayRT->GetTexture2D(), D3D11CalcSubresource(mip, cubeI + CUBEMAP_FACES_COUNT * i, SPECULAR_PROBE_MIP_COUNT), 0, 0, 0,
 								probes[mNonCulledSpecularProbesIndices[i]]->GetCubemapTexture2D(), D3D11CalcSubresource(mip, cubeI, SPECULAR_PROBE_MIP_COUNT), NULL);
 						}
 					}
@@ -479,9 +479,9 @@ namespace Library
 			material->World() << XMMatrixIdentity();
 			material->CameraPosition() << mMainCamera.PositionVector();
 			if (aType == DIFFUSE_PROBE)
-				material->CubemapTexture() << mDiffuseCubemapArrayRT->getSRV();
+				material->CubemapTexture() << mDiffuseCubemapArrayRT->GetSRV();
 			else
-				material->CubemapTexture() << mSpecularCubemapArrayRT->getSRV();
+				material->CubemapTexture() << mSpecularCubemapArrayRT->GetSRV();
 		}
 	}
 
@@ -491,7 +491,7 @@ namespace Library
 		, mShadowMapper(shadowMapper)
 		, mProbeType(aType)
 	{
-		mCubemapTexture = new CustomRenderTarget(game.Direct3DDevice(), size, size, 1, DXGI_FORMAT_R8G8B8A8_UNORM, 0,
+		mCubemapTexture = new ER_GPUTexture(game.Direct3DDevice(), size, size, 1, DXGI_FORMAT_R8G8B8A8_UNORM, 0,
 			(aType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
 		
 		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
@@ -537,7 +537,7 @@ namespace Library
 			(mPosition.z > aMax.z || mPosition.z < aMin.z);
 	}
 
-	void ER_LightProbe::Compute(Game& game, const GameTime& gameTime, CustomRenderTarget* aTextureNonConvoluted, CustomRenderTarget* aTextureConvoluted,
+	void ER_LightProbe::Compute(Game& game, const GameTime& gameTime, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted,
 		DepthTarget** aDepthBuffers, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, QuadRenderer* quadRenderer, Skybox* skybox)
 	{
 		if (mIsProbeLoadedFromDisk)
@@ -572,7 +572,7 @@ namespace Library
 		mIsProbeLoadedFromDisk = true;
 	}
 
-	void ER_LightProbe::DrawGeometryToProbe(Game& game, const GameTime& gameTime, CustomRenderTarget* aTextureNonConvoluted, DepthTarget** aDepthBuffers,
+	void ER_LightProbe::DrawGeometryToProbe(Game& game, const GameTime& gameTime, ER_GPUTexture* aTextureNonConvoluted, DepthTarget** aDepthBuffers,
 		const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox)
 	{
 		auto context = game.Direct3DDeviceContext();
@@ -584,8 +584,8 @@ namespace Library
 		{
 			// Set the render target and clear it.
 			int rtvShift = (mProbeType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT;
-			context->OMSetRenderTargets(1, &aTextureNonConvoluted->getRTVs()[cubeMapFace * rtvShift], aDepthBuffers[cubeMapFace]->getDSV());
-			context->ClearRenderTargetView(aTextureNonConvoluted->getRTVs()[cubeMapFace], clearColor);
+			context->OMSetRenderTargets(1, &aTextureNonConvoluted->GetRTVs()[cubeMapFace * rtvShift], aDepthBuffers[cubeMapFace]->getDSV());
+			context->ClearRenderTargetView(aTextureNonConvoluted->GetRTVs()[cubeMapFace], clearColor);
 			context->ClearDepthStencilView(aDepthBuffers[cubeMapFace]->getDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 			//rendering objects and sky
@@ -614,10 +614,10 @@ namespace Library
 		}
 
 		if (mProbeType == SPECULAR_PROBE)
-			context->GenerateMips(aTextureNonConvoluted->getSRV());
+			context->GenerateMips(aTextureNonConvoluted->GetSRV());
 	}
 
-	void ER_LightProbe::ConvoluteProbe(Game& game, QuadRenderer* quadRenderer, CustomRenderTarget* aTextureNonConvoluted, CustomRenderTarget* aTextureConvoluted)
+	void ER_LightProbe::ConvoluteProbe(Game& game, QuadRenderer* quadRenderer, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted)
 	{
 		int mipCount = -1;
 		if (mProbeType == SPECULAR_PROBE)
@@ -629,7 +629,7 @@ namespace Library
 		int totalMips = (mipCount == -1) ? 1 : mipCount;
 		int rtvShift = (mProbeType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT;
 
-		ID3D11ShaderResourceView* SRVs[1] = { aTextureNonConvoluted->getSRV() };
+		ID3D11ShaderResourceView* SRVs[1] = { aTextureNonConvoluted->GetSRV() };
 		ID3D11SamplerState* SSs[1] = { mLinearSamplerState };
 
 		for (int cubeMapFace = 0; cubeMapFace < CUBEMAP_FACES_COUNT; cubeMapFace++)
@@ -645,8 +645,8 @@ namespace Library
 				CD3D11_VIEWPORT newViewPort(0.0f, 0.0f, static_cast<float>(currentSize), static_cast<float>(currentSize));
 				context->RSSetViewports(1, &newViewPort);
 
-				context->OMSetRenderTargets(1, &aTextureConvoluted->getRTVs()[cubeMapFace * rtvShift + mip], NULL);
-				context->ClearRenderTargetView(aTextureConvoluted->getRTVs()[cubeMapFace * rtvShift + mip], clearColor);
+				context->OMSetRenderTargets(1, &aTextureConvoluted->GetRTVs()[cubeMapFace * rtvShift + mip], NULL);
+				context->ClearRenderTargetView(aTextureConvoluted->GetRTVs()[cubeMapFace * rtvShift + mip], clearColor);
 
 				ID3D11Buffer* CBs[1] = { mConvolutionCB.Buffer() };
 
@@ -712,10 +712,10 @@ namespace Library
 		return mIsProbeLoadedFromDisk;
 	}
 
-	void ER_LightProbe::SaveProbeOnDisk(Game& game, const std::wstring& levelPath, CustomRenderTarget* aTextureConvoluted)
+	void ER_LightProbe::SaveProbeOnDisk(Game& game, const std::wstring& levelPath, ER_GPUTexture* aTextureConvoluted)
 	{
 		DirectX::ScratchImage tempImage;
-		HRESULT res = DirectX::CaptureTexture(game.Direct3DDevice(), game.Direct3DDeviceContext(), aTextureConvoluted->getTexture2D(), tempImage);
+		HRESULT res = DirectX::CaptureTexture(game.Direct3DDevice(), game.Direct3DDeviceContext(), aTextureConvoluted->GetTexture2D(), tempImage);
 		if (FAILED(res))
 			throw GameException("Failed to capture a probe texture when saving!", res);
 
