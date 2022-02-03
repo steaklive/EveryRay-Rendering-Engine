@@ -728,6 +728,10 @@ namespace Library
 			std::string msg = "Failed to save a probe texture: " + str;
 			throw GameException(msg.c_str());
 		}
+
+		//loading the same probe from disk, since aTextureConvoluted is a temp texture and otherwise we need a GPU resource copy to mCubemapTexture (better than this, but I am just too lazy...)
+		if(!LoadProbeFromDisk(game, levelPath))
+			throw GameException("Could not load probe that was already generated :(");
 	}
 
 	std::wstring ER_LightProbe::GetConstructedProbeName(const std::wstring& levelPath)
