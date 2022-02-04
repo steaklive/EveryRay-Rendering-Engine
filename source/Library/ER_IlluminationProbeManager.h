@@ -71,6 +71,7 @@ namespace Library
 		void SetPosition(const XMFLOAT3& pos);
 		const XMFLOAT3& GetPosition() { return mPosition; }
 		void SetIndex(int index) { mIndex = index; }
+		int GetIndex() { return mIndex; }
 
 		void CPUCullAgainstProbeBoundingVolume(const XMFLOAT3& aMin, const XMFLOAT3& aMax);
 		bool IsCulled() { return mIsCulled; }
@@ -109,6 +110,13 @@ namespace Library
 		bool mIsCulled = false; //i.e., we can cull-check against custom bounding box positioned at main camera
 	};
 
+	struct ER_LightProbeCell
+	{
+		XMFLOAT3 position;
+		std::vector<int> lightProbeIndices;
+		int index;
+	};
+
 	class ER_IlluminationProbeManager
 	{
 	public:
@@ -116,6 +124,8 @@ namespace Library
 		ER_IlluminationProbeManager(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ShadowMapper& shadowMapper);
 		~ER_IlluminationProbeManager();
 
+		void AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType);
+		bool IsProbeInCell(ER_LightProbe* aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds);
 		bool AreProbesReady() { return mDiffuseProbesReady && mSpecularProbesReady; }
 		void SetLevelPath(const std::wstring& aPath) { mLevelPath = aPath; };
 		void ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox = nullptr);
@@ -137,6 +147,9 @@ namespace Library
 
 		std::vector<ER_LightProbe*> mDiffuseProbes;
 		std::vector<ER_LightProbe*> mSpecularProbes;
+
+		std::vector<ER_LightProbeCell> mDiffuseProbesCells;
+		ER_AABB mDiffuseProbesCellBounds;
 
 		std::vector<int> mNonCulledDiffuseProbesIndices;
 		std::vector<int> mNonCulledSpecularProbesIndices;
@@ -170,6 +183,7 @@ namespace Library
 		int mDiffuseProbesCountX = 0;
 		int mDiffuseProbesCountY = 0;
 		int mDiffuseProbesCountZ = 0;
+		int mDiffuseProbesCellsCountTotal = 0;
 
 		int mSpecularProbesCountTotal = 0;
 		int mSpecularProbesCountX = 0;

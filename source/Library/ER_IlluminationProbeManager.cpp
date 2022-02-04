@@ -97,8 +97,8 @@ namespace Library
 			blob->Release();
 		}
 
-		XMFLOAT3 minBounds = scene->GetLightProbesVolumeMinBounds();
-		XMFLOAT3 maxBounds = scene->GetLightProbesVolumeMaxBounds();
+		const XMFLOAT3 minBounds = scene->GetLightProbesVolumeMinBounds();
+		const XMFLOAT3 maxBounds = scene->GetLightProbesVolumeMaxBounds();
 
 		mDebugProbeVolumeGizmo = new RenderableAABB(game, mMainCamera, XMFLOAT4(0.44f, 0.2f, 0.64f, 1.0f));
 		mDebugProbeVolumeGizmo->Initialize();
@@ -114,7 +114,33 @@ namespace Library
 			mDiffuseProbesCountZ = (maxBounds.z - minBounds.z) / DISTANCE_BETWEEN_DIFFUSE_PROBES;
 			mDiffuseProbesCountTotal = mDiffuseProbesCountX * mDiffuseProbesCountY * mDiffuseProbesCountZ;
 			mDiffuseProbes.reserve(mDiffuseProbesCountTotal);
-			
+
+			mDiffuseProbesCellsCountTotal = (mDiffuseProbesCountX - 1) * (mDiffuseProbesCountY - 1) * (mDiffuseProbesCountZ - 1);
+			mDiffuseProbesCells.resize(mDiffuseProbesCellsCountTotal, {});
+			float probeCellPositionOffset = static_cast<float>(DISTANCE_BETWEEN_DIFFUSE_PROBES) / 2.0f;
+			mDiffuseProbesCellBounds = { 
+				XMFLOAT3(-probeCellPositionOffset, -probeCellPositionOffset, -probeCellPositionOffset),
+				XMFLOAT3(probeCellPositionOffset, probeCellPositionOffset, probeCellPositionOffset) };
+			{
+				for (int cellsY = 0; cellsY < mDiffuseProbesCountY - 1; cellsY++)
+				{
+					for (int cellsX = 0; cellsX < mDiffuseProbesCountX - 1; cellsX++)
+					{
+						for (int cellsZ = 0; cellsZ < mDiffuseProbesCountZ - 1; cellsZ++)
+						{
+							XMFLOAT3 pos = XMFLOAT3(
+								minBounds.x + probeCellPositionOffset + cellsX * DISTANCE_BETWEEN_DIFFUSE_PROBES,
+								minBounds.y + probeCellPositionOffset + cellsY * DISTANCE_BETWEEN_DIFFUSE_PROBES,
+								minBounds.z + probeCellPositionOffset + cellsZ * DISTANCE_BETWEEN_DIFFUSE_PROBES);
+							
+							int index = cellsY * ((mDiffuseProbesCountX - 1) * (mDiffuseProbesCountZ - 1)) + cellsX * (mDiffuseProbesCountZ - 1) + cellsZ;
+							mDiffuseProbesCells[index].index = index;
+							mDiffuseProbesCells[index].position = pos;
+						}
+					}
+				}
+			}
+
 			for (size_t i = 0; i < mDiffuseProbesCountTotal; i++)
 				mDiffuseProbes.emplace_back(new ER_LightProbe(game, light, shadowMapper, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE));
 
@@ -134,6 +160,7 @@ namespace Library
 							mDiffuseProbes[index]->SetIndex(index);
 							mDiffuseProbes[index]->SetPosition(pos);
 							mDiffuseProbes[index]->SetShaderInfoForConvolution(mConvolutionVS, mConvolutionPS, mInputLayout, mLinearSamplerState);
+							AddProbeToCells(mDiffuseProbes[index], DIFFUSE_PROBE);
 						}
 					}
 				}
@@ -270,6 +297,41 @@ namespace Library
 		}
 		ReleaseObject(mIntegrationMapTextureSRV);
 
+	}
+
+	void ER_IlluminationProbeManager::AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType)
+	{
+		int index = aProbe->GetIndex();
+		if (aType == DIFFUSE_PROBE)
+		{
+			for (auto& cell : mDiffuseProbesCells)
+			{
+				if (IsProbeInCell(aProbe, cell, mDiffuseProbesCellBounds))
+					cell.lightProbeIndices.push_back(index);
+
+				if (cell.lightProbeIndices.size() > 8)
+					throw GameException("Too many probes per cell!");
+			}
+		}
+	}
+
+	bool ER_IlluminationProbeManager::IsProbeInCell(ER_LightProbe* aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds)
+	{
+		XMFLOAT3 pos = aProbe->GetPosition();
+
+		XMFLOAT3 maxBounds = XMFLOAT3(
+			aCellBounds.second.x + aCell.position.x,
+			aCellBounds.second.y + aCell.position.y,
+			aCellBounds.second.z + aCell.position.z);
+
+		XMFLOAT3 minBounds = XMFLOAT3(
+			aCellBounds.first.x + aCell.position.x,
+			aCellBounds.first.y + aCell.position.y,
+			aCellBounds.first.z + aCell.position.z);
+
+		return	(pos.x <= maxBounds.x && pos.x >= minBounds.x) &&
+				(pos.y <= maxBounds.y && pos.y >= minBounds.y) &&
+				(pos.z <= maxBounds.z && pos.z >= minBounds.z);
 	}
 
 	void ER_IlluminationProbeManager::ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox)
