@@ -11,9 +11,12 @@ namespace Library
 
 		void Map(ID3D11DeviceContext* context, D3D11_MAP mapFlags, D3D11_MAPPED_SUBRESOURCE* outMappedResource);
 		void Unmap(ID3D11DeviceContext* context);
+		void Update(ID3D11DeviceContext* context, void* aData, int dataSize, D3D11_MAP mapFlags);
 
 	private:
 		ID3D11Buffer* mBuffer = nullptr;
 		ID3D11UnorderedAccessView* mBufferUAV = nullptr;
+
+		int mByteSize = 0;
 	};
 }

@@ -9,6 +9,8 @@
 #define DISTANCE_BETWEEN_SPECULAR_PROBES 30
 #define SPECULAR_PROBE_MIP_COUNT 6
 
+#define PROBE_COUNT_PER_CELL 8
+
 static const int MaxNonCulledDiffuseProbesCountPerAxis = MAIN_CAMERA_PROBE_VOLUME_SIZE * 2 / DISTANCE_BETWEEN_DIFFUSE_PROBES;
 static const int MaxNonCulledDiffuseProbesCount = MaxNonCulledDiffuseProbesCountPerAxis * MaxNonCulledDiffuseProbesCountPerAxis * MaxNonCulledDiffuseProbesCountPerAxis;
 static const int MaxNonCulledSpecularProbesCountPerAxis = MAIN_CAMERA_PROBE_VOLUME_SIZE * 2 / DISTANCE_BETWEEN_SPECULAR_PROBES;
@@ -30,6 +32,7 @@ namespace Library
 	class QuadRenderer;
 	class Scene;
 	class RenderableAABB;
+	class ER_GPUBuffer;
 
 	enum ER_ProbeType
 	{
@@ -159,13 +162,16 @@ namespace Library
 
 		ER_GPUTexture* mDiffuseCubemapArrayRT;
 		ER_GPUTexture* mSpecularCubemapArrayRT;
-
 		ER_GPUTexture* mDiffuseCubemapFacesRT;
 		ER_GPUTexture* mDiffuseCubemapFacesConvolutedRT;
 		ER_GPUTexture* mSpecularCubemapFacesRT;
 		ER_GPUTexture* mSpecularCubemapFacesConvolutedRT;
 		DepthTarget* mDiffuseCubemapDepthBuffers[CUBEMAP_FACES_COUNT];
 		DepthTarget* mSpecularCubemapDepthBuffers[CUBEMAP_FACES_COUNT];
+
+		int* mDiffuseProbesTexArrayIndicesCPUBuffer;
+		ER_GPUBuffer* mDiffuseProbesTexArrayIndicesGPUBuffer;
+		ER_GPUBuffer* mDiffuseProbesCellsIndicesGPUBuffer;
 
 		bool mDiffuseProbesReady = false;
 		bool mSpecularProbesReady = false;

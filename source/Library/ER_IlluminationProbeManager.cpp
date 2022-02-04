@@ -19,6 +19,7 @@
 #include "Effect.h"
 #include "DebugLightProbeMaterial.h"
 #include "RenderableAABB.h"
+#include "ER_GPUBuffer.h"
 
 namespace Library
 {
@@ -141,6 +142,7 @@ namespace Library
 				}
 			}
 
+
 			for (size_t i = 0; i < mDiffuseProbesCountTotal; i++)
 				mDiffuseProbes.emplace_back(new ER_LightProbe(game, light, shadowMapper, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE));
 
@@ -165,6 +167,18 @@ namespace Library
 					}
 				}
 			}
+
+			int* diffuseProbeCellsIndicesCPUBuffer = new int[mDiffuseProbesCellsCountTotal * PROBE_COUNT_PER_CELL];
+			for (int probeIndex = 0; probeIndex < mDiffuseProbesCellsCountTotal; probeIndex++)
+			{
+				for (int indices = 0; indices < PROBE_COUNT_PER_CELL; indices++)
+					diffuseProbeCellsIndicesCPUBuffer[probeIndex * PROBE_COUNT_PER_CELL + indices] = mDiffuseProbesCells[probeIndex].lightProbeIndices[indices];
+			}
+			mDiffuseProbesCellsIndicesGPUBuffer = new ER_GPUBuffer(game.Direct3DDevice(), diffuseProbeCellsIndicesCPUBuffer, mDiffuseProbesCellsCountTotal * PROBE_COUNT_PER_CELL, sizeof(int));
+			DeleteObjects(diffuseProbeCellsIndicesCPUBuffer);
+
+			mDiffuseProbesTexArrayIndicesCPUBuffer = new int[mDiffuseProbesCountTotal];
+			mDiffuseProbesTexArrayIndicesGPUBuffer = new ER_GPUBuffer(game.Direct3DDevice(), mDiffuseProbesTexArrayIndicesCPUBuffer, mDiffuseProbesCountTotal, sizeof(int), D3D11_USAGE_DYNAMIC, D3D11_BIND_SHADER_RESOURCE, D3D11_CPU_ACCESS_WRITE);
 
 			auto result = scene->objects.insert(
 				std::pair<std::string, Rendering::RenderingObject*>(
@@ -296,7 +310,9 @@ namespace Library
 			DeleteObject(mSpecularCubemapDepthBuffers[i]);
 		}
 		ReleaseObject(mIntegrationMapTextureSRV);
-
+		DeleteObject(mDiffuseProbesCellsIndicesGPUBuffer);
+		DeleteObjects(mDiffuseProbesTexArrayIndicesCPUBuffer);
+		DeleteObject(mDiffuseProbesTexArrayIndicesGPUBuffer);
 	}
 
 	void ER_IlluminationProbeManager::AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType)
@@ -309,7 +325,7 @@ namespace Library
 				if (IsProbeInCell(aProbe, cell, mDiffuseProbesCellBounds))
 					cell.lightProbeIndices.push_back(index);
 
-				if (cell.lightProbeIndices.size() > 8)
+				if (cell.lightProbeIndices.size() > PROBE_COUNT_PER_CELL)
 					throw GameException("Too many probes per cell!");
 			}
 		}
@@ -479,16 +495,24 @@ namespace Library
 		auto context = game.Direct3DDeviceContext();
 		if (aType == DIFFUSE_PROBE)
 		{
+			for (int i = 0; i < mDiffuseProbesCountTotal; i++)
+				mDiffuseProbesTexArrayIndicesCPUBuffer[i] = -1;
+
 			for (int i = 0; i < MaxNonCulledDiffuseProbesCount; i++)
 			{
 				if (i < mNonCulledDiffuseProbesIndices.size() && i < probes.size())
 				{
+					int probeIndex = mNonCulledDiffuseProbesIndices[i];
 					for (int cubeI = 0; cubeI < CUBEMAP_FACES_COUNT; cubeI++)
 						context->CopySubresourceRegion(mDiffuseCubemapArrayRT->GetTexture2D(), D3D11CalcSubresource(0, cubeI + CUBEMAP_FACES_COUNT * i, 1), 0, 0, 0,
-							probes[mNonCulledDiffuseProbesIndices[i]]->GetCubemapTexture2D(), D3D11CalcSubresource(0, cubeI, 1), NULL);
+							probes[probeIndex]->GetCubemapTexture2D(), D3D11CalcSubresource(0, cubeI, 1), NULL);
+
+					mDiffuseProbesTexArrayIndicesCPUBuffer[probeIndex] = CUBEMAP_FACES_COUNT * i;
 				}
+				//else
 				//TODO clear remaining texture subregions with solid color (PINK)
 			}
+			mDiffuseProbesTexArrayIndicesGPUBuffer->Update(context, mDiffuseProbesTexArrayIndicesCPUBuffer, sizeof(mDiffuseProbesTexArrayIndicesCPUBuffer[0]) * mDiffuseProbesCountTotal, D3D11_MAP_WRITE_DISCARD);
 		}
 		else
 		{

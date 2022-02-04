@@ -6,6 +6,7 @@ namespace Library
 	ER_GPUBuffer::ER_GPUBuffer(ID3D11Device* device, void* aData, UINT objectsCount, UINT byteStride, D3D11_USAGE usage, UINT bindFlags, UINT cpuAccessFlags, UINT miscFlags, bool needUAV)
 	{
 		D3D11_SUBRESOURCE_DATA init_data = { aData, 0, 0 };
+		mByteSize = objectsCount * byteStride;
 
 		D3D11_BUFFER_DESC buf_desc;
 		buf_desc.ByteWidth = objectsCount * byteStride;
@@ -46,6 +47,17 @@ namespace Library
 	void ER_GPUBuffer::Unmap(ID3D11DeviceContext* context)
 	{
 		context->Unmap(mBuffer, 0);
+	}
+
+	void ER_GPUBuffer::Update(ID3D11DeviceContext* context, void* aData, int dataSize, D3D11_MAP mapFlags)
+	{
+		assert(mByteSize == dataSize);
+
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+		ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
+		Map(context, mapFlags, &mappedResource);
+		memcpy(mappedResource.pData, aData, dataSize);
+		Unmap(context);
 	}
 
 }
