@@ -49,6 +49,12 @@ namespace Library
 		if (!scene)
 			throw GameException("No scene to load light probes for!");
 
+		if (!scene->HasLightProbesSupport())
+		{
+			mEnabled = false;
+			return;
+		}
+
 		D3D11_SAMPLER_DESC sam_desc;
 		sam_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 		sam_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -100,6 +106,8 @@ namespace Library
 
 		const XMFLOAT3 minBounds = scene->GetLightProbesVolumeMinBounds();
 		const XMFLOAT3 maxBounds = scene->GetLightProbesVolumeMaxBounds();
+		mMinBounds = minBounds;
+		mMaxBounds = maxBounds;
 
 		mDebugProbeVolumeGizmo = new RenderableAABB(game, mMainCamera, XMFLOAT4(0.44f, 0.2f, 0.64f, 1.0f));
 		mDebugProbeVolumeGizmo->Initialize();
@@ -110,31 +118,35 @@ namespace Library
 
 		// diffuse probes setup
 		{
-			mDiffuseProbesCountX = (maxBounds.x - minBounds.x) / DISTANCE_BETWEEN_DIFFUSE_PROBES;
-			mDiffuseProbesCountY = (maxBounds.y - minBounds.y) / DISTANCE_BETWEEN_DIFFUSE_PROBES;
-			mDiffuseProbesCountZ = (maxBounds.z - minBounds.z) / DISTANCE_BETWEEN_DIFFUSE_PROBES;
+			mDiffuseProbesCountX = (maxBounds.x - minBounds.x) / DISTANCE_BETWEEN_DIFFUSE_PROBES + 1;
+			mDiffuseProbesCountY = (maxBounds.y - minBounds.y) / DISTANCE_BETWEEN_DIFFUSE_PROBES + 1;
+			mDiffuseProbesCountZ = (maxBounds.z - minBounds.z) / DISTANCE_BETWEEN_DIFFUSE_PROBES + 1;
 			mDiffuseProbesCountTotal = mDiffuseProbesCountX * mDiffuseProbesCountY * mDiffuseProbesCountZ;
 			mDiffuseProbes.reserve(mDiffuseProbesCountTotal);
 
-			mDiffuseProbesCellsCountTotal = (mDiffuseProbesCountX - 1) * (mDiffuseProbesCountY - 1) * (mDiffuseProbesCountZ - 1);
+			mDiffuseProbesCellsCountX = mDiffuseProbesCountX - 1;
+			mDiffuseProbesCellsCountY = mDiffuseProbesCountY - 1;
+			mDiffuseProbesCellsCountZ = mDiffuseProbesCountZ - 1;
+			mDiffuseProbesCellsCountTotal = mDiffuseProbesCellsCountX * mDiffuseProbesCellsCountY * mDiffuseProbesCellsCountZ;
 			mDiffuseProbesCells.resize(mDiffuseProbesCellsCountTotal, {});
+			
 			float probeCellPositionOffset = static_cast<float>(DISTANCE_BETWEEN_DIFFUSE_PROBES) / 2.0f;
 			mDiffuseProbesCellBounds = { 
 				XMFLOAT3(-probeCellPositionOffset, -probeCellPositionOffset, -probeCellPositionOffset),
 				XMFLOAT3(probeCellPositionOffset, probeCellPositionOffset, probeCellPositionOffset) };
 			{
-				for (int cellsY = 0; cellsY < mDiffuseProbesCountY - 1; cellsY++)
+				for (int cellsY = 0; cellsY < mDiffuseProbesCellsCountY; cellsY++)
 				{
-					for (int cellsX = 0; cellsX < mDiffuseProbesCountX - 1; cellsX++)
+					for (int cellsX = 0; cellsX < mDiffuseProbesCellsCountX; cellsX++)
 					{
-						for (int cellsZ = 0; cellsZ < mDiffuseProbesCountZ - 1; cellsZ++)
+						for (int cellsZ = 0; cellsZ < mDiffuseProbesCellsCountZ; cellsZ++)
 						{
 							XMFLOAT3 pos = XMFLOAT3(
 								minBounds.x + probeCellPositionOffset + cellsX * DISTANCE_BETWEEN_DIFFUSE_PROBES,
 								minBounds.y + probeCellPositionOffset + cellsY * DISTANCE_BETWEEN_DIFFUSE_PROBES,
 								minBounds.z + probeCellPositionOffset + cellsZ * DISTANCE_BETWEEN_DIFFUSE_PROBES);
 							
-							int index = cellsY * ((mDiffuseProbesCountX - 1) * (mDiffuseProbesCountZ - 1)) + cellsX * (mDiffuseProbesCountZ - 1) + cellsZ;
+							int index = cellsY * (mDiffuseProbesCellsCountX * mDiffuseProbesCellsCountZ) + cellsX * mDiffuseProbesCellsCountZ + cellsZ;
 							mDiffuseProbesCells[index].index = index;
 							mDiffuseProbesCells[index].position = pos;
 						}
@@ -162,7 +174,7 @@ namespace Library
 							mDiffuseProbes[index]->SetIndex(index);
 							mDiffuseProbes[index]->SetPosition(pos);
 							mDiffuseProbes[index]->SetShaderInfoForConvolution(mConvolutionVS, mConvolutionPS, mInputLayout, mLinearSamplerState);
-							AddProbeToCells(mDiffuseProbes[index], DIFFUSE_PROBE);
+							AddProbeToCells(mDiffuseProbes[index], DIFFUSE_PROBE, minBounds, maxBounds);
 						}
 					}
 				}
@@ -315,11 +327,12 @@ namespace Library
 		DeleteObject(mDiffuseProbesTexArrayIndicesGPUBuffer);
 	}
 
-	void ER_IlluminationProbeManager::AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType)
+	void ER_IlluminationProbeManager::AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds)
 	{
 		int index = aProbe->GetIndex();
 		if (aType == DIFFUSE_PROBE)
 		{
+			// brute force O(cells * probes)
 			for (auto& cell : mDiffuseProbesCells)
 			{
 				if (IsProbeInCell(aProbe, cell, mDiffuseProbesCellBounds))
@@ -329,6 +342,34 @@ namespace Library
 					throw GameException("Too many probes per cell!");
 			}
 		}
+	}
+
+	// Fast uniform-grid searching approach (WARNING: can not do multiple indices per pos. (i.e., when pos. is on the edge of several cells))
+	int ER_IlluminationProbeManager::GetCellIndex(const XMFLOAT3& pos, ER_ProbeType aType)
+	{
+		int finalIndex = -1;
+
+		if (aType == DIFFUSE_PROBE)
+		{
+			int xIndex = (pos.x - mMinBounds.x) / DISTANCE_BETWEEN_DIFFUSE_PROBES;
+			int yIndex = (pos.y - mMinBounds.y) / DISTANCE_BETWEEN_DIFFUSE_PROBES;
+			int zIndex = (pos.z - mMinBounds.z) / DISTANCE_BETWEEN_DIFFUSE_PROBES;
+
+			//little hacky way to prevent from out-of-bounds
+			if (xIndex >= mDiffuseProbesCellsCountX)
+				xIndex = mDiffuseProbesCellsCountX - 1;
+			if (yIndex >= mDiffuseProbesCellsCountY)
+				yIndex = mDiffuseProbesCellsCountY - 1;
+			if (zIndex >= mDiffuseProbesCellsCountZ)
+				zIndex = mDiffuseProbesCellsCountZ - 1;
+
+			finalIndex = yIndex * (mDiffuseProbesCellsCountX * mDiffuseProbesCellsCountZ) + xIndex * mDiffuseProbesCellsCountZ + zIndex;
+
+			if (finalIndex >= mDiffuseProbesCellsCountTotal)
+				throw GameException("Incorrect probes cell index!");
+		}
+
+		return finalIndex;
 	}
 
 	bool ER_IlluminationProbeManager::IsProbeInCell(ER_LightProbe* aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds)
@@ -537,6 +578,8 @@ namespace Library
 
 	void ER_IlluminationProbeManager::UpdateProbes(Game& game)
 	{
+		int difProbeCellIndexCamera = GetCellIndex(mMainCamera.Position(), DIFFUSE_PROBE);
+
 		mDebugProbeVolumeGizmo->SetPosition(mMainCamera.Position());
 		mDebugProbeVolumeGizmo->Update();
 

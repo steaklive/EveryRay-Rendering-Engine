@@ -111,6 +111,7 @@ namespace Library
 		bool mIsProbeLoadedFromDisk = false;
 		bool mIsComputed = false;
 		bool mIsCulled = false; //i.e., we can cull-check against custom bounding box positioned at main camera
+
 	};
 
 	struct ER_LightProbeCell
@@ -127,8 +128,6 @@ namespace Library
 		ER_IlluminationProbeManager(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ShadowMapper& shadowMapper);
 		~ER_IlluminationProbeManager();
 
-		void AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType);
-		bool IsProbeInCell(ER_LightProbe* aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds);
 		bool AreProbesReady() { return mDiffuseProbesReady && mSpecularProbesReady; }
 		void SetLevelPath(const std::wstring& aPath) { mLevelPath = aPath; };
 		void ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox = nullptr);
@@ -139,7 +138,10 @@ namespace Library
 		const ER_LightProbe* GetDiffuseLightProbe(int index) const { return mDiffuseProbes[index]; }
 		const ER_LightProbe* GetSpecularLightProbe(int index) const { return mSpecularProbes[index]; }
 		ID3D11ShaderResourceView* GetIntegrationMap() { return mIntegrationMapTextureSRV; }
+		int GetCellIndex(const XMFLOAT3& pos, ER_ProbeType aType);
 	private:
+		void AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds);
+		bool IsProbeInCell(ER_LightProbe* aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds);
 		void UpdateProbesByType(Game& game, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds);
 		QuadRenderer* mQuadRenderer = nullptr;
 		Camera& mMainCamera;
@@ -189,11 +191,19 @@ namespace Library
 		int mDiffuseProbesCountX = 0;
 		int mDiffuseProbesCountY = 0;
 		int mDiffuseProbesCountZ = 0;
+		int mDiffuseProbesCellsCountX = 0;
+		int mDiffuseProbesCellsCountY = 0;
+		int mDiffuseProbesCellsCountZ = 0;
 		int mDiffuseProbesCellsCountTotal = 0;
 
 		int mSpecularProbesCountTotal = 0;
 		int mSpecularProbesCountX = 0;
 		int mSpecularProbesCountY = 0;
 		int mSpecularProbesCountZ = 0;
+
+		bool mEnabled = true;
+
+		XMFLOAT3 mMinBounds;
+		XMFLOAT3 mMaxBounds;
 	};
 }

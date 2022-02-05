@@ -27,6 +27,7 @@ namespace Library
 		Camera& GetCamera() { return mCamera; }
 		const XMFLOAT3& GetLightProbesVolumeMinBounds() const { return mLightProbesVolumeMinBounds; }
 		const XMFLOAT3& GetLightProbesVolumeMaxBounds() const { return mLightProbesVolumeMaxBounds; }
+		bool HasLightProbesSupport() { return mHasLightProbes; }
 
 		std::map<std::string, Rendering::RenderingObject*> objects;
 
@@ -46,6 +47,7 @@ namespace Library
 		Camera& mCamera;
 		std::string mScenePath;
 
+		bool mHasLightProbes = true;
 		XMFLOAT3 mLightProbesVolumeMinBounds = { 0,0,0 };
 		XMFLOAT3 mLightProbesVolumeMaxBounds = { 0,0,0 };
 	};

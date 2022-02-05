@@ -83,6 +83,8 @@ namespace Library
 
 				mLightProbesVolumeMinBounds = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
 			}
+			else
+				mHasLightProbes = false;
 
 			if (root.isMember("light_probes_volume_bounds_max")) {
 				float vec3[3];
@@ -91,6 +93,8 @@ namespace Library
 
 				mLightProbesVolumeMaxBounds = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
 			}
+			else 
+				mHasLightProbes = false;
 
 			// add rendering objects to scene
 			unsigned int numRenderingObjects = root["rendering_objects"].size();
