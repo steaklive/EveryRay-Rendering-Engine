@@ -186,11 +186,20 @@ namespace Library
 				for (int indices = 0; indices < PROBE_COUNT_PER_CELL; indices++)
 					diffuseProbeCellsIndicesCPUBuffer[probeIndex * PROBE_COUNT_PER_CELL + indices] = mDiffuseProbesCells[probeIndex].lightProbeIndices[indices];
 			}
-			mDiffuseProbesCellsIndicesGPUBuffer = new ER_GPUBuffer(game.Direct3DDevice(), diffuseProbeCellsIndicesCPUBuffer, mDiffuseProbesCellsCountTotal * PROBE_COUNT_PER_CELL, sizeof(int));
+			mDiffuseProbesCellsIndicesGPUBuffer = new ER_GPUBuffer(game.Direct3DDevice(), diffuseProbeCellsIndicesCPUBuffer, mDiffuseProbesCellsCountTotal * PROBE_COUNT_PER_CELL, sizeof(int),
+				D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
 			DeleteObjects(diffuseProbeCellsIndicesCPUBuffer);
 
+			XMFLOAT3* diffuseProbesPositionsCPUBuffer = new XMFLOAT3[mDiffuseProbesCountTotal];
+			for (int probeIndex = 0; probeIndex < mDiffuseProbesCountTotal; probeIndex++)
+				diffuseProbesPositionsCPUBuffer[probeIndex] = mDiffuseProbes[probeIndex]->GetPosition();
+			mDiffuseProbesPositionsGPUBuffer = new ER_GPUBuffer(game.Direct3DDevice(), diffuseProbesPositionsCPUBuffer, mDiffuseProbesCountTotal, sizeof(XMFLOAT3),
+				D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
+			DeleteObjects(diffuseProbesPositionsCPUBuffer);
+
 			mDiffuseProbesTexArrayIndicesCPUBuffer = new int[mDiffuseProbesCountTotal];
-			mDiffuseProbesTexArrayIndicesGPUBuffer = new ER_GPUBuffer(game.Direct3DDevice(), mDiffuseProbesTexArrayIndicesCPUBuffer, mDiffuseProbesCountTotal, sizeof(int), D3D11_USAGE_DYNAMIC, D3D11_BIND_SHADER_RESOURCE, D3D11_CPU_ACCESS_WRITE);
+			mDiffuseProbesTexArrayIndicesGPUBuffer = new ER_GPUBuffer(game.Direct3DDevice(), mDiffuseProbesTexArrayIndicesCPUBuffer, mDiffuseProbesCountTotal, sizeof(int),
+				D3D11_USAGE_DYNAMIC, D3D11_BIND_SHADER_RESOURCE, D3D11_CPU_ACCESS_WRITE, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
 
 			auto result = scene->objects.insert(
 				std::pair<std::string, Rendering::RenderingObject*>(
@@ -325,6 +334,7 @@ namespace Library
 		DeleteObject(mDiffuseProbesCellsIndicesGPUBuffer);
 		DeleteObjects(mDiffuseProbesTexArrayIndicesCPUBuffer);
 		DeleteObject(mDiffuseProbesTexArrayIndicesGPUBuffer);
+		DeleteObject(mDiffuseProbesPositionsGPUBuffer);
 	}
 
 	void ER_IlluminationProbeManager::AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds)
@@ -355,21 +365,36 @@ namespace Library
 			int yIndex = (pos.y - mMinBounds.y) / DISTANCE_BETWEEN_DIFFUSE_PROBES;
 			int zIndex = (pos.z - mMinBounds.z) / DISTANCE_BETWEEN_DIFFUSE_PROBES;
 
+			if (xIndex < 0 || xIndex > mDiffuseProbesCellsCountX)
+				return -1;
+			if (yIndex < 0 || yIndex > mDiffuseProbesCellsCountY)
+				return -1;
+			if (zIndex < 0 || zIndex > mDiffuseProbesCellsCountZ)
+				return -1;
+
 			//little hacky way to prevent from out-of-bounds
-			if (xIndex >= mDiffuseProbesCellsCountX)
+			if (xIndex == mDiffuseProbesCellsCountX)
 				xIndex = mDiffuseProbesCellsCountX - 1;
-			if (yIndex >= mDiffuseProbesCellsCountY)
+			if (yIndex == mDiffuseProbesCellsCountY)
 				yIndex = mDiffuseProbesCellsCountY - 1;
-			if (zIndex >= mDiffuseProbesCellsCountZ)
+			if (zIndex == mDiffuseProbesCellsCountZ)
 				zIndex = mDiffuseProbesCellsCountZ - 1;
 
 			finalIndex = yIndex * (mDiffuseProbesCellsCountX * mDiffuseProbesCellsCountZ) + xIndex * mDiffuseProbesCellsCountZ + zIndex;
 
 			if (finalIndex >= mDiffuseProbesCellsCountTotal)
-				throw GameException("Incorrect probes cell index!");
+				return -1;
 		}
 
 		return finalIndex;
+	}
+
+	const DirectX::XMFLOAT4& ER_IlluminationProbeManager::GetProbesCellsCount(ER_ProbeType aType)
+	{
+		if (aType == DIFFUSE_PROBE)
+			return XMFLOAT4(mDiffuseProbesCellsCountX, mDiffuseProbesCellsCountY, mDiffuseProbesCellsCountZ, mDiffuseProbesCellsCountTotal);
+		else
+			Vector4Helper::Zero; //TODO
 	}
 
 	bool ER_IlluminationProbeManager::IsProbeInCell(ER_LightProbe* aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds)

@@ -24,6 +24,7 @@ namespace Library
 	class RenderableAABB;
 	class RenderingObject;
 	class ER_IlluminationProbeManager;
+	class ER_GPUBuffer;
 
 	namespace IlluminationCBufferData {
 		struct VoxelizationDebugCB
@@ -58,6 +59,10 @@ namespace Library
 			XMFLOAT4 SunDirection;
 			XMFLOAT4 SunColor;
 			XMFLOAT4 CameraPosition;
+			XMFLOAT4 LightProbesMinBounds; //min volume's extent of all scene's probes
+			XMFLOAT4 LightProbesMaxBounds; //max volume's extent of all scene's probes
+			XMFLOAT4 DiffuseProbesCellsCount; //x,y,z,total
+			float DistanceBetweenDiffuseProbes;
 		};
 	}
 

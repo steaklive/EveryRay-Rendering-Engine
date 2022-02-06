@@ -1,20 +1,26 @@
 #define NUM_OF_SHADOW_CASCADES 3
+#define NUM_OF_PROBES_PER_CELL 8
+
 static const float4 ColorWhite = { 1, 1, 1, 1 };
 static const float Pi = 3.141592654f;
-
-Texture2D<float4> GbufferAlbedoTexture : register(t0);
-Texture2D<float4> GbufferNormalTexture : register(t1);
-Texture2D<float4> GbufferWorldPosTexture : register(t2);
-Texture2D<float4> GbufferExtraTexture : register(t3);
-TextureCube<float4> IrradianceDiffuseTexture : register(t4);
-TextureCube<float4> IrradianceSpecularTexture : register(t5);
-Texture2D<float4> IntegrationTexture : register(t6);
-Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t7);
 
 SamplerState SamplerLinear : register(s0);
 SamplerComparisonState CascadedPcfShadowMapSampler : register(s1);
 
 RWTexture2D<float4> OutputTexture : register(u0);
+
+Texture2D<float4> GbufferAlbedoTexture : register(t0);
+Texture2D<float4> GbufferNormalTexture : register(t1);
+Texture2D<float4> GbufferWorldPosTexture : register(t2);
+Texture2D<float4> GbufferExtraTexture : register(t3);
+TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray : register(t4);
+TextureCube<float4> IrradianceSpecularTexture : register(t5);
+Texture2D<float4> IntegrationTexture : register(t6);
+Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t7);
+
+StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices : register(t10); //linear array of cells with 8 probes' indices in each cell
+StructuredBuffer<int> DiffuseProbesTextureArrayIndices : register(t11); //array of all diffuse probes in scene with indices in 'IrradianceDiffuseProbesTextureArray' for each probe (-1 if not in array)
+StructuredBuffer<float3> DiffuseProbesPositions : register(t12); //linear array of all diffuse probes positions
 
 cbuffer DeferredLightingCBuffer : register(b0)
 {
@@ -24,6 +30,10 @@ cbuffer DeferredLightingCBuffer : register(b0)
     float4 SunDirection;
     float4 SunColor;
     float4 CameraPosition;
+    float4 LightProbesMinBounds; //min volume's extent of all scene's probes
+    float4 LightProbesMaxBounds; //max volume's extent of all scene's probes
+    float4 DiffuseProbesCellsCount; //x,y,z,total
+    float DistanceBetweenDiffuseProbes;
 }
 
 float CalculateShadow(float3 worldPos, float4x4 svp, int index)
@@ -180,6 +190,87 @@ float3 ApproximateSpecularIBL(float3 F0, float3 reflectDir, float nDotV, float r
     return prefilteredColor * (F0 * environmentBRDF.x + environmentBRDF.y);
 
 }
+
+float3 GetTrilinearInterpolationFromNeighbourProbes(float3 pos, float3 probeSamples[NUM_OF_PROBES_PER_CELL], float3 probePos[NUM_OF_PROBES_PER_CELL])
+{
+    float3 result = float3(0.0, 0.0, 0.0);
+    
+    float distanceX0 = abs(probePos[0].x - pos.x);
+    float distanceY0 = abs(probePos[0].y - pos.y);
+    float distanceZ0 = abs(probePos[0].z - pos.z);
+    
+    float3 bottomLeft = lerp(probeSamples[0], probeSamples[1], distanceZ0 / DistanceBetweenDiffuseProbes);    
+    float3 bottomRight = lerp(probeSamples[2], probeSamples[3], distanceZ0 / DistanceBetweenDiffuseProbes);
+    float3 upperLeft = lerp(probeSamples[4], probeSamples[5], distanceZ0 / DistanceBetweenDiffuseProbes);
+    float3 upperRight = lerp(probeSamples[6], probeSamples[7], distanceZ0 / DistanceBetweenDiffuseProbes);
+    
+    float3 bottomTotal = lerp(bottomLeft, bottomRight, distanceX0 / DistanceBetweenDiffuseProbes);
+    float3 upperTotal = lerp(upperLeft, upperRight, distanceX0 / DistanceBetweenDiffuseProbes);
+    
+    result = lerp(bottomTotal, upperTotal, distanceY0 / DistanceBetweenDiffuseProbes);
+    
+    return result;
+}
+
+int GetLightProbesCellIndex(float3 pos, bool isDiffuse)
+{
+    int finalIndex = -1;
+    if (isDiffuse)
+    {
+        float3 index = (pos - LightProbesMinBounds.xyz) / DistanceBetweenDiffuseProbes;
+        if (index.x < 0.0f || index.x > DiffuseProbesCellsCount.x)
+            return -1;
+        if (index.y < 0.0f || index.y > DiffuseProbesCellsCount.y)
+            return -1;
+        if (index.z < 0.0f || index.z > DiffuseProbesCellsCount.z)
+            return -1;
+        
+		//little hacky way to prevent from out-of-bounds
+        if (index.x == DiffuseProbesCellsCount.x)
+            index.x = DiffuseProbesCellsCount.x - 1;
+        if (index.y == DiffuseProbesCellsCount.y)
+            index.y = DiffuseProbesCellsCount.y - 1;
+        if (index.z == DiffuseProbesCellsCount.z)
+            index.z = DiffuseProbesCellsCount.z - 1;
+
+        finalIndex = floor(index.y) * (DiffuseProbesCellsCount.x * DiffuseProbesCellsCount.z) + floor(index.x) * DiffuseProbesCellsCount.z + floor(index.z);
+
+        if (finalIndex >= DiffuseProbesCellsCount.w)
+            return -1;
+    }
+    
+    return finalIndex;
+}
+
+float3 GetDiffuseIrradiance(float3 worldPos, float3 normal)
+{
+    int probesIndices[NUM_OF_PROBES_PER_CELL];
+    float3 probeSamples[NUM_OF_PROBES_PER_CELL];
+    float3 probePositions[NUM_OF_PROBES_PER_CELL];
+    
+    float3 finalSum = float3(0.0, 0.0, 0.0);
+    
+    int diffuseProbesCellIndex = GetLightProbesCellIndex(worldPos, true);
+    if (diffuseProbesCellIndex != -1)
+    {
+        for (int i = 0; i < NUM_OF_PROBES_PER_CELL; i++)
+        {
+            probesIndices[i] = DiffuseProbesCellsWithProbeIndices[NUM_OF_PROBES_PER_CELL * diffuseProbesCellIndex + i];
+            
+            int indexInTexArray = DiffuseProbesTextureArrayIndices[probesIndices[i]];// -1 is culled and not in texture array
+            if (indexInTexArray != -1)
+                probeSamples[i] = IrradianceDiffuseProbesTextureArray.SampleLevel(SamplerLinear, float4(normal, indexInTexArray / 6), 0).rgb;
+            else
+                probeSamples[i] = float3(0.0, 0.0, 0.0);
+            
+            probePositions[i] = DiffuseProbesPositions[probesIndices[i]];
+        }
+        
+        finalSum = GetTrilinearInterpolationFromNeighbourProbes(worldPos, probeSamples, probePositions);
+    }
+    return finalSum;
+}
+
 float3 IndirectLightingPBR(float3 diffuseAlbedo, float3 normalWS, float3 positionWS, float roughness, float3 F0, float metalness)
 {
     float3 viewDir = normalize(CameraPosition.xyz - positionWS);
@@ -187,7 +278,7 @@ float3 IndirectLightingPBR(float3 diffuseAlbedo, float3 normalWS, float3 positio
     float3 reflectDir = normalize(reflect(-viewDir, normalWS));
     float ao = 1.0f;
 
-    float3 irradiance = IrradianceDiffuseTexture.SampleLevel(SamplerLinear, normalWS, 0).rgb / Pi;
+    float3 irradiance = GetDiffuseIrradiance(positionWS, normalWS)/* / Pi*/;
     float3 indirectDiffuseLighting = irradiance * diffuseAlbedo * float3(1.0f - metalness, 1.0f - metalness, 1.0f - metalness);
 
     float3 F = Schlick_Fresnel_UE(F0, nDotV);
@@ -210,13 +301,13 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     
     float roughness = extraGbuffer.g;
     float metalness = extraGbuffer.b;
-        
+
     //reflectance at normal incidence for dia-electic or metal
     float3 F0 = float3(0.04, 0.04, 0.04);
     F0 = lerp(F0, diffuseAlbedo.rgb, metalness);
 
     float3 directLighting = float3(0.0, 0.0, 0.0);
-    directLighting += DirectLightingPBR(normalWS, SunColor.xyz, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness);
+        directLighting += DirectLightingPBR(normalWS, SunColor.xyz, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness);
     
     float3 indirectLighting = float3(0.0, 0.0, 0.0);
     if (extraGbuffer.a < 1.0f)

@@ -26,6 +26,7 @@
 #include "IBLRadianceMap.h"
 #include "RenderableAABB.h"
 #include "ER_IlluminationProbeManager.h"
+#include "ER_GPUBuffer.h"
 
 namespace Library {
 
@@ -595,30 +596,41 @@ namespace Library {
 			mDeferredLightingConstantBuffer.Data.SunDirection = XMFLOAT4{ -mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f };
 			mDeferredLightingConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLightIntensity };
 			mDeferredLightingConstantBuffer.Data.CameraPosition = XMFLOAT4{ mCamera.Position().x,mCamera.Position().y,mCamera.Position().z, 1.0f };
+			mDeferredLightingConstantBuffer.Data.LightProbesMinBounds = XMFLOAT4{ mProbesManager->GetProbesVolumeMin().x, mProbesManager->GetProbesVolumeMin().y, mProbesManager->GetProbesVolumeMin().z, 1.0f };
+			mDeferredLightingConstantBuffer.Data.LightProbesMaxBounds = XMFLOAT4{ mProbesManager->GetProbesVolumeMax().x, mProbesManager->GetProbesVolumeMax().y, mProbesManager->GetProbesVolumeMax().z, 1.0f };
+			mDeferredLightingConstantBuffer.Data.DiffuseProbesCellsCount = mProbesManager->GetProbesCellsCount(DIFFUSE_PROBE);
+			mDeferredLightingConstantBuffer.Data.DistanceBetweenDiffuseProbes = DISTANCE_BETWEEN_DIFFUSE_PROBES;
+
 			mDeferredLightingConstantBuffer.ApplyChanges(context);
 
-			ID3D11UnorderedAccessView* UAV[1] = { aRenderTarget->GetUAV() };
 			ID3D11Buffer* CBs[1] = { mDeferredLightingConstantBuffer.Buffer() };
+			context->CSSetConstantBuffers(0, 1, CBs);
 
-			ID3D11ShaderResourceView* SRs[10] = {
+			ID3D11ShaderResourceView* SRs[13] = {
 				gbuffer->GetAlbedo()->GetSRV(),
 				gbuffer->GetNormals()->GetSRV(),
 				gbuffer->GetPositions()->GetSRV(),
 				gbuffer->GetExtraBuffer()->GetSRV(),
-				/*mIrradianceDiffuseTextureSRV,*/mProbesManager->GetDiffuseLightProbe(0)->GetCubemapSRV(),
-				/*mIrradianceSpecularTextureSRV,*/mProbesManager->GetSpecularLightProbe(0)->GetCubemapSRV(),
+				mProbesManager->GetCulledDiffuseProbesTextureArray()->GetSRV(),
+				 mProbesManager->GetSpecularLightProbe(0)->GetCubemapSRV() /*TODO*/,
 				mProbesManager->GetIntegrationMap()
 			};
 			for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 				SRs[7 + i] = mShadowMapper.GetShadowTexture(i);
 
-			ID3D11SamplerState* SS[2] = { mLinearSamplerState, mShadowSamplerState };
+			SRs[10] = mProbesManager->GetDiffuseProbesCellsIndicesBuffer()->GetBufferSRV();
+			SRs[11] = mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer()->GetBufferSRV();
+			SRs[12] = mProbesManager->GetDiffuseProbesPositionsBuffer()->GetBufferSRV();
+			context->CSSetShaderResources(0, 13, SRs);
 
-			context->CSSetShaderResources(0, 10, SRs);
-			context->CSSetConstantBuffers(0, 1, CBs);
+			ID3D11SamplerState* SS[2] = { mLinearSamplerState, mShadowSamplerState };
 			context->CSSetSamplers(0, 2, SS);
-			context->CSSetShader(mDeferredLightingCS, NULL, NULL);
+
+			ID3D11UnorderedAccessView* UAV[1] = { aRenderTarget->GetUAV() };
 			context->CSSetUnorderedAccessViews(0, 1, UAV, NULL);
+
+			context->CSSetShader(mDeferredLightingCS, NULL, NULL);
+
 			context->Dispatch(DivideByMultiple(static_cast<UINT>(aRenderTarget->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(aRenderTarget->GetHeight()), 8u), 1u);
 
 			ID3D11ShaderResourceView* nullSRV[] = { NULL };

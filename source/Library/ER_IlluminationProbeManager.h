@@ -139,6 +139,16 @@ namespace Library
 		const ER_LightProbe* GetSpecularLightProbe(int index) const { return mSpecularProbes[index]; }
 		ID3D11ShaderResourceView* GetIntegrationMap() { return mIntegrationMapTextureSRV; }
 		int GetCellIndex(const XMFLOAT3& pos, ER_ProbeType aType);
+
+		ER_GPUTexture* GetCulledDiffuseProbesTextureArray() const { return mDiffuseCubemapArrayRT; }
+		ER_GPUBuffer* GetDiffuseProbesCellsIndicesBuffer() const { return mDiffuseProbesCellsIndicesGPUBuffer; }
+		ER_GPUBuffer* GetDiffuseProbesTexArrayIndicesBuffer() const { return mDiffuseProbesTexArrayIndicesGPUBuffer; }
+		ER_GPUBuffer* GetDiffuseProbesPositionsBuffer() const { return mDiffuseProbesPositionsGPUBuffer; }
+
+		const XMFLOAT3& GetProbesVolumeMin() { return mMinBounds; }
+		const XMFLOAT3& GetProbesVolumeMax() { return mMaxBounds; }
+		const XMFLOAT4& GetProbesCellsCount(ER_ProbeType aType);
+
 	private:
 		void AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds);
 		bool IsProbeInCell(ER_LightProbe* aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds);
@@ -174,6 +184,7 @@ namespace Library
 		int* mDiffuseProbesTexArrayIndicesCPUBuffer;
 		ER_GPUBuffer* mDiffuseProbesTexArrayIndicesGPUBuffer;
 		ER_GPUBuffer* mDiffuseProbesCellsIndicesGPUBuffer;
+		ER_GPUBuffer* mDiffuseProbesPositionsGPUBuffer;
 
 		bool mDiffuseProbesReady = false;
 		bool mSpecularProbesReady = false;

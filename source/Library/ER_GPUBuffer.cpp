@@ -3,7 +3,7 @@
 
 namespace Library
 {
-	ER_GPUBuffer::ER_GPUBuffer(ID3D11Device* device, void* aData, UINT objectsCount, UINT byteStride, D3D11_USAGE usage, UINT bindFlags, UINT cpuAccessFlags, UINT miscFlags, bool needUAV)
+	ER_GPUBuffer::ER_GPUBuffer(ID3D11Device* device, void* aData, UINT objectsCount, UINT byteStride, D3D11_USAGE usage, UINT bindFlags, UINT cpuAccessFlags, UINT miscFlags, DXGI_FORMAT format)
 	{
 		D3D11_SUBRESOURCE_DATA init_data = { aData, 0, 0 };
 		mByteSize = objectsCount * byteStride;
@@ -18,11 +18,23 @@ namespace Library
 		if (FAILED(device->CreateBuffer(&buf_desc, aData != NULL ? &init_data : NULL, &mBuffer)))
 			throw GameException("Failed to create GPU buffer.");
 
-		if (needUAV)
+		if (buf_desc.BindFlags & D3D11_BIND_SHADER_RESOURCE)
+		{
+			D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc;
+			srv_desc.Format = format;
+			srv_desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+			srv_desc.Buffer.FirstElement = 0;
+			srv_desc.Buffer.NumElements = objectsCount;
+			if (FAILED(device->CreateShaderResourceView(mBuffer, &srv_desc, &mBufferSRV)))
+				throw GameException("Failed to create SRV of GPU buffer.");
+
+		}
+
+		if (buf_desc.BindFlags & D3D11_BIND_UNORDERED_ACCESS)
 		{
 			// uav for positions
 			D3D11_UNORDERED_ACCESS_VIEW_DESC uav_desc;
-			uav_desc.Format = DXGI_FORMAT_UNKNOWN;
+			uav_desc.Format = format;
 			uav_desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
 			uav_desc.Buffer.FirstElement = 0;
 			uav_desc.Buffer.NumElements = objectsCount;
