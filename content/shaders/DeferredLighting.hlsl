@@ -4,6 +4,9 @@
 static const float4 ColorWhite = { 1, 1, 1, 1 };
 static const float Pi = 3.141592654f;
 
+static float3 cellProbesPositions[NUM_OF_PROBES_PER_CELL];
+static float3 cellProbesSamples[NUM_OF_PROBES_PER_CELL];
+
 SamplerState SamplerLinear : register(s0);
 SamplerComparisonState CascadedPcfShadowMapSampler : register(s1);
 
@@ -18,7 +21,7 @@ TextureCube<float4> IrradianceSpecularTexture : register(t5);
 Texture2D<float4> IntegrationTexture : register(t6);
 Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t7);
 
-StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices : register(t10); //linear array of cells with 8 probes' indices in each cell
+StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices : register(t10); //linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
 StructuredBuffer<int> DiffuseProbesTextureArrayIndices : register(t11); //array of all diffuse probes in scene with indices in 'IrradianceDiffuseProbesTextureArray' for each probe (-1 if not in array)
 StructuredBuffer<float3> DiffuseProbesPositions : register(t12); //linear array of all diffuse probes positions
 
@@ -191,18 +194,18 @@ float3 ApproximateSpecularIBL(float3 F0, float3 reflectDir, float nDotV, float r
 
 }
 
-float3 GetTrilinearInterpolationFromNeighbourProbes(float3 pos, float3 probeSamples[NUM_OF_PROBES_PER_CELL], float3 probePos[NUM_OF_PROBES_PER_CELL])
+float3 GetTrilinearInterpolationFromNeighbourProbes(float3 pos)
 {
     float3 result = float3(0.0, 0.0, 0.0);
     
-    float distanceX0 = abs(probePos[0].x - pos.x);
-    float distanceY0 = abs(probePos[0].y - pos.y);
-    float distanceZ0 = abs(probePos[0].z - pos.z);
+    float distanceX0 = abs(cellProbesPositions[0].x - pos.x);
+    float distanceY0 = abs(cellProbesPositions[0].y - pos.y);
+    float distanceZ0 = abs(cellProbesPositions[0].z - pos.z);
     
-    float3 bottomLeft = lerp(probeSamples[0], probeSamples[1], distanceZ0 / DistanceBetweenDiffuseProbes);    
-    float3 bottomRight = lerp(probeSamples[2], probeSamples[3], distanceZ0 / DistanceBetweenDiffuseProbes);
-    float3 upperLeft = lerp(probeSamples[4], probeSamples[5], distanceZ0 / DistanceBetweenDiffuseProbes);
-    float3 upperRight = lerp(probeSamples[6], probeSamples[7], distanceZ0 / DistanceBetweenDiffuseProbes);
+    float3 bottomLeft = lerp(cellProbesSamples[0], cellProbesSamples[1], distanceZ0 / DistanceBetweenDiffuseProbes);
+    float3 bottomRight = lerp(cellProbesSamples[2], cellProbesSamples[3], distanceZ0 / DistanceBetweenDiffuseProbes);
+    float3 upperLeft = lerp(cellProbesSamples[4], cellProbesSamples[5], distanceZ0 / DistanceBetweenDiffuseProbes);
+    float3 upperRight = lerp(cellProbesSamples[6], cellProbesSamples[7], distanceZ0 / DistanceBetweenDiffuseProbes);
     
     float3 bottomTotal = lerp(bottomLeft, bottomRight, distanceX0 / DistanceBetweenDiffuseProbes);
     float3 upperTotal = lerp(upperLeft, upperRight, distanceX0 / DistanceBetweenDiffuseProbes);
@@ -244,10 +247,6 @@ int GetLightProbesCellIndex(float3 pos, bool isDiffuse)
 
 float3 GetDiffuseIrradiance(float3 worldPos, float3 normal)
 {
-    int probesIndices[NUM_OF_PROBES_PER_CELL];
-    float3 probeSamples[NUM_OF_PROBES_PER_CELL];
-    float3 probePositions[NUM_OF_PROBES_PER_CELL];
-    
     float3 finalSum = float3(0.0, 0.0, 0.0);
     
     int diffuseProbesCellIndex = GetLightProbesCellIndex(worldPos, true);
@@ -255,18 +254,18 @@ float3 GetDiffuseIrradiance(float3 worldPos, float3 normal)
     {
         for (int i = 0; i < NUM_OF_PROBES_PER_CELL; i++)
         {
-            probesIndices[i] = DiffuseProbesCellsWithProbeIndices[NUM_OF_PROBES_PER_CELL * diffuseProbesCellIndex + i];
+            int currentIndex = DiffuseProbesCellsWithProbeIndices[NUM_OF_PROBES_PER_CELL * diffuseProbesCellIndex + i];
             
-            int indexInTexArray = DiffuseProbesTextureArrayIndices[probesIndices[i]];// -1 is culled and not in texture array
+            int indexInTexArray = DiffuseProbesTextureArrayIndices[currentIndex]; // -1 is culled and not in texture array
             if (indexInTexArray != -1)
-                probeSamples[i] = IrradianceDiffuseProbesTextureArray.SampleLevel(SamplerLinear, float4(normal, indexInTexArray / 6), 0).rgb;
+                cellProbesSamples[i] = IrradianceDiffuseProbesTextureArray.SampleLevel(SamplerLinear, float4(normal, indexInTexArray / 6), 0).rgb;
             else
-                probeSamples[i] = float3(0.0, 0.0, 0.0);
+                cellProbesSamples[i] = float3(0.0, 0.0, 0.0);
             
-            probePositions[i] = DiffuseProbesPositions[probesIndices[i]];
+            cellProbesPositions[i] = DiffuseProbesPositions[currentIndex];
         }
         
-        finalSum = GetTrilinearInterpolationFromNeighbourProbes(worldPos, probeSamples, probePositions);
+        finalSum = GetTrilinearInterpolationFromNeighbourProbes(worldPos);
     }
     return finalSum;
 }
