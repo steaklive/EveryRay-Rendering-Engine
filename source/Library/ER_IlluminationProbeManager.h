@@ -1,20 +1,18 @@
 #pragma once
 #define CUBEMAP_FACES_COUNT 6
-#define MAIN_CAMERA_PROBE_VOLUME_SIZE 45
 
-#define DIFFUSE_PROBE_SIZE 32
+#define DIFFUSE_PROBE_SIZE 32 //cubemap dimension
 #define DISTANCE_BETWEEN_DIFFUSE_PROBES 15
 
-#define SPECULAR_PROBE_SIZE 128
+#define SPECULAR_PROBE_SIZE 128 //cubemap dimension
 #define DISTANCE_BETWEEN_SPECULAR_PROBES 30
 #define SPECULAR_PROBE_MIP_COUNT 6
 
-#define PROBE_COUNT_PER_CELL 8
+#define PROBE_COUNT_PER_CELL 8 // 3D cube cell of probes in each vertex
 
-static const int MaxNonCulledDiffuseProbesCountPerAxis = MAIN_CAMERA_PROBE_VOLUME_SIZE * 2 / DISTANCE_BETWEEN_DIFFUSE_PROBES;
-static const int MaxNonCulledDiffuseProbesCount = MaxNonCulledDiffuseProbesCountPerAxis * MaxNonCulledDiffuseProbesCountPerAxis * MaxNonCulledDiffuseProbesCountPerAxis;
-static const int MaxNonCulledSpecularProbesCountPerAxis = MAIN_CAMERA_PROBE_VOLUME_SIZE * 2 / DISTANCE_BETWEEN_SPECULAR_PROBES;
-static const int MaxNonCulledSpecularProbesCount = MaxNonCulledSpecularProbesCountPerAxis * MaxNonCulledSpecularProbesCountPerAxis * MaxNonCulledSpecularProbesCountPerAxis;
+#define NUM_PROBE_VOLUME_CASCADES 2
+
+static const int ProbesVolumeCascadeSizes[NUM_PROBE_VOLUME_CASCADES] = { 45, 150 };
 
 #include "Common.h"
 #include "RenderingObject.h"
@@ -36,8 +34,10 @@ namespace Library
 
 	enum ER_ProbeType
 	{
-		DIFFUSE_PROBE,
-		SPECULAR_PROBE
+		DIFFUSE_PROBE = 0,
+		SPECULAR_PROBE = 1,
+
+		PROBE_TYPES_COUNT = 2
 	};
 
 	namespace LightProbeCBufferData {
@@ -76,8 +76,8 @@ namespace Library
 		void SetIndex(int index) { mIndex = index; }
 		int GetIndex() { return mIndex; }
 
-		void CPUCullAgainstProbeBoundingVolume(const XMFLOAT3& aMin, const XMFLOAT3& aMax);
-		bool IsCulled() { return mIsCulled; }
+		void CPUCullAgainstProbeBoundingVolume(int volumeIndex, const XMFLOAT3& aMin, const XMFLOAT3& aMax);
+		bool IsCulled(int volumeIndex) { return mIsCulled[volumeIndex]; }
 		bool IsLoadedFromDisk() { return mIsProbeLoadedFromDisk; }
 	private:
 		void DrawGeometryToProbe(Game& game, const GameTime& gameTime, ER_GPUTexture* aTextureNonConvoluted, DepthTarget** aDepthBuffers, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox);
@@ -110,8 +110,7 @@ namespace Library
 		int mIndex;
 		bool mIsProbeLoadedFromDisk = false;
 		bool mIsComputed = false;
-		bool mIsCulled = false; //i.e., we can cull-check against custom bounding box positioned at main camera
-
+		bool mIsCulled[NUM_PROBE_VOLUME_CASCADES] = { false, false };
 	};
 
 	struct ER_LightProbeCell
@@ -140,25 +139,25 @@ namespace Library
 		ID3D11ShaderResourceView* GetIntegrationMap() { return mIntegrationMapTextureSRV; }
 		int GetCellIndex(const XMFLOAT3& pos, ER_ProbeType aType);
 
-		ER_GPUTexture* GetCulledDiffuseProbesTextureArray() const { return mDiffuseCubemapArrayRT; }
+		ER_GPUTexture* GetCulledDiffuseProbesTextureArray(int volumeIndex) const { return mDiffuseCubemapArrayRT[volumeIndex]; }
 		ER_GPUBuffer* GetDiffuseProbesCellsIndicesBuffer() const { return mDiffuseProbesCellsIndicesGPUBuffer; }
-		ER_GPUBuffer* GetDiffuseProbesTexArrayIndicesBuffer() const { return mDiffuseProbesTexArrayIndicesGPUBuffer; }
+		ER_GPUBuffer* GetDiffuseProbesTexArrayIndicesBuffer(int volumeIndex) const { return mDiffuseProbesTexArrayIndicesGPUBuffer[volumeIndex]; }
 		ER_GPUBuffer* GetDiffuseProbesPositionsBuffer() const { return mDiffuseProbesPositionsGPUBuffer; }
 
-		const XMFLOAT3& GetProbesVolumeMin() { return mMinBounds; }
-		const XMFLOAT3& GetProbesVolumeMax() { return mMaxBounds; }
+		const XMFLOAT3& GetProbesVolumeMin() { return mSceneProbesMinBounds; }
+		const XMFLOAT3& GetProbesVolumeMax() { return mSceneProbesMaxBounds; }
 		const XMFLOAT4& GetProbesCellsCount(ER_ProbeType aType);
 
 	private:
 		void AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds);
 		bool IsProbeInCell(ER_LightProbe* aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds);
-		void UpdateProbesByType(Game& game, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds);
+		void UpdateProbesByType(Game& game, ER_ProbeType aType);
 		QuadRenderer* mQuadRenderer = nullptr;
 		Camera& mMainCamera;
-		RenderableAABB* mDebugProbeVolumeGizmo;
+		RenderableAABB* mDebugProbeVolumeGizmo[NUM_PROBE_VOLUME_CASCADES];
 
-		Rendering::RenderingObject* mDiffuseProbeRenderingObject; // deleted in scene
-		Rendering::RenderingObject* mSpecularProbeRenderingObject; // deleted in scene
+		Rendering::RenderingObject* mDiffuseProbeRenderingObject = nullptr;
+		Rendering::RenderingObject* mSpecularProbeRenderingObject = nullptr;
 
 		std::vector<ER_LightProbe*> mDiffuseProbes;
 		std::vector<ER_LightProbe*> mSpecularProbes;
@@ -166,14 +165,14 @@ namespace Library
 		std::vector<ER_LightProbeCell> mDiffuseProbesCells;
 		ER_AABB mDiffuseProbesCellBounds;
 
-		std::vector<int> mNonCulledDiffuseProbesIndices;
-		std::vector<int> mNonCulledSpecularProbesIndices;
+		std::vector<int> mNonCulledDiffuseProbesIndices[NUM_PROBE_VOLUME_CASCADES];
+		std::vector<int> mNonCulledSpecularProbesIndices[NUM_PROBE_VOLUME_CASCADES];
 
-		int mNonCulledDiffuseProbesCount = 0;
-		int mNonCulledSpecularProbesCount = 0;
+		int mNonCulledDiffuseProbesCount[NUM_PROBE_VOLUME_CASCADES];
+		int mNonCulledSpecularProbesCount[NUM_PROBE_VOLUME_CASCADES];
 
-		ER_GPUTexture* mDiffuseCubemapArrayRT;
-		ER_GPUTexture* mSpecularCubemapArrayRT;
+		ER_GPUTexture* mDiffuseCubemapArrayRT[NUM_PROBE_VOLUME_CASCADES];
+		ER_GPUTexture* mSpecularCubemapArrayRT[NUM_PROBE_VOLUME_CASCADES];
 		ER_GPUTexture* mDiffuseCubemapFacesRT;
 		ER_GPUTexture* mDiffuseCubemapFacesConvolutedRT;
 		ER_GPUTexture* mSpecularCubemapFacesRT;
@@ -181,8 +180,8 @@ namespace Library
 		DepthTarget* mDiffuseCubemapDepthBuffers[CUBEMAP_FACES_COUNT];
 		DepthTarget* mSpecularCubemapDepthBuffers[CUBEMAP_FACES_COUNT];
 
-		int* mDiffuseProbesTexArrayIndicesCPUBuffer;
-		ER_GPUBuffer* mDiffuseProbesTexArrayIndicesGPUBuffer;
+		int* mDiffuseProbesTexArrayIndicesCPUBuffer[NUM_PROBE_VOLUME_CASCADES];
+		ER_GPUBuffer* mDiffuseProbesTexArrayIndicesGPUBuffer[NUM_PROBE_VOLUME_CASCADES];
 		ER_GPUBuffer* mDiffuseProbesCellsIndicesGPUBuffer;
 		ER_GPUBuffer* mDiffuseProbesPositionsGPUBuffer;
 
@@ -214,7 +213,16 @@ namespace Library
 
 		bool mEnabled = true;
 
-		XMFLOAT3 mMinBounds;
-		XMFLOAT3 mMaxBounds;
+		XMFLOAT3 mSceneProbesMinBounds;
+		XMFLOAT3 mSceneProbesMaxBounds;
+
+		XMFLOAT3 mCurrentVolumesMaxBounds[NUM_PROBE_VOLUME_CASCADES];
+		XMFLOAT3 mCurrentVolumesMinBounds[NUM_PROBE_VOLUME_CASCADES];
+
+		int MaxNonCulledDiffuseProbesCountPerAxis[NUM_PROBE_VOLUME_CASCADES];
+		int MaxNonCulledDiffuseProbesCount[NUM_PROBE_VOLUME_CASCADES];
+
+		int MaxNonCulledSpecularProbesCountPerAxis[NUM_PROBE_VOLUME_CASCADES];
+		int MaxNonCulledSpecularProbesCount[NUM_PROBE_VOLUME_CASCADES];
 	};
 }

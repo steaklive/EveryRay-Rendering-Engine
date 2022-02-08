@@ -611,15 +611,15 @@ namespace Library {
 				gbuffer->GetNormals()->GetSRV(),
 				gbuffer->GetPositions()->GetSRV(),
 				gbuffer->GetExtraBuffer()->GetSRV(),
-				mProbesManager->GetCulledDiffuseProbesTextureArray()->GetSRV(),
-				 mProbesManager->GetSpecularLightProbe(0)->GetCubemapSRV() /*TODO*/,
+				mProbesManager->GetCulledDiffuseProbesTextureArray(0)->GetSRV(),
+				mProbesManager->GetSpecularLightProbe(0)->GetCubemapSRV() /*TODO*/,
 				mProbesManager->GetIntegrationMap()
 			};
 			for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 				SRs[7 + i] = mShadowMapper.GetShadowTexture(i);
 
 			SRs[10] = mProbesManager->GetDiffuseProbesCellsIndicesBuffer()->GetBufferSRV();
-			SRs[11] = mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer()->GetBufferSRV();
+			SRs[11] = mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer(0)->GetBufferSRV();
 			SRs[12] = mProbesManager->GetDiffuseProbesPositionsBuffer()->GetBufferSRV();
 			context->CSSetShaderResources(0, 13, SRs);
 
