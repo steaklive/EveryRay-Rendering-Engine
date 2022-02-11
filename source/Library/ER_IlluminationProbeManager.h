@@ -12,7 +12,7 @@
 
 #define NUM_PROBE_VOLUME_CASCADES 2
 
-static const int ProbesVolumeCascadeSizes[NUM_PROBE_VOLUME_CASCADES] = { 45, 150 };
+static const int ProbesVolumeCascadeSizes[NUM_PROBE_VOLUME_CASCADES] = { 45, 135 };
 
 #include "Common.h"
 #include "RenderingObject.h"
@@ -78,6 +78,8 @@ namespace Library
 
 		void CPUCullAgainstProbeBoundingVolume(int volumeIndex, const XMFLOAT3& aMin, const XMFLOAT3& aMax);
 		bool IsCulled(int volumeIndex) { return mIsCulled[volumeIndex]; }
+		bool IsTaggedByVolume(int volumeIndex) { return mIsTaggedByVolume[volumeIndex]; }
+		void SetIsTaggedByVolume(int volumeIndex) { mIsTaggedByVolume[volumeIndex] = true; }
 		bool IsLoadedFromDisk() { return mIsProbeLoadedFromDisk; }
 	private:
 		void DrawGeometryToProbe(Game& game, const GameTime& gameTime, ER_GPUTexture* aTextureNonConvoluted, DepthTarget** aDepthBuffers, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox);
@@ -111,6 +113,7 @@ namespace Library
 		bool mIsProbeLoadedFromDisk = false;
 		bool mIsComputed = false;
 		bool mIsCulled[NUM_PROBE_VOLUME_CASCADES] = { false, false };
+		bool mIsTaggedByVolume[NUM_PROBE_VOLUME_CASCADES] = { false, false };
 	};
 
 	struct ER_LightProbeCell
@@ -219,10 +222,10 @@ namespace Library
 		XMFLOAT3 mCurrentVolumesMaxBounds[NUM_PROBE_VOLUME_CASCADES];
 		XMFLOAT3 mCurrentVolumesMinBounds[NUM_PROBE_VOLUME_CASCADES];
 
-		int MaxNonCulledDiffuseProbesCountPerAxis[NUM_PROBE_VOLUME_CASCADES];
-		int MaxNonCulledDiffuseProbesCount[NUM_PROBE_VOLUME_CASCADES];
+		int MaxNonCulledDiffuseProbesCountPerAxis;
+		int MaxNonCulledDiffuseProbesCount;
 
-		int MaxNonCulledSpecularProbesCountPerAxis[NUM_PROBE_VOLUME_CASCADES];
-		int MaxNonCulledSpecularProbesCount[NUM_PROBE_VOLUME_CASCADES];
+		int MaxNonCulledSpecularProbesCountPerAxis;
+		int MaxNonCulledSpecularProbesCount;
 	};
 }

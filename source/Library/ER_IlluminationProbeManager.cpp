@@ -121,12 +121,9 @@ namespace Library
 
 		// diffuse probes setup
 		{
-			for (int volumeIndex = 0; volumeIndex < NUM_PROBE_VOLUME_CASCADES; volumeIndex++)
-			{
-				MaxNonCulledDiffuseProbesCountPerAxis[volumeIndex] = ProbesVolumeCascadeSizes[volumeIndex] * 2 / DISTANCE_BETWEEN_DIFFUSE_PROBES;
-				MaxNonCulledDiffuseProbesCount[volumeIndex] = MaxNonCulledDiffuseProbesCountPerAxis[volumeIndex] * 
-					MaxNonCulledDiffuseProbesCountPerAxis[volumeIndex] * MaxNonCulledDiffuseProbesCountPerAxis[volumeIndex];
-			}
+			//max allowed amount of cubemap textures in an array (DX)
+			MaxNonCulledDiffuseProbesCountPerAxis = std::cbrt(2048 / 6);
+			MaxNonCulledDiffuseProbesCount = MaxNonCulledDiffuseProbesCountPerAxis * MaxNonCulledDiffuseProbesCountPerAxis * MaxNonCulledDiffuseProbesCountPerAxis;
 
 			mDiffuseProbesCountX = (maxBounds.x - minBounds.x) / DISTANCE_BETWEEN_DIFFUSE_PROBES + 1;
 			mDiffuseProbesCountY = (maxBounds.y - minBounds.y) / DISTANCE_BETWEEN_DIFFUSE_PROBES + 1;
@@ -185,6 +182,19 @@ namespace Library
 							mDiffuseProbes[index]->SetIndex(index);
 							mDiffuseProbes[index]->SetPosition(pos);
 							mDiffuseProbes[index]->SetShaderInfoForConvolution(mConvolutionVS, mConvolutionPS, mInputLayout, mLinearSamplerState);
+							for (int volumeI = 0; volumeI < NUM_PROBE_VOLUME_CASCADES; volumeI++)
+							{
+								switch (volumeI)
+								{
+								case 0:
+									mDiffuseProbes[index]->SetIsTaggedByVolume(volumeI);
+									break;
+								case 1:
+									if (probesY % 3 == 0 && probesX % 3 == 0 && probesZ % 3 == 0)
+										mDiffuseProbes[index]->SetIsTaggedByVolume(volumeI);
+									break;
+								}
+							}
 							AddProbeToCells(mDiffuseProbes[index], DIFFUSE_PROBE, minBounds, maxBounds);
 						}
 					}
@@ -251,19 +261,17 @@ namespace Library
 			for (int i = 0; i < NUM_PROBE_VOLUME_CASCADES; i++)
 			{
 				mDiffuseCubemapArrayRT[i] = new ER_GPUTexture(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
-					D3D11_BIND_SHADER_RESOURCE, 1, -1, CUBEMAP_FACES_COUNT, true, MaxNonCulledDiffuseProbesCount[i]);
+					D3D11_BIND_SHADER_RESOURCE, 1, -1, CUBEMAP_FACES_COUNT, true, MaxNonCulledDiffuseProbesCount);
 			}
 		}
 		
 		// specular probes setup
 		{
 
-			for (int volumeIndex = 0; volumeIndex < NUM_PROBE_VOLUME_CASCADES; volumeIndex++)
-			{
-				MaxNonCulledSpecularProbesCountPerAxis[volumeIndex] = ProbesVolumeCascadeSizes[volumeIndex] * 2 / DISTANCE_BETWEEN_SPECULAR_PROBES;
-				MaxNonCulledSpecularProbesCount[volumeIndex] = MaxNonCulledSpecularProbesCountPerAxis[volumeIndex] * 
-					MaxNonCulledSpecularProbesCountPerAxis[volumeIndex] * MaxNonCulledSpecularProbesCountPerAxis[volumeIndex];
-			}
+			MaxNonCulledSpecularProbesCountPerAxis = ProbesVolumeCascadeSizes[0] * 2 / DISTANCE_BETWEEN_SPECULAR_PROBES;
+			MaxNonCulledSpecularProbesCount = MaxNonCulledSpecularProbesCountPerAxis * 
+					MaxNonCulledSpecularProbesCountPerAxis * MaxNonCulledSpecularProbesCountPerAxis;
+
 			mSpecularProbesCountX = (maxBounds.x - minBounds.x) / DISTANCE_BETWEEN_SPECULAR_PROBES;
 			mSpecularProbesCountY = (maxBounds.y - minBounds.y) / DISTANCE_BETWEEN_SPECULAR_PROBES;
 			mSpecularProbesCountZ = (maxBounds.z - minBounds.z) / DISTANCE_BETWEEN_SPECULAR_PROBES;
@@ -330,7 +338,7 @@ namespace Library
 			for (int i = 0; i < NUM_PROBE_VOLUME_CASCADES; i++)
 			{
 				mSpecularCubemapArrayRT[i] = new ER_GPUTexture(game.Direct3DDevice(), SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
-					D3D11_BIND_SHADER_RESOURCE, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true, MaxNonCulledSpecularProbesCount[i]);
+					D3D11_BIND_SHADER_RESOURCE, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true, MaxNonCulledSpecularProbesCount);
 			}
 		}
 
@@ -575,7 +583,7 @@ namespace Library
 
 				for (int i = 0; i < oldInstancedData.size(); i++)
 				{
-					bool isCulled = probes[i]->IsCulled(volumeIndex);
+					bool isCulled = probes[i]->IsCulled(volumeIndex) || !probes[i]->IsTaggedByVolume(volumeIndex);
 					//writing culling flag to [4][4] of world instanced matrix
 					oldInstancedData[i].World._44 = isCulled ? 1.0f : 0.0f;
 					//writing cubemap index to [0][0] of world instanced matrix (since we don't need scale)
@@ -610,7 +618,7 @@ namespace Library
 				for (int i = 0; i < mDiffuseProbesCountTotal; i++)
 					mDiffuseProbesTexArrayIndicesCPUBuffer[volumeIndex][i] = -1;
 
-				for (int i = 0; i < MaxNonCulledDiffuseProbesCount[volumeIndex]; i++)
+				for (int i = 0; i < MaxNonCulledDiffuseProbesCount; i++)
 				{
 					if (i < mNonCulledDiffuseProbesIndices[volumeIndex].size() && i < probes.size())
 					{
@@ -628,7 +636,7 @@ namespace Library
 			}
 			else
 			{
-				for (int i = 0; i < MaxNonCulledSpecularProbesCount[volumeIndex]; i++)
+				for (int i = 0; i < MaxNonCulledSpecularProbesCount; i++)
 				{
 					if (i < mNonCulledSpecularProbesIndices[volumeIndex].size() && i < probes.size())
 					{
