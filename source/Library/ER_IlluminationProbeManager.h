@@ -133,10 +133,10 @@ namespace Library
 		bool AreProbesReady() { return mDiffuseProbesReady && mSpecularProbesReady; }
 		void SetLevelPath(const std::wstring& aPath) { mLevelPath = aPath; };
 		void ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox = nullptr);
-		void DrawDebugProbes(ER_ProbeType aType);
+		void DrawDebugProbes(ER_ProbeType aType, int volumeIndex);
 		void DrawDebugProbesVolumeGizmo();
 		void UpdateProbes(Game& game);
-		void UpdateDebugLightProbeMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, ER_ProbeType aType);
+		void UpdateDebugLightProbeMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, ER_ProbeType aType, int volumeIndex);
 		const ER_LightProbe* GetDiffuseLightProbe(int index) const { return mDiffuseProbes[index]; }
 		const ER_LightProbe* GetSpecularLightProbe(int index) const { return mSpecularProbes[index]; }
 		ID3D11ShaderResourceView* GetIntegrationMap() { return mIntegrationMapTextureSRV; }
@@ -161,8 +161,8 @@ namespace Library
 		Camera& mMainCamera;
 		RenderableAABB* mDebugProbeVolumeGizmo[NUM_PROBE_VOLUME_CASCADES];
 
-		Rendering::RenderingObject* mDiffuseProbeRenderingObject = nullptr;
-		Rendering::RenderingObject* mSpecularProbeRenderingObject = nullptr;
+		Rendering::RenderingObject* mDiffuseProbeRenderingObject[NUM_PROBE_VOLUME_CASCADES] = { nullptr, nullptr };
+		Rendering::RenderingObject* mSpecularProbeRenderingObject[NUM_PROBE_VOLUME_CASCADES] = { nullptr, nullptr };
 
 		std::vector<ER_LightProbe*> mDiffuseProbes;
 		std::vector<ER_LightProbe*> mSpecularProbes;

@@ -416,9 +416,9 @@ namespace Library {
 		//light probe system
 		if (mProbesManager) {
 			if (mDrawDiffuseProbes)
-				mProbesManager->DrawDebugProbes(DIFFUSE_PROBE);
+				mProbesManager->DrawDebugProbes(DIFFUSE_PROBE, mCurrentDebugProbeVolumeIndex);
 			if (mDrawSpecularProbes)
-				mProbesManager->DrawDebugProbes(SPECULAR_PROBE);
+				mProbesManager->DrawDebugProbes(SPECULAR_PROBE, mCurrentDebugProbeVolumeIndex);
 
 			if (mDrawProbesVolumeGizmo)
 				mProbesManager->DrawDebugProbesVolumeGizmo();
@@ -465,6 +465,7 @@ namespace Library {
 				//TODO add on/off for probe system
 				//TODO add rebake etc.
 				ImGui::Checkbox("DEBUG - Probe Volume", &mDrawProbesVolumeGizmo);
+				ImGui::SliderInt("DEBUG - Probe Volumes Index", &mCurrentDebugProbeVolumeIndex, 0, 1);
 				ImGui::Checkbox("DEBUG - Diffuse Probes", &mDrawDiffuseProbes);
 				ImGui::Checkbox("DEBUG - Specular Probes", &mDrawSpecularProbes);
 			}

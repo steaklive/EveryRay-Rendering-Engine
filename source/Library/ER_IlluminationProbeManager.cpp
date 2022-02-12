@@ -224,34 +224,32 @@ namespace Library
 				mDiffuseProbesTexArrayIndicesCPUBuffer[volumeIndex] = new int[mDiffuseProbesCountTotal];
 				mDiffuseProbesTexArrayIndicesGPUBuffer[volumeIndex] = new ER_GPUBuffer(game.Direct3DDevice(), mDiffuseProbesTexArrayIndicesCPUBuffer[volumeIndex], mDiffuseProbesCountTotal, sizeof(int),
 					D3D11_USAGE_DYNAMIC, D3D11_BIND_SHADER_RESOURCE, D3D11_CPU_ACCESS_WRITE, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
+			
+				std::string name = "Debug diffuse lightprobes " + std::to_string(volumeIndex) + " volume";
+				auto result = scene->objects.insert(
+					std::pair<std::string, Rendering::RenderingObject*>(name, new Rendering::RenderingObject(name, scene->objects.size(), game, camera,
+							std::unique_ptr<Model>(new Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), true, true))
+				);
+
+				if (!result.second)
+					throw GameException("Could not add a diffuse probe global object into scene");
+
+				Effect* diffuseLightProbeEffect = new Effect(game); // deleted when material is deleted
+				diffuseLightProbeEffect->CompileFromFile(Utility::GetFilePath(Utility::ToWideString("content\\effects\\DebugLightProbe.fx")));
+
+				mDiffuseProbeRenderingObject[volumeIndex] = result.first->second;
+				mDiffuseProbeRenderingObject[volumeIndex]->LoadMaterial(new Rendering::DebugLightProbeMaterial(), diffuseLightProbeEffect, MaterialHelper::debugLightProbeMaterialName);
+				mDiffuseProbeRenderingObject[volumeIndex]->LoadRenderBuffers();
+				mDiffuseProbeRenderingObject[volumeIndex]->LoadInstanceBuffers();
+				mDiffuseProbeRenderingObject[volumeIndex]->ResetInstanceData(mDiffuseProbesCountTotal, true);
+				for (int i = 0; i < mDiffuseProbesCountTotal; i++) {
+					XMMATRIX worldT = XMMatrixTranslation(mDiffuseProbes[i]->GetPosition().x, mDiffuseProbes[i]->GetPosition().y, mDiffuseProbes[i]->GetPosition().z);
+					mDiffuseProbeRenderingObject[volumeIndex]->AddInstanceData(worldT);
+				}
+				mDiffuseProbeRenderingObject[volumeIndex]->UpdateInstanceBuffer(mDiffuseProbeRenderingObject[volumeIndex]->GetInstancesData());
+				mDiffuseProbeRenderingObject[volumeIndex]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::debugLightProbeMaterialName,
+					[&, _volumeIndex = volumeIndex](int meshIndex) { UpdateDebugLightProbeMaterialVariables(mDiffuseProbeRenderingObject[_volumeIndex], meshIndex, DIFFUSE_PROBE, _volumeIndex); });
 			}
-
-			auto result = scene->objects.insert(
-				std::pair<std::string, Rendering::RenderingObject*>(
-					"Debug diffuse lightprobes",
-					new Rendering::RenderingObject("Debug diffuse lightprobes", scene->objects.size(), game, camera,
-						std::unique_ptr<Model>(new Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), true, true)
-					)
-			);
-
-			if (!result.second)
-				throw GameException("Could not add a diffuse probe global object into scene");
-
-			Effect* diffuseLightProbeEffect = new Effect(game); // deleted when material is deleted
-			diffuseLightProbeEffect->CompileFromFile(Utility::GetFilePath(Utility::ToWideString("content\\effects\\DebugLightProbe.fx")));
-
-			mDiffuseProbeRenderingObject = result.first->second;
-			mDiffuseProbeRenderingObject->LoadMaterial(new Rendering::DebugLightProbeMaterial(), diffuseLightProbeEffect, MaterialHelper::debugLightProbeMaterialName);
-			mDiffuseProbeRenderingObject->LoadRenderBuffers();
-			mDiffuseProbeRenderingObject->LoadInstanceBuffers();
-			mDiffuseProbeRenderingObject->ResetInstanceData(mDiffuseProbesCountTotal, true);
-			for (int i = 0; i < mDiffuseProbesCountTotal; i++) {
-				XMMATRIX worldT = XMMatrixTranslation(mDiffuseProbes[i]->GetPosition().x, mDiffuseProbes[i]->GetPosition().y, mDiffuseProbes[i]->GetPosition().z);
-				mDiffuseProbeRenderingObject->AddInstanceData(worldT);
-			}
-			mDiffuseProbeRenderingObject->UpdateInstanceBuffer(mDiffuseProbeRenderingObject->GetInstancesData());
-			mDiffuseProbeRenderingObject->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::debugLightProbeMaterialName,
-				[&](int meshIndex) { UpdateDebugLightProbeMaterialVariables(mDiffuseProbeRenderingObject, meshIndex, DIFFUSE_PROBE); });
 
 			mDiffuseCubemapFacesRT = new ER_GPUTexture(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
 				D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1, -1, CUBEMAP_FACES_COUNT, true);
@@ -303,32 +301,32 @@ namespace Library
 				}
 			}
 
-			auto result = scene->objects.insert(
-				std::pair<std::string, Rendering::RenderingObject*>(
-					"Debug specular lightprobes",
-					new Rendering::RenderingObject("Debug specular lightprobes", scene->objects.size(), game, camera,
-						std::unique_ptr<Model>(new Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), true, true)
-					)
-			);
+			//auto result = scene->objects.insert(
+			//	std::pair<std::string, Rendering::RenderingObject*>(
+			//		"Debug specular lightprobes",
+			//		new Rendering::RenderingObject("Debug specular lightprobes", scene->objects.size(), game, camera,
+			//			std::unique_ptr<Model>(new Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), true, true)
+			//		)
+			//);
+			//
+			//if (!result.second)
+			//	throw GameException("Could not add a specular probe global object into scene");
 
-			if (!result.second)
-				throw GameException("Could not add a specular probe global object into scene");
-
-			Effect* specularLightProbeEffect = new Effect(game); // deleted when material is deleted
-			specularLightProbeEffect->CompileFromFile(Utility::GetFilePath(Utility::ToWideString("content\\effects\\DebugLightProbe.fx")));
-
-			mSpecularProbeRenderingObject = result.first->second;
-			mSpecularProbeRenderingObject->LoadMaterial(new Rendering::DebugLightProbeMaterial(), specularLightProbeEffect, MaterialHelper::debugLightProbeMaterialName);
-			mSpecularProbeRenderingObject->LoadRenderBuffers();
-			mSpecularProbeRenderingObject->LoadInstanceBuffers();
-			mSpecularProbeRenderingObject->ResetInstanceData(mSpecularProbesCountTotal, true);
-			for (int i = 0; i < mSpecularProbesCountTotal; i++) {
-				XMMATRIX worldT = XMMatrixTranslation(mSpecularProbes[i]->GetPosition().x, mSpecularProbes[i]->GetPosition().y, mSpecularProbes[i]->GetPosition().z);
-				mSpecularProbeRenderingObject->AddInstanceData(worldT);
-			}
-			mSpecularProbeRenderingObject->UpdateInstanceBuffer(mSpecularProbeRenderingObject->GetInstancesData());
-			mSpecularProbeRenderingObject->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::debugLightProbeMaterialName,
-				[&](int meshIndex) { UpdateDebugLightProbeMaterialVariables(mSpecularProbeRenderingObject, meshIndex, SPECULAR_PROBE); });
+			//Effect* specularLightProbeEffect = new Effect(game); // deleted when material is deleted
+			//specularLightProbeEffect->CompileFromFile(Utility::GetFilePath(Utility::ToWideString("content\\effects\\DebugLightProbe.fx")));
+			//
+			//mSpecularProbeRenderingObject = result.first->second;
+			//mSpecularProbeRenderingObject->LoadMaterial(new Rendering::DebugLightProbeMaterial(), specularLightProbeEffect, MaterialHelper::debugLightProbeMaterialName);
+			//mSpecularProbeRenderingObject->LoadRenderBuffers();
+			//mSpecularProbeRenderingObject->LoadInstanceBuffers();
+			//mSpecularProbeRenderingObject->ResetInstanceData(mSpecularProbesCountTotal, true);
+			//for (int i = 0; i < mSpecularProbesCountTotal; i++) {
+			//	XMMATRIX worldT = XMMatrixTranslation(mSpecularProbes[i]->GetPosition().x, mSpecularProbes[i]->GetPosition().y, mSpecularProbes[i]->GetPosition().z);
+			//	mSpecularProbeRenderingObject->AddInstanceData(worldT);
+			//}
+			//mSpecularProbeRenderingObject->UpdateInstanceBuffer(mSpecularProbeRenderingObject->GetInstancesData());
+			//mSpecularProbeRenderingObject->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::debugLightProbeMaterialName,
+			//	[&](int meshIndex) { UpdateDebugLightProbeMaterialVariables(mSpecularProbeRenderingObject, meshIndex, SPECULAR_PROBE); });
 
 			mSpecularCubemapFacesRT = new ER_GPUTexture(game.Direct3DDevice(), SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
 				D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
@@ -543,16 +541,16 @@ namespace Library
 		}
 	}
 
-	void ER_IlluminationProbeManager::DrawDebugProbes(ER_ProbeType aType)
+	void ER_IlluminationProbeManager::DrawDebugProbes(ER_ProbeType aType, int volumeIndex)
 	{
 		if (aType == DIFFUSE_PROBE) {
-			if (mDiffuseProbeRenderingObject && mDiffuseProbesReady)
-				mDiffuseProbeRenderingObject->Draw(MaterialHelper::debugLightProbeMaterialName);
+			if (mDiffuseProbeRenderingObject[volumeIndex] && mDiffuseProbesReady)
+				mDiffuseProbeRenderingObject[volumeIndex]->Draw(MaterialHelper::debugLightProbeMaterialName);
 		}
 		else
 		{
-			if (mSpecularProbeRenderingObject && mSpecularProbesReady)
-				mSpecularProbeRenderingObject->Draw(MaterialHelper::debugLightProbeMaterialName);
+			if (mSpecularProbeRenderingObject[volumeIndex] && mSpecularProbesReady)
+				mSpecularProbeRenderingObject[volumeIndex]->Draw(MaterialHelper::debugLightProbeMaterialName);
 		}
 	}
 
@@ -565,10 +563,10 @@ namespace Library
 	void ER_IlluminationProbeManager::UpdateProbesByType(Game& game, ER_ProbeType aType)
 	{
 		std::vector<ER_LightProbe*>& probes = (aType == DIFFUSE_PROBE) ? mDiffuseProbes : mSpecularProbes;
-		Rendering::RenderingObject* probeRenderingObject = (aType == DIFFUSE_PROBE) ? mDiffuseProbeRenderingObject : mSpecularProbeRenderingObject;
 		
 		for (int volumeIndex = 0; volumeIndex < NUM_PROBE_VOLUME_CASCADES; volumeIndex++)
 		{
+			Rendering::RenderingObject* probeRenderingObject = (aType == DIFFUSE_PROBE) ? mDiffuseProbeRenderingObject[volumeIndex] : mSpecularProbeRenderingObject[volumeIndex];
 			if (aType == DIFFUSE_PROBE)
 			{
 				if (!mDiffuseProbesReady)
@@ -618,7 +616,7 @@ namespace Library
 					}
 				}
 
-				if (volumeIndex ==1)
+				if (volumeIndex == 1)
 					probeRenderingObject->UpdateInstanceBuffer(oldInstancedData);
 			}
 			else
@@ -690,13 +688,15 @@ namespace Library
 				-ProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().z);
 		}
 		UpdateProbesByType(game, DIFFUSE_PROBE);
-		UpdateProbesByType(game, SPECULAR_PROBE);
+		// TODO UpdateProbesByType(game, SPECULAR_PROBE);
 	}
 
-	void ER_IlluminationProbeManager::UpdateDebugLightProbeMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, ER_ProbeType aType)
+	void ER_IlluminationProbeManager::UpdateDebugLightProbeMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, ER_ProbeType aType, int volumeIndex)
 	{
-		XMMATRIX vp = mMainCamera.ViewMatrix() * mMainCamera.ProjectionMatrix();
+		if (!obj)
+			return;
 
+		XMMATRIX vp = mMainCamera.ViewMatrix() * mMainCamera.ProjectionMatrix();
 		auto material = static_cast<Rendering::DebugLightProbeMaterial*>(obj->GetMaterials()[MaterialHelper::debugLightProbeMaterialName]);
 		if (material)
 		{
@@ -704,9 +704,9 @@ namespace Library
 			material->World() << XMMatrixIdentity();
 			material->CameraPosition() << mMainCamera.PositionVector();
 			if (aType == DIFFUSE_PROBE)
-				material->CubemapTexture() << mDiffuseCubemapArrayRT[0]->GetSRV(); //only show volume cascade 0 (closest to camera)
+				material->CubemapTexture() << mDiffuseCubemapArrayRT[volumeIndex]->GetSRV();
 			else
-				material->CubemapTexture() << mSpecularCubemapArrayRT[0]->GetSRV();
+				material->CubemapTexture() << mSpecularCubemapArrayRT[volumeIndex]->GetSRV();
 		}
 	}
 
