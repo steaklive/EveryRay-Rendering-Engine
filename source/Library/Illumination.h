@@ -4,6 +4,7 @@
 #include "ER_GPUTexture.h"
 #include "DepthTarget.h"
 #include "RenderingObject.h"
+#include "ER_IlluminationProbeManager.h"
 
 #define NUM_VOXEL_GI_CASCADES 2
 #define NUM_VOXEL_GI_TEX_MIPS 6
@@ -23,7 +24,6 @@ namespace Library
 	class IBLRadianceMap;
 	class RenderableAABB;
 	class RenderingObject;
-	class ER_IlluminationProbeManager;
 	class ER_GPUBuffer;
 
 	namespace IlluminationCBufferData {
@@ -59,9 +59,13 @@ namespace Library
 			XMFLOAT4 SunDirection;
 			XMFLOAT4 SunColor;
 			XMFLOAT4 CameraPosition;
-			XMFLOAT4 LightProbesMinBounds; //min volume's extent of all scene's probes
-			XMFLOAT4 LightProbesMaxBounds; //max volume's extent of all scene's probes
-			XMFLOAT4 DiffuseProbesCellsCount; //x,y,z,total
+		};
+		struct LightProbesCB
+		{
+			XMFLOAT4 LightProbesVolumeBounds[NUM_PROBE_VOLUME_CASCADES];
+			XMFLOAT4 DiffuseProbesCellsCount[NUM_PROBE_VOLUME_CASCADES]; //x,y,z,total
+			XMFLOAT4 DiffuseProbeIndexSkip[NUM_PROBE_VOLUME_CASCADES]; //index skip, 0, 0, 0
+			XMFLOAT4 SceneLightProbesBounds; //volume's extent of all scene's probes
 			float DistanceBetweenDiffuseProbes;
 		};
 	}
@@ -123,6 +127,7 @@ namespace Library
 		ConstantBuffer<IlluminationCBufferData::VoxelConeTracingCB> mVoxelConeTracingConstantBuffer;
 		ConstantBuffer<IlluminationCBufferData::UpsampleBlurCB> mUpsampleBlurConstantBuffer;
 		ConstantBuffer<IlluminationCBufferData::DeferredLightingCB> mDeferredLightingConstantBuffer;
+		ConstantBuffer<IlluminationCBufferData::LightProbesCB> mLightProbesConstantBuffer;
 
 		std::vector<ER_GPUTexture*> mVCTVoxelCascades3DRTs;
 		ER_GPUTexture* mVCTVoxelizationDebugRT = nullptr;

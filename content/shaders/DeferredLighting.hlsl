@@ -1,5 +1,6 @@
 #define NUM_OF_SHADOW_CASCADES 3
 #define NUM_OF_PROBES_PER_CELL 8
+#define NUM_OF_PROBE_VOLUME_CASCADES 2
 
 static const float4 ColorWhite = { 1, 1, 1, 1 };
 static const float Pi = 3.141592654f;
@@ -16,14 +17,17 @@ Texture2D<float4> GbufferAlbedoTexture : register(t0);
 Texture2D<float4> GbufferNormalTexture : register(t1);
 Texture2D<float4> GbufferWorldPosTexture : register(t2);
 Texture2D<float4> GbufferExtraTexture : register(t3);
-TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray : register(t4);
-TextureCube<float4> IrradianceSpecularTexture : register(t5);
-Texture2D<float4> IntegrationTexture : register(t6);
-Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t7);
+TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray0 : register(t4); //cascade 0
+TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray1 : register(t5); //cascade 1
+TextureCube<float4> IrradianceSpecularTexture : register(t6);
+Texture2D<float4> IntegrationTexture : register(t7);
+Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t8);
 
-StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices : register(t10); //linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
-StructuredBuffer<int> DiffuseProbesTextureArrayIndices : register(t11); //array of all diffuse probes in scene with indices in 'IrradianceDiffuseProbesTextureArray' for each probe (-1 if not in array)
-StructuredBuffer<float3> DiffuseProbesPositions : register(t12); //linear array of all diffuse probes positions
+StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices0 : register(t11); //cascade 0, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
+StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices1 : register(t12); //cascade 1, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
+StructuredBuffer<int> DiffuseProbesTextureArrayIndices0 : register(t13); //cascade 0, array of all diffuse probes in scene with indices in 'IrradianceDiffuseProbesTextureArray' for each probe (-1 if not in array)
+StructuredBuffer<int> DiffuseProbesTextureArrayIndices1 : register(t14); //cascade 1, array of all diffuse probes in scene with indices in 'IrradianceDiffuseProbesTextureArray' for each probe (-1 if not in array)
+StructuredBuffer<float3> DiffuseProbesPositions : register(t15); //linear array of all diffuse probes positions
 
 cbuffer DeferredLightingCBuffer : register(b0)
 {
@@ -33,9 +37,15 @@ cbuffer DeferredLightingCBuffer : register(b0)
     float4 SunDirection;
     float4 SunColor;
     float4 CameraPosition;
-    float4 LightProbesMinBounds; //min volume's extent of all scene's probes
-    float4 LightProbesMaxBounds; //max volume's extent of all scene's probes
-    float4 DiffuseProbesCellsCount; //x,y,z,total
+
+}
+
+cbuffer LightProbesCBuffer : register(b1)
+{
+    float4 LightProbesVolumeBounds[NUM_OF_PROBE_VOLUME_CASCADES];
+    float4 DiffuseProbesCellsCount[NUM_OF_PROBE_VOLUME_CASCADES]; //x,y,z,total
+    float4 DiffuseProbeIndexSkip[NUM_OF_PROBE_VOLUME_CASCADES];
+    float4 SceneLightProbesBounds; //volume's extent of all scene's probes
     float DistanceBetweenDiffuseProbes;
 }
 
@@ -194,78 +204,112 @@ float3 ApproximateSpecularIBL(float3 F0, float3 reflectDir, float nDotV, float r
 
 }
 
-float3 GetTrilinearInterpolationFromNeighbourProbes(float3 pos)
+float3 GetTrilinearInterpolationFromNeighbourProbes(float3 pos, int volumeIndex)
 {
     float3 result = float3(0.0, 0.0, 0.0);
+    float cellDistance = DistanceBetweenDiffuseProbes * DiffuseProbeIndexSkip[volumeIndex];
     
     float distanceX0 = abs(cellProbesPositions[0].x - pos.x);
     float distanceY0 = abs(cellProbesPositions[0].y - pos.y);
     float distanceZ0 = abs(cellProbesPositions[0].z - pos.z);
     
-    float3 bottomLeft = lerp(cellProbesSamples[0], cellProbesSamples[1], distanceZ0 / DistanceBetweenDiffuseProbes);
-    float3 bottomRight = lerp(cellProbesSamples[2], cellProbesSamples[3], distanceZ0 / DistanceBetweenDiffuseProbes);
-    float3 upperLeft = lerp(cellProbesSamples[4], cellProbesSamples[5], distanceZ0 / DistanceBetweenDiffuseProbes);
-    float3 upperRight = lerp(cellProbesSamples[6], cellProbesSamples[7], distanceZ0 / DistanceBetweenDiffuseProbes);
+    float3 bottomLeft = lerp(cellProbesSamples[0], cellProbesSamples[1], distanceZ0 / cellDistance);
+    float3 bottomRight = lerp(cellProbesSamples[2], cellProbesSamples[3], distanceZ0 / cellDistance);
+    float3 upperLeft = lerp(cellProbesSamples[4], cellProbesSamples[5], distanceZ0 / cellDistance);
+    float3 upperRight = lerp(cellProbesSamples[6], cellProbesSamples[7], distanceZ0 / cellDistance);
     
-    float3 bottomTotal = lerp(bottomLeft, bottomRight, distanceX0 / DistanceBetweenDiffuseProbes);
-    float3 upperTotal = lerp(upperLeft, upperRight, distanceX0 / DistanceBetweenDiffuseProbes);
+    float3 bottomTotal = lerp(bottomLeft, bottomRight, distanceX0 / cellDistance);
+    float3 upperTotal = lerp(upperLeft, upperRight, distanceX0 / cellDistance);
     
-    result = lerp(bottomTotal, upperTotal, distanceY0 / DistanceBetweenDiffuseProbes);
+    result = lerp(bottomTotal, upperTotal, distanceY0 / cellDistance);
     
     return result;
 }
 
-int GetLightProbesCellIndex(float3 pos, bool isDiffuse)
+int GetLightProbesCellIndex(float3 pos, bool isDiffuse, int volumeIndex)
 {
     int finalIndex = -1;
     if (isDiffuse)
     {
-        float3 index = (pos - LightProbesMinBounds.xyz) / DistanceBetweenDiffuseProbes;
-        if (index.x < 0.0f || index.x > DiffuseProbesCellsCount.x)
+        float3 index = (pos - SceneLightProbesBounds.xyz) / (DistanceBetweenDiffuseProbes * DiffuseProbeIndexSkip[volumeIndex].x);
+        if (index.x < 0.0f || index.x > DiffuseProbesCellsCount[volumeIndex].x)
             return -1;
-        if (index.y < 0.0f || index.y > DiffuseProbesCellsCount.y)
+        if (index.y < 0.0f || index.y > DiffuseProbesCellsCount[volumeIndex].y)
             return -1;
-        if (index.z < 0.0f || index.z > DiffuseProbesCellsCount.z)
+        if (index.z < 0.0f || index.z > DiffuseProbesCellsCount[volumeIndex].z)
             return -1;
         
 		//little hacky way to prevent from out-of-bounds
-        if (index.x == DiffuseProbesCellsCount.x)
-            index.x = DiffuseProbesCellsCount.x - 1;
-        if (index.y == DiffuseProbesCellsCount.y)
-            index.y = DiffuseProbesCellsCount.y - 1;
-        if (index.z == DiffuseProbesCellsCount.z)
-            index.z = DiffuseProbesCellsCount.z - 1;
+        if (index.x == DiffuseProbesCellsCount[volumeIndex].x)
+            index.x = DiffuseProbesCellsCount[volumeIndex].x - 1;
+        if (index.y == DiffuseProbesCellsCount[volumeIndex].y)
+            index.y = DiffuseProbesCellsCount[volumeIndex].y - 1;
+        if (index.z == DiffuseProbesCellsCount[volumeIndex].z)
+            index.z = DiffuseProbesCellsCount[volumeIndex].z - 1;
 
-        finalIndex = floor(index.y) * (DiffuseProbesCellsCount.x * DiffuseProbesCellsCount.z) + floor(index.x) * DiffuseProbesCellsCount.z + floor(index.z);
+        finalIndex = floor(index.y) * (DiffuseProbesCellsCount[volumeIndex].x * DiffuseProbesCellsCount[volumeIndex].z) + floor(index.x) * DiffuseProbesCellsCount[volumeIndex].z + floor(index.z);
 
-        if (finalIndex >= DiffuseProbesCellsCount.w)
+        if (finalIndex >= DiffuseProbesCellsCount[volumeIndex].w)
             return -1;
     }
     
     return finalIndex;
 }
 
+int GetProbesVolumeCascade(float3 worldPos)
+{
+    for (int volumeIndex = 0; volumeIndex < NUM_OF_PROBE_VOLUME_CASCADES; volumeIndex++)
+    {
+        float3 aMax = LightProbesVolumeBounds[volumeIndex].xyz + CameraPosition.xyz;
+        float3 aMin = -LightProbesVolumeBounds[volumeIndex].xyz + CameraPosition.xyz;
+        
+        if ((worldPos.x <= aMax.x && worldPos.x >= aMin.x) &&
+			(worldPos.y <= aMax.y && worldPos.y >= aMin.y) &&
+			(worldPos.z <= aMax.z && worldPos.z >= aMin.z))
+            return volumeIndex;
+    }
+    
+    return -1;
+}
+
 float3 GetDiffuseIrradiance(float3 worldPos, float3 normal)
 {
-    float3 finalSum = float3(0.0, 0.0, 0.0);
+    float3 finalSum = float3(1.0, 0.0, 0.0);
     
-    int diffuseProbesCellIndex = GetLightProbesCellIndex(worldPos, true);
+    int volumeCascadeIndex = GetProbesVolumeCascade(worldPos);
+    if (volumeCascadeIndex == -1)
+        return float3(1.0, 1.0, 0.0);
+    
+    int diffuseProbesCellIndex = GetLightProbesCellIndex(worldPos, true, volumeCascadeIndex);
     if (diffuseProbesCellIndex != -1)
     {
         for (int i = 0; i < NUM_OF_PROBES_PER_CELL; i++)
         {
-            int currentIndex = DiffuseProbesCellsWithProbeIndices[NUM_OF_PROBES_PER_CELL * diffuseProbesCellIndex + i];
+            int currentIndex = -1;
+            if (volumeCascadeIndex == 0)
+                currentIndex = DiffuseProbesCellsWithProbeIndices0[NUM_OF_PROBES_PER_CELL * diffuseProbesCellIndex + i];
+            else if (volumeCascadeIndex == 1)
+                currentIndex = DiffuseProbesCellsWithProbeIndices1[NUM_OF_PROBES_PER_CELL * diffuseProbesCellIndex + i];
             
-            int indexInTexArray = DiffuseProbesTextureArrayIndices[currentIndex]; // -1 is culled and not in texture array
+            int indexInTexArray = -1;
+            if (volumeCascadeIndex == 0)
+                indexInTexArray = DiffuseProbesTextureArrayIndices0[currentIndex]; // -1 is culled and not in texture array
+            else if (volumeCascadeIndex == 1)
+                indexInTexArray = DiffuseProbesTextureArrayIndices1[currentIndex]; // -1 is culled and not in texture array
+            
+            cellProbesSamples[i] = float3(0.0, 0.0, 0.0);
             if (indexInTexArray != -1)
-                cellProbesSamples[i] = IrradianceDiffuseProbesTextureArray.SampleLevel(SamplerLinear, float4(normal, indexInTexArray / 6), 0).rgb;
-            else
-                cellProbesSamples[i] = float3(0.0, 0.0, 0.0);
-            
+            {
+                if (volumeCascadeIndex == 0)
+                    cellProbesSamples[i] = IrradianceDiffuseProbesTextureArray0.SampleLevel(SamplerLinear, float4(normal, indexInTexArray / 6), 0).rgb;
+                else if (volumeCascadeIndex == 1)
+                    cellProbesSamples[i] = IrradianceDiffuseProbesTextureArray1.SampleLevel(SamplerLinear, float4(normal, indexInTexArray / 6), 0).rgb;
+            }
+
             cellProbesPositions[i] = DiffuseProbesPositions[currentIndex];
         }
         
-        finalSum = GetTrilinearInterpolationFromNeighbourProbes(worldPos);
+        finalSum = GetTrilinearInterpolationFromNeighbourProbes(worldPos, volumeCascadeIndex);
     }
     return finalSum;
 }
@@ -306,7 +350,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     F0 = lerp(F0, diffuseAlbedo.rgb, metalness);
 
     float3 directLighting = float3(0.0, 0.0, 0.0);
-        directLighting += DirectLightingPBR(normalWS, SunColor.xyz, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness);
+       // directLighting += DirectLightingPBR(normalWS, SunColor.xyz, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness);
     
     float3 indirectLighting = float3(0.0, 0.0, 0.0);
     if (extraGbuffer.a < 1.0f)

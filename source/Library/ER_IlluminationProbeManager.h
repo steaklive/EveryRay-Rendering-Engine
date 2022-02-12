@@ -12,7 +12,7 @@
 
 #define NUM_PROBE_VOLUME_CASCADES 2
 
-static const int ProbesVolumeCascadeSizes[NUM_PROBE_VOLUME_CASCADES] = { 45, 135 };
+static const int ProbesVolumeCascadeSizes[NUM_PROBE_VOLUME_CASCADES] = { 45, 225 };
 
 #include "Common.h"
 #include "RenderingObject.h"
@@ -140,16 +140,18 @@ namespace Library
 		const ER_LightProbe* GetDiffuseLightProbe(int index) const { return mDiffuseProbes[index]; }
 		const ER_LightProbe* GetSpecularLightProbe(int index) const { return mSpecularProbes[index]; }
 		ID3D11ShaderResourceView* GetIntegrationMap() { return mIntegrationMapTextureSRV; }
-		int GetCellIndex(const XMFLOAT3& pos, ER_ProbeType aType);
+		int GetCellIndex(const XMFLOAT3& pos, ER_ProbeType aType, int volumeIndex);
 
 		ER_GPUTexture* GetCulledDiffuseProbesTextureArray(int volumeIndex) const { return mDiffuseCubemapArrayRT[volumeIndex]; }
-		ER_GPUBuffer* GetDiffuseProbesCellsIndicesBuffer() const { return mDiffuseProbesCellsIndicesGPUBuffer; }
+		ER_GPUBuffer* GetDiffuseProbesCellsIndicesBuffer(int volumeIndex) const { return mDiffuseProbesCellsIndicesGPUBuffer[volumeIndex]; }
 		ER_GPUBuffer* GetDiffuseProbesTexArrayIndicesBuffer(int volumeIndex) const { return mDiffuseProbesTexArrayIndicesGPUBuffer[volumeIndex]; }
 		ER_GPUBuffer* GetDiffuseProbesPositionsBuffer() const { return mDiffuseProbesPositionsGPUBuffer; }
 
-		const XMFLOAT3& GetProbesVolumeMin() { return mSceneProbesMinBounds; }
-		const XMFLOAT3& GetProbesVolumeMax() { return mSceneProbesMaxBounds; }
-		const XMFLOAT4& GetProbesCellsCount(ER_ProbeType aType);
+		const XMFLOAT3& GetSceneProbesVolumeMin() { return mSceneProbesMinBounds; }
+		const XMFLOAT3& GetSceneProbesVolumeMax() { return mSceneProbesMaxBounds; }
+		const XMFLOAT3& GetProbesVolumeCascade(int volumeIndex) { return XMFLOAT3(ProbesVolumeCascadeSizes[volumeIndex], ProbesVolumeCascadeSizes[volumeIndex], ProbesVolumeCascadeSizes[volumeIndex]); }
+		const XMFLOAT4& GetProbesCellsCount(ER_ProbeType aType, int volumeIndex);
+		float GetProbesIndexSkip(ER_ProbeType aType, int volumeIndex);
 
 	private:
 		void AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds);
@@ -165,8 +167,8 @@ namespace Library
 		std::vector<ER_LightProbe*> mDiffuseProbes;
 		std::vector<ER_LightProbe*> mSpecularProbes;
 
-		std::vector<ER_LightProbeCell> mDiffuseProbesCells;
-		ER_AABB mDiffuseProbesCellBounds;
+		std::vector<ER_LightProbeCell> mDiffuseProbesCells[NUM_PROBE_VOLUME_CASCADES];
+		ER_AABB mDiffuseProbesCellBounds[NUM_PROBE_VOLUME_CASCADES];
 
 		std::vector<int> mNonCulledDiffuseProbesIndices[NUM_PROBE_VOLUME_CASCADES];
 		std::vector<int> mNonCulledSpecularProbesIndices[NUM_PROBE_VOLUME_CASCADES];
@@ -185,7 +187,7 @@ namespace Library
 
 		int* mDiffuseProbesTexArrayIndicesCPUBuffer[NUM_PROBE_VOLUME_CASCADES];
 		ER_GPUBuffer* mDiffuseProbesTexArrayIndicesGPUBuffer[NUM_PROBE_VOLUME_CASCADES];
-		ER_GPUBuffer* mDiffuseProbesCellsIndicesGPUBuffer;
+		ER_GPUBuffer* mDiffuseProbesCellsIndicesGPUBuffer[NUM_PROBE_VOLUME_CASCADES];
 		ER_GPUBuffer* mDiffuseProbesPositionsGPUBuffer;
 
 		bool mDiffuseProbesReady = false;
@@ -204,10 +206,13 @@ namespace Library
 		int mDiffuseProbesCountX = 0;
 		int mDiffuseProbesCountY = 0;
 		int mDiffuseProbesCountZ = 0;
-		int mDiffuseProbesCellsCountX = 0;
-		int mDiffuseProbesCellsCountY = 0;
-		int mDiffuseProbesCellsCountZ = 0;
-		int mDiffuseProbesCellsCountTotal = 0;
+
+		int mDiffuseProbesCellsCountX[NUM_PROBE_VOLUME_CASCADES];
+		int mDiffuseProbesCellsCountY[NUM_PROBE_VOLUME_CASCADES];
+		int mDiffuseProbesCellsCountZ[NUM_PROBE_VOLUME_CASCADES];
+		int mDiffuseProbesCellsCountTotal[NUM_PROBE_VOLUME_CASCADES];
+
+		const int mDiffuseProbeIndexSkip[NUM_PROBE_VOLUME_CASCADES] = { 1, 5 };
 
 		int mSpecularProbesCountTotal = 0;
 		int mSpecularProbesCountX = 0;

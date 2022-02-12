@@ -25,7 +25,6 @@
 #include "Foliage.h"
 #include "IBLRadianceMap.h"
 #include "RenderableAABB.h"
-#include "ER_IlluminationProbeManager.h"
 #include "ER_GPUBuffer.h"
 
 namespace Library {
@@ -66,6 +65,7 @@ namespace Library {
 		mVoxelConeTracingConstantBuffer.Release();
 		mUpsampleBlurConstantBuffer.Release();
 		mDeferredLightingConstantBuffer.Release();
+		mLightProbesConstantBuffer.Release();
 	}
 
 	void Illumination::Initialize(const Scene* scene)
@@ -161,6 +161,7 @@ namespace Library {
 			mVoxelConeTracingConstantBuffer.Initialize(mGame->Direct3DDevice());
 			mUpsampleBlurConstantBuffer.Initialize(mGame->Direct3DDevice());
 			mDeferredLightingConstantBuffer.Initialize(mGame->Direct3DDevice());
+			mLightProbesConstantBuffer.Initialize(mGame->Direct3DDevice());
 		}
 
 		//RTs and gizmos
@@ -596,32 +597,40 @@ namespace Library {
 			mDeferredLightingConstantBuffer.Data.SunDirection = XMFLOAT4{ -mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f };
 			mDeferredLightingConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLightIntensity };
 			mDeferredLightingConstantBuffer.Data.CameraPosition = XMFLOAT4{ mCamera.Position().x,mCamera.Position().y,mCamera.Position().z, 1.0f };
-			mDeferredLightingConstantBuffer.Data.LightProbesMinBounds = XMFLOAT4{ mProbesManager->GetProbesVolumeMin().x, mProbesManager->GetProbesVolumeMin().y, mProbesManager->GetProbesVolumeMin().z, 1.0f };
-			mDeferredLightingConstantBuffer.Data.LightProbesMaxBounds = XMFLOAT4{ mProbesManager->GetProbesVolumeMax().x, mProbesManager->GetProbesVolumeMax().y, mProbesManager->GetProbesVolumeMax().z, 1.0f };
-			mDeferredLightingConstantBuffer.Data.DiffuseProbesCellsCount = mProbesManager->GetProbesCellsCount(DIFFUSE_PROBE);
-			mDeferredLightingConstantBuffer.Data.DistanceBetweenDiffuseProbes = DISTANCE_BETWEEN_DIFFUSE_PROBES;
-
 			mDeferredLightingConstantBuffer.ApplyChanges(context);
 
-			ID3D11Buffer* CBs[1] = { mDeferredLightingConstantBuffer.Buffer() };
-			context->CSSetConstantBuffers(0, 1, CBs);
+			for (size_t i = 0; i < NUM_PROBE_VOLUME_CASCADES; i++)
+			{
+				mLightProbesConstantBuffer.Data.LightProbesVolumeBounds[i] = XMFLOAT4{ mProbesManager->GetProbesVolumeCascade(i).x, mProbesManager->GetProbesVolumeCascade(i).y, mProbesManager->GetProbesVolumeCascade(i).z, 1.0f };
+				mLightProbesConstantBuffer.Data.DiffuseProbesCellsCount[i] = mProbesManager->GetProbesCellsCount(DIFFUSE_PROBE, i);
+				mLightProbesConstantBuffer.Data.DiffuseProbeIndexSkip[i] = XMFLOAT4(mProbesManager->GetProbesIndexSkip(DIFFUSE_PROBE, i), 0.0, 0.0, 0.0);
+			}
+			mLightProbesConstantBuffer.Data.SceneLightProbesBounds = XMFLOAT4{ mProbesManager->GetSceneProbesVolumeMin().x, mProbesManager->GetSceneProbesVolumeMin().y, mProbesManager->GetSceneProbesVolumeMin().z, 1.0f };
+			mLightProbesConstantBuffer.Data.DistanceBetweenDiffuseProbes = DISTANCE_BETWEEN_DIFFUSE_PROBES;
+			mLightProbesConstantBuffer.ApplyChanges(context);
 
-			ID3D11ShaderResourceView* SRs[13] = {
+			ID3D11Buffer* CBs[2] = { mDeferredLightingConstantBuffer.Buffer(), mLightProbesConstantBuffer.Buffer() };
+			context->CSSetConstantBuffers(0, 2, CBs);
+
+			ID3D11ShaderResourceView* SRs[16] = {
 				gbuffer->GetAlbedo()->GetSRV(),
 				gbuffer->GetNormals()->GetSRV(),
 				gbuffer->GetPositions()->GetSRV(),
 				gbuffer->GetExtraBuffer()->GetSRV(),
 				mProbesManager->GetCulledDiffuseProbesTextureArray(0)->GetSRV(),
+				mProbesManager->GetCulledDiffuseProbesTextureArray(1)->GetSRV(),
 				mProbesManager->GetSpecularLightProbe(0)->GetCubemapSRV() /*TODO*/,
 				mProbesManager->GetIntegrationMap()
 			};
 			for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
-				SRs[7 + i] = mShadowMapper.GetShadowTexture(i);
+				SRs[8 + i] = mShadowMapper.GetShadowTexture(i);
 
-			SRs[10] = mProbesManager->GetDiffuseProbesCellsIndicesBuffer()->GetBufferSRV();
-			SRs[11] = mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer(0)->GetBufferSRV();
-			SRs[12] = mProbesManager->GetDiffuseProbesPositionsBuffer()->GetBufferSRV();
-			context->CSSetShaderResources(0, 13, SRs);
+			SRs[11] = mProbesManager->GetDiffuseProbesCellsIndicesBuffer(0)->GetBufferSRV();
+			SRs[12] = mProbesManager->GetDiffuseProbesCellsIndicesBuffer(1)->GetBufferSRV();
+			SRs[13] = mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer(0)->GetBufferSRV();
+			SRs[14] = mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer(1)->GetBufferSRV();
+			SRs[15] = mProbesManager->GetDiffuseProbesPositionsBuffer()->GetBufferSRV();
+			context->CSSetShaderResources(0, 16, SRs);
 
 			ID3D11SamplerState* SS[2] = { mLinearSamplerState, mShadowSamplerState };
 			context->CSSetSamplers(0, 2, SS);

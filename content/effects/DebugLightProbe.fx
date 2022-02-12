@@ -79,15 +79,15 @@ VS_OUTPUT mainVS_Instancing(VS_INPUT_INSTANCING IN)
     return OUT;
 }
 
-float3 mainPS(VS_OUTPUT vsOutput) : SV_Target0
+float4 mainPS(VS_OUTPUT vsOutput) : SV_Target0
 {
     float3 viewDir = normalize(CameraPosition.xyz - vsOutput.WorldPos);
     float3 reflectDir = normalize(reflect(-viewDir, vsOutput.Normal));
    
     if (vsOutput.CullingFlag > 0.0f) 
-        return float3(0.5f, 0.5f, 0.5f);
+        return float4(0.5f, 0.5f, 0.5f, 1.0f);
     else
-        return CubemapTexture.Sample(LinearSampler, float4(reflectDir, vsOutput.CubemapIndex)).rgb;
+        return float4(CubemapTexture.Sample(LinearSampler, float4(reflectDir, vsOutput.CubemapIndex)).rgb, 1.0f);
 }
 
 float3 recomputePS(VS_OUTPUT vsOutput) : SV_Target0
