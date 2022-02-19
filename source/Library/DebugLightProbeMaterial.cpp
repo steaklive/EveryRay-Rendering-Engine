@@ -13,6 +13,7 @@ namespace Rendering
 		MATERIAL_VARIABLE_INITIALIZATION(ViewProjection),
 		MATERIAL_VARIABLE_INITIALIZATION(World),
 		MATERIAL_VARIABLE_INITIALIZATION(CameraPosition),
+		MATERIAL_VARIABLE_INITIALIZATION(DiscardCulledProbe),
 		MATERIAL_VARIABLE_INITIALIZATION(CubemapTexture)
 	{
 	}
@@ -20,6 +21,7 @@ namespace Rendering
 	MATERIAL_VARIABLE_DEFINITION(DebugLightProbeMaterial, ViewProjection)
 	MATERIAL_VARIABLE_DEFINITION(DebugLightProbeMaterial, World)
 	MATERIAL_VARIABLE_DEFINITION(DebugLightProbeMaterial, CameraPosition)
+	MATERIAL_VARIABLE_DEFINITION(DebugLightProbeMaterial, DiscardCulledProbe)
 	MATERIAL_VARIABLE_DEFINITION(DebugLightProbeMaterial, CubemapTexture)
 
 	void DebugLightProbeMaterial::Initialize(Effect* effect)
@@ -29,6 +31,7 @@ namespace Rendering
 		MATERIAL_VARIABLE_RETRIEVE(ViewProjection)
 		MATERIAL_VARIABLE_RETRIEVE(World)
 		MATERIAL_VARIABLE_RETRIEVE(CameraPosition)
+		MATERIAL_VARIABLE_RETRIEVE(DiscardCulledProbe)
 		MATERIAL_VARIABLE_RETRIEVE(CubemapTexture)
 
 		D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =

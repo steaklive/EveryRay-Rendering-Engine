@@ -3,6 +3,7 @@ cbuffer CBufferPerObject
     float4x4 ViewProjection;
     float4x4 World;
     float4 CameraPosition;
+    bool DiscardCulledProbe;
 }
 TextureCubeArray<float4> CubemapTexture;
 
@@ -84,10 +85,14 @@ float4 mainPS(VS_OUTPUT vsOutput) : SV_Target0
     float3 viewDir = normalize(CameraPosition.xyz - vsOutput.WorldPos);
     float3 reflectDir = normalize(reflect(-viewDir, vsOutput.Normal));
    
-    if (vsOutput.CullingFlag > 0.0f) 
-        discard;//    return float4(0.5f, 0.5f, 0.5f, 1.0f);
-    //else
-        return float4(CubemapTexture.Sample(LinearSampler, float4(reflectDir, vsOutput.CubemapIndex)).rgb, 1.0f);
+    if (vsOutput.CullingFlag > 0.0f)
+    {
+        if (DiscardCulledProbe)
+            discard;
+        else
+            return float4(0.5f, 0.5f, 0.5f, 1.0f);
+    }
+    return float4(CubemapTexture.Sample(LinearSampler, float4(reflectDir, vsOutput.CubemapIndex)).rgb, 1.0f);
 }
 
 float3 recomputePS(VS_OUTPUT vsOutput) : SV_Target0

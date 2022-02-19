@@ -26,6 +26,7 @@
 #include "IBLRadianceMap.h"
 #include "RenderableAABB.h"
 #include "ER_GPUBuffer.h"
+#include "ER_LightProbe.h"
 
 namespace Library {
 
@@ -464,10 +465,11 @@ namespace Library {
 			{
 				//TODO add on/off for probe system
 				//TODO add rebake etc.
-				ImGui::Checkbox("DEBUG - Probe Volume", &mDrawProbesVolumeGizmo);
-				ImGui::SliderInt("DEBUG - Probe Volumes Index", &mCurrentDebugProbeVolumeIndex, 0, 1);
-				ImGui::Checkbox("DEBUG - Diffuse Probes", &mDrawDiffuseProbes);
-				ImGui::Checkbox("DEBUG - Specular Probes", &mDrawSpecularProbes);
+				ImGui::Checkbox("DEBUG - Hide culled probes", &mProbesManager->mDebugDiscardCulledProbes);
+				ImGui::Checkbox("DEBUG - Probe volume", &mDrawProbesVolumeGizmo);
+				ImGui::SliderInt("DEBUG - Probe volumes index", &mCurrentDebugProbeVolumeIndex, 0, 1);
+				ImGui::Checkbox("DEBUG - Diffuse probes", &mDrawDiffuseProbes);
+				ImGui::Checkbox("DEBUG - Specular probes", &mDrawSpecularProbes);
 			}
 		}
 		if (ImGui::CollapsingHeader("Local Illumination"))

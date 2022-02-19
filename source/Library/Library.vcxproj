@@ -212,6 +212,7 @@
     <ClInclude Include="ER_CPUProfiler.h" />
     <ClInclude Include="ER_GPUBuffer.h" />
     <ClInclude Include="ER_IlluminationProbeManager.h" />
+    <ClInclude Include="ER_LightProbe.h" />
     <ClInclude Include="FastFourierTransform.h" />
     <ClInclude Include="FirstPersonCamera.h" />
     <ClInclude Include="FogMaterial.h" />
@@ -322,6 +323,7 @@
     <ClCompile Include="ER_CPUProfiler.cpp" />
     <ClCompile Include="ER_GPUBuffer.cpp" />
     <ClCompile Include="ER_IlluminationProbeManager.cpp" />
+    <ClCompile Include="ER_LightProbe.cpp" />
     <ClCompile Include="FirstPersonCamera.cpp" />
     <ClCompile Include="FogMaterial.cpp" />
     <ClCompile Include="Foliage.cpp" />

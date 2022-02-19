@@ -447,7 +447,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     F0 = lerp(F0, diffuseAlbedo.rgb, metalness);
 
     float3 directLighting = float3(0.0, 0.0, 0.0);
-       // directLighting += DirectLightingPBR(normalWS, SunColor.xyz, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness);
+       directLighting += DirectLightingPBR(normalWS, SunColor.xyz, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness);
     
     float3 indirectLighting = float3(0.0, 0.0, 0.0);
     if (extraGbuffer.a < 1.0f)
