@@ -7,6 +7,7 @@ static const float Pi = 3.141592654f;
 
 static float3 cellProbesPositions[NUM_OF_PROBES_PER_CELL];
 static float3 cellProbesSamples[NUM_OF_PROBES_PER_CELL];
+static bool cellProbesExistanceFlags[NUM_OF_PROBES_PER_CELL];
 
 SamplerState SamplerLinear : register(s0);
 SamplerComparisonState CascadedPcfShadowMapSampler : register(s1);
@@ -37,7 +38,6 @@ cbuffer DeferredLightingCBuffer : register(b0)
     float4 SunDirection;
     float4 SunColor;
     float4 CameraPosition;
-
 }
 
 cbuffer LightProbesCBuffer : register(b1)
@@ -49,6 +49,8 @@ cbuffer LightProbesCBuffer : register(b1)
     float DistanceBetweenDiffuseProbes;
 }
 
+// ================================================================================================
+// Simple PCF cascaded shadow mapping
 float CalculateShadow(float3 worldPos, float4x4 svp, int index)
 {
     float4 lightSpacePos = mul(svp, float4(worldPos, 1.0f));
@@ -127,7 +129,7 @@ float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
 }
 
 // ================================================================================================
-// Fresnel with Schlick's approximation:
+// Fresnel with Schlick's approximation functions:
 // http://blog.selfshadow.com/publications/s2013-shading-course/rad/s2013_pbs_rad_notes.pdf
 // http://graphicrants.blogspot.fr/2013/08/specular-brdf-reference.html
 // ================================================================================================
@@ -170,7 +172,6 @@ float3 DirectSpecularBRDF(float3 normalWS, float3 lightDir, float3 viewDir, floa
        
     return specular;
 }
-// ================================================================================================
 
 float3 DirectLightingPBR(float3 normalWS, float3 lightColor, float3 diffuseAlbedo,
 	float3 positionWS, float roughness, float3 F0, float metallic)
@@ -204,24 +205,89 @@ float3 ApproximateSpecularIBL(float3 F0, float3 reflectDir, float nDotV, float r
 
 }
 
+// ==============================================================================================================
+// Trilinear interpolation of probes in a cell (7 lerps) based on "Irradiance Volumes for Games" by N. Tatarchuk.
+// There are some extra checks for edge cases (i.e., if the probe is culled, then don't lerp).
+// In theory, it is possible to get rid of 'ifs' and optimize this function but readability will be lost.
+// ==============================================================================================================
 float3 GetTrilinearInterpolationFromNeighbourProbes(float3 pos, int volumeIndex)
 {
     float3 result = float3(0.0, 0.0, 0.0);
+    
     float cellDistance = DistanceBetweenDiffuseProbes * DiffuseProbeIndexSkip[volumeIndex];
+    float distanceX0 = abs(cellProbesPositions[0].x - pos.x) / cellDistance;
+    float distanceY0 = abs(cellProbesPositions[0].y - pos.y) / cellDistance;
+    float distanceZ0 = abs(cellProbesPositions[0].z - pos.z) / cellDistance;
     
-    float distanceX0 = abs(cellProbesPositions[0].x - pos.x);
-    float distanceY0 = abs(cellProbesPositions[0].y - pos.y);
-    float distanceZ0 = abs(cellProbesPositions[0].z - pos.z);
+    // bottom-left, bottom-right, upper-left, upper-right, bottom-total, upper-total
+    bool sideHasColor[6] = { true, true, true, true, true, true };
     
-    float3 bottomLeft = lerp(cellProbesSamples[0], cellProbesSamples[1], distanceZ0 / cellDistance);
-    float3 bottomRight = lerp(cellProbesSamples[2], cellProbesSamples[3], distanceZ0 / cellDistance);
-    float3 upperLeft = lerp(cellProbesSamples[4], cellProbesSamples[5], distanceZ0 / cellDistance);
-    float3 upperRight = lerp(cellProbesSamples[6], cellProbesSamples[7], distanceZ0 / cellDistance);
+    float3 bottomLeft = float3(0.0, 0.0, 0.0);
+    if (cellProbesExistanceFlags[0] && cellProbesExistanceFlags[1])
+        bottomLeft = lerp(cellProbesSamples[0], cellProbesSamples[1], distanceZ0);
+    else if (cellProbesExistanceFlags[0] && !cellProbesExistanceFlags[1])
+        bottomLeft = cellProbesSamples[0];
+    else if (!cellProbesExistanceFlags[0] && cellProbesExistanceFlags[1])
+        bottomLeft = cellProbesSamples[1];
+    else
+        sideHasColor[0] = false;
+        
+    float3 bottomRight = float3(0.0, 0.0, 0.0);
+    if (cellProbesExistanceFlags[2] && cellProbesExistanceFlags[3])
+        bottomRight = lerp(cellProbesSamples[2], cellProbesSamples[3], distanceZ0);
+    else if (cellProbesExistanceFlags[2] && !cellProbesExistanceFlags[3])
+        bottomRight = cellProbesSamples[2];
+    else if (!cellProbesExistanceFlags[2] && cellProbesExistanceFlags[3])
+        bottomRight = cellProbesSamples[3];
+    else
+        sideHasColor[1] = false;
+        
+    float3 upperLeft = float3(0.0, 0.0, 0.0);
+    if (cellProbesExistanceFlags[4] && cellProbesExistanceFlags[5])
+        upperLeft = lerp(cellProbesSamples[4], cellProbesSamples[5], distanceZ0);
+    else if (cellProbesExistanceFlags[4] && !cellProbesExistanceFlags[5])
+        upperLeft = cellProbesSamples[4];
+    else if (!cellProbesExistanceFlags[4] && cellProbesExistanceFlags[5])
+        upperLeft = cellProbesSamples[5];
+    else
+        sideHasColor[2] = false;
     
-    float3 bottomTotal = lerp(bottomLeft, bottomRight, distanceX0 / cellDistance);
-    float3 upperTotal = lerp(upperLeft, upperRight, distanceX0 / cellDistance);
+    float3 upperRight = float3(0.0, 0.0, 0.0);
+    if (cellProbesExistanceFlags[6] && cellProbesExistanceFlags[7])
+        upperRight = lerp(cellProbesSamples[6], cellProbesSamples[7], distanceZ0);
+    else if (cellProbesExistanceFlags[6] && !cellProbesExistanceFlags[7])
+        upperRight = cellProbesSamples[6];
+    else if (!cellProbesExistanceFlags[6] && cellProbesExistanceFlags[7])
+        upperRight = cellProbesSamples[7];
+    else
+        sideHasColor[3] = false;
     
-    result = lerp(bottomTotal, upperTotal, distanceY0 / cellDistance);
+    float3 bottomTotal = float3(0.0, 0.0, 0.0);
+    if (sideHasColor[0] && sideHasColor[1])
+        bottomTotal = lerp(bottomLeft, bottomRight, distanceX0);
+    else if (sideHasColor[0] && !sideHasColor[1])
+        bottomTotal = bottomLeft;
+    else if (!sideHasColor[0] && sideHasColor[1])
+        bottomTotal = bottomRight;
+    else
+        sideHasColor[4] = false;
+    
+    float3 upperTotal = float3(0.0, 0.0, 0.0);
+    if (sideHasColor[2] && sideHasColor[3])
+        upperTotal = lerp(upperLeft, upperRight, distanceX0);
+    else if (sideHasColor[2] && !sideHasColor[3])
+        upperTotal = upperLeft;
+    else if (!sideHasColor[2] && sideHasColor[3])
+        upperTotal = upperRight;
+    else
+        sideHasColor[5] = false;
+    
+    if (sideHasColor[4] && sideHasColor[5])
+        result = lerp(bottomTotal, upperTotal, distanceY0);
+    else if (sideHasColor[4] && !sideHasColor[5])
+        result = bottomTotal;
+    else if (!sideHasColor[4] && sideHasColor[5])
+        result = upperTotal;
     
     return result;
 }
@@ -252,6 +318,7 @@ int GetLightProbesCellIndex(float3 pos, bool isDiffuse, int volumeIndex)
         if (finalIndex >= DiffuseProbesCellsCount[volumeIndex].w)
             return -1;
     }
+    //else TODO specular probes
     
     return finalIndex;
 }
@@ -272,6 +339,13 @@ int GetProbesVolumeCascade(float3 worldPos)
     return -1;
 }
 
+// ====================================================================================================================
+// Get diffuse irradiance from probes:
+// 1) probes volume cascade is calculated for the position
+// 2) probes cell index is calculated for the cascade
+// 3) 8 probes (or less if out of the current cascade) are sampled from IrradianceDiffuseProbesTextureArrays
+// 4) Final probe samples are trilinearly interpolated and the final diffuse result is returned
+// ====================================================================================================================
 float3 GetDiffuseIrradiance(float3 worldPos, float3 normal)
 {
     float3 finalSum = float3(1.0, 0.0, 0.0);
@@ -286,20 +360,26 @@ float3 GetDiffuseIrradiance(float3 worldPos, float3 normal)
         for (int i = 0; i < NUM_OF_PROBES_PER_CELL; i++)
         {
             int currentIndex = -1;
+            cellProbesExistanceFlags[i] = false;
+            
+            // get cell's probe global index 
             if (volumeCascadeIndex == 0)
                 currentIndex = DiffuseProbesCellsWithProbeIndices0[NUM_OF_PROBES_PER_CELL * diffuseProbesCellIndex + i];
             else if (volumeCascadeIndex == 1)
                 currentIndex = DiffuseProbesCellsWithProbeIndices1[NUM_OF_PROBES_PER_CELL * diffuseProbesCellIndex + i];
             
+            // get global probes-texture array index for current probe's global index 
             int indexInTexArray = -1;
             if (volumeCascadeIndex == 0)
                 indexInTexArray = DiffuseProbesTextureArrayIndices0[currentIndex]; // -1 is culled and not in texture array
             else if (volumeCascadeIndex == 1)
                 indexInTexArray = DiffuseProbesTextureArrayIndices1[currentIndex]; // -1 is culled and not in texture array
             
+            // sample probe from global probes-texture array
             cellProbesSamples[i] = float3(0.0, 0.0, 0.0);
             if (indexInTexArray != -1)
             {
+                cellProbesExistanceFlags[i] = true;
                 if (volumeCascadeIndex == 0)
                     cellProbesSamples[i] = IrradianceDiffuseProbesTextureArray0.SampleLevel(SamplerLinear, float4(normal, indexInTexArray / 6), 0).rgb;
                 else if (volumeCascadeIndex == 1)
@@ -321,8 +401,8 @@ float3 IndirectLightingPBR(float3 diffuseAlbedo, float3 normalWS, float3 positio
     float3 reflectDir = normalize(reflect(-viewDir, normalWS));
     float ao = 1.0f;
 
-    float3 irradiance = GetDiffuseIrradiance(positionWS, normalWS)/* / Pi*/;
-    float3 indirectDiffuseLighting = irradiance * diffuseAlbedo * float3(1.0f - metalness, 1.0f - metalness, 1.0f - metalness);
+    float3 irradianceDiffuse = GetDiffuseIrradiance(positionWS, normalWS)/* / Pi*/;
+    float3 indirectDiffuseLighting = irradianceDiffuse * diffuseAlbedo * float3(1.0f - metalness, 1.0f - metalness, 1.0f - metalness);
 
     float3 F = Schlick_Fresnel_UE(F0, nDotV);
     float3 indirectSpecularLighting = ApproximateSpecularIBL(F, reflectDir, nDotV, roughness);
