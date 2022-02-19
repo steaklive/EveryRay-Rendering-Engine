@@ -8,6 +8,8 @@
 #define NUM_OF_SHADOW_CASCADES 3
 #define NUM_OF_PROBES_PER_CELL 8
 #define NUM_OF_PROBE_VOLUME_CASCADES 2
+#define SPECULAR_PROBE_MIP_COUNT 6
+#define FLT_MAX 3.402823466e+38
 
 static const float4 ColorWhite = { 1, 1, 1, 1 };
 static const float Pi = 3.141592654f;
@@ -30,16 +32,24 @@ Texture2D<float4> GbufferExtra2Texture : register(t4); // [global diffuse probe 
 TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray0 : register(t5); //cascade 0
 TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray1 : register(t6); //cascade 1
 TextureCube<float4> IrradianceDiffuseGlobalProbeTexture : register(t7); // global probe
-TextureCube<float4> IrradianceSpecularTexture : register(t8);
-Texture2D<float4> IntegrationTexture : register(t9);
+TextureCubeArray<float4> IrradianceSpecularProbesTextureArray0 : register(t8); //cascade 0
+TextureCubeArray<float4> IrradianceSpecularProbesTextureArray1 : register(t9); //cascade 1
 
-Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t10);
+Texture2D<float4> IntegrationTexture : register(t10);
 
-StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices0 : register(t13); //cascade 0, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
-StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices1 : register(t14); //cascade 1, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
-StructuredBuffer<int> DiffuseProbesTextureArrayIndices0 : register(t15); //cascade 0, array of all diffuse probes in scene with indices in 'IrradianceDiffuseProbesTextureArray' for each probe (-1 if not in array)
-StructuredBuffer<int> DiffuseProbesTextureArrayIndices1 : register(t16); //cascade 1, array of all diffuse probes in scene with indices in 'IrradianceDiffuseProbesTextureArray' for each probe (-1 if not in array)
-StructuredBuffer<float3> DiffuseProbesPositions : register(t17); //linear array of all diffuse probes positions
+Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t11);
+
+StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices0 : register(t14); //cascade 0, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
+StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices1 : register(t15); //cascade 1, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
+StructuredBuffer<int> DiffuseProbesTextureArrayIndices0 : register(t16); //cascade 0, array of all diffuse probes in scene with indices in 'IrradianceDiffuseProbesTextureArray' for each probe (-1 if not in array)
+StructuredBuffer<int> DiffuseProbesTextureArrayIndices1 : register(t17); //cascade 1, array of all diffuse probes in scene with indices in 'IrradianceDiffuseProbesTextureArray' for each probe (-1 if not in array)
+StructuredBuffer<float3> DiffuseProbesPositions : register(t18); //linear array of all diffuse probes positions
+
+StructuredBuffer<int> SpecularProbesCellsWithProbeIndices0 : register(t19); //cascade 0, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
+StructuredBuffer<int> SpecularProbesCellsWithProbeIndices1 : register(t20); //cascade 1, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
+StructuredBuffer<int> SpecularProbesTextureArrayIndices0 : register(t21); //cascade 0, array of all specular probes in scene with indices in 'IrradianceSpecularProbesTextureArray' for each probe (-1 if not in array)
+StructuredBuffer<int> SpecularProbesTextureArrayIndices1 : register(t22); //cascade 1, array of all specular probes in scene with indices in 'IrradianceSpecularProbesTextureArray' for each probe (-1 if not in array)
+StructuredBuffer<float3> SpecularProbesPositions : register(t23); //linear array of all specular probes positions
 
 cbuffer DeferredLightingCBuffer : register(b0)
 {
@@ -56,8 +66,11 @@ cbuffer LightProbesCBuffer : register(b1)
     float4 LightProbesVolumeBounds[NUM_OF_PROBE_VOLUME_CASCADES];
     float4 DiffuseProbesCellsCount[NUM_OF_PROBE_VOLUME_CASCADES]; //x,y,z,total
     float4 DiffuseProbeIndexSkip[NUM_OF_PROBE_VOLUME_CASCADES];
+    float4 SpecularProbesCellsCount[NUM_OF_PROBE_VOLUME_CASCADES]; //x,y,z,total
+    float4 SpecularProbeIndexSkip[NUM_OF_PROBE_VOLUME_CASCADES];
     float4 SceneLightProbesBounds; //volume's extent of all scene's probes
     float DistanceBetweenDiffuseProbes;
+    float DistanceBetweenSpecularProbes;
 }
 
 // ================================================================================================
@@ -199,22 +212,6 @@ float3 DirectLightingPBR(float3 normalWS, float3 lightColor, float3 diffuseAlbed
     return max(lighting, 0.0f) * nDotL * lightColor * lightIntensity;
 }
 
-// ================================================================================================
-// Split sum approximation 
-// http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
-// ================================================================================================
-float3 ApproximateSpecularIBL(float3 F0, float3 reflectDir, float nDotV, float roughness)
-{
-    uint width, height, levels;
-    IrradianceSpecularTexture.GetDimensions(0, width, height, levels);
-    float mipIndex = roughness * levels;
-    
-    float3 prefilteredColor = IrradianceSpecularTexture.SampleLevel(SamplerLinear, reflectDir, mipIndex);
-    float2 environmentBRDF = IntegrationTexture.SampleLevel(SamplerLinear, float2(nDotV, roughness), 0).rg;
-
-    return prefilteredColor * (F0 * environmentBRDF.x + environmentBRDF.y);
-
-}
 
 // ==============================================================================================================
 // Trilinear interpolation of probes in a cell (7 lerps) based on "Irradiance Volumes for Games" by N. Tatarchuk.
@@ -329,7 +326,29 @@ int GetLightProbesCellIndex(float3 pos, bool isDiffuse, int volumeIndex)
         if (finalIndex >= DiffuseProbesCellsCount[volumeIndex].w)
             return -1;
     }
-    //else TODO specular probes
+    else
+    {
+        float3 index = (pos - SceneLightProbesBounds.xyz) / (DistanceBetweenSpecularProbes * SpecularProbeIndexSkip[volumeIndex].x);
+        if (index.x < 0.0f || index.x > SpecularProbesCellsCount[volumeIndex].x)
+            return -1;
+        if (index.y < 0.0f || index.y > SpecularProbesCellsCount[volumeIndex].y)
+            return -1;
+        if (index.z < 0.0f || index.z > SpecularProbesCellsCount[volumeIndex].z)
+            return -1;
+        
+		//little hacky way to prevent from out-of-bounds
+        if (index.x == SpecularProbesCellsCount[volumeIndex].x)
+            index.x = SpecularProbesCellsCount[volumeIndex].x - 1;
+        if (index.y == SpecularProbesCellsCount[volumeIndex].y)
+            index.y = SpecularProbesCellsCount[volumeIndex].y - 1;
+        if (index.z == SpecularProbesCellsCount[volumeIndex].z)
+            index.z = SpecularProbesCellsCount[volumeIndex].z - 1;
+
+        finalIndex = floor(index.y) * (SpecularProbesCellsCount[volumeIndex].x * SpecularProbesCellsCount[volumeIndex].z) + floor(index.x) * SpecularProbesCellsCount[volumeIndex].z + floor(index.z);
+
+        if (finalIndex >= SpecularProbesCellsCount[volumeIndex].w)
+            return -1;
+    }
     
     return finalIndex;
 }
@@ -407,6 +426,74 @@ float3 GetDiffuseIrradiance(float3 worldPos, float3 normal, bool useGlobalDiffus
     return finalSum;
 }
 
+float3 GetSpecularIrradiance(float3 worldPos, float3 reflectDir, int mipIndex)
+{
+    float3 finalSum = float3(1.0, 0.0, 0.0);
+    
+    int volumeCascadeIndex = GetProbesVolumeCascade(worldPos);
+    if (volumeCascadeIndex == -1)
+        return float3(0.0, 1.0, 0.0);
+    
+    int specularProbesCellIndex = GetLightProbesCellIndex(worldPos, false, volumeCascadeIndex);
+    if (specularProbesCellIndex != -1)
+    {
+        int closestProbeTexArrayIndex = -1;
+        int closestProbeDistance = FLT_MAX;
+        for (int i = 0; i < NUM_OF_PROBES_PER_CELL; i++)
+        {
+            int currentIndex = -1;
+            
+            // get cell's probe global index 
+            if (volumeCascadeIndex == 0)
+                currentIndex = SpecularProbesCellsWithProbeIndices0[NUM_OF_PROBES_PER_CELL * specularProbesCellIndex + i];
+            else if (volumeCascadeIndex == 1)
+                currentIndex = SpecularProbesCellsWithProbeIndices1[NUM_OF_PROBES_PER_CELL * specularProbesCellIndex + i];
+            
+            // get global probes-texture array index for current probe's global index 
+            int indexInTexArray = -1;
+            if (volumeCascadeIndex == 0)
+                indexInTexArray = SpecularProbesTextureArrayIndices0[currentIndex]; // -1 is culled and not in texture array
+            else if (volumeCascadeIndex == 1)
+                indexInTexArray = SpecularProbesTextureArrayIndices1[currentIndex]; // -1 is culled and not in texture array
+            
+            if (indexInTexArray != -1)
+            {
+                float curDistance = distance(worldPos, SpecularProbesPositions[currentIndex]);
+                if (curDistance < closestProbeDistance)
+                {
+                    closestProbeDistance = curDistance;
+                    closestProbeTexArrayIndex = indexInTexArray;
+                }
+            }
+        }
+        
+        if (closestProbeTexArrayIndex != -1)
+        {
+            if (volumeCascadeIndex == 0)
+                finalSum = IrradianceSpecularProbesTextureArray0.SampleLevel(SamplerLinear, float4(reflectDir, closestProbeTexArrayIndex / 6), mipIndex).rgb;
+            else if (volumeCascadeIndex == 1)
+                finalSum = IrradianceSpecularProbesTextureArray1.SampleLevel(SamplerLinear, float4(reflectDir, closestProbeTexArrayIndex / 6), mipIndex).rgb;
+        }
+    }
+    else
+        return float3(0.0, 0.0, 1.0);
+    return finalSum;
+}
+
+// ================================================================================================
+// Split sum approximation 
+// http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
+// ================================================================================================
+float3 ApproximateSpecularIBL(float3 worldPos, float3 F0, float3 reflectDir, float nDotV, float roughness)
+{
+    float mipIndex = roughness * SPECULAR_PROBE_MIP_COUNT;
+    
+    float3 prefilteredColor = GetSpecularIrradiance(worldPos, reflectDir, mipIndex);
+    float2 environmentBRDF = IntegrationTexture.SampleLevel(SamplerLinear, float2(nDotV, roughness), 0).rg;
+
+    return prefilteredColor * (F0 * environmentBRDF.x + environmentBRDF.y);
+}
+
 float3 IndirectLightingPBR(float3 diffuseAlbedo, float3 normalWS, float3 positionWS, float roughness, float3 F0, float metalness, bool useGlobalDiffuseProbe)
 {
     float3 viewDir = normalize(CameraPosition.xyz - positionWS);
@@ -418,9 +505,9 @@ float3 IndirectLightingPBR(float3 diffuseAlbedo, float3 normalWS, float3 positio
     float3 indirectDiffuseLighting = irradianceDiffuse * diffuseAlbedo * float3(1.0f - metalness, 1.0f - metalness, 1.0f - metalness);
 
     float3 F = Schlick_Fresnel_UE(F0, nDotV);
-    float3 indirectSpecularLighting = ApproximateSpecularIBL(F, reflectDir, nDotV, roughness);
+    float3 indirectSpecularLighting = ApproximateSpecularIBL(positionWS, F, reflectDir, nDotV, roughness);
     
-    return (indirectDiffuseLighting + indirectSpecularLighting) * ao;
+    return (/*indirectDiffuseLighting + */indirectSpecularLighting) * ao;
 }
 
 [numthreads(8, 8, 1)]
@@ -447,7 +534,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     F0 = lerp(F0, diffuseAlbedo.rgb, metalness);
 
     float3 directLighting = float3(0.0, 0.0, 0.0);
-       directLighting += DirectLightingPBR(normalWS, SunColor.xyz, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness);
+    //   directLighting += DirectLightingPBR(normalWS, SunColor.xyz, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness);
     
     float3 indirectLighting = float3(0.0, 0.0, 0.0);
     if (extraGbuffer.a < 1.0f)
