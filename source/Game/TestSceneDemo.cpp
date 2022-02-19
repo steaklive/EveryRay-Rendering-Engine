@@ -178,6 +178,7 @@ namespace Rendering
 		static_cast<DeferredMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->MetallicMap() << mScene->objects[objectName]->GetTextureData(meshIndex).MetallicMap;
 		static_cast<DeferredMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->ReflectionMaskFactor() << mScene->objects[objectName]->GetMeshReflectionFactor(meshIndex);
 		static_cast<DeferredMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->FoliageMaskFactor() << mScene->objects[objectName]->GetFoliageMask();
+		static_cast<DeferredMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->UseGlobalDiffuseProbeMaskFactor() << mScene->objects[objectName]->GetUseGlobalLightProbeMask();
 	}
 	void TestSceneDemo::UpdateShadow0MaterialVariables(const std::string & objectName, int meshIndex)
 	{

@@ -223,6 +223,9 @@ namespace Rendering
 
 		bool IsInLightProbe() { return mIsInLightProbe; }
 		void SetInLightProbe(bool value) { mIsInLightProbe = value; }
+		void SetUseGlobalLightProbe(bool value) { mUseGlobalLightProbe = value; }
+		bool GetUseGlobalLightProbe() { return mUseGlobalLightProbe; }
+		float GetUseGlobalLightProbeMask() { return mUseGlobalLightProbe ? 1.0f : 0.0f; }
 
 		int GetIndexInScene() { return mIndexInScene; }
 
@@ -277,6 +280,7 @@ namespace Rendering
 		float													mMaxScale = 1.0f;
 		bool													mFoliageMask = false;
 		bool													mIsInLightProbe = false;
+		bool													mUseGlobalLightProbe = false;
 		float													mCameraViewMatrix[16];
 		float													mCameraProjectionMatrix[16];
 		float													mCurrentObjectTransformMatrix[16] = 

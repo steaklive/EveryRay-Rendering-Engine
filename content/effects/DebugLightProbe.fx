@@ -85,8 +85,8 @@ float4 mainPS(VS_OUTPUT vsOutput) : SV_Target0
     float3 reflectDir = normalize(reflect(-viewDir, vsOutput.Normal));
    
     if (vsOutput.CullingFlag > 0.0f) 
-        return float4(0.5f, 0.5f, 0.5f, 1.0f);
-    else
+        discard;//    return float4(0.5f, 0.5f, 0.5f, 1.0f);
+    //else
         return float4(CubemapTexture.Sample(LinearSampler, float4(reflectDir, vsOutput.CubemapIndex)).rgb, 1.0f);
 }
 

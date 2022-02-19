@@ -9,6 +9,7 @@ cbuffer CBufferPerObject
     float4x4 World : WORLD;
     float ReflectionMaskFactor;
     float FoliageMaskFactor;
+    float UseGlobalDiffuseProbeMaskFactor;
 }
 SamplerState Sampler
 {
@@ -78,6 +79,7 @@ struct PS_OUTPUT
     float4 Normal : SV_Target1;
     float4 WorldPos : SV_Target2;
     float4 Extra : SV_Target3;
+    float4 Extra2 : SV_Target4;
 };
 
 PS_OUTPUT pixel_shader(VS_OUTPUT IN) : SV_Target
@@ -100,6 +102,7 @@ PS_OUTPUT pixel_shader(VS_OUTPUT IN) : SV_Target
     float roughness = RoughnessMap.Sample(Sampler, IN.TextureCoordinate).r;
     float metalness = MetallicMap.Sample(Sampler, IN.TextureCoordinate).r;
     OUT.Extra = float4(ReflectionMaskFactor, roughness, metalness, FoliageMaskFactor);
+    OUT.Extra2 = float4(UseGlobalDiffuseProbeMaskFactor, 0.0, 0.0, 0.0);
     return OUT;
 
 }

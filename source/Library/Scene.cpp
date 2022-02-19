@@ -164,6 +164,8 @@ namespace Library
 				aObject->SetFoliageMask(root["rendering_objects"][i]["foliageMask"].asBool());
 			if (root["rendering_objects"][i].isMember("inLightProbe"))
 				aObject->SetInLightProbe(root["rendering_objects"][i]["inLightProbe"].asBool());
+			if (root["rendering_objects"][i].isMember("useGlobalLightProbe"))
+				aObject->SetUseGlobalLightProbe(root["rendering_objects"][i]["useGlobalLightProbe"].asBool());
 			if (root["rendering_objects"][i].isMember("placed_on_terrain")) {
 				aObject->SetPlacedOnTerrain(root["rendering_objects"][i]["placed_on_terrain"].asBool());
 				if (isInstanced && root["rendering_objects"][i].isMember("num_instances_per_vegetation_zone"))

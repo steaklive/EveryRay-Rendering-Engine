@@ -108,8 +108,8 @@ namespace Library
 		ID3D11InputLayout* mInputLayout = nullptr; //TODO remove
 
 		XMFLOAT3 mPosition;
-		int mSize;
-		int mIndex;
+		int mSize = 0;
+		int mIndex = 0;
 		bool mIsProbeLoadedFromDisk = false;
 		bool mIsComputed = false;
 		bool mIsCulled[NUM_PROBE_VOLUME_CASCADES] = { false, false };
@@ -134,7 +134,7 @@ namespace Library
 		void SetLevelPath(const std::wstring& aPath) { mLevelPath = aPath; };
 		void ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox = nullptr);
 		void DrawDebugProbes(ER_ProbeType aType, int volumeIndex);
-		void DrawDebugProbesVolumeGizmo();
+		void DrawDebugProbesVolumeGizmo(int volumeIndex);
 		void UpdateProbes(Game& game);
 		void UpdateDebugLightProbeMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, ER_ProbeType aType, int volumeIndex);
 		const ER_LightProbe* GetDiffuseLightProbe(int index) const { return mDiffuseProbes[index]; }
@@ -142,6 +142,7 @@ namespace Library
 		ID3D11ShaderResourceView* GetIntegrationMap() { return mIntegrationMapTextureSRV; }
 		int GetCellIndex(const XMFLOAT3& pos, ER_ProbeType aType, int volumeIndex);
 
+		ER_LightProbe* GetGlobalDiffuseProbe() { return mGlobalDiffuseProbe; }
 		ER_GPUTexture* GetCulledDiffuseProbesTextureArray(int volumeIndex) const { return mDiffuseCubemapArrayRT[volumeIndex]; }
 		ER_GPUBuffer* GetDiffuseProbesCellsIndicesBuffer(int volumeIndex) const { return mDiffuseProbesCellsIndicesGPUBuffer[volumeIndex]; }
 		ER_GPUBuffer* GetDiffuseProbesTexArrayIndicesBuffer(int volumeIndex) const { return mDiffuseProbesTexArrayIndicesGPUBuffer[volumeIndex]; }
@@ -166,6 +167,7 @@ namespace Library
 
 		std::vector<ER_LightProbe*> mDiffuseProbes;
 		std::vector<ER_LightProbe*> mSpecularProbes;
+		ER_LightProbe* mGlobalDiffuseProbe = nullptr;
 
 		std::vector<ER_LightProbeCell> mDiffuseProbesCells[NUM_PROBE_VOLUME_CASCADES];
 		ER_AABB mDiffuseProbesCellBounds[NUM_PROBE_VOLUME_CASCADES];
@@ -176,22 +178,24 @@ namespace Library
 		int mNonCulledDiffuseProbesCount[NUM_PROBE_VOLUME_CASCADES];
 		int mNonCulledSpecularProbesCount[NUM_PROBE_VOLUME_CASCADES];
 
-		ER_GPUTexture* mDiffuseCubemapArrayRT[NUM_PROBE_VOLUME_CASCADES];
-		ER_GPUTexture* mSpecularCubemapArrayRT[NUM_PROBE_VOLUME_CASCADES];
-		ER_GPUTexture* mDiffuseCubemapFacesRT;
-		ER_GPUTexture* mDiffuseCubemapFacesConvolutedRT;
-		ER_GPUTexture* mSpecularCubemapFacesRT;
-		ER_GPUTexture* mSpecularCubemapFacesConvolutedRT;
-		DepthTarget* mDiffuseCubemapDepthBuffers[CUBEMAP_FACES_COUNT];
-		DepthTarget* mSpecularCubemapDepthBuffers[CUBEMAP_FACES_COUNT];
+		ER_GPUTexture* mDiffuseCubemapArrayRT[NUM_PROBE_VOLUME_CASCADES] = { nullptr };
+		ER_GPUTexture* mSpecularCubemapArrayRT[NUM_PROBE_VOLUME_CASCADES] = { nullptr };
 
-		int* mDiffuseProbesTexArrayIndicesCPUBuffer[NUM_PROBE_VOLUME_CASCADES];
-		ER_GPUBuffer* mDiffuseProbesTexArrayIndicesGPUBuffer[NUM_PROBE_VOLUME_CASCADES];
-		ER_GPUBuffer* mDiffuseProbesCellsIndicesGPUBuffer[NUM_PROBE_VOLUME_CASCADES];
+		ER_GPUTexture* mTempDiffuseCubemapFacesRT = nullptr;
+		ER_GPUTexture* mTempDiffuseCubemapFacesConvolutedRT = nullptr;
+		ER_GPUTexture* mTempSpecularCubemapFacesRT = nullptr;
+		ER_GPUTexture* mTempSpecularCubemapFacesConvolutedRT = nullptr;
+		DepthTarget* mTempDiffuseCubemapDepthBuffers[CUBEMAP_FACES_COUNT] = { nullptr };
+		DepthTarget* mTempSpecularCubemapDepthBuffers[CUBEMAP_FACES_COUNT] = { nullptr };
+
+		int* mDiffuseProbesTexArrayIndicesCPUBuffer[NUM_PROBE_VOLUME_CASCADES] = { nullptr };
+		ER_GPUBuffer* mDiffuseProbesTexArrayIndicesGPUBuffer[NUM_PROBE_VOLUME_CASCADES] = { nullptr };
+		ER_GPUBuffer* mDiffuseProbesCellsIndicesGPUBuffer[NUM_PROBE_VOLUME_CASCADES] = { nullptr };
 		ER_GPUBuffer* mDiffuseProbesPositionsGPUBuffer;
 
 		bool mDiffuseProbesReady = false;
 		bool mSpecularProbesReady = false;
+		bool mGlobalDiffuseProbeReady = false;
 
 		std::wstring mLevelPath;
 

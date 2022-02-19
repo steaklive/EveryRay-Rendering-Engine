@@ -17,7 +17,8 @@ namespace Library
 		MATERIAL_VARIABLE_INITIALIZATION(RoughnessMap),
 		MATERIAL_VARIABLE_INITIALIZATION(MetallicMap),
 		MATERIAL_VARIABLE_INITIALIZATION(ReflectionMaskFactor),
-		MATERIAL_VARIABLE_INITIALIZATION(FoliageMaskFactor)
+		MATERIAL_VARIABLE_INITIALIZATION(FoliageMaskFactor),
+		MATERIAL_VARIABLE_INITIALIZATION(UseGlobalDiffuseProbeMaskFactor)
 	{
 	}
 
@@ -29,6 +30,7 @@ namespace Library
 	MATERIAL_VARIABLE_DEFINITION(DeferredMaterial, MetallicMap)
 	MATERIAL_VARIABLE_DEFINITION(DeferredMaterial, ReflectionMaskFactor)
 	MATERIAL_VARIABLE_DEFINITION(DeferredMaterial, FoliageMaskFactor)
+	MATERIAL_VARIABLE_DEFINITION(DeferredMaterial, UseGlobalDiffuseProbeMaskFactor)
 
 	void DeferredMaterial::Initialize(Effect* effect)
 	{
@@ -42,6 +44,7 @@ namespace Library
 		MATERIAL_VARIABLE_RETRIEVE(MetallicMap)
 		MATERIAL_VARIABLE_RETRIEVE(ReflectionMaskFactor)
 		MATERIAL_VARIABLE_RETRIEVE(FoliageMaskFactor)
+		MATERIAL_VARIABLE_RETRIEVE(UseGlobalDiffuseProbeMaskFactor)
 
 		D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 		{

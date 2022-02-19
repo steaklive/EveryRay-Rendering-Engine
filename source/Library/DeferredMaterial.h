@@ -17,6 +17,7 @@ namespace Library
 		MATERIAL_VARIABLE_DECLARATION(MetallicMap)
 		MATERIAL_VARIABLE_DECLARATION(ReflectionMaskFactor)
 		MATERIAL_VARIABLE_DECLARATION(FoliageMaskFactor)
+		MATERIAL_VARIABLE_DECLARATION(UseGlobalDiffuseProbeMaskFactor)
 
 	public:
 		DeferredMaterial();

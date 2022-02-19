@@ -421,7 +421,7 @@ namespace Library {
 				mProbesManager->DrawDebugProbes(SPECULAR_PROBE, mCurrentDebugProbeVolumeIndex);
 
 			if (mDrawProbesVolumeGizmo)
-				mProbesManager->DrawDebugProbesVolumeGizmo();
+				mProbesManager->DrawDebugProbesVolumeGizmo(mCurrentDebugProbeVolumeIndex);
 		}
 	}
 
@@ -613,25 +613,27 @@ namespace Library {
 			ID3D11Buffer* CBs[2] = { mDeferredLightingConstantBuffer.Buffer(), mLightProbesConstantBuffer.Buffer() };
 			context->CSSetConstantBuffers(0, 2, CBs);
 
-			ID3D11ShaderResourceView* SRs[16] = {
+			ID3D11ShaderResourceView* SRs[18] = {
 				gbuffer->GetAlbedo()->GetSRV(),
 				gbuffer->GetNormals()->GetSRV(),
 				gbuffer->GetPositions()->GetSRV(),
 				gbuffer->GetExtraBuffer()->GetSRV(),
+				gbuffer->GetExtra2Buffer()->GetSRV(),
 				mProbesManager->GetCulledDiffuseProbesTextureArray(0)->GetSRV(),
 				mProbesManager->GetCulledDiffuseProbesTextureArray(1)->GetSRV(),
+				mProbesManager->GetGlobalDiffuseProbe()->GetCubemapSRV(),
 				mProbesManager->GetSpecularLightProbe(0)->GetCubemapSRV() /*TODO*/,
 				mProbesManager->GetIntegrationMap()
 			};
 			for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
-				SRs[8 + i] = mShadowMapper.GetShadowTexture(i);
+				SRs[10 + i] = mShadowMapper.GetShadowTexture(i);
 
-			SRs[11] = mProbesManager->GetDiffuseProbesCellsIndicesBuffer(0)->GetBufferSRV();
-			SRs[12] = mProbesManager->GetDiffuseProbesCellsIndicesBuffer(1)->GetBufferSRV();
-			SRs[13] = mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer(0)->GetBufferSRV();
-			SRs[14] = mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer(1)->GetBufferSRV();
-			SRs[15] = mProbesManager->GetDiffuseProbesPositionsBuffer()->GetBufferSRV();
-			context->CSSetShaderResources(0, 16, SRs);
+			SRs[13] = mProbesManager->GetDiffuseProbesCellsIndicesBuffer(0)->GetBufferSRV();
+			SRs[14] = mProbesManager->GetDiffuseProbesCellsIndicesBuffer(1)->GetBufferSRV();
+			SRs[15] = mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer(0)->GetBufferSRV();
+			SRs[16] = mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer(1)->GetBufferSRV();
+			SRs[17] = mProbesManager->GetDiffuseProbesPositionsBuffer()->GetBufferSRV();
+			context->CSSetShaderResources(0, 18, SRs);
 
 			ID3D11SamplerState* SS[2] = { mLinearSamplerState, mShadowSamplerState };
 			context->CSSetSamplers(0, 2, SS);

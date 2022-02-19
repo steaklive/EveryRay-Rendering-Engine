@@ -33,6 +33,7 @@
 	[
 		{
 			"inLightProbe" : true,
+			"useGlobalLightProbe" : true,
 			"instanced" : false,
 			"materials" : 
 			[

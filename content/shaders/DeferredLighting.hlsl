@@ -1,3 +1,10 @@
+// ================================================================================================
+// Compute shader for deferred direct and indirect lighting. 
+// Contains cascaded shadow mapping, light probes and PBR support
+// 
+// Written by Gen Afanasev for 'EveryRay Rendering Engine', 2017-2022
+// ================================================================================================
+
 #define NUM_OF_SHADOW_CASCADES 3
 #define NUM_OF_PROBES_PER_CELL 8
 #define NUM_OF_PROBE_VOLUME_CASCADES 2
@@ -17,18 +24,22 @@ RWTexture2D<float4> OutputTexture : register(u0);
 Texture2D<float4> GbufferAlbedoTexture : register(t0);
 Texture2D<float4> GbufferNormalTexture : register(t1);
 Texture2D<float4> GbufferWorldPosTexture : register(t2);
-Texture2D<float4> GbufferExtraTexture : register(t3);
-TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray0 : register(t4); //cascade 0
-TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray1 : register(t5); //cascade 1
-TextureCube<float4> IrradianceSpecularTexture : register(t6);
-Texture2D<float4> IntegrationTexture : register(t7);
-Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t8);
+Texture2D<float4> GbufferExtraTexture : register(t3); // [reflection mask, roughness, metalness, foliage mask]
+Texture2D<float4> GbufferExtra2Texture : register(t4); // [global diffuse probe mask, empty, empty, empty]
 
-StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices0 : register(t11); //cascade 0, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
-StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices1 : register(t12); //cascade 1, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
-StructuredBuffer<int> DiffuseProbesTextureArrayIndices0 : register(t13); //cascade 0, array of all diffuse probes in scene with indices in 'IrradianceDiffuseProbesTextureArray' for each probe (-1 if not in array)
-StructuredBuffer<int> DiffuseProbesTextureArrayIndices1 : register(t14); //cascade 1, array of all diffuse probes in scene with indices in 'IrradianceDiffuseProbesTextureArray' for each probe (-1 if not in array)
-StructuredBuffer<float3> DiffuseProbesPositions : register(t15); //linear array of all diffuse probes positions
+TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray0 : register(t5); //cascade 0
+TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray1 : register(t6); //cascade 1
+TextureCube<float4> IrradianceDiffuseGlobalProbeTexture : register(t7); // global probe
+TextureCube<float4> IrradianceSpecularTexture : register(t8);
+Texture2D<float4> IntegrationTexture : register(t9);
+
+Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t10);
+
+StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices0 : register(t13); //cascade 0, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
+StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices1 : register(t14); //cascade 1, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
+StructuredBuffer<int> DiffuseProbesTextureArrayIndices0 : register(t15); //cascade 0, array of all diffuse probes in scene with indices in 'IrradianceDiffuseProbesTextureArray' for each probe (-1 if not in array)
+StructuredBuffer<int> DiffuseProbesTextureArrayIndices1 : register(t16); //cascade 1, array of all diffuse probes in scene with indices in 'IrradianceDiffuseProbesTextureArray' for each probe (-1 if not in array)
+StructuredBuffer<float3> DiffuseProbesPositions : register(t17); //linear array of all diffuse probes positions
 
 cbuffer DeferredLightingCBuffer : register(b0)
 {
@@ -346,13 +357,15 @@ int GetProbesVolumeCascade(float3 worldPos)
 // 3) 8 probes (or less if out of the current cascade) are sampled from IrradianceDiffuseProbesTextureArrays
 // 4) Final probe samples are trilinearly interpolated and the final diffuse result is returned
 // ====================================================================================================================
-float3 GetDiffuseIrradiance(float3 worldPos, float3 normal)
+float3 GetDiffuseIrradiance(float3 worldPos, float3 normal, bool useGlobalDiffuseProbe)
 {
     float3 finalSum = float3(1.0, 0.0, 0.0);
+    if (useGlobalDiffuseProbe)
+        return IrradianceDiffuseGlobalProbeTexture.SampleLevel(SamplerLinear, normal, 0).rgb;
     
     int volumeCascadeIndex = GetProbesVolumeCascade(worldPos);
     if (volumeCascadeIndex == -1)
-        return float3(1.0, 1.0, 0.0);
+        return IrradianceDiffuseGlobalProbeTexture.SampleLevel(SamplerLinear, normal, 0).rgb;
     
     int diffuseProbesCellIndex = GetLightProbesCellIndex(worldPos, true, volumeCascadeIndex);
     if (diffuseProbesCellIndex != -1)
@@ -394,14 +407,14 @@ float3 GetDiffuseIrradiance(float3 worldPos, float3 normal)
     return finalSum;
 }
 
-float3 IndirectLightingPBR(float3 diffuseAlbedo, float3 normalWS, float3 positionWS, float roughness, float3 F0, float metalness)
+float3 IndirectLightingPBR(float3 diffuseAlbedo, float3 normalWS, float3 positionWS, float roughness, float3 F0, float metalness, bool useGlobalDiffuseProbe)
 {
     float3 viewDir = normalize(CameraPosition.xyz - positionWS);
     float nDotV = max(dot(normalWS, viewDir), 0.0);
     float3 reflectDir = normalize(reflect(-viewDir, normalWS));
     float ao = 1.0f;
 
-    float3 irradianceDiffuse = GetDiffuseIrradiance(positionWS, normalWS)/* / Pi*/;
+    float3 irradianceDiffuse = GetDiffuseIrradiance(positionWS, normalWS, useGlobalDiffuseProbe) /* / Pi*/;
     float3 indirectDiffuseLighting = irradianceDiffuse * diffuseAlbedo * float3(1.0f - metalness, 1.0f - metalness, 1.0f - metalness);
 
     float3 F = Schlick_Fresnel_UE(F0, nDotV);
@@ -415,15 +428,19 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
 {
     uint2 inPos = DTid.xy;
     
-    float4 diffuseAlbedo = pow(GbufferAlbedoTexture.Load(uint3(inPos, 0)), 2.2);    
-    float3 normalWS = GbufferNormalTexture.Load(uint3(inPos, 0)).rgb;
     float4 worldPos = GbufferWorldPosTexture.Load(uint3(inPos, 0));
-    float4 extraGbuffer = GbufferExtraTexture.Load(uint3(inPos, 0));
     if (worldPos.a < 0.000001f)
         return;
     
+    float4 diffuseAlbedo = pow(GbufferAlbedoTexture.Load(uint3(inPos, 0)), 2.2);    
+    float3 normalWS = GbufferNormalTexture.Load(uint3(inPos, 0)).rgb;
+    
+    float4 extraGbuffer = GbufferExtraTexture.Load(uint3(inPos, 0));
     float roughness = extraGbuffer.g;
     float metalness = extraGbuffer.b;
+    
+    float4 extra2Gbuffer = GbufferExtra2Texture.Load(uint3(inPos, 0));
+    bool useGlobalDiffuseProbe = extra2Gbuffer.r > 0.0f;
 
     //reflectance at normal incidence for dia-electic or metal
     float3 F0 = float3(0.04, 0.04, 0.04);
@@ -434,7 +451,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     
     float3 indirectLighting = float3(0.0, 0.0, 0.0);
     if (extraGbuffer.a < 1.0f)
-        indirectLighting += IndirectLightingPBR(diffuseAlbedo.rgb, normalWS, worldPos.rgb, roughness, F0, metalness);
+        indirectLighting += IndirectLightingPBR(diffuseAlbedo.rgb, normalWS, worldPos.rgb, roughness, F0, metalness, useGlobalDiffuseProbe);
     
     float shadow = GetShadow(worldPos);
     

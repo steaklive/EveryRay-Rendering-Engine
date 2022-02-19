@@ -22,7 +22,8 @@ namespace Library
 		ER_GPUTexture* GetAlbedo() { return mAlbedoBuffer; }
 		ER_GPUTexture* GetNormals() { return mNormalBuffer; }
 		ER_GPUTexture* GetPositions() { return mPositionsBuffer; }
-		ER_GPUTexture* GetExtraBuffer() { return mExtraBuffer; }
+		ER_GPUTexture* GetExtraBuffer() { return mExtraBuffer; } // [reflection mask, roughness, metalness, foliage mask]
+		ER_GPUTexture* GetExtra2Buffer() { return mExtra2Buffer; } // [global diffuse probe mask, empty, empty, empty]
 		DepthTarget* GetDepth() { return mDepthBuffer; }
 
 	private:
@@ -32,6 +33,7 @@ namespace Library
 		ER_GPUTexture* mNormalBuffer= nullptr;
 		ER_GPUTexture* mPositionsBuffer = nullptr;
 		ER_GPUTexture* mExtraBuffer = nullptr;
+		ER_GPUTexture* mExtra2Buffer = nullptr;
 		ID3D11RasterizerState* mRS = nullptr;
 
 		int mWidth;
