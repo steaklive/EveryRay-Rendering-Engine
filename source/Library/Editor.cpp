@@ -66,18 +66,23 @@ namespace Library
 			}
 
 			int objectIndex = 0;
+			int objectsSize = 0;
 			for (auto& object : mScene->objects) {
-				editorObjectsNames[objectIndex] = object.first.c_str();
-				objectIndex++;
+				if (object.second->IsAvailableInEditor())
+				{
+					editorObjectsNames[objectIndex] = object.first.c_str();
+					objectIndex++;
+				}
 			}
+			objectsSize = objectIndex;
 
 			ImGui::PushItemWidth(-1);
 			if (ImGui::Button("Deselect")) {
 				selectedObjectIndex = -1;
 			}
-			ImGui::ListBox("##empty", &selectedObjectIndex, editorObjectsNames, mScene->objects.size());
+			ImGui::ListBox("##empty", &selectedObjectIndex, editorObjectsNames, objectsSize);
 
-			for (size_t i = 0; i < mScene->objects.size(); i++)
+			for (size_t i = 0; i < objectsSize; i++)
 			{
 				if (i == selectedObjectIndex)
 					mScene->objects[editorObjectsNames[selectedObjectIndex]]->Selected(true);

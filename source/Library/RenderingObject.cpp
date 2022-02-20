@@ -571,7 +571,7 @@ namespace Rendering
 	void RenderingObject::Update(const GameTime & time)
 	{
 
-		if (mIsSelected && mIsInstanced /*&& mInstanceCount[0]*/ && Utility::IsEditorMode)
+		if (mAvailableInEditorMode && mIsSelected && mIsInstanced /*&& mInstanceCount[0]*/ && Utility::IsEditorMode)
 		{
 			ShowInstancesListUI();
 			MatrixHelper::GetFloatArray(mInstanceData[0][mSelectedInstancedObjectIndex].World, mCurrentObjectTransformMatrix);

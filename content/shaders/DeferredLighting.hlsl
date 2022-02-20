@@ -5,11 +5,11 @@
 // Written by Gen Afanasev for 'EveryRay Rendering Engine', 2017-2022
 // ================================================================================================
 
+#define FLT_MAX 3.402823466e+38
 #define NUM_OF_SHADOW_CASCADES 3
 #define NUM_OF_PROBES_PER_CELL 8
 #define NUM_OF_PROBE_VOLUME_CASCADES 2
 #define SPECULAR_PROBE_MIP_COUNT 6
-#define FLT_MAX 3.402823466e+38
 
 static const float4 ColorWhite = { 1, 1, 1, 1 };
 static const float Pi = 3.141592654f;
@@ -171,7 +171,6 @@ float3 Schlick_Fresnel_Roughness(float cosTheta, float3 F0, float roughness)
     return F0 + (max(float3(a, a, a), F0) - F0) * pow(1.0f - cosTheta, 5.0f);
 }
 
-// ================================================================================================
 float3 DirectDiffuseBRDF(float3 diffuseAlbedo, float3 lightDir, float3 viewDir, float3 F0, float metallic, float3 halfVec)
 {
     float3 F = Schlick_Fresnel(F0, max(dot(halfVec, viewDir), 0.0));
@@ -181,8 +180,6 @@ float3 DirectDiffuseBRDF(float3 diffuseAlbedo, float3 lightDir, float3 viewDir, 
     return (diffuseAlbedo * kD) / Pi;
 }
 
-// ================================================================================================
-// Cook-Torrence BRDF
 float3 DirectSpecularBRDF(float3 normalWS, float3 lightDir, float3 viewDir, float roughness, float3 F0, float3 halfVec)
 {
     // Cook-Torrance BRDF
@@ -426,13 +423,20 @@ float3 GetDiffuseIrradiance(float3 worldPos, float3 normal, bool useGlobalDiffus
     return finalSum;
 }
 
+// ====================================================================================================================
+// Get specular irradiance from probes:
+// 1) probes volume cascade is calculated for the position
+// 2) probes cell index is calculated for the cascade
+// 3) 8 probes (or less if out of the current cascade) are processed and the closest is found
+// 4) Final probe with the closest distance to the position is sampled from 'IrradianceSpecularProbesTextureArray'
+// ====================================================================================================================
 float3 GetSpecularIrradiance(float3 worldPos, float3 reflectDir, int mipIndex)
 {
-    float3 finalSum = float3(1.0, 0.0, 0.0);
+    float3 finalSum = float3(0.0, 0.0, 0.0);
     
     int volumeCascadeIndex = GetProbesVolumeCascade(worldPos);
     if (volumeCascadeIndex == -1)
-        return float3(0.0, 1.0, 0.0);
+        return finalSum;
     
     int specularProbesCellIndex = GetLightProbesCellIndex(worldPos, false, volumeCascadeIndex);
     if (specularProbesCellIndex != -1)
@@ -456,6 +460,7 @@ float3 GetSpecularIrradiance(float3 worldPos, float3 reflectDir, int mipIndex)
             else if (volumeCascadeIndex == 1)
                 indexInTexArray = SpecularProbesTextureArrayIndices1[currentIndex]; // -1 is culled and not in texture array
             
+            // calculate the probe with the closest distance to the position
             if (indexInTexArray != -1)
             {
                 float curDistance = distance(worldPos, SpecularProbesPositions[currentIndex]);
@@ -475,23 +480,7 @@ float3 GetSpecularIrradiance(float3 worldPos, float3 reflectDir, int mipIndex)
                 finalSum = IrradianceSpecularProbesTextureArray1.SampleLevel(SamplerLinear, float4(reflectDir, closestProbeTexArrayIndex / 6), mipIndex).rgb;
         }
     }
-    else
-        return float3(0.0, 0.0, 1.0);
     return finalSum;
-}
-
-// ================================================================================================
-// Split sum approximation 
-// http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
-// ================================================================================================
-float3 ApproximateSpecularIBL(float3 worldPos, float3 F0, float3 reflectDir, float nDotV, float roughness)
-{
-    float mipIndex = roughness * SPECULAR_PROBE_MIP_COUNT;
-    
-    float3 prefilteredColor = GetSpecularIrradiance(worldPos, reflectDir, mipIndex);
-    float2 environmentBRDF = IntegrationTexture.SampleLevel(SamplerLinear, float2(nDotV, roughness), 0).rg;
-
-    return prefilteredColor * (F0 * environmentBRDF.x + environmentBRDF.y);
 }
 
 float3 IndirectLightingPBR(float3 diffuseAlbedo, float3 normalWS, float3 positionWS, float roughness, float3 F0, float metalness, bool useGlobalDiffuseProbe)
@@ -501,13 +490,18 @@ float3 IndirectLightingPBR(float3 diffuseAlbedo, float3 normalWS, float3 positio
     float3 reflectDir = normalize(reflect(-viewDir, normalWS));
     float ao = 1.0f;
 
+    //indirect diffuse
     float3 irradianceDiffuse = GetDiffuseIrradiance(positionWS, normalWS, useGlobalDiffuseProbe) /* / Pi*/;
     float3 indirectDiffuseLighting = irradianceDiffuse * diffuseAlbedo * float3(1.0f - metalness, 1.0f - metalness, 1.0f - metalness);
 
+    //indirect specular (split sum approximation http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf)
     float3 F = Schlick_Fresnel_UE(F0, nDotV);
-    float3 indirectSpecularLighting = ApproximateSpecularIBL(positionWS, F, reflectDir, nDotV, roughness);
+    float mipIndex = roughness * SPECULAR_PROBE_MIP_COUNT;
+    float3 prefilteredColor = GetSpecularIrradiance(positionWS, reflectDir, mipIndex);
+    float2 environmentBRDF = IntegrationTexture.SampleLevel(SamplerLinear, float2(nDotV, roughness), 0).rg;
+    float3 indirectSpecularLighting = prefilteredColor * (F * environmentBRDF.x + environmentBRDF.y);
     
-    return (/*indirectDiffuseLighting + */indirectSpecularLighting) * ao;
+    return (indirectDiffuseLighting + indirectSpecularLighting) * ao;
 }
 
 [numthreads(8, 8, 1)]
@@ -534,7 +528,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     F0 = lerp(F0, diffuseAlbedo.rgb, metalness);
 
     float3 directLighting = float3(0.0, 0.0, 0.0);
-    //   directLighting += DirectLightingPBR(normalWS, SunColor.xyz, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness);
+       directLighting += DirectLightingPBR(normalWS, SunColor.xyz, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness);
     
     float3 indirectLighting = float3(0.0, 0.0, 0.0);
     if (extraGbuffer.a < 1.0f)

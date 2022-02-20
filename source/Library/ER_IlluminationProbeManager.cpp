@@ -274,7 +274,7 @@ namespace Library
 			std::string name = "Debug diffuse lightprobes " + std::to_string(volumeIndex) + " volume";
 			auto result = scene->objects.insert(
 				std::pair<std::string, Rendering::RenderingObject*>(name, new Rendering::RenderingObject(name, scene->objects.size(), game, camera,
-					std::unique_ptr<Model>(new Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), true, true))
+					std::unique_ptr<Model>(new Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true))
 			);
 
 			if (!result.second)
@@ -423,7 +423,7 @@ namespace Library
 			std::string name = "Debug specular lightprobes " + std::to_string(volumeIndex) + " volume";
 			auto result = scene->objects.insert(
 				std::pair<std::string, Rendering::RenderingObject*>(name, new Rendering::RenderingObject(name, scene->objects.size(), game, camera,
-					std::unique_ptr<Model>(new Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), true, true))
+					std::unique_ptr<Model>(new Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true))
 			);
 
 			if (!result.second)
