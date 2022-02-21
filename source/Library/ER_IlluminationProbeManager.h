@@ -8,12 +8,13 @@
 #define SPECULAR_PROBE_SIZE 128 //cubemap dimension
 #define DISTANCE_BETWEEN_SPECULAR_PROBES 30
 
-#define MAX_PROBES_IN_VOLUME_PER_AXIS 6 // == cbrt(2048 / CUBEMAP_FACES_COUNT), 2048 - tex array limit (DX11)
+#define MAX_PROBES_IN_VOLUME_PER_AXIS 6 // == cbrt(2048 / CUBEMAP_FACES_COUNT), 2048 - tex. array limit (DX11)
 #define PROBE_COUNT_PER_CELL 8 // 3D cube cell of probes in each vertex
 #define NUM_PROBE_VOLUME_CASCADES 2 // 3D volumes of cells
 
-static const int VolumeProbeIndexSkips[NUM_PROBE_VOLUME_CASCADES] = { 1, 5 }; //skips between probes (in indices), i.e 1 - no skips, 5 - probe with i = 0 to i = 5
-static const int ProbesVolumeCascadeSizes[NUM_PROBE_VOLUME_CASCADES] =
+// we want to skip some probes to widen the coverage area
+static const int VolumeProbeIndexSkips[NUM_PROBE_VOLUME_CASCADES] = { 1, 5 }; //skips between probes (in indices), i.e 1 - no skips
+static const int DiffuseProbesVolumeCascadeSizes[NUM_PROBE_VOLUME_CASCADES] =
 { 
 	MAX_PROBES_IN_VOLUME_PER_AXIS * DISTANCE_BETWEEN_DIFFUSE_PROBES * VolumeProbeIndexSkips[0] / 2,
 	MAX_PROBES_IN_VOLUME_PER_AXIS * DISTANCE_BETWEEN_DIFFUSE_PROBES * VolumeProbeIndexSkips[1] / 2
@@ -87,9 +88,9 @@ namespace Library
 
 		const XMFLOAT3& GetProbesVolumeCascade(ER_ProbeType aType, int volumeIndex) { 
 			if (aType == DIFFUSE_PROBE)
-				return XMFLOAT3(ProbesVolumeCascadeSizes[volumeIndex],
-					ProbesVolumeCascadeSizes[volumeIndex],
-					ProbesVolumeCascadeSizes[volumeIndex]); 
+				return XMFLOAT3(DiffuseProbesVolumeCascadeSizes[volumeIndex],
+					DiffuseProbesVolumeCascadeSizes[volumeIndex],
+					DiffuseProbesVolumeCascadeSizes[volumeIndex]); 
 			else
 				return XMFLOAT3(SpecularProbesVolumeCascadeSizes[volumeIndex],
 					SpecularProbesVolumeCascadeSizes[volumeIndex],

@@ -93,8 +93,8 @@ namespace Library
 			mDebugDiffuseProbeVolumeGizmo[volumeIndex] = new RenderableAABB(game, mMainCamera, XMFLOAT4(0.44f, 0.2f, 0.94f, 1.0f));
 			mDebugDiffuseProbeVolumeGizmo[volumeIndex]->Initialize();
 			mDebugDiffuseProbeVolumeGizmo[volumeIndex]->InitializeGeometry({
-				XMFLOAT3(-ProbesVolumeCascadeSizes[volumeIndex], -ProbesVolumeCascadeSizes[volumeIndex], -ProbesVolumeCascadeSizes[volumeIndex]),
-				XMFLOAT3(ProbesVolumeCascadeSizes[volumeIndex], ProbesVolumeCascadeSizes[volumeIndex], ProbesVolumeCascadeSizes[volumeIndex]) }, XMMatrixScaling(1, 1, 1));
+				XMFLOAT3(-DiffuseProbesVolumeCascadeSizes[volumeIndex], -DiffuseProbesVolumeCascadeSizes[volumeIndex], -DiffuseProbesVolumeCascadeSizes[volumeIndex]),
+				XMFLOAT3(DiffuseProbesVolumeCascadeSizes[volumeIndex], DiffuseProbesVolumeCascadeSizes[volumeIndex], DiffuseProbesVolumeCascadeSizes[volumeIndex]) }, XMMatrixScaling(1, 1, 1));
 			mDebugDiffuseProbeVolumeGizmo[volumeIndex]->SetPosition(mMainCamera.Position());
 
 			mDebugSpecularProbeVolumeGizmo[volumeIndex] = new RenderableAABB(game, mMainCamera, XMFLOAT4(0.44f, 0.2f, 0.94f, 1.0f));
@@ -804,14 +804,14 @@ namespace Library
 			mDebugSpecularProbeVolumeGizmo[volumeIndex]->Update();
 
 			mCurrentDiffuseVolumesMaxBounds[volumeIndex] = XMFLOAT3(
-				ProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().x,
-				ProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().y,
-				ProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().z);
+				DiffuseProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().x,
+				DiffuseProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().y,
+				DiffuseProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().z);
 
 			mCurrentDiffuseVolumesMinBounds[volumeIndex] = XMFLOAT3(
-				-ProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().x,
-				-ProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().y,
-				-ProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().z);
+				-DiffuseProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().x,
+				-DiffuseProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().y,
+				-DiffuseProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().z);
 
 			mCurrentSpecularVolumesMaxBounds[volumeIndex] = XMFLOAT3(
 				SpecularProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().x,
