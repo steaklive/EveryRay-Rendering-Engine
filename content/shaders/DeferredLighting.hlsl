@@ -63,11 +63,11 @@ cbuffer DeferredLightingCBuffer : register(b0)
 
 cbuffer LightProbesCBuffer : register(b1)
 {
-    float4 LightProbesVolumeBounds[NUM_OF_PROBE_VOLUME_CASCADES];
     float4 DiffuseProbesCellsCount[NUM_OF_PROBE_VOLUME_CASCADES]; //x,y,z,total
-    float4 DiffuseProbeIndexSkip[NUM_OF_PROBE_VOLUME_CASCADES];
+    float4 DiffuseProbesVolumeSizes[NUM_OF_PROBE_VOLUME_CASCADES];
     float4 SpecularProbesCellsCount[NUM_OF_PROBE_VOLUME_CASCADES]; //x,y,z,total
-    float4 SpecularProbeIndexSkip[NUM_OF_PROBE_VOLUME_CASCADES];
+    float4 SpecularProbesVolumeSizes[NUM_OF_PROBE_VOLUME_CASCADES];
+    float4 VolumeProbesIndexSkips[NUM_OF_PROBE_VOLUME_CASCADES];
     float4 SceneLightProbesBounds; //volume's extent of all scene's probes
     float DistanceBetweenDiffuseProbes;
     float DistanceBetweenSpecularProbes;
@@ -219,7 +219,7 @@ float3 GetTrilinearInterpolationFromNeighbourProbes(float3 pos, int volumeIndex)
 {
     float3 result = float3(0.0, 0.0, 0.0);
     
-    float cellDistance = DistanceBetweenDiffuseProbes * DiffuseProbeIndexSkip[volumeIndex];
+    float cellDistance = DistanceBetweenDiffuseProbes * VolumeProbesIndexSkips[volumeIndex];
     float distanceX0 = abs(cellProbesPositions[0].x - pos.x) / cellDistance;
     float distanceY0 = abs(cellProbesPositions[0].y - pos.y) / cellDistance;
     float distanceZ0 = abs(cellProbesPositions[0].z - pos.z) / cellDistance;
@@ -302,7 +302,7 @@ int GetLightProbesCellIndex(float3 pos, bool isDiffuse, int volumeIndex)
     int finalIndex = -1;
     if (isDiffuse)
     {
-        float3 index = (pos - SceneLightProbesBounds.xyz) / (DistanceBetweenDiffuseProbes * DiffuseProbeIndexSkip[volumeIndex].x);
+        float3 index = (pos - SceneLightProbesBounds.xyz) / (DistanceBetweenDiffuseProbes * VolumeProbesIndexSkips[volumeIndex].x);
         if (index.x < 0.0f || index.x > DiffuseProbesCellsCount[volumeIndex].x)
             return -1;
         if (index.y < 0.0f || index.y > DiffuseProbesCellsCount[volumeIndex].y)
@@ -325,7 +325,7 @@ int GetLightProbesCellIndex(float3 pos, bool isDiffuse, int volumeIndex)
     }
     else
     {
-        float3 index = (pos - SceneLightProbesBounds.xyz) / (DistanceBetweenSpecularProbes * SpecularProbeIndexSkip[volumeIndex].x);
+        float3 index = (pos - SceneLightProbesBounds.xyz) / (DistanceBetweenSpecularProbes * VolumeProbesIndexSkips[volumeIndex].x);
         if (index.x < 0.0f || index.x > SpecularProbesCellsCount[volumeIndex].x)
             return -1;
         if (index.y < 0.0f || index.y > SpecularProbesCellsCount[volumeIndex].y)
@@ -350,12 +350,12 @@ int GetLightProbesCellIndex(float3 pos, bool isDiffuse, int volumeIndex)
     return finalIndex;
 }
 
-int GetProbesVolumeCascade(float3 worldPos)
+int GetProbesVolumeCascade(float3 worldPos, bool diffuse)
 {
     for (int volumeIndex = 0; volumeIndex < NUM_OF_PROBE_VOLUME_CASCADES; volumeIndex++)
     {
-        float3 aMax = LightProbesVolumeBounds[volumeIndex].xyz + CameraPosition.xyz;
-        float3 aMin = -LightProbesVolumeBounds[volumeIndex].xyz + CameraPosition.xyz;
+        float3 aMax = ((diffuse) ? DiffuseProbesVolumeSizes[volumeIndex].xyz : SpecularProbesVolumeSizes[volumeIndex].xyz) + CameraPosition.xyz;
+        float3 aMin = ((diffuse) ? -DiffuseProbesVolumeSizes[volumeIndex].xyz : -SpecularProbesVolumeSizes[volumeIndex].xyz) + CameraPosition.xyz;
         
         if ((worldPos.x <= aMax.x && worldPos.x >= aMin.x) &&
 			(worldPos.y <= aMax.y && worldPos.y >= aMin.y) &&
@@ -379,7 +379,7 @@ float3 GetDiffuseIrradiance(float3 worldPos, float3 normal, bool useGlobalDiffus
     if (useGlobalDiffuseProbe)
         return IrradianceDiffuseGlobalProbeTexture.SampleLevel(SamplerLinear, normal, 0).rgb;
     
-    int volumeCascadeIndex = GetProbesVolumeCascade(worldPos);
+    int volumeCascadeIndex = GetProbesVolumeCascade(worldPos, true);
     if (volumeCascadeIndex == -1)
         return IrradianceDiffuseGlobalProbeTexture.SampleLevel(SamplerLinear, normal, 0).rgb;
     
@@ -434,7 +434,7 @@ float3 GetSpecularIrradiance(float3 worldPos, float3 reflectDir, int mipIndex)
 {
     float3 finalSum = float3(0.0, 0.0, 0.0);
     
-    int volumeCascadeIndex = GetProbesVolumeCascade(worldPos);
+    int volumeCascadeIndex = GetProbesVolumeCascade(worldPos, false);
     if (volumeCascadeIndex == -1)
         return finalSum;
     

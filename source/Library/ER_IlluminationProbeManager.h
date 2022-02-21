@@ -4,15 +4,25 @@
 #define DIFFUSE_PROBE_SIZE 32 //cubemap dimension
 #define DISTANCE_BETWEEN_DIFFUSE_PROBES 15
 
+#define SPECULAR_PROBE_MIP_COUNT 6
 #define SPECULAR_PROBE_SIZE 128 //cubemap dimension
 #define DISTANCE_BETWEEN_SPECULAR_PROBES 30
-#define SPECULAR_PROBE_MIP_COUNT 6
 
+#define MAX_PROBES_IN_VOLUME_PER_AXIS 6 // == cbrt(2048 / CUBEMAP_FACES_COUNT), 2048 - tex array limit (DX11)
 #define PROBE_COUNT_PER_CELL 8 // 3D cube cell of probes in each vertex
+#define NUM_PROBE_VOLUME_CASCADES 2 // 3D volumes of cells
 
-#define NUM_PROBE_VOLUME_CASCADES 2
-
-static const int ProbesVolumeCascadeSizes[NUM_PROBE_VOLUME_CASCADES] = { 45, 225 };
+static const int VolumeProbeIndexSkips[NUM_PROBE_VOLUME_CASCADES] = { 1, 5 }; //skips between probes (in indices), i.e 1 - no skips, 5 - probe with i = 0 to i = 5
+static const int ProbesVolumeCascadeSizes[NUM_PROBE_VOLUME_CASCADES] =
+{ 
+	MAX_PROBES_IN_VOLUME_PER_AXIS * DISTANCE_BETWEEN_DIFFUSE_PROBES * VolumeProbeIndexSkips[0] / 2,
+	MAX_PROBES_IN_VOLUME_PER_AXIS * DISTANCE_BETWEEN_DIFFUSE_PROBES * VolumeProbeIndexSkips[1] / 2
+};
+static const int SpecularProbesVolumeCascadeSizes[NUM_PROBE_VOLUME_CASCADES] = 
+{ 
+	MAX_PROBES_IN_VOLUME_PER_AXIS * DISTANCE_BETWEEN_SPECULAR_PROBES * VolumeProbeIndexSkips[0] / 2,
+	MAX_PROBES_IN_VOLUME_PER_AXIS * DISTANCE_BETWEEN_SPECULAR_PROBES * VolumeProbeIndexSkips[1] / 2
+};
 
 #include "Common.h"
 #include "RenderingObject.h"
@@ -58,7 +68,7 @@ namespace Library
 		void SetLevelPath(const std::wstring& aPath) { mLevelPath = aPath; };
 		void ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox = nullptr);
 		void DrawDebugProbes(ER_ProbeType aType, int volumeIndex);
-		void DrawDebugProbesVolumeGizmo(int volumeIndex);
+		void DrawDebugProbesVolumeGizmo(ER_ProbeType aType, int volumeIndex);
 		void UpdateProbes(Game& game);
 		int GetCellIndex(const XMFLOAT3& pos, ER_ProbeType aType, int volumeIndex);
 
@@ -75,12 +85,18 @@ namespace Library
 		ER_GPUBuffer* GetSpecularProbesTexArrayIndicesBuffer(int volumeIndex) const { return mSpecularProbesTexArrayIndicesGPUBuffer[volumeIndex]; }
 		ER_GPUBuffer* GetSpecularProbesPositionsBuffer() const { return mSpecularProbesPositionsGPUBuffer; }
 
-		const XMFLOAT3& GetProbesVolumeCascade(int volumeIndex) { 
-			return XMFLOAT3(ProbesVolumeCascadeSizes[volumeIndex],
-				ProbesVolumeCascadeSizes[volumeIndex],
-				ProbesVolumeCascadeSizes[volumeIndex]); }
+		const XMFLOAT3& GetProbesVolumeCascade(ER_ProbeType aType, int volumeIndex) { 
+			if (aType == DIFFUSE_PROBE)
+				return XMFLOAT3(ProbesVolumeCascadeSizes[volumeIndex],
+					ProbesVolumeCascadeSizes[volumeIndex],
+					ProbesVolumeCascadeSizes[volumeIndex]); 
+			else
+				return XMFLOAT3(SpecularProbesVolumeCascadeSizes[volumeIndex],
+					SpecularProbesVolumeCascadeSizes[volumeIndex],
+					SpecularProbesVolumeCascadeSizes[volumeIndex]);
+		}
 		const XMFLOAT4& GetProbesCellsCount(ER_ProbeType aType, int volumeIndex);
-		float GetProbesIndexSkip(ER_ProbeType aType, int volumeIndex);
+		float GetProbesIndexSkip(int volumeIndex);
 
 		ID3D11ShaderResourceView* GetIntegrationMap() { return mIntegrationMapTextureSRV; }
 		const XMFLOAT3& GetSceneProbesVolumeMin() { return mSceneProbesMinBounds; }
@@ -96,7 +112,8 @@ namespace Library
 		
 		QuadRenderer* mQuadRenderer = nullptr;
 		Camera& mMainCamera;
-		RenderableAABB* mDebugProbeVolumeGizmo[NUM_PROBE_VOLUME_CASCADES] = { nullptr };
+		RenderableAABB* mDebugDiffuseProbeVolumeGizmo[NUM_PROBE_VOLUME_CASCADES] = { nullptr };
+		RenderableAABB* mDebugSpecularProbeVolumeGizmo[NUM_PROBE_VOLUME_CASCADES] = { nullptr };
 
 		ID3D11VertexShader* mConvolutionVS = nullptr;
 		ID3D11PixelShader* mConvolutionPS = nullptr;
@@ -107,10 +124,12 @@ namespace Library
 
 		XMFLOAT3 mSceneProbesMinBounds;
 		XMFLOAT3 mSceneProbesMaxBounds;
-		XMFLOAT3 mCurrentVolumesMaxBounds[NUM_PROBE_VOLUME_CASCADES];
-		XMFLOAT3 mCurrentVolumesMinBounds[NUM_PROBE_VOLUME_CASCADES];
+
+		int mMaxProbesInVolumeCount = 0;
 
 		// Diffuse probes members
+		XMFLOAT3 mCurrentDiffuseVolumesMaxBounds[NUM_PROBE_VOLUME_CASCADES];
+		XMFLOAT3 mCurrentDiffuseVolumesMinBounds[NUM_PROBE_VOLUME_CASCADES];
 		std::vector<ER_LightProbe*> mDiffuseProbes;
 		Rendering::RenderingObject* mDiffuseProbeRenderingObject[NUM_PROBE_VOLUME_CASCADES] = { nullptr, nullptr };
 		int* mDiffuseProbesTexArrayIndicesCPUBuffer[NUM_PROBE_VOLUME_CASCADES] = { nullptr };
@@ -124,7 +143,6 @@ namespace Library
 		std::vector<ER_LightProbeCell> mDiffuseProbesCells[NUM_PROBE_VOLUME_CASCADES];
 		ER_AABB mDiffuseProbesCellBounds[NUM_PROBE_VOLUME_CASCADES];
 		std::vector<int> mNonCulledDiffuseProbesIndices[NUM_PROBE_VOLUME_CASCADES];
-		const int mDiffuseProbeIndexSkip[NUM_PROBE_VOLUME_CASCADES] = { 1, 5 };
 		int mDiffuseProbesCountTotal = 0;
 		int mDiffuseProbesCountX = 0;
 		int mDiffuseProbesCountY = 0;
@@ -134,13 +152,13 @@ namespace Library
 		int mDiffuseProbesCellsCountZ[NUM_PROBE_VOLUME_CASCADES] = { 0 };
 		int mDiffuseProbesCellsCountTotal[NUM_PROBE_VOLUME_CASCADES] = { 0 };
 		int mNonCulledDiffuseProbesCount[NUM_PROBE_VOLUME_CASCADES] = { 0 };
-		int mMaxNonCulledDiffuseProbesCountPerAxis = 0;
-		int mMaxNonCulledDiffuseProbesCount = 0;
 		bool mDiffuseProbesReady = false;
 		ER_LightProbe* mGlobalDiffuseProbe = nullptr;
 		bool mGlobalDiffuseProbeReady = false;
 
 		// Specular probes members
+		XMFLOAT3 mCurrentSpecularVolumesMaxBounds[NUM_PROBE_VOLUME_CASCADES];
+		XMFLOAT3 mCurrentSpecularVolumesMinBounds[NUM_PROBE_VOLUME_CASCADES];
 		std::vector<ER_LightProbe*> mSpecularProbes;
 		Rendering::RenderingObject* mSpecularProbeRenderingObject[NUM_PROBE_VOLUME_CASCADES] = { nullptr, nullptr };
 		int* mSpecularProbesTexArrayIndicesCPUBuffer[NUM_PROBE_VOLUME_CASCADES] = { nullptr };
@@ -154,7 +172,6 @@ namespace Library
 		std::vector<ER_LightProbeCell> mSpecularProbesCells[NUM_PROBE_VOLUME_CASCADES];
 		ER_AABB mSpecularProbesCellBounds[NUM_PROBE_VOLUME_CASCADES];
 		std::vector<int> mNonCulledSpecularProbesIndices[NUM_PROBE_VOLUME_CASCADES];
-		const int mSpecularProbeIndexSkip[NUM_PROBE_VOLUME_CASCADES] = { 1, 5 };
 		int mSpecularProbesCountTotal = 0;
 		int mSpecularProbesCountX = 0;
 		int mSpecularProbesCountY = 0;
@@ -164,8 +181,6 @@ namespace Library
 		int mSpecularProbesCellsCountZ[NUM_PROBE_VOLUME_CASCADES]= { 0 };
 		int mSpecularProbesCellsCountTotal[NUM_PROBE_VOLUME_CASCADES] = { 0 };
 		int mNonCulledSpecularProbesCount[NUM_PROBE_VOLUME_CASCADES] = { 0 };
-		int mMaxNonCulledSpecularProbesCountPerAxis = 0;
-		int mMaxNonCulledSpecularProbesCount = 0;
 		bool mSpecularProbesReady = false;
 
 		std::wstring mLevelPath;

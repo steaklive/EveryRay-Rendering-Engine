@@ -62,11 +62,11 @@ namespace Library
 		};
 		struct LightProbesCB
 		{
-			XMFLOAT4 LightProbesVolumeBounds[NUM_PROBE_VOLUME_CASCADES];
 			XMFLOAT4 DiffuseProbesCellsCount[NUM_PROBE_VOLUME_CASCADES]; //x,y,z,total
-			XMFLOAT4 DiffuseProbeIndexSkip[NUM_PROBE_VOLUME_CASCADES]; //index skip, 0, 0, 0
+			XMFLOAT4 DiffuseProbesVolumeSizes[NUM_PROBE_VOLUME_CASCADES];
 			XMFLOAT4 SpecularProbesCellsCount[NUM_PROBE_VOLUME_CASCADES]; //x,y,z,total
-			XMFLOAT4 SpecularProbeIndexSkip[NUM_PROBE_VOLUME_CASCADES]; //index skip, 0, 0, 0
+			XMFLOAT4 SpecularProbesVolumeSizes[NUM_PROBE_VOLUME_CASCADES];
+			XMFLOAT4 ProbesVolumeIndexSkips[NUM_PROBE_VOLUME_CASCADES]; //index skip, 0, 0, 0
 			XMFLOAT4 SceneLightProbesBounds; //volume's extent of all scene's probes
 			float DistanceBetweenDiffuseProbes;
 			float DistanceBetweenSpecularProbes;

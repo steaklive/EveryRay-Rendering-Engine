@@ -422,7 +422,10 @@ namespace Library {
 				mProbesManager->DrawDebugProbes(SPECULAR_PROBE, mCurrentDebugProbeVolumeIndex);
 
 			if (mDrawProbesVolumeGizmo)
-				mProbesManager->DrawDebugProbesVolumeGizmo(mCurrentDebugProbeVolumeIndex);
+			{
+				mProbesManager->DrawDebugProbesVolumeGizmo(DIFFUSE_PROBE, mCurrentDebugProbeVolumeIndex);
+				mProbesManager->DrawDebugProbesVolumeGizmo(SPECULAR_PROBE, mCurrentDebugProbeVolumeIndex);
+			}
 		}
 	}
 
@@ -604,11 +607,17 @@ namespace Library {
 
 			for (size_t i = 0; i < NUM_PROBE_VOLUME_CASCADES; i++)
 			{
-				mLightProbesConstantBuffer.Data.LightProbesVolumeBounds[i] = XMFLOAT4{ mProbesManager->GetProbesVolumeCascade(i).x, mProbesManager->GetProbesVolumeCascade(i).y, mProbesManager->GetProbesVolumeCascade(i).z, 1.0f };
 				mLightProbesConstantBuffer.Data.DiffuseProbesCellsCount[i] = mProbesManager->GetProbesCellsCount(DIFFUSE_PROBE, i);
-				mLightProbesConstantBuffer.Data.DiffuseProbeIndexSkip[i] = XMFLOAT4(mProbesManager->GetProbesIndexSkip(DIFFUSE_PROBE, i), 0.0, 0.0, 0.0);
+				mLightProbesConstantBuffer.Data.DiffuseProbesVolumeSizes[i] = XMFLOAT4{ 
+					mProbesManager->GetProbesVolumeCascade(DIFFUSE_PROBE, i).x, 
+					mProbesManager->GetProbesVolumeCascade(DIFFUSE_PROBE, i).y,
+					mProbesManager->GetProbesVolumeCascade(DIFFUSE_PROBE, i).z, 1.0f };
 				mLightProbesConstantBuffer.Data.SpecularProbesCellsCount[i] = mProbesManager->GetProbesCellsCount(SPECULAR_PROBE, i);
-				mLightProbesConstantBuffer.Data.SpecularProbeIndexSkip[i] = XMFLOAT4(mProbesManager->GetProbesIndexSkip(SPECULAR_PROBE, i), 0.0, 0.0, 0.0);
+				mLightProbesConstantBuffer.Data.SpecularProbesVolumeSizes[i] = XMFLOAT4{
+					mProbesManager->GetProbesVolumeCascade(SPECULAR_PROBE, i).x,
+					mProbesManager->GetProbesVolumeCascade(SPECULAR_PROBE, i).y,
+					mProbesManager->GetProbesVolumeCascade(SPECULAR_PROBE, i).z, 1.0f };
+				mLightProbesConstantBuffer.Data.ProbesVolumeIndexSkips[i] = XMFLOAT4(mProbesManager->GetProbesIndexSkip(i), 0.0, 0.0, 0.0);
 			}
 			mLightProbesConstantBuffer.Data.SceneLightProbesBounds = XMFLOAT4{ mProbesManager->GetSceneProbesVolumeMin().x, mProbesManager->GetSceneProbesVolumeMin().y, mProbesManager->GetSceneProbesVolumeMin().z, 1.0f };
 			mLightProbesConstantBuffer.Data.DistanceBetweenDiffuseProbes = DISTANCE_BETWEEN_DIFFUSE_PROBES;
