@@ -59,6 +59,7 @@ namespace Library
 			XMFLOAT4 SunDirection;
 			XMFLOAT4 SunColor;
 			XMFLOAT4 CameraPosition;
+			bool SkipIndirectProbeLighting;
 		};
 		struct LightProbesCB
 		{
@@ -176,12 +177,12 @@ namespace Library
 		bool mDrawSpecularProbes = false;
 		bool mDrawProbesVolumeGizmo = false;
 		int mCurrentDebugProbeVolumeIndex = 0;
+		bool mDebugSkipIndirectProbeLighting = false;
 
 		bool mEnabled = false;
 		bool mShowDebug = false;
 
 		float mDirectionalLightIntensity = 10.0f;
-
 		RenderingObjectInfo mForwardPassObjects;
 	};
 }

@@ -59,6 +59,7 @@ cbuffer DeferredLightingCBuffer : register(b0)
     float4 SunDirection;
     float4 SunColor;
     float4 CameraPosition;
+    bool SkipIndirectLighting;
 }
 
 cbuffer LightProbesCBuffer : register(b1)
@@ -531,7 +532,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
        directLighting += DirectLightingPBR(normalWS, SunColor.xyz, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness);
     
     float3 indirectLighting = float3(0.0, 0.0, 0.0);
-    if (extraGbuffer.a < 1.0f)
+    if (extraGbuffer.a < 1.0f && !SkipIndirectLighting)
         indirectLighting += IndirectLightingPBR(diffuseAlbedo.rgb, normalWS, worldPos.rgb, roughness, F0, metalness, useGlobalDiffuseProbe);
     
     float shadow = GetShadow(worldPos);

@@ -466,8 +466,8 @@ namespace Library {
 			}
 			if (ImGui::CollapsingHeader("Static - Light Probes"))
 			{
-				//TODO add on/off for probe system
-				//TODO add rebake etc.
+				ImGui::Checkbox("DEBUG - Skip indirect lighting", &mDebugSkipIndirectProbeLighting);
+				ImGui::Separator();
 				ImGui::Checkbox("DEBUG - Hide culled probes", &mProbesManager->mDebugDiscardCulledProbes);
 				ImGui::Checkbox("DEBUG - Probe volume", &mDrawProbesVolumeGizmo);
 				ImGui::SliderInt("DEBUG - Probe volumes index", &mCurrentDebugProbeVolumeIndex, 0, 1);
@@ -603,6 +603,7 @@ namespace Library {
 			mDeferredLightingConstantBuffer.Data.SunDirection = XMFLOAT4{ -mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f };
 			mDeferredLightingConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLightIntensity };
 			mDeferredLightingConstantBuffer.Data.CameraPosition = XMFLOAT4{ mCamera.Position().x,mCamera.Position().y,mCamera.Position().z, 1.0f };
+			mDeferredLightingConstantBuffer.Data.SkipIndirectProbeLighting = mDebugSkipIndirectProbeLighting;
 			mDeferredLightingConstantBuffer.ApplyChanges(context);
 
 			for (size_t i = 0; i < NUM_PROBE_VOLUME_CASCADES; i++)
