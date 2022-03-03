@@ -20,13 +20,13 @@
 	"light_probes_volume_bounds_max" : 
 	[
 		300.0,
-		151.0,
+		150.2,
 		300.0
 	],
 	"light_probes_volume_bounds_min" : 
 	[
 		-300.0,
-		1.0,
+		0.2,
 		-300.0
 	],
 	"rendering_objects" : 

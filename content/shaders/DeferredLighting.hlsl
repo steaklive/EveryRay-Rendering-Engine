@@ -376,7 +376,7 @@ int GetProbesVolumeCascade(float3 worldPos, bool diffuse)
 // ====================================================================================================================
 float3 GetDiffuseIrradiance(float3 worldPos, float3 normal, bool useGlobalDiffuseProbe)
 {
-    float3 finalSum = float3(1.0, 0.0, 0.0);
+    float3 finalSum = float3(0.0, 0.0, 0.0);
     if (useGlobalDiffuseProbe)
         return IrradianceDiffuseGlobalProbeTexture.SampleLevel(SamplerLinear, normal, 0).rgb;
     
