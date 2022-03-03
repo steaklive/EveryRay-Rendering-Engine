@@ -195,14 +195,9 @@
     <ClInclude Include="..\..\external\ImGUI\stb_textedit.h" />
     <ClInclude Include="..\..\external\ImGUI\stb_truetype.h" />
     <ClInclude Include="ParallaxMappingDemo.h" />
-    <ClInclude Include="SponzaMainDemo.h" />
     <ClInclude Include="CollisionTestDemo.h" />
-    <ClInclude Include="FrustumCullingDemo.h" />
-    <ClInclude Include="InstancingDemo.h" />
-    <ClInclude Include="PhysicallyBasedRenderingDemo.h" />
     <ClInclude Include="RenderingGame.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="ShadowMappingDemo.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="SubsurfaceScatteringDemo.h" />
     <ClInclude Include="targetver.h" />
@@ -219,14 +214,9 @@
     <ClCompile Include="..\..\external\ImGUI\imgui_impl_dx11.cpp" />
     <ClCompile Include="..\..\external\ImGUI\imgui_impl_win32.cpp" />
     <ClCompile Include="ParallaxMappingDemo.cpp" />
-    <ClCompile Include="SponzaMainDemo.cpp" />
     <ClCompile Include="CollisionTestDemo.cpp" />
-    <ClCompile Include="FrustumCullingDemo.cpp" />
-    <ClCompile Include="InstancingDemo.cpp" />
-    <ClCompile Include="PhysicallyBasedRenderingDemo.cpp" />
     <ClCompile Include="Program.cpp" />
     <ClCompile Include="RenderingGame.cpp" />
-    <ClCompile Include="ShadowMappingDemo.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

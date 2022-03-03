@@ -45,8 +45,8 @@ namespace Library
 		XMMATRIX RotationTransformMatrix() const;
 
 		void Cull(const std::map<std::string, Rendering::RenderingObject*>& objects);
-		float GetCameraFarCascadeDistance(int index);
-		float GetCameraNearCascadeDistance(int index);
+		float GetCameraFarCascadeDistance (int index) const;
+		float GetCameraNearCascadeDistance (int index) const;
 
 		virtual void SetPosition(FLOAT x, FLOAT y, FLOAT z);
 		virtual void SetPosition(FXMVECTOR position);

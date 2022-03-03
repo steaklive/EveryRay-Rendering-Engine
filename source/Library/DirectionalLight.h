@@ -52,6 +52,8 @@ namespace Library
 		float GetSunBrightness() { return mSunBrightness; }
 		float GetSunExponent() { return mSunExponent; }
 
+		float GetDirectionalLightIntensity() const { return mDirectionalLightIntensity; }
+
 		GeneralEvent<Delegate_RotationUpdate>* RotationUpdateEvent = new GeneralEvent<Delegate_RotationUpdate>();
 
 	protected:
@@ -85,5 +87,6 @@ namespace Library
 
 		float mSunExponent = 10000;
 		float mSunBrightness = 2.637f;
+		float mDirectionalLightIntensity = 10.0f;
 	};
 }

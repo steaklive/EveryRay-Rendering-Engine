@@ -4,7 +4,7 @@
 #include "GameException.h"
 #include "Mesh.h"
 
-namespace Rendering
+namespace Library
 {
 	RTTI_DEFINITIONS(StandardLightingMaterial)
 

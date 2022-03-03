@@ -103,15 +103,11 @@ namespace Library
 				return mVCTUpsampleAndBlurRT->GetSRV();
 		}
 
-		float GetDirectionalLightIntensity() const { return mDirectionalLightIntensity; }
 	private:
 		void DrawDeferredLighting(GBuffer* gbuffer, ER_GPUTexture* aRenderTarget, bool clearTarget = false);
 		void DrawForwardLighting(GBuffer* gbuffer, ER_GPUTexture* aRenderTarget);
 		void DrawDebugGizmos();
 
-		void UpdateVoxelizationGIMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int voxelCascadeIndex);
-		void UpdateForwardLightingMaterial(Rendering::RenderingObject* obj, int meshIndex);
-	
 		void UpdateImGui();
 		void UpdateVoxelCameraPosition();
 
@@ -182,7 +178,6 @@ namespace Library
 		bool mEnabled = false;
 		bool mShowDebug = false;
 
-		float mDirectionalLightIntensity = 10.0f;
 		RenderingObjectInfo mForwardPassObjects;
 	};
 }

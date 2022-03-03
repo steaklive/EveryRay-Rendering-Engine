@@ -29,11 +29,6 @@
 #include "..\Library\Editor.h"
 
 // include scenes
-#include "SponzaMainDemo.h"
-#include "ShadowMappingDemo.h"
-#include "PhysicallyBasedRenderingDemo.h"
-#include "InstancingDemo.h"
-#include "FrustumCullingDemo.h"
 #include "SubsurfaceScatteringDemo.h"
 //#include "VolumetricLightingDemo.h"
 #include "CollisionTestDemo.h"
@@ -56,13 +51,10 @@ namespace Rendering
 	
 	const char* displayedLevelNames[] =
 	{
-		"Sponza Demo Scene",
 		"Terrain Demo Scene",
-		"Physically Based Rendering",
 		"Separable Subsurface Scattering",
 		"Volumetric Lighting",
 		"Collision Detection",
-		"Cascaded Shadow Mapping",
 		"Water Simulation",
 		"Parallax Occlusion Mapping",
 		"TEST_SCENE",
@@ -87,11 +79,6 @@ namespace Rendering
 
 		//scenes
 		mTestSceneDemo(nullptr),
-		mSponzaMainDemo(nullptr),
-		mShadowMappingDemo(nullptr),
-		mPBRDemo(nullptr),
-		mInstancingDemo(nullptr),
-		mFrustumCullingDemo(nullptr),
 		mSubsurfaceScatteringDemo(nullptr),
 		//mVolumetricLightingDemo(nullptr),
 		mCollisionTestDemo(nullptr),
@@ -182,14 +169,8 @@ namespace Rendering
 		{
 			switch (level)
 			{
-			case 0:
-				demoLevel = new SponzaMainDemo(*this, *mCamera);
-				break;
 			case 1:
 				demoLevel = new TerrainDemo(*this, *mCamera, *mEditor);
-				break;
-			case 2:
-				demoLevel = new PhysicallyBasedRenderingDemo(*this, *mCamera);
 				break;
 			case 3:
 				demoLevel = new SubsurfaceScatteringDemo(*this, *mCamera);
@@ -199,9 +180,6 @@ namespace Rendering
 				break;
 			case 5:
 				demoLevel = new CollisionTestDemo(*this, *mCamera);
-				break;
-			case 6:
-				demoLevel = new ShadowMappingDemo(*this, *mCamera);
 				break;
 			case 7:
 				//demoLevel = new WaterSimulationDemo(*this, *mCamera);
@@ -320,11 +298,6 @@ namespace Rendering
 	
 	void RenderingGame::Shutdown()
 	{
-		DeleteObject(mSponzaMainDemo);
-		DeleteObject(mShadowMappingDemo);
-		DeleteObject(mPBRDemo);
-		//DeleteObject(mInstancingDemo);
-		//DeleteObject(mFrustumCullingDemo);
 		DeleteObject(mSubsurfaceScatteringDemo);
 		//DeleteObject(mVolumetricLightingDemo);
 		DeleteObject(mCollisionTestDemo);

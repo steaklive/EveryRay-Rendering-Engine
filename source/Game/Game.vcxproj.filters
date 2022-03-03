@@ -33,18 +33,6 @@
     <ClInclude Include="RenderingGame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ShadowMappingDemo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PhysicallyBasedRenderingDemo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="InstancingDemo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FrustumCullingDemo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SubsurfaceScatteringDemo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -81,9 +69,6 @@
     <ClInclude Include="..\..\external\ImGUI\stb_truetype.h">
       <Filter>Source Files\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="SponzaMainDemo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\external\ImGUI\ImGuizmo.h">
       <Filter>Source Files\ImGui</Filter>
     </ClInclude>
@@ -107,18 +92,6 @@
     <ClCompile Include="RenderingGame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ShadowMappingDemo.cpp">
-      <Filter>Source Files\Demo Scenes</Filter>
-    </ClCompile>
-    <ClCompile Include="PhysicallyBasedRenderingDemo.cpp">
-      <Filter>Source Files\Demo Scenes</Filter>
-    </ClCompile>
-    <ClCompile Include="InstancingDemo.cpp">
-      <Filter>Source Files\Demo Scenes</Filter>
-    </ClCompile>
-    <ClCompile Include="FrustumCullingDemo.cpp">
-      <Filter>Source Files\Demo Scenes</Filter>
-    </ClCompile>
     <ClCompile Include="SubsurfaceScatteringDemo.cpp">
       <Filter>Source Files\Demo Scenes</Filter>
     </ClCompile>
@@ -139,9 +112,6 @@
     </ClCompile>
     <ClCompile Include="..\..\external\ImGUI\imgui_impl_win32.cpp">
       <Filter>Source Files\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="SponzaMainDemo.cpp">
-      <Filter>Source Files\Demo Scenes</Filter>
     </ClCompile>
     <ClCompile Include="..\..\external\ImGUI\ImGuizmo.cpp">
       <Filter>Source Files\ImGui</Filter>

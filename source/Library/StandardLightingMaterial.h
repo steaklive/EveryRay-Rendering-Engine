@@ -3,9 +3,8 @@
 #include "Common.h"
 #include "Material.h"
 #include "VertexDeclarations.h"
-using namespace Library;
 
-namespace Rendering
+namespace Library
 {
 	class StandardLightingMaterial : public Material
 	{

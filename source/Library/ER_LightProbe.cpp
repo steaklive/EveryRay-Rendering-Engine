@@ -334,7 +334,7 @@ namespace Library
 		};
 
 		std::string materialName = ((mProbeType == DIFFUSE_PROBE) ? "diffuse_" : "specular_") + MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubeFaceIndex);
-		auto material = static_cast<Rendering::StandardLightingMaterial*>(obj->GetMaterials()[materialName]);
+		auto material = static_cast<StandardLightingMaterial*>(obj->GetMaterials()[materialName]);
 
 		if (material)
 		{

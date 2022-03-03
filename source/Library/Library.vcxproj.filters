@@ -429,6 +429,9 @@
     <ClInclude Include="ER_LightProbe.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_MaterialsCallbacks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -736,6 +739,9 @@
     </ClCompile>
     <ClCompile Include="ER_LightProbe.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_MaterialsCallbacks.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

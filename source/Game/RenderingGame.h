@@ -19,11 +19,6 @@ namespace Library
 namespace Rendering
 {	
 	class TestSceneDemo;
-	class SponzaMainDemo;
-	class ShadowMappingDemo;
-	class PhysicallyBasedRenderingDemo;
-	class InstancingDemo;
-	class FrustumCullingDemo;
 	class SubsurfaceScatteringDemo;
 	//class VolumetricLightingDemo;
 	class CollisionTestDemo;
@@ -62,11 +57,6 @@ namespace Rendering
 		
 		//Demo scenes
 		TestSceneDemo* mTestSceneDemo;
-		SponzaMainDemo* mSponzaMainDemo;
-		ShadowMappingDemo* mShadowMappingDemo;
-		PhysicallyBasedRenderingDemo* mPBRDemo;
-		InstancingDemo* mInstancingDemo;
-		FrustumCullingDemo* mFrustumCullingDemo;
 		SubsurfaceScatteringDemo* mSubsurfaceScatteringDemo;
 		//VolumetricLightingDemo* mVolumetricLightingDemo;
 		CollisionTestDemo* mCollisionTestDemo;

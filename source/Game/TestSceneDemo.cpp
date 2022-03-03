@@ -4,6 +4,7 @@
 #include "..\Library\Systems.inl"
 #include "..\Library\Materials.inl"
 #include "..\Library\Utility.h"
+#include "..\Library\ER_MaterialsCallbacks.h"
 
 namespace Rendering
 {
@@ -40,12 +41,17 @@ namespace Rendering
 	{
 		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
 
+		ER_MaterialSystems materialSystems;
+		materialSystems.mCamera = mCamera;
+		materialSystems.mDirectionalLight = mDirectionalLight;
+		materialSystems.mShadowMapper = mShadowMapper;
+
         for (auto& object : mScene->objects) {
             if (!object.second->IsForwardShading())
-				object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&](int meshIndex) { UpdateDeferredPrepassMaterialVariables(object.first, meshIndex); });
-            object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(0), [&](int meshIndex) { UpdateShadow0MaterialVariables(object.first, meshIndex); });
-            object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(1), [&](int meshIndex) { UpdateShadow1MaterialVariables(object.first, meshIndex); });
-            object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(2), [&](int meshIndex) { UpdateShadow2MaterialVariables(object.first, meshIndex); });
+				object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&, matSystems = materialSystems](int meshIndex) { Library::ER_MaterialsCallbacks::UpdateDeferredPrepassMaterialVariables(matSystems, object.second, meshIndex); });
+            object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(0), [&, matSystems = materialSystems](int meshIndex) { Library::ER_MaterialsCallbacks::UpdateShadowMappingMaterialVariables(matSystems, object.second, meshIndex, 0); });
+            object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(1), [&, matSystems = materialSystems](int meshIndex) { Library::ER_MaterialsCallbacks::UpdateShadowMappingMaterialVariables(matSystems, object.second, meshIndex, 1); });
+            object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(2), [&, matSystems = materialSystems](int meshIndex) { Library::ER_MaterialsCallbacks::UpdateShadowMappingMaterialVariables(matSystems, object.second, meshIndex, 2); });
         }
 
 		mEditor->LoadScene(mScene);
@@ -164,35 +170,5 @@ namespace Rendering
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
 #pragma endregion
-	}
-
-	void TestSceneDemo::UpdateDeferredPrepassMaterialVariables(const std::string & objectName, int meshIndex)
-	{
-		XMMATRIX worldMatrix = XMLoadFloat4x4(&(mScene->objects[objectName]->GetTransformationMatrix4X4()));
-		XMMATRIX vp = /*worldMatrix * */mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
-		static_cast<DeferredMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->ViewProjection() << vp;
-		static_cast<DeferredMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->World() << worldMatrix;
-		static_cast<DeferredMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->AlbedoMap() << mScene->objects[objectName]->GetTextureData(meshIndex).AlbedoMap;
-		static_cast<DeferredMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->NormalMap() << mScene->objects[objectName]->GetTextureData(meshIndex).NormalMap;
-		static_cast<DeferredMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->RoughnessMap() << mScene->objects[objectName]->GetTextureData(meshIndex).RoughnessMap;
-		static_cast<DeferredMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->MetallicMap() << mScene->objects[objectName]->GetTextureData(meshIndex).MetallicMap;
-		static_cast<DeferredMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->ReflectionMaskFactor() << mScene->objects[objectName]->GetMeshReflectionFactor(meshIndex);
-		static_cast<DeferredMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->FoliageMaskFactor() << mScene->objects[objectName]->GetFoliageMask();
-		static_cast<DeferredMaterial*>(mScene->objects[objectName]->GetMaterials()[MaterialHelper::deferredPrepassMaterialName])->UseGlobalDiffuseProbeMaskFactor() << mScene->objects[objectName]->GetUseGlobalLightProbeMask();
-	}
-	void TestSceneDemo::UpdateShadow0MaterialVariables(const std::string & objectName, int meshIndex)
-	{
-		const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(0);
-		static_cast<DepthMapMaterial*>(mScene->objects[objectName]->GetMaterials()[name])->AlbedoAlphaMap() << mScene->objects[objectName]->GetTextureData(meshIndex).AlbedoMap;
-	}
-	void TestSceneDemo::UpdateShadow1MaterialVariables(const std::string & objectName, int meshIndex)
-	{
-		const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(1);
-		static_cast<DepthMapMaterial*>(mScene->objects[objectName]->GetMaterials()[name])->AlbedoAlphaMap() << mScene->objects[objectName]->GetTextureData(meshIndex).AlbedoMap;
-	}
-	void TestSceneDemo::UpdateShadow2MaterialVariables(const std::string & objectName, int meshIndex)
-	{
-		const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(2);
-		static_cast<DepthMapMaterial*>(mScene->objects[objectName]->GetMaterials()[name])->AlbedoAlphaMap() << mScene->objects[objectName]->GetTextureData(meshIndex).AlbedoMap;
 	}
 }

@@ -216,7 +216,7 @@ namespace Library
 							//diffuse
 							{
 								name = "diffuse_" + MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubemapFaceIndex);
-								aObject->LoadMaterial(new Rendering::StandardLightingMaterial(), std::get<1>(materialData), name);
+								aObject->LoadMaterial(new StandardLightingMaterial(), std::get<1>(materialData), name);
 								auto material = aObject->GetMaterials()[name];
 								if (material)
 									material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][matIndex]["technique"].asString()));
@@ -224,7 +224,7 @@ namespace Library
 							//specular
 							{
 								name = "specular_" + MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubemapFaceIndex);
-								aObject->LoadMaterial(new Rendering::StandardLightingMaterial(), std::get<1>(materialData), name);
+								aObject->LoadMaterial(new StandardLightingMaterial(), std::get<1>(materialData), name);
 								auto material = aObject->GetMaterials()[name];
 								if (material)
 									material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][matIndex]["technique"].asString()));
@@ -442,7 +442,7 @@ namespace Library
 		}
 		else if (matName == "StandardLightingMaterial") {
 			materialName = MaterialHelper::forwardLightingMaterialName;
-			material = new Rendering::StandardLightingMaterial();
+			material = new StandardLightingMaterial();
 		}
 		else if (matName == "StandardLightingForProbeMaterial") {
 			materialName = MaterialHelper::forwardLightingForProbesMaterialName;

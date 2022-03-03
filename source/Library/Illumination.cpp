@@ -27,6 +27,7 @@
 #include "RenderableAABB.h"
 #include "ER_GPUBuffer.h"
 #include "ER_LightProbe.h"
+#include "ER_MaterialsCallbacks.h"
 
 namespace Library {
 
@@ -74,12 +75,17 @@ namespace Library {
 		if (!scene)
 			return;
 
+		ER_MaterialSystems materialSystems;
+		materialSystems.mCamera = &mCamera;
+		materialSystems.mDirectionalLight = &mDirectionalLight;
+		materialSystems.mShadowMapper = &mShadowMapper;
+
 		//callbacks
 		{
 			for (auto& obj : scene->objects) {
 				for (int voxelCascadeIndex = 0; voxelCascadeIndex < NUM_VOXEL_GI_CASCADES; voxelCascadeIndex++)
 					obj.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::voxelizationGIMaterialName + "_" + std::to_string(voxelCascadeIndex),
-						[&, voxelCascadeIndex](int meshIndex) { UpdateVoxelizationGIMaterialVariables(obj.second, meshIndex, voxelCascadeIndex); });
+						[&, voxelCascadeIndex, matSystems = materialSystems](int meshIndex) { ER_MaterialsCallbacks::UpdateVoxelizationGIMaterialVariables(matSystems, obj.second, meshIndex, voxelCascadeIndex); });
 			}
 		}
 		
@@ -197,7 +203,7 @@ namespace Library {
 			{
 				mForwardPassObjects.insert(obj);
 				obj.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::forwardLightingMaterialName,
-					[&](int meshIndex) { UpdateForwardLightingMaterial(obj.second, meshIndex); });
+					[&, matSystems = materialSystems](int meshIndex) { ER_MaterialsCallbacks::UpdateForwardLightingMaterial(matSystems, obj.second, meshIndex); });
 			}
 		}
 	}
@@ -475,79 +481,7 @@ namespace Library {
 				ImGui::Checkbox("DEBUG - Specular probes", &mDrawSpecularProbes);
 			}
 		}
-		if (ImGui::CollapsingHeader("Local Illumination"))
-		{
-			ImGui::SliderFloat("Directional Light Intensity", &mDirectionalLightIntensity, 0.0f, 50.0f);
-			ImGui::Separator();
-		}
 		ImGui::End();
-	}
-
-	void Illumination::UpdateVoxelizationGIMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int voxelCascadeIndex)
-	{
-		XMMATRIX vp = mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
-
-		const int shadowCascade = 1;
-		std::string materialName = MaterialHelper::voxelizationGIMaterialName + "_" + std::to_string(voxelCascadeIndex);
-		auto material = static_cast<Rendering::VoxelizationGIMaterial*>(obj->GetMaterials()[materialName]);
-		if (material)
-		{
-			material->ViewProjection() << vp;
-			material->ShadowMatrix() << mShadowMapper.GetViewMatrix(shadowCascade) * mShadowMapper.GetProjectionMatrix(shadowCascade) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix());
-			material->ShadowTexelSize() << XMVECTOR{ 1.0f / mShadowMapper.GetResolution(), 1.0f, 1.0f , 1.0f };
-			material->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
-			material->MeshWorld() << obj->GetTransformationMatrix();
-			material->MeshAlbedo() << obj->GetTextureData(meshIndex).AlbedoMap;
-			material->ShadowTexture() << mShadowMapper.GetShadowTexture(shadowCascade);
-		}
-	}
-
-	void Illumination::UpdateForwardLightingMaterial(Rendering::RenderingObject* obj, int meshIndex)
-	{
-		XMMATRIX worldMatrix = XMLoadFloat4x4(&(obj->GetTransformationMatrix4X4()));
-		XMMATRIX vp = mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
-
-		XMMATRIX shadowMatrices[3] =
-		{
-			mShadowMapper.GetViewMatrix(0) * mShadowMapper.GetProjectionMatrix(0) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()) ,
-			mShadowMapper.GetViewMatrix(1) * mShadowMapper.GetProjectionMatrix(1) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()) ,
-			mShadowMapper.GetViewMatrix(2) * mShadowMapper.GetProjectionMatrix(2) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix())
-		};
-
-		ID3D11ShaderResourceView* shadowMaps[3] =
-		{
-			mShadowMapper.GetShadowTexture(0),
-			mShadowMapper.GetShadowTexture(1),
-			mShadowMapper.GetShadowTexture(2)
-		};
-
-		auto material = static_cast<Rendering::StandardLightingMaterial*>(obj->GetMaterials()[MaterialHelper::forwardLightingMaterialName]);
-		if (material)
-		{
-			if (obj->IsInstanced())
-				material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at("standard_lighting_pbr_instancing"));
-			else
-				material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at("standard_lighting_pbr"));
-
-			material->ViewProjection() << vp;
-			material->World() << worldMatrix;
-			material->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, NUM_SHADOW_CASCADES);
-			material->CameraPosition() << mCamera.PositionVector();
-			material->SunDirection() << XMVectorNegate(mDirectionalLight.DirectionVector());
-			material->SunColor() << XMVECTOR{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z , mDirectionalLightIntensity };
-			material->AmbientColor() << XMVECTOR{ mDirectionalLight.GetAmbientLightColor().x, mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
-			material->ShadowTexelSize() << XMVECTOR{ 1.0f / mShadowMapper.GetResolution(), 1.0f, 1.0f , 1.0f };
-			material->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
-			material->AlbedoTexture() << obj->GetTextureData(meshIndex).AlbedoMap;
-			material->NormalTexture() << obj->GetTextureData(meshIndex).NormalMap;
-			material->SpecularTexture() << obj->GetTextureData(meshIndex).SpecularMap;
-			material->RoughnessTexture() << obj->GetTextureData(meshIndex).RoughnessMap;
-			material->MetallicTexture() << obj->GetTextureData(meshIndex).MetallicMap;
-			material->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, NUM_SHADOW_CASCADES);
-			material->IrradianceDiffuseTexture() << mProbesManager->GetDiffuseLightProbe(0)->GetCubemapSRV(); //TODO
-			material->IrradianceSpecularTexture() << mProbesManager->GetSpecularLightProbe(0)->GetCubemapSRV();//TODO
-			material->IntegrationTexture() << mProbesManager->GetIntegrationMap(); //TODO
-		}
 	}
 
 	void Illumination::SetFoliageSystemForGI(FoliageSystem* foliageSystem)
@@ -601,7 +535,7 @@ namespace Library {
 			mDeferredLightingConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
 			mDeferredLightingConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / mShadowMapper.GetResolution(), 1.0f, 1.0f , 1.0f };
 			mDeferredLightingConstantBuffer.Data.SunDirection = XMFLOAT4{ -mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f };
-			mDeferredLightingConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLightIntensity };
+			mDeferredLightingConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLight.GetDirectionalLightIntensity() };
 			mDeferredLightingConstantBuffer.Data.CameraPosition = XMFLOAT4{ mCamera.Position().x,mCamera.Position().y,mCamera.Position().z, 1.0f };
 			mDeferredLightingConstantBuffer.Data.SkipIndirectProbeLighting = mDebugSkipIndirectProbeLighting;
 			mDeferredLightingConstantBuffer.ApplyChanges(context);
