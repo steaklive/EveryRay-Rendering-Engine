@@ -10,6 +10,8 @@ namespace Library
 {
 	void ER_MaterialsCallbacks::UpdateDeferredPrepassMaterialVariables(ER_MaterialSystems neededSystems, Rendering::RenderingObject* obj, int meshIndex)
 	{
+		assert(neededSystems.mCamera);
+
 		if (!obj)
 			return;
 
@@ -33,6 +35,8 @@ namespace Library
 
 	void ER_MaterialsCallbacks::UpdateForwardLightingMaterial(ER_MaterialSystems neededSystems, Rendering::RenderingObject* obj, int meshIndex)
 	{
+		assert(neededSystems.mShadowMapper && neededSystems.mCamera);
+
 		if (!obj)
 			return;
 
@@ -95,6 +99,8 @@ namespace Library
 
 	void ER_MaterialsCallbacks::UpdateVoxelizationGIMaterialVariables(ER_MaterialSystems neededSystems, Rendering::RenderingObject* obj, int meshIndex, int voxelCascadeIndex)
 	{
+		assert(neededSystems.mShadowMapper && neededSystems.mCamera);
+
 		if (!obj)
 			return;
 
@@ -112,6 +118,29 @@ namespace Library
 			material->MeshWorld() << obj->GetTransformationMatrix();
 			material->MeshAlbedo() << obj->GetTextureData(meshIndex).AlbedoMap;
 			material->ShadowTexture() << neededSystems.mShadowMapper->GetShadowTexture(shadowCascade);
+		}
+	}
+
+	void ER_MaterialsCallbacks::UpdateDebugLightProbeMaterialVariables(ER_MaterialSystems neededSystems, Rendering::RenderingObject* obj, int meshIndex, ER_ProbeType aType, int volumeIndex)
+	{
+		assert(neededSystems.mProbesManager && neededSystems.mCamera);
+
+		if (!obj)
+			return;
+
+		XMMATRIX vp = neededSystems.mCamera->ViewMatrix() * neededSystems.mCamera->ProjectionMatrix();
+
+		auto material = static_cast<DebugLightProbeMaterial*>(obj->GetMaterials()[MaterialHelper::debugLightProbeMaterialName]);
+		if (material)
+		{
+			material->ViewProjection() << vp;
+			material->World() << XMMatrixIdentity();
+			material->CameraPosition() << neededSystems.mCamera->PositionVector();
+			material->DiscardCulledProbe() << neededSystems.mProbesManager->mDebugDiscardCulledProbes;
+			if (aType == DIFFUSE_PROBE)
+				material->CubemapTexture() << neededSystems.mProbesManager->GetCulledDiffuseProbesTextureArray(volumeIndex)->GetSRV();
+			else
+				material->CubemapTexture() << neededSystems.mProbesManager->GetCulledSpecularProbesTextureArray(volumeIndex)->GetSRV();
 		}
 	}
 }

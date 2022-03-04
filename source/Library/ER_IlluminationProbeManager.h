@@ -109,7 +109,6 @@ namespace Library
 		void AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds);
 		bool IsProbeInCell(ER_LightProbe* aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds);
 		void UpdateProbesByType(Game& game, ER_ProbeType aType);
-		void UpdateDebugLightProbeMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, ER_ProbeType aType, int volumeIndex);
 		
 		QuadRenderer* mQuadRenderer = nullptr;
 		Camera& mMainCamera;

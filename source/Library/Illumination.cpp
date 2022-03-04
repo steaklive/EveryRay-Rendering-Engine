@@ -79,6 +79,7 @@ namespace Library {
 		materialSystems.mCamera = &mCamera;
 		materialSystems.mDirectionalLight = &mDirectionalLight;
 		materialSystems.mShadowMapper = &mShadowMapper;
+		materialSystems.mProbesManager = mProbesManager;
 
 		//callbacks
 		{
