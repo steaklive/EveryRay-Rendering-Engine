@@ -80,10 +80,6 @@ namespace Rendering
 	#pragma region COMPONENT_METHODS
 	/////////////////////////////////////////////////////////////
 	// 'DemoLevel' ugly methods...
-	bool CollisionTestDemo::IsComponent()
-	{
-		return mGame->IsInGameComponents<CollisionTestDemo*>(mGame->components, this);
-	}
 	void CollisionTestDemo::Create()
 	{
 		Initialize();

@@ -48,9 +48,6 @@ namespace Rendering
 
 		virtual void Create() override;
 		virtual void Destroy() override;
-		virtual bool IsComponent() override;
-		virtual void UpdateLevel(const GameTime& gameTime) override;
-		virtual void DrawLevel(const GameTime& gameTime) override;
 
 	private:
 		ParallaxMappingDemo();

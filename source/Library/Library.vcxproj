@@ -219,7 +219,6 @@
     <ClInclude Include="FogMaterial.h" />
     <ClInclude Include="Foliage.h" />
     <ClInclude Include="FoliageMaterial.h" />
-    <ClInclude Include="FpsComponent.h" />
     <ClInclude Include="Frustum.h" />
     <ClInclude Include="FullScreenQuad.h" />
     <ClInclude Include="FullScreenRenderTarget.h" />
@@ -231,9 +230,6 @@
     <ClInclude Include="GBuffer.h" />
     <ClInclude Include="GeneralEvent.h" />
     <ClInclude Include="Grid.h" />
-    <ClInclude Include="IBLCubemap.h" />
-    <ClInclude Include="IBLCubemapFace.h" />
-    <ClInclude Include="IBLRadianceMap.h" />
     <ClInclude Include="Illumination.h" />
     <ClInclude Include="InstancingMaterial.h" />
     <ClInclude Include="Keyboard.h" />
@@ -330,7 +326,6 @@
     <ClCompile Include="FogMaterial.cpp" />
     <ClCompile Include="Foliage.cpp" />
     <ClCompile Include="FoliageMaterial.cpp" />
-    <ClCompile Include="FpsComponent.cpp" />
     <ClCompile Include="Frustum.cpp" />
     <ClCompile Include="FullScreenQuad.cpp" />
     <ClCompile Include="FullScreenRenderTarget.cpp" />
@@ -342,9 +337,6 @@
     <ClCompile Include="GameTime.cpp" />
     <ClCompile Include="GBuffer.cpp" />
     <ClCompile Include="Grid.cpp" />
-    <ClCompile Include="IBLCubemap.cpp" />
-    <ClCompile Include="IBLCubemapFace.cpp" />
-    <ClCompile Include="IBLRadianceMap.cpp" />
     <ClCompile Include="Illumination.cpp" />
     <ClCompile Include="InstancingMaterial.cpp" />
     <ClCompile Include="Keyboard.cpp" />

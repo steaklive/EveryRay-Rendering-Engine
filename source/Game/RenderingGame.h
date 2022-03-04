@@ -8,7 +8,6 @@
 using namespace Library;
 namespace Library
 {
-	class FpsComponent;
 	class Mouse;
 	class Keyboard;
 	class FirstPersonCamera;
@@ -18,14 +17,6 @@ namespace Library
 
 namespace Rendering
 {	
-	class TestSceneDemo;
-	class SubsurfaceScatteringDemo;
-	//class VolumetricLightingDemo;
-	class CollisionTestDemo;
-	//class WaterSimulationDemo;
-	class ParallaxMappingDemo;
-	class TerrainDemo;
-
 	class RenderingGame : public Game
 	{
 	public:
@@ -36,7 +27,7 @@ namespace Rendering
 		virtual void Update(const GameTime& gameTime) override;
 		virtual void Draw(const GameTime& gameTime) override;
 
-		void CollectRenderingTimestamps(ID3D11DeviceContext * pContext);	
+		void CollectGPUTimestamps(ID3D11DeviceContext * pContext);	
 	protected:
 		virtual void Shutdown() override;
 	
@@ -55,15 +46,7 @@ namespace Rendering
 		FirstPersonCamera* mCamera;
 		Editor* mEditor;
 		
-		//Demo scenes
-		TestSceneDemo* mTestSceneDemo;
-		SubsurfaceScatteringDemo* mSubsurfaceScatteringDemo;
-		//VolumetricLightingDemo* mVolumetricLightingDemo;
-		CollisionTestDemo* mCollisionTestDemo;
-		//WaterSimulationDemo* mWaterSimulationDemo;
-		TerrainDemo* mTerrainDemo;
-		ParallaxMappingDemo* mParallaxOcclusionDemo;
-		RenderStateHelper* mRenderStateHelper;
+		RenderStateHelper* mRenderStateHelper; //TODO move to Game.cpp
 
 		std::chrono::duration<double> mElapsedTimeUpdateCPU;
 		std::chrono::duration<double> mElapsedTimeRenderCPU;

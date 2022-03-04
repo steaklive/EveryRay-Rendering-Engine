@@ -13,6 +13,7 @@ namespace Library
     class GameTime;
     class Camera;
     class Scene;
+    class Editor;
     class Keyboard;
     class RenderStateHelper;
     class DirectionalLight;
@@ -29,15 +30,16 @@ namespace Library
 	class DemoLevel
 	{
 	public:
-		virtual void Destroy();
-		virtual void Create();
-		virtual void UpdateLevel(const GameTime& time);
-		virtual void DrawLevel(const GameTime& time);
-		virtual bool IsComponent() = 0;
+        DemoLevel();
+        ~DemoLevel();
 
-        void Initialize(Game& game, Camera& camera, const std::string& sceneName);
+        void Initialize(Game& game, Camera& camera, const std::string& sceneName, const std::string& sceneFolderPath);
+		virtual void Destroy();
+		virtual void UpdateLevel(Game& game, const GameTime& time);
+		virtual void DrawLevel(Game& game, const GameTime& time);
     protected:
         Scene* mScene = nullptr;
+		Editor* mEditor = nullptr;
         Keyboard* mKeyboard = nullptr;
         RenderStateHelper* mRenderStateHelper = nullptr;
         Skybox* mSkybox = nullptr;
@@ -49,7 +51,7 @@ namespace Library
         VolumetricClouds* mVolumetricClouds = nullptr;
         Illumination* mIllumination = nullptr;
         ER_IlluminationProbeManager* mIlluminationProbesManager = nullptr;
-        Rendering::PostProcessingStack* mPostProcessingStack = nullptr;
+        Rendering::PostProcessingStack* mPostProcessingStack = nullptr; //TODO remove namespace
     private:
         void UpdateImGui();
 	};

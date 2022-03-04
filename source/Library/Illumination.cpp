@@ -23,7 +23,6 @@
 #include "GBuffer.h"
 #include "ShadowMapper.h"
 #include "Foliage.h"
-#include "IBLRadianceMap.h"
 #include "RenderableAABB.h"
 #include "ER_GPUBuffer.h"
 #include "ER_LightProbe.h"

@@ -33,13 +33,7 @@
     <ClInclude Include="RenderingGame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SubsurfaceScatteringDemo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="VolumetricLightingDemo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CollisionTestDemo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WaterSimulationDemo.h">
@@ -72,15 +66,6 @@
     <ClInclude Include="..\..\external\ImGUI\ImGuizmo.h">
       <Filter>Source Files\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="TestSceneDemo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TerrainDemo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ParallaxMappingDemo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -91,12 +76,6 @@
     </ClCompile>
     <ClCompile Include="RenderingGame.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SubsurfaceScatteringDemo.cpp">
-      <Filter>Source Files\Demo Scenes</Filter>
-    </ClCompile>
-    <ClCompile Include="CollisionTestDemo.cpp">
-      <Filter>Source Files\Demo Scenes</Filter>
     </ClCompile>
     <ClCompile Include="..\..\external\ImGUI\imgui.cpp">
       <Filter>Source Files\ImGui</Filter>
@@ -115,15 +94,6 @@
     </ClCompile>
     <ClCompile Include="..\..\external\ImGUI\ImGuizmo.cpp">
       <Filter>Source Files\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="TestSceneDemo.cpp">
-      <Filter>Source Files\Demo Scenes</Filter>
-    </ClCompile>
-    <ClCompile Include="TerrainDemo.cpp">
-      <Filter>Source Files\Demo Scenes</Filter>
-    </ClCompile>
-    <ClCompile Include="ParallaxMappingDemo.cpp">
-      <Filter>Source Files\Demo Scenes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

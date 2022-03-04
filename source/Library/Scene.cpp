@@ -21,7 +21,7 @@
 
 namespace Library 
 {
-	Scene::Scene(Game& pGame, Camera& pCamera, std::string path) :
+	Scene::Scene(Game& pGame, Camera& pCamera, const std::string& path) :
 		GameComponent(pGame), mCamera(pCamera), mScenePath(path)
 	{
 		Json::Reader reader;

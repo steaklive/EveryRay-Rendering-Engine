@@ -9,7 +9,6 @@
 #include "..\Library\GameException.h"
 #include "..\Library\Keyboard.h"
 #include "..\Library\Mouse.h"
-#include "..\Library\FpsComponent.h"
 #include "..\Library\Utility.h"
 #include "..\Library\FirstPersonCamera.h"
 #include "..\Library\ColorHelper.h"
@@ -29,13 +28,6 @@
 #include "..\Library\Editor.h"
 
 // include scenes
-#include "SubsurfaceScatteringDemo.h"
-//#include "VolumetricLightingDemo.h"
-#include "CollisionTestDemo.h"
-//#include "WaterSimulationDemo.h"
-#include "ParallaxMappingDemo.h"
-#include "TerrainDemo.h"
-#include "TestSceneDemo.h"
 
 // include IMGUI
 #include "imgui.h"
@@ -51,16 +43,13 @@ namespace Rendering
 	
 	const char* displayedLevelNames[] =
 	{
-		"Terrain Demo Scene",
-		"Separable Subsurface Scattering",
-		"Volumetric Lighting",
-		"Collision Detection",
-		"Water Simulation",
-		"Parallax Occlusion Mapping",
-		"TEST_SCENE",
+		"Test Scene",
+		"Test Scene (Simple)",
+		"Sponza Scene",
+		"Terrain Scene"
 	};
 
-	DemoLevel* demoLevel;
+	DemoLevel* demoLevel = nullptr;
 	static int currentLevel = 0;
 
 	static float fov = 60.0f;
@@ -76,15 +65,6 @@ namespace Rendering
 		mMouse(nullptr),
 		mMouseTextPosition(0.0f, 40.0f),
 		mShowProfiler(false), mEditor(nullptr),
-
-		//scenes
-		mTestSceneDemo(nullptr),
-		mSubsurfaceScatteringDemo(nullptr),
-		//mVolumetricLightingDemo(nullptr),
-		mCollisionTestDemo(nullptr),
-		//mWaterSimulationDemo(nullptr),
-		mTerrainDemo(nullptr),
-		mParallaxOcclusionDemo(nullptr),
 		mRenderStateHelper(nullptr)
 
 	{
@@ -104,18 +84,20 @@ namespace Rendering
 		SamplerStates::BorderColor = ColorHelper::Black;
 		SamplerStates::Initialize(mDirect3DDevice);
 
-		if (FAILED(DirectInput8Create(mInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (LPVOID*)&mDirectInput, nullptr)))
 		{
-			throw GameException("DirectInput8Create() failed");
-		}
-		
-		mKeyboard = new Keyboard(*this, mDirectInput);
-		components.push_back(mKeyboard);
-		mServices.AddService(Keyboard::TypeIdClass(), mKeyboard);
+			if (FAILED(DirectInput8Create(mInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (LPVOID*)&mDirectInput, nullptr)))
+			{
+				throw GameException("DirectInput8Create() failed");
+			}
 
-		mMouse = new Mouse(*this, mDirectInput);
-		components.push_back(mMouse);
-		mServices.AddService(Mouse::TypeIdClass(), mMouse);
+			mKeyboard = new Keyboard(*this, mDirectInput);
+			components.push_back(mKeyboard);
+			mServices.AddService(Keyboard::TypeIdClass(), mKeyboard);
+
+			mMouse = new Mouse(*this, mDirectInput);
+			components.push_back(mMouse);
+			mServices.AddService(Mouse::TypeIdClass(), mMouse);
+		}
 
 		mCamera = new FirstPersonCamera(*this, 1.5708f, this->AspectRatio(), nearPlaneDist, farPlaneDist );
 		mCamera->SetPosition(0.0f, 20.0f, 65.0f);
@@ -147,66 +129,44 @@ namespace Rendering
 #pragma endregion
 
 		Game::Initialize();
-		SetLevel(9);
+		SetLevel(0); //TODO parse
 	}
 
-
-	// ...*sniff-sniff*
-	// ...why does it smell like shit here??...
-	// ...oh, amazing level management... multiple inheritance, switch... mhm...
-	// ...also have you heard of Data-Oriented Design?..
 	void RenderingGame::SetLevel(int level)
 	{
 		mCurrentLevelIndex = level;
 		mCamera->Reset();
 
-		if (demoLevel != nullptr)
+		if (demoLevel)
 		{
 			demoLevel->Destroy();
-			demoLevel = nullptr;
+			DeleteObject(demoLevel);
 		}
-		if (demoLevel == nullptr)
+		if (!demoLevel)
 		{
 			switch (level)
 			{
-			case 1:
-				demoLevel = new TerrainDemo(*this, *mCamera, *mEditor);
-				break;
-			case 3:
-				demoLevel = new SubsurfaceScatteringDemo(*this, *mCamera);
-				break;
-			case 4:
-				//demoLevel = new VolumetricLightingDemo(*this, *mCamera);
-				break;
-			case 5:
-				demoLevel = new CollisionTestDemo(*this, *mCamera);
-				break;
-			case 7:
-				//demoLevel = new WaterSimulationDemo(*this, *mCamera);
-				break;
-			case 8:
-				demoLevel = new ParallaxMappingDemo(*this, *mCamera);
-				break;
-			case 9:
-				demoLevel = new TestSceneDemo(*this, *mCamera, *mEditor);
+			case 0:
+				demoLevel = new DemoLevel();
+				demoLevel->Initialize(*this, *mCamera, "testScene", Utility::GetFilePath("content\\levels\\testScene\\")); //TODO parse
 				break;
 			}
 		}
-		demoLevel->Create();
 	}
 
 	void RenderingGame::Update(const GameTime& gameTime)
 	{
+		assert(demoLevel);
+
 		auto startUpdateTimer = std::chrono::high_resolution_clock::now();
 
 		if (mKeyboard->WasKeyPressedThisFrame(DIK_ESCAPE))
-		{
 			Exit();
-		}
 
 		UpdateImGui();
-		Game::Update(gameTime);
-		demoLevel->UpdateLevel(gameTime);
+
+		Game::Update(gameTime); //engine components (input, camera, etc);
+		demoLevel->UpdateLevel(*this, gameTime);
 
 		auto endUpdateTimer = std::chrono::high_resolution_clock::now();
 		mElapsedTimeUpdateCPU = endUpdateTimer - startUpdateTimer;
@@ -298,15 +258,8 @@ namespace Rendering
 	
 	void RenderingGame::Shutdown()
 	{
-		DeleteObject(mSubsurfaceScatteringDemo);
-		//DeleteObject(mVolumetricLightingDemo);
-		DeleteObject(mCollisionTestDemo);
-		//DeleteObject(mWaterSimulationDemo);
-		DeleteObject(mTerrainDemo);
-		DeleteObject(mParallaxOcclusionDemo);
-		DeleteObject(mTestSceneDemo);
-
 		DeleteObject(mKeyboard);
+		DeleteObject(mEditor);
 		DeleteObject(mMouse);
 		DeleteObject(mCamera);
 		DeleteObject(mRenderStateHelper);
@@ -323,27 +276,27 @@ namespace Rendering
 	
 	void RenderingGame::Draw(const GameTime& gameTime)
 	{
+		assert(demoLevel);
+
 		auto startRenderTimer = std::chrono::high_resolution_clock::now();
 
 		mDirect3DDeviceContext->ClearRenderTargetView(mRenderTargetView, reinterpret_cast<const float*>(&BackgroundColor));
 		mDirect3DDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-		Game::Draw(gameTime);
-		demoLevel->DrawLevel(gameTime);
+		Game::Draw(gameTime); //TODO remove
+		demoLevel->DrawLevel(*this, gameTime);
 
 		mRenderStateHelper->SaveAll();
 		mRenderStateHelper->RestoreAll();
 
 		HRESULT hr = mSwapChain->Present(0, 0);
 		if (FAILED(hr))
-		{
 			throw GameException("IDXGISwapChain::Present() failed.", hr);
-		}
 
 		auto endRenderTimer = std::chrono::high_resolution_clock::now();
 		mElapsedTimeRenderCPU = endRenderTimer - startRenderTimer;
 	}
 
-	void RenderingGame::CollectRenderingTimestamps(ID3D11DeviceContext* pContext)
+	void RenderingGame::CollectGPUTimestamps(ID3D11DeviceContext* pContext)
 	{
 		//TODO
 	}

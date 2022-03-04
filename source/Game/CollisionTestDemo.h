@@ -75,7 +75,6 @@ namespace Rendering
 
 		virtual void Create() override;
 		virtual void Destroy() override;
-		virtual bool IsComponent() override;
 
 	private:
 

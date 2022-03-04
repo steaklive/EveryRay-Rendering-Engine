@@ -25,9 +25,6 @@
     <Filter Include="Source Files\Objects">
       <UniqueIdentifier>{e5657760-8042-479c-9f78-93af2408e19a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Objects\IBL">
-      <UniqueIdentifier>{6a1f9583-954a-4b21-a09b-668715fcab93}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Objects\RenderTarget">
       <UniqueIdentifier>{4aa63e57-78cb-4ffa-a397-0ca6cabfa803}</UniqueIdentifier>
     </Filter>
@@ -118,9 +115,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RTTI.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FpsComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Utility.h">
@@ -270,16 +264,7 @@
     <ClInclude Include="PBRMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IBLRadianceMap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="QuadRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IBLCubemapFace.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IBLCubemap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ConstantBuffer.h">
@@ -482,9 +467,6 @@
     <ClCompile Include="DrawableGameComponent.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
-    <ClCompile Include="FpsComponent.cpp">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
     <ClCompile Include="GameComponent.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
@@ -562,15 +544,6 @@
     </ClCompile>
     <ClCompile Include="PBRMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="IBLRadianceMap.cpp">
-      <Filter>Source Files\Objects\IBL</Filter>
-    </ClCompile>
-    <ClCompile Include="IBLCubemap.cpp">
-      <Filter>Source Files\Objects\IBL</Filter>
-    </ClCompile>
-    <ClCompile Include="IBLCubemapFace.cpp">
-      <Filter>Source Files\Objects\IBL</Filter>
     </ClCompile>
     <ClCompile Include="FullScreenQuad.cpp">
       <Filter>Source Files\Objects\RenderTarget</Filter>

@@ -15,7 +15,6 @@ namespace Library
 		DrawableGameComponent();
 		DrawableGameComponent(Game& game);
 		DrawableGameComponent(Game& game, Camera& camera);
-		DrawableGameComponent(Game& game, Camera& camera, Editor& editor);
 		virtual ~DrawableGameComponent();
 
 		bool Visible() const;
@@ -30,7 +29,6 @@ namespace Library
 	protected:
 		bool mVisible;
 		Camera* mCamera;
-		Editor* mEditor;
 	
 	private:
 		DrawableGameComponent(const DrawableGameComponent& rhs);

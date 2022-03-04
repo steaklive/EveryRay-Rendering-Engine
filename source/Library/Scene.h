@@ -18,7 +18,7 @@ namespace Library
 	class Scene : public GameComponent
 	{
 	public:
-		Scene(Game& pGame, Camera& pCamera, std::string path);
+		Scene(Game& pGame, Camera& pCamera, const std::string& path);
 		~Scene();
 
 		void SaveRenderingObjectsTransforms();
