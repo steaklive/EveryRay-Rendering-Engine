@@ -1,0 +1,18 @@
+{
+	"scenes" : 
+	[
+		{
+			"scene_name" : "testScene",
+			"scene_path" : "content\\levels\\testScene\\"
+		},
+		{
+			"scene_name" : "testScene_simple",
+			"scene_path" : "content\\levels\\testScene_simple\\"
+		},
+		{
+			"scene_name" : "terrainScene",
+			"scene_path" : "content\\levels\\terrainScene\\"
+		}
+	],
+	"startup_scene" : "testScene"
+}

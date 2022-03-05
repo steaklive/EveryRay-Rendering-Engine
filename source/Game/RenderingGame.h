@@ -32,17 +32,16 @@ namespace Rendering
 		virtual void Shutdown() override;
 	
 	private:
-		void SetLevel(int level);
+		void LoadGlobalLevelsConfig();
+		void SetLevel(const std::string& aSceneName);
 		void UpdateImGui();
 
 		static const XMVECTORF32 BackgroundColor;
 		static const XMVECTORF32 BackgroundColor2;
-		static const float BrightnessModulationRate;
 
 		LPDIRECTINPUT8 mDirectInput;
 		Keyboard* mKeyboard;
 		Mouse* mMouse;
-		XMFLOAT2 mMouseTextPosition;
 		FirstPersonCamera* mCamera;
 		Editor* mEditor;
 		
@@ -51,7 +50,11 @@ namespace Rendering
 		std::chrono::duration<double> mElapsedTimeUpdateCPU;
 		std::chrono::duration<double> mElapsedTimeRenderCPU;
 
-		int mCurrentLevelIndex = -1;
+		std::map<std::string, std::string> mScenesPaths;
+		char** mDisplayedLevelNames = nullptr;
+		std::string mStartupSceneName;
+		std::string mCurrentSceneName;
+
 		bool mShowProfiler;
 		bool mShowCameraSettings = true;
 	};

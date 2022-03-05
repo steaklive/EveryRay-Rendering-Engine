@@ -2,7 +2,12 @@
 
 #include "RenderingGame.h"
 
+#include "..\JsonCpp\include\json\json.h"
+
 #include <sstream>
+#include <fstream>
+#include <iostream>
+
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
 
@@ -39,16 +44,7 @@ namespace Rendering
 {
 	const XMVECTORF32 RenderingGame::BackgroundColor = ColorHelper::Black;
 	const XMVECTORF32 RenderingGame::BackgroundColor2 = ColorHelper::Red;
-	const float RenderingGame::BrightnessModulationRate = 1.0f;
 	
-	const char* displayedLevelNames[] =
-	{
-		"Test Scene",
-		"Test Scene (Simple)",
-		"Sponza Scene",
-		"Terrain Scene"
-	};
-
 	DemoLevel* demoLevel = nullptr;
 	static int currentLevel = 0;
 
@@ -63,10 +59,9 @@ namespace Rendering
 		mDirectInput(nullptr),
 		mKeyboard(nullptr),
 		mMouse(nullptr),
-		mMouseTextPosition(0.0f, 40.0f),
-		mShowProfiler(false), mEditor(nullptr),
+		mShowProfiler(false),
+		mEditor(nullptr),
 		mRenderStateHelper(nullptr)
-
 	{
 		mDepthStencilBufferEnabled = true;
 		mMultiSamplingEnabled = true;
@@ -111,7 +106,6 @@ namespace Rendering
 		mEditor = new Editor(*this);
 		mServices.AddService(Editor::TypeIdClass(), mEditor);
 
-		//Render State Helper
 		mRenderStateHelper = new RenderStateHelper(*this);
 
 		#pragma region INITIALIZE_IMGUI
@@ -129,12 +123,48 @@ namespace Rendering
 #pragma endregion
 
 		Game::Initialize();
+		LoadGlobalLevelsConfig();
 		SetLevel(0); //TODO parse
 	}
 
-	void RenderingGame::SetLevel(int level)
+	void RenderingGame::LoadGlobalLevelsConfig()
 	{
-		mCurrentLevelIndex = level;
+		Json::Reader reader;
+		std::string path = Utility::GetFilePath("content\\levels\\global_scenes_config.json");
+		std::ifstream globalConfig(path.c_str(), std::ifstream::binary);
+		
+		Json::Value root;
+
+		if (!reader.parse(globalConfig, root)) {
+			throw GameException(reader.getFormattedErrorMessages().c_str());
+		}
+		else
+		{
+			if (root["scenes"].size() == 0)
+				throw GameException("No scenes defined in global_scenes_config.json");
+
+			unsigned int numScenes = root["scenes"].size();
+
+			//mDisplayedLevelNames = (char**)calloc(numScenes, sizeof(char*));
+			//for (int i = 0; i < numScenes; i++)
+			//	mDisplayedLevelNames[i] = (char*)calloc(100, sizeof(char));
+
+			for (Json::Value::ArrayIndex i = 0; i != numScenes; i++)
+			{
+				//mDisplayedLevelNames[i] = root["scenes"][i]["scene_name"].asCString();
+				mScenesPaths.emplace(root["scenes"][i]["scene_name"].asString(), root["scenes"][i]["scene_path"].asString());
+			}
+
+			if (!root["scenes"].isMember("startup_scene"))
+				throw GameException("No startup scene defined in global_scenes_config.json");
+			else
+				mStartupSceneName = root["scenes"]["startup_scene"].asString();
+		}
+	}
+
+	void RenderingGame::SetLevel(const std::string& aSceneName)
+	{
+		mCurrentSceneName = aSceneName;
 		mCamera->Reset();
 
 		if (demoLevel)
@@ -142,15 +172,14 @@ namespace Rendering
 			demoLevel->Destroy();
 			DeleteObject(demoLevel);
 		}
-		if (!demoLevel)
+
+		demoLevel = new DemoLevel();
+		if (mScenesPaths.find(aSceneName) != mScenesPaths.end())
+			demoLevel->Initialize(*this, *mCamera, aSceneName, mScenesPaths[aSceneName]);
+		else
 		{
-			switch (level)
-			{
-			case 0:
-				demoLevel = new DemoLevel();
-				demoLevel->Initialize(*this, *mCamera, "testScene", Utility::GetFilePath("content\\levels\\testScene\\")); //TODO parse
-				break;
-			}
+			std::string message = "Scene file name not found for loading: " + aSceneName;
+			throw GameException(message.c_str());
 		}
 	}
 
@@ -165,8 +194,8 @@ namespace Rendering
 
 		UpdateImGui();
 
-		Game::Update(gameTime); //engine components (input, camera, etc);
-		demoLevel->UpdateLevel(*this, gameTime);
+		Game::Update(gameTime); //engine components (input, camera, etc.);
+		demoLevel->UpdateLevel(*this, gameTime); //level components (rendering systems, culling, etc.)
 
 		auto endUpdateTimer = std::chrono::high_resolution_clock::now();
 		mElapsedTimeUpdateCPU = endUpdateTimer - startUpdateTimer;
@@ -243,13 +272,13 @@ namespace Rendering
 			}
 			ImGui::Separator();
 
-			if (ImGui::CollapsingHeader("Load demo level"))
-			{
-				if (ImGui::Combo("Level", &currentLevel, displayedLevelNames, IM_ARRAYSIZE(displayedLevelNames)))
-					SetLevel(currentLevel);
-			}
+			//if (ImGui::CollapsingHeader("Load demo level"))
+			//{
+			//	if (ImGui::Combo("Level", &currentLevel, mDisplayedLevelNames, IM_ARRAYSIZE(mDisplayedLevelNames)))
+			//		SetLevel(currentLevel);
+			//}
 			if (ImGui::Button("Reload current level")) {
-				SetLevel(mCurrentLevelIndex);
+				SetLevel(mCurrentSceneName);
 			}
 		}
 		ImGui::End();
