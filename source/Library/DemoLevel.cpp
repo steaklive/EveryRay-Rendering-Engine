@@ -10,11 +10,11 @@ namespace Library {
 	}
 	DemoLevel::~DemoLevel()
 	{
-		Destroy();
 	}
 	
-	void DemoLevel::Destroy()
+	void DemoLevel::Destroy(Game& game)
 	{
+		game.CPUProfiler()->BeginCPUTime("Destroying scene: " + mName);
         DeleteObject(mRenderStateHelper);
         DeleteObject(mDirectionalLight);
         DeleteObject(mSkybox);
@@ -27,11 +27,13 @@ namespace Library {
         DeleteObject(mIllumination);
         DeleteObject(mScene);
         DeleteObject(mIlluminationProbesManager);
+		game.CPUProfiler()->EndCPUTime("Destroying scene: " + mName);
 	}
 
     void DemoLevel::Initialize(Game& game, Camera& camera, const std::string& sceneName, const std::string& sceneFolderPath)
     {
         mRenderStateHelper = new RenderStateHelper(game);
+		mName = sceneName;
 
 		#pragma region INIT_SCENE
 		game.CPUProfiler()->BeginCPUTime("Scene init: " + sceneName);

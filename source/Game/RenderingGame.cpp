@@ -104,6 +104,7 @@ namespace Rendering
 		mServices.AddService(Camera::TypeIdClass(), mCamera);
 
 		mEditor = new Editor(*this);
+		components.push_back(mEditor);
 		mServices.AddService(Editor::TypeIdClass(), mEditor);
 
 		mRenderStateHelper = new RenderStateHelper(*this);
@@ -124,7 +125,7 @@ namespace Rendering
 
 		Game::Initialize();
 		LoadGlobalLevelsConfig();
-		SetLevel(0); //TODO parse
+		SetLevel(mStartupSceneName);
 	}
 
 	void RenderingGame::LoadGlobalLevelsConfig()
@@ -143,22 +144,28 @@ namespace Rendering
 			if (root["scenes"].size() == 0)
 				throw GameException("No scenes defined in global_scenes_config.json");
 
-			unsigned int numScenes = root["scenes"].size();
+			mNumParsedScenesFromConfig = root["scenes"].size();
+			if (mNumParsedScenesFromConfig > MAX_SCENES_COUNT)
+				throw GameException("Amount of parsed scenes is bigger than MAX_SCENES_COUNT. Increase MAX_SCENES_COUNT!");
 
-			//mDisplayedLevelNames = (char**)calloc(numScenes, sizeof(char*));
-			//for (int i = 0; i < numScenes; i++)
-			//	mDisplayedLevelNames[i] = (char*)calloc(100, sizeof(char));
+			for (int i = 0; i < mNumParsedScenesFromConfig; i++)
+				mDisplayedLevelNames[i] = (char*)malloc(sizeof(char) * 100);
 
-			for (Json::Value::ArrayIndex i = 0; i != numScenes; i++)
+			for (Json::Value::ArrayIndex i = 0; i != mNumParsedScenesFromConfig; i++)
 			{
-				//mDisplayedLevelNames[i] = root["scenes"][i]["scene_name"].asCString();
+				strcpy(mDisplayedLevelNames[i], root["scenes"][i]["scene_name"].asCString());
 				mScenesPaths.emplace(root["scenes"][i]["scene_name"].asString(), root["scenes"][i]["scene_path"].asString());
+				mScenesNamesByIndices.push_back(root["scenes"][i]["scene_name"].asString());
 			}
 
-			if (!root["scenes"].isMember("startup_scene"))
+			if (!root.isMember("startup_scene"))
 				throw GameException("No startup scene defined in global_scenes_config.json");
 			else
-				mStartupSceneName = root["scenes"]["startup_scene"].asString();
+			{
+				mStartupSceneName = root["startup_scene"].asString();
+				if (mScenesPaths.find(mStartupSceneName) == mScenesPaths.end())
+					throw GameException("No startup scene defined in global_scenes_config.json");
+			}
 		}
 	}
 
@@ -169,16 +176,16 @@ namespace Rendering
 
 		if (demoLevel)
 		{
-			demoLevel->Destroy();
+			demoLevel->Destroy(*this);
 			DeleteObject(demoLevel);
 		}
 
 		demoLevel = new DemoLevel();
 		if (mScenesPaths.find(aSceneName) != mScenesPaths.end())
-			demoLevel->Initialize(*this, *mCamera, aSceneName, mScenesPaths[aSceneName]);
+			demoLevel->Initialize(*this, *mCamera, aSceneName, Utility::GetFilePath(mScenesPaths[aSceneName]));
 		else
 		{
-			std::string message = "Scene file name not found for loading: " + aSceneName;
+			std::string message = "Scene was not found with this name: " + aSceneName;
 			throw GameException(message.c_str());
 		}
 	}
@@ -272,11 +279,11 @@ namespace Rendering
 			}
 			ImGui::Separator();
 
-			//if (ImGui::CollapsingHeader("Load demo level"))
-			//{
-			//	if (ImGui::Combo("Level", &currentLevel, mDisplayedLevelNames, IM_ARRAYSIZE(mDisplayedLevelNames)))
-			//		SetLevel(currentLevel);
-			//}
+			if (ImGui::CollapsingHeader("Load level"))
+			{
+				if (ImGui::Combo("Level", &currentLevel, mDisplayedLevelNames, mNumParsedScenesFromConfig))
+					SetLevel(mScenesNamesByIndices[currentLevel]);
+			}
 			if (ImGui::Button("Reload current level")) {
 				SetLevel(mCurrentSceneName);
 			}

@@ -16,9 +16,6 @@
     <Filter Include="Source Files\ImGui">
       <UniqueIdentifier>{14e2444f-2c0c-4fe3-be27-0e5c33922674}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Demo Scenes">
-      <UniqueIdentifier>{7f49ee93-4e93-4eca-abfb-752ce248c71f}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">

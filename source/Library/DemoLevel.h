@@ -34,7 +34,7 @@ namespace Library
         ~DemoLevel();
 
         void Initialize(Game& game, Camera& camera, const std::string& sceneName, const std::string& sceneFolderPath);
-		virtual void Destroy();
+		virtual void Destroy(Game& game);
 		virtual void UpdateLevel(Game& game, const GameTime& time);
 		virtual void DrawLevel(Game& game, const GameTime& time);
     protected:
@@ -54,6 +54,7 @@ namespace Library
         Rendering::PostProcessingStack* mPostProcessingStack = nullptr; //TODO remove namespace
     private:
         void UpdateImGui();
+        std::string mName;
 	};
 
 }

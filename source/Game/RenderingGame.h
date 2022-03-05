@@ -1,4 +1,5 @@
 #pragma once
+#define MAX_SCENES_COUNT 25
 
 #include "..\Library\Game.h"
 #include "..\Library\Common.h"
@@ -51,7 +52,10 @@ namespace Rendering
 		std::chrono::duration<double> mElapsedTimeRenderCPU;
 
 		std::map<std::string, std::string> mScenesPaths;
-		char** mDisplayedLevelNames = nullptr;
+		std::vector<std::string> mScenesNamesByIndices;
+		char* mDisplayedLevelNames[MAX_SCENES_COUNT];
+		unsigned int mNumParsedScenesFromConfig;
+
 		std::string mStartupSceneName;
 		std::string mCurrentSceneName;
 
