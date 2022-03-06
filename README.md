@@ -44,8 +44,6 @@ Other features based on NVIDIA techniques (no code provided here)
 - R/T/Y - scale/translate/rotate object in the editor mode
 
 # Notes
-Only "Sponza Main Demo", "Test Scene", "Terrain Demo Scene" have almost all the features and are up-to-date with the changes to the codebase. Other levels suffer from legacy issues and might not have, for example, up to date code, such as RenderingObjects, working editor or post processing stack... I will be refactoring those when possible. 
-
 The framework is NOT API-agnostic and, thus, has been tighly bound to DX11 since the beginning of its development. Hopefully, I will be changing that in the future and adding DX12 support for it. It will undeniably improve the perfomance in many scenarios. 
 
 You might increase TDR time of your GPU driver (explained here https://docs.substance3d.com/spdoc/gpu-drivers-crash-with-long-computations-128745489.html).
