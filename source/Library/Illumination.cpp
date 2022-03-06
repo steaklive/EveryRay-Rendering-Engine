@@ -537,29 +537,32 @@ namespace Library {
 			mDeferredLightingConstantBuffer.Data.SunDirection = XMFLOAT4{ -mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f };
 			mDeferredLightingConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLight.GetDirectionalLightIntensity() };
 			mDeferredLightingConstantBuffer.Data.CameraPosition = XMFLOAT4{ mCamera.Position().x,mCamera.Position().y,mCamera.Position().z, 1.0f };
-			mDeferredLightingConstantBuffer.Data.SkipIndirectProbeLighting = mDebugSkipIndirectProbeLighting;
+			mDeferredLightingConstantBuffer.Data.SkipIndirectProbeLighting = !mProbesManager->IsEnabled() || mDebugSkipIndirectProbeLighting;
 			mDeferredLightingConstantBuffer.ApplyChanges(context);
 
-			for (size_t i = 0; i < NUM_PROBE_VOLUME_CASCADES; i++)
+			if (mProbesManager->IsEnabled())
 			{
-				mLightProbesConstantBuffer.Data.DiffuseProbesCellsCount[i] = mProbesManager->GetProbesCellsCount(DIFFUSE_PROBE, i);
-				mLightProbesConstantBuffer.Data.DiffuseProbesVolumeSizes[i] = XMFLOAT4{ 
-					mProbesManager->GetProbesVolumeCascade(DIFFUSE_PROBE, i).x, 
-					mProbesManager->GetProbesVolumeCascade(DIFFUSE_PROBE, i).y,
-					mProbesManager->GetProbesVolumeCascade(DIFFUSE_PROBE, i).z, 1.0f };
-				mLightProbesConstantBuffer.Data.SpecularProbesCellsCount[i] = mProbesManager->GetProbesCellsCount(SPECULAR_PROBE, i);
-				mLightProbesConstantBuffer.Data.SpecularProbesVolumeSizes[i] = XMFLOAT4{
-					mProbesManager->GetProbesVolumeCascade(SPECULAR_PROBE, i).x,
-					mProbesManager->GetProbesVolumeCascade(SPECULAR_PROBE, i).y,
-					mProbesManager->GetProbesVolumeCascade(SPECULAR_PROBE, i).z, 1.0f };
-				mLightProbesConstantBuffer.Data.ProbesVolumeIndexSkips[i] = XMFLOAT4(mProbesManager->GetProbesIndexSkip(i), 0.0, 0.0, 0.0);
+				for (size_t i = 0; i < NUM_PROBE_VOLUME_CASCADES; i++)
+				{
+					mLightProbesConstantBuffer.Data.DiffuseProbesCellsCount[i] = mProbesManager->GetProbesCellsCount(DIFFUSE_PROBE, i);
+					mLightProbesConstantBuffer.Data.DiffuseProbesVolumeSizes[i] = XMFLOAT4{
+						mProbesManager->GetProbesVolumeCascade(DIFFUSE_PROBE, i).x,
+						mProbesManager->GetProbesVolumeCascade(DIFFUSE_PROBE, i).y,
+						mProbesManager->GetProbesVolumeCascade(DIFFUSE_PROBE, i).z, 1.0f };
+					mLightProbesConstantBuffer.Data.SpecularProbesCellsCount[i] = mProbesManager->GetProbesCellsCount(SPECULAR_PROBE, i);
+					mLightProbesConstantBuffer.Data.SpecularProbesVolumeSizes[i] = XMFLOAT4{
+						mProbesManager->GetProbesVolumeCascade(SPECULAR_PROBE, i).x,
+						mProbesManager->GetProbesVolumeCascade(SPECULAR_PROBE, i).y,
+						mProbesManager->GetProbesVolumeCascade(SPECULAR_PROBE, i).z, 1.0f };
+					mLightProbesConstantBuffer.Data.ProbesVolumeIndexSkips[i] = XMFLOAT4(mProbesManager->GetProbesIndexSkip(i), 0.0, 0.0, 0.0);
+				}
+				mLightProbesConstantBuffer.Data.SceneLightProbesBounds = XMFLOAT4{ mProbesManager->GetSceneProbesVolumeMin().x, mProbesManager->GetSceneProbesVolumeMin().y, mProbesManager->GetSceneProbesVolumeMin().z, 1.0f };
+				mLightProbesConstantBuffer.Data.DistanceBetweenDiffuseProbes = DISTANCE_BETWEEN_DIFFUSE_PROBES;
+				mLightProbesConstantBuffer.Data.DistanceBetweenSpecularProbes = DISTANCE_BETWEEN_SPECULAR_PROBES;
+				mLightProbesConstantBuffer.ApplyChanges(context);
 			}
-			mLightProbesConstantBuffer.Data.SceneLightProbesBounds = XMFLOAT4{ mProbesManager->GetSceneProbesVolumeMin().x, mProbesManager->GetSceneProbesVolumeMin().y, mProbesManager->GetSceneProbesVolumeMin().z, 1.0f };
-			mLightProbesConstantBuffer.Data.DistanceBetweenDiffuseProbes = DISTANCE_BETWEEN_DIFFUSE_PROBES;
-			mLightProbesConstantBuffer.Data.DistanceBetweenSpecularProbes = DISTANCE_BETWEEN_SPECULAR_PROBES;
-			mLightProbesConstantBuffer.ApplyChanges(context);
 
-			ID3D11Buffer* CBs[2] = { mDeferredLightingConstantBuffer.Buffer(), mLightProbesConstantBuffer.Buffer() };
+			ID3D11Buffer* CBs[2] = { mDeferredLightingConstantBuffer.Buffer(), mProbesManager->IsEnabled() ? mLightProbesConstantBuffer.Buffer() : nullptr };
 			context->CSSetConstantBuffers(0, 2, CBs);
 
 			ID3D11ShaderResourceView* SRs[24] = {
@@ -568,26 +571,28 @@ namespace Library {
 				gbuffer->GetPositions()->GetSRV(),
 				gbuffer->GetExtraBuffer()->GetSRV(),
 				gbuffer->GetExtra2Buffer()->GetSRV(),
-				mProbesManager->GetCulledDiffuseProbesTextureArray(0)->GetSRV(),
-				mProbesManager->GetCulledDiffuseProbesTextureArray(1)->GetSRV(),
-				mProbesManager->GetGlobalDiffuseProbe()->GetCubemapSRV(),
-				mProbesManager->GetCulledSpecularProbesTextureArray(0)->GetSRV(),
-				mProbesManager->GetCulledSpecularProbesTextureArray(1)->GetSRV(),
-				mProbesManager->GetIntegrationMap()
+
+				mProbesManager->IsEnabled() ? mProbesManager->GetCulledDiffuseProbesTextureArray(0)->GetSRV() : nullptr,
+				mProbesManager->IsEnabled() ? mProbesManager->GetCulledDiffuseProbesTextureArray(1)->GetSRV() : nullptr,
+				mProbesManager->IsEnabled() ? mProbesManager->GetGlobalDiffuseProbe()->GetCubemapSRV() : nullptr,
+				mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray(0)->GetSRV() : nullptr,
+				mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray(1)->GetSRV() : nullptr,
+				mProbesManager->IsEnabled() ? mProbesManager->GetIntegrationMap() : nullptr
 			};
+
 			for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 				SRs[11 + i] = mShadowMapper.GetShadowTexture(i);
 
-			SRs[14] = mProbesManager->GetDiffuseProbesCellsIndicesBuffer(0)->GetBufferSRV();
-			SRs[15] = mProbesManager->GetDiffuseProbesCellsIndicesBuffer(1)->GetBufferSRV();
-			SRs[16] = mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer(0)->GetBufferSRV();
-			SRs[17] = mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer(1)->GetBufferSRV();
-			SRs[18] = mProbesManager->GetDiffuseProbesPositionsBuffer()->GetBufferSRV();
-			SRs[19] = mProbesManager->GetSpecularProbesCellsIndicesBuffer(0)->GetBufferSRV();
-			SRs[20] = mProbesManager->GetSpecularProbesCellsIndicesBuffer(1)->GetBufferSRV();
-			SRs[21] = mProbesManager->GetSpecularProbesTexArrayIndicesBuffer(0)->GetBufferSRV();
-			SRs[22] = mProbesManager->GetSpecularProbesTexArrayIndicesBuffer(1)->GetBufferSRV();
-			SRs[23] = mProbesManager->GetSpecularProbesPositionsBuffer()->GetBufferSRV();
+			SRs[14] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer(0)->GetBufferSRV() : nullptr;
+			SRs[15] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer(1)->GetBufferSRV() : nullptr;
+			SRs[16] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer(0)->GetBufferSRV() : nullptr;
+			SRs[17] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer(1)->GetBufferSRV() : nullptr;
+			SRs[18] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesPositionsBuffer()->GetBufferSRV() : nullptr;
+			SRs[19] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesCellsIndicesBuffer(0)->GetBufferSRV() : nullptr;
+			SRs[20] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesCellsIndicesBuffer(1)->GetBufferSRV() : nullptr;
+			SRs[21] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer(0)->GetBufferSRV() : nullptr;
+			SRs[22] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer(1)->GetBufferSRV() : nullptr;
+			SRs[23] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesPositionsBuffer()->GetBufferSRV() : nullptr;
 			context->CSSetShaderResources(0, 24, SRs);
 
 			ID3D11SamplerState* SS[2] = { mLinearSamplerState, mShadowSamplerState };

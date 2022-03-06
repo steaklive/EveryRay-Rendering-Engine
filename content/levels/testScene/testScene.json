@@ -48,11 +48,6 @@
 					"technique" : "deferred"
 				},
 				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				},
-				{
 					"effect" : "content\\effects\\StandardLighting.fx",
 					"name" : "StandardLightingForProbeMaterial",
 					"technique" : "standard_lighting_pbr"

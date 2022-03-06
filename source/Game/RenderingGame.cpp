@@ -304,9 +304,12 @@ namespace Rendering
 		SamplerStates::Release();
 
 		//destroy imgui
-		ImGui_ImplDX11_Shutdown();
-		ImGui_ImplWin32_Shutdown();
-		ImGui::DestroyContext();
+		{
+			ImGui_ImplDX11_Shutdown();
+			ImGui_ImplWin32_Shutdown();
+			ImGui::DestroyContext();
+		}
+
 		Game::Shutdown();
 	}
 	

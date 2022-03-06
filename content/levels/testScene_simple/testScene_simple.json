@@ -17,23 +17,9 @@
 		10.0,
 		35.0
 	],
-	"light_probes_volume_bounds_max" : 
-	[
-		300.0,
-		150.2,
-		300.0
-	],
-	"light_probes_volume_bounds_min" : 
-	[
-		-300.0,
-		0.2,
-		-300.0
-	],
 	"rendering_objects" : 
 	[
 		{
-			"inLightProbe" : true,
-			"useGlobalLightProbe" : true,
 			"instanced" : false,
 			"materials" : 
 			[
@@ -46,16 +32,6 @@
 					"effect" : "content\\effects\\DeferredPrepass.fx",
 					"name" : "DeferredMaterial",
 					"technique" : "deferred"
-				},
-				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				},
-				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr"
 				}
 			],
 			"model_path" : "content\\models\\default_plane\\default_plane.fbx",
@@ -81,7 +57,6 @@
 			]
 		},
 		{
-			"inLightProbe" : true,
 			"instanced" : false,
 			"materials" : 
 			[
@@ -91,19 +66,14 @@
 					"technique" : "create_depthmap_w_render_target"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingMaterial",
-					"technique" : "standard_lighting_pbr"
+					"effect" : "content\\effects\\DeferredPrepass.fx",
+					"name" : "DeferredMaterial",
+					"technique" : "deferred"
 				},
 				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
-				},
-				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr"
 				}
 			],
 			"model_path" : "content\\models\\bunny\\bunny.fbx",
@@ -116,18 +86,18 @@
 			],
 			"transform" : 
 			[
-				12.468400001525879,
+				11.437989234924316,
 				0.0,
-				0.0,
-				-16.805683135986328,
+				4.9632878303527832,
+				-8.6595258712768555,
 				0.0,
 				12.468400001525879,
 				0.0,
 				7.688323974609375,
+				-4.9632878303527832,
 				0.0,
-				0.0,
-				12.468400001525879,
-				-20.592681884765625,
+				11.437989234924316,
+				-13.816640853881836,
 				0.0,
 				0.0,
 				0.0,
@@ -135,7 +105,6 @@
 			]
 		},
 		{
-			"inLightProbe" : true,
 			"instanced" : false,
 			"materials" : 
 			[
@@ -145,19 +114,14 @@
 					"technique" : "create_depthmap_w_render_target"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingMaterial",
-					"technique" : "standard_lighting_pbr"
+					"effect" : "content\\effects\\DeferredPrepass.fx",
+					"name" : "DeferredMaterial",
+					"technique" : "deferred"
 				},
 				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
-				},
-				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr"
 				}
 			],
 			"model_path" : "content\\models\\cube.fbx",
@@ -170,17 +134,17 @@
 			],
 			"transform" : 
 			[
-				1.6728048324584961,
-				-0.14780165255069733,
-				0.39924439787864685,
+				2.0185890197753906,
+				0.016205744817852974,
+				12.246352195739746,
 				16.146291732788086,
-				-0.0056756003759801388,
-				0.45369452238082886,
-				13.646233558654785,
+				-1.451682448387146,
+				0.022534362971782684,
+				17.02876091003418,
 				4.5598549842834473,
-				-0.15508843958377838,
-				-1.6108119487762451,
-				3.806908130645752,
+				0.0,
+				-2.486248254776001,
+				0.23416547477245331,
 				-0.14806365966796875,
 				0.0,
 				0.0,
@@ -189,7 +153,6 @@
 			]
 		},
 		{
-			"inLightProbe" : true,
 			"instanced" : false,
 			"materials" : 
 			[
@@ -199,19 +162,14 @@
 					"technique" : "create_depthmap_w_render_target"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingMaterial",
-					"technique" : "standard_lighting_pbr"
+					"effect" : "content\\effects\\DeferredPrepass.fx",
+					"name" : "DeferredMaterial",
+					"technique" : "deferred"
 				},
 				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
-				},
-				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr"
 				}
 			],
 			"model_path" : "content\\models\\sphere.fbx",
@@ -227,11 +185,11 @@
 				1.5,
 				0.0,
 				0.0,
-				-23.515312194824219,
+				-21.070217132568359,
 				0.0,
 				1.5,
 				0.0,
-				5.385777473449707,
+				-1.0466251373291016,
 				0.0,
 				0.0,
 				1.5,
@@ -243,7 +201,6 @@
 			]
 		},
 		{
-			"inLightProbe" : true,
 			"instanced" : false,
 			"materials" : 
 			[
@@ -253,19 +210,14 @@
 					"technique" : "create_depthmap_w_render_target"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingMaterial",
-					"technique" : "standard_lighting_pbr"
+					"effect" : "content\\effects\\DeferredPrepass.fx",
+					"name" : "DeferredMaterial",
+					"technique" : "deferred"
 				},
 				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
-				},
-				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr"
 				}
 			],
 			"model_path" : "content\\models\\sphere.fbx",
@@ -279,11 +231,11 @@
 				0.0,
 				1.4175000190734863,
 				0.0,
-				7.3902015686035156,
+				4.429649829864502,
 				0.0,
 				0.0,
 				1.4175000190734863,
-				-22.753517150878906,
+				-14.302750587463379,
 				0.0,
 				0.0,
 				0.0,
@@ -291,7 +243,6 @@
 			]
 		},
 		{
-			"inLightProbe" : false,
 			"instanced" : false,
 			"materials" : 
 			[
@@ -324,602 +275,15 @@
 				0.65205007791519165,
 				0.0,
 				0.0,
-				18.557842254638672,
+				24.622383117675781,
 				0.0,
 				0.65205007791519165,
 				0.0,
-				22.331504821777344,
+				0.78330302238464355,
 				0.0,
 				0.0,
 				0.65205007791519165,
-				-14.861448287963867,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"foliageMask" : true,
-			"instanced" : true,
-			"inLightProbe" : true,
-			"instances_transforms" : 
-			[
-				{
-					"transform" : 
-					[
-						1.899813175201416,
-						0.0,
-						0.0,
-						-40.920845031738281,
-						0.0,
-						1.8999999761581421,
-						0.0,
-						0.0,
-						0.0,
-						0.0,
-						1.8999999761581421,
-						-34.851955413818359,
-						0.0,
-						0.0,
-						0.0,
-						1.0
-					]
-				},
-				{
-					"transform" : 
-					[
-						1.899813175201416,
-						0.0,
-						0.0,
-						18.933021545410156,
-						0.0,
-						1.8999999761581421,
-						0.0,
-						0.0,
-						0.0,
-						0.0,
-						1.8999999761581421,
-						-34.851955413818359,
-						0.0,
-						0.0,
-						0.0,
-						1.0
-					]
-				}
-			],
-			"materials" : 
-			[
-				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target_instanced"
-				},
-				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred_instanced"
-				},
-				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI_instancing"
-				},
-				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr_instancing"
-				}
-			],
-			"model_lods" : 
-			[
-				{
-					"path" : "content\\models\\vegetation\\trees\\elm\\elm_ds.fbx"
-				},
-				{
-					"path" : "content\\models\\vegetation\\trees\\elm\\elm_ds.fbx"
-				},
-				{
-					"path" : "content\\models\\vegetation\\trees\\elm\\elm_ds.fbx"
-				}
-			],
-			"model_path" : "content\\models\\vegetation\\trees\\elm\\elm_ds.fbx",
-			"name" : "Elm Tree",
-			"transform" : 
-			[
-				1.899813175201416,
-				0.0,
-				0.0,
-				-40.920845031738281,
-				0.0,
-				1.8999999761581421,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.8999999761581421,
-				-34.851955413818359,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"instanced" : false,
-			"inLightProbe" : true,
-			"materials" : 
-			[
-				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
-				},
-				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
-				},
-				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				},
-				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr"
-				}
-			],
-			"model_path" : "content\\models\\Sponza\\sponza.fbx",
-			"name" : "Sponza",
-			"transform" : 
-			[
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0,
-				-252.54008483886719,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"instanced" : false,
-			"inLightProbe" : true,
-			"materials" : 
-			[
-				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
-				},
-				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
-				},
-				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				},
-				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr"
-				}
-			],
-			"model_path" : "content\\models\\shaderball.fbx",
-			"name" : "Shader Ball Pavement",
-			"textures" : 
-			[
-				{
-					"albedo" : "content\\textures\\PBR\\Pavement\\PavingStones077_2K_Color.jpg",
-					"metalness" : "content\\textures\\PBR\\Pavement\\EmptyMetalMap.png",
-					"normal" : "content\\textures\\PBR\\Pavement\\PavingStones077_2K_Normal.jpg",
-					"roughness" : "content\\textures\\PBR\\Pavement\\PavingStones077_2K_Roughness.jpg"
-				},
-				{
-					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
-					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
-					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
-				}
-			],
-			"transform" : 
-			[
-				1.0,
-				0.0,
-				0.0,
-				-109.76650238037109,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"instanced" : false,
-			"inLightProbe" : true,
-			"materials" : 
-			[
-				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
-				},
-				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
-				},
-				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				},
-				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr"
-				}
-			],
-			"model_path" : "content\\models\\shaderball.fbx",
-			"name" : "Shader Ball Marble",
-			"textures" : 
-			[
-				{
-					"albedo" : "content\\textures\\PBR\\Marble\\Marble_col.jpg",
-					"metalness" : "content\\textures\\PBR\\Marble\\EmptyMetalMap.png",
-					"normal" : "content\\textures\\PBR\\Marble\\Marble_nrm.jpg",
-					"roughness" : "content\\textures\\PBR\\Marble\\Marble_rgh.jpg"
-				},
-				{
-					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
-					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
-					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
-				}
-			],
-			"transform" : 
-			[
-				1.0,
-				0.0,
-				0.0,
-				12.0,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"instanced" : false,
-			"inLightProbe" : true,
-			"materials" : 
-			[
-				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
-				},
-				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
-				},
-				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				},
-				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr"
-				}
-			],
-			"model_path" : "content\\models\\shaderball.fbx",
-			"name" : "Shader Ball Scuffed Gold",
-			"textures" : 
-			[
-				{
-					"albedo" : "content\\textures\\PBR\\ScuffedGold\\gold-scuffed_basecolor-boosted.png",
-					"metalness" : "content\\textures\\PBR\\ScuffedGold\\gold-scuffed_metallic.png",
-					"normal" : "content\\textures\\PBR\\ScuffedGold\\gold-scuffed_normal.png",
-					"roughness" : "content\\textures\\PBR\\ScuffedGold\\gold-scuffed_roughness.png"
-				},
-				{
-					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
-					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
-					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
-				}
-			],
-			"transform" : 
-			[
-				1.0,
-				0.0,
-				0.0,
-				-12.645288467407227,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"instanced" : false,
-			"inLightProbe" : true,
-			"materials" : 
-			[
-				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
-				},
-				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
-				},
-				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				},
-				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr"
-				}
-			],
-			"model_lods" : 
-			[
-				{
-					"path" : "content\\models\\rocks\\rock_1\\rock_1_lod_high.fbx"
-				},
-				{
-					"path" : "content\\models\\rocks\\rock_1\\rock_1_lod_mid.fbx"
-				},
-				{
-					"path" : "content\\models\\rocks\\rock_1\\rock_1_lod_low.fbx"
-				}
-			],
-			"model_path" : "content\\models\\rocks\\rock_1\\rock_1_lod_high.fbx",
-			"name" : "Rock 1",
-			"textures" : 
-			[
-				{
-					"albedo" : "content\\models\\rocks\\rock_1\\rock_low_Base_Color.png",
-					"metalness" : "content\\models\\rocks\\rock_1\\rock_low_Metallic.png",
-					"normal" : "content\\models\\rocks\\rock_1\\rock_low_Normal_DirectX.png",
-					"roughness" : "content\\models\\rocks\\rock_1\\rock_low_Roughness.png"
-				}
-			],
-			"transform" : 
-			[
-				0.90517723560333252,
-				0.0,
-				0.4250321090221405,
-				-38.242660522460938,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				-0.4250321090221405,
-				0.0,
-				0.90517723560333252,
-				41.258087158203125,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"foliageMask" : true,
-			"inLightProbe" : true,
-			"instanced" : true,
-			"instances_transforms" : 
-			[
-				{
-					"transform" : 
-					[
-						1.0,
-						0.0,
-						0.0,
-						25.0,
-						0.0,
-						1.0,
-						0.0,
-						0.0,
-						0.0,
-						0.0,
-						1.0,
-						0.0,
-						0.0,
-						0.0,
-						0.0,
-						1.0
-					]
-				}
-			],
-			"materials" : 
-			[
-				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
-				},
-				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
-				},
-				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				},
-				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr_instancing"
-				}
-			],
-			"model_lods" : 
-			[
-				{
-					"path" : "content\\models\\vegetation\\trees\\pine\\pine_small_2_lod_high.fbx"
-				},
-				{
-					"path" : "content\\models\\vegetation\\trees\\pine\\pine_small_2_lod_middle.fbx"
-				},
-				{
-					"path" : "content\\models\\vegetation\\trees\\pine\\pine_small_2_lod_low.fbx"
-				}
-			],
-			"model_path" : "content\\models\\vegetation\\trees\\pine\\pine_small_2_lod_high.fbx",
-			"name" : "Pine Small 2",
-			"textures" : 
-			[
-				{
-					"albedo" : "content\\models\\vegetation\\trees\\pine\\Needles\\needles_Diffuse_a.png",
-					"metalness" : "content\\textures\\emptyMetallicMap.png",
-					"normal" : "content\\models\\vegetation\\trees\\pine\\Needles\\needles_Normal.png",
-					"roughness" : "content\\textures\\emptyRoughnessMap.png"
-				},
-				{
-					"albedo" : "content\\models\\vegetation\\trees\\pine\\Bark\\bark_Diffuse.png",
-					"metalness" : "content\\textures\\emptyMetallicMap.png",
-					"normal" : "content\\models\\vegetation\\trees\\pine\\Bark\\Bark_Normal.png",
-					"roughness" : "content\\textures\\emptyRoughnessMap.png"
-				},
-				{
-					"albedo" : "content\\models\\vegetation\\trees\\pine\\Branches_1\\branches_1_Diffuse_a.png",
-					"metalness" : "content\\textures\\emptyMetallicMap.png",
-					"normal" : "content\\models\\vegetation\\trees\\pine\\Branches_1\\branches_1_Normal.png",
-					"roughness" : "content\\textures\\emptyRoughnessMap.png"
-				},
-				{
-					"albedo" : "content\\models\\vegetation\\trees\\pine\\Branches_2\\branches_2_Diffuse_a.png",
-					"metalness" : "content\\textures\\emptyMetallicMap.png",
-					"normal" : "content\\models\\vegetation\\trees\\pine\\Branches_2\\branches_2_Normal.png",
-					"roughness" : "content\\textures\\emptyRoughnessMap.png"
-				},
-				{
-					"albedo" : "content\\models\\vegetation\\trees\\pine\\Bark\\bark_Diffuse.png",
-					"metalness" : "content\\textures\\emptyMetallicMap.png",
-					"normal" : "content\\models\\vegetation\\trees\\pine\\Bark\\Bark_Normal.png",
-					"roughness" : "content\\textures\\emptyRoughnessMap.png"
-				}
-			],
-			"transform" : 
-			[
-				1.0,
-				0.0,
-				0.0,
-				25.0,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"instanced" : false,
-			"inLightProbe" : true,
-			"materials" : 
-			[
-				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
-				},
-				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
-				},
-				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				},
-				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr"
-				}
-			],
-			"model_path" : "content\\models\\couch\\couch.fbx",
-			"name" : "Green couch",
-			"textures" : 
-			[
-				{
-					"albedo" : "content\\models\\couch\\Color_map.png",
-					"metalness" : "content\\models\\couch\\Metalic_map.png",
-					"normal" : "content\\models\\couch\\Normal_map.png",
-					"roughness" : "content\\models\\couch\\Roughness_map.png"
-				}
-			],
-			"transform" : 
-			[
-				7.690000057220459,
-				0.0,
-				0.0,
-				42.430252075195312,
-				0.0,
-				7.690000057220459,
-				0.0,
-				-0.12476038932800293,
-				0.0,
-				0.0,
-				7.690000057220459,
-				39.210628509521484,
+				6.8373608589172363,
 				0.0,
 				0.0,
 				0.0,

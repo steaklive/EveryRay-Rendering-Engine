@@ -10,9 +10,13 @@
 			"scene_path" : "content\\levels\\testScene_simple\\"
 		},
 		{
+			"scene_name" : "sponzaScene",
+			"scene_path" : "content\\levels\\sponzaScene\\"
+		},
+		{
 			"scene_name" : "terrainScene",
 			"scene_path" : "content\\levels\\terrainScene\\"
 		}
 	],
-	"startup_scene" : "testScene"
+	"startup_scene" : "testScene_simple"
 }

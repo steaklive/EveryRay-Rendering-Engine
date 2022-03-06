@@ -102,6 +102,7 @@ namespace Library
 		ID3D11ShaderResourceView* GetIntegrationMap() { return mIntegrationMapTextureSRV; }
 		const XMFLOAT3& GetSceneProbesVolumeMin() { return mSceneProbesMinBounds; }
 		const XMFLOAT3& GetSceneProbesVolumeMax() { return mSceneProbesMaxBounds; }
+		bool IsEnabled() { return mEnabled; }
 		bool mDebugDiscardCulledProbes = false;//used in DebugLightProbeMaterial
 	private:
 		void SetupDiffuseProbes(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ShadowMapper& shadowMapper);

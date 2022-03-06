@@ -113,7 +113,7 @@ namespace Library {
 
 		#pragma region INIT_LIGHTPROBES_MANAGER
 		game.CPUProfiler()->BeginCPUTime("Light probes manager init");
-        mIlluminationProbesManager = new ER_IlluminationProbeManager(game, camera, mScene, *mDirectionalLight, *mShadowMapper);
+		mIlluminationProbesManager = new ER_IlluminationProbeManager(game, camera, mScene, *mDirectionalLight, *mShadowMapper);
 		mIlluminationProbesManager->SetLevelPath(Utility::ToWideString(sceneFolderPath));
 		mIllumination->SetProbesManager(mIlluminationProbesManager);
 		game.CPUProfiler()->EndCPUTime("Light probes manager init");
@@ -171,7 +171,8 @@ namespace Library {
 		mPostProcessingStack->Update();
 		mVolumetricClouds->Update(gameTime);
 		mIllumination->Update(gameTime, mScene);
-		mIlluminationProbesManager->UpdateProbes(game); //TODO move to Illumination
+		if (mScene->HasLightProbesSupport() && mIlluminationProbesManager->IsEnabled())
+			mIlluminationProbesManager->UpdateProbes(game);
 		mShadowMapper->Update(gameTime);
 		//mFoliageSystem->Update(gameTime, mWindGustDistance, mWindStrength, mWindFrequency); //TODO
 		//mDirectionalLight->UpdateProxyModel(gameTime, mCamera->ViewMatrix4X4(), mCamera->ProjectionMatrix4X4()); TODO refactor to DebugRenderer
@@ -227,7 +228,7 @@ namespace Library {
 #pragma endregion
 
 		#pragma region DRAW_GLOBAL_ILLUMINATION
-		if (!mIlluminationProbesManager->AreProbesReady())
+		if (mScene->HasLightProbesSupport() && !mIlluminationProbesManager->AreProbesReady())
 		{
 			game.CPUProfiler()->BeginCPUTime("Compute or load light probes");
 			mIlluminationProbesManager->ComputeOrLoadProbes(game, gameTime, mScene->objects, mSkybox);
