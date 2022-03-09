@@ -1,4 +1,4 @@
-// Standard Lighting Effect
+
 static const float4 ColorWhite = { 1, 1, 1, 1 };
 static const float Pi = 3.141592654f;
 
