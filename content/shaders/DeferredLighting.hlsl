@@ -27,7 +27,7 @@ Texture2D<float4> GbufferAlbedoTexture : register(t0);
 Texture2D<float4> GbufferNormalTexture : register(t1);
 Texture2D<float4> GbufferWorldPosTexture : register(t2);
 Texture2D<float4> GbufferExtraTexture : register(t3); // [reflection mask, roughness, metalness, foliage mask]
-Texture2D<float4> GbufferExtra2Texture : register(t4); // [global diffuse probe mask, empty, empty, empty]
+Texture2D<float4> GbufferExtra2Texture : register(t4); // [global diffuse probe mask, POM, empty, empty]
 
 TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray0 : register(t5); //cascade 0
 TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray1 : register(t6); //cascade 1
@@ -523,6 +523,8 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     
     float4 extra2Gbuffer = GbufferExtra2Texture.Load(uint3(inPos, 0));
     bool useGlobalDiffuseProbe = extra2Gbuffer.r > 0.0f;
+    
+    bool usePOM = extra2Gbuffer.g > -1.0f; // TODO add support to Deferred
 
     //reflectance at normal incidence for dia-electic or metal
     float3 F0 = float3(0.04, 0.04, 0.04);

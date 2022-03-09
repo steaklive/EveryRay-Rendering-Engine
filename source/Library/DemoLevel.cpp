@@ -175,7 +175,9 @@ namespace Library {
 			mIlluminationProbesManager->UpdateProbes(game);
 		mShadowMapper->Update(gameTime);
 		//mFoliageSystem->Update(gameTime, mWindGustDistance, mWindStrength, mWindFrequency); //TODO
-		//mDirectionalLight->UpdateProxyModel(gameTime, mCamera->ViewMatrix4X4(), mCamera->ProjectionMatrix4X4()); TODO refactor to DebugRenderer
+		mDirectionalLight->UpdateProxyModel(gameTime, 
+			((Camera*)game.Services().GetService(Camera::TypeIdClass()))->ViewMatrix4X4(),
+			((Camera*)game.Services().GetService(Camera::TypeIdClass()))->ProjectionMatrix4X4()); //TODO refactor to DebugRenderer
 
 		mScene->GetCamera().Cull(mScene->objects);
 		for (auto& object : mScene->objects)

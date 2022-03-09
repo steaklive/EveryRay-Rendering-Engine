@@ -166,6 +166,8 @@ namespace Library
 				aObject->SetInLightProbe(root["rendering_objects"][i]["inLightProbe"].asBool());
 			if (root["rendering_objects"][i].isMember("useGlobalLightProbe"))
 				aObject->SetUseGlobalLightProbe(root["rendering_objects"][i]["useGlobalLightProbe"].asBool());
+			if (root["rendering_objects"][i].isMember("use_parallax_occlusion_mapping"))
+				aObject->SetParallaxOcclusionMapping(root["rendering_objects"][i]["use_parallax_occlusion_mapping"].asBool());
 			if (root["rendering_objects"][i].isMember("placed_on_terrain")) {
 				aObject->SetPlacedOnTerrain(root["rendering_objects"][i]["placed_on_terrain"].asBool());
 				if (isInstanced && root["rendering_objects"][i].isMember("num_instances_per_vegetation_zone"))
@@ -260,6 +262,8 @@ namespace Library
 						aObject->mCustomRoughnessTextures[mesh] = root["rendering_objects"][i]["textures"][mesh]["roughness"].asString();
 					if (root["rendering_objects"][i]["textures"][mesh].isMember("metalness"))
 						aObject->mCustomMetalnessTextures[mesh] = root["rendering_objects"][i]["textures"][mesh]["metalness"].asString();
+					if (root["rendering_objects"][i]["textures"][mesh].isMember("height"))
+						aObject->mCustomHeightTextures[mesh] = root["rendering_objects"][i]["textures"][mesh]["height"].asString();
 
 					aObject->LoadCustomMeshTextures(mesh);
 				}

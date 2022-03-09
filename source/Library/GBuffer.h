@@ -23,7 +23,7 @@ namespace Library
 		ER_GPUTexture* GetNormals() { return mNormalBuffer; }
 		ER_GPUTexture* GetPositions() { return mPositionsBuffer; }
 		ER_GPUTexture* GetExtraBuffer() { return mExtraBuffer; } // [reflection mask, roughness, metalness, foliage mask]
-		ER_GPUTexture* GetExtra2Buffer() { return mExtra2Buffer; } // [global diffuse probe mask, empty, empty, empty]
+		ER_GPUTexture* GetExtra2Buffer() { return mExtra2Buffer; } // [global diffuse probe mask, height (for POM, etc.), empty, empty]
 		DepthTarget* GetDepth() { return mDepthBuffer; }
 
 	private:

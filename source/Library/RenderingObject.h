@@ -56,19 +56,22 @@ namespace Rendering
 		ID3D11ShaderResourceView* SpecularMap	= nullptr;
 		ID3D11ShaderResourceView* MetallicMap	= nullptr;
 		ID3D11ShaderResourceView* RoughnessMap	= nullptr;
+		ID3D11ShaderResourceView* HeightMap		= nullptr;
 		ID3D11ShaderResourceView* ExtraMap1		= nullptr;  // can be used for extra textures (AO, opacity, displacement)
 		ID3D11ShaderResourceView* ExtraMap2		= nullptr;  // can be used for extra textures (AO, opacity, displacement)
 		ID3D11ShaderResourceView* ExtraMap3		= nullptr;  // can be used for extra textures (AO, opacity, displacement)
 
 		TextureData(){}
 
-		TextureData(ID3D11ShaderResourceView* albedo, ID3D11ShaderResourceView* normal, ID3D11ShaderResourceView* specular, ID3D11ShaderResourceView* roughness, ID3D11ShaderResourceView* metallic, ID3D11ShaderResourceView* extra1, ID3D11ShaderResourceView* extra2, ID3D11ShaderResourceView* extra3)
+		TextureData(ID3D11ShaderResourceView* albedo, ID3D11ShaderResourceView* normal, ID3D11ShaderResourceView* specular, ID3D11ShaderResourceView* roughness, ID3D11ShaderResourceView* metallic, ID3D11ShaderResourceView* height,
+			ID3D11ShaderResourceView* extra1, ID3D11ShaderResourceView* extra2, ID3D11ShaderResourceView* extra3)
 			:
 			AlbedoMap(albedo),
 			NormalMap(normal),
 			SpecularMap(specular),
 			RoughnessMap(roughness),
 			MetallicMap(metallic),
+			HeightMap(height),
 			ExtraMap1(extra1),
 			ExtraMap2(extra2),
 			ExtraMap3(extra3)
@@ -81,6 +84,7 @@ namespace Rendering
 			ReleaseObject(SpecularMap);
 			ReleaseObject(RoughnessMap);
 			ReleaseObject(MetallicMap);
+			ReleaseObject(HeightMap);
 			ReleaseObject(ExtraMap1);
 			ReleaseObject(ExtraMap2);
 			ReleaseObject(ExtraMap3);
@@ -221,6 +225,9 @@ namespace Rendering
 		bool IsForwardShading() { return mIsForwardShading; }
 		void SetForwardShading(bool value) { mIsForwardShading = value; }
 
+		bool IsParallaxOcclusionMapping() { return mIsPOM; }
+		void SetParallaxOcclusionMapping(bool value) { mIsPOM = value; }
+
 		bool IsInLightProbe() { return mIsInLightProbe; }
 		void SetInLightProbe(bool value) { mIsInLightProbe = value; }
 		void SetUseGlobalLightProbe(bool value) { mUseGlobalLightProbe = value; }
@@ -235,6 +242,7 @@ namespace Rendering
 		std::vector<std::string>								mCustomNormalTextures;
 		std::vector<std::string>								mCustomRoughnessTextures;
 		std::vector<std::string>								mCustomMetalnessTextures;
+		std::vector<std::string>								mCustomHeightTextures;
 	private:
 		void LoadAssignedMeshTextures();
 		void LoadTexture(TextureType type, std::wstring path, int meshIndex);
@@ -271,6 +279,7 @@ namespace Rendering
 		bool													mIsRendered = true;
 		bool													mIsInstanced = false;
 		bool													mIsForwardShading = false;
+		bool													mIsPOM = false;
 		int														mSelectedInstancedObjectIndex = 0;
 		bool													mPlacedOnTerrain = false;
 		bool													mSavedOnTerrain = false;

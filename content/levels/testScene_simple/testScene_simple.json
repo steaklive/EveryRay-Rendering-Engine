@@ -114,43 +114,48 @@
 					"technique" : "create_depthmap_w_render_target"
 				},
 				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
-				},
-				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
+				},
+				{
+					"effect" : "content\\effects\\StandardLighting.fx",
+					"name" : "StandardLightingMaterial",
+					"technique" : "standard_lighting_pbr"
 				}
 			],
-			"model_path" : "content\\models\\cube.fbx",
-			"name" : "Simple cube Orange",
+			"model_path" : "content\\models\\default_plane\\plane.fbx",
+			"name" : "Simple sphere Orange",
 			"textures" : 
 			[
 				{
-					"albedo" : "content\\textures\\colors\\orange.png"
+					"albedo" : "content\\textures\\PBR\\Pebbles\\Pebbles_024_BaseColor.jpg",
+					"height" : "content\\textures\\PBR\\Pebbles\\Pebbles_024_Height.png",
+					"metalness" : "content\\textures\\emptyMetallicMap.png",
+					"normal" : "content\\textures\\PBR\\Pebbles\\Pebbles_024_Normal.jpg",
+					"roughness" : "content\\textures\\PBR\\Pebbles\\Pebbles_024_Roughness.jpg"
 				}
 			],
 			"transform" : 
 			[
-				2.0185890197753906,
-				0.016205744817852974,
-				12.246352195739746,
-				16.146291732788086,
-				-1.451682448387146,
-				0.022534362971782684,
-				17.02876091003418,
-				4.5598549842834473,
+				0.083492308855056763,
+				-0.38095787167549133,
 				0.0,
-				-2.486248254776001,
-				0.23416547477245331,
-				-0.14806365966796875,
+				50.305789947509766,
+				0.38095787167549133,
+				0.083492308855056763,
+				0.0,
+				16.38648796081543,
+				0.0,
+				0.0,
+				0.38999858498573303,
+				16.651384353637695,
 				0.0,
 				0.0,
 				0.0,
 				1.0
-			]
+			],
+			"use_parallax_occlusion_mapping" : true
 		},
 		{
 			"instanced" : false,

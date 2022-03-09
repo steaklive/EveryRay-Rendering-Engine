@@ -2,6 +2,7 @@ Texture2D AlbedoMap;
 Texture2D NormalMap;
 Texture2D RoughnessMap;
 Texture2D MetallicMap;
+Texture2D HeightMap;
 
 cbuffer CBufferPerObject
 {
@@ -10,6 +11,7 @@ cbuffer CBufferPerObject
     float ReflectionMaskFactor;
     float FoliageMaskFactor;
     float UseGlobalDiffuseProbeMaskFactor;
+    float UsePOM;
 }
 SamplerState Sampler
 {
@@ -102,7 +104,7 @@ PS_OUTPUT pixel_shader(VS_OUTPUT IN) : SV_Target
     float roughness = RoughnessMap.Sample(Sampler, IN.TextureCoordinate).r;
     float metalness = MetallicMap.Sample(Sampler, IN.TextureCoordinate).r;
     OUT.Extra = float4(ReflectionMaskFactor, roughness, metalness, FoliageMaskFactor);
-    OUT.Extra2 = float4(UseGlobalDiffuseProbeMaskFactor, 0.0, 0.0, 0.0);
+    OUT.Extra2 = float4(UseGlobalDiffuseProbeMaskFactor, UsePOM ? HeightMap.Sample(Sampler, IN.TextureCoordinate).r : -1.0f, 0.0, 0.0);
     return OUT;
 
 }

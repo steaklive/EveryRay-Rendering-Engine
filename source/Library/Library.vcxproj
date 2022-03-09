@@ -185,7 +185,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\Game\GameException.h" />
-    <ClInclude Include="AmbientLightingMaterial.h" />
     <ClInclude Include="BasicMaterial.h" />
     <ClInclude Include="BruteforceStructure.h" />
     <ClInclude Include="Camera.h" />
@@ -203,12 +202,10 @@
     <ClInclude Include="DepthMap.h" />
     <ClInclude Include="DepthMapMaterial.h" />
     <ClInclude Include="DepthTarget.h" />
-    <ClInclude Include="DiffuseLightingMaterial.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="DrawableGameComponent.h" />
     <ClInclude Include="Editor.h" />
     <ClInclude Include="Effect.h" />
-    <ClInclude Include="EnvironmentMappingMaterial.h" />
     <ClInclude Include="ER_CPUProfiler.h" />
     <ClInclude Include="ER_GPUBuffer.h" />
     <ClInclude Include="ER_IlluminationProbeManager.h" />
@@ -243,7 +240,6 @@
     <ClInclude Include="ModelMaterial.h" />
     <ClInclude Include="MotionBlurMaterial.h" />
     <ClInclude Include="Mouse.h" />
-    <ClInclude Include="NormalMappingMaterial.h" />
     <ClInclude Include="OceanSimulator.h" />
     <ClInclude Include="OctreeStructure.h" />
     <ClInclude Include="ParallaxMappingTestMaterial.h" />
@@ -296,7 +292,6 @@
     <ClInclude Include="VoxelizationGIMaterial.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AmbientLightingMaterial.cpp" />
     <ClCompile Include="BasicMaterial.cpp" />
     <ClCompile Include="BruteforceStructure.cpp" />
     <ClCompile Include="Camera.cpp" />
@@ -311,12 +306,10 @@
     <ClCompile Include="DepthMap.cpp" />
     <ClCompile Include="DepthMapMaterial.cpp" />
     <ClCompile Include="DepthTarget.cpp" />
-    <ClCompile Include="DiffuseLightingMaterial.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="DrawableGameComponent.cpp" />
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="Effect.cpp" />
-    <ClCompile Include="EnvironmentMappingMaterial.cpp" />
     <ClCompile Include="ER_CPUProfiler.cpp" />
     <ClCompile Include="ER_GPUBuffer.cpp" />
     <ClCompile Include="ER_IlluminationProbeManager.cpp" />
@@ -350,7 +343,6 @@
     <ClCompile Include="ModelMaterial.cpp" />
     <ClCompile Include="MotionBlurMaterial.cpp" />
     <ClCompile Include="Mouse.cpp" />
-    <ClCompile Include="NormalMappingMaterial.cpp" />
     <ClCompile Include="OctreeStructure.cpp" />
     <ClCompile Include="ParallaxMappingTestMaterial.cpp" />
     <ClCompile Include="Pass.cpp" />

@@ -27,9 +27,11 @@ namespace Library
 			material->NormalMap() << obj->GetTextureData(meshIndex).NormalMap;
 			material->RoughnessMap() << obj->GetTextureData(meshIndex).RoughnessMap;
 			material->MetallicMap() << obj->GetTextureData(meshIndex).MetallicMap;
+			material->HeightMap() << obj->GetTextureData(meshIndex).HeightMap;
 			material->ReflectionMaskFactor() << obj->GetMeshReflectionFactor(meshIndex);
 			material->FoliageMaskFactor() << obj->GetFoliageMask();
 			material->UseGlobalDiffuseProbeMaskFactor() << obj->GetUseGlobalLightProbeMask();
+			material->UsePOM() << obj->IsParallaxOcclusionMapping();
 		}
 	}
 
@@ -79,6 +81,7 @@ namespace Library
 			material->SpecularTexture() << obj->GetTextureData(meshIndex).SpecularMap;
 			material->RoughnessTexture() << obj->GetTextureData(meshIndex).RoughnessMap;
 			material->MetallicTexture() << obj->GetTextureData(meshIndex).MetallicMap;
+			material->HeightTexture() << obj->GetTextureData(meshIndex).HeightMap;
 			material->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, NUM_SHADOW_CASCADES);
 			//material->IrradianceDiffuseTexture() << mProbesManager->GetDiffuseLightProbe(0)->GetCubemapSRV(); //TODO
 			//material->IrradianceSpecularTexture() << mProbesManager->GetSpecularLightProbe(0)->GetCubemapSRV();//TODO

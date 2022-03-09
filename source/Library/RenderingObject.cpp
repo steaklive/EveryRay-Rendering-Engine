@@ -46,6 +46,7 @@ namespace Rendering
 			mCustomNormalTextures.push_back("");
 			mCustomRoughnessTextures.push_back("");
 			mCustomMetalnessTextures.push_back("");
+			mCustomHeightTextures.push_back("");
 		}
 
 		for (size_t i = 0; i < mMeshVertices[0].size(); i++)
@@ -227,17 +228,25 @@ namespace Rendering
 		assert(meshIndex < mMeshesCount[0]);
 		std::string errorMessage = mModel->GetFileName() + " of mesh index: " + std::to_string(meshIndex);
 
-		if (!mCustomAlbedoTextures[meshIndex].empty() && mCustomAlbedoTextures[meshIndex].back() != '\\')
-			LoadTexture(TextureType::TextureTypeDifffuse, Utility::GetFilePath(Utility::ToWideString(mCustomAlbedoTextures[meshIndex])), meshIndex);
+		if (!mCustomAlbedoTextures[meshIndex].empty())
+			if (mCustomAlbedoTextures[meshIndex].back() != '\\')
+				LoadTexture(TextureType::TextureTypeDifffuse, Utility::GetFilePath(Utility::ToWideString(mCustomAlbedoTextures[meshIndex])), meshIndex);
 
-		if (!mCustomNormalTextures[meshIndex].empty() && mCustomNormalTextures[meshIndex].back() != '\\')
-			LoadTexture(TextureType::TextureTypeNormalMap, Utility::GetFilePath(Utility::ToWideString(mCustomNormalTextures[meshIndex])), meshIndex);
+		if (!mCustomNormalTextures[meshIndex].empty())
+			if (mCustomNormalTextures[meshIndex].back() != '\\')
+				LoadTexture(TextureType::TextureTypeNormalMap, Utility::GetFilePath(Utility::ToWideString(mCustomNormalTextures[meshIndex])), meshIndex);
 
-		if (!mCustomRoughnessTextures[meshIndex].empty() && mCustomRoughnessTextures[meshIndex].back() != '\\')
-			LoadTexture(TextureType::TextureTypeDisplacementMap, Utility::GetFilePath(Utility::ToWideString(mCustomRoughnessTextures[meshIndex])), meshIndex);
+		if (!mCustomRoughnessTextures[meshIndex].empty())
+			if (mCustomRoughnessTextures[meshIndex].back() != '\\')
+				LoadTexture(TextureType::TextureTypeDisplacementMap, Utility::GetFilePath(Utility::ToWideString(mCustomRoughnessTextures[meshIndex])), meshIndex);
 
-		if (!mCustomMetalnessTextures[meshIndex].empty() && mCustomMetalnessTextures[meshIndex].back() != '\\')
-			LoadTexture(TextureType::TextureTypeEmissive, Utility::GetFilePath(Utility::ToWideString(mCustomMetalnessTextures[meshIndex])), meshIndex);
+		if (!mCustomMetalnessTextures[meshIndex].empty())
+			if (mCustomMetalnessTextures[meshIndex].back() != '\\')
+				LoadTexture(TextureType::TextureTypeEmissive, Utility::GetFilePath(Utility::ToWideString(mCustomMetalnessTextures[meshIndex])), meshIndex);
+
+		if (!mCustomHeightTextures[meshIndex].empty())
+			if (mCustomHeightTextures[meshIndex].back() != '\\')
+				LoadTexture(TextureType::TextureTypeHeightmap, Utility::GetFilePath(Utility::ToWideString(mCustomHeightTextures[meshIndex])), meshIndex);
 
 		//TODO
 		//if (!extra1Path.empty())
@@ -282,6 +291,10 @@ namespace Rendering
 		case TextureType::TextureTypeDisplacementMap:
 			texType = "Roughness Texture";
 			resource = &(mMeshesTextureBuffers[meshIndex].RoughnessMap);
+			break;
+		case TextureType::TextureTypeHeightmap:
+			texType = "Height Texture";
+			resource = &(mMeshesTextureBuffers[meshIndex].HeightMap);
 			break;
 		}
 
