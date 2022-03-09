@@ -906,5 +906,8 @@
     <None Include="Materials.inl">
       <Filter>Header Files</Filter>
     </None>
+    <None Include="..\..\content\shaders\Lighting.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
