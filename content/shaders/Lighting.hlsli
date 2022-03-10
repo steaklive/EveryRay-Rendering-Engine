@@ -8,14 +8,39 @@
 static const float4 ColorWhite = { 1, 1, 1, 1 };
 static const float Pi = 3.141592654f;
 
-//for probe GI
-static float3 cellProbesPositions[NUM_OF_PROBES_PER_CELL];
-static float3 cellProbesSamples[NUM_OF_PROBES_PER_CELL];
-static bool cellProbesExistanceFlags[NUM_OF_PROBES_PER_CELL];
+struct LightProbeInfo
+{
+    TextureCube<float4> globalIrradianceProbeTexture;
+    TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray0;
+    TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray1;
+    TextureCubeArray<float4> IrradianceSpecularProbesTextureArray0;
+    TextureCubeArray<float4> IrradianceSpecularProbesTextureArray1;
+    
+    StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices0;
+    StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices1;
+    StructuredBuffer<int> DiffuseProbesTextureArrayIndices0;
+    StructuredBuffer<int> DiffuseProbesTextureArrayIndices1;
+    StructuredBuffer<float3> DiffuseProbesPositions;
+    StructuredBuffer<int> SpecularProbesCellsWithProbeIndices0;
+    StructuredBuffer<int> SpecularProbesCellsWithProbeIndices1;
+    StructuredBuffer<int> SpecularProbesTextureArrayIndices0;
+    StructuredBuffer<int> SpecularProbesTextureArrayIndices1;
+    StructuredBuffer<float3> SpecularProbesPositions;
+    
+    float4 diffuseProbesVolumeSizes[NUM_OF_PROBE_VOLUME_CASCADES];
+    float4 diffuseProbeCellsCount[NUM_OF_PROBE_VOLUME_CASCADES];
+    float4 specularProbesVolumeSizes[NUM_OF_PROBE_VOLUME_CASCADES];
+    float4 specularProbeCellsCount[NUM_OF_PROBE_VOLUME_CASCADES];
+    float4 volumeProbesIndexSkips[NUM_OF_PROBE_VOLUME_CASCADES];
+    float4 sceneLightProbeBounds;
+    float distanceBetweenDiffuseProbes;
+    float distanceBetweenSpecularProbes;
+};
 
 // ================================================================================================
 // Simple PCF cascaded shadow mapping
-float CalculateShadow(float3 worldPos, float4x4 svp, int index, float ShadowTexelSize, Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES], SamplerComparisonState CascadedPcfShadowMapSampler)
+// ================================================================================================
+float CalculateCSM(float3 worldPos, float4x4 svp, int index, float ShadowTexelSize, Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES], SamplerComparisonState CascadedPcfShadowMapSampler)
 {
     float4 lightSpacePos = mul(svp, float4(worldPos, 1.0f));
     float4 ShadowCoord = lightSpacePos / lightSpacePos.w;
@@ -45,17 +70,17 @@ float GetShadow(float4 worldPos, float4x4 ShadowMatrices[NUM_OF_SHADOW_CASCADES]
     float depthDistance = worldPos.a;
     
     if (depthDistance < ShadowCascadeDistances.x)
-        return CalculateShadow(worldPos.rgb, ShadowMatrices[0], 0, ShadowTexelSize, CascadedShadowTextures, CascadedPcfShadowMapSampler);
+        return CalculateCSM(worldPos.rgb, ShadowMatrices[0], 0, ShadowTexelSize, CascadedShadowTextures, CascadedPcfShadowMapSampler);
     else if (depthDistance < ShadowCascadeDistances.y)
-        return CalculateShadow(worldPos.rgb, ShadowMatrices[1], 1, ShadowTexelSize, CascadedShadowTextures, CascadedPcfShadowMapSampler);
+        return CalculateCSM(worldPos.rgb, ShadowMatrices[1], 1, ShadowTexelSize, CascadedShadowTextures, CascadedPcfShadowMapSampler);
     else if (depthDistance < ShadowCascadeDistances.z)
-        return CalculateShadow(worldPos.rgb, ShadowMatrices[2], 2, ShadowTexelSize, CascadedShadowTextures, CascadedPcfShadowMapSampler);
+        return CalculateCSM(worldPos.rgb, ShadowMatrices[2], 2, ShadowTexelSize, CascadedShadowTextures, CascadedPcfShadowMapSampler);
     else
         return 1.0f;
 }
 
 // ===============================================================================================
-// PBR functions (GGX)
+// GGX functions
 // http://graphicrants.blogspot.com.au/2013/08/specular-brdf-reference.html
 // ===============================================================================================
 float DistributionGGX(float3 N, float3 H, float roughness)
@@ -71,7 +96,6 @@ float DistributionGGX(float3 N, float3 H, float roughness)
 
     return nom / max(denom, 0.001);
 }
-
 float GeometrySchlickGGX(float NdotV, float roughness)
 {
     float r = (roughness + 1.0);
@@ -82,7 +106,6 @@ float GeometrySchlickGGX(float NdotV, float roughness)
 
     return nom / denom;
 }
-
 float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
 {
     float NdotV = max(dot(N, V), 0.0);
@@ -112,6 +135,9 @@ float3 Schlick_Fresnel_Roughness(float cosTheta, float3 F0, float roughness)
     return F0 + (max(float3(a, a, a), F0) - F0) * pow(1.0f - cosTheta, 5.0f);
 }
 
+static float3 cellProbesPositions[NUM_OF_PROBES_PER_CELL];
+static float3 cellProbesSamples[NUM_OF_PROBES_PER_CELL];
+static bool cellProbesExistanceFlags[NUM_OF_PROBES_PER_CELL];
 // ==============================================================================================================
 // Trilinear interpolation of probes in a cell (7 lerps) based on "Irradiance Volumes for Games" by N. Tatarchuk.
 // There are some extra checks for edge cases (i.e., if the probe is culled, then don't lerp).
@@ -199,6 +225,59 @@ float3 GetTrilinearInterpolationFromNeighbourProbes(float3 pos, float distanceBe
     return result;
 }
 
+// ==============================================================================================================
+// Calculate probes volume cascade index by doing a simple world point/aabb collision check
+// ==============================================================================================================
+int GetProbesVolumeCascade(float3 worldPos, float4 probesVolumeSizes[NUM_OF_PROBE_VOLUME_CASCADES], float3 camPos)
+{
+    for (int volumeIndex = 0; volumeIndex < NUM_OF_PROBE_VOLUME_CASCADES; volumeIndex++)
+    {
+        float3 aMax = probesVolumeSizes[volumeIndex].xyz + camPos.xyz;
+        float3 aMin = -probesVolumeSizes[volumeIndex].xyz + camPos.xyz;
+        
+        if ((worldPos.x <= aMax.x && worldPos.x >= aMin.x) &&
+			(worldPos.y <= aMax.y && worldPos.y >= aMin.y) &&
+			(worldPos.z <= aMax.z && worldPos.z >= aMin.z))
+            return volumeIndex;
+    }
+    
+    return -1;
+}
+
+// ==============================================================================================================
+// Calculate probes cell index (fast uniform-grid searching approach)
+// WARNING: can not do multiple indices per pos. (i.e., when pos. is on the edge of several cells)
+// ==============================================================================================================
+int GetLightProbesCellIndex(float3 pos, float4 probesCellsCount, float3 sceneProbeBounds, float distanceBetweenProbes, float probeSkips)
+{
+    int finalIndex = -1;
+    float3 index = (pos - sceneProbeBounds.xyz) / (distanceBetweenProbes * probeSkips);
+    if (index.x < 0.0f || index.x > probesCellsCount.x)
+        return -1;
+    if (index.y < 0.0f || index.y > probesCellsCount.y)
+        return -1;
+    if (index.z < 0.0f || index.z > probesCellsCount.z)
+        return -1;
+    
+	//hacky way to prevent from out-of-bounds
+    if (index.x == probesCellsCount.x)
+        index.x = probesCellsCount.x - 1;
+    if (index.y == probesCellsCount.y)
+        index.y = probesCellsCount.y - 1;
+    if (index.z == probesCellsCount.z)
+        index.z = probesCellsCount.z - 1;
+
+    finalIndex = floor(index.y) * (probesCellsCount.x * probesCellsCount.z) + floor(index.x) * probesCellsCount.z + floor(index.z);
+
+    if (finalIndex >= probesCellsCount.w)
+        return -1;
+    
+    return finalIndex;
+}
+
+// ==============================================================================================================
+// Direct lighting (diffuse & specular) (PBR)
+// ==============================================================================================================
 float3 DirectDiffuseBRDF(float3 diffuseAlbedo, float3 lightDir, float3 viewDir, float3 F0, float metallic, float3 halfVec)
 {
     float3 F = Schlick_Fresnel(F0, max(dot(halfVec, viewDir), 0.0));
@@ -219,4 +298,164 @@ float3 DirectSpecularBRDF(float3 normalWS, float3 lightDir, float3 viewDir, floa
     float3 specular = nominator / max(denominator, 0.001);
        
     return specular;
+}
+float3 DirectLightingPBR(float3 normalWS, float4 lightColor, float3 lightDir, float3 diffuseAlbedo,
+	float3 positionWS, float roughness, float3 F0, float metallic, float3 camPos)
+{
+    float3 viewDir = normalize(camPos.xyz - positionWS).rgb;
+    float3 halfVec = normalize(viewDir + lightDir);
+    
+    float nDotL = max(dot(normalWS, lightDir), 0.0);
+   
+    float3 lighting = DirectDiffuseBRDF(diffuseAlbedo, lightDir, viewDir, F0, metallic, halfVec) + DirectSpecularBRDF(normalWS, lightDir, viewDir, roughness, F0, halfVec);
+
+    float lightIntensity = lightColor.a;
+    return max(lighting, 0.0f) * nDotL * lightColor.xyz * lightIntensity;
+}
+
+
+// ==============================================================================================================
+// Indirect lighting (diffuse & specular) (PBR light probes: diffuse & specular)
+// ==============================================================================================================
+
+// ====================================================================================================================
+// Get diffuse irradiance from probes:
+// 1) probes volume cascade is calculated for the position
+// 2) probes cell index is calculated for the cascade
+// 3) 8 probes (or less if out of the current cascade) are sampled from IrradianceDiffuseProbesTextureArrays
+// 4) Final probe samples are trilinearly interpolated and the final diffuse result is returned
+// ====================================================================================================================
+float3 GetDiffuseIrradiance(float3 worldPos, float3 normal, float3 camPos, bool useGlobalDiffuseProbe, in SamplerState linearSampler,
+    in LightProbeInfo probesInfo)
+{
+    float3 finalSum = float3(0.0, 0.0, 0.0);
+    if (useGlobalDiffuseProbe)
+        return probesInfo.globalIrradianceProbeTexture.SampleLevel(linearSampler, normal, 0).rgb;
+    
+    int volumeCascadeIndex = GetProbesVolumeCascade(worldPos, probesInfo.diffuseProbesVolumeSizes, camPos);
+    if (volumeCascadeIndex == -1)
+        return probesInfo.globalIrradianceProbeTexture.SampleLevel(linearSampler, normal, 0).rgb;
+    
+    int diffuseProbesCellIndex = GetLightProbesCellIndex(worldPos, probesInfo.diffuseProbeCellsCount[volumeCascadeIndex], probesInfo.sceneLightProbeBounds.xyz,
+        probesInfo.distanceBetweenDiffuseProbes, probesInfo.volumeProbesIndexSkips[volumeCascadeIndex].r);
+    if (diffuseProbesCellIndex != -1)
+    {
+        for (int i = 0; i < NUM_OF_PROBES_PER_CELL; i++)
+        {
+            int currentIndex = -1;
+            cellProbesExistanceFlags[i] = false;
+            
+            // get cell's probe global index 
+            if (volumeCascadeIndex == 0)
+                currentIndex = probesInfo.DiffuseProbesCellsWithProbeIndices0[NUM_OF_PROBES_PER_CELL * diffuseProbesCellIndex + i];
+            else if (volumeCascadeIndex == 1)
+                currentIndex = probesInfo.DiffuseProbesCellsWithProbeIndices1[NUM_OF_PROBES_PER_CELL * diffuseProbesCellIndex + i];
+            
+            // get global probes-texture array index for current probe's global index 
+            int indexInTexArray = -1;
+            if (volumeCascadeIndex == 0)
+                indexInTexArray = probesInfo.DiffuseProbesTextureArrayIndices0[currentIndex]; // -1 is culled and not in texture array
+            else if (volumeCascadeIndex == 1)
+                indexInTexArray = probesInfo.DiffuseProbesTextureArrayIndices1[currentIndex]; // -1 is culled and not in texture array
+            
+            // sample probe from global probes-texture array
+            cellProbesSamples[i] = float3(0.0, 0.0, 0.0);
+            if (indexInTexArray != -1)
+            {
+                cellProbesExistanceFlags[i] = true;
+                if (volumeCascadeIndex == 0)
+                    cellProbesSamples[i] = probesInfo.IrradianceDiffuseProbesTextureArray0.SampleLevel(linearSampler, float4(normal, indexInTexArray / 6), 0).rgb;
+                else if (volumeCascadeIndex == 1)
+                    cellProbesSamples[i] = probesInfo.IrradianceDiffuseProbesTextureArray1.SampleLevel(linearSampler, float4(normal, indexInTexArray / 6), 0).rgb;
+            }
+
+            cellProbesPositions[i] = probesInfo.DiffuseProbesPositions[currentIndex];
+        }
+        
+        finalSum = GetTrilinearInterpolationFromNeighbourProbes(worldPos, probesInfo.distanceBetweenDiffuseProbes, probesInfo.volumeProbesIndexSkips[volumeCascadeIndex].r);
+    }
+    return finalSum;
+}
+
+// ====================================================================================================================
+// Get specular irradiance from probes:
+// 1) probes volume cascade is calculated for the position
+// 2) probes cell index is calculated for the cascade
+// 3) 8 probes (or less if out of the current cascade) are processed and the closest is found
+// 4) Final probe with the closest distance to the position is sampled from 'IrradianceSpecularProbesTextureArray'
+// ====================================================================================================================
+float3 GetSpecularIrradiance(float3 worldPos, float3 camPos, float3 reflectDir, int mipIndex, in SamplerState linearSampler,
+    in LightProbeInfo probesInfo)
+{
+    float3 finalSum = float3(0.0, 0.0, 0.0);
+    
+    int volumeCascadeIndex = GetProbesVolumeCascade(worldPos, probesInfo.specularProbesVolumeSizes, camPos);
+    if (volumeCascadeIndex == -1)
+        return finalSum;
+    
+    int specularProbesCellIndex = GetLightProbesCellIndex(worldPos, probesInfo.specularProbeCellsCount[volumeCascadeIndex], probesInfo.sceneLightProbeBounds.xyz,
+        probesInfo.distanceBetweenSpecularProbes, probesInfo.volumeProbesIndexSkips[volumeCascadeIndex].r);
+    if (specularProbesCellIndex != -1)
+    {
+        int closestProbeTexArrayIndex = -1;
+        int closestProbeDistance = FLT_MAX;
+        for (int i = 0; i < NUM_OF_PROBES_PER_CELL; i++)
+        {
+            int currentIndex = -1;
+            
+            // get cell's probe global index 
+            if (volumeCascadeIndex == 0)
+                currentIndex = probesInfo.SpecularProbesCellsWithProbeIndices0[NUM_OF_PROBES_PER_CELL * specularProbesCellIndex + i];
+            else if (volumeCascadeIndex == 1)
+                currentIndex = probesInfo.SpecularProbesCellsWithProbeIndices1[NUM_OF_PROBES_PER_CELL * specularProbesCellIndex + i];
+            
+            // get global probes-texture array index for current probe's global index 
+            int indexInTexArray = -1;
+            if (volumeCascadeIndex == 0)
+                indexInTexArray = probesInfo.SpecularProbesTextureArrayIndices0[currentIndex]; // -1 is culled and not in texture array
+            else if (volumeCascadeIndex == 1)
+                indexInTexArray = probesInfo.SpecularProbesTextureArrayIndices1[currentIndex]; // -1 is culled and not in texture array
+            
+            // calculate the probe with the closest distance to the position
+            if (indexInTexArray != -1)
+            {
+                float curDistance = distance(worldPos, probesInfo.SpecularProbesPositions[currentIndex]);
+                if (curDistance < closestProbeDistance)
+                {
+                    closestProbeDistance = curDistance;
+                    closestProbeTexArrayIndex = indexInTexArray;
+                }
+            }
+        }
+        
+        if (closestProbeTexArrayIndex != -1)
+        {
+            if (volumeCascadeIndex == 0)
+                finalSum = probesInfo.IrradianceSpecularProbesTextureArray0.SampleLevel(linearSampler, float4(reflectDir, closestProbeTexArrayIndex / 6), mipIndex).rgb;
+            else if (volumeCascadeIndex == 1)
+                finalSum = probesInfo.IrradianceSpecularProbesTextureArray1.SampleLevel(linearSampler, float4(reflectDir, closestProbeTexArrayIndex / 6), mipIndex).rgb;
+        }
+    }
+    return finalSum;
+}
+
+float3 IndirectLightingPBR(float3 normalWS, float3 diffuseAlbedo, float3 positionWS, float roughness, float3 F0, float metalness, float3 camPos, bool useGlobalDiffuseProbe,
+    in LightProbeInfo probesInfo, in SamplerState linearSampler, in Texture2D<float4> integrationTexture, float ambienOcclusion)
+{
+    float3 viewDir = normalize(camPos.xyz - positionWS);
+    float nDotV = max(dot(normalWS, viewDir), 0.0);
+    float3 reflectDir = normalize(reflect(-viewDir, normalWS));
+    
+    //indirect diffuse
+    float3 irradianceDiffuse = GetDiffuseIrradiance(positionWS, normalWS, camPos, useGlobalDiffuseProbe, linearSampler, probesInfo) /* / Pi*/;
+    float3 indirectDiffuseLighting = irradianceDiffuse * diffuseAlbedo * float3(1.0f - metalness, 1.0f - metalness, 1.0f - metalness);
+
+    //indirect specular (split sum approximation http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf)
+    float3 F = Schlick_Fresnel_UE(F0, nDotV);
+    float mipIndex = roughness * SPECULAR_PROBE_MIP_COUNT;
+    float3 prefilteredColor = GetSpecularIrradiance(positionWS, camPos, reflectDir, mipIndex, linearSampler, probesInfo);
+    float2 environmentBRDF = integrationTexture.SampleLevel(linearSampler, float2(nDotV, roughness), 0).rg;
+    float3 indirectSpecularLighting = prefilteredColor * (F * environmentBRDF.x + environmentBRDF.y);
+    
+    return (indirectDiffuseLighting + indirectSpecularLighting) * ambienOcclusion;
 }
