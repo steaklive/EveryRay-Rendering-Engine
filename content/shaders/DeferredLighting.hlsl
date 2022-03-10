@@ -20,27 +20,6 @@ Texture2D<float4> GbufferExtra2Texture : register(t4); // [global diffuse probe 
 
 Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t5);
 
-//texture arrays of cubemap probes (unfortunately, without bindless support there is no way to have array of arrays)
-TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray0 : register(t8); //cascade 0
-TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray1 : register(t9); //cascade 1
-TextureCube<float4> IrradianceDiffuseGlobalProbeTexture : register(t10); // global probe (fallback)
-TextureCubeArray<float4> IrradianceSpecularProbesTextureArray0 : register(t11); //cascade 0
-TextureCubeArray<float4> IrradianceSpecularProbesTextureArray1 : register(t12); //cascade 1
-//TODO add global specular probe (fallback)
-Texture2D<float4> IntegrationTexture : register(t13);
-
-StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices0 : register(t14); //cascade 0, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
-StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices1 : register(t15); //cascade 1, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
-StructuredBuffer<int> DiffuseProbesTextureArrayIndices0 : register(t16); //cascade 0, array of all diffuse probes in scene with indices in 'IrradianceDiffuseProbesTextureArray' for each probe (-1 if not in array)
-StructuredBuffer<int> DiffuseProbesTextureArrayIndices1 : register(t17); //cascade 1, array of all diffuse probes in scene with indices in 'IrradianceDiffuseProbesTextureArray' for each probe (-1 if not in array)
-StructuredBuffer<float3> DiffuseProbesPositions : register(t18); //linear array of all diffuse probes positions
-
-StructuredBuffer<int> SpecularProbesCellsWithProbeIndices0 : register(t19); //cascade 0, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
-StructuredBuffer<int> SpecularProbesCellsWithProbeIndices1 : register(t20); //cascade 1, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
-StructuredBuffer<int> SpecularProbesTextureArrayIndices0 : register(t21); //cascade 0, array of all specular probes in scene with indices in 'IrradianceSpecularProbesTextureArray' for each probe (-1 if not in array)
-StructuredBuffer<int> SpecularProbesTextureArrayIndices1 : register(t22); //cascade 1, array of all specular probes in scene with indices in 'IrradianceSpecularProbesTextureArray' for each probe (-1 if not in array)
-StructuredBuffer<float3> SpecularProbesPositions : register(t23); //linear array of all specular probes positions
-
 cbuffer DeferredLightingCBuffer : register(b0)
 {
     float4x4 ShadowMatrices[NUM_OF_SHADOW_CASCADES];
@@ -91,8 +70,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     float3 F0 = float3(0.04, 0.04, 0.04);
     F0 = lerp(F0, diffuseAlbedo.rgb, metalness);
 
-    float3 directLighting = float3(0.0, 0.0, 0.0);
-    directLighting += DirectLightingPBR(normalWS, SunColor, SunDirection.xyz, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness, CameraPosition.xyz);
+    float3 directLighting = DirectLightingPBR(normalWS, SunColor, SunDirection.xyz, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness, CameraPosition.xyz);
     
     float3 indirectLighting = float3(0.0, 0.0, 0.0);
     if (extraGbuffer.a < 1.0f && !SkipIndirectLighting)
@@ -126,7 +104,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
             probesInfo, SamplerLinear, IntegrationTexture, ao);
     }
     
-    float shadow = GetShadow(worldPos, ShadowMatrices, ShadowCascadeDistances, ShadowTexelSize.x, CascadedShadowTextures, CascadedPcfShadowMapSampler);
+    float shadow = Deferred_GetShadow(worldPos, ShadowMatrices, ShadowCascadeDistances, ShadowTexelSize.x, CascadedShadowTextures, CascadedPcfShadowMapSampler);
     
     float3 color = (directLighting * shadow) + indirectLighting;
     color = color / (color + float3(1.0f, 1.0f, 1.0f));

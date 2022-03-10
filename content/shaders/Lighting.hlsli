@@ -5,8 +5,34 @@
 #define NUM_OF_PROBE_VOLUME_CASCADES 2
 #define SPECULAR_PROBE_MIP_COUNT 6
 
+#define PARALLAX_OCCLUSION_MAPPING_SUPPORT 1
+#define PARALLAX_OCCLUSION_MAPPING_SELF_SHADOW_SUPPORT 1
+#define PARALLAX_OCCLUSION_MAPPING_HEIGHT_SCALE 0.05
+#define PARALLAX_OCCLUSION_MAPPING_SOFT_SHADOWS_FACTOR 10.0
+
 static const float4 ColorWhite = { 1, 1, 1, 1 };
 static const float Pi = 3.141592654f;
+
+//texture arrays of cubemap probes (unfortunately, without bindless support there is no way to have array of arrays)
+TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray0 : register(t8); //cascade 0
+TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray1 : register(t9); //cascade 1
+TextureCube<float4> IrradianceDiffuseGlobalProbeTexture : register(t10); // global probe (fallback)
+TextureCubeArray<float4> IrradianceSpecularProbesTextureArray0 : register(t11); //cascade 0
+TextureCubeArray<float4> IrradianceSpecularProbesTextureArray1 : register(t12); //cascade 1
+//TODO add global specular probe (fallback)
+Texture2D<float4> IntegrationTexture : register(t13);
+
+StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices0 : register(t14); //cascade 0, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
+StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices1 : register(t15); //cascade 1, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
+StructuredBuffer<int> DiffuseProbesTextureArrayIndices0 : register(t16); //cascade 0, array of all diffuse probes in scene with indices in 'IrradianceDiffuseProbesTextureArray' for each probe (-1 if not in array)
+StructuredBuffer<int> DiffuseProbesTextureArrayIndices1 : register(t17); //cascade 1, array of all diffuse probes in scene with indices in 'IrradianceDiffuseProbesTextureArray' for each probe (-1 if not in array)
+StructuredBuffer<float3> DiffuseProbesPositions : register(t18); //linear array of all diffuse probes positions
+
+StructuredBuffer<int> SpecularProbesCellsWithProbeIndices0 : register(t19); //cascade 0, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
+StructuredBuffer<int> SpecularProbesCellsWithProbeIndices1 : register(t20); //cascade 1, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
+StructuredBuffer<int> SpecularProbesTextureArrayIndices0 : register(t21); //cascade 0, array of all specular probes in scene with indices in 'IrradianceSpecularProbesTextureArray' for each probe (-1 if not in array)
+StructuredBuffer<int> SpecularProbesTextureArrayIndices1 : register(t22); //cascade 1, array of all specular probes in scene with indices in 'IrradianceSpecularProbesTextureArray' for each probe (-1 if not in array)
+StructuredBuffer<float3> SpecularProbesPositions : register(t23); //linear array of all specular probes positions
 
 struct LightProbeInfo
 {
@@ -38,9 +64,9 @@ struct LightProbeInfo
 };
 
 // ================================================================================================
-// Simple PCF cascaded shadow mapping
+// Simple PCF cascaded shadow mapping (deferred & forward versions)
 // ================================================================================================
-float CalculateCSM(float3 worldPos, float4x4 svp, int index, float ShadowTexelSize, Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES], SamplerComparisonState CascadedPcfShadowMapSampler)
+float Deferred_CalculateCSM(float3 worldPos, float4x4 svp, int index, float ShadowTexelSize, in Texture2D<float> CascadedShadowTexture, in SamplerComparisonState CascadedPcfShadowMapSampler)
 {
     float4 lightSpacePos = mul(svp, float4(worldPos, 1.0f));
     float4 ShadowCoord = lightSpacePos / lightSpacePos.w;
@@ -52,31 +78,91 @@ float CalculateCSM(float3 worldPos, float4x4 svp, int index, float ShadowTexelSi
     float d3 = Dilation * ShadowTexelSize * 0.625;
     float d4 = Dilation * ShadowTexelSize * 0.375;
     float result = (
-        2.0 * CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy, ShadowCoord.z) +
-        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d2, d1), ShadowCoord.z) +
-        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d1, -d2), ShadowCoord.z) +
-        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d2, -d1), ShadowCoord.z) +
-        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d1, d2), ShadowCoord.z) +
-        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d4, d3), ShadowCoord.z) +
-        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d3, -d4), ShadowCoord.z) +
-        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d4, -d3), ShadowCoord.z) +
-        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d3, d4), ShadowCoord.z)
+        2.0 * CascadedShadowTexture.SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy, ShadowCoord.z) +
+        CascadedShadowTexture.SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d2, d1), ShadowCoord.z) +
+        CascadedShadowTexture.SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d1, -d2), ShadowCoord.z) +
+        CascadedShadowTexture.SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d2, -d1), ShadowCoord.z) +
+        CascadedShadowTexture.SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d1, d2), ShadowCoord.z) +
+        CascadedShadowTexture.SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d4, d3), ShadowCoord.z) +
+        CascadedShadowTexture.SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d3, -d4), ShadowCoord.z) +
+        CascadedShadowTexture.SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d4, -d3), ShadowCoord.z) +
+        CascadedShadowTexture.SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d3, d4), ShadowCoord.z)
         ) / 10.0;
 
     return result * result;
 }
-float GetShadow(float4 worldPos, float4x4 ShadowMatrices[NUM_OF_SHADOW_CASCADES], float4 ShadowCascadeDistances, float ShadowTexelSize, Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES], SamplerComparisonState CascadedPcfShadowMapSampler)
+float Deferred_GetShadow(float4 worldPos, float4x4 ShadowMatrices[NUM_OF_SHADOW_CASCADES], float4 ShadowCascadeDistances, float ShadowTexelSize, in Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES],
+    in SamplerComparisonState CascadedPcfShadowMapSampler)
 {
     float depthDistance = worldPos.a;
     
     if (depthDistance < ShadowCascadeDistances.x)
-        return CalculateCSM(worldPos.rgb, ShadowMatrices[0], 0, ShadowTexelSize, CascadedShadowTextures, CascadedPcfShadowMapSampler);
+        return Deferred_CalculateCSM(worldPos.rgb, ShadowMatrices[0], 0, ShadowTexelSize, CascadedShadowTextures[0], CascadedPcfShadowMapSampler);
     else if (depthDistance < ShadowCascadeDistances.y)
-        return CalculateCSM(worldPos.rgb, ShadowMatrices[1], 1, ShadowTexelSize, CascadedShadowTextures, CascadedPcfShadowMapSampler);
+        return Deferred_CalculateCSM(worldPos.rgb, ShadowMatrices[1], 1, ShadowTexelSize, CascadedShadowTextures[1], CascadedPcfShadowMapSampler);
     else if (depthDistance < ShadowCascadeDistances.z)
-        return CalculateCSM(worldPos.rgb, ShadowMatrices[2], 2, ShadowTexelSize, CascadedShadowTextures, CascadedPcfShadowMapSampler);
+        return Deferred_CalculateCSM(worldPos.rgb, ShadowMatrices[2], 2, ShadowTexelSize, CascadedShadowTextures[2], CascadedPcfShadowMapSampler);
     else
         return 1.0f;
+}
+float Forward_CalculateCSM(float3 ShadowCoord, float ShadowTexelSize, in Texture2D<float> CascadedShadowTexture, in SamplerComparisonState CascadedPcfShadowMapSampler)
+{
+    const float Dilation = 2.0;
+    float d1 = Dilation * ShadowTexelSize * 0.125;
+    float d2 = Dilation * ShadowTexelSize * 0.875;
+    float d3 = Dilation * ShadowTexelSize * 0.625;
+    float d4 = Dilation * ShadowTexelSize * 0.375;
+    float result = (
+        2.0 * CascadedShadowTexture.SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy, ShadowCoord.z) +
+        CascadedShadowTexture.SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d2, d1), ShadowCoord.z) +
+        CascadedShadowTexture.SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d1, -d2), ShadowCoord.z) +
+        CascadedShadowTexture.SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d2, -d1), ShadowCoord.z) +
+        CascadedShadowTexture.SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d1, d2), ShadowCoord.z) +
+        CascadedShadowTexture.SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d4, d3), ShadowCoord.z) +
+        CascadedShadowTexture.SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d3, -d4), ShadowCoord.z) +
+        CascadedShadowTexture.SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d4, -d3), ShadowCoord.z) +
+        CascadedShadowTexture.SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d3, d4), ShadowCoord.z)
+        ) / 10.0;
+
+    return result * result;
+}
+float Forward_GetShadow(float4 ShadowCascadeDistances, float3 ShadowCoords[NUM_OF_SHADOW_CASCADES], float ShadowTexelSize, in Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES],
+    in SamplerComparisonState CascadedPcfShadowMapSampler, float depthDistance, int nthCascade = -1)
+{
+    if (nthCascade == -1)
+    {
+        if (depthDistance < ShadowCascadeDistances.x)
+            return Forward_CalculateCSM(ShadowCoords[0], ShadowTexelSize, CascadedShadowTextures[0], CascadedPcfShadowMapSampler);
+        else if (depthDistance < ShadowCascadeDistances.y)
+            return Forward_CalculateCSM(ShadowCoords[1], ShadowTexelSize, CascadedShadowTextures[1], CascadedPcfShadowMapSampler);
+        else if (depthDistance < ShadowCascadeDistances.z)
+            return Forward_CalculateCSM(ShadowCoords[2], ShadowTexelSize, CascadedShadowTextures[2], CascadedPcfShadowMapSampler);
+        else
+            return 1.0f;
+    }
+    
+    // Besides standard CSM, we can force render a specific cascade (i.e., thats useful for light probe rendering which happens in forward mode)
+    if (nthCascade == 0)
+    {
+        if (depthDistance < ShadowCascadeDistances.x)
+            return Forward_CalculateCSM(ShadowCoords[0], ShadowTexelSize, CascadedShadowTextures[0], CascadedPcfShadowMapSampler);
+        else
+            return 1.0f;
+    }
+    else if (nthCascade == 1)
+    {
+        if (depthDistance < ShadowCascadeDistances.y)
+            return Forward_CalculateCSM(ShadowCoords[1], ShadowTexelSize, CascadedShadowTextures[1], CascadedPcfShadowMapSampler);
+        return
+            1.0f;
+    }
+    else
+    {
+        if (depthDistance < ShadowCascadeDistances.z)
+            return Forward_CalculateCSM(ShadowCoords[2], ShadowTexelSize, CascadedShadowTextures[2], CascadedPcfShadowMapSampler);
+        return
+            1.0f;
+    }
 }
 
 // ===============================================================================================
