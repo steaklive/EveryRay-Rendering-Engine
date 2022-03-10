@@ -1,5 +1,5 @@
 // ================================================================================================
-// Compute shader for deferred direct and indirect lighting. 
+// Compute shader for deferred lighting. 
 // Contains cascaded shadow mapping, light probes and PBR support
 // 
 // Written by Gen Afanasev for 'EveryRay Rendering Engine', 2017-2022
@@ -18,15 +18,16 @@ Texture2D<float4> GbufferWorldPosTexture : register(t2);
 Texture2D<float4> GbufferExtraTexture : register(t3); // [reflection mask, roughness, metalness, foliage mask]
 Texture2D<float4> GbufferExtra2Texture : register(t4); // [global diffuse probe mask, POM, empty, empty]
 
-//texture arrays of cubemap probes (unfortunately, without bindless support there is no way to have array of arrays)
-TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray0 : register(t5); //cascade 0
-TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray1 : register(t6); //cascade 1
-TextureCube<float4> IrradianceDiffuseGlobalProbeTexture : register(t7); // global probe
-TextureCubeArray<float4> IrradianceSpecularProbesTextureArray0 : register(t8); //cascade 0
-TextureCubeArray<float4> IrradianceSpecularProbesTextureArray1 : register(t9); //cascade 1
-Texture2D<float4> IntegrationTexture : register(t10);
+Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t5);
 
-Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t11);
+//texture arrays of cubemap probes (unfortunately, without bindless support there is no way to have array of arrays)
+TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray0 : register(t8); //cascade 0
+TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray1 : register(t9); //cascade 1
+TextureCube<float4> IrradianceDiffuseGlobalProbeTexture : register(t10); // global probe (fallback)
+TextureCubeArray<float4> IrradianceSpecularProbesTextureArray0 : register(t11); //cascade 0
+TextureCubeArray<float4> IrradianceSpecularProbesTextureArray1 : register(t12); //cascade 1
+//TODO add global specular probe (fallback)
+Texture2D<float4> IntegrationTexture : register(t13);
 
 StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices0 : register(t14); //cascade 0, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
 StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices1 : register(t15); //cascade 1, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell

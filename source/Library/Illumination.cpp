@@ -571,18 +571,17 @@ namespace Library {
 				gbuffer->GetPositions()->GetSRV(),
 				gbuffer->GetExtraBuffer()->GetSRV(),
 				gbuffer->GetExtra2Buffer()->GetSRV(),
-
-				mProbesManager->IsEnabled() ? mProbesManager->GetCulledDiffuseProbesTextureArray(0)->GetSRV() : nullptr,
-				mProbesManager->IsEnabled() ? mProbesManager->GetCulledDiffuseProbesTextureArray(1)->GetSRV() : nullptr,
-				mProbesManager->IsEnabled() ? mProbesManager->GetGlobalDiffuseProbe()->GetCubemapSRV() : nullptr,
-				mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray(0)->GetSRV() : nullptr,
-				mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray(1)->GetSRV() : nullptr,
-				mProbesManager->IsEnabled() ? mProbesManager->GetIntegrationMap() : nullptr
 			};
 
 			for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
-				SRs[11 + i] = mShadowMapper.GetShadowTexture(i);
+				SRs[5 + i] = mShadowMapper.GetShadowTexture(i);
 
+			SRs[8] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledDiffuseProbesTextureArray(0)->GetSRV() : nullptr;
+			SRs[9] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledDiffuseProbesTextureArray(1)->GetSRV() : nullptr;
+			SRs[10] = mProbesManager->IsEnabled() ? mProbesManager->GetGlobalDiffuseProbe()->GetCubemapSRV() : nullptr;
+			SRs[11] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray(0)->GetSRV() : nullptr;
+			SRs[12] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray(1)->GetSRV() : nullptr;
+			SRs[13] = mProbesManager->IsEnabled() ? mProbesManager->GetIntegrationMap() : nullptr;
 			SRs[14] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer(0)->GetBufferSRV() : nullptr;
 			SRs[15] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer(1)->GetBufferSRV() : nullptr;
 			SRs[16] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer(0)->GetBufferSRV() : nullptr;
