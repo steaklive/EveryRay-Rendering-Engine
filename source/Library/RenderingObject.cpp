@@ -8,6 +8,7 @@
 #include "Game.h"
 #include "MatrixHelper.h"
 #include "Utility.h"
+#include "Illumination.h"
 
 namespace Rendering
 {
@@ -353,8 +354,6 @@ namespace Rendering
 	{
 		assert(lod < GetLODCount());
 		assert(mModel);
-		if (lod > 0)
-			assert(mModelLODs[lod - 1]);
 		assert(mGame->Direct3DDevice() != nullptr);
 
 		mMeshesRenderBuffers.push_back({});
@@ -383,34 +382,62 @@ namespace Rendering
 			}
 		}
 
+		//special case for forward lighting (non-material case)
+		if (mIsForwardShading || mIsInLightProbe)
+		{
+			mMeshesRenderBuffers[lod].insert(std::pair<std::string, std::vector<RenderBufferData*>>(MaterialHelper::forwardLightingNonMaterialName, std::vector<RenderBufferData*>()));
+			for (size_t i = 0; i < mMeshesCount[lod]; i++)
+			{
+				mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName].push_back(new RenderBufferData());
+				if (lod == 0) {
+					mModel->Meshes()[i]->CreateVertexBuffer_PositionUvNormalTangent(&(mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer));
+					mModel->Meshes()[i]->CreateIndexBuffer(&(mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->IndexBuffer));
+					mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->IndicesCount = mModel->Meshes()[i]->Indices().size();
+				}
+				else
+				{
+					mModel->Meshes()[i]->CreateVertexBuffer_PositionUvNormalTangent(&(mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer));
+					mModelLODs[lod - 1]->Meshes()[i]->CreateIndexBuffer(&(mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->IndexBuffer));
+					mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->IndicesCount = mModelLODs[lod - 1]->Meshes()[i]->Indices().size();
+				}
+
+				mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->Stride = sizeof(VertexPositionTextureNormalTangent);
+				mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->Offset = 0;
+			}
+		}
 	}
 	
-	void RenderingObject::Draw(std::string materialName, bool toDepth, int meshIndex) {
+	void RenderingObject::Draw(const std::string& materialName, bool toDepth, int meshIndex) {
 		for (int lod = 0; lod < GetLODCount(); lod++)
 			DrawLOD(materialName, toDepth, meshIndex, lod);
 	}
 
-	void RenderingObject::DrawLOD(std::string materialName, bool toDepth, int meshIndex, int lod)
+	void RenderingObject::DrawLOD(const std::string& materialName, bool toDepth, int meshIndex, int lod)
 	{
-		if (mMaterials.find(materialName) == mMaterials.end())
+		bool isForwardPass = materialName == MaterialHelper::forwardLightingNonMaterialName && mIsForwardShading;
+
+		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+		context->IASetPrimitiveTopology(mWireframeMode ? D3D11_PRIMITIVE_TOPOLOGY_LINELIST : D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		if (mMaterials.find(materialName) == mMaterials.end() && !isForwardPass)
 			return;
 		
 		if (mIsRendered && !mIsCulled)
 		{
-			if (!mMaterials.size() || mMeshesRenderBuffers[lod].size() == 0)
+			if (!isForwardPass && (!mMaterials.size() || mMeshesRenderBuffers[lod].size() == 0))
 				return;
 			
 			bool isSpecificMesh = (meshIndex != -1);
 			for (int i = (isSpecificMesh) ? meshIndex : 0; i < ((isSpecificMesh) ? 1 : mMeshesCount[lod]); i++)
 			{
-				ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
-				if (mWireframeMode)
-					context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-				else
-					context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-				Pass* pass = mMaterials[materialName]->CurrentTechnique()->Passes().at(0);
-				ID3D11InputLayout* inputLayout = mMaterials[materialName]->InputLayouts().at(pass);
-				context->IASetInputLayout(inputLayout);
+				Pass* pass = nullptr;
+				if (!isForwardPass) //materials then
+				{
+					pass = mMaterials[materialName]->CurrentTechnique()->Passes().at(0);
+					ID3D11InputLayout* inputLayout = mMaterials[materialName]->InputLayouts().at(pass);
+					context->IASetInputLayout(inputLayout);
+				}
+				//else non-material special case (forward lighting) will be set in Illumination::PrepareForForwardLighting()
 
 				if (mIsInstanced)
 				{
@@ -429,23 +456,27 @@ namespace Rendering
 					context->IASetIndexBuffer(mMeshesRenderBuffers[lod][materialName][i]->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 				}
 
-				auto listener = MeshMaterialVariablesUpdateEvent->GetListener(materialName);
-				listener(i);
+				if (!isForwardPass && pass) {
+					auto listener = MeshMaterialVariablesUpdateEvent->GetListener(materialName);
+					listener(i);
 
-				pass->Apply(0, context);
+					pass->Apply(0, context);
+				}
+				else if (mGame->GetLevel()->mIllumination)
+					mGame->GetLevel()->mIllumination->PrepareForForwardLighting(this, i);
 
 				if (mIsInstanced)
 				{
 					if (mInstanceCountToRender[lod] > 0)
 						context->DrawIndexedInstanced(mMeshesRenderBuffers[lod][materialName][i]->IndicesCount, mInstanceCountToRender[lod], 0, 0, 0);
-					else continue;
+					else 
+						continue;
 				}
 				else
 					context->DrawIndexed(mMeshesRenderBuffers[lod][materialName][i]->IndicesCount, 0, 0);
 			}
 
-
-			//broken after the change to deferred shading (TODO move to a separate debug render system)
+			//TODO broken after the change to deferred shading ( move to a separate debug render system)
 			if (!toDepth && mAvailableInEditorMode && mIsSelected)
 				DrawAABB();
 		}

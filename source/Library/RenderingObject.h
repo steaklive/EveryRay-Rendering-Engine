@@ -133,8 +133,8 @@ namespace Rendering
 		void LoadMaterial(Material* pMaterial, Effect* pEffect, std::string materialName);
 		void LoadRenderBuffers(int lod = 0);
 		void LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData, std::string materialName, int lod = 0);
-		void Draw(std::string materialName,bool toDepth = false, int meshIndex = -1);
-		void DrawLOD(std::string materialName, bool toDepth, int meshIndex, int lod);
+		void Draw(const std::string& materialName, bool toDepth = false, int meshIndex = -1);
+		void DrawLOD(const std::string& materialName, bool toDepth, int meshIndex, int lod);
 		void DrawAABB();
 		void UpdateInstanceData(std::vector<InstancingMaterial::InstancedData> pInstanceData, std::string materialName, int lod = 0);
 		void UpdateGizmos();
@@ -225,6 +225,9 @@ namespace Rendering
 		bool IsForwardShading() { return mIsForwardShading; }
 		void SetForwardShading(bool value) { mIsForwardShading = value; }
 
+		bool IsInGBuffer() { return mIsInGbuffer; }
+		void SetInGBuffer(bool value) { mIsInGbuffer = value; }
+
 		bool IsInVoxelization() { return mIsInVoxelization; }
 		void SetInVoxelization(bool value) { mIsInVoxelization = value; }
 
@@ -293,6 +296,7 @@ namespace Rendering
 		bool													mFoliageMask = false;
 		bool													mIsInLightProbe = false;
 		bool													mIsInVoxelization = false;
+		bool													mIsInGbuffer = false;
 		bool													mUseGlobalLightProbe = false;
 		float													mCameraViewMatrix[16];
 		float													mCameraProjectionMatrix[16];

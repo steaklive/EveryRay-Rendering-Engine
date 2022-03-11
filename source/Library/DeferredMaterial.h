@@ -20,6 +20,7 @@ namespace Library
 		MATERIAL_VARIABLE_DECLARATION(FoliageMaskFactor)
 		MATERIAL_VARIABLE_DECLARATION(UseGlobalDiffuseProbeMaskFactor)
 		MATERIAL_VARIABLE_DECLARATION(UsePOM)
+		MATERIAL_VARIABLE_DECLARATION(SkipDeferredLighting)
 
 	public:
 		DeferredMaterial();

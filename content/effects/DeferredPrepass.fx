@@ -12,6 +12,7 @@ cbuffer CBufferPerObject
     float FoliageMaskFactor;
     float UseGlobalDiffuseProbeMaskFactor;
     float UsePOM;
+    float SkipDeferredLighting;
 }
 SamplerState Sampler
 {
@@ -104,7 +105,7 @@ PS_OUTPUT pixel_shader(VS_OUTPUT IN) : SV_Target
     float roughness = RoughnessMap.Sample(Sampler, IN.TextureCoordinate).r;
     float metalness = MetallicMap.Sample(Sampler, IN.TextureCoordinate).r;
     OUT.Extra = float4(ReflectionMaskFactor, roughness, metalness, FoliageMaskFactor);
-    OUT.Extra2 = float4(UseGlobalDiffuseProbeMaskFactor, UsePOM ? HeightMap.Sample(Sampler, IN.TextureCoordinate).r : -1.0f, 0.0, 0.0);
+    OUT.Extra2 = float4(UseGlobalDiffuseProbeMaskFactor, UsePOM ? HeightMap.Sample(Sampler, IN.TextureCoordinate).r : -1.0f, 0.0, SkipDeferredLighting);
     return OUT;
 
 }

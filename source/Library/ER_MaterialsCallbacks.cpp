@@ -32,61 +32,62 @@ namespace Library
 			material->FoliageMaskFactor() << obj->GetFoliageMask();
 			material->UseGlobalDiffuseProbeMaskFactor() << obj->GetUseGlobalLightProbeMask();
 			material->UsePOM() << obj->IsParallaxOcclusionMapping();
+			material->SkipDeferredLighting() << obj->IsForwardShading();
 		}
 	}
 
 	void ER_MaterialsCallbacks::UpdateForwardLightingMaterial(ER_MaterialSystems neededSystems, Rendering::RenderingObject* obj, int meshIndex)
 	{
-		assert(neededSystems.mShadowMapper && neededSystems.mCamera);
-
-		if (!obj)
-			return;
-
-		XMMATRIX worldMatrix = XMLoadFloat4x4(&(obj->GetTransformationMatrix4X4()));
-		XMMATRIX vp = neededSystems.mCamera->ViewMatrix() * neededSystems.mCamera->ProjectionMatrix();
-
-		XMMATRIX shadowMatrices[3] =
-		{
-			neededSystems.mShadowMapper->GetViewMatrix(0) * neededSystems.mShadowMapper->GetProjectionMatrix(0)* XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()) ,
-			neededSystems.mShadowMapper->GetViewMatrix(1) * neededSystems.mShadowMapper->GetProjectionMatrix(1)* XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()) ,
-			neededSystems.mShadowMapper->GetViewMatrix(2) * neededSystems.mShadowMapper->GetProjectionMatrix(2)* XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix())
-		};
-
-		ID3D11ShaderResourceView* shadowMaps[3] =
-		{
-			neededSystems.mShadowMapper->GetShadowTexture(0),
-			neededSystems.mShadowMapper->GetShadowTexture(1),
-			neededSystems.mShadowMapper->GetShadowTexture(2)
-		};
-
-		auto material = static_cast<StandardLightingMaterial*>(obj->GetMaterials()[MaterialHelper::forwardLightingMaterialName]);
-		if (material)
-		{
-			if (obj->IsInstanced())
-				material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at("standard_lighting_pbr_instancing"));
-			else
-				material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at("standard_lighting_pbr"));
-
-			material->ViewProjection() << vp;
-			material->World() << worldMatrix;
-			material->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, NUM_SHADOW_CASCADES);
-			material->CameraPosition() << neededSystems.mCamera->PositionVector();
-			material->SunDirection() << XMVectorNegate(neededSystems.mDirectionalLight->DirectionVector());
-			material->SunColor() << XMVECTOR{ neededSystems.mDirectionalLight->GetDirectionalLightColor().x, neededSystems.mDirectionalLight->GetDirectionalLightColor().y, neededSystems.mDirectionalLight->GetDirectionalLightColor().z , neededSystems.mDirectionalLight->GetDirectionalLightIntensity() };
-			material->AmbientColor() << XMVECTOR{ neededSystems.mDirectionalLight->GetAmbientLightColor().x, neededSystems.mDirectionalLight->GetAmbientLightColor().y, neededSystems.mDirectionalLight->GetAmbientLightColor().z , 1.0f };
-			material->ShadowTexelSize() << XMVECTOR{ 1.0f / neededSystems.mShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
-			material->ShadowCascadeDistances() << XMVECTOR{ neededSystems.mCamera->GetCameraFarCascadeDistance(0), neededSystems.mCamera->GetCameraFarCascadeDistance(1), neededSystems.mCamera->GetCameraFarCascadeDistance(2), 1.0f };
-			material->AlbedoTexture() << obj->GetTextureData(meshIndex).AlbedoMap;
-			material->NormalTexture() << obj->GetTextureData(meshIndex).NormalMap;
-			material->SpecularTexture() << obj->GetTextureData(meshIndex).SpecularMap;
-			material->RoughnessTexture() << obj->GetTextureData(meshIndex).RoughnessMap;
-			material->MetallicTexture() << obj->GetTextureData(meshIndex).MetallicMap;
-			material->HeightTexture() << obj->GetTextureData(meshIndex).HeightMap;
-			material->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, NUM_SHADOW_CASCADES);
-			//material->IrradianceDiffuseTexture() << mProbesManager->GetDiffuseLightProbe(0)->GetCubemapSRV(); //TODO
-			//material->IrradianceSpecularTexture() << mProbesManager->GetSpecularLightProbe(0)->GetCubemapSRV();//TODO
-			//material->IntegrationTexture() << mProbesManager->GetIntegrationMap(); //TODO
-		}
+		//assert(neededSystems.mShadowMapper && neededSystems.mCamera);
+		//
+		//if (!obj)
+		//	return;
+		//
+		//XMMATRIX worldMatrix = XMLoadFloat4x4(&(obj->GetTransformationMatrix4X4()));
+		//XMMATRIX vp = neededSystems.mCamera->ViewMatrix() * neededSystems.mCamera->ProjectionMatrix();
+		//
+		//XMMATRIX shadowMatrices[3] =
+		//{
+		//	neededSystems.mShadowMapper->GetViewMatrix(0) * neededSystems.mShadowMapper->GetProjectionMatrix(0)* XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()) ,
+		//	neededSystems.mShadowMapper->GetViewMatrix(1) * neededSystems.mShadowMapper->GetProjectionMatrix(1)* XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()) ,
+		//	neededSystems.mShadowMapper->GetViewMatrix(2) * neededSystems.mShadowMapper->GetProjectionMatrix(2)* XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix())
+		//};
+		//
+		//ID3D11ShaderResourceView* shadowMaps[3] =
+		//{
+		//	neededSystems.mShadowMapper->GetShadowTexture(0),
+		//	neededSystems.mShadowMapper->GetShadowTexture(1),
+		//	neededSystems.mShadowMapper->GetShadowTexture(2)
+		//};
+		//
+		//auto material = static_cast<StandardLightingMaterial*>(obj->GetMaterials()[MaterialHelper::forwardLightingMaterialName]);
+		//if (material)
+		//{
+		//	if (obj->IsInstanced())
+		//		material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at("standard_lighting_pbr_instancing"));
+		//	else
+		//		material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at("standard_lighting_pbr"));
+		//
+		//	material->ViewProjection() << vp;
+		//	material->World() << worldMatrix;
+		//	material->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, NUM_SHADOW_CASCADES);
+		//	material->CameraPosition() << neededSystems.mCamera->PositionVector();
+		//	material->SunDirection() << XMVectorNegate(neededSystems.mDirectionalLight->DirectionVector());
+		//	material->SunColor() << XMVECTOR{ neededSystems.mDirectionalLight->GetDirectionalLightColor().x, neededSystems.mDirectionalLight->GetDirectionalLightColor().y, neededSystems.mDirectionalLight->GetDirectionalLightColor().z , neededSystems.mDirectionalLight->GetDirectionalLightIntensity() };
+		//	material->AmbientColor() << XMVECTOR{ neededSystems.mDirectionalLight->GetAmbientLightColor().x, neededSystems.mDirectionalLight->GetAmbientLightColor().y, neededSystems.mDirectionalLight->GetAmbientLightColor().z , 1.0f };
+		//	material->ShadowTexelSize() << XMVECTOR{ 1.0f / neededSystems.mShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
+		//	material->ShadowCascadeDistances() << XMVECTOR{ neededSystems.mCamera->GetCameraFarCascadeDistance(0), neededSystems.mCamera->GetCameraFarCascadeDistance(1), neededSystems.mCamera->GetCameraFarCascadeDistance(2), 1.0f };
+		//	material->AlbedoTexture() << obj->GetTextureData(meshIndex).AlbedoMap;
+		//	material->NormalTexture() << obj->GetTextureData(meshIndex).NormalMap;
+		//	material->SpecularTexture() << obj->GetTextureData(meshIndex).SpecularMap;
+		//	material->RoughnessTexture() << obj->GetTextureData(meshIndex).RoughnessMap;
+		//	material->MetallicTexture() << obj->GetTextureData(meshIndex).MetallicMap;
+		//	material->HeightTexture() << obj->GetTextureData(meshIndex).HeightMap;
+		//	material->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, NUM_SHADOW_CASCADES);
+		//	//material->IrradianceDiffuseTexture() << mProbesManager->GetDiffuseLightProbe(0)->GetCubemapSRV(); //TODO
+		//	//material->IrradianceSpecularTexture() << mProbesManager->GetSpecularLightProbe(0)->GetCubemapSRV();//TODO
+		//	//material->IntegrationTexture() << mProbesManager->GetIntegrationMap(); //TODO
+		//}
 	}
 
 	void ER_MaterialsCallbacks::UpdateShadowMappingMaterialVariables(ER_MaterialSystems neededSystems, Rendering::RenderingObject* obj, int meshIndex, int cascadeIndex)

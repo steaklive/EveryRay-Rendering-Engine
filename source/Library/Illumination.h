@@ -108,13 +108,14 @@ namespace Library
 		bool GetDebugVoxels() { return mDrawVoxelization; }
 		bool GetDebugAO() { return mDrawAmbientOcclusionOnly; }
 
+		void PrepareForForwardLighting(Rendering::RenderingObject* aObj, int meshIndex);
+
 		ID3D11ShaderResourceView* GetGlobaIlluminationSRV() const {
 			if (mDrawVoxelization)
 				return mVCTVoxelizationDebugRT->GetSRV();
 			else
 				return mVCTUpsampleAndBlurRT->GetSRV();
 		}
-
 	private:
 		void DrawDeferredLighting(GBuffer* gbuffer, ER_GPUTexture* aRenderTarget, bool clearTarget = false);
 		void DrawForwardLighting(GBuffer* gbuffer, ER_GPUTexture* aRenderTarget);
@@ -167,6 +168,9 @@ namespace Library
 		ID3D11DepthStencilState* mDepthStencilStateRW = nullptr;
 		ID3D11SamplerState* mLinearSamplerState = nullptr;
 		ID3D11SamplerState* mShadowSamplerState = nullptr;
+		
+		ID3D11InputLayout* mForwardLightingRenderingObjectInputLayout = nullptr;
+		ID3D11InputLayout* mForwardLightingRenderingObjectInputLayout_Instancing = nullptr;
 
 		float mWorldVoxelScales[NUM_VOXEL_GI_CASCADES] = { 2.0f, 0.5f };
 		XMFLOAT4 mVoxelCameraPositions[NUM_VOXEL_GI_CASCADES];

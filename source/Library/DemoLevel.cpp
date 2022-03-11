@@ -141,7 +141,7 @@ namespace Library {
 		materialSystems.mProbesManager = mIlluminationProbesManager;
 
 		for (auto& object : mScene->objects) {
-			if (!object.second->IsForwardShading() /*TODO|| object.second->IsInGBuffer()*/)
+			if (object.second->IsInGBuffer())
 				object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&, matSystems = materialSystems](int meshIndex) { Library::ER_MaterialsCallbacks::UpdateDeferredPrepassMaterialVariables(matSystems, object.second, meshIndex); });
 			
 			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(0), [&, matSystems = materialSystems](int meshIndex) { Library::ER_MaterialsCallbacks::UpdateShadowMappingMaterialVariables(matSystems, object.second, meshIndex, 0); });

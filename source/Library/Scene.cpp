@@ -9,13 +9,9 @@
 #include "Utility.h"
 #include "Model.h"
 #include "Material.h"
+#include "Materials.inl"
 #include "RenderingObject.h"
 #include "MaterialHelper.h"
-#include "DepthMapMaterial.h"
-#include "StandardLightingMaterial.h"
-#include "DeferredMaterial.h"
-#include "ParallaxMappingTestMaterial.h"
-#include "VoxelizationGIMaterial.h"
 #include "Illumination.h"
 #include "ER_IlluminationProbeManager.h"
 
@@ -214,28 +210,29 @@ namespace Library
 								material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][matIndex]["technique"].asString()));
 						}
 					}
-					else if (std::get<2>(materialData) == MaterialHelper::forwardLightingForProbesMaterialName) {
-						for (int cubemapFaceIndex = 0; cubemapFaceIndex < CUBEMAP_FACES_COUNT; cubemapFaceIndex++)
-						{
-							std::string name;
-							//diffuse
-							{
-								name = "diffuse_" + MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubemapFaceIndex);
-								aObject->LoadMaterial(new StandardLightingMaterial(), std::get<1>(materialData), name);
-								auto material = aObject->GetMaterials()[name];
-								if (material)
-									material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][matIndex]["technique"].asString()));
-							}
-							//specular
-							{
-								name = "specular_" + MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubemapFaceIndex);
-								aObject->LoadMaterial(new StandardLightingMaterial(), std::get<1>(materialData), name);
-								auto material = aObject->GetMaterials()[name];
-								if (material)
-									material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][matIndex]["technique"].asString()));
-							}
-						}
-					}
+					//TODO
+					//else if (std::get<2>(materialData) == MaterialHelper::forwardLightingForProbesMaterialName) {
+					//	for (int cubemapFaceIndex = 0; cubemapFaceIndex < CUBEMAP_FACES_COUNT; cubemapFaceIndex++)
+					//	{
+					//		std::string name;
+					//		//diffuse
+					//		{
+					//			name = "diffuse_" + MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubemapFaceIndex);
+					//			aObject->LoadMaterial(new StandardLightingMaterial(), std::get<1>(materialData), name);
+					//			auto material = aObject->GetMaterials()[name];
+					//			if (material)
+					//				material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][matIndex]["technique"].asString()));
+					//		}
+					//		//specular
+					//		{
+					//			name = "specular_" + MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubemapFaceIndex);
+					//			aObject->LoadMaterial(new StandardLightingMaterial(), std::get<1>(materialData), name);
+					//			auto material = aObject->GetMaterials()[name];
+					//			if (material)
+					//				material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][matIndex]["technique"].asString()));
+					//		}
+					//	}
+					//}
 					else if (std::get<0>(materialData))
 					{
 						aObject->LoadMaterial(std::get<0>(materialData), std::get<1>(materialData), std::get<2>(materialData));
@@ -243,6 +240,10 @@ namespace Library
 							aObject->GetMaterials()[std::get<2>(materialData)]->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][matIndex]["technique"].asString())
 						);
 					}
+
+					if (std::get<2>(materialData) == MaterialHelper::deferredPrepassMaterialName)
+						aObject->SetInGBuffer(true);
+
 				}
 				aObject->LoadRenderBuffers();
 			}
@@ -442,18 +443,6 @@ namespace Library
 		else if (matName == "DeferredMaterial") {
 			materialName = MaterialHelper::deferredPrepassMaterialName;
 			material = new DeferredMaterial();
-		}
-		else if (matName == "StandardLightingMaterial") {
-			materialName = MaterialHelper::forwardLightingMaterialName;
-			material = new StandardLightingMaterial();
-		}
-		else if (matName == "StandardLightingForProbeMaterial") {
-			materialName = MaterialHelper::forwardLightingForProbesMaterialName;
-			//material = new Rendering::StandardLightingMaterial(); //processed later as we have cubemap faces
-		}
-		else if (matName == "ParallaxMappingTestMaterial") {
-			materialName = MaterialHelper::parallaxMaterialName;
-			material = new Rendering::ParallaxMappingTestMaterial();
 		}
 		else if (matName == "VoxelizationGIMaterial") {
 			materialName = MaterialHelper::voxelizationGIMaterialName;

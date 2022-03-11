@@ -24,7 +24,7 @@ Texture2D<float4> GbufferAlbedoTexture : register(t0);
 Texture2D<float4> GbufferNormalTexture : register(t1);
 Texture2D<float4> GbufferWorldPosTexture : register(t2);
 Texture2D<float4> GbufferExtraTexture : register(t3); // [reflection mask, roughness, metalness, foliage mask]
-Texture2D<float4> GbufferExtra2Texture : register(t4); // [global diffuse probe mask, POM, empty, empty]
+Texture2D<float4> GbufferExtra2Texture : register(t4); // [global diffuse probe mask, POM, empty, skip deferred lighting]
 
 Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t5);
 
@@ -56,6 +56,16 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
 {
     uint2 inPos = DTid.xy;
     
+    float4 extra2Gbuffer = GbufferExtra2Texture.Load(uint3(inPos, 0));
+    bool skipLighting = extra2Gbuffer.a > 0.0f;
+    if (skipLighting)
+    {
+        OutputTexture[inPos] += float4(0.0, 0.0, 0.0, 0.0f);
+        return;
+    }
+    
+    bool useGlobalDiffuseProbe = extra2Gbuffer.r > 0.0f;
+    
     float4 worldPos = GbufferWorldPosTexture.Load(uint3(inPos, 0));
     if (worldPos.a < 0.000001f)
         return;
@@ -67,8 +77,6 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     float roughness = extraGbuffer.g;
     float metalness = extraGbuffer.b;
     
-    float4 extra2Gbuffer = GbufferExtra2Texture.Load(uint3(inPos, 0));
-    bool useGlobalDiffuseProbe = extra2Gbuffer.r > 0.0f;
     
     float ao = 1.0f; // TODO sample AO texture
     

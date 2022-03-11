@@ -114,14 +114,14 @@
 					"technique" : "create_depthmap_w_render_target"
 				},
 				{
+					"effect" : "content\\effects\\DeferredPrepass.fx",
+					"name" : "DeferredMaterial",
+					"technique" : "deferred"
+				},
+				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
-				},
-				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingMaterial",
-					"technique" : "standard_lighting_pbr"
 				}
 			],
 			"model_path" : "content\\models\\default_plane\\plane.fbx",
@@ -155,7 +155,8 @@
 				0.0,
 				1.0
 			],
-			"use_parallax_occlusion_mapping" : true
+			"use_parallax_occlusion_mapping" : true,
+			"use_forward_shading" : true
 		},
 		{
 			"instanced" : false,
@@ -167,14 +168,14 @@
 					"technique" : "create_depthmap_w_render_target"
 				},
 				{
+					"effect" : "content\\effects\\DeferredPrepass.fx",
+					"name" : "DeferredMaterial",
+					"technique" : "deferred"
+				},
+				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
-				},
-				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingMaterial",
-					"technique" : "standard_lighting_pbr"
 				}
 			],
 			"model_path" : "content\\models\\default_plane\\plane.fbx",
@@ -208,7 +209,8 @@
 				0.0,
 				1.0
 			],
-			"use_parallax_occlusion_mapping" : true
+			"use_parallax_occlusion_mapping" : true,
+			"use_forward_shading" : true
 		},
 		{
 			"instanced" : false,
@@ -220,14 +222,14 @@
 					"technique" : "create_depthmap_w_render_target"
 				},
 				{
+					"effect" : "content\\effects\\DeferredPrepass.fx",
+					"name" : "DeferredMaterial",
+					"technique" : "deferred"
+				},
+				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
-				},
-				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingMaterial",
-					"technique" : "standard_lighting_pbr"
 				}
 			],
 			"model_path" : "content\\models\\default_plane\\plane.fbx",
@@ -261,7 +263,8 @@
 				0.0,
 				1.0
 			],
-			"use_parallax_occlusion_mapping" : true
+			"use_parallax_occlusion_mapping" : true,
+			"use_forward_shading" : true
 		},
 		{
 			"instanced" : false,

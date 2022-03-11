@@ -31,6 +31,7 @@
 #include "..\Library\DemoLevel.h"
 #include "..\Library\PostProcessingStack.h"
 #include "..\Library\Editor.h"
+#include "..\Library\DemoLevel.h"
 
 // include scenes
 
@@ -45,7 +46,6 @@ namespace Rendering
 	const XMVECTORF32 RenderingGame::BackgroundColor = ColorHelper::Black;
 	const XMVECTORF32 RenderingGame::BackgroundColor2 = ColorHelper::Red;
 	
-	DemoLevel* demoLevel = nullptr;
 	static int currentLevel = 0;
 
 	static float fov = 60.0f;
@@ -174,15 +174,15 @@ namespace Rendering
 		mCurrentSceneName = aSceneName;
 		mCamera->Reset();
 
-		if (demoLevel)
+		if (mCurrentDemoLevel)
 		{
-			demoLevel->Destroy(*this);
-			DeleteObject(demoLevel);
+			mCurrentDemoLevel->Destroy(*this);
+			DeleteObject(mCurrentDemoLevel);
 		}
 
-		demoLevel = new DemoLevel();
+		mCurrentDemoLevel = new DemoLevel();
 		if (mScenesPaths.find(aSceneName) != mScenesPaths.end())
-			demoLevel->Initialize(*this, *mCamera, aSceneName, Utility::GetFilePath(mScenesPaths[aSceneName]));
+			mCurrentDemoLevel->Initialize(*this, *mCamera, aSceneName, Utility::GetFilePath(mScenesPaths[aSceneName]));
 		else
 		{
 			std::string message = "Scene was not found with this name: " + aSceneName;
@@ -192,7 +192,7 @@ namespace Rendering
 
 	void RenderingGame::Update(const GameTime& gameTime)
 	{
-		assert(demoLevel);
+		assert(mCurrentDemoLevel);
 
 		auto startUpdateTimer = std::chrono::high_resolution_clock::now();
 
@@ -202,7 +202,7 @@ namespace Rendering
 		UpdateImGui();
 
 		Game::Update(gameTime); //engine components (input, camera, etc.);
-		demoLevel->UpdateLevel(*this, gameTime); //level components (rendering systems, culling, etc.)
+		mCurrentDemoLevel->UpdateLevel(*this, gameTime); //level components (rendering systems, culling, etc.)
 
 		auto endUpdateTimer = std::chrono::high_resolution_clock::now();
 		mElapsedTimeUpdateCPU = endUpdateTimer - startUpdateTimer;
@@ -315,14 +315,14 @@ namespace Rendering
 	
 	void RenderingGame::Draw(const GameTime& gameTime)
 	{
-		assert(demoLevel);
+		assert(mCurrentDemoLevel);
 
 		auto startRenderTimer = std::chrono::high_resolution_clock::now();
 
 		mDirect3DDeviceContext->ClearRenderTargetView(mRenderTargetView, reinterpret_cast<const float*>(&BackgroundColor));
 		mDirect3DDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 		Game::Draw(gameTime); //TODO remove
-		demoLevel->DrawLevel(*this, gameTime);
+		mCurrentDemoLevel->DrawLevel(*this, gameTime);
 
 		mRenderStateHelper->SaveAll();
 		mRenderStateHelper->RestoreAll();

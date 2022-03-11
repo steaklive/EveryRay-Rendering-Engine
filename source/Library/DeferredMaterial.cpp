@@ -20,7 +20,8 @@ namespace Library
 		MATERIAL_VARIABLE_INITIALIZATION(ReflectionMaskFactor),
 		MATERIAL_VARIABLE_INITIALIZATION(FoliageMaskFactor),
 		MATERIAL_VARIABLE_INITIALIZATION(UseGlobalDiffuseProbeMaskFactor),
-		MATERIAL_VARIABLE_INITIALIZATION(UsePOM)
+		MATERIAL_VARIABLE_INITIALIZATION(UsePOM),
+		MATERIAL_VARIABLE_INITIALIZATION(SkipDeferredLighting)
 	{
 	}
 
@@ -35,6 +36,7 @@ namespace Library
 	MATERIAL_VARIABLE_DEFINITION(DeferredMaterial, FoliageMaskFactor)
 	MATERIAL_VARIABLE_DEFINITION(DeferredMaterial, UseGlobalDiffuseProbeMaskFactor)
 	MATERIAL_VARIABLE_DEFINITION(DeferredMaterial, UsePOM)
+	MATERIAL_VARIABLE_DEFINITION(DeferredMaterial, SkipDeferredLighting)
 
 	void DeferredMaterial::Initialize(Effect* effect)
 	{
@@ -51,6 +53,7 @@ namespace Library
 		MATERIAL_VARIABLE_RETRIEVE(FoliageMaskFactor)
 		MATERIAL_VARIABLE_RETRIEVE(UseGlobalDiffuseProbeMaskFactor)
 		MATERIAL_VARIABLE_RETRIEVE(UsePOM)
+		MATERIAL_VARIABLE_RETRIEVE(SkipDeferredLighting)
 
 		D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 		{

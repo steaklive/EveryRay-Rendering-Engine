@@ -93,15 +93,14 @@ namespace Library
 			return;
 
 		bool isGlobal = (mIndex == -1);
-		std::string materialListenerName = ((mProbeType == DIFFUSE_PROBE) ? "diffuse_" : "specular_") + MaterialHelper::forwardLightingForProbesMaterialName;
-
-		if (!isGlobal)
-		{
-			for (int cubemapFaceIndex = 0; cubemapFaceIndex < CUBEMAP_FACES_COUNT; cubemapFaceIndex++)
-				for (auto& object : objectsToRender)
-					object.second->MeshMaterialVariablesUpdateEvent->AddListener(materialListenerName + "_" + std::to_string(cubemapFaceIndex),
-						[&, cubemapFaceIndex](int meshIndex) { UpdateStandardLightingPBRProbeMaterialVariables(object.second, meshIndex, cubemapFaceIndex); });
-		}
+		//TODO std::string materialListenerName = ((mProbeType == DIFFUSE_PROBE) ? "diffuse_" : "specular_") + MaterialHelper::forwardLightingForProbesMaterialName;
+		//if (!isGlobal)
+		//{
+		//	for (int cubemapFaceIndex = 0; cubemapFaceIndex < CUBEMAP_FACES_COUNT; cubemapFaceIndex++)
+		//		for (auto& object : objectsToRender)
+		//			object.second->MeshMaterialVariablesUpdateEvent->AddListener(materialListenerName + "_" + std::to_string(cubemapFaceIndex),
+		//				[&, cubemapFaceIndex](int meshIndex) { UpdateStandardLightingPBRProbeMaterialVariables(object.second, meshIndex, cubemapFaceIndex); });
+		//}
 
 		auto context = game.Direct3DDeviceContext();
 		UINT viewportsCount = 1;
@@ -116,12 +115,13 @@ namespace Library
 
 		context->RSSetViewports(1, &oldViewPort);
 
-		if (!isGlobal)
-		{
-			for (int cubeMapFaceIndex = 0; cubeMapFaceIndex < CUBEMAP_FACES_COUNT; cubeMapFaceIndex++)
-				for (auto& object : objectsToRender)
-					object.second->MeshMaterialVariablesUpdateEvent->RemoveListener(materialListenerName + "_" + std::to_string(cubeMapFaceIndex));
-		}
+		//TODO
+		//if (!isGlobal)
+		//{
+		//	for (int cubeMapFaceIndex = 0; cubeMapFaceIndex < CUBEMAP_FACES_COUNT; cubeMapFaceIndex++)
+		//		for (auto& object : objectsToRender)
+		//			object.second->MeshMaterialVariablesUpdateEvent->RemoveListener(materialListenerName + "_" + std::to_string(cubeMapFaceIndex));
+		//}
 		SaveProbeOnDisk(game, levelPath, aTextureConvoluted);
 		mIsProbeLoadedFromDisk = true;
 	}
@@ -133,7 +133,8 @@ namespace Library
 		float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		bool isGlobal = (mIndex == -1);
 
-		std::string materialListenerName = ((mProbeType == DIFFUSE_PROBE) ? "diffuse_" : "specular_") + MaterialHelper::forwardLightingForProbesMaterialName;
+		//TODO
+		std::string materialListenerName = ((mProbeType == DIFFUSE_PROBE) ? "diffuse_" : "specular_");// +MaterialHelper::forwardLightingForProbesMaterialName;
 
 		//draw world to probe
 		for (int cubeMapFace = 0; cubeMapFace < CUBEMAP_FACES_COUNT; cubeMapFace++)
@@ -333,7 +334,8 @@ namespace Library
 			mShadowMapper.GetShadowTexture(2)
 		};
 
-		std::string materialName = ((mProbeType == DIFFUSE_PROBE) ? "diffuse_" : "specular_") + MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubeFaceIndex);
+		//TODO
+		std::string materialName = ((mProbeType == DIFFUSE_PROBE) ? "diffuse_" : "specular_");// +MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubeFaceIndex);
 		auto material = static_cast<StandardLightingMaterial*>(obj->GetMaterials()[materialName]);
 
 		if (material)

@@ -59,6 +59,9 @@ namespace Library {
 		ReleaseObject(mLinearSamplerState);
 		ReleaseObject(mShadowSamplerState);
 
+		ReleaseObject(mForwardLightingRenderingObjectInputLayout);
+		ReleaseObject(mForwardLightingRenderingObjectInputLayout_Instancing);
+
 		DeletePointerCollection(mVCTVoxelCascades3DRTs);
 		DeletePointerCollection(mDebugVoxelZonesGizmos);
 		DeleteObject(mVCTVoxelizationDebugRT);
@@ -127,6 +130,34 @@ namespace Library {
 				throw GameException("Failed to load VSMain from shader: ForwardLighting.hlsl!");
 			if (FAILED(mGame->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingVS)))
 				throw GameException("Failed to create vertex shader from ForwardLighting.hlsl!");
+
+			// create input layouts for forward lighting pass
+			{
+				D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
+				{
+					{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+					{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+					{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+					{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+				};
+
+				D3D11_INPUT_ELEMENT_DESC inputElementDescriptionsInstancing[] =
+				{
+					{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+					{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+					{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+					{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+					{ "WORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+					{ "WORLD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+					{ "WORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+					{ "WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+				};
+
+				if (FAILED(GetGame()->Direct3DDevice()->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), blob->GetBufferPointer(), blob->GetBufferSize(), &mForwardLightingRenderingObjectInputLayout)))
+					throw GameException("ID3D11Device::CreateInputLayout() failed for Forward Lighting Input Layout.");	
+				if (FAILED(GetGame()->Direct3DDevice()->CreateInputLayout(inputElementDescriptionsInstancing, ARRAYSIZE(inputElementDescriptionsInstancing), blob->GetBufferPointer(), blob->GetBufferSize(), &mForwardLightingRenderingObjectInputLayout_Instancing)))
+					throw GameException("ID3D11Device::CreateInputLayout() failed for Forward Lighting Input Layout (Instancing).");
+			}
 			blob->Release();
 
 			blob = nullptr;
@@ -186,6 +217,7 @@ namespace Library {
 			mVoxelConeTracingConstantBuffer.Initialize(mGame->Direct3DDevice());
 			mUpsampleBlurConstantBuffer.Initialize(mGame->Direct3DDevice());
 			mDeferredLightingConstantBuffer.Initialize(mGame->Direct3DDevice());
+			mForwardLightingConstantBuffer.Initialize(mGame->Direct3DDevice());
 			mLightProbesConstantBuffer.Initialize(mGame->Direct3DDevice());
 		}
 
@@ -223,20 +255,16 @@ namespace Library {
 		materialSystems.mShadowMapper = &mShadowMapper;
 		materialSystems.mProbesManager = mProbesManager;
 
-		for (auto& obj : scene->objects) {
-			
+		for (auto& obj : scene->objects)
+		{
+			if (obj.second->IsForwardShading())
+				mForwardPassObjects.emplace(obj);
+
 			if (obj.second->IsInVoxelization())
 			{
 				for (int voxelCascadeIndex = 0; voxelCascadeIndex < NUM_VOXEL_GI_CASCADES; voxelCascadeIndex++)
 					obj.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::voxelizationGIMaterialName + "_" + std::to_string(voxelCascadeIndex),
 						[&, voxelCascadeIndex, matSystems = materialSystems](int meshIndex) { ER_MaterialsCallbacks::UpdateVoxelizationGIMaterialVariables(matSystems, obj.second, meshIndex, voxelCascadeIndex); });
-			}
-
-			if (obj.second->IsForwardShading())
-			{
-				mForwardPassObjects.insert(obj);
-				obj.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::forwardLightingMaterialName,
-					[&, matSystems = materialSystems](int meshIndex) { ER_MaterialsCallbacks::UpdateForwardLightingMaterial(matSystems, obj.second, meshIndex); });
 			}
 		}
 	}
@@ -654,8 +682,89 @@ namespace Library {
 		context->OMSetRenderTargets(1, aRenderTarget->GetRTVs(), gbuffer->GetDepth()->getDSV());
 
 		for (auto& obj : mForwardPassObjects)
+			obj.second->Draw(MaterialHelper::forwardLightingNonMaterialName);
+	}
+
+	void Illumination::PrepareForForwardLighting(Rendering::RenderingObject* aObj, int meshIndex)
+	{
+		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+
+		if (aObj && (aObj->IsForwardShading() || aObj->IsInLightProbe()))
 		{
-			obj.second->Draw(MaterialHelper::forwardLightingMaterialName);
+			context->IASetInputLayout(aObj->IsInstanced() ? mForwardLightingRenderingObjectInputLayout_Instancing : mForwardLightingRenderingObjectInputLayout);
+
+			for (size_t i = 0; i < NUM_SHADOW_CASCADES; i++)
+				mForwardLightingConstantBuffer.Data.ShadowMatrices[i] = XMMatrixTranspose(mShadowMapper.GetViewMatrix(i) * mShadowMapper.GetProjectionMatrix(i) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()));
+			mForwardLightingConstantBuffer.Data.ViewProjection = XMMatrixTranspose(mCamera.ViewMatrix() * mCamera.ProjectionMatrix());
+			mForwardLightingConstantBuffer.Data.World = XMMatrixTranspose(aObj->GetTransformationMatrix());
+			mForwardLightingConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / mShadowMapper.GetResolution(), 1.0f, 1.0f , 1.0f };
+			mForwardLightingConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
+			mForwardLightingConstantBuffer.Data.SunDirection = XMFLOAT4{ -mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f };
+			mForwardLightingConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLight.GetDirectionalLightIntensity() };
+			mForwardLightingConstantBuffer.Data.CameraPosition = XMFLOAT4{ mCamera.Position().x,mCamera.Position().y,mCamera.Position().z, 1.0f };
+			mForwardLightingConstantBuffer.Data.UseGlobalDiffuseProbe = aObj->GetUseGlobalLightProbeMask();
+			mForwardLightingConstantBuffer.ApplyChanges(context);
+
+			if (mProbesManager->IsEnabled())
+			{
+				for (size_t i = 0; i < NUM_PROBE_VOLUME_CASCADES; i++)
+				{
+					mLightProbesConstantBuffer.Data.DiffuseProbesCellsCount[i] = mProbesManager->GetProbesCellsCount(DIFFUSE_PROBE, i);
+					mLightProbesConstantBuffer.Data.DiffuseProbesVolumeSizes[i] = XMFLOAT4{
+						mProbesManager->GetProbesVolumeCascade(DIFFUSE_PROBE, i).x,
+						mProbesManager->GetProbesVolumeCascade(DIFFUSE_PROBE, i).y,
+						mProbesManager->GetProbesVolumeCascade(DIFFUSE_PROBE, i).z, 1.0f };
+					mLightProbesConstantBuffer.Data.SpecularProbesCellsCount[i] = mProbesManager->GetProbesCellsCount(SPECULAR_PROBE, i);
+					mLightProbesConstantBuffer.Data.SpecularProbesVolumeSizes[i] = XMFLOAT4{
+						mProbesManager->GetProbesVolumeCascade(SPECULAR_PROBE, i).x,
+						mProbesManager->GetProbesVolumeCascade(SPECULAR_PROBE, i).y,
+						mProbesManager->GetProbesVolumeCascade(SPECULAR_PROBE, i).z, 1.0f };
+					mLightProbesConstantBuffer.Data.ProbesVolumeIndexSkips[i] = XMFLOAT4(mProbesManager->GetProbesIndexSkip(i), 0.0, 0.0, 0.0);
+				}
+				mLightProbesConstantBuffer.Data.SceneLightProbesBounds = XMFLOAT4{ mProbesManager->GetSceneProbesVolumeMin().x, mProbesManager->GetSceneProbesVolumeMin().y, mProbesManager->GetSceneProbesVolumeMin().z, 1.0f };
+				mLightProbesConstantBuffer.Data.DistanceBetweenDiffuseProbes = DISTANCE_BETWEEN_DIFFUSE_PROBES;
+				mLightProbesConstantBuffer.Data.DistanceBetweenSpecularProbes = DISTANCE_BETWEEN_SPECULAR_PROBES;
+				mLightProbesConstantBuffer.ApplyChanges(context);
+			}
+
+			ID3D11Buffer* CBs[2] = { mForwardLightingConstantBuffer.Buffer(), mProbesManager->IsEnabled() ? mLightProbesConstantBuffer.Buffer() : nullptr };
+			context->VSSetShader(mForwardLightingVS, NULL, 0);
+			context->VSSetConstantBuffers(0, 2, CBs);
+
+			context->PSSetShader(mForwardLightingPS, NULL, NULL); //TODO add other passes
+			context->PSSetConstantBuffers(0, 2, CBs);
+
+			ID3D11ShaderResourceView* SRs[24] = {
+				aObj->GetTextureData(meshIndex).AlbedoMap,
+				aObj->GetTextureData(meshIndex).NormalMap,
+				aObj->GetTextureData(meshIndex).MetallicMap,
+				aObj->GetTextureData(meshIndex).RoughnessMap,
+				aObj->GetTextureData(meshIndex).HeightMap
+			};
+			for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
+				SRs[5 + i] = mShadowMapper.GetShadowTexture(i);
+
+			SRs[8] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledDiffuseProbesTextureArray(0)->GetSRV() : nullptr;
+			SRs[9] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledDiffuseProbesTextureArray(1)->GetSRV() : nullptr;
+			SRs[10] = mProbesManager->IsEnabled() ? mProbesManager->GetGlobalDiffuseProbe()->GetCubemapSRV() : nullptr;
+			SRs[11] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray(0)->GetSRV() : nullptr;
+			SRs[12] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray(1)->GetSRV() : nullptr;
+			SRs[13] = mProbesManager->IsEnabled() ? mProbesManager->GetIntegrationMap() : nullptr;
+			SRs[14] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer(0)->GetBufferSRV() : nullptr;
+			SRs[15] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer(1)->GetBufferSRV() : nullptr;
+			SRs[16] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer(0)->GetBufferSRV() : nullptr;
+			SRs[17] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer(1)->GetBufferSRV() : nullptr;
+			SRs[18] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesPositionsBuffer()->GetBufferSRV() : nullptr;
+			SRs[19] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesCellsIndicesBuffer(0)->GetBufferSRV() : nullptr;
+			SRs[20] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesCellsIndicesBuffer(1)->GetBufferSRV() : nullptr;
+			SRs[21] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer(0)->GetBufferSRV() : nullptr;
+			SRs[22] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer(1)->GetBufferSRV() : nullptr;
+			SRs[23] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesPositionsBuffer()->GetBufferSRV() : nullptr;
+
+			context->PSSetShaderResources(0, 24, SRs);
+
+			ID3D11SamplerState* SS[2] = { mLinearSamplerState, mShadowSamplerState };
+			context->PSSetSamplers(0, 2, SS);
 		}
 	}
 

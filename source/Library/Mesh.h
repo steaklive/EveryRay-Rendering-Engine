@@ -32,6 +32,7 @@ namespace Library
 		const std::vector<UINT>& Indices() const;
 
 		void CreateIndexBuffer(ID3D11Buffer** indexBuffer);
+		void CreateVertexBuffer_PositionUvNormalTangent(ID3D11Buffer** vertexBuffer);
 
 	private:
 		Mesh(Model& model, aiMesh& mesh);

@@ -37,7 +37,7 @@ namespace Library
 		virtual void Destroy(Game& game);
 		virtual void UpdateLevel(Game& game, const GameTime& time);
 		virtual void DrawLevel(Game& game, const GameTime& time);
-    protected:
+
         Scene* mScene = nullptr;
 		Editor* mEditor = nullptr;
         Keyboard* mKeyboard = nullptr;
