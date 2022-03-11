@@ -3,15 +3,18 @@ Rendering engine/framework written in C++/DirectX 11.
 https://youtu.be/_htQNxesr9U
 
 # Some of the rendering features
-- Hybrid Rendering (Deferred Prepass with GBuffer + Forward Pass)
-- Physically Based Rendering with IBL
+- Deferred + Forward
+- Local illumination w/ Physically Based Rendering
+- Global illumination w/:
+- - Static: Image Based Lighting (via light probes: diffuse/specular)
+- - Dynamic: Cascaded Voxel Cone Tracing (AO, diffuse, specular)
 - Cascaded Shadow Mapping
-- Post Processing: SSR, Motion Blur, Vignette, LUT color grading, FXAA, Tonemap, Bloom, Fog, Light Shafts
+- Parallax-Occlusion Mapping w/ soft self-shadowing
 - Separable Subsurface Scattering
-- Terrain with GPU tessellation
+- Terrain w/ GPU tessellation
 - Foliage
 - Volumetric clouds
-- Cascaded Voxel Cone Tracing GI (WIP)
+- Post Processing: SSR, Motion Blur, Vignette, LUT color grading, FXAA, Tonemap, Bloom, Fog, Light Shafts
 
 Other features based on NVIDIA techniques (no code provided here)
 - Volumetric Lighting (from "Fast, Flexible, Physically-Based Volumetric Light Scattering")
