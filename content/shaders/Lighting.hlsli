@@ -14,9 +14,11 @@ static const float4 ColorWhite = { 1, 1, 1, 1 };
 static const float Pi = 3.141592654f;
 
 //texture arrays of cubemap probes (unfortunately, without bindless support there is no way to have array of arrays)
+//TODO consider Spherical-Harmonics for diffuse probes (will get rid of cubemaps)
 TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray0 : register(t8); //cascade 0
 TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray1 : register(t9); //cascade 1
 TextureCube<float4> IrradianceDiffuseGlobalProbeTexture : register(t10); // global probe (fallback)
+
 TextureCubeArray<float4> IrradianceSpecularProbesTextureArray0 : register(t11); //cascade 0
 TextureCubeArray<float4> IrradianceSpecularProbesTextureArray1 : register(t12); //cascade 1
 //TODO add global specular probe (fallback)

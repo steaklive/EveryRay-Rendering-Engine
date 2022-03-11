@@ -225,6 +225,9 @@ namespace Rendering
 		bool IsForwardShading() { return mIsForwardShading; }
 		void SetForwardShading(bool value) { mIsForwardShading = value; }
 
+		bool IsInVoxelization() { return mIsInVoxelization; }
+		void SetInVoxelization(bool value) { mIsInVoxelization = value; }
+
 		bool IsParallaxOcclusionMapping() { return mIsPOM; }
 		void SetParallaxOcclusionMapping(bool value) { mIsPOM = value; }
 
@@ -289,6 +292,7 @@ namespace Rendering
 		float													mMaxScale = 1.0f;
 		bool													mFoliageMask = false;
 		bool													mIsInLightProbe = false;
+		bool													mIsInVoxelization = false;
 		bool													mUseGlobalLightProbe = false;
 		float													mCameraViewMatrix[16];
 		float													mCameraProjectionMatrix[16];

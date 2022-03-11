@@ -1,7 +1,15 @@
 // ================================================================================================
-// Compute shader for deferred lighting. 
-// Contains cascaded shadow mapping, light probes and PBR support
+// Compute shader for classic "Deferred" lighting. 
 // 
+// Supports:
+// - Cascaded Shadow Mapping
+// - PBR with Image Based Lighting (via light probes)
+//
+// TODO:
+// - move to "Tiled/Clustered Deferred"
+// - add support for point/spot lights
+// - add support for ambient occlusion
+//
 // Written by Gen Afanasev for 'EveryRay Rendering Engine', 2017-2022
 // ================================================================================================
 

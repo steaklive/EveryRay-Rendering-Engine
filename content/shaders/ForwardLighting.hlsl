@@ -1,3 +1,22 @@
+// ================================================================================================
+// Vertex/Pixel shader for classic "Forward" lighting. 
+//
+// Supports:
+// - Cascaded Shadow Mapping
+// - PBR with Image Based Lighting (via light probes)
+// - Parallax-Occlusion Mapping
+//
+// TODO:
+// - move to "Forward+"
+// - add support for proper transparency (+BRDF)
+// - add support for point/spot lights
+// - add support for ambient occlusion
+//
+// Info: also used for rendering into light probes cubemaps (with different entry points for PS)
+//
+// Written by Gen Afanasev for 'EveryRay Rendering Engine', 2017-2022
+// ================================================================================================
+
 #include "Lighting.hlsli"
 
 Texture2D<float4> AlbedoTexture : register(t0);

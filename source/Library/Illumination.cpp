@@ -50,6 +50,10 @@ namespace Library {
 		ReleaseObject(mVCTVoxelizationDebugGS);
 		ReleaseObject(mVCTVoxelizationDebugPS);
 		ReleaseObject(mDeferredLightingCS);
+		ReleaseObject(mForwardLightingVS);
+		ReleaseObject(mForwardLightingPS);
+		ReleaseObject(mForwardLightingDiffuseProbesPS);
+		ReleaseObject(mForwardLightingSpecularProbesPS);
 
 		ReleaseObject(mDepthStencilStateRW);
 		ReleaseObject(mLinearSamplerState);
@@ -66,6 +70,7 @@ namespace Library {
 		mVoxelConeTracingConstantBuffer.Release();
 		mUpsampleBlurConstantBuffer.Release();
 		mDeferredLightingConstantBuffer.Release();
+		mForwardLightingConstantBuffer.Release();
 		mLightProbesConstantBuffer.Release();
 	}
 
@@ -73,22 +78,7 @@ namespace Library {
 	{
 		if (!scene)
 			return;
-
-		ER_MaterialSystems materialSystems;
-		materialSystems.mCamera = &mCamera;
-		materialSystems.mDirectionalLight = &mDirectionalLight;
-		materialSystems.mShadowMapper = &mShadowMapper;
-		materialSystems.mProbesManager = mProbesManager;
-
-		//callbacks
-		{
-			for (auto& obj : scene->objects) {
-				for (int voxelCascadeIndex = 0; voxelCascadeIndex < NUM_VOXEL_GI_CASCADES; voxelCascadeIndex++)
-					obj.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::voxelizationGIMaterialName + "_" + std::to_string(voxelCascadeIndex),
-						[&, voxelCascadeIndex, matSystems = materialSystems](int meshIndex) { ER_MaterialsCallbacks::UpdateVoxelizationGIMaterialVariables(matSystems, obj.second, meshIndex, voxelCascadeIndex); });
-			}
-		}
-		
+	
 		//shaders
 		{
 			ID3DBlob* blob = nullptr;
@@ -130,6 +120,34 @@ namespace Library {
 				throw GameException("Failed to load CSMain from shader: DeferredLighting.hlsl!");
 			if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mDeferredLightingCS)))
 				throw GameException("Failed to create shader from DeferredLighting.hlsl!");
+			blob->Release();
+
+			blob = nullptr;
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
+				throw GameException("Failed to load VSMain from shader: ForwardLighting.hlsl!");
+			if (FAILED(mGame->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingVS)))
+				throw GameException("Failed to create vertex shader from ForwardLighting.hlsl!");
+			blob->Release();
+
+			blob = nullptr;
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
+				throw GameException("Failed to load PSMain from shader: ForwardLighting.hlsl!");
+			if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingPS)))
+				throw GameException("Failed to create main pixel shader from ForwardLighting.hlsl!");
+			blob->Release();
+
+			blob = nullptr;
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "PSMain_DiffuseProbes", "ps_5_0", &blob)))
+				throw GameException("Failed to load PSMain_DiffuseProbes from shader: ForwardLighting.hlsl!");
+			if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingDiffuseProbesPS)))
+				throw GameException("Failed to create diffuse probes pixel shader from ForwardLighting.hlsl!");
+			blob->Release();	
+			
+			blob = nullptr;
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "PSMain_SpecularProbes", "ps_5_0", &blob)))
+				throw GameException("Failed to load PSMain_SpecularProbes from shader: ForwardLighting.hlsl!");
+			if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingSpecularProbesPS)))
+				throw GameException("Failed to create specular probes pixel shader from ForwardLighting.hlsl!");
 			blob->Release();
 		}
 
@@ -197,8 +215,23 @@ namespace Library {
 				DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 			mDepthBuffer = DepthTarget::Create(mGame->Direct3DDevice(), mGame->ScreenWidth(), mGame->ScreenHeight(), 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
 		}
-		
+
+		//callbacks for materials updates
+		ER_MaterialSystems materialSystems;
+		materialSystems.mCamera = &mCamera;
+		materialSystems.mDirectionalLight = &mDirectionalLight;
+		materialSystems.mShadowMapper = &mShadowMapper;
+		materialSystems.mProbesManager = mProbesManager;
+
 		for (auto& obj : scene->objects) {
+			
+			if (obj.second->IsInVoxelization())
+			{
+				for (int voxelCascadeIndex = 0; voxelCascadeIndex < NUM_VOXEL_GI_CASCADES; voxelCascadeIndex++)
+					obj.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::voxelizationGIMaterialName + "_" + std::to_string(voxelCascadeIndex),
+						[&, voxelCascadeIndex, matSystems = materialSystems](int meshIndex) { ER_MaterialsCallbacks::UpdateVoxelizationGIMaterialVariables(matSystems, obj.second, meshIndex, voxelCascadeIndex); });
+			}
+
 			if (obj.second->IsForwardShading())
 			{
 				mForwardPassObjects.insert(obj);

@@ -61,6 +61,18 @@ namespace Library
 			XMFLOAT4 CameraPosition;
 			bool SkipIndirectProbeLighting;
 		};
+		struct ForwardLightingCB
+		{
+			XMMATRIX ShadowMatrices[NUM_SHADOW_CASCADES];
+			XMMATRIX ViewProjection;
+			XMMATRIX World;
+			XMFLOAT4 ShadowTexelSize;
+			XMFLOAT4 ShadowCascadeDistances;
+			XMFLOAT4 SunDirection;
+			XMFLOAT4 SunColor;
+			XMFLOAT4 CameraPosition;
+			float UseGlobalDiffuseProbe;
+		};
 		struct LightProbesCB
 		{
 			XMFLOAT4 DiffuseProbesCellsCount[NUM_PROBE_VOLUME_CASCADES]; //x,y,z,total
@@ -127,6 +139,7 @@ namespace Library
 		ConstantBuffer<IlluminationCBufferData::VoxelConeTracingCB> mVoxelConeTracingConstantBuffer;
 		ConstantBuffer<IlluminationCBufferData::UpsampleBlurCB> mUpsampleBlurConstantBuffer;
 		ConstantBuffer<IlluminationCBufferData::DeferredLightingCB> mDeferredLightingConstantBuffer;
+		ConstantBuffer<IlluminationCBufferData::ForwardLightingCB> mForwardLightingConstantBuffer;
 		ConstantBuffer<IlluminationCBufferData::LightProbesCB> mLightProbesConstantBuffer;
 
 		std::vector<ER_GPUTexture*> mVCTVoxelCascades3DRTs;
@@ -144,6 +157,10 @@ namespace Library
 		ID3D11ComputeShader* mVCTMainCS = nullptr;
 		ID3D11ComputeShader* mUpsampleBlurCS = nullptr;
 		ID3D11ComputeShader* mDeferredLightingCS = nullptr;
+		ID3D11VertexShader* mForwardLightingVS = nullptr;
+		ID3D11PixelShader* mForwardLightingPS = nullptr;
+		ID3D11PixelShader* mForwardLightingDiffuseProbesPS = nullptr;
+		ID3D11PixelShader* mForwardLightingSpecularProbesPS = nullptr;
 
 		ID3D11ShaderResourceView* mShadowMapSRV = nullptr;
 

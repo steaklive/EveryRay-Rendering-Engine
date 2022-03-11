@@ -168,6 +168,8 @@ namespace Library
 				aObject->SetUseGlobalLightProbe(root["rendering_objects"][i]["useGlobalLightProbe"].asBool());
 			if (root["rendering_objects"][i].isMember("use_parallax_occlusion_mapping"))
 				aObject->SetParallaxOcclusionMapping(root["rendering_objects"][i]["use_parallax_occlusion_mapping"].asBool());
+			if (root["rendering_objects"][i].isMember("use_forward_shading"))
+				aObject->SetForwardShading(root["rendering_objects"][i]["use_forward_shading"].asBool());
 			if (root["rendering_objects"][i].isMember("placed_on_terrain")) {
 				aObject->SetPlacedOnTerrain(root["rendering_objects"][i]["placed_on_terrain"].asBool());
 				if (isInstanced && root["rendering_objects"][i].isMember("num_instances_per_vegetation_zone"))
@@ -202,6 +204,7 @@ namespace Library
 						}
 					}
 					else if (std::get<2>(materialData) == MaterialHelper::voxelizationGIMaterialName) {
+						aObject->SetInVoxelization(true);
 						for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
 						{
 							const std::string name = MaterialHelper::voxelizationGIMaterialName + "_" + std::to_string(cascade);
@@ -240,10 +243,6 @@ namespace Library
 							aObject->GetMaterials()[std::get<2>(materialData)]->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][matIndex]["technique"].asString())
 						);
 					}
-
-					//TODO maybe parse from a separate flag instead?
-					if (std::get<2>(materialData) == MaterialHelper::forwardLightingMaterialName)
-						aObject->SetForwardShading(true);
 				}
 				aObject->LoadRenderBuffers();
 			}
