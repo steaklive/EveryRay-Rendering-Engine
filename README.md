@@ -29,6 +29,12 @@ Other features based on NVIDIA techniques (no code provided here)
 - AABB, OBB, collision detection
 - ImGUI, ImGuizmo
  
+# Roadmap (big architectural tasks)
+- remove DX11 "Effects" library, all .fx shaders and refactor the material system (WIP)
+- remove all low-level DX11 code and put it into the abstracted RHI (hopefully, until the summer/autumn of 2022)
+- add support for DX12 (hopefully, until 2023)
+- (?) remove DirectXMath and its usages (yes, it can cover DX11/12 but not future APIs); maybe come up with a custom math lib
+
 # Screenshots
 
 ![picture](screenshots/EveryRayTerrain.png)
