@@ -12,11 +12,13 @@ https://youtu.be/_htQNxesr9U
 - - Dynamic: Cascaded Voxel Cone Tracing (AO, diffuse, specular)
 - Cascaded Shadow Mapping
 - Parallax-Occlusion Mapping w/ soft self-shadowing
-- Separable Subsurface Scattering
-- Terrain w/ GPU tessellation
-- Foliage
+- Separable Subsurface Scattering *
+- Terrain w/ GPU tessellation *
+- Foliage *
 - Volumetric clouds
-- Post Processing: SSR, Motion Blur, Vignette, LUT color grading, FXAA, Tonemap, Bloom, Fog, Light Shafts
+- Post Processing: SSR *, Motion Blur *, Vignette, LUT color grading, FXAA, Tonemap *, Bloom, Fog, Light Shafts
+
+* - needs to be fixed or refactored
 
 Other features based on NVIDIA techniques (no code provided here)
 - Volumetric Lighting (from "Fast, Flexible, Physically-Based Volumetric Light Scattering")
