@@ -18,7 +18,7 @@
 #include "RasterizerStates.h"
 #include "ShaderCompiler.h"
 #include "VoxelizationGIMaterial.h"
-#include "StandardLightingMaterial.h"
+#include "RenderToLightProbeMaterial.h"
 #include "Scene.h"
 #include "GBuffer.h"
 #include "ShadowMapper.h"
@@ -689,7 +689,7 @@ namespace Library {
 	{
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
 
-		if (aObj && (aObj->IsForwardShading() || aObj->IsInLightProbe()))
+		if (aObj && aObj->IsForwardShading())
 		{
 			context->IASetInputLayout(aObj->IsInstanced() ? mForwardLightingRenderingObjectInputLayout_Instancing : mForwardLightingRenderingObjectInputLayout);
 

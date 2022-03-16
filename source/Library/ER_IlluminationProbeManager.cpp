@@ -7,7 +7,6 @@
 #include "MatrixHelper.h"
 #include "MaterialHelper.h"
 #include "VectorHelper.h"
-#include "StandardLightingMaterial.h"
 #include "ShaderCompiler.h"
 #include "RenderingObject.h"
 #include "Model.h"

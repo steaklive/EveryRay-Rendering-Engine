@@ -260,6 +260,7 @@
     <ClInclude Include="RenderingObject.h" />
     <ClInclude Include="RenderStateHelper.h" />
     <ClInclude Include="RenderTarget.h" />
+    <ClInclude Include="RenderToLightProbeMaterial.h" />
     <ClInclude Include="RTTI.h" />
     <ClInclude Include="SamplerStates.h" />
     <ClInclude Include="Scene.h" />
@@ -276,7 +277,6 @@
     <ClInclude Include="SpatialCell.h" />
     <ClInclude Include="SpatialElement.h" />
     <ClInclude Include="SpotLight.h" />
-    <ClInclude Include="StandardLightingMaterial.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Technique.h" />
@@ -362,6 +362,7 @@
     <ClCompile Include="RenderingObject.cpp" />
     <ClCompile Include="RenderStateHelper.cpp" />
     <ClCompile Include="RenderTarget.cpp" />
+    <ClCompile Include="RenderToLightProbeMaterial.cpp" />
     <ClCompile Include="SamplerStates.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ScreenSpaceReflectionsMaterial.cpp" />
@@ -375,7 +376,6 @@
     <ClCompile Include="SkyboxMaterial.cpp" />
     <ClCompile Include="SpatialElement.cpp" />
     <ClCompile Include="SpotLight.cpp" />
-    <ClCompile Include="StandardLightingMaterial.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -560,7 +560,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="..\..\content\effects\StandardLighting.fx">
+    <FxCompile Include="..\..\content\effects\RenderToLightProbe.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

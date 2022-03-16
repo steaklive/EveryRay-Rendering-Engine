@@ -49,7 +49,7 @@ namespace Library
 		void ConvoluteProbe(Game& game, QuadRenderer* quadRenderer, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted);
 
 		void PrecullObjectsPerFace();
-		void UpdateStandardLightingPBRProbeMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int cubeFaceIndex);
+		void UpdateRenderToLightProbeMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int cubeFaceIndex);
 
 		void SaveProbeOnDisk(Game& game, const std::wstring& levelPath, ER_GPUTexture* aTextureConvoluted);
 		std::wstring GetConstructedProbeName(const std::wstring& levelPath);

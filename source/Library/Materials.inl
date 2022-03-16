@@ -4,3 +4,4 @@
 #include "..\Library\DeferredMaterial.h"
 #include "..\Library\VoxelizationGIMaterial.h"
 #include "..\Library\DebugLightProbeMaterial.h"
+#include "..\Library\RenderToLightProbeMaterial.h"

@@ -327,9 +327,6 @@
     <ClInclude Include="TGATextureLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StandardLightingMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FXAAMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -403,6 +400,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DebugLightProbeMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderToLightProbeMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -587,9 +587,6 @@
     <ClCompile Include="TGATextureLoader.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
-    <ClCompile Include="StandardLightingMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
     <ClCompile Include="FXAAMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
@@ -692,6 +689,9 @@
     <ClCompile Include="InstancingMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
+    <ClCompile Include="RenderToLightProbeMaterial.cpp">
+      <Filter>Source Files\Graphics\Materials</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\content\effects\AmbientLighting.fx">
@@ -749,9 +749,6 @@
       <Filter>Effects</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\effects\Skybox.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\StandardLighting.fx">
       <Filter>Effects</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\effects\Vignette.fx">
@@ -897,6 +894,9 @@
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\ForwardLighting.hlsl">
       <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\effects\RenderToLightProbe.fx">
+      <Filter>Effects</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

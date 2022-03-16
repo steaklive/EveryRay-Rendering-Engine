@@ -32,6 +32,11 @@
 					"effect" : "content\\effects\\DeferredPrepass.fx",
 					"name" : "DeferredMaterial",
 					"technique" : "deferred"
+				},
+				{
+					"effect" : "content\\effects\\RenderToLightProbe.fx",
+					"name" : "RenderToLightProbeMaterial",
+					"technique" : "renderToLightProbe"
 				}
 			],
 			"model_path" : "content\\models\\default_plane\\default_plane.fbx",
@@ -74,6 +79,11 @@
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
+				},
+				{
+					"effect" : "content\\effects\\RenderToLightProbe.fx",
+					"name" : "RenderToLightProbeMaterial",
+					"technique" : "renderToLightProbe"
 				}
 			],
 			"model_path" : "content\\models\\bunny\\bunny.fbx",
@@ -122,6 +132,11 @@
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
+				},
+				{
+					"effect" : "content\\effects\\RenderToLightProbe.fx",
+					"name" : "RenderToLightProbeMaterial",
+					"technique" : "renderToLightProbe"
 				}
 			],
 			"model_path" : "content\\models\\default_plane\\plane.fbx",
@@ -176,6 +191,11 @@
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
+				},
+				{
+					"effect" : "content\\effects\\RenderToLightProbe.fx",
+					"name" : "RenderToLightProbeMaterial",
+					"technique" : "renderToLightProbe"
 				}
 			],
 			"model_path" : "content\\models\\default_plane\\plane.fbx",
@@ -230,6 +250,11 @@
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
+				},
+				{
+					"effect" : "content\\effects\\RenderToLightProbe.fx",
+					"name" : "RenderToLightProbeMaterial",
+					"technique" : "renderToLightProbe"
 				}
 			],
 			"model_path" : "content\\models\\default_plane\\plane.fbx",
@@ -284,6 +309,11 @@
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
+				},
+				{
+					"effect" : "content\\effects\\RenderToLightProbe.fx",
+					"name" : "RenderToLightProbeMaterial",
+					"technique" : "renderToLightProbe"
 				}
 			],
 			"model_path" : "content\\models\\sphere.fbx",
@@ -332,6 +362,11 @@
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
+				},
+				{
+					"effect" : "content\\effects\\RenderToLightProbe.fx",
+					"name" : "RenderToLightProbeMaterial",
+					"technique" : "renderToLightProbe"
 				}
 			],
 			"model_path" : "content\\models\\sphere.fbx",

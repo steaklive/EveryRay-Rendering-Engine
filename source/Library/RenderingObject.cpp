@@ -350,6 +350,7 @@ namespace Rendering
 		}
 	}
 
+	//TODO refactor (remove duplicated code)
 	void RenderingObject::LoadRenderBuffers(int lod)
 	{
 		assert(lod < GetLODCount());
@@ -383,7 +384,7 @@ namespace Rendering
 		}
 
 		//special case for forward lighting (non-material case)
-		if (mIsForwardShading || mIsInLightProbe)
+		if (mIsForwardShading)
 		{
 			mMeshesRenderBuffers[lod].insert(std::pair<std::string, std::vector<RenderBufferData*>>(MaterialHelper::forwardLightingNonMaterialName, std::vector<RenderBufferData*>()));
 			for (size_t i = 0; i < mMeshesCount[lod]; i++)
@@ -430,15 +431,6 @@ namespace Rendering
 			bool isSpecificMesh = (meshIndex != -1);
 			for (int i = (isSpecificMesh) ? meshIndex : 0; i < ((isSpecificMesh) ? 1 : mMeshesCount[lod]); i++)
 			{
-				Pass* pass = nullptr;
-				if (!isForwardPass) //materials then
-				{
-					pass = mMaterials[materialName]->CurrentTechnique()->Passes().at(0);
-					ID3D11InputLayout* inputLayout = mMaterials[materialName]->InputLayouts().at(pass);
-					context->IASetInputLayout(inputLayout);
-				}
-				//else non-material special case (forward lighting) will be set in Illumination::PrepareForForwardLighting()
-
 				if (mIsInstanced)
 				{
 					ID3D11Buffer* vertexBuffers[2] = { mMeshesRenderBuffers[lod][materialName][i]->VertexBuffer, mMeshesInstanceBuffers[lod][i]->InstanceBuffer };
@@ -456,9 +448,13 @@ namespace Rendering
 					context->IASetIndexBuffer(mMeshesRenderBuffers[lod][materialName][i]->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 				}
 
-				if (!isForwardPass && pass) {
+				if (!isForwardPass) {
 					auto listener = MeshMaterialVariablesUpdateEvent->GetListener(materialName);
 					listener(i);
+
+					Pass* pass = mMaterials[materialName]->CurrentTechnique()->Passes().at(0);
+					ID3D11InputLayout* inputLayout = mMaterials[materialName]->InputLayouts().at(pass);
+					context->IASetInputLayout(inputLayout);
 
 					pass->Apply(0, context);
 				}

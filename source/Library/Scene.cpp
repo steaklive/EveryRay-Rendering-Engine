@@ -210,29 +210,29 @@ namespace Library
 								material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][matIndex]["technique"].asString()));
 						}
 					}
-					//TODO
-					//else if (std::get<2>(materialData) == MaterialHelper::forwardLightingForProbesMaterialName) {
-					//	for (int cubemapFaceIndex = 0; cubemapFaceIndex < CUBEMAP_FACES_COUNT; cubemapFaceIndex++)
-					//	{
-					//		std::string name;
-					//		//diffuse
-					//		{
-					//			name = "diffuse_" + MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubemapFaceIndex);
-					//			aObject->LoadMaterial(new StandardLightingMaterial(), std::get<1>(materialData), name);
-					//			auto material = aObject->GetMaterials()[name];
-					//			if (material)
-					//				material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][matIndex]["technique"].asString()));
-					//		}
-					//		//specular
-					//		{
-					//			name = "specular_" + MaterialHelper::forwardLightingForProbesMaterialName + "_" + std::to_string(cubemapFaceIndex);
-					//			aObject->LoadMaterial(new StandardLightingMaterial(), std::get<1>(materialData), name);
-					//			auto material = aObject->GetMaterials()[name];
-					//			if (material)
-					//				material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][matIndex]["technique"].asString()));
-					//		}
-					//	}
-					//}
+					else if (std::get<2>(materialData) == MaterialHelper::renderToLightProbeMaterialName) {
+						for (int cubemapFaceIndex = 0; cubemapFaceIndex < CUBEMAP_FACES_COUNT; cubemapFaceIndex++)
+						{
+							std::string name;
+							std::string techniqueName = root["rendering_objects"][i]["materials"][matIndex]["technique"].asString();
+							//diffuse
+							{
+								name = "diffuse_" + MaterialHelper::renderToLightProbeMaterialName + "_" + std::to_string(cubemapFaceIndex);
+								aObject->LoadMaterial(new RenderToLightProbeMaterial(), std::get<1>(materialData), name);
+								auto material = aObject->GetMaterials()[name];
+								if (material)
+									material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at(techniqueName));
+							}
+							//specular
+							{
+								name = "specular_" + MaterialHelper::renderToLightProbeMaterialName + "_" + std::to_string(cubemapFaceIndex);
+								aObject->LoadMaterial(new RenderToLightProbeMaterial(), std::get<1>(materialData), name);
+								auto material = aObject->GetMaterials()[name];
+								if (material)
+									material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at(techniqueName));
+							}
+						}
+					}
 					else if (std::get<0>(materialData))
 					{
 						aObject->LoadMaterial(std::get<0>(materialData), std::get<1>(materialData), std::get<2>(materialData));
@@ -447,6 +447,10 @@ namespace Library
 		else if (matName == "VoxelizationGIMaterial") {
 			materialName = MaterialHelper::voxelizationGIMaterialName;
 			//material = new Rendering::VoxelizationGIMaterial();//processed later as we need cascades
+		}
+		else if (matName == "RenderToLightProbeMaterial") {
+			materialName = MaterialHelper::renderToLightProbeMaterialName;
+			//material = new Rendering::RenderToLightProbeMaterial();//processed later
 		}
 		else
 			material = nullptr;

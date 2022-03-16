@@ -48,9 +48,9 @@
 					"technique" : "deferred"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr"
+					"effect" : "content\\effects\\RenderToLightProbe.fx",
+					"name" : "RenderToLightProbeMaterial",
+					"technique" : "renderToLightProbe"
 				}
 			],
 			"model_path" : "content\\models\\default_plane\\default_plane.fbx",
@@ -86,19 +86,14 @@
 					"technique" : "create_depthmap_w_render_target"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingMaterial",
-					"technique" : "standard_lighting_pbr"
-				},
-				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr"
+					"effect" : "content\\effects\\RenderToLightProbe.fx",
+					"name" : "RenderToLightProbeMaterial",
+					"technique" : "renderToLightProbe"
 				}
 			],
 			"model_path" : "content\\models\\bunny\\bunny.fbx",
@@ -127,7 +122,8 @@
 				0.0,
 				0.0,
 				1.0
-			]
+			],
+			"use_forward_shading" : true
 		},
 		{
 			"inLightProbe" : true,
@@ -140,19 +136,14 @@
 					"technique" : "create_depthmap_w_render_target"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingMaterial",
-					"technique" : "standard_lighting_pbr"
-				},
-				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr"
+					"effect" : "content\\effects\\RenderToLightProbe.fx",
+					"name" : "RenderToLightProbeMaterial",
+					"technique" : "renderToLightProbe"
 				}
 			],
 			"model_path" : "content\\models\\cube.fbx",
@@ -181,7 +172,8 @@
 				0.0,
 				0.0,
 				1.0
-			]
+			],
+			"use_forward_shading" : true
 		},
 		{
 			"inLightProbe" : true,
@@ -194,19 +186,14 @@
 					"technique" : "create_depthmap_w_render_target"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingMaterial",
-					"technique" : "standard_lighting_pbr"
-				},
-				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr"
+					"effect" : "content\\effects\\RenderToLightProbe.fx",
+					"name" : "RenderToLightProbeMaterial",
+					"technique" : "renderToLightProbe"
 				}
 			],
 			"model_path" : "content\\models\\sphere.fbx",
@@ -235,7 +222,8 @@
 				0.0,
 				0.0,
 				1.0
-			]
+			],
+			"use_forward_shading" : true
 		},
 		{
 			"inLightProbe" : true,
@@ -248,19 +236,14 @@
 					"technique" : "create_depthmap_w_render_target"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingMaterial",
-					"technique" : "standard_lighting_pbr"
-				},
-				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
 					"technique" : "voxelizationGI"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr"
+					"effect" : "content\\effects\\RenderToLightProbe.fx",
+					"name" : "RenderToLightProbeMaterial",
+					"technique" : "renderToLightProbe"
 				}
 			],
 			"model_path" : "content\\models\\sphere.fbx",
@@ -283,7 +266,8 @@
 				0.0,
 				0.0,
 				1.0
-			]
+			],
+			"use_forward_shading" : true
 		},
 		{
 			"inLightProbe" : false,
@@ -401,9 +385,9 @@
 					"technique" : "voxelizationGI_instancing"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr_instancing"
+					"effect" : "content\\effects\\RenderToLightProbe.fx",
+					"name" : "RenderToLightProbeMaterial",
+					"technique" : "renderToLightProbe_instancing"
 				}
 			],
 			"model_lods" : 
@@ -461,9 +445,9 @@
 					"technique" : "voxelizationGI"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr"
+					"effect" : "content\\effects\\RenderToLightProbe.fx",
+					"name" : "RenderToLightProbeMaterial",
+					"technique" : "renderToLightProbe"
 				}
 			],
 			"model_path" : "content\\models\\Sponza\\sponza.fbx",
@@ -509,9 +493,9 @@
 					"technique" : "voxelizationGI"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr"
+					"effect" : "content\\effects\\RenderToLightProbe.fx",
+					"name" : "RenderToLightProbeMaterial",
+					"technique" : "renderToLightProbe"
 				}
 			],
 			"model_path" : "content\\models\\shaderball.fbx",
@@ -572,9 +556,9 @@
 					"technique" : "voxelizationGI"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr"
+					"effect" : "content\\effects\\RenderToLightProbe.fx",
+					"name" : "RenderToLightProbeMaterial",
+					"technique" : "renderToLightProbe"
 				}
 			],
 			"model_path" : "content\\models\\shaderball.fbx",
@@ -635,9 +619,9 @@
 					"technique" : "voxelizationGI"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr"
+					"effect" : "content\\effects\\RenderToLightProbe.fx",
+					"name" : "RenderToLightProbeMaterial",
+					"technique" : "renderToLightProbe"
 				}
 			],
 			"model_path" : "content\\models\\shaderball.fbx",
@@ -698,9 +682,9 @@
 					"technique" : "voxelizationGI"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr"
+					"effect" : "content\\effects\\RenderToLightProbe.fx",
+					"name" : "RenderToLightProbeMaterial",
+					"technique" : "renderToLightProbe"
 				}
 			],
 			"model_lods" : 
@@ -779,22 +763,22 @@
 				{
 					"effect" : "content\\effects\\DepthMap.fx",
 					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
+					"technique" : "create_depthmap_w_render_target_instanced"
 				},
 				{
 					"effect" : "content\\effects\\DeferredPrepass.fx",
 					"name" : "DeferredMaterial",
-					"technique" : "deferred"
+					"technique" : "deferred_instanced"
 				},
 				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
+					"technique" : "voxelizationGI_instancing"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr_instancing"
+					"effect" : "content\\effects\\RenderToLightProbe.fx",
+					"name" : "RenderToLightProbeMaterial",
+					"technique" : "renderToLightProbe_instancing"
 				}
 			],
 			"model_lods" : 
@@ -885,9 +869,9 @@
 					"technique" : "voxelizationGI"
 				},
 				{
-					"effect" : "content\\effects\\StandardLighting.fx",
-					"name" : "StandardLightingForProbeMaterial",
-					"technique" : "standard_lighting_pbr"
+					"effect" : "content\\effects\\RenderToLightProbe.fx",
+					"name" : "RenderToLightProbeMaterial",
+					"technique" : "renderToLightProbe"
 				}
 			],
 			"model_path" : "content\\models\\couch\\couch.fbx",
