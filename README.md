@@ -35,6 +35,8 @@ Other features based on NVIDIA techniques (no code provided here)
  * [ ]  add support for DX12 (hopefully, until 2023)
  * [ ]  (?) remove DirectXMath and its usages (yes, it can cover DX11/12 but not future APIs); maybe come up with a custom math lib
  * [ ]  add cross-API shader compiler
+ * [ ]  add simple job-system (i.e. for Update(), CPU culling, etc.)
+ * [ ]  add simple memory management system (for now CPU memory; at least linear, pool allocators)
 
 # Screenshots
 
