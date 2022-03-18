@@ -3,12 +3,13 @@
 #include "Utility.h"
 #include "GameException.h"
 #include "Game.h"
+#include "Camera.h"
 #include "RenderingObject.h"
 
 namespace Library
 {
-	ER_BasicColorMaterial::ER_BasicColorMaterial(Game& game, unsigned int shaderFlags)
-		: ER_Material(game, shaderFlags)
+	ER_BasicColorMaterial::ER_BasicColorMaterial(Game& game, const MaterialShaderEntries& entries, unsigned int shaderFlags)
+		: ER_Material(game, entries, shaderFlags)
 	{
 
 		if (shaderFlags & HAS_VERTEX_SHADER)
@@ -35,11 +36,15 @@ namespace Library
 	void ER_BasicColorMaterial::PrepareForRendering(Rendering::RenderingObject* aObj, int meshIndex)
 	{
 		auto context = ER_Material::GetGame()->Direct3DDeviceContext();
-
+		Camera* camera = (Camera*)(ER_Material::GetGame()->Services().GetService(Camera::TypeIdClass()));
+		
 		assert(aObj);
+		assert(camera);
 
 		ER_Material::PrepareForRendering(aObj, meshIndex);
 
+		mConstantBuffer.Data.World = XMMatrixTranspose(aObj->GetTransformationMatrix());
+		mConstantBuffer.Data.ViewProjection = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());
 		mConstantBuffer.Data.Color = XMFLOAT4{0.0, 1.0, 0.0, 0.0};
 		mConstantBuffer.ApplyChanges(context);
 		ID3D11Buffer* CBs[1] = { mConstantBuffer.Buffer() };

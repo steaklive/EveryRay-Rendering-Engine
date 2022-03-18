@@ -15,9 +15,10 @@ namespace Library
 	static const std::string hullShaderModel = "hs_5_0";
 	static const std::string domainShaderModel = "ds_5_0";
 
-	ER_Material::ER_Material(Game& game, unsigned int shaderFlags)
+	ER_Material::ER_Material(Game& game, const MaterialShaderEntries& shaderEntry, unsigned int shaderFlags)
 		: GameComponent(game),
-		mShaderFlags(shaderFlags)
+		mShaderFlags(shaderFlags),
+		mShaderEntries(shaderEntry)
 	{
 	}
 
@@ -58,11 +59,13 @@ namespace Library
 
 	void ER_Material::CreateVertexShader(const std::string& path, D3D11_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount)
 	{
+		assert(!mShaderEntries.vertexEntry.empty());
+
 		std::string compilerErrorMessage = "Failed to compile VSMain from shader: " + path;
 		std::string createErrorMessage = "Failed to create vertex shader from shader: " + path;
 
 		ID3DBlob* blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(Utility::ToWideString(path)).c_str(), "VSMain", vertexShaderModel.c_str(), &blob)))
+		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(Utility::ToWideString(path)).c_str(), mShaderEntries.vertexEntry.c_str(), vertexShaderModel.c_str(), &blob)))
 			throw GameException(compilerErrorMessage.c_str());
 		if (FAILED(GetGame()->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVS)))
 			throw GameException(createErrorMessage.c_str());
@@ -74,11 +77,13 @@ namespace Library
 
 	void ER_Material::CreatePixelShader(const std::string& path)
 	{
+		assert(!mShaderEntries.pixelEntry.empty());
+
 		std::string compilerErrorMessage = "Failed to compile PSMain from shader: " + path;
 		std::string createErrorMessage = "Failed to create pixel shader from shader: " + path;
 
 		ID3DBlob* blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(Utility::ToWideString(path)).c_str(), "PSMain", pixelShaderModel.c_str(), &blob)))
+		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(Utility::ToWideString(path)).c_str(), mShaderEntries.pixelEntry.c_str(), pixelShaderModel.c_str(), &blob)))
 			throw GameException(compilerErrorMessage.c_str());
 		if (FAILED(GetGame()->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS)))
 			throw GameException(createErrorMessage.c_str());

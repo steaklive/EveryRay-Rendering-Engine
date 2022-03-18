@@ -13,6 +13,15 @@ namespace Library
 {
 	class GameComponent;
 
+	struct MaterialShaderEntries 
+	{
+		std::string vertexEntry = "VSMain";
+		std::string geometryEntry = "GSMain";
+		std::string hullEntry = "HSMain";
+		std::string domainEntry = "DSMain";
+		std::string pixelEntry = "PSMain";
+	};
+
 	enum MaterialShaderFlags
 	{
 		HAS_VERTEX_SHADER		= 0x1L,
@@ -24,7 +33,7 @@ namespace Library
 	class ER_Material : public GameComponent
 	{
 	public:
-		ER_Material(Game& game, unsigned int shaderFlags);
+		ER_Material(Game& game, const MaterialShaderEntries& shaderEntry, unsigned int shaderFlags);
 		~ER_Material();
 
 		virtual void PrepareForRendering(Rendering::RenderingObject* aObj, int meshIndex);
@@ -47,5 +56,6 @@ namespace Library
 		ID3D11InputLayout* mInputLayout = nullptr;
 
 		unsigned int mShaderFlags;
+		MaterialShaderEntries mShaderEntries;
 	};
 }

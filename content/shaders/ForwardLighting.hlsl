@@ -5,6 +5,7 @@
 // - Cascaded Shadow Mapping
 // - PBR with Image Based Lighting (via light probes)
 // - Parallax-Occlusion Mapping
+// - Instancing
 //
 // TODO:
 // - move to "Forward+"

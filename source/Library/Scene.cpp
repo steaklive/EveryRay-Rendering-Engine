@@ -15,6 +15,8 @@
 #include "Illumination.h"
 #include "ER_IlluminationProbeManager.h"
 
+#define MULTITHREADED_SCENE_LOAD 1
+
 namespace Library 
 {
 	Scene::Scene(Game& pGame, Camera& pCamera, const std::string& path) :
@@ -103,7 +105,11 @@ namespace Library
 
 			assert(numRenderingObjects == objects.size());
 
+#if MULTITHREADED_SCENE_LOAD
 			int numThreads = std::thread::hardware_concurrency();
+#else
+			int numThreads = 1;
+#endif
 			int objectsPerThread = numRenderingObjects / numThreads;
 			if (objectsPerThread == 0)
 			{
