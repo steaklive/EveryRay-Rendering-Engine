@@ -3,7 +3,8 @@
 #include "Common.h"
 #include "GameComponent.h"
 #include "Camera.h"
-#include "Material.h"
+#include "Material.h" //TODO remove once refactored
+#include "ER_Material.h"
 #include "VertexDeclarations.h"
 #include "InstancingMaterial.h"
 #include "ModelMaterial.h"
@@ -130,13 +131,14 @@ namespace Rendering
 
 		void LoadCustomMeshTextures(int meshIndex, std::wstring albedoPath, std::wstring normalPath, std::wstring specularPath, std::wstring roughnessPath, std::wstring metallicPath, std::wstring extra1Path, std::wstring extra2Path, std::wstring extra3Path);
 		void LoadCustomMeshTextures(int meshIndex);
-		void LoadMaterial(Material* pMaterial, Effect* pEffect, std::string materialName);
+		void LoadMaterial(Material* pMaterial, Effect* pEffect, std::string materialName); //TODO remove
+		void LoadMaterial(ER_Material* pMaterial, const std::string& materialName);
 		void LoadRenderBuffers(int lod = 0);
-		void LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData, std::string materialName, int lod = 0);
+		void LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData, std::string materialName, int lod = 0); //TODO remove
 		void Draw(const std::string& materialName, bool toDepth = false, int meshIndex = -1);
 		void DrawLOD(const std::string& materialName, bool toDepth, int meshIndex, int lod);
 		void DrawAABB();
-		void UpdateInstanceData(std::vector<InstancingMaterial::InstancedData> pInstanceData, std::string materialName, int lod = 0);
+		void UpdateInstanceData(std::vector<InstancingMaterial::InstancedData> pInstanceData, std::string materialName, int lod = 0); //TODO remove
 		void UpdateGizmos();
 		void Update(const GameTime& time);
 		void Selected(bool val) { mIsSelected = val; }
@@ -146,7 +148,8 @@ namespace Rendering
 		void SetMeshReflectionFactor(int meshIndex, float factor) { mMeshesReflectionFactors[meshIndex] = factor; }
 		float GetMeshReflectionFactor(int meshIndex) { return mMeshesReflectionFactors[meshIndex]; }
 
-		std::map<std::string, Material*>& GetMaterials() { return mMaterials; }
+		std::map<std::string, Material*>& GetMaterials() { return mMaterials; } //TODO remove
+		std::map<std::string, ER_Material*>& GetNewMaterials() { return mNewMaterials; }
 		TextureData& GetTextureData(int meshIndex) { return mMeshesTextureBuffers[meshIndex]; }
 		
 		const int GetMeshCount(int lod = 0) const { return mMeshesCount[lod]; }
@@ -265,6 +268,7 @@ namespace Rendering
 		std::vector<std::map<std::string, std::vector<RenderBufferData*>>>	mMeshesRenderBuffers;
 		std::vector<float>										mMeshesReflectionFactors; 
 		std::map<std::string, Material*>						mMaterials;
+		std::map<std::string, ER_Material*>						mNewMaterials;
 		ER_AABB													mLocalAABB;
 		std::unique_ptr<Model>									mModel;
 		std::vector<std::unique_ptr<Model>>						mModelLODs;

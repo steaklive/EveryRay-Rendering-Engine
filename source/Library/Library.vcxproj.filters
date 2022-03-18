@@ -405,6 +405,12 @@
     <ClInclude Include="RenderToLightProbeMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_Material.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ER_BasicColorMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -690,6 +696,12 @@
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="RenderToLightProbeMaterial.cpp">
+      <Filter>Source Files\Graphics\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_Material.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_BasicColorMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
   </ItemGroup>

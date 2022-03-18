@@ -80,6 +80,10 @@ namespace Rendering
 			DeleteObject(object.second);
 		mMaterials.clear();
 
+		for (auto object : mNewMaterials)
+			DeleteObject(object.second);
+		mNewMaterials.clear();
+
 		for (auto lod : mMeshesRenderBuffers)
 			for (auto meshRenderBuffer : lod)
 				DeletePointerCollection(meshRenderBuffer.second);
@@ -102,6 +106,12 @@ namespace Rendering
 
 		mMaterials.insert(std::pair<std::string, Material*>(materialName, pMaterial));
 		mMaterials[materialName]->Initialize(pEffect);
+	}
+
+	void RenderingObject::LoadMaterial(ER_Material* pMaterial, const std::string& materialName)
+	{
+		assert(pMaterial);
+		mNewMaterials.emplace(materialName, pMaterial);
 	}
 
 	void RenderingObject::LoadAssignedMeshTextures()
