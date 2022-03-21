@@ -7,6 +7,7 @@ namespace Library
 	class MaterialHelper
 	{
 	public:
+		static const std::string basicColorMaterialName;
 		static const std::string shadowMapMaterialName;
 		static const std::string deferredPrepassMaterialName;
 		static const std::string ssrMaterialName;

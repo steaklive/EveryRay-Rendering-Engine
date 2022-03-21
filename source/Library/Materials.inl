@@ -5,3 +5,5 @@
 #include "..\Library\VoxelizationGIMaterial.h"
 #include "..\Library\DebugLightProbeMaterial.h"
 #include "..\Library\RenderToLightProbeMaterial.h"
+
+#include "..\Library\ER_BasicColorMaterial.h"

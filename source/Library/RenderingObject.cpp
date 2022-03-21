@@ -393,6 +393,29 @@ namespace Rendering
 			}
 		}
 
+		for (auto material : mNewMaterials)
+		{
+			mMeshesRenderBuffers[lod].insert(std::pair<std::string, std::vector<RenderBufferData*>>(material.first, std::vector<RenderBufferData*>()));
+			for (size_t i = 0; i < mMeshesCount[lod]; i++)
+			{
+				mMeshesRenderBuffers[lod][material.first].push_back(new RenderBufferData());
+				if (lod == 0) {
+					material.second->CreateVertexBuffer(*mModel->Meshes()[i], &(mMeshesRenderBuffers[lod][material.first][i]->VertexBuffer));
+					mModel->Meshes()[i]->CreateIndexBuffer(&(mMeshesRenderBuffers[lod][material.first][i]->IndexBuffer));
+					mMeshesRenderBuffers[lod][material.first][i]->IndicesCount = mModel->Meshes()[i]->Indices().size();
+				}
+				else
+				{
+					material.second->CreateVertexBuffer(*mModelLODs[lod - 1]->Meshes()[i], &(mMeshesRenderBuffers[lod][material.first][i]->VertexBuffer));
+					mModelLODs[lod - 1]->Meshes()[i]->CreateIndexBuffer(&(mMeshesRenderBuffers[lod][material.first][i]->IndexBuffer));
+					mMeshesRenderBuffers[lod][material.first][i]->IndicesCount = mModelLODs[lod - 1]->Meshes()[i]->Indices().size();
+				}
+
+				mMeshesRenderBuffers[lod][material.first][i]->Stride = mNewMaterials[material.first]->VertexSize();
+				mMeshesRenderBuffers[lod][material.first][i]->Offset = 0;
+			}
+		}
+
 		//special case for forward lighting (non-material case)
 		if (mIsForwardShading)
 		{
@@ -430,12 +453,14 @@ namespace Rendering
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
 		context->IASetPrimitiveTopology(mWireframeMode ? D3D11_PRIMITIVE_TOPOLOGY_LINELIST : D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		if (mMaterials.find(materialName) == mMaterials.end() && !isForwardPass)
+		bool newMat = mNewMaterials.find(materialName) != mNewMaterials.end();
+
+		if ((mMaterials.find(materialName) == mMaterials.end() && !newMat) && !isForwardPass)
 			return;
 		
 		if (mIsRendered && !mIsCulled)
 		{
-			if (!isForwardPass && (!mMaterials.size() || mMeshesRenderBuffers[lod].size() == 0))
+			if (!newMat && !isForwardPass && (!mMaterials.size() || mMeshesRenderBuffers[lod].size() == 0))
 				return;
 			
 			bool isSpecificMesh = (meshIndex != -1);
@@ -458,7 +483,7 @@ namespace Rendering
 					context->IASetIndexBuffer(mMeshesRenderBuffers[lod][materialName][i]->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 				}
 
-				if (!isForwardPass) {
+				if (!isForwardPass && !newMat) {
 					auto listener = MeshMaterialVariablesUpdateEvent->GetListener(materialName);
 					listener(i);
 
@@ -467,6 +492,11 @@ namespace Rendering
 					context->IASetInputLayout(inputLayout);
 
 					pass->Apply(0, context);
+				}
+				else if (newMat)
+				{
+					auto prepareDrawingMaterial = MeshMaterialVariablesUpdateEvent->GetListener(materialName);
+					prepareDrawingMaterial(i);
 				}
 				else if (mGame->GetLevel()->mIllumination)
 					mGame->GetLevel()->mIllumination->PrepareForForwardLighting(this, i);

@@ -147,6 +147,9 @@ namespace Library {
 			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(0), [&, matSystems = materialSystems](int meshIndex) { Library::ER_MaterialsCallbacks::UpdateShadowMappingMaterialVariables(matSystems, object.second, meshIndex, 0); });
 			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(1), [&, matSystems = materialSystems](int meshIndex) { Library::ER_MaterialsCallbacks::UpdateShadowMappingMaterialVariables(matSystems, object.second, meshIndex, 1); });
 			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(2), [&, matSystems = materialSystems](int meshIndex) { Library::ER_MaterialsCallbacks::UpdateShadowMappingMaterialVariables(matSystems, object.second, meshIndex, 2); });
+
+			for (auto& layeredMaterial : object.second->GetNewMaterials())
+				object.second->MeshMaterialVariablesUpdateEvent->AddListener(layeredMaterial.first, [&, matSystems = materialSystems](int meshIndex) { layeredMaterial.second->PrepareForRendering(matSystems, object.second, meshIndex); });
 		}
 		game.CPUProfiler()->EndCPUTime("Material callbacks init");
 #pragma endregion
@@ -253,6 +256,9 @@ namespace Library {
 			mDirectionalLight->DrawProxyModel(gameTime); //TODO move to Illumination() or better to separate debug renderer system
 		}
 #pragma endregion
+
+		for (auto it = mScene->objects.begin(); it != mScene->objects.end(); it++)
+			it->second->Draw(MaterialHelper::basicColorMaterialName);
 
 		mPostProcessingStack->End();
 

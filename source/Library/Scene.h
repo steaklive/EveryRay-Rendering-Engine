@@ -3,6 +3,7 @@
 #include "GameComponent.h"
 #include "Camera.h"
 #include "Material.h"
+#include "ER_Material.h"
 #include "ModelMaterial.h"
 #include "Effect.h"
 
@@ -23,7 +24,7 @@ namespace Library
 
 		void SaveRenderingObjectsTransforms();
 
-		Material* GetMaterial(const std::string& materialName);
+		ER_Material* GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries);
 		Camera& GetCamera() { return mCamera; }
 		const XMFLOAT3& GetLightProbesVolumeMinBounds() const { return mLightProbesVolumeMinBounds; }
 		const XMFLOAT3& GetLightProbesVolumeMaxBounds() const { return mLightProbesVolumeMaxBounds; }

@@ -8,7 +8,6 @@
 #include "GameException.h"
 #include "Utility.h"
 #include "Model.h"
-#include "Material.h"
 #include "Materials.inl"
 #include "RenderingObject.h"
 #include "MaterialHelper.h"
@@ -185,6 +184,26 @@ namespace Library
 
 		// load materials
 		{
+			if (root["rendering_objects"][i].isMember("new_materials")) {
+				unsigned int numMaterials = root["rendering_objects"][i]["new_materials"].size();
+				for (Json::Value::ArrayIndex matIndex = 0; matIndex != numMaterials; matIndex++) {
+					std::string name = root["rendering_objects"][i]["new_materials"][matIndex]["name"].asString();
+
+					MaterialShaderEntries shaderEntries;
+					if (root["rendering_objects"][i]["new_materials"][matIndex].isMember("vertexEntry"))
+						shaderEntries.vertexEntry = root["rendering_objects"][i]["new_materials"][matIndex]["vertexEntry"].asString();
+					if (root["rendering_objects"][i]["new_materials"][matIndex].isMember("geometryEntry"))
+						shaderEntries.geometryEntry = root["rendering_objects"][i]["new_materials"][matIndex]["geometryEntry"].asString();
+					if (root["rendering_objects"][i]["new_materials"][matIndex].isMember("hullEntry"))
+						shaderEntries.hullEntry = root["rendering_objects"][i]["new_materials"][matIndex]["hullEntry"].asString();	
+					if (root["rendering_objects"][i]["new_materials"][matIndex].isMember("domainEntry"))
+						shaderEntries.domainEntry = root["rendering_objects"][i]["new_materials"][matIndex]["domainEntry"].asString();	
+					if (root["rendering_objects"][i]["new_materials"][matIndex].isMember("pixelEntry"))
+						shaderEntries.pixelEntry = root["rendering_objects"][i]["new_materials"][matIndex]["pixelEntry"].asString();
+
+					aObject->LoadMaterial(GetMaterialByName(name, shaderEntries), name);
+				}
+			}
 			if (root["rendering_objects"][i].isMember("materials")) {
 
 				unsigned int numMaterials = root["rendering_objects"][i]["materials"].size();
@@ -251,8 +270,9 @@ namespace Library
 						aObject->SetInGBuffer(true);
 
 				}
-				aObject->LoadRenderBuffers();
 			}
+
+			aObject->LoadRenderBuffers();
 		}
 
 		// load custom textures
@@ -426,10 +446,21 @@ namespace Library
 		writer->write(root, &file_id);
 	}
 
-	Library::Material* Scene::GetMaterial(const std::string& materialName)
+	ER_Material* Scene::GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries)
 	{
-		//TODO load from materials container
-		return nullptr;
+		auto core = GetGame();
+		assert(core);
+
+		ER_Material* material = nullptr;
+
+		// cant do reflection in C++
+		if (matName == "BasicColorMaterial") {
+			material = new ER_BasicColorMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER);
+		}
+		else
+			material = nullptr;
+
+		return material;
 	}
 
 	std::tuple<Material*, Effect*, std::string> Scene::CreateMaterialData(const std::string& matName, const std::string& effectName, const std::string& techniqueName)

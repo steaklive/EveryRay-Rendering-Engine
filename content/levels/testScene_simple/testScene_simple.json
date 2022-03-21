@@ -393,22 +393,10 @@
 		},
 		{
 			"instanced" : false,
-			"materials" : 
+			"new_materials":
 			[
 				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
-				},
-				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
-				},
-				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
+					"name" : "BasicColorMaterial"
 				}
 			],
 			"model_path" : "content\\models\\sphere.fbx",

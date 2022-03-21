@@ -3,7 +3,7 @@
 #include "Common.h"
 #include "ConstantBuffer.h"
 #include "GameComponent.h"
-
+#include "VertexDeclarations.h"
 namespace Rendering
 {
 	class RenderingObject;
@@ -11,7 +11,9 @@ namespace Rendering
 
 namespace Library
 {
+	class Mesh;
 	class GameComponent;
+	struct ER_MaterialSystems;
 
 	struct MaterialShaderEntries 
 	{
@@ -36,14 +38,18 @@ namespace Library
 		ER_Material(Game& game, const MaterialShaderEntries& shaderEntry, unsigned int shaderFlags);
 		~ER_Material();
 
-		virtual void PrepareForRendering(Rendering::RenderingObject* aObj, int meshIndex);
+		virtual void PrepareForRendering(ER_MaterialSystems neededSystems, Rendering::RenderingObject* aObj, int meshIndex);
 		
 		virtual void CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount, const void* shaderBytecodeWithInputSignature, UINT byteCodeLength);
+		
+		virtual void CreateVertexBuffer(Mesh& mesh, ID3D11Buffer** vertexBuffer) = 0;
 
 		/*virtual*/ void CreateVertexShader(const std::string& path, D3D11_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount);
 		/*virtual*/ void CreatePixelShader(const std::string& path);
 		/*virtual*/ void CreateGeometryShader(const std::string& path);
 		/*virtual*/ void CreateTessellationShader(const std::string& path);
+
+		virtual int VertexSize() = 0;
 
 	protected:
 

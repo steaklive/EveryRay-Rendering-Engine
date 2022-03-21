@@ -180,6 +180,34 @@ namespace Library
 		}
 	}
 
+	void Mesh::CreateVertexBuffer_Position(ID3D11Buffer** vertexBuffer)
+	{
+		const std::vector<XMFLOAT3>& sourceVertices = Vertices();
+		std::vector<VertexPosition> vertices;
+		vertices.reserve(sourceVertices.size());
+
+		for (UINT i = 0; i < sourceVertices.size(); i++)
+		{
+			XMFLOAT3 position = sourceVertices.at(i);
+			vertices.push_back(VertexPosition(XMFLOAT4(position.x, position.y, position.z, 1.0f)));
+		}
+
+		ID3D11Device* device = mModel.GetGame().Direct3DDevice();
+
+		D3D11_BUFFER_DESC vertexBufferDesc;
+		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
+		vertexBufferDesc.ByteWidth = sizeof(VertexPosition) * vertices.size();
+		vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+		D3D11_SUBRESOURCE_DATA vertexSubResourceData;
+		ZeroMemory(&vertexSubResourceData, sizeof(vertexSubResourceData));
+		vertexSubResourceData.pSysMem = &vertices[0];
+		if (FAILED(device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, vertexBuffer)))
+			throw GameException("ID3D11Device::CreateBuffer() failed during vertex buffer creation for CreateVertexBuffer_Position.");
+
+	}
+
 	void Mesh::CreateVertexBuffer_PositionUvNormalTangent(ID3D11Buffer** vertexBuffer)
 	{
 		const std::vector<XMFLOAT3>& sourceVertices = Vertices();
@@ -217,7 +245,7 @@ namespace Library
 		ZeroMemory(&vertexSubResourceData, sizeof(vertexSubResourceData));
 		vertexSubResourceData.pSysMem = &vertices[0];
 		if (FAILED(device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, vertexBuffer)))
-			throw GameException("ID3D11Device::CreateBuffer() failed during vertex buffer creation for Forward Lighting.");
+			throw GameException("ID3D11Device::CreateBuffer() failed during vertex buffer creation for CreateVertexBuffer_PositionUvNormalTangent.");
 
 	}
 
