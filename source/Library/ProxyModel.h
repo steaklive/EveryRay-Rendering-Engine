@@ -5,7 +5,7 @@
 namespace Library
 {
 	class Effect;
-	class BasicMaterial;
+	class ER_BasicColorMaterial;
 
 	class ProxyModel : public DrawableGameComponent
 	{
@@ -46,8 +46,7 @@ namespace Library
 		ProxyModel& operator=(const ProxyModel& rhs);
 
 		std::string mModelFileName;
-		Effect* mEffect;
-		BasicMaterial* mMaterial;
+		ER_BasicColorMaterial* mMaterial;
 		ID3D11Buffer* mVertexBuffer;
 		ID3D11Buffer* mIndexBuffer;
 		UINT mIndexCount;

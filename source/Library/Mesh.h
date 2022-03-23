@@ -34,6 +34,7 @@ namespace Library
 		void CreateIndexBuffer(ID3D11Buffer** indexBuffer);
 
 		void CreateVertexBuffer_Position(ID3D11Buffer** vertexBuffer);
+		void CreateVertexBuffer_PositionUv(ID3D11Buffer** vertexBuffer);
 		void CreateVertexBuffer_PositionUvNormalTangent(ID3D11Buffer** vertexBuffer);
 
 	private:

@@ -16,7 +16,7 @@ namespace Library
 	static const std::string hullShaderModel = "hs_5_0";
 	static const std::string domainShaderModel = "ds_5_0";
 
-	ER_Material::ER_Material(Game& game, const MaterialShaderEntries& shaderEntry, unsigned int shaderFlags)
+	ER_Material::ER_Material(Game& game, const MaterialShaderEntries& shaderEntry, unsigned int shaderFlags, bool instanced)
 		: GameComponent(game),
 		mShaderFlags(shaderFlags),
 		mShaderEntries(shaderEntry)

@@ -9,10 +9,10 @@
 #include "ER_MaterialsCallbacks.h"
 namespace Library
 {
-	ER_BasicColorMaterial::ER_BasicColorMaterial(Game& game, const MaterialShaderEntries& entries, unsigned int shaderFlags)
+	ER_BasicColorMaterial::ER_BasicColorMaterial(Game& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced)
 		: ER_Material(game, entries, shaderFlags)
 	{
-
+		//TODO instanced support
 		if (shaderFlags & HAS_VERTEX_SHADER)
 		{
 			D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
@@ -54,9 +54,28 @@ namespace Library
 		context->PSSetConstantBuffers(0, 1, CBs);
 	}
 
+	// non-callback method for non-"RenderingObject" draws
+	void ER_BasicColorMaterial::PrepareForRendering(const XMMATRIX& worldTransform, const XMFLOAT4& color)
+	{
+		auto context = ER_Material::GetGame()->Direct3DDeviceContext();
+		Camera* camera = (Camera*)(ER_Material::GetGame()->Services().GetService(Camera::TypeIdClass()));
+
+		assert(camera);
+
+		ER_Material::PrepareForRendering({}, nullptr, 0);
+
+		mConstantBuffer.Data.World = XMMatrixTranspose(worldTransform);
+		mConstantBuffer.Data.ViewProjection = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());
+		mConstantBuffer.Data.Color = color;
+		mConstantBuffer.ApplyChanges(context);
+		ID3D11Buffer* CBs[1] = { mConstantBuffer.Buffer() };
+
+		context->VSSetConstantBuffers(0, 1, CBs);
+		context->PSSetConstantBuffers(0, 1, CBs);
+	}
+
 	void ER_BasicColorMaterial::CreateVertexBuffer(Mesh& mesh, ID3D11Buffer** vertexBuffer)
 	{
-		assert(aObj);
 		mesh.CreateVertexBuffer_Position(vertexBuffer);
 	}
 

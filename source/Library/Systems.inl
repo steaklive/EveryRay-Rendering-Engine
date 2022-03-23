@@ -8,7 +8,6 @@
 #include "..\Library\DirectionalLight.h"
 #include "..\Library\Keyboard.h"
 #include "..\Library\Skybox.h"
-#include "..\Library\Grid.h"
 #include "..\Library\PostProcessingStack.h"
 #include "..\Library\GBuffer.h"
 #include "..\Library\ShadowMapper.h"

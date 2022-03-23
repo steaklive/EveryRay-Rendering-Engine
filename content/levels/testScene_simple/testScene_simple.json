@@ -21,13 +21,14 @@
 	[
 		{
 			"instanced" : false,
-			"materials" : 
+			"new_materials":
 			[
 				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
-				},
+					"name" : "ShadowMapMaterial"
+				}
+			],
+			"materials" : 
+			[
 				{
 					"effect" : "content\\effects\\DeferredPrepass.fx",
 					"name" : "DeferredMaterial",
@@ -63,13 +64,14 @@
 		},
 		{
 			"instanced" : false,
-			"materials" : 
+			"new_materials":
 			[
 				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
-				},
+					"name" : "ShadowMapMaterial"
+				}
+			],
+			"materials" : 
+			[
 				{
 					"effect" : "content\\effects\\DeferredPrepass.fx",
 					"name" : "DeferredMaterial",
@@ -116,13 +118,14 @@
 		},
 		{
 			"instanced" : false,
-			"materials" : 
+			"new_materials":
 			[
 				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
-				},
+					"name" : "ShadowMapMaterial"
+				}
+			],
+			"materials" : 
+			[
 				{
 					"effect" : "content\\effects\\DeferredPrepass.fx",
 					"name" : "DeferredMaterial",
@@ -175,13 +178,14 @@
 		},
 		{
 			"instanced" : false,
-			"materials" : 
+			"new_materials":
 			[
 				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
-				},
+					"name" : "ShadowMapMaterial"
+				}
+			],
+			"materials" : 
+			[
 				{
 					"effect" : "content\\effects\\DeferredPrepass.fx",
 					"name" : "DeferredMaterial",
@@ -234,13 +238,14 @@
 		},
 		{
 			"instanced" : false,
-			"materials" : 
+			"new_materials":
 			[
 				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
-				},
+					"name" : "ShadowMapMaterial"
+				}
+			],
+			"materials" : 
+			[
 				{
 					"effect" : "content\\effects\\DeferredPrepass.fx",
 					"name" : "DeferredMaterial",
@@ -292,14 +297,15 @@
 			"use_forward_shading" : true
 		},
 		{
-			"instanced" : false,
-			"materials" : 
+			"instanced" : false,	
+			"new_materials":
 			[
 				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
-				},
+					"name" : "ShadowMapMaterial"
+				}
+			],
+			"materials" : 
+			[
 				{
 					"effect" : "content\\effects\\DeferredPrepass.fx",
 					"name" : "DeferredMaterial",
@@ -346,13 +352,14 @@
 		},
 		{
 			"instanced" : false,
-			"materials" : 
+			"new_materials":
 			[
 				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
-				},
+					"name" : "ShadowMapMaterial"
+				}
+			],
+			"materials" : 
+			[
 				{
 					"effect" : "content\\effects\\DeferredPrepass.fx",
 					"name" : "DeferredMaterial",
@@ -395,6 +402,9 @@
 			"instanced" : false,
 			"new_materials":
 			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
 				{
 					"name" : "BasicColorMaterial"
 				}

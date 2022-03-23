@@ -147,9 +147,6 @@
     <ClInclude Include="VertexDeclarations.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Grid.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RenderStateHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -175,9 +172,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Material.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BasicMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Skybox.h">
@@ -207,9 +201,6 @@
     <ClInclude Include="SpotLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PointLightingMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FullScreenRenderTarget.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -219,13 +210,7 @@
     <ClInclude Include="PostProcessingMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ColorFilteringMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Projector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderableFrustum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Frustum.h">
@@ -238,18 +223,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RenderTarget.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DepthMapMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ShadowMappingMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ShadowMappingDirectionalMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PBRMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="QuadRenderer.h">
@@ -360,9 +333,6 @@
     <ClInclude Include="Scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ParallaxMappingTestMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Editor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -411,6 +381,9 @@
     <ClInclude Include="ER_BasicColorMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_ShadowMapMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -430,9 +403,6 @@
     </ClCompile>
     <ClCompile Include="ColorHelper.cpp">
       <Filter>Source Files\Helpers</Filter>
-    </ClCompile>
-    <ClCompile Include="BasicMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="Keyboard.cpp">
       <Filter>Source Files\Controls</Filter>
@@ -503,29 +473,11 @@
     <ClCompile Include="SpotLight.cpp">
       <Filter>Source Files\Graphics\Lights</Filter>
     </ClCompile>
-    <ClCompile Include="PointLightingMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
     <ClCompile Include="PostProcessingMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="ColorFilteringMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="Ray.cpp">
       <Filter>Source Files\Helpers</Filter>
-    </ClCompile>
-    <ClCompile Include="DepthMapMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="ShadowMappingMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="ShadowMappingDirectionalMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="PBRMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="FullScreenQuad.cpp">
       <Filter>Source Files\Objects\RenderTarget</Filter>
@@ -552,9 +504,6 @@
       <Filter>Source Files\Objects\Frustums</Filter>
     </ClCompile>
     <ClCompile Include="Projector.cpp">
-      <Filter>Source Files\Objects\Frustums</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderableFrustum.cpp">
       <Filter>Source Files\Objects\Frustums</Filter>
     </ClCompile>
     <ClCompile Include="DemoLevel.cpp">
@@ -617,9 +566,6 @@
     <ClCompile Include="LightShaftsMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
-    <ClCompile Include="ParallaxMappingTestMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
     <ClCompile Include="FogMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
@@ -645,9 +591,6 @@
       <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
     <ClCompile Include="Illumination.cpp">
-      <Filter>Source Files\Graphics\Rendering systems</Filter>
-    </ClCompile>
-    <ClCompile Include="Grid.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
     <ClCompile Include="Foliage.cpp">
@@ -704,51 +647,15 @@
     <ClCompile Include="ER_BasicColorMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
+    <ClCompile Include="ER_ShadowMapMaterial.cpp">
+      <Filter>Source Files\Graphics\Materials</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\..\content\effects\AmbientLighting.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\BasicEffect.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\ColorFilter.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
     <FxCompile Include="..\..\content\effects\ColorGrading.fx">
       <Filter>Effects</Filter>
     </FxCompile>
-    <FxCompile Include="..\..\content\effects\DepthMap.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\DiffuseLighting.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\EnvironmentMapping.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\Instancing.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
     <FxCompile Include="..\..\content\effects\MotionBlur.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\NormalMapping.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\PBR.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\PointLighting.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\ShadowMapping.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\ShadowMappingDirectional.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\ShadowMappingPoint.fx">
       <Filter>Effects</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\effects\SkinShadingColor.fx">
@@ -862,9 +769,6 @@
     <FxCompile Include="..\..\content\shaders\Sun.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="..\..\content\effects\ParallaxMapping.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
     <FxCompile Include="..\..\content\shaders\VolumetricClouds\VolumetricClouds.hlsl">
       <Filter>Shaders\VolumetricClouds</Filter>
     </FxCompile>
@@ -911,6 +815,9 @@
       <Filter>Effects</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\BasicColor.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\ShadowMap.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

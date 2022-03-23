@@ -495,8 +495,12 @@ namespace Rendering
 				}
 				else if (newMat)
 				{
-					auto prepareDrawingMaterial = MeshMaterialVariablesUpdateEvent->GetListener(materialName);
-					prepareDrawingMaterial(i);
+					// run prepare callbacks for non-special materials (specials are, i.e., shadow mapping, processed in their own systems)
+					if (!mNewMaterials[materialName]->IsSpecial())
+					{
+						auto prepareDrawingMaterial = MeshMaterialVariablesUpdateEvent->GetListener(materialName);
+						prepareDrawingMaterial(i);
+					}
 				}
 				else if (mGame->GetLevel()->mIllumination)
 					mGame->GetLevel()->mIllumination->PrepareForForwardLighting(this, i);

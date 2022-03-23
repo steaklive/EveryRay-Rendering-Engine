@@ -18,7 +18,6 @@ namespace Library {
         DeleteObject(mRenderStateHelper);
         DeleteObject(mDirectionalLight);
         DeleteObject(mSkybox);
-        DeleteObject(mGrid);
         DeleteObject(mPostProcessingStack);
         DeleteObject(mGBuffer);
         DeleteObject(mShadowMapper);
@@ -68,12 +67,6 @@ namespace Library {
         mSkybox = new Skybox(game, camera, Utility::GetFilePath(Utility::ToWideString(mScene->skyboxPath)), 10000);
         mSkybox->Initialize();
 		game.CPUProfiler()->EndCPUTime("Skybox init");
-#pragma endregion
-
-		#pragma region INIT_GRID
-        mGrid = new Grid(game, camera, 200, 56, XMFLOAT4(0.961f, 0.871f, 0.702f, 1.0f));
-        mGrid->Initialize();
-        mGrid->SetColor((XMFLOAT4)ColorHelper::LightGray);
 #pragma endregion
 
 		#pragma region INIT_DIRECTIONAL_LIGHT
@@ -144,12 +137,10 @@ namespace Library {
 			if (object.second->IsInGBuffer())
 				object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&, matSystems = materialSystems](int meshIndex) { Library::ER_MaterialsCallbacks::UpdateDeferredPrepassMaterialVariables(matSystems, object.second, meshIndex); });
 			
-			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(0), [&, matSystems = materialSystems](int meshIndex) { Library::ER_MaterialsCallbacks::UpdateShadowMappingMaterialVariables(matSystems, object.second, meshIndex, 0); });
-			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(1), [&, matSystems = materialSystems](int meshIndex) { Library::ER_MaterialsCallbacks::UpdateShadowMappingMaterialVariables(matSystems, object.second, meshIndex, 1); });
-			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(2), [&, matSystems = materialSystems](int meshIndex) { Library::ER_MaterialsCallbacks::UpdateShadowMappingMaterialVariables(matSystems, object.second, meshIndex, 2); });
-
+			// assign prepare callbacks to non-special materials (special ones are processed and rendered from their own systems, i.e., ShadowMapper)
 			for (auto& layeredMaterial : object.second->GetNewMaterials())
-				object.second->MeshMaterialVariablesUpdateEvent->AddListener(layeredMaterial.first, [&, matSystems = materialSystems](int meshIndex) { layeredMaterial.second->PrepareForRendering(matSystems, object.second, meshIndex); });
+				if (!layeredMaterial.second->IsSpecial())
+					object.second->MeshMaterialVariablesUpdateEvent->AddListener(layeredMaterial.first, [&, matSystems = materialSystems](int meshIndex) { layeredMaterial.second->PrepareForRendering(matSystems, object.second, meshIndex); });
 		}
 		game.CPUProfiler()->EndCPUTime("Material callbacks init");
 #pragma endregion
@@ -169,8 +160,6 @@ namespace Library {
 			mDirectionalLight->GetSunBrightness(), mDirectionalLight->GetSunExponent());
 		mSkybox->Update(gameTime);
 		mSkybox->UpdateSun(gameTime);
-
-		mGrid->Update(gameTime);
 		mPostProcessingStack->Update();
 		mVolumetricClouds->Update(gameTime);
 		mIllumination->Update(gameTime, mScene);
@@ -203,7 +192,6 @@ namespace Library {
 			mIllumination->Config();
 
 		//TODO shadow mapper config
-
 		//TODO skybox config
 
         ImGui::End();
@@ -211,11 +199,14 @@ namespace Library {
 
 	void DemoLevel::DrawLevel(Game& game, const GameTime& gameTime)
 	{
+		//TODO set proper RS
+		//TODO set proper DS
+
 		if (mRenderStateHelper)
 			mRenderStateHelper->SaveRasterizerState();
 
-		ID3D11DeviceContext* direct3DDeviceContext = game.Direct3DDeviceContext();
-		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		ID3D11DeviceContext* context = game.Direct3DDeviceContext();
+		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		#pragma region DRAW_GBUFFER
 
@@ -229,7 +220,6 @@ namespace Library {
 
 		#pragma region DRAW_SHADOWS
 		mShadowMapper->Draw(mScene);
-		mRenderStateHelper->RestoreRasterizerState();
 #pragma endregion
 
 		#pragma region DRAW_GLOBAL_ILLUMINATION
@@ -252,9 +242,7 @@ namespace Library {
 		mIllumination->DrawLocalIllumination(mGBuffer, mPostProcessingStack->GetMainRenderTarget(), Utility::IsEditorMode);
 
 		if (Utility::IsEditorMode)
-		{
 			mDirectionalLight->DrawProxyModel(gameTime); //TODO move to Illumination() or better to separate debug renderer system
-		}
 #pragma endregion
 
 		for (auto it = mScene->objects.begin(); it != mScene->objects.end(); it++)

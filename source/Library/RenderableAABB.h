@@ -4,7 +4,7 @@
 
 namespace Library
 {
-	class BasicMaterial;
+	class ER_BasicColorMaterial;
 	class Pass;
 
 	class RenderableAABB : public DrawableGameComponent
@@ -20,11 +20,11 @@ namespace Library
 		void InitializeGeometry(const std::vector<XMFLOAT3>& aabb, XMMATRIX matrix);
 		void SetPosition(const XMFLOAT3& position);
 		void SetScale(const XMFLOAT3& scale) { mScale = scale; };
-		void SetColor(XMFLOAT4 color);
+		void SetColor(const XMFLOAT4& color);
+		void UpdateColor(const XMFLOAT4& color);
 		void SetRotationMatrix(const XMMATRIX& rotationMat);
 		void SetAABB(const std::vector<XMFLOAT3>& aabb);
 
-		void UpdateColor(XMFLOAT4 color);
 
 		virtual void Initialize() override;
 		void Update();
@@ -50,9 +50,7 @@ namespace Library
 
 		ID3D11Buffer* mVertexBuffer;
 		ID3D11Buffer* mIndexBuffer;
-		BasicMaterial* mMaterial;
-		Pass* mPass;
-		ID3D11InputLayout* mInputLayout;
+		ER_BasicColorMaterial* mMaterial;
 
 		XMFLOAT4 mColor;
 		XMFLOAT3 mPosition;

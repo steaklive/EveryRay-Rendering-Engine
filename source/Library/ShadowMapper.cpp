@@ -11,8 +11,9 @@
 #include "GameException.h"
 #include "Scene.h"
 #include "MaterialHelper.h"
-#include "DepthMapMaterial.h"
 #include "RenderingObject.h"
+#include "ER_ShadowMapMaterial.h"
+#include "ER_MaterialsCallbacks.h"
 
 #include <sstream>
 #include <iomanip>
@@ -58,7 +59,16 @@ namespace Library
 		rasterizerStateDesc.FrontCounterClockwise = false;
 		HRESULT hr = mGame.Direct3DDevice()->CreateRasterizerState(&rasterizerStateDesc, &mShadowRasterizerState);
 		if (FAILED(hr))
-			throw GameException("ID3D11Device::CreateRasterizerState() failed while generating a shadow map.", hr);
+			throw GameException("CreateRasterizerState() failed while generating a shadow mapper.", hr);
+
+		D3D11_DEPTH_STENCIL_DESC depthStencilStateDesc;
+		depthStencilStateDesc.DepthEnable = TRUE;
+		depthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+		depthStencilStateDesc.StencilEnable = FALSE;
+		hr = mGame.Direct3DDevice()->CreateDepthStencilState(&depthStencilStateDesc, &mDepthStencilState);
+		if (FAILED(hr))
+			throw GameException("CreateDepthStencilState() failed while generating a shadow mapper.", hr);
 	}
 
 	ShadowMapper::~ShadowMapper()
@@ -66,6 +76,7 @@ namespace Library
 		DeletePointerCollection(mShadowMaps);
 		DeletePointerCollection(mLightProjectors);
 		ReleaseObject(mShadowRasterizerState);
+		ReleaseObject(mDepthStencilState);
 	}
 
 	void ShadowMapper::Update(const GameTime& gameTime)
@@ -84,6 +95,7 @@ namespace Library
 	void ShadowMapper::BeginRenderingToShadowMap(int cascadeIndex)
 	{
 		assert(cascadeIndex < NUM_SHADOW_CASCADES);
+		mGame.Direct3DDeviceContext()->RSGetState(&mOriginalRasterizerState);
 
 		mShadowMaps[cascadeIndex]->Begin();
 		mGame.Direct3DDeviceContext()->ClearDepthStencilView(mShadowMaps[cascadeIndex]->DepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
@@ -95,6 +107,8 @@ namespace Library
 		assert(cascadeIndex < NUM_SHADOW_CASCADES);
 
 		mShadowMaps[cascadeIndex]->End();
+
+		mGame.Direct3DDeviceContext()->RSSetState(mOriginalRasterizerState);
 	}
 
 	XMMATRIX ShadowMapper::GetViewMatrix(int cascadeIndex /*= 0*/) const
@@ -232,24 +246,27 @@ namespace Library
 
 	void ShadowMapper::Draw(const Scene* scene)
 	{
+		mGame.Direct3DDeviceContext()->OMSetDepthStencilState(mDepthStencilState, 0);
+
+		ER_MaterialSystems materialSystems;
+		materialSystems.mShadowMapper = this;
+
 		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 		{
 			BeginRenderingToShadowMap(i);
 			const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(i);
 
-			XMMATRIX lvp = GetViewMatrix(i) * GetProjectionMatrix(i);
 			int objectIndex = 0;
 			for (auto it = scene->objects.begin(); it != scene->objects.end(); it++, objectIndex++)
 			{
-				auto materialInfo = it->second->GetMaterials().find(name);
-				if (materialInfo != it->second->GetMaterials().end())
+				auto materialInfo = it->second->GetNewMaterials().find(name);
+				if (materialInfo != it->second->GetNewMaterials().end())
 				{
-					XMMATRIX worldMatrix = XMLoadFloat4x4(&(it->second->GetTransformationMatrix4X4()));
-					if (it->second->IsInstanced())
-						static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->LightViewProjection() << lvp;
-					else
-						static_cast<DepthMapMaterial*>(it->second->GetMaterials()[name])->WorldLightViewProjection() << worldMatrix * lvp;
-					it->second->Draw(name, true);
+					for (int meshIndex = 0; meshIndex < it->second->GetMeshCount(); meshIndex++)
+					{
+						static_cast<ER_ShadowMapMaterial*>(materialInfo->second)->PrepareForRendering(materialSystems, it->second, meshIndex, i);
+						it->second->Draw(name, true);
+					}
 				}
 			}
 

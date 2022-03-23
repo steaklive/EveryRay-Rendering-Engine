@@ -24,7 +24,7 @@ namespace Library
 
 		void SaveRenderingObjectsTransforms();
 
-		ER_Material* GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries);
+		ER_Material* GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries, bool instanced);
 		Camera& GetCamera() { return mCamera; }
 		const XMFLOAT3& GetLightProbesVolumeMinBounds() const { return mLightProbesVolumeMinBounds; }
 		const XMFLOAT3& GetLightProbesVolumeMaxBounds() const { return mLightProbesVolumeMaxBounds; }

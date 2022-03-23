@@ -4,7 +4,7 @@
 #include "MatrixHelper.h"
 namespace Library
 {
-	class BasicMaterial;
+	class ER_BasicColorMaterial;
 	class Pass;
 
 	class RenderableOBB : public DrawableGameComponent
@@ -19,7 +19,8 @@ namespace Library
 
 		void InitializeGeometry(const std::vector<XMFLOAT3>& aabb, XMMATRIX matrix);
 		void SetPosition(const XMFLOAT3& position);
-		void SetColor(XMFLOAT4 color);
+		void SetColor(const XMFLOAT4& color);
+		void UpdateColor(const XMFLOAT4& color);
 		void SetRotationMatrix(const XMMATRIX& rotationMat);
 		void SetOBB(const std::vector<XMFLOAT3>& aabb);
 
@@ -28,7 +29,6 @@ namespace Library
 		std::vector<XMFLOAT3>& GetRotationRowMatrix() { return MatrixHelper::GetRows(mTranformationMatrix); };
 		XMFLOAT3 GetCenter() { return mCenter; };
 
-		void UpdateColor(XMFLOAT4 color);
 
 		const std::vector<XMFLOAT3>& GetOBB() { return mModifiedOBB; };
 
@@ -43,13 +43,10 @@ namespace Library
 		RenderableOBB(const RenderableOBB& rhs);
 		RenderableOBB& operator=(const RenderableOBB& rhs);
 
-
 		void InitializeVertexBuffer(const std::vector<XMFLOAT3>& aabb);
 		void InitializeIndexBuffer();
 
-
 		void TransformOBB(const GameTime& gameTime);
-
 
 		static const XMVECTORF32 DefaultColor;
 		static const UINT OBBVertexCount;
@@ -60,9 +57,7 @@ namespace Library
 
 		ID3D11Buffer* mVertexBuffer;
 		ID3D11Buffer* mIndexBuffer;
-		BasicMaterial* mMaterial;
-		Pass* mPass;
-		ID3D11InputLayout* mInputLayout;
+		ER_BasicColorMaterial* mMaterial;
 
 		XMFLOAT4 mColor;
 		XMFLOAT3 mPosition;
@@ -73,7 +68,6 @@ namespace Library
 		XMFLOAT4X4 mWorldMatrix;
 
 		XMMATRIX mTransformMatrix;
-
 
 		XMFLOAT3 mExtents;
 		XMMATRIX mTranformationMatrix;

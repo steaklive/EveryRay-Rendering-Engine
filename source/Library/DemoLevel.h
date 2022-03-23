@@ -18,7 +18,6 @@ namespace Library
     class RenderStateHelper;
     class DirectionalLight;
     class Skybox;
-    class Grid;
     class GBuffer;
     class ShadowMapper;
     class Terrain;
@@ -43,7 +42,6 @@ namespace Library
         Keyboard* mKeyboard = nullptr;
         RenderStateHelper* mRenderStateHelper = nullptr;
         Skybox* mSkybox = nullptr;
-        Grid* mGrid = nullptr;
         ShadowMapper* mShadowMapper = nullptr;
         DirectionalLight* mDirectionalLight = nullptr;
         GBuffer* mGBuffer = nullptr;

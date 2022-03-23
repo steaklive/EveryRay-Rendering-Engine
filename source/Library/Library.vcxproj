@@ -185,11 +185,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\Game\GameException.h" />
-    <ClInclude Include="BasicMaterial.h" />
     <ClInclude Include="BruteforceStructure.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CollisionDetectionTypes.h" />
-    <ClInclude Include="ColorFilteringMaterial.h" />
     <ClInclude Include="ColorGradingMaterial.h" />
     <ClInclude Include="ColorHelper.h" />
     <ClInclude Include="Common.h" />
@@ -201,7 +199,6 @@
     <ClInclude Include="DeferredMaterial.h" />
     <ClInclude Include="DemoLevel.h" />
     <ClInclude Include="DepthMap.h" />
-    <ClInclude Include="DepthMapMaterial.h" />
     <ClInclude Include="DepthTarget.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="DrawableGameComponent.h" />
@@ -213,6 +210,7 @@
     <ClInclude Include="ER_LightProbe.h" />
     <ClInclude Include="ER_Material.h" />
     <ClInclude Include="ER_MaterialsCallbacks.h" />
+    <ClInclude Include="ER_ShadowMapMaterial.h" />
     <ClInclude Include="FastFourierTransform.h" />
     <ClInclude Include="FirstPersonCamera.h" />
     <ClInclude Include="FogMaterial.h" />
@@ -228,7 +226,6 @@
     <ClInclude Include="GameTime.h" />
     <ClInclude Include="GBuffer.h" />
     <ClInclude Include="GeneralEvent.h" />
-    <ClInclude Include="Grid.h" />
     <ClInclude Include="Illumination.h" />
     <ClInclude Include="InstancingMaterial.h" />
     <ClInclude Include="Keyboard.h" />
@@ -244,11 +241,8 @@
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="OceanSimulator.h" />
     <ClInclude Include="OctreeStructure.h" />
-    <ClInclude Include="ParallaxMappingTestMaterial.h" />
     <ClInclude Include="Pass.h" />
-    <ClInclude Include="PBRMaterial.h" />
     <ClInclude Include="PointLight.h" />
-    <ClInclude Include="PointLightingMaterial.h" />
     <ClInclude Include="PostProcessingMaterial.h" />
     <ClInclude Include="PostProcessingStack.h" />
     <ClInclude Include="Projector.h" />
@@ -257,7 +251,6 @@
     <ClInclude Include="RasterizerStates.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="RenderableAABB.h" />
-    <ClInclude Include="RenderableFrustum.h" />
     <ClInclude Include="RenderableOBB.h" />
     <ClInclude Include="RenderingObject.h" />
     <ClInclude Include="RenderStateHelper.h" />
@@ -270,8 +263,6 @@
     <ClInclude Include="ServiceContainer.h" />
     <ClInclude Include="ShaderCompiler.h" />
     <ClInclude Include="ShadowMapper.h" />
-    <ClInclude Include="ShadowMappingDirectionalMaterial.h" />
-    <ClInclude Include="ShadowMappingMaterial.h" />
     <ClInclude Include="SkinShadingColorMaterial.h" />
     <ClInclude Include="SkinShadingScatterMaterial.h" />
     <ClInclude Include="Skybox.h" />
@@ -294,10 +285,8 @@
     <ClInclude Include="VoxelizationGIMaterial.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BasicMaterial.cpp" />
     <ClCompile Include="BruteforceStructure.cpp" />
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="ColorFilteringMaterial.cpp" />
     <ClCompile Include="ColorGradingMaterial.cpp" />
     <ClCompile Include="ColorHelper.cpp" />
     <ClCompile Include="CompositeLightingMaterial.cpp" />
@@ -307,7 +296,6 @@
     <ClCompile Include="DeferredMaterial.cpp" />
     <ClCompile Include="DemoLevel.cpp" />
     <ClCompile Include="DepthMap.cpp" />
-    <ClCompile Include="DepthMapMaterial.cpp" />
     <ClCompile Include="DepthTarget.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="DrawableGameComponent.cpp" />
@@ -319,6 +307,7 @@
     <ClCompile Include="ER_LightProbe.cpp" />
     <ClCompile Include="ER_Material.cpp" />
     <ClCompile Include="ER_MaterialsCallbacks.cpp" />
+    <ClCompile Include="ER_ShadowMapMaterial.cpp" />
     <ClCompile Include="FirstPersonCamera.cpp" />
     <ClCompile Include="FogMaterial.cpp" />
     <ClCompile Include="Foliage.cpp" />
@@ -333,7 +322,6 @@
     <ClCompile Include="GameException.cpp" />
     <ClCompile Include="GameTime.cpp" />
     <ClCompile Include="GBuffer.cpp" />
-    <ClCompile Include="Grid.cpp" />
     <ClCompile Include="Illumination.cpp" />
     <ClCompile Include="InstancingMaterial.cpp" />
     <ClCompile Include="Keyboard.cpp" />
@@ -348,11 +336,8 @@
     <ClCompile Include="MotionBlurMaterial.cpp" />
     <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="OctreeStructure.cpp" />
-    <ClCompile Include="ParallaxMappingTestMaterial.cpp" />
     <ClCompile Include="Pass.cpp" />
-    <ClCompile Include="PBRMaterial.cpp" />
     <ClCompile Include="PointLight.cpp" />
-    <ClCompile Include="PointLightingMaterial.cpp" />
     <ClCompile Include="PostProcessingMaterial.cpp" />
     <ClCompile Include="PostProcessingStack.cpp" />
     <ClCompile Include="Projector.cpp" />
@@ -361,7 +346,6 @@
     <ClCompile Include="RasterizerStates.cpp" />
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="RenderableAABB.cpp" />
-    <ClCompile Include="RenderableFrustum.cpp" />
     <ClCompile Include="RenderableOBB.cpp" />
     <ClCompile Include="RenderingObject.cpp" />
     <ClCompile Include="RenderStateHelper.cpp" />
@@ -372,8 +356,6 @@
     <ClCompile Include="ScreenSpaceReflectionsMaterial.cpp" />
     <ClCompile Include="ServiceContainer.cpp" />
     <ClCompile Include="ShadowMapper.cpp" />
-    <ClCompile Include="ShadowMappingDirectionalMaterial.cpp" />
-    <ClCompile Include="ShadowMappingMaterial.cpp" />
     <ClCompile Include="SkinShadingColorMaterial.cpp" />
     <ClCompile Include="SkinShadingScatterMaterial.cpp" />
     <ClCompile Include="Skybox.cpp" />
@@ -398,24 +380,6 @@
     <ClCompile Include="VoxelizationGIMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\..\content\effects\AmbientLighting.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\BasicEffect.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\ColorFilter.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
     <FxCompile Include="..\..\content\effects\ColorGrading.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -433,24 +397,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\content\effects\DeferredPrepass.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\DepthMap.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\DiffuseLighting.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\EnvironmentMapping.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -474,12 +420,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="..\..\content\effects\Instancing.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
     <FxCompile Include="..\..\content\effects\LightShafts.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -487,48 +427,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\content\effects\MotionBlur.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\NormalMapping.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\ParallaxMapping.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\PBR.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\PointLighting.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\ShadowMapping.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\ShadowMappingDirectional.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\ShadowMappingPoint.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -633,6 +531,10 @@
     <FxCompile Include="..\..\content\shaders\PBR\RadianceMapVS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\ShadowMap.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

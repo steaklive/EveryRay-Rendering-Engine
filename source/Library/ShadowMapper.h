@@ -45,6 +45,8 @@ namespace Library
 		XMMATRIX mShadowMapViewMatrix;
 		XMMATRIX mShadowMapProjectionMatrix;
 		ID3D11RasterizerState* mShadowRasterizerState;
+		ID3D11RasterizerState* mOriginalRasterizerState;
+		ID3D11DepthStencilState* mDepthStencilState;
 		UINT mResolution = 0;
 		bool mIsCascaded = true;
 	};

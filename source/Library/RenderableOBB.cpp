@@ -3,13 +3,12 @@
 #include "RenderableOBB.h"
 #include "Game.h"
 #include "GameException.h"
-#include "BasicMaterial.h"
+#include "ER_BasicColorMaterial.h"
 #include "VertexDeclarations.h"
 #include "ColorHelper.h"
 #include "MatrixHelper.h"
 #include "VectorHelper.h"
 #include "Camera.h"
-#include "VertexDeclarations.h"
 #include "Utility.h"
 
 namespace Library
@@ -43,7 +42,7 @@ namespace Library
 	};
 	RenderableOBB::RenderableOBB(Game& game, Camera& camera)
 		: DrawableGameComponent(game, camera),
-		mVertexBuffer(nullptr), mIndexBuffer(nullptr), mMaterial(nullptr), mPass(nullptr), mInputLayout(nullptr),
+		mVertexBuffer(nullptr), mIndexBuffer(nullptr), mMaterial(nullptr),
 		mColor(DefaultColor), mPosition(Vector3Helper::Zero), mDirection(Vector3Helper::Forward), mUp(Vector3Helper::Up), mRight(Vector3Helper::Right),
 		mWorldMatrix(MatrixHelper::Identity), mVertices(0), mCornersAABB(0)
 	{
@@ -51,7 +50,7 @@ namespace Library
 
 	RenderableOBB::RenderableOBB(Game& game, Camera& camera, const XMFLOAT4& color)
 		: DrawableGameComponent(game, camera),
-		mVertexBuffer(nullptr), mIndexBuffer(nullptr), mMaterial(nullptr), mPass(nullptr), mInputLayout(nullptr),
+		mVertexBuffer(nullptr), mIndexBuffer(nullptr), mMaterial(nullptr),
 		mColor(color), mPosition(Vector3Helper::Zero), mDirection(Vector3Helper::Forward), mUp(Vector3Helper::Up), mRight(Vector3Helper::Right),
 		mWorldMatrix(MatrixHelper::Identity), mVertices(0), mCornersAABB(0)
 	{
@@ -61,13 +60,7 @@ namespace Library
 	{
 		ReleaseObject(mIndexBuffer);
 		ReleaseObject(mVertexBuffer);
-
-		if (mMaterial != nullptr)
-		{
-			delete mMaterial->GetEffect();
-			delete mMaterial;
-			mMaterial = nullptr;
-		}
+		DeleteObjects(mMaterial);
 	}
 
 	void RenderableOBB::SetPosition(const XMFLOAT3& position)
@@ -95,9 +88,7 @@ namespace Library
 
 	void RenderableOBB::InitializeGeometry(const std::vector<XMFLOAT3>& aabb, XMMATRIX matrix)
 	{
-
 		mOBB = &aabb;
-
 
 		XMFLOAT3 Center = XMFLOAT3
 		{
@@ -112,19 +103,12 @@ namespace Library
 			mOBB->at(1).y - Center.y,
 			mOBB->at(1).z - Center.z
 		};
-		
 
 		mTranformationMatrix = XMMatrixTranslation(Center.x, Center.y, Center.z);
-
-
-		//mModifiedAABB = aabb;
-		//mModifiedAABB2 = aabb;
-
 
 		XMFLOAT3 xv = XMFLOAT3(mExtents.x, 0, 0);
 		XMFLOAT3 yv = XMFLOAT3(0, mExtents.y, 0);
 		XMFLOAT3 zv = XMFLOAT3(0, 0, mExtents.z);
-
 
 		XMStoreFloat3(&xv, XMVector3TransformNormal(XMLoadFloat3(&xv), mTranformationMatrix));
 		XMStoreFloat3(&yv, XMVector3TransformNormal(XMLoadFloat3(&yv), mTranformationMatrix));
@@ -134,14 +118,10 @@ namespace Library
 		XMVECTOR translation;
 		XMVECTOR rotation;
 		XMMatrixDecompose(&scale, &rotation, &translation, mTranformationMatrix );
-
-
 		
 		//XMFLOAT3 center;
 		XMStoreFloat3(&mCenter, translation);
 		XMStoreFloat3(&mCenterConstant, translation);
-
-
 
 		//std::vector<XMFLOAT3> vertices;
 		mVertices.push_back(XMFLOAT3(mCenter.x + xv.x + yv.x + zv.x, mCenter.y + xv.y + yv.y + zv.y, mCenter.z + xv.z + yv.z + zv.z));
@@ -162,22 +142,12 @@ namespace Library
 		mCornersAABB.push_back(XMFLOAT3(mCenter.x - xv.x - yv.x - zv.x, mCenter.y - xv.y - yv.y - zv.y, mCenter.z - xv.z - yv.z - zv.z));
 		mCornersAABB.push_back(XMFLOAT3(mCenter.x - xv.x - yv.x + zv.x, mCenter.y - xv.y - yv.y + zv.y, mCenter.z - xv.z - yv.z + zv.z));
 
-
-
 		InitializeVertexBuffer(mVertices);
 	}
 
 	void RenderableOBB::Initialize()
 	{
-		Effect* effect = new Effect(*mGame);
-		effect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\BasicEffect.fx"));
-
-		mMaterial = new BasicMaterial();
-		mMaterial->Initialize(effect);
-
-		mPass = mMaterial->CurrentTechnique()->Passes().at(0);
-		mInputLayout = mMaterial->InputLayouts().at(mPass);
-
+		mMaterial = new ER_BasicColorMaterial(*mGame, {}, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER);
 		InitializeIndexBuffer();
 	}
 
@@ -196,48 +166,26 @@ namespace Library
 
 	void RenderableOBB::Draw(const GameTime& gameTime)
 	{
-		assert(mPass != nullptr);
-		assert(mInputLayout != nullptr);
+		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 
-		ID3D11DeviceContext* direct3DDeviceContext = mGame->Direct3DDeviceContext();
-		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-		direct3DDeviceContext->IASetInputLayout(mInputLayout);
-
-		UINT stride = sizeof(VertexPositionColor);
+		UINT stride = mMaterial->VertexSize();
 		UINT offset = 0;
-		direct3DDeviceContext->IASetVertexBuffers(0, 1, &mVertexBuffer, &stride, &offset);
-		direct3DDeviceContext->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+		context->IASetVertexBuffers(0, 1, &mVertexBuffer, &stride, &offset);
+		context->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
-		XMMATRIX world = XMLoadFloat4x4(&mWorldMatrix);
-		XMMATRIX wvp = world * mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
-		mMaterial->WorldViewProjection() << wvp;
+		mMaterial->PrepareForRendering(XMLoadFloat4x4(&mWorldMatrix), mColor);
 
-		mPass->Apply(0, direct3DDeviceContext);
-
-		direct3DDeviceContext->DrawIndexed(OBBIndexCount, 0, 0);
+		context->DrawIndexed(OBBIndexCount, 0, 0);
 	}
-	void RenderableOBB::SetColor(XMFLOAT4 color)
+	void RenderableOBB::SetColor(const XMFLOAT4& color)
 	{
 		mColor = color;
 	}
-
-	void RenderableOBB::UpdateColor(XMFLOAT4 color)
+	//TODO refactor duplication
+	void RenderableOBB::UpdateColor(const XMFLOAT4& color)
 	{
-
-		VertexPositionColor vertices[OBBVertexCount];
-
-		for (UINT i = 0; i < OBBVertexCount; i++)
-		{
-			vertices[i].Position = XMFLOAT4(mVertices[i].x, mVertices[i].y, mVertices[i].z, 1.0f);
-			vertices[i].Color = color;
-		}
-
-		D3D11_MAPPED_SUBRESOURCE mappedResource;
-		ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
-		mGame->Direct3DDeviceContext()->Map(mVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-		memcpy(mappedResource.pData, vertices, sizeof(VertexPositionColor) * OBBVertexCount);
-		mGame->Direct3DDeviceContext()->Unmap(mVertexBuffer, 0);
-
+		mColor = color;
 	}
 
 	void RenderableOBB::TransformOBB(const GameTime& gameTime)
@@ -258,19 +206,14 @@ namespace Library
 	{
 		ReleaseObject(mVertexBuffer);
 
-		VertexPositionColor vertices[OBBVertexCount];
-		//const XMFLOAT3* corners = frustum.Corners();
+		VertexPosition vertices[OBBVertexCount];
 		for (UINT i = 0; i < OBBVertexCount; i++)
-		{
 			vertices[i].Position = XMFLOAT4(aabb[i].x, aabb[i].y, aabb[i].z, 1.0f);
-			vertices[i].Color = mColor;
-		}
 
 		D3D11_BUFFER_DESC vertexBufferDesc;
 		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
-		vertexBufferDesc.ByteWidth = sizeof(VertexPositionColor) * OBBVertexCount;
-		vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-		vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		vertexBufferDesc.ByteWidth = sizeof(VertexPosition) * OBBVertexCount;
+		vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
 		D3D11_SUBRESOURCE_DATA vertexSubResourceData;

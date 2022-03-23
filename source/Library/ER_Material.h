@@ -4,6 +4,8 @@
 #include "ConstantBuffer.h"
 #include "GameComponent.h"
 #include "VertexDeclarations.h"
+#include "SamplerStates.h"
+
 namespace Rendering
 {
 	class RenderingObject;
@@ -35,13 +37,11 @@ namespace Library
 	class ER_Material : public GameComponent
 	{
 	public:
-		ER_Material(Game& game, const MaterialShaderEntries& shaderEntry, unsigned int shaderFlags);
+		ER_Material(Game& game, const MaterialShaderEntries& shaderEntry, unsigned int shaderFlags, bool instanced = false);
 		~ER_Material();
 
 		virtual void PrepareForRendering(ER_MaterialSystems neededSystems, Rendering::RenderingObject* aObj, int meshIndex);
-		
-		virtual void CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount, const void* shaderBytecodeWithInputSignature, UINT byteCodeLength);
-		
+
 		virtual void CreateVertexBuffer(Mesh& mesh, ID3D11Buffer** vertexBuffer) = 0;
 
 		/*virtual*/ void CreateVertexShader(const std::string& path, D3D11_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount);
@@ -51,7 +51,9 @@ namespace Library
 
 		virtual int VertexSize() = 0;
 
+		bool IsSpecial() { return mIsSpecial; };
 	protected:
+		virtual void CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount, const void* shaderBytecodeWithInputSignature, UINT byteCodeLength);
 
 		ID3D11VertexShader* mVS = nullptr;
 		ID3D11GeometryShader* mGS = nullptr;
@@ -63,5 +65,7 @@ namespace Library
 
 		unsigned int mShaderFlags;
 		MaterialShaderEntries mShaderEntries;
+
+		bool mIsSpecial = false; //special materials (like shadow map, voxelization, etc.) do not use callbacks in RenderingObjects
 	};
 }

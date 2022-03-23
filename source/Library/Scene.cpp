@@ -201,7 +201,19 @@ namespace Library
 					if (root["rendering_objects"][i]["new_materials"][matIndex].isMember("pixelEntry"))
 						shaderEntries.pixelEntry = root["rendering_objects"][i]["new_materials"][matIndex]["pixelEntry"].asString();
 
-					aObject->LoadMaterial(GetMaterialByName(name, shaderEntries), name);
+					if (isInstanced) //be careful with the instancing support in shaders of the materials! (i.e., maybe the material does not have instancing entry point/support)
+						shaderEntries.vertexEntry = shaderEntries.vertexEntry + "_instancing";
+
+					// taking care of a special material : shadow map
+					if (name == MaterialHelper::shadowMapMaterialName) {
+						for (int cascade = 0; cascade < NUM_SHADOW_CASCADES; cascade++)
+						{
+							std::string cascadedname = MaterialHelper::shadowMapMaterialName + " " + std::to_string(cascade);
+							aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), cascadedname);
+						}
+					}
+					else //other standard materials
+						aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), name);
 				}
 			}
 			if (root["rendering_objects"][i].isMember("materials")) {
@@ -214,17 +226,7 @@ namespace Library
 						root["rendering_objects"][i]["materials"][matIndex]["technique"].asString()
 					);
 
-					if (std::get<2>(materialData) == MaterialHelper::shadowMapMaterialName) {
-						for (int cascade = 0; cascade < NUM_SHADOW_CASCADES; cascade++)
-						{
-							const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(cascade);
-							aObject->LoadMaterial(new DepthMapMaterial(), std::get<1>(materialData), name);
-							auto material = aObject->GetMaterials()[name];
-							if (material)
-								material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][matIndex]["technique"].asString()));
-						}
-					}
-					else if (std::get<2>(materialData) == MaterialHelper::voxelizationGIMaterialName) {
+					if (std::get<2>(materialData) == MaterialHelper::voxelizationGIMaterialName) {
 						aObject->SetInVoxelization(true);
 						for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
 						{
@@ -446,7 +448,7 @@ namespace Library
 		writer->write(root, &file_id);
 	}
 
-	ER_Material* Scene::GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries)
+	ER_Material* Scene::GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries, bool instanced)
 	{
 		auto core = GetGame();
 		assert(core);
@@ -454,9 +456,10 @@ namespace Library
 		ER_Material* material = nullptr;
 
 		// cant do reflection in C++
-		if (matName == "BasicColorMaterial") {
+		if (matName == "BasicColorMaterial")
 			material = new ER_BasicColorMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER);
-		}
+		else if (matName == "ShadowMapMaterial")
+			material = new ER_ShadowMapMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
 		else
 			material = nullptr;
 
