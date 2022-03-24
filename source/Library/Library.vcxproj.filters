@@ -303,19 +303,10 @@
     <ClInclude Include="FXAAMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DeferredMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ScreenSpaceReflectionsMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MaterialHelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ShadowMapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Terrain.h">
@@ -382,6 +373,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ER_ShadowMapMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ER_GBufferMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ER_GBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ER_ShadowMapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -545,9 +545,6 @@
     <ClCompile Include="FXAAMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
-    <ClCompile Include="DeferredMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
     <ClCompile Include="ScreenSpaceReflectionsMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
@@ -584,9 +581,6 @@
     <ClCompile Include="VolumetricClouds.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
-    <ClCompile Include="ShadowMapper.cpp">
-      <Filter>Source Files\Graphics\Rendering systems</Filter>
-    </ClCompile>
     <ClCompile Include="PostProcessingStack.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
@@ -594,9 +588,6 @@
       <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
     <ClCompile Include="Foliage.cpp">
-      <Filter>Source Files\Graphics\Rendering systems</Filter>
-    </ClCompile>
-    <ClCompile Include="GBuffer.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
     <ClCompile Include="CompositeLightingMaterial.cpp">
@@ -649,6 +640,15 @@
     </ClCompile>
     <ClCompile Include="ER_ShadowMapMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_GBufferMaterial.cpp">
+      <Filter>Source Files\Graphics\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_GBuffer.cpp">
+      <Filter>Source Files\Graphics\Rendering systems</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_ShadowMapper.cpp">
+      <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -748,9 +748,6 @@
     <FxCompile Include="..\..\content\shaders\Tonemap\Tonemap.hlsl">
       <Filter>Shaders\Tonemap</Filter>
     </FxCompile>
-    <FxCompile Include="..\..\content\effects\DeferredPrepass.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
     <FxCompile Include="..\..\content\effects\SSR.fx">
       <Filter>Effects</Filter>
     </FxCompile>
@@ -818,6 +815,9 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\ShadowMap.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\GBuffer.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

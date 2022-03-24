@@ -11,7 +11,7 @@
 #include "VertexDeclarations.h"
 #include "RasterizerStates.h"
 #include "TerrainMaterial.h"
-#include "ShadowMapper.h"
+#include "ER_ShadowMapper.h"
 
 #define MULTITHREADED_LOAD 1
 
@@ -67,7 +67,7 @@ namespace Library
 		std::chrono::duration<double> durationTime = std::chrono::system_clock::now() - startTime;
 		//float timeSec = durationTime.count();
 
-		mTerrainShadowMapper = new ShadowMapper(pGame, camera, light, 4096, 4096);
+		mTerrainShadowMapper = new ER_ShadowMapper(pGame, camera, light, 4096, 4096);
 		mDirectionalLight.RotationUpdateEvent->AddListener("terrain shadow mapper", [&]() { mTerrainShadowMapper->ApplyTransform(); });
 	}
 
@@ -186,7 +186,7 @@ namespace Library
 		}
 	}
 
-	void Terrain::Draw(ShadowMapper* worldShadowMapper)
+	void Terrain::Draw(ER_ShadowMapper* worldShadowMapper)
 	{
 		if (mUseTessellatedTerrain)
 		{
@@ -219,7 +219,7 @@ namespace Library
 		}
 	}
 
-	void Terrain::DrawTessellated(int tileIndex, ShadowMapper* worldShadowMapper)
+	void Terrain::DrawTessellated(int tileIndex, ER_ShadowMapper* worldShadowMapper)
 	{
 		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
 		D3D11_PRIMITIVE_TOPOLOGY originalPrimitiveTopology;
@@ -291,7 +291,7 @@ namespace Library
 		context->DSSetShader(NULL, NULL, 0);
 	}
 
-	void Terrain::DrawNonTessellated(int tileIndex, ShadowMapper* worldShadowMapper)
+	void Terrain::DrawNonTessellated(int tileIndex, ER_ShadowMapper* worldShadowMapper)
 	{
 		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
 		context->IASetPrimitiveTopology(/*D3D11_PRIMITIVE_TOPOLOGY_LINELIST*/D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

@@ -34,7 +34,7 @@ static const int SpecularProbesVolumeCascadeSizes[NUM_PROBE_VOLUME_CASCADES] =
 namespace Library
 {
 	class Camera;
-	class ShadowMapper;
+	class ER_ShadowMapper;
 	class DirectionalLight;
 	class Skybox;
 	class GameTime;
@@ -62,7 +62,7 @@ namespace Library
 	{
 	public:
 		using ProbesRenderingObjectsInfo = std::map<std::string, Rendering::RenderingObject*>;
-		ER_IlluminationProbeManager(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ShadowMapper& shadowMapper);
+		ER_IlluminationProbeManager(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
 		~ER_IlluminationProbeManager();
 
 		bool AreProbesReady() { return mDiffuseProbesReady && mSpecularProbesReady; }
@@ -105,8 +105,8 @@ namespace Library
 		bool IsEnabled() { return mEnabled; }
 		bool mDebugDiscardCulledProbes = false;//used in DebugLightProbeMaterial
 	private:
-		void SetupDiffuseProbes(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ShadowMapper& shadowMapper);
-		void SetupSpecularProbes(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ShadowMapper& shadowMapper);
+		void SetupDiffuseProbes(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
+		void SetupSpecularProbes(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
 		void AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds);
 		bool IsProbeInCell(ER_LightProbe* aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds);
 		void UpdateProbesByType(Game& game, ER_ProbeType aType);

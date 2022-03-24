@@ -2,40 +2,12 @@
 #include "Materials.inl"
 #include "MaterialHelper.h"
 #include "RenderingObject.h"
-#include "ShadowMapper.h"
+#include "ER_ShadowMapper.h"
 #include "DirectionalLight.h"
 #include "Camera.h"
 
 namespace Library
 {
-	void ER_MaterialsCallbacks::UpdateDeferredPrepassMaterialVariables(ER_MaterialSystems neededSystems, Rendering::RenderingObject* obj, int meshIndex)
-	{
-		assert(neededSystems.mCamera);
-
-		if (!obj)
-			return;
-
-		XMMATRIX worldMatrix = XMLoadFloat4x4(&(obj->GetTransformationMatrix4X4()));
-		XMMATRIX vp = neededSystems.mCamera->ViewMatrix() * neededSystems.mCamera->ProjectionMatrix();
-
-		auto material = static_cast<DeferredMaterial*>(obj->GetMaterials()[MaterialHelper::deferredPrepassMaterialName]);
-		if (material)
-		{
-			material->ViewProjection() << vp;
-			material->World() << worldMatrix;
-			material->AlbedoMap() << obj->GetTextureData(meshIndex).AlbedoMap;
-			material->NormalMap() << obj->GetTextureData(meshIndex).NormalMap;
-			material->RoughnessMap() << obj->GetTextureData(meshIndex).RoughnessMap;
-			material->MetallicMap() << obj->GetTextureData(meshIndex).MetallicMap;
-			material->HeightMap() << obj->GetTextureData(meshIndex).HeightMap;
-			material->ReflectionMaskFactor() << obj->GetMeshReflectionFactor(meshIndex);
-			material->FoliageMaskFactor() << obj->GetFoliageMask();
-			material->UseGlobalDiffuseProbeMaskFactor() << obj->GetUseGlobalLightProbeMask();
-			material->UsePOM() << obj->IsParallaxOcclusionMapping();
-			material->SkipDeferredLighting() << obj->IsForwardShading();
-		}
-	}
-
 	void ER_MaterialsCallbacks::UpdateVoxelizationGIMaterialVariables(ER_MaterialSystems neededSystems, Rendering::RenderingObject* obj, int meshIndex, int voxelCascadeIndex)
 	{
 		assert(neededSystems.mShadowMapper && neededSystems.mCamera);

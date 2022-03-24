@@ -203,6 +203,9 @@ namespace Library
 
 					if (isInstanced) //be careful with the instancing support in shaders of the materials! (i.e., maybe the material does not have instancing entry point/support)
 						shaderEntries.vertexEntry = shaderEntries.vertexEntry + "_instancing";
+					
+					if (name == MaterialHelper::gbufferMaterialName)
+						aObject->SetInGBuffer(true);
 
 					// taking care of a special material : shadow map
 					if (name == MaterialHelper::shadowMapMaterialName) {
@@ -267,10 +270,6 @@ namespace Library
 							aObject->GetMaterials()[std::get<2>(materialData)]->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][matIndex]["technique"].asString())
 						);
 					}
-
-					if (std::get<2>(materialData) == MaterialHelper::deferredPrepassMaterialName)
-						aObject->SetInGBuffer(true);
-
 				}
 			}
 
@@ -457,9 +456,11 @@ namespace Library
 
 		// cant do reflection in C++
 		if (matName == "BasicColorMaterial")
-			material = new ER_BasicColorMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER);
+			material = new ER_BasicColorMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER /*TODO instanced support*/);
 		else if (matName == "ShadowMapMaterial")
 			material = new ER_ShadowMapMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
+		else if (matName == "GBufferMaterial")
+			material = new ER_GBufferMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
 		else
 			material = nullptr;
 
@@ -479,10 +480,6 @@ namespace Library
 		if (matName == "DepthMapMaterial") {
 			materialName = MaterialHelper::shadowMapMaterialName;
 			//material = new DepthMapMaterial(); //processed later as we need cascades
-		}
-		else if (matName == "DeferredMaterial") {
-			materialName = MaterialHelper::deferredPrepassMaterialName;
-			material = new DeferredMaterial();
 		}
 		else if (matName == "VoxelizationGIMaterial") {
 			materialName = MaterialHelper::voxelizationGIMaterialName;

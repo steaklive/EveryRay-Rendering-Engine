@@ -52,7 +52,7 @@ namespace Library {
 
 		#pragma region INIT_GBUFFER
         game.CPUProfiler()->BeginCPUTime("Gbuffer init");
-        mGBuffer = new GBuffer(game, camera, game.ScreenWidth(), game.ScreenHeight());
+        mGBuffer = new ER_GBuffer(game, camera, game.ScreenWidth(), game.ScreenHeight());
         mGBuffer->Initialize();
         game.CPUProfiler()->EndCPUTime("Gbuffer init");
 #pragma endregion
@@ -78,7 +78,7 @@ namespace Library {
 
 		#pragma region INIT_SHADOWMAPPER
 		game.CPUProfiler()->BeginCPUTime("Shadow mapper init");
-        mShadowMapper = new ShadowMapper(game, camera, *mDirectionalLight, 4096, 4096);
+        mShadowMapper = new ER_ShadowMapper(game, camera, *mDirectionalLight, 4096, 4096);
         mDirectionalLight->RotationUpdateEvent->AddListener("shadow mapper", [&]() { mShadowMapper->ApplyTransform(); });
 		game.CPUProfiler()->EndCPUTime("Shadow mapper init");
 #pragma endregion
@@ -134,13 +134,16 @@ namespace Library {
 		materialSystems.mProbesManager = mIlluminationProbesManager;
 
 		for (auto& object : mScene->objects) {
-			if (object.second->IsInGBuffer())
-				object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&, matSystems = materialSystems](int meshIndex) { Library::ER_MaterialsCallbacks::UpdateDeferredPrepassMaterialVariables(matSystems, object.second, meshIndex); });
-			
-			// assign prepare callbacks to non-special materials (special ones are processed and rendered from their own systems, i.e., ShadowMapper)
 			for (auto& layeredMaterial : object.second->GetNewMaterials())
+			{
+				// assign prepare callbacks to non-special materials (special ones are processed and rendered from their own systems, i.e., ShadowMapper)
 				if (!layeredMaterial.second->IsSpecial())
 					object.second->MeshMaterialVariablesUpdateEvent->AddListener(layeredMaterial.first, [&, matSystems = materialSystems](int meshIndex) { layeredMaterial.second->PrepareForRendering(matSystems, object.second, meshIndex); });
+
+				// gbuffer material (special, but since its draws are not processed in 
+				if (layeredMaterial.first == MaterialHelper::gbufferMaterialName)
+					object.second->MeshMaterialVariablesUpdateEvent->AddListener(layeredMaterial.first, [&, matSystems = materialSystems](int meshIndex) { layeredMaterial.second->PrepareForRendering(matSystems, object.second, meshIndex); });
+			}
 		}
 		game.CPUProfiler()->EndCPUTime("Material callbacks init");
 #pragma endregion
@@ -209,13 +212,10 @@ namespace Library {
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		#pragma region DRAW_GBUFFER
-
 		mGBuffer->Start();
-		for (auto it = mScene->objects.begin(); it != mScene->objects.end(); it++)
-			it->second->Draw(MaterialHelper::deferredPrepassMaterialName, true);
+		mGBuffer->Draw(mScene);
 		mFoliageSystem->Draw(gameTime, nullptr, FoliageRenderingPass::TO_GBUFFER);
 		mGBuffer->End();
-
 #pragma endregion
 
 		#pragma region DRAW_SHADOWS
@@ -245,8 +245,16 @@ namespace Library {
 			mDirectionalLight->DrawProxyModel(gameTime); //TODO move to Illumination() or better to separate debug renderer system
 #pragma endregion
 
-		for (auto it = mScene->objects.begin(); it != mScene->objects.end(); it++)
-			it->second->Draw(MaterialHelper::basicColorMaterialName);
+		#pragma region DRAW_LAYERED_MATERIALS
+		for (auto& it = mScene->objects.begin(); it != mScene->objects.end(); it++)
+		{
+			for (auto& mat : it->second->GetNewMaterials())
+			{
+				if (!mat.second->IsSpecial())
+					it->second->Draw(mat.first);
+			}
+		}
+#pragma endregion
 
 		mPostProcessingStack->End();
 

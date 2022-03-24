@@ -52,6 +52,7 @@ namespace Library
 		virtual int VertexSize() = 0;
 
 		bool IsSpecial() { return mIsSpecial; };
+		//bool IsLayered() { return mIsSpecial; };
 	protected:
 		virtual void CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount, const void* shaderBytecodeWithInputSignature, UINT byteCodeLength);
 

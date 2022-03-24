@@ -1,7 +1,7 @@
 #include "ER_LightProbe.h"
 #include "Skybox.h"
 #include "Game.h"
-#include "ShadowMapper.h"
+#include "ER_ShadowMapper.h"
 #include "Game.h"
 #include "GameTime.h"
 #include "GameException.h"
@@ -34,7 +34,7 @@ namespace Library
 		Vector3Helper::Up
 	};
 
-	ER_LightProbe::ER_LightProbe(Game& game, DirectionalLight& light, ShadowMapper& shadowMapper, int size, ER_ProbeType aType)
+	ER_LightProbe::ER_LightProbe(Game& game, DirectionalLight& light, ER_ShadowMapper& shadowMapper, int size, ER_ProbeType aType)
 		: mSize(size)
 		, mDirectionalLight(light)
 		, mShadowMapper(shadowMapper)

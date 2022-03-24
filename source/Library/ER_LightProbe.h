@@ -15,7 +15,7 @@ namespace Library
 	{
 		using LightProbeRenderingObjectsInfo = std::map<std::string, Rendering::RenderingObject*>;
 	public:
-		ER_LightProbe(Game& game, DirectionalLight& light, ShadowMapper& shadowMapper, int size, ER_ProbeType aType);
+		ER_LightProbe(Game& game, DirectionalLight& light, ER_ShadowMapper& shadowMapper, int size, ER_ProbeType aType);
 		~ER_LightProbe();
 
 		void Compute(Game& game, const GameTime& gameTime, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted, DepthTarget** aDepthBuffers,
@@ -57,7 +57,7 @@ namespace Library
 		ER_ProbeType mProbeType;
 
 		DirectionalLight& mDirectionalLight;
-		ShadowMapper& mShadowMapper;
+		ER_ShadowMapper& mShadowMapper;
 
 		LightProbeRenderingObjectsInfo mObjectsToRenderPerFace[CUBEMAP_FACES_COUNT];
 		Camera* mCubemapCameras[CUBEMAP_FACES_COUNT];

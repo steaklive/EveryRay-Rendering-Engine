@@ -18,8 +18,8 @@ namespace Library
     class RenderStateHelper;
     class DirectionalLight;
     class Skybox;
-    class GBuffer;
-    class ShadowMapper;
+    class ER_GBuffer;
+    class ER_ShadowMapper;
     class Terrain;
     class FoliageSystem;
     class VolumetricClouds;
@@ -42,9 +42,9 @@ namespace Library
         Keyboard* mKeyboard = nullptr;
         RenderStateHelper* mRenderStateHelper = nullptr;
         Skybox* mSkybox = nullptr;
-        ShadowMapper* mShadowMapper = nullptr;
+        ER_ShadowMapper* mShadowMapper = nullptr;
         DirectionalLight* mDirectionalLight = nullptr;
-        GBuffer* mGBuffer = nullptr;
+        ER_GBuffer* mGBuffer = nullptr;
         FoliageSystem* mFoliageSystem = nullptr;
         VolumetricClouds* mVolumetricClouds = nullptr;
         Illumination* mIllumination = nullptr;

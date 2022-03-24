@@ -25,15 +25,13 @@
 			[
 				{
 					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
 				}
 			],
 			"materials" : 
 			[
-				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
-				},
 				{
 					"effect" : "content\\effects\\RenderToLightProbe.fx",
 					"name" : "RenderToLightProbeMaterial",
@@ -68,15 +66,13 @@
 			[
 				{
 					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
 				}
 			],
 			"materials" : 
 			[
-				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
-				},
 				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
@@ -122,15 +118,13 @@
 			[
 				{
 					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
 				}
 			],
 			"materials" : 
 			[
-				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
-				},
 				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
@@ -182,15 +176,13 @@
 			[
 				{
 					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
 				}
 			],
 			"materials" : 
 			[
-				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
-				},
 				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
@@ -242,15 +234,13 @@
 			[
 				{
 					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
 				}
 			],
 			"materials" : 
 			[
-				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
-				},
 				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
@@ -302,15 +292,13 @@
 			[
 				{
 					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
 				}
 			],
 			"materials" : 
 			[
-				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
-				},
 				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
@@ -356,15 +344,13 @@
 			[
 				{
 					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
 				}
 			],
 			"materials" : 
 			[
-				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
-				},
 				{
 					"effect" : "content\\effects\\VoxelizationGI.fx",
 					"name" : "VoxelizationGIMaterial",
@@ -404,6 +390,9 @@
 			[
 				{
 					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
 				},
 				{
 					"name" : "BasicColorMaterial"

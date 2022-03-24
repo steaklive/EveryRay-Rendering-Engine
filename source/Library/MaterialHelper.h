@@ -9,7 +9,8 @@ namespace Library
 	public:
 		static const std::string basicColorMaterialName;
 		static const std::string shadowMapMaterialName;
-		static const std::string deferredPrepassMaterialName;
+		static const std::string gbufferMaterialName;
+
 		static const std::string ssrMaterialName;
 		static const std::string parallaxMaterialName;
 		static const std::string voxelizationGIMaterialName;

@@ -5,9 +5,8 @@
 #include "DirectionalLight.h"
 #include "PostProcessingStack.h"
 #include "FoliageMaterial.h"
-#include "DeferredMaterial.h"
 #include "VoxelizationGIMaterial.h"
-#include "ShadowMapper.h"
+#include "ER_ShadowMapper.h"
 #include "Illumination.h"
 #include "GeneralEvent.h"
 
@@ -53,7 +52,7 @@ namespace Library
 		~Foliage();
 
 		void Initialize();
-		void Draw(const GameTime& gameTime, const ShadowMapper* worldShadowMapper = nullptr, FoliageRenderingPass renderPass = FoliageRenderingPass::FORWARD_SHADING);
+		void Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper = nullptr, FoliageRenderingPass renderPass = FoliageRenderingPass::FORWARD_SHADING);
 		void Update(const GameTime& gameTime);
 
 		int GetPatchesCount() { return mPatchesCount; }
@@ -147,7 +146,7 @@ namespace Library
 
 		void Initialize();
 		void Update(const GameTime& gameTime, float gustDistance, float strength, float frequency);
-		void Draw(const GameTime& gameTime, const ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass = FoliageRenderingPass::FORWARD_SHADING);
+		void Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass = FoliageRenderingPass::FORWARD_SHADING);
 		void AddFoliage(Foliage* foliage) { mFoliageCollection.emplace_back(foliage); }
 		void SetVoxelizationTextureOutput(ID3D11UnorderedAccessView* uav);
 		void SetVoxelizationParams(float* scale, XMFLOAT4* voxelCamera);

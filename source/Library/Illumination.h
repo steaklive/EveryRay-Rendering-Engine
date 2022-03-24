@@ -18,8 +18,8 @@ namespace Library
 	class GameTime;
 	class Camera;
 	class Scene;
-	class GBuffer;
-	class ShadowMapper;
+	class ER_GBuffer;
+	class ER_ShadowMapper;
 	class FoliageSystem;
 	class IBLRadianceMap;
 	class RenderableAABB;
@@ -89,13 +89,13 @@ namespace Library
 	class Illumination : public GameComponent
 	{
 	public:
-		Illumination(Game& game, Camera& camera, const DirectionalLight& light, const ShadowMapper& shadowMapper, const Scene* scene);
+		Illumination(Game& game, Camera& camera, const DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const Scene* scene);
 		~Illumination();
 
 		void Initialize(const Scene* scene);
 
-		void DrawLocalIllumination(GBuffer* gbuffer, ER_GPUTexture* aRenderTarget, bool isEditorMode = false, bool clearInitTarget = false);
-		void DrawGlobalIllumination(GBuffer* gbuffer, const GameTime& gameTime);
+		void DrawLocalIllumination(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget, bool isEditorMode = false, bool clearInitTarget = false);
+		void DrawGlobalIllumination(ER_GBuffer* gbuffer, const GameTime& gameTime);
 
 		void Update(const GameTime& gameTime, const Scene* scene);
 		void Config() { mShowDebug = !mShowDebug; }
@@ -117,8 +117,8 @@ namespace Library
 				return mVCTUpsampleAndBlurRT->GetSRV();
 		}
 	private:
-		void DrawDeferredLighting(GBuffer* gbuffer, ER_GPUTexture* aRenderTarget, bool clearTarget = false);
-		void DrawForwardLighting(GBuffer* gbuffer, ER_GPUTexture* aRenderTarget);
+		void DrawDeferredLighting(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget, bool clearTarget = false);
+		void DrawForwardLighting(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget);
 		void DrawDebugGizmos();
 
 		void UpdateImGui();
@@ -128,7 +128,7 @@ namespace Library
 
 		Camera& mCamera;
 		const DirectionalLight& mDirectionalLight;
-		const ShadowMapper& mShadowMapper;
+		const ER_ShadowMapper& mShadowMapper;
 
 		ER_IlluminationProbeManager* mProbesManager = nullptr;
 		FoliageSystem* mFoliageSystem = nullptr;
@@ -148,7 +148,7 @@ namespace Library
 		ER_GPUTexture* mVCTMainRT = nullptr;
 		ER_GPUTexture* mVCTUpsampleAndBlurRT = nullptr;
 
-		GBuffer* mGbuffer = nullptr;
+		ER_GBuffer* mGbuffer = nullptr;
 
 		DepthTarget* mDepthBuffer = nullptr;
 

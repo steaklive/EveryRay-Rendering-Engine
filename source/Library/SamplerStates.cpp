@@ -22,7 +22,10 @@ namespace Library
 		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-
+		samplerStateDesc.MipLODBias = 0;
+		samplerStateDesc.MaxAnisotropy = 1;
+		samplerStateDesc.MinLOD = -1000.0f;
+		samplerStateDesc.MaxLOD = 1000.0f;
 		HRESULT hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &TrilinearWrap);
 		if (FAILED(hr))
 		{

@@ -20,8 +20,8 @@
 #include "VoxelizationGIMaterial.h"
 #include "RenderToLightProbeMaterial.h"
 #include "Scene.h"
-#include "GBuffer.h"
-#include "ShadowMapper.h"
+#include "ER_GBuffer.h"
+#include "ER_ShadowMapper.h"
 #include "Foliage.h"
 #include "RenderableAABB.h"
 #include "ER_GPUBuffer.h"
@@ -32,7 +32,7 @@ namespace Library {
 
 	const float voxelCascadesSizes[NUM_VOXEL_GI_CASCADES] = { 256.0f, 256.0f };
 
-	Illumination::Illumination(Game& game, Camera& camera, const DirectionalLight& light, const ShadowMapper& shadowMapper, const Scene* scene)
+	Illumination::Illumination(Game& game, Camera& camera, const DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const Scene* scene)
 		: 
 		GameComponent(game),
 		mCamera(camera),
@@ -270,7 +270,7 @@ namespace Library {
 	}
 
 	//deferred rendering approach
-	void Illumination::DrawLocalIllumination(GBuffer* gbuffer, ER_GPUTexture* aRenderTarget, bool isEditorMode, bool clearInitTarget)
+	void Illumination::DrawLocalIllumination(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget, bool isEditorMode, bool clearInitTarget)
 	{
 		DrawDeferredLighting(gbuffer, aRenderTarget, clearInitTarget);
 		DrawForwardLighting(gbuffer, aRenderTarget);
@@ -283,7 +283,7 @@ namespace Library {
 
 	//voxel GI based on "Interactive Indirect Illumination Using Voxel Cone Tracing" by C.Crassin et al.
 	//https://research.nvidia.com/sites/default/files/pubs/2011-09_Interactive-Indirect-Illumination/GIVoxels-pg2011-authors.pdf
-	void Illumination::DrawGlobalIllumination(GBuffer* gbuffer, const GameTime& gameTime)
+	void Illumination::DrawGlobalIllumination(ER_GBuffer* gbuffer, const GameTime& gameTime)
 	{
 		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
@@ -578,7 +578,7 @@ namespace Library {
 		}
 	}
 
-	void Illumination::DrawDeferredLighting(GBuffer* gbuffer, ER_GPUTexture* aRenderTarget, bool clearTarget)
+	void Illumination::DrawDeferredLighting(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget, bool clearTarget)
 	{
 		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
@@ -676,7 +676,7 @@ namespace Library {
 		}
 	}
 
-	void Illumination::DrawForwardLighting(GBuffer* gbuffer, ER_GPUTexture* aRenderTarget)
+	void Illumination::DrawForwardLighting(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget)
 	{
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
 		context->OMSetRenderTargets(1, aRenderTarget->GetRTVs(), gbuffer->GetDepth()->getDSV());

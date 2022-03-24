@@ -22,7 +22,7 @@
 
 namespace Library
 {
-	ER_IlluminationProbeManager::ER_IlluminationProbeManager(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ShadowMapper& shadowMapper)
+	ER_IlluminationProbeManager::ER_IlluminationProbeManager(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 		: mMainCamera(camera)
 	{
 		//TODO temp
@@ -164,7 +164,7 @@ namespace Library
 		}
 	}
 
-	void ER_IlluminationProbeManager::SetupDiffuseProbes(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ShadowMapper& shadowMapper)
+	void ER_IlluminationProbeManager::SetupDiffuseProbes(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 	{
 		ER_MaterialSystems materialSystems;
 		materialSystems.mCamera = &camera;
@@ -321,7 +321,7 @@ namespace Library
 		}
 	}
 
-	void ER_IlluminationProbeManager::SetupSpecularProbes(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ShadowMapper& shadowMapper)
+	void ER_IlluminationProbeManager::SetupSpecularProbes(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 	{
 		ER_MaterialSystems materialSystems;
 		materialSystems.mCamera = &camera;

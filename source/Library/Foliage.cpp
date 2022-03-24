@@ -39,7 +39,7 @@ namespace Library
 		}
 	}
 
-	void FoliageSystem::Draw(const GameTime& gameTime, const ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass)
+	void FoliageSystem::Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass)
 	{
 		for (auto& object : mFoliageCollection)
 			object->Draw(gameTime, worldShadowMapper, renderPass);
@@ -259,7 +259,7 @@ namespace Library
 		}
 	}
 
-	void Foliage::Draw(const GameTime& gameTime, const ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass)
+	void Foliage::Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass)
 	{
 		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
 

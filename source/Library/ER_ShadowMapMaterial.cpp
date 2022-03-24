@@ -7,7 +7,7 @@
 #include "Camera.h"
 #include "RenderingObject.h"
 #include "Mesh.h"
-#include "ShadowMapper.h"
+#include "ER_ShadowMapper.h"
 
 namespace Library
 {

@@ -194,9 +194,9 @@
     <ClInclude Include="CompositeLightingMaterial.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="ER_BasicColorMaterial.h" />
+    <ClInclude Include="ER_GBufferMaterial.h" />
     <ClInclude Include="ER_GPUTexture.h" />
     <ClInclude Include="DebugLightProbeMaterial.h" />
-    <ClInclude Include="DeferredMaterial.h" />
     <ClInclude Include="DemoLevel.h" />
     <ClInclude Include="DepthMap.h" />
     <ClInclude Include="DepthTarget.h" />
@@ -224,7 +224,7 @@
     <ClInclude Include="GameClock.h" />
     <ClInclude Include="GameComponent.h" />
     <ClInclude Include="GameTime.h" />
-    <ClInclude Include="GBuffer.h" />
+    <ClInclude Include="ER_GBuffer.h" />
     <ClInclude Include="GeneralEvent.h" />
     <ClInclude Include="Illumination.h" />
     <ClInclude Include="InstancingMaterial.h" />
@@ -262,7 +262,7 @@
     <ClInclude Include="ScreenSpaceReflectionsMaterial.h" />
     <ClInclude Include="ServiceContainer.h" />
     <ClInclude Include="ShaderCompiler.h" />
-    <ClInclude Include="ShadowMapper.h" />
+    <ClInclude Include="ER_ShadowMapper.h" />
     <ClInclude Include="SkinShadingColorMaterial.h" />
     <ClInclude Include="SkinShadingScatterMaterial.h" />
     <ClInclude Include="Skybox.h" />
@@ -291,9 +291,9 @@
     <ClCompile Include="ColorHelper.cpp" />
     <ClCompile Include="CompositeLightingMaterial.cpp" />
     <ClCompile Include="ER_BasicColorMaterial.cpp" />
+    <ClCompile Include="ER_GBufferMaterial.cpp" />
     <ClCompile Include="ER_GPUTexture.cpp" />
     <ClCompile Include="DebugLightProbeMaterial.cpp" />
-    <ClCompile Include="DeferredMaterial.cpp" />
     <ClCompile Include="DemoLevel.cpp" />
     <ClCompile Include="DepthMap.cpp" />
     <ClCompile Include="DepthTarget.cpp" />
@@ -321,7 +321,7 @@
     <ClCompile Include="GameComponent.cpp" />
     <ClCompile Include="GameException.cpp" />
     <ClCompile Include="GameTime.cpp" />
-    <ClCompile Include="GBuffer.cpp" />
+    <ClCompile Include="ER_GBuffer.cpp" />
     <ClCompile Include="Illumination.cpp" />
     <ClCompile Include="InstancingMaterial.cpp" />
     <ClCompile Include="Keyboard.cpp" />
@@ -355,7 +355,7 @@
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ScreenSpaceReflectionsMaterial.cpp" />
     <ClCompile Include="ServiceContainer.cpp" />
-    <ClCompile Include="ShadowMapper.cpp" />
+    <ClCompile Include="ER_ShadowMapper.cpp" />
     <ClCompile Include="SkinShadingColorMaterial.cpp" />
     <ClCompile Include="SkinShadingScatterMaterial.cpp" />
     <ClCompile Include="Skybox.cpp" />
@@ -393,12 +393,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\content\effects\DebugLightProbe.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\DeferredPrepass.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
@@ -503,6 +497,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\ForwardLighting.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\GBuffer.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
