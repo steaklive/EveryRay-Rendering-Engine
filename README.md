@@ -35,7 +35,7 @@ Other features based on NVIDIA techniques (no code provided here)
  * [ ]  [RENDERING] remove DX11 "Effects" library, all .fx shaders and refactor the material system (WIP)
  * [ ]  [RENDERING] remove all low-level DX11 code and put it into the abstracted RHI (hopefully, until the summer/autumn of 2022)
  * [ ]  [RENDERING] add support for DX12 (hopefully, until 2023)
- * [ ]  [CORE] (?) remove DirectXMath and its usages (yes, it can cover DX11/12 but not future APIs); maybe come up with a custom math lib
+ * [ ]  [CORE] (?) remove DirectXMath and its usages (maybe come up with a custom math lib)
  * [ ]  [CORE] add cross-API shader compiler
  * [ ]  [CORE] add simple job-system (i.e. for Update(), CPU culling, etc.)
  * [ ]  [CORE] add simple memory management system (for now CPU memory; at least linear, pool allocators)
