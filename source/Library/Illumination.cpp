@@ -18,7 +18,7 @@
 #include "RasterizerStates.h"
 #include "ShaderCompiler.h"
 #include "VoxelizationGIMaterial.h"
-#include "RenderToLightProbeMaterial.h"
+#include "ER_RenderToLightProbeMaterial.h"
 #include "Scene.h"
 #include "ER_GBuffer.h"
 #include "ER_ShadowMapper.h"
@@ -51,13 +51,12 @@ namespace Library {
 		ReleaseObject(mVCTVoxelizationDebugPS);
 		ReleaseObject(mDeferredLightingCS);
 		ReleaseObject(mForwardLightingVS);
+		ReleaseObject(mForwardLightingVS_Instancing);
 		ReleaseObject(mForwardLightingPS);
 		ReleaseObject(mForwardLightingDiffuseProbesPS);
 		ReleaseObject(mForwardLightingSpecularProbesPS);
 
 		ReleaseObject(mDepthStencilStateRW);
-		ReleaseObject(mLinearSamplerState);
-		ReleaseObject(mShadowSamplerState);
 
 		ReleaseObject(mForwardLightingRenderingObjectInputLayout);
 		ReleaseObject(mForwardLightingRenderingObjectInputLayout_Instancing);
@@ -130,34 +129,35 @@ namespace Library {
 				throw GameException("Failed to load VSMain from shader: ForwardLighting.hlsl!");
 			if (FAILED(mGame->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingVS)))
 				throw GameException("Failed to create vertex shader from ForwardLighting.hlsl!");
-
-			// create input layouts for forward lighting pass
+			D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 			{
-				D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
-				{
-					{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-					{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-					{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-					{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-				};
+				{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+				{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+				{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+				{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+			};
+			if (FAILED(GetGame()->Direct3DDevice()->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), blob->GetBufferPointer(), blob->GetBufferSize(), &mForwardLightingRenderingObjectInputLayout)))
+				throw GameException("ID3D11Device::CreateInputLayout() failed for Forward Lighting Input Layout.");
 
-				D3D11_INPUT_ELEMENT_DESC inputElementDescriptionsInstancing[] =
-				{
-					{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-					{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-					{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-					{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-					{ "WORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-					{ "WORLD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-					{ "WORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-					{ "WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
-				};
+			blob = nullptr;
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "VSMain_instancing", "vs_5_0", &blob)))
+				throw GameException("Failed to load VSMain from shader: ForwardLighting.hlsl!");
+			if (FAILED(mGame->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingVS_Instancing)))
+				throw GameException("Failed to create vertex shader from ForwardLighting.hlsl!");
+			D3D11_INPUT_ELEMENT_DESC inputElementDescriptionsInstancing[] =
+			{
+				{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+				{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+				{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+				{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+				{ "WORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+				{ "WORLD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+				{ "WORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+				{ "WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+			};
+			if (FAILED(GetGame()->Direct3DDevice()->CreateInputLayout(inputElementDescriptionsInstancing, ARRAYSIZE(inputElementDescriptionsInstancing), blob->GetBufferPointer(), blob->GetBufferSize(), &mForwardLightingRenderingObjectInputLayout_Instancing)))
+				throw GameException("ID3D11Device::CreateInputLayout() failed for Forward Lighting Input Layout (Instancing).");
 
-				if (FAILED(GetGame()->Direct3DDevice()->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), blob->GetBufferPointer(), blob->GetBufferSize(), &mForwardLightingRenderingObjectInputLayout)))
-					throw GameException("ID3D11Device::CreateInputLayout() failed for Forward Lighting Input Layout.");	
-				if (FAILED(GetGame()->Direct3DDevice()->CreateInputLayout(inputElementDescriptionsInstancing, ARRAYSIZE(inputElementDescriptionsInstancing), blob->GetBufferPointer(), blob->GetBufferSize(), &mForwardLightingRenderingObjectInputLayout_Instancing)))
-					throw GameException("ID3D11Device::CreateInputLayout() failed for Forward Lighting Input Layout (Instancing).");
-			}
 			blob->Release();
 
 			blob = nullptr;
@@ -180,35 +180,6 @@ namespace Library {
 			if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingSpecularProbesPS)))
 				throw GameException("Failed to create specular probes pixel shader from ForwardLighting.hlsl!");
 			blob->Release();
-		}
-
-		//sampler states
-		{
-			D3D11_SAMPLER_DESC sam_desc;
-			sam_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-			sam_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-			sam_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-			sam_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-			sam_desc.MipLODBias = 0;
-			sam_desc.MaxAnisotropy = 1;
-			sam_desc.MinLOD = -1000.0f;
-			sam_desc.MaxLOD = 1000.0f;
-			if (FAILED(mGame->Direct3DDevice()->CreateSamplerState(&sam_desc, &mLinearSamplerState)))
-				throw GameException("Failed to create sampler mLinearSamplerState!");
-
-			sam_desc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
-			sam_desc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-			sam_desc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-			sam_desc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
-			float white[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-			memcpy(sam_desc.BorderColor, reinterpret_cast<FLOAT*>(&white), sizeof(FLOAT) * 4);
-			sam_desc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
-			if (FAILED(mGame->Direct3DDevice()->CreateSamplerState(&sam_desc, &mShadowSamplerState)))
-				throw GameException("Failed to create sampler mShadowSamplerState!");
-
-			CD3D11_DEPTH_STENCIL_DESC dsDesc((CD3D11_DEFAULT()));
-			dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-			mGame->Direct3DDevice()->CreateDepthStencilState(&dsDesc, &mDepthStencilStateRW);
 		}
 		
 		//cbuffers
@@ -421,7 +392,7 @@ namespace Library {
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 				SRVs[4 + i] = mVCTVoxelCascades3DRTs[i]->GetSRV();
 
-			ID3D11SamplerState* SSs[] = { mLinearSamplerState };
+			ID3D11SamplerState* SSs[] = { SamplerStates::TrilinearWrap };
 
 			context->CSSetSamplers(0, 1, SSs);
 			context->CSSetShaderResources(0, 4 + mVCTVoxelCascades3DRTs.size(), SRVs);
@@ -449,7 +420,7 @@ namespace Library {
 			ID3D11UnorderedAccessView* UAV[1] = { mVCTUpsampleAndBlurRT->GetUAV() };
 			ID3D11Buffer* CBs[1] = { mUpsampleBlurConstantBuffer.Buffer() };
 			ID3D11ShaderResourceView* SRVs[1] = { mVCTMainRT->GetSRV() };
-			ID3D11SamplerState* SSs[] = { mLinearSamplerState };
+			ID3D11SamplerState* SSs[] = { SamplerStates::TrilinearWrap };
 
 			context->CSSetSamplers(0, 1, SSs);
 			context->CSSetShaderResources(0, 1, SRVs);
@@ -655,7 +626,7 @@ namespace Library {
 			SRs[23] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesPositionsBuffer()->GetBufferSRV() : nullptr;
 			context->CSSetShaderResources(0, 24, SRs);
 
-			ID3D11SamplerState* SS[2] = { mLinearSamplerState, mShadowSamplerState };
+			ID3D11SamplerState* SS[2] = { SamplerStates::TrilinearWrap, SamplerStates::ShadowSamplerState };
 			context->CSSetSamplers(0, 2, SS);
 
 			ID3D11UnorderedAccessView* UAV[1] = { aRenderTarget->GetUAV() };
@@ -728,7 +699,7 @@ namespace Library {
 			}
 
 			ID3D11Buffer* CBs[2] = { mForwardLightingConstantBuffer.Buffer(), mProbesManager->IsEnabled() ? mLightProbesConstantBuffer.Buffer() : nullptr };
-			context->VSSetShader(mForwardLightingVS, NULL, 0);
+			context->VSSetShader(aObj->IsInstanced() ? mForwardLightingVS_Instancing : mForwardLightingVS, NULL, 0);
 			context->VSSetConstantBuffers(0, 2, CBs);
 
 			context->PSSetShader(mForwardLightingPS, NULL, NULL); //TODO add other passes
@@ -763,7 +734,7 @@ namespace Library {
 
 			context->PSSetShaderResources(0, 24, SRs);
 
-			ID3D11SamplerState* SS[2] = { mLinearSamplerState, mShadowSamplerState };
+			ID3D11SamplerState* SS[2] = { SamplerStates::TrilinearWrap, SamplerStates::ShadowSamplerState };
 			context->PSSetSamplers(0, 2, SS);
 		}
 	}

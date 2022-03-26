@@ -360,12 +360,6 @@
     <ClInclude Include="ER_MaterialsCallbacks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DebugLightProbeMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderToLightProbeMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ER_Material.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -382,6 +376,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ER_ShadowMapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ER_RenderToLightProbeMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ER_DebugLightProbeMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -596,9 +596,6 @@
     <ClCompile Include="ER_IlluminationProbeManager.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
-    <ClCompile Include="DebugLightProbeMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
     <ClCompile Include="ER_CPUProfiler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -629,9 +626,6 @@
     <ClCompile Include="InstancingMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
-    <ClCompile Include="RenderToLightProbeMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
     <ClCompile Include="ER_Material.cpp">
       <Filter>Source Files\Graphics</Filter>
     </ClCompile>
@@ -649,6 +643,12 @@
     </ClCompile>
     <ClCompile Include="ER_ShadowMapper.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_RenderToLightProbeMaterial.cpp">
+      <Filter>Source Files\Graphics\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_DebugLightProbeMaterial.cpp">
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -802,14 +802,8 @@
     <FxCompile Include="..\..\content\shaders\IBL\ProbeConvolution.hlsl">
       <Filter>Shaders\IBL</Filter>
     </FxCompile>
-    <FxCompile Include="..\..\content\effects\DebugLightProbe.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
     <FxCompile Include="..\..\content\shaders\ForwardLighting.hlsl">
       <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\RenderToLightProbe.fx">
-      <Filter>Effects</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\BasicColor.hlsl">
       <Filter>Shaders</Filter>
@@ -819,6 +813,9 @@
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\GBuffer.hlsl">
       <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\IBL\DebugLightProbe.hlsl">
+      <Filter>Shaders\IBL</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

@@ -194,9 +194,9 @@
     <ClInclude Include="CompositeLightingMaterial.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="ER_BasicColorMaterial.h" />
+    <ClInclude Include="ER_DebugLightProbeMaterial.h" />
     <ClInclude Include="ER_GBufferMaterial.h" />
     <ClInclude Include="ER_GPUTexture.h" />
-    <ClInclude Include="DebugLightProbeMaterial.h" />
     <ClInclude Include="DemoLevel.h" />
     <ClInclude Include="DepthMap.h" />
     <ClInclude Include="DepthTarget.h" />
@@ -210,6 +210,7 @@
     <ClInclude Include="ER_LightProbe.h" />
     <ClInclude Include="ER_Material.h" />
     <ClInclude Include="ER_MaterialsCallbacks.h" />
+    <ClInclude Include="ER_RenderToLightProbeMaterial.h" />
     <ClInclude Include="ER_ShadowMapMaterial.h" />
     <ClInclude Include="FastFourierTransform.h" />
     <ClInclude Include="FirstPersonCamera.h" />
@@ -255,7 +256,6 @@
     <ClInclude Include="RenderingObject.h" />
     <ClInclude Include="RenderStateHelper.h" />
     <ClInclude Include="RenderTarget.h" />
-    <ClInclude Include="RenderToLightProbeMaterial.h" />
     <ClInclude Include="RTTI.h" />
     <ClInclude Include="SamplerStates.h" />
     <ClInclude Include="Scene.h" />
@@ -291,9 +291,9 @@
     <ClCompile Include="ColorHelper.cpp" />
     <ClCompile Include="CompositeLightingMaterial.cpp" />
     <ClCompile Include="ER_BasicColorMaterial.cpp" />
+    <ClCompile Include="ER_DebugLightProbeMaterial.cpp" />
     <ClCompile Include="ER_GBufferMaterial.cpp" />
     <ClCompile Include="ER_GPUTexture.cpp" />
-    <ClCompile Include="DebugLightProbeMaterial.cpp" />
     <ClCompile Include="DemoLevel.cpp" />
     <ClCompile Include="DepthMap.cpp" />
     <ClCompile Include="DepthTarget.cpp" />
@@ -307,6 +307,7 @@
     <ClCompile Include="ER_LightProbe.cpp" />
     <ClCompile Include="ER_Material.cpp" />
     <ClCompile Include="ER_MaterialsCallbacks.cpp" />
+    <ClCompile Include="ER_RenderToLightProbeMaterial.cpp" />
     <ClCompile Include="ER_ShadowMapMaterial.cpp" />
     <ClCompile Include="FirstPersonCamera.cpp" />
     <ClCompile Include="FogMaterial.cpp" />
@@ -350,7 +351,6 @@
     <ClCompile Include="RenderingObject.cpp" />
     <ClCompile Include="RenderStateHelper.cpp" />
     <ClCompile Include="RenderTarget.cpp" />
-    <ClCompile Include="RenderToLightProbeMaterial.cpp" />
     <ClCompile Include="SamplerStates.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ScreenSpaceReflectionsMaterial.cpp" />
@@ -389,10 +389,6 @@
     <FxCompile Include="..\..\content\effects\CompositeLighting.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\DebugLightProbe.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
@@ -456,12 +452,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="..\..\content\effects\RenderToLightProbe.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
     <FxCompile Include="..\..\content\effects\TerrainEffect.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -513,6 +503,10 @@
     <FxCompile Include="..\..\content\shaders\GI\VoxelConeTracingVoxelizationDebug.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\IBL\DebugLightProbe.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

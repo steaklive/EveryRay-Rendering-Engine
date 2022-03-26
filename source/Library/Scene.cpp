@@ -163,9 +163,7 @@ namespace Library
 		{
 			if (root["rendering_objects"][i].isMember("foliageMask"))
 				aObject->SetFoliageMask(root["rendering_objects"][i]["foliageMask"].asBool());
-			if (root["rendering_objects"][i].isMember("inLightProbe"))
-				aObject->SetInLightProbe(root["rendering_objects"][i]["inLightProbe"].asBool());
-			if (root["rendering_objects"][i].isMember("useGlobalLightProbe"))
+			if (root["rendering_objects"][i].isMember("use_global_lightprobe"))
 				aObject->SetUseGlobalLightProbe(root["rendering_objects"][i]["useGlobalLightProbe"].asBool());
 			if (root["rendering_objects"][i].isMember("use_parallax_occlusion_mapping"))
 				aObject->SetParallaxOcclusionMapping(root["rendering_objects"][i]["use_parallax_occlusion_mapping"].asBool());
@@ -206,6 +204,8 @@ namespace Library
 					
 					if (name == MaterialHelper::gbufferMaterialName)
 						aObject->SetInGBuffer(true);
+					if (name == MaterialHelper::renderToLightProbeMaterialName)
+						aObject->SetInLightProbe(true);
 
 					// taking care of a special material : shadow map
 					if (name == MaterialHelper::shadowMapMaterialName) {
@@ -213,6 +213,25 @@ namespace Library
 						{
 							std::string cascadedname = MaterialHelper::shadowMapMaterialName + " " + std::to_string(cascade);
 							aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), cascadedname);
+						}
+					}
+					else if (name == MaterialHelper::renderToLightProbeMaterialName) {
+						std::string originalPSEntry = shaderEntries.pixelEntry;
+						for (int cubemapFaceIndex = 0; cubemapFaceIndex < CUBEMAP_FACES_COUNT; cubemapFaceIndex++)
+						{
+							std::string newName;
+							//diffuse
+							{
+								shaderEntries.pixelEntry = originalPSEntry + "_DiffuseProbes";
+								newName = "diffuse_" + MaterialHelper::renderToLightProbeMaterialName + "_" + std::to_string(cubemapFaceIndex);
+								aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), newName);
+							}
+							//specular
+							{
+								shaderEntries.pixelEntry = originalPSEntry + "_SpecularProbes";
+								newName = "specular_" + MaterialHelper::renderToLightProbeMaterialName + "_" + std::to_string(cubemapFaceIndex);
+								aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), newName);
+							}
 						}
 					}
 					else //other standard materials
@@ -238,29 +257,6 @@ namespace Library
 							auto material = aObject->GetMaterials()[name];
 							if (material)
 								material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][matIndex]["technique"].asString()));
-						}
-					}
-					else if (std::get<2>(materialData) == MaterialHelper::renderToLightProbeMaterialName) {
-						for (int cubemapFaceIndex = 0; cubemapFaceIndex < CUBEMAP_FACES_COUNT; cubemapFaceIndex++)
-						{
-							std::string name;
-							std::string techniqueName = root["rendering_objects"][i]["materials"][matIndex]["technique"].asString();
-							//diffuse
-							{
-								name = "diffuse_" + MaterialHelper::renderToLightProbeMaterialName + "_" + std::to_string(cubemapFaceIndex);
-								aObject->LoadMaterial(new RenderToLightProbeMaterial(), std::get<1>(materialData), name);
-								auto material = aObject->GetMaterials()[name];
-								if (material)
-									material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at(techniqueName));
-							}
-							//specular
-							{
-								name = "specular_" + MaterialHelper::renderToLightProbeMaterialName + "_" + std::to_string(cubemapFaceIndex);
-								aObject->LoadMaterial(new RenderToLightProbeMaterial(), std::get<1>(materialData), name);
-								auto material = aObject->GetMaterials()[name];
-								if (material)
-									material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at(techniqueName));
-							}
 						}
 					}
 					else if (std::get<0>(materialData))
@@ -461,6 +457,8 @@ namespace Library
 			material = new ER_ShadowMapMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
 		else if (matName == "GBufferMaterial")
 			material = new ER_GBufferMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
+		else if (matName == "RenderToLightProbeMaterial")
+			material = new ER_RenderToLightProbeMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
 		else
 			material = nullptr;
 

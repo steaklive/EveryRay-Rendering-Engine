@@ -464,7 +464,7 @@ namespace Rendering
 				return;
 			
 			bool isSpecificMesh = (meshIndex != -1);
-			for (int i = (isSpecificMesh) ? meshIndex : 0; i < ((isSpecificMesh) ? 1 : mMeshesCount[lod]); i++)
+			for (int i = (isSpecificMesh) ? meshIndex : 0; i < ((isSpecificMesh) ? meshIndex + 1 : mMeshesCount[lod]); i++)
 			{
 				if (mIsInstanced)
 				{
@@ -483,6 +483,7 @@ namespace Rendering
 					context->IASetIndexBuffer(mMeshesRenderBuffers[lod][materialName][i]->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 				}
 
+				//TODO remove effects when new material system is ready
 				if (!isForwardPass && !newMat) {
 					auto listener = MeshMaterialVariablesUpdateEvent->GetListener(materialName);
 					listener(i);
@@ -495,7 +496,7 @@ namespace Rendering
 				}
 				else if (newMat)
 				{
-					// run prepare callbacks for non-special materials (specials are, i.e., shadow mapping, processed in their own systems)
+					// run prepare callbacks for non-special materials (specials are, i.e., shadow mapping, which are processed in their own systems)
 					if (!mNewMaterials[materialName]->IsSpecial())
 					{
 						auto prepareDrawingMaterial = MeshMaterialVariablesUpdateEvent->GetListener(materialName);

@@ -60,7 +60,7 @@ namespace Library
 	{
 		ReleaseObject(mIndexBuffer);
 		ReleaseObject(mVertexBuffer);
-		DeleteObjects(mMaterial);
+		DeleteObject(mMaterial);
 	}
 
 	void RenderableOBB::SetPosition(const XMFLOAT3& position)

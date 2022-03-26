@@ -11,13 +11,11 @@
 #include "RenderingObject.h"
 #include "Model.h"
 #include "Scene.h"
-#include "Material.h"
-#include "Effect.h"
-#include "DebugLightProbeMaterial.h"
 #include "RenderableAABB.h"
 #include "ER_GPUBuffer.h"
 #include "ER_LightProbe.h"
 #include "QuadRenderer.h"
+#include "ER_DebugLightProbeMaterial.h"
 #include "ER_MaterialsCallbacks.h"
 
 namespace Library
@@ -278,7 +276,7 @@ namespace Library
 				mDiffuseProbesCellsCountTotal[volumeIndex] * PROBE_COUNT_PER_CELL, sizeof(int),
 				D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
 			DeleteObjects(diffuseProbeCellsIndicesCPUBuffer);
-
+			
 			mDiffuseProbesTexArrayIndicesCPUBuffer[volumeIndex] = new int[mDiffuseProbesCountTotal];
 			mDiffuseProbesTexArrayIndicesGPUBuffer[volumeIndex] = new ER_GPUBuffer(game.Direct3DDevice(), mDiffuseProbesTexArrayIndicesCPUBuffer[volumeIndex], mDiffuseProbesCountTotal, sizeof(int),
 				D3D11_USAGE_DYNAMIC, D3D11_BIND_SHADER_RESOURCE, D3D11_CPU_ACCESS_WRITE, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
@@ -292,11 +290,11 @@ namespace Library
 			if (!result.second)
 				throw GameException("Could not add a diffuse probe global object into scene");
 
-			Effect* diffuseLightProbeEffect = new Effect(game); // deleted when material is deleted
-			diffuseLightProbeEffect->CompileFromFile(Utility::GetFilePath(Utility::ToWideString("content\\effects\\DebugLightProbe.fx")));
+			MaterialShaderEntries shaderEntries;
+			shaderEntries.vertexEntry += "_instancing";
 
 			mDiffuseProbeRenderingObject[volumeIndex] = result.first->second;
-			mDiffuseProbeRenderingObject[volumeIndex]->LoadMaterial(new DebugLightProbeMaterial(), diffuseLightProbeEffect, MaterialHelper::debugLightProbeMaterialName);
+			mDiffuseProbeRenderingObject[volumeIndex]->LoadMaterial(new ER_DebugLightProbeMaterial(game, shaderEntries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, true), MaterialHelper::debugLightProbeMaterialName);
 			mDiffuseProbeRenderingObject[volumeIndex]->LoadRenderBuffers();
 			mDiffuseProbeRenderingObject[volumeIndex]->LoadInstanceBuffers();
 			mDiffuseProbeRenderingObject[volumeIndex]->ResetInstanceData(mDiffuseProbesCountTotal, true);
@@ -305,8 +303,6 @@ namespace Library
 				mDiffuseProbeRenderingObject[volumeIndex]->AddInstanceData(worldT);
 			}
 			mDiffuseProbeRenderingObject[volumeIndex]->UpdateInstanceBuffer(mDiffuseProbeRenderingObject[volumeIndex]->GetInstancesData());
-			mDiffuseProbeRenderingObject[volumeIndex]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::debugLightProbeMaterialName,
-				[&, _volumeIndex = volumeIndex, matSystems = materialSystems](int meshIndex) { ER_MaterialsCallbacks::UpdateDebugLightProbeMaterialVariables(matSystems, mDiffuseProbeRenderingObject[_volumeIndex], meshIndex, DIFFUSE_PROBE, _volumeIndex); });
 		}
 
 		mTempDiffuseCubemapFacesRT = new ER_GPUTexture(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
@@ -442,12 +438,12 @@ namespace Library
 
 			if (!result.second)
 				throw GameException("Could not add a specular probe global object into scene");
-
-			Effect* specularLightProbeEffect = new Effect(game); // deleted when material is deleted
-			specularLightProbeEffect->CompileFromFile(Utility::GetFilePath(Utility::ToWideString("content\\effects\\DebugLightProbe.fx")));
+			
+			MaterialShaderEntries shaderEntries;
+			shaderEntries.vertexEntry += "_instancing";
 
 			mSpecularProbeRenderingObject[volumeIndex] = result.first->second;
-			mSpecularProbeRenderingObject[volumeIndex]->LoadMaterial(new DebugLightProbeMaterial(), specularLightProbeEffect, MaterialHelper::debugLightProbeMaterialName);
+			mSpecularProbeRenderingObject[volumeIndex]->LoadMaterial(new ER_DebugLightProbeMaterial(game, shaderEntries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, true), MaterialHelper::debugLightProbeMaterialName);
 			mSpecularProbeRenderingObject[volumeIndex]->LoadRenderBuffers();
 			mSpecularProbeRenderingObject[volumeIndex]->LoadInstanceBuffers();
 			mSpecularProbeRenderingObject[volumeIndex]->ResetInstanceData(mSpecularProbesCountTotal, true);
@@ -456,8 +452,6 @@ namespace Library
 				mSpecularProbeRenderingObject[volumeIndex]->AddInstanceData(worldT);
 			}
 			mSpecularProbeRenderingObject[volumeIndex]->UpdateInstanceBuffer(mSpecularProbeRenderingObject[volumeIndex]->GetInstancesData());
-			mSpecularProbeRenderingObject[volumeIndex]->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::debugLightProbeMaterialName,
-				[&, _volumeIndex = volumeIndex, matSystems = materialSystems](int meshIndex) { ER_MaterialsCallbacks::UpdateDebugLightProbeMaterialVariables(matSystems, mSpecularProbeRenderingObject[_volumeIndex], meshIndex, SPECULAR_PROBE, _volumeIndex); });
 		}
 
 		mTempSpecularCubemapFacesRT = new ER_GPUTexture(game.Direct3DDevice(), SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
@@ -676,15 +670,22 @@ namespace Library
 
 	void ER_IlluminationProbeManager::DrawDebugProbes(ER_ProbeType aType, int volumeIndex)
 	{
-		if (aType == DIFFUSE_PROBE) {
-			if (mDiffuseProbeRenderingObject[volumeIndex] && mDiffuseProbesReady)
-				mDiffuseProbeRenderingObject[volumeIndex]->Draw(MaterialHelper::debugLightProbeMaterialName);
-		}
-		else
+		Rendering::RenderingObject* probeObject = aType == DIFFUSE_PROBE ? mDiffuseProbeRenderingObject[volumeIndex] : mSpecularProbeRenderingObject[volumeIndex];
+		bool ready = aType == DIFFUSE_PROBE ? mDiffuseProbesReady : mSpecularProbesReady;
+		
+		ER_MaterialSystems materialSystems;
+		materialSystems.mProbesManager = this;
+
+		if (probeObject && ready)
 		{
-			if (mSpecularProbeRenderingObject[volumeIndex] && mSpecularProbesReady)
-				mSpecularProbeRenderingObject[volumeIndex]->Draw(MaterialHelper::debugLightProbeMaterialName);
+			auto materialInfo = probeObject->GetNewMaterials().find(MaterialHelper::debugLightProbeMaterialName);
+			if (materialInfo != probeObject->GetNewMaterials().end())
+			{
+				static_cast<ER_DebugLightProbeMaterial*>(materialInfo->second)->PrepareForRendering(materialSystems, probeObject, 0, static_cast<int>(aType), volumeIndex);
+				probeObject->Draw(MaterialHelper::debugLightProbeMaterialName);
+			}
 		}
+
 	}
 
 	void ER_IlluminationProbeManager::DrawDebugProbesVolumeGizmo(ER_ProbeType aType, int volumeIndex)

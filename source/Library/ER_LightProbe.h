@@ -47,10 +47,6 @@ namespace Library
 	private:
 		void DrawGeometryToProbe(Game& game, const GameTime& gameTime, ER_GPUTexture* aTextureNonConvoluted, DepthTarget** aDepthBuffers, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox);
 		void ConvoluteProbe(Game& game, QuadRenderer* quadRenderer, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted);
-
-		void PrecullObjectsPerFace();
-		void UpdateRenderToLightProbeMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int cubeFaceIndex);
-
 		void SaveProbeOnDisk(Game& game, const std::wstring& levelPath, ER_GPUTexture* aTextureConvoluted);
 		std::wstring GetConstructedProbeName(const std::wstring& levelPath);
 

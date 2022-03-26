@@ -159,6 +159,7 @@ namespace Library
 		ID3D11ComputeShader* mUpsampleBlurCS = nullptr;
 		ID3D11ComputeShader* mDeferredLightingCS = nullptr;
 		ID3D11VertexShader* mForwardLightingVS = nullptr;
+		ID3D11VertexShader* mForwardLightingVS_Instancing = nullptr;
 		ID3D11PixelShader* mForwardLightingPS = nullptr;
 		ID3D11PixelShader* mForwardLightingDiffuseProbesPS = nullptr;
 		ID3D11PixelShader* mForwardLightingSpecularProbesPS = nullptr;
@@ -166,8 +167,6 @@ namespace Library
 		ID3D11ShaderResourceView* mShadowMapSRV = nullptr;
 
 		ID3D11DepthStencilState* mDepthStencilStateRW = nullptr;
-		ID3D11SamplerState* mLinearSamplerState = nullptr;
-		ID3D11SamplerState* mShadowSamplerState = nullptr;
 		
 		ID3D11InputLayout* mForwardLightingRenderingObjectInputLayout = nullptr;
 		ID3D11InputLayout* mForwardLightingRenderingObjectInputLayout_Instancing = nullptr;

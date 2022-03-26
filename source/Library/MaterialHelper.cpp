@@ -6,12 +6,12 @@ namespace Library
 	const std::string MaterialHelper::basicColorMaterialName = "BasicColorMaterial";
 	const std::string MaterialHelper::shadowMapMaterialName = "ShadowMapMaterial";
 	const std::string MaterialHelper::gbufferMaterialName = "GBufferMaterial";
+	const std::string MaterialHelper::renderToLightProbeMaterialName = "RenderToLightProbeMaterial";
+	const std::string MaterialHelper::debugLightProbeMaterialName = "DebugLightProbeMaterial";
 
 	const std::string MaterialHelper::ssrMaterialName = "ssr";
 	const std::string MaterialHelper::parallaxMaterialName = "parallax";
 	const std::string MaterialHelper::voxelizationGIMaterialName = "voxelizationGI";
-	const std::string MaterialHelper::debugLightProbeMaterialName = "debugLightProbe";
-	const std::string MaterialHelper::renderToLightProbeMaterialName = "renderToLightProbe";
 
 	const std::string MaterialHelper::forwardLightingNonMaterialName = "FORWARD_LIGHTING_NON_MATERIAL";
 }
