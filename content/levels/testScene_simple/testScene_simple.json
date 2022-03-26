@@ -61,14 +61,9 @@
 				},
 				{
 					"name" : "GBufferMaterial"
-				}
-			],
-			"materials" : 
-			[
+				},
 				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
+					"name" : "VoxelizationMaterial"
 				}
 			],
 			"model_path" : "content\\models\\bunny\\bunny.fbx",
@@ -108,14 +103,9 @@
 				},
 				{
 					"name" : "GBufferMaterial"
-				}
-			],
-			"materials" : 
-			[
+				},
 				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
+					"name" : "VoxelizationMaterial"
 				}
 			],
 			"model_path" : "content\\models\\default_plane\\plane.fbx",
@@ -161,14 +151,9 @@
 				},
 				{
 					"name" : "GBufferMaterial"
-				}
-			],
-			"materials" : 
-			[
+				},
 				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
+					"name" : "VoxelizationMaterial"
 				}
 			],
 			"model_path" : "content\\models\\default_plane\\plane.fbx",
@@ -214,14 +199,9 @@
 				},
 				{
 					"name" : "GBufferMaterial"
-				}
-			],
-			"materials" : 
-			[
+				},
 				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
+					"name" : "VoxelizationMaterial"
 				}
 			],
 			"model_path" : "content\\models\\default_plane\\plane.fbx",
@@ -267,14 +247,9 @@
 				},
 				{
 					"name" : "GBufferMaterial"
-				}
-			],
-			"materials" : 
-			[
+				},
 				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
+					"name" : "VoxelizationMaterial"
 				}
 			],
 			"model_path" : "content\\models\\sphere.fbx",
@@ -314,14 +289,9 @@
 				},
 				{
 					"name" : "GBufferMaterial"
-				}
-			],
-			"materials" : 
-			[
+				},
 				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
+					"name" : "VoxelizationMaterial"
 				}
 			],
 			"model_path" : "content\\models\\sphere.fbx",
@@ -357,7 +327,7 @@
 					"name" : "GBufferMaterial"
 				},
 				{
-					"name" : "BasicColorMaterial"
+					"name" : "VoxelizationMaterial"
 				}
 			],
 			"model_path" : "content\\models\\sphere.fbx",

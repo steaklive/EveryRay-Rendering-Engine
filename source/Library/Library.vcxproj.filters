@@ -339,9 +339,6 @@
     <ClInclude Include="Illumination.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VoxelizationGIMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="CompositeLightingMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -382,6 +379,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ER_DebugLightProbeMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ER_VoxelizationMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -557,9 +557,6 @@
     <ClCompile Include="FoliageMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
-    <ClCompile Include="VoxelizationGIMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
     <ClCompile Include="LightShaftsMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
@@ -620,9 +617,6 @@
     <ClCompile Include="ER_LightProbe.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
-    <ClCompile Include="ER_MaterialsCallbacks.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="InstancingMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
@@ -648,6 +642,9 @@
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="ER_DebugLightProbeMaterial.cpp">
+      <Filter>Source Files\Graphics\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_VoxelizationMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
   </ItemGroup>
@@ -778,9 +775,6 @@
     <FxCompile Include="..\..\content\shaders\VolumetricClouds\VolumetricCloudsCS.hlsl">
       <Filter>Shaders\VolumetricClouds</Filter>
     </FxCompile>
-    <FxCompile Include="..\..\content\effects\VoxelizationGI.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
     <FxCompile Include="..\..\content\shaders\GI\VoxelConeTracingVoxelizationDebug.hlsl">
       <Filter>Shaders\GI</Filter>
     </FxCompile>
@@ -816,6 +810,9 @@
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\IBL\DebugLightProbe.hlsl">
       <Filter>Shaders\IBL</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\Voxelization.hlsl">
+      <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

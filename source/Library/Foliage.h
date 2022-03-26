@@ -5,7 +5,6 @@
 #include "DirectionalLight.h"
 #include "PostProcessingStack.h"
 #include "FoliageMaterial.h"
-#include "VoxelizationGIMaterial.h"
 #include "ER_ShadowMapper.h"
 #include "Illumination.h"
 #include "GeneralEvent.h"

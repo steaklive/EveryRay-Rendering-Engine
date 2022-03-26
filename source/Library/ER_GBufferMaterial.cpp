@@ -65,7 +65,6 @@ namespace Library
 
 		assert(aObj);
 		assert(camera);
-		assert(neededSystems.mShadowMapper);
 
 		ER_Material::PrepareForRendering(neededSystems, aObj, meshIndex);
 

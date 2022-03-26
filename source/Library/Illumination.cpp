@@ -17,7 +17,7 @@
 #include "VertexDeclarations.h"
 #include "RasterizerStates.h"
 #include "ShaderCompiler.h"
-#include "VoxelizationGIMaterial.h"
+#include "ER_VoxelizationMaterial.h"
 #include "ER_RenderToLightProbeMaterial.h"
 #include "Scene.h"
 #include "ER_GBuffer.h"
@@ -230,13 +230,6 @@ namespace Library {
 		{
 			if (obj.second->IsForwardShading())
 				mForwardPassObjects.emplace(obj);
-
-			if (obj.second->IsInVoxelization())
-			{
-				for (int voxelCascadeIndex = 0; voxelCascadeIndex < NUM_VOXEL_GI_CASCADES; voxelCascadeIndex++)
-					obj.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::voxelizationGIMaterialName + "_" + std::to_string(voxelCascadeIndex),
-						[&, voxelCascadeIndex, matSystems = materialSystems](int meshIndex) { ER_MaterialsCallbacks::UpdateVoxelizationGIMaterialVariables(matSystems, obj.second, meshIndex, voxelCascadeIndex); });
-			}
 		}
 	}
 
@@ -275,6 +268,11 @@ namespace Library {
 		context->RSGetState(&oldRS);
 
 		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
+		
+		ER_MaterialSystems materialSystems;
+		materialSystems.mCamera = &mCamera;
+		materialSystems.mDirectionalLight = &mDirectionalLight;
+		materialSystems.mShadowMapper = &mShadowMapper;
 
 		//voxelization
 		{
@@ -283,26 +281,28 @@ namespace Library {
 				D3D11_VIEWPORT vctViewport = { 0.0f, 0.0f, voxelCascadesSizes[cascade], voxelCascadesSizes[cascade] };
 				D3D11_RECT vctRect = { 0.0f, 0.0f, voxelCascadesSizes[cascade], voxelCascadesSizes[cascade] };
 				ID3D11UnorderedAccessView* UAV[1] = { mVCTVoxelCascades3DRTs[cascade]->GetUAV() };
+				ID3D11UnorderedAccessView* nullUAV[1] = { nullptr };
 
 				context->RSSetState(RasterizerStates::NoCullingNoDepthEnabledScissorRect);
 				context->RSSetViewports(1, &vctViewport);
 				context->RSSetScissorRects(1, &vctRect);
-				context->OMSetRenderTargets(1, nullRTVs, nullptr);
-				/*if (mVoxelCameraPositionsUpdated)
-					*/context->ClearUnorderedAccessViewFloat(UAV[0], clearColorBlack);
+				context->OMSetRenderTargetsAndUnorderedAccessViews(0, nullRTVs, NULL, 0, 1, UAV, NULL);
+				context->ClearUnorderedAccessViewFloat(UAV[0], clearColorBlack);
 
-				std::string materialName = MaterialHelper::voxelizationGIMaterialName + "_" + std::to_string(cascade);
+				std::string materialName = MaterialHelper::voxelizationMaterialName + "_" + std::to_string(cascade);
 				for (auto& obj : mVoxelizationObjects[cascade]) {
-					auto material = static_cast<Rendering::VoxelizationGIMaterial*>(obj.second->GetMaterials()[materialName]);
-					if (material)
+					if (!obj.second->IsInVoxelization())
+						continue;
+
+					auto materialInfo = obj.second->GetNewMaterials().find(materialName);
+					if (materialInfo != obj.second->GetNewMaterials().end())
 					{
-						material->VoxelCameraPos() << XMVECTOR{
-							mVoxelCameraPositions[cascade].x,
-							mVoxelCameraPositions[cascade].y,
-							mVoxelCameraPositions[cascade].z, 1.0f };
-						material->WorldVoxelScale() << mWorldVoxelScales[cascade];
-						material->GetEffect()->GetEffect()->GetVariableByName("outputTexture")->AsUnorderedAccessView()->SetUnorderedAccessView(UAV[0]);
-						obj.second->Draw(materialName);
+						for (int meshIndex = 0; meshIndex < obj.second->GetMeshCount(); meshIndex++)
+						{
+							static_cast<ER_VoxelizationMaterial*>(materialInfo->second)->PrepareForRendering(materialSystems, obj.second, meshIndex, 
+								mWorldVoxelScales[cascade], voxelCascadesSizes[cascade], mVoxelCameraPositions[cascade]);
+							obj.second->Draw(materialName, true, meshIndex);
+						}
 					}
 				}
 
@@ -313,6 +313,7 @@ namespace Library {
 				}
 
 				//reset back
+				context->OMSetRenderTargetsAndUnorderedAccessViews(0, nullRTVs, NULL, 0, 1, nullUAV, NULL);
 				context->RSSetViewports(1, &viewport);
 				context->RSSetScissorRects(1, &rect);
 			}
@@ -399,7 +400,6 @@ namespace Library {
 			context->CSSetConstantBuffers(0, 1, CBs);
 			context->CSSetShader(mVCTMainCS, NULL, NULL);
 			context->CSSetUnorderedAccessViews(0, 1, UAV, NULL);
-
 			context->Dispatch(DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetHeight()), 8u), 1u);
 
 			ID3D11ShaderResourceView* nullSRV[] = { NULL };

@@ -212,6 +212,7 @@
     <ClInclude Include="ER_MaterialsCallbacks.h" />
     <ClInclude Include="ER_RenderToLightProbeMaterial.h" />
     <ClInclude Include="ER_ShadowMapMaterial.h" />
+    <ClInclude Include="ER_VoxelizationMaterial.h" />
     <ClInclude Include="FastFourierTransform.h" />
     <ClInclude Include="FirstPersonCamera.h" />
     <ClInclude Include="FogMaterial.h" />
@@ -282,7 +283,6 @@
     <ClInclude Include="VertexDeclarations.h" />
     <ClInclude Include="VignetteMaterial.h" />
     <ClInclude Include="VolumetricClouds.h" />
-    <ClInclude Include="VoxelizationGIMaterial.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BruteforceStructure.cpp" />
@@ -306,9 +306,9 @@
     <ClCompile Include="ER_IlluminationProbeManager.cpp" />
     <ClCompile Include="ER_LightProbe.cpp" />
     <ClCompile Include="ER_Material.cpp" />
-    <ClCompile Include="ER_MaterialsCallbacks.cpp" />
     <ClCompile Include="ER_RenderToLightProbeMaterial.cpp" />
     <ClCompile Include="ER_ShadowMapMaterial.cpp" />
+    <ClCompile Include="ER_VoxelizationMaterial.cpp" />
     <ClCompile Include="FirstPersonCamera.cpp" />
     <ClCompile Include="FogMaterial.cpp" />
     <ClCompile Include="Foliage.cpp" />
@@ -377,7 +377,6 @@
     <ClCompile Include="VectorHelper.cpp" />
     <ClCompile Include="VignetteMaterial.cpp" />
     <ClCompile Include="VolumetricClouds.cpp" />
-    <ClCompile Include="VoxelizationGIMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\content\effects\ColorGrading.fx">
@@ -459,20 +458,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\content\effects\Vignette.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\VoxelizationGI.fx">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -673,6 +658,10 @@
     <FxCompile Include="..\..\content\shaders\VolumetricLight\TemporalFilter_PS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\Voxelization.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

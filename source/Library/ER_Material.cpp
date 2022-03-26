@@ -15,6 +15,7 @@ namespace Library
 	static const std::string pixelShaderModel = "ps_5_0";
 	static const std::string hullShaderModel = "hs_5_0";
 	static const std::string domainShaderModel = "ds_5_0";
+	static const std::string geometryShaderModel = "gs_5_0";
 
 	ER_Material::ER_Material(Game& game, const MaterialShaderEntries& shaderEntry, unsigned int shaderFlags, bool instanced)
 		: GameComponent(game),
@@ -93,7 +94,17 @@ namespace Library
 
 	void ER_Material::CreateGeometryShader(const std::string& path)
 	{
-		//TODO
+		assert(!mShaderEntries.geometryEntry.empty());
+
+		std::string compilerErrorMessage = "Failed to compile GSMain from shader: " + path;
+		std::string createErrorMessage = "Failed to create geometry shader from shader: " + path;
+
+		ID3DBlob* blob = nullptr;
+		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(Utility::ToWideString(path)).c_str(), mShaderEntries.geometryEntry.c_str(), geometryShaderModel.c_str(), &blob)))
+			throw GameException(compilerErrorMessage.c_str());
+		if (FAILED(GetGame()->Direct3DDevice()->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mGS)))
+			throw GameException(createErrorMessage.c_str());
+		blob->Release();
 	}
 
 	void ER_Material::CreateTessellationShader(const std::string& path)

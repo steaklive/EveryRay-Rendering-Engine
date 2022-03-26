@@ -22,10 +22,10 @@ static const float diffuseConeWeights[] =
 static const float specularOneDegree = 0.0174533f; //in radians
 static const int specularMaxDegreesCount = 2;
 
-Texture2DMS<float4> albedoBuffer : register(t0);
-Texture2DMS<float4> normalBuffer : register(t1);
-Texture2DMS<float4> worldPosBuffer : register(t2);
-Texture2DMS<float4> extraGBuffer : register(t3);
+Texture2D<float4> albedoBuffer : register(t0);
+Texture2D<float4> normalBuffer : register(t1);
+Texture2D<float4> worldPosBuffer : register(t2);
+Texture2D<float4> extraGBuffer : register(t3);
 Texture3D<float4> voxelTextures[NUM_VOXEL_CASCADES] : register(t4);
 
 RWTexture2D<float4> outputTexture : register(u0);
@@ -169,16 +169,19 @@ float4 CalculateIndirectDiffuse(float3 worldPos, float3 normal, out float ao)
 [numthreads(8, 8, 1)]
 void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID)
 {
-    float2 inPos = DTid.xy;
+    uint width, height;
+    albedoBuffer.GetDimensions(width, height);
     
-    float3 normal = normalize(normalBuffer.Load(inPos * UpsampleRatio, 0).rgb);
-    float4 worldPos = worldPosBuffer.Load(inPos * UpsampleRatio, 0);
-    float4 albedo = albedoBuffer.Load(inPos * UpsampleRatio, 0);
-    float4 extraGbuffer = extraGBuffer.Load(inPos * UpsampleRatio, 0);
+    float2 texCooord = DTid.xy / float2(width / UpsampleRatio.x, height / UpsampleRatio.y);
+    
+    float3 normal = normalize(normalBuffer.SampleLevel(LinearSampler, texCooord, 0).rgb);
+    float4 worldPos = worldPosBuffer.SampleLevel(LinearSampler, texCooord, 0);
+    float4 albedo = albedoBuffer.SampleLevel(LinearSampler, texCooord, 0);
+    float4 extraGbuffer = extraGBuffer.SampleLevel(LinearSampler, texCooord, 0);
        
     float ao = 0.0f;
     float4 indirectDiffuse = CalculateIndirectDiffuse(worldPos.rgb, normal.rgb, ao);
     //float4 indirectSpecular = CalculateIndirectSpecular(worldPos.rgb, normal.rgb, float4(albedo.rgb, extraGbuffer.g));
 
-    outputTexture[inPos] = GIPower * saturate(float4(indirectDiffuse.rgb * albedo.rgb /*+ indirectSpecular.rgb*/, ao));
+    outputTexture[DTid.xy] = GIPower * saturate(float4(indirectDiffuse.rgb * albedo.rgb /*+ indirectSpecular.rgb*/, ao));
 }

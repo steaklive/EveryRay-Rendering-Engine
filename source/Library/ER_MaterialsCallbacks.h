@@ -19,10 +19,4 @@ namespace Library
 		const ER_ShadowMapper* mShadowMapper = nullptr;
 		const ER_IlluminationProbeManager* mProbesManager = nullptr;
 	};
-
-	class ER_MaterialsCallbacks
-	{
-	public:
-		static void UpdateVoxelizationGIMaterialVariables(ER_MaterialSystems neededSystems, Rendering::RenderingObject* obj, int meshIndex, int voxelCascadeIndex);
-	};
 }

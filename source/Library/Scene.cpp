@@ -215,6 +215,14 @@ namespace Library
 							aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), cascadedname);
 						}
 					}
+					else if (name == MaterialHelper::voxelizationMaterialName) {
+						aObject->SetInVoxelization(true);
+						for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
+						{
+							const std::string fullname = MaterialHelper::voxelizationMaterialName + "_" + std::to_string(cascade);
+							aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), fullname);
+						}
+					}
 					else if (name == MaterialHelper::renderToLightProbeMaterialName) {
 						std::string originalPSEntry = shaderEntries.pixelEntry;
 						for (int cubemapFaceIndex = 0; cubemapFaceIndex < CUBEMAP_FACES_COUNT; cubemapFaceIndex++)
@@ -236,36 +244,6 @@ namespace Library
 					}
 					else //other standard materials
 						aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), name);
-				}
-			}
-			if (root["rendering_objects"][i].isMember("materials")) {
-
-				unsigned int numMaterials = root["rendering_objects"][i]["materials"].size();
-				for (Json::Value::ArrayIndex matIndex = 0; matIndex != numMaterials; matIndex++) {
-					std::tuple<Material*, Effect*, std::string> materialData = CreateMaterialData(
-						root["rendering_objects"][i]["materials"][matIndex]["name"].asString(),
-						root["rendering_objects"][i]["materials"][matIndex]["effect"].asString(),
-						root["rendering_objects"][i]["materials"][matIndex]["technique"].asString()
-					);
-
-					if (std::get<2>(materialData) == MaterialHelper::voxelizationGIMaterialName) {
-						aObject->SetInVoxelization(true);
-						for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
-						{
-							const std::string name = MaterialHelper::voxelizationGIMaterialName + "_" + std::to_string(cascade);
-							aObject->LoadMaterial(new Rendering::VoxelizationGIMaterial(), std::get<1>(materialData), name);
-							auto material = aObject->GetMaterials()[name];
-							if (material)
-								material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][matIndex]["technique"].asString()));
-						}
-					}
-					else if (std::get<0>(materialData))
-					{
-						aObject->LoadMaterial(std::get<0>(materialData), std::get<1>(materialData), std::get<2>(materialData));
-						aObject->GetMaterials()[std::get<2>(materialData)]->SetCurrentTechnique(
-							aObject->GetMaterials()[std::get<2>(materialData)]->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][matIndex]["technique"].asString())
-						);
-					}
 				}
 			}
 
@@ -459,6 +437,8 @@ namespace Library
 			material = new ER_GBufferMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
 		else if (matName == "RenderToLightProbeMaterial")
 			material = new ER_RenderToLightProbeMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
+		else if (matName == "VoxelizationMaterial")
+			material = new ER_VoxelizationMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_GEOMETRY_SHADER | HAS_PIXEL_SHADER, instanced);
 		else
 			material = nullptr;
 
@@ -480,7 +460,7 @@ namespace Library
 			//material = new DepthMapMaterial(); //processed later as we need cascades
 		}
 		else if (matName == "VoxelizationGIMaterial") {
-			materialName = MaterialHelper::voxelizationGIMaterialName;
+			materialName = MaterialHelper::voxelizationMaterialName;
 			//material = new Rendering::VoxelizationGIMaterial();//processed later as we need cascades
 		}
 		else if (matName == "RenderToLightProbeMaterial") {
