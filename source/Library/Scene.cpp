@@ -207,15 +207,16 @@ namespace Library
 					if (name == MaterialHelper::renderToLightProbeMaterialName)
 						aObject->SetInLightProbe(true);
 
-					// taking care of a special material : shadow map
-					if (name == MaterialHelper::shadowMapMaterialName) {
+					if (name == MaterialHelper::shadowMapMaterialName)
+					{
 						for (int cascade = 0; cascade < NUM_SHADOW_CASCADES; cascade++)
 						{
 							std::string cascadedname = MaterialHelper::shadowMapMaterialName + " " + std::to_string(cascade);
 							aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), cascadedname);
 						}
 					}
-					else if (name == MaterialHelper::voxelizationMaterialName) {
+					else if (name == MaterialHelper::voxelizationMaterialName)
+					{
 						aObject->SetInVoxelization(true);
 						for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
 						{
@@ -223,7 +224,8 @@ namespace Library
 							aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), fullname);
 						}
 					}
-					else if (name == MaterialHelper::renderToLightProbeMaterialName) {
+					else if (name == MaterialHelper::renderToLightProbeMaterialName)
+					{
 						std::string originalPSEntry = shaderEntries.pixelEntry;
 						for (int cubemapFaceIndex = 0; cubemapFaceIndex < CUBEMAP_FACES_COUNT; cubemapFaceIndex++)
 						{
@@ -443,33 +445,5 @@ namespace Library
 			material = nullptr;
 
 		return material;
-	}
-
-	std::tuple<Material*, Effect*, std::string> Scene::CreateMaterialData(const std::string& matName, const std::string& effectName, const std::string& techniqueName)
-	{
-		Material* material = nullptr;
-
-		Effect* effect = new Effect(*mGame);
-		effect->CompileFromFile(Utility::GetFilePath(Utility::ToWideString(effectName)));
-
-		std::string materialName = "";
-
-		// cant do reflection in C++
-		if (matName == "DepthMapMaterial") {
-			materialName = MaterialHelper::shadowMapMaterialName;
-			//material = new DepthMapMaterial(); //processed later as we need cascades
-		}
-		else if (matName == "VoxelizationGIMaterial") {
-			materialName = MaterialHelper::voxelizationMaterialName;
-			//material = new Rendering::VoxelizationGIMaterial();//processed later as we need cascades
-		}
-		else if (matName == "RenderToLightProbeMaterial") {
-			materialName = MaterialHelper::renderToLightProbeMaterialName;
-			//material = new Rendering::RenderToLightProbeMaterial();//processed later
-		}
-		else
-			material = nullptr;
-
-		return std::tuple<Material*, Effect*, std::string>(material, effect, materialName);
 	}
 }

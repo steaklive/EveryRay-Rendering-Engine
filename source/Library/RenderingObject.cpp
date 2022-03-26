@@ -76,10 +76,6 @@ namespace Rendering
 	{
 		DeleteObject(MeshMaterialVariablesUpdateEvent);
 
-		for (auto object : mMaterials)
-			DeleteObject(object.second);
-		mMaterials.clear();
-
 		for (auto object : mNewMaterials)
 			DeleteObject(object.second);
 		mNewMaterials.clear();
@@ -96,16 +92,6 @@ namespace Rendering
 		mMeshesTextureBuffers.clear();
 
 		DeleteObject(mDebugAABB);
-	}
-
-	void RenderingObject::LoadMaterial(Material* pMaterial, Effect* pEffect, std::string materialName)
-	{
-		assert(mModel);
-		assert(pMaterial);
-		assert(pEffect);
-
-		mMaterials.insert(std::pair<std::string, Material*>(materialName, pMaterial));
-		mMaterials[materialName]->Initialize(pEffect);
 	}
 
 	void RenderingObject::LoadMaterial(ER_Material* pMaterial, const std::string& materialName)
@@ -370,29 +356,6 @@ namespace Rendering
 		mMeshesRenderBuffers.push_back({});
 		assert(mMeshesRenderBuffers.size() - 1 == lod);
 
-		for (auto material : mMaterials)
-		{
-			mMeshesRenderBuffers[lod].insert(std::pair<std::string, std::vector<RenderBufferData*>>(material.first, std::vector<RenderBufferData*>()));
-			for (size_t i = 0; i < mMeshesCount[lod]; i++)
-			{
-				mMeshesRenderBuffers[lod][material.first].push_back(new RenderBufferData());
-				if (lod == 0) {
-					material.second->CreateVertexBuffer(mGame->Direct3DDevice(), *mModel->Meshes()[i], &(mMeshesRenderBuffers[lod][material.first][i]->VertexBuffer));
-					mModel->Meshes()[i]->CreateIndexBuffer(&(mMeshesRenderBuffers[lod][material.first][i]->IndexBuffer));
-					mMeshesRenderBuffers[lod][material.first][i]->IndicesCount = mModel->Meshes()[i]->Indices().size();
-				}
-				else
-				{
-					material.second->CreateVertexBuffer(mGame->Direct3DDevice(), *mModelLODs[lod - 1]->Meshes()[i], &(mMeshesRenderBuffers[lod][material.first][i]->VertexBuffer));
-					mModelLODs[lod - 1]->Meshes()[i]->CreateIndexBuffer(&(mMeshesRenderBuffers[lod][material.first][i]->IndexBuffer));
-					mMeshesRenderBuffers[lod][material.first][i]->IndicesCount = mModelLODs[lod - 1]->Meshes()[i]->Indices().size();
-				}
-				
-				mMeshesRenderBuffers[lod][material.first][i]->Stride = mMaterials[material.first]->VertexSize();
-				mMeshesRenderBuffers[lod][material.first][i]->Offset = 0;
-			}
-		}
-
 		for (auto material : mNewMaterials)
 		{
 			mMeshesRenderBuffers[lod].insert(std::pair<std::string, std::vector<RenderBufferData*>>(material.first, std::vector<RenderBufferData*>()));
@@ -453,14 +416,12 @@ namespace Rendering
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
 		context->IASetPrimitiveTopology(mWireframeMode ? D3D11_PRIMITIVE_TOPOLOGY_LINELIST : D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		bool newMat = mNewMaterials.find(materialName) != mNewMaterials.end();
-
-		if ((mMaterials.find(materialName) == mMaterials.end() && !newMat) && !isForwardPass)
+		if (mNewMaterials.find(materialName) == mNewMaterials.end() && !isForwardPass)
 			return;
 		
 		if (mIsRendered && !mIsCulled)
 		{
-			if (!newMat && !isForwardPass && (!mMaterials.size() || mMeshesRenderBuffers[lod].size() == 0))
+			if (!isForwardPass && (!mNewMaterials.size() || mMeshesRenderBuffers[lod].size() == 0))
 				return;
 			
 			bool isSpecificMesh = (meshIndex != -1);
@@ -483,25 +444,12 @@ namespace Rendering
 					context->IASetIndexBuffer(mMeshesRenderBuffers[lod][materialName][i]->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 				}
 
-				//TODO remove effects when new material system is ready
-				if (!isForwardPass && !newMat) {
-					auto listener = MeshMaterialVariablesUpdateEvent->GetListener(materialName);
-					listener(i);
-
-					Pass* pass = mMaterials[materialName]->CurrentTechnique()->Passes().at(0);
-					ID3D11InputLayout* inputLayout = mMaterials[materialName]->InputLayouts().at(pass);
-					context->IASetInputLayout(inputLayout);
-
-					pass->Apply(0, context);
-				}
-				else if (newMat)
+				// run prepare callbacks for non-special materials (specials are, i.e., shadow mapping, which are processed in their own systems)
+				if (!isForwardPass && !mNewMaterials[materialName]->IsSpecial())
 				{
-					// run prepare callbacks for non-special materials (specials are, i.e., shadow mapping, which are processed in their own systems)
-					if (!mNewMaterials[materialName]->IsSpecial())
-					{
-						auto prepareDrawingMaterial = MeshMaterialVariablesUpdateEvent->GetListener(materialName);
-						prepareDrawingMaterial(i);
-					}
+					auto prepareMaterialBeforeRendering = MeshMaterialVariablesUpdateEvent->GetListener(materialName);
+					if (prepareMaterialBeforeRendering)
+						prepareMaterialBeforeRendering(i);
 				}
 				else if (mGame->GetLevel()->mIllumination)
 					mGame->GetLevel()->mIllumination->PrepareForForwardLighting(this, i);
@@ -527,47 +475,6 @@ namespace Rendering
 	{
 		if (mAvailableInEditorMode && mEnableAABBDebug && Utility::IsEditorMode)
 			mDebugAABB->Draw();
-	}
-
-
-	// legacy instancing code [DEPRECATED]
-	void RenderingObject::LoadInstanceBuffers(std::vector<InstancingMaterial::InstancedData>& pInstanceData, std::string materialName, int lod)
-	{
-		assert(mModel != nullptr);
-		assert(mGame->Direct3DDevice() != nullptr);
-
-		mMeshesInstanceBuffers.push_back({});
-		assert(lod == mMeshesInstanceBuffers.size() - 1);
-
-		mInstanceCount.push_back(pInstanceData.size());
-		assert(lod == mInstanceCount.size() - 1);
-
-		for (size_t i = 0; i < mMeshesCount[lod]; i++)
-		{
-			mMeshesInstanceBuffers[lod].push_back(new InstanceBufferData());
-			static_cast<InstancingMaterial*>(mMaterials[materialName])->CreateInstanceBuffer(mGame->Direct3DDevice(), pInstanceData, &(mMeshesInstanceBuffers[lod][i]->InstanceBuffer));
-			mMeshesInstanceBuffers[lod][i]->Stride = sizeof(InstancingMaterial::InstancedData);
-		}
-	}
-	// legacy instancing code [DEPRECATED]
-	void RenderingObject::UpdateInstanceData(std::vector<InstancingMaterial::InstancedData> pInstanceData, std::string materialName, int lod)
-	{
-		assert(lod < mMeshesInstanceBuffers.size());
-		assert(lod < mInstanceCount.size());
-
-		for (size_t i = 0; i < mMeshesCount[lod]; i++)
-		{
-			static_cast<InstancingMaterial*>(mMaterials[materialName])->CreateInstanceBuffer(mGame->Direct3DDevice(), pInstanceData, &(mMeshesInstanceBuffers[lod][i]->InstanceBuffer));
-			
-			// dynamically update instance buffer
-			D3D11_MAPPED_SUBRESOURCE mappedResource;
-			ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
-			
-			mGame->Direct3DDeviceContext()->Map(mMeshesInstanceBuffers[lod][i]->InstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-			memcpy(mappedResource.pData, &pInstanceData[0], sizeof(pInstanceData[0]) * mInstanceCount[lod]);
-			mGame->Direct3DDeviceContext()->Unmap(mMeshesInstanceBuffers[lod][i]->InstanceBuffer, 0);
-
-		}
 	}
 
 	// new instancing code
