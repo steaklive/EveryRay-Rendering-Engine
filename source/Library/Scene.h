@@ -9,13 +9,9 @@
 
 #include "..\JsonCpp\include\json\json.h"
 
-namespace Rendering
-{
-	class RenderingObject;
-}
-
 namespace Library
 {
+	class RenderingObject;
 	class Scene : public GameComponent
 	{
 	public:
@@ -30,7 +26,7 @@ namespace Library
 		const XMFLOAT3& GetLightProbesVolumeMaxBounds() const { return mLightProbesVolumeMaxBounds; }
 		bool HasLightProbesSupport() { return mHasLightProbes; }
 
-		std::map<std::string, Rendering::RenderingObject*> objects;
+		std::map<std::string, RenderingObject*> objects;
 
 		//TODO remove to private and make public methods
 		std::string skyboxPath;
@@ -41,8 +37,8 @@ namespace Library
 		XMFLOAT3 ambientColor;
 
 	private:
-		void LoadRenderingObjectData(Rendering::RenderingObject* aObject);
-		void LoadRenderingObjectInstancedData(Rendering::RenderingObject* aObject);
+		void LoadRenderingObjectData(RenderingObject* aObject);
+		void LoadRenderingObjectInstancedData(RenderingObject* aObject);
 
 		Json::Value root;
 		Camera& mCamera;

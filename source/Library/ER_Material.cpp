@@ -35,7 +35,7 @@ namespace Library
 	}
 
 	// Setting up the pipeline before the draw call
-	void ER_Material::PrepareForRendering(ER_MaterialSystems neededSystems, Rendering::RenderingObject* aObj, int meshIndex)
+	void ER_Material::PrepareForRendering(ER_MaterialSystems neededSystems, RenderingObject* aObj, int meshIndex)
 	{
 		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
 

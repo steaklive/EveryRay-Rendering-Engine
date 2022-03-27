@@ -1,13 +1,10 @@
 #pragma once
 #include "ER_Material.h"
 
-namespace Rendering
-{
-	class RenderingObject;
-}
 namespace Library
 {
 	class Mesh;
+	class RenderingObject;
 
 	namespace GBufferMaterial_CBufferData {
 		struct GBufferCB
@@ -24,7 +21,7 @@ namespace Library
 		ER_GBufferMaterial(Game& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced = false);
 		~ER_GBufferMaterial();
 
-		virtual void PrepareForRendering(ER_MaterialSystems neededSystems, Rendering::RenderingObject* aObj, int meshIndex) override;
+		virtual void PrepareForRendering(ER_MaterialSystems neededSystems, RenderingObject* aObj, int meshIndex) override;
 		virtual void CreateVertexBuffer(Mesh& mesh, ID3D11Buffer** vertexBuffer) override;
 		virtual int VertexSize() override;
 

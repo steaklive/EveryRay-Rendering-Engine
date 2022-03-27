@@ -1,9 +1,9 @@
 #pragma once
 #include "Common.h"
+#include "GameComponent.h"
 #include "ConstantBuffer.h"
 #include "ER_GPUTexture.h"
 #include "DepthTarget.h"
-#include "RenderingObject.h"
 #include "ER_IlluminationProbeManager.h"
 
 #define NUM_VOXEL_GI_CASCADES 2
@@ -12,10 +12,9 @@
 
 namespace Library
 {
+	class GameTime;
 	class FullScreenRenderTarget;
 	class DirectionalLight;
-	class GameComponent;
-	class GameTime;
 	class Camera;
 	class Scene;
 	class ER_GBuffer;
@@ -108,7 +107,7 @@ namespace Library
 		bool GetDebugVoxels() { return mDrawVoxelization; }
 		bool GetDebugAO() { return mDrawAmbientOcclusionOnly; }
 
-		void PrepareForForwardLighting(Rendering::RenderingObject* aObj, int meshIndex);
+		void PrepareForForwardLighting(RenderingObject* aObj, int meshIndex);
 
 		ID3D11ShaderResourceView* GetGlobaIlluminationSRV() const {
 			if (mDrawVoxelization)
@@ -133,7 +132,7 @@ namespace Library
 		ER_IlluminationProbeManager* mProbesManager = nullptr;
 		FoliageSystem* mFoliageSystem = nullptr;
 
-		using RenderingObjectInfo = std::map<std::string, Rendering::RenderingObject*>;
+		using RenderingObjectInfo = std::map<std::string, RenderingObject*>;
 		RenderingObjectInfo mVoxelizationObjects[NUM_VOXEL_GI_CASCADES];
 
 		ConstantBuffer<IlluminationCBufferData::VoxelizationDebugCB> mVoxelizationDebugConstantBuffer;

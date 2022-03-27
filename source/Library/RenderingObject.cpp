@@ -2,19 +2,24 @@
 #include <iostream>
 
 #include "RenderingObject.h"
+#include "GameComponent.h"
 #include "GameException.h"
+#include "Game.h"
+#include "GameTime.h"
 #include "Model.h"
 #include "Mesh.h"
-#include "Game.h"
-#include "MatrixHelper.h"
 #include "Utility.h"
 #include "Illumination.h"
+#include "RenderableAABB.h"
+#include "ER_Material.h"
+#include "Camera.h"
+#include "MatrixHelper.h"
 
-namespace Rendering
+namespace Library
 {
 	RenderingObject::RenderingObject(const std::string& pName, int index, Game& pGame, Camera& pCamera, std::unique_ptr<Model> pModel, bool availableInEditor, bool isInstanced)
 		:
-		GameComponent(pGame),
+		mGame(&pGame),
 		mCamera(pCamera),
 		mModel(std::move(pModel)),
 		mMeshesReflectionFactors(0),
@@ -475,6 +480,30 @@ namespace Rendering
 	{
 		if (mAvailableInEditorMode && mEnableAABBDebug && Utility::IsEditorMode)
 			mDebugAABB->Draw();
+	}
+
+	void RenderingObject::SetTransformationMatrix(const XMMATRIX& mat)
+	{
+		mTransformationMatrix = mat;
+		MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
+	}
+
+	void RenderingObject::SetTranslation(float x, float y, float z)
+	{
+		mTransformationMatrix *= XMMatrixTranslation(x, y, z);
+		MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
+	}
+
+	void RenderingObject::SetScale(float x, float y, float z)
+	{
+		mTransformationMatrix *= XMMatrixScaling(x, y, z);
+		MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
+	}
+
+	void RenderingObject::SetRotation(float x, float y, float z)
+	{
+		mTransformationMatrix *= XMMatrixRotationRollPitchYaw(x, y, z);
+		MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
 	}
 
 	// new instancing code

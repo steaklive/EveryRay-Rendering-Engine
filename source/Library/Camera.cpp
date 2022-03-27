@@ -273,7 +273,7 @@ namespace Library
 		return mRotationMatrix;
 	}
 
-	void Camera::Cull(const std::map<std::string, Rendering::RenderingObject*>& objects)
+	void Camera::Cull(const std::map<std::string, RenderingObject*>& objects)
 	{
 		if (!Utility::IsCameraCulling)
 		{
@@ -291,7 +291,7 @@ namespace Library
 		for (auto object : objects)
 		{
 			bool isInstanced = object.second->IsInstanced();
-			std::vector<Rendering::InstancedData> newInstanceData;
+			std::vector<InstancedData> newInstanceData;
 			int instanceCount = object.second->GetInstanceCount();
 			auto aabb = object.second->GetLocalAABB();
 			XMFLOAT3 position; 

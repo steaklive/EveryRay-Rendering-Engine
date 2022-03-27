@@ -1,21 +1,20 @@
 #pragma once
 
 #include "Common.h"
-#include "GameComponent.h"
-#include "Camera.h"
-#include "ER_Material.h"
-#include "VertexDeclarations.h"
-#include "InstancingMaterial.h"
-#include "ModelMaterial.h"
-#include "Effect.h"
 #include "GeneralEvent.h"
-#include "RenderableAABB.h"
-#include "MatrixHelper.h"
+#include "ModelMaterial.h"
 
 const UINT MAX_INSTANCE_COUNT = 20000;
 
-namespace Rendering
+namespace Library
 {
+	class Game;
+	class GameTime;
+	class ER_Material;
+	class RenderableAABB;
+	class Camera;
+	class Model;
+
 	struct RenderBufferData
 	{
 		ID3D11Buffer*			VertexBuffer;
@@ -120,7 +119,7 @@ namespace Rendering
 		
 	};
 
-	class RenderingObject : public GameComponent
+	class RenderingObject
 	{
 		using Delegate_MeshMaterialVariablesUpdate = std::function<void(int)>; // mesh index for input
 
@@ -159,26 +158,10 @@ namespace Rendering
 		bool IsInstanced() { return mIsInstanced; }
 		bool IsVisible() { return mIsRendered; }
 
-		void SetTransformationMatrix(XMMATRIX mat)
-		{
-			mTransformationMatrix = mat;
-			MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
-		}
-		void SetTranslation(float x, float y, float z)
-		{
-			mTransformationMatrix *= XMMatrixTranslation(x, y, z);
-			MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
-		}
-		void SetScale(float x, float y, float z)
-		{ 
-			mTransformationMatrix *= XMMatrixScaling(x, y, z);
-			MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
-		}
-		void SetRotation(float x, float y, float z)
-		{
-			mTransformationMatrix *= XMMatrixRotationRollPitchYaw(x, y, z);
-			MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
-		}
+		void SetTransformationMatrix(const XMMATRIX& mat);
+		void SetTranslation(float x, float y, float z);
+		void SetScale(float x, float y, float z);
+		void SetRotation(float x, float y, float z);
 
 		void LoadInstanceBuffers(int lod = 0);
 		void UpdateInstanceBuffer(std::vector<InstancedData>& instanceData, int lod = 0);
@@ -255,6 +238,7 @@ namespace Rendering
 		void ShowInstancesListUI();
 		void UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix);
 		
+		Game* mGame = nullptr;
 		Camera& mCamera;
 		std::vector<TextureData>								mMeshesTextureBuffers;
 		std::vector<std::vector<InstanceBufferData*>>			mMeshesInstanceBuffers;

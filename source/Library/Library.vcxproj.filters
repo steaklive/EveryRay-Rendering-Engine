@@ -237,9 +237,6 @@
     <ClInclude Include="DemoLevel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="InstancingMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RenderableAABB.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -616,9 +613,6 @@
     </ClCompile>
     <ClCompile Include="ER_LightProbe.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
-    </ClCompile>
-    <ClCompile Include="InstancingMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="ER_Material.cpp">
       <Filter>Source Files\Graphics</Filter>

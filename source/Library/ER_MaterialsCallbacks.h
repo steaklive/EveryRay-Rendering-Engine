@@ -2,12 +2,9 @@
 #include "Common.h"
 #include "ER_IlluminationProbeManager.h"
 
-namespace Rendering
-{
-	class RenderingObject;
-}
 namespace Library
 {
+	class RenderingObject;
 	class Camera;
 	class DirectionalLight;
 	class ER_ShadowMapper;

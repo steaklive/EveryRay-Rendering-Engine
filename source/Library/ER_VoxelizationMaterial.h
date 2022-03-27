@@ -1,12 +1,9 @@
 #pragma once
 #include "ER_Material.h"
 
-namespace Rendering
-{
-	class RenderingObject;
-}
 namespace Library
 {
+	class RenderingObject;
 	class Mesh;
 	class Camera;
 
@@ -29,7 +26,7 @@ namespace Library
 		ER_VoxelizationMaterial(Game& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced = false);
 		~ER_VoxelizationMaterial();
 
-		void PrepareForRendering(ER_MaterialSystems neededSystems, Rendering::RenderingObject* aObj, int meshIndex, float voxelScale, float voxelTexSize, const XMFLOAT4& voxelCameraPos);
+		void PrepareForRendering(ER_MaterialSystems neededSystems, RenderingObject* aObj, int meshIndex, float voxelScale, float voxelTexSize, const XMFLOAT4& voxelCameraPos);
 		virtual void CreateVertexBuffer(Mesh& mesh, ID3D11Buffer** vertexBuffer) override;
 		virtual int VertexSize() override;
 

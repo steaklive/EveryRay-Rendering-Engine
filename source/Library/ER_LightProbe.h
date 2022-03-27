@@ -13,7 +13,7 @@ namespace Library
 
 	class ER_LightProbe
 	{
-		using LightProbeRenderingObjectsInfo = std::map<std::string, Rendering::RenderingObject*>;
+		using LightProbeRenderingObjectsInfo = std::map<std::string, RenderingObject*>;
 	public:
 		ER_LightProbe(Game& game, DirectionalLight& light, ER_ShadowMapper& shadowMapper, int size, ER_ProbeType aType);
 		~ER_LightProbe();

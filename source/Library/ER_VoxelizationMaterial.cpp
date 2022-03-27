@@ -62,7 +62,7 @@ namespace Library
 		ER_Material::~ER_Material();
 	}
 
-	void ER_VoxelizationMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, Rendering::RenderingObject* aObj, int meshIndex, float voxelScale, float voxelTexSize, const XMFLOAT4& voxelCameraPos)
+	void ER_VoxelizationMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, RenderingObject* aObj, int meshIndex, float voxelScale, float voxelTexSize, const XMFLOAT4& voxelCameraPos)
 	{
 		auto context = ER_Material::GetGame()->Direct3DDeviceContext();
 		Camera* camera = (Camera*)(ER_Material::GetGame()->Services().GetService(Camera::TypeIdClass()));

@@ -3,13 +3,9 @@
 #include "GameComponent.h"
 #include "Frustum.h"
 
-namespace Rendering
-{
-	class RenderingObject;
-}
-
 namespace Library
 {
+	class RenderingObject;
 	class GameTime;
 
 	class Camera : public GameComponent
@@ -44,7 +40,7 @@ namespace Library
 		XMMATRIX ViewProjectionMatrix() const;
 		XMMATRIX RotationTransformMatrix() const;
 
-		void Cull(const std::map<std::string, Rendering::RenderingObject*>& objects);
+		void Cull(const std::map<std::string, RenderingObject*>& objects);
 		float GetCameraFarCascadeDistance (int index) const;
 		float GetCameraNearCascadeDistance (int index) const;
 

@@ -6,13 +6,9 @@
 #include "VertexDeclarations.h"
 #include "SamplerStates.h"
 
-namespace Rendering
-{
-	class RenderingObject;
-}
-
 namespace Library
 {
+	class RenderingObject;
 	class Mesh;
 	class GameComponent;
 	struct ER_MaterialSystems;
@@ -40,7 +36,7 @@ namespace Library
 		ER_Material(Game& game, const MaterialShaderEntries& shaderEntry, unsigned int shaderFlags, bool instanced = false);
 		~ER_Material();
 
-		virtual void PrepareForRendering(ER_MaterialSystems neededSystems, Rendering::RenderingObject* aObj, int meshIndex);
+		virtual void PrepareForRendering(ER_MaterialSystems neededSystems, RenderingObject* aObj, int meshIndex);
 
 		virtual void CreateVertexBuffer(Mesh& mesh, ID3D11Buffer** vertexBuffer) = 0;
 

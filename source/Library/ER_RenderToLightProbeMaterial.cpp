@@ -59,7 +59,7 @@ namespace Library
 		ER_Material::~ER_Material();
 	}
 
-	void ER_RenderToLightProbeMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, Rendering::RenderingObject* aObj, int meshIndex, Camera* cubemapCamera)
+	void ER_RenderToLightProbeMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, RenderingObject* aObj, int meshIndex, Camera* cubemapCamera)
 	{
 		auto context = ER_Material::GetGame()->Direct3DDeviceContext();
 

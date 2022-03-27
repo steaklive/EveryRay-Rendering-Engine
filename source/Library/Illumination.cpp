@@ -2,7 +2,6 @@
 #include <stdio.h>
 
 #include "Illumination.h"
-#include "GameComponent.h"
 #include "GameTime.h"
 #include "Camera.h"
 #include "DirectionalLight.h"
@@ -27,6 +26,7 @@
 #include "ER_GPUBuffer.h"
 #include "ER_LightProbe.h"
 #include "ER_MaterialsCallbacks.h"
+#include "RenderingObject.h"
 
 namespace Library {
 
@@ -656,7 +656,7 @@ namespace Library {
 			obj.second->Draw(MaterialHelper::forwardLightingNonMaterialName);
 	}
 
-	void Illumination::PrepareForForwardLighting(Rendering::RenderingObject* aObj, int meshIndex)
+	void Illumination::PrepareForForwardLighting(RenderingObject* aObj, int meshIndex)
 	{
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
 

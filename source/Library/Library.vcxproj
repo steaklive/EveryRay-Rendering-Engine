@@ -229,7 +229,6 @@
     <ClInclude Include="ER_GBuffer.h" />
     <ClInclude Include="GeneralEvent.h" />
     <ClInclude Include="Illumination.h" />
-    <ClInclude Include="InstancingMaterial.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="LightShaftsMaterial.h" />
@@ -324,7 +323,6 @@
     <ClCompile Include="GameTime.cpp" />
     <ClCompile Include="ER_GBuffer.cpp" />
     <ClCompile Include="Illumination.cpp" />
-    <ClCompile Include="InstancingMaterial.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="LightShaftsMaterial.cpp" />

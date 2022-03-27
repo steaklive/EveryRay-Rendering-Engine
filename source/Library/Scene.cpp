@@ -99,7 +99,7 @@ namespace Library
 				std::string name = root["rendering_objects"][i]["name"].asString();
 				std::string modelPath = root["rendering_objects"][i]["model_path"].asString();
 				bool isInstanced = root["rendering_objects"][i]["instanced"].asBool();
-				objects.emplace(name, new Rendering::RenderingObject(name, i, *mGame, mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath(modelPath), true)), true, isInstanced));
+				objects.emplace(name, new RenderingObject(name, i, *mGame, mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath(modelPath), true)), true, isInstanced));
 			}
 
 			assert(numRenderingObjects == objects.size());
@@ -150,7 +150,7 @@ namespace Library
 		objects.clear();
 	}
 
-	void Scene::LoadRenderingObjectData(Rendering::RenderingObject* aObject)
+	void Scene::LoadRenderingObjectData(RenderingObject* aObject)
 	{
 		if (!aObject)
 			return;
@@ -306,7 +306,7 @@ namespace Library
 	}
 
 	// [WARNING] NOT THREAD-SAFE!
-	void Scene::LoadRenderingObjectInstancedData(Rendering::RenderingObject* aObject)
+	void Scene::LoadRenderingObjectInstancedData(RenderingObject* aObject)
 	{
 		int i = aObject->GetIndexInScene();
 		bool isInstanced = aObject->IsInstanced();
