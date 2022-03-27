@@ -3,7 +3,7 @@
 
 namespace Library
 {
-	class RenderingObject;
+	class ER_RenderingObject;
 	class Mesh;
 
 	namespace BasicMaterial_CBufferData {
@@ -20,7 +20,7 @@ namespace Library
 		ER_BasicColorMaterial(Game& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced = false);
 		~ER_BasicColorMaterial();
 
-		virtual void PrepareForRendering(ER_MaterialSystems neededSystems, RenderingObject* aObj, int meshIndex) override;
+		virtual void PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex) override;
 		void PrepareForRendering(const XMMATRIX& worldTransform, const XMFLOAT4& color);
 
 		virtual void CreateVertexBuffer(Mesh& mesh, ID3D11Buffer** vertexBuffer) override;

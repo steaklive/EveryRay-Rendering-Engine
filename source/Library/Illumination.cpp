@@ -26,7 +26,7 @@
 #include "ER_GPUBuffer.h"
 #include "ER_LightProbe.h"
 #include "ER_MaterialsCallbacks.h"
-#include "RenderingObject.h"
+#include "ER_RenderingObject.h"
 
 namespace Library {
 
@@ -656,7 +656,7 @@ namespace Library {
 			obj.second->Draw(MaterialHelper::forwardLightingNonMaterialName);
 	}
 
-	void Illumination::PrepareForForwardLighting(RenderingObject* aObj, int meshIndex)
+	void Illumination::PrepareForForwardLighting(ER_RenderingObject* aObj, int meshIndex)
 	{
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
 

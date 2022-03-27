@@ -6,7 +6,7 @@
 
 namespace Library
 {
-	class RenderingObject;
+	class ER_RenderingObject;
 	class GameTime;
 	class Scene;
 

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include <iostream>
 
-#include "RenderingObject.h"
+#include "ER_RenderingObject.h"
 #include "GameComponent.h"
 #include "GameException.h"
 #include "Game.h"
@@ -17,7 +17,7 @@
 
 namespace Library
 {
-	RenderingObject::RenderingObject(const std::string& pName, int index, Game& pGame, Camera& pCamera, std::unique_ptr<Model> pModel, bool availableInEditor, bool isInstanced)
+	ER_RenderingObject::ER_RenderingObject(const std::string& pName, int index, Game& pGame, Camera& pCamera, std::unique_ptr<Model> pModel, bool availableInEditor, bool isInstanced)
 		:
 		mGame(&pGame),
 		mCamera(pCamera),
@@ -77,7 +77,7 @@ namespace Library
 		mTransformationMatrix = XMLoadFloat4x4(&transform);
 	}
 
-	RenderingObject::~RenderingObject()
+	ER_RenderingObject::~ER_RenderingObject()
 	{
 		DeleteObject(MeshMaterialVariablesUpdateEvent);
 
@@ -99,13 +99,13 @@ namespace Library
 		DeleteObject(mDebugAABB);
 	}
 
-	void RenderingObject::LoadMaterial(ER_Material* pMaterial, const std::string& materialName)
+	void ER_RenderingObject::LoadMaterial(ER_Material* pMaterial, const std::string& materialName)
 	{
 		assert(pMaterial);
 		mNewMaterials.emplace(materialName, pMaterial);
 	}
 
-	void RenderingObject::LoadAssignedMeshTextures()
+	void ER_RenderingObject::LoadAssignedMeshTextures()
 	{
 		auto pathBuilder = [&](std::wstring relativePath)
 		{
@@ -195,7 +195,7 @@ namespace Library
 		}
 	}
 	
-	void RenderingObject::LoadCustomMeshTextures(int meshIndex, std::wstring albedoPath, std::wstring normalPath, std::wstring specularPath, std::wstring roughnessPath, std::wstring metallicPath, std::wstring extra1Path, std::wstring extra2Path, std::wstring extra3Path)
+	void ER_RenderingObject::LoadCustomMeshTextures(int meshIndex, std::wstring albedoPath, std::wstring normalPath, std::wstring specularPath, std::wstring roughnessPath, std::wstring metallicPath, std::wstring extra1Path, std::wstring extra2Path, std::wstring extra3Path)
 	{
 		assert(meshIndex < mMeshesCount[0]);
 		
@@ -225,7 +225,7 @@ namespace Library
 	}
 
 	//from custom collections
-	void RenderingObject::LoadCustomMeshTextures(int meshIndex)
+	void ER_RenderingObject::LoadCustomMeshTextures(int meshIndex)
 	{
 		assert(meshIndex < mMeshesCount[0]);
 		std::string errorMessage = mModel->GetFileName() + " of mesh index: " + std::to_string(meshIndex);
@@ -258,7 +258,7 @@ namespace Library
 		//if (!extra3Path.empty())
 	}
 	
-	void RenderingObject::LoadTexture(TextureType type, std::wstring path, int meshIndex)
+	void ER_RenderingObject::LoadTexture(TextureType type, std::wstring path, int meshIndex)
 	{
 		const wchar_t* postfixDDS = L".dds";
 		const wchar_t* postfixDDS_Capital = L".DDS";
@@ -352,7 +352,7 @@ namespace Library
 	}
 
 	//TODO refactor (remove duplicated code)
-	void RenderingObject::LoadRenderBuffers(int lod)
+	void ER_RenderingObject::LoadRenderBuffers(int lod)
 	{
 		assert(lod < GetLODCount());
 		assert(mModel);
@@ -409,12 +409,12 @@ namespace Library
 		}
 	}
 	
-	void RenderingObject::Draw(const std::string& materialName, bool toDepth, int meshIndex) {
+	void ER_RenderingObject::Draw(const std::string& materialName, bool toDepth, int meshIndex) {
 		for (int lod = 0; lod < GetLODCount(); lod++)
 			DrawLOD(materialName, toDepth, meshIndex, lod);
 	}
 
-	void RenderingObject::DrawLOD(const std::string& materialName, bool toDepth, int meshIndex, int lod)
+	void ER_RenderingObject::DrawLOD(const std::string& materialName, bool toDepth, int meshIndex, int lod)
 	{
 		bool isForwardPass = materialName == MaterialHelper::forwardLightingNonMaterialName && mIsForwardShading;
 
@@ -476,38 +476,38 @@ namespace Library
 		}
 	}
 
-	void RenderingObject::DrawAABB()
+	void ER_RenderingObject::DrawAABB()
 	{
 		if (mAvailableInEditorMode && mEnableAABBDebug && Utility::IsEditorMode)
 			mDebugAABB->Draw();
 	}
 
-	void RenderingObject::SetTransformationMatrix(const XMMATRIX& mat)
+	void ER_RenderingObject::SetTransformationMatrix(const XMMATRIX& mat)
 	{
 		mTransformationMatrix = mat;
 		MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
 	}
 
-	void RenderingObject::SetTranslation(float x, float y, float z)
+	void ER_RenderingObject::SetTranslation(float x, float y, float z)
 	{
 		mTransformationMatrix *= XMMatrixTranslation(x, y, z);
 		MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
 	}
 
-	void RenderingObject::SetScale(float x, float y, float z)
+	void ER_RenderingObject::SetScale(float x, float y, float z)
 	{
 		mTransformationMatrix *= XMMatrixScaling(x, y, z);
 		MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
 	}
 
-	void RenderingObject::SetRotation(float x, float y, float z)
+	void ER_RenderingObject::SetRotation(float x, float y, float z)
 	{
 		mTransformationMatrix *= XMMatrixRotationRollPitchYaw(x, y, z);
 		MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
 	}
 
 	// new instancing code
-	void RenderingObject::LoadInstanceBuffers(int lod)
+	void ER_RenderingObject::LoadInstanceBuffers(int lod)
 	{
 		assert(mModel != nullptr);
 		assert(mGame->Direct3DDevice() != nullptr);
@@ -544,7 +544,7 @@ namespace Library
 		}
 	}
 	// new instancing code
-	void RenderingObject::CreateInstanceBuffer(ID3D11Device* device, InstancedData* instanceData, UINT instanceCount, ID3D11Buffer** instanceBuffer)
+	void ER_RenderingObject::CreateInstanceBuffer(ID3D11Device* device, InstancedData* instanceData, UINT instanceCount, ID3D11Buffer** instanceBuffer)
 	{
 		D3D11_BUFFER_DESC instanceBufferDesc;
 		ZeroMemory(&instanceBufferDesc, sizeof(instanceBufferDesc));
@@ -562,7 +562,7 @@ namespace Library
 		}
 	}
 	// new instancing code
-	void RenderingObject::UpdateInstanceBuffer(std::vector<InstancedData>& instanceData, int lod)
+	void ER_RenderingObject::UpdateInstanceBuffer(std::vector<InstancedData>& instanceData, int lod)
 	{
 		assert(lod < mMeshesInstanceBuffers.size());
 
@@ -582,14 +582,14 @@ namespace Library
 		}
 	}
 
-	UINT RenderingObject::InstanceSize() const
+	UINT ER_RenderingObject::InstanceSize() const
 	{
 		return sizeof(InstancedData);
 	}
 
 	//Updates
 
-	void RenderingObject::Update(const GameTime & time)
+	void ER_RenderingObject::Update(const GameTime & time)
 	{
 
 		if (mAvailableInEditorMode && mIsSelected && mIsInstanced /*&& mInstanceCount[0]*/ && Utility::IsEditorMode)
@@ -626,7 +626,7 @@ namespace Library
 			UpdateLODs();
 	}
 	
-	void RenderingObject::UpdateGizmos()
+	void ER_RenderingObject::UpdateGizmos()
 	{
 		if (!mAvailableInEditorMode)
 			return;
@@ -640,7 +640,7 @@ namespace Library
 		mTransformationMatrix = XMLoadFloat4x4(&mat);
 	}
 	
-	void RenderingObject::UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix)
+	void ER_RenderingObject::UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix)
 	{
 		static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
 		static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
@@ -697,7 +697,7 @@ namespace Library
 		}
 	}
 	
-	void RenderingObject::ShowInstancesListUI()
+	void ER_RenderingObject::ShowInstancesListUI()
 	{
 		assert(mInstanceCount.size() != 0);
 		assert(mInstanceData[0].size() != 0);
@@ -714,7 +714,7 @@ namespace Library
 		ImGui::End();
 	}
 	
-	void RenderingObject::LoadLOD(std::unique_ptr<Model> pModel)
+	void ER_RenderingObject::LoadLOD(std::unique_ptr<Model> pModel)
 	{
 		//assert();
 		mMeshesCount.push_back(pModel->Meshes().size());
@@ -738,7 +738,7 @@ namespace Library
 		LoadRenderBuffers(lodIndex);
 	}
 
-	void RenderingObject::ResetInstanceData(int count, bool clear, int lod)
+	void ER_RenderingObject::ResetInstanceData(int count, bool clear, int lod)
 	{
 		assert(lod < GetLODCount());
 
@@ -753,7 +753,7 @@ namespace Library
 			mInstanceData[lod].clear();
 		
 	}
-	void RenderingObject::AddInstanceData(XMMATRIX worldMatrix, int lod)
+	void ER_RenderingObject::AddInstanceData(XMMATRIX worldMatrix, int lod)
 	{
 		if (lod == -1) {
 			for (int lod = 0; lod < GetLODCount(); lod++)
@@ -765,7 +765,7 @@ namespace Library
 		mInstanceData[lod].push_back(InstancedData(worldMatrix));
 	}
 
-	void RenderingObject::UpdateLODs()
+	void ER_RenderingObject::UpdateLODs()
 	{
 		if (mIsInstanced) {
 			if (!Utility::IsCameraCulling && mInstanceData.size() == 0)

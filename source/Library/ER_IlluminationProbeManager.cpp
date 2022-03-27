@@ -8,7 +8,7 @@
 #include "MaterialHelper.h"
 #include "VectorHelper.h"
 #include "ShaderCompiler.h"
-#include "RenderingObject.h"
+#include "ER_RenderingObject.h"
 #include "Model.h"
 #include "Scene.h"
 #include "RenderableAABB.h"
@@ -283,7 +283,7 @@ namespace Library
 
 			std::string name = "Debug diffuse lightprobes " + std::to_string(volumeIndex) + " volume";
 			auto result = scene->objects.insert(
-				std::pair<std::string, RenderingObject*>(name, new RenderingObject(name, scene->objects.size(), game, camera,
+				std::pair<std::string, ER_RenderingObject*>(name, new ER_RenderingObject(name, scene->objects.size(), game, camera,
 					std::unique_ptr<Model>(new Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true))
 			);
 
@@ -432,7 +432,7 @@ namespace Library
 
 			std::string name = "Debug specular lightprobes " + std::to_string(volumeIndex) + " volume";
 			auto result = scene->objects.insert(
-				std::pair<std::string, RenderingObject*>(name, new RenderingObject(name, scene->objects.size(), game, camera,
+				std::pair<std::string, ER_RenderingObject*>(name, new ER_RenderingObject(name, scene->objects.size(), game, camera,
 					std::unique_ptr<Model>(new Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true))
 			);
 
@@ -670,7 +670,7 @@ namespace Library
 
 	void ER_IlluminationProbeManager::DrawDebugProbes(ER_ProbeType aType, int volumeIndex)
 	{
-		RenderingObject* probeObject = aType == DIFFUSE_PROBE ? mDiffuseProbeRenderingObject[volumeIndex] : mSpecularProbeRenderingObject[volumeIndex];
+		ER_RenderingObject* probeObject = aType == DIFFUSE_PROBE ? mDiffuseProbeRenderingObject[volumeIndex] : mSpecularProbeRenderingObject[volumeIndex];
 		bool ready = aType == DIFFUSE_PROBE ? mDiffuseProbesReady : mSpecularProbesReady;
 		
 		ER_MaterialSystems materialSystems;
@@ -704,7 +704,7 @@ namespace Library
 
 		for (int volumeIndex = 0; volumeIndex < NUM_PROBE_VOLUME_CASCADES; volumeIndex++)
 		{
-			RenderingObject* probeRenderingObject = (aType == DIFFUSE_PROBE) ? mDiffuseProbeRenderingObject[volumeIndex] : mSpecularProbeRenderingObject[volumeIndex];
+			ER_RenderingObject* probeRenderingObject = (aType == DIFFUSE_PROBE) ? mDiffuseProbeRenderingObject[volumeIndex] : mSpecularProbeRenderingObject[volumeIndex];
 			if (aType == DIFFUSE_PROBE)
 			{
 				if (!mDiffuseProbesReady)

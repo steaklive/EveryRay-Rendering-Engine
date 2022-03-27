@@ -26,7 +26,7 @@ static const int SpecularProbesVolumeCascadeSizes[NUM_PROBE_VOLUME_CASCADES] =
 };
 
 #include "Common.h"
-#include "RenderingObject.h"
+#include "ER_RenderingObject.h"
 #include "ER_GPUTexture.h"
 #include "DepthTarget.h"
 #include "ConstantBuffer.h"
@@ -61,7 +61,7 @@ namespace Library
 	class ER_IlluminationProbeManager
 	{
 	public:
-		using ProbesRenderingObjectsInfo = std::map<std::string, RenderingObject*>;
+		using ProbesRenderingObjectsInfo = std::map<std::string, ER_RenderingObject*>;
 		ER_IlluminationProbeManager(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
 		~ER_IlluminationProbeManager();
 
@@ -132,7 +132,7 @@ namespace Library
 		XMFLOAT3 mCurrentDiffuseVolumesMaxBounds[NUM_PROBE_VOLUME_CASCADES];
 		XMFLOAT3 mCurrentDiffuseVolumesMinBounds[NUM_PROBE_VOLUME_CASCADES];
 		std::vector<ER_LightProbe*> mDiffuseProbes;
-		RenderingObject* mDiffuseProbeRenderingObject[NUM_PROBE_VOLUME_CASCADES] = { nullptr, nullptr };
+		ER_RenderingObject* mDiffuseProbeRenderingObject[NUM_PROBE_VOLUME_CASCADES] = { nullptr, nullptr };
 		int* mDiffuseProbesTexArrayIndicesCPUBuffer[NUM_PROBE_VOLUME_CASCADES] = { nullptr };
 		ER_GPUBuffer* mDiffuseProbesTexArrayIndicesGPUBuffer[NUM_PROBE_VOLUME_CASCADES] = { nullptr };
 		ER_GPUBuffer* mDiffuseProbesCellsIndicesGPUBuffer[NUM_PROBE_VOLUME_CASCADES] = { nullptr };
@@ -161,7 +161,7 @@ namespace Library
 		XMFLOAT3 mCurrentSpecularVolumesMaxBounds[NUM_PROBE_VOLUME_CASCADES];
 		XMFLOAT3 mCurrentSpecularVolumesMinBounds[NUM_PROBE_VOLUME_CASCADES];
 		std::vector<ER_LightProbe*> mSpecularProbes;
-		RenderingObject* mSpecularProbeRenderingObject[NUM_PROBE_VOLUME_CASCADES] = { nullptr, nullptr };
+		ER_RenderingObject* mSpecularProbeRenderingObject[NUM_PROBE_VOLUME_CASCADES] = { nullptr, nullptr };
 		int* mSpecularProbesTexArrayIndicesCPUBuffer[NUM_PROBE_VOLUME_CASCADES] = { nullptr };
 		ER_GPUBuffer* mSpecularProbesTexArrayIndicesGPUBuffer[NUM_PROBE_VOLUME_CASCADES] = { nullptr };
 		ER_GPUBuffer* mSpecularProbesCellsIndicesGPUBuffer[NUM_PROBE_VOLUME_CASCADES] = { nullptr };

@@ -5,7 +5,7 @@
 #include "GameTime.h"
 #include "VectorHelper.h"
 #include "MatrixHelper.h"
-#include "RenderingObject.h"
+#include "ER_RenderingObject.h"
 #include "Utility.h"
 
 #define MAX_NUM_CASCADES 3
@@ -273,7 +273,7 @@ namespace Library
 		return mRotationMatrix;
 	}
 
-	void Camera::Cull(const std::map<std::string, RenderingObject*>& objects)
+	void Camera::Cull(const std::map<std::string, ER_RenderingObject*>& objects)
 	{
 		if (!Utility::IsCameraCulling)
 		{

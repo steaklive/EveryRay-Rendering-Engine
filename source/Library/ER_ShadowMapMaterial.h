@@ -3,7 +3,7 @@
 
 namespace Library
 {
-	class RenderingObject;
+	class ER_RenderingObject;
 	class Mesh;
 
 	namespace ShadowMapMaterial_CBufferData {
@@ -19,7 +19,7 @@ namespace Library
 		ER_ShadowMapMaterial(Game& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced = false);
 		~ER_ShadowMapMaterial();
 
-		void PrepareForRendering(ER_MaterialSystems neededSystems, RenderingObject* aObj, int meshIndex, int cascadeIndex);
+		void PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, int cascadeIndex);
 		virtual void CreateVertexBuffer(Mesh& mesh, ID3D11Buffer** vertexBuffer) override;
 		virtual int VertexSize() override;
 

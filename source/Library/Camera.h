@@ -5,7 +5,7 @@
 
 namespace Library
 {
-	class RenderingObject;
+	class ER_RenderingObject;
 	class GameTime;
 
 	class Camera : public GameComponent
@@ -40,7 +40,7 @@ namespace Library
 		XMMATRIX ViewProjectionMatrix() const;
 		XMMATRIX RotationTransformMatrix() const;
 
-		void Cull(const std::map<std::string, RenderingObject*>& objects);
+		void Cull(const std::map<std::string, ER_RenderingObject*>& objects);
 		float GetCameraFarCascadeDistance (int index) const;
 		float GetCameraNearCascadeDistance (int index) const;
 

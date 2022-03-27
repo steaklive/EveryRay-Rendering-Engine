@@ -11,7 +11,7 @@
 #include "GameException.h"
 #include "Scene.h"
 #include "MaterialHelper.h"
-#include "RenderingObject.h"
+#include "ER_RenderingObject.h"
 #include "ER_ShadowMapMaterial.h"
 #include "ER_MaterialsCallbacks.h"
 

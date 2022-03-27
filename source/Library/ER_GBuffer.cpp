@@ -3,7 +3,7 @@
 #include "GameException.h"
 #include "ER_GBufferMaterial.h"
 #include "ER_MaterialsCallbacks.h"
-#include "RenderingObject.h"
+#include "ER_RenderingObject.h"
 #include "Utility.h"
 #include "Scene.h"
 

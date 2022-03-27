@@ -4,7 +4,7 @@
 #include "Game.h"
 #include "GameException.h"
 #include "Model.h"
-#include "RenderingObject.h"
+#include "ER_RenderingObject.h"
 #include "ShaderCompiler.h"
 #include "Utility.h"
 #include "ER_MaterialsCallbacks.h"
@@ -35,7 +35,7 @@ namespace Library
 	}
 
 	// Setting up the pipeline before the draw call
-	void ER_Material::PrepareForRendering(ER_MaterialSystems neededSystems, RenderingObject* aObj, int meshIndex)
+	void ER_Material::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex)
 	{
 		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
 

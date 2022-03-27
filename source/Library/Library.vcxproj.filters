@@ -288,9 +288,6 @@
     <ClInclude Include="FastFourierTransform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RenderingObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GeneralEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -379,6 +376,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ER_VoxelizationMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ER_RenderingObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -533,9 +533,6 @@
     <ClCompile Include="BruteforceStructure.cpp">
       <Filter>Source Files\Objects\Spatial hierarchies</Filter>
     </ClCompile>
-    <ClCompile Include="RenderingObject.cpp">
-      <Filter>Source Files\Objects</Filter>
-    </ClCompile>
     <ClCompile Include="TGATextureLoader.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
@@ -640,6 +637,9 @@
     </ClCompile>
     <ClCompile Include="ER_VoxelizationMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_RenderingObject.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

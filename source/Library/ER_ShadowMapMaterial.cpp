@@ -5,7 +5,7 @@
 #include "GameException.h"
 #include "Game.h"
 #include "Camera.h"
-#include "RenderingObject.h"
+#include "ER_RenderingObject.h"
 #include "Mesh.h"
 #include "ER_ShadowMapper.h"
 
@@ -54,7 +54,7 @@ namespace Library
 		ER_Material::~ER_Material();
 	}
 
-	void ER_ShadowMapMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, RenderingObject* aObj, int meshIndex, int cascadeIndex)
+	void ER_ShadowMapMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, int cascadeIndex)
 	{
 		auto context = ER_Material::GetGame()->Direct3DDeviceContext();
 		Camera* camera = (Camera*)(ER_Material::GetGame()->Services().GetService(Camera::TypeIdClass()));

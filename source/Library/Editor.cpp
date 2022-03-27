@@ -5,7 +5,7 @@
 #include "GameTime.h"
 #include "VectorHelper.h"
 #include "MatrixHelper.h"
-#include "RenderingObject.h"
+#include "ER_RenderingObject.h"
 #include "Utility.h"
 #include "Scene.h"
 

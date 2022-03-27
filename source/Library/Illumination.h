@@ -22,7 +22,7 @@ namespace Library
 	class FoliageSystem;
 	class IBLRadianceMap;
 	class RenderableAABB;
-	class RenderingObject;
+	class ER_RenderingObject;
 	class ER_GPUBuffer;
 
 	namespace IlluminationCBufferData {
@@ -107,7 +107,7 @@ namespace Library
 		bool GetDebugVoxels() { return mDrawVoxelization; }
 		bool GetDebugAO() { return mDrawAmbientOcclusionOnly; }
 
-		void PrepareForForwardLighting(RenderingObject* aObj, int meshIndex);
+		void PrepareForForwardLighting(ER_RenderingObject* aObj, int meshIndex);
 
 		ID3D11ShaderResourceView* GetGlobaIlluminationSRV() const {
 			if (mDrawVoxelization)
@@ -132,7 +132,7 @@ namespace Library
 		ER_IlluminationProbeManager* mProbesManager = nullptr;
 		FoliageSystem* mFoliageSystem = nullptr;
 
-		using RenderingObjectInfo = std::map<std::string, RenderingObject*>;
+		using RenderingObjectInfo = std::map<std::string, ER_RenderingObject*>;
 		RenderingObjectInfo mVoxelizationObjects[NUM_VOXEL_GI_CASCADES];
 
 		ConstantBuffer<IlluminationCBufferData::VoxelizationDebugCB> mVoxelizationDebugConstantBuffer;

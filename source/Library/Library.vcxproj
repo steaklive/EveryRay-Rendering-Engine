@@ -253,7 +253,7 @@
     <ClInclude Include="Ray.h" />
     <ClInclude Include="RenderableAABB.h" />
     <ClInclude Include="RenderableOBB.h" />
-    <ClInclude Include="RenderingObject.h" />
+    <ClInclude Include="ER_RenderingObject.h" />
     <ClInclude Include="RenderStateHelper.h" />
     <ClInclude Include="RenderTarget.h" />
     <ClInclude Include="RTTI.h" />
@@ -305,6 +305,7 @@
     <ClCompile Include="ER_IlluminationProbeManager.cpp" />
     <ClCompile Include="ER_LightProbe.cpp" />
     <ClCompile Include="ER_Material.cpp" />
+    <ClCompile Include="ER_RenderingObject.cpp" />
     <ClCompile Include="ER_RenderToLightProbeMaterial.cpp" />
     <ClCompile Include="ER_ShadowMapMaterial.cpp" />
     <ClCompile Include="ER_VoxelizationMaterial.cpp" />
@@ -346,7 +347,6 @@
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="RenderableAABB.cpp" />
     <ClCompile Include="RenderableOBB.cpp" />
-    <ClCompile Include="RenderingObject.cpp" />
     <ClCompile Include="RenderStateHelper.cpp" />
     <ClCompile Include="RenderTarget.cpp" />
     <ClCompile Include="SamplerStates.cpp" />

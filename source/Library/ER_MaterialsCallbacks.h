@@ -4,7 +4,7 @@
 
 namespace Library
 {
-	class RenderingObject;
+	class ER_RenderingObject;
 	class Camera;
 	class DirectionalLight;
 	class ER_ShadowMapper;

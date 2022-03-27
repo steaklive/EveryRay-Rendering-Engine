@@ -9,7 +9,7 @@
 #include "Utility.h"
 #include "Model.h"
 #include "Materials.inl"
-#include "RenderingObject.h"
+#include "ER_RenderingObject.h"
 #include "MaterialHelper.h"
 #include "Illumination.h"
 #include "ER_IlluminationProbeManager.h"
@@ -99,7 +99,7 @@ namespace Library
 				std::string name = root["rendering_objects"][i]["name"].asString();
 				std::string modelPath = root["rendering_objects"][i]["model_path"].asString();
 				bool isInstanced = root["rendering_objects"][i]["instanced"].asBool();
-				objects.emplace(name, new RenderingObject(name, i, *mGame, mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath(modelPath), true)), true, isInstanced));
+				objects.emplace(name, new ER_RenderingObject(name, i, *mGame, mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath(modelPath), true)), true, isInstanced));
 			}
 
 			assert(numRenderingObjects == objects.size());
@@ -150,7 +150,7 @@ namespace Library
 		objects.clear();
 	}
 
-	void Scene::LoadRenderingObjectData(RenderingObject* aObject)
+	void Scene::LoadRenderingObjectData(ER_RenderingObject* aObject)
 	{
 		if (!aObject)
 			return;
@@ -306,7 +306,7 @@ namespace Library
 	}
 
 	// [WARNING] NOT THREAD-SAFE!
-	void Scene::LoadRenderingObjectInstancedData(RenderingObject* aObject)
+	void Scene::LoadRenderingObjectInstancedData(ER_RenderingObject* aObject)
 	{
 		int i = aObject->GetIndexInScene();
 		bool isInstanced = aObject->IsInstanced();

@@ -3,7 +3,7 @@
 #include "..\Library\DrawableGameComponent.h"
 #include "..\Library\DemoLevel.h"
 #include "..\Library\Frustum.h"
-#include "..\Library\RenderingObject.h"
+#include "..\Library\ER_RenderingObject.h"
 
 using namespace Library;
 
