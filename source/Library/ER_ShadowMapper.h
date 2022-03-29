@@ -33,7 +33,6 @@ namespace Library
 		XMMATRIX GetLightProjectionMatrixInFrustum(int index, Frustum& cameraFrustum, DirectionalLight& light);
 		XMMATRIX GetProjectionBoundingSphere(int index);
 
-		Game& mGame;
 		Camera& mCamera;
 		DirectionalLight& mDirectionalLight;
 

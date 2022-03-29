@@ -27,6 +27,7 @@
 #include "ER_LightProbe.h"
 #include "ER_MaterialsCallbacks.h"
 #include "ER_RenderingObject.h"
+#include "Skybox.h"
 
 namespace Library {
 
@@ -46,6 +47,7 @@ namespace Library {
 	{
 		ReleaseObject(mVCTMainCS);
 		ReleaseObject(mUpsampleBlurCS);
+		ReleaseObject(mCompositeIlluminationCS);
 		ReleaseObject(mVCTVoxelizationDebugVS);
 		ReleaseObject(mVCTVoxelizationDebugGS);
 		ReleaseObject(mVCTVoxelizationDebugPS);
@@ -66,10 +68,12 @@ namespace Library {
 		DeleteObject(mVCTVoxelizationDebugRT);
 		DeleteObject(mVCTMainRT);
 		DeleteObject(mVCTUpsampleAndBlurRT);
+		DeleteObject(mLocalIlluminationRT);
+		DeleteObject(mFinalIlluminationRT);
 		DeleteObject(mDepthBuffer);
 
 		mVoxelizationDebugConstantBuffer.Release();
-		mVoxelConeTracingConstantBuffer.Release();
+		mVoxelConeTracingMainConstantBuffer.Release();
 		mUpsampleBlurConstantBuffer.Release();
 		mDeferredLightingConstantBuffer.Release();
 		mForwardLightingConstantBuffer.Release();
@@ -115,6 +119,13 @@ namespace Library {
 				throw GameException("Failed to load CSMain from shader: UpsampleBlur.hlsl!");
 			if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mUpsampleBlurCS)))
 				throw GameException("Failed to create shader from UpsampleBlur.hlsl!");
+			blob->Release();
+
+			blob = nullptr;
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\CompositeIllumination.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
+				throw GameException("Failed to load CSMain from shader: CompositeIllumination.hlsl!");
+			if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mCompositeIlluminationCS)))
+				throw GameException("Failed to create shader from CompositeIllumination.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
@@ -185,7 +196,8 @@ namespace Library {
 		//cbuffers
 		{
 			mVoxelizationDebugConstantBuffer.Initialize(mGame->Direct3DDevice());
-			mVoxelConeTracingConstantBuffer.Initialize(mGame->Direct3DDevice());
+			mVoxelConeTracingMainConstantBuffer.Initialize(mGame->Direct3DDevice());
+			mCompositeTotalIlluminationConstantBuffer.Initialize(mGame->Direct3DDevice());
 			mUpsampleBlurConstantBuffer.Initialize(mGame->Direct3DDevice());
 			mDeferredLightingConstantBuffer.Initialize(mGame->Direct3DDevice());
 			mForwardLightingConstantBuffer.Initialize(mGame->Direct3DDevice());
@@ -216,6 +228,12 @@ namespace Library {
 				DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
 			mVCTVoxelizationDebugRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u,
 				DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+			
+			mFinalIlluminationRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u,
+				DXGI_FORMAT_R16G16B16A16_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS, 1);
+			mLocalIlluminationRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u,
+				DXGI_FORMAT_R16G16B16A16_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS, 1);
+			
 			mDepthBuffer = DepthTarget::Create(mGame->Direct3DDevice(), mGame->ScreenWidth(), mGame->ScreenHeight(), 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
 		}
 
@@ -234,15 +252,21 @@ namespace Library {
 	}
 
 	//deferred rendering approach
-	void Illumination::DrawLocalIllumination(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget, bool isEditorMode, bool clearInitTarget)
+	void Illumination::DrawLocalIllumination(ER_GBuffer* gbuffer, Skybox* skybox)
 	{
-		DrawDeferredLighting(gbuffer, aRenderTarget, clearInitTarget);
-		DrawForwardLighting(gbuffer, aRenderTarget);
+		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+		auto context = GetGame()->Direct3DDeviceContext();
+		context->OMSetRenderTargets(1, mLocalIlluminationRT->GetRTVs(), gbuffer->GetDepth()->getDSV());
+		context->ClearRenderTargetView(mLocalIlluminationRT->GetRTV(), clearColorBlack);
 
-		if (isEditorMode) //todo move to a separate debug renderer
+		if (skybox)
 		{
-			DrawDebugGizmos();
+			skybox->Draw();
+			//skybox->DrawSun(nullptr, gbuffer->GetDepth());
 		}
+
+		DrawDeferredLighting(gbuffer, mLocalIlluminationRT);
+		DrawForwardLighting(gbuffer, mLocalIlluminationRT);
 	}
 
 	//voxel GI based on "Interactive Indirect Illumination Using Voxel Cone Tracing" by C.Crassin et al.
@@ -320,7 +344,7 @@ namespace Library {
 		}
 
 		//voxelization debug 
-		if (mDrawVoxelization)
+		if (mShowVCTVoxelizationOnly)
 		{
 			int cascade = 0; //TODO fix for multiple cascades
 			{
@@ -368,23 +392,23 @@ namespace Library {
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 			{
 				context->GenerateMips(mVCTVoxelCascades3DRTs[i]->GetSRV());
-				mVoxelConeTracingConstantBuffer.Data.VoxelCameraPositions[i] = mVoxelCameraPositions[i];
-				mVoxelConeTracingConstantBuffer.Data.WorldVoxelScales[i] = XMFLOAT4(mWorldVoxelScales[i], 0.0, 0.0, 0.0);
+				mVoxelConeTracingMainConstantBuffer.Data.VoxelCameraPositions[i] = mVoxelCameraPositions[i];
+				mVoxelConeTracingMainConstantBuffer.Data.WorldVoxelScales[i] = XMFLOAT4(mWorldVoxelScales[i], 0.0, 0.0, 0.0);
 			}
-			mVoxelConeTracingConstantBuffer.Data.CameraPos = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1);
-			mVoxelConeTracingConstantBuffer.Data.UpsampleRatio = XMFLOAT2(1.0f / VCT_GI_MAIN_PASS_DOWNSCALE, 1.0f / VCT_GI_MAIN_PASS_DOWNSCALE);
-			mVoxelConeTracingConstantBuffer.Data.IndirectDiffuseStrength = mVCTIndirectDiffuseStrength;
-			mVoxelConeTracingConstantBuffer.Data.IndirectSpecularStrength = mVCTIndirectSpecularStrength;
-			mVoxelConeTracingConstantBuffer.Data.MaxConeTraceDistance = mVCTMaxConeTraceDistance;
-			mVoxelConeTracingConstantBuffer.Data.AOFalloff = mVCTAoFalloff;
-			mVoxelConeTracingConstantBuffer.Data.SamplingFactor = mVCTSamplingFactor;
-			mVoxelConeTracingConstantBuffer.Data.VoxelSampleOffset = mVCTVoxelSampleOffset;
-			mVoxelConeTracingConstantBuffer.Data.GIPower = mVCTGIPower;
-			mVoxelConeTracingConstantBuffer.Data.pad0 = XMFLOAT3(0, 0, 0);
-			mVoxelConeTracingConstantBuffer.ApplyChanges(context);
+			mVoxelConeTracingMainConstantBuffer.Data.CameraPos = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1);
+			mVoxelConeTracingMainConstantBuffer.Data.UpsampleRatio = XMFLOAT2(1.0f / VCT_GI_MAIN_PASS_DOWNSCALE, 1.0f / VCT_GI_MAIN_PASS_DOWNSCALE);
+			mVoxelConeTracingMainConstantBuffer.Data.IndirectDiffuseStrength = mVCTIndirectDiffuseStrength;
+			mVoxelConeTracingMainConstantBuffer.Data.IndirectSpecularStrength = mVCTIndirectSpecularStrength;
+			mVoxelConeTracingMainConstantBuffer.Data.MaxConeTraceDistance = mVCTMaxConeTraceDistance;
+			mVoxelConeTracingMainConstantBuffer.Data.AOFalloff = mVCTAoFalloff;
+			mVoxelConeTracingMainConstantBuffer.Data.SamplingFactor = mVCTSamplingFactor;
+			mVoxelConeTracingMainConstantBuffer.Data.VoxelSampleOffset = mVCTVoxelSampleOffset;
+			mVoxelConeTracingMainConstantBuffer.Data.GIPower = mVCTGIPower;
+			mVoxelConeTracingMainConstantBuffer.Data.pad0 = XMFLOAT3(0, 0, 0);
+			mVoxelConeTracingMainConstantBuffer.ApplyChanges(context);
 
 			ID3D11UnorderedAccessView* UAV[1] = { mVCTMainRT->GetUAV() };
-			ID3D11Buffer* CBs[1] = { mVoxelConeTracingConstantBuffer.Buffer() };
+			ID3D11Buffer* CBs[1] = { mVoxelConeTracingMainConstantBuffer.Buffer() };
 			ID3D11ShaderResourceView* SRVs[4 + NUM_VOXEL_GI_CASCADES];
 			SRVs[0] = gbuffer->GetAlbedo()->GetSRV();
 			SRVs[1] = gbuffer->GetNormals()->GetSRV();
@@ -441,10 +465,46 @@ namespace Library {
 		}
 	}
 
+	// Combine GI output (Voxel Cone Tracing) with local illumination output
+	void Illumination::CompositeTotalIllumination()
+	{
+		auto context = GetGame()->Direct3DDeviceContext();
+
+		mCompositeTotalIlluminationConstantBuffer.Data.DebugVoxelAO = XMFLOAT4(mShowVCTVoxelizationOnly ? 1.0f : -1.0f, mShowVCTAmbientOcclusionOnly ? 1.0f : -1.0f, 0.0, 0.0);
+		mCompositeTotalIlluminationConstantBuffer.ApplyChanges(context);
+		ID3D11Buffer* CBs[1] = { mCompositeTotalIlluminationConstantBuffer.Buffer() };
+		context->CSSetConstantBuffers(0, 1, CBs);
+
+		ID3D11SamplerState* SSs[] = { SamplerStates::TrilinearWrap };
+		context->CSSetSamplers(0, 1, SSs);
+
+		ID3D11UnorderedAccessView* UAV[1] = { mFinalIlluminationRT->GetUAV() };
+		context->CSSetUnorderedAccessViews(0, 1, UAV, NULL);
+
+		// mLocalIllumination might be bound as RTV before this pass
+		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
+		context->OMSetRenderTargets(1, nullRTVs, nullptr);
+		ID3D11ShaderResourceView* SRs[2] = { /*mShowVCTVoxelizationOnly ? mVCTVoxelizationDebugRT->GetSRV() : */mVCTUpsampleAndBlurRT->GetSRV(), mLocalIlluminationRT->GetSRV() };
+		context->CSSetShaderResources(0, 2, SRs);
+		
+		context->CSSetShader(mCompositeIlluminationCS, NULL, NULL);
+
+		context->Dispatch(DivideByMultiple(static_cast<UINT>(mFinalIlluminationRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mFinalIlluminationRT->GetHeight()), 8u), 1u);
+
+		ID3D11ShaderResourceView* nullSRV[] = { NULL };
+		context->CSSetShaderResources(0, 1, nullSRV);
+		ID3D11UnorderedAccessView* nullUAV[] = { NULL };
+		context->CSSetUnorderedAccessViews(0, 1, nullUAV, 0);
+		ID3D11Buffer* nullCBs[] = { NULL };
+		context->CSSetConstantBuffers(0, 1, nullCBs);
+		ID3D11SamplerState* nullSSs[] = { NULL };
+		context->CSSetSamplers(0, 1, nullSSs);
+	}
+
 	void Illumination::DrawDebugGizmos()
 	{
 		//voxel GI
-		if (mDrawVoxelZonesGizmos) 
+		if (mDrawVCTVoxelZonesGizmos) 
 		{
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 			{
@@ -498,9 +558,9 @@ namespace Library {
 					ImGui::SliderFloat(name.c_str(), &mWorldVoxelScales[cascade], 0.1f, 10.0f);
 				}
 				ImGui::Separator();
-				ImGui::Checkbox("DEBUG - Ambient Occlusion", &mDrawAmbientOcclusionOnly);
-				ImGui::Checkbox("DEBUG - Voxel Texture", &mDrawVoxelization);
-				ImGui::Checkbox("DEBUG - Voxel Cascades Gizmos (Editor)", &mDrawVoxelZonesGizmos);
+				ImGui::Checkbox("DEBUG - Ambient Occlusion", &mShowVCTAmbientOcclusionOnly);
+				ImGui::Checkbox("DEBUG - Voxel Texture", &mShowVCTVoxelizationOnly);
+				ImGui::Checkbox("DEBUG - Voxel Cascades Gizmos (Editor)", &mDrawVCTVoxelZonesGizmos);
 			}
 			if (ImGui::CollapsingHeader("Static - Light Probes"))
 			{
@@ -539,17 +599,17 @@ namespace Library {
 				mCamera.Position().x > voxelGridBoundsMax.x || mCamera.Position().y > voxelGridBoundsMax.y || mCamera.Position().z > voxelGridBoundsMax.z)
 			{
 				mVoxelCameraPositions[i] = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f);
-				mVoxelCameraPositionsUpdated = true;
+				mIsVCTVoxelCameraPositionsUpdated = true;
 			}
 			else
-				mVoxelCameraPositionsUpdated = false;
+				mIsVCTVoxelCameraPositionsUpdated = false;
 
 			mDebugVoxelZonesGizmos[i]->SetPosition(XMFLOAT3(mVoxelCameraPositions[i].x, mVoxelCameraPositions[i].y, mVoxelCameraPositions[i].z));
 			mDebugVoxelZonesGizmos[i]->Update();
 		}
 	}
 
-	void Illumination::DrawDeferredLighting(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget, bool clearTarget)
+	void Illumination::DrawDeferredLighting(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget)
 	{
 		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
@@ -558,10 +618,6 @@ namespace Library {
 		//compute pass
 		if (aRenderTarget)
 		{
-			//might be cleared before (i.e., in PP)
-			if (clearTarget) 
-				context->ClearUnorderedAccessViewFloat(aRenderTarget->GetUAV(), clearColorBlack);
-
 			for (size_t i = 0; i < NUM_SHADOW_CASCADES; i++)
 				mDeferredLightingConstantBuffer.Data.ShadowMatrices[i] = mShadowMapper.GetViewMatrix(i) * mShadowMapper.GetProjectionMatrix(i) /** XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix())*/;
 			mDeferredLightingConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
@@ -628,7 +684,9 @@ namespace Library {
 
 			ID3D11SamplerState* SS[2] = { SamplerStates::TrilinearWrap, SamplerStates::ShadowSamplerState };
 			context->CSSetSamplers(0, 2, SS);
-
+			
+			ID3D11RenderTargetView* nullRTVs[1] = { NULL };
+			context->OMSetRenderTargets(1, nullRTVs, nullptr);
 			ID3D11UnorderedAccessView* UAV[1] = { aRenderTarget->GetUAV() };
 			context->CSSetUnorderedAccessViews(0, 1, UAV, NULL);
 

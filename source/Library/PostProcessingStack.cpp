@@ -15,7 +15,8 @@
 #include "ColorHelper.h"
 #include "MatrixHelper.h"
 #include "DirectionalLight.h"
-
+#include "QuadRenderer.h"
+#include "SamplerStates.h"
 
 namespace Rendering {
 	const XMVECTORF32 ClearBackgroundColor = ColorHelper::Black;
@@ -29,7 +30,6 @@ namespace Rendering {
 		mSSREffect(nullptr),
 		mFogEffect(nullptr),
 		mLightShaftsEffect(nullptr),
-		mCompositeLightingEffect(nullptr),
 		game(pGame), camera(pCamera)
 	{
 	}
@@ -44,9 +44,7 @@ namespace Rendering {
 		DeleteObject(mSSREffect);
 		DeleteObject(mFogEffect);
 		DeleteObject(mLightShaftsEffect);
-		DeleteObject(mCompositeLightingEffect);
 
-		DeleteObject(mMainRenderTarget);
 		DeleteObject(mColorGradingRenderTarget);
 		DeleteObject(mMotionBlurRenderTarget);
 		DeleteObject(mVignetteRenderTarget);
@@ -54,35 +52,18 @@ namespace Rendering {
 		DeleteObject(mSSRRenderTarget);
 		DeleteObject(mFogRenderTarget);
 		DeleteObject(mLightShaftsRenderTarget);
-		DeleteObject(mCompositeLightingRenderTarget);
+
 		DeleteObject(mExtraRenderTarget);
 
 		ReleaseObject(mQuadVB);
 		ReleaseObject(mFullScreenQuadVS);
 		ReleaseObject(mFullScreenQuadLayout);
+		ReleaseObject(mFinalResolvePS);
 	}
 
 	void PostProcessingStack::Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR, bool pFog, bool pLightShafts)
 	{
-		mMainRenderTarget = new ER_GPUTexture(game.Direct3DDevice(), game.ScreenWidth(), game.ScreenHeight(), 1,
-			DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS);
-		
-		mOriginalMainRTSRV = mMainRenderTarget->GetSRV();
-
 		mExtraRenderTarget = new FullScreenRenderTarget(game);
-
-		Effect* compositeLightingFX = new Effect(game);
-		compositeLightingFX->CompileFromFile(Utility::GetFilePath(L"content\\effects\\CompositeLighting.fx"));
-		mCompositeLightingEffect = new EffectElements::CompositeLightingEffect();
-		mCompositeLightingEffect->Material = new CompositeLightingMaterial();
-		mCompositeLightingEffect->Material->Initialize(compositeLightingFX);
-		mCompositeLightingEffect->Quad = new FullScreenQuad(game, *mCompositeLightingEffect->Material);
-		mCompositeLightingEffect->Quad->Initialize();
-		mCompositeLightingEffect->Quad->SetActiveTechnique("composite_filter", "p0");
-		//mCompositeLightingEffect->Quad->SetCustomUpdateMaterial(std::bind(&PostProcessingStack::UpdateCompositeLightingMaterial, this));
-		mCompositeLightingLoaded = true;
-		mCompositeLightingRenderTarget = new FullScreenRenderTarget(game);
-		mCompositeLightingEffect->isActive = true;
 
 		Effect* lightShaftsFX = new Effect(game);
  		lightShaftsFX->CompileFromFile(Utility::GetFilePath(L"content\\effects\\LightShafts.fx"));
@@ -294,6 +275,12 @@ namespace Rendering {
 			throw GameException("Failed to create EmptyPass shader from PSPostProcess.hlsl!");
 		pShaderBlob->Release();
 
+		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\EmptyColorResolve.hlsl").c_str(), "PSMain", "ps_5_0", &pShaderBlob)))
+			throw GameException("Failed to load EmptyPass pass from shader: EmptyColorResolve.hlsl!");
+		if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mFinalResolvePS)))
+			throw GameException("Failed to create EmptyPass shader from EmptyColorResolve.hlsl!");
+		pShaderBlob->Release();
+
 		// Quad temp
 		ID3DBlob* pBlob = NULL;
 		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Tonemap\\FullScreenQuad.hlsl").c_str(), "VSMain", "vs_4_0", &pBlob)))
@@ -395,14 +382,6 @@ namespace Rendering {
 			}
 			else 
 				mLightShaftsEffect->Quad->SetActiveTechnique("no_filter", "p0");
-		}
-
-		if (mCompositeLightingLoaded)
-		{
-			if (mCompositeLightingEffect->isActive)
-				mCompositeLightingEffect->Quad->SetActiveTechnique("composite_filter", "p0");
-			else
-				mCompositeLightingEffect->Quad->SetActiveTechnique("no_filter", "p0");
 		}
 
 		ShowPostProcessingWindow();
@@ -513,29 +492,12 @@ namespace Rendering {
 
 	}
 
-	void PostProcessingStack::UpdateCompositeLightingMaterial(ID3D11ShaderResourceView* localIlluminationSRV, ID3D11ShaderResourceView* globalIlluminationSRV, bool debugVoxel, bool debugAO)
-	{
-		mCompositeLightingEffect->Material->InputLocalIlluminationTexture() << localIlluminationSRV;
-		mCompositeLightingEffect->Material->InputGlobalIlluminationTexture() << globalIlluminationSRV;
-		mCompositeLightingEffect->Material->DebugVoxel() << debugVoxel;
-		mCompositeLightingEffect->Material->DebugAO() << debugAO;
-	}
-
 	void PostProcessingStack::ShowPostProcessingWindow()
 	{
 		if (!mShowDebug)
 			return;
 
 		ImGui::Begin("Post Processing Stack Config");
-
-		if (mCompositeLightingLoaded) 
-		{
-			if (ImGui::CollapsingHeader("Composite Lighting"))
-			{
-				ImGui::Checkbox("Composite Lighting - On", &mCompositeLightingEffect->isActive);
-				ImGui::Checkbox("Debug GI", &mCompositeLightingEffect->debugGI);
-			}
-		}
 
 		if (mLightShaftsLoaded)
 		{
@@ -628,16 +590,6 @@ namespace Rendering {
 		ImGui::End();
 	}
 
-	ID3D11ShaderResourceView* PostProcessingStack::GetDepthSRV()
-	{
-		return mMainDepthTarget->getSRV();
-	}
-
-	ID3D11ShaderResourceView* PostProcessingStack::GetPrepassColorSRV()
-	{
-		return mMainRenderTarget->GetSRV();
-	}
-
 	ID3D11ShaderResourceView* PostProcessingStack::GetExtraColorSRV()
 	{
 		return mExtraRenderTarget->OutputColorTexture();
@@ -705,22 +657,30 @@ namespace Rendering {
 		DrawFullscreenQuad(pContext);
 	}
 	
-	void PostProcessingStack::Begin(bool clear, DepthTarget* aDepthTarget, bool clearDepth)
+	void PostProcessingStack::Begin(ER_GPUTexture* aInitialRT, DepthTarget* aDepthTarget)
 	{
-		mMainDepthTarget = aDepthTarget;
-
-		game.Direct3DDeviceContext()->OMSetRenderTargets(1, mMainRenderTarget->GetRTVs(), mMainDepthTarget->getDSV());
-		//TODO maybe set viewport
-		
-		if (clear)
-			game.Direct3DDeviceContext()->ClearRenderTargetView(mMainRenderTarget->GetRTV(), ClearBackgroundColor);
-		if (clearDepth)
-			game.Direct3DDeviceContext()->ClearDepthStencilView(mMainDepthTarget->getDSV(), D3D11_CLEAR_DEPTH, 1.0, 0);
+		assert(aInitialRT && aDepthTarget);
+		game.Direct3DDeviceContext()->OMSetRenderTargets(1, aInitialRT->GetRTVs(), aDepthTarget->getDSV());
 	}
 
-	void PostProcessingStack::End()
+	void PostProcessingStack::End(ER_GPUTexture* aResolveRT)
 	{
 		game.ResetRenderTargets();
+
+		//final resolve to main swapchain
+		{
+			QuadRenderer* quad = (QuadRenderer*)game.Services().GetService(QuadRenderer::TypeIdClass());
+			assert(quad);
+
+			auto context = game.Direct3DDeviceContext();
+
+			ID3D11ShaderResourceView* SR[1] = { aResolveRT->GetSRV() };	
+			context->PSSetShaderResources(0, 1, SR);
+			ID3D11SamplerState* SS[1] = { SamplerStates::TrilinearWrap };
+			context->PSSetSamplers(0, 1, SS);
+			context->PSSetShader(mFinalResolvePS, NULL, NULL);
+			quad->Draw(context);
+		}
 	}
 
 	void PostProcessingStack::BeginRenderingToExtraRT(bool clear)
@@ -733,15 +693,6 @@ namespace Rendering {
 		}
 	}
 
-	void PostProcessingStack::SetMainRT(ID3D11ShaderResourceView* srv)
-	{
-		mMainRenderTarget->SetSRV(srv);
-	}
-	void PostProcessingStack::ResetMainRTtoOriginal()
-	{
-		mMainRenderTarget->SetSRV(mOriginalMainRTSRV);
-	}
-
 	void PostProcessingStack::EndRenderingToExtraRT()
 	{
 		mExtraRenderTarget->End();
@@ -751,24 +702,20 @@ namespace Rendering {
 	{
 		ID3D11DeviceContext* context = game.Direct3DDeviceContext();
 
-		// COMPOSITE LIGHTING
-		mCompositeLightingRenderTarget->Begin();
-		//mCompositeLightingEffect->InputDirectLightingTexture = mMainRenderTarget->OutputColorTexture();
-		game.Direct3DDeviceContext()->ClearRenderTargetView(mCompositeLightingRenderTarget->RenderTargetView(), ClearBackgroundColor);
-		game.Direct3DDeviceContext()->ClearDepthStencilView(mCompositeLightingRenderTarget->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
-		mCompositeLightingEffect->Quad->Draw(gameTime);
-		mCompositeLightingRenderTarget->End();
-		if (mCompositeLightingEffect->debugGI)
-			return;
-
 		// LIGHT SHAFTS
 		mLightShaftsRenderTarget->Begin();
-		mLightShaftsEffect->OutputTexture = mCompositeLightingRenderTarget->OutputColorTexture();
-		mLightShaftsEffect->DepthTexture = mMainDepthTarget->getSRV();
+		//mLightShaftsEffect->OutputTexture = mMainRenderTarget->GetSRV();
+		//mLightShaftsEffect->DepthTexture = mMainDepthTarget->getSRV();
 		game.Direct3DDeviceContext()->ClearRenderTargetView(mLightShaftsRenderTarget->RenderTargetView(), ClearBackgroundColor);
 		game.Direct3DDeviceContext()->ClearDepthStencilView(mLightShaftsRenderTarget->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
 		mLightShaftsEffect->Quad->Draw(gameTime);
 		mLightShaftsRenderTarget->End();
+
+		//if (mIsScreenSpaceLightshaftsEnabled)
+		//{
+			//PrepareScreenSpaceLightshafts();
+			//mQuadRenderer->Draw();
+		//}
 
 		// SSR
 		mSSRRenderTarget->Begin();
@@ -781,11 +728,17 @@ namespace Rendering {
 		// FOG
 		mFogRenderTarget->Begin();
 		mFogEffect->OutputTexture = mSSRRenderTarget->OutputColorTexture();
-		mFogEffect->DepthTexture = mMainDepthTarget->getSRV();
+		mFogEffect->DepthTexture = nullptr;//TODO mMainDepthTarget->getSRV();
 		game.Direct3DDeviceContext()->ClearRenderTargetView(mFogRenderTarget->RenderTargetView(), ClearBackgroundColor);
 		game.Direct3DDeviceContext()->ClearDepthStencilView(mFogRenderTarget->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
 		mFogEffect->Quad->Draw(gameTime);
 		mFogRenderTarget->End();
+
+		//if (mIsLinearFogEnabled)
+		//{
+			//PrepareLinearFog();
+			//mQuadRenderer->Draw();
+		//}
 
 		// TONEMAP
 		mTonemapRenderTarget->Begin();
@@ -915,7 +868,7 @@ namespace Rendering {
 		game.Direct3DDeviceContext()->ClearRenderTargetView(mMotionBlurRenderTarget->RenderTargetView(), ClearBackgroundColor);
 		game.Direct3DDeviceContext()->ClearDepthStencilView(mMotionBlurRenderTarget->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
 		mMotionBlurEffect->OutputTexture = mTonemapRenderTarget->OutputColorTexture();
-		mMotionBlurEffect->DepthMap = mMainDepthTarget->getSRV();
+		mMotionBlurEffect->DepthMap = nullptr;// TODO mMainDepthTarget->getSRV();
 		mMotionBlurEffect->Quad->Draw(gameTime);
 		mMotionBlurRenderTarget->End();
 
@@ -943,8 +896,6 @@ namespace Rendering {
 		mFXAAEffect->OutputTexture = mVignetteRenderTarget->OutputColorTexture();
 		mFXAAEffect->Quad->Draw(gameTime);
 		//mFXAARenderTarget->End();
-
-		ResetMainRTtoOriginal();
 	}
 
 	void PostProcessingStack::DrawFullscreenQuad(ID3D11DeviceContext* pContext)

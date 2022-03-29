@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include <stdio.h>
 #include "VolumetricClouds.h"
-#include "GameComponent.h"
 #include "GameTime.h"
 #include "Camera.h"
 #include "DirectionalLight.h"
@@ -15,18 +14,16 @@
 #include "VertexDeclarations.h"
 #include "RasterizerStates.h"
 #include "ShaderCompiler.h"
-#include "PostProcessingStack.h"
 #include "Skybox.h"
+#include "QuadRenderer.h"
 
 namespace Library {
-	VolumetricClouds::VolumetricClouds(Game& game, Camera& camera, DirectionalLight& light, Rendering::PostProcessingStack& stack, Skybox& skybox)
+	VolumetricClouds::VolumetricClouds(Game& game, Camera& camera, DirectionalLight& light, Skybox& skybox)
 		: GameComponent(game),
 		mCamera(camera), 
 		mDirectionalLight(light),
-		mPostProcessingStack(stack),
 		mSkybox(skybox)
 	{
-		Initialize();
 	}
 	VolumetricClouds::~VolumetricClouds()
 	{
@@ -39,13 +36,14 @@ namespace Library {
 		ReleaseObject(mCompositePS);
 		ReleaseObject(mBlurPS);
 		DeleteObject(mCustomMainRenderTargetCS);
-		DeleteObject(mCompositeRenderTarget);
+		DeleteObject(mSkyRT);
+		DeleteObject(mSkyAndSunRT);
 		DeleteObject(mBlurRenderTarget);
 		mFrameConstantBuffer.Release();
 		mCloudsConstantBuffer.Release();
 	}
 
-	void VolumetricClouds::Initialize() {
+	void VolumetricClouds::Initialize(ER_GPUTexture* aIlluminationColor, DepthTarget* aIlluminationDepth) {
 		//shaders
 		ID3DBlob* blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsComposite.hlsl").c_str(), "main", "ps_5_0", &blob)))
@@ -100,9 +98,15 @@ namespace Library {
 			throw GameException("Failed to create sampler mWeatherSS!");
 
 		//render targets
-		mCompositeRenderTarget = new FullScreenRenderTarget(*mGame);
+		assert(aIlluminationColor);
+		mIlluminationResultRT = aIlluminationColor;
+		assert(aIlluminationDepth);
+		mIlluminationResultDepthTarget = aIlluminationDepth;
+
 		mBlurRenderTarget = new FullScreenRenderTarget(*mGame);
 		mCustomMainRenderTargetCS = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
+		mSkyRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+		mSkyAndSunRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 	}
 	
 	void VolumetricClouds::Update(const GameTime& gameTime)
@@ -161,14 +165,20 @@ namespace Library {
 		if (!mEnabled)
 			return;
 
-		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+		assert(mIlluminationResultRT && mIlluminationResultDepthTarget);
+		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
 
-		//skybox to empty texture
-		if (!mDirectionalLight.IsSunRendered()) {
-			mPostProcessingStack.BeginRenderingToExtraRT(true);
-			mSkybox.Draw();
-			mPostProcessingStack.EndRenderingToExtraRT();
-		}
+		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+		context->OMSetRenderTargets(1, mSkyRT->GetRTVs(), nullptr);
+		mSkybox.Draw();
+		context->OMSetRenderTargets(1, nullRTVs, nullptr);
+
+		context->OMSetRenderTargets(1, mSkyAndSunRT->GetRTVs(), nullptr);
+		mSkybox.DrawSun(nullptr, mSkyRT, mIlluminationResultDepthTarget);
+		context->OMSetRenderTargets(1, nullRTVs, nullptr);
+
+		QuadRenderer* quadRenderer = (QuadRenderer*)mGame->Services().GetService(QuadRenderer::TypeIdClass());
+		assert(quadRenderer);
 
 		//main pass
 		ID3D11Buffer* CBs[2] = {
@@ -176,11 +186,11 @@ namespace Library {
 			mCloudsConstantBuffer.Buffer()
 		};
 		ID3D11ShaderResourceView* SR[5] = {
-			(mDirectionalLight.IsSunRendered()) ? mSkybox.GetSunOutputTexture() : mPostProcessingStack.GetExtraColorSRV(),
+			mSkyAndSunRT->GetSRV(),
 			mWeatherTextureSRV,
 			mCloudTextureSRV,
 			mWorleyTextureSRV,
-			mPostProcessingStack.GetDepthSRV(),
+			mIlluminationResultDepthTarget->getSRV()
 		};
 		ID3D11SamplerState* SS[2] = { mCloudSS, mWeatherSS };
 
@@ -206,29 +216,27 @@ namespace Library {
 		}
 
 		//blur pass
-		mBlurRenderTarget->Begin();
-		ID3D11ShaderResourceView* SR_Blur[2] = {
-			mCustomMainRenderTargetCS->GetSRV(),
-			mPostProcessingStack.GetDepthSRV(),
-		};
-		context->PSSetShaderResources(0, 2, SR_Blur);
-		context->PSSetShader(mBlurPS, NULL, NULL);
-		mPostProcessingStack.DrawFullscreenQuad(context);
-		mBlurRenderTarget->End();
+		{
+			mBlurRenderTarget->Begin();
+			ID3D11ShaderResourceView* SR_Blur[2] = {
+				mCustomMainRenderTargetCS->GetSRV(),
+				mIlluminationResultDepthTarget->getSRV(),
+			};
+			context->PSSetShaderResources(0, 2, SR_Blur);
+			context->PSSetShader(mBlurPS, NULL, NULL);
+			quadRenderer->Draw(context);
+			mBlurRenderTarget->End();
+		}
 
 		//composite pass
-		mCompositeRenderTarget->Begin();
-		ID3D11ShaderResourceView* SR_Composite[3] = {
-			mPostProcessingStack.GetPrepassColorSRV(),
-			mPostProcessingStack.GetDepthSRV(),
-			mBlurRenderTarget->OutputColorTexture()
-		};
-		context->PSSetShaderResources(0, 3, SR_Composite);
-		context->PSSetShader(mCompositePS, NULL, NULL);
-		mPostProcessingStack.DrawFullscreenQuad(context);
-		mCompositeRenderTarget->End();
+		{
+			context->OMSetRenderTargets(1, mIlluminationResultRT->GetRTVs(), nullptr);
+			ID3D11ShaderResourceView* SR[2] = { mIlluminationResultDepthTarget->getSRV(), mBlurRenderTarget->OutputColorTexture() };
+			context->PSSetShaderResources(0, 2, SR);
+			context->PSSetShader(mCompositePS, NULL, NULL);
+			quadRenderer->Draw(context);
 
-		//reset main RT 
-		mPostProcessingStack.SetMainRT(mCompositeRenderTarget->OutputColorTexture());
+			context->OMSetRenderTargets(1, nullRTVs, nullptr);
+		}
 	}
 }

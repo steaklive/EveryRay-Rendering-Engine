@@ -28,27 +28,6 @@ namespace Rendering
 
 	namespace EffectElements
 	{
-		struct CompositeLightingEffect
-		{
-			CompositeLightingEffect() :
-				Material(nullptr), Quad(nullptr)
-			{}
-
-			~CompositeLightingEffect()
-			{
-				DeleteObject(Material);
-				DeleteObject(Quad);
-			}
-
-			CompositeLightingMaterial* Material;
-			FullScreenQuad* Quad;
-			//ID3D11ShaderResourceView* InputDirectLightingTexture;
-			//ID3D11ShaderResourceView* InputIndirectLightingTexture;
-
-			bool isActive = false;
-			bool debugGI = false;
-		};
-
 		struct TonemapEffect
 		{
 			TonemapEffect():
@@ -313,15 +292,13 @@ namespace Rendering
 		void UpdateSSRMaterial(ID3D11ShaderResourceView* normal, ID3D11ShaderResourceView* depth, ID3D11ShaderResourceView* extra, float time);
 		void UpdateFogMaterial();
 		void UpdateLightShaftsMaterial();
-		void UpdateCompositeLightingMaterial(ID3D11ShaderResourceView* localIlluminationSRV, ID3D11ShaderResourceView* globalIlluminationSRV, bool debugVoxel, bool debugAO);
 
 		void Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR = true, bool pFog = false, bool pLightShafts = false);
-		void Begin(bool clear = true, DepthTarget* aDepthTarget = nullptr, bool clearDepth = false);
-		void End();
+	
+		void Begin(ER_GPUTexture* aInitialRT, DepthTarget* aDepthTarget);
+		void End(ER_GPUTexture* aResolveRT);
 		void BeginRenderingToExtraRT(bool clear);
 		void EndRenderingToExtraRT();
-		void SetMainRT(ID3D11ShaderResourceView* srv);
-		void ResetMainRTtoOriginal();
 
 		void DrawEffects(const GameTime & gameTime);
 
@@ -334,10 +311,6 @@ namespace Rendering
 
 		void Config() { mShowDebug = !mShowDebug; }
 
-		ER_GPUTexture* GetMainRenderTarget() { return mMainRenderTarget; }
-
-		ID3D11ShaderResourceView* GetDepthSRV();
-		ID3D11ShaderResourceView* GetPrepassColorSRV();
 		ID3D11ShaderResourceView* GetExtraColorSRV();
 
 		bool isWindowOpened = false;
@@ -364,11 +337,7 @@ namespace Rendering
 		EffectElements::SSREffect* mSSREffect;
 		EffectElements::FogEffect* mFogEffect;
 		EffectElements::LightShaftsEffect* mLightShaftsEffect;
-		EffectElements::CompositeLightingEffect* mCompositeLightingEffect;
 		
-		ER_GPUTexture* mMainRenderTarget = nullptr;
-		DepthTarget* mMainDepthTarget = nullptr;
-
 		//TODO change to custom render targets
 		FullScreenRenderTarget* mVignetteRenderTarget;
 		FullScreenRenderTarget* mColorGradingRenderTarget;
@@ -378,14 +347,12 @@ namespace Rendering
 		FullScreenRenderTarget* mSSRRenderTarget;
 		FullScreenRenderTarget* mFogRenderTarget;
 		FullScreenRenderTarget* mLightShaftsRenderTarget;
-		FullScreenRenderTarget* mCompositeLightingRenderTarget;
 		FullScreenRenderTarget* mExtraRenderTarget;
 
 		ID3D11Buffer* mQuadVB;
 		ID3D11VertexShader* mFullScreenQuadVS;
 		ID3D11InputLayout* mFullScreenQuadLayout;
 
-		ID3D11ShaderResourceView* mOriginalMainRTSRV = nullptr;
 		ID3D11ShaderResourceView* mSunOcclusionSRV = nullptr;
 
 		bool mVignetteLoaded = false;
@@ -398,6 +365,8 @@ namespace Rendering
 		bool mCompositeLightingLoaded = false;
 
 		XMFLOAT2 mSunNDCPos;
+
+		ID3D11PixelShader* mFinalResolvePS = nullptr;
 
 		bool mShowDebug = false;
 	};

@@ -23,6 +23,7 @@
 #include "..\Library\Editor.h"
 #include "..\Library\RasterizerStates.h"
 #include "..\Library\SamplerStates.h"
+#include "..\Library\QuadRenderer.h"
 
 // include scenes
 
@@ -52,6 +53,7 @@ namespace Rendering
 		mMouse(nullptr),
 		mShowProfiler(false),
 		mEditor(nullptr),
+		mQuadRenderer(nullptr),
 		mRenderStateHelper(nullptr)
 	{
 		mDepthStencilBufferEnabled = true;
@@ -97,6 +99,10 @@ namespace Rendering
 		mEditor = new Editor(*this);
 		components.push_back(mEditor);
 		mServices.AddService(Editor::TypeIdClass(), mEditor);
+
+		mQuadRenderer = new QuadRenderer(*this);
+		components.push_back(mQuadRenderer);
+		mServices.AddService(QuadRenderer::TypeIdClass(), mQuadRenderer);
 
 		mRenderStateHelper = new RenderStateHelper(*this);
 
@@ -287,6 +293,7 @@ namespace Rendering
 	{
 		DeleteObject(mKeyboard);
 		DeleteObject(mEditor);
+		DeleteObject(mQuadRenderer);
 		DeleteObject(mMouse);
 		DeleteObject(mCamera);
 		DeleteObject(mRenderStateHelper);

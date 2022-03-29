@@ -3,6 +3,7 @@
 #include "DrawableGameComponent.h"
 #include "PostProcessingStack.h"
 #include "ConstantBuffer.h"
+#include "DepthTarget.h"
 
 namespace Library
 {
@@ -31,7 +32,7 @@ namespace Library
 		void Draw(Camera* aCustomCamera = nullptr);
 		void Update(const GameTime& gameTime, Camera* aCustomCamera = nullptr);
 		void UpdateSun(const GameTime& gameTime, Camera* aCustomCamera = nullptr);
-		void DrawSun(Camera* aCustomCamera = nullptr, Rendering::PostProcessingStack* postprocess = nullptr);
+		void DrawSun(Camera* aCustomCamera = nullptr, ER_GPUTexture* aSky = nullptr, DepthTarget* aSceneDepth = nullptr);
 
 		void SetMovable(bool value) { mIsMovable = value; };
 		void SetUseCustomSkyColor(bool value) { mUseCustomColor = value; }
@@ -46,8 +47,7 @@ namespace Library
 			mSunBrightness = brightness;
 			mSunExponent = exponent;
 		}
-		ID3D11ShaderResourceView* GetSunOutputTexture();
-		ID3D11ShaderResourceView* GetSunOcclusionOutputTexture();
+		ID3D11ShaderResourceView* GetSunOcclusionOutputTexture() const;
 	private:
 		Skybox();
 		Skybox(const Skybox& rhs);

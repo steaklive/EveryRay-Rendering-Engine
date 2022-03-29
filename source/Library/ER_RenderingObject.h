@@ -136,11 +136,9 @@ namespace Library
 		void DrawAABB();
 		void UpdateGizmos();
 		void Update(const GameTime& time);
-		void Selected(bool val) { mIsSelected = val; }
-		void SetVisible(bool val) { mIsRendered = val; }
-		void SetCulled(bool val) { mIsCulled = val; }
 
 		std::map<std::string, ER_Material*>& GetNewMaterials() { return mNewMaterials; }
+		
 		TextureData& GetTextureData(int meshIndex) { return mMeshesTextureBuffers[meshIndex]; }
 		
 		const int GetMeshCount(int lod = 0) const { return mMeshesCount[lod]; }
@@ -153,11 +151,6 @@ namespace Library
 
 		const ER_AABB& GetLocalAABB() { return mLocalAABB; }
 
-		bool IsAvailableInEditor() { return mAvailableInEditorMode; }
-		bool IsSelected() { return mIsSelected; }
-		bool IsInstanced() { return mIsInstanced; }
-		bool IsVisible() { return mIsRendered; }
-
 		void SetTransformationMatrix(const XMMATRIX& mat);
 		void SetTranslation(float x, float y, float z);
 		void SetScale(float x, float y, float z);
@@ -165,10 +158,42 @@ namespace Library
 
 		void LoadInstanceBuffers(int lod = 0);
 		void UpdateInstanceBuffer(std::vector<InstancedData>& instanceData, int lod = 0);
-		UINT InstanceSize() const;
-
 		void ResetInstanceData(int count, bool clear = false, int lod = 0);
-		void AddInstanceData(XMMATRIX worldMatrix, int lod = -1);
+		void AddInstanceData(const XMMATRIX& worldMatrix, int lod = -1);
+		UINT InstanceSize() const;
+		
+		void Rename(const std::string& name) { mName = name; }
+		const std::string& GetName() { return mName; }
+
+		int GetLODCount() {
+			return 1 + mModelLODs.size();
+		}
+		void UpdateLODs();
+		void LoadLOD(std::unique_ptr<Model> pModel);
+		void LoadPostCullingInstanceData(std::vector<InstancedData>& instanceData) {
+			mPostCullingInstanceDataPerLOD.clear();
+			for (int i = 0; i < GetLODCount(); i++)
+				mPostCullingInstanceDataPerLOD.push_back(instanceData);
+		}
+		
+		float GetMinScale() { return mMinScale; }
+		void SetMinScale(float v) { mMinScale = v; }
+		
+		float GetMaxScale() { return mMaxScale; }
+		void SetMaxScale(float v) { mMaxScale = v; }
+
+		bool IsSelected() { return mIsSelected; }
+		void SetSelected(bool val) { mIsSelected = val; }
+
+		bool IsInstanced() { return mIsInstanced; }
+		bool IsAvailableInEditor() { return mAvailableInEditorMode; }
+
+		bool IsVisible() { return mIsRendered; }
+		void SetVisible(bool val) { mIsRendered = val; }
+
+		//TODO remove that (culling can be different in different views)
+		bool IsCulled() { return mIsCulled; }
+		void SetCulled(bool val) { mIsCulled = val; }
 
 		void SetMeshReflectionFactor(int meshIndex, float factor) { mMeshesReflectionFactors[meshIndex] = factor; }
 		float GetMeshReflectionFactor(int meshIndex) { return mMeshesReflectionFactors[meshIndex]; }
@@ -178,30 +203,12 @@ namespace Library
 
 		bool GetIsSavedOnTerrain() { return mSavedOnTerrain; }
 		void SetSavedOnTerrain(bool flag) { mSavedOnTerrain = flag; }
+		
 		void SetNumInstancesPerVegetationZone(int count) { mNumInstancesPerVegetationZone = count; }
 		int GetNumInstancesPerVegetationZone() { return mNumInstancesPerVegetationZone; }
 
-		void Rename(const std::string& name) { mName = name; }
-		std::string GetName() { return mName; }
-
-		void UpdateLODs();
-		void LoadLOD(std::unique_ptr<Model> pModel);
-		int GetLODCount() {
-			return 1 + mModelLODs.size();
-		}
-		void LoadPostCullingInstanceData(std::vector<InstancedData>& instanceData) {
-			mPostCullingInstanceDataPerLOD.clear();
-			for (int i = 0; i < GetLODCount(); i++)
-				mPostCullingInstanceDataPerLOD.push_back(instanceData);
-		}
-		
-		void SetMinScale(float v) { mMinScale = v; }
-		void SetMaxScale(float v) { mMaxScale = v; }
-		float GetMinScale() { return mMinScale; }
-		float GetMaxScale() { return mMaxScale; }
-
-		void SetFoliageMask(bool value) { mFoliageMask = value; }
 		bool GetFoliageMask() { return mFoliageMask; }
+		void SetFoliageMask(bool value) { mFoliageMask = value; }
 
 		bool IsForwardShading() { return mIsForwardShading; }
 		void SetForwardShading(bool value) { mIsForwardShading = value; }
@@ -217,11 +224,13 @@ namespace Library
 
 		bool IsInLightProbe() { return mIsInLightProbe; }
 		void SetInLightProbe(bool value) { mIsInLightProbe = value; }
+		
 		void SetUseGlobalLightProbe(bool value) { mUseGlobalLightProbe = value; }
 		bool GetUseGlobalLightProbe() { return mUseGlobalLightProbe; }
 		float GetUseGlobalLightProbeMask() { return mUseGlobalLightProbe ? 1.0f : 0.0f; }
 
 		int GetIndexInScene() { return mIndexInScene; }
+		void SetIndexInScene(int index) { mIndexInScene = index; }
 
 		GeneralEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new GeneralEvent<Delegate_MeshMaterialVariablesUpdate>();
 	
@@ -240,6 +249,7 @@ namespace Library
 		
 		Game* mGame = nullptr;
 		Camera& mCamera;
+
 		std::vector<TextureData>								mMeshesTextureBuffers;
 		std::vector<std::vector<InstanceBufferData*>>			mMeshesInstanceBuffers;
 		std::vector<std::vector<std::vector<XMFLOAT3>>>			mMeshVertices; 
@@ -248,6 +258,7 @@ namespace Library
 		std::vector<float>										mMeshesReflectionFactors; 
 		std::map<std::string, ER_Material*>						mNewMaterials;
 		ER_AABB													mLocalAABB;
+		RenderableAABB*											mDebugAABB;
 		std::unique_ptr<Model>									mModel;
 		std::vector<std::unique_ptr<Model>>						mModelLODs;
 		std::vector<int>										mMeshesCount;
@@ -259,7 +270,10 @@ namespace Library
 		std::vector<std::vector<InstancedData>>					mPostCullingInstanceDataPerLOD;
 	
 		std::string												mName;
-		RenderableAABB*											mDebugAABB;
+		const char*												mInstancedNamesUI[MAX_INSTANCE_COUNT];
+		int														mIndexInScene = -1;
+		int														mSelectedInstancedObjectIndex = 0;
+		int														mNumInstancesPerVegetationZone = 0;
 		bool													mEnableAABBDebug = true;
 		bool													mWireframeMode = false;
 		bool													mAvailableInEditorMode = false;
@@ -268,20 +282,20 @@ namespace Library
 		bool													mIsInstanced = false;
 		bool													mIsForwardShading = false;
 		bool													mIsPOM = false;
-		int														mSelectedInstancedObjectIndex = 0;
 		bool													mPlacedOnTerrain = false;
 		bool													mSavedOnTerrain = false;
-		int														mNumInstancesPerVegetationZone = 0;
 		bool													mIsCulled = false;
-		float													mMinScale = 1.0f;
-		float													mMaxScale = 1.0f;
 		bool													mFoliageMask = false;
 		bool													mIsInLightProbe = false;
 		bool													mIsInVoxelization = false;
 		bool													mIsInGbuffer = false;
 		bool													mUseGlobalLightProbe = false;
+		float													mMinScale = 1.0f;
+		float													mMaxScale = 1.0f;
 		float													mCameraViewMatrix[16];
 		float													mCameraProjectionMatrix[16];
+		XMMATRIX												mTransformationMatrix;
+		float													mMatrixTranslation[3], mMatrixRotation[3], mMatrixScale[3];
 		float													mCurrentObjectTransformMatrix[16] = 
 		{   
 			1.f, 0.f, 0.f, 0.f,
@@ -289,10 +303,6 @@ namespace Library
 			0.f, 0.f, 1.f, 0.f,
 			0.f, 0.f, 0.f, 1.f 
 		};
-		float													mMatrixTranslation[3], mMatrixRotation[3], mMatrixScale[3];
-		XMMATRIX												mTransformationMatrix;
-		const char* listbox_items[MAX_INSTANCE_COUNT];
 
-		int mIndexInScene = -1;
 	};
 }

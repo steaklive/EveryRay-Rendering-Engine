@@ -1,14 +1,14 @@
 #pragma once
 #include "Common.h"
 #include "ConstantBuffer.h"
-#include "PostProcessingStack.h"
 #include "ER_GPUTexture.h"
+#include "DepthTarget.h"
+#include "GameComponent.h"
 
 namespace Library
 {
 	class FullScreenRenderTarget;
 	class DirectionalLight;
-	class GameComponent;
 	class GameTime;
 	class Camera;
 	class Skybox;
@@ -43,10 +43,10 @@ namespace Library
 	class VolumetricClouds : public GameComponent
 	{
 	public:
-		VolumetricClouds(Game& game, Camera& camera, DirectionalLight& light, Rendering::PostProcessingStack& stack, Skybox& skybox);
+		VolumetricClouds(Game& game, Camera& camera, DirectionalLight& light, Skybox& skybox);
 		~VolumetricClouds();
 
-		void Initialize();
+		void Initialize(ER_GPUTexture* aIlluminationColor, DepthTarget* aIlluminationDepth);
 
 		void Draw(const GameTime& gametime);
 		void Update(const GameTime& gameTime);
@@ -57,13 +57,16 @@ namespace Library
 		Camera& mCamera;
 		DirectionalLight& mDirectionalLight;
 		Skybox& mSkybox;
-		Rendering::PostProcessingStack& mPostProcessingStack;
 		
 		ConstantBuffer<VolumetricCloudsCBufferData::FrameCB> mFrameConstantBuffer;
 		ConstantBuffer<VolumetricCloudsCBufferData::CloudsCB> mCloudsConstantBuffer;
 
+		ER_GPUTexture* mIlluminationResultRT = nullptr; // not allocated here, just a pointer
+		DepthTarget* mIlluminationResultDepthTarget = nullptr; // not allocated here, just a pointer
+
+		ER_GPUTexture* mSkyRT = nullptr;
+		ER_GPUTexture* mSkyAndSunRT = nullptr;
 		ER_GPUTexture* mCustomMainRenderTargetCS = nullptr;
-		FullScreenRenderTarget* mCompositeRenderTarget = nullptr;
 		FullScreenRenderTarget* mBlurRenderTarget = nullptr;
 
 		ID3D11ComputeShader* mMainCS = nullptr;

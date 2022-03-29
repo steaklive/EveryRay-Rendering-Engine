@@ -24,6 +24,7 @@ namespace Library
 	class RenderableAABB;
 	class ER_RenderingObject;
 	class ER_GPUBuffer;
+	class Skybox;
 
 	namespace IlluminationCBufferData {
 		struct VoxelizationDebugCB
@@ -31,7 +32,7 @@ namespace Library
 			XMMATRIX WorldVoxelCube;
 			XMMATRIX ViewProjection;
 		};
-		struct VoxelConeTracingCB
+		struct VoxelConeTracingMainCB
 		{
 			XMFLOAT4 VoxelCameraPositions[NUM_VOXEL_GI_CASCADES];
 			XMFLOAT4 WorldVoxelScales[NUM_VOXEL_GI_CASCADES];
@@ -45,6 +46,10 @@ namespace Library
 			float VoxelSampleOffset;
 			float GIPower;
 			XMFLOAT3 pad0;
+		};
+		struct CompositeTotalIlluminationCB
+		{
+			XMFLOAT4 DebugVoxelAO;
 		};
 		struct UpsampleBlurCB
 		{
@@ -93,32 +98,26 @@ namespace Library
 
 		void Initialize(const Scene* scene);
 
-		void DrawLocalIllumination(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget, bool isEditorMode = false, bool clearInitTarget = false);
+		void DrawLocalIllumination(ER_GBuffer* gbuffer, Skybox* skybox);
 		void DrawGlobalIllumination(ER_GBuffer* gbuffer, const GameTime& gameTime);
+		void CompositeTotalIllumination();
+
+		void DrawDebugGizmos();
 
 		void Update(const GameTime& gameTime, const Scene* scene);
 		void Config() { mShowDebug = !mShowDebug; }
 
 		void SetShadowMapSRV(ID3D11ShaderResourceView* srv) { mShadowMapSRV = srv; }
 		void SetFoliageSystemForGI(FoliageSystem* foliageSystem);
-
 		void SetProbesManager(ER_IlluminationProbeManager* manager) { mProbesManager = manager; }
-
-		bool GetDebugVoxels() { return mDrawVoxelization; }
-		bool GetDebugAO() { return mDrawAmbientOcclusionOnly; }
 
 		void PrepareForForwardLighting(ER_RenderingObject* aObj, int meshIndex);
 
-		ID3D11ShaderResourceView* GetGlobaIlluminationSRV() const {
-			if (mDrawVoxelization)
-				return mVCTVoxelizationDebugRT->GetSRV();
-			else
-				return mVCTUpsampleAndBlurRT->GetSRV();
-		}
+		ER_GPUTexture* GetLocalIlluminationRT() const { return mLocalIlluminationRT; }
+		ER_GPUTexture* GetFinalIlluminationRT() const { return mFinalIlluminationRT; }
 	private:
-		void DrawDeferredLighting(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget, bool clearTarget = false);
+		void DrawDeferredLighting(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget);
 		void DrawForwardLighting(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget);
-		void DrawDebugGizmos();
 
 		void UpdateImGui();
 		void UpdateVoxelCameraPosition();
@@ -136,8 +135,9 @@ namespace Library
 		RenderingObjectInfo mVoxelizationObjects[NUM_VOXEL_GI_CASCADES];
 
 		ConstantBuffer<IlluminationCBufferData::VoxelizationDebugCB> mVoxelizationDebugConstantBuffer;
-		ConstantBuffer<IlluminationCBufferData::VoxelConeTracingCB> mVoxelConeTracingConstantBuffer;
+		ConstantBuffer<IlluminationCBufferData::VoxelConeTracingMainCB> mVoxelConeTracingMainConstantBuffer;
 		ConstantBuffer<IlluminationCBufferData::UpsampleBlurCB> mUpsampleBlurConstantBuffer;
+		ConstantBuffer<IlluminationCBufferData::CompositeTotalIlluminationCB> mCompositeTotalIlluminationConstantBuffer;
 		ConstantBuffer<IlluminationCBufferData::DeferredLightingCB> mDeferredLightingConstantBuffer;
 		ConstantBuffer<IlluminationCBufferData::ForwardLightingCB> mForwardLightingConstantBuffer;
 		ConstantBuffer<IlluminationCBufferData::LightProbesCB> mLightProbesConstantBuffer;
@@ -146,6 +146,9 @@ namespace Library
 		ER_GPUTexture* mVCTVoxelizationDebugRT = nullptr;
 		ER_GPUTexture* mVCTMainRT = nullptr;
 		ER_GPUTexture* mVCTUpsampleAndBlurRT = nullptr;
+
+		ER_GPUTexture* mLocalIlluminationRT = nullptr;
+		ER_GPUTexture* mFinalIlluminationRT = nullptr;
 
 		ER_GBuffer* mGbuffer = nullptr;
 
@@ -156,6 +159,7 @@ namespace Library
 		ID3D11PixelShader* mVCTVoxelizationDebugPS = nullptr;
 		ID3D11ComputeShader* mVCTMainCS = nullptr;
 		ID3D11ComputeShader* mUpsampleBlurCS = nullptr;
+		ID3D11ComputeShader* mCompositeIlluminationCS = nullptr;
 		ID3D11ComputeShader* mDeferredLightingCS = nullptr;
 		ID3D11VertexShader* mForwardLightingVS = nullptr;
 		ID3D11VertexShader* mForwardLightingVS_Instancing = nullptr;
@@ -183,11 +187,11 @@ namespace Library
 		float mVCTSamplingFactor = 0.5f;
 		float mVCTVoxelSampleOffset = 0.0f;
 		float mVCTGIPower = 1.0f;
-		bool mVoxelCameraPositionsUpdated = true;
+		bool mIsVCTVoxelCameraPositionsUpdated = true;
+		bool mShowVCTVoxelizationOnly = false;
+		bool mShowVCTAmbientOcclusionOnly = false;
+		bool mDrawVCTVoxelZonesGizmos = false;
 
-		bool mDrawVoxelization = false;
-		bool mDrawVoxelZonesGizmos = false;
-		bool mDrawAmbientOcclusionOnly = false;
 		bool mDrawDiffuseProbes = false;
 		bool mDrawSpecularProbes = false;
 		bool mDrawProbesVolumeGizmo = false;

@@ -26,11 +26,9 @@ namespace Library
 		ID3D11Texture2D* GetCubemapTexture2D() const { return mCubemapTexture->GetTexture2D(); }
 
 		//TODO refactor
-		void SetShaderInfoForConvolution(ID3D11VertexShader* vs, ID3D11PixelShader* ps, ID3D11InputLayout* il, ID3D11SamplerState* ss)
+		void SetShaderInfoForConvolution(ID3D11PixelShader* ps, ID3D11SamplerState* ss)
 		{
-			mConvolutionVS = vs;
 			mConvolutionPS = ps;
-			mInputLayout = il;
 			mLinearSamplerState = ss;
 		}
 

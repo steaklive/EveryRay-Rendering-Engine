@@ -456,7 +456,7 @@ namespace Library
 					if (prepareMaterialBeforeRendering)
 						prepareMaterialBeforeRendering(i);
 				}
-				else if (mGame->GetLevel()->mIllumination)
+				else if (isForwardPass && mGame->GetLevel()->mIllumination)
 					mGame->GetLevel()->mIllumination->PrepareForForwardLighting(this, i);
 
 				if (mIsInstanced)
@@ -706,11 +706,11 @@ namespace Library
 		ImGui::Begin(title.c_str());
 
 		//for (int i = 0; i < mInstanceData[0].size(); i++) {
-		//	listbox_items[i] = dynamic_cast<char*>(i);
+		//	mInstancedNamesUI[i] = dynamic_cast<char*>(i);
 		//}
 
 		ImGui::PushItemWidth(-1);
-		ImGui::ListBox("##empty", &mSelectedInstancedObjectIndex, listbox_items, mInstanceData[0].size(), 15);
+		ImGui::ListBox("##empty", &mSelectedInstancedObjectIndex, mInstancedNamesUI, mInstanceData[0].size(), 15);
 		ImGui::End();
 	}
 	
@@ -753,7 +753,7 @@ namespace Library
 			mInstanceData[lod].clear();
 		
 	}
-	void ER_RenderingObject::AddInstanceData(XMMATRIX worldMatrix, int lod)
+	void ER_RenderingObject::AddInstanceData(const XMMATRIX& worldMatrix, int lod)
 	{
 		if (lod == -1) {
 			for (int lod = 0; lod < GetLODCount(); lod++)

@@ -1,27 +1,32 @@
-#include "Common.h"
 #include "QuadRenderer.h"
+#include "GameException.h"
+#include "ShaderCompiler.h"
+#include "Game.h"
+#include "Utility.h"
 
 namespace Library {
-	
-	QuadRenderer::QuadRenderer(ID3D11Device* device)
+	RTTI_DEFINITIONS(QuadRenderer)
+
+	QuadRenderer::QuadRenderer(Game& game) : GameComponent(game)
 	{
-		Vertex* vertices = new Vertex[4];
+		auto device = game.Direct3DDevice();
+		QuadVertex* vertices = new QuadVertex[4];
 
 		// Bottom left.
-		vertices[0].Position = Vector3(1.0f, -1.0f, 0.0f);
-		vertices[0].TextureCoordinates = Vector2(1.0f, 1.0f);
+		vertices[0].Position = XMFLOAT3(1.0f, -1.0f, 0.0f);
+		vertices[0].TextureCoordinates = XMFLOAT2(1.0f, 1.0f);
 
 		// Top left.
-		vertices[1].Position = Vector3(-1.0f, -1.0f, 0.0f);
-		vertices[1].TextureCoordinates = Vector2(0.0f, 1.0f);
+		vertices[1].Position = XMFLOAT3(-1.0f, -1.0f, 0.0f);
+		vertices[1].TextureCoordinates = XMFLOAT2(0.0f, 1.0f);
 
 		// Bottom right.
-		vertices[2].Position = Vector3(-1.0f, 1.0f, 0.0f);
-		vertices[2].TextureCoordinates = Vector2(0.0f, 0.0f);
+		vertices[2].Position = XMFLOAT3(-1.0f, 1.0f, 0.0f);
+		vertices[2].TextureCoordinates = XMFLOAT2(0.0f, 0.0f);
 
 		// Top right.
-		vertices[3].Position = Vector3(1.0f, 1.0f, 0.0f);
-		vertices[3].TextureCoordinates = Vector2(1.0f, 0.0f);
+		vertices[3].Position = XMFLOAT3(1.0f, 1.0f, 0.0f);
+		vertices[3].TextureCoordinates = XMFLOAT2(1.0f, 0.0f);
 
 		unsigned long* indices = new unsigned long[6];
 
@@ -35,7 +40,7 @@ namespace Library {
 		D3D11_BUFFER_DESC vertexBufferDesc;
 
 		vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-		vertexBufferDesc.ByteWidth = sizeof(Vertex) * 6;
+		vertexBufferDesc.ByteWidth = sizeof(QuadVertex) * 6;
 		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		vertexBufferDesc.MiscFlags = 0;
@@ -47,12 +52,10 @@ namespace Library {
 		vertexData.SysMemPitch = 0;
 		vertexData.SysMemSlicePitch = 0;
 
-		HRESULT hr = device->CreateBuffer(&vertexBufferDesc, &vertexData, &this->vertexBuffer);
+		HRESULT hr = device->CreateBuffer(&vertexBufferDesc, &vertexData, &mVertexBuffer);
 
 		if (FAILED(hr))
-		{
-			MessageBox(NULL, L"An error occurred while trying to create the vertex buffer.", L"Error", MB_OK);
-		}
+			MessageBox(NULL, L"An error occurred while trying to create the vertex buffer for Quad.", L"Error", MB_OK);
 
 		D3D11_BUFFER_DESC indexBufferDesc;
 
@@ -69,15 +72,45 @@ namespace Library {
 		indexData.SysMemPitch = 0;
 		indexData.SysMemSlicePitch = 0;
 
-		hr = device->CreateBuffer(&indexBufferDesc, &indexData, &this->indexBuffer);
+		hr = device->CreateBuffer(&indexBufferDesc, &indexData, &mIndexBuffer);
 
 		if (FAILED(hr))
+			MessageBox(NULL, L"An error occurred while trying to create the index buffer for Quad.", L"Error", MB_OK);
+
+		ID3DBlob* blob = nullptr;
+		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Quad.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
+			throw GameException("Failed to load VSMain from shader: Quad.hlsl!");
+		if (FAILED(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVS)))
+			throw GameException("Failed to create vertex shader from Quad.hlsl!");
 		{
-			MessageBox(NULL, L"An error occurred while trying to create the index buffer.", L"Error", MB_OK);
+			D3D11_INPUT_ELEMENT_DESC inputLayoutDesc[2];
+			inputLayoutDesc[0].SemanticName = "POSITION";
+			inputLayoutDesc[0].SemanticIndex = 0;
+			inputLayoutDesc[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+			inputLayoutDesc[0].InputSlot = 0;
+			inputLayoutDesc[0].AlignedByteOffset = 0;
+			inputLayoutDesc[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+			inputLayoutDesc[0].InstanceDataStepRate = 0;
+
+			inputLayoutDesc[1].SemanticName = "TEXCOORD";
+			inputLayoutDesc[1].SemanticIndex = 0;
+			inputLayoutDesc[1].Format = DXGI_FORMAT_R32G32_FLOAT;
+			inputLayoutDesc[1].InputSlot = 0;
+			inputLayoutDesc[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+			inputLayoutDesc[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+			inputLayoutDesc[1].InstanceDataStepRate = 0;
+
+			int numElements = sizeof(inputLayoutDesc) / sizeof(inputLayoutDesc[0]);
+			device->CreateInputLayout(inputLayoutDesc, numElements, blob->GetBufferPointer(), blob->GetBufferSize(), &mInputLayout);
 		}
+		blob->Release();
 	}
 	QuadRenderer::~QuadRenderer()
 	{
+		ReleaseObject(mVS);
+		ReleaseObject(mInputLayout);
+		ReleaseObject(mVertexBuffer);
+		ReleaseObject(mIndexBuffer);
 	}
 
 	void QuadRenderer::Draw(ID3D11DeviceContext* context)
@@ -85,11 +118,14 @@ namespace Library {
 		unsigned int stride;
 		unsigned int offset;
 
-		stride = sizeof(Vertex);
+		stride = sizeof(QuadVertex);
 		offset = 0;
 
-		context->IASetVertexBuffers(0, 1, this->vertexBuffer.GetAddressOf(), &stride, &offset);
-		context->IASetIndexBuffer(this->indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		context->IASetInputLayout(mInputLayout);
+		context->VSSetShader(mVS, NULL, NULL);
+
+		context->IASetVertexBuffers(0, 1, &mVertexBuffer, &stride, &offset);
+		context->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		context->DrawIndexed(6, 0, 0);

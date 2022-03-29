@@ -116,9 +116,7 @@ namespace Library
 		RenderableAABB* mDebugDiffuseProbeVolumeGizmo[NUM_PROBE_VOLUME_CASCADES] = { nullptr };
 		RenderableAABB* mDebugSpecularProbeVolumeGizmo[NUM_PROBE_VOLUME_CASCADES] = { nullptr };
 
-		ID3D11VertexShader* mConvolutionVS = nullptr;
 		ID3D11PixelShader* mConvolutionPS = nullptr;
-		ID3D11InputLayout* mInputLayout = nullptr; //TODO remove
 		ID3D11SamplerState* mLinearSamplerState = nullptr;
 
 		ID3D11ShaderResourceView* mIntegrationMapTextureSRV = nullptr; //TODO generate custom ones

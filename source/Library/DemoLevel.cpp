@@ -92,16 +92,17 @@ namespace Library {
 		game.CPUProfiler()->EndCPUTime("Post processing stack init");
 #pragma endregion
 
-		#pragma region INIT_VOLUMETRIC_CLOUDS
-		game.CPUProfiler()->BeginCPUTime("Volumetric Clouds init");
-        mVolumetricClouds = new VolumetricClouds(game, camera, *mDirectionalLight, *mPostProcessingStack, *mSkybox);
-		game.CPUProfiler()->EndCPUTime("Volumetric Clouds init");
-#pragma endregion
-
 		#pragma region INIT_ILLUMINATION
 		game.CPUProfiler()->BeginCPUTime("Illumination init");
         mIllumination = new Illumination(game, camera, *mDirectionalLight, *mShadowMapper, mScene);
 		game.CPUProfiler()->EndCPUTime("Illumination init");
+#pragma endregion
+
+		#pragma region INIT_VOLUMETRIC_CLOUDS
+		game.CPUProfiler()->BeginCPUTime("Volumetric Clouds init");
+        mVolumetricClouds = new VolumetricClouds(game, camera, *mDirectionalLight, *mSkybox);
+		mVolumetricClouds->Initialize(mIllumination->GetLocalIlluminationRT(), mGBuffer->GetDepth());
+		game.CPUProfiler()->EndCPUTime("Volumetric Clouds init");
 #pragma endregion
 
 		#pragma region INIT_LIGHTPROBES_MANAGER
@@ -235,15 +236,9 @@ namespace Library {
 		mRenderStateHelper->RestoreAll();
 #pragma endregion
 
-		mPostProcessingStack->Begin(true, mGBuffer->GetDepth());
-
 		#pragma region DRAW_LOCAL_ILLUMINATION
-		mSkybox->Draw();
-		mIllumination->DrawLocalIllumination(mGBuffer, mPostProcessingStack->GetMainRenderTarget(), Utility::IsEditorMode);
-
-		if (Utility::IsEditorMode)
-			mDirectionalLight->DrawProxyModel(gameTime); //TODO move to Illumination() or better to separate debug renderer system
-#pragma endregion
+		
+		mIllumination->DrawLocalIllumination(mGBuffer, mSkybox);
 
 		#pragma region DRAW_LAYERED_MATERIALS
 		for (auto& it = mScene->objects.begin(); it != mScene->objects.end(); it++)
@@ -256,20 +251,26 @@ namespace Library {
 		}
 #pragma endregion
 
-		mPostProcessingStack->End();
-
-		#pragma region DRAW_SUN
-		mSkybox->DrawSun(nullptr, mPostProcessingStack);
+		#pragma region DRAW_DEBUG_GIZMOS
+		if (Utility::IsEditorMode)
+		{
+			mDirectionalLight->DrawProxyModel(gameTime); //TODO move to Illumination() or better to separate debug renderer system
+			mIllumination->DrawDebugGizmos();
+		}
 #pragma endregion
 
 		#pragma region DRAW_VOLUMETRIC_CLOUDS
 		mVolumetricClouds->Draw(gameTime);
 #pragma endregion
 
+		mIllumination->CompositeTotalIllumination();
+#pragma endregion
+		
 		#pragma region DRAW_POSTPROCESSING
-		mPostProcessingStack->UpdateCompositeLightingMaterial(mPostProcessingStack->GetMainRenderTarget()->GetSRV(), mIllumination->GetGlobaIlluminationSRV(), mIllumination->GetDebugVoxels(), mIllumination->GetDebugAO());
-		mPostProcessingStack->UpdateSSRMaterial(mGBuffer->GetNormals()->GetSRV(), mGBuffer->GetDepth()->getSRV(), mGBuffer->GetExtraBuffer()->GetSRV(), (float)gameTime.TotalGameTime());
-		mPostProcessingStack->DrawEffects(gameTime);
+		mPostProcessingStack->Begin(mIllumination->GetFinalIlluminationRT(), mGBuffer->GetDepth());
+		//mPostProcessingStack->UpdateSSRMaterial(mGBuffer->GetNormals()->GetSRV(), mGBuffer->GetDepth()->getSRV(), mGBuffer->GetExtraBuffer()->GetSRV(), (float)gameTime.TotalGameTime());
+		//mPostProcessingStack->DrawEffects(gameTime);
+		mPostProcessingStack->End(mIllumination->GetFinalIlluminationRT());
 #pragma endregion
 
 		mRenderStateHelper->SaveAll();

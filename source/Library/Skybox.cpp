@@ -11,7 +11,7 @@
 #include "Utility.h"
 #include "ShaderCompiler.h"
 #include "FullScreenRenderTarget.h"
-
+#include "QuadRenderer.h"
 
 namespace Library
 {
@@ -165,69 +165,55 @@ namespace Library
 		mGame.UnbindPixelShaderResources(0, 3);
 	}
 
-	void Skybox::DrawSun(Camera* aCustomCamera, Rendering::PostProcessingStack* postprocess) {
+	void Skybox::DrawSun(Camera* aCustomCamera, ER_GPUTexture* aSky, DepthTarget* aSceneDepth)
+	{
 		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
+		assert(aSceneDepth);
+		auto quadRenderer = (QuadRenderer*)mGame.Services().GetService(QuadRenderer::TypeIdClass());
+		assert(quadRenderer);
 
-		//dirty way (re-rendering skybox)
-		postprocess->BeginRenderingToExtraRT(true);
-		Draw(aCustomCamera);
-		postprocess->EndRenderingToExtraRT();
-
-		if (mDrawSun && postprocess) {
-			ID3D11Buffer* CBs[1] = {
-				mSunConstantBuffer.Buffer()
-			};
-
-			ID3D11ShaderResourceView* SR[3] = {
-				postprocess->GetExtraColorSRV(),
-				postprocess->GetPrepassColorSRV(),
-				postprocess->GetDepthSRV()
-			};
-
-			mSunRenderTarget->Begin();
+		if (mDrawSun) {
+			ID3D11Buffer* CBs[1] = { mSunConstantBuffer.Buffer() };
 			context->PSSetConstantBuffers(0, 1, CBs);
-			context->PSSetShaderResources(0, 3, SR);
-			//context->PSSetSamplers(0, 2, SS);
+
+			ID3D11ShaderResourceView* SR[2] = { aSky->GetSRV(), aSceneDepth->getSRV() };
+			context->PSSetShaderResources(0, 2, SR);
+
 			context->PSSetShader(mSunPS, NULL, NULL);
-			postprocess->DrawFullscreenQuad(context);
-			mSunRenderTarget->End();
+
+			quadRenderer->Draw(context);
 			
-			//reset main RT 
-			postprocess->SetMainRT(mSunRenderTarget->OutputColorTexture());
-		
+			return;// TODO fix for light shafts
 			//draw occlusion texture for light shafts
-			mSunOcclusionRenderTarget->Begin();
-			context->PSSetConstantBuffers(0, 1, CBs);
-			context->PSSetShaderResources(0, 3, SR);
-			//context->PSSetSamplers(0, 2, SS);
-			context->PSSetShader(mSunOcclusionPS, NULL, NULL);
-			postprocess->DrawFullscreenQuad(context);
-			mSunOcclusionRenderTarget->End();
+			{
+				mSunOcclusionRenderTarget->Begin();
+				context->PSSetConstantBuffers(0, 1, CBs);
+				context->PSSetShaderResources(0, 2, SR);
+				//context->PSSetSamplers(0, 2, SS);
+				context->PSSetShader(mSunOcclusionPS, NULL, NULL);
+				quadRenderer->Draw(context);
+				mSunOcclusionRenderTarget->End();
 
-			XMFLOAT3 mSunDirection;
-			XMStoreFloat3(&mSunDirection, mSunDir);
-			XMFLOAT4 posWorld = CalculateSunPositionOnSkybox(XMFLOAT3(-mSunDirection.x,-mSunDirection.y,-mSunDirection.z), aCustomCamera);
-			XMVECTOR ndc;
-			if (aCustomCamera)
-				ndc = XMVector3Transform(XMLoadFloat4(&posWorld), aCustomCamera->ViewProjectionMatrix());
-			else
-				ndc = XMVector3Transform(XMLoadFloat4(&posWorld), mCamera.ViewProjectionMatrix());
+				XMFLOAT3 mSunDirection;
+				XMStoreFloat3(&mSunDirection, mSunDir);
+				XMFLOAT4 posWorld = CalculateSunPositionOnSkybox(XMFLOAT3(-mSunDirection.x, -mSunDirection.y, -mSunDirection.z), aCustomCamera);
+				XMVECTOR ndc;
+				if (aCustomCamera)
+					ndc = XMVector3Transform(XMLoadFloat4(&posWorld), aCustomCamera->ViewProjectionMatrix());
+				else
+					ndc = XMVector3Transform(XMLoadFloat4(&posWorld), mCamera.ViewProjectionMatrix());
 
-			XMFLOAT4 ndcF;
-			XMStoreFloat4(&ndcF, ndc);
-			ndcF = XMFLOAT4(ndcF.x / ndcF.w, ndcF.y / ndcF.w, ndcF.z / ndcF.w, ndcF.w / ndcF.w);
-			XMFLOAT2 ndcPos = XMFLOAT2(ndcF.x * 0.5f + 0.5f, -ndcF.y * 0.5f + 0.5f);
-			//XMFLOAT2 screenPos = XMFLOAT2(ndcPos.x * mGame->ScreenWidth(), (1 - ndcPos.y) * mGame->ScreenHeight());
-			postprocess->SetSunNDCPos(ndcPos);
+				XMFLOAT4 ndcF;
+				XMStoreFloat4(&ndcF, ndc);
+				ndcF = XMFLOAT4(ndcF.x / ndcF.w, ndcF.y / ndcF.w, ndcF.z / ndcF.w, ndcF.w / ndcF.w);
+				XMFLOAT2 ndcPos = XMFLOAT2(ndcF.x * 0.5f + 0.5f, -ndcF.y * 0.5f + 0.5f);
+				//XMFLOAT2 screenPos = XMFLOAT2(ndcPos.x * mGame->ScreenWidth(), (1 - ndcPos.y) * mGame->ScreenHeight());
+				//TODO postprocess->SetSunNDCPos(ndcPos);
+			}
 		}
 	}
 
-	ID3D11ShaderResourceView* Skybox::GetSunOutputTexture()
-	{
-		return mSunRenderTarget->OutputColorTexture();
-	}
-
-	ID3D11ShaderResourceView* Skybox::GetSunOcclusionOutputTexture()
+	ID3D11ShaderResourceView* Skybox::GetSunOcclusionOutputTexture() const
 	{
 		return mSunOcclusionRenderTarget->OutputColorTexture();
 	}

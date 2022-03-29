@@ -55,7 +55,7 @@ float4 onepass_blur(float2 uv, uint2 resolution)
     return col;
 }
 
-float4 main(float4 pos : SV_POSITION, float2 tex : TEX_COORD0) : SV_Target
+float4 main(float4 pos : SV_Position, float2 tex : TEXCOORD0) : SV_Target
 {
     uint width, height;
     cloudsColorTex.GetDimensions(width, height);

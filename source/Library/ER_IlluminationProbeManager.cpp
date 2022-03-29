@@ -44,38 +44,10 @@ namespace Library
 		if (FAILED(game.Direct3DDevice()->CreateSamplerState(&sam_desc, &mLinearSamplerState)))
 			throw GameException("Failed to create sampler mLinearSamplerState!");
 
-		mQuadRenderer = new QuadRenderer(game.Direct3DDevice());
+		mQuadRenderer = (QuadRenderer*)game.Services().GetService(QuadRenderer::TypeIdClass());
+		assert(mQuadRenderer);
 		{
 			ID3DBlob* blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\IBL\\ProbeConvolution.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
-				throw GameException("Failed to load VSMain from shader: ProbeConvolution.hlsl!");
-			if (FAILED(game.Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mConvolutionVS)))
-				throw GameException("Failed to create vertex shader from ProbeConvolution.hlsl!");
-
-			//TODO move to QuadRenderer
-			{
-				D3D11_INPUT_ELEMENT_DESC inputLayoutDesc[2];
-				inputLayoutDesc[0].SemanticName = "POSITION";
-				inputLayoutDesc[0].SemanticIndex = 0;
-				inputLayoutDesc[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-				inputLayoutDesc[0].InputSlot = 0;
-				inputLayoutDesc[0].AlignedByteOffset = 0;
-				inputLayoutDesc[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-				inputLayoutDesc[0].InstanceDataStepRate = 0;
-
-				inputLayoutDesc[1].SemanticName = "TEXCOORD";
-				inputLayoutDesc[1].SemanticIndex = 0;
-				inputLayoutDesc[1].Format = DXGI_FORMAT_R32G32_FLOAT;
-				inputLayoutDesc[1].InputSlot = 0;
-				inputLayoutDesc[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
-				inputLayoutDesc[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-				inputLayoutDesc[1].InstanceDataStepRate = 0;
-
-				int numElements = sizeof(inputLayoutDesc) / sizeof(inputLayoutDesc[0]);
-				game.Direct3DDevice()->CreateInputLayout(inputLayoutDesc, numElements, blob->GetBufferPointer(), blob->GetBufferSize(), &mInputLayout);
-			}
-			blob->Release();
-
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\IBL\\ProbeConvolution.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
 				throw GameException("Failed to load PSMain from shader: ProbeConvolution.hlsl!");
 			if (FAILED(game.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mConvolutionPS)))
@@ -126,10 +98,7 @@ namespace Library
 		DeletePointerCollection(mDiffuseProbes);
 		DeletePointerCollection(mSpecularProbes);
 
-		DeleteObject(mQuadRenderer);
-		ReleaseObject(mConvolutionVS);
 		ReleaseObject(mConvolutionPS);
-		ReleaseObject(mInputLayout);
 		ReleaseObject(mLinearSamplerState);
 
 		DeleteObject(mTempDiffuseCubemapFacesRT);
@@ -177,7 +146,7 @@ namespace Library
 		mGlobalDiffuseProbe = new ER_LightProbe(game, light, shadowMapper, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE);
 		mGlobalDiffuseProbe->SetIndex(-1);
 		mGlobalDiffuseProbe->SetPosition(Vector3Helper::Zero);
-		mGlobalDiffuseProbe->SetShaderInfoForConvolution(mConvolutionVS, mConvolutionPS, mInputLayout, mLinearSamplerState);
+		mGlobalDiffuseProbe->SetShaderInfoForConvolution(mConvolutionPS, mLinearSamplerState);
 
 		mDiffuseProbesCountX = (maxBounds.x - minBounds.x) / DISTANCE_BETWEEN_DIFFUSE_PROBES + 1;
 		mDiffuseProbesCountY = (maxBounds.y - minBounds.y) / DISTANCE_BETWEEN_DIFFUSE_PROBES + 1;
@@ -242,7 +211,7 @@ namespace Library
 					int index = probesY * (mDiffuseProbesCountX * mDiffuseProbesCountZ) + probesX * mDiffuseProbesCountZ + probesZ;
 					mDiffuseProbes[index]->SetIndex(index);
 					mDiffuseProbes[index]->SetPosition(pos);
-					mDiffuseProbes[index]->SetShaderInfoForConvolution(mConvolutionVS, mConvolutionPS, mInputLayout, mLinearSamplerState);
+					mDiffuseProbes[index]->SetShaderInfoForConvolution(mConvolutionPS, mLinearSamplerState);
 					for (int volumeIndex = 0; volumeIndex < NUM_PROBE_VOLUME_CASCADES; volumeIndex++)
 					{
 						if (probesY % VolumeProbeIndexSkips[volumeIndex] == 0 &&
@@ -391,7 +360,7 @@ namespace Library
 					int index = probesY * (mSpecularProbesCountX * mSpecularProbesCountZ) + probesX * mSpecularProbesCountZ + probesZ;
 					mSpecularProbes[index]->SetIndex(index);
 					mSpecularProbes[index]->SetPosition(pos);
-					mSpecularProbes[index]->SetShaderInfoForConvolution(mConvolutionVS, mConvolutionPS, mInputLayout, mLinearSamplerState);
+					mSpecularProbes[index]->SetShaderInfoForConvolution(mConvolutionPS, mLinearSamplerState);
 					for (int volumeIndex = 0; volumeIndex < NUM_PROBE_VOLUME_CASCADES; volumeIndex++)
 					{
 						if (probesY % VolumeProbeIndexSkips[volumeIndex] == 0 &&

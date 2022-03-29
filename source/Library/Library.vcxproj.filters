@@ -639,7 +639,7 @@
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="ER_RenderingObject.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Objects</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -806,6 +806,15 @@
       <Filter>Shaders\IBL</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\Voxelization.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\CompositeIllumination.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\Quad.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\EmptyColorResolve.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
