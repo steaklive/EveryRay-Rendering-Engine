@@ -15,7 +15,7 @@
 #include "ColorHelper.h"
 #include "MatrixHelper.h"
 #include "DirectionalLight.h"
-#include "QuadRenderer.h"
+#include "ER_QuadRenderer.h"
 #include "SamplerStates.h"
 
 namespace Rendering {
@@ -669,7 +669,7 @@ namespace Rendering {
 
 		//final resolve to main swapchain
 		{
-			QuadRenderer* quad = (QuadRenderer*)game.Services().GetService(QuadRenderer::TypeIdClass());
+			ER_QuadRenderer* quad = (ER_QuadRenderer*)game.Services().GetService(ER_QuadRenderer::TypeIdClass());
 			assert(quad);
 
 			auto context = game.Direct3DDeviceContext();

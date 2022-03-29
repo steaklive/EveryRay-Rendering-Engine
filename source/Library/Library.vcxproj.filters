@@ -225,9 +225,6 @@
     <ClInclude Include="RenderTarget.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="QuadRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ConstantBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -381,6 +378,9 @@
     <ClInclude Include="ER_RenderingObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_QuadRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -480,9 +480,6 @@
       <Filter>Source Files\Objects\RenderTarget</Filter>
     </ClCompile>
     <ClCompile Include="FullScreenRenderTarget.cpp">
-      <Filter>Source Files\Objects\RenderTarget</Filter>
-    </ClCompile>
-    <ClCompile Include="QuadRenderer.cpp">
       <Filter>Source Files\Objects\RenderTarget</Filter>
     </ClCompile>
     <ClCompile Include="RenderTarget.cpp">
@@ -640,6 +637,9 @@
     </ClCompile>
     <ClCompile Include="ER_RenderingObject.cpp">
       <Filter>Source Files\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_QuadRenderer.cpp">
+      <Filter>Source Files\Objects\RenderTarget</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

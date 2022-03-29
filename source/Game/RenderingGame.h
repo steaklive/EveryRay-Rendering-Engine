@@ -13,7 +13,7 @@ namespace Library
 	class FirstPersonCamera;
 	class RenderStateHelper;
 	class Editor;
-	class QuadRenderer;
+	class ER_QuadRenderer;
 }
 
 namespace Rendering
@@ -45,7 +45,7 @@ namespace Rendering
 		Mouse* mMouse;
 		FirstPersonCamera* mCamera;
 		Editor* mEditor;
-		QuadRenderer* mQuadRenderer;
+		ER_QuadRenderer* mQuadRenderer;
 
 		RenderStateHelper* mRenderStateHelper; //TODO move to Game.cpp
 

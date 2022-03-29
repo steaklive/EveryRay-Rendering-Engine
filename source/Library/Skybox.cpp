@@ -11,7 +11,7 @@
 #include "Utility.h"
 #include "ShaderCompiler.h"
 #include "FullScreenRenderTarget.h"
-#include "QuadRenderer.h"
+#include "ER_QuadRenderer.h"
 
 namespace Library
 {
@@ -169,7 +169,7 @@ namespace Library
 	{
 		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
 		assert(aSceneDepth);
-		auto quadRenderer = (QuadRenderer*)mGame.Services().GetService(QuadRenderer::TypeIdClass());
+		auto quadRenderer = (ER_QuadRenderer*)mGame.Services().GetService(ER_QuadRenderer::TypeIdClass());
 		assert(quadRenderer);
 
 		if (mDrawSun) {

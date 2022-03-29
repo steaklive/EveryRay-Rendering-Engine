@@ -38,7 +38,7 @@ namespace Library
 	class DirectionalLight;
 	class Skybox;
 	class GameTime;
-	class QuadRenderer;
+	class ER_QuadRenderer;
 	class Scene;
 	class RenderableAABB;
 	class ER_GPUBuffer;
@@ -111,7 +111,7 @@ namespace Library
 		bool IsProbeInCell(ER_LightProbe* aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds);
 		void UpdateProbesByType(Game& game, ER_ProbeType aType);
 		
-		QuadRenderer* mQuadRenderer = nullptr;
+		ER_QuadRenderer* mQuadRenderer = nullptr;
 		Camera& mMainCamera;
 		RenderableAABB* mDebugDiffuseProbeVolumeGizmo[NUM_PROBE_VOLUME_CASCADES] = { nullptr };
 		RenderableAABB* mDebugSpecularProbeVolumeGizmo[NUM_PROBE_VOLUME_CASCADES] = { nullptr };

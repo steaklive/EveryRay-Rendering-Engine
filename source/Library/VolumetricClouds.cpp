@@ -15,7 +15,7 @@
 #include "RasterizerStates.h"
 #include "ShaderCompiler.h"
 #include "Skybox.h"
-#include "QuadRenderer.h"
+#include "ER_QuadRenderer.h"
 
 namespace Library {
 	VolumetricClouds::VolumetricClouds(Game& game, Camera& camera, DirectionalLight& light, Skybox& skybox)
@@ -177,7 +177,7 @@ namespace Library {
 		mSkybox.DrawSun(nullptr, mSkyRT, mIlluminationResultDepthTarget);
 		context->OMSetRenderTargets(1, nullRTVs, nullptr);
 
-		QuadRenderer* quadRenderer = (QuadRenderer*)mGame->Services().GetService(QuadRenderer::TypeIdClass());
+		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mGame->Services().GetService(ER_QuadRenderer::TypeIdClass());
 		assert(quadRenderer);
 
 		//main pass

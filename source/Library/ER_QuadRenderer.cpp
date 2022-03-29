@@ -1,13 +1,13 @@
-#include "QuadRenderer.h"
+#include "ER_QuadRenderer.h"
 #include "GameException.h"
 #include "ShaderCompiler.h"
 #include "Game.h"
 #include "Utility.h"
 
 namespace Library {
-	RTTI_DEFINITIONS(QuadRenderer)
+	RTTI_DEFINITIONS(ER_QuadRenderer)
 
-	QuadRenderer::QuadRenderer(Game& game) : GameComponent(game)
+	ER_QuadRenderer::ER_QuadRenderer(Game& game) : GameComponent(game)
 	{
 		auto device = game.Direct3DDevice();
 		QuadVertex* vertices = new QuadVertex[4];
@@ -105,7 +105,7 @@ namespace Library {
 		}
 		blob->Release();
 	}
-	QuadRenderer::~QuadRenderer()
+	ER_QuadRenderer::~ER_QuadRenderer()
 	{
 		ReleaseObject(mVS);
 		ReleaseObject(mInputLayout);
@@ -113,7 +113,7 @@ namespace Library {
 		ReleaseObject(mIndexBuffer);
 	}
 
-	void QuadRenderer::Draw(ID3D11DeviceContext* context)
+	void ER_QuadRenderer::Draw(ID3D11DeviceContext* context)
 	{
 		unsigned int stride;
 		unsigned int offset;

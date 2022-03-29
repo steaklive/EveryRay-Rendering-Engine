@@ -14,7 +14,7 @@
 #include "RenderableAABB.h"
 #include "ER_GPUBuffer.h"
 #include "ER_LightProbe.h"
-#include "QuadRenderer.h"
+#include "ER_QuadRenderer.h"
 #include "ER_DebugLightProbeMaterial.h"
 #include "ER_MaterialsCallbacks.h"
 
@@ -44,7 +44,7 @@ namespace Library
 		if (FAILED(game.Direct3DDevice()->CreateSamplerState(&sam_desc, &mLinearSamplerState)))
 			throw GameException("Failed to create sampler mLinearSamplerState!");
 
-		mQuadRenderer = (QuadRenderer*)game.Services().GetService(QuadRenderer::TypeIdClass());
+		mQuadRenderer = (ER_QuadRenderer*)game.Services().GetService(ER_QuadRenderer::TypeIdClass());
 		assert(mQuadRenderer);
 		{
 			ID3DBlob* blob = nullptr;

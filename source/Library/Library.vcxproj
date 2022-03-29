@@ -248,7 +248,7 @@
     <ClInclude Include="PostProcessingStack.h" />
     <ClInclude Include="Projector.h" />
     <ClInclude Include="ProxyModel.h" />
-    <ClInclude Include="QuadRenderer.h" />
+    <ClInclude Include="ER_QuadRenderer.h" />
     <ClInclude Include="RasterizerStates.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="RenderableAABB.h" />
@@ -342,7 +342,7 @@
     <ClCompile Include="PostProcessingStack.cpp" />
     <ClCompile Include="Projector.cpp" />
     <ClCompile Include="ProxyModel.cpp" />
-    <ClCompile Include="QuadRenderer.cpp" />
+    <ClCompile Include="ER_QuadRenderer.cpp" />
     <ClCompile Include="RasterizerStates.cpp" />
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="RenderableAABB.cpp" />

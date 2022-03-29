@@ -23,7 +23,7 @@
 #include "..\Library\Editor.h"
 #include "..\Library\RasterizerStates.h"
 #include "..\Library\SamplerStates.h"
-#include "..\Library\QuadRenderer.h"
+#include "..\Library\ER_QuadRenderer.h"
 
 // include scenes
 
@@ -100,9 +100,9 @@ namespace Rendering
 		components.push_back(mEditor);
 		mServices.AddService(Editor::TypeIdClass(), mEditor);
 
-		mQuadRenderer = new QuadRenderer(*this);
+		mQuadRenderer = new ER_QuadRenderer(*this);
 		components.push_back(mQuadRenderer);
-		mServices.AddService(QuadRenderer::TypeIdClass(), mQuadRenderer);
+		mServices.AddService(ER_QuadRenderer::TypeIdClass(), mQuadRenderer);
 
 		mRenderStateHelper = new RenderStateHelper(*this);
 

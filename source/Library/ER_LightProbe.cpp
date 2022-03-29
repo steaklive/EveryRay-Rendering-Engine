@@ -10,7 +10,7 @@
 #include "MaterialHelper.h"
 #include "VectorHelper.h"
 #include "DirectionalLight.h"
-#include "QuadRenderer.h"
+#include "ER_QuadRenderer.h"
 #include "Material.h"
 #include "ER_RenderToLightProbeMaterial.h"
 #include "ER_MaterialsCallbacks.h"
@@ -88,7 +88,7 @@ namespace Library
 	}
 
 	void ER_LightProbe::Compute(Game& game, const GameTime& gameTime, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted,
-		DepthTarget** aDepthBuffers, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, QuadRenderer* quadRenderer, Skybox* skybox)
+		DepthTarget** aDepthBuffers, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, ER_QuadRenderer* quadRenderer, Skybox* skybox)
 	{
 		if (mIsProbeLoadedFromDisk)
 			return;
@@ -174,7 +174,7 @@ namespace Library
 			context->GenerateMips(aTextureNonConvoluted->GetSRV());
 	}
 
-	void ER_LightProbe::ConvoluteProbe(Game& game, QuadRenderer* quadRenderer, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted)
+	void ER_LightProbe::ConvoluteProbe(Game& game, ER_QuadRenderer* quadRenderer, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted)
 	{
 		int mipCount = -1;
 		if (mProbeType == SPECULAR_PROBE)

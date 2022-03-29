@@ -8,12 +8,12 @@ namespace Library {
 		XMFLOAT3 Position;
 		XMFLOAT2 TextureCoordinates;
 	};
-	class QuadRenderer : public GameComponent
+	class ER_QuadRenderer : public GameComponent
 	{
-		RTTI_DECLARATIONS(QuadRenderer, GameComponent)
+		RTTI_DECLARATIONS(ER_QuadRenderer, GameComponent)
 	public:
-		QuadRenderer(Game& game);
-		~QuadRenderer();
+		ER_QuadRenderer(Game& game);
+		~ER_QuadRenderer();
 
 		void Draw(ID3D11DeviceContext* context);
 
