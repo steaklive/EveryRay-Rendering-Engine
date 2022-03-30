@@ -269,8 +269,8 @@ namespace Library {
 		#pragma region DRAW_POSTPROCESSING
 		mPostProcessingStack->Begin(mIllumination->GetFinalIlluminationRT(), mGBuffer->GetDepth());
 		//mPostProcessingStack->UpdateSSRMaterial(mGBuffer->GetNormals()->GetSRV(), mGBuffer->GetDepth()->getSRV(), mGBuffer->GetExtraBuffer()->GetSRV(), (float)gameTime.TotalGameTime());
-		//mPostProcessingStack->DrawEffects(gameTime);
-		mPostProcessingStack->End(mIllumination->GetFinalIlluminationRT());
+		mPostProcessingStack->DrawEffects(gameTime, (ER_QuadRenderer*)game.Services().GetService(ER_QuadRenderer::TypeIdClass()));
+		mPostProcessingStack->End();
 #pragma endregion
 
 		mRenderStateHelper->SaveAll();

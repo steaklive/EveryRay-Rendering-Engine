@@ -291,9 +291,6 @@
     <ClInclude Include="TGATextureLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FXAAMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ScreenSpaceReflectionsMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -328,9 +325,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Illumination.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CompositeLightingMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ER_IlluminationProbeManager.h">
@@ -533,9 +527,6 @@
     <ClCompile Include="TGATextureLoader.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
-    <ClCompile Include="FXAAMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
     <ClCompile Include="ScreenSpaceReflectionsMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
@@ -577,9 +568,6 @@
     </ClCompile>
     <ClCompile Include="Foliage.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
-    </ClCompile>
-    <ClCompile Include="CompositeLightingMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="ER_IlluminationProbeManager.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
@@ -733,9 +721,6 @@
     <FxCompile Include="..\..\content\shaders\WaterSimulation\WaterSimulation.hlsl">
       <Filter>Shaders\WaterSimulation</Filter>
     </FxCompile>
-    <FxCompile Include="..\..\content\effects\FXAA.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
     <FxCompile Include="..\..\content\shaders\Tonemap\Tonemap.hlsl">
       <Filter>Shaders\Tonemap</Filter>
     </FxCompile>
@@ -774,9 +759,6 @@
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\GI\VoxelConeTracingMain.hlsl">
       <Filter>Shaders\GI</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\CompositeLighting.fx">
-      <Filter>Effects</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\UpsampleBlur.hlsl">
       <Filter>Shaders</Filter>
@@ -817,6 +799,9 @@
     <FxCompile Include="..\..\content\shaders\EmptyColorResolve.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="..\..\content\shaders\FXAA.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\content\effects\ShaderHelper.hlsli">
@@ -829,6 +814,9 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="..\..\content\shaders\Lighting.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\content\shaders\Common.hlsli">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

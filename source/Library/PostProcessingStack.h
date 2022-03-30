@@ -5,6 +5,7 @@
 #include "GameTime.h"
 #include "ER_GPUTexture.h"
 #include "DepthTarget.h"
+#include "ConstantBuffer.h"
 
 namespace Library
 {
@@ -12,6 +13,7 @@ namespace Library
 	class FullScreenRenderTarget;
 	class FullScreenQuad;
 	class DirectionalLight;
+	class ER_QuadRenderer;
 }
 
 namespace Rendering
@@ -25,6 +27,14 @@ namespace Rendering
 	class ScreenSpaceReflectionsMaterial;
 	class LightShaftsMaterial;
 	class CompositeLightingMaterial;
+
+	namespace PostEffectsCBuffers
+	{
+		struct FXAACB
+		{
+			XMFLOAT2 ScreenDimensions;
+		};
+	}
 
 	namespace EffectElements
 	{
@@ -288,7 +298,6 @@ namespace Rendering
 		void UpdateVignetteMaterial();
 		void UpdateColorGradingMaterial();
 		void UpdateMotionBlurMaterial();
-		void UpdateFXAAMaterial();
 		void UpdateSSRMaterial(ID3D11ShaderResourceView* normal, ID3D11ShaderResourceView* depth, ID3D11ShaderResourceView* extra, float time);
 		void UpdateFogMaterial();
 		void UpdateLightShaftsMaterial();
@@ -296,14 +305,13 @@ namespace Rendering
 		void Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR = true, bool pFog = false, bool pLightShafts = false);
 	
 		void Begin(ER_GPUTexture* aInitialRT, DepthTarget* aDepthTarget);
-		void End(ER_GPUTexture* aResolveRT);
+		void End(ER_GPUTexture* aResolveRT = nullptr);
 		void BeginRenderingToExtraRT(bool clear);
 		void EndRenderingToExtraRT();
 
-		void DrawEffects(const GameTime & gameTime);
+		void DrawEffects(const GameTime& gameTime, ER_QuadRenderer* quad);
 
 		void Update();
-		void DrawFullscreenQuad(ID3D11DeviceContext* pContext);
 
 		void SetDirectionalLight(const DirectionalLight* pLight) { light = pLight; }
 		void SetSunOcclusionSRV(ID3D11ShaderResourceView* srv) { mSunOcclusionSRV = srv; }
@@ -316,13 +324,9 @@ namespace Rendering
 		bool isWindowOpened = false;
 
 	private:
+		void PrepareDrawingFXAA(ER_GPUTexture* aInputTexture);
+	
 		void UpdateTonemapConstantBuffer(ID3D11DeviceContext * pD3DImmediateContext, ID3D11Buffer* buffer, int mipLevel0, int mipLevel1, unsigned int width, unsigned int height);
-		void ComputeLuminance(ID3D11DeviceContext* pContext, ID3D11ShaderResourceView* pInput, ID3D11RenderTargetView* pOutput);
-		void ComputeBrightPass(ID3D11DeviceContext* pContext, ID3D11ShaderResourceView* pInput, ID3D11RenderTargetView* pOutput);
-		void ComputeHorizontalBlur(ID3D11DeviceContext* pContext, ID3D11ShaderResourceView* pInput, ID3D11RenderTargetView* pOutput);
-		void ComputeVerticalBlur(ID3D11DeviceContext* pContext, ID3D11ShaderResourceView* pInput, ID3D11RenderTargetView* pOutput);
-		void ComputeToneMapWithBloom(ID3D11DeviceContext* pContext, ID3D11ShaderResourceView* pInput, ID3D11ShaderResourceView* pAVG, ID3D11ShaderResourceView* pBloom, ID3D11RenderTargetView* pOutput);
-		void PerformEmptyPass(ID3D11DeviceContext * pContext, ID3D11ShaderResourceView * pInput, ID3D11RenderTargetView * pOutput);
 		void ShowPostProcessingWindow();
 
 		Game& game;
@@ -332,7 +336,6 @@ namespace Rendering
 		EffectElements::VignetteEffect* mVignetteEffect;
 		EffectElements::ColorGradingEffect* mColorGradingEffect;
 		EffectElements::MotionBlurEffect* mMotionBlurEffect;
-		EffectElements::FXAAEffect* mFXAAEffect;
 		EffectElements::TonemapEffect* mTonemapEffect;
 		EffectElements::SSREffect* mSSREffect;
 		EffectElements::FogEffect* mFogEffect;
@@ -342,32 +345,33 @@ namespace Rendering
 		FullScreenRenderTarget* mVignetteRenderTarget;
 		FullScreenRenderTarget* mColorGradingRenderTarget;
 		FullScreenRenderTarget* mMotionBlurRenderTarget;
-		FullScreenRenderTarget* mFXAARenderTarget;
 		FullScreenRenderTarget* mTonemapRenderTarget;
 		FullScreenRenderTarget* mSSRRenderTarget;
 		FullScreenRenderTarget* mFogRenderTarget;
 		FullScreenRenderTarget* mLightShaftsRenderTarget;
 		FullScreenRenderTarget* mExtraRenderTarget;
 
-		ID3D11Buffer* mQuadVB;
-		ID3D11VertexShader* mFullScreenQuadVS;
-		ID3D11InputLayout* mFullScreenQuadLayout;
-
 		ID3D11ShaderResourceView* mSunOcclusionSRV = nullptr;
 
 		bool mVignetteLoaded = false;
 		bool mColorGradingLoaded = false;
 		bool mMotionBlurLoaded = false;
-		bool mFXAALoaded = false;
 		bool mSSRLoaded = false;
 		bool mFogLoaded = false;
 		bool mLightShaftsLoaded = false;
 		bool mCompositeLightingLoaded = false;
 
-		XMFLOAT2 mSunNDCPos;
-
+		ER_GPUTexture* mFXAART = nullptr;
+		ConstantBuffer<PostEffectsCBuffers::FXAACB> mFXAAConstantBuffer;
+		ID3D11PixelShader* mFXAAPS = nullptr;
+		bool mUseFXAA = true;
+		
 		ID3D11PixelShader* mFinalResolvePS = nullptr;
 
+		ER_GPUTexture* mFinalTargetBeforeResolve = nullptr; // just a pointer
+		ER_GPUTexture* mFirstTargetBeforePostProcessingPasses = nullptr; // just a pointer
+
+		XMFLOAT2 mSunNDCPos;
 		bool mShowDebug = false;
 	};
 }

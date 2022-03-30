@@ -4,6 +4,7 @@
 #include "..\Library\GameTime.h"
 #include "..\Library\GameException.h"
 #include "..\Library\Editor.h"
+#include "..\Library\ER_QuadRenderer.h"
 #include "..\Library\Camera.h"
 #include "..\Library\DirectionalLight.h"
 #include "..\Library\Keyboard.h"

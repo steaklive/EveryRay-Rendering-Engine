@@ -3,10 +3,8 @@
 #include "MotionBlurMaterial.h"
 #include "ColorGradingMaterial.h"
 #include "ScreenSpaceReflectionsMaterial.h"
-#include "FXAAMaterial.h"
 #include "FogMaterial.h"
 #include "LightShaftsMaterial.h"
-#include "CompositeLightingMaterial.h"
 #include "FullScreenQuad.h"
 #include "FullScreenRenderTarget.h"
 #include "ShaderCompiler.h"
@@ -26,7 +24,6 @@ namespace Rendering {
 		mVignetteEffect(nullptr),
 		mColorGradingEffect(nullptr),
 		mMotionBlurEffect(nullptr),
-		mFXAAEffect(nullptr),
 		mSSREffect(nullptr),
 		mFogEffect(nullptr),
 		mLightShaftsEffect(nullptr),
@@ -37,7 +34,6 @@ namespace Rendering {
 	PostProcessingStack::~PostProcessingStack()
 	{
 		DeleteObject(mVignetteEffect);
-		DeleteObject(mFXAAEffect);
 		DeleteObject(mColorGradingEffect);
 		DeleteObject(mMotionBlurEffect);
 		DeleteObject(mTonemapEffect);
@@ -48,17 +44,18 @@ namespace Rendering {
 		DeleteObject(mColorGradingRenderTarget);
 		DeleteObject(mMotionBlurRenderTarget);
 		DeleteObject(mVignetteRenderTarget);
-		DeleteObject(mFXAARenderTarget);
 		DeleteObject(mSSRRenderTarget);
 		DeleteObject(mFogRenderTarget);
 		DeleteObject(mLightShaftsRenderTarget);
 
 		DeleteObject(mExtraRenderTarget);
 
-		ReleaseObject(mQuadVB);
-		ReleaseObject(mFullScreenQuadVS);
-		ReleaseObject(mFullScreenQuadLayout);
+		DeleteObject(mFXAART);
+
 		ReleaseObject(mFinalResolvePS);
+		ReleaseObject(mFXAAPS);
+
+		mFXAAConstantBuffer.Release();
 	}
 
 	void PostProcessingStack::Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR, bool pFog, bool pLightShafts)
@@ -152,19 +149,6 @@ namespace Rendering {
 		mMotionBlurRenderTarget = new FullScreenRenderTarget(game);
 		mMotionBlurEffect->isActive = pMotionBlur;
 		mMotionBlurLoaded = true;
-
-		Effect* fxaaFX = new Effect(game);
-		fxaaFX->CompileFromFile(Utility::GetFilePath(L"content\\effects\\FXAA.fx"));
-		mFXAAEffect = new EffectElements::FXAAEffect();
-		mFXAAEffect->Material = new FXAAMaterial();
-		mFXAAEffect->Material->Initialize(fxaaFX);
-		mFXAAEffect->Quad = new FullScreenQuad(game, *mFXAAEffect->Material);
-		mFXAAEffect->Quad->Initialize();
-		mFXAAEffect->Quad->SetActiveTechnique("fxaa_filter", "p0");
-		mFXAAEffect->Quad->SetCustomUpdateMaterial(std::bind(&PostProcessingStack::UpdateFXAAMaterial, this));
-		mFXAARenderTarget = new FullScreenRenderTarget(game);
-		mFXAAEffect->isActive = pFXAA;
-		mFXAALoaded = true;
 
 		Effect* fogFX = new Effect(game);
 		fogFX->CompileFromFile(Utility::GetFilePath(L"content\\effects\\Fog.fx"));
@@ -276,45 +260,24 @@ namespace Rendering {
 		pShaderBlob->Release();
 
 		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\EmptyColorResolve.hlsl").c_str(), "PSMain", "ps_5_0", &pShaderBlob)))
-			throw GameException("Failed to load EmptyPass pass from shader: EmptyColorResolve.hlsl!");
+			throw GameException("Failed to load PSMain pass from shader: EmptyColorResolve.hlsl!");
 		if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mFinalResolvePS)))
-			throw GameException("Failed to create EmptyPass shader from EmptyColorResolve.hlsl!");
+			throw GameException("Failed to create PSMain shader from EmptyColorResolve.hlsl!");
 		pShaderBlob->Release();
 
-		// Quad temp
-		ID3DBlob* pBlob = NULL;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Tonemap\\FullScreenQuad.hlsl").c_str(), "VSMain", "vs_4_0", &pBlob)))
-			throw GameException("Failed to load VSMain pass from shader: FullScreenQuad.hlsl!");
-		if (FAILED(game.Direct3DDevice()->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), NULL, &mFullScreenQuadVS)))
-			throw GameException("Failed to create AvgLuminance shader from PSPostProcess.hlsl!");
+		//FXAA
+		{
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\FXAA.hlsl").c_str(), "PSMain", "ps_5_0", &pShaderBlob)))
+				throw GameException("Failed to load PSMain pass from shader: FXAA.hlsl!");
+			if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mFXAAPS)))
+				throw GameException("Failed to create PSMain shader from FXAA.hlsl!");
+			pShaderBlob->Release();
 
-		D3D11_INPUT_ELEMENT_DESC InputLayout[] =
-		{ { "SV_POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		};
-		game.Direct3DDevice()->CreateInputLayout(InputLayout, ARRAYSIZE(InputLayout),
-			pBlob->GetBufferPointer(), pBlob->GetBufferSize(),
-			&mFullScreenQuadLayout);
-		pBlob->Release();
+			mFXAAConstantBuffer.Initialize(game.Direct3DDevice());
+			mFXAART = new ER_GPUTexture(game.Direct3DDevice(), static_cast<UINT>(game.ScreenWidth()), static_cast<UINT>(game.ScreenHeight()), 1u,
+				DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+		}
 
-		float data[] =
-		{ -1.0f,  1.0f, 0.0f,
-			 1.0f,  1.0f, 0.0f,
-			-1.0f, -1.0f, 0.0f,
-			 1.0f, -1.0f, 0.0f,
-		};
-
-		D3D11_BUFFER_DESC BufferDesc2;
-		ZeroMemory(&BufferDesc2, sizeof(BufferDesc2));
-		BufferDesc2.ByteWidth = sizeof(float) * 3 * 4;
-		BufferDesc2.Usage = D3D11_USAGE_DEFAULT;
-		BufferDesc2.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		BufferDesc2.CPUAccessFlags = 0;
-
-		D3D11_SUBRESOURCE_DATA subresourceData2;
-		subresourceData2.pSysMem = data;
-		subresourceData2.SysMemPitch = 0;
-		subresourceData2.SysMemSlicePitch = 0;
-		game.Direct3DDevice()->CreateBuffer(&BufferDesc2, &subresourceData2, &mQuadVB);
 	}
 
 	// Only updates Effects
@@ -346,14 +309,7 @@ namespace Rendering {
 			mMotionBlurEffect->WVP = XMMatrixIdentity() * camera.ViewMatrix() * camera.ProjectionMatrix();
 		}
 
-		if (mFXAALoaded)
-		{
-			if (mFXAAEffect->isActive)
-				mFXAAEffect->Quad->SetActiveTechnique("fxaa_filter", "p0");
-			else
-				mFXAAEffect->Quad->SetActiveTechnique("no_filter", "p0");
-		}		
-		
+	
 		if (mSSRLoaded)
 		{
 			if (mSSREffect->isActive)
@@ -483,15 +439,6 @@ namespace Rendering {
 		mLightShaftsEffect->Material->Intensity() << mLightShaftsEffect->intensity;
 	}
 
-	void PostProcessingStack::UpdateFXAAMaterial()
-	{
-		mFXAAEffect->Material->ColorTexture() << mFXAAEffect->OutputTexture;
-
-		mFXAAEffect->Material->Width() << game.ScreenWidth();
-		mFXAAEffect->Material->Height() << game.ScreenHeight();
-
-	}
-
 	void PostProcessingStack::ShowPostProcessingWindow()
 	{
 		if (!mShowDebug)
@@ -579,12 +526,10 @@ namespace Rendering {
 			}
 		}	
 		
-		if (mFXAALoaded)
+
+		if (ImGui::CollapsingHeader("FXAA"))
 		{
-			if (ImGui::CollapsingHeader("FXAA"))
-			{
-				ImGui::Checkbox("FXAA - On", &mFXAAEffect->isActive);
-			}
+			ImGui::Checkbox("FXAA - On", &mUseFXAA);
 		}
 
 		ImGui::End();
@@ -594,72 +539,11 @@ namespace Rendering {
 	{
 		return mExtraRenderTarget->OutputColorTexture();
 	}
-
-	void PostProcessingStack::ComputeLuminance(ID3D11DeviceContext * pContext, ID3D11ShaderResourceView * pInput, ID3D11RenderTargetView* pOutput)
-	{
-		pContext->OMSetRenderTargets(1, &pOutput, NULL);
-		pContext->PSSetShaderResources(0, 1, &pInput);
-		pContext->PSSetShader(mTonemapEffect->CalcLumPS, NULL, NULL);
-		DrawFullscreenQuad(pContext);
-
-		pContext->OMSetRenderTargets(1, mTonemapEffect->AvgLuminanceResource->GetRTVs(), NULL);
-		ID3D11ShaderResourceView* srv = mTonemapEffect->LuminanceResource->GetSRV();
-		pContext->GenerateMips(srv);
-		pContext->PSSetShaderResources(0, 1, &srv);
-		pContext->PSSetShader(mTonemapEffect->AvgLumPS, NULL, NULL);
-		DrawFullscreenQuad(pContext);
-	}
-
-	void PostProcessingStack::ComputeBrightPass(ID3D11DeviceContext * pContext, ID3D11ShaderResourceView * pInput, ID3D11RenderTargetView * pOutput)
-	{
-		ID3D11RenderTargetView* pRT[] = { pOutput };
-		pContext->PSSetShaderResources(0, 1, &pInput);
-		pContext->PSSetShader(mTonemapEffect->BrightPS, NULL, NULL);
-		pContext->OMSetRenderTargets(1, pRT, NULL);
-		DrawFullscreenQuad(pContext);
-	}
-
-	void PostProcessingStack::ComputeHorizontalBlur(ID3D11DeviceContext * pContext, ID3D11ShaderResourceView * pInput, ID3D11RenderTargetView * pOutput)
-	{
-		pContext->OMSetRenderTargets(1, &pOutput, NULL);
-		ID3D11ShaderResourceView* pSR[] = { pInput };
-		pContext->PSSetShaderResources(0, 1, pSR);
-		pContext->PSSetShader(mTonemapEffect->BlurHPS, NULL, NULL);
-		DrawFullscreenQuad(pContext);
-	}
-
-	void PostProcessingStack::ComputeVerticalBlur(ID3D11DeviceContext * pContext, ID3D11ShaderResourceView * pInput, ID3D11RenderTargetView * pOutput)
-	{
-		ID3D11ShaderResourceView* pSR[] = { NULL, NULL };
-		pContext->PSSetShaderResources(0, 2, pSR);
-		pContext->OMSetRenderTargets(1, &pOutput, NULL);
-		pSR[0] = pInput;
-		pContext->PSSetShaderResources(0, 1, pSR);
-		pContext->PSSetShader(mTonemapEffect->BlurVPS, NULL, NULL);
-		DrawFullscreenQuad(pContext);
-	}
-
-	void PostProcessingStack::ComputeToneMapWithBloom(ID3D11DeviceContext * pContext, ID3D11ShaderResourceView * pInput, ID3D11ShaderResourceView * pAVG, ID3D11ShaderResourceView * pBloom, ID3D11RenderTargetView * pOutput)
-	{
-		pContext->OMSetRenderTargets(1, &pOutput, NULL);
-		ID3D11ShaderResourceView* pSR[] = { pInput, pBloom, pAVG };
-		pContext->PSSetShaderResources(0, 3, pSR);
-		pContext->PSSetShader(mTonemapEffect->ToneMapWithBloomPS, NULL, NULL);
-		DrawFullscreenQuad(pContext);
-	}
-
-	void PostProcessingStack::PerformEmptyPass(ID3D11DeviceContext* pContext, ID3D11ShaderResourceView * pInput, ID3D11RenderTargetView * pOutput)
-	{
-		pContext->OMSetRenderTargets(1, &pOutput, NULL);
-		ID3D11ShaderResourceView* pSR[] = { pInput };
-		pContext->PSSetShaderResources(0, 1, pSR);
-		pContext->PSSetShader(mTonemapEffect->EmptyPassPS, NULL, NULL);
-		DrawFullscreenQuad(pContext);
-	}
 	
 	void PostProcessingStack::Begin(ER_GPUTexture* aInitialRT, DepthTarget* aDepthTarget)
 	{
 		assert(aInitialRT && aDepthTarget);
+		mFirstTargetBeforePostProcessingPasses = aInitialRT;
 		game.Direct3DDeviceContext()->OMSetRenderTargets(1, aInitialRT->GetRTVs(), aDepthTarget->getDSV());
 	}
 
@@ -671,10 +555,11 @@ namespace Rendering {
 		{
 			ER_QuadRenderer* quad = (ER_QuadRenderer*)game.Services().GetService(ER_QuadRenderer::TypeIdClass());
 			assert(quad);
+			assert(mFinalTargetBeforeResolve);
 
 			auto context = game.Direct3DDeviceContext();
 
-			ID3D11ShaderResourceView* SR[1] = { aResolveRT->GetSRV() };	
+			ID3D11ShaderResourceView* SR[1] = { aResolveRT ? aResolveRT->GetSRV() : mFinalTargetBeforeResolve->GetSRV() };
 			context->PSSetShaderResources(0, 1, SR);
 			ID3D11SamplerState* SS[1] = { SamplerStates::TrilinearWrap };
 			context->PSSetSamplers(0, 1, SS);
@@ -698,10 +583,33 @@ namespace Rendering {
 		mExtraRenderTarget->End();
 	}
 
-	void PostProcessingStack::DrawEffects(const GameTime& gameTime)
+	void PostProcessingStack::PrepareDrawingFXAA(ER_GPUTexture* aInputTexture)
 	{
+		assert(aInputTexture);
+		auto context = game.Direct3DDeviceContext();
+
+		mFXAAConstantBuffer.Data.ScreenDimensions = XMFLOAT2(static_cast<float>(game.ScreenWidth()),static_cast<float>(game.ScreenHeight()));
+		mFXAAConstantBuffer.ApplyChanges(context);
+		ID3D11Buffer* CBs[1] = { mFXAAConstantBuffer.Buffer() };
+		context->PSSetConstantBuffers(0, 1, CBs);
+
+		context->PSSetShader(mFXAAPS, NULL, NULL);
+
+		ID3D11SamplerState* SS[1] = { SamplerStates::TrilinearWrap };
+		context->PSSetSamplers(0, 1, SS);
+
+		ID3D11ShaderResourceView* SRs[1] = { aInputTexture->GetSRV() };
+		context->PSSetShaderResources(0, 1, SRs);
+	}
+
+	void PostProcessingStack::DrawEffects(const GameTime& gameTime, ER_QuadRenderer* quad)
+	{
+		assert(quad);
 		ID3D11DeviceContext* context = game.Direct3DDeviceContext();
 
+		mFinalTargetBeforeResolve = mFirstTargetBeforePostProcessingPasses;
+
+		/*
 		// LIGHT SHAFTS
 		mLightShaftsRenderTarget->Begin();
 		//mLightShaftsEffect->OutputTexture = mMainRenderTarget->GetSRV();
@@ -887,26 +795,18 @@ namespace Rendering {
 		mVignetteEffect->OutputTexture = mColorGradingRenderTarget->OutputColorTexture();
 		mVignetteEffect->Quad->Draw(gameTime);
 		mVignetteRenderTarget->End();
+		*/
 
 		// FXAA
-		/* uncomment if there is an effect after this one */
-		//mFXAARenderTarget->Begin();
-		//game.Direct3DDeviceContext()->ClearRenderTargetView(mFXAARenderTarget->RenderTargetView(), ClearBackgroundColor);
-		//game.Direct3DDeviceContext()->ClearDepthStencilView(mFXAARenderTarget->DepthStencilView(), D3D11_CLEAR_DEPTH, 1.0, 0);
-		mFXAAEffect->OutputTexture = mVignetteRenderTarget->OutputColorTexture();
-		mFXAAEffect->Quad->Draw(gameTime);
-		//mFXAARenderTarget->End();
-	}
+		if (mUseFXAA)
+		{
+			game.SetCustomRenderTarget(mFXAART, nullptr);
+			PrepareDrawingFXAA(mFirstTargetBeforePostProcessingPasses); //TODO temp
+			quad->Draw(context);
+			game.UnsetCustomRenderTarget();
 
-	void PostProcessingStack::DrawFullscreenQuad(ID3D11DeviceContext* pContext)
-	{
-		pContext->VSSetShader(mFullScreenQuadVS, NULL, 0);
-		pContext->IASetInputLayout(mFullScreenQuadLayout);
-		ID3D11Buffer* pVBs[] = { mQuadVB };
-		UINT strides[] = { sizeof(float) * 3 };
-		UINT offsets[] = { 0 };
-		pContext->IASetVertexBuffers(0, 1, pVBs, strides, offsets);
-		pContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-		pContext->Draw(4, 0);
+			//[WARNING] Set from last post processing effect (now: FXAA)
+			mFinalTargetBeforeResolve = mFXAART;
+		}
 	}
 }

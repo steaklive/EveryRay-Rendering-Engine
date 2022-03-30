@@ -35,10 +35,10 @@ namespace Library {
 		ReleaseObject(mMainCS);
 		ReleaseObject(mCompositePS);
 		ReleaseObject(mBlurPS);
-		DeleteObject(mCustomMainRenderTargetCS);
+		DeleteObject(mMainRT);
 		DeleteObject(mSkyRT);
 		DeleteObject(mSkyAndSunRT);
-		DeleteObject(mBlurRenderTarget);
+		DeleteObject(mBlurRT);
 		mFrameConstantBuffer.Release();
 		mCloudsConstantBuffer.Release();
 	}
@@ -103,8 +103,9 @@ namespace Library {
 		assert(aIlluminationDepth);
 		mIlluminationResultDepthTarget = aIlluminationDepth;
 
-		mBlurRenderTarget = new FullScreenRenderTarget(*mGame);
-		mCustomMainRenderTargetCS = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
+		mMainRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
+		
+		mBlurRT = new FullScreenRenderTarget(*mGame);
 		mSkyRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 		mSkyAndSunRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 	}
@@ -196,7 +197,7 @@ namespace Library {
 
 		// main pass
 		{
-			ID3D11UnorderedAccessView* UAV[1] = { mCustomMainRenderTargetCS->GetUAV() };
+			ID3D11UnorderedAccessView* UAV[1] = { mMainRT->GetUAV() };
 
 			context->CSSetShaderResources(0, 5, SR);
 			context->CSSetConstantBuffers(0, 2, CBs);
@@ -217,21 +218,21 @@ namespace Library {
 
 		//blur pass
 		{
-			mBlurRenderTarget->Begin();
+			mBlurRT->Begin();
 			ID3D11ShaderResourceView* SR_Blur[2] = {
-				mCustomMainRenderTargetCS->GetSRV(),
+				mMainRT->GetSRV(),
 				mIlluminationResultDepthTarget->getSRV(),
 			};
 			context->PSSetShaderResources(0, 2, SR_Blur);
 			context->PSSetShader(mBlurPS, NULL, NULL);
 			quadRenderer->Draw(context);
-			mBlurRenderTarget->End();
+			mBlurRT->End();
 		}
 
 		//composite pass
 		{
 			context->OMSetRenderTargets(1, mIlluminationResultRT->GetRTVs(), nullptr);
-			ID3D11ShaderResourceView* SR[2] = { mIlluminationResultDepthTarget->getSRV(), mBlurRenderTarget->OutputColorTexture() };
+			ID3D11ShaderResourceView* SR[2] = { mIlluminationResultDepthTarget->getSRV(), mBlurRT->OutputColorTexture() };
 			context->PSSetShaderResources(0, 2, SR);
 			context->PSSetShader(mCompositePS, NULL, NULL);
 			quadRenderer->Draw(context);
