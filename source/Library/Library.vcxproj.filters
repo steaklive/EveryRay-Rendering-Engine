@@ -252,13 +252,7 @@
     <ClInclude Include="PostProcessingStack.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VignetteMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ColorGradingMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MotionBlurMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RenderableOBB.h">
@@ -506,13 +500,7 @@
     <ClCompile Include="DepthTarget.cpp">
       <Filter>Source Files\Objects\RenderTarget</Filter>
     </ClCompile>
-    <ClCompile Include="VignetteMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
     <ClCompile Include="ColorGradingMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="MotionBlurMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="OctreeStructure.cpp">
@@ -634,9 +622,6 @@
     <FxCompile Include="..\..\content\effects\ColorGrading.fx">
       <Filter>Effects</Filter>
     </FxCompile>
-    <FxCompile Include="..\..\content\effects\MotionBlur.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
     <FxCompile Include="..\..\content\effects\SkinShadingColor.fx">
       <Filter>Effects</Filter>
     </FxCompile>
@@ -647,9 +632,6 @@
       <Filter>Effects</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\effects\Skybox.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\Vignette.fx">
       <Filter>Effects</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\PBR\RadianceMapPS.hlsl">
@@ -800,6 +782,9 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\FXAA.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\Vignette.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

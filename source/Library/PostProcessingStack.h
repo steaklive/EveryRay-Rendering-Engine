@@ -21,7 +21,6 @@ namespace Rendering
 	class ColorFilterMaterial;
 	class VignetteMaterial;
 	class ColorGradingMaterial;
-	class MotionBlurMaterial;
 	class FXAAMaterial;
 	class FogMaterial;
 	class ScreenSpaceReflectionsMaterial;
@@ -33,6 +32,10 @@ namespace Rendering
 		struct FXAACB
 		{
 			XMFLOAT2 ScreenDimensions;
+		};	
+		struct VignetteCB
+		{
+			XMFLOAT2 RadiusSoftness;
 		};
 	}
 
@@ -102,49 +105,6 @@ namespace Rendering
 			bool isActive = true;
 		};
 		
-		struct VignetteEffect
-		{
-			VignetteEffect() :
-				Material(nullptr), Quad(nullptr), OutputTexture(nullptr)
-			{}
-
-			~VignetteEffect()
-			{
-				DeleteObject(Material);
-				DeleteObject(Quad);
-				ReleaseObject(OutputTexture);
-			}
-
-			VignetteMaterial* Material;
-			FullScreenQuad* Quad;
-			ID3D11ShaderResourceView* OutputTexture;
-
-			bool isActive = false;
-
-			float radius = 0.75f;
-			float softness = 0.5f;
-		};
-
-		struct FXAAEffect
-		{
-			FXAAEffect() :
-				Material(nullptr), Quad(nullptr), OutputTexture(nullptr)
-			{}
-
-			~FXAAEffect()
-			{
-				DeleteObject(Material);
-				DeleteObject(Quad);
-				ReleaseObject(OutputTexture);
-			}
-
-			FXAAMaterial* Material;
-			FullScreenQuad* Quad;
-			ID3D11ShaderResourceView* OutputTexture;
-
-			bool isActive = false;
-		};
-
 		struct ColorGradingEffect
 		{
 			ColorGradingEffect() :
@@ -254,37 +214,6 @@ namespace Rendering
 			float stepSize = 0.741f;
 			float maxThickness = 0.00021f;
 		};
-
-		struct MotionBlurEffect
-		{
-			MotionBlurEffect() :
-				Material(nullptr), Quad(nullptr), OutputTexture(nullptr),
-				DepthMap(nullptr)
-			{}
-
-			~MotionBlurEffect()
-			{
-				DeleteObject(Material);
-				DeleteObject(Quad);
-				ReleaseObject(DepthMap);
-				ReleaseObject(OutputTexture);
-
-			}
-
-			MotionBlurMaterial* Material;
-			FullScreenQuad* Quad;
-			ID3D11ShaderResourceView* OutputTexture;
-			ID3D11ShaderResourceView* DepthMap;
-
-			XMMATRIX WVP = XMMatrixIdentity();
-			XMMATRIX preWVP = XMMatrixIdentity();
-			XMMATRIX WIT = XMMatrixTranspose(XMMatrixInverse(nullptr, XMMatrixIdentity()));
-
-			bool isActive = false;
-
-			float amount = 17.0f;
-		};
-
 	}
 
 	class PostProcessingStack
@@ -295,9 +224,7 @@ namespace Rendering
 		PostProcessingStack(Game& pGame, Camera& pCamera);
 		~PostProcessingStack();
 
-		void UpdateVignetteMaterial();
 		void UpdateColorGradingMaterial();
-		void UpdateMotionBlurMaterial();
 		void UpdateSSRMaterial(ID3D11ShaderResourceView* normal, ID3D11ShaderResourceView* depth, ID3D11ShaderResourceView* extra, float time);
 		void UpdateFogMaterial();
 		void UpdateLightShaftsMaterial();
@@ -324,6 +251,7 @@ namespace Rendering
 		bool isWindowOpened = false;
 
 	private:
+		void PrepareDrawingVignette(ER_GPUTexture* aInputTexture);
 		void PrepareDrawingFXAA(ER_GPUTexture* aInputTexture);
 	
 		void UpdateTonemapConstantBuffer(ID3D11DeviceContext * pD3DImmediateContext, ID3D11Buffer* buffer, int mipLevel0, int mipLevel1, unsigned int width, unsigned int height);
@@ -333,18 +261,14 @@ namespace Rendering
 		Camera& camera;
 		const DirectionalLight* light;
 
-		EffectElements::VignetteEffect* mVignetteEffect;
 		EffectElements::ColorGradingEffect* mColorGradingEffect;
-		EffectElements::MotionBlurEffect* mMotionBlurEffect;
 		EffectElements::TonemapEffect* mTonemapEffect;
 		EffectElements::SSREffect* mSSREffect;
 		EffectElements::FogEffect* mFogEffect;
 		EffectElements::LightShaftsEffect* mLightShaftsEffect;
 		
 		//TODO change to custom render targets
-		FullScreenRenderTarget* mVignetteRenderTarget;
 		FullScreenRenderTarget* mColorGradingRenderTarget;
-		FullScreenRenderTarget* mMotionBlurRenderTarget;
 		FullScreenRenderTarget* mTonemapRenderTarget;
 		FullScreenRenderTarget* mSSRRenderTarget;
 		FullScreenRenderTarget* mFogRenderTarget;
@@ -355,7 +279,6 @@ namespace Rendering
 
 		bool mVignetteLoaded = false;
 		bool mColorGradingLoaded = false;
-		bool mMotionBlurLoaded = false;
 		bool mSSRLoaded = false;
 		bool mFogLoaded = false;
 		bool mLightShaftsLoaded = false;
@@ -365,7 +288,14 @@ namespace Rendering
 		ConstantBuffer<PostEffectsCBuffers::FXAACB> mFXAAConstantBuffer;
 		ID3D11PixelShader* mFXAAPS = nullptr;
 		bool mUseFXAA = true;
-		
+
+		ER_GPUTexture* mVignetteRT = nullptr;
+		ConstantBuffer<PostEffectsCBuffers::VignetteCB> mVignetteConstantBuffer;
+		ID3D11PixelShader* mVignettePS = nullptr;
+		float mVignetteRadius = 0.75f;
+		float mVignetteSoftness = 0.5f;
+		bool mUseVignette = true;
+
 		ID3D11PixelShader* mFinalResolvePS = nullptr;
 
 		ER_GPUTexture* mFinalTargetBeforeResolve = nullptr; // just a pointer

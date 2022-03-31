@@ -1,6 +1,4 @@
 #include "PostProcessingStack.h"
-#include "VignetteMaterial.h"
-#include "MotionBlurMaterial.h"
 #include "ColorGradingMaterial.h"
 #include "ScreenSpaceReflectionsMaterial.h"
 #include "FogMaterial.h"
@@ -21,9 +19,7 @@ namespace Rendering {
 
 	PostProcessingStack::PostProcessingStack(Game& pGame, Camera& pCamera)
 		:
-		mVignetteEffect(nullptr),
 		mColorGradingEffect(nullptr),
-		mMotionBlurEffect(nullptr),
 		mSSREffect(nullptr),
 		mFogEffect(nullptr),
 		mLightShaftsEffect(nullptr),
@@ -33,26 +29,24 @@ namespace Rendering {
 
 	PostProcessingStack::~PostProcessingStack()
 	{
-		DeleteObject(mVignetteEffect);
 		DeleteObject(mColorGradingEffect);
-		DeleteObject(mMotionBlurEffect);
 		DeleteObject(mTonemapEffect);
 		DeleteObject(mSSREffect);
 		DeleteObject(mFogEffect);
 		DeleteObject(mLightShaftsEffect);
 
 		DeleteObject(mColorGradingRenderTarget);
-		DeleteObject(mMotionBlurRenderTarget);
-		DeleteObject(mVignetteRenderTarget);
 		DeleteObject(mSSRRenderTarget);
 		DeleteObject(mFogRenderTarget);
 		DeleteObject(mLightShaftsRenderTarget);
 
 		DeleteObject(mExtraRenderTarget);
 
+		DeleteObject(mVignetteRT);
 		DeleteObject(mFXAART);
 
 		ReleaseObject(mFinalResolvePS);
+		ReleaseObject(mVignettePS);
 		ReleaseObject(mFXAAPS);
 
 		mFXAAConstantBuffer.Release();
@@ -75,20 +69,6 @@ namespace Rendering {
 		mLightShaftsRenderTarget = new FullScreenRenderTarget(game);
 		mLightShaftsEffect->OutputTexture = mLightShaftsRenderTarget->OutputColorTexture();
 		mLightShaftsEffect->isActive = pLightShafts;
-
-		Effect* vignetteEffectFX = new Effect(game);
-		vignetteEffectFX->CompileFromFile(Utility::GetFilePath(L"content\\effects\\Vignette.fx"));
-		mVignetteEffect = new EffectElements::VignetteEffect();
-		mVignetteEffect->Material = new VignetteMaterial();
-		mVignetteEffect->Material->Initialize(vignetteEffectFX);
-		mVignetteEffect->Quad = new FullScreenQuad(game, *mVignetteEffect->Material);
-		mVignetteEffect->Quad->Initialize();
-		mVignetteEffect->Quad->SetActiveTechnique("vignette_filter", "p0");
-		mVignetteEffect->Quad->SetCustomUpdateMaterial(std::bind(&PostProcessingStack::UpdateVignetteMaterial, this));
-		mVignetteLoaded = true;
-		mVignetteRenderTarget = new FullScreenRenderTarget(game);
-		mVignetteEffect->OutputTexture = mVignetteRenderTarget->OutputColorTexture();
-		mVignetteEffect->isActive = pVignette;
 
 		Effect* ssrEffectFX = new Effect(game);
 		ssrEffectFX->CompileFromFile(Utility::GetFilePath(L"content\\effects\\SSR.fx"));
@@ -136,19 +116,6 @@ namespace Rendering {
 			throw GameException("Failed to load LUT3 texture.");
 		}
 		mColorGradingLoaded = true;
-
-		Effect* motionblurEffectFX = new Effect(game);
-		motionblurEffectFX->CompileFromFile(Utility::GetFilePath(L"content\\effects\\MotionBlur.fx"));
-		mMotionBlurEffect = new EffectElements::MotionBlurEffect();
-		mMotionBlurEffect->Material = new MotionBlurMaterial();
-		mMotionBlurEffect->Material->Initialize(motionblurEffectFX);
-		mMotionBlurEffect->Quad = new FullScreenQuad(game, *mMotionBlurEffect->Material);
-		mMotionBlurEffect->Quad->Initialize();
-		mMotionBlurEffect->Quad->SetActiveTechnique("blur_filter", "p0");
-		mMotionBlurEffect->Quad->SetCustomUpdateMaterial(std::bind(&PostProcessingStack::UpdateMotionBlurMaterial, this));
-		mMotionBlurRenderTarget = new FullScreenRenderTarget(game);
-		mMotionBlurEffect->isActive = pMotionBlur;
-		mMotionBlurLoaded = true;
 
 		Effect* fogFX = new Effect(game);
 		fogFX->CompileFromFile(Utility::GetFilePath(L"content\\effects\\Fog.fx"));
@@ -265,6 +232,19 @@ namespace Rendering {
 			throw GameException("Failed to create PSMain shader from EmptyColorResolve.hlsl!");
 		pShaderBlob->Release();
 
+		//Vignette
+		{
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Vignette.hlsl").c_str(), "PSMain", "ps_5_0", &pShaderBlob)))
+				throw GameException("Failed to load PSMain pass from shader: Vignette.hlsl!");
+			if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mVignettePS)))
+				throw GameException("Failed to create PSMain shader from Vignette.hlsl!");
+			pShaderBlob->Release();
+
+			mVignetteConstantBuffer.Initialize(game.Direct3DDevice());
+			mVignetteRT = new ER_GPUTexture(game.Direct3DDevice(), static_cast<UINT>(game.ScreenWidth()), static_cast<UINT>(game.ScreenHeight()), 1u,
+				DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+		}	
+		
 		//FXAA
 		{
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\FXAA.hlsl").c_str(), "PSMain", "ps_5_0", &pShaderBlob)))
@@ -283,14 +263,6 @@ namespace Rendering {
 	// Only updates Effects
 	void PostProcessingStack::Update()
 	{
-		if (mVignetteLoaded)
-		{
-			if (mVignetteEffect->isActive) 
-				mVignetteEffect->Quad->SetActiveTechnique("vignette_filter", "p0");
-			else
-				mVignetteEffect->Quad->SetActiveTechnique("no_filter", "p0");
-		}
-
 		if (mColorGradingLoaded) 
 		{
 			if (mColorGradingEffect->isActive) 
@@ -298,17 +270,6 @@ namespace Rendering {
 			else 
 				mColorGradingEffect->Quad->SetActiveTechnique("no_filter", "p0");
 		}
-
-		if (mMotionBlurLoaded)
-		{
-			if (mMotionBlurEffect->isActive)
-				mMotionBlurEffect->Quad->SetActiveTechnique("blur_filter", "p0");
-			else
-				mMotionBlurEffect->Quad->SetActiveTechnique("no_filter", "p0");
-			mMotionBlurEffect->preWVP = mMotionBlurEffect->WVP;
-			mMotionBlurEffect->WVP = XMMatrixIdentity() * camera.ViewMatrix() * camera.ProjectionMatrix();
-		}
-
 	
 		if (mSSRLoaded)
 		{
@@ -351,13 +312,6 @@ namespace Rendering {
 		pD3DImmediateContext->PSSetConstantBuffers(0, 1, &buffer);
 	}
 
-	void PostProcessingStack::UpdateVignetteMaterial()
-	{
-		mVignetteEffect->Material->ColorTexture() << mVignetteEffect->OutputTexture;
-		mVignetteEffect->Material->radius() << mVignetteEffect->radius;
-		mVignetteEffect->Material->softness() << mVignetteEffect->softness;
-	}
-
 	void PostProcessingStack::UpdateColorGradingMaterial()
 	{
 
@@ -379,20 +333,6 @@ namespace Rendering {
 		}
 
 	}
-
-	void PostProcessingStack::UpdateMotionBlurMaterial()
-	{
-		mMotionBlurEffect->Material->ColorTexture() << mMotionBlurEffect->OutputTexture;
-		mMotionBlurEffect->Material->DepthTexture() << mMotionBlurEffect->DepthMap;
-
-		mMotionBlurEffect->Material->WorldViewProjection()		 << mMotionBlurEffect->WVP;
-		mMotionBlurEffect->Material->InvWorldViewProjection()	 << XMMatrixInverse(nullptr, mMotionBlurEffect->WVP);
-		mMotionBlurEffect->Material->preWorldViewProjection()	 << mMotionBlurEffect->preWVP;
-		mMotionBlurEffect->Material->preInvWorldViewProjection() << XMMatrixInverse(nullptr, mMotionBlurEffect->preWVP);
-		mMotionBlurEffect->Material->WorldInverseTranspose()	 << mMotionBlurEffect->WIT;
-		mMotionBlurEffect->Material->amount() << mMotionBlurEffect->amount;
-	}
-
 	void PostProcessingStack::UpdateSSRMaterial(ID3D11ShaderResourceView* normal, ID3D11ShaderResourceView* depth, ID3D11ShaderResourceView* extra, float time)
 	{
 		XMMATRIX vp = camera.ViewMatrix() * camera.ProjectionMatrix();
@@ -493,15 +433,6 @@ namespace Rendering {
 				ImGui::ColorEdit3("Luminance Weights", mTonemapEffect->luminanceWeights);
 			}
 		}
-
-		if (mMotionBlurLoaded)
-		{
-			if (ImGui::CollapsingHeader("Motion Blur"))
-			{
-				ImGui::Checkbox("Motion Blur - On", &mMotionBlurEffect->isActive);
-				ImGui::SliderFloat("Amount", &mMotionBlurEffect->amount, 1.000f, 50.0f);
-			}
-		}
 		
 		if (mColorGradingLoaded) 
 		{
@@ -516,16 +447,12 @@ namespace Rendering {
 			}
 		}
 
-		if (mVignetteLoaded)
+		if (ImGui::CollapsingHeader("Vignette"))
 		{
-			if (ImGui::CollapsingHeader("Vignette"))
-			{
-				ImGui::Checkbox("Vignette - On", &mVignetteEffect->isActive);
-				ImGui::SliderFloat("Radius", &mVignetteEffect->radius, 0.000f, 1.0f);
-				ImGui::SliderFloat("Softness", &mVignetteEffect->softness, 0.000f, 1.0f);
-			}
-		}	
-		
+			ImGui::Checkbox("Vignette - On", &mUseVignette);
+			ImGui::SliderFloat("Radius", &mVignetteRadius, 0.000f, 1.0f);
+			ImGui::SliderFloat("Softness", &mVignetteSoftness, 0.000f, 1.0f);
+		}
 
 		if (ImGui::CollapsingHeader("FXAA"))
 		{
@@ -581,6 +508,25 @@ namespace Rendering {
 	void PostProcessingStack::EndRenderingToExtraRT()
 	{
 		mExtraRenderTarget->End();
+	}
+
+	void PostProcessingStack::PrepareDrawingVignette(ER_GPUTexture* aInputTexture)
+	{
+		assert(aInputTexture);
+		auto context = game.Direct3DDeviceContext();
+
+		mVignetteConstantBuffer.Data.RadiusSoftness = XMFLOAT2(mVignetteRadius, mVignetteSoftness);
+		mVignetteConstantBuffer.ApplyChanges(context);
+		ID3D11Buffer* CBs[1] = { mVignetteConstantBuffer.Buffer() };
+		context->PSSetConstantBuffers(0, 1, CBs);
+
+		context->PSSetShader(mVignettePS, NULL, NULL);
+
+		ID3D11SamplerState* SS[1] = { SamplerStates::TrilinearWrap };
+		context->PSSetSamplers(0, 1, SS);
+
+		ID3D11ShaderResourceView* SRs[1] = { aInputTexture->GetSRV() };
+		context->PSSetShaderResources(0, 1, SRs);
 	}
 
 	void PostProcessingStack::PrepareDrawingFXAA(ER_GPUTexture* aInputTexture)
@@ -797,15 +743,26 @@ namespace Rendering {
 		mVignetteRenderTarget->End();
 		*/
 
+		// Vignette
+		if (mUseVignette)
+		{
+			game.SetCustomRenderTarget(mVignetteRT, nullptr);
+			PrepareDrawingVignette(mFinalTargetBeforeResolve);
+			quad->Draw(context);
+			game.UnsetCustomRenderTarget();
+
+			//[WARNING] Set from last post processing effect
+			mFinalTargetBeforeResolve = mVignetteRT;
+		}
 		// FXAA
 		if (mUseFXAA)
 		{
 			game.SetCustomRenderTarget(mFXAART, nullptr);
-			PrepareDrawingFXAA(mFirstTargetBeforePostProcessingPasses); //TODO temp
+			PrepareDrawingFXAA(mFinalTargetBeforeResolve);
 			quad->Draw(context);
 			game.UnsetCustomRenderTarget();
 
-			//[WARNING] Set from last post processing effect (now: FXAA)
+			//[WARNING] Set from last post processing effect 
 			mFinalTargetBeforeResolve = mFXAART;
 		}
 	}
