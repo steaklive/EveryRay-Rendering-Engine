@@ -1,7 +1,5 @@
 #include "PostProcessingStack.h"
-#include "ColorGradingMaterial.h"
 #include "ScreenSpaceReflectionsMaterial.h"
-#include "FogMaterial.h"
 #include "LightShaftsMaterial.h"
 #include "FullScreenQuad.h"
 #include "FullScreenRenderTarget.h"
@@ -19,9 +17,7 @@ namespace Rendering {
 
 	PostProcessingStack::PostProcessingStack(Game& pGame, Camera& pCamera)
 		:
-		mColorGradingEffect(nullptr),
 		mSSREffect(nullptr),
-		mFogEffect(nullptr),
 		mLightShaftsEffect(nullptr),
 		game(pGame), camera(pCamera)
 	{
@@ -29,25 +25,25 @@ namespace Rendering {
 
 	PostProcessingStack::~PostProcessingStack()
 	{
-		DeleteObject(mColorGradingEffect);
-		DeleteObject(mTonemapEffect);
 		DeleteObject(mSSREffect);
-		DeleteObject(mFogEffect);
 		DeleteObject(mLightShaftsEffect);
 
-		DeleteObject(mColorGradingRenderTarget);
 		DeleteObject(mSSRRenderTarget);
-		DeleteObject(mFogRenderTarget);
 		DeleteObject(mLightShaftsRenderTarget);
 
 		DeleteObject(mExtraRenderTarget);
 
+		DeleteObject(mColorGradingRT);
 		DeleteObject(mVignetteRT);
 		DeleteObject(mFXAART);
+		DeleteObject(mLinearFogRT);
 
-		ReleaseObject(mFinalResolvePS);
+		ReleaseObject(mColorGradingPS);
 		ReleaseObject(mVignettePS);
 		ReleaseObject(mFXAAPS);
+		ReleaseObject(mLinearFogPS);
+
+		ReleaseObject(mFinalResolvePS);
 
 		mFXAAConstantBuffer.Release();
 	}
@@ -84,153 +80,50 @@ namespace Rendering {
 		mSSREffect->isActive = pSSR;
 		mSSRLoaded = true;
 
-		Effect* colorgradingEffectFX = new Effect(game);
-		colorgradingEffectFX->CompileFromFile(Utility::GetFilePath(L"content\\effects\\ColorGrading.fx"));
-		mColorGradingEffect = new EffectElements::ColorGradingEffect();
-		mColorGradingEffect->Material = new ColorGradingMaterial();
-		mColorGradingEffect->Material->Initialize(colorgradingEffectFX);
-		mColorGradingEffect->Quad = new FullScreenQuad(game, *mColorGradingEffect->Material);
-		mColorGradingEffect->Quad->Initialize();
-		mColorGradingEffect->Quad->SetActiveTechnique("color_grading_filter", "p0");
-		mColorGradingEffect->Quad->SetCustomUpdateMaterial(std::bind(&PostProcessingStack::UpdateColorGradingMaterial, this));
-		mColorGradingRenderTarget = new FullScreenRenderTarget(game);
-		mColorGradingEffect->OutputTexture = mColorGradingRenderTarget->OutputColorTexture();
-		mColorGradingEffect->isActive = pColorGrading;
-		mColorGradingEffect->currentLUT = 2;
-
-		std::wstring LUTtexture1 = Utility::GetFilePath(L"content\\effects\\LUT_1.png");
-		if (FAILED(DirectX::CreateWICTextureFromFile(game.Direct3DDevice(), game.Direct3DDeviceContext(), LUTtexture1.c_str(), nullptr, &mColorGradingEffect->LUT1)))
-		{
-			throw GameException("Failed to load LUT1 texture.");
-		}
-
-		std::wstring LUTtexture2 = Utility::GetFilePath(L"content\\effects\\LUT_2.png");
-		if (FAILED(DirectX::CreateWICTextureFromFile(game.Direct3DDevice(), game.Direct3DDeviceContext(), LUTtexture2.c_str(), nullptr, &mColorGradingEffect->LUT2)))
-		{
-			throw GameException("Failed to load LUT2 texture.");
-		}
-
-		std::wstring LUTtexture3 = Utility::GetFilePath(L"content\\effects\\LUT_3.png");
-		if (FAILED(DirectX::CreateWICTextureFromFile(game.Direct3DDevice(), game.Direct3DDeviceContext(), LUTtexture3.c_str(), nullptr, &mColorGradingEffect->LUT3)))
-		{
-			throw GameException("Failed to load LUT3 texture.");
-		}
-		mColorGradingLoaded = true;
-
-		Effect* fogFX = new Effect(game);
-		fogFX->CompileFromFile(Utility::GetFilePath(L"content\\effects\\Fog.fx"));
-		mFogEffect = new EffectElements::FogEffect();
-		mFogEffect->Material = new FogMaterial();
-		mFogEffect->Material->Initialize(fogFX);
-		mFogEffect->Quad = new FullScreenQuad(game, *mFogEffect->Material);
-		mFogEffect->Quad->Initialize();
-		mFogEffect->Quad->SetActiveTechnique("fog", "p0");
-		mFogEffect->Quad->SetCustomUpdateMaterial(std::bind(&PostProcessingStack::UpdateFogMaterial, this));
-		mFogRenderTarget = new FullScreenRenderTarget(game);
-		mFogEffect->isActive = pFog;
-		mFogLoaded = true;
-
-		// Tonemapping
-		mTonemapEffect = new EffectElements::TonemapEffect();
-		mTonemapEffect->isActive = pTonemap;
-		mTonemapRenderTarget = new FullScreenRenderTarget(game);
-		UINT bindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-		float minDim = (float)std::min(game.ScreenHeight(), game.ScreenWidth());
-		int log2min = std::min((int)floor(log(minDim) / log(2.0f)), 9);
-		int lumDim = 1 << log2min;
-		mTonemapEffect->LuminanceResource = new ER_GPUTexture(game.Direct3DDevice(), lumDim, lumDim, 0, DXGI_FORMAT_R16_FLOAT, bindFlags, log2min + 1);
-		mTonemapEffect->AvgLuminanceResource = new ER_GPUTexture(game.Direct3DDevice(), 16, 16, 0, DXGI_FORMAT_R16_FLOAT, bindFlags, 1);
-		mTonemapEffect->BrightResource = new ER_GPUTexture(game.Direct3DDevice(), game.ScreenWidth()/2, game.ScreenHeight()/2, 0, DXGI_FORMAT_R11G11B10_FLOAT, bindFlags, 4);
-		mTonemapEffect->BlurSummedResource = new ER_GPUTexture(game.Direct3DDevice(), game.ScreenWidth() / 2, game.ScreenHeight() / 2, 0, DXGI_FORMAT_R11G11B10_FLOAT, bindFlags, 4);
-		mTonemapEffect->BlurHorizontalResource = new ER_GPUTexture(game.Direct3DDevice(), game.ScreenWidth() / 2, game.ScreenHeight() / 2, 0, DXGI_FORMAT_R11G11B10_FLOAT, bindFlags, 4);
-		mTonemapEffect->BlurVerticalResource = new ER_GPUTexture(game.Direct3DDevice(), game.ScreenWidth() / 2, game.ScreenHeight() / 2, 0, DXGI_FORMAT_R11G11B10_FLOAT, bindFlags, 4);
-
-		D3D11_BUFFER_DESC BufferDesc;
-		ZeroMemory(&BufferDesc, sizeof(BufferDesc));
-		BufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		BufferDesc.CPUAccessFlags = 0;
-		BufferDesc.ByteWidth = sizeof(int) * 4;
-		BufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		game.Direct3DDevice()->CreateBuffer(&BufferDesc, NULL, &mTonemapEffect->ConstBuffer);
-
-		BufferDesc.ByteWidth = sizeof(float) * 8;
-		BufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		game.Direct3DDevice()->CreateBuffer(&BufferDesc, NULL, &mTonemapEffect->BloomConstants);
-
-		D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC();
-		ZeroMemory(&samplerDesc, sizeof(D3D11_SAMPLER_DESC));
-		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-		samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-		samplerDesc.MaxAnisotropy = 16;
-		samplerDesc.MaxLOD = FLT_MAX;
-		samplerDesc.MinLOD = FLT_MIN;
-		samplerDesc.MipLODBias = 0.0f;
-		game.Direct3DDevice()->CreateSamplerState(&samplerDesc, &mTonemapEffect->LinearSampler);		
-		
-		ID3DBlob* pShaderBlob = nullptr;		
-		if(FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Tonemap\\Tonemap.hlsl").c_str(), "ToneMapWithBloom", "ps_4_0", &pShaderBlob)))
-			throw GameException("Failed to load ToneMapWithBloom pass from shader: PSPostProcess.hlsl!");
-		if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mTonemapEffect->ToneMapWithBloomPS)))
-			throw GameException("Failed to create ToneMapWithBloom shader from PSPostProcess.hlsl!");
-		pShaderBlob->Release();
-
-		pShaderBlob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Tonemap\\Tonemap.hlsl").c_str(), "Add", "ps_4_0", &pShaderBlob)))
-			throw GameException("Failed to load Add pass from shader: PSPostProcess.hlsl!");
-		if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mTonemapEffect->AddPS)))
-			throw GameException("Failed to create Add shader from PSPostProcess.hlsl!");
-		pShaderBlob->Release();
-
-		pShaderBlob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Tonemap\\Tonemap.hlsl").c_str(), "BlurHorizontal", "ps_4_0", &pShaderBlob)))
-			throw GameException("Failed to load BlurHorizontal pass from shader: PSPostProcess.hlsl!");
-		if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mTonemapEffect->BlurHPS)))
-			throw GameException("Failed to create BlurHorizontal shader from PSPostProcess.hlsl!");
-		pShaderBlob->Release();
-
-		pShaderBlob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Tonemap\\Tonemap.hlsl").c_str(), "BlurVertical", "ps_4_0", &pShaderBlob)))
-			throw GameException("Failed to load BlurVertical pass from shader: PSPostProcess.hlsl!");
-		if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mTonemapEffect->BlurVPS)))
-			throw GameException("Failed to create BlurVertical shader from PSPostProcess.hlsl!");
-		pShaderBlob->Release();
-
-		pShaderBlob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Tonemap\\Tonemap.hlsl").c_str(), "Bright", "ps_4_0", &pShaderBlob)))
-			throw GameException("Failed to load Bright pass from shader: PSPostProcess.hlsl!");
-		if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mTonemapEffect->BrightPS)))
-			throw GameException("Failed to create Bright shader from PSPostProcess.hlsl!");
-		pShaderBlob->Release();
-	
-		pShaderBlob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Tonemap\\Tonemap.hlsl").c_str(), "CalcLuminance", "ps_4_0", &pShaderBlob)))
-			throw GameException("Failed to load CalcLuminance pass from shader: PSPostProcess.hlsl!");
-		if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mTonemapEffect->CalcLumPS)))
-			throw GameException("Failed to create CalcLuminance shader from PSPostProcess.hlsl!");
-		pShaderBlob->Release();
-
-		pShaderBlob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Tonemap\\Tonemap.hlsl").c_str(), "AvgLuminance", "ps_4_0", &pShaderBlob)))
-			throw GameException("Failed to load AvgLuminance pass from shader: PSPostProcess.hlsl!");
-		if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mTonemapEffect->AvgLumPS)))
-			throw GameException("Failed to create AvgLuminance shader from PSPostProcess.hlsl!");
-		pShaderBlob->Release();
-
-		pShaderBlob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Tonemap\\Tonemap.hlsl").c_str(), "EmptyPass", "ps_4_0", &pShaderBlob)))
-			throw GameException("Failed to load EmptyPass pass from shader: PSPostProcess.hlsl!");
-		if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mTonemapEffect->EmptyPassPS)))
-			throw GameException("Failed to create EmptyPass shader from PSPostProcess.hlsl!");
-		pShaderBlob->Release();
-
+		ID3DBlob* pShaderBlob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\EmptyColorResolve.hlsl").c_str(), "PSMain", "ps_5_0", &pShaderBlob)))
 			throw GameException("Failed to load PSMain pass from shader: EmptyColorResolve.hlsl!");
 		if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mFinalResolvePS)))
 			throw GameException("Failed to create PSMain shader from EmptyColorResolve.hlsl!");
 		pShaderBlob->Release();
+
+		//Linear fog
+		{
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\LinearFog.hlsl").c_str(), "PSMain", "ps_5_0", &pShaderBlob)))
+				throw GameException("Failed to load PSMain pass from shader: LinearFog.hlsl!");
+			if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mLinearFogPS)))
+				throw GameException("Failed to create PSMain shader from LinearFog.hlsl!");
+			pShaderBlob->Release();
+
+			mLinearFogConstantBuffer.Initialize(game.Direct3DDevice());
+			mLinearFogRT = new ER_GPUTexture(game.Direct3DDevice(), static_cast<UINT>(game.ScreenWidth()), static_cast<UINT>(game.ScreenHeight()), 1u,
+				DXGI_FORMAT_R16G16B16A16_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+		}
+
+		//Color grading
+		{
+			std::wstring LUTtexture1 = Utility::GetFilePath(L"content\\shaders\\LUT_1.png");
+			if (FAILED(DirectX::CreateWICTextureFromFile(game.Direct3DDevice(), game.Direct3DDeviceContext(), LUTtexture1.c_str(), nullptr, &mLUTs[0])))
+				throw GameException("Failed to load LUT1 texture.");
+
+			std::wstring LUTtexture2 = Utility::GetFilePath(L"content\\shaders\\LUT_2.png");
+			if (FAILED(DirectX::CreateWICTextureFromFile(game.Direct3DDevice(), game.Direct3DDeviceContext(), LUTtexture2.c_str(), nullptr, &mLUTs[1])))
+				throw GameException("Failed to load LUT2 texture.");
+
+			std::wstring LUTtexture3 = Utility::GetFilePath(L"content\\shaders\\LUT_3.png");
+			if (FAILED(DirectX::CreateWICTextureFromFile(game.Direct3DDevice(), game.Direct3DDeviceContext(), LUTtexture3.c_str(), nullptr, &mLUTs[2])))
+				throw GameException("Failed to load LUT3 texture.");
+
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\ColorGrading.hlsl").c_str(), "PSMain", "ps_5_0", &pShaderBlob)))
+				throw GameException("Failed to load PSMain pass from shader: ColorGrading.hlsl!");
+			if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mColorGradingPS)))
+				throw GameException("Failed to create PSMain shader from ColorGrading.hlsl!");
+			pShaderBlob->Release();
+
+			mColorGradingRT = new ER_GPUTexture(game.Direct3DDevice(), static_cast<UINT>(game.ScreenWidth()), static_cast<UINT>(game.ScreenHeight()), 1u,
+				DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+		}
+
 
 		//Vignette
 		{
@@ -260,79 +153,11 @@ namespace Rendering {
 
 	}
 
-	// Only updates Effects
 	void PostProcessingStack::Update()
-	{
-		if (mColorGradingLoaded) 
-		{
-			if (mColorGradingEffect->isActive) 
-				mColorGradingEffect->Quad->SetActiveTechnique("color_grading_filter", "p0");
-			else 
-				mColorGradingEffect->Quad->SetActiveTechnique("no_filter", "p0");
-		}
-	
-		if (mSSRLoaded)
-		{
-			if (mSSREffect->isActive)
-				mSSREffect->Quad->SetActiveTechnique("ssr", "p0");
-			else
-				mSSREffect->Quad->SetActiveTechnique("no_ssr", "p0");
-		}
-
-		if (mFogLoaded)
-		{
-			if (mFogEffect->isActive)
-				mFogEffect->Quad->SetActiveTechnique("fog", "p0");
-			else
-				mFogEffect->Quad->SetActiveTechnique("no_filter", "p0");
-		}
-
-		if (mLightShaftsLoaded)
-		{
-			if (mLightShaftsEffect->isActive) {
-				if (mLightShaftsEffect->isForceEnable && mLightShaftsEffect->isSunOnScreen)
-					mLightShaftsEffect->Quad->SetActiveTechnique("light_shafts", "p0");
-				else if (mLightShaftsEffect->isForceEnable && !mLightShaftsEffect->isSunOnScreen)
-					mLightShaftsEffect->Quad->SetActiveTechnique("no_filter", "p0");
-				else if (!mLightShaftsEffect->isForceEnable)
-					mLightShaftsEffect->Quad->SetActiveTechnique("light_shafts", "p0");
-			}
-			else 
-				mLightShaftsEffect->Quad->SetActiveTechnique("no_filter", "p0");
-		}
-
+	{	
 		ShowPostProcessingWindow();
 	}
 
-	void PostProcessingStack::UpdateTonemapConstantBuffer(ID3D11DeviceContext* pD3DImmediateContext, ID3D11Buffer* buffer, int mipLevel0, int mipLevel1, unsigned int width, unsigned int height)
-	{
-		int src[] = { mipLevel0, mipLevel1, width, height };
-		int rowpitch = sizeof(int) * 4;
-		pD3DImmediateContext->UpdateSubresource(buffer, 0, NULL, &src, rowpitch, 0);
-		pD3DImmediateContext->PSSetConstantBuffers(0, 1, &buffer);
-	}
-
-	void PostProcessingStack::UpdateColorGradingMaterial()
-	{
-
-		mColorGradingEffect->Material->ColorTexture() << mColorGradingEffect->OutputTexture;
-		switch (mColorGradingEffect->currentLUT)
-		{
-		case 0:
-			mColorGradingEffect->Material->lut() << mColorGradingEffect->LUT1;
-			break;
-		case 1:
-			mColorGradingEffect->Material->lut() << mColorGradingEffect->LUT2;
-			break;
-		case 2:
-			mColorGradingEffect->Material->lut() << mColorGradingEffect->LUT3;
-			break;
-		default:
-			mColorGradingEffect->Material->lut() << mColorGradingEffect->LUT1;
-			break;
-		}
-
-	}
 	void PostProcessingStack::UpdateSSRMaterial(ID3D11ShaderResourceView* normal, ID3D11ShaderResourceView* depth, ID3D11ShaderResourceView* extra, float time)
 	{
 		XMMATRIX vp = camera.ViewMatrix() * camera.ProjectionMatrix();
@@ -353,16 +178,6 @@ namespace Rendering {
 		mSSREffect->Material->MaxRayCount() << mSSREffect->rayCount;
 	}
 	
-	void PostProcessingStack::UpdateFogMaterial()
-	{
-		mFogEffect->Material->ColorTexture() << mFogEffect->OutputTexture;
-		mFogEffect->Material->DepthTexture() << mFogEffect->DepthTexture;
-		mFogEffect->Material->FogColor() << XMVECTOR{ mFogEffect->color[0], mFogEffect->color[1], mFogEffect->color[2], 1.0f };
-		mFogEffect->Material->FogNear() << camera.NearPlaneDistance();
-		mFogEffect->Material->FogFar() << camera.FarPlaneDistance();
-		mFogEffect->Material->FogDensity() << mFogEffect->density;
-	}
-
 	void PostProcessingStack::UpdateLightShaftsMaterial()
 	{
 		mLightShaftsEffect->isSunOnScreen = (mSunNDCPos.x >= 0.0f && mSunNDCPos.x <= 1.0f && mSunNDCPos.y >= 0.0f && mSunNDCPos.y <= 1.0f);
@@ -412,39 +227,22 @@ namespace Rendering {
 				ImGui::SliderFloat("Max Thickness", &mSSREffect->maxThickness, 0.0f, 0.01f);
 			}
 		}
-		if (mFogLoaded)
+
+		if (ImGui::CollapsingHeader("Linear Fog"))
 		{
-			if (ImGui::CollapsingHeader("Fog"))
-			{
-				ImGui::Checkbox("Fog - On", &mFogEffect->isActive);
-				ImGui::ColorEdit3("Color", mFogEffect->color);
-				ImGui::SliderFloat("Density", &mFogEffect->density, 1.0f, 10000.0f);
-			}
+			ImGui::Checkbox("Fog - On", &mUseLinearFog);
+			ImGui::ColorEdit3("Color", mLinearFogColor);
+			ImGui::SliderFloat("Density", &mLinearFogDensity, 1.0f, 10000.0f);
 		}
 
-		if (true)
+		if (ImGui::CollapsingHeader("Color Grading"))
 		{
-			if (ImGui::CollapsingHeader("Tonemap and Bloom"))
-			{
-				ImGui::Checkbox("Tonemap and Bloom - On", &mTonemapEffect->isActive);
-				ImGui::SliderFloat("Middle Grey", &mTonemapEffect->middlegrey, 0.0f, 1.0f);
-				ImGui::SliderFloat("Bloom Threshold", &mTonemapEffect->bloomthreshold, 0.0f, 1.0f);
-				ImGui::SliderFloat("Bloom Multiplier", &mTonemapEffect->bloommultiplier, 0.0f, 1.0f);
-				ImGui::ColorEdit3("Luminance Weights", mTonemapEffect->luminanceWeights);
-			}
-		}
-		
-		if (mColorGradingLoaded) 
-		{
-			if (ImGui::CollapsingHeader("Color Grading"))
-			{
-				ImGui::Checkbox("Color Grading - On", &mColorGradingEffect->isActive);
+			ImGui::Checkbox("Color Grading - On", &mUseColorGrading);
 
-				ImGui::TextWrapped("Current LUT");
-				ImGui::RadioButton("LUT 1", &mColorGradingEffect->currentLUT, 0);
-				ImGui::RadioButton("LUT 2", &mColorGradingEffect->currentLUT, 1);
-				ImGui::RadioButton("LUT 3", &mColorGradingEffect->currentLUT, 2);
-			}
+			ImGui::TextWrapped("Current LUT");
+			ImGui::RadioButton("LUT 1", &mColorGradingCurrentLUTIndex, 0);
+			ImGui::RadioButton("LUT 2", &mColorGradingCurrentLUTIndex, 1);
+			ImGui::RadioButton("LUT 3", &mColorGradingCurrentLUTIndex, 2);
 		}
 
 		if (ImGui::CollapsingHeader("Vignette"))
@@ -471,6 +269,7 @@ namespace Rendering {
 	{
 		assert(aInitialRT && aDepthTarget);
 		mFirstTargetBeforePostProcessingPasses = aInitialRT;
+		mDepthTarget = aDepthTarget;
 		game.Direct3DDeviceContext()->OMSetRenderTargets(1, aInitialRT->GetRTVs(), aDepthTarget->getDSV());
 	}
 
@@ -508,6 +307,39 @@ namespace Rendering {
 	void PostProcessingStack::EndRenderingToExtraRT()
 	{
 		mExtraRenderTarget->End();
+	}
+
+	void PostProcessingStack::PrepareDrawingLinearFog(ER_GPUTexture* aInputTexture)
+	{
+		assert(aInputTexture);
+		auto context = game.Direct3DDeviceContext();
+
+		mLinearFogConstantBuffer.Data.FogColor = XMFLOAT4{ mLinearFogColor[0], mLinearFogColor[1], mLinearFogColor[2], 1.0f };
+		mLinearFogConstantBuffer.Data.FogNear = camera.NearPlaneDistance();
+		mLinearFogConstantBuffer.Data.FogFar = camera.FarPlaneDistance();
+		mLinearFogConstantBuffer.Data.FogDensity = mLinearFogDensity;
+		mLinearFogConstantBuffer.ApplyChanges(context);
+		ID3D11Buffer* CBs[1] = { mLinearFogConstantBuffer.Buffer() };
+		context->PSSetConstantBuffers(0, 1, CBs);
+
+		context->PSSetShader(mLinearFogPS, NULL, NULL);
+
+		ID3D11SamplerState* SS[1] = { SamplerStates::TrilinearWrap };
+		context->PSSetSamplers(0, 1, SS);
+
+		ID3D11ShaderResourceView* SRs[2] = { aInputTexture->GetSRV(), mDepthTarget->getSRV() };
+		context->PSSetShaderResources(0, 2, SRs);
+	}
+
+	void PostProcessingStack::PrepareDrawingColorGrading(ER_GPUTexture* aInputTexture)
+	{
+		assert(aInputTexture);
+		auto context = game.Direct3DDeviceContext();
+
+		context->PSSetShader(mColorGradingPS, NULL, NULL);
+
+		ID3D11ShaderResourceView* SRs[2] = { mLUTs[mColorGradingCurrentLUTIndex], aInputTexture->GetSRV() };
+		context->PSSetShaderResources(0, 2, SRs);
 	}
 
 	void PostProcessingStack::PrepareDrawingVignette(ER_GPUTexture* aInputTexture)
@@ -743,6 +575,29 @@ namespace Rendering {
 		mVignetteRenderTarget->End();
 		*/
 
+		// Linear fog
+		if (mUseLinearFog)
+		{
+			game.SetCustomRenderTarget(mLinearFogRT, nullptr);
+			PrepareDrawingLinearFog(mFinalTargetBeforeResolve);
+			quad->Draw(context);
+			game.UnsetCustomRenderTarget();
+
+			//[WARNING] Set from last post processing effect
+			mFinalTargetBeforeResolve = mLinearFogRT;
+		}
+
+		// Color grading
+		if (mUseColorGrading)
+		{
+			game.SetCustomRenderTarget(mColorGradingRT, nullptr);
+			PrepareDrawingColorGrading(mFinalTargetBeforeResolve);
+			quad->Draw(context);
+			game.UnsetCustomRenderTarget();
+
+			//[WARNING] Set from last post processing effect
+			mFinalTargetBeforeResolve = mColorGradingRT;
+		}
 		// Vignette
 		if (mUseVignette)
 		{

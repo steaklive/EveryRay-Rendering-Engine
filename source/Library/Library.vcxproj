@@ -188,7 +188,6 @@
     <ClInclude Include="BruteforceStructure.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CollisionDetectionTypes.h" />
-    <ClInclude Include="ColorGradingMaterial.h" />
     <ClInclude Include="ColorHelper.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="ConstantBuffer.h" />
@@ -214,7 +213,6 @@
     <ClInclude Include="ER_VoxelizationMaterial.h" />
     <ClInclude Include="FastFourierTransform.h" />
     <ClInclude Include="FirstPersonCamera.h" />
-    <ClInclude Include="FogMaterial.h" />
     <ClInclude Include="Foliage.h" />
     <ClInclude Include="FoliageMaterial.h" />
     <ClInclude Include="Frustum.h" />
@@ -282,7 +280,6 @@
   <ItemGroup>
     <ClCompile Include="BruteforceStructure.cpp" />
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="ColorGradingMaterial.cpp" />
     <ClCompile Include="ColorHelper.cpp" />
     <ClCompile Include="ER_BasicColorMaterial.cpp" />
     <ClCompile Include="ER_DebugLightProbeMaterial.cpp" />
@@ -305,7 +302,6 @@
     <ClCompile Include="ER_ShadowMapMaterial.cpp" />
     <ClCompile Include="ER_VoxelizationMaterial.cpp" />
     <ClCompile Include="FirstPersonCamera.cpp" />
-    <ClCompile Include="FogMaterial.cpp" />
     <ClCompile Include="Foliage.cpp" />
     <ClCompile Include="FoliageMaterial.cpp" />
     <ClCompile Include="Frustum.cpp" />
@@ -369,18 +365,6 @@
     <ClCompile Include="VolumetricClouds.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\..\content\effects\ColorGrading.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\Fog.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
     <FxCompile Include="..\..\content\effects\Foliage.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -433,6 +417,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
+    <FxCompile Include="..\..\content\shaders\ColorGrading.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="..\..\content\shaders\CompositeIllumination.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -470,6 +458,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\IBL\ProbeConvolution.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\LinearFog.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

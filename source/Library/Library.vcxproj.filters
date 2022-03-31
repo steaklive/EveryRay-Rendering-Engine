@@ -252,9 +252,6 @@
     <ClInclude Include="PostProcessingStack.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ColorGradingMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RenderableOBB.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -310,9 +307,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VolumetricClouds.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FogMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LightShaftsMaterial.h">
@@ -500,9 +494,6 @@
     <ClCompile Include="DepthTarget.cpp">
       <Filter>Source Files\Objects\RenderTarget</Filter>
     </ClCompile>
-    <ClCompile Include="ColorGradingMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
     <ClCompile Include="OctreeStructure.cpp">
       <Filter>Source Files\Objects\Spatial hierarchies</Filter>
     </ClCompile>
@@ -528,9 +519,6 @@
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="LightShaftsMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="FogMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="Editor.cpp">
@@ -619,9 +607,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\..\content\effects\ColorGrading.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
     <FxCompile Include="..\..\content\effects\SkinShadingColor.fx">
       <Filter>Effects</Filter>
     </FxCompile>
@@ -715,9 +700,6 @@
     <FxCompile Include="..\..\content\effects\Foliage.fx">
       <Filter>Effects</Filter>
     </FxCompile>
-    <FxCompile Include="..\..\content\effects\Fog.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
     <FxCompile Include="..\..\content\effects\LightShafts.fx">
       <Filter>Effects</Filter>
     </FxCompile>
@@ -785,6 +767,12 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\Vignette.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\ColorGrading.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\LinearFog.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
