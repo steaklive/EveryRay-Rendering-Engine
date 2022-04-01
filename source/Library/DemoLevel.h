@@ -3,10 +3,6 @@
 #pragma once
 #include "Common.h"
 
-namespace Rendering
-{
-    class PostProcessingStack;
-}
 namespace Library
 {
     class Game;
@@ -25,6 +21,7 @@ namespace Library
     class VolumetricClouds;
     class Illumination;
     class ER_IlluminationProbeManager;
+    class ER_PostProcessingStack;
 
 	class DemoLevel
 	{
@@ -49,7 +46,7 @@ namespace Library
         VolumetricClouds* mVolumetricClouds = nullptr;
         Illumination* mIllumination = nullptr;
         ER_IlluminationProbeManager* mIlluminationProbesManager = nullptr;
-        Rendering::PostProcessingStack* mPostProcessingStack = nullptr; //TODO remove namespace
+        ER_PostProcessingStack* mPostProcessingStack = nullptr; //TODO remove namespace
     private:
         void UpdateImGui();
         std::string mName;

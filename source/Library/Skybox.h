@@ -1,7 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "DrawableGameComponent.h"
-#include "PostProcessingStack.h"
+#include "ER_PostProcessingStack.h"
 #include "ConstantBuffer.h"
 #include "DepthTarget.h"
 

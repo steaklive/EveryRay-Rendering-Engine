@@ -85,10 +85,9 @@ namespace Library {
 
 		#pragma region INIT_POST_PROCESSING
 		game.CPUProfiler()->BeginCPUTime("Post processing stack init");
-        mPostProcessingStack = new Rendering::PostProcessingStack(game, camera);
+        mPostProcessingStack = new ER_PostProcessingStack(game, camera);
         mPostProcessingStack->Initialize(false, false, true, true, true, false, false, false);
         mPostProcessingStack->SetDirectionalLight(mDirectionalLight);
-        mPostProcessingStack->SetSunOcclusionSRV(mSkybox->GetSunOcclusionOutputTexture());
 		game.CPUProfiler()->EndCPUTime("Post processing stack init");
 #pragma endregion
 
@@ -268,8 +267,7 @@ namespace Library {
 		
 		#pragma region DRAW_POSTPROCESSING
 		mPostProcessingStack->Begin(mIllumination->GetFinalIlluminationRT(), mGBuffer->GetDepth());
-		//mPostProcessingStack->UpdateSSRMaterial(mGBuffer->GetNormals()->GetSRV(), mGBuffer->GetDepth()->getSRV(), mGBuffer->GetExtraBuffer()->GetSRV(), (float)gameTime.TotalGameTime());
-		mPostProcessingStack->DrawEffects(gameTime, (ER_QuadRenderer*)game.Services().GetService(ER_QuadRenderer::TypeIdClass()));
+		mPostProcessingStack->DrawEffects(gameTime, (ER_QuadRenderer*)game.Services().GetService(ER_QuadRenderer::TypeIdClass()), mGBuffer);
 		mPostProcessingStack->End();
 #pragma endregion
 

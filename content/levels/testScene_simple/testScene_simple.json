@@ -30,6 +30,12 @@
 					"name" : "GBufferMaterial"
 				}
 			],
+			"textures" : 
+			[
+				{
+					"reflection_mask" : "content\\models\\default_plane\\UV_Grid_Lrg_reflection_mask.png"
+				}
+			],
 			"model_path" : "content\\models\\default_plane\\default_plane.fbx",
 			"name" : "Ground Plane",
 			"transform" : 

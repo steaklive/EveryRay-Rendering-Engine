@@ -18,7 +18,7 @@
 namespace Library
 {
 
-	Terrain::Terrain(std::string path, Game& pGame, Camera& camera, DirectionalLight& light, Rendering::PostProcessingStack& pp, bool isWireframe) :
+	Terrain::Terrain(std::string path, Game& pGame, Camera& camera, DirectionalLight& light, ER_PostProcessingStack& pp, bool isWireframe) :
 		GameComponent(pGame),
 		mCamera(camera), 
 		mIsWireframe(isWireframe),

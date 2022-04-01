@@ -207,9 +207,6 @@
     <ClInclude Include="FullScreenQuad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PostProcessingMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Projector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -249,9 +246,6 @@
     <ClInclude Include="ER_GPUTexture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PostProcessingStack.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RenderableOBB.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -282,9 +276,6 @@
     <ClInclude Include="TGATextureLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ScreenSpaceReflectionsMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MaterialHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -307,9 +298,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VolumetricClouds.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LightShaftsMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Illumination.h">
@@ -361,6 +349,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ER_QuadRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ER_PostProcessingStack.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -452,9 +443,6 @@
     <ClCompile Include="SpotLight.cpp">
       <Filter>Source Files\Graphics\Lights</Filter>
     </ClCompile>
-    <ClCompile Include="PostProcessingMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
     <ClCompile Include="Ray.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
@@ -506,9 +494,6 @@
     <ClCompile Include="TGATextureLoader.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
-    <ClCompile Include="ScreenSpaceReflectionsMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
     <ClCompile Include="MaterialHelper.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
@@ -516,9 +501,6 @@
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="FoliageMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="LightShaftsMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="Editor.cpp">
@@ -534,9 +516,6 @@
       <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
     <ClCompile Include="VolumetricClouds.cpp">
-      <Filter>Source Files\Graphics\Rendering systems</Filter>
-    </ClCompile>
-    <ClCompile Include="PostProcessingStack.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
     <ClCompile Include="Illumination.cpp">
@@ -604,6 +583,9 @@
     </ClCompile>
     <ClCompile Include="ER_QuadRenderer.cpp">
       <Filter>Source Files\Objects\RenderTarget</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_PostProcessingStack.cpp">
+      <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -691,16 +673,10 @@
     <FxCompile Include="..\..\content\shaders\Tonemap\Tonemap.hlsl">
       <Filter>Shaders\Tonemap</Filter>
     </FxCompile>
-    <FxCompile Include="..\..\content\effects\SSR.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
     <FxCompile Include="..\..\content\effects\TerrainEffect.fx">
       <Filter>Effects</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\effects\Foliage.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\LightShafts.fx">
       <Filter>Effects</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\Sun.hlsl">
@@ -773,6 +749,9 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\LinearFog.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\SSR.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

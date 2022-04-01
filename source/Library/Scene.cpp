@@ -267,6 +267,8 @@ namespace Library
 						aObject->mCustomMetalnessTextures[mesh] = root["rendering_objects"][i]["textures"][mesh]["metalness"].asString();
 					if (root["rendering_objects"][i]["textures"][mesh].isMember("height"))
 						aObject->mCustomHeightTextures[mesh] = root["rendering_objects"][i]["textures"][mesh]["height"].asString();
+					if (root["rendering_objects"][i]["textures"][mesh].isMember("reflection_mask"))
+						aObject->mCustomReflectionMaskTextures[mesh] = root["rendering_objects"][i]["textures"][mesh]["reflection_mask"].asString();
 
 					aObject->LoadCustomMeshTextures(mesh);
 				}

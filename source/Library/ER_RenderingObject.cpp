@@ -53,6 +53,7 @@ namespace Library
 			mCustomRoughnessTextures.push_back("");
 			mCustomMetalnessTextures.push_back("");
 			mCustomHeightTextures.push_back("");
+			mCustomReflectionMaskTextures.push_back("");
 		}
 
 		for (size_t i = 0; i < mMeshVertices[0].size(); i++)
@@ -195,34 +196,34 @@ namespace Library
 		}
 	}
 	
-	void ER_RenderingObject::LoadCustomMeshTextures(int meshIndex, std::wstring albedoPath, std::wstring normalPath, std::wstring specularPath, std::wstring roughnessPath, std::wstring metallicPath, std::wstring extra1Path, std::wstring extra2Path, std::wstring extra3Path)
-	{
-		assert(meshIndex < mMeshesCount[0]);
-		
-		std::string errorMessage = mModel->GetFileName() + " of mesh index: " + std::to_string(meshIndex);
-
-		if (!albedoPath.empty() && albedoPath.back() != '\\')
-			LoadTexture(TextureType::TextureTypeDifffuse, albedoPath, meshIndex);
-
-		if (!normalPath.empty() && normalPath.back() != '\\')
-			LoadTexture(TextureType::TextureTypeNormalMap, normalPath, meshIndex);
-
-		if (!specularPath.empty() && specularPath.back() != '\\')
-			LoadTexture(TextureType::TextureTypeSpecularMap, specularPath, meshIndex);
-		
-		if (!roughnessPath.empty() && roughnessPath.back() != '\\')
-			LoadTexture(TextureType::TextureTypeDisplacementMap, roughnessPath, meshIndex);
-
-		if (!metallicPath.empty() && metallicPath.back() != '\\')
-			LoadTexture(TextureType::TextureTypeEmissive, metallicPath, meshIndex);
-
-		//TODO
-		//if (!extra1Path.empty())
-		//TODO
-		//if (!extra2Path.empty())
-		//TODO
-		//if (!extra3Path.empty())
-	}
+	//void ER_RenderingObject::LoadCustomMeshTextures(int meshIndex, std::wstring albedoPath, std::wstring normalPath, std::wstring specularPath, std::wstring roughnessPath, std::wstring metallicPath, std::wstring extra1Path, std::wstring extra2Path, std::wstring extra3Path)
+	//{
+	//	assert(meshIndex < mMeshesCount[0]);
+	//	
+	//	std::string errorMessage = mModel->GetFileName() + " of mesh index: " + std::to_string(meshIndex);
+	//
+	//	if (!albedoPath.empty() && albedoPath.back() != '\\')
+	//		LoadTexture(TextureType::TextureTypeDifffuse, albedoPath, meshIndex);
+	//
+	//	if (!normalPath.empty() && normalPath.back() != '\\')
+	//		LoadTexture(TextureType::TextureTypeNormalMap, normalPath, meshIndex);
+	//
+	//	if (!specularPath.empty() && specularPath.back() != '\\')
+	//		LoadTexture(TextureType::TextureTypeSpecularMap, specularPath, meshIndex);
+	//	
+	//	if (!roughnessPath.empty() && roughnessPath.back() != '\\')
+	//		LoadTexture(TextureType::TextureTypeDisplacementMap, roughnessPath, meshIndex);
+	//
+	//	if (!metallicPath.empty() && metallicPath.back() != '\\')
+	//		LoadTexture(TextureType::TextureTypeEmissive, metallicPath, meshIndex);
+	//
+	//	//TODO
+	//	//if (!extra1Path.empty())
+	//	//TODO
+	//	//if (!extra2Path.empty())
+	//	//TODO
+	//	//if (!extra3Path.empty())
+	//}
 
 	//from custom collections
 	void ER_RenderingObject::LoadCustomMeshTextures(int meshIndex)
@@ -250,15 +251,17 @@ namespace Library
 			if (mCustomHeightTextures[meshIndex].back() != '\\')
 				LoadTexture(TextureType::TextureTypeHeightmap, Utility::GetFilePath(Utility::ToWideString(mCustomHeightTextures[meshIndex])), meshIndex);
 
-		//TODO
-		//if (!extra1Path.empty())
+		if (!mCustomReflectionMaskTextures[meshIndex].empty())
+			if (mCustomReflectionMaskTextures[meshIndex].back() != '\\')
+				LoadTexture(TextureType::TextureTypeLightMap, Utility::GetFilePath(Utility::ToWideString(mCustomReflectionMaskTextures[meshIndex])), meshIndex);
+
 		//TODO
 		//if (!extra2Path.empty())
 		//TODO
 		//if (!extra3Path.empty())
 	}
 	
-	void ER_RenderingObject::LoadTexture(TextureType type, std::wstring path, int meshIndex)
+	void ER_RenderingObject::LoadTexture(TextureType type, const std::wstring& path, int meshIndex)
 	{
 		const wchar_t* postfixDDS = L".dds";
 		const wchar_t* postfixDDS_Capital = L".DDS";
@@ -297,6 +300,10 @@ namespace Library
 		case TextureType::TextureTypeHeightmap:
 			texType = "Height Texture";
 			resource = &(mMeshesTextureBuffers[meshIndex].HeightMap);
+			break;	
+		case TextureType::TextureTypeLightMap:
+			texType = "Reflection Mask Texture";
+			resource = &(mMeshesTextureBuffers[meshIndex].ReflectionMaskMap);
 			break;
 		}
 

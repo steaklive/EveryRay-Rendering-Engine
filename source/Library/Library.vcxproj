@@ -227,7 +227,6 @@
     <ClInclude Include="Illumination.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Light.h" />
-    <ClInclude Include="LightShaftsMaterial.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="MaterialHelper.h" />
     <ClInclude Include="MatrixHelper.h" />
@@ -239,8 +238,7 @@
     <ClInclude Include="OctreeStructure.h" />
     <ClInclude Include="Pass.h" />
     <ClInclude Include="PointLight.h" />
-    <ClInclude Include="PostProcessingMaterial.h" />
-    <ClInclude Include="PostProcessingStack.h" />
+    <ClInclude Include="ER_PostProcessingStack.h" />
     <ClInclude Include="Projector.h" />
     <ClInclude Include="ProxyModel.h" />
     <ClInclude Include="ER_QuadRenderer.h" />
@@ -254,7 +252,6 @@
     <ClInclude Include="RTTI.h" />
     <ClInclude Include="SamplerStates.h" />
     <ClInclude Include="Scene.h" />
-    <ClInclude Include="ScreenSpaceReflectionsMaterial.h" />
     <ClInclude Include="ServiceContainer.h" />
     <ClInclude Include="ShaderCompiler.h" />
     <ClInclude Include="ER_ShadowMapper.h" />
@@ -297,6 +294,7 @@
     <ClCompile Include="ER_IlluminationProbeManager.cpp" />
     <ClCompile Include="ER_LightProbe.cpp" />
     <ClCompile Include="ER_Material.cpp" />
+    <ClCompile Include="ER_PostProcessingStack.cpp" />
     <ClCompile Include="ER_RenderingObject.cpp" />
     <ClCompile Include="ER_RenderToLightProbeMaterial.cpp" />
     <ClCompile Include="ER_ShadowMapMaterial.cpp" />
@@ -316,7 +314,6 @@
     <ClCompile Include="Illumination.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Light.cpp" />
-    <ClCompile Include="LightShaftsMaterial.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="MaterialHelper.cpp" />
     <ClCompile Include="MatrixHelper.cpp" />
@@ -327,8 +324,6 @@
     <ClCompile Include="OctreeStructure.cpp" />
     <ClCompile Include="Pass.cpp" />
     <ClCompile Include="PointLight.cpp" />
-    <ClCompile Include="PostProcessingMaterial.cpp" />
-    <ClCompile Include="PostProcessingStack.cpp" />
     <ClCompile Include="Projector.cpp" />
     <ClCompile Include="ProxyModel.cpp" />
     <ClCompile Include="ER_QuadRenderer.cpp" />
@@ -340,7 +335,6 @@
     <ClCompile Include="RenderTarget.cpp" />
     <ClCompile Include="SamplerStates.cpp" />
     <ClCompile Include="Scene.cpp" />
-    <ClCompile Include="ScreenSpaceReflectionsMaterial.cpp" />
     <ClCompile Include="ServiceContainer.cpp" />
     <ClCompile Include="ER_ShadowMapper.cpp" />
     <ClCompile Include="SkinShadingColorMaterial.cpp" />
@@ -371,12 +365,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="..\..\content\effects\LightShafts.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
     <FxCompile Include="..\..\content\effects\SkinShadingColor.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -396,12 +384,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\content\effects\Skybox.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\SSR.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -486,6 +468,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\ShadowMap.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\SSR.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

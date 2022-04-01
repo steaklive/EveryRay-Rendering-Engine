@@ -3,7 +3,7 @@
 #include "GameComponent.h"
 #include "Camera.h"
 #include "DirectionalLight.h"
-#include "PostProcessingStack.h"
+#include "ER_PostProcessingStack.h"
 
 static const int NUM_THREADS_PER_TERRAIN_SIDE = 4;
 static const int NUM_PATCHES = 8;
@@ -70,7 +70,7 @@ namespace Library
 	class Terrain : public GameComponent
 	{
 	public:
-		Terrain(std::string path, Game& game, Camera& camera, DirectionalLight& light, Rendering::PostProcessingStack& pp, bool isWireframe);
+		Terrain(std::string path, Game& game, Camera& camera, DirectionalLight& light, ER_PostProcessingStack& pp, bool isWireframe);
 		~Terrain();
 
 		UINT GetWidth() { return mWidth; }
@@ -105,7 +105,7 @@ namespace Library
 
 		Camera& mCamera;
 		DirectionalLight& mDirectionalLight;
-		Rendering::PostProcessingStack& mPPStack;
+		ER_PostProcessingStack& mPPStack;
 
 		ER_ShadowMapper* mTerrainShadowMapper = nullptr; // for terrain shadows 
 

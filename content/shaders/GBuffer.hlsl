@@ -12,6 +12,7 @@ Texture2D<float4> NormalMap : register(t1);
 Texture2D<float> RoughnessMap : register(t2);
 Texture2D<float> MetallicMap : register(t3);
 Texture2D<float> HeightMap : register(t4);
+Texture2D<float> ReflectionMaskMap : register(t5);
 
 cbuffer GBufferCBuffer : register(b0)
 {
@@ -104,7 +105,8 @@ PS_OUTPUT PSMain(VS_OUTPUT IN) : SV_Target
     
     float roughness = RoughnessMap.Sample(Sampler, IN.TextureCoordinate).r;
     float metalness = MetallicMap.Sample(Sampler, IN.TextureCoordinate).r;
-    OUT.Extra = float4(Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor.r, roughness, metalness, Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor.g);
+    float reflectionMask = ReflectionMaskMap.Sample(Sampler, IN.TextureCoordinate).r;
+    OUT.Extra = float4(reflectionMask, roughness, metalness, Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor.g);
     OUT.Extra2 = float4(Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor.b, 
         Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor.a ? HeightMap.Sample(Sampler, IN.TextureCoordinate).r : -1.0f, 0.0, SkipDeferredLighting.r);
     return OUT;

@@ -3,7 +3,7 @@
 #include "GameComponent.h"
 #include "Camera.h"
 #include "DirectionalLight.h"
-#include "PostProcessingStack.h"
+#include "ER_PostProcessingStack.h"
 #include "FoliageMaterial.h"
 #include "ER_ShadowMapper.h"
 #include "Illumination.h"

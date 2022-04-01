@@ -50,15 +50,15 @@ namespace Library
 
 	struct TextureData
 	{
-		ID3D11ShaderResourceView* AlbedoMap		= nullptr;
-		ID3D11ShaderResourceView* NormalMap		= nullptr;
-		ID3D11ShaderResourceView* SpecularMap	= nullptr;
-		ID3D11ShaderResourceView* MetallicMap	= nullptr;
-		ID3D11ShaderResourceView* RoughnessMap	= nullptr;
-		ID3D11ShaderResourceView* HeightMap		= nullptr;
-		ID3D11ShaderResourceView* ExtraMap1		= nullptr;  // can be used for extra textures (AO, opacity, displacement)
-		ID3D11ShaderResourceView* ExtraMap2		= nullptr;  // can be used for extra textures (AO, opacity, displacement)
-		ID3D11ShaderResourceView* ExtraMap3		= nullptr;  // can be used for extra textures (AO, opacity, displacement)
+		ID3D11ShaderResourceView* AlbedoMap			= nullptr;
+		ID3D11ShaderResourceView* NormalMap			= nullptr;
+		ID3D11ShaderResourceView* SpecularMap		= nullptr;
+		ID3D11ShaderResourceView* MetallicMap		= nullptr;
+		ID3D11ShaderResourceView* RoughnessMap		= nullptr;
+		ID3D11ShaderResourceView* HeightMap			= nullptr;
+		ID3D11ShaderResourceView* ReflectionMaskMap	= nullptr;
+		ID3D11ShaderResourceView* ExtraMap2			= nullptr;  // can be used for extra textures (AO, opacity, displacement)
+		ID3D11ShaderResourceView* ExtraMap3			= nullptr;  // can be used for extra textures (AO, opacity, displacement)
 
 		TextureData(){}
 
@@ -71,7 +71,7 @@ namespace Library
 			RoughnessMap(roughness),
 			MetallicMap(metallic),
 			HeightMap(height),
-			ExtraMap1(extra1),
+			ReflectionMaskMap(extra1),
 			ExtraMap2(extra2),
 			ExtraMap3(extra3)
 		{}
@@ -84,7 +84,7 @@ namespace Library
 			ReleaseObject(RoughnessMap);
 			ReleaseObject(MetallicMap);
 			ReleaseObject(HeightMap);
-			ReleaseObject(ExtraMap1);
+			ReleaseObject(ReflectionMaskMap);
 			ReleaseObject(ExtraMap2);
 			ReleaseObject(ExtraMap3);
 		}
@@ -127,7 +127,7 @@ namespace Library
 		ER_RenderingObject(const std::string& pName, int index, Game& pGame, Camera& pCamera, std::unique_ptr<Model> pModel, bool availableInEditor = false, bool isInstanced = false);
 		~ER_RenderingObject();
 
-		void LoadCustomMeshTextures(int meshIndex, std::wstring albedoPath, std::wstring normalPath, std::wstring specularPath, std::wstring roughnessPath, std::wstring metallicPath, std::wstring extra1Path, std::wstring extra2Path, std::wstring extra3Path);
+		//void LoadCustomMeshTextures(int meshIndex, std::wstring albedoPath, std::wstring normalPath, std::wstring specularPath, std::wstring roughnessPath, std::wstring metallicPath, std::wstring extra1Path, std::wstring extra2Path, std::wstring extra3Path);
 		void LoadCustomMeshTextures(int meshIndex);
 		void LoadMaterial(ER_Material* pMaterial, const std::string& materialName);
 		void LoadRenderBuffers(int lod = 0);
@@ -239,9 +239,10 @@ namespace Library
 		std::vector<std::string>								mCustomRoughnessTextures;
 		std::vector<std::string>								mCustomMetalnessTextures;
 		std::vector<std::string>								mCustomHeightTextures;
+		std::vector<std::string>								mCustomReflectionMaskTextures;
 	private:
 		void LoadAssignedMeshTextures();
-		void LoadTexture(TextureType type, std::wstring path, int meshIndex);
+		void LoadTexture(TextureType type, const std::wstring& path, int meshIndex);
 		void CreateInstanceBuffer(ID3D11Device* device, InstancedData* instanceData, UINT instanceCount, ID3D11Buffer** instanceBuffer);
 		
 		void ShowInstancesListUI();

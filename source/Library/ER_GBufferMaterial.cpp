@@ -82,14 +82,15 @@ namespace Library
 		context->VSSetConstantBuffers(0, 1, CBs);
 		context->PSSetConstantBuffers(0, 1, CBs);
 
-		ID3D11ShaderResourceView* SRs[5] = { 
+		ID3D11ShaderResourceView* SRs[6] = { 
 			aObj->GetTextureData(meshIndex).AlbedoMap,
 			aObj->GetTextureData(meshIndex).NormalMap,
 			aObj->GetTextureData(meshIndex).RoughnessMap,
 			aObj->GetTextureData(meshIndex).MetallicMap,
-			aObj->GetTextureData(meshIndex).HeightMap
+			aObj->GetTextureData(meshIndex).HeightMap,
+			aObj->GetTextureData(meshIndex).ReflectionMaskMap
 		};
-		context->PSSetShaderResources(0, 5, SRs);
+		context->PSSetShaderResources(0, 6, SRs);
 
 		ID3D11SamplerState* SS[1] = { SamplerStates::TrilinearWrap };
 		context->PSSetSamplers(0, 1, SS);

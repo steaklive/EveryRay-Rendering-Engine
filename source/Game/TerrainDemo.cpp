@@ -25,7 +25,7 @@
 #include "..\Library\StandardLightingMaterial.h"
 #include "..\Library\ScreenSpaceReflectionsMaterial.h"
 #include "..\Library\DepthMapMaterial.h"
-#include "..\Library\PostProcessingStack.h"
+#include "..\Library\ER_PostProcessingStack.h"
 #include "..\Library\FullScreenRenderTarget.h"
 #include "..\Library\IBLRadianceMap.h"
 #include "..\Library\DeferredMaterial.h"
