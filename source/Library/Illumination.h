@@ -24,7 +24,7 @@ namespace Library
 	class RenderableAABB;
 	class ER_RenderingObject;
 	class ER_GPUBuffer;
-	class Skybox;
+	class ER_Skybox;
 
 	namespace IlluminationCBufferData {
 		struct VoxelizationDebugCB
@@ -98,7 +98,7 @@ namespace Library
 
 		void Initialize(const Scene* scene);
 
-		void DrawLocalIllumination(ER_GBuffer* gbuffer, Skybox* skybox);
+		void DrawLocalIllumination(ER_GBuffer* gbuffer, ER_Skybox* skybox);
 		void DrawGlobalIllumination(ER_GBuffer* gbuffer, const GameTime& gameTime);
 		void CompositeTotalIllumination();
 

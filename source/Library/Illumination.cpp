@@ -27,7 +27,7 @@
 #include "ER_LightProbe.h"
 #include "ER_MaterialsCallbacks.h"
 #include "ER_RenderingObject.h"
-#include "Skybox.h"
+#include "ER_Skybox.h"
 
 namespace Library {
 
@@ -252,7 +252,7 @@ namespace Library {
 	}
 
 	//deferred rendering approach
-	void Illumination::DrawLocalIllumination(ER_GBuffer* gbuffer, Skybox* skybox)
+	void Illumination::DrawLocalIllumination(ER_GBuffer* gbuffer, ER_Skybox* skybox)
 	{
 		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		auto context = GetGame()->Direct3DDeviceContext();

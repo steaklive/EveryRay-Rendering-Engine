@@ -64,7 +64,7 @@ namespace Library {
 
 		#pragma region INIT_SKYBOX
 		game.CPUProfiler()->BeginCPUTime("Skybox init");
-        mSkybox = new Skybox(game, camera, 10000);
+        mSkybox = new ER_Skybox(game, camera, 10000);
         mSkybox->Initialize();
 		game.CPUProfiler()->EndCPUTime("Skybox init");
 #pragma endregion

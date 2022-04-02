@@ -257,7 +257,7 @@
     <ClInclude Include="ER_ShadowMapper.h" />
     <ClInclude Include="SkinShadingColorMaterial.h" />
     <ClInclude Include="SkinShadingScatterMaterial.h" />
-    <ClInclude Include="Skybox.h" />
+    <ClInclude Include="ER_Skybox.h" />
     <ClInclude Include="SpatialCell.h" />
     <ClInclude Include="SpatialElement.h" />
     <ClInclude Include="SpotLight.h" />
@@ -297,6 +297,7 @@
     <ClCompile Include="ER_RenderingObject.cpp" />
     <ClCompile Include="ER_RenderToLightProbeMaterial.cpp" />
     <ClCompile Include="ER_ShadowMapMaterial.cpp" />
+    <ClCompile Include="ER_Skybox.cpp" />
     <ClCompile Include="ER_VoxelizationMaterial.cpp" />
     <ClCompile Include="FirstPersonCamera.cpp" />
     <ClCompile Include="Foliage.cpp" />
@@ -338,7 +339,6 @@
     <ClCompile Include="ER_ShadowMapper.cpp" />
     <ClCompile Include="SkinShadingColorMaterial.cpp" />
     <ClCompile Include="SkinShadingScatterMaterial.cpp" />
-    <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="SpatialElement.cpp" />
     <ClCompile Include="SpotLight.cpp" />
     <ClCompile Include="stdafx.cpp">

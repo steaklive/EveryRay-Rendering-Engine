@@ -15,7 +15,7 @@
 #include "..\Library\DirectionalLight.h"
 #include "..\Library\Keyboard.h"
 #include "..\Library\Light.h"
-#include "..\Library\Skybox.h"
+#include "..\Library\ER_Skybox.h"
 #include "..\Library\Grid.h"
 #include "..\Library\DemoLevel.h"
 #include "..\Library\RenderStateHelper.h"

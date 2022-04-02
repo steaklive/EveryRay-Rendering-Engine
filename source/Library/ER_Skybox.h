@@ -30,11 +30,11 @@ namespace Library
 		};
 	}
 
-	class Skybox : public GameComponent
+	class ER_Skybox : public GameComponent
 	{
 	public:
-		Skybox(Game& game, Camera& camera, float scale);
-		~Skybox();
+		ER_Skybox(Game& game, Camera& camera, float scale);
+		~ER_Skybox();
 
 		void Initialize();
 		void Draw(Camera* aCustomCamera = nullptr);

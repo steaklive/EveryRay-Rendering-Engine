@@ -11,7 +11,7 @@ namespace Library
 	class DirectionalLight;
 	class GameTime;
 	class Camera;
-	class Skybox;
+	class ER_Skybox;
 
 	namespace VolumetricCloudsCBufferData {
 		struct FrameCB
@@ -43,7 +43,7 @@ namespace Library
 	class VolumetricClouds : public GameComponent
 	{
 	public:
-		VolumetricClouds(Game& game, Camera& camera, DirectionalLight& light, Skybox& skybox);
+		VolumetricClouds(Game& game, Camera& camera, DirectionalLight& light, ER_Skybox& skybox);
 		~VolumetricClouds();
 
 		void Initialize(ER_GPUTexture* aIlluminationColor, DepthTarget* aIlluminationDepth);
@@ -56,7 +56,7 @@ namespace Library
 
 		Camera& mCamera;
 		DirectionalLight& mDirectionalLight;
-		Skybox& mSkybox;
+		ER_Skybox& mSkybox;
 		
 		ConstantBuffer<VolumetricCloudsCBufferData::FrameCB> mFrameConstantBuffer;
 		ConstantBuffer<VolumetricCloudsCBufferData::CloudsCB> mCloudsConstantBuffer;

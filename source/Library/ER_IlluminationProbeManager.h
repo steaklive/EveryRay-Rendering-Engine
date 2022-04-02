@@ -36,7 +36,7 @@ namespace Library
 	class Camera;
 	class ER_ShadowMapper;
 	class DirectionalLight;
-	class Skybox;
+	class ER_Skybox;
 	class GameTime;
 	class ER_QuadRenderer;
 	class Scene;
@@ -67,7 +67,7 @@ namespace Library
 
 		bool AreProbesReady() { return mDiffuseProbesReady && mSpecularProbesReady; }
 		void SetLevelPath(const std::wstring& aPath) { mLevelPath = aPath; };
-		void ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox = nullptr);
+		void ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox = nullptr);
 		void DrawDebugProbes(ER_ProbeType aType, int volumeIndex);
 		void DrawDebugProbesVolumeGizmo(ER_ProbeType aType, int volumeIndex);
 		void UpdateProbes(Game& game);

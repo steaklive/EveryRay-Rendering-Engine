@@ -8,7 +8,7 @@
 #include "..\Library\Camera.h"
 #include "..\Library\DirectionalLight.h"
 #include "..\Library\Keyboard.h"
-#include "..\Library\Skybox.h"
+#include "..\Library\ER_Skybox.h"
 #include "..\Library\ER_PostProcessingStack.h"
 #include "..\Library\ER_GBuffer.h"
 #include "..\Library\ER_ShadowMapper.h"

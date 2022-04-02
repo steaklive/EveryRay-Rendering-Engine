@@ -14,11 +14,11 @@
 #include "VertexDeclarations.h"
 #include "RasterizerStates.h"
 #include "ShaderCompiler.h"
-#include "Skybox.h"
+#include "ER_Skybox.h"
 #include "ER_QuadRenderer.h"
 
 namespace Library {
-	VolumetricClouds::VolumetricClouds(Game& game, Camera& camera, DirectionalLight& light, Skybox& skybox)
+	VolumetricClouds::VolumetricClouds(Game& game, Camera& camera, DirectionalLight& light, ER_Skybox& skybox)
 		: GameComponent(game),
 		mCamera(camera), 
 		mDirectionalLight(light),

@@ -174,9 +174,6 @@
     <ClInclude Include="Material.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Skybox.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Light.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -351,6 +348,9 @@
     <ClInclude Include="ER_PostProcessingStack.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_Skybox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -503,9 +503,6 @@
     <ClCompile Include="Scene.cpp">
       <Filter>Source Files\Objects</Filter>
     </ClCompile>
-    <ClCompile Include="Skybox.cpp">
-      <Filter>Source Files\Graphics\Rendering systems</Filter>
-    </ClCompile>
     <ClCompile Include="Terrain.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
@@ -579,6 +576,9 @@
       <Filter>Source Files\Objects\RenderTarget</Filter>
     </ClCompile>
     <ClCompile Include="ER_PostProcessingStack.cpp">
+      <Filter>Source Files\Graphics\Rendering systems</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_Skybox.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
   </ItemGroup>

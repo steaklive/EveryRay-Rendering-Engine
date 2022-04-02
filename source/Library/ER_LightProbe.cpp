@@ -1,5 +1,5 @@
 #include "ER_LightProbe.h"
-#include "Skybox.h"
+#include "ER_Skybox.h"
 #include "Camera.h"
 #include "Game.h"
 #include "ER_ShadowMapper.h"
@@ -89,7 +89,7 @@ namespace Library
 	}
 
 	void ER_LightProbe::Compute(Game& game, const GameTime& gameTime, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted,
-		DepthTarget** aDepthBuffers, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, ER_QuadRenderer* quadRenderer, Skybox* skybox)
+		DepthTarget** aDepthBuffers, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, ER_QuadRenderer* quadRenderer, ER_Skybox* skybox)
 	{
 		if (mIsProbeLoadedFromDisk)
 			return;
@@ -112,7 +112,7 @@ namespace Library
 	}
 
 	void ER_LightProbe::DrawGeometryToProbe(Game& game, const GameTime& gameTime, ER_GPUTexture* aTextureNonConvoluted, DepthTarget** aDepthBuffers,
-		const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox)
+		const LightProbeRenderingObjectsInfo& objectsToRender, ER_Skybox* skybox)
 	{
 		auto context = game.Direct3DDeviceContext();
 		float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };

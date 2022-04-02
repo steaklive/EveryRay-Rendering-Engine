@@ -564,7 +564,7 @@ namespace Library
 				(pos.z <= maxBounds.z && pos.z >= minBounds.z);
 	}
 
-	void ER_IlluminationProbeManager::ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, Skybox* skybox)
+	void ER_IlluminationProbeManager::ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox)
 	{
 		int numThreads = std::thread::hardware_concurrency();
 		assert(numThreads > 0);
