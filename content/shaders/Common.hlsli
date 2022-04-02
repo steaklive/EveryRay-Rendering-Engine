@@ -1,3 +1,7 @@
+#define NUM_OF_SHADOW_CASCADES 3
+
+static const float PI = 3.141592654f;
+
 struct QUAD_VS_IN
 {
     float4 Position : POSITION;

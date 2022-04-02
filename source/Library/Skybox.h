@@ -1,31 +1,39 @@
 #pragma once
 #include "Common.h"
-#include "DrawableGameComponent.h"
-#include "ER_PostProcessingStack.h"
+#include "GameComponent.h"
 #include "ConstantBuffer.h"
 #include "DepthTarget.h"
+#include "ER_GPUTexture.h"
 
 namespace Library
 {
-	class Effect;
-	class SkyboxMaterial;
 	class FullScreenRenderTarget;
+	class Camera;
+	class GameTime;
 
-	namespace SunCBufferData {
+	namespace SkyCBufferData {
 		struct SunData {
 			XMMATRIX InvProj;
 			XMMATRIX InvView;
-			XMVECTOR SunDir;
-			XMVECTOR SunColor;
+			XMFLOAT4 SunDir;
+			XMFLOAT4 SunColor;
 			float SunExponent;
 			float SunBrightness;
 		};
+
+		struct SkyboxData
+		{
+			XMMATRIX WorldViewProjection;
+			XMFLOAT4 SunColor;
+			XMFLOAT4 TopColor;
+			XMFLOAT4 BottomColor;
+		};
 	}
 
-	class Skybox
+	class Skybox : public GameComponent
 	{
 	public:
-		Skybox(Game& game, Camera& camera, const std::wstring& cubeMapFileName, float scale);
+		Skybox(Game& game, Camera& camera, float scale);
 		~Skybox();
 
 		void Initialize();
@@ -36,11 +44,11 @@ namespace Library
 
 		void SetMovable(bool value) { mIsMovable = value; };
 		void SetUseCustomSkyColor(bool value) { mUseCustomColor = value; }
-		void SetSkyColors(XMFLOAT4 bottom, XMFLOAT4 top) { 
+		void SetSkyColors(const XMFLOAT4& bottom, const XMFLOAT4& top) {
 			mBottomColor = bottom;
 			mTopColor = top;
 		}
-		void SetSunData(bool rendered, XMVECTOR sunDir, XMVECTOR sunColor, float brightness, float exponent) {
+		void SetSunData(bool rendered, const XMFLOAT4& sunDir, const XMFLOAT4& sunColor, float brightness, float exponent) {
 			mDrawSun = rendered;
 			mSunDir = sunDir;
 			mSunColor = sunColor;
@@ -49,19 +57,15 @@ namespace Library
 		}
 		ID3D11ShaderResourceView* GetSunOcclusionOutputTexture() const;
 	private:
-		Skybox();
-		Skybox(const Skybox& rhs);
-		Skybox& operator=(const Skybox& rhs);
+
 		XMFLOAT4 CalculateSunPositionOnSkybox(XMFLOAT3 dir, Camera* aCustomCamera = nullptr);
+		
 		Game& mGame;
 		Camera& mCamera;
 
-		std::wstring mCubeMapFileName;
-		Effect* mEffect;
-		SkyboxMaterial* mMaterial;
-		ID3D11ShaderResourceView* mCubeMapShaderResourceView;
-		ID3D11Buffer* mVertexBuffer;
-		ID3D11Buffer* mIndexBuffer;
+		ID3D11Buffer* mVertexBuffer = nullptr;
+		ID3D11Buffer* mIndexBuffer = nullptr;
+		ID3D11InputLayout* mInputLayout = nullptr;
 		UINT mIndexCount;
 
 		XMFLOAT4X4 mWorldMatrix;
@@ -76,10 +80,14 @@ namespace Library
 		bool mDrawSun = true;
 		ID3D11PixelShader* mSunPS = nullptr;
 		ID3D11PixelShader* mSunOcclusionPS = nullptr;
-		ConstantBuffer<SunCBufferData::SunData> mSunConstantBuffer;
+		ConstantBuffer<SkyCBufferData::SunData> mSunConstantBuffer;	
+		
+		ID3D11VertexShader* mSkyboxVS = nullptr;
+		ID3D11PixelShader* mSkyboxPS = nullptr;
+		ConstantBuffer<SkyCBufferData::SkyboxData> mSkyboxConstantBuffer;
 
-		XMVECTOR mSunDir;
-		XMVECTOR mSunColor;
+		XMFLOAT4 mSunDir;
+		XMFLOAT4 mSunColor;
 		float mSunExponent;
 		float mSunBrightness;
 		FullScreenRenderTarget* mSunRenderTarget = nullptr;

@@ -1,7 +1,6 @@
 #pragma once
 #include "Common.h"
 #include "Game.h"
-#include "Camera.h"
 #include "GameTime.h"
 #include "ER_GPUTexture.h"
 #include "DepthTarget.h"
@@ -9,6 +8,7 @@
 
 namespace Library
 {
+	class Camera;
 	class DirectionalLight;
 	class ER_QuadRenderer;
 	class ER_GBuffer;
@@ -119,9 +119,10 @@ namespace Library
 
 		ID3D11PixelShader* mFinalResolvePS = nullptr;
 
-		ER_GPUTexture* mFinalTargetBeforeResolve = nullptr; // just a pointer
-		ER_GPUTexture* mFirstTargetBeforePostProcessingPasses = nullptr; // just a pointer
-		DepthTarget* mDepthTarget = nullptr; //just a pointer
+		// just pointers to RTs (not allocated in this system)
+		ER_GPUTexture* mRenderTargetBeforeResolve = nullptr; 
+		ER_GPUTexture* mRenderTargetBeforePostProcessingPasses = nullptr;
+		DepthTarget* mDepthTarget = nullptr;
 
 		bool mShowDebug = false;
 	};

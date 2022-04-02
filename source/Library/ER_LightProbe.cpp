@@ -1,5 +1,6 @@
 #include "ER_LightProbe.h"
 #include "Skybox.h"
+#include "Camera.h"
 #include "Game.h"
 #include "ER_ShadowMapper.h"
 #include "Game.h"

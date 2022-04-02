@@ -177,9 +177,6 @@
     <ClInclude Include="Skybox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SkyboxMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Light.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -416,9 +413,6 @@
     <ClCompile Include="ModelMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
-    <ClCompile Include="SkyboxMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
     <ClCompile Include="Light.cpp">
       <Filter>Source Files\Graphics\Lights</Filter>
     </ClCompile>
@@ -598,9 +592,6 @@
     <FxCompile Include="..\..\content\effects\SkinShadingSpecular.fx">
       <Filter>Effects</Filter>
     </FxCompile>
-    <FxCompile Include="..\..\content\effects\Skybox.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
     <FxCompile Include="..\..\content\shaders\PBR\RadianceMapPS.hlsl">
       <Filter>Shaders\PBR</Filter>
     </FxCompile>
@@ -674,9 +665,6 @@
       <Filter>Shaders\Tonemap</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\effects\TerrainEffect.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\Foliage.fx">
       <Filter>Effects</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\Sun.hlsl">
@@ -754,11 +742,14 @@
     <FxCompile Include="..\..\content\shaders\SSR.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="..\..\content\shaders\Skybox.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\Foliage.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\content\effects\ShaderHelper.hlsli">
-      <Filter>Effects</Filter>
-    </None>
     <None Include="Systems.inl">
       <Filter>Header Files</Filter>
     </None>

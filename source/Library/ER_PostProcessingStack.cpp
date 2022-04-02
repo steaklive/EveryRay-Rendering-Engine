@@ -8,12 +8,12 @@
 #include "ER_QuadRenderer.h"
 #include "SamplerStates.h"
 #include "ER_GBuffer.h"
+#include "Camera.h"
 
 namespace Library {
 
 	ER_PostProcessingStack::ER_PostProcessingStack(Game& pGame, Camera& pCamera)
-		:
-		game(pGame), camera(pCamera)
+		: game(pGame), camera(pCamera)
 	{
 	}
 
@@ -30,7 +30,6 @@ namespace Library {
 		ReleaseObject(mVignettePS);
 		ReleaseObject(mFXAAPS);
 		ReleaseObject(mLinearFogPS);
-
 		ReleaseObject(mFinalResolvePS);
 
 		mSSRConstantBuffer.Release();
@@ -154,6 +153,7 @@ namespace Library {
 			ImGui::SliderFloat("Step Size", &mSSRStepSize, 0.0f, 10.0f);
 			ImGui::SliderFloat("Max Thickness", &mSSRMaxThickness, 0.0f, 0.01f);
 		}
+		
 		if (ImGui::CollapsingHeader("Color Grading"))
 		{
 			ImGui::Checkbox("Color Grading - On", &mUseColorGrading);
@@ -182,7 +182,7 @@ namespace Library {
 	void ER_PostProcessingStack::Begin(ER_GPUTexture* aInitialRT, DepthTarget* aDepthTarget)
 	{
 		assert(aInitialRT && aDepthTarget);
-		mFirstTargetBeforePostProcessingPasses = aInitialRT;
+		mRenderTargetBeforePostProcessingPasses = aInitialRT;
 		mDepthTarget = aDepthTarget;
 		game.Direct3DDeviceContext()->OMSetRenderTargets(1, aInitialRT->GetRTVs(), aDepthTarget->getDSV());
 	}
@@ -191,15 +191,15 @@ namespace Library {
 	{
 		game.ResetRenderTargets();
 
-		//final resolve to main swapchain
+		//final resolve to main RT (pre-UI)
 		{
 			ER_QuadRenderer* quad = (ER_QuadRenderer*)game.Services().GetService(ER_QuadRenderer::TypeIdClass());
 			assert(quad);
-			assert(mFinalTargetBeforeResolve);
+			assert(mRenderTargetBeforeResolve);
 
 			auto context = game.Direct3DDeviceContext();
 
-			ID3D11ShaderResourceView* SR[1] = { aResolveRT ? aResolveRT->GetSRV() : mFinalTargetBeforeResolve->GetSRV() };
+			ID3D11ShaderResourceView* SR[1] = { aResolveRT ? aResolveRT->GetSRV() : mRenderTargetBeforeResolve->GetSRV() };
 			context->PSSetShaderResources(0, 1, SR);
 			ID3D11SamplerState* SS[1] = { SamplerStates::TrilinearWrap };
 			context->PSSetSamplers(0, 1, SS);
@@ -312,30 +312,30 @@ namespace Library {
 		assert(gbuffer);
 		ID3D11DeviceContext* context = game.Direct3DDeviceContext();
 
-		mFinalTargetBeforeResolve = mFirstTargetBeforePostProcessingPasses;
+		mRenderTargetBeforeResolve = mRenderTargetBeforePostProcessingPasses;
 
 		// Linear fog
 		if (mUseLinearFog)
 		{
 			game.SetCustomRenderTarget(mLinearFogRT, nullptr);
-			PrepareDrawingLinearFog(mFinalTargetBeforeResolve);
+			PrepareDrawingLinearFog(mRenderTargetBeforeResolve);
 			quad->Draw(context);
 			game.UnsetCustomRenderTarget();
 
 			//[WARNING] Set from last post processing effect
-			mFinalTargetBeforeResolve = mLinearFogRT;
+			mRenderTargetBeforeResolve = mLinearFogRT;
 		}
 
 		// SSR
 		if (mUseSSR)
 		{
 			game.SetCustomRenderTarget(mSSRRT, nullptr);
-			PrepareDrawingSSR(gameTime, mFinalTargetBeforeResolve, gbuffer);
+			PrepareDrawingSSR(gameTime, mRenderTargetBeforeResolve, gbuffer);
 			quad->Draw(context);
 			game.UnsetCustomRenderTarget();
 
 			//[WARNING] Set from last post processing effect
-			mFinalTargetBeforeResolve = mSSRRT;
+			mRenderTargetBeforeResolve = mSSRRT;
 		}
 
 		//TODO tonemapping here
@@ -344,34 +344,34 @@ namespace Library {
 		if (mUseColorGrading)
 		{
 			game.SetCustomRenderTarget(mColorGradingRT, nullptr);
-			PrepareDrawingColorGrading(mFinalTargetBeforeResolve);
+			PrepareDrawingColorGrading(mRenderTargetBeforeResolve);
 			quad->Draw(context);
 			game.UnsetCustomRenderTarget();
 
 			//[WARNING] Set from last post processing effect
-			mFinalTargetBeforeResolve = mColorGradingRT;
+			mRenderTargetBeforeResolve = mColorGradingRT;
 		}
 		// Vignette
 		if (mUseVignette)
 		{
 			game.SetCustomRenderTarget(mVignetteRT, nullptr);
-			PrepareDrawingVignette(mFinalTargetBeforeResolve);
+			PrepareDrawingVignette(mRenderTargetBeforeResolve);
 			quad->Draw(context);
 			game.UnsetCustomRenderTarget();
 
 			//[WARNING] Set from last post processing effect
-			mFinalTargetBeforeResolve = mVignetteRT;
+			mRenderTargetBeforeResolve = mVignetteRT;
 		}
 		// FXAA
 		if (mUseFXAA)
 		{
 			game.SetCustomRenderTarget(mFXAART, nullptr);
-			PrepareDrawingFXAA(mFinalTargetBeforeResolve);
+			PrepareDrawingFXAA(mRenderTargetBeforeResolve);
 			quad->Draw(context);
 			game.UnsetCustomRenderTarget();
 
 			//[WARNING] Set from last post processing effect 
-			mFinalTargetBeforeResolve = mFXAART;
+			mRenderTargetBeforeResolve = mFXAART;
 		}
 	}
 }

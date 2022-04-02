@@ -10,6 +10,7 @@ namespace Library
 			int MipIndex;
 		};
 	}
+	class Camera;
 
 	class ER_LightProbe
 	{

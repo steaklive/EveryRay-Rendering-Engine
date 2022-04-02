@@ -64,7 +64,7 @@ namespace Library {
 
 		#pragma region INIT_SKYBOX
 		game.CPUProfiler()->BeginCPUTime("Skybox init");
-        mSkybox = new Skybox(game, camera, Utility::GetFilePath(Utility::ToWideString(mScene->skyboxPath)), 10000);
+        mSkybox = new Skybox(game, camera, 10000);
         mSkybox->Initialize();
 		game.CPUProfiler()->EndCPUTime("Skybox init");
 #pragma endregion
@@ -158,8 +158,8 @@ namespace Library {
 		mSkybox->SetUseCustomSkyColor(mEditor->IsSkyboxUsingCustomColor());
 		mSkybox->SetSkyColors(mEditor->GetBottomSkyColor(), mEditor->GetTopSkyColor());
 		mSkybox->SetSunData(mDirectionalLight->IsSunRendered(),
-			mDirectionalLight->DirectionVector(),
-			XMVECTOR{ mDirectionalLight->GetDirectionalLightColor().x, mDirectionalLight->GetDirectionalLightColor().y, mDirectionalLight->GetDirectionalLightColor().z, 1.0 },
+			XMFLOAT4(mDirectionalLight->Direction().x, mDirectionalLight->Direction().y, mDirectionalLight->Direction().z, 1.0),
+			XMFLOAT4(mDirectionalLight->GetDirectionalLightColor().x, mDirectionalLight->GetDirectionalLightColor().y, mDirectionalLight->GetDirectionalLightColor().z, 1.0),
 			mDirectionalLight->GetSunBrightness(), mDirectionalLight->GetSunExponent());
 		mSkybox->Update(gameTime);
 		mSkybox->UpdateSun(gameTime);
