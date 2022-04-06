@@ -332,8 +332,8 @@ namespace Library {
 
 				//voxelize extra objects
 				{
-					if (cascade == 0)
-						mFoliageSystem->Draw(gameTime, &mShadowMapper, FoliageRenderingPass::VOXELIZATION);
+					if (cascade == 0 && mFoliageSystem)
+						mFoliageSystem->Draw(gameTime, &mShadowMapper, FoliageRenderingPass::TO_VOXELIZATION);
 				}
 
 				//reset back
@@ -583,7 +583,7 @@ namespace Library {
 		{
 			//only first cascade due to performance
 			mFoliageSystem->SetVoxelizationTextureOutput(mVCTVoxelCascades3DRTs[0]->GetUAV()); 
-			mFoliageSystem->SetVoxelizationParams(&mWorldVoxelScales[0], &mVoxelCameraPositions[0]);
+			mFoliageSystem->SetVoxelizationParams(&mWorldVoxelScales[0], &voxelCascadesSizes[0], &mVoxelCameraPositions[0]);
 		}
 	}
 

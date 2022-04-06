@@ -17,6 +17,25 @@
 		10.0,
 		35.0
 	],
+	"foliage_zones":
+	[
+		{
+			"type" : 0,
+			"patch_count" : 100,
+			"texture_path" : "content\\textures\\foliage\\grass_flower_type1.png",
+			"position" : [ -30.0, 0.0, 0.0],
+			"distribution_radius" : 30.0,
+			"average_scale" : 3.5
+		},
+		{
+			"type" : 0,
+			"patch_count" : 500,
+			"texture_path" : "content\\textures\\foliage\\grass_type1.png",
+			"position" : [ -30.0, 0.0, 0.0],
+			"distribution_radius" : 30.0,
+			"average_scale" : 2.5
+		}
+	],
 	"rendering_objects" : 
 	[
 		{

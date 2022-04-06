@@ -1,42 +1,68 @@
 #pragma once
 #include "Common.h"
 #include "GameComponent.h"
-#include "Camera.h"
-#include "DirectionalLight.h"
-#include "ER_PostProcessingStack.h"
-#include "FoliageMaterial.h"
-#include "ER_ShadowMapper.h"
-#include "Illumination.h"
 #include "GeneralEvent.h"
+#include "ConstantBuffer.h"
 
 namespace Library
 {
+	class Scene;
+	class Camera;
+	class DirectionalLight;
+	class ER_ShadowMapper;
+	class ER_PostProcessingStack;
+	class Illumination;
+
+	namespace FoliageCBufferData {
+		struct FoliageData {
+			XMMATRIX ShadowMatrices[NUM_SHADOW_CASCADES];
+			XMMATRIX World;
+			XMMATRIX View;
+			XMMATRIX Projection;
+			XMFLOAT4 SunDirection;
+			XMFLOAT4 SunColor;
+			XMFLOAT4 AmbientColor;
+			XMFLOAT4 ShadowTexelSize;
+			XMFLOAT4 ShadowCascadeDistances;
+			XMFLOAT4 CameraDirection;
+			XMFLOAT4 CameraPos;
+			XMFLOAT4 VoxelCameraPos;
+			XMFLOAT4 WindDirection;
+			float RotateToCamera;
+			float Time;
+			float WindFrequency;
+			float WindStrength;
+			float WindGustDistance;
+			float WorldVoxelScale;
+			float VoxelTextureDimension;
+		};
+	}
+
 	enum FoliageRenderingPass
 	{
-		FORWARD_SHADING,
 		TO_GBUFFER,
-		VOXELIZATION
+		TO_VOXELIZATION
 	};
 	enum FoliageBillboardType
 	{
-		SINGLE,
-		TWO_QUADS_CROSSING,
-		THREE_QUADS_CROSSING
+		SINGLE = 0,
+		TWO_QUADS_CROSSING = 1,
+		THREE_QUADS_CROSSING = 2
 	};
 
-	struct FoliagePatchData //for GPU vertex buffer
+	struct GPUFoliagePatchData //for GPU vertex buffer
 	{
 		XMFLOAT4 pos;
 		XMFLOAT2 uv;
 		XMFLOAT3 normals;
 	};
 
-	struct FoliageInstanceData //for GPU instance buffer
+	struct GPUFoliageInstanceData //for GPU instance buffer
 	{
 		XMMATRIX worldMatrix = XMMatrixIdentity();
 	};
 
-	struct FoliageData //for CPU buffer
+	struct CPUFoliageData //for CPU buffer
 	{
 		float xPos, yPos, zPos;
 		float r, g, b;
@@ -47,11 +73,11 @@ namespace Library
 	{
 
 	public:
-		Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale = 1.0f, float distributionRadius = 100, XMFLOAT3 distributionCenter = XMFLOAT3(0.0f, 0.0f, 0.0f), FoliageBillboardType bType = FoliageBillboardType::SINGLE);
+		Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale = 1.0f, float distributionRadius = 100, const XMFLOAT3& distributionCenter = XMFLOAT3(0.0f, 0.0f, 0.0f), FoliageBillboardType bType = FoliageBillboardType::SINGLE);
 		~Foliage();
 
 		void Initialize();
-		void Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper = nullptr, FoliageRenderingPass renderPass = FoliageRenderingPass::FORWARD_SHADING);
+		void Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass);
 		void Update(const GameTime& gameTime);
 
 		int GetPatchesCount() { return mPatchesCount; }
@@ -78,10 +104,11 @@ namespace Library
 		void UpdateBuffersGPU();
 
 		void SetVoxelizationTextureOutput(ID3D11UnorderedAccessView* uav) { mVoxelizationTexture = uav; }
-		void SetVoxelizationParams(float* worldVoxelScale, XMFLOAT4* voxelCameraPos)
+		void SetVoxelizationParams(float* worldVoxelScale, const float* voxelTexDimension, XMFLOAT4* voxelCameraPos)
 		{
 			mWorldVoxelScale = worldVoxelScale;
 			mVoxelCameraPos = voxelCameraPos;
+			mVoxelTextureDimension = voxelTexDimension;
 		}
 	private:
 		void InitializeBuffersGPU(int count);
@@ -93,7 +120,13 @@ namespace Library
 		Camera& mCamera;
 		DirectionalLight& mDirectionalLight;
 
-		FoliageMaterial* mFoliageMaterial = nullptr;
+		ID3D11InputLayout* mInputLayout = nullptr;
+		ID3D11VertexShader* mVS = nullptr;
+		ID3D11GeometryShader* mGS = nullptr;
+		ID3D11PixelShader* mPS = nullptr;
+		ID3D11PixelShader* mPS_GBuffer = nullptr;
+		ID3D11PixelShader* mPS_Voxelization = nullptr;
+		ConstantBuffer<FoliageCBufferData::FoliageData> mFoliageConstantBuffer;
 
 		ID3D11Buffer* mVertexBuffer = nullptr;
 		ID3D11Buffer* mIndexBuffer = nullptr;
@@ -104,8 +137,8 @@ namespace Library
 
 		ID3D11UnorderedAccessView* mVoxelizationTexture = nullptr;
 
-		FoliageInstanceData* mPatchesBufferGPU = nullptr;
-		FoliageData* mPatchesBufferCPU = nullptr;
+		GPUFoliageInstanceData* mPatchesBufferGPU = nullptr;
+		CPUFoliageData* mPatchesBufferCPU = nullptr;
 
 		FoliageBillboardType mType;
 
@@ -132,23 +165,22 @@ namespace Library
 		float mWindGustDistance;
 
 		float* mWorldVoxelScale;
+		const float* mVoxelTextureDimension;
 		XMFLOAT4* mVoxelCameraPos;
 	};
 
 	class FoliageSystem
 	{
 	public:
-		FoliageSystem();
-		FoliageSystem(const FoliageSystem& rhs);
-		FoliageSystem& operator=(const FoliageSystem& rhs);
+		FoliageSystem(Scene* aScene, DirectionalLight& light);
 		~FoliageSystem();
 
 		void Initialize();
 		void Update(const GameTime& gameTime, float gustDistance, float strength, float frequency);
-		void Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass = FoliageRenderingPass::FORWARD_SHADING);
-		void AddFoliage(Foliage* foliage) { mFoliageCollection.emplace_back(foliage); }
+		void Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass);
+		void AddFoliage(Foliage* foliage);
 		void SetVoxelizationTextureOutput(ID3D11UnorderedAccessView* uav);
-		void SetVoxelizationParams(float* scale, XMFLOAT4* voxelCamera);
+		void SetVoxelizationParams(float* scale, const float* dimensions, XMFLOAT4* voxelCamera);
 
 		using Delegate_FoliageSystemInitialized = std::function<void()>;
 		GeneralEvent<Delegate_FoliageSystemInitialized>* FoliageSystemInitializedEvent = new GeneralEvent<Delegate_FoliageSystemInitialized>();

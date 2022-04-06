@@ -214,7 +214,6 @@
     <ClInclude Include="FastFourierTransform.h" />
     <ClInclude Include="FirstPersonCamera.h" />
     <ClInclude Include="Foliage.h" />
-    <ClInclude Include="FoliageMaterial.h" />
     <ClInclude Include="Frustum.h" />
     <ClInclude Include="FullScreenQuad.h" />
     <ClInclude Include="FullScreenRenderTarget.h" />
@@ -301,7 +300,6 @@
     <ClCompile Include="ER_VoxelizationMaterial.cpp" />
     <ClCompile Include="FirstPersonCamera.cpp" />
     <ClCompile Include="Foliage.cpp" />
-    <ClCompile Include="FoliageMaterial.cpp" />
     <ClCompile Include="Frustum.cpp" />
     <ClCompile Include="FullScreenQuad.cpp" />
     <ClCompile Include="FullScreenRenderTarget.cpp" />

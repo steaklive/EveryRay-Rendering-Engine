@@ -12,6 +12,15 @@
 namespace Library
 {
 	class ER_RenderingObject;
+	class Foliage;
+	class DirectionalLight;
+
+	struct SceneFoliageZone
+	{
+		int patchCount;
+		std::string texturePath;
+	};
+
 	class Scene : public GameComponent
 	{
 	public:
@@ -25,6 +34,8 @@ namespace Library
 		const XMFLOAT3& GetLightProbesVolumeMinBounds() const { return mLightProbesVolumeMinBounds; }
 		const XMFLOAT3& GetLightProbesVolumeMaxBounds() const { return mLightProbesVolumeMaxBounds; }
 		bool HasLightProbesSupport() { return mHasLightProbes; }
+
+		void LoadFoliageZones(std::vector<Foliage*>& foliageZones, DirectionalLight& light);
 
 		std::map<std::string, ER_RenderingObject*> objects;
 

@@ -50,6 +50,10 @@ namespace Library
     private:
         void UpdateImGui();
         std::string mName;
+
+		float mWindStrength = 1.0f;
+		float mWindFrequency = 1.0f;
+		float mWindGustDistance = 1.0f;
 	};
 
 }

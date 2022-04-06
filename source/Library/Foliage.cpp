@@ -7,12 +7,21 @@
 #include "Mesh.h"
 #include "VertexDeclarations.h"
 #include "RasterizerStates.h"
-
-#include <WICTextureLoader.h>
+#include "Scene.h"
+#include "DirectionalLight.h"
+#include "ER_ShadowMapper.h"
+#include "ER_PostProcessingStack.h"
+#include "Illumination.h"
+#include "Camera.h"
+#include "ShaderCompiler.h"
 
 namespace Library
 {
-	FoliageSystem::FoliageSystem() { }
+	FoliageSystem::FoliageSystem(Scene* aScene, DirectionalLight& light) 
+	{
+		assert(aScene);
+		aScene->LoadFoliageZones(mFoliageCollection, light);
+	}
 
 	FoliageSystem::~FoliageSystem()
 	{
@@ -45,20 +54,28 @@ namespace Library
 			object->Draw(gameTime, worldShadowMapper, renderPass);
 	}
 
+	void FoliageSystem::AddFoliage(Foliage* foliage)
+	{
+		assert(foliage);
+		if (foliage)
+			mFoliageCollection.emplace_back(foliage);
+	}
+
 	void FoliageSystem::SetVoxelizationTextureOutput(ID3D11UnorderedAccessView* uav)
 	{
 		for (auto& object : mFoliageCollection)
 			object->SetVoxelizationTextureOutput(uav);
 	}
 
-	void FoliageSystem::SetVoxelizationParams(float* scale, XMFLOAT4* voxelCamera)
+	void FoliageSystem::SetVoxelizationParams(float* scale, const float* dimensions, XMFLOAT4* voxelCamera)
 	{
 		for (auto& object : mFoliageCollection)
-			object->SetVoxelizationParams(scale, voxelCamera);
+			object->SetVoxelizationParams(scale, dimensions, voxelCamera);
 	}
+	
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	Foliage::Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale, float distributionRadius, XMFLOAT3 distributionCenter, FoliageBillboardType bType)
+	Foliage::Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale, float distributionRadius, const XMFLOAT3& distributionCenter, FoliageBillboardType bType)
 		:
 		GameComponent(pGame),
 		mCamera(pCamera),
@@ -72,10 +89,55 @@ namespace Library
 	{
 
 		{
-			Effect* effectFoliage = new Effect(pGame);
-			effectFoliage->CompileFromFile(Utility::GetFilePath(L"content\\effects\\Foliage.fx"));
-			mFoliageMaterial = new FoliageMaterial();
-			mFoliageMaterial->Initialize(effectFoliage);
+			ID3DBlob* blob = nullptr;
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
+				throw GameException("Failed to load VSMain from shader: Foliage.hlsl!");
+			if (FAILED(GetGame()->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVS)))
+				throw GameException("Failed to create vertex shader from Foliage.hlsl!");
+
+			D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
+			{
+				{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+				{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+				{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+				{ "WORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+				{ "WORLD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+				{ "WORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+				{ "WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+			};
+
+			HRESULT hr = GetGame()->Direct3DDevice()->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), blob->GetBufferPointer(), blob->GetBufferSize(), &mInputLayout);
+			if (FAILED(hr))
+				throw GameException("CreateInputLayout() failed when creating foliage's vertex shader.", hr);
+			blob->Release();
+
+			blob = nullptr;
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "GSMain", "gs_5_0", &blob)))
+				throw GameException("Failed to load GSMain from shader: Foliage.hlsl!");
+			if (FAILED(GetGame()->Direct3DDevice()->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mGS)))
+				throw GameException("Failed to create geometry shader from Foliage.hlsl!");
+			blob->Release();
+
+			blob = nullptr;
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
+				throw GameException("Failed to load PSMain from shader: Foliage.hlsl!");
+			if (FAILED(GetGame()->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS)))
+				throw GameException("Failed to create pixel shader from Foliage.hlsl!");
+			blob->Release();
+
+			blob = nullptr;
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "PSMain_gbuffer", "ps_5_0", &blob)))
+				throw GameException("Failed to load PSMain_gbuffer from shader: Foliage.hlsl!");
+			if (FAILED(GetGame()->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS_GBuffer)))
+				throw GameException("Failed to create pixel shader from Foliage.hlsl!");
+			blob->Release();
+
+			blob = nullptr;
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "PSMain_voxelization", "ps_5_0", &blob)))
+				throw GameException("Failed to load PSMain_voxelization from shader: Foliage.hlsl!");
+			if (FAILED(GetGame()->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS_Voxelization)))
+				throw GameException("Failed to create pixel shader from Foliage.hlsl!");
+			blob->Release();
 		}
 
 		LoadBillboardModel(mType);
@@ -101,40 +163,42 @@ namespace Library
 		ReleaseObject(mNoBlendState);
 		DeleteObject(mPatchesBufferCPU);
 		DeleteObject(mPatchesBufferGPU);
-		DeleteObject(mFoliageMaterial);
+		ReleaseObject(mInputLayout);
+		ReleaseObject(mVS);
+		ReleaseObject(mGS);
+		ReleaseObject(mPS);
+		ReleaseObject(mPS_GBuffer);
+		ReleaseObject(mPS_Voxelization);
+		mFoliageConstantBuffer.Release();
 	}
 
 	void Foliage::LoadBillboardModel(FoliageBillboardType bType)
 	{
-		assert(mFoliageMaterial != nullptr);
-
 		if (bType == FoliageBillboardType::SINGLE) {
 			mIsRotating = true;
 			std::unique_ptr<Model> quadSingleModel(new Model(*mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_single.obj"), true));
-			mFoliageMaterial->CreateVertexBuffer(mGame->Direct3DDevice(), *(quadSingleModel->Meshes()[0]), &mVertexBuffer);
-			mFoliageMaterial->CreateIndexBuffer(*(quadSingleModel->Meshes()[0]), &mIndexBuffer);
+			quadSingleModel->Meshes()[0]->CreateVertexBuffer_PositionUvNormal(&mVertexBuffer);
 			quadSingleModel->Meshes()[0]->CreateIndexBuffer(&mIndexBuffer);
 			mVerticesCount = quadSingleModel->Meshes()[0]->Indices().size();
 		}
 		else if (bType == FoliageBillboardType::TWO_QUADS_CROSSING) {
 			mIsRotating = false;
 			std::unique_ptr<Model> quadDoubleModel(new Model(*mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_double.obj"), true));
-			mFoliageMaterial->CreateVertexBuffer(mGame->Direct3DDevice(), *(quadDoubleModel->Meshes()[0]), &mVertexBuffer);
-			mFoliageMaterial->CreateIndexBuffer(*(quadDoubleModel->Meshes()[0]), &mIndexBuffer);
+			quadDoubleModel->Meshes()[0]->CreateVertexBuffer_PositionUvNormal(&mVertexBuffer);
 			quadDoubleModel->Meshes()[0]->CreateIndexBuffer(&mIndexBuffer);
 			mVerticesCount = quadDoubleModel->Meshes()[0]->Indices().size();
 		}
 		else if (bType == FoliageBillboardType::THREE_QUADS_CROSSING) {
 			mIsRotating = false;
 			std::unique_ptr<Model> quadTripleModel(new Model(*mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_triple.obj"), true));
-			mFoliageMaterial->CreateVertexBuffer(mGame->Direct3DDevice(), *(quadTripleModel->Meshes()[0]), &mVertexBuffer);
-			mFoliageMaterial->CreateIndexBuffer(*(quadTripleModel->Meshes()[0]), &mIndexBuffer);
+			quadTripleModel->Meshes()[0]->CreateVertexBuffer_PositionUvNormal(&mVertexBuffer);
 			quadTripleModel->Meshes()[0]->CreateIndexBuffer(&mIndexBuffer);
 			mVerticesCount = quadTripleModel->Meshes()[0]->Indices().size();
 		}
 	}
 	void Foliage::Initialize()
 	{
+		mFoliageConstantBuffer.Initialize(GetGame()->Direct3DDevice());
 		InitializeBuffersCPU();
 		//InitializeBuffersGPU();
 	}
@@ -215,7 +279,7 @@ namespace Library
 
 		// instance buffer
 		int instanceCount = count;
-		mPatchesBufferGPU = new FoliageInstanceData[instanceCount];
+		mPatchesBufferGPU = new GPUFoliageInstanceData[instanceCount];
 
 		for (int i = 0; i < instanceCount; i++)
 		{
@@ -227,7 +291,7 @@ namespace Library
 
 		// Set up the description of the instance buffer.
 		instanceBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-		instanceBufferDesc.ByteWidth = sizeof(FoliageInstanceData) * instanceCount;
+		instanceBufferDesc.ByteWidth = sizeof(GPUFoliageInstanceData) * instanceCount;
 		instanceBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		instanceBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		instanceBufferDesc.MiscFlags = 0;
@@ -245,7 +309,7 @@ namespace Library
 	void Foliage::InitializeBuffersCPU()
 	{
 		// randomly generate positions and color
-		mPatchesBufferCPU = new FoliageData[mPatchesCount];
+		mPatchesBufferCPU = new CPUFoliageData[mPatchesCount];
 		
 		for (int i = 0; i < mPatchesCount; i++)
 		{
@@ -261,12 +325,14 @@ namespace Library
 
 	void Foliage::Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass)
 	{
+		if(renderPass == TO_VOXELIZATION)
+			assert(worldShadowMapper);
+
 		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
 
 		if (mPatchesCountToRender == 0)
 			return;
 
-		// dont forget to set alpha blend state if not using the one declared in .fx
 		float blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		context->OMSetBlendState(mAlphaToCoverageState, blendFactor, 0xffffffff);
 
@@ -274,8 +340,8 @@ namespace Library
 		unsigned int offsets[2];
 		ID3D11Buffer* bufferPointers[2];
 
-		strides[0] = sizeof(FoliagePatchData);
-		strides[1] = sizeof(FoliageInstanceData);
+		strides[0] = sizeof(GPUFoliagePatchData);
+		strides[1] = sizeof(GPUFoliageInstanceData);
 
 		offsets[0] = 0;
 		offsets[1] = 0;
@@ -288,72 +354,62 @@ namespace Library
 		context->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		auto updateMaterial = [this, worldShadowMapper, gameTime, context]() {
-			Pass* pass = mFoliageMaterial->CurrentTechnique()->Passes().at(0);
-			ID3D11InputLayout* inputLayout = mFoliageMaterial->InputLayouts().at(pass);
-			context->IASetInputLayout(inputLayout);
-
-			XMMATRIX shadowMatrices[NUM_SHADOW_CASCADES];
-			ID3D11ShaderResourceView* shadowMaps[NUM_SHADOW_CASCADES];
-			if (worldShadowMapper) {
-				for (int cascade = 0; cascade < NUM_SHADOW_CASCADES; cascade++)
-				{
-					shadowMatrices[cascade] = worldShadowMapper->GetViewMatrix(cascade) * worldShadowMapper->GetProjectionMatrix(cascade) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix());
-					shadowMaps[cascade] = worldShadowMapper->GetShadowTexture(cascade);
-				}
-			}
-			mFoliageMaterial->World() << XMMatrixIdentity();
-			mFoliageMaterial->View() << mCamera.ViewMatrix();
-			mFoliageMaterial->Projection() << mCamera.ProjectionMatrix();
-			mFoliageMaterial->albedoTexture() << mAlbedoTexture;
-			mFoliageMaterial->SunDirection() << XMVectorNegate(mDirectionalLight.DirectionVector());
-			mFoliageMaterial->SunColor() << XMVECTOR{ mDirectionalLight.GetDirectionalLightColor().x,  mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z , 1.0f };
-			mFoliageMaterial->AmbientColor() << XMVECTOR{ mDirectionalLight.GetAmbientLightColor().x,  mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
-			if (worldShadowMapper) 
-			{
-				mFoliageMaterial->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, NUM_SHADOW_CASCADES);
-				mFoliageMaterial->cascadedShadowTextures().SetResourceArray(shadowMaps, 0, NUM_SHADOW_CASCADES);
-				mFoliageMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f / worldShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
-			}
-			else
-				mFoliageMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f , 1.0f, 1.0f , 1.0f };
-			mFoliageMaterial->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
-			mFoliageMaterial->CameraDirection() << mCamera.DirectionVector();
-			mFoliageMaterial->CameraPos() << mCamera.PositionVector();
-			float rotateToCamera = (mIsRotating) ? 1.0f : 0.0f;
-			mFoliageMaterial->RotateToCamera() << rotateToCamera;
-			mFoliageMaterial->Time() << static_cast<float>(gameTime.TotalGameTime());
-			mFoliageMaterial->WindStrength() << mWindStrength;
-			mFoliageMaterial->WindDirection() << XMVECTOR{ 0.0f, 0.0f, 1.0f , 1.0f };
-			mFoliageMaterial->WindFrequency() << mWindFrequency;
-			mFoliageMaterial->WindGustDistance() << mWindGustDistance;
-			mFoliageMaterial->VoxelCameraPos() << XMVECTOR{ mVoxelCameraPos->x, mVoxelCameraPos->y, mVoxelCameraPos->z, 1.0 };
-			mFoliageMaterial->WorldVoxelScale() << *mWorldVoxelScale;
-
-			mFoliageMaterial->GetEffect()->GetEffect()->GetVariableByName("outputVoxelGITexture")->AsUnorderedAccessView()->SetUnorderedAccessView(mVoxelizationTexture);
-
-			pass->Apply(0, context);
-			context->DrawIndexedInstanced(mVerticesCount, mPatchesCountToRender, 0, 0, 0);
-		};
-
-		if (renderPass == FoliageRenderingPass::TO_GBUFFER)
+		if (worldShadowMapper)
 		{
-			mFoliageMaterial->SetCurrentTechnique(mFoliageMaterial->GetEffect()->TechniquesByName().at("to_gbuffer"));
-			updateMaterial();
+			for (int cascade = 0; cascade < NUM_SHADOW_CASCADES; cascade++)
+				mFoliageConstantBuffer.Data.ShadowMatrices[cascade] = XMMatrixTranspose(worldShadowMapper->GetViewMatrix(cascade) * worldShadowMapper->GetProjectionMatrix(cascade) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()));
+			mFoliageConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / worldShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
+			mFoliageConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
 		}
-		else if (renderPass == FoliageRenderingPass::VOXELIZATION)
-		{
-			mFoliageMaterial->SetCurrentTechnique(mFoliageMaterial->GetEffect()->TechniquesByName().at("to_voxel_gi"));
-			updateMaterial();
-		}
-		else if (renderPass == FoliageRenderingPass::FORWARD_SHADING)
-		{
-			//not used in recent version, since deferred shading is used
-			// 
-			//mFoliageMaterial->SetCurrentTechnique(mFoliageMaterial->GetEffect()->TechniquesByName().at("main"));
-			//updateMaterial();
-		}
+		
+		mFoliageConstantBuffer.Data.World = XMMatrixIdentity();
+		mFoliageConstantBuffer.Data.View = XMMatrixTranspose(mCamera.ViewMatrix());
+		mFoliageConstantBuffer.Data.Projection = XMMatrixTranspose(mCamera.ProjectionMatrix());
+		mFoliageConstantBuffer.Data.SunDirection = XMFLOAT4(-mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f);
+		mFoliageConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z , 1.0f };
+		mFoliageConstantBuffer.Data.AmbientColor = XMFLOAT4{ mDirectionalLight.GetAmbientLightColor().x, mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
+		mFoliageConstantBuffer.Data.CameraDirection = XMFLOAT4(mCamera.Direction().x, mCamera.Direction().y, mCamera.Direction().z, 1.0f);
+		mFoliageConstantBuffer.Data.CameraPos = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f);
+		mFoliageConstantBuffer.Data.WindDirection = XMFLOAT4{ 0.0f, 0.0f, 1.0f , 1.0f };
+		mFoliageConstantBuffer.Data.VoxelCameraPos = XMFLOAT4{ mVoxelCameraPos->x, mVoxelCameraPos->y, mVoxelCameraPos->z, 1.0 };
+		mFoliageConstantBuffer.Data.RotateToCamera = (mIsRotating) ? 1.0f : 0.0f;;
+		mFoliageConstantBuffer.Data.Time = static_cast<float>(gameTime.TotalGameTime());
+		mFoliageConstantBuffer.Data.WindStrength = mWindStrength;
+		mFoliageConstantBuffer.Data.WindFrequency = mWindFrequency;
+		mFoliageConstantBuffer.Data.WindGustDistance = mWindGustDistance;
+		mFoliageConstantBuffer.Data.WorldVoxelScale = *mWorldVoxelScale;
+		mFoliageConstantBuffer.Data.VoxelTextureDimension = *mVoxelTextureDimension;
+		mFoliageConstantBuffer.ApplyChanges(context);
+		ID3D11Buffer* CBs[1] = { mFoliageConstantBuffer.Buffer() };
+		
+		ID3D11SamplerState* SS[2] = { SamplerStates::TrilinearWrap, SamplerStates::ShadowSamplerState };
 
+		context->IASetInputLayout(mInputLayout);
+		context->VSSetShader(mVS, NULL, NULL);
+		context->VSSetConstantBuffers(0, 1, CBs);
+
+		if (renderPass == TO_VOXELIZATION)
+		{
+			context->GSSetShader(mGS, NULL, NULL);
+			context->GSSetConstantBuffers(0, 1, CBs);
+
+			context->PSSetShader(mPS_Voxelization, NULL, NULL);
+		}
+		else if (renderPass == TO_GBUFFER)
+		{
+			context->PSSetShader(mPS_GBuffer, NULL, NULL);
+		}
+		context->PSSetConstantBuffers(0, 1, CBs);
+		context->PSSetSamplers(0, 2, SS);
+		
+		ID3D11ShaderResourceView* SRs[1 + NUM_SHADOW_CASCADES] = { mAlbedoTexture };
+		if (worldShadowMapper)
+			for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
+				SRs[1 + i] = worldShadowMapper->GetShadowTexture(i);
+
+		context->PSSetShaderResources(0, 1 + NUM_SHADOW_CASCADES, SRs);
+
+		context->DrawIndexedInstanced(mVerticesCount, mPatchesCountToRender, 0, 0, 0);
 		context->OMSetBlendState(mNoBlendState, blendFactor, 0xffffffff);
 	}
 
@@ -399,14 +455,14 @@ namespace Library
 		}
 
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
-		FoliageInstanceData* instancesPtr;
+		GPUFoliageInstanceData* instancesPtr;
 
 		if (FAILED(context->Map(mInstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource)))
 			throw GameException("Map() failed while updating instance buffer of foliage patches");
 
-		instancesPtr = (FoliageInstanceData*)mappedResource.pData;
+		instancesPtr = (GPUFoliageInstanceData*)mappedResource.pData;
 
-		memcpy(instancesPtr, (void*)mPatchesBufferGPU, (sizeof(FoliageInstanceData) * /*mPatchesCount*/mPatchesCountVisible));
+		memcpy(instancesPtr, (void*)mPatchesBufferGPU, (sizeof(GPUFoliageInstanceData) * /*mPatchesCount*/mPatchesCountVisible));
 		context->Unmap(mInstanceBuffer, 0);
 	}
 

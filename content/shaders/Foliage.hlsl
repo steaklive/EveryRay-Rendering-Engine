@@ -13,14 +13,15 @@ cbuffer FoliageCBuffer : register(b0)
     float4 ShadowCascadeDistances;
     float4 CameraDirection;
     float4 CameraPos;
+    float4 VoxelCameraPos;
+    float4 WindDirection;
     float RotateToCamera;
     float Time;
     float WindFrequency;
     float WindStrength;
     float WindGustDistance;
-    float4 WindDirection;
-    float4 VoxelCameraPos;
     float WorldVoxelScale;
+    float VoxelTextureDimension;
 }
 
 SamplerState ColorSampler : register(s0);
@@ -230,13 +231,10 @@ void GSMain(triangle VS_OUTPUT input[3], inout TriangleStream<PS_GI_IN> OutputSt
        
     float axis = max(n.x, max(n.y, n.z));
     
-    uint voxelTexWidth, voxelTexHeight, voxTexDepth;
-    OutputVoxelGITexture.GetDimensions(voxelTexWidth, voxelTexHeight, voxTexDepth);
-    
     [unroll]
     for (uint i = 0; i < 3; i++)
     {
-        float3 vPos = (input[i].WorldPos.xyz - VoxelCameraPos.xyz) / (0.5f * (float) voxelTexWidth) * WorldVoxelScale;
+        float3 vPos = (input[i].WorldPos.xyz - VoxelCameraPos.xyz) / (0.5f * (float)VoxelTextureDimension) * WorldVoxelScale;
         output[0].VoxelPos = vPos;
         output[1].VoxelPos = vPos;
         output[2].VoxelPos = vPos;
@@ -287,7 +285,7 @@ void PSMain_voxelization(PS_GI_IN input)
     }
 }
 
-float4 PSMain(VS_OUTPUT IN) : SV_Target
+float4 PSMain(VS_OUTPUT IN) : SV_Target //forward pass
 {
     float4 albedo = AlbedoTexture.Sample(ColorSampler, IN.TextureCoordinates);
     float shadow = GetShadow(IN.ShadowCoord0, IN.ShadowCoord1, IN.ShadowCoord2, IN.Position.w);

@@ -13,6 +13,8 @@
 #include "MaterialHelper.h"
 #include "Illumination.h"
 #include "ER_IlluminationProbeManager.h"
+#include "Foliage.h"
+#include "DirectionalLight.h"
 
 #define MULTITHREADED_SCENE_LOAD 1
 
@@ -448,4 +450,35 @@ namespace Library
 
 		return material;
 	}
+
+	void Scene::LoadFoliageZones(std::vector<Foliage*>& foliageZones, DirectionalLight& light)
+	{
+		Json::Reader reader;
+		std::ifstream scene(mScenePath.c_str(), std::ifstream::binary);
+		Game* core = GetGame();
+		assert(core);
+
+		if (!reader.parse(scene, root)) {
+			throw GameException(reader.getFormattedErrorMessages().c_str());
+		}
+		else {
+			if (root.isMember("foliage_zones")) {
+				for (Json::Value::ArrayIndex i = 0; i != root["foliage_zones"].size(); i++)
+				{
+					float vec3[3];
+					for (Json::Value::ArrayIndex ia = 0; ia != root["foliage_zones"][i]["position"].size(); ia++)
+						vec3[ia] = root["foliage_zones"][i]["position"][ia].asFloat();
+
+					foliageZones.push_back(new Foliage(*core, mCamera, light,
+						root["foliage_zones"][i]["patch_count"].asInt(),
+						Utility::GetFilePath(root["foliage_zones"][i]["texture_path"].asString()),
+						root["foliage_zones"][i]["average_scale"].asFloat(),
+						root["foliage_zones"][i]["distribution_radius"].asFloat(),
+						XMFLOAT3(vec3[0], vec3[1], vec3[2]), 
+						(FoliageBillboardType)root["foliage_zones"][i]["type"].asInt()));
+				}
+			}
+		}
+	}
+
 }

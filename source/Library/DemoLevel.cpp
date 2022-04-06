@@ -114,13 +114,8 @@ namespace Library {
 
 		#pragma region INIT_FOLIAGE_MANAGER
 		game.CPUProfiler()->BeginCPUTime("Foliage init");
-        mFoliageSystem = new FoliageSystem();
-        mFoliageSystem->FoliageSystemInitializedEvent->AddListener("foliage initialized for GI",  [&]() { mIllumination->SetFoliageSystemForGI(mFoliageSystem); });
-		//TODO add foliage from level
-		//mFoliageSystem->AddFoliage(new Foliage(*mGame, *mCamera, *mDirectionalLight, 3500, Utility::GetFilePath("content\\textures\\foliage\\grass_type1.png"), 2.5f, 100.0f, XMFLOAT3(0.0, 0.0, 0.0), FoliageBillboardType::SINGLE));
-		//mFoliageSystem->AddFoliage(new Foliage(*mGame, *mCamera, *mDirectionalLight, 100, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type1.png"), 3.5f, 100.0f, XMFLOAT3(0.0, 0.0, 0.0), FoliageBillboardType::SINGLE));
-		//mFoliageSystem->AddFoliage(new Foliage(*mGame, *mCamera, *mDirectionalLight, 50, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type3.png"), 2.5f, 100.0f, XMFLOAT3(0.0, 0.0, 0.0), FoliageBillboardType::SINGLE));
-		//mFoliageSystem->AddFoliage(new Foliage(*mGame, *mCamera, *mDirectionalLight, 100, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type10.png"), 3.5f, 100.0f, XMFLOAT3(0.0, 0.0, 0.0), FoliageBillboardType::SINGLE));
+		mFoliageSystem = new FoliageSystem(mScene, *mDirectionalLight);
+		mFoliageSystem->FoliageSystemInitializedEvent->AddListener("foliage initialized for GI",  [&]() { mIllumination->SetFoliageSystemForGI(mFoliageSystem); });
 		mFoliageSystem->Initialize();
 		game.CPUProfiler()->EndCPUTime("Foliage init");
 #pragma endregion
@@ -169,7 +164,7 @@ namespace Library {
 		if (mScene->HasLightProbesSupport() && mIlluminationProbesManager->IsEnabled())
 			mIlluminationProbesManager->UpdateProbes(game);
 		mShadowMapper->Update(gameTime);
-		//mFoliageSystem->Update(gameTime, mWindGustDistance, mWindStrength, mWindFrequency); //TODO
+		mFoliageSystem->Update(gameTime, mWindGustDistance, mWindStrength, mWindFrequency);
 		mDirectionalLight->UpdateProxyModel(gameTime, 
 			((Camera*)game.Services().GetService(Camera::TypeIdClass()))->ViewMatrix4X4(),
 			((Camera*)game.Services().GetService(Camera::TypeIdClass()))->ProjectionMatrix4X4()); //TODO refactor to DebugRenderer
@@ -194,6 +189,13 @@ namespace Library {
         if (ImGui::Button("Global Illumination"))
 			mIllumination->Config();
 
+		if (ImGui::CollapsingHeader("Wind"))
+		{
+			ImGui::SliderFloat("Wind strength", &mWindStrength, 0.0f, 100.0f);
+			ImGui::SliderFloat("Wind gust distance", &mWindGustDistance, 0.0f, 100.0f);
+			ImGui::SliderFloat("Wind frequency", &mWindFrequency, 0.0f, 100.0f);
+		}
+
 		//TODO shadow mapper config
 		//TODO skybox config
 
@@ -214,7 +216,8 @@ namespace Library {
 		#pragma region DRAW_GBUFFER
 		mGBuffer->Start();
 		mGBuffer->Draw(mScene);
-		mFoliageSystem->Draw(gameTime, nullptr, FoliageRenderingPass::TO_GBUFFER);
+		if (mFoliageSystem)
+			mFoliageSystem->Draw(gameTime, nullptr, FoliageRenderingPass::TO_GBUFFER);
 		mGBuffer->End();
 #pragma endregion
 

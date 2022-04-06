@@ -282,9 +282,6 @@
     <ClInclude Include="Foliage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FoliageMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -492,9 +489,6 @@
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="TerrainMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="FoliageMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="Editor.cpp">
