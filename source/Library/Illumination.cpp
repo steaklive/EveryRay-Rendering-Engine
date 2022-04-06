@@ -582,7 +582,6 @@ namespace Library {
 		if (mFoliageSystem)
 		{
 			//only first cascade due to performance
-			mFoliageSystem->SetVoxelizationTextureOutput(mVCTVoxelCascades3DRTs[0]->GetUAV()); 
 			mFoliageSystem->SetVoxelizationParams(&mWorldVoxelScales[0], &voxelCascadesSizes[0], &mVoxelCameraPositions[0]);
 		}
 	}

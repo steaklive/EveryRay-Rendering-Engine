@@ -61,12 +61,6 @@ namespace Library
 			mFoliageCollection.emplace_back(foliage);
 	}
 
-	void FoliageSystem::SetVoxelizationTextureOutput(ID3D11UnorderedAccessView* uav)
-	{
-		for (auto& object : mFoliageCollection)
-			object->SetVoxelizationTextureOutput(uav);
-	}
-
 	void FoliageSystem::SetVoxelizationParams(float* scale, const float* dimensions, XMFLOAT4* voxelCamera)
 	{
 		for (auto& object : mFoliageCollection)
