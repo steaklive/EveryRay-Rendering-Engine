@@ -342,9 +342,9 @@ namespace Library {
 				context->RSSetScissorRects(1, &rect);
 			}
 		}
-
-		//voxelization debug 
-		if (mShowVCTVoxelizationOnly)
+		
+		//voxelization debug
+		if (mShowVCTVoxelizationOnly) 
 		{
 			int cascade = 0; //TODO fix for multiple cascades
 			{
@@ -384,9 +384,13 @@ namespace Library {
 
 				context->RSSetState(oldRS);
 				context->OMSetRenderTargets(1, nullRTVs, NULL);
+
+				context->VSSetShader(NULL, NULL, NULL);
+				context->GSSetShader(NULL, NULL, NULL);
+				context->PSSetShader(NULL, NULL, NULL);
 			}
 		}
-		else
+		else // main pass
 		{
 			context->OMSetRenderTargets(1, nullRTVs, NULL);
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
@@ -484,7 +488,7 @@ namespace Library {
 		// mLocalIllumination might be bound as RTV before this pass
 		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
 		context->OMSetRenderTargets(1, nullRTVs, nullptr);
-		ID3D11ShaderResourceView* SRs[2] = { /*mShowVCTVoxelizationOnly ? mVCTVoxelizationDebugRT->GetSRV() : */mVCTUpsampleAndBlurRT->GetSRV(), mLocalIlluminationRT->GetSRV() };
+		ID3D11ShaderResourceView* SRs[2] = { mShowVCTVoxelizationOnly ? mVCTVoxelizationDebugRT->GetSRV() : mVCTUpsampleAndBlurRT->GetSRV(), mLocalIlluminationRT->GetSRV() };
 		context->CSSetShaderResources(0, 2, SRs);
 		
 		context->CSSetShader(mCompositeIlluminationCS, NULL, NULL);

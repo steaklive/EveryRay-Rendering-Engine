@@ -405,6 +405,23 @@ namespace Library
 
 		context->DrawIndexedInstanced(mVerticesCount, mPatchesCountToRender, 0, 0, 0);
 		context->OMSetBlendState(mNoBlendState, blendFactor, 0xffffffff);
+
+		context->VSSetShader(NULL, NULL, NULL);
+		context->PSSetShader(NULL, NULL, NULL);
+		if (renderPass == TO_VOXELIZATION)
+			context->GSSetShader(NULL, NULL, NULL);
+
+		ID3D11ShaderResourceView* nullSRV[] = { NULL };
+		context->PSSetShaderResources(0, 1, nullSRV);
+
+		ID3D11Buffer* nullCBs[] = { NULL };
+		context->VSSetConstantBuffers(0, 1, nullCBs);
+		context->PSSetConstantBuffers(0, 1, nullCBs);
+		if (renderPass == TO_VOXELIZATION)
+			context->GSSetConstantBuffers(0, 1, nullCBs);
+
+		ID3D11SamplerState* nullSSs[] = { NULL };
+		context->PSSetSamplers(0, 1, nullSSs);
 	}
 
 	void Foliage::Update(const GameTime& gameTime)
