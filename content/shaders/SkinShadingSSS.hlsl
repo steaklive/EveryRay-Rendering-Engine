@@ -1,26 +1,31 @@
 /**
- * Copyright (C) 2012 Jorge Jimenez (jorge@iryoku.com). All rights reserved.
+ * Copyright (C) 2012 Jorge Jimenez (jorge@iryoku.com)
+ * Copyright (C) 2012 Diego Gutierrez (diegog@unizar.es)
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  *    1. Redistributions of source code must retain the above copyright notice,
  *       this list of conditions and the following disclaimer.
  *
- *    2. Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
+ *    2. Redistributions in binary form must reproduce the following disclaimer
+ *       in the documentation and/or other materials provided with the 
+ *       distribution:
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
- * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDERS OR CONTRIBUTORS
- * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *       "Uses Separable SSS. Copyright (C) 2012 by Jorge Jimenez and Diego
+ *        Gutierrez."
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS 
+ * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR 
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDERS OR CONTRIBUTORS 
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * The views and conclusions contained in the software and documentation are 
@@ -28,19 +33,54 @@
  * policies, either expressed or implied, of the copyright holders.
  */
 
-
 //********** https://github.com/iryoku/separable-sss ************//
 ///////////////////////////////////////////////////////////////////
 // Shader is modified by Gen Afanasev (for educational purposes) //
 //***************************************************************//
 
+#include "Common.hlsli"
 
-#pragma warning(disable: 3571) 
+const int NUM_SAMPLES = 25;
 
-cbuffer UpdatedPerFrame
+// 25 samples kernel
+float4 kernel[] =
 {
-    float3 cameraPosition;
+    float4(0.530605, 0.613514, 0.739601, 0),
+    float4(0.000973794, 1.11862e-005, 9.43437e-007, -3),
+    float4(0.00333804, 7.85443e-005, 1.2945e-005, -2.52083),
+    float4(0.00500364, 0.00020094, 5.28848e-005, -2.08333),
+    float4(0.00700976, 0.00049366, 0.000151938, -1.6875),
+    float4(0.0094389, 0.00139119, 0.000416598, -1.33333),
+    float4(0.0128496, 0.00356329, 0.00132016, -1.02083),
+    float4(0.017924, 0.00711691, 0.00347194, -0.75),
+    float4(0.0263642, 0.0119715, 0.00684598, -0.520833),
+    float4(0.0410172, 0.0199899, 0.0118481, -0.333333),
+    float4(0.0493588, 0.0367726, 0.0219485, -0.1875),
+    float4(0.0402784, 0.0657244, 0.04631, -0.0833333),
+    float4(0.0211412, 0.0459286, 0.0378196, -0.0208333),
+    float4(0.0211412, 0.0459286, 0.0378196, 0.0208333),
+    float4(0.0402784, 0.0657244, 0.04631, 0.0833333),
+    float4(0.0493588, 0.0367726, 0.0219485, 0.1875),
+    float4(0.0410172, 0.0199899, 0.0118481, 0.333333),
+    float4(0.0263642, 0.0119715, 0.00684598, 0.520833),
+    float4(0.017924, 0.00711691, 0.00347194, 0.75),
+    float4(0.0128496, 0.00356329, 0.00132016, 1.02083),
+    float4(0.0094389, 0.00139119, 0.000416598, 1.33333),
+    float4(0.00700976, 0.00049366, 0.000151938, 1.6875),
+    float4(0.00500364, 0.00020094, 5.28848e-005, 2.08333),
+    float4(0.00333804, 7.85443e-005, 1.2945e-005, 2.52083),
+    float4(0.000973794, 1.11862e-005, 9.43437e-007, 3),
+};
 
+
+cbuffer UpdatedPerFrame : register(b0)
+{
+    float4x4 ProjectiveTextureMatrix;
+    float4x4 lightviewProjection;
+    matrix currWorldViewProj;
+    matrix world;
+    
+    float3 cameraPosition;
     float3 lightposition;
     float3 lightdirection;
     float lightfalloffStart;
@@ -49,15 +89,6 @@ cbuffer UpdatedPerFrame
     float lightattenuation;
     float farPlane;
     float bias;
-    float4x4 lightviewProjection;
-
-    matrix currWorldViewProj;
-
-}
-
-cbuffer UpdatedPerObject
-{
-    matrix world;
     int id;
     float bumpiness;
     float specularIntensity;
@@ -67,9 +98,6 @@ cbuffer UpdatedPerObject
     bool sssEnabled;
     float sssWidth;
     float ambient;
-
-    float4x4 ProjectiveTextureMatrix;
-
 }
 
 // Textures
@@ -81,18 +109,46 @@ Texture2D beckmannTex;
 TextureCube irradianceTex;
 Texture2D specularsTex;
 
+Texture2D PreBlurColorTexture;
+Texture2D DepthTexture;
 
-// Depth States
-//------------------------------------//
-DepthStencilState DisableDepthStencil
+cbuffer BlurSSS : register(b1)
 {
-    DepthEnable = FALSE;
-    StencilEnable = FALSE;
+    float sssStrength;
+    float2 dir;
+    bool followSurface;
 };
 
-DepthStencilState EnableDepthStencil
+// Sampler States
+//------------------------------------//
+SamplerState PointSampler
 {
-    DepthEnable = TRUE;
+    Filter = MIN_MAG_MIP_POINT;
+    AddressU = Clamp;
+    AddressV = Clamp;
+};
+
+SamplerState LinearSampler
+{ 
+    Filter = MIN_MAG_LINEAR_MIP_POINT; 
+    AddressU = Clamp;
+    AddressV = Clamp;
+};
+//------------------------------------//
+
+
+// Depth Stencil States
+//------------------------------------//
+DepthStencilState BlurStencil
+{
+    DepthEnable = FALSE;
+    StencilEnable = TRUE;
+    FrontFaceStencilFunc = EQUAL;
+};
+
+DepthStencilState InitStencil
+{
+    DepthEnable = FALSE;
     StencilEnable = TRUE;
     FrontFaceStencilPass = REPLACE;
 };
@@ -119,50 +175,6 @@ BlendState AddSpecularBlending
 };
 //------------------------------------//
 
-
-// Rasterizer State
-//------------------------------------//
-RasterizerState EnableMultisampling
-{
-    MultisampleEnable = TRUE;
-};
-//------------------------------------//
-
-
-// Sampler States
-//------------------------------------//
-SamplerState AnisotropicSampler
-{
-    Filter = ANISOTROPIC;
-    AddressU = Clamp;
-    AddressV = Clamp;
-    MaxAnisotropy = 16;
-};
-
-SamplerState LinearSampler
-{
-    Filter = MIN_MAG_LINEAR_MIP_POINT;
-    AddressU = Clamp;
-    AddressV = Clamp;
-};
-SamplerComparisonState ShadowSampler
-{
-    ComparisonFunc = Less;
-    Filter = COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
-};
-
-SamplerComparisonState PcfShadowMapSampler
-{
-    Filter = COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
-    AddressU = BORDER;
-    AddressV = BORDER;
-    ComparisonFunc = LESS_EQUAL;
-};
-//------------------------------------//
-
-
-
-
 struct VS_INPUT
 {
     float4 ObjectPosition : POSITION;
@@ -175,22 +187,19 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     // Position and texcoord:
-   float4 svPosition : SV_POSITION;
-   float2 texcoord : TEXCOORD0;
+    float4 svPosition : SV_POSITION;
+    float2 texcoord : TEXCOORD0;
 
     // For shading:
-   float3 worldPosition : TEXCOORD1;
-   float3 view : TEXCOORD2;
-   float3 normal : TEXCOORD3;
-   float3 tangent : TEXCOORD4;
-   float4 ShadowTextureCoordinate : TEXCOORD5;
+    float3 worldPosition : TEXCOORD1;
+    float3 view : TEXCOORD2;
+    float3 normal : TEXCOORD3;
+    float3 tangent : TEXCOORD4;
+    float4 ShadowTextureCoordinate : TEXCOORD5;
 
 };
 
-
-
 VS_OUTPUT RenderVS(VS_INPUT IN)
-                 
 {
     VS_OUTPUT output;
 
@@ -212,11 +221,10 @@ VS_OUTPUT RenderVS(VS_INPUT IN)
     return output;
 }
 
-
 float3 BumpMap(Texture2D normalTex, float2 texcoord)
 {
     float3 bump;
-    bump.xy = -1.0 + 2.0 * normalTex.Sample(AnisotropicSampler, texcoord).gr;
+    bump.xy = -1.0 + 2.0 * normalTex.Sample(LinearSampler, texcoord).gr;
     bump.z = sqrt(1.0 - bump.x * bump.x - bump.y * bump.y);
     return normalize(bump);
 }
@@ -230,7 +238,7 @@ float Fresnel(float3 h, float3 view, float f0)
 
 float SpecularKSK(Texture2D beckmannTex, float3 normal, float3 light, float3 view, float roughness)
 {
-    float3 h = view+light;
+    float3 h = view + light;
     float3 halfn = normalize(h);
 
     float ndotl = max(dot(normal, light), 0.0);
@@ -238,7 +246,7 @@ float SpecularKSK(Texture2D beckmannTex, float3 normal, float3 light, float3 vie
 
     float ph = pow(2.0 * beckmannTex.SampleLevel(LinearSampler, float2(ndoth, roughness), 0).r, 10.0);
     float f = lerp(0.25, Fresnel(halfn, view, 0.028), specularFresnel);
-    float ksk = max(ph * f / dot( h,  h), 0.0);
+    float ksk = max(ph * f / dot(h, h), 0.0);
 
     return ndotl * ksk;
 }
@@ -342,7 +350,7 @@ float4 RenderPS(VS_OUTPUT input) : SV_TARGET
     input.view = normalize(input.view);
 
     // Fetch albedo, specular parameters and static ambient occlusion:
-    float4 albedo = diffuseTex.Sample(AnisotropicSampler, input.texcoord);
+    float4 albedo = diffuseTex.Sample(LinearSampler, input.texcoord);
     float3 specularAO = specularAOTex.Sample(LinearSampler, input.texcoord).rgb;
 
     float occlusion = specularAO.b;
@@ -363,7 +371,7 @@ float4 RenderPS(VS_OUTPUT input) : SV_TARGET
     if (spot > lightfalloffStart)
     {
         // Calculate attenuation:
-        float curve = min(pow(dist /farPlane, 6.0), 1.0);
+        float curve = min(pow(dist / farPlane, 6.0), 1.0);
         float attenuation = lerp(1.0 / (1.0 + lightattenuation * dist * dist), 0.0, curve);
   
         // And the spot light falloff:
@@ -394,17 +402,68 @@ float4 RenderPS(VS_OUTPUT input) : SV_TARGET
     return color;
 }
 
-technique10 Render
+float4 BlurPS(QUAD_VS_IN input) : SV_TARGET
 {
-    pass Render
+    // Fetch color of current pixel:
+    float4 colorM = PreBlurColorTexture.SampleLevel(PointSampler, input.TexCoord, 0);
+
+    // Fetch linear depth of current pixel:
+    float depthM = DepthTexture.SampleLevel(PointSampler, input.TexCoord, 0).r;
+
+    // Calculate the sssWidth scale (1.0 for a unit plane sitting on the
+    // projection window):
+    float distanceToProjectionWindow = 1.0 / tan(0.5 * radians(20.0f));
+    float scale = distanceToProjectionWindow / depthM;
+
+    // Calculate the final step to fetch the surrounding pixels:
+    float2 finalStep = sssWidth * scale * dir;
+    finalStep *= sssStrength; // Modulate it using the strength.
+    finalStep *= 1.0 / 3.0; // Divide by 3 as the kernels range from -3 to 3.
+
+    // Accumulate the center sample:
+    float4 colorBlurred = colorM;
+    colorBlurred.rgb *= kernel[0].rgb;
+
+    // Accumulate the other samples:
+    for (int i = 1; i < 25; i++)
     {
-        SetVertexShader(CompileShader(vs_5_0, RenderVS()));
-        SetGeometryShader(NULL);
-        SetPixelShader(CompileShader(ps_5_0, RenderPS()));
-        
-        SetDepthStencilState(EnableDepthStencil, id);
-        SetBlendState(NoBlending, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
-        //SetRasterizerState(EnableMultisampling);
+        // Fetch color and depth for current sample:
+        float2 offset = input.TexCoord + kernel[i].a * finalStep;
+        float4 color = PreBlurColorTexture.Sample(LinearSampler, offset);
+
+        // follow the surface
+        if (followSurface)
+        {
+            float depth = DepthTexture.SampleLevel(PointSampler, offset, 0).r;
+            float s = saturate(300.0f * distanceToProjectionWindow * sssWidth * abs(depthM - depth));
+            color.rgb = lerp(color.rgb, colorM.rgb, s);
+        }
+
+        // Accumulate:
+        colorBlurred.rgb += kernel[i].rgb * color.rgb;
     }
+
+    return colorBlurred;
 }
 
+//technique10 SSS
+//{
+//    pass SSSSBlurX
+//    {
+//        SetVertexShader(CompileShader(vs_5_0, BlurVS()));
+//
+//        SetPixelShader(CompileShader(ps_5_0, BlurPS()));
+//        SetDepthStencilState(InitStencil, id);
+//
+//        SetBlendState(NoBlending, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
+//    }
+//
+//    pass SSSSBlurY
+//    {
+//        SetVertexShader(CompileShader(vs_5_0, BlurVS()));
+//        SetPixelShader(CompileShader(ps_5_0, BlurPS()));
+//        
+//        SetDepthStencilState(BlurStencil, id);
+//        SetBlendState(NoBlending, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
+//    }
+//}

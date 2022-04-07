@@ -57,7 +57,6 @@ namespace Rendering
 		mIntegrationMapTextureSRV(nullptr),
 		mGrid(nullptr),
 		mGBuffer(nullptr),
-		mSSRQuad(nullptr),
 		mShadowMapper(nullptr),
 		mTerrain(nullptr),
 		mPostProcessingStack(nullptr),

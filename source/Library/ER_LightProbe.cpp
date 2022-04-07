@@ -12,7 +12,6 @@
 #include "VectorHelper.h"
 #include "DirectionalLight.h"
 #include "ER_QuadRenderer.h"
-#include "Material.h"
 #include "ER_RenderToLightProbeMaterial.h"
 #include "ER_MaterialsCallbacks.h"
 
@@ -158,8 +157,8 @@ namespace Library
 					if (!object.second->IsInLightProbe())
 						continue;
 				
-					auto materialInfo = object.second->GetNewMaterials().find(materialListenerName + "_" + std::to_string(cubeMapFaceIndex));
-					if (materialInfo != object.second->GetNewMaterials().end())
+					auto materialInfo = object.second->GetMaterials().find(materialListenerName + "_" + std::to_string(cubeMapFaceIndex));
+					if (materialInfo != object.second->GetMaterials().end())
 					{
 						for (int meshIndex = 0; meshIndex < object.second->GetMeshCount(); meshIndex++)
 						{

@@ -11,7 +11,6 @@ static const int TERRAIN_TILE_RESOLUTION = 512;
 
 namespace Library 
 {
-	class TerrainMaterial;
 	class ER_ShadowMapper;
 	class GameTime;
 
@@ -109,7 +108,6 @@ namespace Library
 
 		ER_ShadowMapper* mTerrainShadowMapper = nullptr; // for terrain shadows 
 
-		TerrainMaterial* mMaterial;
 		UINT mWidth = 0;
 		UINT mHeight = 0;
 		

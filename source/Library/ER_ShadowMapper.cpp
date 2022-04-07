@@ -256,8 +256,8 @@ namespace Library
 			int objectIndex = 0;
 			for (auto it = scene->objects.begin(); it != scene->objects.end(); it++, objectIndex++)
 			{
-				auto materialInfo = it->second->GetNewMaterials().find(name);
-				if (materialInfo != it->second->GetNewMaterials().end())
+				auto materialInfo = it->second->GetMaterials().find(name);
+				if (materialInfo != it->second->GetMaterials().end())
 				{
 					for (int meshIndex = 0; meshIndex < it->second->GetMeshCount(); meshIndex++)
 					{

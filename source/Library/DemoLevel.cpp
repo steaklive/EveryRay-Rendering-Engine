@@ -129,7 +129,7 @@ namespace Library {
 		materialSystems.mProbesManager = mIlluminationProbesManager;
 
 		for (auto& object : mScene->objects) {
-			for (auto& layeredMaterial : object.second->GetNewMaterials())
+			for (auto& layeredMaterial : object.second->GetMaterials())
 			{
 				// assign prepare callbacks to non-special materials (special ones are processed and rendered from their own systems, i.e., ShadowMapper)
 				if (!layeredMaterial.second->IsSpecial())
@@ -245,7 +245,7 @@ namespace Library {
 		#pragma region DRAW_LAYERED_MATERIALS
 		for (auto& it = mScene->objects.begin(); it != mScene->objects.end(); it++)
 		{
-			for (auto& mat : it->second->GetNewMaterials())
+			for (auto& mat : it->second->GetMaterials())
 			{
 				if (!mat.second->IsSpecial())
 					it->second->Draw(mat.first);

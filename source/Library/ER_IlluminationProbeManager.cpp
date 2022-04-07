@@ -647,8 +647,8 @@ namespace Library
 
 		if (probeObject && ready)
 		{
-			auto materialInfo = probeObject->GetNewMaterials().find(MaterialHelper::debugLightProbeMaterialName);
-			if (materialInfo != probeObject->GetNewMaterials().end())
+			auto materialInfo = probeObject->GetMaterials().find(MaterialHelper::debugLightProbeMaterialName);
+			if (materialInfo != probeObject->GetMaterials().end())
 			{
 				static_cast<ER_DebugLightProbeMaterial*>(materialInfo->second)->PrepareForRendering(materialSystems, probeObject, 0, static_cast<int>(aType), volumeIndex);
 				probeObject->Draw(MaterialHelper::debugLightProbeMaterialName);

@@ -137,7 +137,7 @@ namespace Library
 		void UpdateGizmos();
 		void Update(const GameTime& time);
 
-		std::map<std::string, ER_Material*>& GetNewMaterials() { return mNewMaterials; }
+		std::map<std::string, ER_Material*>& GetMaterials() { return mMaterials; }
 		
 		TextureData& GetTextureData(int meshIndex) { return mMeshesTextureBuffers[meshIndex]; }
 		
@@ -257,7 +257,7 @@ namespace Library
 		std::vector<std::vector<XMFLOAT3>>						mMeshAllVertices; 
 		std::vector<std::map<std::string, std::vector<RenderBufferData*>>>	mMeshesRenderBuffers;
 		std::vector<float>										mMeshesReflectionFactors; 
-		std::map<std::string, ER_Material*>						mNewMaterials;
+		std::map<std::string, ER_Material*>						mMaterials;
 		ER_AABB													mLocalAABB;
 		RenderableAABB*											mDebugAABB;
 		std::unique_ptr<Model>									mModel;

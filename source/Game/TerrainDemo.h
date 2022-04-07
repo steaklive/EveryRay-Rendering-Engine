@@ -22,7 +22,6 @@ namespace Library
 	class IBLRadianceMap;
 	class Frustum;
 	class FullScreenRenderTarget;
-	class FullScreenQuad;
 	class GBuffer;
 	class ShadowMapper;
 	class Terrain;
@@ -76,7 +75,6 @@ namespace Rendering
 		Skybox* mSkybox;
 		Grid* mGrid;
 		ShadowMapper* mShadowMapper;
-		FullScreenQuad* mSSRQuad;
 		DirectionalLight* mDirectionalLight;
 		GBuffer* mGBuffer;
 		PostProcessingStack* mPostProcessingStack;

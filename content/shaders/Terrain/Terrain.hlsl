@@ -1,27 +1,20 @@
+#include "..\Common.hlsli"
+
 static const int TILE_SIZE = 512;
 static const int DETAIL_TEXTURE_REPEAT = 32;
-#define NUM_OF_SHADOW_CASCADES 3
-static const float4 ColorWhite = { 1, 1, 1, 1 };
 
-cbuffer CBufferPerObject 
+cbuffer TerrainDataCBuffer : register(b0)
 {
+    float4x4 ShadowMatrices[NUM_OF_SHADOW_CASCADES];
     float4x4 World;
     float4x4 View;
     float4x4 Projection;
-    float4x4 ShadowMatrices[NUM_OF_SHADOW_CASCADES];
-}
-
-cbuffer CBufferPerFrame
-{
     float4 SunDirection;
     float4 SunColor;
     float4 AmbientColor;
     float4 ShadowTexelSize;
     float4 ShadowCascadeDistances;
     float4 CameraPosition;
-}
-cbuffer CBufferTerrainData
-{
     float TessellationFactor;
     float TerrainHeightScale;
     float UseDynamicTessellation;
@@ -348,26 +341,26 @@ float4 pixel_shader_ts(DS_OUTPUT IN) : SV_Target
     return float4(color, 1.0f);
 }
 
-technique11 main
-{
-    pass p0
-	{
-        SetVertexShader(CompileShader(vs_5_0, vertex_shader()));
-		SetGeometryShader(NULL);
-        SetPixelShader(CompileShader(ps_5_0, pixel_shader()));
-    }
-
-    pass tessellation
-    {
-        SetVertexShader(CompileShader(vs_5_0, vertex_shader_ts()));
-        SetHullShader(CompileShader(hs_5_0, hull_shader()));
-        SetDomainShader(CompileShader(ds_5_0, domain_shader()));
-        SetGeometryShader(NULL);
-        SetPixelShader(CompileShader(ps_5_0, pixel_shader_ts()));
-    }
-
-    //pass placeObjects
-    //{
-    //    SetComputeShader(CompileShader(cs_5_0, displaceOnTerrainCS()));
-    //}
-}
+//technique11 main
+//{
+//    pass p0
+//	{
+//        SetVertexShader(CompileShader(vs_5_0, vertex_shader()));
+//		SetGeometryShader(NULL);
+//        SetPixelShader(CompileShader(ps_5_0, pixel_shader()));
+//    }
+//
+//    pass tessellation
+//    {
+//        SetVertexShader(CompileShader(vs_5_0, vertex_shader_ts()));
+//        SetHullShader(CompileShader(hs_5_0, hull_shader()));
+//        SetDomainShader(CompileShader(ds_5_0, domain_shader()));
+//        SetGeometryShader(NULL);
+//        SetPixelShader(CompileShader(ps_5_0, pixel_shader_ts()));
+//    }
+//
+//    //pass placeObjects
+//    //{
+//    //    SetComputeShader(CompileShader(cs_5_0, displaceOnTerrainCS()));
+//    //}
+//}

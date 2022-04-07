@@ -82,9 +82,9 @@ namespace Library
 	{
 		DeleteObject(MeshMaterialVariablesUpdateEvent);
 
-		for (auto object : mNewMaterials)
+		for (auto object : mMaterials)
 			DeleteObject(object.second);
-		mNewMaterials.clear();
+		mMaterials.clear();
 
 		for (auto lod : mMeshesRenderBuffers)
 			for (auto meshRenderBuffer : lod)
@@ -103,7 +103,7 @@ namespace Library
 	void ER_RenderingObject::LoadMaterial(ER_Material* pMaterial, const std::string& materialName)
 	{
 		assert(pMaterial);
-		mNewMaterials.emplace(materialName, pMaterial);
+		mMaterials.emplace(materialName, pMaterial);
 	}
 
 	void ER_RenderingObject::LoadAssignedMeshTextures()
@@ -368,7 +368,7 @@ namespace Library
 		mMeshesRenderBuffers.push_back({});
 		assert(mMeshesRenderBuffers.size() - 1 == lod);
 
-		for (auto material : mNewMaterials)
+		for (auto material : mMaterials)
 		{
 			mMeshesRenderBuffers[lod].insert(std::pair<std::string, std::vector<RenderBufferData*>>(material.first, std::vector<RenderBufferData*>()));
 			for (size_t i = 0; i < mMeshesCount[lod]; i++)
@@ -386,7 +386,7 @@ namespace Library
 					mMeshesRenderBuffers[lod][material.first][i]->IndicesCount = mModelLODs[lod - 1]->Meshes()[i]->Indices().size();
 				}
 
-				mMeshesRenderBuffers[lod][material.first][i]->Stride = mNewMaterials[material.first]->VertexSize();
+				mMeshesRenderBuffers[lod][material.first][i]->Stride = mMaterials[material.first]->VertexSize();
 				mMeshesRenderBuffers[lod][material.first][i]->Offset = 0;
 			}
 		}
@@ -428,12 +428,12 @@ namespace Library
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
 		context->IASetPrimitiveTopology(mWireframeMode ? D3D11_PRIMITIVE_TOPOLOGY_LINELIST : D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		if (mNewMaterials.find(materialName) == mNewMaterials.end() && !isForwardPass)
+		if (mMaterials.find(materialName) == mMaterials.end() && !isForwardPass)
 			return;
 		
 		if (mIsRendered && !mIsCulled)
 		{
-			if (!isForwardPass && (!mNewMaterials.size() || mMeshesRenderBuffers[lod].size() == 0))
+			if (!isForwardPass && (!mMaterials.size() || mMeshesRenderBuffers[lod].size() == 0))
 				return;
 			
 			bool isSpecificMesh = (meshIndex != -1);
@@ -457,7 +457,7 @@ namespace Library
 				}
 
 				// run prepare callbacks for non-special materials (specials are, i.e., shadow mapping, which are processed in their own systems)
-				if (!isForwardPass && !mNewMaterials[materialName]->IsSpecial())
+				if (!isForwardPass && !mMaterials[materialName]->IsSpecial())
 				{
 					auto prepareMaterialBeforeRendering = MeshMaterialVariablesUpdateEvent->GetListener(materialName);
 					if (prepareMaterialBeforeRendering)

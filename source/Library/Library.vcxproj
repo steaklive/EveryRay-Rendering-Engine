@@ -201,7 +201,6 @@
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="DrawableGameComponent.h" />
     <ClInclude Include="Editor.h" />
-    <ClInclude Include="Effect.h" />
     <ClInclude Include="ER_CPUProfiler.h" />
     <ClInclude Include="ER_GPUBuffer.h" />
     <ClInclude Include="ER_IlluminationProbeManager.h" />
@@ -215,7 +214,6 @@
     <ClInclude Include="FirstPersonCamera.h" />
     <ClInclude Include="Foliage.h" />
     <ClInclude Include="Frustum.h" />
-    <ClInclude Include="FullScreenQuad.h" />
     <ClInclude Include="FullScreenRenderTarget.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameClock.h" />
@@ -226,7 +224,6 @@
     <ClInclude Include="Illumination.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Light.h" />
-    <ClInclude Include="Material.h" />
     <ClInclude Include="MaterialHelper.h" />
     <ClInclude Include="MatrixHelper.h" />
     <ClInclude Include="Mesh.h" />
@@ -235,7 +232,6 @@
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="OceanSimulator.h" />
     <ClInclude Include="OctreeStructure.h" />
-    <ClInclude Include="Pass.h" />
     <ClInclude Include="PointLight.h" />
     <ClInclude Include="ER_PostProcessingStack.h" />
     <ClInclude Include="Projector.h" />
@@ -254,20 +250,15 @@
     <ClInclude Include="ServiceContainer.h" />
     <ClInclude Include="ShaderCompiler.h" />
     <ClInclude Include="ER_ShadowMapper.h" />
-    <ClInclude Include="SkinShadingColorMaterial.h" />
-    <ClInclude Include="SkinShadingScatterMaterial.h" />
     <ClInclude Include="ER_Skybox.h" />
     <ClInclude Include="SpatialCell.h" />
     <ClInclude Include="SpatialElement.h" />
     <ClInclude Include="SpotLight.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="Technique.h" />
     <ClInclude Include="Terrain.h" />
-    <ClInclude Include="TerrainMaterial.h" />
     <ClInclude Include="TGATextureLoader.h" />
     <ClInclude Include="Utility.h" />
-    <ClInclude Include="Variable.h" />
     <ClInclude Include="VectorHelper.h" />
     <ClInclude Include="VertexDeclarations.h" />
     <ClInclude Include="VolumetricClouds.h" />
@@ -286,7 +277,6 @@
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="DrawableGameComponent.cpp" />
     <ClCompile Include="Editor.cpp" />
-    <ClCompile Include="Effect.cpp" />
     <ClCompile Include="ER_CPUProfiler.cpp" />
     <ClCompile Include="ER_GPUBuffer.cpp" />
     <ClCompile Include="ER_IlluminationProbeManager.cpp" />
@@ -301,7 +291,6 @@
     <ClCompile Include="FirstPersonCamera.cpp" />
     <ClCompile Include="Foliage.cpp" />
     <ClCompile Include="Frustum.cpp" />
-    <ClCompile Include="FullScreenQuad.cpp" />
     <ClCompile Include="FullScreenRenderTarget.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameClock.cpp" />
@@ -312,7 +301,6 @@
     <ClCompile Include="Illumination.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Light.cpp" />
-    <ClCompile Include="Material.cpp" />
     <ClCompile Include="MaterialHelper.cpp" />
     <ClCompile Include="MatrixHelper.cpp" />
     <ClCompile Include="Mesh.cpp" />
@@ -320,7 +308,6 @@
     <ClCompile Include="ModelMaterial.cpp" />
     <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="OctreeStructure.cpp" />
-    <ClCompile Include="Pass.cpp" />
     <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="Projector.cpp" />
     <ClCompile Include="ProxyModel.cpp" />
@@ -335,8 +322,6 @@
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ServiceContainer.cpp" />
     <ClCompile Include="ER_ShadowMapper.cpp" />
-    <ClCompile Include="SkinShadingColorMaterial.cpp" />
-    <ClCompile Include="SkinShadingScatterMaterial.cpp" />
     <ClCompile Include="SpatialElement.cpp" />
     <ClCompile Include="SpotLight.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -345,40 +330,13 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Technique.cpp" />
     <ClCompile Include="Terrain.cpp" />
-    <ClCompile Include="TerrainMaterial.cpp" />
     <ClCompile Include="TGATextureLoader.cpp" />
     <ClCompile Include="Utility.cpp" />
-    <ClCompile Include="Variable.cpp" />
     <ClCompile Include="VectorHelper.cpp" />
     <ClCompile Include="VolumetricClouds.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\..\content\effects\SkinShadingColor.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\SkinShadingSeparableSubsurface.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\SkinShadingSpecular.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\TerrainEffect.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
     <FxCompile Include="..\..\content\shaders\BasicColor.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -435,18 +393,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="..\..\content\shaders\PBR\RadianceMapPS.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\..\content\shaders\PBR\RadianceMapVS.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
     <FxCompile Include="..\..\content\shaders\EmptyColorResolve.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -456,6 +402,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\ShadowMap.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\SkinShadingSSS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
@@ -474,6 +424,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\Terrain\PlaceObjectsOnTerrain.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\Terrain\Terrain.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

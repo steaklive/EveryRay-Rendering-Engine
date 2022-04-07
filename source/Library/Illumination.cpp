@@ -318,8 +318,8 @@ namespace Library {
 					if (!obj.second->IsInVoxelization())
 						continue;
 
-					auto materialInfo = obj.second->GetNewMaterials().find(materialName);
-					if (materialInfo != obj.second->GetNewMaterials().end())
+					auto materialInfo = obj.second->GetMaterials().find(materialName);
+					if (materialInfo != obj.second->GetMaterials().end())
 					{
 						for (int meshIndex = 0; meshIndex < obj.second->GetMeshCount(); meshIndex++)
 						{

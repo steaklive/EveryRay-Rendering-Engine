@@ -34,14 +34,8 @@
     <Filter Include="Source Files\Objects\Frustums">
       <UniqueIdentifier>{8aed3072-d0a1-4ed0-ac9f-2bc88a7c28c7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Effects">
-      <UniqueIdentifier>{cb66bc09-9b78-4531-8ec0-10a31f0b8295}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shaders">
       <UniqueIdentifier>{09f1a3ac-1868-41c5-8c47-d866e35cd170}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shaders\PBR">
-      <UniqueIdentifier>{3a46b407-bb43-4e45-af57-5ce23f448b2b}</UniqueIdentifier>
     </Filter>
     <Filter Include="Shaders\VolumetricLighting">
       <UniqueIdentifier>{b4952fdd-8615-41aa-879e-346bf0c5e5b6}</UniqueIdentifier>
@@ -78,9 +72,6 @@
     </Filter>
     <Filter Include="Source Files\Graphics\Materials">
       <UniqueIdentifier>{b5ad1c8e-a7e4-495c-97ab-98e3b928f8ba}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Graphics\Materials\Effects">
-      <UniqueIdentifier>{1b9f0c31-d964-4307-9d45-a9ccf343642d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Graphics\Lights">
       <UniqueIdentifier>{c7d93f20-369b-4d5a-b0c3-b3b6b4b5da84}</UniqueIdentifier>
@@ -159,21 +150,6 @@
     <ClInclude Include="Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Effect.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Technique.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Variable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Pass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Light.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -196,9 +172,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FullScreenRenderTarget.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FullScreenQuad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Projector.h">
@@ -226,12 +199,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RenderableAABB.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SkinShadingColorMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SkinShadingScatterMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DepthTarget.h">
@@ -274,9 +241,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Terrain.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TerrainMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Foliage.h">
@@ -374,18 +338,6 @@
     <ClCompile Include="VectorHelper.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
-    <ClCompile Include="Effect.cpp">
-      <Filter>Source Files\Graphics\Materials\Effects</Filter>
-    </ClCompile>
-    <ClCompile Include="Material.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="Variable.cpp">
-      <Filter>Source Files\Graphics\Materials\Effects</Filter>
-    </ClCompile>
-    <ClCompile Include="Technique.cpp">
-      <Filter>Source Files\Graphics\Materials\Effects</Filter>
-    </ClCompile>
     <ClCompile Include="Utility.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
@@ -400,9 +352,6 @@
     </ClCompile>
     <ClCompile Include="RenderStateHelper.cpp">
       <Filter>Source Files\Helpers</Filter>
-    </ClCompile>
-    <ClCompile Include="Pass.cpp">
-      <Filter>Source Files\Graphics\Materials\Effects</Filter>
     </ClCompile>
     <ClCompile Include="Mouse.cpp">
       <Filter>Source Files\Controls</Filter>
@@ -437,9 +386,6 @@
     <ClCompile Include="Ray.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
-    <ClCompile Include="FullScreenQuad.cpp">
-      <Filter>Source Files\Objects\RenderTarget</Filter>
-    </ClCompile>
     <ClCompile Include="FullScreenRenderTarget.cpp">
       <Filter>Source Files\Objects\RenderTarget</Filter>
     </ClCompile>
@@ -464,12 +410,6 @@
     <ClCompile Include="DemoLevel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SkinShadingColorMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="SkinShadingScatterMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
     <ClCompile Include="DepthTarget.cpp">
       <Filter>Source Files\Objects\RenderTarget</Filter>
     </ClCompile>
@@ -487,9 +427,6 @@
     </ClCompile>
     <ClCompile Include="MaterialHelper.cpp">
       <Filter>Source Files\Helpers</Filter>
-    </ClCompile>
-    <ClCompile Include="TerrainMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="Editor.cpp">
       <Filter>Source Files\Objects</Filter>
@@ -577,21 +514,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\..\content\effects\SkinShadingColor.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\SkinShadingSeparableSubsurface.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\SkinShadingSpecular.fx">
-      <Filter>Effects</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\content\shaders\PBR\RadianceMapPS.hlsl">
-      <Filter>Shaders\PBR</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\content\shaders\PBR\RadianceMapVS.hlsl">
-      <Filter>Shaders\PBR</Filter>
-    </FxCompile>
     <FxCompile Include="..\..\content\shaders\VolumetricLight\Apply_PS.hlsl">
       <Filter>Shaders\VolumetricLighting</Filter>
     </FxCompile>
@@ -657,9 +579,6 @@
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\Tonemap\Tonemap.hlsl">
       <Filter>Shaders\Tonemap</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\content\effects\TerrainEffect.fx">
-      <Filter>Effects</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\Sun.hlsl">
       <Filter>Shaders</Filter>
@@ -741,6 +660,12 @@
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\Foliage.hlsl">
       <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\SkinShadingSSS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\Terrain\Terrain.hlsl">
+      <Filter>Shaders\Terrain</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

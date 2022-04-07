@@ -2,24 +2,16 @@
 #include "Common.h"
 #include "GameComponent.h"
 #include "Camera.h"
-#include "Material.h"
-#include "ER_Material.h"
 #include "ModelMaterial.h"
-#include "Effect.h"
+#include "ER_Material.h"
 
 #include "..\JsonCpp\include\json\json.h"
 
 namespace Library
 {
 	class ER_RenderingObject;
-	class Foliage;
 	class DirectionalLight;
-
-	struct SceneFoliageZone
-	{
-		int patchCount;
-		std::string texturePath;
-	};
+	class Foliage;
 
 	class Scene : public GameComponent
 	{

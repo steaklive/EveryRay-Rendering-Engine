@@ -86,8 +86,8 @@ namespace Library {
 
 		for (auto it = scene->objects.begin(); it != scene->objects.end(); it++)
 		{
-			auto materialInfo = it->second->GetNewMaterials().find(MaterialHelper::gbufferMaterialName);
-			if (materialInfo != it->second->GetNewMaterials().end())
+			auto materialInfo = it->second->GetMaterials().find(MaterialHelper::gbufferMaterialName);
+			if (materialInfo != it->second->GetMaterials().end())
 			{
 				for (int meshIndex = 0; meshIndex < it->second->GetMeshCount(); meshIndex++)
 				{
