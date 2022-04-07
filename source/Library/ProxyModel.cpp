@@ -3,7 +3,6 @@
 #include "ProxyModel.h"
 #include "Game.h"
 #include "GameException.h"
-#include "BasicMaterial.h"
 #include "MatrixHelper.h"
 #include "VectorHelper.h"
 #include "Model.h"
@@ -11,6 +10,8 @@
 #include "Utility.h"
 #include "Camera.h"
 #include "RasterizerStates.h"
+#include "ER_BasicColorMaterial.h"
+#include "ER_MaterialsCallbacks.h"
 
 namespace Library
 {
@@ -18,7 +19,7 @@ namespace Library
 
 		ProxyModel::ProxyModel(Game& game, Camera& camera, const std::string& modelFileName, float scale)
 		: DrawableGameComponent(game, camera),
-		mModelFileName(modelFileName), mEffect(nullptr), mMaterial(nullptr),
+		mModelFileName(modelFileName), mMaterial(nullptr),
 		mVertexBuffer(nullptr), mIndexBuffer(nullptr), mIndexCount(0),
 		mWorldMatrix(MatrixHelper::Identity), mScaleMatrix(MatrixHelper::Identity), mDisplayWireframe(false),
 		mPosition(Vector3Helper::Zero), mDirection(Vector3Helper::Forward), mUp(Vector3Helper::Up), mRight(Vector3Helper::Right)
@@ -29,7 +30,6 @@ namespace Library
 	ProxyModel::~ProxyModel()
 	{
 		DeleteObject(mMaterial);
-		DeleteObject(mEffect);
 		ReleaseObject(mVertexBuffer);
 		ReleaseObject(mIndexBuffer);
 	}
@@ -150,14 +150,10 @@ namespace Library
 
 		std::unique_ptr<Model> model(new Model(*mGame, mModelFileName, true));
 
-		mEffect = new Effect(*mGame);
-		mEffect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\BasicEffect.fx"));
-
-		mMaterial = new BasicMaterial();
-		mMaterial->Initialize(mEffect);
+		mMaterial = new ER_BasicColorMaterial(*mGame, {}, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER);
 
 		Mesh* mesh = model->Meshes().at(0);
-		mMaterial->CreateVertexBuffer(mGame->Direct3DDevice(), *mesh, &mVertexBuffer);
+		mMaterial->CreateVertexBuffer(*mesh, &mVertexBuffer);
 		mesh->CreateIndexBuffer(&mIndexBuffer);
 		mIndexCount = mesh->Indices().size();
 	}
@@ -169,44 +165,19 @@ namespace Library
 		MatrixHelper::SetUp(worldMatrix, mUp);
 		MatrixHelper::SetRight(worldMatrix, mRight);
 		MatrixHelper::SetTranslation(worldMatrix, mPosition);
-		//
-		//XMMATRIX translate = XMMatrixTranslation(0.0f, 0.0f, 15.0f);
-		//
-		//XMMATRIX matFinal = -translate * rotation * translate;
-		//
-		//worldMatrix = matFinal;
-
 		XMStoreFloat4x4(&mWorldMatrix, XMLoadFloat4x4(&mScaleMatrix) * worldMatrix);
 	}
 
 	void ProxyModel::Draw(const GameTime& gametime)
 	{
-		ID3D11DeviceContext* direct3DDeviceContext = mGame->Direct3DDeviceContext();
-		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-		Pass* pass = mMaterial->CurrentTechnique()->Passes().at(0);
-		ID3D11InputLayout* inputLayout = mMaterial->InputLayouts().at(pass);
-		direct3DDeviceContext->IASetInputLayout(inputLayout);
+		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
 
 		UINT stride = mMaterial->VertexSize();
 		UINT offset = 0;
-		direct3DDeviceContext->IASetVertexBuffers(0, 1, &mVertexBuffer, &stride, &offset);
-		direct3DDeviceContext->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		context->IASetVertexBuffers(0, 1, &mVertexBuffer, &stride, &offset);
+		context->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
-		XMMATRIX wvp = XMLoadFloat4x4(&mWorldMatrix) * mCamera->ViewMatrix() * mCamera->ProjectionMatrix();
-		mMaterial->WorldViewProjection() << wvp;
-
-		pass->Apply(0, direct3DDeviceContext);
-
-		if (mDisplayWireframe)
-		{
-			mGame->Direct3DDeviceContext()->RSSetState(RasterizerStates::Wireframe);
-			direct3DDeviceContext->DrawIndexed(mIndexCount, 0, 0);
-			mGame->Direct3DDeviceContext()->RSSetState(nullptr);
-		}
-		else
-		{
-			direct3DDeviceContext->DrawIndexed(mIndexCount, 0, 0);
-		}
+		mMaterial->PrepareForRendering(XMLoadFloat4x4(&mWorldMatrix), { 1.0f, 0.65f, 0.0f, 1.0f });
+		context->DrawIndexed(mIndexCount, 0, 0);
 	}
 }

@@ -5,7 +5,7 @@
 #include "GameTime.h"
 #include "VectorHelper.h"
 #include "MatrixHelper.h"
-#include "RenderingObject.h"
+#include "ER_RenderingObject.h"
 #include "Utility.h"
 #include "Scene.h"
 
@@ -85,9 +85,9 @@ namespace Library
 			for (size_t i = 0; i < objectsSize; i++)
 			{
 				if (i == selectedObjectIndex)
-					mScene->objects[editorObjectsNames[selectedObjectIndex]]->Selected(true);
+					mScene->objects[editorObjectsNames[selectedObjectIndex]]->SetSelected(true);
 				else
-					mScene->objects[editorObjectsNames[i]]->Selected(false);
+					mScene->objects[editorObjectsNames[i]]->SetSelected(false);
 			}
 
 			ImGui::End();

@@ -23,7 +23,6 @@
 
 #include <d3d11_1.h>
 #include <D3DCompiler.h>
-#include <d3dx11Effect.h>
 #include <DirectXMath.h>
 #include <DirectXPackedVector.h>
 #include <dinput.h>

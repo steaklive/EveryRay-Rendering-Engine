@@ -1,6 +1,5 @@
 Texture2D skyTex : register(t0);
-Texture2D sceneColorTex : register(t1);
-Texture2D sceneDepthTex : register(t2);
+Texture2D sceneDepthTex : register(t1);
 
 SamplerState DefaultSampler : register(s0);
 
@@ -36,7 +35,7 @@ float4 renderSun(float3 worldDir, bool occlusion = false)
         return SunBrightness * /*SunColor*/SUN_COLOR * pow(sun, SunExponent);
 }
 
-float4 main(float4 pos : SV_POSITION, float2 tex : TEX_COORD0) : SV_Target
+float4 main(float4 pos : SV_Position, float2 tex : TEXCOORD0) : SV_Target
 {
     //compute ray direction
     float4 rayClipSpace = float4(toClipSpaceCoord(tex), 1.0);
@@ -49,14 +48,15 @@ float4 main(float4 pos : SV_POSITION, float2 tex : TEX_COORD0) : SV_Target
     float4 sunColor = skyTex.Sample(DefaultSampler, tex);
     sunColor += renderSun(worldDir);
     
-    float4 sceneCol = sceneColorTex.Sample(DefaultSampler, tex);
     float sceneDepth = sceneDepthTex.Sample(DefaultSampler, tex).r;
-    
-    return lerp(sceneCol, sunColor, ((sceneDepth < 0.9998f) ? 0.0 : 1.0));
+    if (sceneDepth < 0.9998f)
+        return float4(0.0, 0.0, 0.0, 1.0);
+    else
+        return sunColor;
 }
 
 // for light shafts
-float4 occlusion(float4 pos : SV_POSITION, float2 tex : TEX_COORD0) : SV_Target
+float4 occlusion(float4 pos : SV_Position, float2 tex : TEXCOORD0) : SV_Target
 {
     //compute ray direction
     float4 rayClipSpace = float4(toClipSpaceCoord(tex), 1.0);

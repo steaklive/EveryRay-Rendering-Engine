@@ -13,6 +13,7 @@ namespace Library
 	class FirstPersonCamera;
 	class RenderStateHelper;
 	class Editor;
+	class ER_QuadRenderer;
 }
 
 namespace Rendering
@@ -44,7 +45,8 @@ namespace Rendering
 		Mouse* mMouse;
 		FirstPersonCamera* mCamera;
 		Editor* mEditor;
-		
+		ER_QuadRenderer* mQuadRenderer;
+
 		RenderStateHelper* mRenderStateHelper; //TODO move to Game.cpp
 
 		std::chrono::duration<double> mElapsedTimeUpdateCPU;

@@ -3,7 +3,7 @@
 #include "..\Library\DrawableGameComponent.h"
 #include "..\Library\DemoLevel.h"
 #include "..\Library\Frustum.h"
-#include "..\Library\RenderingObject.h"
+#include "..\Library\ER_RenderingObject.h"
 
 using namespace Library;
 
@@ -22,7 +22,6 @@ namespace Library
 	class IBLRadianceMap;
 	class Frustum;
 	class FullScreenRenderTarget;
-	class FullScreenQuad;
 	class GBuffer;
 	class ShadowMapper;
 	class Terrain;
@@ -76,7 +75,6 @@ namespace Rendering
 		Skybox* mSkybox;
 		Grid* mGrid;
 		ShadowMapper* mShadowMapper;
-		FullScreenQuad* mSSRQuad;
 		DirectionalLight* mDirectionalLight;
 		GBuffer* mGBuffer;
 		PostProcessingStack* mPostProcessingStack;

@@ -8,12 +8,15 @@
 #include "GameException.h"
 #include "Utility.h"
 #include "Model.h"
-#include "Material.h"
 #include "Materials.inl"
-#include "RenderingObject.h"
+#include "ER_RenderingObject.h"
 #include "MaterialHelper.h"
-#include "Illumination.h"
-#include "ER_IlluminationProbeManager.h"
+#include "ER_Illumination.h"
+#include "ER_LightProbesManager.h"
+#include "ER_FoliageManager.h"
+#include "DirectionalLight.h"
+
+#define MULTITHREADED_SCENE_LOAD 1
 
 namespace Library 
 {
@@ -98,12 +101,16 @@ namespace Library
 				std::string name = root["rendering_objects"][i]["name"].asString();
 				std::string modelPath = root["rendering_objects"][i]["model_path"].asString();
 				bool isInstanced = root["rendering_objects"][i]["instanced"].asBool();
-				objects.emplace(name, new Rendering::RenderingObject(name, i, *mGame, mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath(modelPath), true)), true, isInstanced));
+				objects.emplace(name, new ER_RenderingObject(name, i, *mGame, mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath(modelPath), true)), true, isInstanced));
 			}
 
 			assert(numRenderingObjects == objects.size());
 
+#if MULTITHREADED_SCENE_LOAD
 			int numThreads = std::thread::hardware_concurrency();
+#else
+			int numThreads = 1;
+#endif
 			int objectsPerThread = numRenderingObjects / numThreads;
 			if (objectsPerThread == 0)
 			{
@@ -145,7 +152,7 @@ namespace Library
 		objects.clear();
 	}
 
-	void Scene::LoadRenderingObjectData(Rendering::RenderingObject* aObject)
+	void Scene::LoadRenderingObjectData(ER_RenderingObject* aObject)
 	{
 		if (!aObject)
 			return;
@@ -158,9 +165,7 @@ namespace Library
 		{
 			if (root["rendering_objects"][i].isMember("foliageMask"))
 				aObject->SetFoliageMask(root["rendering_objects"][i]["foliageMask"].asBool());
-			if (root["rendering_objects"][i].isMember("inLightProbe"))
-				aObject->SetInLightProbe(root["rendering_objects"][i]["inLightProbe"].asBool());
-			if (root["rendering_objects"][i].isMember("useGlobalLightProbe"))
+			if (root["rendering_objects"][i].isMember("use_global_lightprobe"))
 				aObject->SetUseGlobalLightProbe(root["rendering_objects"][i]["useGlobalLightProbe"].asBool());
 			if (root["rendering_objects"][i].isMember("use_parallax_occlusion_mapping"))
 				aObject->SetParallaxOcclusionMapping(root["rendering_objects"][i]["use_parallax_occlusion_mapping"].asBool());
@@ -179,74 +184,74 @@ namespace Library
 
 		// load materials
 		{
-			if (root["rendering_objects"][i].isMember("materials")) {
-
-				unsigned int numMaterials = root["rendering_objects"][i]["materials"].size();
+			if (root["rendering_objects"][i].isMember("new_materials")) {
+				unsigned int numMaterials = root["rendering_objects"][i]["new_materials"].size();
 				for (Json::Value::ArrayIndex matIndex = 0; matIndex != numMaterials; matIndex++) {
-					std::tuple<Material*, Effect*, std::string> materialData = CreateMaterialData(
-						root["rendering_objects"][i]["materials"][matIndex]["name"].asString(),
-						root["rendering_objects"][i]["materials"][matIndex]["effect"].asString(),
-						root["rendering_objects"][i]["materials"][matIndex]["technique"].asString()
-					);
+					std::string name = root["rendering_objects"][i]["new_materials"][matIndex]["name"].asString();
 
-					if (std::get<2>(materialData) == MaterialHelper::shadowMapMaterialName) {
+					MaterialShaderEntries shaderEntries;
+					if (root["rendering_objects"][i]["new_materials"][matIndex].isMember("vertexEntry"))
+						shaderEntries.vertexEntry = root["rendering_objects"][i]["new_materials"][matIndex]["vertexEntry"].asString();
+					if (root["rendering_objects"][i]["new_materials"][matIndex].isMember("geometryEntry"))
+						shaderEntries.geometryEntry = root["rendering_objects"][i]["new_materials"][matIndex]["geometryEntry"].asString();
+					if (root["rendering_objects"][i]["new_materials"][matIndex].isMember("hullEntry"))
+						shaderEntries.hullEntry = root["rendering_objects"][i]["new_materials"][matIndex]["hullEntry"].asString();	
+					if (root["rendering_objects"][i]["new_materials"][matIndex].isMember("domainEntry"))
+						shaderEntries.domainEntry = root["rendering_objects"][i]["new_materials"][matIndex]["domainEntry"].asString();	
+					if (root["rendering_objects"][i]["new_materials"][matIndex].isMember("pixelEntry"))
+						shaderEntries.pixelEntry = root["rendering_objects"][i]["new_materials"][matIndex]["pixelEntry"].asString();
+
+					if (isInstanced) //be careful with the instancing support in shaders of the materials! (i.e., maybe the material does not have instancing entry point/support)
+						shaderEntries.vertexEntry = shaderEntries.vertexEntry + "_instancing";
+					
+					if (name == MaterialHelper::gbufferMaterialName)
+						aObject->SetInGBuffer(true);
+					if (name == MaterialHelper::renderToLightProbeMaterialName)
+						aObject->SetInLightProbe(true);
+
+					if (name == MaterialHelper::shadowMapMaterialName)
+					{
 						for (int cascade = 0; cascade < NUM_SHADOW_CASCADES; cascade++)
 						{
-							const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(cascade);
-							aObject->LoadMaterial(new DepthMapMaterial(), std::get<1>(materialData), name);
-							auto material = aObject->GetMaterials()[name];
-							if (material)
-								material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][matIndex]["technique"].asString()));
+							std::string cascadedname = MaterialHelper::shadowMapMaterialName + " " + std::to_string(cascade);
+							aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), cascadedname);
 						}
 					}
-					else if (std::get<2>(materialData) == MaterialHelper::voxelizationGIMaterialName) {
+					else if (name == MaterialHelper::voxelizationMaterialName)
+					{
 						aObject->SetInVoxelization(true);
 						for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
 						{
-							const std::string name = MaterialHelper::voxelizationGIMaterialName + "_" + std::to_string(cascade);
-							aObject->LoadMaterial(new Rendering::VoxelizationGIMaterial(), std::get<1>(materialData), name);
-							auto material = aObject->GetMaterials()[name];
-							if (material)
-								material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][matIndex]["technique"].asString()));
+							const std::string fullname = MaterialHelper::voxelizationMaterialName + "_" + std::to_string(cascade);
+							aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), fullname);
 						}
 					}
-					else if (std::get<2>(materialData) == MaterialHelper::renderToLightProbeMaterialName) {
+					else if (name == MaterialHelper::renderToLightProbeMaterialName)
+					{
+						std::string originalPSEntry = shaderEntries.pixelEntry;
 						for (int cubemapFaceIndex = 0; cubemapFaceIndex < CUBEMAP_FACES_COUNT; cubemapFaceIndex++)
 						{
-							std::string name;
-							std::string techniqueName = root["rendering_objects"][i]["materials"][matIndex]["technique"].asString();
+							std::string newName;
 							//diffuse
 							{
-								name = "diffuse_" + MaterialHelper::renderToLightProbeMaterialName + "_" + std::to_string(cubemapFaceIndex);
-								aObject->LoadMaterial(new RenderToLightProbeMaterial(), std::get<1>(materialData), name);
-								auto material = aObject->GetMaterials()[name];
-								if (material)
-									material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at(techniqueName));
+								shaderEntries.pixelEntry = originalPSEntry + "_DiffuseProbes";
+								newName = "diffuse_" + MaterialHelper::renderToLightProbeMaterialName + "_" + std::to_string(cubemapFaceIndex);
+								aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), newName);
 							}
 							//specular
 							{
-								name = "specular_" + MaterialHelper::renderToLightProbeMaterialName + "_" + std::to_string(cubemapFaceIndex);
-								aObject->LoadMaterial(new RenderToLightProbeMaterial(), std::get<1>(materialData), name);
-								auto material = aObject->GetMaterials()[name];
-								if (material)
-									material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at(techniqueName));
+								shaderEntries.pixelEntry = originalPSEntry + "_SpecularProbes";
+								newName = "specular_" + MaterialHelper::renderToLightProbeMaterialName + "_" + std::to_string(cubemapFaceIndex);
+								aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), newName);
 							}
 						}
 					}
-					else if (std::get<0>(materialData))
-					{
-						aObject->LoadMaterial(std::get<0>(materialData), std::get<1>(materialData), std::get<2>(materialData));
-						aObject->GetMaterials()[std::get<2>(materialData)]->SetCurrentTechnique(
-							aObject->GetMaterials()[std::get<2>(materialData)]->GetEffect()->TechniquesByName().at(root["rendering_objects"][i]["materials"][matIndex]["technique"].asString())
-						);
-					}
-
-					if (std::get<2>(materialData) == MaterialHelper::deferredPrepassMaterialName)
-						aObject->SetInGBuffer(true);
-
+					else //other standard materials
+						aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), name);
 				}
-				aObject->LoadRenderBuffers();
 			}
+
+			aObject->LoadRenderBuffers();
 		}
 
 		// load custom textures
@@ -264,6 +269,8 @@ namespace Library
 						aObject->mCustomMetalnessTextures[mesh] = root["rendering_objects"][i]["textures"][mesh]["metalness"].asString();
 					if (root["rendering_objects"][i]["textures"][mesh].isMember("height"))
 						aObject->mCustomHeightTextures[mesh] = root["rendering_objects"][i]["textures"][mesh]["height"].asString();
+					if (root["rendering_objects"][i]["textures"][mesh].isMember("reflection_mask"))
+						aObject->mCustomReflectionMaskTextures[mesh] = root["rendering_objects"][i]["textures"][mesh]["reflection_mask"].asString();
 
 					aObject->LoadCustomMeshTextures(mesh);
 				}
@@ -303,7 +310,7 @@ namespace Library
 	}
 
 	// [WARNING] NOT THREAD-SAFE!
-	void Scene::LoadRenderingObjectInstancedData(Rendering::RenderingObject* aObject)
+	void Scene::LoadRenderingObjectInstancedData(ER_RenderingObject* aObject)
 	{
 		int i = aObject->GetIndexInScene();
 		bool isInstanced = aObject->IsInstanced();
@@ -420,41 +427,58 @@ namespace Library
 		writer->write(root, &file_id);
 	}
 
-	Library::Material* Scene::GetMaterial(const std::string& materialName)
+	ER_Material* Scene::GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries, bool instanced)
 	{
-		//TODO load from materials container
-		return nullptr;
-	}
+		auto core = GetGame();
+		assert(core);
 
-	std::tuple<Material*, Effect*, std::string> Scene::CreateMaterialData(const std::string& matName, const std::string& effectName, const std::string& techniqueName)
-	{
-		Material* material = nullptr;
-
-		Effect* effect = new Effect(*mGame);
-		effect->CompileFromFile(Utility::GetFilePath(Utility::ToWideString(effectName)));
-
-		std::string materialName = "";
+		ER_Material* material = nullptr;
 
 		// cant do reflection in C++
-		if (matName == "DepthMapMaterial") {
-			materialName = MaterialHelper::shadowMapMaterialName;
-			//material = new DepthMapMaterial(); //processed later as we need cascades
-		}
-		else if (matName == "DeferredMaterial") {
-			materialName = MaterialHelper::deferredPrepassMaterialName;
-			material = new DeferredMaterial();
-		}
-		else if (matName == "VoxelizationGIMaterial") {
-			materialName = MaterialHelper::voxelizationGIMaterialName;
-			//material = new Rendering::VoxelizationGIMaterial();//processed later as we need cascades
-		}
-		else if (matName == "RenderToLightProbeMaterial") {
-			materialName = MaterialHelper::renderToLightProbeMaterialName;
-			//material = new Rendering::RenderToLightProbeMaterial();//processed later
-		}
+		if (matName == "BasicColorMaterial")
+			material = new ER_BasicColorMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER /*TODO instanced support*/);
+		else if (matName == "ShadowMapMaterial")
+			material = new ER_ShadowMapMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
+		else if (matName == "GBufferMaterial")
+			material = new ER_GBufferMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
+		else if (matName == "RenderToLightProbeMaterial")
+			material = new ER_RenderToLightProbeMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
+		else if (matName == "VoxelizationMaterial")
+			material = new ER_VoxelizationMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_GEOMETRY_SHADER | HAS_PIXEL_SHADER, instanced);
 		else
 			material = nullptr;
 
-		return std::tuple<Material*, Effect*, std::string>(material, effect, materialName);
+		return material;
 	}
+
+	void Scene::LoadFoliageZones(std::vector<ER_Foliage*>& foliageZones, DirectionalLight& light)
+	{
+		Json::Reader reader;
+		std::ifstream scene(mScenePath.c_str(), std::ifstream::binary);
+		Game* core = GetGame();
+		assert(core);
+
+		if (!reader.parse(scene, root)) {
+			throw GameException(reader.getFormattedErrorMessages().c_str());
+		}
+		else {
+			if (root.isMember("foliage_zones")) {
+				for (Json::Value::ArrayIndex i = 0; i != root["foliage_zones"].size(); i++)
+				{
+					float vec3[3];
+					for (Json::Value::ArrayIndex ia = 0; ia != root["foliage_zones"][i]["position"].size(); ia++)
+						vec3[ia] = root["foliage_zones"][i]["position"][ia].asFloat();
+
+					foliageZones.push_back(new ER_Foliage(*core, mCamera, light,
+						root["foliage_zones"][i]["patch_count"].asInt(),
+						Utility::GetFilePath(root["foliage_zones"][i]["texture_path"].asString()),
+						root["foliage_zones"][i]["average_scale"].asFloat(),
+						root["foliage_zones"][i]["distribution_radius"].asFloat(),
+						XMFLOAT3(vec3[0], vec3[1], vec3[2]), 
+						(FoliageBillboardType)root["foliage_zones"][i]["type"].asInt()));
+				}
+			}
+		}
+	}
+
 }

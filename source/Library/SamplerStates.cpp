@@ -9,6 +9,7 @@ namespace Library
 	ID3D11SamplerState* SamplerStates::TrilinearMirror = nullptr;
 	ID3D11SamplerState* SamplerStates::TrilinearClamp = nullptr;
 	ID3D11SamplerState* SamplerStates::TrilinerBorder = nullptr;
+	ID3D11SamplerState* SamplerStates::ShadowSamplerState = nullptr;
 
 	XMVECTORF32 SamplerStates::BorderColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 
@@ -22,7 +23,10 @@ namespace Library
 		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-
+		samplerStateDesc.MipLODBias = 0;
+		samplerStateDesc.MaxAnisotropy = 1;
+		samplerStateDesc.MinLOD = -1000.0f;
+		samplerStateDesc.MaxLOD = 1000.0f;
 		HRESULT hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &TrilinearWrap);
 		if (FAILED(hr))
 		{
@@ -65,6 +69,20 @@ namespace Library
 		{
 			throw GameException("ID3D11Device::CreateSamplerState() failed.", hr);
 		}
+
+		samplerStateDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+		samplerStateDesc.MipLODBias = 0;
+		samplerStateDesc.MaxAnisotropy = 1;
+		samplerStateDesc.MinLOD = -1000.0f;
+		samplerStateDesc.MaxLOD = 1000.0f;
+		float white[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		memcpy(samplerStateDesc.BorderColor, reinterpret_cast<FLOAT*>(&white), sizeof(FLOAT) * 4);
+		samplerStateDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
+		if (FAILED(direct3DDevice->CreateSamplerState(&samplerStateDesc, &ShadowSamplerState)))
+			throw GameException("Failed to create sampler ShadowSamplerState!");
 	}
 
 	void SamplerStates::Release()
@@ -73,5 +91,6 @@ namespace Library
 		ReleaseObject(TrilinearMirror);
 		ReleaseObject(TrilinearClamp);
 		ReleaseObject(TrilinerBorder);
+		ReleaseObject(ShadowSamplerState);
 	}
 }

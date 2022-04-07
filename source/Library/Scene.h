@@ -2,19 +2,17 @@
 #include "Common.h"
 #include "GameComponent.h"
 #include "Camera.h"
-#include "Material.h"
 #include "ModelMaterial.h"
-#include "Effect.h"
+#include "ER_Material.h"
 
 #include "..\JsonCpp\include\json\json.h"
 
-namespace Rendering
-{
-	class RenderingObject;
-}
-
 namespace Library
 {
+	class ER_RenderingObject;
+	class DirectionalLight;
+	class ER_Foliage;
+
 	class Scene : public GameComponent
 	{
 	public:
@@ -23,13 +21,15 @@ namespace Library
 
 		void SaveRenderingObjectsTransforms();
 
-		Material* GetMaterial(const std::string& materialName);
+		ER_Material* GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries, bool instanced);
 		Camera& GetCamera() { return mCamera; }
 		const XMFLOAT3& GetLightProbesVolumeMinBounds() const { return mLightProbesVolumeMinBounds; }
 		const XMFLOAT3& GetLightProbesVolumeMaxBounds() const { return mLightProbesVolumeMaxBounds; }
 		bool HasLightProbesSupport() { return mHasLightProbes; }
 
-		std::map<std::string, Rendering::RenderingObject*> objects;
+		void LoadFoliageZones(std::vector<ER_Foliage*>& foliageZones, DirectionalLight& light);
+
+		std::map<std::string, ER_RenderingObject*> objects;
 
 		//TODO remove to private and make public methods
 		std::string skyboxPath;
@@ -40,9 +40,9 @@ namespace Library
 		XMFLOAT3 ambientColor;
 
 	private:
-		void LoadRenderingObjectData(Rendering::RenderingObject* aObject);
-		void LoadRenderingObjectInstancedData(Rendering::RenderingObject* aObject);
-		std::tuple<Material*, Effect*, std::string> CreateMaterialData(const std::string& materialName, const std::string& effectName, const std::string& techniqueName);
+		void LoadRenderingObjectData(ER_RenderingObject* aObject);
+		void LoadRenderingObjectInstancedData(ER_RenderingObject* aObject);
+
 		Json::Value root;
 		Camera& mCamera;
 		std::string mScenePath;

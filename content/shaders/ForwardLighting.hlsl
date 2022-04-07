@@ -5,6 +5,7 @@
 // - Cascaded Shadow Mapping
 // - PBR with Image Based Lighting (via light probes)
 // - Parallax-Occlusion Mapping
+// - Instancing
 //
 // TODO:
 // - move to "Forward+"
@@ -129,7 +130,7 @@ VS_OUTPUT VSMain(VS_INPUT IN)
     return OUT;
 }
 
-VS_OUTPUT VSMain_Instancing(VS_INPUT_INSTANCING IN)
+VS_OUTPUT VSMain_instancing(VS_INPUT_INSTANCING IN)
 {
     VS_OUTPUT OUT = (VS_OUTPUT) 0;
 
@@ -306,8 +307,10 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
         normalWS = normalize(sampledNormal);
     }
     
-    float4 diffuseAlbedo = pow(AlbedoTexture.Sample(SamplerLinear, texCoord), 2.2);
-    clip(diffuseAlbedo.a < 0.1f ? -1 : 1);
+    float4 diffuseAlbedoNonGamma = AlbedoTexture.Sample(SamplerLinear, texCoord);
+    clip(diffuseAlbedoNonGamma.a < 0.000001f ? -1 : 1);
+    float3 diffuseAlbedo = pow(diffuseAlbedoNonGamma.rgb, 2.2);
+    
     float metalness = MetallicTexture.Sample(SamplerLinear, texCoord).r;
     float roughness = RoughnessTexture.Sample(SamplerLinear, texCoord).r;
     float ao = 1.0f; // TODO sample AO texture
@@ -359,7 +362,8 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
         shadow = Forward_GetShadow(ShadowCascadeDistances, shadowCoords, ShadowTexelSize.r, CascadedShadowTextures, CascadedPcfShadowMapSampler, vsOutput.Position.w, forcedCascadeShadowIndex);
     
     float3 color = (directLighting * shadow * POMSelfShadow) + indirectLighting;
-    color = color / (color + float3(1.0f, 1.0f, 1.0f));
+    color = GetGammaCorrectColor(color);
+    //color = color / (color + float3(1.0f, 1.0f, 1.0f));
     
     return color;
 }

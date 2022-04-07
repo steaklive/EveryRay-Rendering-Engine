@@ -3,7 +3,7 @@
 #include "GameComponent.h"
 #include "Camera.h"
 #include "DirectionalLight.h"
-#include "PostProcessingStack.h"
+#include "ER_PostProcessingStack.h"
 
 static const int NUM_THREADS_PER_TERRAIN_SIDE = 4;
 static const int NUM_PATCHES = 8;
@@ -11,8 +11,7 @@ static const int TERRAIN_TILE_RESOLUTION = 512;
 
 namespace Library 
 {
-	class TerrainMaterial;
-	class ShadowMapper;
+	class ER_ShadowMapper;
 	class GameTime;
 
 	enum TerrainSplatChannels {
@@ -70,13 +69,13 @@ namespace Library
 	class Terrain : public GameComponent
 	{
 	public:
-		Terrain(std::string path, Game& game, Camera& camera, DirectionalLight& light, Rendering::PostProcessingStack& pp, bool isWireframe);
+		Terrain(std::string path, Game& game, Camera& camera, DirectionalLight& light, ER_PostProcessingStack& pp, bool isWireframe);
 		~Terrain();
 
 		UINT GetWidth() { return mWidth; }
 		UINT GetHeight() { return mHeight; }
 
-		void Draw(ShadowMapper* worldShadowMapper = nullptr);
+		void Draw(ER_ShadowMapper* worldShadowMapper = nullptr);
 		//void Draw(int tileIndex);
 		void Update(const GameTime& gameTime);
 
@@ -100,16 +99,15 @@ namespace Library
 		void LoadSplatmapPerTileGPU(int tileIndexX, int tileIndexY, std::string path);
 		void LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, std::string path);
 		void LoadNormalmapPerTileGPU(int tileIndexX, int tileIndexY, std::string path);
-		void DrawTessellated(int i, ShadowMapper* worldShadowMapper = nullptr);
-		void DrawNonTessellated(int i, ShadowMapper* worldShadowMapper = nullptr);
+		void DrawTessellated(int i, ER_ShadowMapper* worldShadowMapper = nullptr);
+		void DrawNonTessellated(int i, ER_ShadowMapper* worldShadowMapper = nullptr);
 
 		Camera& mCamera;
 		DirectionalLight& mDirectionalLight;
-		Rendering::PostProcessingStack& mPPStack;
+		ER_PostProcessingStack& mPPStack;
 
-		ShadowMapper* mTerrainShadowMapper = nullptr; // for terrain shadows 
+		ER_ShadowMapper* mTerrainShadowMapper = nullptr; // for terrain shadows 
 
-		TerrainMaterial* mMaterial;
 		UINT mWidth = 0;
 		UINT mHeight = 0;
 		

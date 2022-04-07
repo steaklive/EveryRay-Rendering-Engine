@@ -547,3 +547,9 @@ float3 IndirectLightingPBR(float3 normalWS, float3 diffuseAlbedo, float3 positio
     
     return (indirectDiffuseLighting + indirectSpecularLighting) * ambienOcclusion;
 }
+
+float3 GetGammaCorrectColor(float3 inputColor)
+{
+    float factor = 1.0f / 2.2f;
+    return pow(inputColor, float3(factor, factor, factor));
+}

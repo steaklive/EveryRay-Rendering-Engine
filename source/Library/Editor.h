@@ -4,13 +4,9 @@
 #define MAX_OBJECTS_COUNT 1000
 #define MAX_LOD 3
 
-namespace Rendering
-{
-	class RenderingObject;
-}
-
 namespace Library
 {
+	class ER_RenderingObject;
 	class GameTime;
 	class Scene;
 

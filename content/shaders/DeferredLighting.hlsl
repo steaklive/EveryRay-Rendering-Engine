@@ -70,13 +70,16 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     if (worldPos.a < 0.000001f)
         return;
     
-    float4 diffuseAlbedo = pow(GbufferAlbedoTexture.Load(uint3(inPos, 0)), 2.2);    
+    float4 diffuseAlbedoNonGamma = GbufferAlbedoTexture.Load(uint3(inPos, 0));
+    if(diffuseAlbedoNonGamma.a < 0.000001f)
+        return;
+    float3 diffuseAlbedo = pow(diffuseAlbedoNonGamma.rgb, 2.2);
+    
     float3 normalWS = GbufferNormalTexture.Load(uint3(inPos, 0)).rgb;
     
     float4 extraGbuffer = GbufferExtraTexture.Load(uint3(inPos, 0));
     float roughness = extraGbuffer.g;
     float metalness = extraGbuffer.b;
-    
     
     float ao = 1.0f; // TODO sample AO texture
     
@@ -123,7 +126,9 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     float shadow = Deferred_GetShadow(worldPos, ShadowMatrices, ShadowCascadeDistances, ShadowTexelSize.x, CascadedShadowTextures, CascadedPcfShadowMapSampler);
     
     float3 color = (directLighting * shadow) + indirectLighting;
-    color = color / (color + float3(1.0f, 1.0f, 1.0f));
+    color = GetGammaCorrectColor(color);
+    
+    //color = color / (color + float3(1.0f, 1.0f, 1.0f));
 
     OutputTexture[inPos] += float4(color, 1.0f);
 }

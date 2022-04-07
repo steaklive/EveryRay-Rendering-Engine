@@ -18,7 +18,6 @@ namespace Library {
         DeleteObject(mRenderStateHelper);
         DeleteObject(mDirectionalLight);
         DeleteObject(mSkybox);
-        DeleteObject(mGrid);
         DeleteObject(mPostProcessingStack);
         DeleteObject(mGBuffer);
         DeleteObject(mShadowMapper);
@@ -53,7 +52,7 @@ namespace Library {
 
 		#pragma region INIT_GBUFFER
         game.CPUProfiler()->BeginCPUTime("Gbuffer init");
-        mGBuffer = new GBuffer(game, camera, game.ScreenWidth(), game.ScreenHeight());
+        mGBuffer = new ER_GBuffer(game, camera, game.ScreenWidth(), game.ScreenHeight());
         mGBuffer->Initialize();
         game.CPUProfiler()->EndCPUTime("Gbuffer init");
 #pragma endregion
@@ -65,15 +64,9 @@ namespace Library {
 
 		#pragma region INIT_SKYBOX
 		game.CPUProfiler()->BeginCPUTime("Skybox init");
-        mSkybox = new Skybox(game, camera, Utility::GetFilePath(Utility::ToWideString(mScene->skyboxPath)), 10000);
+        mSkybox = new ER_Skybox(game, camera, 10000);
         mSkybox->Initialize();
 		game.CPUProfiler()->EndCPUTime("Skybox init");
-#pragma endregion
-
-		#pragma region INIT_GRID
-        mGrid = new Grid(game, camera, 200, 56, XMFLOAT4(0.961f, 0.871f, 0.702f, 1.0f));
-        mGrid->Initialize();
-        mGrid->SetColor((XMFLOAT4)ColorHelper::LightGray);
 #pragma endregion
 
 		#pragma region INIT_DIRECTIONAL_LIGHT
@@ -85,35 +78,35 @@ namespace Library {
 
 		#pragma region INIT_SHADOWMAPPER
 		game.CPUProfiler()->BeginCPUTime("Shadow mapper init");
-        mShadowMapper = new ShadowMapper(game, camera, *mDirectionalLight, 4096, 4096);
+        mShadowMapper = new ER_ShadowMapper(game, camera, *mDirectionalLight, 4096, 4096);
         mDirectionalLight->RotationUpdateEvent->AddListener("shadow mapper", [&]() { mShadowMapper->ApplyTransform(); });
 		game.CPUProfiler()->EndCPUTime("Shadow mapper init");
 #pragma endregion
 
 		#pragma region INIT_POST_PROCESSING
 		game.CPUProfiler()->BeginCPUTime("Post processing stack init");
-        mPostProcessingStack = new Rendering::PostProcessingStack(game, camera);
+        mPostProcessingStack = new ER_PostProcessingStack(game, camera);
         mPostProcessingStack->Initialize(false, false, true, true, true, false, false, false);
         mPostProcessingStack->SetDirectionalLight(mDirectionalLight);
-        mPostProcessingStack->SetSunOcclusionSRV(mSkybox->GetSunOcclusionOutputTexture());
 		game.CPUProfiler()->EndCPUTime("Post processing stack init");
-#pragma endregion
-
-		#pragma region INIT_VOLUMETRIC_CLOUDS
-		game.CPUProfiler()->BeginCPUTime("Volumetric Clouds init");
-        mVolumetricClouds = new VolumetricClouds(game, camera, *mDirectionalLight, *mPostProcessingStack, *mSkybox);
-		game.CPUProfiler()->EndCPUTime("Volumetric Clouds init");
 #pragma endregion
 
 		#pragma region INIT_ILLUMINATION
 		game.CPUProfiler()->BeginCPUTime("Illumination init");
-        mIllumination = new Illumination(game, camera, *mDirectionalLight, *mShadowMapper, mScene);
+        mIllumination = new ER_Illumination(game, camera, *mDirectionalLight, *mShadowMapper, mScene);
 		game.CPUProfiler()->EndCPUTime("Illumination init");
+#pragma endregion
+
+		#pragma region INIT_VOLUMETRIC_CLOUDS
+		game.CPUProfiler()->BeginCPUTime("Volumetric Clouds init");
+        mVolumetricClouds = new ER_VolumetricClouds(game, camera, *mDirectionalLight, *mSkybox);
+		mVolumetricClouds->Initialize(mIllumination->GetLocalIlluminationRT(), mGBuffer->GetDepth());
+		game.CPUProfiler()->EndCPUTime("Volumetric Clouds init");
 #pragma endregion
 
 		#pragma region INIT_LIGHTPROBES_MANAGER
 		game.CPUProfiler()->BeginCPUTime("Light probes manager init");
-		mIlluminationProbesManager = new ER_IlluminationProbeManager(game, camera, mScene, *mDirectionalLight, *mShadowMapper);
+		mIlluminationProbesManager = new ER_LightProbesManager(game, camera, mScene, *mDirectionalLight, *mShadowMapper);
 		mIlluminationProbesManager->SetLevelPath(Utility::ToWideString(sceneFolderPath));
 		mIllumination->SetProbesManager(mIlluminationProbesManager);
 		game.CPUProfiler()->EndCPUTime("Light probes manager init");
@@ -121,13 +114,8 @@ namespace Library {
 
 		#pragma region INIT_FOLIAGE_MANAGER
 		game.CPUProfiler()->BeginCPUTime("Foliage init");
-        mFoliageSystem = new FoliageSystem();
-        mFoliageSystem->FoliageSystemInitializedEvent->AddListener("foliage initialized for GI",  [&]() { mIllumination->SetFoliageSystemForGI(mFoliageSystem); });
-		//TODO add foliage from level
-		//mFoliageSystem->AddFoliage(new Foliage(*mGame, *mCamera, *mDirectionalLight, 3500, Utility::GetFilePath("content\\textures\\foliage\\grass_type1.png"), 2.5f, 100.0f, XMFLOAT3(0.0, 0.0, 0.0), FoliageBillboardType::SINGLE));
-		//mFoliageSystem->AddFoliage(new Foliage(*mGame, *mCamera, *mDirectionalLight, 100, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type1.png"), 3.5f, 100.0f, XMFLOAT3(0.0, 0.0, 0.0), FoliageBillboardType::SINGLE));
-		//mFoliageSystem->AddFoliage(new Foliage(*mGame, *mCamera, *mDirectionalLight, 50, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type3.png"), 2.5f, 100.0f, XMFLOAT3(0.0, 0.0, 0.0), FoliageBillboardType::SINGLE));
-		//mFoliageSystem->AddFoliage(new Foliage(*mGame, *mCamera, *mDirectionalLight, 100, Utility::GetFilePath("content\\textures\\foliage\\grass_flower_type10.png"), 3.5f, 100.0f, XMFLOAT3(0.0, 0.0, 0.0), FoliageBillboardType::SINGLE));
+		mFoliageSystem = new ER_FoliageManager(mScene, *mDirectionalLight);
+		mFoliageSystem->FoliageSystemInitializedEvent->AddListener("foliage initialized for GI",  [&]() { mIllumination->SetFoliageSystemForGI(mFoliageSystem); });
 		mFoliageSystem->Initialize();
 		game.CPUProfiler()->EndCPUTime("Foliage init");
 #pragma endregion
@@ -141,12 +129,16 @@ namespace Library {
 		materialSystems.mProbesManager = mIlluminationProbesManager;
 
 		for (auto& object : mScene->objects) {
-			if (object.second->IsInGBuffer())
-				object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::deferredPrepassMaterialName, [&, matSystems = materialSystems](int meshIndex) { Library::ER_MaterialsCallbacks::UpdateDeferredPrepassMaterialVariables(matSystems, object.second, meshIndex); });
-			
-			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(0), [&, matSystems = materialSystems](int meshIndex) { Library::ER_MaterialsCallbacks::UpdateShadowMappingMaterialVariables(matSystems, object.second, meshIndex, 0); });
-			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(1), [&, matSystems = materialSystems](int meshIndex) { Library::ER_MaterialsCallbacks::UpdateShadowMappingMaterialVariables(matSystems, object.second, meshIndex, 1); });
-			object.second->MeshMaterialVariablesUpdateEvent->AddListener(MaterialHelper::shadowMapMaterialName + " " + std::to_string(2), [&, matSystems = materialSystems](int meshIndex) { Library::ER_MaterialsCallbacks::UpdateShadowMappingMaterialVariables(matSystems, object.second, meshIndex, 2); });
+			for (auto& layeredMaterial : object.second->GetMaterials())
+			{
+				// assign prepare callbacks to non-special materials (special ones are processed and rendered from their own systems, i.e., ShadowMapper)
+				if (!layeredMaterial.second->IsSpecial())
+					object.second->MeshMaterialVariablesUpdateEvent->AddListener(layeredMaterial.first, [&, matSystems = materialSystems](int meshIndex) { layeredMaterial.second->PrepareForRendering(matSystems, object.second, meshIndex); });
+
+				// gbuffer material (special, but since its draws are not processed in 
+				if (layeredMaterial.first == MaterialHelper::gbufferMaterialName)
+					object.second->MeshMaterialVariablesUpdateEvent->AddListener(layeredMaterial.first, [&, matSystems = materialSystems](int meshIndex) { layeredMaterial.second->PrepareForRendering(matSystems, object.second, meshIndex); });
+			}
 		}
 		game.CPUProfiler()->EndCPUTime("Material callbacks init");
 #pragma endregion
@@ -161,20 +153,18 @@ namespace Library {
 		mSkybox->SetUseCustomSkyColor(mEditor->IsSkyboxUsingCustomColor());
 		mSkybox->SetSkyColors(mEditor->GetBottomSkyColor(), mEditor->GetTopSkyColor());
 		mSkybox->SetSunData(mDirectionalLight->IsSunRendered(),
-			mDirectionalLight->DirectionVector(),
-			XMVECTOR{ mDirectionalLight->GetDirectionalLightColor().x, mDirectionalLight->GetDirectionalLightColor().y, mDirectionalLight->GetDirectionalLightColor().z, 1.0 },
+			XMFLOAT4(mDirectionalLight->Direction().x, mDirectionalLight->Direction().y, mDirectionalLight->Direction().z, 1.0),
+			XMFLOAT4(mDirectionalLight->GetDirectionalLightColor().x, mDirectionalLight->GetDirectionalLightColor().y, mDirectionalLight->GetDirectionalLightColor().z, 1.0),
 			mDirectionalLight->GetSunBrightness(), mDirectionalLight->GetSunExponent());
 		mSkybox->Update(gameTime);
 		mSkybox->UpdateSun(gameTime);
-
-		mGrid->Update(gameTime);
 		mPostProcessingStack->Update();
 		mVolumetricClouds->Update(gameTime);
 		mIllumination->Update(gameTime, mScene);
 		if (mScene->HasLightProbesSupport() && mIlluminationProbesManager->IsEnabled())
 			mIlluminationProbesManager->UpdateProbes(game);
 		mShadowMapper->Update(gameTime);
-		//mFoliageSystem->Update(gameTime, mWindGustDistance, mWindStrength, mWindFrequency); //TODO
+		mFoliageSystem->Update(gameTime, mWindGustDistance, mWindStrength, mWindFrequency);
 		mDirectionalLight->UpdateProxyModel(gameTime, 
 			((Camera*)game.Services().GetService(Camera::TypeIdClass()))->ViewMatrix4X4(),
 			((Camera*)game.Services().GetService(Camera::TypeIdClass()))->ProjectionMatrix4X4()); //TODO refactor to DebugRenderer
@@ -199,8 +189,14 @@ namespace Library {
         if (ImGui::Button("Global Illumination"))
 			mIllumination->Config();
 
-		//TODO shadow mapper config
+		if (ImGui::CollapsingHeader("Wind"))
+		{
+			ImGui::SliderFloat("Wind strength", &mWindStrength, 0.0f, 100.0f);
+			ImGui::SliderFloat("Wind gust distance", &mWindGustDistance, 0.0f, 100.0f);
+			ImGui::SliderFloat("Wind frequency", &mWindFrequency, 0.0f, 100.0f);
+		}
 
+		//TODO shadow mapper config
 		//TODO skybox config
 
         ImGui::End();
@@ -208,25 +204,25 @@ namespace Library {
 
 	void DemoLevel::DrawLevel(Game& game, const GameTime& gameTime)
 	{
+		//TODO set proper RS
+		//TODO set proper DS
+
 		if (mRenderStateHelper)
 			mRenderStateHelper->SaveRasterizerState();
 
-		ID3D11DeviceContext* direct3DDeviceContext = game.Direct3DDeviceContext();
-		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		ID3D11DeviceContext* context = game.Direct3DDeviceContext();
+		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		#pragma region DRAW_GBUFFER
-
 		mGBuffer->Start();
-		for (auto it = mScene->objects.begin(); it != mScene->objects.end(); it++)
-			it->second->Draw(MaterialHelper::deferredPrepassMaterialName, true);
-		mFoliageSystem->Draw(gameTime, nullptr, FoliageRenderingPass::TO_GBUFFER);
+		mGBuffer->Draw(mScene);
+		if (mFoliageSystem)
+			mFoliageSystem->Draw(gameTime, nullptr, FoliageRenderingPass::TO_GBUFFER);
 		mGBuffer->End();
-
 #pragma endregion
 
 		#pragma region DRAW_SHADOWS
 		mShadowMapper->Draw(mScene);
-		mRenderStateHelper->RestoreRasterizerState();
 #pragma endregion
 
 		#pragma region DRAW_GLOBAL_ILLUMINATION
@@ -242,32 +238,40 @@ namespace Library {
 		mRenderStateHelper->RestoreAll();
 #pragma endregion
 
-		mPostProcessingStack->Begin(true, mGBuffer->GetDepth());
-
 		#pragma region DRAW_LOCAL_ILLUMINATION
-		mSkybox->Draw();
-		mIllumination->DrawLocalIllumination(mGBuffer, mPostProcessingStack->GetMainRenderTarget(), Utility::IsEditorMode);
+		
+		mIllumination->DrawLocalIllumination(mGBuffer, mSkybox);
 
-		if (Utility::IsEditorMode)
+		#pragma region DRAW_LAYERED_MATERIALS
+		for (auto& it = mScene->objects.begin(); it != mScene->objects.end(); it++)
 		{
-			mDirectionalLight->DrawProxyModel(gameTime); //TODO move to Illumination() or better to separate debug renderer system
+			for (auto& mat : it->second->GetMaterials())
+			{
+				if (!mat.second->IsSpecial())
+					it->second->Draw(mat.first);
+			}
 		}
 #pragma endregion
 
-		mPostProcessingStack->End();
-
-		#pragma region DRAW_SUN
-		mSkybox->DrawSun(nullptr, mPostProcessingStack);
+		#pragma region DRAW_DEBUG_GIZMOS
+		if (Utility::IsEditorMode)
+		{
+			mDirectionalLight->DrawProxyModel(gameTime); //TODO move to ER_Illumination() or better to separate debug renderer system
+			mIllumination->DrawDebugGizmos();
+		}
 #pragma endregion
 
 		#pragma region DRAW_VOLUMETRIC_CLOUDS
 		mVolumetricClouds->Draw(gameTime);
 #pragma endregion
 
+		mIllumination->CompositeTotalIllumination();
+#pragma endregion
+		
 		#pragma region DRAW_POSTPROCESSING
-		mPostProcessingStack->UpdateCompositeLightingMaterial(mPostProcessingStack->GetMainRenderTarget()->GetSRV(), mIllumination->GetGlobaIlluminationSRV(), mIllumination->GetDebugVoxels(), mIllumination->GetDebugAO());
-		mPostProcessingStack->UpdateSSRMaterial(mGBuffer->GetNormals()->GetSRV(), mGBuffer->GetDepth()->getSRV(), mGBuffer->GetExtraBuffer()->GetSRV(), (float)gameTime.TotalGameTime());
-		mPostProcessingStack->DrawEffects(gameTime);
+		mPostProcessingStack->Begin(mIllumination->GetFinalIlluminationRT(), mGBuffer->GetDepth());
+		mPostProcessingStack->DrawEffects(gameTime, (ER_QuadRenderer*)game.Services().GetService(ER_QuadRenderer::TypeIdClass()), mGBuffer);
+		mPostProcessingStack->End();
 #pragma endregion
 
 		mRenderStateHelper->SaveAll();

@@ -15,7 +15,7 @@
 #include "..\Library\DirectionalLight.h"
 #include "..\Library\Keyboard.h"
 #include "..\Library\Light.h"
-#include "..\Library\Skybox.h"
+#include "..\Library\ER_Skybox.h"
 #include "..\Library\Grid.h"
 #include "..\Library\DemoLevel.h"
 #include "..\Library\RenderStateHelper.h"
@@ -25,7 +25,7 @@
 #include "..\Library\StandardLightingMaterial.h"
 #include "..\Library\ScreenSpaceReflectionsMaterial.h"
 #include "..\Library\DepthMapMaterial.h"
-#include "..\Library\PostProcessingStack.h"
+#include "..\Library\ER_PostProcessingStack.h"
 #include "..\Library\FullScreenRenderTarget.h"
 #include "..\Library\IBLRadianceMap.h"
 #include "..\Library\DeferredMaterial.h"
@@ -33,9 +33,9 @@
 #include "..\Library\FullScreenQuad.h"
 #include "..\Library\ShadowMapper.h"
 #include "..\Library\Terrain.h"
-#include "..\Library\Foliage.h"
+#include "..\Library\ER_Foliage.h"
 #include "..\Library\Scene.h"
-#include "..\Library\VolumetricClouds.h"
+#include "..\Library\ER_VolumetricClouds.h"
 #include "..\Library\ShaderCompiler.h"
 
 namespace Rendering
@@ -57,7 +57,6 @@ namespace Rendering
 		mIntegrationMapTextureSRV(nullptr),
 		mGrid(nullptr),
 		mGBuffer(nullptr),
-		mSSRQuad(nullptr),
 		mShadowMapper(nullptr),
 		mTerrain(nullptr),
 		mPostProcessingStack(nullptr),

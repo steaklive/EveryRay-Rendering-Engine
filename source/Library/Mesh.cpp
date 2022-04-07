@@ -180,6 +180,100 @@ namespace Library
 		}
 	}
 
+	void Mesh::CreateVertexBuffer_Position(ID3D11Buffer** vertexBuffer)
+	{
+		const std::vector<XMFLOAT3>& sourceVertices = Vertices();
+		std::vector<VertexPosition> vertices;
+		vertices.reserve(sourceVertices.size());
+
+		for (UINT i = 0; i < sourceVertices.size(); i++)
+		{
+			XMFLOAT3 position = sourceVertices.at(i);
+			vertices.push_back(VertexPosition(XMFLOAT4(position.x, position.y, position.z, 1.0f)));
+		}
+
+		ID3D11Device* device = mModel.GetGame().Direct3DDevice();
+
+		D3D11_BUFFER_DESC vertexBufferDesc;
+		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
+		vertexBufferDesc.ByteWidth = sizeof(VertexPosition) * vertices.size();
+		vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+		D3D11_SUBRESOURCE_DATA vertexSubResourceData;
+		ZeroMemory(&vertexSubResourceData, sizeof(vertexSubResourceData));
+		vertexSubResourceData.pSysMem = &vertices[0];
+		if (FAILED(device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, vertexBuffer)))
+			throw GameException("ID3D11Device::CreateBuffer() failed during vertex buffer creation for CreateVertexBuffer_Position.");
+
+	}
+
+	void Mesh::CreateVertexBuffer_PositionUv(ID3D11Buffer** vertexBuffer)
+	{
+		const std::vector<XMFLOAT3>& sourceVertices = Vertices();
+		std::vector<XMFLOAT3>* textureCoordinates = TextureCoordinates().at(0);
+		assert(textureCoordinates->size() == sourceVertices.size());
+
+		std::vector<VertexPositionTexture> vertices;
+		vertices.reserve(sourceVertices.size());
+		for (UINT i = 0; i < sourceVertices.size(); i++)
+		{
+			XMFLOAT3 position = sourceVertices.at(i);
+			XMFLOAT3 uv = textureCoordinates->at(i);
+			vertices.push_back(VertexPositionTexture(XMFLOAT4(position.x, position.y, position.z, 1.0f), XMFLOAT2(uv.x, uv.y)));
+		}
+
+		ID3D11Device* device = mModel.GetGame().Direct3DDevice();
+
+		D3D11_BUFFER_DESC vertexBufferDesc;
+		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
+		vertexBufferDesc.ByteWidth = sizeof(VertexPositionTexture) * vertices.size();
+		vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+		D3D11_SUBRESOURCE_DATA vertexSubResourceData;
+		ZeroMemory(&vertexSubResourceData, sizeof(vertexSubResourceData));
+		vertexSubResourceData.pSysMem = &vertices[0];
+		if (FAILED(device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, vertexBuffer)))
+			throw GameException("ID3D11Device::CreateBuffer() failed.");
+	}
+
+	void Mesh::CreateVertexBuffer_PositionUvNormal(ID3D11Buffer** vertexBuffer)
+	{
+		const std::vector<XMFLOAT3>& sourceVertices = Vertices();
+		std::vector<XMFLOAT3>* textureCoordinates = TextureCoordinates().at(0);
+		assert(textureCoordinates->size() == sourceVertices.size());
+
+		const std::vector<XMFLOAT3>& normals = Normals();
+		assert(normals.size() == sourceVertices.size());
+
+		std::vector<VertexPositionTextureNormal> vertices;
+		vertices.reserve(sourceVertices.size());
+
+		for (UINT i = 0; i < sourceVertices.size(); i++)
+		{
+			XMFLOAT3 position = sourceVertices.at(i);
+			XMFLOAT3 uv = textureCoordinates->at(i);
+			XMFLOAT3 normal = normals.at(i);
+
+			vertices.push_back(VertexPositionTextureNormal(XMFLOAT4(position.x, position.y, position.z, 1.0f), XMFLOAT2(uv.x, uv.y), normal));
+		}
+
+		ID3D11Device* device = mModel.GetGame().Direct3DDevice();
+
+		D3D11_BUFFER_DESC vertexBufferDesc;
+		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
+		vertexBufferDesc.ByteWidth = sizeof(VertexPositionTextureNormal) * vertices.size();
+		vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+		D3D11_SUBRESOURCE_DATA vertexSubResourceData;
+		ZeroMemory(&vertexSubResourceData, sizeof(vertexSubResourceData));
+		vertexSubResourceData.pSysMem = &vertices[0];
+		if (FAILED(device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, vertexBuffer)))
+			throw GameException("ID3D11Device::CreateBuffer() failed during vertex buffer creation for CreateVertexBuffer_PositionUvNormal.");
+	}
+
 	void Mesh::CreateVertexBuffer_PositionUvNormalTangent(ID3D11Buffer** vertexBuffer)
 	{
 		const std::vector<XMFLOAT3>& sourceVertices = Vertices();
@@ -217,7 +311,7 @@ namespace Library
 		ZeroMemory(&vertexSubResourceData, sizeof(vertexSubResourceData));
 		vertexSubResourceData.pSysMem = &vertices[0];
 		if (FAILED(device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, vertexBuffer)))
-			throw GameException("ID3D11Device::CreateBuffer() failed during vertex buffer creation for Forward Lighting.");
+			throw GameException("ID3D11Device::CreateBuffer() failed during vertex buffer creation for CreateVertexBuffer_PositionUvNormalTangent.");
 
 	}
 

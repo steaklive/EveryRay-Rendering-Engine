@@ -17,21 +17,13 @@
 #include "..\Library\Utility.h"
 #include "..\Library\FirstPersonCamera.h"
 #include "..\Library\ColorHelper.h"
-#include "..\Library\Grid.h"
 #include "..\Library\RenderStateHelper.h"
+#include "..\Library\MatrixHelper.h"
+#include "..\Library\DemoLevel.h"
+#include "..\Library\Editor.h"
 #include "..\Library\RasterizerStates.h"
 #include "..\Library\SamplerStates.h"
-#include "..\Library\Skybox.h"
-#include "..\Library\MatrixHelper.h"
-#include "..\Library\PointLightingMaterial.h"
-#include "..\Library\FullScreenRenderTarget.h"
-#include "..\Library\FullScreenQuad.h"
-#include "..\Library\Effect.h"
-#include "..\Library\ColorFilteringMaterial.h"
-#include "..\Library\DemoLevel.h"
-#include "..\Library\PostProcessingStack.h"
-#include "..\Library\Editor.h"
-#include "..\Library\DemoLevel.h"
+#include "..\Library\ER_QuadRenderer.h"
 
 // include scenes
 
@@ -61,6 +53,7 @@ namespace Rendering
 		mMouse(nullptr),
 		mShowProfiler(false),
 		mEditor(nullptr),
+		mQuadRenderer(nullptr),
 		mRenderStateHelper(nullptr)
 	{
 		mDepthStencilBufferEnabled = true;
@@ -106,6 +99,10 @@ namespace Rendering
 		mEditor = new Editor(*this);
 		components.push_back(mEditor);
 		mServices.AddService(Editor::TypeIdClass(), mEditor);
+
+		mQuadRenderer = new ER_QuadRenderer(*this);
+		components.push_back(mQuadRenderer);
+		mServices.AddService(ER_QuadRenderer::TypeIdClass(), mQuadRenderer);
 
 		mRenderStateHelper = new RenderStateHelper(*this);
 
@@ -296,6 +293,7 @@ namespace Rendering
 	{
 		DeleteObject(mKeyboard);
 		DeleteObject(mEditor);
+		DeleteObject(mQuadRenderer);
 		DeleteObject(mMouse);
 		DeleteObject(mCamera);
 		DeleteObject(mRenderStateHelper);

@@ -1,5 +1,5 @@
 #pragma once
-#include "ER_IlluminationProbeManager.h"
+#include "ER_LightProbesManager.h"
 
 namespace Library
 {
@@ -10,27 +10,26 @@ namespace Library
 			int MipIndex;
 		};
 	}
+	class Camera;
 
 	class ER_LightProbe
 	{
-		using LightProbeRenderingObjectsInfo = std::map<std::string, Rendering::RenderingObject*>;
+		using LightProbeRenderingObjectsInfo = std::map<std::string, ER_RenderingObject*>;
 	public:
-		ER_LightProbe(Game& game, DirectionalLight& light, ShadowMapper& shadowMapper, int size, ER_ProbeType aType);
+		ER_LightProbe(Game& game, DirectionalLight& light, ER_ShadowMapper& shadowMapper, int size, ER_ProbeType aType);
 		~ER_LightProbe();
 
 		void Compute(Game& game, const GameTime& gameTime, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted, DepthTarget** aDepthBuffers,
-			const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, QuadRenderer* quadRenderer, Skybox* skybox = nullptr);
+			const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, ER_QuadRenderer* quadRenderer, ER_Skybox* skybox = nullptr);
 		void UpdateProbe(const GameTime& gameTime);
 		bool LoadProbeFromDisk(Game& game, const std::wstring& levelPath);
 		ID3D11ShaderResourceView* GetCubemapSRV() const { return mCubemapTexture->GetSRV(); }
 		ID3D11Texture2D* GetCubemapTexture2D() const { return mCubemapTexture->GetTexture2D(); }
 
 		//TODO refactor
-		void SetShaderInfoForConvolution(ID3D11VertexShader* vs, ID3D11PixelShader* ps, ID3D11InputLayout* il, ID3D11SamplerState* ss)
+		void SetShaderInfoForConvolution(ID3D11PixelShader* ps, ID3D11SamplerState* ss)
 		{
-			mConvolutionVS = vs;
 			mConvolutionPS = ps;
-			mInputLayout = il;
 			mLinearSamplerState = ss;
 		}
 
@@ -45,19 +44,15 @@ namespace Library
 		void SetIsTaggedByVolume(int volumeIndex) { mIsTaggedByVolume[volumeIndex] = true; }
 		bool IsLoadedFromDisk() { return mIsProbeLoadedFromDisk; }
 	private:
-		void DrawGeometryToProbe(Game& game, const GameTime& gameTime, ER_GPUTexture* aTextureNonConvoluted, DepthTarget** aDepthBuffers, const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox);
-		void ConvoluteProbe(Game& game, QuadRenderer* quadRenderer, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted);
-
-		void PrecullObjectsPerFace();
-		void UpdateRenderToLightProbeMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int cubeFaceIndex);
-
+		void DrawGeometryToProbe(Game& game, const GameTime& gameTime, ER_GPUTexture* aTextureNonConvoluted, DepthTarget** aDepthBuffers, const LightProbeRenderingObjectsInfo& objectsToRender, ER_Skybox* skybox);
+		void ConvoluteProbe(Game& game, ER_QuadRenderer* quadRenderer, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted);
 		void SaveProbeOnDisk(Game& game, const std::wstring& levelPath, ER_GPUTexture* aTextureConvoluted);
 		std::wstring GetConstructedProbeName(const std::wstring& levelPath);
 
 		ER_ProbeType mProbeType;
 
 		DirectionalLight& mDirectionalLight;
-		ShadowMapper& mShadowMapper;
+		ER_ShadowMapper& mShadowMapper;
 
 		LightProbeRenderingObjectsInfo mObjectsToRenderPerFace[CUBEMAP_FACES_COUNT];
 		Camera* mCubemapCameras[CUBEMAP_FACES_COUNT];

@@ -10,15 +10,14 @@
 #include "Utility.h"
 #include "VertexDeclarations.h"
 #include "RasterizerStates.h"
-#include "TerrainMaterial.h"
-#include "ShadowMapper.h"
+#include "ER_ShadowMapper.h"
 
 #define MULTITHREADED_LOAD 1
 
 namespace Library
 {
 
-	Terrain::Terrain(std::string path, Game& pGame, Camera& camera, DirectionalLight& light, Rendering::PostProcessingStack& pp, bool isWireframe) :
+	Terrain::Terrain(std::string path, Game& pGame, Camera& camera, DirectionalLight& light, ER_PostProcessingStack& pp, bool isWireframe) :
 		GameComponent(pGame),
 		mCamera(camera), 
 		mIsWireframe(isWireframe),
@@ -30,12 +29,6 @@ namespace Library
 	{
 		if (!(mNumTiles && !(mNumTiles & (mNumTiles - 1))))
 			throw GameException("Number of tiles defined is not a power of 2!");
-
-		Effect* effect = new Effect(pGame);
-		effect->CompileFromFile(Utility::GetFilePath(L"content\\effects\\TerrainEffect.fx"));
-
-		mMaterial = new TerrainMaterial();
-		mMaterial->Initialize(effect);
 
 		auto startTime = std::chrono::system_clock::now();
 		
@@ -67,13 +60,12 @@ namespace Library
 		std::chrono::duration<double> durationTime = std::chrono::system_clock::now() - startTime;
 		//float timeSec = durationTime.count();
 
-		mTerrainShadowMapper = new ShadowMapper(pGame, camera, light, 4096, 4096);
+		mTerrainShadowMapper = new ER_ShadowMapper(pGame, camera, light, 4096, 4096);
 		mDirectionalLight.RotationUpdateEvent->AddListener("terrain shadow mapper", [&]() { mTerrainShadowMapper->ApplyTransform(); });
 	}
 
 	Terrain::~Terrain()
 	{
-		DeleteObject(mMaterial);
 		DeletePointerCollection(mHeightMaps);
 		ReleaseObject(mGrassTexture);
 		ReleaseObject(mRockTexture);
@@ -186,7 +178,7 @@ namespace Library
 		}
 	}
 
-	void Terrain::Draw(ShadowMapper* worldShadowMapper)
+	void Terrain::Draw(ER_ShadowMapper* worldShadowMapper)
 	{
 		if (mUseTessellatedTerrain)
 		{
@@ -219,16 +211,13 @@ namespace Library
 		}
 	}
 
-	void Terrain::DrawTessellated(int tileIndex, ShadowMapper* worldShadowMapper)
+	void Terrain::DrawTessellated(int tileIndex, ER_ShadowMapper* worldShadowMapper)
 	{
 		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
 		D3D11_PRIMITIVE_TOPOLOGY originalPrimitiveTopology;
 		context->IAGetPrimitiveTopology(&originalPrimitiveTopology);
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST);
-
-		Pass* pass = mMaterial->CurrentTechnique()->Passes().at(1);
-		ID3D11InputLayout* inputLayout = mMaterial->InputLayouts().at(pass);
-		context->IASetInputLayout(inputLayout);
+		//TODO context->IASetInputLayout(inputLayout);
 
 		UINT stride = sizeof(float) * 4;
 		UINT offset = 0;
@@ -245,35 +234,35 @@ namespace Library
 		}
 
 		XMMATRIX wvp = mHeightMaps[tileIndex]->mWorldMatrix * mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
-		mMaterial->World() << mHeightMaps[tileIndex]->mWorldMatrixTS;
-		mMaterial->View() << mCamera.ViewMatrix();
-		mMaterial->Projection() << mCamera.ProjectionMatrix();
-		mMaterial->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, NUM_SHADOW_CASCADES);
-		mMaterial->heightTexture() << mHeightMaps[tileIndex]->mHeightTexture;
-		mMaterial->grassTexture() << mGrassTexture;
-		mMaterial->groundTexture() << mGroundTexture;
-		mMaterial->rockTexture() << mRockTexture;
-		mMaterial->mudTexture() << mMudTexture;
-		mMaterial->cascadedShadowTextures().SetResourceArray(shadowMaps, 0, NUM_SHADOW_CASCADES);
-		//mMaterial->normalTexture() << mHeightMaps[tileIndex]->mNormalTexture;
-		mMaterial->splatTexture() << mHeightMaps[tileIndex]->mSplatTexture;
-		mMaterial->SunDirection() << XMVectorNegate(mDirectionalLight.DirectionVector());
-		mMaterial->SunColor() << XMVECTOR{ mDirectionalLight.GetDirectionalLightColor().x,  mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z , 1.0f };
-		mMaterial->AmbientColor() << XMVECTOR{ mDirectionalLight.GetAmbientLightColor().x,  mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
-		if (worldShadowMapper)
-			mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f / worldShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
-		else 
-			mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f , 1.0f, 1.0f , 1.0f };
-		mMaterial->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
-		mMaterial->CameraPosition() << mCamera.PositionVector();
-		mMaterial->TessellationFactor() << (float)mTessellationFactor;
-		mMaterial->TerrainHeightScale() << mTerrainTessellatedHeightScale;
-		float val = (mUseDynamicTessellation) ? 1.0f : 0.0f;
-		mMaterial->UseDynamicTessellation() << val;
-		mMaterial->TessellationFactorDynamic() << (float)mTessellationFactorDynamic;
-		mMaterial->DistanceFactor() << mTessellationDistanceFactor;
-
-		pass->Apply(0, context);
+		//mMaterial->World() << mHeightMaps[tileIndex]->mWorldMatrixTS;
+		//mMaterial->View() << mCamera.ViewMatrix();
+		//mMaterial->Projection() << mCamera.ProjectionMatrix();
+		//mMaterial->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, NUM_SHADOW_CASCADES);
+		//mMaterial->heightTexture() << mHeightMaps[tileIndex]->mHeightTexture;
+		//mMaterial->grassTexture() << mGrassTexture;
+		//mMaterial->groundTexture() << mGroundTexture;
+		//mMaterial->rockTexture() << mRockTexture;
+		//mMaterial->mudTexture() << mMudTexture;
+		//mMaterial->cascadedShadowTextures().SetResourceArray(shadowMaps, 0, NUM_SHADOW_CASCADES);
+		////mMaterial->normalTexture() << mHeightMaps[tileIndex]->mNormalTexture;
+		//mMaterial->splatTexture() << mHeightMaps[tileIndex]->mSplatTexture;
+		//mMaterial->SunDirection() << XMVectorNegate(mDirectionalLight.DirectionVector());
+		//mMaterial->SunColor() << XMVECTOR{ mDirectionalLight.GetDirectionalLightColor().x,  mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z , 1.0f };
+		//mMaterial->AmbientColor() << XMVECTOR{ mDirectionalLight.GetAmbientLightColor().x,  mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
+		//if (worldShadowMapper)
+		//	mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f / worldShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
+		//else 
+		//	mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f , 1.0f, 1.0f , 1.0f };
+		//mMaterial->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
+		//mMaterial->CameraPosition() << mCamera.PositionVector();
+		//mMaterial->TessellationFactor() << (float)mTessellationFactor;
+		//mMaterial->TerrainHeightScale() << mTerrainTessellatedHeightScale;
+		//float val = (mUseDynamicTessellation) ? 1.0f : 0.0f;
+		//mMaterial->UseDynamicTessellation() << val;
+		//mMaterial->TessellationFactorDynamic() << (float)mTessellationFactorDynamic;
+		//mMaterial->DistanceFactor() << mTessellationDistanceFactor;
+		//
+		//pass->Apply(0, context);
 
 		if (mIsWireframe)
 		{
@@ -291,48 +280,48 @@ namespace Library
 		context->DSSetShader(NULL, NULL, 0);
 	}
 
-	void Terrain::DrawNonTessellated(int tileIndex, ShadowMapper* worldShadowMapper)
+	void Terrain::DrawNonTessellated(int tileIndex, ER_ShadowMapper* worldShadowMapper)
 	{
-		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
-		context->IASetPrimitiveTopology(/*D3D11_PRIMITIVE_TOPOLOGY_LINELIST*/D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-		Pass* pass = mMaterial->CurrentTechnique()->Passes().at(0);
-		ID3D11InputLayout* inputLayout = mMaterial->InputLayouts().at(pass);
-		context->IASetInputLayout(inputLayout);
-
-		UINT stride = sizeof(TerrainVertexInput);
-		UINT offset = 0;
-		context->IASetVertexBuffers(0, 1, &(mHeightMaps[tileIndex]->mVertexBuffer), &stride, &offset);
-		context->IASetIndexBuffer(mHeightMaps[tileIndex]->mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-
-		//mHeightMaps[tileIndex]->mWorldMatrix = XMMatrixTranslation(1.0f, 0.0f, 0.0f);
-		XMMATRIX wvp = mHeightMaps[tileIndex]->mWorldMatrix * mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
-		mMaterial->World() << mHeightMaps[tileIndex]->mWorldMatrix;
-		mMaterial->View() << mCamera.ViewMatrix();
-		mMaterial->Projection() << mCamera.ProjectionMatrix();
-		mMaterial->grassTexture() << mGrassTexture;
-		mMaterial->groundTexture() << mGroundTexture;
-		mMaterial->rockTexture() << mRockTexture;
-		mMaterial->mudTexture() << mMudTexture;
-		mMaterial->splatTexture() << mHeightMaps[tileIndex]->mSplatTexture;
-		//mMaterial->normalTexture() << mHeightMaps[tileIndex]->mNormalTexture;
-		mMaterial->SunDirection() << XMVectorNegate(mDirectionalLight.DirectionVector());
-		mMaterial->SunColor() << XMVECTOR{ mDirectionalLight.GetDirectionalLightColor().x,  mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z , 1.0f };
-		mMaterial->AmbientColor() << XMVECTOR{ mDirectionalLight.GetAmbientLightColor().x,  mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
-		mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f, 1.0f, 1.0f , 1.0f }; //todo
-		mMaterial->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
-		mMaterial->CameraPosition() << mCamera.PositionVector();
-
-		pass->Apply(0, context);
-
-		if (mIsWireframe)
-		{
-			context->RSSetState(RasterizerStates::Wireframe);
-			context->DrawIndexed(mHeightMaps[tileIndex]->mIndexCount, 0, 0);
-			context->RSSetState(nullptr);
-		}
-		else
-			context->DrawIndexed(mHeightMaps[tileIndex]->mIndexCount, 0, 0);
+		//ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
+		//context->IASetPrimitiveTopology(/*D3D11_PRIMITIVE_TOPOLOGY_LINELIST*/D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		//
+		//Pass* pass = mMaterial->CurrentTechnique()->Passes().at(0);
+		//ID3D11InputLayout* inputLayout = mMaterial->InputLayouts().at(pass);
+		//context->IASetInputLayout(inputLayout);
+		//
+		//UINT stride = sizeof(TerrainVertexInput);
+		//UINT offset = 0;
+		//context->IASetVertexBuffers(0, 1, &(mHeightMaps[tileIndex]->mVertexBuffer), &stride, &offset);
+		//context->IASetIndexBuffer(mHeightMaps[tileIndex]->mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		//
+		////mHeightMaps[tileIndex]->mWorldMatrix = XMMatrixTranslation(1.0f, 0.0f, 0.0f);
+		//XMMATRIX wvp = mHeightMaps[tileIndex]->mWorldMatrix * mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
+		//mMaterial->World() << mHeightMaps[tileIndex]->mWorldMatrix;
+		//mMaterial->View() << mCamera.ViewMatrix();
+		//mMaterial->Projection() << mCamera.ProjectionMatrix();
+		//mMaterial->grassTexture() << mGrassTexture;
+		//mMaterial->groundTexture() << mGroundTexture;
+		//mMaterial->rockTexture() << mRockTexture;
+		//mMaterial->mudTexture() << mMudTexture;
+		//mMaterial->splatTexture() << mHeightMaps[tileIndex]->mSplatTexture;
+		////mMaterial->normalTexture() << mHeightMaps[tileIndex]->mNormalTexture;
+		//mMaterial->SunDirection() << XMVectorNegate(mDirectionalLight.DirectionVector());
+		//mMaterial->SunColor() << XMVECTOR{ mDirectionalLight.GetDirectionalLightColor().x,  mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z , 1.0f };
+		//mMaterial->AmbientColor() << XMVECTOR{ mDirectionalLight.GetAmbientLightColor().x,  mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
+		//mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f, 1.0f, 1.0f , 1.0f }; //todo
+		//mMaterial->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
+		//mMaterial->CameraPosition() << mCamera.PositionVector();
+		//
+		//pass->Apply(0, context);
+		//
+		//if (mIsWireframe)
+		//{
+		//	context->RSSetState(RasterizerStates::Wireframe);
+		//	context->DrawIndexed(mHeightMaps[tileIndex]->mIndexCount, 0, 0);
+		//	context->RSSetState(nullptr);
+		//}
+		//else
+		//	context->DrawIndexed(mHeightMaps[tileIndex]->mIndexCount, 0, 0);
 	
 	}
 	

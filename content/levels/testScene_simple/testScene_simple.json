@@ -17,26 +17,42 @@
 		10.0,
 		35.0
 	],
+	"foliage_zones":
+	[
+		{
+			"type" : 0,
+			"patch_count" : 100,
+			"texture_path" : "content\\textures\\foliage\\grass_flower_type1.png",
+			"position" : [ -30.0, 0.0, 0.0],
+			"distribution_radius" : 30.0,
+			"average_scale" : 3.5
+		},
+		{
+			"type" : 0,
+			"patch_count" : 500,
+			"texture_path" : "content\\textures\\foliage\\grass_type1.png",
+			"position" : [ -30.0, 0.0, 0.0],
+			"distribution_radius" : 30.0,
+			"average_scale" : 2.5
+		}
+	],
 	"rendering_objects" : 
 	[
 		{
 			"instanced" : false,
-			"materials" : 
+			"new_materials":
 			[
 				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
+					"name" : "ShadowMapMaterial"
 				},
 				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
-				},
+					"name" : "GBufferMaterial"
+				}
+			],
+			"textures" : 
+			[
 				{
-					"effect" : "content\\effects\\RenderToLightProbe.fx",
-					"name" : "RenderToLightProbeMaterial",
-					"technique" : "renderToLightProbe"
+					"reflection_mask" : "content\\models\\default_plane\\UV_Grid_Lrg_reflection_mask.png"
 				}
 			],
 			"model_path" : "content\\models\\default_plane\\default_plane.fbx",
@@ -63,27 +79,16 @@
 		},
 		{
 			"instanced" : false,
-			"materials" : 
+			"new_materials":
 			[
 				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
+					"name" : "ShadowMapMaterial"
 				},
 				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
+					"name" : "GBufferMaterial"
 				},
 				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				},
-				{
-					"effect" : "content\\effects\\RenderToLightProbe.fx",
-					"name" : "RenderToLightProbeMaterial",
-					"technique" : "renderToLightProbe"
+					"name" : "VoxelizationMaterial"
 				}
 			],
 			"model_path" : "content\\models\\bunny\\bunny.fbx",
@@ -116,27 +121,16 @@
 		},
 		{
 			"instanced" : false,
-			"materials" : 
+			"new_materials":
 			[
 				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
+					"name" : "ShadowMapMaterial"
 				},
 				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
+					"name" : "GBufferMaterial"
 				},
 				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				},
-				{
-					"effect" : "content\\effects\\RenderToLightProbe.fx",
-					"name" : "RenderToLightProbeMaterial",
-					"technique" : "renderToLightProbe"
+					"name" : "VoxelizationMaterial"
 				}
 			],
 			"model_path" : "content\\models\\default_plane\\plane.fbx",
@@ -175,27 +169,16 @@
 		},
 		{
 			"instanced" : false,
-			"materials" : 
+			"new_materials":
 			[
 				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
+					"name" : "ShadowMapMaterial"
 				},
 				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
+					"name" : "GBufferMaterial"
 				},
 				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				},
-				{
-					"effect" : "content\\effects\\RenderToLightProbe.fx",
-					"name" : "RenderToLightProbeMaterial",
-					"technique" : "renderToLightProbe"
+					"name" : "VoxelizationMaterial"
 				}
 			],
 			"model_path" : "content\\models\\default_plane\\plane.fbx",
@@ -234,27 +217,16 @@
 		},
 		{
 			"instanced" : false,
-			"materials" : 
+			"new_materials":
 			[
 				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
+					"name" : "ShadowMapMaterial"
 				},
 				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
+					"name" : "GBufferMaterial"
 				},
 				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				},
-				{
-					"effect" : "content\\effects\\RenderToLightProbe.fx",
-					"name" : "RenderToLightProbeMaterial",
-					"technique" : "renderToLightProbe"
+					"name" : "VoxelizationMaterial"
 				}
 			],
 			"model_path" : "content\\models\\default_plane\\plane.fbx",
@@ -292,28 +264,17 @@
 			"use_forward_shading" : true
 		},
 		{
-			"instanced" : false,
-			"materials" : 
+			"instanced" : false,	
+			"new_materials":
 			[
 				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
+					"name" : "ShadowMapMaterial"
 				},
 				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
+					"name" : "GBufferMaterial"
 				},
 				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				},
-				{
-					"effect" : "content\\effects\\RenderToLightProbe.fx",
-					"name" : "RenderToLightProbeMaterial",
-					"technique" : "renderToLightProbe"
+					"name" : "VoxelizationMaterial"
 				}
 			],
 			"model_path" : "content\\models\\sphere.fbx",
@@ -346,27 +307,16 @@
 		},
 		{
 			"instanced" : false,
-			"materials" : 
+			"new_materials":
 			[
 				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
+					"name" : "ShadowMapMaterial"
 				},
 				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
+					"name" : "GBufferMaterial"
 				},
 				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				},
-				{
-					"effect" : "content\\effects\\RenderToLightProbe.fx",
-					"name" : "RenderToLightProbeMaterial",
-					"technique" : "renderToLightProbe"
+					"name" : "VoxelizationMaterial"
 				}
 			],
 			"model_path" : "content\\models\\sphere.fbx",
@@ -393,22 +343,16 @@
 		},
 		{
 			"instanced" : false,
-			"materials" : 
+			"new_materials":
 			[
 				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
+					"name" : "ShadowMapMaterial"
 				},
 				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
+					"name" : "GBufferMaterial"
 				},
 				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
+					"name" : "VoxelizationMaterial"
 				}
 			],
 			"model_path" : "content\\models\\sphere.fbx",

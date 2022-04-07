@@ -1,7 +1,8 @@
 #include "ER_LightProbe.h"
-#include "Skybox.h"
+#include "ER_Skybox.h"
+#include "Camera.h"
 #include "Game.h"
-#include "ShadowMapper.h"
+#include "ER_ShadowMapper.h"
 #include "Game.h"
 #include "GameTime.h"
 #include "GameException.h"
@@ -10,9 +11,9 @@
 #include "MaterialHelper.h"
 #include "VectorHelper.h"
 #include "DirectionalLight.h"
-#include "QuadRenderer.h"
-#include "Material.h"
-#include "RenderToLightProbeMaterial.h"
+#include "ER_QuadRenderer.h"
+#include "ER_RenderToLightProbeMaterial.h"
+#include "ER_MaterialsCallbacks.h"
 
 namespace Library
 {
@@ -34,7 +35,7 @@ namespace Library
 		Vector3Helper::Up
 	};
 
-	ER_LightProbe::ER_LightProbe(Game& game, DirectionalLight& light, ShadowMapper& shadowMapper, int size, ER_ProbeType aType)
+	ER_LightProbe::ER_LightProbe(Game& game, DirectionalLight& light, ER_ShadowMapper& shadowMapper, int size, ER_ProbeType aType)
 		: mSize(size)
 		, mDirectionalLight(light)
 		, mShadowMapper(shadowMapper)
@@ -87,20 +88,10 @@ namespace Library
 	}
 
 	void ER_LightProbe::Compute(Game& game, const GameTime& gameTime, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted,
-		DepthTarget** aDepthBuffers, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, QuadRenderer* quadRenderer, Skybox* skybox)
+		DepthTarget** aDepthBuffers, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, ER_QuadRenderer* quadRenderer, ER_Skybox* skybox)
 	{
 		if (mIsProbeLoadedFromDisk)
 			return;
-
-		bool isGlobal = (mIndex == -1);
-		std::string materialListenerName = ((mProbeType == DIFFUSE_PROBE) ? "diffuse_" : "specular_") + MaterialHelper::renderToLightProbeMaterialName;
-		if (!isGlobal)
-		{
-			for (int cubemapFaceIndex = 0; cubemapFaceIndex < CUBEMAP_FACES_COUNT; cubemapFaceIndex++)
-				for (auto& object : objectsToRender)
-					object.second->MeshMaterialVariablesUpdateEvent->AddListener(materialListenerName + "_" + std::to_string(cubemapFaceIndex),
-						[&, cubemapFaceIndex](int meshIndex) { UpdateRenderToLightProbeMaterialVariables(object.second, meshIndex, cubemapFaceIndex); });
-		}
 
 		auto context = game.Direct3DDeviceContext();
 		UINT viewportsCount = 1;
@@ -115,40 +106,38 @@ namespace Library
 
 		context->RSSetViewports(1, &oldViewPort);
 
-		if (!isGlobal)
-		{
-			for (int cubeMapFaceIndex = 0; cubeMapFaceIndex < CUBEMAP_FACES_COUNT; cubeMapFaceIndex++)
-				for (auto& object : objectsToRender)
-					object.second->MeshMaterialVariablesUpdateEvent->RemoveListener(materialListenerName + "_" + std::to_string(cubeMapFaceIndex));
-		}
 		SaveProbeOnDisk(game, levelPath, aTextureConvoluted);
 		mIsProbeLoadedFromDisk = true;
 	}
 
 	void ER_LightProbe::DrawGeometryToProbe(Game& game, const GameTime& gameTime, ER_GPUTexture* aTextureNonConvoluted, DepthTarget** aDepthBuffers,
-		const LightProbeRenderingObjectsInfo& objectsToRender, Skybox* skybox)
+		const LightProbeRenderingObjectsInfo& objectsToRender, ER_Skybox* skybox)
 	{
 		auto context = game.Direct3DDeviceContext();
 		float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		bool isGlobal = (mIndex == -1);
 
 		std::string materialListenerName = ((mProbeType == DIFFUSE_PROBE) ? "diffuse_" : "specular_") + MaterialHelper::renderToLightProbeMaterialName;
+		
+		ER_MaterialSystems matSystems;
+		matSystems.mDirectionalLight = &mDirectionalLight;
+		matSystems.mShadowMapper = &mShadowMapper;
 
 		//draw world to probe
-		for (int cubeMapFace = 0; cubeMapFace < CUBEMAP_FACES_COUNT; cubeMapFace++)
+		for (int cubeMapFaceIndex = 0; cubeMapFaceIndex < CUBEMAP_FACES_COUNT; cubeMapFaceIndex++)
 		{
 			// Set the render target and clear it.
 			int rtvShift = (mProbeType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT;
-			context->OMSetRenderTargets(1, &aTextureNonConvoluted->GetRTVs()[cubeMapFace * rtvShift], aDepthBuffers[cubeMapFace]->getDSV());
-			context->ClearRenderTargetView(aTextureNonConvoluted->GetRTVs()[cubeMapFace], clearColor);
-			context->ClearDepthStencilView(aDepthBuffers[cubeMapFace]->getDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+			context->OMSetRenderTargets(1, &aTextureNonConvoluted->GetRTVs()[cubeMapFaceIndex * rtvShift], aDepthBuffers[cubeMapFaceIndex]->getDSV());
+			context->ClearRenderTargetView(aTextureNonConvoluted->GetRTVs()[cubeMapFaceIndex], clearColor);
+			context->ClearDepthStencilView(aDepthBuffers[cubeMapFaceIndex]->getDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 			//rendering objects and sky
 			{
 				if (skybox)
 				{
-					skybox->Update(gameTime, mCubemapCameras[cubeMapFace]);
-					skybox->Draw(mCubemapCameras[cubeMapFace]);
+					skybox->Update(gameTime, mCubemapCameras[cubeMapFaceIndex]);
+					skybox->Draw(mCubemapCameras[cubeMapFaceIndex]);
 					//TODO draw sun
 					//...
 					//skybox->UpdateSun(gameTime, mCubemapCameras[cubeMapFace]);
@@ -165,8 +154,18 @@ namespace Library
 				//TODO change to culled objects per face (not a priority since we compute probes once)
 				for (auto& object : objectsToRender)
 				{
-					if (object.second->IsInLightProbe())
-						object.second->DrawLOD(materialListenerName + "_" + std::to_string(cubeMapFace), false, -1, lod);
+					if (!object.second->IsInLightProbe())
+						continue;
+				
+					auto materialInfo = object.second->GetMaterials().find(materialListenerName + "_" + std::to_string(cubeMapFaceIndex));
+					if (materialInfo != object.second->GetMaterials().end())
+					{
+						for (int meshIndex = 0; meshIndex < object.second->GetMeshCount(); meshIndex++)
+						{
+							static_cast<ER_RenderToLightProbeMaterial*>(materialInfo->second)->PrepareForRendering(matSystems, object.second, meshIndex, mCubemapCameras[cubeMapFaceIndex]);
+							object.second->DrawLOD(materialInfo->first, false, meshIndex, lod);
+						}
+					}					
 				}
 			}
 		}
@@ -175,7 +174,7 @@ namespace Library
 			context->GenerateMips(aTextureNonConvoluted->GetSRV());
 	}
 
-	void ER_LightProbe::ConvoluteProbe(Game& game, QuadRenderer* quadRenderer, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted)
+	void ER_LightProbe::ConvoluteProbe(Game& game, ER_QuadRenderer* quadRenderer, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted)
 	{
 		int mipCount = -1;
 		if (mProbeType == SPECULAR_PROBE)
@@ -309,66 +308,5 @@ namespace Library
 			fileName += L"_global.dds";
 
 		return fileName;
-	}
-
-	void ER_LightProbe::UpdateRenderToLightProbeMaterialVariables(Rendering::RenderingObject* obj, int meshIndex, int cubeFaceIndex)
-	{
-		assert(mCubemapCameras);
-
-		XMMATRIX worldMatrix = XMLoadFloat4x4(&(obj->GetTransformationMatrix4X4()));
-		XMMATRIX vp = mCubemapCameras[cubeFaceIndex]->ViewMatrix() * mCubemapCameras[cubeFaceIndex]->ProjectionMatrix();
-
-		XMMATRIX shadowMatrices[3] =
-		{
-			mShadowMapper.GetViewMatrix(0) * mShadowMapper.GetProjectionMatrix(0) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()) ,
-			mShadowMapper.GetViewMatrix(1) * mShadowMapper.GetProjectionMatrix(1) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()) ,
-			mShadowMapper.GetViewMatrix(2) * mShadowMapper.GetProjectionMatrix(2) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix())
-		};
-
-		ID3D11ShaderResourceView* shadowMaps[3] =
-		{
-			mShadowMapper.GetShadowTexture(0),
-			mShadowMapper.GetShadowTexture(1),
-			mShadowMapper.GetShadowTexture(2)
-		};
-
-		std::string materialName = ((mProbeType == DIFFUSE_PROBE) ? "diffuse_" : "specular_") + MaterialHelper::renderToLightProbeMaterialName + "_" + std::to_string(cubeFaceIndex);
-		auto material = static_cast<RenderToLightProbeMaterial*>(obj->GetMaterials()[materialName]);
-
-		if (material)
-		{
-			if (mProbeType == DIFFUSE_PROBE)
-			{
-				if (obj->IsInstanced())
-					material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at("renderToLightProbe_diffuse_probes_instancing"));
-				else
-					material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at("renderToLightProbe_diffuse_probes"));
-			}
-			else
-			{
-				if (obj->IsInstanced())
-					material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at("renderToLightProbe_specular_probes_instancing"));
-				else
-					material->SetCurrentTechnique(material->GetEffect()->TechniquesByName().at("renderToLightProbe_specular_probes"));
-			}
-
-			material->ViewProjection() << vp;
-			material->World() << worldMatrix;
-			material->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, NUM_SHADOW_CASCADES);
-			material->CameraPosition() << mCubemapCameras[cubeFaceIndex]->PositionVector();
-			material->SunDirection() << XMVectorNegate(mDirectionalLight.DirectionVector());
-			material->SunColor() << XMVECTOR{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, 5.0f };
-			material->AmbientColor() << XMVECTOR{ mDirectionalLight.GetAmbientLightColor().x,  mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
-			material->ShadowTexelSize() << XMVECTOR{ 1.0f / mShadowMapper.GetResolution(), 1.0f, 1.0f , 1.0f };
-			material->ShadowCascadeDistances() << XMVECTOR{
-				mCubemapCameras[cubeFaceIndex]->GetCameraFarCascadeDistance(0),
-				mCubemapCameras[cubeFaceIndex]->GetCameraFarCascadeDistance(1),
-				mCubemapCameras[cubeFaceIndex]->GetCameraFarCascadeDistance(2), 1.0f };
-			material->AlbedoTexture() << obj->GetTextureData(meshIndex).AlbedoMap;
-			material->NormalTexture() << obj->GetTextureData(meshIndex).NormalMap;
-			material->RoughnessTexture() << obj->GetTextureData(meshIndex).RoughnessMap;
-			material->MetallicTexture() << obj->GetTextureData(meshIndex).MetallicMap;
-			material->CascadedShadowTextures().SetResourceArray(shadowMaps, 0, NUM_SHADOW_CASCADES);
-		}
 	}
 }
