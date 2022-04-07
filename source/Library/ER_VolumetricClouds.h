@@ -40,11 +40,11 @@ namespace Library
 		};
 	}
 
-	class VolumetricClouds : public GameComponent
+	class ER_VolumetricClouds : public GameComponent
 	{
 	public:
-		VolumetricClouds(Game& game, Camera& camera, DirectionalLight& light, ER_Skybox& skybox);
-		~VolumetricClouds();
+		ER_VolumetricClouds(Game& game, Camera& camera, DirectionalLight& light, ER_Skybox& skybox);
+		~ER_VolumetricClouds();
 
 		void Initialize(ER_GPUTexture* aIlluminationColor, DepthTarget* aIlluminationDepth);
 

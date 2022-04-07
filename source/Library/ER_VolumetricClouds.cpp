@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include <stdio.h>
-#include "VolumetricClouds.h"
+#include "ER_VolumetricClouds.h"
 #include "GameTime.h"
 #include "Camera.h"
 #include "DirectionalLight.h"
@@ -18,14 +18,14 @@
 #include "ER_QuadRenderer.h"
 
 namespace Library {
-	VolumetricClouds::VolumetricClouds(Game& game, Camera& camera, DirectionalLight& light, ER_Skybox& skybox)
+	ER_VolumetricClouds::ER_VolumetricClouds(Game& game, Camera& camera, DirectionalLight& light, ER_Skybox& skybox)
 		: GameComponent(game),
 		mCamera(camera), 
 		mDirectionalLight(light),
 		mSkybox(skybox)
 	{
 	}
-	VolumetricClouds::~VolumetricClouds()
+	ER_VolumetricClouds::~ER_VolumetricClouds()
 	{
 		ReleaseObject(mCloudSS);
 		ReleaseObject(mWeatherSS);
@@ -43,7 +43,7 @@ namespace Library {
 		mCloudsConstantBuffer.Release();
 	}
 
-	void VolumetricClouds::Initialize(ER_GPUTexture* aIlluminationColor, DepthTarget* aIlluminationDepth) {
+	void ER_VolumetricClouds::Initialize(ER_GPUTexture* aIlluminationColor, DepthTarget* aIlluminationDepth) {
 		//shaders
 		ID3DBlob* blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsComposite.hlsl").c_str(), "main", "ps_5_0", &blob)))
@@ -110,7 +110,7 @@ namespace Library {
 		mSkyAndSunRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 	}
 	
-	void VolumetricClouds::Update(const GameTime& gameTime)
+	void ER_VolumetricClouds::Update(const GameTime& gameTime)
 	{
 		UpdateImGui();
 
@@ -142,7 +142,7 @@ namespace Library {
 
 	}
 
-	void VolumetricClouds::UpdateImGui()
+	void ER_VolumetricClouds::UpdateImGui()
 	{
 		if (!mShowDebug)
 			return;
@@ -161,7 +161,7 @@ namespace Library {
 		ImGui::End();
 	}
 
-	void VolumetricClouds::Draw(const GameTime& gametime)
+	void ER_VolumetricClouds::Draw(const GameTime& gametime)
 	{
 		if (!mEnabled)
 			return;

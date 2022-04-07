@@ -11,8 +11,8 @@
 #include "Materials.inl"
 #include "ER_RenderingObject.h"
 #include "MaterialHelper.h"
-#include "Illumination.h"
-#include "ER_IlluminationProbeManager.h"
+#include "ER_Illumination.h"
+#include "ER_LightProbesManager.h"
 #include "ER_FoliageManager.h"
 #include "DirectionalLight.h"
 

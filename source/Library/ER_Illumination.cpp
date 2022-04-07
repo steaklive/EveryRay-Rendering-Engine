@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include <stdio.h>
 
-#include "Illumination.h"
+#include "ER_Illumination.h"
 #include "GameTime.h"
 #include "Camera.h"
 #include "DirectionalLight.h"
@@ -33,7 +33,7 @@ namespace Library {
 
 	const float voxelCascadesSizes[NUM_VOXEL_GI_CASCADES] = { 256.0f, 256.0f };
 
-	Illumination::Illumination(Game& game, Camera& camera, const DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const Scene* scene)
+	ER_Illumination::ER_Illumination(Game& game, Camera& camera, const DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const Scene* scene)
 		: 
 		GameComponent(game),
 		mCamera(camera),
@@ -43,7 +43,7 @@ namespace Library {
 		Initialize(scene);
 	}
 
-	Illumination::~Illumination()
+	ER_Illumination::~ER_Illumination()
 	{
 		ReleaseObject(mVCTMainCS);
 		ReleaseObject(mUpsampleBlurCS);
@@ -80,7 +80,7 @@ namespace Library {
 		mLightProbesConstantBuffer.Release();
 	}
 
-	void Illumination::Initialize(const Scene* scene)
+	void ER_Illumination::Initialize(const Scene* scene)
 	{
 		if (!scene)
 			return;
@@ -252,7 +252,7 @@ namespace Library {
 	}
 
 	//deferred rendering approach
-	void Illumination::DrawLocalIllumination(ER_GBuffer* gbuffer, ER_Skybox* skybox)
+	void ER_Illumination::DrawLocalIllumination(ER_GBuffer* gbuffer, ER_Skybox* skybox)
 	{
 		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		auto context = GetGame()->Direct3DDeviceContext();
@@ -271,7 +271,7 @@ namespace Library {
 
 	//voxel GI based on "Interactive Indirect Illumination Using Voxel Cone Tracing" by C.Crassin et al.
 	//https://research.nvidia.com/sites/default/files/pubs/2011-09_Interactive-Indirect-Illumination/GIVoxels-pg2011-authors.pdf
-	void Illumination::DrawGlobalIllumination(ER_GBuffer* gbuffer, const GameTime& gameTime)
+	void ER_Illumination::DrawGlobalIllumination(ER_GBuffer* gbuffer, const GameTime& gameTime)
 	{
 		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
@@ -470,7 +470,7 @@ namespace Library {
 	}
 
 	// Combine GI output (Voxel Cone Tracing) with local illumination output
-	void Illumination::CompositeTotalIllumination()
+	void ER_Illumination::CompositeTotalIllumination()
 	{
 		auto context = GetGame()->Direct3DDeviceContext();
 
@@ -505,7 +505,7 @@ namespace Library {
 		context->CSSetSamplers(0, 1, nullSSs);
 	}
 
-	void Illumination::DrawDebugGizmos()
+	void ER_Illumination::DrawDebugGizmos()
 	{
 		//voxel GI
 		if (mDrawVCTVoxelZonesGizmos) 
@@ -531,14 +531,14 @@ namespace Library {
 		}
 	}
 
-	void Illumination::Update(const GameTime& gameTime, const Scene* scene)
+	void ER_Illumination::Update(const GameTime& gameTime, const Scene* scene)
 	{
 		CPUCullObjectsAgainstVoxelCascades(scene);
 		UpdateVoxelCameraPosition();
 		UpdateImGui();
 	}
 
-	void Illumination::UpdateImGui()
+	void ER_Illumination::UpdateImGui()
 	{
 		if (!mShowDebug)
 			return;
@@ -580,7 +580,7 @@ namespace Library {
 		ImGui::End();
 	}
 
-	void Illumination::SetFoliageSystemForGI(ER_FoliageManager* foliageSystem)
+	void ER_Illumination::SetFoliageSystemForGI(ER_FoliageManager* foliageSystem)
 	{
 		mFoliageSystem = foliageSystem;
 		if (mFoliageSystem)
@@ -590,7 +590,7 @@ namespace Library {
 		}
 	}
 
-	void Illumination::UpdateVoxelCameraPosition()
+	void ER_Illumination::UpdateVoxelCameraPosition()
 	{
 		for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 		{
@@ -612,7 +612,7 @@ namespace Library {
 		}
 	}
 
-	void Illumination::DrawDeferredLighting(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget)
+	void ER_Illumination::DrawDeferredLighting(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget)
 	{
 		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
@@ -708,7 +708,7 @@ namespace Library {
 		}
 	}
 
-	void Illumination::DrawForwardLighting(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget)
+	void ER_Illumination::DrawForwardLighting(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget)
 	{
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
 		context->OMSetRenderTargets(1, aRenderTarget->GetRTVs(), gbuffer->GetDepth()->getDSV());
@@ -717,7 +717,7 @@ namespace Library {
 			obj.second->Draw(MaterialHelper::forwardLightingNonMaterialName);
 	}
 
-	void Illumination::PrepareForForwardLighting(ER_RenderingObject* aObj, int meshIndex)
+	void ER_Illumination::PrepareForForwardLighting(ER_RenderingObject* aObj, int meshIndex)
 	{
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
 
@@ -800,7 +800,7 @@ namespace Library {
 		}
 	}
 
-	void Illumination::CPUCullObjectsAgainstVoxelCascades(const Scene* scene)
+	void ER_Illumination::CPUCullObjectsAgainstVoxelCascades(const Scene* scene)
 	{
 		//TODO add instancing support
 		//TODO fix repetition checks when the object AABB is bigger than the lower cascade (i.e. sponza)

@@ -1,6 +1,6 @@
 #pragma once
 #include "Common.h"
-#include "ER_IlluminationProbeManager.h"
+#include "ER_LightProbesManager.h"
 
 namespace Library
 {
@@ -14,6 +14,6 @@ namespace Library
 		const Camera* mCamera = nullptr;
 		const DirectionalLight* mDirectionalLight = nullptr;
 		const ER_ShadowMapper* mShadowMapper = nullptr;
-		const ER_IlluminationProbeManager* mProbesManager = nullptr;
+		const ER_LightProbesManager* mProbesManager = nullptr;
 	};
 }

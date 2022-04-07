@@ -93,20 +93,20 @@ namespace Library {
 
 		#pragma region INIT_ILLUMINATION
 		game.CPUProfiler()->BeginCPUTime("Illumination init");
-        mIllumination = new Illumination(game, camera, *mDirectionalLight, *mShadowMapper, mScene);
+        mIllumination = new ER_Illumination(game, camera, *mDirectionalLight, *mShadowMapper, mScene);
 		game.CPUProfiler()->EndCPUTime("Illumination init");
 #pragma endregion
 
 		#pragma region INIT_VOLUMETRIC_CLOUDS
 		game.CPUProfiler()->BeginCPUTime("Volumetric Clouds init");
-        mVolumetricClouds = new VolumetricClouds(game, camera, *mDirectionalLight, *mSkybox);
+        mVolumetricClouds = new ER_VolumetricClouds(game, camera, *mDirectionalLight, *mSkybox);
 		mVolumetricClouds->Initialize(mIllumination->GetLocalIlluminationRT(), mGBuffer->GetDepth());
 		game.CPUProfiler()->EndCPUTime("Volumetric Clouds init");
 #pragma endregion
 
 		#pragma region INIT_LIGHTPROBES_MANAGER
 		game.CPUProfiler()->BeginCPUTime("Light probes manager init");
-		mIlluminationProbesManager = new ER_IlluminationProbeManager(game, camera, mScene, *mDirectionalLight, *mShadowMapper);
+		mIlluminationProbesManager = new ER_LightProbesManager(game, camera, mScene, *mDirectionalLight, *mShadowMapper);
 		mIlluminationProbesManager->SetLevelPath(Utility::ToWideString(sceneFolderPath));
 		mIllumination->SetProbesManager(mIlluminationProbesManager);
 		game.CPUProfiler()->EndCPUTime("Light probes manager init");
@@ -256,7 +256,7 @@ namespace Library {
 		#pragma region DRAW_DEBUG_GIZMOS
 		if (Utility::IsEditorMode)
 		{
-			mDirectionalLight->DrawProxyModel(gameTime); //TODO move to Illumination() or better to separate debug renderer system
+			mDirectionalLight->DrawProxyModel(gameTime); //TODO move to ER_Illumination() or better to separate debug renderer system
 			mIllumination->DrawDebugGizmos();
 		}
 #pragma endregion

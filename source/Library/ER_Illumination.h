@@ -4,7 +4,7 @@
 #include "ConstantBuffer.h"
 #include "ER_GPUTexture.h"
 #include "DepthTarget.h"
-#include "ER_IlluminationProbeManager.h"
+#include "ER_LightProbesManager.h"
 
 #define NUM_VOXEL_GI_CASCADES 2
 #define NUM_VOXEL_GI_TEX_MIPS 6
@@ -90,11 +90,11 @@ namespace Library
 		};
 	}
 
-	class Illumination : public GameComponent
+	class ER_Illumination : public GameComponent
 	{
 	public:
-		Illumination(Game& game, Camera& camera, const DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const Scene* scene);
-		~Illumination();
+		ER_Illumination(Game& game, Camera& camera, const DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const Scene* scene);
+		~ER_Illumination();
 
 		void Initialize(const Scene* scene);
 
@@ -109,7 +109,7 @@ namespace Library
 
 		void SetShadowMapSRV(ID3D11ShaderResourceView* srv) { mShadowMapSRV = srv; }
 		void SetFoliageSystemForGI(ER_FoliageManager* foliageSystem);
-		void SetProbesManager(ER_IlluminationProbeManager* manager) { mProbesManager = manager; }
+		void SetProbesManager(ER_LightProbesManager* manager) { mProbesManager = manager; }
 
 		void PrepareForForwardLighting(ER_RenderingObject* aObj, int meshIndex);
 
@@ -128,7 +128,7 @@ namespace Library
 		const DirectionalLight& mDirectionalLight;
 		const ER_ShadowMapper& mShadowMapper;
 
-		ER_IlluminationProbeManager* mProbesManager = nullptr;
+		ER_LightProbesManager* mProbesManager = nullptr;
 		ER_FoliageManager* mFoliageSystem = nullptr;
 
 		using RenderingObjectInfo = std::map<std::string, ER_RenderingObject*>;

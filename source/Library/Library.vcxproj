@@ -203,7 +203,7 @@
     <ClInclude Include="Editor.h" />
     <ClInclude Include="ER_CPUProfiler.h" />
     <ClInclude Include="ER_GPUBuffer.h" />
-    <ClInclude Include="ER_IlluminationProbeManager.h" />
+    <ClInclude Include="ER_LightProbesManager.h" />
     <ClInclude Include="ER_LightProbe.h" />
     <ClInclude Include="ER_Material.h" />
     <ClInclude Include="ER_MaterialsCallbacks.h" />
@@ -221,7 +221,7 @@
     <ClInclude Include="GameTime.h" />
     <ClInclude Include="ER_GBuffer.h" />
     <ClInclude Include="GeneralEvent.h" />
-    <ClInclude Include="Illumination.h" />
+    <ClInclude Include="ER_Illumination.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="MaterialHelper.h" />
@@ -261,7 +261,7 @@
     <ClInclude Include="Utility.h" />
     <ClInclude Include="VectorHelper.h" />
     <ClInclude Include="VertexDeclarations.h" />
-    <ClInclude Include="VolumetricClouds.h" />
+    <ClInclude Include="ER_VolumetricClouds.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BruteforceStructure.cpp" />
@@ -279,14 +279,16 @@
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="ER_CPUProfiler.cpp" />
     <ClCompile Include="ER_GPUBuffer.cpp" />
-    <ClCompile Include="ER_IlluminationProbeManager.cpp" />
+    <ClCompile Include="ER_Illumination.cpp" />
     <ClCompile Include="ER_LightProbe.cpp" />
+    <ClCompile Include="ER_LightProbesManager.cpp" />
     <ClCompile Include="ER_Material.cpp" />
     <ClCompile Include="ER_PostProcessingStack.cpp" />
     <ClCompile Include="ER_RenderingObject.cpp" />
     <ClCompile Include="ER_RenderToLightProbeMaterial.cpp" />
     <ClCompile Include="ER_ShadowMapMaterial.cpp" />
     <ClCompile Include="ER_Skybox.cpp" />
+    <ClCompile Include="ER_VolumetricClouds.cpp" />
     <ClCompile Include="ER_VoxelizationMaterial.cpp" />
     <ClCompile Include="FirstPersonCamera.cpp" />
     <ClCompile Include="ER_FoliageManager.cpp" />
@@ -298,7 +300,6 @@
     <ClCompile Include="GameException.cpp" />
     <ClCompile Include="GameTime.cpp" />
     <ClCompile Include="ER_GBuffer.cpp" />
-    <ClCompile Include="Illumination.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="MaterialHelper.cpp" />
@@ -334,7 +335,6 @@
     <ClCompile Include="TGATextureLoader.cpp" />
     <ClCompile Include="Utility.cpp" />
     <ClCompile Include="VectorHelper.cpp" />
-    <ClCompile Include="VolumetricClouds.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\content\shaders\BasicColor.hlsl">

@@ -58,12 +58,12 @@ namespace Library
 		int index;
 	};
 
-	class ER_IlluminationProbeManager
+	class ER_LightProbesManager
 	{
 	public:
 		using ProbesRenderingObjectsInfo = std::map<std::string, ER_RenderingObject*>;
-		ER_IlluminationProbeManager(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
-		~ER_IlluminationProbeManager();
+		ER_LightProbesManager(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
+		~ER_LightProbesManager();
 
 		bool AreProbesReady() { return mDiffuseProbesReady && mSpecularProbesReady; }
 		void SetLevelPath(const std::wstring& aPath) { mLevelPath = aPath; };

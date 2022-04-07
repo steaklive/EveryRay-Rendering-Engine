@@ -11,7 +11,7 @@
 #include "DirectionalLight.h"
 #include "ER_ShadowMapper.h"
 #include "ER_PostProcessingStack.h"
-#include "Illumination.h"
+#include "ER_Illumination.h"
 #include "Camera.h"
 #include "ShaderCompiler.h"
 

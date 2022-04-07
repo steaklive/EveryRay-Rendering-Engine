@@ -11,7 +11,7 @@ namespace Library
 	class DirectionalLight;
 	class ER_ShadowMapper;
 	class ER_PostProcessingStack;
-	class Illumination;
+	class ER_Illumination;
 
 	namespace FoliageCBufferData {
 		struct FoliageData {

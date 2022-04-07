@@ -7,7 +7,7 @@
 #include "Camera.h"
 #include "ER_RenderingObject.h"
 #include "Mesh.h"
-#include "ER_IlluminationProbeManager.h"
+#include "ER_LightProbesManager.h"
 
 namespace Library
 {

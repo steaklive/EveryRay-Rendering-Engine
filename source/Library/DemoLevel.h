@@ -18,9 +18,9 @@ namespace Library
     class ER_ShadowMapper;
     class Terrain;
     class ER_FoliageManager;
-    class VolumetricClouds;
-    class Illumination;
-    class ER_IlluminationProbeManager;
+    class ER_VolumetricClouds;
+    class ER_Illumination;
+    class ER_LightProbesManager;
     class ER_PostProcessingStack;
 
 	class DemoLevel
@@ -43,9 +43,9 @@ namespace Library
         DirectionalLight* mDirectionalLight = nullptr;
         ER_GBuffer* mGBuffer = nullptr;
         ER_FoliageManager* mFoliageSystem = nullptr;
-        VolumetricClouds* mVolumetricClouds = nullptr;
-        Illumination* mIllumination = nullptr;
-        ER_IlluminationProbeManager* mIlluminationProbesManager = nullptr;
+        ER_VolumetricClouds* mVolumetricClouds = nullptr;
+        ER_Illumination* mIllumination = nullptr;
+        ER_LightProbesManager* mIlluminationProbesManager = nullptr;
         ER_PostProcessingStack* mPostProcessingStack = nullptr; //TODO remove namespace
     private:
         void UpdateImGui();

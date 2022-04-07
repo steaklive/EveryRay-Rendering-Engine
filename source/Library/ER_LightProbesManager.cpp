@@ -1,4 +1,4 @@
-#include "ER_IlluminationProbeManager.h"
+#include "ER_LightProbesManager.h"
 #include "Game.h"
 #include "GameTime.h"
 #include "GameException.h"
@@ -20,7 +20,7 @@
 
 namespace Library
 {
-	ER_IlluminationProbeManager::ER_IlluminationProbeManager(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
+	ER_LightProbesManager::ER_LightProbesManager(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 		: mMainCamera(camera)
 	{
 		//TODO temp
@@ -92,7 +92,7 @@ namespace Library
 		}
 	}
 
-	ER_IlluminationProbeManager::~ER_IlluminationProbeManager()
+	ER_LightProbesManager::~ER_LightProbesManager()
 	{
 		DeleteObject(mGlobalDiffuseProbe);
 		DeletePointerCollection(mDiffuseProbes);
@@ -131,7 +131,7 @@ namespace Library
 		}
 	}
 
-	void ER_IlluminationProbeManager::SetupDiffuseProbes(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
+	void ER_LightProbesManager::SetupDiffuseProbes(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 	{
 		ER_MaterialSystems materialSystems;
 		materialSystems.mCamera = &camera;
@@ -286,7 +286,7 @@ namespace Library
 		}
 	}
 
-	void ER_IlluminationProbeManager::SetupSpecularProbes(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
+	void ER_LightProbesManager::SetupSpecularProbes(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 	{
 		ER_MaterialSystems materialSystems;
 		materialSystems.mCamera = &camera;
@@ -435,7 +435,7 @@ namespace Library
 		}
 	}
 
-	void ER_IlluminationProbeManager::AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds)
+	void ER_LightProbesManager::AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds)
 	{
 		int index = aProbe->GetIndex();
 		if (aType == DIFFUSE_PROBE)
@@ -471,7 +471,7 @@ namespace Library
 	}
 
 	// Fast uniform-grid searching approach (WARNING: can not do multiple indices per pos. (i.e., when pos. is on the edge of several cells))
-	int ER_IlluminationProbeManager::GetCellIndex(const XMFLOAT3& pos, ER_ProbeType aType, int volumeIndex)
+	int ER_LightProbesManager::GetCellIndex(const XMFLOAT3& pos, ER_ProbeType aType, int volumeIndex)
 	{
 		int finalIndex = -1;
 
@@ -532,7 +532,7 @@ namespace Library
 		return finalIndex;
 	}
 
-	const DirectX::XMFLOAT4& ER_IlluminationProbeManager::GetProbesCellsCount(ER_ProbeType aType, int volumeIndex)
+	const DirectX::XMFLOAT4& ER_LightProbesManager::GetProbesCellsCount(ER_ProbeType aType, int volumeIndex)
 	{
 		if (aType == DIFFUSE_PROBE)
 			return XMFLOAT4(mDiffuseProbesCellsCountX[volumeIndex], mDiffuseProbesCellsCountY[volumeIndex], mDiffuseProbesCellsCountZ[volumeIndex], mDiffuseProbesCellsCountTotal[volumeIndex]);
@@ -540,12 +540,12 @@ namespace Library
 			return XMFLOAT4(mSpecularProbesCellsCountX[volumeIndex], mSpecularProbesCellsCountY[volumeIndex], mSpecularProbesCellsCountZ[volumeIndex], mSpecularProbesCellsCountTotal[volumeIndex]);
 	}
 
-	float ER_IlluminationProbeManager::GetProbesIndexSkip(int volumeIndex)
+	float ER_LightProbesManager::GetProbesIndexSkip(int volumeIndex)
 	{
 		return static_cast<float>(VolumeProbeIndexSkips[volumeIndex]);
 	}
 
-	bool ER_IlluminationProbeManager::IsProbeInCell(ER_LightProbe* aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds)
+	bool ER_LightProbesManager::IsProbeInCell(ER_LightProbe* aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds)
 	{
 		XMFLOAT3 pos = aProbe->GetPosition();
 
@@ -564,7 +564,7 @@ namespace Library
 				(pos.z <= maxBounds.z && pos.z >= minBounds.z);
 	}
 
-	void ER_IlluminationProbeManager::ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox)
+	void ER_LightProbesManager::ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox)
 	{
 		int numThreads = std::thread::hardware_concurrency();
 		assert(numThreads > 0);
@@ -637,7 +637,7 @@ namespace Library
 		}
 	}
 
-	void ER_IlluminationProbeManager::DrawDebugProbes(ER_ProbeType aType, int volumeIndex)
+	void ER_LightProbesManager::DrawDebugProbes(ER_ProbeType aType, int volumeIndex)
 	{
 		ER_RenderingObject* probeObject = aType == DIFFUSE_PROBE ? mDiffuseProbeRenderingObject[volumeIndex] : mSpecularProbeRenderingObject[volumeIndex];
 		bool ready = aType == DIFFUSE_PROBE ? mDiffuseProbesReady : mSpecularProbesReady;
@@ -657,7 +657,7 @@ namespace Library
 
 	}
 
-	void ER_IlluminationProbeManager::DrawDebugProbesVolumeGizmo(ER_ProbeType aType, int volumeIndex)
+	void ER_LightProbesManager::DrawDebugProbesVolumeGizmo(ER_ProbeType aType, int volumeIndex)
 	{
 		if (aType == DIFFUSE_PROBE && mDebugDiffuseProbeVolumeGizmo[volumeIndex])
 			mDebugDiffuseProbeVolumeGizmo[volumeIndex]->Draw();
@@ -665,7 +665,7 @@ namespace Library
 			mDebugSpecularProbeVolumeGizmo[volumeIndex]->Draw();
 	}
 
-	void ER_IlluminationProbeManager::UpdateProbesByType(Game& game, ER_ProbeType aType)
+	void ER_LightProbesManager::UpdateProbesByType(Game& game, ER_ProbeType aType)
 	{
 		std::vector<ER_LightProbe*>& probes = (aType == DIFFUSE_PROBE) ? mDiffuseProbes : mSpecularProbes;
 		auto minBounds = (aType == DIFFUSE_PROBE) ? mCurrentDiffuseVolumesMinBounds : mCurrentSpecularVolumesMinBounds;
@@ -773,7 +773,7 @@ namespace Library
 		}
 	}
 
-	void ER_IlluminationProbeManager::UpdateProbes(Game& game)
+	void ER_LightProbesManager::UpdateProbes(Game& game)
 	{
 		//int difProbeCellIndexCamera = GetCellIndex(mMainCamera.Position(), DIFFUSE_PROBE);
 		assert(mMaxProbesInVolumeCount > 0);

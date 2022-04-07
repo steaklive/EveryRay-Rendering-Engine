@@ -252,15 +252,6 @@
     <ClInclude Include="Editor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VolumetricClouds.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Illumination.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ER_IlluminationProbeManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ER_CPUProfiler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -313,6 +304,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ER_FoliageManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ER_LightProbesManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ER_Illumination.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ER_VolumetricClouds.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -425,9 +425,6 @@
     <ClCompile Include="TGATextureLoader.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
-    <ClCompile Include="MaterialHelper.cpp">
-      <Filter>Source Files\Helpers</Filter>
-    </ClCompile>
     <ClCompile Include="Editor.cpp">
       <Filter>Source Files\Objects</Filter>
     </ClCompile>
@@ -435,15 +432,6 @@
       <Filter>Source Files\Objects</Filter>
     </ClCompile>
     <ClCompile Include="Terrain.cpp">
-      <Filter>Source Files\Graphics\Rendering systems</Filter>
-    </ClCompile>
-    <ClCompile Include="VolumetricClouds.cpp">
-      <Filter>Source Files\Graphics\Rendering systems</Filter>
-    </ClCompile>
-    <ClCompile Include="Illumination.cpp">
-      <Filter>Source Files\Graphics\Rendering systems</Filter>
-    </ClCompile>
-    <ClCompile Include="ER_IlluminationProbeManager.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
     <ClCompile Include="ER_CPUProfiler.cpp">
@@ -463,9 +451,6 @@
     </ClCompile>
     <ClCompile Include="ER_LightProbe.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
-    </ClCompile>
-    <ClCompile Include="ER_Material.cpp">
-      <Filter>Source Files\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="ER_BasicColorMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
@@ -514,6 +499,21 @@
     </ClCompile>
     <ClCompile Include="ER_FoliageManager.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_LightProbesManager.cpp">
+      <Filter>Source Files\Graphics\Rendering systems</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_Illumination.cpp">
+      <Filter>Source Files\Graphics\Rendering systems</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_VolumetricClouds.cpp">
+      <Filter>Source Files\Graphics\Rendering systems</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_Material.cpp">
+      <Filter>Source Files\Graphics\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialHelper.cpp">
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

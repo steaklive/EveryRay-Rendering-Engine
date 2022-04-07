@@ -9,7 +9,7 @@
 #include "Mesh.h"
 #include "ER_ShadowMapper.h"
 #include "DirectionalLight.h"
-#include "Illumination.h"
+#include "ER_Illumination.h"
 namespace Library
 {
 	ER_VoxelizationMaterial::ER_VoxelizationMaterial(Game& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced)

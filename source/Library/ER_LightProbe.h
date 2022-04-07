@@ -1,5 +1,5 @@
 #pragma once
-#include "ER_IlluminationProbeManager.h"
+#include "ER_LightProbesManager.h"
 
 namespace Library
 {

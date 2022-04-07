@@ -9,7 +9,7 @@
 #include "Model.h"
 #include "Mesh.h"
 #include "Utility.h"
-#include "Illumination.h"
+#include "ER_Illumination.h"
 #include "RenderableAABB.h"
 #include "ER_Material.h"
 #include "Camera.h"
