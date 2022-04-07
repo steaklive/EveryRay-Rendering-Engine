@@ -14,9 +14,9 @@ https://youtu.be/_htQNxesr9U
 - Parallax-Occlusion Mapping w/ soft self-shadowing
 - Separable Subsurface Scattering (^)
 - Terrain w/ GPU tessellation (^)
-- Foliage (^)
+- Foliage
 - Volumetric clouds
-- Post Processing: SSR (^), Motion Blur (^), Vignette, LUT color grading, FXAA, Tonemap (^), Bloom, Fog, Light Shafts
+- Post Processing: SSR, Vignette, LUT color grading, FXAA, Fog
 
 (^) - needs to be tested or refactored
 
@@ -32,7 +32,7 @@ Other features based on NVIDIA techniques (no code provided here)
 - ImGUI, ImGuizmo
  
 # Roadmap (big architectural tasks)
- * [ ]  [RENDERING] remove DX11 "Effects" library, all .fx shaders and refactor the material system (WIP)
+ * [X]  <del>[RENDERING] remove DX11 "Effects" library, all .fx shaders and refactor the material system (DONE)</del> (https://github.com/steaklive/EveryRay-Rendering-Engine/pull/51)
  * [ ]  [RENDERING] remove all low-level DX11 code and put it into the abstracted RHI (hopefully, until the summer/autumn of 2022)
  * [ ]  [RENDERING] add support for DX12 (hopefully, until 2023)
  * [ ]  [CORE] (?) remove DirectXMath and its usages (maybe come up with a custom math lib)
@@ -65,7 +65,6 @@ The framework is NOT API-agnostic and, thus, has been tighly bound to DX11 since
 You might increase TDR time of your GPU driver (explained here https://docs.substance3d.com/spdoc/gpu-drivers-crash-with-long-computations-128745489.html).
 
 # External Dependencies
-- DirectX Effects 11 (https://github.com/Microsoft/FX11)
 - DirectXTK (https://github.com/Microsoft/DirectXTK)
 - ImGui (https://github.com/ocornut/imgui)
 - Assimp 5.0.1 (https://github.com/assimp/assimp)
