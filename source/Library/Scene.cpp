@@ -13,7 +13,7 @@
 #include "MaterialHelper.h"
 #include "Illumination.h"
 #include "ER_IlluminationProbeManager.h"
-#include "Foliage.h"
+#include "ER_FoliageManager.h"
 #include "DirectionalLight.h"
 
 #define MULTITHREADED_SCENE_LOAD 1
@@ -451,7 +451,7 @@ namespace Library
 		return material;
 	}
 
-	void Scene::LoadFoliageZones(std::vector<Foliage*>& foliageZones, DirectionalLight& light)
+	void Scene::LoadFoliageZones(std::vector<ER_Foliage*>& foliageZones, DirectionalLight& light)
 	{
 		Json::Reader reader;
 		std::ifstream scene(mScenePath.c_str(), std::ifstream::binary);
@@ -469,7 +469,7 @@ namespace Library
 					for (Json::Value::ArrayIndex ia = 0; ia != root["foliage_zones"][i]["position"].size(); ia++)
 						vec3[ia] = root["foliage_zones"][i]["position"][ia].asFloat();
 
-					foliageZones.push_back(new Foliage(*core, mCamera, light,
+					foliageZones.push_back(new ER_Foliage(*core, mCamera, light,
 						root["foliage_zones"][i]["patch_count"].asInt(),
 						Utility::GetFilePath(root["foliage_zones"][i]["texture_path"].asString()),
 						root["foliage_zones"][i]["average_scale"].asFloat(),

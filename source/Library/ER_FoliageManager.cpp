@@ -1,4 +1,4 @@
-#include "Foliage.h"
+#include "ER_FoliageManager.h"
 #include "GameException.h"
 #include "Game.h"
 #include "MatrixHelper.h"
@@ -54,7 +54,7 @@ namespace Library
 			object->Draw(gameTime, worldShadowMapper, renderPass);
 	}
 
-	void ER_FoliageManager::AddFoliage(Foliage* foliage)
+	void ER_FoliageManager::AddFoliage(ER_Foliage* foliage)
 	{
 		assert(foliage);
 		if (foliage)
@@ -69,7 +69,7 @@ namespace Library
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	Foliage::Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale, float distributionRadius, const XMFLOAT3& distributionCenter, FoliageBillboardType bType)
+	ER_Foliage::ER_Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale, float distributionRadius, const XMFLOAT3& distributionCenter, FoliageBillboardType bType)
 		:
 		GameComponent(pGame),
 		mCamera(pCamera),
@@ -147,7 +147,7 @@ namespace Library
 		Initialize();
 	}
 
-	Foliage::~Foliage()
+	ER_Foliage::~ER_Foliage()
 	{
 		ReleaseObject(mVertexBuffer);
 		ReleaseObject(mInstanceBuffer);
@@ -166,7 +166,7 @@ namespace Library
 		mFoliageConstantBuffer.Release();
 	}
 
-	void Foliage::LoadBillboardModel(FoliageBillboardType bType)
+	void ER_Foliage::LoadBillboardModel(FoliageBillboardType bType)
 	{
 		if (bType == FoliageBillboardType::SINGLE) {
 			mIsRotating = true;
@@ -190,14 +190,14 @@ namespace Library
 			mVerticesCount = quadTripleModel->Meshes()[0]->Indices().size();
 		}
 	}
-	void Foliage::Initialize()
+	void ER_Foliage::Initialize()
 	{
 		mFoliageConstantBuffer.Initialize(GetGame()->Direct3DDevice());
 		InitializeBuffersCPU();
 		//InitializeBuffersGPU();
 	}
 
-	void Foliage::CreateBlendStates()
+	void ER_Foliage::CreateBlendStates()
 	{
 		D3D11_BLEND_DESC blendStateDescription;
 		ZeroMemory(&blendStateDescription, sizeof(D3D11_BLEND_DESC));
@@ -223,7 +223,7 @@ namespace Library
 			throw GameException("ID3D11Device::CreateBlendState() failed while create no blend state for foliage");
 	}
 
-	void Foliage::InitializeBuffersGPU(int count)
+	void ER_Foliage::InitializeBuffersGPU(int count)
 	{
 		D3D11_BUFFER_DESC vertexBufferDesc, instanceBufferDesc;
 		D3D11_SUBRESOURCE_DATA vertexData, instanceData;
@@ -300,7 +300,7 @@ namespace Library
 			throw GameException("ID3D11Device::CreateBuffer() failed while generating instance buffer of foliage patches");
 	}
 
-	void Foliage::InitializeBuffersCPU()
+	void ER_Foliage::InitializeBuffersCPU()
 	{
 		// randomly generate positions and color
 		mPatchesBufferCPU = new CPUFoliageData[mPatchesCount];
@@ -317,7 +317,7 @@ namespace Library
 		}
 	}
 
-	void Foliage::Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass)
+	void ER_Foliage::Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass)
 	{
 		if(renderPass == TO_VOXELIZATION)
 			assert(worldShadowMapper);
@@ -424,7 +424,7 @@ namespace Library
 		context->PSSetSamplers(0, 1, nullSSs);
 	}
 
-	void Foliage::Update(const GameTime& gameTime)
+	void ER_Foliage::Update(const GameTime& gameTime)
 	{
 		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
 		XMFLOAT3 toCam = { mDistributionCenter.x - mCamera.Position().x, mDistributionCenter.y - mCamera.Position().y, mDistributionCenter.z - mCamera.Position().z };
@@ -434,7 +434,7 @@ namespace Library
 		CalculateDynamicLOD(distanceToCam);
 	}
 
-	void Foliage::CreateBufferGPU()
+	void ER_Foliage::CreateBufferGPU()
 	{
 		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
 
@@ -451,7 +451,7 @@ namespace Library
 	}
 
 	// updating world matrices of visible patches
-	void Foliage::UpdateBuffersGPU() 
+	void ER_Foliage::UpdateBuffersGPU() 
 	{
 		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
 
@@ -477,7 +477,7 @@ namespace Library
 		context->Unmap(mInstanceBuffer, 0);
 	}
 
-	void Foliage::CalculateDynamicLOD(float distanceToCam)
+	void ER_Foliage::CalculateDynamicLOD(float distanceToCam)
 	{
 		float factor = (distanceToCam - 150.0f) / mMaxDistanceToCamera;
 

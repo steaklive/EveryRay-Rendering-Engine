@@ -13,7 +13,7 @@
 #include "..\Library\ER_GBuffer.h"
 #include "..\Library\ER_ShadowMapper.h"
 #include "..\Library\Terrain.h"
-#include "..\Library\Foliage.h"
+#include "..\Library\ER_FoliageManager.h"
 #include "..\Library\Scene.h"
 #include "..\Library\VolumetricClouds.h"
 #include "..\Library\Illumination.h"

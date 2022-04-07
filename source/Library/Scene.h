@@ -11,7 +11,7 @@ namespace Library
 {
 	class ER_RenderingObject;
 	class DirectionalLight;
-	class Foliage;
+	class ER_Foliage;
 
 	class Scene : public GameComponent
 	{
@@ -27,7 +27,7 @@ namespace Library
 		const XMFLOAT3& GetLightProbesVolumeMaxBounds() const { return mLightProbesVolumeMaxBounds; }
 		bool HasLightProbesSupport() { return mHasLightProbes; }
 
-		void LoadFoliageZones(std::vector<Foliage*>& foliageZones, DirectionalLight& light);
+		void LoadFoliageZones(std::vector<ER_Foliage*>& foliageZones, DirectionalLight& light);
 
 		std::map<std::string, ER_RenderingObject*> objects;
 

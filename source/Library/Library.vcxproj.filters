@@ -76,6 +76,9 @@
     <Filter Include="Source Files\Graphics\Lights">
       <UniqueIdentifier>{c7d93f20-369b-4d5a-b0c3-b3b6b4b5da84}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Graphics\Mesh &amp; Model">
+      <UniqueIdentifier>{37da5177-0d90-4115-9fea-0f0cc11fa684}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -243,9 +246,6 @@
     <ClInclude Include="Terrain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Foliage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -312,6 +312,9 @@
     <ClInclude Include="ER_Skybox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_FoliageManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -355,9 +358,6 @@
     </ClCompile>
     <ClCompile Include="Mouse.cpp">
       <Filter>Source Files\Controls</Filter>
-    </ClCompile>
-    <ClCompile Include="ModelMaterial.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="Light.cpp">
       <Filter>Source Files\Graphics\Lights</Filter>
@@ -443,9 +443,6 @@
     <ClCompile Include="Illumination.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
-    <ClCompile Include="Foliage.cpp">
-      <Filter>Source Files\Graphics\Rendering systems</Filter>
-    </ClCompile>
     <ClCompile Include="ER_IlluminationProbeManager.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
@@ -463,12 +460,6 @@
     </ClCompile>
     <ClCompile Include="RenderableOBB.cpp">
       <Filter>Source Files\Helpers</Filter>
-    </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Source Files\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="Model.cpp">
-      <Filter>Source Files\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="ER_LightProbe.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
@@ -510,6 +501,18 @@
       <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
     <ClCompile Include="ER_Skybox.cpp">
+      <Filter>Source Files\Graphics\Rendering systems</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelMaterial.cpp">
+      <Filter>Source Files\Graphics\Mesh &amp; Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Source Files\Graphics\Mesh &amp; Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>Source Files\Graphics\Mesh &amp; Model</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_FoliageManager.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
   </ItemGroup>

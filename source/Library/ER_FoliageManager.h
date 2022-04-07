@@ -69,12 +69,12 @@ namespace Library
 		float scale;
 	};
 
-	class Foliage : public GameComponent
+	class ER_Foliage : public GameComponent
 	{
 
 	public:
-		Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale = 1.0f, float distributionRadius = 100, const XMFLOAT3& distributionCenter = XMFLOAT3(0.0f, 0.0f, 0.0f), FoliageBillboardType bType = FoliageBillboardType::SINGLE);
-		~Foliage();
+		ER_Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale = 1.0f, float distributionRadius = 100, const XMFLOAT3& distributionCenter = XMFLOAT3(0.0f, 0.0f, 0.0f), FoliageBillboardType bType = FoliageBillboardType::SINGLE);
+		~ER_Foliage();
 
 		void Initialize();
 		void Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass);
@@ -177,12 +177,12 @@ namespace Library
 		void Initialize();
 		void Update(const GameTime& gameTime, float gustDistance, float strength, float frequency);
 		void Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass);
-		void AddFoliage(Foliage* foliage);
+		void AddFoliage(ER_Foliage* foliage);
 		void SetVoxelizationParams(float* scale, const float* dimensions, XMFLOAT4* voxelCamera);
 
 		using Delegate_FoliageSystemInitialized = std::function<void()>;
 		GeneralEvent<Delegate_FoliageSystemInitialized>* FoliageSystemInitializedEvent = new GeneralEvent<Delegate_FoliageSystemInitialized>();
 	private:
-		std::vector<Foliage*> mFoliageCollection;
+		std::vector<ER_Foliage*> mFoliageCollection;
 	};
 }

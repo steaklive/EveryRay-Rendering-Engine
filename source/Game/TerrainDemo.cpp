@@ -33,7 +33,7 @@
 #include "..\Library\FullScreenQuad.h"
 #include "..\Library\ShadowMapper.h"
 #include "..\Library\Terrain.h"
-#include "..\Library\Foliage.h"
+#include "..\Library\ER_Foliage.h"
 #include "..\Library\Scene.h"
 #include "..\Library\VolumetricClouds.h"
 #include "..\Library\ShaderCompiler.h"

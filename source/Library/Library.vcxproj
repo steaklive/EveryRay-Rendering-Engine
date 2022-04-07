@@ -212,7 +212,7 @@
     <ClInclude Include="ER_VoxelizationMaterial.h" />
     <ClInclude Include="FastFourierTransform.h" />
     <ClInclude Include="FirstPersonCamera.h" />
-    <ClInclude Include="Foliage.h" />
+    <ClInclude Include="ER_FoliageManager.h" />
     <ClInclude Include="Frustum.h" />
     <ClInclude Include="FullScreenRenderTarget.h" />
     <ClInclude Include="Game.h" />
@@ -289,7 +289,7 @@
     <ClCompile Include="ER_Skybox.cpp" />
     <ClCompile Include="ER_VoxelizationMaterial.cpp" />
     <ClCompile Include="FirstPersonCamera.cpp" />
-    <ClCompile Include="Foliage.cpp" />
+    <ClCompile Include="ER_FoliageManager.cpp" />
     <ClCompile Include="Frustum.cpp" />
     <ClCompile Include="FullScreenRenderTarget.cpp" />
     <ClCompile Include="Game.cpp" />

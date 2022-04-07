@@ -21,7 +21,7 @@
 #include "Scene.h"
 #include "ER_GBuffer.h"
 #include "ER_ShadowMapper.h"
-#include "Foliage.h"
+#include "ER_FoliageManager.h"
 #include "RenderableAABB.h"
 #include "ER_GPUBuffer.h"
 #include "ER_LightProbe.h"
