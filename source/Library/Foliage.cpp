@@ -17,19 +17,19 @@
 
 namespace Library
 {
-	FoliageSystem::FoliageSystem(Scene* aScene, DirectionalLight& light) 
+	ER_FoliageManager::ER_FoliageManager(Scene* aScene, DirectionalLight& light) 
 	{
 		assert(aScene);
 		aScene->LoadFoliageZones(mFoliageCollection, light);
 	}
 
-	FoliageSystem::~FoliageSystem()
+	ER_FoliageManager::~ER_FoliageManager()
 	{
 		DeletePointerCollection(mFoliageCollection);
 		DeleteObject(FoliageSystemInitializedEvent);
 	}
 
-	void FoliageSystem::Initialize()
+	void ER_FoliageManager::Initialize()
 	{
 		for (auto& foliage : mFoliageCollection) {
 			foliage->CreateBufferGPU();
@@ -39,7 +39,7 @@ namespace Library
 			listener();
 	}
 
-	void FoliageSystem::Update(const GameTime& gameTime, float gustDistance, float strength, float frequency)
+	void ER_FoliageManager::Update(const GameTime& gameTime, float gustDistance, float strength, float frequency)
 	{
 		for (auto& foliage : mFoliageCollection)
 		{
@@ -48,20 +48,20 @@ namespace Library
 		}
 	}
 
-	void FoliageSystem::Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass)
+	void ER_FoliageManager::Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass)
 	{
 		for (auto& object : mFoliageCollection)
 			object->Draw(gameTime, worldShadowMapper, renderPass);
 	}
 
-	void FoliageSystem::AddFoliage(Foliage* foliage)
+	void ER_FoliageManager::AddFoliage(Foliage* foliage)
 	{
 		assert(foliage);
 		if (foliage)
 			mFoliageCollection.emplace_back(foliage);
 	}
 
-	void FoliageSystem::SetVoxelizationParams(float* scale, const float* dimensions, XMFLOAT4* voxelCamera)
+	void ER_FoliageManager::SetVoxelizationParams(float* scale, const float* dimensions, XMFLOAT4* voxelCamera)
 	{
 		for (auto& object : mFoliageCollection)
 			object->SetVoxelizationParams(scale, dimensions, voxelCamera);

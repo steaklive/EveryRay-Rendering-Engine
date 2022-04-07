@@ -580,7 +580,7 @@ namespace Library {
 		ImGui::End();
 	}
 
-	void Illumination::SetFoliageSystemForGI(FoliageSystem* foliageSystem)
+	void Illumination::SetFoliageSystemForGI(ER_FoliageManager* foliageSystem)
 	{
 		mFoliageSystem = foliageSystem;
 		if (mFoliageSystem)

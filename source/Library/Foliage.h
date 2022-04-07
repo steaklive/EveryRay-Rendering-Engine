@@ -168,11 +168,11 @@ namespace Library
 		XMFLOAT4* mVoxelCameraPos;
 	};
 
-	class FoliageSystem
+	class ER_FoliageManager
 	{
 	public:
-		FoliageSystem(Scene* aScene, DirectionalLight& light);
-		~FoliageSystem();
+		ER_FoliageManager(Scene* aScene, DirectionalLight& light);
+		~ER_FoliageManager();
 
 		void Initialize();
 		void Update(const GameTime& gameTime, float gustDistance, float strength, float frequency);

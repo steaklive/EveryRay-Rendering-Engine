@@ -17,7 +17,7 @@ namespace Library
     class ER_GBuffer;
     class ER_ShadowMapper;
     class Terrain;
-    class FoliageSystem;
+    class ER_FoliageManager;
     class VolumetricClouds;
     class Illumination;
     class ER_IlluminationProbeManager;
@@ -42,7 +42,7 @@ namespace Library
         ER_ShadowMapper* mShadowMapper = nullptr;
         DirectionalLight* mDirectionalLight = nullptr;
         ER_GBuffer* mGBuffer = nullptr;
-        FoliageSystem* mFoliageSystem = nullptr;
+        ER_FoliageManager* mFoliageSystem = nullptr;
         VolumetricClouds* mVolumetricClouds = nullptr;
         Illumination* mIllumination = nullptr;
         ER_IlluminationProbeManager* mIlluminationProbesManager = nullptr;

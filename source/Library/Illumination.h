@@ -19,7 +19,7 @@ namespace Library
 	class Scene;
 	class ER_GBuffer;
 	class ER_ShadowMapper;
-	class FoliageSystem;
+	class ER_FoliageManager;
 	class IBLRadianceMap;
 	class RenderableAABB;
 	class ER_RenderingObject;
@@ -108,7 +108,7 @@ namespace Library
 		void Config() { mShowDebug = !mShowDebug; }
 
 		void SetShadowMapSRV(ID3D11ShaderResourceView* srv) { mShadowMapSRV = srv; }
-		void SetFoliageSystemForGI(FoliageSystem* foliageSystem);
+		void SetFoliageSystemForGI(ER_FoliageManager* foliageSystem);
 		void SetProbesManager(ER_IlluminationProbeManager* manager) { mProbesManager = manager; }
 
 		void PrepareForForwardLighting(ER_RenderingObject* aObj, int meshIndex);
@@ -129,7 +129,7 @@ namespace Library
 		const ER_ShadowMapper& mShadowMapper;
 
 		ER_IlluminationProbeManager* mProbesManager = nullptr;
-		FoliageSystem* mFoliageSystem = nullptr;
+		ER_FoliageManager* mFoliageSystem = nullptr;
 
 		using RenderingObjectInfo = std::map<std::string, ER_RenderingObject*>;
 		RenderingObjectInfo mVoxelizationObjects[NUM_VOXEL_GI_CASCADES];
