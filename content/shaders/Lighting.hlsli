@@ -527,15 +527,15 @@ float3 GetSpecularIrradiance(float3 worldPos, float3 camPos, float3 reflectDir, 
     return finalSum;
 }
 
-float3 IndirectLightingPBR(float3 normalWS, float3 diffuseAlbedo, float3 positionWS, float roughness, float3 F0, float metalness, float3 camPos, bool useGlobalDiffuseProbe,
-    in LightProbeInfo probesInfo, in SamplerState linearSampler, in Texture2D<float4> integrationTexture, float ambienOcclusion)
+float3 IndirectLightingPBR(float3 normalWS, float3 diffuseAlbedo, float3 positionWS, float roughness, float3 F0, float metalness, float3 camPos, bool useGlobalProbe,
+    in LightProbeInfo probesInfo, in SamplerState linearSampler, in Texture2D<float4> integrationTexture, float ambientOcclusion)
 {
     float3 viewDir = normalize(camPos.xyz - positionWS);
     float nDotV = max(dot(normalWS, viewDir), 0.0);
     float3 reflectDir = normalize(reflect(-viewDir, normalWS));
     
     //indirect diffuse
-    float3 irradianceDiffuse = GetDiffuseIrradiance(positionWS, normalWS, camPos, useGlobalDiffuseProbe, linearSampler, probesInfo) /* / Pi*/;
+    float3 irradianceDiffuse = GetDiffuseIrradiance(positionWS, normalWS, camPos, useGlobalProbe, linearSampler, probesInfo)  / Pi;
     float3 indirectDiffuseLighting = irradianceDiffuse * diffuseAlbedo * float3(1.0f - metalness, 1.0f - metalness, 1.0f - metalness);
 
     //indirect specular (split sum approximation http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf)
@@ -545,7 +545,7 @@ float3 IndirectLightingPBR(float3 normalWS, float3 diffuseAlbedo, float3 positio
     float2 environmentBRDF = integrationTexture.SampleLevel(linearSampler, float2(nDotV, roughness), 0).rg;
     float3 indirectSpecularLighting = prefilteredColor * (F * environmentBRDF.x + environmentBRDF.y);
     
-    return (indirectDiffuseLighting + indirectSpecularLighting) * ambienOcclusion;
+    return (indirectDiffuseLighting + indirectSpecularLighting) * ambientOcclusion;
 }
 
 float3 GetGammaCorrectColor(float3 inputColor)

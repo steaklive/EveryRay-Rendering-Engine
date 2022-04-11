@@ -87,6 +87,6 @@ namespace Library
 
 		float mSunExponent = 10000;
 		float mSunBrightness = 2.637f;
-		float mDirectionalLightIntensity = 10.0f;
+		float mDirectionalLightIntensity = 4.0f;
 	};
 }

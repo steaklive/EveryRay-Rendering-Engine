@@ -67,7 +67,8 @@ namespace Library
 
 		bool AreProbesReady() { return mDiffuseProbesReady && mSpecularProbesReady; }
 		void SetLevelPath(const std::wstring& aPath) { mLevelPath = aPath; };
-		void ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox = nullptr);
+		void ComputeOrLoadLocalProbes(Game& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox = nullptr);
+		void ComputeOrLoadGlobalProbes(Game& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox);
 		void DrawDebugProbes(ER_ProbeType aType, int volumeIndex);
 		void DrawDebugProbesVolumeGizmo(ER_ProbeType aType, int volumeIndex);
 		void UpdateProbes(Game& game);
@@ -103,8 +104,11 @@ namespace Library
 		const XMFLOAT3& GetSceneProbesVolumeMin() { return mSceneProbesMinBounds; }
 		const XMFLOAT3& GetSceneProbesVolumeMax() { return mSceneProbesMaxBounds; }
 		bool IsEnabled() { return mEnabled; }
+		bool IsGlobalProbeReady(ER_ProbeType aType) { return aType == DIFFUSE_PROBE ? mGlobalDiffuseProbeReady : false /*TODO specular*/; }
+
 		bool mDebugDiscardCulledProbes = false;//used in DebugLightProbeMaterial
 	private:
+		void SetupGlobalDiffuseProbe(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
 		void SetupDiffuseProbes(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
 		void SetupSpecularProbes(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
 		void AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds);

@@ -36,6 +36,7 @@ cbuffer DeferredLightingCBuffer : register(b0)
     float4 SunDirection;
     float4 SunColor;
     float4 CameraPosition;
+    bool UseIndirectLightingWithGlobalProbesOnly;
     bool SkipIndirectLighting;
 }
 
@@ -64,7 +65,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
         return;
     }
     
-    bool useGlobalDiffuseProbe = extra2Gbuffer.r > 0.0f;
+    bool useGlobalProbe = UseIndirectLightingWithGlobalProbesOnly || (extra2Gbuffer.r > 0.0f);
     
     float4 worldPos = GbufferWorldPosTexture.Load(uint3(inPos, 0));
     if (worldPos.a < 0.000001f)
@@ -119,7 +120,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
         probesInfo.distanceBetweenDiffuseProbes = DistanceBetweenDiffuseProbes;
         probesInfo.distanceBetweenSpecularProbes = DistanceBetweenSpecularProbes;
         
-        indirectLighting += IndirectLightingPBR(normalWS, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness, CameraPosition.xyz, useGlobalDiffuseProbe,
+        indirectLighting += IndirectLightingPBR(normalWS, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness, CameraPosition.xyz, useGlobalProbe,
             probesInfo, SamplerLinear, IntegrationTexture, ao);
     }
     

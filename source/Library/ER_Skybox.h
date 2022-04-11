@@ -38,7 +38,7 @@ namespace Library
 
 		void Initialize();
 		void Draw(Camera* aCustomCamera = nullptr);
-		void Update(const GameTime& gameTime, Camera* aCustomCamera = nullptr);
+		void Update(Camera* aCustomCamera = nullptr);
 		void UpdateSun(const GameTime& gameTime, Camera* aCustomCamera = nullptr);
 		void DrawSun(Camera* aCustomCamera = nullptr, ER_GPUTexture* aSky = nullptr, DepthTarget* aSceneDepth = nullptr);
 

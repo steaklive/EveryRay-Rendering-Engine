@@ -87,7 +87,7 @@ namespace Library
 			(mPosition.z > aMax.z || mPosition.z < aMin.z);
 	}
 
-	void ER_LightProbe::Compute(Game& game, const GameTime& gameTime, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted,
+	void ER_LightProbe::Compute(Game& game, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted,
 		DepthTarget** aDepthBuffers, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, ER_QuadRenderer* quadRenderer, ER_Skybox* skybox)
 	{
 		if (mIsProbeLoadedFromDisk)
@@ -101,7 +101,7 @@ namespace Library
 		context->RSSetViewports(1, &newViewPort);
 
 		//sadly, we can't combine or multi-thread these two functions, because of the artifacts on edges of the convoluted faces of the cubemap...
-		DrawGeometryToProbe(game, gameTime, aTextureNonConvoluted, aDepthBuffers, objectsToRender, skybox);
+		DrawGeometryToProbe(game, aTextureNonConvoluted, aDepthBuffers, objectsToRender, skybox);
 		ConvoluteProbe(game, quadRenderer, aTextureNonConvoluted, aTextureConvoluted);
 
 		context->RSSetViewports(1, &oldViewPort);
@@ -110,7 +110,7 @@ namespace Library
 		mIsProbeLoadedFromDisk = true;
 	}
 
-	void ER_LightProbe::DrawGeometryToProbe(Game& game, const GameTime& gameTime, ER_GPUTexture* aTextureNonConvoluted, DepthTarget** aDepthBuffers,
+	void ER_LightProbe::DrawGeometryToProbe(Game& game, ER_GPUTexture* aTextureNonConvoluted, DepthTarget** aDepthBuffers,
 		const LightProbeRenderingObjectsInfo& objectsToRender, ER_Skybox* skybox)
 	{
 		auto context = game.Direct3DDeviceContext();
@@ -136,7 +136,7 @@ namespace Library
 			{
 				if (skybox)
 				{
-					skybox->Update(gameTime, mCubemapCameras[cubeMapFaceIndex]);
+					skybox->Update(mCubemapCameras[cubeMapFaceIndex]);
 					skybox->Draw(mCubemapCameras[cubeMapFaceIndex]);
 					//TODO draw sun
 					//...

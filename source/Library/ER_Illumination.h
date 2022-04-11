@@ -63,6 +63,7 @@ namespace Library
 			XMFLOAT4 SunDirection;
 			XMFLOAT4 SunColor;
 			XMFLOAT4 CameraPosition;
+			bool UseIndirectWithGlobalProbes;
 			bool SkipIndirectProbeLighting;
 		};
 		struct ForwardLightingCB

@@ -172,6 +172,7 @@ namespace Library
 			if (mDrawSun) {
 				ImGui::SliderFloat("Sun Exponent", &mSunExponent, 1.0f, 10000.0f);
 				ImGui::SliderFloat("Sun Brightness", &mSunBrightness, 0.0f, 10.0f);
+				ImGui::SliderFloat("Sun Intensity", &mDirectionalLightIntensity, 0.0f, 50.0f);
 			}
 			ImGui::End();
 

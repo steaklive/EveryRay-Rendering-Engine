@@ -156,7 +156,7 @@ namespace Library {
 			XMFLOAT4(mDirectionalLight->Direction().x, mDirectionalLight->Direction().y, mDirectionalLight->Direction().z, 1.0),
 			XMFLOAT4(mDirectionalLight->GetDirectionalLightColor().x, mDirectionalLight->GetDirectionalLightColor().y, mDirectionalLight->GetDirectionalLightColor().z, 1.0),
 			mDirectionalLight->GetSunBrightness(), mDirectionalLight->GetSunExponent());
-		mSkybox->Update(gameTime);
+		mSkybox->Update();
 		mSkybox->UpdateSun(gameTime);
 		mPostProcessingStack->Update();
 		mVolumetricClouds->Update(gameTime);
@@ -226,11 +226,16 @@ namespace Library {
 #pragma endregion
 
 		#pragma region DRAW_GLOBAL_ILLUMINATION
-		if (mScene->HasLightProbesSupport() && !mIlluminationProbesManager->AreProbesReady())
 		{
-			game.CPUProfiler()->BeginCPUTime("Compute or load light probes");
-			mIlluminationProbesManager->ComputeOrLoadProbes(game, gameTime, mScene->objects, mSkybox);
-			game.CPUProfiler()->EndCPUTime("Compute or load light probes");
+			if (mScene->HasLightProbesSupport() && !mIlluminationProbesManager->AreProbesReady())
+			{
+				game.CPUProfiler()->BeginCPUTime("Compute or load light probes");
+				mIlluminationProbesManager->ComputeOrLoadLocalProbes(game, mScene->objects, mSkybox);
+				mIlluminationProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
+				game.CPUProfiler()->EndCPUTime("Compute or load light probes");
+			}
+			else if (!mIlluminationProbesManager->IsEnabled() && !mIlluminationProbesManager->IsGlobalProbeReady(DIFFUSE_PROBE))
+				mIlluminationProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
 		}
 
 		mRenderStateHelper->SaveAll();

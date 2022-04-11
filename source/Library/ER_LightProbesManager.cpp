@@ -31,6 +31,7 @@ namespace Library
 		if (!scene->HasLightProbesSupport())
 		{
 			mEnabled = false;
+			SetupGlobalDiffuseProbe(game, camera, scene, light, shadowMapper);
 			return;
 		}
 
@@ -131,6 +132,14 @@ namespace Library
 		}
 	}
 
+	void ER_LightProbesManager::SetupGlobalDiffuseProbe(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
+	{
+		mGlobalDiffuseProbe = new ER_LightProbe(game, light, shadowMapper, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE);
+		mGlobalDiffuseProbe->SetIndex(-1);
+		mGlobalDiffuseProbe->SetPosition(Vector3Helper::Zero);
+		mGlobalDiffuseProbe->SetShaderInfoForConvolution(mConvolutionPS, mLinearSamplerState);
+	}
+
 	void ER_LightProbesManager::SetupDiffuseProbes(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 	{
 		ER_MaterialSystems materialSystems;
@@ -142,11 +151,7 @@ namespace Library
 		XMFLOAT3& minBounds = mSceneProbesMinBounds;
 		XMFLOAT3& maxBounds = mSceneProbesMaxBounds;
 
-		//global probe
-		mGlobalDiffuseProbe = new ER_LightProbe(game, light, shadowMapper, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE);
-		mGlobalDiffuseProbe->SetIndex(-1);
-		mGlobalDiffuseProbe->SetPosition(Vector3Helper::Zero);
-		mGlobalDiffuseProbe->SetShaderInfoForConvolution(mConvolutionPS, mLinearSamplerState);
+		SetupGlobalDiffuseProbe(game, camera, scene, light, shadowMapper);
 
 		mDiffuseProbesCountX = (maxBounds.x - minBounds.x) / DISTANCE_BETWEEN_DIFFUSE_PROBES + 1;
 		mDiffuseProbesCountY = (maxBounds.y - minBounds.y) / DISTANCE_BETWEEN_DIFFUSE_PROBES + 1;
@@ -564,19 +569,26 @@ namespace Library
 				(pos.z <= maxBounds.z && pos.z >= minBounds.z);
 	}
 
-	void ER_LightProbesManager::ComputeOrLoadProbes(Game& game, const GameTime& gameTime, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox)
+	void ER_LightProbesManager::ComputeOrLoadGlobalProbes(Game& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox)
+	{
+		// DIFFUSE_PROBE
+		{
+			if (mGlobalDiffuseProbeReady)
+				return;
+
+			std::wstring diffuseProbesPath = mLevelPath + L"diffuse_probes\\";
+			if (!mGlobalDiffuseProbe->LoadProbeFromDisk(game, diffuseProbesPath))
+				mGlobalDiffuseProbe->Compute(game, mTempDiffuseCubemapFacesRT, mTempDiffuseCubemapFacesConvolutedRT, mTempDiffuseCubemapDepthBuffers, diffuseProbesPath, aObjects, mQuadRenderer, skybox);
+
+			mGlobalDiffuseProbeReady = true;
+		}
+		//TODO specular
+	}
+
+	void ER_LightProbesManager::ComputeOrLoadLocalProbes(Game& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox)
 	{
 		int numThreads = std::thread::hardware_concurrency();
 		assert(numThreads > 0);
-
-		if (!mGlobalDiffuseProbeReady)
-		{
-			std::wstring diffuseProbesPath = mLevelPath + L"diffuse_probes\\";
-			if (!mGlobalDiffuseProbe->LoadProbeFromDisk(game, diffuseProbesPath))
-				mGlobalDiffuseProbe->Compute(game, gameTime, mTempDiffuseCubemapFacesRT, mTempDiffuseCubemapFacesConvolutedRT, mTempDiffuseCubemapDepthBuffers, diffuseProbesPath, aObjects, mQuadRenderer, skybox);
-			
-			mGlobalDiffuseProbeReady = true;
-		}
 
 		if (!mDiffuseProbesReady)
 		{
@@ -601,7 +613,7 @@ namespace Library
 			for (auto& probe : mDiffuseProbes)
 			{
 				if (!probe->IsLoadedFromDisk())
-					probe->Compute(game, gameTime, mTempDiffuseCubemapFacesRT, mTempDiffuseCubemapFacesConvolutedRT, mTempDiffuseCubemapDepthBuffers, diffuseProbesPath, aObjects, mQuadRenderer, skybox);
+					probe->Compute(game, mTempDiffuseCubemapFacesRT, mTempDiffuseCubemapFacesConvolutedRT, mTempDiffuseCubemapDepthBuffers, diffuseProbesPath, aObjects, mQuadRenderer, skybox);
 			}
 			
 			mDiffuseProbesReady = true;
@@ -631,7 +643,7 @@ namespace Library
 			for (auto& probe : mSpecularProbes)
 			{
 				if (!probe->IsLoadedFromDisk())
-					probe->Compute(game, gameTime, mTempSpecularCubemapFacesRT, mTempSpecularCubemapFacesConvolutedRT, mTempSpecularCubemapDepthBuffers, specularProbesPath, aObjects, mQuadRenderer, skybox);
+					probe->Compute(game, mTempSpecularCubemapFacesRT, mTempSpecularCubemapFacesConvolutedRT, mTempSpecularCubemapDepthBuffers, specularProbesPath, aObjects, mQuadRenderer, skybox);
 			}
 			mSpecularProbesReady = true;
 		}

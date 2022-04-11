@@ -99,7 +99,7 @@ namespace Library
 		}
 	}
 
-	void ER_Skybox::Update(const GameTime& gameTime, Camera* aCustomCamera)
+	void ER_Skybox::Update(Camera* aCustomCamera)
 	{
 		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
 		XMFLOAT3 position;
@@ -108,11 +108,7 @@ namespace Library
 		else
 			position = mCamera.Position();
 
-		if (mIsMovable)
-			XMStoreFloat4x4(&mWorldMatrix, XMLoadFloat4x4(&mScaleMatrix) * XMMatrixTranslation(position.x, position.y - 50.0f, position.z) * XMMatrixRotationAxis(XMVECTOR{ 0,1,0 }, gameTime.TotalGameTime() * 0.003f));
-		else
-			XMStoreFloat4x4(&mWorldMatrix, XMLoadFloat4x4(&mScaleMatrix) * XMMatrixTranslation(position.x, position.y, position.z));
-
+		XMStoreFloat4x4(&mWorldMatrix, XMLoadFloat4x4(&mScaleMatrix) * XMMatrixTranslation(position.x, position.y, position.z));
 	}
 
 	void ER_Skybox::UpdateSun(const GameTime& gameTime, Camera* aCustomCamera)
