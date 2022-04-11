@@ -16,7 +16,7 @@ https://youtu.be/_htQNxesr9U
 - Terrain w/ GPU tessellation (^)
 - Foliage
 - Volumetric clouds
-- Post Processing: SSR, Vignette, LUT color grading, FXAA, Fog
+- Post Processing: Linear Fog, SSR, Tonemap, LUT color grading, Vignette, FXAA
 
 (^) - needs to be tested or refactored
 
