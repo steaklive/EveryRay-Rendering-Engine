@@ -362,9 +362,6 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
         shadow = Forward_GetShadow(ShadowCascadeDistances, shadowCoords, ShadowTexelSize.r, CascadedShadowTextures, CascadedPcfShadowMapSampler, vsOutput.Position.w, forcedCascadeShadowIndex);
     
     float3 color = (directLighting * shadow * POMSelfShadow) + indirectLighting;
-    color = GetGammaCorrectColor(color);
-    //color = color / (color + float3(1.0f, 1.0f, 1.0f));
-    
     return color;
 }
 
@@ -374,9 +371,11 @@ float3 PSMain(VS_OUTPUT vsOutput) : SV_Target0
 }
 float3 PSMain_DiffuseProbes(VS_OUTPUT vsOutput) : SV_Target0
 {
-    return GetFinalColor(vsOutput, false, -2);
+    //since we dont do tonemapping for probe rendering, run gamma correction
+    return GetGammaCorrectColor(GetFinalColor(vsOutput, false, -2));
 }
 float3 PSMain_SpecularProbes(VS_OUTPUT vsOutput) : SV_Target0
 {
-    return GetFinalColor(vsOutput, false, NUM_OF_SHADOW_CASCADES - 1);
+    //since we dont do tonemapping for probe rendering, run gamma correction
+    return GetGammaCorrectColor(GetFinalColor(vsOutput, false, NUM_OF_SHADOW_CASCADES - 1));
 }

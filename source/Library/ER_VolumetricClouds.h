@@ -46,11 +46,13 @@ namespace Library
 		ER_VolumetricClouds(Game& game, Camera& camera, DirectionalLight& light, ER_Skybox& skybox);
 		~ER_VolumetricClouds();
 
-		void Initialize(ER_GPUTexture* aIlluminationColor, DepthTarget* aIlluminationDepth);
+		void Initialize(DepthTarget* aIlluminationDepth);
 
 		void Draw(const GameTime& gametime);
 		void Update(const GameTime& gameTime);
 		void Config() { mShowDebug = !mShowDebug; }
+		void Composite(ER_GPUTexture* aRenderTarget);
+		bool IsEnabled() { return mEnabled; }
 	private:
 		void UpdateImGui();
 
@@ -61,7 +63,6 @@ namespace Library
 		ConstantBuffer<VolumetricCloudsCBufferData::FrameCB> mFrameConstantBuffer;
 		ConstantBuffer<VolumetricCloudsCBufferData::CloudsCB> mCloudsConstantBuffer;
 
-		ER_GPUTexture* mIlluminationResultRT = nullptr; // not allocated here, just a pointer
 		DepthTarget* mIlluminationResultDepthTarget = nullptr; // not allocated here, just a pointer
 
 		ER_GPUTexture* mSkyRT = nullptr;

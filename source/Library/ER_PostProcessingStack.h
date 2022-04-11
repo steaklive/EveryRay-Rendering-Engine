@@ -12,6 +12,7 @@ namespace Library
 	class DirectionalLight;
 	class ER_QuadRenderer;
 	class ER_GBuffer;
+	class ER_VolumetricClouds;
 
 	namespace PostEffectsCBuffers
 	{
@@ -55,7 +56,7 @@ namespace Library
 		void Begin(ER_GPUTexture* aInitialRT, DepthTarget* aDepthTarget);
 		void End(ER_GPUTexture* aResolveRT = nullptr);
 
-		void DrawEffects(const GameTime& gameTime, ER_QuadRenderer* quad, ER_GBuffer* gbuffer);
+		void DrawEffects(const GameTime& gameTime, ER_QuadRenderer* quad, ER_GBuffer* gbuffer, ER_VolumetricClouds* aVolumetricClouds = nullptr);
 
 		void Update();
 
@@ -65,6 +66,7 @@ namespace Library
 		bool isWindowOpened = false;
 
 	private:
+		void PrepareDrawingTonemapping(ER_GPUTexture* aInputTexture);
 		void PrepareDrawingSSR(const GameTime& gameTime, ER_GPUTexture* aInputTexture, ER_GBuffer* gbuffer);
 		void PrepareDrawingLinearFog(ER_GPUTexture* aInputTexture);
 		void PrepareDrawingColorGrading(ER_GPUTexture* aInputTexture);
@@ -77,7 +79,12 @@ namespace Library
 		Camera& camera;
 		const DirectionalLight* light;
 
-		//SSR
+		// Tonemap
+		ER_GPUTexture* mTonemappingRT = nullptr;
+		ID3D11PixelShader* mTonemappingPS = nullptr;
+		bool mUseTonemap = true;
+
+		// SSR
 		ER_GPUTexture* mSSRRT = nullptr;
 		ConstantBuffer<PostEffectsCBuffers::SSRCB> mSSRConstantBuffer;
 		ID3D11PixelShader* mSSRPS = nullptr;
@@ -86,7 +93,7 @@ namespace Library
 		float mSSRStepSize = 0.741f;
 		float mSSRMaxThickness = 0.00021f;
 
-		//Linear Fog
+		// Linear Fog
 		ER_GPUTexture* mLinearFogRT = nullptr;
 		ConstantBuffer<PostEffectsCBuffers::LinearFogCB> mLinearFogConstantBuffer;
 		ID3D11PixelShader* mLinearFogPS = nullptr;
@@ -101,7 +108,7 @@ namespace Library
 		ID3D11ShaderResourceView* mLUTs[3];
 		ID3D11PixelShader* mColorGradingPS = nullptr;
 		int mColorGradingCurrentLUTIndex = 2;
-		bool mUseColorGrading = false;
+		bool mUseColorGrading = true;
 
 		// FXAA
 		ER_GPUTexture* mFXAART = nullptr;

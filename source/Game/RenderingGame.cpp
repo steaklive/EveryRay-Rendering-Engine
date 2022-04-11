@@ -57,7 +57,7 @@ namespace Rendering
 		mRenderStateHelper(nullptr)
 	{
 		mDepthStencilBufferEnabled = true;
-		mMultiSamplingEnabled = true;
+		mMultiSamplingEnabled = false;
 	}
 
 	RenderingGame::~RenderingGame()

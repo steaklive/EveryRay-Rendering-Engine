@@ -43,7 +43,7 @@ namespace Library {
 		mCloudsConstantBuffer.Release();
 	}
 
-	void ER_VolumetricClouds::Initialize(ER_GPUTexture* aIlluminationColor, DepthTarget* aIlluminationDepth) {
+	void ER_VolumetricClouds::Initialize(DepthTarget* aIlluminationDepth) {
 		//shaders
 		ID3DBlob* blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsComposite.hlsl").c_str(), "main", "ps_5_0", &blob)))
@@ -97,9 +97,6 @@ namespace Library {
 		if (FAILED(mGame->Direct3DDevice()->CreateSamplerState(&sam_desc, &mWeatherSS)))
 			throw GameException("Failed to create sampler mWeatherSS!");
 
-		//render targets
-		assert(aIlluminationColor);
-		mIlluminationResultRT = aIlluminationColor;
 		assert(aIlluminationDepth);
 		mIlluminationResultDepthTarget = aIlluminationDepth;
 
@@ -166,7 +163,7 @@ namespace Library {
 		if (!mEnabled)
 			return;
 
-		assert(mIlluminationResultRT && mIlluminationResultDepthTarget);
+		assert(mIlluminationResultDepthTarget);
 		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
 
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
@@ -229,15 +226,23 @@ namespace Library {
 			mBlurRT->End();
 		}
 
-		//composite pass
-		{
-			context->OMSetRenderTargets(1, mIlluminationResultRT->GetRTVs(), nullptr);
-			ID3D11ShaderResourceView* SR[2] = { mIlluminationResultDepthTarget->getSRV(), mBlurRT->OutputColorTexture() };
-			context->PSSetShaderResources(0, 2, SR);
-			context->PSSetShader(mCompositePS, NULL, NULL);
-			quadRenderer->Draw(context);
+		//composite pass (happens in PostProcessing)
+	}
 
-			context->OMSetRenderTargets(1, nullRTVs, nullptr);
-		}
+	void ER_VolumetricClouds::Composite(ER_GPUTexture* aRenderTarget)
+	{
+		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
+
+		context->OMSetRenderTargets(1, aRenderTarget->GetRTVs(), nullptr);
+		ID3D11ShaderResourceView* SR[2] = { mIlluminationResultDepthTarget->getSRV(), mBlurRT->OutputColorTexture() };
+		context->PSSetShaderResources(0, 2, SR);
+		context->PSSetShader(mCompositePS, NULL, NULL);
+		
+		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mGame->Services().GetService(ER_QuadRenderer::TypeIdClass());
+		assert(quadRenderer);
+		quadRenderer->Draw(context);
+
+		context->OMSetRenderTargets(1, nullRTVs, nullptr);
 	}
 }

@@ -126,9 +126,5 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     float shadow = Deferred_GetShadow(worldPos, ShadowMatrices, ShadowCascadeDistances, ShadowTexelSize.x, CascadedShadowTextures, CascadedPcfShadowMapSampler);
     
     float3 color = (directLighting * shadow) + indirectLighting;
-    color = GetGammaCorrectColor(color);
-    
-    //color = color / (color + float3(1.0f, 1.0f, 1.0f));
-
     OutputTexture[inPos] += float4(color, 1.0f);
 }

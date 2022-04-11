@@ -100,7 +100,7 @@ namespace Library {
 		#pragma region INIT_VOLUMETRIC_CLOUDS
 		game.CPUProfiler()->BeginCPUTime("Volumetric Clouds init");
         mVolumetricClouds = new ER_VolumetricClouds(game, camera, *mDirectionalLight, *mSkybox);
-		mVolumetricClouds->Initialize(mIllumination->GetLocalIlluminationRT(), mGBuffer->GetDepth());
+		mVolumetricClouds->Initialize(mGBuffer->GetDepth());
 		game.CPUProfiler()->EndCPUTime("Volumetric Clouds init");
 #pragma endregion
 
@@ -261,16 +261,17 @@ namespace Library {
 		}
 #pragma endregion
 
+#pragma endregion
+		
+		mIllumination->CompositeTotalIllumination();
+
 		#pragma region DRAW_VOLUMETRIC_CLOUDS
 		mVolumetricClouds->Draw(gameTime);
 #pragma endregion
 
-		mIllumination->CompositeTotalIllumination();
-#pragma endregion
-		
 		#pragma region DRAW_POSTPROCESSING
 		mPostProcessingStack->Begin(mIllumination->GetFinalIlluminationRT(), mGBuffer->GetDepth());
-		mPostProcessingStack->DrawEffects(gameTime, (ER_QuadRenderer*)game.Services().GetService(ER_QuadRenderer::TypeIdClass()), mGBuffer);
+		mPostProcessingStack->DrawEffects(gameTime, (ER_QuadRenderer*)game.Services().GetService(ER_QuadRenderer::TypeIdClass()), mGBuffer, mVolumetricClouds);
 		mPostProcessingStack->End();
 #pragma endregion
 

@@ -21,17 +21,33 @@
 	[
 		{
 			"type" : 0,
-			"patch_count" : 100,
+			"patch_count" : 50,
 			"texture_path" : "content\\textures\\foliage\\grass_flower_type1.png",
-			"position" : [ -30.0, 0.0, 0.0],
+			"position" : [ -30.0, -0.1, 0.0],
 			"distribution_radius" : 30.0,
 			"average_scale" : 3.5
 		},
 		{
+			"type" : 1,
+			"patch_count" : 600,
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"position" : [ -30.0, -0.1, 0.0],
+			"distribution_radius" : 30.0,
+			"average_scale" : 2.5
+		},
+		{
 			"type" : 0,
-			"patch_count" : 500,
-			"texture_path" : "content\\textures\\foliage\\grass_type1.png",
-			"position" : [ -30.0, 0.0, 0.0],
+			"patch_count" : 20,
+			"texture_path" : "content\\textures\\foliage\\grass_flower_type3.png",
+			"position" : [ -65.0, -0.1, 0.0],
+			"distribution_radius" : 30.0,
+			"average_scale" : 2.0
+		},
+		{
+			"type" : 1,
+			"patch_count" : 600,
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"position" : [ -65.0, -0.1, 0.0],
 			"distribution_radius" : 30.0,
 			"average_scale" : 2.5
 		}

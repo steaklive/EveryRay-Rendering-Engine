@@ -9,6 +9,7 @@
 #include "SamplerStates.h"
 #include "ER_GBuffer.h"
 #include "Camera.h"
+#include "ER_VolumetricClouds.h"
 
 namespace Library {
 
@@ -19,12 +20,14 @@ namespace Library {
 
 	ER_PostProcessingStack::~ER_PostProcessingStack()
 	{
+		DeleteObject(mTonemappingRT);
 		DeleteObject(mSSRRT);
 		DeleteObject(mColorGradingRT);
 		DeleteObject(mVignetteRT);
 		DeleteObject(mFXAART);
 		DeleteObject(mLinearFogRT);
 
+		ReleaseObject(mTonemappingPS);
 		ReleaseObject(mSSRPS);
 		ReleaseObject(mColorGradingPS);
 		ReleaseObject(mVignettePS);
@@ -58,7 +61,7 @@ namespace Library {
 
 			mLinearFogConstantBuffer.Initialize(game.Direct3DDevice());
 			mLinearFogRT = new ER_GPUTexture(game.Direct3DDevice(), static_cast<UINT>(game.ScreenWidth()), static_cast<UINT>(game.ScreenHeight()), 1u,
-				DXGI_FORMAT_R16G16B16A16_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+				DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 		}
 
 		//SSR
@@ -71,7 +74,20 @@ namespace Library {
 
 			mSSRConstantBuffer.Initialize(game.Direct3DDevice());
 			mSSRRT = new ER_GPUTexture(game.Direct3DDevice(), static_cast<UINT>(game.ScreenWidth()), static_cast<UINT>(game.ScreenHeight()), 1u,
-				DXGI_FORMAT_R16G16B16A16_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+				DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+		}
+
+		//Tonemap
+		{
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Tonemap.hlsl").c_str(), "PSMain", "ps_5_0", &pShaderBlob)))
+				throw GameException("Failed to load PSMain pass from shader: Tonemap.hlsl!");
+			if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mTonemappingPS)))
+				throw GameException("Failed to create PSMain shader from Tonemap.hlsl!");
+			pShaderBlob->Release();
+
+			//mSSRConstantBuffer.Initialize(game.Direct3DDevice());
+			mTonemappingRT = new ER_GPUTexture(game.Direct3DDevice(), static_cast<UINT>(game.ScreenWidth()), static_cast<UINT>(game.ScreenHeight()), 1u,
+				DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 		}
 
 		//Color grading
@@ -95,9 +111,8 @@ namespace Library {
 			pShaderBlob->Release();
 
 			mColorGradingRT = new ER_GPUTexture(game.Direct3DDevice(), static_cast<UINT>(game.ScreenWidth()), static_cast<UINT>(game.ScreenHeight()), 1u,
-				DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+				DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 		}
-
 
 		//Vignette
 		{
@@ -109,7 +124,7 @@ namespace Library {
 
 			mVignetteConstantBuffer.Initialize(game.Direct3DDevice());
 			mVignetteRT = new ER_GPUTexture(game.Direct3DDevice(), static_cast<UINT>(game.ScreenWidth()), static_cast<UINT>(game.ScreenHeight()), 1u,
-				DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+				DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 		}	
 		
 		//FXAA
@@ -122,7 +137,7 @@ namespace Library {
 
 			mFXAAConstantBuffer.Initialize(game.Direct3DDevice());
 			mFXAART = new ER_GPUTexture(game.Direct3DDevice(), static_cast<UINT>(game.ScreenWidth()), static_cast<UINT>(game.ScreenHeight()), 1u,
-				DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+				DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 		}
 
 	}
@@ -153,7 +168,12 @@ namespace Library {
 			ImGui::SliderFloat("Step Size", &mSSRStepSize, 0.0f, 10.0f);
 			ImGui::SliderFloat("Max Thickness", &mSSRMaxThickness, 0.0f, 0.01f);
 		}
-		
+
+		if (ImGui::CollapsingHeader("Tonemap"))
+		{
+			ImGui::Checkbox("Tonemap - On", &mUseTonemap);
+		}
+
 		if (ImGui::CollapsingHeader("Color Grading"))
 		{
 			ImGui::Checkbox("Color Grading - On", &mUseColorGrading);
@@ -206,6 +226,33 @@ namespace Library {
 			context->PSSetShader(mFinalResolvePS, NULL, NULL);
 			quad->Draw(context);
 		}
+	}
+
+	void ER_PostProcessingStack::PrepareDrawingTonemapping(ER_GPUTexture* aInputTexture)
+	{
+		assert(aInputTexture);
+		auto context = game.Direct3DDeviceContext();
+
+		//mSSRConstantBuffer.Data.InvProjMatrix = XMMatrixTranspose(XMMatrixInverse(nullptr, camera.ProjectionMatrix()));
+		//mSSRConstantBuffer.Data.InvViewMatrix = XMMatrixTranspose(XMMatrixInverse(nullptr, camera.ViewMatrix()));
+		//mSSRConstantBuffer.Data.ViewMatrix = XMMatrixTranspose(camera.ViewMatrix());
+		//mSSRConstantBuffer.Data.ProjMatrix = XMMatrixTranspose(camera.ProjectionMatrix());
+		//mSSRConstantBuffer.Data.CameraPosition = XMFLOAT4(camera.Position().x, camera.Position().y, camera.Position().z, 1.0f);
+		//mSSRConstantBuffer.Data.StepSize = mSSRStepSize;
+		//mSSRConstantBuffer.Data.MaxThickness = mSSRMaxThickness;
+		//mSSRConstantBuffer.Data.Time = static_cast<float>(gameTime.TotalGameTime());
+		//mSSRConstantBuffer.Data.MaxRayCount = mSSRRayCount;
+		//mSSRConstantBuffer.ApplyChanges(context);
+		//ID3D11Buffer* CBs[1] = { mSSRConstantBuffer.Buffer() };
+		//context->PSSetConstantBuffers(0, 1, CBs);
+
+		context->PSSetShader(mTonemappingPS, NULL, NULL);
+
+		ID3D11SamplerState* SS[1] = { SamplerStates::TrilinearWrap };
+		context->PSSetSamplers(0, 1, SS);
+
+		ID3D11ShaderResourceView* SRs[1] = { aInputTexture->GetSRV() };
+		context->PSSetShaderResources(0, 1, SRs);
 	}
 
 	void ER_PostProcessingStack::PrepareDrawingSSR(const GameTime& gameTime, ER_GPUTexture* aInputTexture, ER_GBuffer* gbuffer)
@@ -306,7 +353,7 @@ namespace Library {
 		context->PSSetShaderResources(0, 1, SRs);
 	}
 
-	void ER_PostProcessingStack::DrawEffects(const GameTime& gameTime, ER_QuadRenderer* quad, ER_GBuffer* gbuffer)
+	void ER_PostProcessingStack::DrawEffects(const GameTime& gameTime, ER_QuadRenderer* quad, ER_GBuffer* gbuffer, ER_VolumetricClouds* aVolumetricClouds)
 	{
 		assert(quad);
 		assert(gbuffer);
@@ -338,7 +385,21 @@ namespace Library {
 			mRenderTargetBeforeResolve = mSSRRT;
 		}
 
-		//TODO tonemapping here
+		// Tonemap
+		if (mUseTonemap)
+		{
+			game.SetCustomRenderTarget(mTonemappingRT, nullptr);
+			PrepareDrawingTonemapping(mRenderTargetBeforeResolve);
+			quad->Draw(context);
+			game.UnsetCustomRenderTarget();
+
+			//[WARNING] Set from last post processing effect
+			mRenderTargetBeforeResolve = mTonemappingRT;
+		}
+
+		// Composite with volumetric clouds (if enabled)
+		if (aVolumetricClouds && aVolumetricClouds->IsEnabled())
+			aVolumetricClouds->Composite(mRenderTargetBeforeResolve);
 
 		// Color grading
 		if (mUseColorGrading)

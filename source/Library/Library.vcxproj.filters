@@ -46,9 +46,6 @@
     <Filter Include="Shaders\WaterSimulation">
       <UniqueIdentifier>{4d1d2b2b-ec22-4805-b87f-528f0912b78e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders\Tonemap">
-      <UniqueIdentifier>{e9c80043-00e9-441c-9f00-d0bbbd826f22}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shaders\VolumetricClouds">
       <UniqueIdentifier>{cd99af59-6c4f-42d7-b590-1eb659325193}</UniqueIdentifier>
     </Filter>
@@ -580,14 +577,8 @@
     <FxCompile Include="..\..\content\shaders\WaterSimulation\WaterSimulation.hlsl">
       <Filter>Shaders\WaterSimulation</Filter>
     </FxCompile>
-    <FxCompile Include="..\..\content\shaders\Tonemap\Tonemap.hlsl">
-      <Filter>Shaders\Tonemap</Filter>
-    </FxCompile>
     <FxCompile Include="..\..\content\shaders\Sun.hlsl">
       <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\content\shaders\VolumetricClouds\VolumetricClouds.hlsl">
-      <Filter>Shaders\VolumetricClouds</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\VolumetricClouds\VolumetricCloudsBlur.hlsl">
       <Filter>Shaders\VolumetricClouds</Filter>
@@ -669,6 +660,9 @@
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\Terrain\Terrain.hlsl">
       <Filter>Shaders\Terrain</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\Tonemap.hlsl">
+      <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
