@@ -1,4 +1,7 @@
 # EveryRay-Rendering-Engine
+
+![picture](screenshots/EveryRay_testScene_simple.png)
+
 Rendering engine/framework written in C++/DirectX 11. 
 https://youtu.be/_htQNxesr9U
 
