@@ -26,7 +26,8 @@ namespace Library
 		const XMFLOAT3& GetLightProbesVolumeMinBounds() const { return mLightProbesVolumeMinBounds; }
 		const XMFLOAT3& GetLightProbesVolumeMaxBounds() const { return mLightProbesVolumeMaxBounds; }
 		bool HasLightProbesSupport() { return mHasLightProbes; }
-
+		
+		bool HasFoliage() { return mHasFoliage; }
 		void LoadFoliageZones(std::vector<ER_Foliage*>& foliageZones, DirectionalLight& light);
 
 		std::map<std::string, ER_RenderingObject*> objects;
@@ -47,6 +48,7 @@ namespace Library
 		Camera& mCamera;
 		std::string mScenePath;
 
+		bool mHasFoliage = false;
 		bool mHasLightProbes = true;
 		XMFLOAT3 mLightProbesVolumeMinBounds = { 0,0,0 };
 		XMFLOAT3 mLightProbesVolumeMaxBounds = { 0,0,0 };

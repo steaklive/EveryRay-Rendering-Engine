@@ -463,6 +463,7 @@ namespace Library
 		}
 		else {
 			if (root.isMember("foliage_zones")) {
+				mHasFoliage = true;
 				for (Json::Value::ArrayIndex i = 0; i != root["foliage_zones"].size(); i++)
 				{
 					float vec3[3];
@@ -474,10 +475,12 @@ namespace Library
 						Utility::GetFilePath(root["foliage_zones"][i]["texture_path"].asString()),
 						root["foliage_zones"][i]["average_scale"].asFloat(),
 						root["foliage_zones"][i]["distribution_radius"].asFloat(),
-						XMFLOAT3(vec3[0], vec3[1], vec3[2]), 
+						XMFLOAT3(vec3[0], vec3[1], vec3[2]),
 						(FoliageBillboardType)root["foliage_zones"][i]["type"].asInt()));
 				}
 			}
+			else
+				mHasFoliage = false;
 		}
 	}
 

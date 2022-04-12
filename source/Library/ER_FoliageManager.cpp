@@ -20,7 +20,8 @@ namespace Library
 	ER_FoliageManager::ER_FoliageManager(Scene* aScene, DirectionalLight& light) 
 	{
 		assert(aScene);
-		aScene->LoadFoliageZones(mFoliageCollection, light);
+		if (aScene->HasFoliage())
+			aScene->LoadFoliageZones(mFoliageCollection, light);
 	}
 
 	ER_FoliageManager::~ER_FoliageManager()

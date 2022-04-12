@@ -15,17 +15,17 @@ namespace Library {
 	void DemoLevel::Destroy(Game& game)
 	{
 		game.CPUProfiler()->BeginCPUTime("Destroying scene: " + mName);
-        DeleteObject(mRenderStateHelper);
-        DeleteObject(mDirectionalLight);
-        DeleteObject(mSkybox);
-        DeleteObject(mPostProcessingStack);
-        DeleteObject(mGBuffer);
-        DeleteObject(mShadowMapper);
-        DeleteObject(mFoliageSystem);
-        DeleteObject(mVolumetricClouds);
-        DeleteObject(mIllumination);
-        DeleteObject(mScene);
-        DeleteObject(mIlluminationProbesManager);
+		DeleteObject(mRenderStateHelper);
+		DeleteObject(mDirectionalLight);
+		DeleteObject(mSkybox);
+		DeleteObject(mPostProcessingStack);
+		DeleteObject(mGBuffer);
+		DeleteObject(mShadowMapper);
+		DeleteObject(mFoliageSystem);
+		DeleteObject(mVolumetricClouds);
+		DeleteObject(mIllumination);
+		DeleteObject(mScene);
+		DeleteObject(mIlluminationProbesManager);
 		game.CPUProfiler()->EndCPUTime("Destroying scene: " + mName);
 	}
 

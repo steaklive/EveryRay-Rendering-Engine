@@ -29,8 +29,187 @@
 		0.2,
 		-300.0
 	],
+	"foliage_zones":
+	[
+		{
+			"type" : 0,
+			"patch_count" : 50,
+			"texture_path" : "content\\textures\\foliage\\grass_flower_type1.png",
+			"position" : [ -30.0, -0.1, 0.0],
+			"distribution_radius" : 30.0,
+			"average_scale" : 3.5
+		},
+		{
+			"type" : 1,
+			"patch_count" : 600,
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"position" : [ -30.0, -0.1, 0.0],
+			"distribution_radius" : 30.0,
+			"average_scale" : 2.5
+		},
+		{
+			"type" : 0,
+			"patch_count" : 20,
+			"texture_path" : "content\\textures\\foliage\\grass_flower_type3.png",
+			"position" : [ -65.0, -0.1, 0.0],
+			"distribution_radius" : 30.0,
+			"average_scale" : 2.0
+		},
+		{
+			"type" : 1,
+			"patch_count" : 600,
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"position" : [ -65.0, -0.1, 0.0],
+			"distribution_radius" : 30.0,
+			"average_scale" : 2.5
+		}
+	],
 	"rendering_objects" : 
 	[
+		{
+			"instanced" : false,
+			"new_materials":
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"model_path" : "content\\models\\default_plane\\plane.fbx",
+			"name" : "Plane Pebbles (POM)",
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Pebbles\\Pebbles_024_BaseColor.jpg",
+					"height" : "content\\textures\\PBR\\Pebbles\\Pebbles_024_Height.png",
+					"metalness" : "content\\textures\\emptyMetallicMap.png",
+					"normal" : "content\\textures\\PBR\\Pebbles\\Pebbles_024_Normal.jpg",
+					"roughness" : "content\\textures\\PBR\\Pebbles\\Pebbles_024_Roughness.jpg"
+				}
+			],
+			"transform" : 
+			[
+				0.083492308855056763,
+				-0.38095787167549133,
+				0.0,
+				50.305789947509766,
+				0.38095787167549133,
+				0.083492308855056763,
+				0.0,
+				16.38648796081543,
+				0.0,
+				0.0,
+				0.38999858498573303,
+				16.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"use_parallax_occlusion_mapping" : true,
+			"use_forward_shading" : true
+		},
+		{
+			"instanced" : false,
+			"new_materials":
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"model_path" : "content\\models\\default_plane\\plane.fbx",
+			"name" : "Plane Moon (POM)",
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Moon\\Rock_041_basecolor.jpg",
+					"height" : "content\\textures\\PBR\\Moon\\Rock_041_height.png",
+					"metalness" : "content\\textures\\emptyMetallicMap.png",
+					"normal" : "content\\textures\\PBR\\Moon\\Rock_041_normal.jpg",
+					"roughness" : "content\\textures\\PBR\\Moon\\Rock_041_roughness.jpg"
+				}
+			],
+			"transform" : 
+			[
+				0.083492308855056763,
+				-0.38095787167549133,
+				0.0,
+				50.305789947509766,
+				0.38095787167549133,
+				0.083492308855056763,
+				0.0,
+				16.38648796081543,
+				0.0,
+				0.0,
+				0.38999858498573303,
+				-16.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"use_parallax_occlusion_mapping" : true,
+			"use_forward_shading" : true
+		},
+		{
+			"instanced" : false,
+			"new_materials":
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"model_path" : "content\\models\\default_plane\\plane.fbx",
+			"name" : "Plane Rocks Moss (POM)",
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\RockMoss\\Rock_Moss_001_basecolor.jpg",
+					"height" : "content\\textures\\PBR\\RockMoss\\Rock_Moss_001_height.png",
+					"metalness" : "content\\textures\\emptyMetallicMap.png",
+					"normal" : "content\\textures\\PBR\\RockMoss\\Rock_Moss_001_normal.jpg",
+					"roughness" : "content\\textures\\PBR\\RockMoss\\Rock_Moss_001_roughness.jpg"
+				}
+			],
+			"transform" : 
+			[
+				0.083492308855056763,
+				-0.38095787167549133,
+				0.0,
+				50.305789947509766,
+				0.38095787167549133,
+				0.083492308855056763,
+				0.0,
+				16.368000030517578,
+				0.0,
+				0.0,
+				0.38999858498573303,
+				48.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"use_parallax_occlusion_mapping" : true,
+			"use_forward_shading" : true
+		},
 		{
 			"instanced" : false,
 			"new_materials":
