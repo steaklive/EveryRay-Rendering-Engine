@@ -104,11 +104,12 @@ namespace Library
 		const XMFLOAT3& GetSceneProbesVolumeMin() { return mSceneProbesMinBounds; }
 		const XMFLOAT3& GetSceneProbesVolumeMax() { return mSceneProbesMaxBounds; }
 		bool IsEnabled() { return mEnabled; }
-		bool IsGlobalProbeReady(ER_ProbeType aType) { return aType == DIFFUSE_PROBE ? mGlobalDiffuseProbeReady : false /*TODO specular*/; }
+		bool AreGlobalProbesReady() { return mGlobalDiffuseProbeReady && mGlobalSpecularProbeReady; }
 
 		bool mDebugDiscardCulledProbes = false;//used in DebugLightProbeMaterial
 	private:
 		void SetupGlobalDiffuseProbe(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
+		void SetupGlobalSpecularProbe(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
 		void SetupDiffuseProbes(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
 		void SetupSpecularProbes(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
 		void AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds);
@@ -185,6 +186,8 @@ namespace Library
 		int mSpecularProbesCellsCountTotal[NUM_PROBE_VOLUME_CASCADES] = { 0 };
 		int mNonCulledSpecularProbesCount[NUM_PROBE_VOLUME_CASCADES] = { 0 };
 		bool mSpecularProbesReady = false;
+		ER_LightProbe* mGlobalSpecularProbe = nullptr;
+		bool mGlobalSpecularProbeReady = false;
 
 		std::wstring mLevelPath;
 		bool mEnabled = true;

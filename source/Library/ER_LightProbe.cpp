@@ -93,6 +93,7 @@ namespace Library
 		if (mIsProbeLoadedFromDisk)
 			return;
 
+		assert(quadRenderer);
 		auto context = game.Direct3DDeviceContext();
 		UINT viewportsCount = 1;
 		CD3D11_VIEWPORT oldViewPort;

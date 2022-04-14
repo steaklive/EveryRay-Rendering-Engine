@@ -40,7 +40,8 @@ cbuffer ForwardLightingCBuffer : register(b0)
     float4 SunDirection;
     float4 SunColor;
     float4 CameraPosition;
-    float UseGlobalDiffuseProbe;
+    float UseGlobalProbe;
+    float SkipIndirectProbeLighting;
 }
 
 cbuffer LightProbesCBuffer : register(b1)
@@ -322,7 +323,7 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
     float3 directLighting = DirectLightingPBR(normalWS, SunColor, SunDirection.xyz, diffuseAlbedo.rgb, vsOutput.WorldPos, roughness, F0, metalness, CameraPosition.xyz);
     
     float3 indirectLighting = float3(0, 0, 0);
-    if (IBL)
+    if (IBL && SkipIndirectProbeLighting <= 0.0f)
     {
         LightProbeInfo probesInfo;
         probesInfo.globalIrradianceProbeTexture = IrradianceDiffuseGlobalProbeTexture;
@@ -349,8 +350,8 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
         probesInfo.distanceBetweenDiffuseProbes = DistanceBetweenDiffuseProbes;
         probesInfo.distanceBetweenSpecularProbes = DistanceBetweenSpecularProbes;
         
-        bool useGlobalDiffuseProbe = UseGlobalDiffuseProbe > 0.0f;
-        indirectLighting += IndirectLightingPBR(normalWS, diffuseAlbedo.rgb, vsOutput.WorldPos, roughness, F0, metalness, CameraPosition.xyz, useGlobalDiffuseProbe,
+        bool useGlobalProbe = UseGlobalProbe > 0.0f;
+        indirectLighting += IndirectLightingPBR(normalWS, diffuseAlbedo.rgb, vsOutput.WorldPos, roughness, F0, metalness, CameraPosition.xyz, useGlobalProbe,
             probesInfo, SamplerLinear, IntegrationTexture, ao);
     }
 

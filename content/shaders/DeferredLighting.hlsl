@@ -36,8 +36,8 @@ cbuffer DeferredLightingCBuffer : register(b0)
     float4 SunDirection;
     float4 SunColor;
     float4 CameraPosition;
-    bool UseIndirectLightingWithGlobalProbesOnly;
-    bool SkipIndirectLighting;
+    float UseGlobalProbe;
+    float SkipIndirectLighting;
 }
 
 cbuffer LightProbesCBuffer : register(b1)
@@ -65,7 +65,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
         return;
     }
     
-    bool useGlobalProbe = UseIndirectLightingWithGlobalProbesOnly || (extra2Gbuffer.r > 0.0f);
+    bool useGlobalProbe = (UseGlobalProbe > 0.0f) || (extra2Gbuffer.r > 0.0f);
     
     float4 worldPos = GbufferWorldPosTexture.Load(uint3(inPos, 0));
     if (worldPos.a < 0.000001f)
@@ -76,7 +76,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
         return;
     float3 diffuseAlbedo = pow(diffuseAlbedoNonGamma.rgb, 2.2);
     
-    float3 normalWS = GbufferNormalTexture.Load(uint3(inPos, 0)).rgb;
+    float3 normalWS = normalize(GbufferNormalTexture.Load(uint3(inPos, 0)).rgb);
     
     float4 extraGbuffer = GbufferExtraTexture.Load(uint3(inPos, 0));
     float roughness = extraGbuffer.g;
@@ -93,7 +93,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     float3 directLighting = DirectLightingPBR(normalWS, SunColor, SunDirection.xyz, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness, CameraPosition.xyz);
     
     float3 indirectLighting = float3(0.0, 0.0, 0.0);
-    if (extraGbuffer.a < 1.0f && !SkipIndirectLighting)
+    if (extraGbuffer.a < 1.0f && SkipIndirectLighting <= 0.0f)
     {
         LightProbeInfo probesInfo;
         probesInfo.globalIrradianceProbeTexture = IrradianceDiffuseGlobalProbeTexture;
@@ -120,7 +120,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
         probesInfo.distanceBetweenDiffuseProbes = DistanceBetweenDiffuseProbes;
         probesInfo.distanceBetweenSpecularProbes = DistanceBetweenSpecularProbes;
         
-        indirectLighting += IndirectLightingPBR(normalWS, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness, CameraPosition.xyz, useGlobalProbe,
+        indirectLighting += IndirectLightingPBR(normalWS, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness, CameraPosition.xyz, useGlobalProbe > 0.0f,
             probesInfo, SamplerLinear, IntegrationTexture, ao);
     }
     

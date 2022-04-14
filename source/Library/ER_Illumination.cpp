@@ -628,8 +628,8 @@ namespace Library {
 			mDeferredLightingConstantBuffer.Data.SunDirection = XMFLOAT4{ -mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f };
 			mDeferredLightingConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLight.GetDirectionalLightIntensity() };
 			mDeferredLightingConstantBuffer.Data.CameraPosition = XMFLOAT4{ mCamera.Position().x,mCamera.Position().y,mCamera.Position().z, 1.0f };
-			mDeferredLightingConstantBuffer.Data.UseIndirectWithGlobalProbes = !mProbesManager->IsEnabled() && mProbesManager->IsGlobalProbeReady(ER_ProbeType::DIFFUSE_PROBE) /*TODO && specular*/;
-			mDeferredLightingConstantBuffer.Data.SkipIndirectProbeLighting = !mProbesManager->IsEnabled() || mDebugSkipIndirectProbeLighting;
+			mDeferredLightingConstantBuffer.Data.UseGlobalProbe = !mProbesManager->IsEnabled() && mProbesManager->AreGlobalProbesReady();
+			mDeferredLightingConstantBuffer.Data.SkipIndirectProbeLighting = mDebugSkipIndirectProbeLighting;
 			mDeferredLightingConstantBuffer.ApplyChanges(context);
 
 			if (mProbesManager->IsEnabled())
@@ -670,7 +670,7 @@ namespace Library {
 
 			SRs[8] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledDiffuseProbesTextureArray(0)->GetSRV() : nullptr;
 			SRs[9] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledDiffuseProbesTextureArray(1)->GetSRV() : nullptr;
-			SRs[10] = (mProbesManager->IsEnabled() || mProbesManager->IsGlobalProbeReady(ER_ProbeType::DIFFUSE_PROBE)) ? mProbesManager->GetGlobalDiffuseProbe()->GetCubemapSRV() : nullptr;
+			SRs[10] = (mProbesManager->IsEnabled() || mProbesManager->AreGlobalProbesReady()) ? mProbesManager->GetGlobalDiffuseProbe()->GetCubemapSRV() : nullptr;
 			SRs[11] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray(0)->GetSRV() : nullptr;
 			SRs[12] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray(1)->GetSRV() : nullptr;
 			SRs[13] = mProbesManager->IsEnabled() ? mProbesManager->GetIntegrationMap() : nullptr;
@@ -735,7 +735,8 @@ namespace Library {
 			mForwardLightingConstantBuffer.Data.SunDirection = XMFLOAT4{ -mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f };
 			mForwardLightingConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLight.GetDirectionalLightIntensity() };
 			mForwardLightingConstantBuffer.Data.CameraPosition = XMFLOAT4{ mCamera.Position().x,mCamera.Position().y,mCamera.Position().z, 1.0f };
-			mForwardLightingConstantBuffer.Data.UseGlobalDiffuseProbe = (!mProbesManager->IsEnabled() && mProbesManager->IsGlobalProbeReady(ER_ProbeType::DIFFUSE_PROBE) /*TODO && specular*/) || aObj->GetUseGlobalLightProbeMask();
+			mForwardLightingConstantBuffer.Data.UseGlobalProbe = (!mProbesManager->IsEnabled() && mProbesManager->AreGlobalProbesReady()) || aObj->GetUseGlobalLightProbeMask();
+			mForwardLightingConstantBuffer.Data.SkipIndirectProbeLighting = mDebugSkipIndirectProbeLighting;
 			mForwardLightingConstantBuffer.ApplyChanges(context);
 
 			if (mProbesManager->IsEnabled())
@@ -779,7 +780,7 @@ namespace Library {
 
 			SRs[8] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledDiffuseProbesTextureArray(0)->GetSRV() : nullptr;
 			SRs[9] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledDiffuseProbesTextureArray(1)->GetSRV() : nullptr;
-			SRs[10] = (mProbesManager->IsEnabled() || mProbesManager->IsGlobalProbeReady(ER_ProbeType::DIFFUSE_PROBE)) ? mProbesManager->GetGlobalDiffuseProbe()->GetCubemapSRV() : nullptr;
+			SRs[10] = (mProbesManager->IsEnabled() || mProbesManager->AreGlobalProbesReady()) ? mProbesManager->GetGlobalDiffuseProbe()->GetCubemapSRV() : nullptr;
 			SRs[11] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray(0)->GetSRV() : nullptr;
 			SRs[12] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray(1)->GetSRV() : nullptr;
 			SRs[13] = mProbesManager->IsEnabled() ? mProbesManager->GetIntegrationMap() : nullptr;
