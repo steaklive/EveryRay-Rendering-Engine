@@ -96,7 +96,8 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     if (extraGbuffer.a < 1.0f && SkipIndirectLighting <= 0.0f)
     {
         LightProbeInfo probesInfo;
-        probesInfo.globalIrradianceProbeTexture = IrradianceDiffuseGlobalProbeTexture;
+        probesInfo.globalIrradianceDiffuseProbeTexture = IrradianceDiffuseGlobalProbeTexture;
+        probesInfo.globalIrradianceSpecularProbeTexture = IrradianceSpecularGlobalProbeTexture;
         probesInfo.IrradianceDiffuseProbesTextureArray0 = IrradianceDiffuseProbesTextureArray0;
         probesInfo.IrradianceDiffuseProbesTextureArray1 = IrradianceDiffuseProbesTextureArray1;
         probesInfo.IrradianceSpecularProbesTextureArray0 = IrradianceSpecularProbesTextureArray0;

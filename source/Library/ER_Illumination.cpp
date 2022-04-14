@@ -657,7 +657,7 @@ namespace Library {
 			ID3D11Buffer* CBs[2] = { mDeferredLightingConstantBuffer.Buffer(), mProbesManager->IsEnabled() ? mLightProbesConstantBuffer.Buffer() : nullptr };
 			context->CSSetConstantBuffers(0, 2, CBs);
 
-			ID3D11ShaderResourceView* SRs[24] = {
+			ID3D11ShaderResourceView* SRs[25] = {
 				gbuffer->GetAlbedo()->GetSRV(),
 				gbuffer->GetNormals()->GetSRV(),
 				gbuffer->GetPositions()->GetSRV(),
@@ -673,18 +673,19 @@ namespace Library {
 			SRs[10] = (mProbesManager->IsEnabled() || mProbesManager->AreGlobalProbesReady()) ? mProbesManager->GetGlobalDiffuseProbe()->GetCubemapSRV() : nullptr;
 			SRs[11] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray(0)->GetSRV() : nullptr;
 			SRs[12] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray(1)->GetSRV() : nullptr;
-			SRs[13] = mProbesManager->IsEnabled() ? mProbesManager->GetIntegrationMap() : nullptr;
-			SRs[14] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer(0)->GetBufferSRV() : nullptr;
-			SRs[15] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer(1)->GetBufferSRV() : nullptr;
-			SRs[16] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer(0)->GetBufferSRV() : nullptr;
-			SRs[17] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer(1)->GetBufferSRV() : nullptr;
-			SRs[18] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesPositionsBuffer()->GetBufferSRV() : nullptr;
-			SRs[19] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesCellsIndicesBuffer(0)->GetBufferSRV() : nullptr;
-			SRs[20] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesCellsIndicesBuffer(1)->GetBufferSRV() : nullptr;
-			SRs[21] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer(0)->GetBufferSRV() : nullptr;
-			SRs[22] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer(1)->GetBufferSRV() : nullptr;
-			SRs[23] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesPositionsBuffer()->GetBufferSRV() : nullptr;
-			context->CSSetShaderResources(0, 24, SRs);
+			SRs[13] = (mProbesManager->IsEnabled() || mProbesManager->AreGlobalProbesReady()) ? mProbesManager->GetGlobalSpecularProbe()->GetCubemapSRV() : nullptr;
+			SRs[14] = (mProbesManager->IsEnabled() || mProbesManager->AreGlobalProbesReady()) ? mProbesManager->GetIntegrationMap() : nullptr;
+			SRs[15] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer(0)->GetBufferSRV() : nullptr;
+			SRs[16] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer(1)->GetBufferSRV() : nullptr;
+			SRs[17] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer(0)->GetBufferSRV() : nullptr;
+			SRs[18] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer(1)->GetBufferSRV() : nullptr;
+			SRs[19] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesPositionsBuffer()->GetBufferSRV() : nullptr;
+			SRs[20] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesCellsIndicesBuffer(0)->GetBufferSRV() : nullptr;
+			SRs[21] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesCellsIndicesBuffer(1)->GetBufferSRV() : nullptr;
+			SRs[22] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer(0)->GetBufferSRV() : nullptr;
+			SRs[23] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer(1)->GetBufferSRV() : nullptr;
+			SRs[24] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesPositionsBuffer()->GetBufferSRV() : nullptr;
+			context->CSSetShaderResources(0, 25, SRs);
 
 			ID3D11SamplerState* SS[2] = { SamplerStates::TrilinearWrap, SamplerStates::ShadowSamplerState };
 			context->CSSetSamplers(0, 2, SS);
@@ -768,7 +769,7 @@ namespace Library {
 			context->PSSetShader(mForwardLightingPS, NULL, NULL); //TODO add other passes
 			context->PSSetConstantBuffers(0, 2, CBs);
 
-			ID3D11ShaderResourceView* SRs[24] = {
+			ID3D11ShaderResourceView* SRs[25] = {
 				aObj->GetTextureData(meshIndex).AlbedoMap,
 				aObj->GetTextureData(meshIndex).NormalMap,
 				aObj->GetTextureData(meshIndex).MetallicMap,
@@ -783,19 +784,20 @@ namespace Library {
 			SRs[10] = (mProbesManager->IsEnabled() || mProbesManager->AreGlobalProbesReady()) ? mProbesManager->GetGlobalDiffuseProbe()->GetCubemapSRV() : nullptr;
 			SRs[11] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray(0)->GetSRV() : nullptr;
 			SRs[12] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray(1)->GetSRV() : nullptr;
-			SRs[13] = mProbesManager->IsEnabled() ? mProbesManager->GetIntegrationMap() : nullptr;
-			SRs[14] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer(0)->GetBufferSRV() : nullptr;
-			SRs[15] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer(1)->GetBufferSRV() : nullptr;
-			SRs[16] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer(0)->GetBufferSRV() : nullptr;
-			SRs[17] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer(1)->GetBufferSRV() : nullptr;
-			SRs[18] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesPositionsBuffer()->GetBufferSRV() : nullptr;
-			SRs[19] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesCellsIndicesBuffer(0)->GetBufferSRV() : nullptr;
-			SRs[20] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesCellsIndicesBuffer(1)->GetBufferSRV() : nullptr;
-			SRs[21] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer(0)->GetBufferSRV() : nullptr;
-			SRs[22] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer(1)->GetBufferSRV() : nullptr;
-			SRs[23] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesPositionsBuffer()->GetBufferSRV() : nullptr;
+			SRs[13] = (mProbesManager->IsEnabled() || mProbesManager->AreGlobalProbesReady()) ? mProbesManager->GetGlobalSpecularProbe()->GetCubemapSRV() : nullptr;
+			SRs[14] = (mProbesManager->IsEnabled() || mProbesManager->AreGlobalProbesReady()) ? mProbesManager->GetIntegrationMap() : nullptr;
+			SRs[15] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer(0)->GetBufferSRV() : nullptr;
+			SRs[16] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer(1)->GetBufferSRV() : nullptr;
+			SRs[17] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer(0)->GetBufferSRV() : nullptr;
+			SRs[18] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesTexArrayIndicesBuffer(1)->GetBufferSRV() : nullptr;
+			SRs[19] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesPositionsBuffer()->GetBufferSRV() : nullptr;
+			SRs[20] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesCellsIndicesBuffer(0)->GetBufferSRV() : nullptr;
+			SRs[21] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesCellsIndicesBuffer(1)->GetBufferSRV() : nullptr;
+			SRs[22] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer(0)->GetBufferSRV() : nullptr;
+			SRs[23] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer(1)->GetBufferSRV() : nullptr;
+			SRs[24] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesPositionsBuffer()->GetBufferSRV() : nullptr;
 
-			context->PSSetShaderResources(0, 24, SRs);
+			context->PSSetShaderResources(0, 25, SRs);
 
 			ID3D11SamplerState* SS[2] = { SamplerStates::TrilinearWrap, SamplerStates::ShadowSamplerState };
 			context->PSSetSamplers(0, 2, SS);

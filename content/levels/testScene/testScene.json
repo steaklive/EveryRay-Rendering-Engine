@@ -463,433 +463,6 @@
 					"technique" : "voxelizationGI"
 				}
 			],
-			"model_path" : "content\\models\\Sponza\\sponza.fbx",
-			"name" : "Sponza",
-			"transform" : 
-			[
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0,
-				-252.54008483886719,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"instanced" : false,
-			"new_materials":
-			[
-				{
-					"name" : "ShadowMapMaterial"
-				},
-				{
-					"name" : "GBufferMaterial"
-				},
-				{
-					"name" : "RenderToLightProbeMaterial"
-				},
-				{
-					"name" : "VoxelizationMaterial"
-				}
-			],
-			"model_path" : "content\\models\\shaderball.fbx",
-			"name" : "Shader Ball Concrete",
-			"textures" : 
-			[
-				{
-					"albedo" : "content\\textures\\PBR\\Concrete\\concrete2_albedo.png",
-					"normal" : "content\\textures\\PBR\\Concrete\\concrete2_Normal-dx.png",
-					"roughness" : "content\\textures\\PBR\\Concrete\\concrete2_Roughness.png"
-				},
-				{
-					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
-					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
-					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
-				}
-			],
-			"transform" : 
-			[
-				1.0,
-				0.0,
-				0.0,
-				-100,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"instanced" : false,
-			"new_materials":
-			[
-				{
-					"name" : "ShadowMapMaterial"
-				},
-				{
-					"name" : "GBufferMaterial"
-				},
-				{
-					"name" : "RenderToLightProbeMaterial"
-				},
-				{
-					"name" : "VoxelizationMaterial"
-				}
-			],
-			"model_path" : "content\\models\\shaderball.fbx",
-			"name" : "Shader Ball Pavement",
-			"textures" : 
-			[
-				{
-					"albedo" : "content\\textures\\PBR\\Pavement\\PavingStones077_2K_Color.jpg",
-					"metalness" : "content\\textures\\PBR\\Pavement\\EmptyMetalMap.png",
-					"normal" : "content\\textures\\PBR\\Pavement\\PavingStones077_2K_Normal.jpg",
-					"roughness" : "content\\textures\\PBR\\Pavement\\PavingStones077_2K_Roughness.jpg"
-				},
-				{
-					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
-					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
-					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
-				}
-			],
-			"transform" : 
-			[
-				1.0,
-				0.0,
-				0.0,
-				-85,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"instanced" : false,
-			"new_materials":
-			[
-				{
-					"name" : "ShadowMapMaterial"
-				},
-				{
-					"name" : "GBufferMaterial"
-				},
-				{
-					"name" : "RenderToLightProbeMaterial"
-				},
-				{
-					"name" : "VoxelizationMaterial"
-				}
-			],
-			"model_path" : "content\\models\\shaderball.fbx",
-			"name" : "Shader Ball Red Brick",
-			"textures" : 
-			[
-				{
-					"albedo" : "content\\textures\\PBR\\RedBrick\\redbricks2b-albedo.png",
-					"normal" : "content\\textures\\PBR\\RedBrick\\redbricks2b-normal-dx.png",
-					"roughness" : "content\\textures\\PBR\\RedBrick\\redbricks2b-rough.png"
-				},
-				{
-					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
-					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
-					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
-				}
-			],
-			"transform" : 
-			[
-				1.0,
-				0.0,
-				0.0,
-				-70,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"instanced" : false,
-			"new_materials":
-			[
-				{
-					"name" : "ShadowMapMaterial"
-				},
-				{
-					"name" : "GBufferMaterial"
-				},
-				{
-					"name" : "RenderToLightProbeMaterial"
-				},
-				{
-					"name" : "VoxelizationMaterial"
-				}
-			],
-			"model_path" : "content\\models\\shaderball.fbx",
-			"name" : "Shader Ball Sand Stone",
-			"textures" : 
-			[
-				{
-					"albedo" : "content\\textures\\PBR\\Sand_Stone\\sandstone_rock_001_COLOR.png",
-					"normal" : "content\\textures\\PBR\\Sand_Stone\\sandstone_rock_001_NRM.png",
-				},
-				{
-					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
-					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
-					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
-				}
-			],
-			"transform" : 
-			[
-				1.0,
-				0.0,
-				0.0,
-				-55,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"instanced" : false,
-			"new_materials":
-			[
-				{
-					"name" : "ShadowMapMaterial"
-				},
-				{
-					"name" : "GBufferMaterial"
-				},
-				{
-					"name" : "RenderToLightProbeMaterial"
-				},
-				{
-					"name" : "VoxelizationMaterial"
-				}
-			],
-			"model_path" : "content\\models\\shaderball.fbx",
-			"name" : "Shader Ball Moon Rock",
-			"textures" : 
-			[
-				{
-					"albedo" : "content\\textures\\PBR\\Moon\\Rock_041_basecolor.jpg",
-					"normal" : "content\\textures\\PBR\\Moon\\Rock_041_normal.jpg",
-					"roughness" : "content\\textures\\PBR\\Moon\\Rock_041_roughness.jpg"
-				},
-				{
-					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
-					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
-					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
-				}
-			],
-			"transform" : 
-			[
-				1.0,
-				0.0,
-				0.0,
-				-40,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"instanced" : false,
-			"new_materials":
-			[
-				{
-					"name" : "ShadowMapMaterial"
-				},
-				{
-					"name" : "GBufferMaterial"
-				},
-				{
-					"name" : "RenderToLightProbeMaterial"
-				}
-			],
-			"materials" : 
-			[
-				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				}
-			],
-			"model_path" : "content\\models\\shaderball.fbx",
-			"name" : "Shader Ball Marble",
-			"textures" : 
-			[
-				{
-					"albedo" : "content\\textures\\PBR\\Marble\\Marble_col.jpg",
-					"metalness" : "content\\textures\\PBR\\Marble\\EmptyMetalMap.png",
-					"normal" : "content\\textures\\PBR\\Marble\\Marble_nrm.jpg",
-					"roughness" : "content\\textures\\PBR\\Marble\\Marble_rgh.jpg"
-				},
-				{
-					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
-					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
-					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
-				}
-			],
-			"transform" : 
-			[
-				1.0,
-				0.0,
-				0.0,
-				12.0,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"instanced" : false,
-			"new_materials":
-			[
-				{
-					"name" : "ShadowMapMaterial"
-				},
-				{
-					"name" : "GBufferMaterial"
-				},
-				{
-					"name" : "RenderToLightProbeMaterial"
-				}
-			],
-			"materials" : 
-			[
-				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				}
-			],
-			"model_path" : "content\\models\\shaderball.fbx",
-			"name" : "Shader Ball Scuffed Gold",
-			"textures" : 
-			[
-				{
-					"albedo" : "content\\textures\\PBR\\ScuffedGold\\gold-scuffed_basecolor-boosted.png",
-					"metalness" : "content\\textures\\PBR\\ScuffedGold\\gold-scuffed_metallic.png",
-					"normal" : "content\\textures\\PBR\\ScuffedGold\\gold-scuffed_normal.png",
-					"roughness" : "content\\textures\\PBR\\ScuffedGold\\gold-scuffed_roughness.png"
-				},
-				{
-					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
-					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
-					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
-				}
-			],
-			"transform" : 
-			[
-				1.0,
-				0.0,
-				0.0,
-				-12.645288467407227,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"instanced" : false,
-			"new_materials":
-			[
-				{
-					"name" : "ShadowMapMaterial"
-				},
-				{
-					"name" : "GBufferMaterial"
-				},
-				{
-					"name" : "RenderToLightProbeMaterial"
-				}
-			],
-			"materials" : 
-			[
-				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				}
-			],
 			"model_lods" : 
 			[
 				{
@@ -934,33 +507,10 @@
 			]
 		},
 		{
-			"foliageMask" : true,
-			"instanced" : true,
-			"instances_transforms" : 
-			[
-				{
-					"transform" : 
-					[
-						1.0,
-						0.0,
-						0.0,
-						25.0,
-						0.0,
-						1.0,
-						0.0,
-						0.0,
-						0.0,
-						0.0,
-						1.0,
-						0.0,
-						0.0,
-						0.0,
-						0.0,
-						1.0
-					]
-				}
-			],
-			"new_materials":
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Concrete",
+			"new_materials" : 
 			[
 				{
 					"name" : "ShadowMapMaterial"
@@ -970,61 +520,23 @@
 				},
 				{
 					"name" : "RenderToLightProbeMaterial"
-				}
-			],
-			"materials" : 
-			[
-				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI_instancing"
-				}
-			],
-			"model_lods" : 
-			[
-				{
-					"path" : "content\\models\\vegetation\\trees\\pine\\pine_small_2_lod_high.fbx"
 				},
 				{
-					"path" : "content\\models\\vegetation\\trees\\pine\\pine_small_2_lod_middle.fbx"
-				},
-				{
-					"path" : "content\\models\\vegetation\\trees\\pine\\pine_small_2_lod_low.fbx"
+					"name" : "VoxelizationMaterial"
 				}
 			],
-			"model_path" : "content\\models\\vegetation\\trees\\pine\\pine_small_2_lod_high.fbx",
-			"name" : "Pine Small 2",
 			"textures" : 
 			[
 				{
-					"albedo" : "content\\models\\vegetation\\trees\\pine\\Needles\\needles_Diffuse_a.png",
-					"metalness" : "content\\textures\\emptyMetallicMap.png",
-					"normal" : "content\\models\\vegetation\\trees\\pine\\Needles\\needles_Normal.png",
-					"roughness" : "content\\textures\\emptyRoughnessMap.png"
+					"albedo" : "content\\textures\\PBR\\Concrete\\concrete2_albedo.png",
+					"normal" : "content\\textures\\PBR\\Concrete\\concrete2_Normal-dx.png",
+					"roughness" : "content\\textures\\PBR\\Concrete\\concrete2_Roughness.png"
 				},
 				{
-					"albedo" : "content\\models\\vegetation\\trees\\pine\\Bark\\bark_Diffuse.png",
-					"metalness" : "content\\textures\\emptyMetallicMap.png",
-					"normal" : "content\\models\\vegetation\\trees\\pine\\Bark\\Bark_Normal.png",
-					"roughness" : "content\\textures\\emptyRoughnessMap.png"
-				},
-				{
-					"albedo" : "content\\models\\vegetation\\trees\\pine\\Branches_1\\branches_1_Diffuse_a.png",
-					"metalness" : "content\\textures\\emptyMetallicMap.png",
-					"normal" : "content\\models\\vegetation\\trees\\pine\\Branches_1\\branches_1_Normal.png",
-					"roughness" : "content\\textures\\emptyRoughnessMap.png"
-				},
-				{
-					"albedo" : "content\\models\\vegetation\\trees\\pine\\Branches_2\\branches_2_Diffuse_a.png",
-					"metalness" : "content\\textures\\emptyMetallicMap.png",
-					"normal" : "content\\models\\vegetation\\trees\\pine\\Branches_2\\branches_2_Normal.png",
-					"roughness" : "content\\textures\\emptyRoughnessMap.png"
-				},
-				{
-					"albedo" : "content\\models\\vegetation\\trees\\pine\\Bark\\bark_Diffuse.png",
-					"metalness" : "content\\textures\\emptyMetallicMap.png",
-					"normal" : "content\\models\\vegetation\\trees\\pine\\Bark\\Bark_Normal.png",
-					"roughness" : "content\\textures\\emptyRoughnessMap.png"
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
 				}
 			],
 			"transform" : 
@@ -1032,7 +544,7 @@
 				1.0,
 				0.0,
 				0.0,
-				25.0,
+				-100.0,
 				0.0,
 				1.0,
 				0.0,
@@ -1041,6 +553,1030 @@
 				0.0,
 				1.0,
 				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Pavement",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Pavement\\PavingStones077_2K_Color.jpg",
+					"metalness" : "content\\textures\\PBR\\Pavement\\EmptyMetalMap.png",
+					"normal" : "content\\textures\\PBR\\Pavement\\PavingStones077_2K_Normal.jpg",
+					"roughness" : "content\\textures\\PBR\\Pavement\\PavingStones077_2K_Roughness.jpg"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-85.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Red Brick",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\RedBrick\\redbricks2b-albedo.png",
+					"normal" : "content\\textures\\PBR\\RedBrick\\redbricks2b-normal-dx.png",
+					"roughness" : "content\\textures\\PBR\\RedBrick\\redbricks2b-rough.png"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-70.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"use_forward_shading" : true
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Sand Stone",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Sand_Stone\\sandstone_rock_001_COLOR.png",
+					"height" : "content\\textures\\PBR\\Sand_Stone\\sandstone_rock_001_DISP.png",
+					"normal" : "content\\textures\\PBR\\Sand_Stone\\sandstone_rock_001_NRM.png"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-55.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"use_forward_shading" : true
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Moon Rock",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Moon\\Rock_041_basecolor.jpg",
+					"height" : "content\\textures\\PBR\\Moon\\Rock_041_height.png",
+					"normal" : "content\\textures\\PBR\\Moon\\Rock_041_normal.jpg",
+					"roughness" : "content\\textures\\PBR\\Moon\\Rock_041_roughness.jpg"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-40.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"use_forward_shading" : true,
+			"use_parallax_occlusion_mapping" : true
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Azulejos",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Azulejos\\Azulejos_005_basecolor.jpg",
+					"normal" : "content\\textures\\PBR\\Azulejos\\Azulejos_005_normal.jpg",
+					"roughness" : "content\\textures\\PBR\\Azulejos\\Azulejos_005_roughness.jpg"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-100.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				15.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Marble",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Marble\\Marble_col.jpg",
+					"normal" : "content\\textures\\PBR\\Marble\\Marble_nrm.jpg",
+					"roughness" : "content\\textures\\PBR\\Marble\\Marble_rgh.jpg"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-85.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				15.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Marble Dark",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Marble_Dark\\Marble01_2K_BaseColor.png",
+					"normal" : "content\\textures\\PBR\\Marble_Dark\\Marble01_2K_Normal.png",
+					"roughness" : "content\\textures\\PBR\\Marble_Dark\\Marble01_2K_Roughness.png"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-70.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				15.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Tiles",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Tiles\\Herringbone_marble_tiles_01_Color.png",
+					"normal" : "content\\textures\\PBR\\Tiles\\Herringbone_marble_tiles_01_Normal.png",
+					"roughness" : "content\\textures\\PBR\\Tiles\\Herringbone_marble_tiles_01_Roughness.png"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-55.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				15.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Malachite",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Malachite\\Malachite_001_basecolor.jpg",
+					"normal" : "content\\textures\\PBR\\Malachite\\Malachite_001_normal.jpg",
+					"roughness" : "content\\textures\\PBR\\Malachite\\Malachite_001_roughness.jpg"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-40.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				15.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Bathroom",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_basecolor.png",
+					"normal" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_normal-dx.png",
+					"roughness" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_roughness.png"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-100.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				30.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Wood",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Wood\\WoodFloor07_col.jpg",
+					"normal" : "content\\textures\\PBR\\Wood\\WoodFloor07_nrm.jpg",
+					"roughness" : "content\\textures\\PBR\\Wood\\WoodFloor07_rgh.jpg"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-85.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				30.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Leather",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Leather\\Leather_Padded_001_basecolor.jpg",
+					"normal" : "content\\textures\\PBR\\Leather\\Leather_Padded_001_normal.jpg",
+					"roughness" : "content\\textures\\PBR\\Leather\\Leather_Padded_001_roughness.jpg"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-70.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				30.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Crystal Blue",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Crystal_Blue\\Crystal_003_COLOR.jpg",
+					"normal" : "content\\textures\\PBR\\Crystal_Blue\\Crystal_003_NORM.jpg",
+					"roughness" : "content\\textures\\PBR\\Crystal_Blue\\Crystal_003_ROUGH.jpg",
+					"height" : "content\\textures\\PBR\\Crystal_Blue\\Crystal_003_DISP.png"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-55.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				30.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"use_forward_shading" : true,
+			"use_parallax_occlusion_mapping" : true
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Crystal Purple",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Crystal_Purple\\Crystal_002_COLOR.jpg",
+					"normal" : "content\\textures\\PBR\\Crystal_Purple\\Crystal_002_NORM.jpg",
+					"roughness" : "content\\textures\\PBR\\Crystal_Purple\\Crystal_002_ROUGH.jpg",
+					"height" : "content\\textures\\PBR\\Crystal_Purple\\Crystal_002_DISP.png"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-40.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				30.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"use_forward_shading" : true,
+			"use_parallax_occlusion_mapping" : true
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Bronze",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Bronze\\Bronze01_1K_BaseColor.png",
+					"normal" : "content\\textures\\PBR\\Bronze\\Bronze01_1K_Normal.png",
+					"roughness" : "content\\textures\\PBR\\Bronze\\Bronze01_1K_Roughness.png",
+					"metalness" : "content\\textures\\PBR\\Bronze\\Bronze01_1K_Metallic.png"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-100.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				45.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Painted Metal",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Painted_Metal\\PaintedMetal02_1K_BaseColor.png",
+					"normal" : "content\\textures\\PBR\\Painted_Metal\\PaintedMetal02_1K_Normal.png",
+					"roughness" : "content\\textures\\PBR\\Painted_Metal\\PaintedMetal02_1K_Roughness.png",
+					"metalness" : "content\\textures\\PBR\\Painted_Metal\\PaintedMetal02_1K_Metallic.png"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-85.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				45.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Painted Metal Blue",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Painted_Metal_Blue\\ScratchedPaintedMetal01_1K_BaseColor.png",
+					"normal" : "content\\textures\\PBR\\Painted_Metal_Blue\\ScratchedPaintedMetal01_1K_Normal.png",
+					"roughness" : "content\\textures\\PBR\\Painted_Metal_Blue\\ScratchedPaintedMetal01_1K_Roughness.png",
+					"metalness" : "content\\textures\\PBR\\Painted_Metal_Blue\\ScratchedPaintedMetal01_1K_Metallic.png"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-70.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				45.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Silver",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Silver\\SilverMetal_col.jpg",
+					"normal" : "content\\textures\\PBR\\Silver\\SilverMetal_nrm.jpg",
+					"roughness" : "content\\textures\\PBR\\Silver\\SilverMetal_rgh.jpg",
+					"metalness" : "content\\textures\\PBR\\Silver\\gold-scuffed_metallic.png"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-55.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				45.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Scuffed Gold",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\ScuffedGold\\gold-scuffed_basecolor-boosted.png",
+					"normal" : "content\\textures\\PBR\\ScuffedGold\\gold-scuffed_normal.png",
+					"roughness" : "content\\textures\\PBR\\ScuffedGold\\gold-scuffed_roughness.png",
+					"metalness" : "content\\textures\\PBR\\ScuffedGold\\gold-scuffed_metallic.png"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-40.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				45.0,
 				0.0,
 				0.0,
 				0.0,

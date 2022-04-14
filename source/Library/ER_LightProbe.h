@@ -27,11 +27,7 @@ namespace Library
 		ID3D11Texture2D* GetCubemapTexture2D() const { return mCubemapTexture->GetTexture2D(); }
 
 		//TODO refactor
-		void SetShaderInfoForConvolution(ID3D11PixelShader* ps, ID3D11SamplerState* ss)
-		{
-			mConvolutionPS = ps;
-			mLinearSamplerState = ss;
-		}
+		void SetShaderInfoForConvolution(ID3D11PixelShader* ps)	{ mConvolutionPS = ps; }
 
 		void SetPosition(const XMFLOAT3& pos);
 		const XMFLOAT3& GetPosition() { return mPosition; }
@@ -60,10 +56,7 @@ namespace Library
 		ER_GPUTexture* mCubemapTexture = nullptr;
 		ConstantBuffer<LightProbeCBufferData::ProbeConvolutionCB> mConvolutionCB;
 
-		ID3D11SamplerState* mLinearSamplerState = nullptr; //TODO remove
-		ID3D11VertexShader* mConvolutionVS = nullptr;
 		ID3D11PixelShader* mConvolutionPS = nullptr;
-		ID3D11InputLayout* mInputLayout = nullptr; //TODO remove
 
 		XMFLOAT3 mPosition;
 		int mSize = 0;

@@ -23,16 +23,12 @@ namespace Library
 	ER_LightProbesManager::ER_LightProbesManager(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 		: mMainCamera(camera)
 	{
-		//TODO temp
-
 		if (!scene)
 			throw GameException("No scene to load light probes for!");
 
 		if (!scene->HasLightProbesSupport())
 		{
 			mEnabled = false;
-			SetupGlobalDiffuseProbe(game, camera, scene, light, shadowMapper);
-			SetupGlobalSpecularProbe(game, camera, scene, light, shadowMapper);
 
 			mTempDiffuseCubemapFacesRT = new ER_GPUTexture(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
 				D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1, -1, CUBEMAP_FACES_COUNT, true);
@@ -60,22 +56,13 @@ namespace Library
 				blob->Release();
 			}
 
-			//TODO remove
-			D3D11_SAMPLER_DESC sam_desc;
-			sam_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-			sam_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-			sam_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-			sam_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-			sam_desc.MipLODBias = 0;
-			sam_desc.MaxAnisotropy = 1;
-			if (FAILED(game.Direct3DDevice()->CreateSamplerState(&sam_desc, &mLinearSamplerState)))
-				throw GameException("Failed to create sampler mLinearSamplerState!");
-
-			// TODO Load a pre-computed Integration Map
+			// Load a pre-computed Integration Map
 			if (FAILED(DirectX::CreateDDSTextureFromFile(game.Direct3DDevice(), game.Direct3DDeviceContext(),
-				Utility::GetFilePath(L"content\\textures\\skyboxes\\textureBrdf.dds").c_str(), nullptr, &mIntegrationMapTextureSRV)))
+				Utility::GetFilePath(L"content\\textures\\IntegrationMapBrdf.dds").c_str(), nullptr, &mIntegrationMapTextureSRV)))
 				throw GameException("Failed to create Integration Texture.");
 			
+			SetupGlobalDiffuseProbe(game, camera, scene, light, shadowMapper);
+			SetupGlobalSpecularProbe(game, camera, scene, light, shadowMapper);
 			return;
 		}
 
@@ -113,7 +100,6 @@ namespace Library
 		DeletePointerCollection(mSpecularProbes);
 
 		ReleaseObject(mConvolutionPS);
-		ReleaseObject(mLinearSamplerState);
 
 		DeleteObject(mTempDiffuseCubemapFacesRT);
 		DeleteObject(mTempDiffuseCubemapFacesConvolutedRT);
@@ -150,14 +136,14 @@ namespace Library
 		mGlobalDiffuseProbe = new ER_LightProbe(game, light, shadowMapper, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE);
 		mGlobalDiffuseProbe->SetIndex(-1);
 		mGlobalDiffuseProbe->SetPosition(Vector3Helper::Zero);
-		mGlobalDiffuseProbe->SetShaderInfoForConvolution(mConvolutionPS, mLinearSamplerState);
+		mGlobalDiffuseProbe->SetShaderInfoForConvolution(mConvolutionPS);
 	}
 	void ER_LightProbesManager::SetupGlobalSpecularProbe(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 	{
 		mGlobalSpecularProbe = new ER_LightProbe(game, light, shadowMapper, SPECULAR_PROBE_SIZE, SPECULAR_PROBE);
 		mGlobalSpecularProbe->SetIndex(-1);
 		mGlobalSpecularProbe->SetPosition(Vector3Helper::Zero);
-		mGlobalSpecularProbe->SetShaderInfoForConvolution(mConvolutionPS, mLinearSamplerState);
+		mGlobalSpecularProbe->SetShaderInfoForConvolution(mConvolutionPS);
 	}
 
 	void ER_LightProbesManager::SetupDiffuseProbes(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
@@ -236,7 +222,7 @@ namespace Library
 					int index = probesY * (mDiffuseProbesCountX * mDiffuseProbesCountZ) + probesX * mDiffuseProbesCountZ + probesZ;
 					mDiffuseProbes[index]->SetIndex(index);
 					mDiffuseProbes[index]->SetPosition(pos);
-					mDiffuseProbes[index]->SetShaderInfoForConvolution(mConvolutionPS, mLinearSamplerState);
+					mDiffuseProbes[index]->SetShaderInfoForConvolution(mConvolutionPS);
 					for (int volumeIndex = 0; volumeIndex < NUM_PROBE_VOLUME_CASCADES; volumeIndex++)
 					{
 						if (probesY % VolumeProbeIndexSkips[volumeIndex] == 0 &&
@@ -382,7 +368,7 @@ namespace Library
 					int index = probesY * (mSpecularProbesCountX * mSpecularProbesCountZ) + probesX * mSpecularProbesCountZ + probesZ;
 					mSpecularProbes[index]->SetIndex(index);
 					mSpecularProbes[index]->SetPosition(pos);
-					mSpecularProbes[index]->SetShaderInfoForConvolution(mConvolutionPS, mLinearSamplerState);
+					mSpecularProbes[index]->SetShaderInfoForConvolution(mConvolutionPS);
 					for (int volumeIndex = 0; volumeIndex < NUM_PROBE_VOLUME_CASCADES; volumeIndex++)
 					{
 						if (probesY % VolumeProbeIndexSkips[volumeIndex] == 0 &&

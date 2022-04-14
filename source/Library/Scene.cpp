@@ -16,7 +16,7 @@
 #include "ER_FoliageManager.h"
 #include "DirectionalLight.h"
 
-#define MULTITHREADED_SCENE_LOAD 1
+#define MULTITHREADED_SCENE_LOAD 0
 
 namespace Library 
 {

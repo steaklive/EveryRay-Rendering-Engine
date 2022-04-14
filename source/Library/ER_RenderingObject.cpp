@@ -196,35 +196,6 @@ namespace Library
 		}
 	}
 	
-	//void ER_RenderingObject::LoadCustomMeshTextures(int meshIndex, std::wstring albedoPath, std::wstring normalPath, std::wstring specularPath, std::wstring roughnessPath, std::wstring metallicPath, std::wstring extra1Path, std::wstring extra2Path, std::wstring extra3Path)
-	//{
-	//	assert(meshIndex < mMeshesCount[0]);
-	//	
-	//	std::string errorMessage = mModel->GetFileName() + " of mesh index: " + std::to_string(meshIndex);
-	//
-	//	if (!albedoPath.empty() && albedoPath.back() != '\\')
-	//		LoadTexture(TextureType::TextureTypeDifffuse, albedoPath, meshIndex);
-	//
-	//	if (!normalPath.empty() && normalPath.back() != '\\')
-	//		LoadTexture(TextureType::TextureTypeNormalMap, normalPath, meshIndex);
-	//
-	//	if (!specularPath.empty() && specularPath.back() != '\\')
-	//		LoadTexture(TextureType::TextureTypeSpecularMap, specularPath, meshIndex);
-	//	
-	//	if (!roughnessPath.empty() && roughnessPath.back() != '\\')
-	//		LoadTexture(TextureType::TextureTypeDisplacementMap, roughnessPath, meshIndex);
-	//
-	//	if (!metallicPath.empty() && metallicPath.back() != '\\')
-	//		LoadTexture(TextureType::TextureTypeEmissive, metallicPath, meshIndex);
-	//
-	//	//TODO
-	//	//if (!extra1Path.empty())
-	//	//TODO
-	//	//if (!extra2Path.empty())
-	//	//TODO
-	//	//if (!extra3Path.empty())
-	//}
-
 	//from custom collections
 	void ER_RenderingObject::LoadCustomMeshTextures(int meshIndex)
 	{

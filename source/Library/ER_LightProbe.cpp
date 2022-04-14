@@ -14,6 +14,7 @@
 #include "ER_QuadRenderer.h"
 #include "ER_RenderToLightProbeMaterial.h"
 #include "ER_MaterialsCallbacks.h"
+#include "SamplerStates.h"
 
 namespace Library
 {
@@ -59,7 +60,6 @@ namespace Library
 
 	ER_LightProbe::~ER_LightProbe()
 	{
-		ReleaseObject(mLinearSamplerState);
 		DeleteObject(mCubemapTexture);
 		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
 		{
@@ -188,7 +188,7 @@ namespace Library
 		int rtvShift = (mProbeType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT;
 
 		ID3D11ShaderResourceView* SRVs[1] = { aTextureNonConvoluted->GetSRV() };
-		ID3D11SamplerState* SSs[1] = { mLinearSamplerState };
+		ID3D11SamplerState* SSs[1] = { SamplerStates::TrilinearWrap };
 
 		for (int cubeMapFace = 0; cubeMapFace < CUBEMAP_FACES_COUNT; cubeMapFace++)
 		{
@@ -208,10 +208,7 @@ namespace Library
 
 				ID3D11Buffer* CBs[1] = { mConvolutionCB.Buffer() };
 
-				context->IASetInputLayout(mInputLayout);
-				context->VSSetShader(mConvolutionVS, NULL, NULL);
 				context->VSSetConstantBuffers(0, 1, CBs);
-
 				context->PSSetShader(mConvolutionPS, NULL, NULL);
 				context->PSSetSamplers(0, 1, SSs);
 				context->PSSetShaderResources(0, 1, SRVs);

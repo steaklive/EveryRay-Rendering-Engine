@@ -21,24 +21,26 @@ TextureCube<float4> IrradianceDiffuseGlobalProbeTexture : register(t10); // glob
 
 TextureCubeArray<float4> IrradianceSpecularProbesTextureArray0 : register(t11); //cascade 0
 TextureCubeArray<float4> IrradianceSpecularProbesTextureArray1 : register(t12); //cascade 1
-//TODO add global specular probe (fallback)
-Texture2D<float4> IntegrationTexture : register(t13);
+TextureCube<float4> IrradianceSpecularGlobalProbeTexture : register(t13); // global probe (fallback)
 
-StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices0 : register(t14); //cascade 0, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
-StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices1 : register(t15); //cascade 1, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
-StructuredBuffer<int> DiffuseProbesTextureArrayIndices0 : register(t16); //cascade 0, array of all diffuse probes in scene with indices in 'IrradianceDiffuseProbesTextureArray' for each probe (-1 if not in array)
-StructuredBuffer<int> DiffuseProbesTextureArrayIndices1 : register(t17); //cascade 1, array of all diffuse probes in scene with indices in 'IrradianceDiffuseProbesTextureArray' for each probe (-1 if not in array)
-StructuredBuffer<float3> DiffuseProbesPositions : register(t18); //linear array of all diffuse probes positions
+Texture2D<float4> IntegrationTexture : register(t14);
 
-StructuredBuffer<int> SpecularProbesCellsWithProbeIndices0 : register(t19); //cascade 0, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
-StructuredBuffer<int> SpecularProbesCellsWithProbeIndices1 : register(t20); //cascade 1, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
-StructuredBuffer<int> SpecularProbesTextureArrayIndices0 : register(t21); //cascade 0, array of all specular probes in scene with indices in 'IrradianceSpecularProbesTextureArray' for each probe (-1 if not in array)
-StructuredBuffer<int> SpecularProbesTextureArrayIndices1 : register(t22); //cascade 1, array of all specular probes in scene with indices in 'IrradianceSpecularProbesTextureArray' for each probe (-1 if not in array)
-StructuredBuffer<float3> SpecularProbesPositions : register(t23); //linear array of all specular probes positions
+StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices0 : register(t15); //cascade 0, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
+StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices1 : register(t16); //cascade 1, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
+StructuredBuffer<int> DiffuseProbesTextureArrayIndices0 : register(t17); //cascade 0, array of all diffuse probes in scene with indices in 'IrradianceDiffuseProbesTextureArray' for each probe (-1 if not in array)
+StructuredBuffer<int> DiffuseProbesTextureArrayIndices1 : register(t18); //cascade 1, array of all diffuse probes in scene with indices in 'IrradianceDiffuseProbesTextureArray' for each probe (-1 if not in array)
+StructuredBuffer<float3> DiffuseProbesPositions : register(t19); //linear array of all diffuse probes positions
+
+StructuredBuffer<int> SpecularProbesCellsWithProbeIndices0 : register(t20); //cascade 0, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
+StructuredBuffer<int> SpecularProbesCellsWithProbeIndices1 : register(t21); //cascade 1, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
+StructuredBuffer<int> SpecularProbesTextureArrayIndices0 : register(t22); //cascade 0, array of all specular probes in scene with indices in 'IrradianceSpecularProbesTextureArray' for each probe (-1 if not in array)
+StructuredBuffer<int> SpecularProbesTextureArrayIndices1 : register(t23); //cascade 1, array of all specular probes in scene with indices in 'IrradianceSpecularProbesTextureArray' for each probe (-1 if not in array)
+StructuredBuffer<float3> SpecularProbesPositions : register(t24); //linear array of all specular probes positions
 
 struct LightProbeInfo
 {
-    TextureCube<float4> globalIrradianceProbeTexture;
+    TextureCube<float4> globalIrradianceDiffuseProbeTexture;
+    TextureCube<float4> globalIrradianceSpecularProbeTexture;
     TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray0;
     TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray1;
     TextureCubeArray<float4> IrradianceSpecularProbesTextureArray0;
@@ -418,11 +420,11 @@ float3 GetDiffuseIrradiance(float3 worldPos, float3 normal, float3 camPos, bool 
 {
     float3 finalSum = float3(0.0, 0.0, 0.0);
     if (useGlobalDiffuseProbe)
-        return probesInfo.globalIrradianceProbeTexture.SampleLevel(linearSampler, normal, 0).rgb;
+        return probesInfo.globalIrradianceDiffuseProbeTexture.SampleLevel(linearSampler, normal, 0).rgb;
     
     int volumeCascadeIndex = GetProbesVolumeCascade(worldPos, probesInfo.diffuseProbesVolumeSizes, camPos);
     if (volumeCascadeIndex == -1)
-        return probesInfo.globalIrradianceProbeTexture.SampleLevel(linearSampler, normal, 0).rgb;
+        return probesInfo.globalIrradianceDiffuseProbeTexture.SampleLevel(linearSampler, normal, 0).rgb;
     
     int diffuseProbesCellIndex = GetLightProbesCellIndex(worldPos, probesInfo.diffuseProbeCellsCount[volumeCascadeIndex], probesInfo.sceneLightProbeBounds.xyz,
         probesInfo.distanceBetweenDiffuseProbes, probesInfo.volumeProbesIndexSkips[volumeCascadeIndex].r);
@@ -472,14 +474,16 @@ float3 GetDiffuseIrradiance(float3 worldPos, float3 normal, float3 camPos, bool 
 // 3) 8 probes (or less if out of the current cascade) are processed and the closest is found
 // 4) Final probe with the closest distance to the position is sampled from 'IrradianceSpecularProbesTextureArray'
 // ====================================================================================================================
-float3 GetSpecularIrradiance(float3 worldPos, float3 camPos, float3 reflectDir, int mipIndex, in SamplerState linearSampler,
+float3 GetSpecularIrradiance(float3 worldPos, float3 camPos, float3 reflectDir, int mipIndex, bool useGlobalSpecularProbe, in SamplerState linearSampler,
     in LightProbeInfo probesInfo)
 {
     float3 finalSum = float3(0.0, 0.0, 0.0);
+    if (useGlobalSpecularProbe)
+        return probesInfo.globalIrradianceSpecularProbeTexture.SampleLevel(linearSampler, reflectDir, mipIndex).rgb;
     
     int volumeCascadeIndex = GetProbesVolumeCascade(worldPos, probesInfo.specularProbesVolumeSizes, camPos);
     if (volumeCascadeIndex == -1)
-        return finalSum;
+        return probesInfo.globalIrradianceSpecularProbeTexture.SampleLevel(linearSampler, reflectDir, mipIndex).rgb;
     
     int specularProbesCellIndex = GetLightProbesCellIndex(worldPos, probesInfo.specularProbeCellsCount[volumeCascadeIndex], probesInfo.sceneLightProbeBounds.xyz,
         probesInfo.distanceBetweenSpecularProbes, probesInfo.volumeProbesIndexSkips[volumeCascadeIndex].r);
@@ -535,15 +539,14 @@ float3 IndirectLightingPBR(float3 normalWS, float3 diffuseAlbedo, float3 positio
     float3 reflectDir = normalize(reflect(-viewDir, normalWS));
     
     //indirect diffuse
-    float3 irradianceDiffuse = GetDiffuseIrradiance(positionWS, normalWS, camPos, useGlobalProbe, linearSampler, probesInfo)  / Pi;
+    float3 irradianceDiffuse = GetDiffuseIrradiance(positionWS, normalWS, camPos, useGlobalProbe, linearSampler, probesInfo) / Pi;
     float3 indirectDiffuseLighting = irradianceDiffuse * diffuseAlbedo * float3(1.0f - metalness, 1.0f - metalness, 1.0f - metalness);
 
     //indirect specular (split sum approximation http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf)
-    float3 F = Schlick_Fresnel_UE(F0, nDotV);
     float mipIndex = roughness * SPECULAR_PROBE_MIP_COUNT;
-    float3 prefilteredColor = GetSpecularIrradiance(positionWS, camPos, reflectDir, mipIndex, linearSampler, probesInfo);
+    float3 prefilteredColor = GetSpecularIrradiance(positionWS, camPos, reflectDir, mipIndex, useGlobalProbe, linearSampler, probesInfo);
     float2 environmentBRDF = integrationTexture.SampleLevel(linearSampler, float2(nDotV, roughness), 0).rg;
-    float3 indirectSpecularLighting = prefilteredColor * (F * environmentBRDF.x + environmentBRDF.y);
+    float3 indirectSpecularLighting = prefilteredColor * (Schlick_Fresnel_Roughness(nDotV, F0, roughness) * environmentBRDF.x + float3(environmentBRDF.y, environmentBRDF.y, environmentBRDF.y));
     
     return (indirectDiffuseLighting + indirectSpecularLighting) * ambientOcclusion;
 }

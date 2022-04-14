@@ -326,7 +326,8 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
     if (IBL && SkipIndirectProbeLighting <= 0.0f)
     {
         LightProbeInfo probesInfo;
-        probesInfo.globalIrradianceProbeTexture = IrradianceDiffuseGlobalProbeTexture;
+        probesInfo.globalIrradianceDiffuseProbeTexture = IrradianceDiffuseGlobalProbeTexture;
+        probesInfo.globalIrradianceSpecularProbeTexture = IrradianceSpecularGlobalProbeTexture;
         probesInfo.IrradianceDiffuseProbesTextureArray0 = IrradianceDiffuseProbesTextureArray0;
         probesInfo.IrradianceDiffuseProbesTextureArray1 = IrradianceDiffuseProbesTextureArray1;
         probesInfo.IrradianceSpecularProbesTextureArray0 = IrradianceSpecularProbesTextureArray0;

@@ -75,6 +75,7 @@ namespace Library
 		int GetCellIndex(const XMFLOAT3& pos, ER_ProbeType aType, int volumeIndex);
 
 		ER_LightProbe* GetGlobalDiffuseProbe() { return mGlobalDiffuseProbe; }
+		ER_LightProbe* GetGlobalSpecularProbe() { return mGlobalSpecularProbe; }
 		const ER_LightProbe* GetDiffuseLightProbe(int index) const { return mDiffuseProbes[index]; }
 		ER_GPUTexture* GetCulledDiffuseProbesTextureArray(int volumeIndex) const { return mDiffuseCubemapArrayRT[volumeIndex]; }
 		ER_GPUBuffer* GetDiffuseProbesCellsIndicesBuffer(int volumeIndex) const { return mDiffuseProbesCellsIndicesGPUBuffer[volumeIndex]; }
@@ -122,7 +123,6 @@ namespace Library
 		RenderableAABB* mDebugSpecularProbeVolumeGizmo[NUM_PROBE_VOLUME_CASCADES] = { nullptr };
 
 		ID3D11PixelShader* mConvolutionPS = nullptr;
-		ID3D11SamplerState* mLinearSamplerState = nullptr;
 
 		ID3D11ShaderResourceView* mIntegrationMapTextureSRV = nullptr; //TODO generate custom ones
 

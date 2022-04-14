@@ -234,7 +234,7 @@ namespace Library {
 				mIlluminationProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
 				game.CPUProfiler()->EndCPUTime("Compute or load light probes");
 			}
-			///*else if */(!mIlluminationProbesManager->IsEnabled()/* && !mIlluminationProbesManager->AreGlobalProbesReady()*/)
+			else if (!mIlluminationProbesManager->IsEnabled() && !mIlluminationProbesManager->AreGlobalProbesReady())
 				mIlluminationProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
 		}
 

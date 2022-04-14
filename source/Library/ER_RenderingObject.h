@@ -127,7 +127,6 @@ namespace Library
 		ER_RenderingObject(const std::string& pName, int index, Game& pGame, Camera& pCamera, std::unique_ptr<Model> pModel, bool availableInEditor = false, bool isInstanced = false);
 		~ER_RenderingObject();
 
-		//void LoadCustomMeshTextures(int meshIndex, std::wstring albedoPath, std::wstring normalPath, std::wstring specularPath, std::wstring roughnessPath, std::wstring metallicPath, std::wstring extra1Path, std::wstring extra2Path, std::wstring extra3Path);
 		void LoadCustomMeshTextures(int meshIndex);
 		void LoadMaterial(ER_Material* pMaterial, const std::string& materialName);
 		void LoadRenderBuffers(int lod = 0);
