@@ -443,11 +443,13 @@ float3 GetDiffuseIrradiance(float3 worldPos, float3 normal, float3 camPos, bool 
             
             // get global probes-texture array index for current probe's global index 
             int indexInTexArray = -1;
-            if (volumeCascadeIndex == 0)
-                indexInTexArray = probesInfo.DiffuseProbesTextureArrayIndices0[currentIndex]; // -1 is culled and not in texture array
-            else if (volumeCascadeIndex == 1)
-                indexInTexArray = probesInfo.DiffuseProbesTextureArrayIndices1[currentIndex]; // -1 is culled and not in texture array
-            
+            if (currentIndex != -1)
+            {
+                if (volumeCascadeIndex == 0)
+                    indexInTexArray = probesInfo.DiffuseProbesTextureArrayIndices0[currentIndex]; // -1 is culled and not in texture array
+                else if (volumeCascadeIndex == 1)
+                    indexInTexArray = probesInfo.DiffuseProbesTextureArrayIndices1[currentIndex]; // -1 is culled and not in texture array
+            }
             // sample probe from global probes-texture array
             cellProbesSamples[i] = float3(0.0, 0.0, 0.0);
             if (indexInTexArray != -1)
@@ -503,10 +505,13 @@ float3 GetSpecularIrradiance(float3 worldPos, float3 camPos, float3 reflectDir, 
             
             // get global probes-texture array index for current probe's global index 
             int indexInTexArray = -1;
-            if (volumeCascadeIndex == 0)
-                indexInTexArray = probesInfo.SpecularProbesTextureArrayIndices0[currentIndex]; // -1 is culled and not in texture array
-            else if (volumeCascadeIndex == 1)
-                indexInTexArray = probesInfo.SpecularProbesTextureArrayIndices1[currentIndex]; // -1 is culled and not in texture array
+            if (currentIndex != -1)
+            {
+                if (volumeCascadeIndex == 0)
+                    indexInTexArray = probesInfo.SpecularProbesTextureArrayIndices0[currentIndex]; // -1 is culled and not in texture array
+                else if (volumeCascadeIndex == 1)
+                    indexInTexArray = probesInfo.SpecularProbesTextureArrayIndices1[currentIndex]; // -1 is culled and not in texture array
+            }
             
             // calculate the probe with the closest distance to the position
             if (indexInTexArray != -1)

@@ -13,7 +13,7 @@
 #define NUM_PROBE_VOLUME_CASCADES 2 // 3D volumes of cells
 
 // we want to skip some probes to widen the coverage area
-static const int VolumeProbeIndexSkips[NUM_PROBE_VOLUME_CASCADES] = { 1, 5 }; //skips between probes (in indices), i.e 1 - no skips
+static const int VolumeProbeIndexSkips[NUM_PROBE_VOLUME_CASCADES] = { 1, 4 }; //skips between probes (in indices), i.e 1 - no skips
 static const int DiffuseProbesVolumeCascadeSizes[NUM_PROBE_VOLUME_CASCADES] =
 { 
 	MAX_PROBES_IN_VOLUME_PER_AXIS * DISTANCE_BETWEEN_DIFFUSE_PROBES * VolumeProbeIndexSkips[0] / 2,

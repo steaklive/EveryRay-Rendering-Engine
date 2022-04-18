@@ -19,15 +19,15 @@
 	],
 	"light_probes_volume_bounds_max" : 
 	[
-		300.0,
-		150.2,
-		300.0
+		120.0,
+		120.2,
+		120.0
 	],
 	"light_probes_volume_bounds_min" : 
 	[
-		-300.0,
+		-120.0,
 		0.2,
-		-300.0
+		-120.0
 	],
 	"foliage_zones":
 	[
@@ -301,14 +301,9 @@
 				},
 				{
 					"name" : "GBufferMaterial"
-				}
-			],
-			"materials" : 
-			[
+				},
 				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
+					"name" : "VoxelizationMaterial"
 				}
 			],
 			"model_path" : "content\\models\\sphere.fbx",
@@ -397,14 +392,9 @@
 				},
 				{
 					"name" : "RenderToLightProbeMaterial"
-				}
-			],
-			"materials" : 
-			[
+				},
 				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI_instancing"
+					"name" : "VoxelizationMaterial"
 				}
 			],
 			"model_lods" : 
@@ -453,14 +443,9 @@
 				},
 				{
 					"name" : "RenderToLightProbeMaterial"
-				}
-			],
-			"materials" : 
-			[
+				},
 				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
+					"name" : "VoxelizationMaterial"
 				}
 			],
 			"model_lods" : 
@@ -491,7 +476,7 @@
 				0.90517723560333252,
 				0.0,
 				0.4250321090221405,
-				-38.242660522460938,
+				38.242660522460938,
 				0.0,
 				1.0,
 				0.0,
@@ -664,8 +649,7 @@
 				0.0,
 				0.0,
 				1.0
-			],
-			"use_forward_shading" : true
+			]
 		},
 		{
 			"instanced" : false,
