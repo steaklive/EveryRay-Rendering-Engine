@@ -548,7 +548,9 @@ float3 IndirectLightingPBR(float3 normalWS, float3 diffuseAlbedo, float3 positio
     float3 indirectDiffuseLighting = irradianceDiffuse * diffuseAlbedo * float3(1.0f - metalness, 1.0f - metalness, 1.0f - metalness);
 
     //indirect specular (split sum approximation http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf)
-    float mipIndex = roughness * SPECULAR_PROBE_MIP_COUNT;
+    int mipIndex = floor(roughness * SPECULAR_PROBE_MIP_COUNT);
+    if (mipIndex >= SPECULAR_PROBE_MIP_COUNT)
+        return indirectDiffuseLighting * ambientOcclusion;
     float3 prefilteredColor = GetSpecularIrradiance(positionWS, camPos, reflectDir, mipIndex, useGlobalProbe, linearSampler, probesInfo);
     float2 environmentBRDF = integrationTexture.SampleLevel(linearSampler, float2(nDotV, roughness), 0).rg;
     float3 indirectSpecularLighting = prefilteredColor * (Schlick_Fresnel_Roughness(nDotV, F0, roughness) * environmentBRDF.x + float3(environmentBRDF.y, environmentBRDF.y, environmentBRDF.y));
