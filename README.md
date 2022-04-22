@@ -34,14 +34,20 @@ Other features based on NVIDIA techniques (no code provided here)
 - AABB, OBB, collision detection
 - ImGUI, ImGuizmo
  
-# Roadmap (big architectural tasks)
- * [X]  <del>[RENDERING] remove DX11 "Effects" library, all .fx shaders and refactor the material system (DONE)</del> (https://github.com/steaklive/EveryRay-Rendering-Engine/pull/51)
- * [ ]  [RENDERING] remove all low-level DX11 code and put it into the abstracted RHI (hopefully, until the summer/autumn of 2022)
- * [ ]  [RENDERING] add support for DX12 (hopefully, until 2023)
- * [ ]  [CORE] (?) remove DirectXMath and its usages (maybe come up with a custom math lib)
- * [ ]  [CORE] add cross-API shader compiler
- * [ ]  [CORE] add simple job-system (i.e. for Update(), CPU culling, etc.)
- * [ ]  [CORE] add simple memory management system (for now CPU memory; at least linear, pool allocators)
+# Roadmap (big architectural engine tasks)
+ * [X] <del>remove DX11 "Effects" library, all .fx shaders and refactor the material system (DONE)</del> (https://github.com/steaklive/EveryRay-Rendering-Engine/pull/51)
+ * [ ] remove all low-level DX11 code and put it into the abstracted RHI
+ * [ ] add support for DX12
+ * [ ] remove DirectXMath and its usages (maybe come up with a custom math lib)
+ * [ ] add cross-API shader compiler
+ * [ ] add simple job-system (i.e. for Update(), CPU culling, etc.)
+ * [ ] add simple memory management system (for now CPU memory; at least linear, pool allocators)
+
+# Roadmap (big graphics tasks)
+ * [ ] Order Independent Transparency (in Forward pass)
+ * [ ] Athmospheric Scattering (Mie, etc.)
+ * [ ] Volumetric Light Shafts
+ * [ ] Better Anti-Aliasing (SMAA, TAA, explore FSR/DLSS)
 
 # Screenshots
 
