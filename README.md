@@ -45,7 +45,7 @@ Other features based on NVIDIA techniques (no code provided here)
 
 # Roadmap (big graphics tasks)
  * [ ] Order Independent Transparency (in Forward pass)
- * [ ] Athmospheric Scattering (Mie, etc.)
+ * [ ] Atmospheric Scattering (Mie, etc.)
  * [ ] Volumetric Light Shafts
  * [ ] Better Anti-Aliasing (SMAA, TAA, explore FSR/DLSS)
 
