@@ -16,6 +16,7 @@
 #include "..\Library\ER_FoliageManager.h"
 #include "..\Library\Scene.h"
 #include "..\Library\ER_VolumetricClouds.h"
+#include "..\Library\ER_VolumetricFog.h"
 #include "..\Library\ER_Illumination.h"
 #include "..\Library\ER_LightProbesManager.h"
 #include "..\Library\RenderStateHelper.h"

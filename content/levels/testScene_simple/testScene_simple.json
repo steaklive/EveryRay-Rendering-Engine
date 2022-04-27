@@ -60,6 +60,39 @@
 		},
 		{
 			"instanced" : false,
+			"model_path" : "content\\models\\sponza\\sponza.fbx",
+			"name" : "Sponza",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"instanced" : false,
 			"model_path" : "content\\models\\bunny.fbx",
 			"name" : "Bunny (Blue)",
 			"new_materials" : 

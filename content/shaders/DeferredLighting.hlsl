@@ -14,6 +14,7 @@
 // ================================================================================================
 
 #include "Lighting.hlsli"
+#include "Common.hlsli"
 
 SamplerState SamplerLinear : register(s0);
 SamplerComparisonState CascadedPcfShadowMapSampler : register(s1);
@@ -31,11 +32,13 @@ Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t5);
 cbuffer DeferredLightingCBuffer : register(b0)
 {
     float4x4 ShadowMatrices[NUM_OF_SHADOW_CASCADES];
+    float4x4 ViewProj;
     float4 ShadowCascadeDistances;
     float4 ShadowTexelSize;
     float4 SunDirection;
     float4 SunColor;
     float4 CameraPosition;
+    float4 CameraNearFarPlanes;
     float UseGlobalProbe;
     float SkipIndirectLighting;
 }

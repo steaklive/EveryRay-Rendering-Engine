@@ -209,6 +209,7 @@
     <ClInclude Include="ER_MaterialsCallbacks.h" />
     <ClInclude Include="ER_RenderToLightProbeMaterial.h" />
     <ClInclude Include="ER_ShadowMapMaterial.h" />
+    <ClInclude Include="ER_VolumetricFog.h" />
     <ClInclude Include="ER_VoxelizationMaterial.h" />
     <ClInclude Include="FastFourierTransform.h" />
     <ClInclude Include="FirstPersonCamera.h" />
@@ -289,6 +290,7 @@
     <ClCompile Include="ER_ShadowMapMaterial.cpp" />
     <ClCompile Include="ER_Skybox.cpp" />
     <ClCompile Include="ER_VolumetricClouds.cpp" />
+    <ClCompile Include="ER_VolumetricFog.cpp" />
     <ClCompile Include="ER_VoxelizationMaterial.cpp" />
     <ClCompile Include="FirstPersonCamera.cpp" />
     <ClCompile Include="ER_FoliageManager.cpp" />
@@ -458,6 +460,14 @@
     <FxCompile Include="..\..\content\shaders\VolumetricClouds\VolumetricCloudsCS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\VolumetricFog\VolumetricFogComposite.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\VolumetricFog\VolumetricFogMain.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

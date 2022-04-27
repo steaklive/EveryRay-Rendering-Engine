@@ -10,6 +10,7 @@
 #include "ER_GBuffer.h"
 #include "Camera.h"
 #include "ER_VolumetricClouds.h"
+#include "ER_VolumetricFog.h"
 
 namespace Library {
 
@@ -26,6 +27,7 @@ namespace Library {
 		DeleteObject(mVignetteRT);
 		DeleteObject(mFXAART);
 		DeleteObject(mLinearFogRT);
+		DeleteObject(mVolumetricFogRT);
 
 		ReleaseObject(mTonemappingPS);
 		ReleaseObject(mSSRPS);
@@ -63,6 +65,9 @@ namespace Library {
 			mLinearFogRT = new ER_GPUTexture(game.Direct3DDevice(), static_cast<UINT>(game.ScreenWidth()), static_cast<UINT>(game.ScreenHeight()), 1u,
 				DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 		}
+
+		mVolumetricFogRT = new ER_GPUTexture(game.Direct3DDevice(), static_cast<UINT>(game.ScreenWidth()), static_cast<UINT>(game.ScreenHeight()), 1u,
+			DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 
 		//SSR
 		{
@@ -353,7 +358,7 @@ namespace Library {
 		context->PSSetShaderResources(0, 1, SRs);
 	}
 
-	void ER_PostProcessingStack::DrawEffects(const GameTime& gameTime, ER_QuadRenderer* quad, ER_GBuffer* gbuffer, ER_VolumetricClouds* aVolumetricClouds)
+	void ER_PostProcessingStack::DrawEffects(const GameTime& gameTime, ER_QuadRenderer* quad, ER_GBuffer* gbuffer, ER_VolumetricClouds* aVolumetricClouds, ER_VolumetricFog* aVolumetricFog)
 	{
 		assert(quad);
 		assert(gbuffer);
@@ -385,6 +390,21 @@ namespace Library {
 			mRenderTargetBeforeResolve = mSSRRT;
 		}
 
+		// Composite with volumetric clouds (if enabled)
+		if (aVolumetricClouds && aVolumetricClouds->IsEnabled())
+			aVolumetricClouds->Composite(mRenderTargetBeforeResolve);
+		
+		// Composite with volumetric fog (if enabled)
+		if (aVolumetricFog && aVolumetricFog->IsEnabled())
+		{
+			game.SetCustomRenderTarget(mVolumetricFogRT, nullptr);
+			aVolumetricFog->Composite(mRenderTargetBeforeResolve, gbuffer->GetPositions());
+			game.UnsetCustomRenderTarget();
+
+			//[WARNING] Set from last post processing effect
+			mRenderTargetBeforeResolve = mVolumetricFogRT;
+		}
+
 		// Tonemap
 		if (mUseTonemap)
 		{
@@ -396,10 +416,6 @@ namespace Library {
 			//[WARNING] Set from last post processing effect
 			mRenderTargetBeforeResolve = mTonemappingRT;
 		}
-
-		// Composite with volumetric clouds (if enabled)
-		if (aVolumetricClouds && aVolumetricClouds->IsEnabled())
-			aVolumetricClouds->Composite(mRenderTargetBeforeResolve);
 
 		// Color grading
 		if (mUseColorGrading)

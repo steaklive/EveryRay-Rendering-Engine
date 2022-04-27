@@ -23,6 +23,7 @@ namespace Library {
 		DeleteObject(mShadowMapper);
 		DeleteObject(mFoliageSystem);
 		DeleteObject(mVolumetricClouds);
+		DeleteObject(mVolumetricFog);
 		DeleteObject(mIllumination);
 		DeleteObject(mScene);
 		DeleteObject(mIlluminationProbesManager);
@@ -102,6 +103,13 @@ namespace Library {
         mVolumetricClouds = new ER_VolumetricClouds(game, camera, *mDirectionalLight, *mSkybox);
 		mVolumetricClouds->Initialize(mGBuffer->GetDepth());
 		game.CPUProfiler()->EndCPUTime("Volumetric Clouds init");
+#pragma endregion	
+
+		#pragma region INIT_VOLUMETRIC_FOG
+		game.CPUProfiler()->BeginCPUTime("Volumetric Fog init");
+		mVolumetricFog = new ER_VolumetricFog(game, *mDirectionalLight, *mShadowMapper);
+		mVolumetricFog->Initialize();
+		game.CPUProfiler()->EndCPUTime("Volumetric Fog init");
 #pragma endregion
 
 		#pragma region INIT_LIGHTPROBES_MANAGER
@@ -160,6 +168,7 @@ namespace Library {
 		mSkybox->UpdateSun(gameTime);
 		mPostProcessingStack->Update();
 		mVolumetricClouds->Update(gameTime);
+		mVolumetricFog->Update(gameTime);
 		mIllumination->Update(gameTime, mScene);
 		if (mScene->HasLightProbesSupport() && mIlluminationProbesManager->IsEnabled())
 			mIlluminationProbesManager->UpdateProbes(game);
@@ -185,6 +194,9 @@ namespace Library {
 
 		if (ImGui::Button("Volumetric Clouds"))
 			mVolumetricClouds->Config();
+
+		if (ImGui::Button("Volumetric Fog"))
+			mVolumetricFog->Config();
 
         if (ImGui::Button("Global Illumination"))
 			mIllumination->Config();
@@ -243,6 +255,10 @@ namespace Library {
 		mRenderStateHelper->RestoreAll();
 #pragma endregion
 
+		#pragma region DRAW_VOLUMETRIC_FOG
+		mVolumetricFog->Draw();
+#pragma endregion
+
 		#pragma region DRAW_LOCAL_ILLUMINATION
 		
 		mIllumination->DrawLocalIllumination(mGBuffer, mSkybox);
@@ -272,11 +288,11 @@ namespace Library {
 
 		#pragma region DRAW_VOLUMETRIC_CLOUDS
 		mVolumetricClouds->Draw(gameTime);
-#pragma endregion
+#pragma endregion	
 
 		#pragma region DRAW_POSTPROCESSING
 		mPostProcessingStack->Begin(mIllumination->GetFinalIlluminationRT(), mGBuffer->GetDepth());
-		mPostProcessingStack->DrawEffects(gameTime, (ER_QuadRenderer*)game.Services().GetService(ER_QuadRenderer::TypeIdClass()), mGBuffer, mVolumetricClouds);
+		mPostProcessingStack->DrawEffects(gameTime, (ER_QuadRenderer*)game.Services().GetService(ER_QuadRenderer::TypeIdClass()), mGBuffer, mVolumetricClouds, mVolumetricFog);
 		mPostProcessingStack->End();
 #pragma endregion
 

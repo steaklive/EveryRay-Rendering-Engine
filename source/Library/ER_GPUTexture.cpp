@@ -1,4 +1,6 @@
 #include "ER_GPUTexture.h"
+#include "GameException.h"
+#include "Utility.h"
 
 ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, UINT width, UINT height, UINT samples, DXGI_FORMAT format, UINT bindFlags,
 	int mips, int depth, int arraySize, bool isCubemap, int cubemapArraySize) 
@@ -8,6 +10,7 @@ ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, UINT width, UINT height, UINT
 	ID3D11ShaderResourceView* srv = nullptr;
 	ID3D11RenderTargetView** rtv = nullptr;
 	ID3D11UnorderedAccessView** uav = nullptr;
+	mIsLoadedFromFile = false;
 
 	//todo move to init list
 	mArraySize = arraySize;
@@ -206,9 +209,27 @@ ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, UINT width, UINT height, UINT
 	mTexture3D = tex3D;
 }
 
+ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, ID3D11DeviceContext* context, const std::string& aPath)
+{
+	mIsLoadedFromFile = true;
+
+	if (FAILED(DirectX::CreateDDSTextureFromFile(device, context,
+		Library::Utility::GetFilePath(Library::Utility::ToWideString(aPath)).c_str(), nullptr, &mSRV)))
+	{
+		std::string msg = "Failed to load DDS texture from disk: ";
+		msg += aPath;
+		throw Library::GameException(msg.c_str());
+	}
+}
+
 ER_GPUTexture::~ER_GPUTexture()
 {
 	ReleaseObject(mSRV);
+	ReleaseObject(mTexture2D);
+	ReleaseObject(mTexture3D);
+
+	if (mIsLoadedFromFile)
+		return;
 
 	if (mBindFlags & D3D11_BIND_RENDER_TARGET)
 	{
@@ -224,9 +245,6 @@ ER_GPUTexture::~ER_GPUTexture()
 			ReleaseObject(mUAVs[i]);
 		}
 	}
-
-	ReleaseObject(mTexture2D);
-	ReleaseObject(mTexture3D);
 
 	mMipLevels = 0;
 	mBindFlags = 0;

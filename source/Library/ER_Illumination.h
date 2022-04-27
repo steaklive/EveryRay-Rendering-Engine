@@ -25,6 +25,7 @@ namespace Library
 	class ER_RenderingObject;
 	class ER_GPUBuffer;
 	class ER_Skybox;
+	class ER_VolumetricFog;
 
 	namespace IlluminationCBufferData {
 		struct VoxelizationDebugCB
@@ -58,11 +59,13 @@ namespace Library
 		struct DeferredLightingCB
 		{
 			XMMATRIX ShadowMatrices[NUM_SHADOW_CASCADES];
+			XMMATRIX ViewProj;
 			XMFLOAT4 ShadowCascadeDistances;
 			XMFLOAT4 ShadowTexelSize;
 			XMFLOAT4 SunDirection;
 			XMFLOAT4 SunColor;
 			XMFLOAT4 CameraPosition;
+			XMFLOAT4 CameraNearFarPlanes;
 			float UseGlobalProbe;
 			float SkipIndirectProbeLighting;
 		};
@@ -132,6 +135,7 @@ namespace Library
 
 		ER_LightProbesManager* mProbesManager = nullptr;
 		ER_FoliageManager* mFoliageSystem = nullptr;
+		ER_VolumetricFog* mVolumetricFog = nullptr;
 
 		using RenderingObjectInfo = std::map<std::string, ER_RenderingObject*>;
 		RenderingObjectInfo mVoxelizationObjects[NUM_VOXEL_GI_CASCADES];

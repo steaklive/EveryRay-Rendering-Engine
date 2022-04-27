@@ -13,6 +13,7 @@ namespace Library
 	class ER_QuadRenderer;
 	class ER_GBuffer;
 	class ER_VolumetricClouds;
+	class ER_VolumetricFog;
 
 	namespace PostEffectsCBuffers
 	{
@@ -56,7 +57,8 @@ namespace Library
 		void Begin(ER_GPUTexture* aInitialRT, DepthTarget* aDepthTarget);
 		void End(ER_GPUTexture* aResolveRT = nullptr);
 
-		void DrawEffects(const GameTime& gameTime, ER_QuadRenderer* quad, ER_GBuffer* gbuffer, ER_VolumetricClouds* aVolumetricClouds = nullptr);
+		void DrawEffects(const GameTime& gameTime, ER_QuadRenderer* quad, ER_GBuffer* gbuffer, 
+			ER_VolumetricClouds* aVolumetricClouds = nullptr, ER_VolumetricFog* aVolumetricFog = nullptr);
 
 		void Update();
 
@@ -102,6 +104,8 @@ namespace Library
 		float mLinearFogDensity = 730.0f;
 		float mLinearFogNearZ = 0.0f;
 		float mLinearFogFarZ = 0.0f;
+
+		ER_GPUTexture* mVolumetricFogRT = nullptr;
 
 		// LUT Color Grading
 		ER_GPUTexture* mColorGradingRT = nullptr;

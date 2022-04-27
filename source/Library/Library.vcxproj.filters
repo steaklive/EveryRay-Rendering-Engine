@@ -76,6 +76,9 @@
     <Filter Include="Source Files\Graphics\Mesh &amp; Model">
       <UniqueIdentifier>{37da5177-0d90-4115-9fea-0f0cc11fa684}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\VolumetricFog">
+      <UniqueIdentifier>{3dd4efde-d1aa-43ce-96d5-1662ace464f7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -312,6 +315,9 @@
     <ClInclude Include="ER_VolumetricClouds.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_VolumetricFog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -512,6 +518,9 @@
     <ClCompile Include="MaterialHelper.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
+    <ClCompile Include="ER_VolumetricFog.cpp">
+      <Filter>Source Files\Graphics\Rendering systems</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\content\shaders\VolumetricLight\Apply_PS.hlsl">
@@ -663,6 +672,12 @@
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\Tonemap.hlsl">
       <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\VolumetricFog\VolumetricFogMain.hlsl">
+      <Filter>Shaders\VolumetricFog</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\VolumetricFog\VolumetricFogComposite.hlsl">
+      <Filter>Shaders\VolumetricFog</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1,6 +1,6 @@
 #define FLT_MAX 3.402823466e+38
 
-#define NUM_OF_SHADOW_CASCADES 3
+#define NUM_SHADOW_CASCADES 3
 #define NUM_OF_PROBES_PER_CELL 8
 #define NUM_OF_PROBE_VOLUME_CASCADES 2
 #define SPECULAR_PROBE_MIP_COUNT 6
@@ -95,7 +95,7 @@ float Deferred_CalculateCSM(float3 worldPos, float4x4 svp, int index, float Shad
 
     return result * result;
 }
-float Deferred_GetShadow(float4 worldPos, float4x4 ShadowMatrices[NUM_OF_SHADOW_CASCADES], float4 ShadowCascadeDistances, float ShadowTexelSize, in Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES],
+float Deferred_GetShadow(float4 worldPos, float4x4 ShadowMatrices[NUM_SHADOW_CASCADES], float4 ShadowCascadeDistances, float ShadowTexelSize, in Texture2D<float> CascadedShadowTextures[NUM_SHADOW_CASCADES],
     in SamplerComparisonState CascadedPcfShadowMapSampler)
 {
     float depthDistance = worldPos.a;
@@ -130,7 +130,7 @@ float Forward_CalculateCSM(float3 ShadowCoord, float ShadowTexelSize, in Texture
 
     return result * result;
 }
-float Forward_GetShadow(float4 ShadowCascadeDistances, float3 ShadowCoords[NUM_OF_SHADOW_CASCADES], float ShadowTexelSize, in Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES],
+float Forward_GetShadow(float4 ShadowCascadeDistances, float3 ShadowCoords[NUM_SHADOW_CASCADES], float ShadowTexelSize, in Texture2D<float> CascadedShadowTextures[NUM_SHADOW_CASCADES],
     in SamplerComparisonState CascadedPcfShadowMapSampler, float depthDistance, int nthCascade = -1)
 {
     if (nthCascade == -1)

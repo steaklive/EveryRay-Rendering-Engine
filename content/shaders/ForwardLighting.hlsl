@@ -19,6 +19,7 @@
 // ================================================================================================
 
 #include "Lighting.hlsli"
+#include "Common.hlsli"
 
 Texture2D<float4> AlbedoTexture : register(t0);
 Texture2D<float4> NormalTexture : register(t1);

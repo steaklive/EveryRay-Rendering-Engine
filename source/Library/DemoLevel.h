@@ -19,6 +19,7 @@ namespace Library
     class Terrain;
     class ER_FoliageManager;
     class ER_VolumetricClouds;
+	class ER_VolumetricFog;
     class ER_Illumination;
     class ER_LightProbesManager;
     class ER_PostProcessingStack;
@@ -44,6 +45,7 @@ namespace Library
         ER_GBuffer* mGBuffer = nullptr;
         ER_FoliageManager* mFoliageSystem = nullptr;
         ER_VolumetricClouds* mVolumetricClouds = nullptr;
+        ER_VolumetricFog* mVolumetricFog = nullptr;
         ER_Illumination* mIllumination = nullptr;
         ER_LightProbesManager* mIlluminationProbesManager = nullptr;
         ER_PostProcessingStack* mPostProcessingStack = nullptr; //TODO remove namespace

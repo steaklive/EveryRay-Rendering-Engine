@@ -6,6 +6,7 @@ class ER_GPUTexture
 public:
 	ER_GPUTexture(ID3D11Device* device, UINT width, UINT height, UINT samples, DXGI_FORMAT format, UINT bindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET,
 		int mip = 1, int depth = -1, int arraySize = 1, bool isCubemap = false, int cubemapArraySize = -1);
+	ER_GPUTexture(ID3D11Device* device, ID3D11DeviceContext* context, const std::string& aPath);
 	~ER_GPUTexture();
 
 	ID3D11RenderTargetView* GetRTV() { return mRTVs[0]; }
@@ -28,6 +29,8 @@ public:
 	UINT GetHeight() { return mHeight; }
 	UINT GetDepth() { return mDepth; }
 
+	bool IsLoadedFromFile() { return mIsLoadedFromFile; }
+
 private:
 	ID3D11RenderTargetView** mRTVs = nullptr;
 	ID3D11UnorderedAccessView** mUAVs = nullptr;
@@ -35,11 +38,12 @@ private:
 	ID3D11Texture2D* mTexture2D = nullptr;
 	ID3D11Texture3D* mTexture3D = nullptr;
 
-	UINT mMipLevels;
-	UINT mBindFlags;
-	UINT mWidth;
-	UINT mHeight;
-	UINT mDepth;
-	UINT mArraySize;
-	bool mIsCubemap;
+	UINT mMipLevels = 0;
+	UINT mBindFlags = 0;
+	UINT mWidth = 0;
+	UINT mHeight = 0;
+	UINT mDepth = 0;
+	UINT mArraySize = 0;
+	bool mIsCubemap = false;
+	bool mIsLoadedFromFile = false;
 };
