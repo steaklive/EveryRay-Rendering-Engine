@@ -95,6 +95,12 @@ namespace Library
 			else 
 				mHasLightProbes = false;
 
+			if (root.isMember("use_volumetric_fog")) {
+				mHasVolumetricFog = root["use_volumetric_fog"].asBool();
+			}
+			else
+				mHasVolumetricFog = false;
+
 			// add rendering objects to scene
 			unsigned int numRenderingObjects = root["rendering_objects"].size();
 			for (Json::Value::ArrayIndex i = 0; i != numRenderingObjects; i++) {

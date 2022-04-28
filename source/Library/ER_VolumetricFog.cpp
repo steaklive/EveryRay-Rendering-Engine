@@ -99,6 +99,7 @@ namespace Library {
 		mMainConstantBuffer.Data.CameraNearFar = XMFLOAT4{ camera->NearPlaneDistance(), camera->FarPlaneDistance(), 0.0f, 0.0f };
 		mMainConstantBuffer.Data.Anisotropy = mAnisotropy;
 		mMainConstantBuffer.Data.Density = mDensity;
+		mMainConstantBuffer.Data.Strength = mStrength;
 		mMainConstantBuffer.ApplyChanges(context);
 
 		mCompositeConstantBuffer.Data.ViewProj = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());
@@ -115,6 +116,7 @@ namespace Library {
 		ImGui::Checkbox("Enabled", &mEnabled);
 		ImGui::SliderFloat("Anisotropy", &mAnisotropy, 0.0f, 1.0f);
 		ImGui::SliderFloat("Density", &mDensity, 0.1f, 10.0f);
+		ImGui::SliderFloat("Strength", &mStrength, 0.0f, 50.0f);
 		ImGui::End();
 	}
 
@@ -161,8 +163,6 @@ namespace Library {
 		auto context = GetGame()->Direct3DDeviceContext();
 
 		int readIndex = mCurrentTexture3DRead;
-
-		context->ClearUnorderedAccessViewFloat(mFinalVoxelAccumulationTexture3D->GetUAV(), clearColorBlack);
 
 		ID3D11UnorderedAccessView* UAV[1] = { mFinalVoxelAccumulationTexture3D->GetUAV() };
 		context->CSSetUnorderedAccessViews(0, 1, UAV, NULL);

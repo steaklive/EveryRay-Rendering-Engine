@@ -1,10 +1,4 @@
 {
-	"ambient_color" : 
-	[
-		0.67000000000000004,
-		0.66000000000000003,
-		0.57999999999999996
-	],
 	"camera_direction" : 
 	[
 		0.0,
@@ -52,39 +46,6 @@
 				0.0,
 				1.0,
 				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"instanced" : false,
-			"model_path" : "content\\models\\sponza\\sponza.fbx",
-			"name" : "Sponza",
-			"new_materials" : 
-			[
-				{
-					"name" : "ShadowMapMaterial"
-				},
-				{
-					"name" : "GBufferMaterial"
-				}
-			],
-			"transform" : 
-			[
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0,
-				-229.36979675292969,
 				0.0,
 				0.0,
 				0.0,
@@ -226,5 +187,6 @@
 		0.94999999999999996,
 		0.94999999999999996
 	],
-	"sun_direction" : []
+	"sun_direction" : [],
+	"use_volumetric_fog" : false
 }

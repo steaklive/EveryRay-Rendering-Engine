@@ -1,41 +1,37 @@
 {
-	"ambient_color" : 
-	[
-		0.67000000000000004,
-		0.66000000000000003,
-		0.57999999999999996
-	],
 	"camera_direction" : 
 	[
+		1.0,
 		0.0,
-		0.0,
-		-1.0
+		0.0
 	],
 	"camera_position" : 
 	[
-		0.0,
-		10.0,
-		35.0
+		-44.0,
+		55.0,
+		-43.0
 	],
 	"rendering_objects" : 
 	[
 		{
 			"instanced" : false,
-			"materials" : 
-			[
-				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
-				},
-				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
-				}
-			],
 			"model_path" : "content\\models\\default_plane\\default_plane.fbx",
 			"name" : "Ground Plane",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"reflection_mask" : "content\\models\\default_plane\\UV_Grid_Lrg_reflection_mask.png"
+				}
+			],
 			"transform" : 
 			[
 				1.0,
@@ -58,232 +54,34 @@
 		},
 		{
 			"instanced" : false,
-			"materials" : 
+			"model_path" : "content\\models\\sponza\\sponza.fbx",
+			"name" : "Sponza",
+			"new_materials" : 
 			[
 				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
+					"name" : "ShadowMapMaterial"
 				},
 				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
+					"name" : "GBufferMaterial"
 				},
 				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				}
-			],
-			"model_path" : "content\\models\\bunny\\bunny.fbx",
-			"name" : "Bunny Blue",
-			"textures" : 
-			[
-				{
-					"albedo" : "content\\textures\\colors\\blue.png"
+					"name" : "VoxelizationMaterial"
 				}
 			],
 			"transform" : 
 			[
-				11.437989234924316,
-				0.0,
-				4.9632878303527832,
-				-8.6595258712768555,
-				0.0,
-				12.468400001525879,
-				0.0,
-				7.688323974609375,
-				-4.9632878303527832,
-				0.0,
-				11.437989234924316,
-				-13.816640853881836,
+				1.0,
 				0.0,
 				0.0,
 				0.0,
-				1.0
-			]
-		},
-		{
-			"instanced" : false,
-			"materials" : 
-			[
-				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
-				},
-				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
-				},
-				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				}
-			],
-			"model_path" : "content\\models\\cube.fbx",
-			"name" : "Simple cube Orange",
-			"textures" : 
-			[
-				{
-					"albedo" : "content\\textures\\colors\\orange.png"
-				}
-			],
-			"transform" : 
-			[
-				2.0185890197753906,
-				0.016205744817852974,
-				12.246352195739746,
-				16.146291732788086,
-				-1.451682448387146,
-				0.022534362971782684,
-				17.02876091003418,
-				4.5598549842834473,
 				0.0,
-				-2.486248254776001,
-				0.23416547477245331,
-				-0.14806365966796875,
+				1.0,
 				0.0,
 				0.0,
 				0.0,
-				1.0
-			]
-		},
-		{
-			"instanced" : false,
-			"materials" : 
-			[
-				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
-				},
-				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
-				},
-				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				}
-			],
-			"model_path" : "content\\models\\sphere.fbx",
-			"name" : "Simple sphere Green",
-			"textures" : 
-			[
-				{
-					"albedo" : "content\\textures\\colors\\green.png"
-				}
-			],
-			"transform" : 
-			[
-				1.5,
 				0.0,
+				1.0,
 				0.0,
-				-21.070217132568359,
-				0.0,
-				1.5,
-				0.0,
-				-1.0466251373291016,
-				0.0,
-				0.0,
-				1.5,
-				7.2084488868713379,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"instanced" : false,
-			"materials" : 
-			[
-				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
-				},
-				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
-				},
-				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				}
-			],
-			"model_path" : "content\\models\\sphere.fbx",
-			"name" : "Simple sphere Pink",
-			"transform" : 
-			[
-				1.4175000190734863,
-				0.0,
-				0.0,
-				11.084320068359375,
-				0.0,
-				1.4175000190734863,
-				0.0,
-				4.429649829864502,
-				0.0,
-				0.0,
-				1.4175000190734863,
-				-14.302750587463379,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"instanced" : false,
-			"materials" : 
-			[
-				{
-					"effect" : "content\\effects\\DepthMap.fx",
-					"name" : "DepthMapMaterial",
-					"technique" : "create_depthmap_w_render_target"
-				},
-				{
-					"effect" : "content\\effects\\DeferredPrepass.fx",
-					"name" : "DeferredMaterial",
-					"technique" : "deferred"
-				},
-				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				}
-			],
-			"model_path" : "content\\models\\sphere.fbx",
-			"name" : "Dynamic sphere",
-			"textures" : 
-			[
-				{
-					"albedo" : "content\\textures\\colors\\white.png"
-				}
-			],
-			"transform" : 
-			[
-				0.65205007791519165,
-				0.0,
-				0.0,
-				24.622383117675781,
-				0.0,
-				0.65205007791519165,
-				0.0,
-				0.78330302238464355,
-				0.0,
-				0.0,
-				0.65205007791519165,
-				6.8373608589172363,
 				0.0,
 				0.0,
 				0.0,
@@ -291,12 +89,12 @@
 			]
 		}
 	],
-	"skybox_path" : "content\\textures\\skyboxes\\Sky_5\\textureEnvHDR.dds",
 	"sun_color" : 
 	[
 		1.0,
 		0.94999999999999996,
 		0.94999999999999996
 	],
-	"sun_direction" : []
+	"sun_direction" : [],
+	"use_volumetric_fog" : true
 }

@@ -21,6 +21,7 @@ cbuffer VolumetricFogCBuffer : register(b0)
     float4 CameraNearFar;
     float Anisotropy;
     float Density;
+    float Strength;
 }
 float HenyeyGreensteinPhaseFunction(float3 viewDir, float3 lightDir, float g)
 {
@@ -48,12 +49,13 @@ float GetVisibility(float3 voxelWorldPoint, float4x4 svp)
 float3 GetWorldPosFromVoxelID(uint3 texCoord, float jitter, float near, float far)
 {
     float viewZ = near * pow(far / near, (float(texCoord.z) + 0.5f + jitter) / float(VOLUMETRIC_FOG_VOXEL_SIZE_Z));
+    float z = near / far + (float(texCoord.z) + 0.5f + jitter) / float(VOLUMETRIC_FOG_VOXEL_SIZE_Z) * (1.0f - near/far);
     float3 uv = float3((float(texCoord.x) + 0.5f) / float(VOLUMETRIC_FOG_VOXEL_SIZE_X), (float(texCoord.y) + 0.5f) / float(VOLUMETRIC_FOG_VOXEL_SIZE_Y), viewZ / far);
     
     float3 ndc;
     ndc.x = 2.0f * uv.x - 1.0f;
     ndc.y = 1.0f - 2.0f * uv.y; //turn upside down for DX
-    ndc.z = 2.0f * LinearToExponentialDepth(uv.z, near, far) - 1.0f;
+    ndc.z = 2.0f * LinearToExponentialDepth(uv.z, near, far) - 1.0f; 
     
     float4 worldPos = mul(float4(ndc, 1.0f), InvViewProj);
     worldPos = worldPos / worldPos.w;
@@ -71,17 +73,18 @@ void CSInjection(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DT
         float3 voxelWorldPos = GetWorldPosFromVoxelID(texCoord, jitter, CameraNearFar.x, CameraNearFar.y);
         float3 viewDir = normalize(CameraPosition.xyz - voxelWorldPos);
 
-        float3 lighting = SunColor.rgb * SunColor.a;
+        float3 lighting = float3(0.0, 0.0, 0.0);
         float visibility = GetVisibility(voxelWorldPos, ShadowMatrix);
 
         if (visibility > EPSILON)
             lighting += visibility * SunColor.xyz * HenyeyGreensteinPhaseFunction(viewDir, -SunDirection.xyz, Anisotropy);
 
-        float4 result = float4(lighting * Density, Density);
+        float4 result = float4(Strength * lighting * Density, Density);
         VoxelWriteTexture[texCoord] = result;
     }
 
 }
+
 float GetSliceDistance(int z, float near, float far)
 {
     return near * pow(far / near, (float(z) + 0.5f) / float(VOLUMETRIC_FOG_VOXEL_SIZE_Z));

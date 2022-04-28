@@ -30,6 +30,8 @@ namespace Library
 		bool HasFoliage() { return mHasFoliage; }
 		void LoadFoliageZones(std::vector<ER_Foliage*>& foliageZones, DirectionalLight& light);
 
+		bool HasVolumetricFog() { return mHasVolumetricFog; }
+
 		std::map<std::string, ER_RenderingObject*> objects;
 
 		//TODO remove to private and make public methods
@@ -47,7 +49,8 @@ namespace Library
 		Json::Value root;
 		Camera& mCamera;
 		std::string mScenePath;
-
+		
+		bool mHasVolumetricFog = false;
 		bool mHasFoliage = false;
 		bool mHasLightProbes = true;
 		XMFLOAT3 mLightProbesVolumeMinBounds = { 0,0,0 };

@@ -25,6 +25,7 @@ namespace Library
 			XMFLOAT4 CameraNearFar;
 			float Anisotropy;
 			float Density;
+			float Strength;
 		};	
 		struct CompositeCB
 		{
@@ -66,8 +67,9 @@ namespace Library
 		ID3D11ComputeShader* mAccumulationCS = nullptr;
 		ID3D11PixelShader* mCompositePS = nullptr;
 
-		float mAnisotropy = 0.7f;
-		float mDensity = 5.0f;
+		float mAnisotropy = 0.05f;
+		float mDensity = 0.350f;
+		float mStrength = 2.0f;
 
 		bool mCurrentTexture3DRead = false;
 

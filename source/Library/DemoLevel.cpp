@@ -168,7 +168,8 @@ namespace Library {
 		mSkybox->UpdateSun(gameTime);
 		mPostProcessingStack->Update();
 		mVolumetricClouds->Update(gameTime);
-		mVolumetricFog->Update(gameTime);
+		if (mScene->HasVolumetricFog())
+			mVolumetricFog->Update(gameTime);
 		mIllumination->Update(gameTime, mScene);
 		if (mScene->HasLightProbesSupport() && mIlluminationProbesManager->IsEnabled())
 			mIlluminationProbesManager->UpdateProbes(game);
@@ -256,7 +257,8 @@ namespace Library {
 #pragma endregion
 
 		#pragma region DRAW_VOLUMETRIC_FOG
-		mVolumetricFog->Draw();
+		if (mScene->HasVolumetricFog())
+			mVolumetricFog->Draw();
 #pragma endregion
 
 		#pragma region DRAW_LOCAL_ILLUMINATION
@@ -291,8 +293,9 @@ namespace Library {
 #pragma endregion	
 
 		#pragma region DRAW_POSTPROCESSING
+		auto quad = (ER_QuadRenderer*)game.Services().GetService(ER_QuadRenderer::TypeIdClass());
 		mPostProcessingStack->Begin(mIllumination->GetFinalIlluminationRT(), mGBuffer->GetDepth());
-		mPostProcessingStack->DrawEffects(gameTime, (ER_QuadRenderer*)game.Services().GetService(ER_QuadRenderer::TypeIdClass()), mGBuffer, mVolumetricClouds, mVolumetricFog);
+		mPostProcessingStack->DrawEffects(gameTime, quad, mGBuffer, mVolumetricClouds, mScene->HasVolumetricFog() ? mVolumetricFog : nullptr);
 		mPostProcessingStack->End();
 #pragma endregion
 
