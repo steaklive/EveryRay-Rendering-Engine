@@ -12,11 +12,34 @@ cbuffer VolumetricFogCompositeCBuffer : register(b0)
     float4 CameraNearFarPlanes;
 }
 
+float3 GetUVFromVolumetricFogVoxelWorldPos(float3 worldPos, float n, float f, float4x4 viewProj)
+{
+    float4 ndc = mul(float4(worldPos, 1.0f), viewProj);
+    ndc = ndc / ndc.w;
+    
+    float3 uv;
+    uv.x = ndc.x * 0.5f + 0.5f;
+    uv.y = ndc.y * 0.5f + 0.5f;
+    uv.z = ExponentialToLinearDepth(ndc.z * 0.5f + 0.5f, n, f);
+    
+    float2 params = float2(float(VOLUMETRIC_FOG_VOXEL_SIZE_Z) / log2(f / n), -(float(VOLUMETRIC_FOG_VOXEL_SIZE_Z) * log2(n) / log2(f / n)));
+    float view_z = uv.z * f;
+    uv.z = (max(log2(view_z) * params.x + params.y, 0.0f)) / VOLUMETRIC_FOG_VOXEL_SIZE_Z;
+    return uv;
+}
+float3 AddVolumetricFog(float3 inputColor, float3 worldPos, float nearPlane, float farPlane, float4x4 viewProj)
+{
+    float3 uv = GetUVFromVolumetricFogVoxelWorldPos(worldPos, nearPlane, farPlane, viewProj);
+    float4 scatteredLight = VolumetricFogVoxelGridTexture.SampleLevel(SamplerLinear, uv, 0.0f);
+    return inputColor * scatteredLight.a + scatteredLight.rgb;
+}
+
 float4 PSComposite(float4 pos : SV_Position, float2 tex : TEXCOORD0) : SV_Target
 {
     float4 res = float4(0.0, 0.0, 0.0, 1.0);
     float4 color = InputScreenColor.Sample(SamplerLinear, tex);
     float4 worldPos = GBufferWorldPosTexture.Sample(SamplerLinear, tex);
-    color.rgb = AddVolumetricFog(color.rgb, worldPos.rgb, CameraNearFarPlanes.x, CameraNearFarPlanes.y, ViewProj, SamplerLinear, VolumetricFogVoxelGridTexture);
+    color.rgb = AddVolumetricFog(color.rgb, worldPos.rgb, CameraNearFarPlanes.x, CameraNearFarPlanes.y, ViewProj);
+    
     return float4(color.rgb, 1.0f);
 }

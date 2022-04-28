@@ -96,13 +96,13 @@ namespace Library {
 		mMainConstantBuffer.Data.SunDirection = XMFLOAT4{ -mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f };
 		mMainConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLight.GetDirectionalLightIntensity() };
 		mMainConstantBuffer.Data.CameraPosition = XMFLOAT4{ camera->Position().x, camera->Position().y, camera->Position().z, 1.0f };
-		mMainConstantBuffer.Data.CameraNearFar = XMFLOAT4{ camera->GetCameraNearCascadeDistance(0), camera->GetCameraFarCascadeDistance(0), 0.0f, 0.0f };
+		mMainConstantBuffer.Data.CameraNearFar = XMFLOAT4{ camera->NearPlaneDistance(), camera->FarPlaneDistance(), 0.0f, 0.0f };
 		mMainConstantBuffer.Data.Anisotropy = mAnisotropy;
 		mMainConstantBuffer.Data.Density = mDensity;
 		mMainConstantBuffer.ApplyChanges(context);
 
 		mCompositeConstantBuffer.Data.ViewProj = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());
-		mCompositeConstantBuffer.Data.CameraNearFar = XMFLOAT4{ camera->GetCameraNearCascadeDistance(0), camera->GetCameraFarCascadeDistance(0), 0.0f, 0.0f };
+		mCompositeConstantBuffer.Data.CameraNearFar = XMFLOAT4{ camera->NearPlaneDistance(), camera->FarPlaneDistance(), 0.0f, 0.0f };
 		mCompositeConstantBuffer.ApplyChanges(context);
 	}
 

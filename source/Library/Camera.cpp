@@ -359,12 +359,12 @@ namespace Library
 		}
 	}
 
-	float Camera::GetCameraFarCascadeDistance (int index) const
+	float Camera::GetCameraFarShadowCascadeDistance (int index) const
 	{
 		assert(index < (sizeof(cameraCascadeDistances) / sizeof(cameraCascadeDistances[0])));
 		return cameraCascadeDistances[index];
 	}
-	float Camera::GetCameraNearCascadeDistance (int index) const
+	float Camera::GetCameraNearShadowCascadeDistance (int index) const
 	{
 		assert(index < (sizeof(cameraCascadeDistances) / sizeof(cameraCascadeDistances[0])));
 		if (index == 0)

@@ -74,8 +74,8 @@ void CSInjection(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DT
         float3 lighting = SunColor.rgb * SunColor.a;
         float visibility = GetVisibility(voxelWorldPos, ShadowMatrix);
 
-        //if (visibility > EPSILON)
-        //    lighting += visibility * SunColor.xyz * HenyeyGreensteinPhaseFunction(viewDir, -SunDirection.xyz, Anisotropy);
+        if (visibility > EPSILON)
+            lighting += visibility * SunColor.xyz * HenyeyGreensteinPhaseFunction(viewDir, -SunDirection.xyz, Anisotropy);
 
         float4 result = float4(lighting * Density, Density);
         VoxelWriteTexture[texCoord] = result;

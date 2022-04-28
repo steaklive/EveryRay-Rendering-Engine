@@ -207,8 +207,8 @@ namespace Library
 	XMMATRIX ER_ShadowMapper::GetProjectionBoundingSphere(int index)
 	{
 		// Create a bounding sphere around the camera frustum for 360 rotation
-		float nearV = mCamera.GetCameraNearCascadeDistance(index);
-		float farV = mCamera.GetCameraFarCascadeDistance(index);
+		float nearV = mCamera.GetCameraNearShadowCascadeDistance(index);
+		float farV = mCamera.GetCameraFarShadowCascadeDistance(index);
 		float endV = nearV + farV;
 		XMFLOAT3 sphereCenter = XMFLOAT3(
 			mCamera.Position().x + mCamera.Direction().x * (nearV + 0.5f * endV),
@@ -232,9 +232,9 @@ namespace Library
 
 		mLightProjectorCenteredPositions[index] =
 			XMFLOAT3(
-				mCamera.Position().x + mCamera.Direction().x * 0.5f * mCamera.GetCameraFarCascadeDistance(index),
-				mCamera.Position().y + mCamera.Direction().y * 0.5f * mCamera.GetCameraFarCascadeDistance(index),
-				mCamera.Position().z + mCamera.Direction().z * 0.5f * mCamera.GetCameraFarCascadeDistance(index)
+				mCamera.Position().x + mCamera.Direction().x * 0.5f * mCamera.GetCameraFarShadowCascadeDistance(index),
+				mCamera.Position().y + mCamera.Direction().y * 0.5f * mCamera.GetCameraFarShadowCascadeDistance(index),
+				mCamera.Position().z + mCamera.Direction().z * 0.5f * mCamera.GetCameraFarShadowCascadeDistance(index)
 			);
 
 		XMMATRIX projectionMatrix = XMMatrixOrthographicRH(sphereRadius, sphereRadius, -sphereRadius, sphereRadius);
