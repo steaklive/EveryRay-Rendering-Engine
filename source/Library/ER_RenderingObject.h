@@ -224,9 +224,12 @@ namespace Library
 		bool IsInLightProbe() { return mIsInLightProbe; }
 		void SetInLightProbe(bool value) { mIsInLightProbe = value; }
 		
-		void SetUseGlobalLightProbe(bool value) { mUseGlobalLightProbe = value; }
-		bool GetUseGlobalLightProbe() { return mUseGlobalLightProbe; }
-		float GetUseGlobalLightProbeMask() { return mUseGlobalLightProbe ? 1.0f : 0.0f; }
+		void SetUseIndirectGlobalLightProbe(bool value) { mUseIndirectGlobalLightProbe = value; }
+		bool GetUseIndirectGlobalLightProbe() { return mUseIndirectGlobalLightProbe; }
+		float GetUseIndirectGlobalLightProbeMask() { return mUseIndirectGlobalLightProbe ? 1.0f : 0.0f; }
+
+		bool IsUsedForGlobalLightProbeRendering() { return mIsUsedForGlobalLightProbeRendering; }
+		void SetIsUsedForGlobalLightProbeRendering(bool value) { mIsUsedForGlobalLightProbeRendering = value; }
 
 		int GetIndexInScene() { return mIndexInScene; }
 		void SetIndexInScene(int index) { mIndexInScene = index; }
@@ -289,7 +292,8 @@ namespace Library
 		bool													mIsInLightProbe = false;
 		bool													mIsInVoxelization = false;
 		bool													mIsInGbuffer = false;
-		bool													mUseGlobalLightProbe = false;
+		bool													mUseIndirectGlobalLightProbe = false;
+		bool													mIsUsedForGlobalLightProbeRendering = false;
 		float													mMinScale = 1.0f;
 		float													mMaxScale = 1.0f;
 		float													mCameraViewMatrix[16];

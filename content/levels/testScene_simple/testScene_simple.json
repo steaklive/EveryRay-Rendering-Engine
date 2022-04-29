@@ -24,6 +24,9 @@
 				},
 				{
 					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
 				}
 			],
 			"textures" : 
@@ -50,7 +53,8 @@
 				0.0,
 				0.0,
 				1.0
-			]
+			],
+			"use_in_global_lightprobe_rendering" : true
 		},
 		{
 			"instanced" : false,

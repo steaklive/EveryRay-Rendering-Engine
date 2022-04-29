@@ -35,7 +35,7 @@
 			"type" : 0,
 			"patch_count" : 50,
 			"texture_path" : "content\\textures\\foliage\\grass_flower_type1.png",
-			"position" : [ -30.0, -0.1, 0.0],
+			"position" : [ 30.0, -0.1, 0.0],
 			"distribution_radius" : 30.0,
 			"average_scale" : 3.5
 		},
@@ -43,7 +43,7 @@
 			"type" : 1,
 			"patch_count" : 600,
 			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
-			"position" : [ -30.0, -0.1, 0.0],
+			"position" : [ 30.0, -0.1, 0.0],
 			"distribution_radius" : 30.0,
 			"average_scale" : 2.5
 		},
@@ -51,7 +51,7 @@
 			"type" : 0,
 			"patch_count" : 20,
 			"texture_path" : "content\\textures\\foliage\\grass_flower_type3.png",
-			"position" : [ -65.0, -0.1, 0.0],
+			"position" : [ 65.0, -0.1, 0.0],
 			"distribution_radius" : 30.0,
 			"average_scale" : 2.0
 		},
@@ -59,7 +59,7 @@
 			"type" : 1,
 			"patch_count" : 600,
 			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
-			"position" : [ -65.0, -0.1, 0.0],
+			"position" : [ 65.0, -0.1, 0.0],
 			"distribution_radius" : 30.0,
 			"average_scale" : 2.5
 		}
@@ -245,7 +245,8 @@
 				0.0,
 				1.0
 			],
-			"use_global_lightprobe" : true
+			"use_indirect_global_lightprobe" : true,
+			"use_in_global_lightprobe_rendering" : true
 		},
 		{
 			"instanced" : false,
@@ -328,103 +329,6 @@
 				0.0,
 				0.65205007791519165,
 				-14.861448287963867,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"foliageMask" : true,
-			"instanced" : true,
-			"instances_transforms" : 
-			[
-				{
-					"transform" : 
-					[
-						1.899813175201416,
-						0.0,
-						0.0,
-						-40.920845031738281,
-						0.0,
-						1.8999999761581421,
-						0.0,
-						0.0,
-						0.0,
-						0.0,
-						1.8999999761581421,
-						-34.851955413818359,
-						0.0,
-						0.0,
-						0.0,
-						1.0
-					]
-				},
-				{
-					"transform" : 
-					[
-						1.899813175201416,
-						0.0,
-						0.0,
-						18.933021545410156,
-						0.0,
-						1.8999999761581421,
-						0.0,
-						0.0,
-						0.0,
-						0.0,
-						1.8999999761581421,
-						-34.851955413818359,
-						0.0,
-						0.0,
-						0.0,
-						1.0
-					]
-				}
-			],
-			"new_materials":
-			[
-				{
-					"name" : "ShadowMapMaterial"
-				},
-				{
-					"name" : "GBufferMaterial"
-				},
-				{
-					"name" : "RenderToLightProbeMaterial"
-				},
-				{
-					"name" : "VoxelizationMaterial"
-				}
-			],
-			"model_lods" : 
-			[
-				{
-					"path" : "content\\models\\vegetation\\trees\\elm\\elm_ds.fbx"
-				},
-				{
-					"path" : "content\\models\\vegetation\\trees\\elm\\elm_ds.fbx"
-				},
-				{
-					"path" : "content\\models\\vegetation\\trees\\elm\\elm_ds.fbx"
-				}
-			],
-			"model_path" : "content\\models\\vegetation\\trees\\elm\\elm_ds.fbx",
-			"name" : "Elm Tree",
-			"transform" : 
-			[
-				1.899813175201416,
-				0.0,
-				0.0,
-				-40.920845031738281,
-				0.0,
-				1.8999999761581421,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.8999999761581421,
-				-34.851955413818359,
 				0.0,
 				0.0,
 				0.0,

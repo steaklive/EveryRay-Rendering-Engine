@@ -73,7 +73,7 @@ namespace Library
 		mConstantBuffer.Data.Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor = XMFLOAT4(
 			aObj->GetMeshReflectionFactor(meshIndex) ? 1.0f : 0.0f,
 			aObj->GetFoliageMask() ? 1.0f : 0.0f,
-			aObj->GetUseGlobalLightProbeMask() ? 1.0f : 0.0f,
+			aObj->GetUseIndirectGlobalLightProbeMask() ? 1.0f : 0.0f,
 			aObj->IsParallaxOcclusionMapping() ? 1.0f : 0.0f);
 		mConstantBuffer.Data.SkipDeferredLighting = XMFLOAT4(aObj->IsForwardShading() ? 1.0f : 0.0f, 0.0, 0.0, 0.0);
 		mConstantBuffer.ApplyChanges(context);

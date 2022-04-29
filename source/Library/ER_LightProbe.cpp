@@ -144,9 +144,6 @@ namespace Library
 					//skybox->UpdateSun(gameTime, mCubemapCameras[cubeMapFace]);
 				}
 
-				if (isGlobal)
-					continue;
-
 				// We don't do lodding because it is bound to main camera... We force pick lod 0.
 				// This is incorrect and might cause issues like: 
 				// Probe P is next to object A, but object A is far from main camera => A does not have lod 0, probe P can not render A.
@@ -155,6 +152,9 @@ namespace Library
 				//TODO change to culled objects per face (not a priority since we compute probes once)
 				for (auto& object : objectsToRender)
 				{
+					if (isGlobal && !object.second->IsUsedForGlobalLightProbeRendering())
+						continue;
+
 					if (!object.second->IsInLightProbe())
 						continue;
 				
@@ -166,7 +166,7 @@ namespace Library
 							static_cast<ER_RenderToLightProbeMaterial*>(materialInfo->second)->PrepareForRendering(matSystems, object.second, meshIndex, mCubemapCameras[cubeMapFaceIndex]);
 							object.second->DrawLOD(materialInfo->first, false, meshIndex, lod);
 						}
-					}					
+					}
 				}
 			}
 		}

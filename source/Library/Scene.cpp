@@ -16,7 +16,7 @@
 #include "ER_FoliageManager.h"
 #include "DirectionalLight.h"
 
-#define MULTITHREADED_SCENE_LOAD 0
+#define MULTITHREADED_SCENE_LOAD 1
 
 namespace Library 
 {
@@ -95,6 +95,9 @@ namespace Library
 			else 
 				mHasLightProbes = false;
 
+			if (root.isMember("foliage_zones"))
+				mHasFoliage = true;
+
 			if (root.isMember("use_volumetric_fog")) {
 				mHasVolumetricFog = root["use_volumetric_fog"].asBool();
 			}
@@ -171,8 +174,10 @@ namespace Library
 		{
 			if (root["rendering_objects"][i].isMember("foliageMask"))
 				aObject->SetFoliageMask(root["rendering_objects"][i]["foliageMask"].asBool());
-			if (root["rendering_objects"][i].isMember("use_global_lightprobe"))
-				aObject->SetUseGlobalLightProbe(root["rendering_objects"][i]["useGlobalLightProbe"].asBool());
+			if (root["rendering_objects"][i].isMember("use_indirect_global_lightprobe"))
+				aObject->SetUseIndirectGlobalLightProbe(root["rendering_objects"][i]["use_indirect_global_lightprobe"].asBool());
+			if (root["rendering_objects"][i].isMember("use_in_global_lightprobe_rendering"))
+				aObject->SetIsUsedForGlobalLightProbeRendering(root["rendering_objects"][i]["use_in_global_lightprobe_rendering"].asBool());
 			if (root["rendering_objects"][i].isMember("use_parallax_occlusion_mapping"))
 				aObject->SetParallaxOcclusionMapping(root["rendering_objects"][i]["use_parallax_occlusion_mapping"].asBool());
 			if (root["rendering_objects"][i].isMember("use_forward_shading"))
@@ -469,7 +474,6 @@ namespace Library
 		}
 		else {
 			if (root.isMember("foliage_zones")) {
-				mHasFoliage = true;
 				for (Json::Value::ArrayIndex i = 0; i != root["foliage_zones"].size(); i++)
 				{
 					float vec3[3];

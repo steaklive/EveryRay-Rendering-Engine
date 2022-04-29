@@ -135,14 +135,14 @@ namespace Library
 	{
 		mGlobalDiffuseProbe = new ER_LightProbe(game, light, shadowMapper, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE);
 		mGlobalDiffuseProbe->SetIndex(-1);
-		mGlobalDiffuseProbe->SetPosition(Vector3Helper::Zero);
+		mGlobalDiffuseProbe->SetPosition(XMFLOAT3(0.0f, 2.0f, 0.0f)); //just a bit above the ground
 		mGlobalDiffuseProbe->SetShaderInfoForConvolution(mConvolutionPS);
 	}
 	void ER_LightProbesManager::SetupGlobalSpecularProbe(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 	{
 		mGlobalSpecularProbe = new ER_LightProbe(game, light, shadowMapper, SPECULAR_PROBE_SIZE, SPECULAR_PROBE);
 		mGlobalSpecularProbe->SetIndex(-1);
-		mGlobalSpecularProbe->SetPosition(Vector3Helper::Zero);
+		mGlobalSpecularProbe->SetPosition(XMFLOAT3(0.0f, 2.0f, 0.0f)); //just a bit above the ground
 		mGlobalSpecularProbe->SetShaderInfoForConvolution(mConvolutionPS);
 	}
 

@@ -739,7 +739,7 @@ namespace Library {
 			mForwardLightingConstantBuffer.Data.SunDirection = XMFLOAT4{ -mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f };
 			mForwardLightingConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLight.GetDirectionalLightIntensity() };
 			mForwardLightingConstantBuffer.Data.CameraPosition = XMFLOAT4{ mCamera.Position().x,mCamera.Position().y,mCamera.Position().z, 1.0f };
-			mForwardLightingConstantBuffer.Data.UseGlobalProbe = (!mProbesManager->IsEnabled() && mProbesManager->AreGlobalProbesReady()) || aObj->GetUseGlobalLightProbeMask();
+			mForwardLightingConstantBuffer.Data.UseGlobalProbe = (!mProbesManager->IsEnabled() && mProbesManager->AreGlobalProbesReady()) || aObj->GetUseIndirectGlobalLightProbeMask();
 			mForwardLightingConstantBuffer.Data.SkipIndirectProbeLighting = mDebugSkipIndirectProbeLighting;
 			mForwardLightingConstantBuffer.ApplyChanges(context);
 
