@@ -24,6 +24,9 @@
 				},
 				{
 					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
 				}
 			],
 			"textures" : 
@@ -50,6 +53,49 @@
 				0.0,
 				0.0,
 				1.0
+			],
+			"use_in_global_lightprobe_rendering" : true
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "Dynamic sphere White",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				-13.102462768554688,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.20178937911987305,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				-11.561807632446289,
+				0.0,
+				0.0,
+				0.0,
+				1.0
 			]
 		},
 		{
@@ -66,6 +112,9 @@
 				},
 				{
 					"name" : "VoxelizationMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
 				}
 			],
 			"transform" : 
@@ -86,7 +135,8 @@
 				0.0,
 				0.0,
 				1.0
-			]
+			],
+			"use_in_global_lightprobe_rendering" : true
 		}
 	],
 	"sun_color" : 

@@ -338,6 +338,9 @@ namespace Library {
 				}
 
 				//reset back
+				context->VSSetShader(NULL, NULL, NULL);
+				context->GSSetShader(NULL, NULL, NULL);
+				context->PSSetShader(NULL, NULL, NULL);
 				context->OMSetRenderTargetsAndUnorderedAccessViews(0, nullRTVs, NULL, 0, 1, nullUAV, NULL);
 				context->RSSetViewports(1, &viewport);
 				context->RSSetScissorRects(1, &rect);
