@@ -19,13 +19,10 @@ https://youtu.be/_htQNxesr9U
 - Terrain w/ GPU tessellation (^)
 - Foliage
 - Volumetric clouds
+- Volumetric fog
 - Post Processing: Linear Fog, SSR, Tonemap, LUT color grading, Vignette, FXAA
 
 (^) - needs to be tested or refactored
-
-Other features based on NVIDIA techniques (no code provided here)
-- Volumetric Lighting (from "Fast, Flexible, Physically-Based Volumetric Light Scattering")
-- Ocean Simulation (from DX11 archive samples)
 
 # Some of the engine features
 - 3D model loading (.obj, .fbx and etc.) with Assimp Library
