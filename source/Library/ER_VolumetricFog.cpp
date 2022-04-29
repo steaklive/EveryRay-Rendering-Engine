@@ -20,6 +20,7 @@ namespace Library {
 	ER_VolumetricFog::ER_VolumetricFog(Game& game, const DirectionalLight& aLight, const ER_ShadowMapper& aShadowMapper)
 	    : GameComponent(game), mShadowMapper(aShadowMapper), mDirectionalLight(aLight)
 	{	
+		mPrevViewProj = XMMatrixIdentity();
 	}
 	
 	ER_VolumetricFog::~ER_VolumetricFog()
@@ -92,6 +93,7 @@ namespace Library {
 		auto context = GetGame()->Direct3DDeviceContext();
 
 		mMainConstantBuffer.Data.InvViewProj = XMMatrixTranspose(XMMatrixInverse(nullptr, camera->ViewMatrix() * camera->ProjectionMatrix()));
+		mMainConstantBuffer.Data.PrevViewProj = mPrevViewProj;
 		mMainConstantBuffer.Data.ShadowMatrix = mShadowMapper.GetViewMatrix(0) * mShadowMapper.GetProjectionMatrix(0) /** XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix())*/;
 		mMainConstantBuffer.Data.SunDirection = XMFLOAT4{ -mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f };
 		mMainConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLight.GetDirectionalLightIntensity() };
@@ -100,11 +102,16 @@ namespace Library {
 		mMainConstantBuffer.Data.Anisotropy = mAnisotropy;
 		mMainConstantBuffer.Data.Density = mDensity;
 		mMainConstantBuffer.Data.Strength = mStrength;
+		mMainConstantBuffer.Data.AmbientIntensity = mAmbientIntensity;
+		mMainConstantBuffer.Data.PreviousFrameBlend = mPreviousFrameBlendFactor;
 		mMainConstantBuffer.ApplyChanges(context);
 
 		mCompositeConstantBuffer.Data.ViewProj = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());
 		mCompositeConstantBuffer.Data.CameraNearFar = XMFLOAT4{ camera->NearPlaneDistance(), camera->FarPlaneDistance(), 0.0f, 0.0f };
+		mCompositeConstantBuffer.Data.BlendingWithSceneColorFactor = mBlendingWithSceneColorFactor;
 		mCompositeConstantBuffer.ApplyChanges(context);
+		
+		mPrevViewProj = mCompositeConstantBuffer.Data.ViewProj;
 	}
 
 	void ER_VolumetricFog::UpdateImGui()
@@ -117,6 +124,9 @@ namespace Library {
 		ImGui::SliderFloat("Anisotropy", &mAnisotropy, 0.0f, 1.0f);
 		ImGui::SliderFloat("Density", &mDensity, 0.1f, 10.0f);
 		ImGui::SliderFloat("Strength", &mStrength, 0.0f, 50.0f);
+		ImGui::SliderFloat("Ambient Intensity", &mAmbientIntensity, 0.0f, 1.0f);
+		ImGui::SliderFloat("Blending with scene", &mBlendingWithSceneColorFactor, 0.0f, 1.0f);
+		ImGui::SliderFloat("Blending with previous frame", &mPreviousFrameBlendFactor, 0.0f, 0.1f);
 		ImGui::End();
 	}
 

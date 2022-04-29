@@ -693,5 +693,8 @@
     <None Include="..\..\content\shaders\Common.hlsli">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="..\..\content\shaders\VolumetricFog\VolumetricFog.hlsli">
+      <Filter>Shaders\VolumetricFog</Filter>
+    </None>
   </ItemGroup>
 </Project>

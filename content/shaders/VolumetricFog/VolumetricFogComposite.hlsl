@@ -1,4 +1,12 @@
+// ================================================================================================
+// Pixel shader for composite pass of volumetric fog
+// For more info check VolumetricFogMain.hlsl
+//
+// Written by Gen Afanasev for 'EveryRay Rendering Engine', 2017-2022
+// ================================================================================================
+
 #include "..\\Common.hlsli"
+#include "VolumetricFog.hlsli"
 
 Texture2D<float4> InputScreenColor : register(t0);
 Texture2D<float4> GBufferWorldPosTexture : register(t1);
@@ -10,25 +18,10 @@ cbuffer VolumetricFogCompositeCBuffer : register(b0)
 {
     float4x4 ViewProj;
     float4 CameraNearFarPlanes;
+    float BlendingWithSceneColorFactor;
 }
 
-float3 GetUVFromVolumetricFogVoxelWorldPos(float3 worldPos, float n, float f, float4x4 viewProj)
-{
-    float4 ndc = mul(float4(worldPos, 1.0f), viewProj);
-    ndc = ndc / ndc.w;
-    
-    float3 uv;
-    uv.x = ndc.x * 0.5f + 0.5f;
-    uv.y = 0.5f - ndc.y * 0.5f; //turn upside down for DX
-    uv.z = ExponentialToLinearDepth(ndc.z * 0.5f + 0.5f, n, f);
-    
-    float2 params = float2(float(VOLUMETRIC_FOG_VOXEL_SIZE_Z) / log2(f / n), -(float(VOLUMETRIC_FOG_VOXEL_SIZE_Z) * log2(n) / log2(f / n)));
-    float view_z = uv.z * f;
-    uv.z = (max(log2(view_z) * params.x + params.y, 0.0f)) / VOLUMETRIC_FOG_VOXEL_SIZE_Z;
-    return uv;
-}
-
-float3 AddVolumetricFog(float3 inputColor, float3 worldPos, float nearPlane, float farPlane, float4x4 viewProj)
+float3 GetVolumetricFog(float3 inputColor, float3 worldPos, float nearPlane, float farPlane, float4x4 viewProj)
 {
     float3 uv = GetUVFromVolumetricFogVoxelWorldPos(worldPos, nearPlane, farPlane, viewProj);
     float4 scatteredLight = VolumetricFogVoxelGridTexture.SampleLevel(SamplerLinear, uv, 0.0f);
@@ -38,11 +31,11 @@ float3 AddVolumetricFog(float3 inputColor, float3 worldPos, float nearPlane, flo
 float4 PSComposite(float4 pos : SV_Position, float2 tex : TEXCOORD0) : SV_Target
 {
     float4 res = float4(0.0, 0.0, 0.0, 1.0);
-    float4 color = InputScreenColor.Sample(SamplerLinear, tex);
+    float4 inputColor = InputScreenColor.Sample(SamplerLinear, tex);
     float4 worldPos = GBufferWorldPosTexture.Sample(SamplerLinear, tex);
     if (worldPos.w == 0.0f)
-        return color;
+        return inputColor;
     
-    color.rgb = AddVolumetricFog(color.rgb, worldPos.rgb, CameraNearFarPlanes.x, CameraNearFarPlanes.y, ViewProj);
-    return float4(color.rgb, 1.0f);
+    float3 color = GetVolumetricFog(inputColor.rgb, worldPos.rgb, CameraNearFarPlanes.x, CameraNearFarPlanes.y, ViewProj);
+    return float4(lerp(inputColor.rgb, color, BlendingWithSceneColorFactor), 1.0f);
 }

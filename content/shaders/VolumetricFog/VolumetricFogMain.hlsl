@@ -1,4 +1,26 @@
+// ================================================================================================
+// Volumetric fog based on
+// "Volumetric fog: Unified, compute shader based solution to atmospheric scattering" by B.Wronski
+// 
+// Some parts of the code are borrowed from:
+// https://github.com/diharaw/volumetric-lighting
+// https://github.com/Unity-Technologies/VolumetricLighting
+//
+// The systems performs 2 compute passes: light injection and scattering
+//
+// Supports:
+// - Directional Light
+// - Previous frame interpolation
+//
+// TODO:
+// - add support for point/spot lights
+// - use optimized shadow map (downsample)
+//
+// Written by Gen Afanasev for 'EveryRay Rendering Engine', 2017-2022
+// ================================================================================================
+
 #include "..\\Common.hlsli"
+#include "VolumetricFog.hlsli"
 
 #define EPSILON 0.000001
 
@@ -14,6 +36,7 @@ Texture3D<float4> VoxelReadTexture : register(t2);
 cbuffer VolumetricFogCBuffer : register(b0)
 {
     float4x4 InvViewProj;
+    float4x4 PrevViewProj;
     float4x4 ShadowMatrix;
     float4 SunDirection;
     float4 SunColor;
@@ -22,6 +45,8 @@ cbuffer VolumetricFogCBuffer : register(b0)
     float Anisotropy;
     float Density;
     float Strength;
+    float AmbientIntensity;
+    float PreviousFrameBlend;
 }
 float HenyeyGreensteinPhaseFunction(float3 viewDir, float3 lightDir, float g)
 {
@@ -46,22 +71,6 @@ float GetVisibility(float3 voxelWorldPoint, float4x4 svp)
     return ShadowTexture.SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy, ShadowCoord.z).r;
 }
 
-float3 GetWorldPosFromVoxelID(uint3 texCoord, float jitter, float near, float far)
-{
-    float viewZ = near * pow(far / near, (float(texCoord.z) + 0.5f + jitter) / float(VOLUMETRIC_FOG_VOXEL_SIZE_Z));
-    float z = near / far + (float(texCoord.z) + 0.5f + jitter) / float(VOLUMETRIC_FOG_VOXEL_SIZE_Z) * (1.0f - near/far);
-    float3 uv = float3((float(texCoord.x) + 0.5f) / float(VOLUMETRIC_FOG_VOXEL_SIZE_X), (float(texCoord.y) + 0.5f) / float(VOLUMETRIC_FOG_VOXEL_SIZE_Y), viewZ / far);
-    
-    float3 ndc;
-    ndc.x = 2.0f * uv.x - 1.0f;
-    ndc.y = 1.0f - 2.0f * uv.y; //turn upside down for DX
-    ndc.z = 2.0f * LinearToExponentialDepth(uv.z, near, far) - 1.0f; 
-    
-    float4 worldPos = mul(float4(ndc, 1.0f), InvViewProj);
-    worldPos = worldPos / worldPos.w;
-    return worldPos.rgb;
-}
-
 [numthreads(8, 8, 1)]
 void CSInjection(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID)
 {
@@ -70,16 +79,30 @@ void CSInjection(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DT
     if (texCoord.x < VOLUMETRIC_FOG_VOXEL_SIZE_X && texCoord.y < VOLUMETRIC_FOG_VOXEL_SIZE_Y && texCoord.z < VOLUMETRIC_FOG_VOXEL_SIZE_Z)
     {
         float jitter = (GetBlueNoiseSample(texCoord) - 0.5f) * (1.0f - EPSILON);
-        float3 voxelWorldPos = GetWorldPosFromVoxelID(texCoord, jitter, CameraNearFar.x, CameraNearFar.y);
+        float3 voxelWorldPos = GetWorldPosFromVoxelID(texCoord, jitter, CameraNearFar.x, CameraNearFar.y, InvViewProj);
         float3 viewDir = normalize(CameraPosition.xyz - voxelWorldPos);
 
-        float3 lighting = float3(0.0, 0.0, 0.0);
+        float3 lighting = float3(AmbientIntensity, AmbientIntensity, AmbientIntensity);
         float visibility = GetVisibility(voxelWorldPos, ShadowMatrix);
 
         if (visibility > EPSILON)
             lighting += visibility * SunColor.xyz * HenyeyGreensteinPhaseFunction(viewDir, -SunDirection.xyz, Anisotropy);
-
+        
         float4 result = float4(Strength * lighting * Density, Density);
+        
+        //previous frame interpolation
+        {
+            float3 voxelWorldPosNoJitter = GetWorldPosFromVoxelID(texCoord, 0.0f, CameraNearFar.x, CameraNearFar.y, InvViewProj);
+            float3 prevUV = GetUVFromVolumetricFogVoxelWorldPos(voxelWorldPosNoJitter, CameraNearFar.x, CameraNearFar.y, PrevViewProj);
+            
+            if (prevUV.x >= 0.0f && prevUV.y >= 0.0f && prevUV.z >= 0.0f &&
+                prevUV.x <= 1.0f && prevUV.y <= 1.0f && prevUV.z <= 1.0f)
+            {
+                float4 prevResult = VoxelReadTexture.SampleLevel(SamplerLinear, prevUV, 0.0f);
+                result = lerp(prevResult, result, PreviousFrameBlend);
+            }
+        }
+
         VoxelWriteTexture[texCoord] = result;
     }
 

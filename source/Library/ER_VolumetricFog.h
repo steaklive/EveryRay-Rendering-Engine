@@ -18,6 +18,7 @@ namespace Library
 		struct MainCB
 		{
 			XMMATRIX InvViewProj;
+			XMMATRIX PrevViewProj;
 			XMMATRIX ShadowMatrix;
 			XMFLOAT4 SunDirection;
 			XMFLOAT4 SunColor;
@@ -26,11 +27,14 @@ namespace Library
 			float Anisotropy;
 			float Density;
 			float Strength;
+			float AmbientIntensity;
+			float PreviousFrameBlend;
 		};	
 		struct CompositeCB
 		{
 			XMMATRIX ViewProj;
 			XMFLOAT4 CameraNearFar;
+			float BlendingWithSceneColorFactor;
 		};
 	}
 
@@ -67,9 +71,14 @@ namespace Library
 		ID3D11ComputeShader* mAccumulationCS = nullptr;
 		ID3D11PixelShader* mCompositePS = nullptr;
 
+		XMMATRIX mPrevViewProj;
+
 		float mAnisotropy = 0.05f;
 		float mDensity = 0.350f;
 		float mStrength = 2.0f;
+		float mAmbientIntensity = 0.1f;
+		float mBlendingWithSceneColorFactor = 1.0f;
+		float mPreviousFrameBlendFactor = 0.05f;
 
 		bool mCurrentTexture3DRead = false;
 
