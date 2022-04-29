@@ -43,7 +43,6 @@ https://youtu.be/_htQNxesr9U
 # Roadmap (big graphics tasks)
  * [ ] Order Independent Transparency (in Forward pass)
  * [ ] Atmospheric Scattering (Mie, etc.)
- * [ ] Volumetric Light Shafts
  * [ ] Better Anti-Aliasing (SMAA, TAA, explore FSR/DLSS)
 
 # Screenshots
