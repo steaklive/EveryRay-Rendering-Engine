@@ -43,19 +43,15 @@ https://youtu.be/_htQNxesr9U
 # Roadmap (big graphics tasks)
  * [ ] Order Independent Transparency (in Forward pass)
  * [ ] Atmospheric Scattering (Mie, etc.)
- * [ ] Volumetric Light Shafts
  * [ ] Better Anti-Aliasing (SMAA, TAA, explore FSR/DLSS)
 
 # Screenshots
 
 ![picture](screenshots/EveryRayTerrain.png)
-![picture](screenshots/EveryRayEditor.png)
-![picture](screenshots/EveryRayPBR.png)
-![picture](screenshots/EveryRayInstancing.png)
+![picture](screenshots/EveryRayMaterials.png)
 ![picture](screenshots/EveryRaySSSS.png)
 ![picture](screenshots/EveryRayWater.png)
 ![picture](screenshots/EveryRayCollisionDetection.png)
-![picture](screenshots/EveryRaySSR.png)
 ![picture](screenshots/EveryRayTestScene.png)
 
 # Controls
