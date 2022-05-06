@@ -79,6 +79,9 @@
     <Filter Include="Shaders\VolumetricFog">
       <UniqueIdentifier>{3dd4efde-d1aa-43ce-96d5-1662ace464f7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Helpers\DirectXSH">
+      <UniqueIdentifier>{71eca0d8-96a4-4af7-913b-8fb491aa8901}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -520,6 +523,12 @@
     </ClCompile>
     <ClCompile Include="ER_VolumetricFog.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external\DirectXMath\SHMath\DirectXSH.cpp">
+      <Filter>Source Files\Helpers\DirectXSH</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external\DirectXMath\SHMath\DirectXSHD3D11.cpp">
+      <Filter>Source Files\Helpers\DirectXSH</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

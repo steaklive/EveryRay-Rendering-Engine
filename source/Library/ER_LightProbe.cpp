@@ -16,6 +16,8 @@
 #include "ER_MaterialsCallbacks.h"
 #include "SamplerStates.h"
 
+#include "DirectXSH.h"
+
 namespace Library
 {
 	//X+, X-, Y+, Y-, Z+, Z-
@@ -85,6 +87,27 @@ namespace Library
 			(mPosition.x > aMax.x || mPosition.x < aMin.x) ||
 			(mPosition.y > aMax.y || mPosition.y < aMin.y) ||
 			(mPosition.z > aMax.z || mPosition.z < aMin.z);
+	}
+
+	void ER_LightProbe::StoreSphericalHarmonicsFromCubemap(Game& game)
+	{
+		auto context = game.Direct3DDeviceContext();
+		float rgbCoefficients[3][9] = { 
+			0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
+		};
+		if (FAILED(DirectX::SHProjectCubeMap(context, SPHERICAL_HARMONICS_ORDER, mCubemapTexture->GetTexture2D(), &rgbCoefficients[0][0], &rgbCoefficients[1][0], &rgbCoefficients[2][0])))
+		{
+			//TODO write to log
+			for (int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
+				mSphericalHarmonicsRGB[i] = XMFLOAT3(0.0, 0.0, 0.0);
+		}
+		else
+		{
+			for (int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
+				mSphericalHarmonicsRGB[i] = XMFLOAT3(rgbCoefficients[0][i], rgbCoefficients[1][i], rgbCoefficients[2][i]);
+		}
 	}
 
 	void ER_LightProbe::Compute(Game& game, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted,

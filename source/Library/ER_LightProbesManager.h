@@ -12,6 +12,8 @@
 #define PROBE_COUNT_PER_CELL 8 // 3D cube cell of probes in each vertex
 #define NUM_PROBE_VOLUME_CASCADES 2 // 3D volumes of cells
 
+#define SPHERICAL_HARMONICS_ORDER 3
+
 // we want to skip some probes to widen the coverage area
 static const int VolumeProbeIndexSkips[NUM_PROBE_VOLUME_CASCADES] = { 1, 4 }; //skips between probes (in indices), i.e 1 - no skips
 static const int DiffuseProbesVolumeCascadeSizes[NUM_PROBE_VOLUME_CASCADES] =
@@ -140,6 +142,7 @@ namespace Library
 		ER_GPUBuffer* mDiffuseProbesTexArrayIndicesGPUBuffer[NUM_PROBE_VOLUME_CASCADES] = { nullptr };
 		ER_GPUBuffer* mDiffuseProbesCellsIndicesGPUBuffer[NUM_PROBE_VOLUME_CASCADES] = { nullptr };
 		ER_GPUBuffer* mDiffuseProbesPositionsGPUBuffer = nullptr;
+		ER_GPUBuffer* mDiffuseProbesSphericalHarmonicsGPUBuffer = nullptr;
 		ER_GPUTexture* mTempDiffuseCubemapFacesRT = nullptr;
 		ER_GPUTexture* mTempDiffuseCubemapFacesConvolutedRT = nullptr;
 		ER_GPUTexture* mDiffuseCubemapArrayRT[NUM_PROBE_VOLUME_CASCADES] = { nullptr };

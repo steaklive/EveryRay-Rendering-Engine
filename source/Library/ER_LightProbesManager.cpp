@@ -26,9 +26,9 @@ namespace Library
 		if (!scene)
 			throw GameException("No scene to load light probes for!");
 
-		mTempDiffuseCubemapFacesRT = new ER_GPUTexture(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
+		mTempDiffuseCubemapFacesRT = new ER_GPUTexture(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R16G16B16A16_FLOAT,
 			D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1, -1, CUBEMAP_FACES_COUNT, true);
-		mTempDiffuseCubemapFacesConvolutedRT = new ER_GPUTexture(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
+		mTempDiffuseCubemapFacesConvolutedRT = new ER_GPUTexture(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R16G16B16A16_FLOAT,
 			D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1, -1, CUBEMAP_FACES_COUNT, true);
 		mTempSpecularCubemapFacesRT = new ER_GPUTexture(game.Direct3DDevice(), SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
 			D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
@@ -111,6 +111,8 @@ namespace Library
 			DeleteObject(mTempSpecularCubemapDepthBuffers[i]);
 		}
 		ReleaseObject(mIntegrationMapTextureSRV);
+
+		DeleteObject(mDiffuseProbesSphericalHarmonicsGPUBuffer);
 
 		DeleteObject(mDiffuseProbesPositionsGPUBuffer);
 		DeleteObject(mSpecularProbesPositionsGPUBuffer);
@@ -242,6 +244,17 @@ namespace Library
 		mDiffuseProbesPositionsGPUBuffer = new ER_GPUBuffer(game.Direct3DDevice(), diffuseProbesPositionsCPUBuffer, mDiffuseProbesCountTotal, sizeof(XMFLOAT3),
 			D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
 		DeleteObjects(diffuseProbesPositionsCPUBuffer);
+
+		// SH GPU buffer
+		XMFLOAT3* shCPUBuffer = new XMFLOAT3[mDiffuseProbesCountTotal * SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER];
+		for (int probeIndex = 0; probeIndex < mDiffuseProbesCountTotal; probeIndex++)
+		{
+			for	(int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
+				shCPUBuffer[probeIndex + i] = mDiffuseProbes[probeIndex]->GetSphericalHarmonics()[i];
+		}
+		mDiffuseProbesSphericalHarmonicsGPUBuffer = new ER_GPUBuffer(game.Direct3DDevice(), shCPUBuffer, mDiffuseProbesCountTotal * SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER, sizeof(XMFLOAT3),
+			D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
+		DeleteObjects(shCPUBuffer);
 
 		// probe cell's indices GPU buffer, tex. array indices GPU/CPU buffers
 		for (int volumeIndex = 0; volumeIndex < NUM_PROBE_VOLUME_CASCADES; volumeIndex++)
@@ -634,6 +647,8 @@ namespace Library
 			{
 				if (!probe->IsLoadedFromDisk())
 					probe->Compute(game, mTempDiffuseCubemapFacesRT, mTempDiffuseCubemapFacesConvolutedRT, mTempDiffuseCubemapDepthBuffers, diffuseProbesPath, aObjects, mQuadRenderer, skybox);
+
+				probe->StoreSphericalHarmonicsFromCubemap(game);
 			}
 			
 			mDiffuseProbesReady = true;

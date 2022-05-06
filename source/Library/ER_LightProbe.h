@@ -29,12 +29,15 @@ namespace Library
 		//TODO refactor
 		void SetShaderInfoForConvolution(ID3D11PixelShader* ps)	{ mConvolutionPS = ps; }
 
+		const XMFLOAT3* GetSphericalHarmonics() { return mSphericalHarmonicsRGB; }
+
 		void SetPosition(const XMFLOAT3& pos);
 		const XMFLOAT3& GetPosition() { return mPosition; }
 		void SetIndex(int index) { mIndex = index; }
 		int GetIndex() { return mIndex; }
 
 		void CPUCullAgainstProbeBoundingVolume(int volumeIndex, const XMFLOAT3& aMin, const XMFLOAT3& aMax);
+		void StoreSphericalHarmonicsFromCubemap(Game& game);
 		bool IsCulled(int volumeIndex) { return mIsCulled[volumeIndex]; }
 		bool IsTaggedByVolume(int volumeIndex) { return mIsTaggedByVolume[volumeIndex]; }
 		void SetIsTaggedByVolume(int volumeIndex) { mIsTaggedByVolume[volumeIndex] = true; }
@@ -57,6 +60,8 @@ namespace Library
 		ConstantBuffer<LightProbeCBufferData::ProbeConvolutionCB> mConvolutionCB;
 
 		ID3D11PixelShader* mConvolutionPS = nullptr;
+
+		XMFLOAT3 mSphericalHarmonicsRGB[SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER];
 
 		XMFLOAT3 mPosition;
 		int mSize = 0;
