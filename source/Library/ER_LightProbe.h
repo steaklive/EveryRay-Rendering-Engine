@@ -46,7 +46,7 @@ namespace Library
 		void DrawGeometryToProbe(Game& game, ER_GPUTexture* aTextureNonConvoluted, DepthTarget** aDepthBuffers, const LightProbeRenderingObjectsInfo& objectsToRender, ER_Skybox* skybox);
 		void ConvoluteProbe(Game& game, ER_QuadRenderer* quadRenderer, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted);
 		void SaveProbeOnDisk(Game& game, const std::wstring& levelPath, ER_GPUTexture* aTextureConvoluted);
-		std::wstring GetConstructedProbeName(const std::wstring& levelPath);
+		std::wstring GetConstructedProbeName(const std::wstring& levelPath, bool inSphericalHarmonics = false);
 
 		ER_ProbeType mProbeType;
 
@@ -56,7 +56,7 @@ namespace Library
 		LightProbeRenderingObjectsInfo mObjectsToRenderPerFace[CUBEMAP_FACES_COUNT];
 		Camera* mCubemapCameras[CUBEMAP_FACES_COUNT];
 
-		ER_GPUTexture* mCubemapTexture = nullptr;
+		ER_GPUTexture* mCubemapTexture = nullptr; // for regular diffuse probe it should be null (because we use SH)
 		ConstantBuffer<LightProbeCBufferData::ProbeConvolutionCB> mConvolutionCB;
 
 		ID3D11PixelShader* mConvolutionPS = nullptr;
