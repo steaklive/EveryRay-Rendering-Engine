@@ -29,7 +29,7 @@ namespace Library
 		//TODO refactor
 		void SetShaderInfoForConvolution(ID3D11PixelShader* ps)	{ mConvolutionPS = ps; }
 
-		const XMFLOAT3* GetSphericalHarmonics() { return mSphericalHarmonicsRGB; }
+		const std::vector<XMFLOAT3>& GetSphericalHarmonics() { return mSphericalHarmonicsRGB; }
 
 		void SetPosition(const XMFLOAT3& pos);
 		const XMFLOAT3& GetPosition() { return mPosition; }
@@ -59,7 +59,7 @@ namespace Library
 
 		ID3D11PixelShader* mConvolutionPS = nullptr;
 
-		XMFLOAT3 mSphericalHarmonicsRGB[SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER];
+		std::vector<XMFLOAT3> mSphericalHarmonicsRGB;
 
 		XMFLOAT3 mPosition;
 		int mSize = 0;

@@ -437,7 +437,7 @@ float3 GetDiffuseIrradiance(float3 worldPos, float3 normal, float3 camPos, bool 
 
             float3 SH[SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER];
             for (int s = 0; s < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; s++)
-                SH[s] = probesInfo.DiffuseSphericalHarmonicsCoefficientsArray[currentIndex + s];
+                SH[s] = probesInfo.DiffuseSphericalHarmonicsCoefficientsArray[currentIndex * SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER + s];
         
             cellProbesSamples[i] = GetDiffuseIrradianceFromSphericalHarmonics(normal, SH);
             cellProbesPositions[i] = probesInfo.DiffuseProbesPositionsArray[currentIndex];

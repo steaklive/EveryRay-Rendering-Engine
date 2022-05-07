@@ -576,8 +576,9 @@ namespace Library
 			XMFLOAT3* shCPUBuffer = new XMFLOAT3[mDiffuseProbesCountTotal * SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER];
 			for (int probeIndex = 0; probeIndex < mDiffuseProbesCountTotal; probeIndex++)
 			{
+				const std::vector<XMFLOAT3> sh = mDiffuseProbes[probeIndex]->GetSphericalHarmonics();
 				for (int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
-					shCPUBuffer[probeIndex + i] = mDiffuseProbes[probeIndex]->GetSphericalHarmonics()[i];
+					shCPUBuffer[probeIndex * SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER + i] = sh[i];
 			}
 			mDiffuseProbesSphericalHarmonicsGPUBuffer = new ER_GPUBuffer(game.Direct3DDevice(), shCPUBuffer, mDiffuseProbesCountTotal * SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER, sizeof(XMFLOAT3),
 				D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);

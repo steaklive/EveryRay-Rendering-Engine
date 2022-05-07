@@ -47,6 +47,9 @@ namespace Library
 		, mShadowMapper(shadowMapper)
 		, mProbeType(aType)
 	{
+		for (int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
+			mSphericalHarmonicsRGB.push_back(XMFLOAT3(0.0, 0.0, 0.0));
+
 		mCubemapTexture = new ER_GPUTexture(game.Direct3DDevice(), size, size, 1, DXGI_FORMAT_R8G8B8A8_UNORM, 0,
 			(aType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
 

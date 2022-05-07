@@ -100,7 +100,7 @@ float4 PSMain(VS_OUTPUT vsOutput) : SV_Target0
     {
         float3 SH[SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER];
         for (int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
-            SH[i] = SphericalHarmonicsCoefficientsArray[vsOutput.CubemapIndex + i];
+            SH[i] = SphericalHarmonicsCoefficientsArray[vsOutput.CubemapIndex * SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER + i];
         
         return float4(GetDiffuseIrradianceFromSphericalHarmonics(vsOutput.Normal, SH) / Pi, 1.0f);
     }
