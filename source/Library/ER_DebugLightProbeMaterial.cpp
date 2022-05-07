@@ -8,6 +8,7 @@
 #include "ER_RenderingObject.h"
 #include "Mesh.h"
 #include "ER_LightProbesManager.h"
+#include "ER_GPUBuffer.h"
 
 namespace Library
 {
@@ -58,7 +59,7 @@ namespace Library
 		ER_Material::~ER_Material();
 	}
 
-	void ER_DebugLightProbeMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, int aProbeType, int volumeIndex)
+	void ER_DebugLightProbeMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, int aProbeType)
 	{
 		auto context = ER_Material::GetGame()->Direct3DDeviceContext();
 		Camera* camera = (Camera*)(ER_Material::GetGame()->Services().GetService(Camera::TypeIdClass()));
@@ -72,18 +73,21 @@ namespace Library
 		mConstantBuffer.Data.ViewProjection = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());
 		mConstantBuffer.Data.World = XMMatrixTranspose(aObj->GetTransformationMatrix());
 		mConstantBuffer.Data.CameraPosition = XMFLOAT4{ camera->Position().x, camera->Position().y, camera->Position().z, 1.0f };
-		mConstantBuffer.Data.DiscardCulledProbe = neededSystems.mProbesManager->mDebugDiscardCulledProbes;
+		mConstantBuffer.Data.DiscardCulled_IsDiffuse = XMFLOAT2(
+			neededSystems.mProbesManager->mDebugDiscardCulledProbes ? 1.0f : -1.0f,
+			static_cast<ER_ProbeType>(aProbeType) == DIFFUSE_PROBE ? 1.0f : -1.0f
+		);
 		mConstantBuffer.ApplyChanges(context);
 		ID3D11Buffer* CBs[1] = { mConstantBuffer.Buffer() };
 		
 		context->VSSetConstantBuffers(0, 1, CBs);
 		context->PSSetConstantBuffers(0, 1, CBs);
 		
-		ID3D11ShaderResourceView* SRs[1] = { static_cast<ER_ProbeType>(aProbeType) == DIFFUSE_PROBE ?
-			neededSystems.mProbesManager->GetCulledDiffuseProbesTextureArray(volumeIndex)->GetSRV() : 
-			neededSystems.mProbesManager->GetCulledSpecularProbesTextureArray(volumeIndex)->GetSRV()
+		ID3D11ShaderResourceView* SRs[2] = { static_cast<ER_ProbeType>(aProbeType) == DIFFUSE_PROBE ? nullptr :
+			neededSystems.mProbesManager->GetCulledSpecularProbesTextureArray()->GetSRV(),
+			neededSystems.mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer()->GetBufferSRV()
 		};
-		context->PSSetShaderResources(0, 1, SRs);
+		context->PSSetShaderResources(0, 2, SRs);
 		
 		ID3D11SamplerState* SS[1] = { SamplerStates::TrilinearWrap };
 		context->PSSetSamplers(0, 1, SS);

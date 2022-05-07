@@ -84,11 +84,8 @@ namespace Library
 		};
 		struct LightProbesCB
 		{
-			XMFLOAT4 DiffuseProbesCellsCount[NUM_PROBE_VOLUME_CASCADES]; //x,y,z,total
-			XMFLOAT4 DiffuseProbesVolumeSizes[NUM_PROBE_VOLUME_CASCADES];
-			XMFLOAT4 SpecularProbesCellsCount[NUM_PROBE_VOLUME_CASCADES]; //x,y,z,total
-			XMFLOAT4 SpecularProbesVolumeSizes[NUM_PROBE_VOLUME_CASCADES];
-			XMFLOAT4 ProbesVolumeIndexSkips[NUM_PROBE_VOLUME_CASCADES]; //index skip, 0, 0, 0
+			XMFLOAT4 DiffuseProbesCellsCount; //x,y,z,total
+			XMFLOAT4 SpecularProbesCellsCount; //x,y,z,total
 			XMFLOAT4 SceneLightProbesBounds; //volume's extent of all scene's probes
 			float DistanceBetweenDiffuseProbes;
 			float DistanceBetweenSpecularProbes;
@@ -201,7 +198,6 @@ namespace Library
 		bool mDrawDiffuseProbes = false;
 		bool mDrawSpecularProbes = false;
 		bool mDrawProbesVolumeGizmo = false;
-		int mCurrentDebugProbeVolumeIndex = 0;
 		bool mDebugSkipIndirectProbeLighting = false;
 
 		bool mEnabled = false;

@@ -5,6 +5,8 @@
 #define NUM_OF_PROBE_VOLUME_CASCADES 2
 #define SPECULAR_PROBE_MIP_COUNT 6
 
+#define SPHERICAL_HARMONICS_ORDER 3
+
 #define PARALLAX_OCCLUSION_MAPPING_SUPPORT 1
 #define PARALLAX_OCCLUSION_MAPPING_SELF_SHADOW_SUPPORT 1
 #define PARALLAX_OCCLUSION_MAPPING_HEIGHT_SCALE 0.05
@@ -13,55 +15,36 @@
 static const float4 ColorWhite = { 1, 1, 1, 1 };
 static const float Pi = 3.141592654f;
 
-//texture arrays of cubemap probes (unfortunately, without bindless support there is no way to have array of arrays)
-//TODO consider Spherical-Harmonics for diffuse probes (will get rid of cubemaps)
-TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray0 : register(t8); //cascade 0
-TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray1 : register(t9); //cascade 1
-TextureCube<float4> IrradianceDiffuseGlobalProbeTexture : register(t10); // global probe (fallback)
+TextureCube<float4> DiffuseGlobalProbeTexture : register(t8); // global probe (fallback)
+StructuredBuffer<int> DiffuseProbesCellsWithProbeIndicesArray : register(t9); //linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
+StructuredBuffer<float3> DiffuseSphericalHarmonicsCoefficientsArray : register(t10); //linear array of all diffuse probes 2nd order coefficients (9)
+StructuredBuffer<float3> DiffuseProbesPositionsArray : register(t11); //linear array of all diffuse probes positions
 
-TextureCubeArray<float4> IrradianceSpecularProbesTextureArray0 : register(t11); //cascade 0
-TextureCubeArray<float4> IrradianceSpecularProbesTextureArray1 : register(t12); //cascade 1
-TextureCube<float4> IrradianceSpecularGlobalProbeTexture : register(t13); // global probe (fallback)
+TextureCube<float4> SpecularGlobalProbeTexture : register(t12); // global probe (fallback)
+TextureCubeArray<float4> SpecularProbesTextureArray: register(t13); //linear array of specular cubemap textures
+StructuredBuffer<int> SpecularProbesCellsWithProbeIndicesArray : register(t14); //linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
+StructuredBuffer<int> SpecularProbesTextureArrayIndices : register(t15); //array of all specular probes in scene with indices in 'IrradianceSpecularProbesTextureArray' for each probe (-1 if not in array)
+StructuredBuffer<float3> SpecularProbesPositionsArray : register(t16); //linear array of all specular probes positions
 
-Texture2D<float4> IntegrationTexture : register(t14);
-
-StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices0 : register(t15); //cascade 0, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
-StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices1 : register(t16); //cascade 1, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
-StructuredBuffer<int> DiffuseProbesTextureArrayIndices0 : register(t17); //cascade 0, array of all diffuse probes in scene with indices in 'IrradianceDiffuseProbesTextureArray' for each probe (-1 if not in array)
-StructuredBuffer<int> DiffuseProbesTextureArrayIndices1 : register(t18); //cascade 1, array of all diffuse probes in scene with indices in 'IrradianceDiffuseProbesTextureArray' for each probe (-1 if not in array)
-StructuredBuffer<float3> DiffuseProbesPositions : register(t19); //linear array of all diffuse probes positions
-
-StructuredBuffer<int> SpecularProbesCellsWithProbeIndices0 : register(t20); //cascade 0, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
-StructuredBuffer<int> SpecularProbesCellsWithProbeIndices1 : register(t21); //cascade 1, linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
-StructuredBuffer<int> SpecularProbesTextureArrayIndices0 : register(t22); //cascade 0, array of all specular probes in scene with indices in 'IrradianceSpecularProbesTextureArray' for each probe (-1 if not in array)
-StructuredBuffer<int> SpecularProbesTextureArrayIndices1 : register(t23); //cascade 1, array of all specular probes in scene with indices in 'IrradianceSpecularProbesTextureArray' for each probe (-1 if not in array)
-StructuredBuffer<float3> SpecularProbesPositions : register(t24); //linear array of all specular probes positions
+Texture2D<float4> IntegrationTexture : register(t17);
 
 struct LightProbeInfo
 {
     TextureCube<float4> globalIrradianceDiffuseProbeTexture;
     TextureCube<float4> globalIrradianceSpecularProbeTexture;
-    TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray0;
-    TextureCubeArray<float4> IrradianceDiffuseProbesTextureArray1;
-    TextureCubeArray<float4> IrradianceSpecularProbesTextureArray0;
-    TextureCubeArray<float4> IrradianceSpecularProbesTextureArray1;
     
-    StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices0;
-    StructuredBuffer<int> DiffuseProbesCellsWithProbeIndices1;
-    StructuredBuffer<int> DiffuseProbesTextureArrayIndices0;
-    StructuredBuffer<int> DiffuseProbesTextureArrayIndices1;
-    StructuredBuffer<float3> DiffuseProbesPositions;
-    StructuredBuffer<int> SpecularProbesCellsWithProbeIndices0;
-    StructuredBuffer<int> SpecularProbesCellsWithProbeIndices1;
-    StructuredBuffer<int> SpecularProbesTextureArrayIndices0;
-    StructuredBuffer<int> SpecularProbesTextureArrayIndices1;
-    StructuredBuffer<float3> SpecularProbesPositions;
+    StructuredBuffer<int> DiffuseProbesCellsWithProbeIndicesArray;
+    StructuredBuffer<float3> DiffuseProbesPositionsArray;
+    StructuredBuffer<float3> DiffuseSphericalHarmonicsCoefficientsArray;
+
+    TextureCubeArray<float4> SpecularProbesTextureArray;
+    StructuredBuffer<int> SpecularProbesCellsWithProbeIndicesArray;
+    StructuredBuffer<int> SpecularProbesTextureArrayIndices;
+    StructuredBuffer<float3> SpecularProbesPositionsArray;
     
-    float4 diffuseProbesVolumeSizes[NUM_OF_PROBE_VOLUME_CASCADES];
-    float4 diffuseProbeCellsCount[NUM_OF_PROBE_VOLUME_CASCADES];
-    float4 specularProbesVolumeSizes[NUM_OF_PROBE_VOLUME_CASCADES];
-    float4 specularProbeCellsCount[NUM_OF_PROBE_VOLUME_CASCADES];
-    float4 volumeProbesIndexSkips[NUM_OF_PROBE_VOLUME_CASCADES];
+    float4 diffuseProbeCellsCount;
+    float4 specularProbeCellsCount;
+    
     float4 sceneLightProbeBounds;
     float distanceBetweenDiffuseProbes;
     float distanceBetweenSpecularProbes;
@@ -233,11 +216,11 @@ static bool cellProbesExistanceFlags[NUM_OF_PROBES_PER_CELL];
 // There are some extra checks for edge cases (i.e., if the probe is culled, then don't lerp).
 // In theory, it is possible to get rid of 'ifs' and optimize this function but readability will be lost.
 // ==============================================================================================================
-float3 GetTrilinearInterpolationFromNeighbourProbes(float3 pos, float distanceBetweenDiffuseProbes, float volumeProbesIndexSkip)
+float3 GetTrilinearInterpolationFromNeighbourProbes(float3 pos, float distanceBetweenDiffuseProbes)
 {
     float3 result = float3(0.0, 0.0, 0.0);
     
-    float cellDistance = distanceBetweenDiffuseProbes * volumeProbesIndexSkip;
+    float cellDistance = distanceBetweenDiffuseProbes;
     float distanceX0 = abs(cellProbesPositions[0].x - pos.x) / cellDistance;
     float distanceY0 = abs(cellProbesPositions[0].y - pos.y) / cellDistance;
     float distanceZ0 = abs(cellProbesPositions[0].z - pos.z) / cellDistance;
@@ -316,29 +299,10 @@ float3 GetTrilinearInterpolationFromNeighbourProbes(float3 pos, float distanceBe
 }
 
 // ==============================================================================================================
-// Calculate probes volume cascade index by doing a simple world point/aabb collision check
-// ==============================================================================================================
-int GetProbesVolumeCascade(float3 worldPos, float4 probesVolumeSizes[NUM_OF_PROBE_VOLUME_CASCADES], float3 camPos)
-{
-    for (int volumeIndex = 0; volumeIndex < NUM_OF_PROBE_VOLUME_CASCADES; volumeIndex++)
-    {
-        float3 aMax = probesVolumeSizes[volumeIndex].xyz + camPos.xyz;
-        float3 aMin = -probesVolumeSizes[volumeIndex].xyz + camPos.xyz;
-        
-        if ((worldPos.x <= aMax.x && worldPos.x >= aMin.x) &&
-			(worldPos.y <= aMax.y && worldPos.y >= aMin.y) &&
-			(worldPos.z <= aMax.z && worldPos.z >= aMin.z))
-            return volumeIndex;
-    }
-    
-    return -1;
-}
-
-// ==============================================================================================================
 // Calculate probes cell index (fast uniform-grid searching approach)
 // WARNING: can not do multiple indices per pos. (i.e., when pos. is on the edge of several cells)
 // ==============================================================================================================
-int GetLightProbesCellIndex(float3 pos, float4 probesCellsCount, float3 sceneProbeBounds, float distanceBetweenProbes, float probeSkips)
+int GetLightProbesCellIndex(float3 pos, float4 probesCellsCount, float3 sceneProbeBounds, float distanceBetweenProbes, float probeSkips = 1.0f)
 {
     int finalIndex = -1;
     float3 index = (pos - sceneProbeBounds.xyz) / (distanceBetweenProbes * probeSkips);
@@ -407,13 +371,54 @@ float3 DirectLightingPBR(float3 normalWS, float4 lightColor, float3 lightDir, fl
 // ==============================================================================================================
 // Indirect lighting (diffuse & specular) (PBR light probes: diffuse & specular)
 // ==============================================================================================================
+static const float ConvolveCosineLobeBandFactor[] =
+{
+    Pi,
+    2.0f * Pi / 3.0f, 2.0f * Pi / 3.0f, 2.0f * Pi / 3.0f,
+    Pi / 4.0f, Pi / 4.0f, Pi / 4.0f, Pi / 4.0f, Pi / 4.0f
+};
+struct SHCoefficients
+{
+    float3 l00, l1m1, l10, l11, l2m2, l2m1, l20, l21, l22;
+};
+float3 GetDiffuseIrradianceFromSphericalHarmonics(float3 nor, float3 shCoef[SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER])
+{
+    SHCoefficients c = shCoef;
+    const float c1 = 0.429043;
+    const float c2 = 0.511664;
+    const float c3 = 0.743125;
+    const float c4 = 0.886227;
+    const float c5 = 0.247708;
+    return (
+        c1 * c.l22 * (nor.x * nor.x - nor.y * nor.y) +
+        c3 * c.l20 * nor.z * nor.z +
+        c4 * c.l00 -
+        c5 * c.l20 +
+        2.0 * c1 * c.l2m2 * nor.x * nor.y +
+        2.0 * c1 * c.l21 * nor.x * nor.z +
+        2.0 * c1 * c.l2m1 * nor.y * nor.z +
+        2.0 * c2 * c.l11 * nor.x +
+        2.0 * c2 * c.l1m1 * nor.y +
+        2.0 * c2 * c.l10 * nor.z
+    );
+   //float3 irradiance = 
+   //    shCoef[0] * 0.282095f * ConvolveCosineLobeBandFactor[0] +
+   //    shCoef[1] * 0.488603f * normal.y * ConvolveCosineLobeBandFactor[1] +
+   //    shCoef[2] * 0.488603f * normal.z * ConvolveCosineLobeBandFactor[2] +
+   //    shCoef[3] * 0.488603f * normal.x * ConvolveCosineLobeBandFactor[3] +
+   //    shCoef[4] * 1.092548f * normal.x * normal.y * ConvolveCosineLobeBandFactor[4] +
+   //    shCoef[5] * 1.092548f * normal.y * normal.z * ConvolveCosineLobeBandFactor[5] +
+   //    shCoef[6] * 0.315392f * (3.0f * normal.z * normal.z - 1.0f) * ConvolveCosineLobeBandFactor[6] +
+   //    shCoef[7] * 1.092548f * normal.x * normal.z * ConvolveCosineLobeBandFactor[7] +
+   //    shCoef[8] * 0.546274f * (normal.x * normal.x - normal.y * normal.y) * ConvolveCosineLobeBandFactor[8];
+   //return irradiance;
+}
 
 // ====================================================================================================================
 // Get diffuse irradiance from probes:
-// 1) probes volume cascade is calculated for the position
-// 2) probes cell index is calculated for the cascade
-// 3) 8 probes (or less if out of the current cascade) are sampled from IrradianceDiffuseProbesTextureArrays
-// 4) Final probe samples are trilinearly interpolated and the final diffuse result is returned
+// 1) probes cell index is calculated for the cascade
+// 2) 8 probes colors (or less if out of the current cascade) are calculated from Spherical Harmonics array
+// 3) Final probe colors are trilinearly interpolated and the final diffuse result is returned
 // ====================================================================================================================
 float3 GetDiffuseIrradiance(float3 worldPos, float3 normal, float3 camPos, bool useGlobalDiffuseProbe, in SamplerState linearSampler,
     in LightProbeInfo probesInfo)
@@ -422,101 +427,60 @@ float3 GetDiffuseIrradiance(float3 worldPos, float3 normal, float3 camPos, bool 
     if (useGlobalDiffuseProbe)
         return probesInfo.globalIrradianceDiffuseProbeTexture.SampleLevel(linearSampler, normal, 0).rgb;
     
-    int volumeCascadeIndex = GetProbesVolumeCascade(worldPos, probesInfo.diffuseProbesVolumeSizes, camPos);
-    if (volumeCascadeIndex == -1)
-        return probesInfo.globalIrradianceDiffuseProbeTexture.SampleLevel(linearSampler, normal, 0).rgb;
-    
-    int diffuseProbesCellIndex = GetLightProbesCellIndex(worldPos, probesInfo.diffuseProbeCellsCount[volumeCascadeIndex], probesInfo.sceneLightProbeBounds.xyz,
-        probesInfo.distanceBetweenDiffuseProbes, probesInfo.volumeProbesIndexSkips[volumeCascadeIndex].r);
+    int diffuseProbesCellIndex = GetLightProbesCellIndex(worldPos, probesInfo.diffuseProbeCellsCount, probesInfo.sceneLightProbeBounds.xyz, probesInfo.distanceBetweenDiffuseProbes);
     if (diffuseProbesCellIndex != -1)
     {
         for (int i = 0; i < NUM_OF_PROBES_PER_CELL; i++)
         {
-            int currentIndex = -1;
-            cellProbesExistanceFlags[i] = false;
-            
-            // get cell's probe global index 
-            if (volumeCascadeIndex == 0)
-                currentIndex = probesInfo.DiffuseProbesCellsWithProbeIndices0[NUM_OF_PROBES_PER_CELL * diffuseProbesCellIndex + i];
-            else if (volumeCascadeIndex == 1)
-                currentIndex = probesInfo.DiffuseProbesCellsWithProbeIndices1[NUM_OF_PROBES_PER_CELL * diffuseProbesCellIndex + i];
-            
-            // get global probes-texture array index for current probe's global index 
-            int indexInTexArray = -1;
-            if (currentIndex != -1)
-            {
-                if (volumeCascadeIndex == 0)
-                    indexInTexArray = probesInfo.DiffuseProbesTextureArrayIndices0[currentIndex]; // -1 is culled and not in texture array
-                else if (volumeCascadeIndex == 1)
-                    indexInTexArray = probesInfo.DiffuseProbesTextureArrayIndices1[currentIndex]; // -1 is culled and not in texture array
-            }
-            // sample probe from global probes-texture array
-            cellProbesSamples[i] = float3(0.0, 0.0, 0.0);
-            if (indexInTexArray != -1)
-            {
-                cellProbesExistanceFlags[i] = true;
-                if (volumeCascadeIndex == 0)
-                    cellProbesSamples[i] = probesInfo.IrradianceDiffuseProbesTextureArray0.SampleLevel(linearSampler, float4(normal, indexInTexArray / 6), 0).rgb;
-                else if (volumeCascadeIndex == 1)
-                    cellProbesSamples[i] = probesInfo.IrradianceDiffuseProbesTextureArray1.SampleLevel(linearSampler, float4(normal, indexInTexArray / 6), 0).rgb;
-            }
+            cellProbesExistanceFlags[i] = true;
+            int currentIndex = probesInfo.DiffuseProbesCellsWithProbeIndicesArray[NUM_OF_PROBES_PER_CELL * diffuseProbesCellIndex + i];
 
-            cellProbesPositions[i] = probesInfo.DiffuseProbesPositions[currentIndex];
+            float3 SH[SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER];
+            for (int s = 0; s < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; s++)
+                SH[s] = probesInfo.DiffuseSphericalHarmonicsCoefficientsArray[currentIndex + s];
+        
+            cellProbesSamples[i] = GetDiffuseIrradianceFromSphericalHarmonics(normal, SH);
+            cellProbesPositions[i] = probesInfo.DiffuseProbesPositionsArray[currentIndex];
         }
         
-        finalSum = GetTrilinearInterpolationFromNeighbourProbes(worldPos, probesInfo.distanceBetweenDiffuseProbes, probesInfo.volumeProbesIndexSkips[volumeCascadeIndex].r);
+        finalSum = GetTrilinearInterpolationFromNeighbourProbes(worldPos, probesInfo.distanceBetweenDiffuseProbes);
     }
+    else
+        return probesInfo.globalIrradianceDiffuseProbeTexture.SampleLevel(linearSampler, normal, 0).rgb;
     return finalSum;
 }
 
 // ====================================================================================================================
 // Get specular irradiance from probes:
-// 1) probes volume cascade is calculated for the position
-// 2) probes cell index is calculated for the cascade
-// 3) 8 probes (or less if out of the current cascade) are processed and the closest is found
-// 4) Final probe with the closest distance to the position is sampled from 'IrradianceSpecularProbesTextureArray'
+// 1) probes cell index
+// 2) 8 probes are processed and the closest is found
+// 3) Final probe with the closest distance to the position is sampled from 'IrradianceSpecularProbesTextureArray'
 // ====================================================================================================================
 float3 GetSpecularIrradiance(float3 worldPos, float3 camPos, float3 reflectDir, int mipIndex, bool useGlobalSpecularProbe, in SamplerState linearSampler,
     in LightProbeInfo probesInfo)
 {
-    float3 finalSum = float3(0.0, 0.0, 0.0);
+    float3 finalSum = probesInfo.globalIrradianceSpecularProbeTexture.SampleLevel(linearSampler, reflectDir, mipIndex).rgb;
     if (useGlobalSpecularProbe)
-        return probesInfo.globalIrradianceSpecularProbeTexture.SampleLevel(linearSampler, reflectDir, mipIndex).rgb;
+        return finalSum;
     
-    int volumeCascadeIndex = GetProbesVolumeCascade(worldPos, probesInfo.specularProbesVolumeSizes, camPos);
-    if (volumeCascadeIndex == -1)
-        return probesInfo.globalIrradianceSpecularProbeTexture.SampleLevel(linearSampler, reflectDir, mipIndex).rgb;
-    
-    int specularProbesCellIndex = GetLightProbesCellIndex(worldPos, probesInfo.specularProbeCellsCount[volumeCascadeIndex], probesInfo.sceneLightProbeBounds.xyz,
-        probesInfo.distanceBetweenSpecularProbes, probesInfo.volumeProbesIndexSkips[volumeCascadeIndex].r);
-    if (specularProbesCellIndex != -1)
+    int specularProbesCellIndex = GetLightProbesCellIndex(worldPos, probesInfo.specularProbeCellsCount, probesInfo.sceneLightProbeBounds.xyz, probesInfo.distanceBetweenSpecularProbes);
+    if (specularProbesCellIndex >= 0 && specularProbesCellIndex < probesInfo.specularProbeCellsCount.w)
     {
         int closestProbeTexArrayIndex = -1;
         int closestProbeDistance = FLT_MAX;
         for (int i = 0; i < NUM_OF_PROBES_PER_CELL; i++)
         {
-            int currentIndex = -1;
-            
-            // get cell's probe global index 
-            if (volumeCascadeIndex == 0)
-                currentIndex = probesInfo.SpecularProbesCellsWithProbeIndices0[NUM_OF_PROBES_PER_CELL * specularProbesCellIndex + i];
-            else if (volumeCascadeIndex == 1)
-                currentIndex = probesInfo.SpecularProbesCellsWithProbeIndices1[NUM_OF_PROBES_PER_CELL * specularProbesCellIndex + i];
+            int currentIndex = probesInfo.SpecularProbesCellsWithProbeIndicesArray[NUM_OF_PROBES_PER_CELL * specularProbesCellIndex + i];
             
             // get global probes-texture array index for current probe's global index 
             int indexInTexArray = -1;
             if (currentIndex != -1)
-            {
-                if (volumeCascadeIndex == 0)
-                    indexInTexArray = probesInfo.SpecularProbesTextureArrayIndices0[currentIndex]; // -1 is culled and not in texture array
-                else if (volumeCascadeIndex == 1)
-                    indexInTexArray = probesInfo.SpecularProbesTextureArrayIndices1[currentIndex]; // -1 is culled and not in texture array
-            }
+                indexInTexArray = probesInfo.SpecularProbesTextureArrayIndices[currentIndex]; // -1 is culled and not in texture array
             
             // calculate the probe with the closest distance to the position
             if (indexInTexArray != -1)
             {
-                float curDistance = distance(worldPos, probesInfo.SpecularProbesPositions[currentIndex]);
+                float curDistance = distance(worldPos, probesInfo.SpecularProbesPositionsArray[currentIndex]);
                 if (curDistance < closestProbeDistance)
                 {
                     closestProbeDistance = curDistance;
@@ -526,12 +490,7 @@ float3 GetSpecularIrradiance(float3 worldPos, float3 camPos, float3 reflectDir, 
         }
         
         if (closestProbeTexArrayIndex != -1)
-        {
-            if (volumeCascadeIndex == 0)
-                finalSum = probesInfo.IrradianceSpecularProbesTextureArray0.SampleLevel(linearSampler, float4(reflectDir, closestProbeTexArrayIndex / 6), mipIndex).rgb;
-            else if (volumeCascadeIndex == 1)
-                finalSum = probesInfo.IrradianceSpecularProbesTextureArray1.SampleLevel(linearSampler, float4(reflectDir, closestProbeTexArrayIndex / 6), mipIndex).rgb;
-        }
+            finalSum = probesInfo.SpecularProbesTextureArray.SampleLevel(linearSampler, float4(reflectDir, closestProbeTexArrayIndex / 6), mipIndex).rgb;
     }
     return finalSum;
 }

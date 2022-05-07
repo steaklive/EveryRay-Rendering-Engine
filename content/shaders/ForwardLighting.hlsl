@@ -47,11 +47,8 @@ cbuffer ForwardLightingCBuffer : register(b0)
 
 cbuffer LightProbesCBuffer : register(b1)
 {
-    float4 DiffuseProbesCellsCount[NUM_OF_PROBE_VOLUME_CASCADES]; //x,y,z,total
-    float4 DiffuseProbesVolumeSizes[NUM_OF_PROBE_VOLUME_CASCADES];
-    float4 SpecularProbesCellsCount[NUM_OF_PROBE_VOLUME_CASCADES]; //x,y,z,total
-    float4 SpecularProbesVolumeSizes[NUM_OF_PROBE_VOLUME_CASCADES];
-    float4 VolumeProbesIndexSkips[NUM_OF_PROBE_VOLUME_CASCADES];
+    float4 DiffuseProbesCellsCount; //x,y,z,total
+    float4 SpecularProbesCellsCount; //x,y,z,total
     float4 SceneLightProbesBounds; //volume's extent of all scene's probes
     float DistanceBetweenDiffuseProbes;
     float DistanceBetweenSpecularProbes;
@@ -330,27 +327,20 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
     if (IBL && SkipIndirectProbeLighting <= 0.0f)
     {
         LightProbeInfo probesInfo;
-        probesInfo.globalIrradianceDiffuseProbeTexture = IrradianceDiffuseGlobalProbeTexture;
-        probesInfo.globalIrradianceSpecularProbeTexture = IrradianceSpecularGlobalProbeTexture;
-        probesInfo.IrradianceDiffuseProbesTextureArray0 = IrradianceDiffuseProbesTextureArray0;
-        probesInfo.IrradianceDiffuseProbesTextureArray1 = IrradianceDiffuseProbesTextureArray1;
-        probesInfo.IrradianceSpecularProbesTextureArray0 = IrradianceSpecularProbesTextureArray0;
-        probesInfo.IrradianceSpecularProbesTextureArray1 = IrradianceSpecularProbesTextureArray1;
-        probesInfo.DiffuseProbesCellsWithProbeIndices0 = DiffuseProbesCellsWithProbeIndices0;
-        probesInfo.DiffuseProbesCellsWithProbeIndices1 = DiffuseProbesCellsWithProbeIndices1;
-        probesInfo.DiffuseProbesTextureArrayIndices0 = DiffuseProbesTextureArrayIndices0;
-        probesInfo.DiffuseProbesTextureArrayIndices1 = DiffuseProbesTextureArrayIndices1;
-        probesInfo.DiffuseProbesPositions = DiffuseProbesPositions;
-        probesInfo.SpecularProbesCellsWithProbeIndices0 = SpecularProbesCellsWithProbeIndices0;
-        probesInfo.SpecularProbesCellsWithProbeIndices1 = SpecularProbesCellsWithProbeIndices1;
-        probesInfo.SpecularProbesTextureArrayIndices0 = SpecularProbesTextureArrayIndices0;
-        probesInfo.SpecularProbesTextureArrayIndices1 = SpecularProbesTextureArrayIndices1;
-        probesInfo.SpecularProbesPositions = SpecularProbesPositions;
-        probesInfo.diffuseProbesVolumeSizes = DiffuseProbesVolumeSizes;
+        probesInfo.globalIrradianceDiffuseProbeTexture = DiffuseGlobalProbeTexture;
+        probesInfo.globalIrradianceSpecularProbeTexture = SpecularGlobalProbeTexture;
+
+        probesInfo.DiffuseProbesCellsWithProbeIndicesArray = DiffuseProbesCellsWithProbeIndicesArray;
+        probesInfo.DiffuseSphericalHarmonicsCoefficientsArray = DiffuseSphericalHarmonicsCoefficientsArray;
+        probesInfo.DiffuseProbesPositionsArray = DiffuseProbesPositionsArray;
+
+        probesInfo.SpecularProbesTextureArray = SpecularProbesTextureArray;
+        probesInfo.SpecularProbesCellsWithProbeIndicesArray = SpecularProbesCellsWithProbeIndicesArray;
+        probesInfo.SpecularProbesTextureArrayIndices = SpecularProbesTextureArrayIndices;
+        probesInfo.SpecularProbesPositionsArray = SpecularProbesPositionsArray;
+        
         probesInfo.diffuseProbeCellsCount = DiffuseProbesCellsCount;
-        probesInfo.specularProbesVolumeSizes = SpecularProbesVolumeSizes;
         probesInfo.specularProbeCellsCount = SpecularProbesCellsCount;
-        probesInfo.volumeProbesIndexSkips = VolumeProbesIndexSkips;
         probesInfo.sceneLightProbeBounds = SceneLightProbesBounds;
         probesInfo.distanceBetweenDiffuseProbes = DistanceBetweenDiffuseProbes;
         probesInfo.distanceBetweenSpecularProbes = DistanceBetweenSpecularProbes;

@@ -84,23 +84,25 @@ namespace Library
 		}
 	}
 
-	void ER_LightProbe::CPUCullAgainstProbeBoundingVolume(int volumeIndex, const XMFLOAT3& aMin, const XMFLOAT3& aMax)
+	void ER_LightProbe::CPUCullAgainstProbeBoundingVolume(const XMFLOAT3& aMin, const XMFLOAT3& aMax)
 	{
-		mIsCulled[volumeIndex] =
+		mIsCulled =
 			(mPosition.x > aMax.x || mPosition.x < aMin.x) ||
 			(mPosition.y > aMax.y || mPosition.y < aMin.y) ||
 			(mPosition.z > aMax.z || mPosition.z < aMin.z);
 	}
 
-	void ER_LightProbe::StoreSphericalHarmonicsFromCubemap(Game& game)
+	void ER_LightProbe::StoreSphericalHarmonicsFromCubemap(Game& game, ER_GPUTexture* aTextureConvoluted)
 	{
+		assert(aTextureConvoluted);
+
 		auto context = game.Direct3DDeviceContext();
 		float rgbCoefficients[3][9] = { 
 			0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
 			0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
 			0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
 		};
-		if (FAILED(DirectX::SHProjectCubeMap(context, SPHERICAL_HARMONICS_ORDER, mCubemapTexture->GetTexture2D(), &rgbCoefficients[0][0], &rgbCoefficients[1][0], &rgbCoefficients[2][0])))
+		if (FAILED(DirectX::SHProjectCubeMap(context, SPHERICAL_HARMONICS_ORDER, aTextureConvoluted->GetTexture2D(), &rgbCoefficients[0][0], &rgbCoefficients[1][0], &rgbCoefficients[2][0])))
 		{
 			//TODO write to log
 			for (int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
@@ -132,6 +134,9 @@ namespace Library
 		ConvoluteProbe(game, quadRenderer, aTextureNonConvoluted, aTextureConvoluted);
 
 		context->RSSetViewports(1, &oldViewPort);
+
+		if (mProbeType == DIFFUSE_PROBE && mIndex != -1)
+			StoreSphericalHarmonicsFromCubemap(game, aTextureConvoluted);
 
 		SaveProbeOnDisk(game, levelPath, aTextureConvoluted);
 		mIsProbeLoadedFromDisk = true;
@@ -257,7 +262,6 @@ namespace Library
 
 		if (loadAsSphericalHarmonics)
 		{
-			//TODO read from file
 			std::wifstream shFile(probeName.c_str());
 			if (shFile.is_open())
 			{
@@ -271,7 +275,7 @@ namespace Library
 					in >> type;
 					if (type == L"r" || type == L"g" || type == L"b")
 					{
-						for (int i = 0; i <= SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
+						for (int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
 							in >> coefficients[channel][i];
 					}
 					else
@@ -345,24 +349,76 @@ namespace Library
 	// TODO: should be PC exclusive method
 	void ER_LightProbe::SaveProbeOnDisk(Game& game, const std::wstring& levelPath, ER_GPUTexture* aTextureConvoluted)
 	{
-		DirectX::ScratchImage tempImage;
-		HRESULT res = DirectX::CaptureTexture(game.Direct3DDevice(), game.Direct3DDeviceContext(), aTextureConvoluted->GetTexture2D(), tempImage);
-		if (FAILED(res))
-			throw GameException("Failed to capture a probe texture when saving!", res);
+		bool saveAsSphericalHarmonics = mProbeType == DIFFUSE_PROBE && mIndex != -1;
+		std::wstring probeName = GetConstructedProbeName(levelPath, saveAsSphericalHarmonics);
 
-		std::wstring fileName = GetConstructedProbeName(levelPath);
-
-		res = DirectX::SaveToDDSFile(tempImage.GetImages(), tempImage.GetImageCount(), tempImage.GetMetadata(), DDS_FLAGS_NONE, fileName.c_str());
-		if (FAILED(res))
+		if (saveAsSphericalHarmonics)
 		{
-			std::string str(fileName.begin(), fileName.end());
-			std::string msg = "Failed to save a probe texture: " + str;
-			throw GameException(msg.c_str());
-		}
+			std::wofstream shFile(probeName.c_str());
+			if (shFile.is_open())
+			{
+				std::string tempString = "";
+				shFile << L"r ";
+				for (int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
+				{
+					tempString = std::to_string(mSphericalHarmonicsRGB[i].x);
+					if (i == SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER - 1)
+						tempString += "\n";
+					else
+						tempString += " ";
+					shFile << Utility::ToWideString(tempString);
+				}
 
-		//loading the same probe from disk, since aTextureConvoluted is a temp texture and otherwise we need a GPU resource copy to mCubemapTexture (better than this, but I am just too lazy...)
-		if (!LoadProbeFromDisk(game, levelPath))
-			throw GameException("Could not load probe that was already generated :(");
+				shFile << L"g ";
+				for (int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
+				{
+					tempString = std::to_string(mSphericalHarmonicsRGB[i].y);
+					if (i == SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER - 1)
+						tempString += "\n";
+					else
+						tempString += " ";
+					shFile << Utility::ToWideString(tempString);
+				}
+
+				shFile << L"b ";
+				for (int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
+				{
+					tempString = std::to_string(mSphericalHarmonicsRGB[i].z);
+					if (i == SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER - 1)
+						tempString += "\n";
+					else
+						tempString += " ";
+					shFile << Utility::ToWideString(tempString);
+				}
+				shFile.close();
+			}
+			else
+			{
+				std::string str(probeName.begin(), probeName.end());
+				std::string msg = "Failed to create a probe SH file: " + str;
+				throw GameException(msg.c_str());
+			}
+
+		}
+		else
+		{
+			DirectX::ScratchImage tempImage;
+			HRESULT res = DirectX::CaptureTexture(game.Direct3DDevice(), game.Direct3DDeviceContext(), aTextureConvoluted->GetTexture2D(), tempImage);
+			if (FAILED(res))
+				throw GameException("Failed to capture a probe texture when saving!", res);
+
+			res = DirectX::SaveToDDSFile(tempImage.GetImages(), tempImage.GetImageCount(), tempImage.GetMetadata(), DDS_FLAGS_NONE, probeName.c_str());
+			if (FAILED(res))
+			{
+				std::string str(probeName.begin(), probeName.end());
+				std::string msg = "Failed to save a probe texture: " + str;
+				throw GameException(msg.c_str());
+			}
+
+			//loading the same probe from disk, since aTextureConvoluted is a temp texture and otherwise we need a GPU resource copy to mCubemapTexture (better than this, but I am just too lazy...)
+			if (!LoadProbeFromDisk(game, levelPath))
+				throw GameException("Could not load probe that was already generated :(");
+		}
 	}
 
 	std::wstring ER_LightProbe::GetConstructedProbeName(const std::wstring& levelPath, bool inSphericalHarmonics)

@@ -69,22 +69,19 @@ namespace Library
 		mSceneProbesMinBounds = scene->GetLightProbesVolumeMinBounds();
 		mSceneProbesMaxBounds = scene->GetLightProbesVolumeMaxBounds();
 
-		for (int volumeIndex = 0; volumeIndex < NUM_PROBE_VOLUME_CASCADES; volumeIndex++)
-		{
-			mDebugDiffuseProbeVolumeGizmo[volumeIndex] = new RenderableAABB(game, mMainCamera, XMFLOAT4(0.44f, 0.2f, 0.94f, 1.0f));
-			mDebugDiffuseProbeVolumeGizmo[volumeIndex]->Initialize();
-			mDebugDiffuseProbeVolumeGizmo[volumeIndex]->InitializeGeometry({
-				XMFLOAT3(-DiffuseProbesVolumeCascadeSizes[volumeIndex], -DiffuseProbesVolumeCascadeSizes[volumeIndex], -DiffuseProbesVolumeCascadeSizes[volumeIndex]),
-				XMFLOAT3(DiffuseProbesVolumeCascadeSizes[volumeIndex], DiffuseProbesVolumeCascadeSizes[volumeIndex], DiffuseProbesVolumeCascadeSizes[volumeIndex]) }, XMMatrixScaling(1, 1, 1));
-			mDebugDiffuseProbeVolumeGizmo[volumeIndex]->SetPosition(mMainCamera.Position());
+		mDebugDiffuseProbeVolumeGizmo = new RenderableAABB(game, mMainCamera, XMFLOAT4(0.44f, 0.2f, 0.94f, 1.0f));
+		mDebugDiffuseProbeVolumeGizmo->Initialize();
+		mDebugDiffuseProbeVolumeGizmo->InitializeGeometry({
+			XMFLOAT3(-DIFFUSE_PROBES_VOLUME_SIZE, -DIFFUSE_PROBES_VOLUME_SIZE, -DIFFUSE_PROBES_VOLUME_SIZE),
+			XMFLOAT3(DIFFUSE_PROBES_VOLUME_SIZE, DIFFUSE_PROBES_VOLUME_SIZE, DIFFUSE_PROBES_VOLUME_SIZE) }, XMMatrixScaling(1, 1, 1));
+		mDebugDiffuseProbeVolumeGizmo->SetPosition(mMainCamera.Position());
 
-			mDebugSpecularProbeVolumeGizmo[volumeIndex] = new RenderableAABB(game, mMainCamera, XMFLOAT4(0.44f, 0.2f, 0.94f, 1.0f));
-			mDebugSpecularProbeVolumeGizmo[volumeIndex]->Initialize();
-			mDebugSpecularProbeVolumeGizmo[volumeIndex]->InitializeGeometry({
-				XMFLOAT3(-SpecularProbesVolumeCascadeSizes[volumeIndex], -SpecularProbesVolumeCascadeSizes[volumeIndex], -SpecularProbesVolumeCascadeSizes[volumeIndex]),
-				XMFLOAT3(SpecularProbesVolumeCascadeSizes[volumeIndex], SpecularProbesVolumeCascadeSizes[volumeIndex], SpecularProbesVolumeCascadeSizes[volumeIndex]) }, XMMatrixScaling(1, 1, 1));
-			mDebugSpecularProbeVolumeGizmo[volumeIndex]->SetPosition(mMainCamera.Position());
-		}
+		mDebugSpecularProbeVolumeGizmo = new RenderableAABB(game, mMainCamera, XMFLOAT4(0.44f, 0.2f, 0.94f, 1.0f));
+		mDebugSpecularProbeVolumeGizmo->Initialize();
+		mDebugSpecularProbeVolumeGizmo->InitializeGeometry({
+			XMFLOAT3(-SPECULAR_PROBES_VOLUME_SIZE, -SPECULAR_PROBES_VOLUME_SIZE, -SPECULAR_PROBES_VOLUME_SIZE),
+			XMFLOAT3(SPECULAR_PROBES_VOLUME_SIZE, SPECULAR_PROBES_VOLUME_SIZE, SPECULAR_PROBES_VOLUME_SIZE) }, XMMatrixScaling(1, 1, 1));
+		mDebugSpecularProbeVolumeGizmo->SetPosition(mMainCamera.Position());
 	
 		mMaxProbesInVolumeCount = MAX_PROBES_IN_VOLUME_PER_AXIS * MAX_PROBES_IN_VOLUME_PER_AXIS * MAX_PROBES_IN_VOLUME_PER_AXIS;
 
@@ -116,21 +113,15 @@ namespace Library
 
 		DeleteObject(mDiffuseProbesPositionsGPUBuffer);
 		DeleteObject(mSpecularProbesPositionsGPUBuffer);
-		for (int i = 0; i < NUM_PROBE_VOLUME_CASCADES; i++)
-		{
-			DeleteObject(mDebugDiffuseProbeVolumeGizmo[i]);
-			DeleteObject(mDebugSpecularProbeVolumeGizmo[i]);
 
-			DeleteObject(mDiffuseCubemapArrayRT[i]);
-			DeleteObject(mDiffuseProbesCellsIndicesGPUBuffer[i]);
-			DeleteObjects(mDiffuseProbesTexArrayIndicesCPUBuffer[i]);
-			DeleteObject(mDiffuseProbesTexArrayIndicesGPUBuffer[i]);
+		DeleteObject(mDebugDiffuseProbeVolumeGizmo);
+		DeleteObject(mDiffuseProbesCellsIndicesGPUBuffer);
 
-			DeleteObject(mSpecularCubemapArrayRT[i]);
-			DeleteObject(mSpecularProbesCellsIndicesGPUBuffer[i]);
-			DeleteObjects(mSpecularProbesTexArrayIndicesCPUBuffer[i]);
-			DeleteObject(mSpecularProbesTexArrayIndicesGPUBuffer[i]);
-		}
+		DeleteObject(mDebugSpecularProbeVolumeGizmo);
+		DeleteObject(mSpecularCubemapArrayRT);
+		DeleteObject(mSpecularProbesCellsIndicesGPUBuffer);
+		DeleteObjects(mSpecularProbesTexArrayIndicesCPUBuffer);
+		DeleteObject(mSpecularProbesTexArrayIndicesGPUBuffer);
 	}
 
 	void ER_LightProbesManager::SetupGlobalDiffuseProbe(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
@@ -169,40 +160,33 @@ namespace Library
 		mDiffuseProbes.reserve(mDiffuseProbesCountTotal);
 
 		// cells setup
-		for (int volumeIndex = 0; volumeIndex < NUM_PROBE_VOLUME_CASCADES; volumeIndex++)
+		mDiffuseProbesCellsCountX = (mDiffuseProbesCountX - 1);
+		mDiffuseProbesCellsCountY = (mDiffuseProbesCountY - 1);
+		mDiffuseProbesCellsCountZ = (mDiffuseProbesCountZ - 1);
+		mDiffuseProbesCellsCountTotal = mDiffuseProbesCellsCountX * mDiffuseProbesCellsCountY * mDiffuseProbesCellsCountZ;
+		mDiffuseProbesCells.resize(mDiffuseProbesCellsCountTotal, {});
+
+		assert(mDiffuseProbesCellsCountTotal);
+
+		float probeCellPositionOffset = static_cast<float>(DISTANCE_BETWEEN_DIFFUSE_PROBES) / 2.0f;
+		mDiffuseProbesCellBounds = {
+			XMFLOAT3(-probeCellPositionOffset, -probeCellPositionOffset, -probeCellPositionOffset),
+			XMFLOAT3(probeCellPositionOffset, probeCellPositionOffset, probeCellPositionOffset) };
 		{
-			assert((mDiffuseProbesCountX - 1) % VolumeProbeIndexSkips[volumeIndex] == 0);
-			assert((mDiffuseProbesCountY - 1) % VolumeProbeIndexSkips[volumeIndex] == 0);
-			assert((mDiffuseProbesCountZ - 1) % VolumeProbeIndexSkips[volumeIndex] == 0);
-
-			mDiffuseProbesCellsCountX[volumeIndex] = (mDiffuseProbesCountX - 1) / VolumeProbeIndexSkips[volumeIndex];
-			mDiffuseProbesCellsCountY[volumeIndex] = (mDiffuseProbesCountY - 1) / VolumeProbeIndexSkips[volumeIndex];
-			mDiffuseProbesCellsCountZ[volumeIndex] = (mDiffuseProbesCountZ - 1) / VolumeProbeIndexSkips[volumeIndex];
-			mDiffuseProbesCellsCountTotal[volumeIndex] = mDiffuseProbesCellsCountX[volumeIndex] * mDiffuseProbesCellsCountY[volumeIndex] * mDiffuseProbesCellsCountZ[volumeIndex];
-			mDiffuseProbesCells[volumeIndex].resize(mDiffuseProbesCellsCountTotal[volumeIndex], {});
-
-			assert(mDiffuseProbesCellsCountTotal[volumeIndex]);
-
-			float probeCellPositionOffset = static_cast<float>(DISTANCE_BETWEEN_DIFFUSE_PROBES * VolumeProbeIndexSkips[volumeIndex]) / 2.0f;
-			mDiffuseProbesCellBounds[volumeIndex] = {
-				XMFLOAT3(-probeCellPositionOffset, -probeCellPositionOffset, -probeCellPositionOffset),
-				XMFLOAT3(probeCellPositionOffset, probeCellPositionOffset, probeCellPositionOffset) };
+			for (int cellsY = 0; cellsY < mDiffuseProbesCellsCountY; cellsY++)
 			{
-				for (int cellsY = 0; cellsY < mDiffuseProbesCellsCountY[volumeIndex]; cellsY++)
+				for (int cellsX = 0; cellsX < mDiffuseProbesCellsCountX; cellsX++)
 				{
-					for (int cellsX = 0; cellsX < mDiffuseProbesCellsCountX[volumeIndex]; cellsX++)
+					for (int cellsZ = 0; cellsZ < mDiffuseProbesCellsCountZ; cellsZ++)
 					{
-						for (int cellsZ = 0; cellsZ < mDiffuseProbesCellsCountZ[volumeIndex]; cellsZ++)
-						{
-							XMFLOAT3 pos = XMFLOAT3(
-								minBounds.x + probeCellPositionOffset + cellsX * DISTANCE_BETWEEN_DIFFUSE_PROBES * VolumeProbeIndexSkips[volumeIndex],
-								minBounds.y + probeCellPositionOffset + cellsY * DISTANCE_BETWEEN_DIFFUSE_PROBES * VolumeProbeIndexSkips[volumeIndex],
-								minBounds.z + probeCellPositionOffset + cellsZ * DISTANCE_BETWEEN_DIFFUSE_PROBES * VolumeProbeIndexSkips[volumeIndex]);
+						XMFLOAT3 pos = XMFLOAT3(
+							minBounds.x + probeCellPositionOffset + cellsX * DISTANCE_BETWEEN_DIFFUSE_PROBES,
+							minBounds.y + probeCellPositionOffset + cellsY * DISTANCE_BETWEEN_DIFFUSE_PROBES,
+							minBounds.z + probeCellPositionOffset + cellsZ * DISTANCE_BETWEEN_DIFFUSE_PROBES);
 
-							int index = cellsY * (mDiffuseProbesCellsCountX[volumeIndex] * mDiffuseProbesCellsCountZ[volumeIndex]) + cellsX * mDiffuseProbesCellsCountZ[volumeIndex] + cellsZ;
-							mDiffuseProbesCells[volumeIndex][index].index = index;
-							mDiffuseProbesCells[volumeIndex][index].position = pos;
-						}
+						int index = cellsY * (mDiffuseProbesCellsCountX * mDiffuseProbesCellsCountZ) + cellsX * mDiffuseProbesCellsCountZ + cellsZ;
+						mDiffuseProbesCells[index].index = index;
+						mDiffuseProbesCells[index].position = pos;
 					}
 				}
 			}
@@ -225,13 +209,6 @@ namespace Library
 					mDiffuseProbes[index]->SetIndex(index);
 					mDiffuseProbes[index]->SetPosition(pos);
 					mDiffuseProbes[index]->SetShaderInfoForConvolution(mConvolutionPS);
-					for (int volumeIndex = 0; volumeIndex < NUM_PROBE_VOLUME_CASCADES; volumeIndex++)
-					{
-						if (probesY % VolumeProbeIndexSkips[volumeIndex] == 0 &&
-							probesX % VolumeProbeIndexSkips[volumeIndex] == 0 &&
-							probesZ % VolumeProbeIndexSkips[volumeIndex] == 0)
-							mDiffuseProbes[index]->SetIsTaggedByVolume(volumeIndex);
-					}
 					AddProbeToCells(mDiffuseProbes[index], DIFFUSE_PROBE, minBounds, maxBounds);
 				}
 			}
@@ -245,69 +222,46 @@ namespace Library
 			D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
 		DeleteObjects(diffuseProbesPositionsCPUBuffer);
 
-		// SH GPU buffer
-		XMFLOAT3* shCPUBuffer = new XMFLOAT3[mDiffuseProbesCountTotal * SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER];
-		for (int probeIndex = 0; probeIndex < mDiffuseProbesCountTotal; probeIndex++)
-		{
-			for	(int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
-				shCPUBuffer[probeIndex + i] = mDiffuseProbes[probeIndex]->GetSphericalHarmonics()[i];
-		}
-		mDiffuseProbesSphericalHarmonicsGPUBuffer = new ER_GPUBuffer(game.Direct3DDevice(), shCPUBuffer, mDiffuseProbesCountTotal * SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER, sizeof(XMFLOAT3),
-			D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
-		DeleteObjects(shCPUBuffer);
-
 		// probe cell's indices GPU buffer, tex. array indices GPU/CPU buffers
-		for (int volumeIndex = 0; volumeIndex < NUM_PROBE_VOLUME_CASCADES; volumeIndex++)
+
+		int* diffuseProbeCellsIndicesCPUBuffer = new int[mDiffuseProbesCellsCountTotal * PROBE_COUNT_PER_CELL];
+		for (int probeIndex = 0; probeIndex < mDiffuseProbesCellsCountTotal; probeIndex++)
 		{
-			int* diffuseProbeCellsIndicesCPUBuffer = new int[mDiffuseProbesCellsCountTotal[volumeIndex] * PROBE_COUNT_PER_CELL];
-			for (int probeIndex = 0; probeIndex < mDiffuseProbesCellsCountTotal[volumeIndex]; probeIndex++)
+			for (int indices = 0; indices < PROBE_COUNT_PER_CELL; indices++)
 			{
-				for (int indices = 0; indices < PROBE_COUNT_PER_CELL; indices++)
-				{
-					if (indices >= mDiffuseProbesCells[volumeIndex][probeIndex].lightProbeIndices.size())
-						diffuseProbeCellsIndicesCPUBuffer[probeIndex * PROBE_COUNT_PER_CELL + indices] = -1;
-					else
-						diffuseProbeCellsIndicesCPUBuffer[probeIndex * PROBE_COUNT_PER_CELL + indices] = mDiffuseProbesCells[volumeIndex][probeIndex].lightProbeIndices[indices];
-				}
+				if (indices >= mDiffuseProbesCells[probeIndex].lightProbeIndices.size())
+					diffuseProbeCellsIndicesCPUBuffer[probeIndex * PROBE_COUNT_PER_CELL + indices] = -1;
+				else
+					diffuseProbeCellsIndicesCPUBuffer[probeIndex * PROBE_COUNT_PER_CELL + indices] = mDiffuseProbesCells[probeIndex].lightProbeIndices[indices];
 			}
-			mDiffuseProbesCellsIndicesGPUBuffer[volumeIndex] = new ER_GPUBuffer(game.Direct3DDevice(), diffuseProbeCellsIndicesCPUBuffer,
-				mDiffuseProbesCellsCountTotal[volumeIndex] * PROBE_COUNT_PER_CELL, sizeof(int),
-				D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
-			DeleteObjects(diffuseProbeCellsIndicesCPUBuffer);
-			
-			mDiffuseProbesTexArrayIndicesCPUBuffer[volumeIndex] = new int[mDiffuseProbesCountTotal];
-			mDiffuseProbesTexArrayIndicesGPUBuffer[volumeIndex] = new ER_GPUBuffer(game.Direct3DDevice(), mDiffuseProbesTexArrayIndicesCPUBuffer[volumeIndex], mDiffuseProbesCountTotal, sizeof(int),
-				D3D11_USAGE_DYNAMIC, D3D11_BIND_SHADER_RESOURCE, D3D11_CPU_ACCESS_WRITE, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
-
-			std::string name = "Debug diffuse lightprobes " + std::to_string(volumeIndex) + " volume";
-			auto result = scene->objects.insert(
-				std::pair<std::string, ER_RenderingObject*>(name, new ER_RenderingObject(name, scene->objects.size(), game, camera,
-					std::unique_ptr<Model>(new Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true))
-			);
-
-			if (!result.second)
-				throw GameException("Could not add a diffuse probe global object into scene");
-
-			MaterialShaderEntries shaderEntries;
-			shaderEntries.vertexEntry += "_instancing";
-
-			mDiffuseProbeRenderingObject[volumeIndex] = result.first->second;
-			mDiffuseProbeRenderingObject[volumeIndex]->LoadMaterial(new ER_DebugLightProbeMaterial(game, shaderEntries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, true), MaterialHelper::debugLightProbeMaterialName);
-			mDiffuseProbeRenderingObject[volumeIndex]->LoadRenderBuffers();
-			mDiffuseProbeRenderingObject[volumeIndex]->LoadInstanceBuffers();
-			mDiffuseProbeRenderingObject[volumeIndex]->ResetInstanceData(mDiffuseProbesCountTotal, true);
-			for (int i = 0; i < mDiffuseProbesCountTotal; i++) {
-				XMMATRIX worldT = XMMatrixTranslation(mDiffuseProbes[i]->GetPosition().x, mDiffuseProbes[i]->GetPosition().y, mDiffuseProbes[i]->GetPosition().z);
-				mDiffuseProbeRenderingObject[volumeIndex]->AddInstanceData(worldT);
-			}
-			mDiffuseProbeRenderingObject[volumeIndex]->UpdateInstanceBuffer(mDiffuseProbeRenderingObject[volumeIndex]->GetInstancesData());
 		}
+		mDiffuseProbesCellsIndicesGPUBuffer = new ER_GPUBuffer(game.Direct3DDevice(), diffuseProbeCellsIndicesCPUBuffer,
+			mDiffuseProbesCellsCountTotal * PROBE_COUNT_PER_CELL, sizeof(int),
+			D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
+		DeleteObjects(diffuseProbeCellsIndicesCPUBuffer);
+		
+		std::string name = "Debug diffuse lightprobes ";
+		auto result = scene->objects.insert(
+			std::pair<std::string, ER_RenderingObject*>(name, new ER_RenderingObject(name, scene->objects.size(), game, camera,
+				std::unique_ptr<Model>(new Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true))
+		);
 
-		for (int i = 0; i < NUM_PROBE_VOLUME_CASCADES; i++)
-		{
-			mDiffuseCubemapArrayRT[i] = new ER_GPUTexture(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
-				D3D11_BIND_SHADER_RESOURCE, 1, -1, CUBEMAP_FACES_COUNT, true, mMaxProbesInVolumeCount);
+		if (!result.second)
+			throw GameException("Could not add a diffuse probe global object into scene");
+
+		MaterialShaderEntries shaderEntries;
+		shaderEntries.vertexEntry += "_instancing";
+
+		mDiffuseProbeRenderingObject = result.first->second;
+		mDiffuseProbeRenderingObject->LoadMaterial(new ER_DebugLightProbeMaterial(game, shaderEntries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, true), MaterialHelper::debugLightProbeMaterialName);
+		mDiffuseProbeRenderingObject->LoadRenderBuffers();
+		mDiffuseProbeRenderingObject->LoadInstanceBuffers();
+		mDiffuseProbeRenderingObject->ResetInstanceData(mDiffuseProbesCountTotal, true);
+		for (int i = 0; i < mDiffuseProbesCountTotal; i++) {
+			XMMATRIX worldT = XMMatrixTranslation(mDiffuseProbes[i]->GetPosition().x, mDiffuseProbes[i]->GetPosition().y, mDiffuseProbes[i]->GetPosition().z);
+			mDiffuseProbeRenderingObject->AddInstanceData(worldT);
 		}
+		mDiffuseProbeRenderingObject->UpdateInstanceBuffer(mDiffuseProbeRenderingObject->GetInstancesData());
 	}
 
 	void ER_LightProbesManager::SetupSpecularProbes(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
@@ -331,41 +285,32 @@ namespace Library
 		mSpecularProbes.reserve(mSpecularProbesCountTotal);
 
 		// cells setup
-		for (int volumeIndex = 0; volumeIndex < NUM_PROBE_VOLUME_CASCADES; volumeIndex++)
+		mSpecularProbesCellsCountX = (mSpecularProbesCountX - 1);
+		mSpecularProbesCellsCountY = (mSpecularProbesCountY - 1);
+		mSpecularProbesCellsCountZ = (mSpecularProbesCountZ - 1);
+		mSpecularProbesCellsCountTotal = mSpecularProbesCellsCountX * mSpecularProbesCellsCountY * mSpecularProbesCellsCountZ;
+		mSpecularProbesCells.resize(mSpecularProbesCellsCountTotal, {});
+		assert(mSpecularProbesCellsCountTotal);
+
+		float probeCellPositionOffset = static_cast<float>(DISTANCE_BETWEEN_SPECULAR_PROBES) / 2.0f;
+		mSpecularProbesCellBounds = {
+			XMFLOAT3(-probeCellPositionOffset, -probeCellPositionOffset, -probeCellPositionOffset),
+			XMFLOAT3(probeCellPositionOffset, probeCellPositionOffset, probeCellPositionOffset) };
+		
+		for (int cellsY = 0; cellsY < mSpecularProbesCellsCountY; cellsY++)
 		{
-			assert((mSpecularProbesCountX - 1) % VolumeProbeIndexSkips[volumeIndex] == 0);
-			assert((mSpecularProbesCountY - 1) % VolumeProbeIndexSkips[volumeIndex] == 0);
-			assert((mSpecularProbesCountZ - 1) % VolumeProbeIndexSkips[volumeIndex] == 0);
-
-			mSpecularProbesCellsCountX[volumeIndex] = (mSpecularProbesCountX - 1) / VolumeProbeIndexSkips[volumeIndex];
-			mSpecularProbesCellsCountY[volumeIndex] = (mSpecularProbesCountY - 1) / VolumeProbeIndexSkips[volumeIndex];
-			mSpecularProbesCellsCountZ[volumeIndex] = (mSpecularProbesCountZ - 1) / VolumeProbeIndexSkips[volumeIndex];
-			mSpecularProbesCellsCountTotal[volumeIndex] = mSpecularProbesCellsCountX[volumeIndex] * mSpecularProbesCellsCountY[volumeIndex] * mSpecularProbesCellsCountZ[volumeIndex];
-			mSpecularProbesCells[volumeIndex].resize(mSpecularProbesCellsCountTotal[volumeIndex], {});
-
-			assert(mSpecularProbesCellsCountTotal[volumeIndex]);
-
-			float probeCellPositionOffset = static_cast<float>(DISTANCE_BETWEEN_SPECULAR_PROBES * VolumeProbeIndexSkips[volumeIndex]) / 2.0f;
-			mSpecularProbesCellBounds[volumeIndex] = {
-				XMFLOAT3(-probeCellPositionOffset, -probeCellPositionOffset, -probeCellPositionOffset),
-				XMFLOAT3(probeCellPositionOffset, probeCellPositionOffset, probeCellPositionOffset) };
+			for (int cellsX = 0; cellsX < mSpecularProbesCellsCountX; cellsX++)
 			{
-				for (int cellsY = 0; cellsY < mSpecularProbesCellsCountY[volumeIndex]; cellsY++)
+				for (int cellsZ = 0; cellsZ < mSpecularProbesCellsCountZ; cellsZ++)
 				{
-					for (int cellsX = 0; cellsX < mSpecularProbesCellsCountX[volumeIndex]; cellsX++)
-					{
-						for (int cellsZ = 0; cellsZ < mSpecularProbesCellsCountZ[volumeIndex]; cellsZ++)
-						{
-							XMFLOAT3 pos = XMFLOAT3(
-								minBounds.x + probeCellPositionOffset + cellsX * DISTANCE_BETWEEN_SPECULAR_PROBES * VolumeProbeIndexSkips[volumeIndex],
-								minBounds.y + probeCellPositionOffset + cellsY * DISTANCE_BETWEEN_SPECULAR_PROBES * VolumeProbeIndexSkips[volumeIndex],
-								minBounds.z + probeCellPositionOffset + cellsZ * DISTANCE_BETWEEN_SPECULAR_PROBES * VolumeProbeIndexSkips[volumeIndex]);
+					XMFLOAT3 pos = XMFLOAT3(
+						minBounds.x + probeCellPositionOffset + cellsX * DISTANCE_BETWEEN_SPECULAR_PROBES,
+						minBounds.y + probeCellPositionOffset + cellsY * DISTANCE_BETWEEN_SPECULAR_PROBES,
+						minBounds.z + probeCellPositionOffset + cellsZ * DISTANCE_BETWEEN_SPECULAR_PROBES);
 
-							int index = cellsY * (mSpecularProbesCellsCountX[volumeIndex] * mSpecularProbesCellsCountZ[volumeIndex]) + cellsX * mSpecularProbesCellsCountZ[volumeIndex] + cellsZ;
-							mSpecularProbesCells[volumeIndex][index].index = index;
-							mSpecularProbesCells[volumeIndex][index].position = pos;
-						}
-					}
+					int index = cellsY * (mSpecularProbesCellsCountX * mSpecularProbesCellsCountZ) + cellsX * mSpecularProbesCellsCountZ + cellsZ;
+					mSpecularProbesCells[index].index = index;
+					mSpecularProbesCells[index].position = pos;
 				}
 			}
 		}
@@ -387,13 +332,6 @@ namespace Library
 					mSpecularProbes[index]->SetIndex(index);
 					mSpecularProbes[index]->SetPosition(pos);
 					mSpecularProbes[index]->SetShaderInfoForConvolution(mConvolutionPS);
-					for (int volumeIndex = 0; volumeIndex < NUM_PROBE_VOLUME_CASCADES; volumeIndex++)
-					{
-						if (probesY % VolumeProbeIndexSkips[volumeIndex] == 0 &&
-							probesX % VolumeProbeIndexSkips[volumeIndex] == 0 &&
-							probesZ % VolumeProbeIndexSkips[volumeIndex] == 0)
-							mSpecularProbes[index]->SetIsTaggedByVolume(volumeIndex);
-					}
 					AddProbeToCells(mSpecularProbes[index], SPECULAR_PROBE, minBounds, maxBounds);
 				}
 			}
@@ -408,57 +346,51 @@ namespace Library
 		DeleteObjects(specularProbesPositionsCPUBuffer);
 
 		// probe cell's indices GPU buffer, tex. array indices GPU/CPU buffers
-		for (int volumeIndex = 0; volumeIndex < NUM_PROBE_VOLUME_CASCADES; volumeIndex++)
+		int* specularProbeCellsIndicesCPUBuffer = new int[mSpecularProbesCellsCountTotal * PROBE_COUNT_PER_CELL];
+		for (int probeIndex = 0; probeIndex < mSpecularProbesCellsCountTotal; probeIndex++)
 		{
-			int* specularProbeCellsIndicesCPUBuffer = new int[mSpecularProbesCellsCountTotal[volumeIndex] * PROBE_COUNT_PER_CELL];
-			for (int probeIndex = 0; probeIndex < mSpecularProbesCellsCountTotal[volumeIndex]; probeIndex++)
+			for (int indices = 0; indices < PROBE_COUNT_PER_CELL; indices++)
 			{
-				for (int indices = 0; indices < PROBE_COUNT_PER_CELL; indices++)
-				{
-					if (indices >= mSpecularProbesCells[volumeIndex][probeIndex].lightProbeIndices.size())
-						specularProbeCellsIndicesCPUBuffer[probeIndex * PROBE_COUNT_PER_CELL + indices] = -1;
-					else
-						specularProbeCellsIndicesCPUBuffer[probeIndex * PROBE_COUNT_PER_CELL + indices] = mSpecularProbesCells[volumeIndex][probeIndex].lightProbeIndices[indices];
-				}
+				if (indices >= mSpecularProbesCells[probeIndex].lightProbeIndices.size())
+					specularProbeCellsIndicesCPUBuffer[probeIndex * PROBE_COUNT_PER_CELL + indices] = -1;
+				else
+					specularProbeCellsIndicesCPUBuffer[probeIndex * PROBE_COUNT_PER_CELL + indices] = mSpecularProbesCells[probeIndex].lightProbeIndices[indices];
 			}
-			mSpecularProbesCellsIndicesGPUBuffer[volumeIndex] = new ER_GPUBuffer(game.Direct3DDevice(), specularProbeCellsIndicesCPUBuffer,
-				mSpecularProbesCellsCountTotal[volumeIndex] * PROBE_COUNT_PER_CELL, sizeof(int),
-				D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
-			DeleteObjects(specularProbeCellsIndicesCPUBuffer);
-
-			mSpecularProbesTexArrayIndicesCPUBuffer[volumeIndex] = new int[mSpecularProbesCountTotal];
-			mSpecularProbesTexArrayIndicesGPUBuffer[volumeIndex] = new ER_GPUBuffer(game.Direct3DDevice(), mSpecularProbesTexArrayIndicesCPUBuffer[volumeIndex], mSpecularProbesCountTotal, sizeof(int),
-				D3D11_USAGE_DYNAMIC, D3D11_BIND_SHADER_RESOURCE, D3D11_CPU_ACCESS_WRITE, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
-
-			std::string name = "Debug specular lightprobes " + std::to_string(volumeIndex) + " volume";
-			auto result = scene->objects.insert(
-				std::pair<std::string, ER_RenderingObject*>(name, new ER_RenderingObject(name, scene->objects.size(), game, camera,
-					std::unique_ptr<Model>(new Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true))
-			);
-
-			if (!result.second)
-				throw GameException("Could not add a specular probe global object into scene");
-			
-			MaterialShaderEntries shaderEntries;
-			shaderEntries.vertexEntry += "_instancing";
-
-			mSpecularProbeRenderingObject[volumeIndex] = result.first->second;
-			mSpecularProbeRenderingObject[volumeIndex]->LoadMaterial(new ER_DebugLightProbeMaterial(game, shaderEntries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, true), MaterialHelper::debugLightProbeMaterialName);
-			mSpecularProbeRenderingObject[volumeIndex]->LoadRenderBuffers();
-			mSpecularProbeRenderingObject[volumeIndex]->LoadInstanceBuffers();
-			mSpecularProbeRenderingObject[volumeIndex]->ResetInstanceData(mSpecularProbesCountTotal, true);
-			for (int i = 0; i < mSpecularProbesCountTotal; i++) {
-				XMMATRIX worldT = XMMatrixTranslation(mSpecularProbes[i]->GetPosition().x, mSpecularProbes[i]->GetPosition().y, mSpecularProbes[i]->GetPosition().z);
-				mSpecularProbeRenderingObject[volumeIndex]->AddInstanceData(worldT);
-			}
-			mSpecularProbeRenderingObject[volumeIndex]->UpdateInstanceBuffer(mSpecularProbeRenderingObject[volumeIndex]->GetInstancesData());
 		}
+		mSpecularProbesCellsIndicesGPUBuffer = new ER_GPUBuffer(game.Direct3DDevice(), specularProbeCellsIndicesCPUBuffer,
+			mSpecularProbesCellsCountTotal * PROBE_COUNT_PER_CELL, sizeof(int),
+			D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
+		DeleteObjects(specularProbeCellsIndicesCPUBuffer);
 
-		for (int i = 0; i < NUM_PROBE_VOLUME_CASCADES; i++)
-		{
-			mSpecularCubemapArrayRT[i] = new ER_GPUTexture(game.Direct3DDevice(), SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
-				D3D11_BIND_SHADER_RESOURCE, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true, mMaxProbesInVolumeCount);
+		mSpecularProbesTexArrayIndicesCPUBuffer = new int[mSpecularProbesCountTotal];
+		mSpecularProbesTexArrayIndicesGPUBuffer = new ER_GPUBuffer(game.Direct3DDevice(), mSpecularProbesTexArrayIndicesCPUBuffer, mSpecularProbesCountTotal, sizeof(int),
+			D3D11_USAGE_DYNAMIC, D3D11_BIND_SHADER_RESOURCE, D3D11_CPU_ACCESS_WRITE, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
+
+		std::string name = "Debug specular lightprobes ";
+		auto result = scene->objects.insert(
+			std::pair<std::string, ER_RenderingObject*>(name, new ER_RenderingObject(name, scene->objects.size(), game, camera,
+				std::unique_ptr<Model>(new Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true))
+		);
+
+		if (!result.second)
+			throw GameException("Could not add a specular probe global object into scene");
+		
+		MaterialShaderEntries shaderEntries;
+		shaderEntries.vertexEntry += "_instancing";
+
+		mSpecularProbeRenderingObject = result.first->second;
+		mSpecularProbeRenderingObject->LoadMaterial(new ER_DebugLightProbeMaterial(game, shaderEntries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, true), MaterialHelper::debugLightProbeMaterialName);
+		mSpecularProbeRenderingObject->LoadRenderBuffers();
+		mSpecularProbeRenderingObject->LoadInstanceBuffers();
+		mSpecularProbeRenderingObject->ResetInstanceData(mSpecularProbesCountTotal, true);
+		for (int i = 0; i < mSpecularProbesCountTotal; i++) {
+			XMMATRIX worldT = XMMatrixTranslation(mSpecularProbes[i]->GetPosition().x, mSpecularProbes[i]->GetPosition().y, mSpecularProbes[i]->GetPosition().z);
+			mSpecularProbeRenderingObject->AddInstanceData(worldT);
 		}
+		mSpecularProbeRenderingObject->UpdateInstanceBuffer(mSpecularProbeRenderingObject->GetInstancesData());
+
+		mSpecularCubemapArrayRT = new ER_GPUTexture(game.Direct3DDevice(), SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
+			D3D11_BIND_SHADER_RESOURCE, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true, mMaxProbesInVolumeCount);
 	}
 
 	void ER_LightProbesManager::AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds)
@@ -466,91 +398,85 @@ namespace Library
 		int index = aProbe->GetIndex();
 		if (aType == DIFFUSE_PROBE)
 		{
-			for (int volumeIndex = 0; volumeIndex < NUM_PROBE_VOLUME_CASCADES; volumeIndex++)
+			// brute force O(cells * probes)
+			for (auto& cell : mDiffuseProbesCells)
 			{
-				// brute force O(cells * probes)
-				for (auto& cell : mDiffuseProbesCells[volumeIndex])
-				{
-					if (IsProbeInCell(aProbe, cell, mDiffuseProbesCellBounds[volumeIndex]) && aProbe->IsTaggedByVolume(volumeIndex))
-						cell.lightProbeIndices.push_back(index);
+				if (IsProbeInCell(aProbe, cell, mDiffuseProbesCellBounds))
+					cell.lightProbeIndices.push_back(index);
 
-					if (cell.lightProbeIndices.size() > PROBE_COUNT_PER_CELL)
-						throw GameException("Too many diffuse probes per cell!");
-				}
+				if (cell.lightProbeIndices.size() > PROBE_COUNT_PER_CELL)
+					throw GameException("Too many diffuse probes per cell!");
 			}
 		}
 		else
 		{
-			for (int volumeIndex = 0; volumeIndex < NUM_PROBE_VOLUME_CASCADES; volumeIndex++)
+			// brute force O(cells * probes)
+			for (auto& cell : mSpecularProbesCells)
 			{
-				// brute force O(cells * probes)
-				for (auto& cell : mSpecularProbesCells[volumeIndex])
-				{
-					if (IsProbeInCell(aProbe, cell, mSpecularProbesCellBounds[volumeIndex]) && aProbe->IsTaggedByVolume(volumeIndex))
-						cell.lightProbeIndices.push_back(index);
+				if (IsProbeInCell(aProbe, cell, mSpecularProbesCellBounds))
+					cell.lightProbeIndices.push_back(index);
 
-					if (cell.lightProbeIndices.size() > PROBE_COUNT_PER_CELL)
-						throw GameException("Too many specular probes per cell!");
-				}
+				if (cell.lightProbeIndices.size() > PROBE_COUNT_PER_CELL)
+					throw GameException("Too many specular probes per cell!");
 			}
 		}
 	}
 
 	// Fast uniform-grid searching approach (WARNING: can not do multiple indices per pos. (i.e., when pos. is on the edge of several cells))
-	int ER_LightProbesManager::GetCellIndex(const XMFLOAT3& pos, ER_ProbeType aType, int volumeIndex)
+	int ER_LightProbesManager::GetCellIndex(const XMFLOAT3& pos, ER_ProbeType aType)
 	{
 		int finalIndex = -1;
 
 		if (aType == DIFFUSE_PROBE)
 		{
-			int xIndex = (pos.x - mSceneProbesMinBounds.x) / (DISTANCE_BETWEEN_DIFFUSE_PROBES * VolumeProbeIndexSkips[volumeIndex]);
-			int yIndex = (pos.y - mSceneProbesMinBounds.y) / (DISTANCE_BETWEEN_DIFFUSE_PROBES * VolumeProbeIndexSkips[volumeIndex]);
-			int zIndex = (pos.z - mSceneProbesMinBounds.z) / (DISTANCE_BETWEEN_DIFFUSE_PROBES * VolumeProbeIndexSkips[volumeIndex]);
+			int xIndex = (pos.x - mSceneProbesMinBounds.x) / (DISTANCE_BETWEEN_DIFFUSE_PROBES);
+			int yIndex = (pos.y - mSceneProbesMinBounds.y) / (DISTANCE_BETWEEN_DIFFUSE_PROBES);
+			int zIndex = (pos.z - mSceneProbesMinBounds.z) / (DISTANCE_BETWEEN_DIFFUSE_PROBES);
 
-			if (xIndex < 0 || xIndex > mDiffuseProbesCellsCountX[volumeIndex])
+			if (xIndex < 0 || xIndex > mDiffuseProbesCellsCountX)
 				return -1;
-			if (yIndex < 0 || yIndex > mDiffuseProbesCellsCountY[volumeIndex])
+			if (yIndex < 0 || yIndex > mDiffuseProbesCellsCountY)
 				return -1;
-			if (zIndex < 0 || zIndex > mDiffuseProbesCellsCountZ[volumeIndex])
+			if (zIndex < 0 || zIndex > mDiffuseProbesCellsCountZ)
 				return -1;
 
 			//little hacky way to prevent from out-of-bounds
-			if (xIndex == mDiffuseProbesCellsCountX[volumeIndex])
-				xIndex = mDiffuseProbesCellsCountX[volumeIndex] - 1;
-			if (yIndex == mDiffuseProbesCellsCountY[volumeIndex])
-				yIndex = mDiffuseProbesCellsCountY[volumeIndex] - 1;
-			if (zIndex == mDiffuseProbesCellsCountZ[volumeIndex])
-				zIndex = mDiffuseProbesCellsCountZ[volumeIndex] - 1;
+			if (xIndex == mDiffuseProbesCellsCountX)
+				xIndex = mDiffuseProbesCellsCountX - 1;
+			if (yIndex == mDiffuseProbesCellsCountY)
+				yIndex = mDiffuseProbesCellsCountY - 1;
+			if (zIndex == mDiffuseProbesCellsCountZ)
+				zIndex = mDiffuseProbesCellsCountZ - 1;
 
-			finalIndex = yIndex * (mDiffuseProbesCellsCountX[volumeIndex] * mDiffuseProbesCellsCountZ[volumeIndex]) + xIndex * mDiffuseProbesCellsCountZ[volumeIndex] + zIndex;
+			finalIndex = yIndex * (mDiffuseProbesCellsCountX * mDiffuseProbesCellsCountZ) + xIndex * mDiffuseProbesCellsCountZ + zIndex;
 
-			if (finalIndex >= mDiffuseProbesCellsCountTotal[volumeIndex])
+			if (finalIndex >= mDiffuseProbesCellsCountTotal)
 				return -1;
 		}
 		else
 		{
-			int xIndex = (pos.x - mSceneProbesMinBounds.x) / (DISTANCE_BETWEEN_SPECULAR_PROBES * VolumeProbeIndexSkips[volumeIndex]);
-			int yIndex = (pos.y - mSceneProbesMinBounds.y) / (DISTANCE_BETWEEN_SPECULAR_PROBES * VolumeProbeIndexSkips[volumeIndex]);
-			int zIndex = (pos.z - mSceneProbesMinBounds.z) / (DISTANCE_BETWEEN_SPECULAR_PROBES * VolumeProbeIndexSkips[volumeIndex]);
+			int xIndex = (pos.x - mSceneProbesMinBounds.x) / (DISTANCE_BETWEEN_SPECULAR_PROBES);
+			int yIndex = (pos.y - mSceneProbesMinBounds.y) / (DISTANCE_BETWEEN_SPECULAR_PROBES);
+			int zIndex = (pos.z - mSceneProbesMinBounds.z) / (DISTANCE_BETWEEN_SPECULAR_PROBES);
 
-			if (xIndex < 0 || xIndex > mSpecularProbesCellsCountX[volumeIndex])
+			if (xIndex < 0 || xIndex > mSpecularProbesCellsCountX)
 				return -1;
-			if (yIndex < 0 || yIndex > mSpecularProbesCellsCountY[volumeIndex])
+			if (yIndex < 0 || yIndex > mSpecularProbesCellsCountY)
 				return -1;
-			if (zIndex < 0 || zIndex > mSpecularProbesCellsCountZ[volumeIndex])
+			if (zIndex < 0 || zIndex > mSpecularProbesCellsCountZ)
 				return -1;
 
 			//little hacky way to prevent from out-of-bounds
-			if (xIndex == mSpecularProbesCellsCountX[volumeIndex])
-				xIndex = mSpecularProbesCellsCountX[volumeIndex] - 1;
-			if (yIndex == mSpecularProbesCellsCountY[volumeIndex])
-				yIndex = mSpecularProbesCellsCountY[volumeIndex] - 1;
-			if (zIndex == mSpecularProbesCellsCountZ[volumeIndex])
-				zIndex = mSpecularProbesCellsCountZ[volumeIndex] - 1;
+			if (xIndex == mSpecularProbesCellsCountX)
+				xIndex = mSpecularProbesCellsCountX - 1;
+			if (yIndex == mSpecularProbesCellsCountY)
+				yIndex = mSpecularProbesCellsCountY - 1;
+			if (zIndex == mSpecularProbesCellsCountZ)
+				zIndex = mSpecularProbesCellsCountZ - 1;
 
-			finalIndex = yIndex * (mSpecularProbesCellsCountX[volumeIndex] * mSpecularProbesCellsCountZ[volumeIndex]) + xIndex * mSpecularProbesCellsCountZ[volumeIndex] + zIndex;
+			finalIndex = yIndex * (mSpecularProbesCellsCountX * mSpecularProbesCellsCountZ) + xIndex * mSpecularProbesCellsCountZ + zIndex;
 
-			if (finalIndex >= mSpecularProbesCellsCountTotal[volumeIndex])
+			if (finalIndex >= mSpecularProbesCellsCountTotal)
 				return -1;
 
 		}
@@ -558,17 +484,12 @@ namespace Library
 		return finalIndex;
 	}
 
-	const DirectX::XMFLOAT4& ER_LightProbesManager::GetProbesCellsCount(ER_ProbeType aType, int volumeIndex)
+	const DirectX::XMFLOAT4& ER_LightProbesManager::GetProbesCellsCount(ER_ProbeType aType)
 	{
 		if (aType == DIFFUSE_PROBE)
-			return XMFLOAT4(mDiffuseProbesCellsCountX[volumeIndex], mDiffuseProbesCellsCountY[volumeIndex], mDiffuseProbesCellsCountZ[volumeIndex], mDiffuseProbesCellsCountTotal[volumeIndex]);
+			return XMFLOAT4(mDiffuseProbesCellsCountX, mDiffuseProbesCellsCountY, mDiffuseProbesCellsCountZ, mDiffuseProbesCellsCountTotal);
 		else
-			return XMFLOAT4(mSpecularProbesCellsCountX[volumeIndex], mSpecularProbesCellsCountY[volumeIndex], mSpecularProbesCellsCountZ[volumeIndex], mSpecularProbesCellsCountTotal[volumeIndex]);
-	}
-
-	float ER_LightProbesManager::GetProbesIndexSkip(int volumeIndex)
-	{
-		return static_cast<float>(VolumeProbeIndexSkips[volumeIndex]);
+			return XMFLOAT4(mSpecularProbesCellsCountX, mSpecularProbesCellsCountY, mSpecularProbesCellsCountZ, mSpecularProbesCellsCountTotal);
 	}
 
 	bool ER_LightProbesManager::IsProbeInCell(ER_LightProbe* aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds)
@@ -647,11 +568,20 @@ namespace Library
 			{
 				if (!probe->IsLoadedFromDisk())
 					probe->Compute(game, mTempDiffuseCubemapFacesRT, mTempDiffuseCubemapFacesConvolutedRT, mTempDiffuseCubemapDepthBuffers, diffuseProbesPath, aObjects, mQuadRenderer, skybox);
-
-				probe->StoreSphericalHarmonicsFromCubemap(game);
 			}
 			
 			mDiffuseProbesReady = true;
+
+			// SH GPU buffer
+			XMFLOAT3* shCPUBuffer = new XMFLOAT3[mDiffuseProbesCountTotal * SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER];
+			for (int probeIndex = 0; probeIndex < mDiffuseProbesCountTotal; probeIndex++)
+			{
+				for (int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
+					shCPUBuffer[probeIndex + i] = mDiffuseProbes[probeIndex]->GetSphericalHarmonics()[i];
+			}
+			mDiffuseProbesSphericalHarmonicsGPUBuffer = new ER_GPUBuffer(game.Direct3DDevice(), shCPUBuffer, mDiffuseProbesCountTotal * SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER, sizeof(XMFLOAT3),
+				D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
+			DeleteObjects(shCPUBuffer);
 		}
 
 		if (!mSpecularProbesReady)
@@ -684,9 +614,9 @@ namespace Library
 		}
 	}
 
-	void ER_LightProbesManager::DrawDebugProbes(ER_ProbeType aType, int volumeIndex)
+	void ER_LightProbesManager::DrawDebugProbes(ER_ProbeType aType)
 	{
-		ER_RenderingObject* probeObject = aType == DIFFUSE_PROBE ? mDiffuseProbeRenderingObject[volumeIndex] : mSpecularProbeRenderingObject[volumeIndex];
+		ER_RenderingObject* probeObject = aType == DIFFUSE_PROBE ? mDiffuseProbeRenderingObject : mSpecularProbeRenderingObject;
 		bool ready = aType == DIFFUSE_PROBE ? mDiffuseProbesReady : mSpecularProbesReady;
 		
 		ER_MaterialSystems materialSystems;
@@ -697,126 +627,106 @@ namespace Library
 			auto materialInfo = probeObject->GetMaterials().find(MaterialHelper::debugLightProbeMaterialName);
 			if (materialInfo != probeObject->GetMaterials().end())
 			{
-				static_cast<ER_DebugLightProbeMaterial*>(materialInfo->second)->PrepareForRendering(materialSystems, probeObject, 0, static_cast<int>(aType), volumeIndex);
+				static_cast<ER_DebugLightProbeMaterial*>(materialInfo->second)->PrepareForRendering(materialSystems, probeObject, 0, static_cast<int>(aType));
 				probeObject->Draw(MaterialHelper::debugLightProbeMaterialName);
 			}
 		}
 
 	}
 
-	void ER_LightProbesManager::DrawDebugProbesVolumeGizmo(ER_ProbeType aType, int volumeIndex)
+	void ER_LightProbesManager::DrawDebugProbesVolumeGizmo(ER_ProbeType aType)
 	{
-		if (aType == DIFFUSE_PROBE && mDebugDiffuseProbeVolumeGizmo[volumeIndex])
-			mDebugDiffuseProbeVolumeGizmo[volumeIndex]->Draw();
-		else if (aType == SPECULAR_PROBE && mDebugSpecularProbeVolumeGizmo[volumeIndex])
-			mDebugSpecularProbeVolumeGizmo[volumeIndex]->Draw();
+		if (aType == DIFFUSE_PROBE && mDebugDiffuseProbeVolumeGizmo)
+			mDebugDiffuseProbeVolumeGizmo->Draw();
+		else if (aType == SPECULAR_PROBE && mDebugSpecularProbeVolumeGizmo)
+			mDebugSpecularProbeVolumeGizmo->Draw();
 	}
 
 	void ER_LightProbesManager::UpdateProbesByType(Game& game, ER_ProbeType aType)
 	{
 		std::vector<ER_LightProbe*>& probes = (aType == DIFFUSE_PROBE) ? mDiffuseProbes : mSpecularProbes;
-		auto minBounds = (aType == DIFFUSE_PROBE) ? mCurrentDiffuseVolumesMinBounds : mCurrentSpecularVolumesMinBounds;
-		auto maxBounds = (aType == DIFFUSE_PROBE) ? mCurrentDiffuseVolumesMaxBounds : mCurrentSpecularVolumesMaxBounds;
 
-		for (int volumeIndex = 0; volumeIndex < NUM_PROBE_VOLUME_CASCADES; volumeIndex++)
+		ER_RenderingObject* probeRenderingObject = (aType == DIFFUSE_PROBE) ? mDiffuseProbeRenderingObject : mSpecularProbeRenderingObject;
+		if (aType == DIFFUSE_PROBE)
 		{
-			ER_RenderingObject* probeRenderingObject = (aType == DIFFUSE_PROBE) ? mDiffuseProbeRenderingObject[volumeIndex] : mSpecularProbeRenderingObject[volumeIndex];
-			if (aType == DIFFUSE_PROBE)
-			{
-				if (!mDiffuseProbesReady)
-					return;
+			if (!mDiffuseProbesReady)
+				return;
+		}
+		else
+		{
+			if (!mSpecularProbesReady)
+				return;
 
-				mNonCulledDiffuseProbesCount[volumeIndex] = 0;
-				mNonCulledDiffuseProbesIndices[volumeIndex].clear();
-			}
-			else
-			{
-				if (!mSpecularProbesReady)
-					return;
+			mNonCulledSpecularProbesCount = 0;
+			mNonCulledSpecularProbesIndices.clear();
+		}
 
-				mNonCulledSpecularProbesCount[volumeIndex] = 0;
-				mNonCulledSpecularProbesIndices[volumeIndex].clear();
-			}
+		if (aType == SPECULAR_PROBE)
+		{
+			XMFLOAT3 minBounds = XMFLOAT3(
+				-SPECULAR_PROBES_VOLUME_SIZE + mMainCamera.Position().x,
+				-SPECULAR_PROBES_VOLUME_SIZE + mMainCamera.Position().y,
+				-SPECULAR_PROBES_VOLUME_SIZE + mMainCamera.Position().z);
+			XMFLOAT3 maxBounds = XMFLOAT3(
+				SPECULAR_PROBES_VOLUME_SIZE + mMainCamera.Position().x,
+				SPECULAR_PROBES_VOLUME_SIZE + mMainCamera.Position().y,
+				SPECULAR_PROBES_VOLUME_SIZE + mMainCamera.Position().z);
 
 			for (auto& lightProbe : probes)
-				lightProbe->CPUCullAgainstProbeBoundingVolume(volumeIndex, minBounds[volumeIndex], maxBounds[volumeIndex]);
+				lightProbe->CPUCullAgainstProbeBoundingVolume(minBounds, maxBounds);
+		}
 
-			if (probeRenderingObject)
+		if (probeRenderingObject)
+		{
+			auto& oldInstancedData = probeRenderingObject->GetInstancesData();
+			assert(oldInstancedData.size() == probes.size());
+
+			for (int i = 0; i < oldInstancedData.size(); i++)
 			{
-				auto& oldInstancedData = probeRenderingObject->GetInstancesData();
-				assert(oldInstancedData.size() == probes.size());
-
-				for (int i = 0; i < oldInstancedData.size(); i++)
+				bool isCulled = probes[i]->IsCulled();
+				//writing culling flag to [4][4] of world instanced matrix
+				oldInstancedData[i].World._44 = isCulled ? 1.0f : 0.0f;
+				//writing cubemap index to [0][0] of world instanced matrix (since we don't need scale)
+				oldInstancedData[i].World._11 = -1.0f;
+				if (!isCulled)
 				{
-					bool isCulled = probes[i]->IsCulled(volumeIndex) || !probes[i]->IsTaggedByVolume(volumeIndex);
-					//writing culling flag to [4][4] of world instanced matrix
-					oldInstancedData[i].World._44 = isCulled ? 1.0f : 0.0f;
-					//writing cubemap index to [0][0] of world instanced matrix (since we don't need scale)
-					oldInstancedData[i].World._11 = -1.0f;
-					if (!isCulled)
+					if (aType == DIFFUSE_PROBE)
+						oldInstancedData[i].World._11 = static_cast<float>(i);
+					else
 					{
-						if (aType == DIFFUSE_PROBE)
-						{
-							oldInstancedData[i].World._11 = static_cast<float>(mNonCulledDiffuseProbesCount[volumeIndex]);
-							mNonCulledDiffuseProbesCount[volumeIndex]++;
-							mNonCulledDiffuseProbesIndices[volumeIndex].push_back(i);
-						}
-						else
-						{
-							oldInstancedData[i].World._11 = static_cast<float>(mNonCulledSpecularProbesCount[volumeIndex]);
-							mNonCulledSpecularProbesCount[volumeIndex]++;
-							mNonCulledSpecularProbesIndices[volumeIndex].push_back(i);
-						}
+						oldInstancedData[i].World._11 = static_cast<float>(mNonCulledSpecularProbesCount);
+						mNonCulledSpecularProbesCount++;
+						mNonCulledSpecularProbesIndices.push_back(i);
 					}
 				}
-
-				if (volumeIndex == 0)
-					probeRenderingObject->UpdateInstanceBuffer(oldInstancedData);
 			}
 
-			auto context = game.Direct3DDeviceContext();
-			if (aType == DIFFUSE_PROBE)
+			probeRenderingObject->UpdateInstanceBuffer(oldInstancedData);
+		}
+
+		auto context = game.Direct3DDeviceContext();
+		if (aType == SPECULAR_PROBE)
+		{
+			for (int i = 0; i < mSpecularProbesCountTotal; i++)
+				mSpecularProbesTexArrayIndicesCPUBuffer[i] = -1;
+
+			for (int i = 0; i < mMaxProbesInVolumeCount; i++)
 			{
-				for (int i = 0; i < mDiffuseProbesCountTotal; i++)
-					mDiffuseProbesTexArrayIndicesCPUBuffer[volumeIndex][i] = -1;
-
-				for (int i = 0; i < mMaxProbesInVolumeCount; i++)
+				if (i < mNonCulledSpecularProbesIndices.size() && i < probes.size())
 				{
-					if (i < mNonCulledDiffuseProbesIndices[volumeIndex].size() && i < probes.size())
+					int probeIndex = mNonCulledSpecularProbesIndices[i];
+					for (int cubeI = 0; cubeI < CUBEMAP_FACES_COUNT; cubeI++)
 					{
-						int probeIndex = mNonCulledDiffuseProbesIndices[volumeIndex][i];
-						for (int cubeI = 0; cubeI < CUBEMAP_FACES_COUNT; cubeI++)
-							context->CopySubresourceRegion(mDiffuseCubemapArrayRT[volumeIndex]->GetTexture2D(), D3D11CalcSubresource(0, cubeI + CUBEMAP_FACES_COUNT * i, 1), 0, 0, 0,
-								probes[probeIndex]->GetCubemapTexture2D(), D3D11CalcSubresource(0, cubeI, 1), NULL);
-
-						mDiffuseProbesTexArrayIndicesCPUBuffer[volumeIndex][probeIndex] = CUBEMAP_FACES_COUNT * i;
-					}
-				}
-				mDiffuseProbesTexArrayIndicesGPUBuffer[volumeIndex]->Update(context, mDiffuseProbesTexArrayIndicesCPUBuffer[volumeIndex], sizeof(mDiffuseProbesTexArrayIndicesCPUBuffer[volumeIndex][0]) * mDiffuseProbesCountTotal, D3D11_MAP_WRITE_DISCARD);
-			}
-			else
-			{
-				for (int i = 0; i < mSpecularProbesCountTotal; i++)
-					mSpecularProbesTexArrayIndicesCPUBuffer[volumeIndex][i] = -1;
-
-				for (int i = 0; i < mMaxProbesInVolumeCount; i++)
-				{
-					if (i < mNonCulledSpecularProbesIndices[volumeIndex].size() && i < probes.size())
-					{
-						int probeIndex = mNonCulledSpecularProbesIndices[volumeIndex][i];
-						for (int cubeI = 0; cubeI < CUBEMAP_FACES_COUNT; cubeI++)
+						for (int mip = 0; mip < SPECULAR_PROBE_MIP_COUNT; mip++)
 						{
-							for (int mip = 0; mip < SPECULAR_PROBE_MIP_COUNT; mip++)
-							{
-								context->CopySubresourceRegion(mSpecularCubemapArrayRT[volumeIndex]->GetTexture2D(), D3D11CalcSubresource(mip, cubeI + CUBEMAP_FACES_COUNT * i, SPECULAR_PROBE_MIP_COUNT), 0, 0, 0,
-									probes[probeIndex]->GetCubemapTexture2D(), D3D11CalcSubresource(mip, cubeI, SPECULAR_PROBE_MIP_COUNT), NULL);
-							}
+							context->CopySubresourceRegion(mSpecularCubemapArrayRT->GetTexture2D(), D3D11CalcSubresource(mip, cubeI + CUBEMAP_FACES_COUNT * i, SPECULAR_PROBE_MIP_COUNT), 0, 0, 0,
+								probes[probeIndex]->GetCubemapTexture2D(), D3D11CalcSubresource(mip, cubeI, SPECULAR_PROBE_MIP_COUNT), NULL);
 						}
-						mSpecularProbesTexArrayIndicesCPUBuffer[volumeIndex][probeIndex] = CUBEMAP_FACES_COUNT * i;
 					}
+					mSpecularProbesTexArrayIndicesCPUBuffer[probeIndex] = CUBEMAP_FACES_COUNT * i;
 				}
-				mSpecularProbesTexArrayIndicesGPUBuffer[volumeIndex]->Update(context, mSpecularProbesTexArrayIndicesCPUBuffer[volumeIndex], sizeof(mSpecularProbesTexArrayIndicesCPUBuffer[volumeIndex][0]) * mSpecularProbesCountTotal, D3D11_MAP_WRITE_DISCARD);
 			}
+			mSpecularProbesTexArrayIndicesGPUBuffer->Update(context, mSpecularProbesTexArrayIndicesCPUBuffer, sizeof(mSpecularProbesTexArrayIndicesCPUBuffer[0]) * mSpecularProbesCountTotal, D3D11_MAP_WRITE_DISCARD);
 		}
 	}
 
@@ -825,33 +735,12 @@ namespace Library
 		//int difProbeCellIndexCamera = GetCellIndex(mMainCamera.Position(), DIFFUSE_PROBE);
 		assert(mMaxProbesInVolumeCount > 0);
 		
-		for (int volumeIndex = 0; volumeIndex < NUM_PROBE_VOLUME_CASCADES; volumeIndex++)
-		{
-			mDebugDiffuseProbeVolumeGizmo[volumeIndex]->SetPosition(mMainCamera.Position());
-			mDebugDiffuseProbeVolumeGizmo[volumeIndex]->Update();	
-			mDebugSpecularProbeVolumeGizmo[volumeIndex]->SetPosition(mMainCamera.Position());
-			mDebugSpecularProbeVolumeGizmo[volumeIndex]->Update();
+		mDebugDiffuseProbeVolumeGizmo->SetPosition(mMainCamera.Position());
+		mDebugDiffuseProbeVolumeGizmo->Update();	
 
-			mCurrentDiffuseVolumesMaxBounds[volumeIndex] = XMFLOAT3(
-				DiffuseProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().x,
-				DiffuseProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().y,
-				DiffuseProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().z);
+		mDebugSpecularProbeVolumeGizmo->SetPosition(mMainCamera.Position());
+		mDebugSpecularProbeVolumeGizmo->Update();
 
-			mCurrentDiffuseVolumesMinBounds[volumeIndex] = XMFLOAT3(
-				-DiffuseProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().x,
-				-DiffuseProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().y,
-				-DiffuseProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().z);
-
-			mCurrentSpecularVolumesMaxBounds[volumeIndex] = XMFLOAT3(
-				SpecularProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().x,
-				SpecularProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().y,
-				SpecularProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().z);
-
-			mCurrentSpecularVolumesMinBounds[volumeIndex] = XMFLOAT3(
-				-SpecularProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().x,
-				-SpecularProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().y,
-				-SpecularProbesVolumeCascadeSizes[volumeIndex] + mMainCamera.Position().z);
-		}
 		UpdateProbesByType(game, DIFFUSE_PROBE);
 		UpdateProbesByType(game, SPECULAR_PROBE);
 	}

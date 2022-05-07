@@ -36,13 +36,11 @@ namespace Library
 		void SetIndex(int index) { mIndex = index; }
 		int GetIndex() { return mIndex; }
 
-		void CPUCullAgainstProbeBoundingVolume(int volumeIndex, const XMFLOAT3& aMin, const XMFLOAT3& aMax);
-		void StoreSphericalHarmonicsFromCubemap(Game& game);
-		bool IsCulled(int volumeIndex) { return mIsCulled[volumeIndex]; }
-		bool IsTaggedByVolume(int volumeIndex) { return mIsTaggedByVolume[volumeIndex]; }
-		void SetIsTaggedByVolume(int volumeIndex) { mIsTaggedByVolume[volumeIndex] = true; }
+		void CPUCullAgainstProbeBoundingVolume(const XMFLOAT3& aMin, const XMFLOAT3& aMax);
+		bool IsCulled() { return mIsCulled; }
 		bool IsLoadedFromDisk() { return mIsProbeLoadedFromDisk; }
 	private:
+		void StoreSphericalHarmonicsFromCubemap(Game& game, ER_GPUTexture* aTextureConvoluted);
 		void DrawGeometryToProbe(Game& game, ER_GPUTexture* aTextureNonConvoluted, DepthTarget** aDepthBuffers, const LightProbeRenderingObjectsInfo& objectsToRender, ER_Skybox* skybox);
 		void ConvoluteProbe(Game& game, ER_QuadRenderer* quadRenderer, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted);
 		void SaveProbeOnDisk(Game& game, const std::wstring& levelPath, ER_GPUTexture* aTextureConvoluted);
@@ -68,7 +66,6 @@ namespace Library
 		int mIndex = 0;
 		bool mIsProbeLoadedFromDisk = false;
 		bool mIsComputed = false;
-		bool mIsCulled[NUM_PROBE_VOLUME_CASCADES] = { false, false };
-		bool mIsTaggedByVolume[NUM_PROBE_VOLUME_CASCADES] = { false, false };
+		bool mIsCulled = false;
 	};
 }

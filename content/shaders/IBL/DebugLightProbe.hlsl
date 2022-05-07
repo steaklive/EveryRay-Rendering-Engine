@@ -6,15 +6,17 @@
 //
 // Written by Gen Afanasev for 'EveryRay Rendering Engine', 2017-2022
 // ================================================================================================
+#include "..\\Lighting.hlsli"
 
 cbuffer DebugLightProbeCBuffer : register(b0)
 {
     float4x4 ViewProjection;
     float4x4 World;
     float4 CameraPosition;
-    bool DiscardCulledProbe;
+    float2 DiscardCulled_IsDiffuse;
 }
-TextureCubeArray<float4> CubemapTexture : register(t0);
+TextureCubeArray<float4> CubemapTexture : register(t0); //only for specular (diffuse use SH)
+StructuredBuffer<float3> SphericalHarmonicsCoefficientsArray : register(t1); //linear array of all diffuse probes 2nd order coefficients (9)
 
 SamplerState LinearSampler : register(s0);
 
@@ -89,12 +91,21 @@ float4 PSMain(VS_OUTPUT vsOutput) : SV_Target0
    
     if (vsOutput.CullingFlag > 0.0f)
     {
-        if (DiscardCulledProbe)
+        if (DiscardCulled_IsDiffuse.r > 0.0f)
             discard;
         else
             return float4(0.5f, 0.5f, 0.5f, 1.0f);
     }
-    return float4(CubemapTexture.Sample(LinearSampler, float4(reflectDir, vsOutput.CubemapIndex)).rgb, 1.0f);
+    if (DiscardCulled_IsDiffuse.g > 0.0)
+    {
+        float3 SH[SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER];
+        for (int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
+            SH[i] = SphericalHarmonicsCoefficientsArray[vsOutput.CubemapIndex + i];
+        
+        return float4(GetDiffuseIrradianceFromSphericalHarmonics(vsOutput.Normal, SH) / Pi, 1.0f);
+    }
+    else
+        return float4(CubemapTexture.Sample(LinearSampler, float4(reflectDir, vsOutput.CubemapIndex)).rgb, 1.0f);
 }
 
 float3 PSMain_recompute(VS_OUTPUT vsOutput) : SV_Target0

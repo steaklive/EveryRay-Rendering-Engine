@@ -12,7 +12,7 @@ namespace Library
 			XMMATRIX ViewProjection;
 			XMMATRIX World;
 			XMFLOAT4 CameraPosition;
-			bool DiscardCulledProbe;
+			XMFLOAT2 DiscardCulled_IsDiffuse;
 		};
 	}
 	class ER_DebugLightProbeMaterial : public ER_Material
@@ -21,7 +21,7 @@ namespace Library
 		ER_DebugLightProbeMaterial(Game& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced = false);
 		~ER_DebugLightProbeMaterial();
 
-		void PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, int aProbeType, int volumeIndex);
+		void PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, int aProbeType);
 		virtual void CreateVertexBuffer(Mesh& mesh, ID3D11Buffer** vertexBuffer) override;
 		virtual int VertexSize() override;
 
