@@ -11,7 +11,9 @@ https://youtu.be/_htQNxesr9U
 - Deferred + Forward Rendering
 - Local illumination w/ Physically Based Rendering
 - Global illumination w/:
-- - Static: Image Based Lighting (via light probes: diffuse/specular)
+- - Static: Image Based Lighting from light probes:
+- - - diffuse (2nd order spherical harmonics)
+- - - specular (cubemaps)
 - - Dynamic: Cascaded Voxel Cone Tracing (AO, diffuse, specular)
 - Cascaded Shadow Mapping
 - Parallax-Occlusion Mapping w/ soft self-shadowing
