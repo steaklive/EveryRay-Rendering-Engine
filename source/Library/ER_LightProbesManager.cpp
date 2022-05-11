@@ -429,9 +429,9 @@ namespace Library
 
 		if (aType == DIFFUSE_PROBE)
 		{
-			int xIndex = (pos.x - mSceneProbesMinBounds.x) / (DISTANCE_BETWEEN_DIFFUSE_PROBES);
-			int yIndex = (pos.y - mSceneProbesMinBounds.y) / (DISTANCE_BETWEEN_DIFFUSE_PROBES);
-			int zIndex = (pos.z - mSceneProbesMinBounds.z) / (DISTANCE_BETWEEN_DIFFUSE_PROBES);
+			int xIndex = floor((pos.x - mSceneProbesMinBounds.x) / static_cast<float>(DISTANCE_BETWEEN_DIFFUSE_PROBES));
+			int yIndex = floor((pos.y - mSceneProbesMinBounds.y) / static_cast<float>(DISTANCE_BETWEEN_DIFFUSE_PROBES));
+			int zIndex = floor((pos.z - mSceneProbesMinBounds.z) / static_cast<float>(DISTANCE_BETWEEN_DIFFUSE_PROBES));
 
 			if (xIndex < 0 || xIndex > mDiffuseProbesCellsCountX)
 				return -1;
@@ -455,9 +455,9 @@ namespace Library
 		}
 		else
 		{
-			int xIndex = (pos.x - mSceneProbesMinBounds.x) / (DISTANCE_BETWEEN_SPECULAR_PROBES);
-			int yIndex = (pos.y - mSceneProbesMinBounds.y) / (DISTANCE_BETWEEN_SPECULAR_PROBES);
-			int zIndex = (pos.z - mSceneProbesMinBounds.z) / (DISTANCE_BETWEEN_SPECULAR_PROBES);
+			int xIndex = floor((pos.x - mSceneProbesMinBounds.x) / static_cast<float>(DISTANCE_BETWEEN_SPECULAR_PROBES));
+			int yIndex = floor((pos.y - mSceneProbesMinBounds.y) / static_cast<float>(DISTANCE_BETWEEN_SPECULAR_PROBES));
+			int zIndex = floor((pos.z - mSceneProbesMinBounds.z) / static_cast<float>(DISTANCE_BETWEEN_SPECULAR_PROBES));
 
 			if (xIndex < 0 || xIndex > mSpecularProbesCellsCountX)
 				return -1;
@@ -572,16 +572,18 @@ namespace Library
 			
 			mDiffuseProbesReady = true;
 
+			UpdateProbesByType(game, DIFFUSE_PROBE);
+
 			// SH GPU buffer
-			XMFLOAT3* shCPUBuffer = new XMFLOAT3[mDiffuseProbesCountTotal * SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER];
+			XMFLOAT3* shCPUBuffer = new XMFLOAT3[mDiffuseProbesCountTotal * SPHERICAL_HARMONICS_COEF_COUNT];
 			for (int probeIndex = 0; probeIndex < mDiffuseProbesCountTotal; probeIndex++)
 			{
 				const std::vector<XMFLOAT3> sh = mDiffuseProbes[probeIndex]->GetSphericalHarmonics();
-				for (int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
-					shCPUBuffer[probeIndex * SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER + i] = sh[i];
+				for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
+					shCPUBuffer[probeIndex * SPHERICAL_HARMONICS_COEF_COUNT + i] = sh[i];
 			}
-			mDiffuseProbesSphericalHarmonicsGPUBuffer = new ER_GPUBuffer(game.Direct3DDevice(), shCPUBuffer, mDiffuseProbesCountTotal * SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER, sizeof(XMFLOAT3),
-				D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
+			mDiffuseProbesSphericalHarmonicsGPUBuffer = new ER_GPUBuffer(game.Direct3DDevice(), shCPUBuffer, mDiffuseProbesCountTotal * SPHERICAL_HARMONICS_COEF_COUNT, sizeof(XMFLOAT3),
+				D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, D3D11_CPU_ACCESS_WRITE, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
 			DeleteObjects(shCPUBuffer);
 		}
 
@@ -742,7 +744,7 @@ namespace Library
 		mDebugSpecularProbeVolumeGizmo->SetPosition(mMainCamera.Position());
 		mDebugSpecularProbeVolumeGizmo->Update();
 
-		UpdateProbesByType(game, DIFFUSE_PROBE);
+		//UpdateProbesByType(game, DIFFUSE_PROBE); we do not need to update diffuse probes every frame anymore
 		UpdateProbesByType(game, SPECULAR_PROBE);
 	}
 }

@@ -83,9 +83,11 @@ namespace Library
 		context->VSSetConstantBuffers(0, 1, CBs);
 		context->PSSetConstantBuffers(0, 1, CBs);
 		
-		ID3D11ShaderResourceView* SRs[2] = { static_cast<ER_ProbeType>(aProbeType) == DIFFUSE_PROBE ? nullptr :
-			neededSystems.mProbesManager->GetCulledSpecularProbesTextureArray()->GetSRV(),
-			neededSystems.mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer()->GetBufferSRV()
+		ID3D11ShaderResourceView* SRs[2] = 
+		{ 
+			neededSystems.mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer()->GetBufferSRV(),
+			static_cast<ER_ProbeType>(aProbeType) == DIFFUSE_PROBE ?
+				nullptr : neededSystems.mProbesManager->GetCulledSpecularProbesTextureArray()->GetSRV()
 		};
 		context->PSSetShaderResources(0, 2, SRs);
 		

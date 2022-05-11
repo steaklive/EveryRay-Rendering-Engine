@@ -15,8 +15,8 @@ cbuffer DebugLightProbeCBuffer : register(b0)
     float4 CameraPosition;
     float2 DiscardCulled_IsDiffuse;
 }
-TextureCubeArray<float4> CubemapTexture : register(t0); //only for specular (diffuse use SH)
-StructuredBuffer<float3> SphericalHarmonicsCoefficientsArray : register(t1); //linear array of all diffuse probes 2nd order coefficients (9)
+StructuredBuffer<float3> SphericalHarmonicsCoefficientsArray : register(t0); //linear array of all diffuse probes 2nd order coefficients (9)
+TextureCubeArray<float4> CubemapTexture : register(t1); //only for specular (diffuse use SH)
 
 SamplerState LinearSampler : register(s0);
 
@@ -47,7 +47,7 @@ struct VS_OUTPUT
     float3 Normal : Normal;
     float3 Tangent : Tangent;
     float CullingFlag : TexCoord1; // 1.0f - culled, 0.0f - not culled
-    float CubemapIndex : TexCoord2; //index to sample from TextureCubeArray
+    int CubemapIndex : TexCoord2; //index to sample from TextureCubeArray
 };
 
 
@@ -61,7 +61,7 @@ VS_OUTPUT VSMain(VS_INPUT IN)
     OUT.Normal = normalize(mul(float4(IN.Normal, 0), World).xyz);
     OUT.Tangent = IN.Tangent;
     OUT.CullingFlag = 0.0f;
-    OUT.CubemapIndex = 0.0f;
+    OUT.CubemapIndex = 0;
 
     return OUT;
 }
@@ -79,7 +79,7 @@ VS_OUTPUT VSMain_instancing(VS_INPUT_INSTANCING IN)
     OUT.Normal = normalize(mul(float4(IN.Normal, 0), correctWorld).xyz);
     OUT.Tangent = IN.Tangent;
     OUT.CullingFlag = IN.World[3][3];
-    OUT.CubemapIndex = IN.World[0][0];
+    OUT.CubemapIndex = int(IN.World[0][0]);
 
     return OUT;
 }
@@ -98,9 +98,15 @@ float4 PSMain(VS_OUTPUT vsOutput) : SV_Target0
     }
     if (DiscardCulled_IsDiffuse.g > 0.0)
     {
-        float3 SH[SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER];
-        for (int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
-            SH[i] = SphericalHarmonicsCoefficientsArray[vsOutput.CubemapIndex * SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER + i];
+        float3 SH[SPHERICAL_HARMONICS_COEF_COUNT] =
+        {
+            float3(0.0, 0.0, 0.0), float3(0.0, 0.0, 0.0), float3(0.0, 0.0, 0.0), 
+            float3(0.0, 0.0, 0.0), float3(0.0, 0.0, 0.0), float3(0.0, 0.0, 0.0), 
+            float3(0.0, 0.0, 0.0), float3(0.0, 0.0, 0.0), float3(0.0, 0.0, 0.0)
+        };
+        
+        for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
+            SH[i] = SphericalHarmonicsCoefficientsArray[vsOutput.CubemapIndex * SPHERICAL_HARMONICS_COEF_COUNT + i];
         
         return float4(GetDiffuseIrradianceFromSphericalHarmonics(vsOutput.Normal, SH) / Pi, 1.0f);
     }

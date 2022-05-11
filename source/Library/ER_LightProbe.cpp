@@ -47,7 +47,7 @@ namespace Library
 		, mShadowMapper(shadowMapper)
 		, mProbeType(aType)
 	{
-		for (int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
+		for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
 			mSphericalHarmonicsRGB.push_back(XMFLOAT3(0.0, 0.0, 0.0));
 
 		mCubemapTexture = new ER_GPUTexture(game.Direct3DDevice(), size, size, 1, DXGI_FORMAT_R8G8B8A8_UNORM, 0,
@@ -105,15 +105,15 @@ namespace Library
 			0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
 			0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
 		};
-		if (FAILED(DirectX::SHProjectCubeMap(context, SPHERICAL_HARMONICS_ORDER, aTextureConvoluted->GetTexture2D(), &rgbCoefficients[0][0], &rgbCoefficients[1][0], &rgbCoefficients[2][0])))
+		if (FAILED(DirectX::SHProjectCubeMap(context, SPHERICAL_HARMONICS_ORDER + 1, aTextureConvoluted->GetTexture2D(), &rgbCoefficients[0][0], &rgbCoefficients[1][0], &rgbCoefficients[2][0])))
 		{
 			//TODO write to log
-			for (int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
+			for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
 				mSphericalHarmonicsRGB[i] = XMFLOAT3(0.0, 0.0, 0.0);
 		}
 		else
 		{
-			for (int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
+			for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
 				mSphericalHarmonicsRGB[i] = XMFLOAT3(rgbCoefficients[0][i], rgbCoefficients[1][i], rgbCoefficients[2][i]);
 		}
 	}
@@ -268,7 +268,7 @@ namespace Library
 			std::wifstream shFile(probeName.c_str());
 			if (shFile.is_open())
 			{
-				float coefficients[3][SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER];
+				float coefficients[3][SPHERICAL_HARMONICS_COEF_COUNT];
 				int channel = 0;
 				for (std::wstring line; std::getline(shFile, line);)
 				{
@@ -278,13 +278,13 @@ namespace Library
 					in >> type;
 					if (type == L"r" || type == L"g" || type == L"b")
 					{
-						for (int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
+						for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
 							in >> coefficients[channel][i];
 					}
 					else
 					{
 						//TODO output to LOG (not exception)
-						for (int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
+						for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
 							mSphericalHarmonicsRGB[i] = XMFLOAT3(0, 0, 0);
 
 						break;
@@ -292,7 +292,7 @@ namespace Library
 					channel++;
 				}
 
-				for (int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
+				for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
 					mSphericalHarmonicsRGB[i] = XMFLOAT3(coefficients[0][i], coefficients[1][i], coefficients[2][i]);
 
 				mIsProbeLoadedFromDisk = true;
@@ -362,10 +362,10 @@ namespace Library
 			{
 				std::string tempString = "";
 				shFile << L"r ";
-				for (int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
+				for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
 				{
 					tempString = std::to_string(mSphericalHarmonicsRGB[i].x);
-					if (i == SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER - 1)
+					if (i == SPHERICAL_HARMONICS_COEF_COUNT - 1)
 						tempString += "\n";
 					else
 						tempString += " ";
@@ -373,10 +373,10 @@ namespace Library
 				}
 
 				shFile << L"g ";
-				for (int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
+				for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
 				{
 					tempString = std::to_string(mSphericalHarmonicsRGB[i].y);
-					if (i == SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER - 1)
+					if (i == SPHERICAL_HARMONICS_COEF_COUNT - 1)
 						tempString += "\n";
 					else
 						tempString += " ";
@@ -384,10 +384,10 @@ namespace Library
 				}
 
 				shFile << L"b ";
-				for (int i = 0; i < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; i++)
+				for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
 				{
 					tempString = std::to_string(mSphericalHarmonicsRGB[i].z);
-					if (i == SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER - 1)
+					if (i == SPHERICAL_HARMONICS_COEF_COUNT - 1)
 						tempString += "\n";
 					else
 						tempString += " ";

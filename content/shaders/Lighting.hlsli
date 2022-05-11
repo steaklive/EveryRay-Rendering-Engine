@@ -1,12 +1,5 @@
 #define FLT_MAX 3.402823466e+38
 
-#define NUM_SHADOW_CASCADES 3
-#define NUM_OF_PROBES_PER_CELL 8
-#define NUM_OF_PROBE_VOLUME_CASCADES 2
-#define SPECULAR_PROBE_MIP_COUNT 6
-
-#define SPHERICAL_HARMONICS_ORDER 3
-
 #define PARALLAX_OCCLUSION_MAPPING_SUPPORT 1
 #define PARALLAX_OCCLUSION_MAPPING_SELF_SHADOW_SUPPORT 1
 #define PARALLAX_OCCLUSION_MAPPING_HEIGHT_SCALE 0.05
@@ -14,6 +7,12 @@
 
 static const float4 ColorWhite = { 1, 1, 1, 1 };
 static const float Pi = 3.141592654f;
+
+static const int NUM_SHADOW_CASCADES = 3;
+static const int NUM_OF_PROBES_PER_CELL = 8;
+static const int SPECULAR_PROBE_MIP_COUNT = 6;
+static const int SPHERICAL_HARMONICS_ORDER = 2;
+static const int SPHERICAL_HARMONICS_COEF_COUNT = (SPHERICAL_HARMONICS_ORDER + 1) * (SPHERICAL_HARMONICS_ORDER + 1);
 
 TextureCube<float4> DiffuseGlobalProbeTexture : register(t8); // global probe (fallback)
 StructuredBuffer<int> DiffuseProbesCellsWithProbeIndicesArray : register(t9); //linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
@@ -371,47 +370,25 @@ float3 DirectLightingPBR(float3 normalWS, float4 lightColor, float3 lightDir, fl
 // ==============================================================================================================
 // Indirect lighting (diffuse & specular) (PBR light probes: diffuse & specular)
 // ==============================================================================================================
-static const float ConvolveCosineLobeBandFactor[] =
+
+
+float3 GetDiffuseIrradianceFromSphericalHarmonics(float3 normal, float3 shCoef[SPHERICAL_HARMONICS_COEF_COUNT])
 {
-    Pi,
-    2.0f * Pi / 3.0f, 2.0f * Pi / 3.0f, 2.0f * Pi / 3.0f,
-    Pi / 4.0f, Pi / 4.0f, Pi / 4.0f, Pi / 4.0f, Pi / 4.0f
-};
-struct SHCoefficients
-{
-    float3 l00, l1m1, l10, l11, l2m2, l2m1, l20, l21, l22;
-};
-float3 GetDiffuseIrradianceFromSphericalHarmonics(float3 nor, float3 shCoef[SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER])
-{
-    SHCoefficients c = shCoef;
-    const float c1 = 0.429043;
-    const float c2 = 0.511664;
-    const float c3 = 0.743125;
-    const float c4 = 0.886227;
-    const float c5 = 0.247708;
-    return (
-        c1 * c.l22 * (nor.x * nor.x - nor.y * nor.y) +
-        c3 * c.l20 * nor.z * nor.z +
-        c4 * c.l00 -
-        c5 * c.l20 +
-        2.0 * c1 * c.l2m2 * nor.x * nor.y +
-        2.0 * c1 * c.l21 * nor.x * nor.z +
-        2.0 * c1 * c.l2m1 * nor.y * nor.z +
-        2.0 * c2 * c.l11 * nor.x +
-        2.0 * c2 * c.l1m1 * nor.y +
-        2.0 * c2 * c.l10 * nor.z
-    );
-   //float3 irradiance = 
-   //    shCoef[0] * 0.282095f * ConvolveCosineLobeBandFactor[0] +
-   //    shCoef[1] * 0.488603f * normal.y * ConvolveCosineLobeBandFactor[1] +
-   //    shCoef[2] * 0.488603f * normal.z * ConvolveCosineLobeBandFactor[2] +
-   //    shCoef[3] * 0.488603f * normal.x * ConvolveCosineLobeBandFactor[3] +
-   //    shCoef[4] * 1.092548f * normal.x * normal.y * ConvolveCosineLobeBandFactor[4] +
-   //    shCoef[5] * 1.092548f * normal.y * normal.z * ConvolveCosineLobeBandFactor[5] +
-   //    shCoef[6] * 0.315392f * (3.0f * normal.z * normal.z - 1.0f) * ConvolveCosineLobeBandFactor[6] +
-   //    shCoef[7] * 1.092548f * normal.x * normal.z * ConvolveCosineLobeBandFactor[7] +
-   //    shCoef[8] * 0.546274f * (normal.x * normal.x - normal.y * normal.y) * ConvolveCosineLobeBandFactor[8];
-   //return irradiance;
+    const float A0 = Pi;
+    const float A1 = 2.094395f;
+    const float A2 = 0.785398f;
+    
+    float3 irradiance = 
+        shCoef[0] * 0.282095f * A0 +
+        shCoef[1] * 0.488603f * normal.y * A1 +
+        shCoef[2] * 0.488603f * normal.z * A1 +
+        shCoef[3] * 0.488603f * normal.x * A1 +
+        shCoef[4] * 1.092548f * normal.x * normal.y * A2 +
+        shCoef[5] * 1.092548f * normal.y * normal.z * A2 +
+        shCoef[6] * 0.315392f * (3.0f * normal.z * normal.z - 1.0f) * A2 +
+        shCoef[7] * 1.092548f * normal.x * normal.z * A2 +
+        shCoef[8] * 0.546274f * (normal.x * normal.x - normal.y * normal.y) * A2;
+    return irradiance;
 }
 
 // ====================================================================================================================
@@ -432,15 +409,20 @@ float3 GetDiffuseIrradiance(float3 worldPos, float3 normal, float3 camPos, bool 
     {
         for (int i = 0; i < NUM_OF_PROBES_PER_CELL; i++)
         {
-            cellProbesExistanceFlags[i] = true;
+            cellProbesExistanceFlags[i] = false;
             int currentIndex = probesInfo.DiffuseProbesCellsWithProbeIndicesArray[NUM_OF_PROBES_PER_CELL * diffuseProbesCellIndex + i];
 
-            float3 SH[SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER];
-            for (int s = 0; s < SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER; s++)
-                SH[s] = probesInfo.DiffuseSphericalHarmonicsCoefficientsArray[currentIndex * SPHERICAL_HARMONICS_ORDER * SPHERICAL_HARMONICS_ORDER + s];
+            if (currentIndex != -1)
+            {
+                cellProbesExistanceFlags[i] = true;
+            
+                float3 SH[SPHERICAL_HARMONICS_COEF_COUNT];
+                for (int s = 0; s < SPHERICAL_HARMONICS_COEF_COUNT; s++)
+                    SH[s] = probesInfo.DiffuseSphericalHarmonicsCoefficientsArray[currentIndex * SPHERICAL_HARMONICS_COEF_COUNT + s];
         
-            cellProbesSamples[i] = GetDiffuseIrradianceFromSphericalHarmonics(normal, SH);
-            cellProbesPositions[i] = probesInfo.DiffuseProbesPositionsArray[currentIndex];
+                cellProbesSamples[i] = GetDiffuseIrradianceFromSphericalHarmonics(normal, SH);
+                cellProbesPositions[i] = probesInfo.DiffuseProbesPositionsArray[currentIndex];
+            }
         }
         
         finalSum = GetTrilinearInterpolationFromNeighbourProbes(worldPos, probesInfo.distanceBetweenDiffuseProbes);
