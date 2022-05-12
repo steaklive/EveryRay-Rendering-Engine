@@ -378,17 +378,18 @@ float3 GetDiffuseIrradianceFromSphericalHarmonics(float3 normal, float3 shCoef[S
     const float A1 = 2.094395f;
     const float A2 = 0.785398f;
     
+    // WANRING: we flip some of the SH basis constants (due to the algorithm in DirectXMath::SHProjectCubeMap())
     float3 irradiance = 
         shCoef[0] * 0.282095f * A0 +
-        shCoef[1] * 0.488603f * normal.y * A1 +
+        shCoef[1] * -0.488603f * normal.y * A1 +
         shCoef[2] * 0.488603f * normal.z * A1 +
-        shCoef[3] * 0.488603f * normal.x * A1 +
+        shCoef[3] * -0.488603f * normal.x * A1 +
         shCoef[4] * 1.092548f * normal.x * normal.y * A2 +
-        shCoef[5] * 1.092548f * normal.y * normal.z * A2 +
+        shCoef[5] * -1.092548f * normal.y * normal.z * A2 +
         shCoef[6] * 0.315392f * (3.0f * normal.z * normal.z - 1.0f) * A2 +
-        shCoef[7] * 1.092548f * normal.x * normal.z * A2 +
+        shCoef[7] * -1.092548f * normal.x * normal.z * A2 +
         shCoef[8] * 0.546274f * (normal.x * normal.x - normal.y * normal.y) * A2;
-    return irradiance;
+    return irradiance / Pi;
 }
 
 // ====================================================================================================================

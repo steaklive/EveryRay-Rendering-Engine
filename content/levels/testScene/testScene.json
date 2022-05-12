@@ -17,6 +17,61 @@
 		10.0,
 		35.0
 	],
+	"foliage_zones" : 
+	[
+		{
+			"average_scale" : 3.5,
+			"distribution_radius" : 30.0,
+			"patch_count" : 50,
+			"position" : 
+			[
+				30.0,
+				-0.10000000000000001,
+				0.0
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_flower_type1.png",
+			"type" : 0
+		},
+		{
+			"average_scale" : 2.5,
+			"distribution_radius" : 30.0,
+			"patch_count" : 600,
+			"position" : 
+			[
+				30.0,
+				-0.10000000000000001,
+				0.0
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"type" : 1
+		},
+		{
+			"average_scale" : 2.0,
+			"distribution_radius" : 30.0,
+			"patch_count" : 20,
+			"position" : 
+			[
+				65.0,
+				-0.10000000000000001,
+				0.0
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_flower_type3.png",
+			"type" : 0
+		},
+		{
+			"average_scale" : 2.5,
+			"distribution_radius" : 30.0,
+			"patch_count" : 600,
+			"position" : 
+			[
+				65.0,
+				-0.10000000000000001,
+				0.0
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"type" : 1
+		}
+	],
 	"light_probes_volume_bounds_max" : 
 	[
 		120.0,
@@ -26,49 +81,16 @@
 	"light_probes_volume_bounds_min" : 
 	[
 		-120.0,
-		0.2,
+		0.20000000000000001,
 		-120.0
-	],
-	"foliage_zones":
-	[
-		{
-			"type" : 0,
-			"patch_count" : 50,
-			"texture_path" : "content\\textures\\foliage\\grass_flower_type1.png",
-			"position" : [ 30.0, -0.1, 0.0],
-			"distribution_radius" : 30.0,
-			"average_scale" : 3.5
-		},
-		{
-			"type" : 1,
-			"patch_count" : 600,
-			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
-			"position" : [ 30.0, -0.1, 0.0],
-			"distribution_radius" : 30.0,
-			"average_scale" : 2.5
-		},
-		{
-			"type" : 0,
-			"patch_count" : 20,
-			"texture_path" : "content\\textures\\foliage\\grass_flower_type3.png",
-			"position" : [ 65.0, -0.1, 0.0],
-			"distribution_radius" : 30.0,
-			"average_scale" : 2.0
-		},
-		{
-			"type" : 1,
-			"patch_count" : 600,
-			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
-			"position" : [ 65.0, -0.1, 0.0],
-			"distribution_radius" : 30.0,
-			"average_scale" : 2.5
-		}
 	],
 	"rendering_objects" : 
 	[
 		{
 			"instanced" : false,
-			"new_materials":
+			"model_path" : "content\\models\\default_plane\\plane.fbx",
+			"name" : "Plane Pebbles (POM)",
+			"new_materials" : 
 			[
 				{
 					"name" : "ShadowMapMaterial"
@@ -80,8 +102,6 @@
 					"name" : "VoxelizationMaterial"
 				}
 			],
-			"model_path" : "content\\models\\default_plane\\plane.fbx",
-			"name" : "Plane Pebbles (POM)",
 			"textures" : 
 			[
 				{
@@ -111,12 +131,14 @@
 				0.0,
 				1.0
 			],
-			"use_parallax_occlusion_mapping" : true,
-			"use_forward_shading" : true
+			"use_forward_shading" : true,
+			"use_parallax_occlusion_mapping" : true
 		},
 		{
 			"instanced" : false,
-			"new_materials":
+			"model_path" : "content\\models\\default_plane\\plane.fbx",
+			"name" : "Plane Moon (POM)",
+			"new_materials" : 
 			[
 				{
 					"name" : "ShadowMapMaterial"
@@ -128,8 +150,6 @@
 					"name" : "VoxelizationMaterial"
 				}
 			],
-			"model_path" : "content\\models\\default_plane\\plane.fbx",
-			"name" : "Plane Moon (POM)",
 			"textures" : 
 			[
 				{
@@ -159,12 +179,14 @@
 				0.0,
 				1.0
 			],
-			"use_parallax_occlusion_mapping" : true,
-			"use_forward_shading" : true
+			"use_forward_shading" : true,
+			"use_parallax_occlusion_mapping" : true
 		},
 		{
 			"instanced" : false,
-			"new_materials":
+			"model_path" : "content\\models\\default_plane\\plane.fbx",
+			"name" : "Plane Rocks Moss (POM)",
+			"new_materials" : 
 			[
 				{
 					"name" : "ShadowMapMaterial"
@@ -176,8 +198,6 @@
 					"name" : "VoxelizationMaterial"
 				}
 			],
-			"model_path" : "content\\models\\default_plane\\plane.fbx",
-			"name" : "Plane Rocks Moss (POM)",
 			"textures" : 
 			[
 				{
@@ -207,12 +227,14 @@
 				0.0,
 				1.0
 			],
-			"use_parallax_occlusion_mapping" : true,
-			"use_forward_shading" : true
+			"use_forward_shading" : true,
+			"use_parallax_occlusion_mapping" : true
 		},
 		{
 			"instanced" : false,
-			"new_materials":
+			"model_path" : "content\\models\\default_plane\\default_plane.fbx",
+			"name" : "Ground Plane",
+			"new_materials" : 
 			[
 				{
 					"name" : "ShadowMapMaterial"
@@ -224,8 +246,6 @@
 					"name" : "RenderToLightProbeMaterial"
 				}
 			],
-			"model_path" : "content\\models\\default_plane\\default_plane.fbx",
-			"name" : "Ground Plane",
 			"transform" : 
 			[
 				1.0,
@@ -245,12 +265,22 @@
 				0.0,
 				1.0
 			],
-			"use_indirect_global_lightprobe" : true,
-			"use_in_global_lightprobe_rendering" : true
+			"use_in_global_lightprobe_rendering" : true,
+			"use_indirect_global_lightprobe" : true
 		},
 		{
 			"instanced" : false,
-			"new_materials":
+			"materials" : 
+			[
+				{
+					"effect" : "content\\effects\\VoxelizationGI.fx",
+					"name" : "VoxelizationGIMaterial",
+					"technique" : "voxelizationGI"
+				}
+			],
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "Simple sphere Pink",
+			"new_materials" : 
 			[
 				{
 					"name" : "ShadowMapMaterial"
@@ -262,16 +292,6 @@
 					"name" : "RenderToLightProbeMaterial"
 				}
 			],
-			"materials" : 
-			[
-				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				}
-			],
-			"model_path" : "content\\models\\sphere.fbx",
-			"name" : "Simple sphere Pink",
 			"transform" : 
 			[
 				1.4175000190734863,
@@ -295,7 +315,9 @@
 		},
 		{
 			"instanced" : false,
-			"new_materials":
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "Dynamic sphere White",
+			"new_materials" : 
 			[
 				{
 					"name" : "ShadowMapMaterial"
@@ -307,8 +329,6 @@
 					"name" : "VoxelizationMaterial"
 				}
 			],
-			"model_path" : "content\\models\\sphere.fbx",
-			"name" : "Dynamic sphere White",
 			"textures" : 
 			[
 				{
@@ -337,21 +357,6 @@
 		},
 		{
 			"instanced" : false,
-			"new_materials":
-			[
-				{
-					"name" : "ShadowMapMaterial"
-				},
-				{
-					"name" : "GBufferMaterial"
-				},
-				{
-					"name" : "RenderToLightProbeMaterial"
-				},
-				{
-					"name" : "VoxelizationMaterial"
-				}
-			],
 			"model_lods" : 
 			[
 				{
@@ -366,6 +371,21 @@
 			],
 			"model_path" : "content\\models\\rocks\\rock_1\\rock_1_lod_high.fbx",
 			"name" : "Rock 1",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
 			"textures" : 
 			[
 				{
@@ -1112,9 +1132,9 @@
 			[
 				{
 					"albedo" : "content\\textures\\PBR\\Crystal_Blue\\Crystal_003_COLOR.jpg",
+					"height" : "content\\textures\\PBR\\Crystal_Blue\\Crystal_003_DISP.png",
 					"normal" : "content\\textures\\PBR\\Crystal_Blue\\Crystal_003_NORM.jpg",
-					"roughness" : "content\\textures\\PBR\\Crystal_Blue\\Crystal_003_ROUGH.jpg",
-					"height" : "content\\textures\\PBR\\Crystal_Blue\\Crystal_003_DISP.png"
+					"roughness" : "content\\textures\\PBR\\Crystal_Blue\\Crystal_003_ROUGH.jpg"
 				},
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
@@ -1168,9 +1188,9 @@
 			[
 				{
 					"albedo" : "content\\textures\\PBR\\Crystal_Purple\\Crystal_002_COLOR.jpg",
+					"height" : "content\\textures\\PBR\\Crystal_Purple\\Crystal_002_DISP.png",
 					"normal" : "content\\textures\\PBR\\Crystal_Purple\\Crystal_002_NORM.jpg",
-					"roughness" : "content\\textures\\PBR\\Crystal_Purple\\Crystal_002_ROUGH.jpg",
-					"height" : "content\\textures\\PBR\\Crystal_Purple\\Crystal_002_DISP.png"
+					"roughness" : "content\\textures\\PBR\\Crystal_Purple\\Crystal_002_ROUGH.jpg"
 				},
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
@@ -1224,9 +1244,9 @@
 			[
 				{
 					"albedo" : "content\\textures\\PBR\\Bronze\\Bronze01_1K_BaseColor.png",
+					"metalness" : "content\\textures\\PBR\\Bronze\\Bronze01_1K_Metallic.png",
 					"normal" : "content\\textures\\PBR\\Bronze\\Bronze01_1K_Normal.png",
-					"roughness" : "content\\textures\\PBR\\Bronze\\Bronze01_1K_Roughness.png",
-					"metalness" : "content\\textures\\PBR\\Bronze\\Bronze01_1K_Metallic.png"
+					"roughness" : "content\\textures\\PBR\\Bronze\\Bronze01_1K_Roughness.png"
 				},
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
@@ -1278,9 +1298,9 @@
 			[
 				{
 					"albedo" : "content\\textures\\PBR\\Painted_Metal\\PaintedMetal02_1K_BaseColor.png",
+					"metalness" : "content\\textures\\PBR\\Painted_Metal\\PaintedMetal02_1K_Metallic.png",
 					"normal" : "content\\textures\\PBR\\Painted_Metal\\PaintedMetal02_1K_Normal.png",
-					"roughness" : "content\\textures\\PBR\\Painted_Metal\\PaintedMetal02_1K_Roughness.png",
-					"metalness" : "content\\textures\\PBR\\Painted_Metal\\PaintedMetal02_1K_Metallic.png"
+					"roughness" : "content\\textures\\PBR\\Painted_Metal\\PaintedMetal02_1K_Roughness.png"
 				},
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
@@ -1332,9 +1352,9 @@
 			[
 				{
 					"albedo" : "content\\textures\\PBR\\Painted_Metal_Blue\\ScratchedPaintedMetal01_1K_BaseColor.png",
+					"metalness" : "content\\textures\\PBR\\Painted_Metal_Blue\\ScratchedPaintedMetal01_1K_Metallic.png",
 					"normal" : "content\\textures\\PBR\\Painted_Metal_Blue\\ScratchedPaintedMetal01_1K_Normal.png",
-					"roughness" : "content\\textures\\PBR\\Painted_Metal_Blue\\ScratchedPaintedMetal01_1K_Roughness.png",
-					"metalness" : "content\\textures\\PBR\\Painted_Metal_Blue\\ScratchedPaintedMetal01_1K_Metallic.png"
+					"roughness" : "content\\textures\\PBR\\Painted_Metal_Blue\\ScratchedPaintedMetal01_1K_Roughness.png"
 				},
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
@@ -1386,9 +1406,9 @@
 			[
 				{
 					"albedo" : "content\\textures\\PBR\\Silver\\SilverMetal_col.jpg",
+					"metalness" : "content\\textures\\PBR\\Silver\\gold-scuffed_metallic.png",
 					"normal" : "content\\textures\\PBR\\Silver\\SilverMetal_nrm.jpg",
-					"roughness" : "content\\textures\\PBR\\Silver\\SilverMetal_rgh.jpg",
-					"metalness" : "content\\textures\\PBR\\Silver\\gold-scuffed_metallic.png"
+					"roughness" : "content\\textures\\PBR\\Silver\\SilverMetal_rgh.jpg"
 				},
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
@@ -1440,9 +1460,9 @@
 			[
 				{
 					"albedo" : "content\\textures\\PBR\\ScuffedGold\\gold-scuffed_basecolor-boosted.png",
+					"metalness" : "content\\textures\\PBR\\ScuffedGold\\gold-scuffed_metallic.png",
 					"normal" : "content\\textures\\PBR\\ScuffedGold\\gold-scuffed_normal.png",
-					"roughness" : "content\\textures\\PBR\\ScuffedGold\\gold-scuffed_roughness.png",
-					"metalness" : "content\\textures\\PBR\\ScuffedGold\\gold-scuffed_metallic.png"
+					"roughness" : "content\\textures\\PBR\\ScuffedGold\\gold-scuffed_roughness.png"
 				},
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
@@ -1473,7 +1493,17 @@
 		},
 		{
 			"instanced" : false,
-			"new_materials":
+			"materials" : 
+			[
+				{
+					"effect" : "content\\effects\\VoxelizationGI.fx",
+					"name" : "VoxelizationGIMaterial",
+					"technique" : "voxelizationGI"
+				}
+			],
+			"model_path" : "content\\models\\couch\\couch.fbx",
+			"name" : "Green couch",
+			"new_materials" : 
 			[
 				{
 					"name" : "ShadowMapMaterial"
@@ -1485,16 +1515,6 @@
 					"name" : "RenderToLightProbeMaterial"
 				}
 			],
-			"materials" : 
-			[
-				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				}
-			],
-			"model_path" : "content\\models\\couch\\couch.fbx",
-			"name" : "Green couch",
 			"textures" : 
 			[
 				{
