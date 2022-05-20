@@ -108,7 +108,7 @@ float4 PSMain(VS_OUTPUT vsOutput) : SV_Target0
         for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
             SH[i] = SphericalHarmonicsCoefficientsArray[vsOutput.CubemapIndex * SPHERICAL_HARMONICS_COEF_COUNT + i];
         
-        return float4(GetDiffuseIrradianceFromSphericalHarmonics(vsOutput.Normal, SH) / Pi, 1.0f);
+        return float4(GetDiffuseIrradianceFromSphericalHarmonics(vsOutput.Normal, SH), 1.0f);
     }
     else
         return float4(CubemapTexture.Sample(LinearSampler, float4(reflectDir, vsOutput.CubemapIndex)).rgb, 1.0f);

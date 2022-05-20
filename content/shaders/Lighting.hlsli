@@ -370,8 +370,6 @@ float3 DirectLightingPBR(float3 normalWS, float4 lightColor, float3 lightDir, fl
 // ==============================================================================================================
 // Indirect lighting (diffuse & specular) (PBR light probes: diffuse & specular)
 // ==============================================================================================================
-
-
 float3 GetDiffuseIrradianceFromSphericalHarmonics(float3 normal, float3 shCoef[SPHERICAL_HARMONICS_COEF_COUNT])
 {
     const float A0 = Pi;

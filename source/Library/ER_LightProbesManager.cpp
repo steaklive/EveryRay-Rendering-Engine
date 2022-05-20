@@ -495,6 +495,7 @@ namespace Library
 	bool ER_LightProbesManager::IsProbeInCell(ER_LightProbe* aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds)
 	{
 		XMFLOAT3 pos = aProbe->GetPosition();
+		float epsilon = 0.00001f;
 
 		XMFLOAT3 maxBounds = XMFLOAT3(
 			aCellBounds.second.x + aCell.position.x,
@@ -506,9 +507,9 @@ namespace Library
 			aCellBounds.first.y + aCell.position.y,
 			aCellBounds.first.z + aCell.position.z);
 
-		return	(pos.x <= maxBounds.x && pos.x >= minBounds.x) &&
-				(pos.y <= maxBounds.y && pos.y >= minBounds.y) &&
-				(pos.z <= maxBounds.z && pos.z >= minBounds.z);
+		return	(pos.x <= (maxBounds.x + epsilon) && pos.x >= (minBounds.x - epsilon)) &&
+				(pos.y <= (maxBounds.y + epsilon) && pos.y >= (minBounds.y - epsilon)) &&
+				(pos.z <= (maxBounds.z + epsilon) && pos.z >= (minBounds.z - epsilon));
 	}
 
 	void ER_LightProbesManager::ComputeOrLoadGlobalProbes(Game& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox)
