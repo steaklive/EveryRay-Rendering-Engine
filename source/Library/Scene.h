@@ -23,9 +23,12 @@ namespace Library
 
 		ER_Material* GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries, bool instanced);
 		Camera& GetCamera() { return mCamera; }
+
+		bool HasLightProbesSupport() { return mHasLightProbes; }
 		const XMFLOAT3& GetLightProbesVolumeMinBounds() const { return mLightProbesVolumeMinBounds; }
 		const XMFLOAT3& GetLightProbesVolumeMaxBounds() const { return mLightProbesVolumeMaxBounds; }
-		bool HasLightProbesSupport() { return mHasLightProbes; }
+		float GetLightProbesDiffuseDistance() { return mLightProbesDiffuseDistance; }
+		float GetLightProbesSpecularDistance() { return mLightProbesSpecularDistance; }
 		
 		bool HasFoliage() { return mHasFoliage; }
 		void LoadFoliageZones(std::vector<ER_Foliage*>& foliageZones, DirectionalLight& light);
@@ -55,5 +58,7 @@ namespace Library
 		bool mHasLightProbes = true;
 		XMFLOAT3 mLightProbesVolumeMinBounds = { 0,0,0 };
 		XMFLOAT3 mLightProbesVolumeMaxBounds = { 0,0,0 };
+		float mLightProbesDiffuseDistance = -1.0f;
+		float mLightProbesSpecularDistance = -1.0f;
 	};
 }

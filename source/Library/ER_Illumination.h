@@ -197,7 +197,6 @@ namespace Library
 
 		bool mDrawDiffuseProbes = false;
 		bool mDrawSpecularProbes = false;
-		bool mDrawProbesVolumeGizmo = false;
 		bool mDebugSkipIndirectProbeLighting = false;
 
 		bool mEnabled = false;

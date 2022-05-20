@@ -69,21 +69,14 @@ namespace Library
 		mSceneProbesMinBounds = scene->GetLightProbesVolumeMinBounds();
 		mSceneProbesMaxBounds = scene->GetLightProbesVolumeMaxBounds();
 
-		mDebugDiffuseProbeVolumeGizmo = new RenderableAABB(game, mMainCamera, XMFLOAT4(0.44f, 0.2f, 0.94f, 1.0f));
-		mDebugDiffuseProbeVolumeGizmo->Initialize();
-		mDebugDiffuseProbeVolumeGizmo->InitializeGeometry({
-			XMFLOAT3(-DIFFUSE_PROBES_VOLUME_SIZE, -DIFFUSE_PROBES_VOLUME_SIZE, -DIFFUSE_PROBES_VOLUME_SIZE),
-			XMFLOAT3(DIFFUSE_PROBES_VOLUME_SIZE, DIFFUSE_PROBES_VOLUME_SIZE, DIFFUSE_PROBES_VOLUME_SIZE) }, XMMatrixScaling(1, 1, 1));
-		mDebugDiffuseProbeVolumeGizmo->SetPosition(mMainCamera.Position());
+		mDistanceBetweenDiffuseProbes = scene->GetLightProbesDiffuseDistance();
+		mDistanceBetweenSpecularProbes = scene->GetLightProbesSpecularDistance();
 
-		mDebugSpecularProbeVolumeGizmo = new RenderableAABB(game, mMainCamera, XMFLOAT4(0.44f, 0.2f, 0.94f, 1.0f));
-		mDebugSpecularProbeVolumeGizmo->Initialize();
-		mDebugSpecularProbeVolumeGizmo->InitializeGeometry({
-			XMFLOAT3(-SPECULAR_PROBES_VOLUME_SIZE, -SPECULAR_PROBES_VOLUME_SIZE, -SPECULAR_PROBES_VOLUME_SIZE),
-			XMFLOAT3(SPECULAR_PROBES_VOLUME_SIZE, SPECULAR_PROBES_VOLUME_SIZE, SPECULAR_PROBES_VOLUME_SIZE) }, XMMatrixScaling(1, 1, 1));
-		mDebugSpecularProbeVolumeGizmo->SetPosition(mMainCamera.Position());
-	
-		mMaxProbesInVolumeCount = MAX_PROBES_IN_VOLUME_PER_AXIS * MAX_PROBES_IN_VOLUME_PER_AXIS * MAX_PROBES_IN_VOLUME_PER_AXIS;
+		if (mDistanceBetweenDiffuseProbes <= 0.0f || mDistanceBetweenSpecularProbes <= 0.0f)
+			throw GameException("Loaded level has incorrect distances between probes (either diffuse or specular or both). Did you forget to assign them in the level file?");
+
+		mSpecularProbesVolumeSize = MAX_CUBEMAPS_IN_VOLUME_PER_AXIS * mDistanceBetweenSpecularProbes * 0.5f;
+		mMaxSpecularProbesInVolumeCount = MAX_CUBEMAPS_IN_VOLUME_PER_AXIS * MAX_CUBEMAPS_IN_VOLUME_PER_AXIS * MAX_CUBEMAPS_IN_VOLUME_PER_AXIS;
 
 		SetupDiffuseProbes(game, camera, scene, light, shadowMapper);
 		SetupSpecularProbes(game, camera, scene, light, shadowMapper);
@@ -114,10 +107,8 @@ namespace Library
 		DeleteObject(mDiffuseProbesPositionsGPUBuffer);
 		DeleteObject(mSpecularProbesPositionsGPUBuffer);
 
-		DeleteObject(mDebugDiffuseProbeVolumeGizmo);
 		DeleteObject(mDiffuseProbesCellsIndicesGPUBuffer);
 
-		DeleteObject(mDebugSpecularProbeVolumeGizmo);
 		DeleteObject(mSpecularCubemapArrayRT);
 		DeleteObject(mSpecularProbesCellsIndicesGPUBuffer);
 		DeleteObjects(mSpecularProbesTexArrayIndicesCPUBuffer);
@@ -152,9 +143,9 @@ namespace Library
 
 		SetupGlobalDiffuseProbe(game, camera, scene, light, shadowMapper);
 
-		mDiffuseProbesCountX = (maxBounds.x - minBounds.x) / DISTANCE_BETWEEN_DIFFUSE_PROBES + 1;
-		mDiffuseProbesCountY = (maxBounds.y - minBounds.y) / DISTANCE_BETWEEN_DIFFUSE_PROBES + 1;
-		mDiffuseProbesCountZ = (maxBounds.z - minBounds.z) / DISTANCE_BETWEEN_DIFFUSE_PROBES + 1;
+		mDiffuseProbesCountX = (maxBounds.x - minBounds.x) / mDistanceBetweenDiffuseProbes + 1;
+		mDiffuseProbesCountY = (maxBounds.y - minBounds.y) / mDistanceBetweenDiffuseProbes + 1;
+		mDiffuseProbesCountZ = (maxBounds.z - minBounds.z) / mDistanceBetweenDiffuseProbes + 1;
 		mDiffuseProbesCountTotal = mDiffuseProbesCountX * mDiffuseProbesCountY * mDiffuseProbesCountZ;
 		assert(mDiffuseProbesCountTotal);
 		mDiffuseProbes.reserve(mDiffuseProbesCountTotal);
@@ -168,7 +159,7 @@ namespace Library
 
 		assert(mDiffuseProbesCellsCountTotal);
 
-		float probeCellPositionOffset = static_cast<float>(DISTANCE_BETWEEN_DIFFUSE_PROBES) / 2.0f;
+		float probeCellPositionOffset = static_cast<float>(mDistanceBetweenDiffuseProbes) / 2.0f;
 		mDiffuseProbesCellBounds = {
 			XMFLOAT3(-probeCellPositionOffset, -probeCellPositionOffset, -probeCellPositionOffset),
 			XMFLOAT3(probeCellPositionOffset, probeCellPositionOffset, probeCellPositionOffset) };
@@ -180,9 +171,9 @@ namespace Library
 					for (int cellsZ = 0; cellsZ < mDiffuseProbesCellsCountZ; cellsZ++)
 					{
 						XMFLOAT3 pos = XMFLOAT3(
-							minBounds.x + probeCellPositionOffset + cellsX * DISTANCE_BETWEEN_DIFFUSE_PROBES,
-							minBounds.y + probeCellPositionOffset + cellsY * DISTANCE_BETWEEN_DIFFUSE_PROBES,
-							minBounds.z + probeCellPositionOffset + cellsZ * DISTANCE_BETWEEN_DIFFUSE_PROBES);
+							minBounds.x + probeCellPositionOffset + cellsX * mDistanceBetweenDiffuseProbes,
+							minBounds.y + probeCellPositionOffset + cellsY * mDistanceBetweenDiffuseProbes,
+							minBounds.z + probeCellPositionOffset + cellsZ * mDistanceBetweenDiffuseProbes);
 
 						int index = cellsY * (mDiffuseProbesCellsCountX * mDiffuseProbesCellsCountZ) + cellsX * mDiffuseProbesCellsCountZ + cellsZ;
 						mDiffuseProbesCells[index].index = index;
@@ -202,9 +193,9 @@ namespace Library
 				for (int probesZ = 0; probesZ < mDiffuseProbesCountZ; probesZ++)
 				{
 					XMFLOAT3 pos = XMFLOAT3(
-						minBounds.x + probesX * DISTANCE_BETWEEN_DIFFUSE_PROBES,
-						minBounds.y + probesY * DISTANCE_BETWEEN_DIFFUSE_PROBES,
-						minBounds.z + probesZ * DISTANCE_BETWEEN_DIFFUSE_PROBES);
+						minBounds.x + probesX * mDistanceBetweenDiffuseProbes,
+						minBounds.y + probesY * mDistanceBetweenDiffuseProbes,
+						minBounds.z + probesZ * mDistanceBetweenDiffuseProbes);
 					int index = probesY * (mDiffuseProbesCountX * mDiffuseProbesCountZ) + probesX * mDiffuseProbesCountZ + probesZ;
 					mDiffuseProbes[index]->SetIndex(index);
 					mDiffuseProbes[index]->SetPosition(pos);
@@ -277,9 +268,9 @@ namespace Library
 		
 		SetupGlobalSpecularProbe(game, camera, scene, light, shadowMapper);
 
-		mSpecularProbesCountX = (maxBounds.x - minBounds.x) / DISTANCE_BETWEEN_SPECULAR_PROBES + 1;
-		mSpecularProbesCountY = (maxBounds.y - minBounds.y) / DISTANCE_BETWEEN_SPECULAR_PROBES + 1;
-		mSpecularProbesCountZ = (maxBounds.z - minBounds.z) / DISTANCE_BETWEEN_SPECULAR_PROBES + 1;
+		mSpecularProbesCountX = (maxBounds.x - minBounds.x) / mDistanceBetweenSpecularProbes + 1;
+		mSpecularProbesCountY = (maxBounds.y - minBounds.y) / mDistanceBetweenSpecularProbes + 1;
+		mSpecularProbesCountZ = (maxBounds.z - minBounds.z) / mDistanceBetweenSpecularProbes + 1;
 		mSpecularProbesCountTotal = mSpecularProbesCountX * mSpecularProbesCountY * mSpecularProbesCountZ;
 		assert(mSpecularProbesCountTotal);
 		mSpecularProbes.reserve(mSpecularProbesCountTotal);
@@ -292,7 +283,7 @@ namespace Library
 		mSpecularProbesCells.resize(mSpecularProbesCellsCountTotal, {});
 		assert(mSpecularProbesCellsCountTotal);
 
-		float probeCellPositionOffset = static_cast<float>(DISTANCE_BETWEEN_SPECULAR_PROBES) / 2.0f;
+		float probeCellPositionOffset = static_cast<float>(mDistanceBetweenSpecularProbes) / 2.0f;
 		mSpecularProbesCellBounds = {
 			XMFLOAT3(-probeCellPositionOffset, -probeCellPositionOffset, -probeCellPositionOffset),
 			XMFLOAT3(probeCellPositionOffset, probeCellPositionOffset, probeCellPositionOffset) };
@@ -304,9 +295,9 @@ namespace Library
 				for (int cellsZ = 0; cellsZ < mSpecularProbesCellsCountZ; cellsZ++)
 				{
 					XMFLOAT3 pos = XMFLOAT3(
-						minBounds.x + probeCellPositionOffset + cellsX * DISTANCE_BETWEEN_SPECULAR_PROBES,
-						minBounds.y + probeCellPositionOffset + cellsY * DISTANCE_BETWEEN_SPECULAR_PROBES,
-						minBounds.z + probeCellPositionOffset + cellsZ * DISTANCE_BETWEEN_SPECULAR_PROBES);
+						minBounds.x + probeCellPositionOffset + cellsX * mDistanceBetweenSpecularProbes,
+						minBounds.y + probeCellPositionOffset + cellsY * mDistanceBetweenSpecularProbes,
+						minBounds.z + probeCellPositionOffset + cellsZ * mDistanceBetweenSpecularProbes);
 
 					int index = cellsY * (mSpecularProbesCellsCountX * mSpecularProbesCellsCountZ) + cellsX * mSpecularProbesCellsCountZ + cellsZ;
 					mSpecularProbesCells[index].index = index;
@@ -325,9 +316,9 @@ namespace Library
 				for (int probesZ = 0; probesZ < mSpecularProbesCountZ; probesZ++)
 				{
 					XMFLOAT3 pos = XMFLOAT3(
-						minBounds.x + probesX * DISTANCE_BETWEEN_SPECULAR_PROBES,
-						minBounds.y + probesY * DISTANCE_BETWEEN_SPECULAR_PROBES,
-						minBounds.z + probesZ * DISTANCE_BETWEEN_SPECULAR_PROBES);
+						minBounds.x + probesX * mDistanceBetweenSpecularProbes,
+						minBounds.y + probesY * mDistanceBetweenSpecularProbes,
+						minBounds.z + probesZ * mDistanceBetweenSpecularProbes);
 					int index = probesY * (mSpecularProbesCountX * mSpecularProbesCountZ) + probesX * mSpecularProbesCountZ + probesZ;
 					mSpecularProbes[index]->SetIndex(index);
 					mSpecularProbes[index]->SetPosition(pos);
@@ -390,7 +381,7 @@ namespace Library
 		mSpecularProbeRenderingObject->UpdateInstanceBuffer(mSpecularProbeRenderingObject->GetInstancesData());
 
 		mSpecularCubemapArrayRT = new ER_GPUTexture(game.Direct3DDevice(), SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
-			D3D11_BIND_SHADER_RESOURCE, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true, mMaxProbesInVolumeCount);
+			D3D11_BIND_SHADER_RESOURCE, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true, mMaxSpecularProbesInVolumeCount);
 	}
 
 	void ER_LightProbesManager::AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds)
@@ -429,9 +420,9 @@ namespace Library
 
 		if (aType == DIFFUSE_PROBE)
 		{
-			int xIndex = floor((pos.x - mSceneProbesMinBounds.x) / static_cast<float>(DISTANCE_BETWEEN_DIFFUSE_PROBES));
-			int yIndex = floor((pos.y - mSceneProbesMinBounds.y) / static_cast<float>(DISTANCE_BETWEEN_DIFFUSE_PROBES));
-			int zIndex = floor((pos.z - mSceneProbesMinBounds.z) / static_cast<float>(DISTANCE_BETWEEN_DIFFUSE_PROBES));
+			int xIndex = floor((pos.x - mSceneProbesMinBounds.x) / static_cast<float>(mDistanceBetweenDiffuseProbes));
+			int yIndex = floor((pos.y - mSceneProbesMinBounds.y) / static_cast<float>(mDistanceBetweenDiffuseProbes));
+			int zIndex = floor((pos.z - mSceneProbesMinBounds.z) / static_cast<float>(mDistanceBetweenDiffuseProbes));
 
 			if (xIndex < 0 || xIndex > mDiffuseProbesCellsCountX)
 				return -1;
@@ -455,9 +446,9 @@ namespace Library
 		}
 		else
 		{
-			int xIndex = floor((pos.x - mSceneProbesMinBounds.x) / static_cast<float>(DISTANCE_BETWEEN_SPECULAR_PROBES));
-			int yIndex = floor((pos.y - mSceneProbesMinBounds.y) / static_cast<float>(DISTANCE_BETWEEN_SPECULAR_PROBES));
-			int zIndex = floor((pos.z - mSceneProbesMinBounds.z) / static_cast<float>(DISTANCE_BETWEEN_SPECULAR_PROBES));
+			int xIndex = floor((pos.x - mSceneProbesMinBounds.x) / static_cast<float>(mDistanceBetweenSpecularProbes));
+			int yIndex = floor((pos.y - mSceneProbesMinBounds.y) / static_cast<float>(mDistanceBetweenSpecularProbes));
+			int zIndex = floor((pos.z - mSceneProbesMinBounds.z) / static_cast<float>(mDistanceBetweenSpecularProbes));
 
 			if (xIndex < 0 || xIndex > mSpecularProbesCellsCountX)
 				return -1;
@@ -638,14 +629,6 @@ namespace Library
 
 	}
 
-	void ER_LightProbesManager::DrawDebugProbesVolumeGizmo(ER_ProbeType aType)
-	{
-		if (aType == DIFFUSE_PROBE && mDebugDiffuseProbeVolumeGizmo)
-			mDebugDiffuseProbeVolumeGizmo->Draw();
-		else if (aType == SPECULAR_PROBE && mDebugSpecularProbeVolumeGizmo)
-			mDebugSpecularProbeVolumeGizmo->Draw();
-	}
-
 	void ER_LightProbesManager::UpdateProbesByType(Game& game, ER_ProbeType aType)
 	{
 		std::vector<ER_LightProbe*>& probes = (aType == DIFFUSE_PROBE) ? mDiffuseProbes : mSpecularProbes;
@@ -668,13 +651,13 @@ namespace Library
 		if (aType == SPECULAR_PROBE)
 		{
 			XMFLOAT3 minBounds = XMFLOAT3(
-				-SPECULAR_PROBES_VOLUME_SIZE + mMainCamera.Position().x,
-				-SPECULAR_PROBES_VOLUME_SIZE + mMainCamera.Position().y,
-				-SPECULAR_PROBES_VOLUME_SIZE + mMainCamera.Position().z);
+				-mSpecularProbesVolumeSize + mMainCamera.Position().x,
+				-mSpecularProbesVolumeSize + mMainCamera.Position().y,
+				-mSpecularProbesVolumeSize + mMainCamera.Position().z);
 			XMFLOAT3 maxBounds = XMFLOAT3(
-				SPECULAR_PROBES_VOLUME_SIZE + mMainCamera.Position().x,
-				SPECULAR_PROBES_VOLUME_SIZE + mMainCamera.Position().y,
-				SPECULAR_PROBES_VOLUME_SIZE + mMainCamera.Position().z);
+				mSpecularProbesVolumeSize + mMainCamera.Position().x,
+				mSpecularProbesVolumeSize + mMainCamera.Position().y,
+				mSpecularProbesVolumeSize + mMainCamera.Position().z);
 
 			for (auto& lightProbe : probes)
 				lightProbe->CPUCullAgainstProbeBoundingVolume(minBounds, maxBounds);
@@ -714,7 +697,7 @@ namespace Library
 			for (int i = 0; i < mSpecularProbesCountTotal; i++)
 				mSpecularProbesTexArrayIndicesCPUBuffer[i] = -1;
 
-			for (int i = 0; i < mMaxProbesInVolumeCount; i++)
+			for (int i = 0; i < mMaxSpecularProbesInVolumeCount; i++)
 			{
 				if (i < mNonCulledSpecularProbesIndices.size() && i < probes.size())
 				{
@@ -737,13 +720,7 @@ namespace Library
 	void ER_LightProbesManager::UpdateProbes(Game& game)
 	{
 		//int difProbeCellIndexCamera = GetCellIndex(mMainCamera.Position(), DIFFUSE_PROBE);
-		assert(mMaxProbesInVolumeCount > 0);
-		
-		mDebugDiffuseProbeVolumeGizmo->SetPosition(mMainCamera.Position());
-		mDebugDiffuseProbeVolumeGizmo->Update();	
-
-		mDebugSpecularProbeVolumeGizmo->SetPosition(mMainCamera.Position());
-		mDebugSpecularProbeVolumeGizmo->Update();
+		assert(mMaxSpecularProbesInVolumeCount > 0);
 
 		//UpdateProbesByType(game, DIFFUSE_PROBE); we do not need to update diffuse probes every frame anymore
 		UpdateProbesByType(game, SPECULAR_PROBE);

@@ -27,6 +27,12 @@ StructuredBuffer<float3> SpecularProbesPositionsArray : register(t16); //linear 
 
 Texture2D<float4> IntegrationTexture : register(t17);
 
+float3 GetGammaCorrectColor(float3 inputColor)
+{
+    float factor = 1.0f / 2.2f;
+    return pow(inputColor, float3(factor, factor, factor));
+}
+
 struct LightProbeInfo
 {
     TextureCube<float4> globalIrradianceDiffuseProbeTexture;
@@ -491,15 +497,9 @@ float3 IndirectLightingPBR(float3 normalWS, float3 diffuseAlbedo, float3 positio
     int mipIndex = floor(roughness * SPECULAR_PROBE_MIP_COUNT);
     if (mipIndex >= SPECULAR_PROBE_MIP_COUNT)
         return indirectDiffuseLighting * ambientOcclusion;
-    float3 prefilteredColor = GetSpecularIrradiance(positionWS, camPos, reflectDir, mipIndex, useGlobalProbe, linearSampler, probesInfo);
+    float3 prefilteredColor = GetSpecularIrradiance(positionWS, camPos, reflectDir, mipIndex, useGlobalProbe, linearSampler, probesInfo) / Pi;    
     float2 environmentBRDF = integrationTexture.SampleLevel(linearSampler, float2(nDotV, roughness), 0).rg;
     float3 indirectSpecularLighting = prefilteredColor * (Schlick_Fresnel_Roughness(nDotV, F0, roughness) * environmentBRDF.x + float3(environmentBRDF.y, environmentBRDF.y, environmentBRDF.y));
     
     return (indirectDiffuseLighting + indirectSpecularLighting) * ambientOcclusion;
-}
-
-float3 GetGammaCorrectColor(float3 inputColor)
-{
-    float factor = 1.0f / 2.2f;
-    return pow(inputColor, float3(factor, factor, factor));
 }

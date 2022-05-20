@@ -75,25 +75,33 @@ namespace Library
 				skyboxPath = root["skybox_path"].asString();
 			}
 
-			if (root.isMember("light_probes_volume_bounds_min")) {
-				float vec3[3];
-				for (Json::Value::ArrayIndex i = 0; i != root["light_probes_volume_bounds_min"].size(); i++)
-					vec3[i] = root["light_probes_volume_bounds_min"][i].asFloat();
+			// light probes config
+			{
+				if (root.isMember("light_probes_volume_bounds_min")) {
+					float vec3[3];
+					for (Json::Value::ArrayIndex i = 0; i != root["light_probes_volume_bounds_min"].size(); i++)
+						vec3[i] = root["light_probes_volume_bounds_min"][i].asFloat();
 
-				mLightProbesVolumeMinBounds = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+					mLightProbesVolumeMinBounds = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+				}
+				else
+					mHasLightProbes = false;
+
+				if (root.isMember("light_probes_volume_bounds_max")) {
+					float vec3[3];
+					for (Json::Value::ArrayIndex i = 0; i != root["light_probes_volume_bounds_max"].size(); i++)
+						vec3[i] = root["light_probes_volume_bounds_max"][i].asFloat();
+
+					mLightProbesVolumeMaxBounds = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+				}
+				else
+					mHasLightProbes = false;
+
+				if (root.isMember("light_probes_diffuse_distance"))
+					mLightProbesDiffuseDistance = root["light_probes_diffuse_distance"].asFloat();
+				if (root.isMember("light_probes_specular_distance"))
+					mLightProbesSpecularDistance = root["light_probes_specular_distance"].asFloat();
 			}
-			else
-				mHasLightProbes = false;
-
-			if (root.isMember("light_probes_volume_bounds_max")) {
-				float vec3[3];
-				for (Json::Value::ArrayIndex i = 0; i != root["light_probes_volume_bounds_max"].size(); i++)
-					vec3[i] = root["light_probes_volume_bounds_max"][i].asFloat();
-
-				mLightProbesVolumeMaxBounds = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
-			}
-			else 
-				mHasLightProbes = false;
 
 			if (root.isMember("foliage_zones"))
 				mHasFoliage = true;

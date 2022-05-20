@@ -526,12 +526,6 @@ namespace Library {
 				mProbesManager->DrawDebugProbes(DIFFUSE_PROBE);
 			if (mDrawSpecularProbes)
 				mProbesManager->DrawDebugProbes(SPECULAR_PROBE);
-
-			if (mDrawProbesVolumeGizmo)
-			{
-				mProbesManager->DrawDebugProbesVolumeGizmo(DIFFUSE_PROBE);
-				mProbesManager->DrawDebugProbesVolumeGizmo(SPECULAR_PROBE);
-			}
 		}
 	}
 
@@ -575,7 +569,6 @@ namespace Library {
 				ImGui::Checkbox("DEBUG - Skip indirect lighting", &mDebugSkipIndirectProbeLighting);
 				ImGui::Separator();
 				ImGui::Checkbox("DEBUG - Hide culled probes", &mProbesManager->mDebugDiscardCulledProbes);
-				ImGui::Checkbox("DEBUG - Probe volume", &mDrawProbesVolumeGizmo);
 				ImGui::Checkbox("DEBUG - Diffuse probes", &mDrawDiffuseProbes);
 				ImGui::Checkbox("DEBUG - Specular probes", &mDrawSpecularProbes);
 			}
@@ -642,8 +635,8 @@ namespace Library {
 				mLightProbesConstantBuffer.Data.DiffuseProbesCellsCount = mProbesManager->GetProbesCellsCount(DIFFUSE_PROBE);
 				mLightProbesConstantBuffer.Data.SpecularProbesCellsCount = mProbesManager->GetProbesCellsCount(SPECULAR_PROBE);
 				mLightProbesConstantBuffer.Data.SceneLightProbesBounds = XMFLOAT4{ mProbesManager->GetSceneProbesVolumeMin().x, mProbesManager->GetSceneProbesVolumeMin().y, mProbesManager->GetSceneProbesVolumeMin().z, 1.0f };
-				mLightProbesConstantBuffer.Data.DistanceBetweenDiffuseProbes = DISTANCE_BETWEEN_DIFFUSE_PROBES;
-				mLightProbesConstantBuffer.Data.DistanceBetweenSpecularProbes = DISTANCE_BETWEEN_SPECULAR_PROBES;
+				mLightProbesConstantBuffer.Data.DistanceBetweenDiffuseProbes = mProbesManager->GetDistanceBetweenDiffuseProbes();
+				mLightProbesConstantBuffer.Data.DistanceBetweenSpecularProbes = mProbesManager->GetDistanceBetweenSpecularProbes();
 				mLightProbesConstantBuffer.ApplyChanges(context);
 			}
 
@@ -733,8 +726,8 @@ namespace Library {
 				mLightProbesConstantBuffer.Data.DiffuseProbesCellsCount = mProbesManager->GetProbesCellsCount(DIFFUSE_PROBE);
 				mLightProbesConstantBuffer.Data.SpecularProbesCellsCount = mProbesManager->GetProbesCellsCount(SPECULAR_PROBE);
 				mLightProbesConstantBuffer.Data.SceneLightProbesBounds = XMFLOAT4{ mProbesManager->GetSceneProbesVolumeMin().x, mProbesManager->GetSceneProbesVolumeMin().y, mProbesManager->GetSceneProbesVolumeMin().z, 1.0f };
-				mLightProbesConstantBuffer.Data.DistanceBetweenDiffuseProbes = DISTANCE_BETWEEN_DIFFUSE_PROBES;
-				mLightProbesConstantBuffer.Data.DistanceBetweenSpecularProbes = DISTANCE_BETWEEN_SPECULAR_PROBES;
+				mLightProbesConstantBuffer.Data.DistanceBetweenDiffuseProbes = mProbesManager->GetDistanceBetweenDiffuseProbes();
+				mLightProbesConstantBuffer.Data.DistanceBetweenSpecularProbes = mProbesManager->GetDistanceBetweenSpecularProbes();
 				mLightProbesConstantBuffer.ApplyChanges(context);
 			}
 

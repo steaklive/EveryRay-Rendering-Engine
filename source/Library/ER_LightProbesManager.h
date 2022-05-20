@@ -2,20 +2,15 @@
 #define CUBEMAP_FACES_COUNT 6
 
 #define DIFFUSE_PROBE_SIZE 32 //cubemap dimension
-#define DISTANCE_BETWEEN_DIFFUSE_PROBES 15
 
 #define SPECULAR_PROBE_MIP_COUNT 6
 #define SPECULAR_PROBE_SIZE 128 //cubemap dimension
-#define DISTANCE_BETWEEN_SPECULAR_PROBES 30
 
-#define MAX_PROBES_IN_VOLUME_PER_AXIS 6 // == cbrt(2048 / CUBEMAP_FACES_COUNT), 2048 - tex. array limit (DX11)
+#define MAX_CUBEMAPS_IN_VOLUME_PER_AXIS 6 // == cbrt(2048 / CUBEMAP_FACES_COUNT), 2048 - tex. array limit (DX11)
 #define PROBE_COUNT_PER_CELL 8 // 3D cube cell of probes in each vertex
 
 #define SPHERICAL_HARMONICS_ORDER 2
 #define SPHERICAL_HARMONICS_COEF_COUNT (SPHERICAL_HARMONICS_ORDER + 1) * (SPHERICAL_HARMONICS_ORDER + 1)
-
-#define DIFFUSE_PROBES_VOLUME_SIZE MAX_PROBES_IN_VOLUME_PER_AXIS * DISTANCE_BETWEEN_DIFFUSE_PROBES / 2
-#define SPECULAR_PROBES_VOLUME_SIZE MAX_PROBES_IN_VOLUME_PER_AXIS * DISTANCE_BETWEEN_SPECULAR_PROBES / 2
 
 #include "Common.h"
 #include "ER_RenderingObject.h"
@@ -62,7 +57,6 @@ namespace Library
 		void ComputeOrLoadLocalProbes(Game& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox = nullptr);
 		void ComputeOrLoadGlobalProbes(Game& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox);
 		void DrawDebugProbes(ER_ProbeType aType);
-		void DrawDebugProbesVolumeGizmo(ER_ProbeType aType);
 		void UpdateProbes(Game& game);
 		int GetCellIndex(const XMFLOAT3& pos, ER_ProbeType aType);
 
@@ -71,6 +65,7 @@ namespace Library
 		ER_GPUBuffer* GetDiffuseProbesCellsIndicesBuffer() const { return mDiffuseProbesCellsIndicesGPUBuffer; }
 		ER_GPUBuffer* GetDiffuseProbesPositionsBuffer() const { return mDiffuseProbesPositionsGPUBuffer; }
 		ER_GPUBuffer* GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer() const { return mDiffuseProbesSphericalHarmonicsGPUBuffer; }
+		float GetDistanceBetweenDiffuseProbes() { return mDistanceBetweenDiffuseProbes; }
 
 		ER_LightProbe* GetGlobalSpecularProbe() { return mGlobalSpecularProbe; }
 		const ER_LightProbe* GetSpecularLightProbe(int index) const { return mSpecularProbes[index]; }
@@ -78,13 +73,8 @@ namespace Library
 		ER_GPUBuffer* GetSpecularProbesCellsIndicesBuffer() const { return mSpecularProbesCellsIndicesGPUBuffer; }
 		ER_GPUBuffer* GetSpecularProbesTexArrayIndicesBuffer() const { return mSpecularProbesTexArrayIndicesGPUBuffer; }
 		ER_GPUBuffer* GetSpecularProbesPositionsBuffer() const { return mSpecularProbesPositionsGPUBuffer; }
+		float GetDistanceBetweenSpecularProbes() { return mDistanceBetweenSpecularProbes; }
 
-		const XMFLOAT3& GetProbesVolumeCascade(ER_ProbeType aType) { 
-			if (aType == DIFFUSE_PROBE)
-				return XMFLOAT3(DIFFUSE_PROBES_VOLUME_SIZE,	DIFFUSE_PROBES_VOLUME_SIZE,	DIFFUSE_PROBES_VOLUME_SIZE);
-			else
-				return XMFLOAT3(SPECULAR_PROBES_VOLUME_SIZE, SPECULAR_PROBES_VOLUME_SIZE, SPECULAR_PROBES_VOLUME_SIZE);
-		}
 		const XMFLOAT4& GetProbesCellsCount(ER_ProbeType aType);
 
 		ID3D11ShaderResourceView* GetIntegrationMap() { return mIntegrationMapTextureSRV; }
@@ -107,8 +97,6 @@ namespace Library
 		
 		ER_QuadRenderer* mQuadRenderer = nullptr;
 		Camera& mMainCamera;
-		RenderableAABB* mDebugDiffuseProbeVolumeGizmo = nullptr;
-		RenderableAABB* mDebugSpecularProbeVolumeGizmo = nullptr;
 
 		ID3D11PixelShader* mConvolutionPS = nullptr;
 
@@ -116,8 +104,6 @@ namespace Library
 
 		XMFLOAT3 mSceneProbesMinBounds;
 		XMFLOAT3 mSceneProbesMaxBounds;
-
-		int mMaxProbesInVolumeCount = 0;
 
 		// Diffuse probes members
 		std::vector<ER_LightProbe*> mDiffuseProbes;
@@ -143,6 +129,7 @@ namespace Library
 		bool mDiffuseProbesReady = false;
 		ER_LightProbe* mGlobalDiffuseProbe = nullptr;
 		bool mGlobalDiffuseProbeReady = false;
+		float mDistanceBetweenDiffuseProbes = 0.0f;
 
 		// Specular probes members
 		std::vector<ER_LightProbe*> mSpecularProbes;
@@ -172,6 +159,9 @@ namespace Library
 		bool mSpecularProbesReady = false;
 		ER_LightProbe* mGlobalSpecularProbe = nullptr;
 		bool mGlobalSpecularProbeReady = false;
+		float mDistanceBetweenSpecularProbes = 0.0f;
+		float mSpecularProbesVolumeSize = 0.0f;
+		int mMaxSpecularProbesInVolumeCount = 0;
 
 		std::wstring mLevelPath;
 		bool mEnabled = true;

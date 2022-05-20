@@ -14,11 +14,15 @@ bin/x64/Release/Library.lib
 *.obj
 !content/models/*.obj
 
-# ignore generated light probes in levels
+# ignore generated light probes in levels (except global probes):
+# - testScene
 content/levels/testScene/diffuse_probes/*
 content/levels/testScene/specular_probes/*
 !content/levels/testScene/diffuse_probes/empty.file
 !content/levels/testScene/specular_probes/empty.file
+!content/levels/testScene/diffuse_probes/diffuse_probe_global.dds
+!content/levels/testScene/specular_probes/specular_probe_global.dds
+# - other levels...
 
 # taken from NVIDIA GameWorks - VolumetricLight
 content/shaders/VolumetricLight

@@ -84,6 +84,8 @@
 		0.20000000000000001,
 		-120.0
 	],
+	"light_probes_diffuse_distance" : 15.0,
+	"light_probes_specular_distance" : 120.0,
 	"rendering_objects" : 
 	[
 		{
@@ -99,7 +101,7 @@
 					"name" : "GBufferMaterial"
 				},
 				{
-					"name" : "VoxelizationMaterial"
+					"name" : "RenderToLightProbeMaterial"
 				}
 			],
 			"textures" : 
@@ -147,7 +149,7 @@
 					"name" : "GBufferMaterial"
 				},
 				{
-					"name" : "VoxelizationMaterial"
+					"name" : "RenderToLightProbeMaterial"
 				}
 			],
 			"textures" : 
@@ -195,7 +197,7 @@
 					"name" : "GBufferMaterial"
 				},
 				{
-					"name" : "VoxelizationMaterial"
+					"name" : "RenderToLightProbeMaterial"
 				}
 			],
 			"textures" : 
@@ -270,14 +272,6 @@
 		},
 		{
 			"instanced" : false,
-			"materials" : 
-			[
-				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				}
-			],
 			"model_path" : "content\\models\\sphere.fbx",
 			"name" : "Simple sphere Pink",
 			"new_materials" : 
@@ -381,9 +375,6 @@
 				},
 				{
 					"name" : "RenderToLightProbeMaterial"
-				},
-				{
-					"name" : "VoxelizationMaterial"
 				}
 			],
 			"textures" : 
@@ -1493,14 +1484,6 @@
 		},
 		{
 			"instanced" : false,
-			"materials" : 
-			[
-				{
-					"effect" : "content\\effects\\VoxelizationGI.fx",
-					"name" : "VoxelizationGIMaterial",
-					"technique" : "voxelizationGI"
-				}
-			],
 			"model_path" : "content\\models\\couch\\couch.fbx",
 			"name" : "Green couch",
 			"new_materials" : 
