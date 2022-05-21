@@ -277,10 +277,13 @@ namespace Library {
 #pragma endregion
 
 		#pragma region DRAW_DEBUG_GIZMOS
+		// TODO: consider moving all debug gizmos to a separate debug renderer system
 		if (Utility::IsEditorMode)
 		{
-			mDirectionalLight->DrawProxyModel(gameTime); //TODO move to ER_Illumination() or better to separate debug renderer system
+			mDirectionalLight->DrawProxyModel(gameTime);
 			mIllumination->DrawDebugGizmos();
+			for (auto& it = mScene->objects.begin(); it != mScene->objects.end(); it++)
+				it->second->DrawAABB();
 		}
 #pragma endregion
 

@@ -447,16 +447,12 @@ namespace Library
 				else
 					context->DrawIndexed(mMeshesRenderBuffers[lod][materialName][i]->IndicesCount, 0, 0);
 			}
-
-			//TODO broken after the change to deferred shading ( move to a separate debug render system)
-			if (!toDepth && mAvailableInEditorMode && mIsSelected)
-				DrawAABB();
 		}
 	}
 
 	void ER_RenderingObject::DrawAABB()
 	{
-		if (mAvailableInEditorMode && mEnableAABBDebug && Utility::IsEditorMode)
+		if (mIsSelected && mAvailableInEditorMode && mEnableAABBDebug && Utility::IsEditorMode)
 			mDebugAABB->Draw();
 	}
 
