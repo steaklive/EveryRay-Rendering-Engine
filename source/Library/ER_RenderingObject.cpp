@@ -10,7 +10,7 @@
 #include "Mesh.h"
 #include "Utility.h"
 #include "ER_Illumination.h"
-#include "RenderableAABB.h"
+#include "ER_RenderableAABB.h"
 #include "ER_Material.h"
 #include "Camera.h"
 #include "MatrixHelper.h"
@@ -69,7 +69,7 @@ namespace Library
 		mGlobalAABB = mLocalAABB;
 
 		if (mAvailableInEditorMode) {
-			mDebugAABB = new RenderableAABB(*mGame, XMFLOAT4{ 0.0f, 0.0f, 1.0f, 1.0f });
+			mDebugAABB = new ER_RenderableAABB(*mGame, XMFLOAT4{ 0.0f, 0.0f, 1.0f, 1.0f });
 			mDebugAABB->InitializeGeometry({ mLocalAABB.first, mLocalAABB.second });
 		}
 

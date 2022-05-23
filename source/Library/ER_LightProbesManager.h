@@ -27,7 +27,7 @@ namespace Library
 	class GameTime;
 	class ER_QuadRenderer;
 	class Scene;
-	class RenderableAABB;
+	class ER_RenderableAABB;
 	class ER_GPUBuffer;
 	class ER_LightProbe;
 

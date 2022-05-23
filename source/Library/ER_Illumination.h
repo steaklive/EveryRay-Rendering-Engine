@@ -21,7 +21,7 @@ namespace Library
 	class ER_ShadowMapper;
 	class ER_FoliageManager;
 	class IBLRadianceMap;
-	class RenderableAABB;
+	class ER_RenderableAABB;
 	class ER_RenderingObject;
 	class ER_GPUBuffer;
 	class ER_Skybox;
@@ -181,7 +181,7 @@ namespace Library
 		XMFLOAT4 mVoxelCameraPositions[NUM_VOXEL_GI_CASCADES];
 		ER_AABB mVoxelCascadesAABBs[NUM_VOXEL_GI_CASCADES];
 		
-		std::vector<RenderableAABB*> mDebugVoxelZonesGizmos;
+		std::vector<ER_RenderableAABB*> mDebugVoxelZonesGizmos;
 
 		float mVCTIndirectDiffuseStrength = 1.0f;
 		float mVCTIndirectSpecularStrength = 1.0f;

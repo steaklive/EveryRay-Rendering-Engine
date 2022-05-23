@@ -11,7 +11,7 @@
 #include "ER_RenderingObject.h"
 #include "Model.h"
 #include "Scene.h"
-#include "RenderableAABB.h"
+#include "ER_RenderableAABB.h"
 #include "ER_GPUBuffer.h"
 #include "ER_LightProbe.h"
 #include "ER_QuadRenderer.h"

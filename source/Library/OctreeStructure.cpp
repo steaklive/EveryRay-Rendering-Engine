@@ -1,5 +1,5 @@
 #include "OctreeStructure.h"
-#include "RenderableAABB.h"
+#include "ER_RenderableAABB.h"
 #include "MatrixHelper.h"
 
 namespace Library 
@@ -454,7 +454,7 @@ namespace Library
 			if (IsLeafNode()) break;
 			mChildNodes[i]->InitializeCellAABBs(game, camera);
 		}
-		mCellAABB = new RenderableAABB(game, XMFLOAT4{ 0.0, 0.0, 0.0, 1.0 });
+		mCellAABB = new ER_RenderableAABB(game, XMFLOAT4{ 0.0, 0.0, 0.0, 1.0 });
 
 		std::vector<XMFLOAT3> volumeAABB;
 		volumeAABB.push_back(XMFLOAT3(mHalfWidth + mCenter.x, mHalfWidth + mCenter.y, mHalfWidth + mCenter.z));

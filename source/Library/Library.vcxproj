@@ -240,7 +240,7 @@
     <ClInclude Include="ER_QuadRenderer.h" />
     <ClInclude Include="RasterizerStates.h" />
     <ClInclude Include="Ray.h" />
-    <ClInclude Include="RenderableAABB.h" />
+    <ClInclude Include="ER_RenderableAABB.h" />
     <ClInclude Include="RenderableOBB.h" />
     <ClInclude Include="ER_RenderingObject.h" />
     <ClInclude Include="RenderStateHelper.h" />
@@ -319,7 +319,7 @@
     <ClCompile Include="ER_QuadRenderer.cpp" />
     <ClCompile Include="RasterizerStates.cpp" />
     <ClCompile Include="Ray.cpp" />
-    <ClCompile Include="RenderableAABB.cpp" />
+    <ClCompile Include="ER_RenderableAABB.cpp" />
     <ClCompile Include="RenderableOBB.cpp" />
     <ClCompile Include="RenderStateHelper.cpp" />
     <ClCompile Include="RenderTarget.cpp" />

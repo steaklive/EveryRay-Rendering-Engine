@@ -22,7 +22,7 @@
 #include "ER_GBuffer.h"
 #include "ER_ShadowMapper.h"
 #include "ER_FoliageManager.h"
-#include "RenderableAABB.h"
+#include "ER_RenderableAABB.h"
 #include "ER_GPUBuffer.h"
 #include "ER_LightProbe.h"
 #include "ER_MaterialsCallbacks.h"
@@ -214,7 +214,7 @@ namespace Library {
 				
 				mVoxelCameraPositions[i] = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f);
 				
-				mDebugVoxelZonesGizmos.push_back(new RenderableAABB(*mGame, XMFLOAT4(0.1f, 0.34f, 0.1f, 1.0f)));
+				mDebugVoxelZonesGizmos.push_back(new ER_RenderableAABB(*mGame, XMFLOAT4(0.1f, 0.34f, 0.1f, 1.0f)));
 				float maxBB = voxelCascadesSizes[i] / mWorldVoxelScales[i] * 0.5f;
 				mVoxelCascadesAABBs[i].first = XMFLOAT3(-maxBB, -maxBB, -maxBB);
 				mVoxelCascadesAABBs[i].second = XMFLOAT3(maxBB, maxBB, maxBB);

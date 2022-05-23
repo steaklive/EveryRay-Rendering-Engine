@@ -3,7 +3,7 @@
 #include "Common.h"
 #include "SpatialCell.h"
 #include "RenderableOBB.h"
-#include "RenderableAABB.h"
+#include "ER_RenderableAABB.h"
 #include "CollisionDetectionTypes.h"
 
 
@@ -38,7 +38,7 @@ namespace Library
 		void DoSphereCheckFirst(bool val) { mDoSphereCheckFirst = val; };
 
 		RenderableOBB* OBB;
-		RenderableAABB* AABB;
+		ER_RenderableAABB* AABB;
 		CollisionDetectionTypes CollisionType = CollisionDetectionTypes::AABBvsAABB;
 
 	private:

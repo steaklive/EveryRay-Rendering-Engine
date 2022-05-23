@@ -11,7 +11,7 @@ namespace Library
 	class Game;
 	class GameTime;
 	class ER_Material;
-	class RenderableAABB;
+	class ER_RenderableAABB;
 	class Camera;
 	class Model;
 
@@ -264,7 +264,7 @@ namespace Library
 		ER_AABB													mLocalAABB;
 		ER_AABB													mGlobalAABB;
 		XMFLOAT3												mCurrentGlobalAABBVertices[8];
-		RenderableAABB*											mDebugAABB;
+		ER_RenderableAABB*											mDebugAABB;
 		std::unique_ptr<Model>									mModel;
 		std::vector<std::unique_ptr<Model>>						mModelLODs;
 		std::vector<int>										mMeshesCount;

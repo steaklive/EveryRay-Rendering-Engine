@@ -3,7 +3,7 @@
 #include "Common.h"
 #include "SpatialElement.h"
 #include "SpatialCell.h"
-#include "RenderableAABB.h"
+#include "ER_RenderableAABB.h"
 #include <chrono>
 
 namespace Library
@@ -73,7 +73,7 @@ namespace Library
 		int mDepth;
 
 
-		RenderableAABB* mCellAABB;
+		ER_RenderableAABB* mCellAABB;
 
 
 

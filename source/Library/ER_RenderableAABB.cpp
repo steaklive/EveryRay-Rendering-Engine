@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "RenderableAABB.h"
+#include "ER_RenderableAABB.h"
 #include "Game.h"
 #include "GameException.h"
 #include "ER_BasicColorMaterial.h"
@@ -40,7 +40,7 @@ namespace Library
 		7, 4
 	};
 
-	RenderableAABB::RenderableAABB(Game& game, const XMFLOAT4& color)
+	ER_RenderableAABB::ER_RenderableAABB(Game& game, const XMFLOAT4& color)
 		: mGame(game),
 		mVertexBuffer(nullptr), mIndexBuffer(nullptr), mMaterial(nullptr),
 		mColor(color)
@@ -51,19 +51,19 @@ namespace Library
 		mIndexBuffer = new ER_GPUBuffer(device, AABBIndices, AABBIndexCount, sizeof(USHORT), D3D11_USAGE_IMMUTABLE, D3D11_BIND_INDEX_BUFFER);
 	}
 
-	RenderableAABB::~RenderableAABB()
+	ER_RenderableAABB::~ER_RenderableAABB()
 	{
 		DeleteObject(mVertexBuffer);
 		DeleteObject(mIndexBuffer);
 		DeleteObject(mMaterial);
 	}
 
-	void RenderableAABB::SetAABB(const std::vector<XMFLOAT3>& aabb)
+	void ER_RenderableAABB::SetAABB(const std::vector<XMFLOAT3>& aabb)
 	{
 		mAABB = std::make_pair(aabb[0], aabb[1]);
 	}
 
-	void RenderableAABB::InitializeGeometry(const std::vector<XMFLOAT3>& aabb)
+	void ER_RenderableAABB::InitializeGeometry(const std::vector<XMFLOAT3>& aabb)
 	{
 		mAABB = std::make_pair(aabb[0], aabb[1]);
 
@@ -80,13 +80,13 @@ namespace Library
 		mVertexBuffer = new ER_GPUBuffer(device, mVertices, AABBVertexCount, sizeof(VertexPosition), D3D11_USAGE_DYNAMIC, D3D11_BIND_VERTEX_BUFFER, D3D11_CPU_ACCESS_WRITE);
 	}
 
-	void RenderableAABB::Update(ER_AABB& aabb)
+	void ER_RenderableAABB::Update(ER_AABB& aabb)
 	{
 		mAABB = aabb;
 		UpdateVertices();
 	}
 
-	void RenderableAABB::Draw()
+	void ER_RenderableAABB::Draw()
 	{
 		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
@@ -101,12 +101,12 @@ namespace Library
 		context->DrawIndexed(AABBIndexCount, 0, 0);
 	}
 
-	void RenderableAABB::SetColor(const XMFLOAT4& color)
+	void ER_RenderableAABB::SetColor(const XMFLOAT4& color)
 	{
 		mColor = color;
 	}
 
-	void RenderableAABB::UpdateVertices()
+	void ER_RenderableAABB::UpdateVertices()
 	{
 		mVertices[0] = XMFLOAT4(mAABB.first.x, mAABB.second.y, mAABB.first.z, 1.0f);
 		mVertices[1] = XMFLOAT4(mAABB.second.x, mAABB.second.y, mAABB.first.z, 1.0f);

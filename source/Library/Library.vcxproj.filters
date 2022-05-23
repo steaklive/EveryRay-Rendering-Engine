@@ -204,9 +204,6 @@
     <ClInclude Include="DemoLevel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RenderableAABB.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DepthTarget.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -319,6 +316,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ER_VolumetricFog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ER_RenderableAABB.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -449,9 +449,6 @@
     <ClCompile Include="ER_GPUTexture.cpp">
       <Filter>Source Files\Graphics\Graphics API</Filter>
     </ClCompile>
-    <ClCompile Include="RenderableAABB.cpp">
-      <Filter>Source Files\Helpers</Filter>
-    </ClCompile>
     <ClCompile Include="RenderableOBB.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
@@ -529,6 +526,9 @@
     </ClCompile>
     <ClCompile Include="..\..\external\DirectXMath\SHMath\DirectXSHD3D11.cpp">
       <Filter>Source Files\Helpers\DirectXSH</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_RenderableAABB.cpp">
+      <Filter>Source Files\Helpers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
