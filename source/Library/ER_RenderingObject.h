@@ -148,7 +148,8 @@ namespace Library
 		XMFLOAT4X4 GetTransformationMatrix4X4() const { return XMFLOAT4X4(mCurrentObjectTransformMatrix); }
 		XMMATRIX GetTransformationMatrix() const { return mTransformationMatrix; }
 
-		const ER_AABB& GetLocalAABB() { return mLocalAABB; }
+		const ER_AABB& GetLocalAABB() { return mLocalAABB; } //local space (no transforms)
+		const ER_AABB& GetGlobalAABB() { return mGlobalAABB; } //world space (with transforms)
 
 		void SetTransformationMatrix(const XMMATRIX& mat);
 		void SetTranslation(float x, float y, float z);
@@ -261,6 +262,8 @@ namespace Library
 		std::vector<float>										mMeshesReflectionFactors; 
 		std::map<std::string, ER_Material*>						mMaterials;
 		ER_AABB													mLocalAABB;
+		ER_AABB													mGlobalAABB;
+		XMFLOAT3												mCurrentGlobalAABBVertices[8];
 		RenderableAABB*											mDebugAABB;
 		std::unique_ptr<Model>									mModel;
 		std::vector<std::unique_ptr<Model>>						mModelLODs;

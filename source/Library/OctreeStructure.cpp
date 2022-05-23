@@ -454,15 +454,12 @@ namespace Library
 			if (IsLeafNode()) break;
 			mChildNodes[i]->InitializeCellAABBs(game, camera);
 		}
-		mCellAABB = new RenderableAABB(game, camera);
-		mCellAABB->Initialize();
+		mCellAABB = new RenderableAABB(game, XMFLOAT4{ 0.0, 0.0, 0.0, 1.0 });
 
 		std::vector<XMFLOAT3> volumeAABB;
-		volumeAABB.push_back(XMFLOAT3(mHalfWidth, mHalfWidth, mHalfWidth));
-		volumeAABB.push_back(XMFLOAT3(-mHalfWidth, -mHalfWidth, -mHalfWidth));
-
-		mCellAABB->InitializeGeometry(volumeAABB, XMMatrixScaling(1, 1, 1));
-		mCellAABB->SetPosition(mCenter);
+		volumeAABB.push_back(XMFLOAT3(mHalfWidth + mCenter.x, mHalfWidth + mCenter.y, mHalfWidth + mCenter.z));
+		volumeAABB.push_back(XMFLOAT3(-mHalfWidth + mCenter.x, -mHalfWidth + mCenter.y, -mHalfWidth + mCenter.z));
+		mCellAABB->InitializeGeometry(volumeAABB);
 	}
 	void OctreeNode::UpdateCellsAABBs(const GameTime& gameTime)
 	{
@@ -471,14 +468,10 @@ namespace Library
 			if (IsLeafNode()) break;
 			mChildNodes[i]->UpdateCellsAABBs(gameTime);
 		}
-		mCellAABB->SetPosition(mCenter);
-		mCellAABB->Update();
+		//mCellAABB->Update(); TODO
 	}
 	void OctreeNode::DrawCells(const GameTime& gameTime)
 	{
-
-
-		
 		for (size_t i = 0; i < 8; i++)
 		{
 			if (IsLeafNode()) break;

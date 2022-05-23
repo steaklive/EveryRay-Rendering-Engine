@@ -66,12 +66,11 @@ namespace Library
 
 		LoadAssignedMeshTextures();
 		mLocalAABB = std::make_pair(mModel->GenerateAABB()[0], mModel->GenerateAABB()[1]);
+		mGlobalAABB = mLocalAABB;
 
 		if (mAvailableInEditorMode) {
-			mDebugAABB = new RenderableAABB(*mGame, mCamera);
-			mDebugAABB->Initialize();
-			mDebugAABB->InitializeGeometry({ mLocalAABB.first, mLocalAABB.second }, XMMatrixScaling(1, 1, 1));
-			mDebugAABB->SetPosition(XMFLOAT3(0,0,0));
+			mDebugAABB = new RenderableAABB(*mGame, XMFLOAT4{ 0.0f, 0.0f, 1.0f, 1.0f });
+			mDebugAABB->InitializeGeometry({ mLocalAABB.first, mLocalAABB.second });
 		}
 
 		XMFLOAT4X4 transform = XMFLOAT4X4( mCurrentObjectTransformMatrix );
@@ -588,13 +587,49 @@ namespace Library
 			}
 		}
 
-		if (mAvailableInEditorMode && mEnableAABBDebug && Utility::IsEditorMode && mIsSelected)
+		//update global AABB
 		{
-			mDebugAABB->SetPosition(XMFLOAT3(mMatrixTranslation[0],mMatrixTranslation[1],mMatrixTranslation[2]));
-			mDebugAABB->SetScale(XMFLOAT3(mMatrixScale[0], mMatrixScale[1], mMatrixScale[2]));
-			mDebugAABB->SetRotationMatrix(XMMatrixRotationRollPitchYaw(XMConvertToRadians(mMatrixRotation[0]), XMConvertToRadians(mMatrixRotation[1]), XMConvertToRadians(mMatrixRotation[2])));
-			mDebugAABB->Update();
+			mGlobalAABB = mLocalAABB;
+
+			// computing AABB from the non-axis aligned BB
+			mCurrentGlobalAABBVertices[0] = (XMFLOAT3(mGlobalAABB.first.x, mGlobalAABB.second.y, mGlobalAABB.first.z));
+			mCurrentGlobalAABBVertices[1] = (XMFLOAT3(mGlobalAABB.second.x, mGlobalAABB.second.y, mGlobalAABB.first.z));
+			mCurrentGlobalAABBVertices[2] = (XMFLOAT3(mGlobalAABB.second.x, mGlobalAABB.first.y, mGlobalAABB.first.z));
+			mCurrentGlobalAABBVertices[3] = (XMFLOAT3(mGlobalAABB.first.x, mGlobalAABB.first.y, mGlobalAABB.first.z));
+			mCurrentGlobalAABBVertices[4] = (XMFLOAT3(mGlobalAABB.first.x, mGlobalAABB.second.y, mGlobalAABB.second.z));
+			mCurrentGlobalAABBVertices[5] = (XMFLOAT3(mGlobalAABB.second.x, mGlobalAABB.second.y, mGlobalAABB.second.z));
+			mCurrentGlobalAABBVertices[6] = (XMFLOAT3(mGlobalAABB.second.x, mGlobalAABB.first.y, mGlobalAABB.second.z));
+			mCurrentGlobalAABBVertices[7] = (XMFLOAT3(mGlobalAABB.first.x, mGlobalAABB.first.y, mGlobalAABB.second.z));
+			
+			// non-axis-aligned BB (applying transform)
+			for (size_t i = 0; i < 8; i++)
+			{
+				XMVECTOR point = XMVector3Transform(XMLoadFloat3(&(mCurrentGlobalAABBVertices[i])), mTransformationMatrix);
+				XMStoreFloat3(&(mCurrentGlobalAABBVertices[i]), point);
+			}
+
+			XMFLOAT3 minVertex = XMFLOAT3(FLT_MAX, FLT_MAX, FLT_MAX);
+			XMFLOAT3 maxVertex = XMFLOAT3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+			for (UINT i = 0; i < 8; i++)
+			{
+				//Get the smallest vertex 
+				minVertex.x = std::min(minVertex.x, mCurrentGlobalAABBVertices[i].x);    // Find smallest x value in model
+				minVertex.y = std::min(minVertex.y, mCurrentGlobalAABBVertices[i].y);    // Find smallest y value in model
+				minVertex.z = std::min(minVertex.z, mCurrentGlobalAABBVertices[i].z);    // Find smallest z value in model
+
+				//Get the largest vertex 
+				maxVertex.x = std::max(maxVertex.x, mCurrentGlobalAABBVertices[i].x);    // Find largest x value in model
+				maxVertex.y = std::max(maxVertex.y, mCurrentGlobalAABBVertices[i].y);    // Find largest y value in model
+				maxVertex.z = std::max(maxVertex.z, mCurrentGlobalAABBVertices[i].z);    // Find largest z value in model
+			}
+
+			ER_AABB newAABB(minVertex, maxVertex);
+			mGlobalAABB = newAABB;
 		}
+
+		if (mAvailableInEditorMode && mEnableAABBDebug && Utility::IsEditorMode && mIsSelected)
+			mDebugAABB->Update(mGlobalAABB);
 
 		if (GetLODCount() > 1)
 			UpdateLODs();
@@ -636,10 +671,21 @@ namespace Library
 
 			ImGui::TextColored(ImVec4(0.8f, 0.2f, 0.24f, 1), name.c_str());
 			ImGui::Separator();
-			//if (!mIsInstanced)
-				ImGui::Checkbox("Rendered", &mIsRendered);
+			ImGui::Checkbox("Rendered", &mIsRendered);
 			ImGui::Checkbox("Show AABB", &mEnableAABBDebug);
-			ImGui::Checkbox("Wireframe", &mWireframeMode);
+			ImGui::Checkbox("Show Wireframe", &mWireframeMode);
+
+			std::string modeName = "Shaded in: ";
+			if (mIsForwardShading)
+			{
+				modeName += "Forward";
+				ImGui::TextColored(ImVec4(0.2f, 0.2f, 0.9f, 1), modeName.c_str());
+			}
+			else
+			{
+				modeName += "Deferred";
+				ImGui::TextColored(ImVec4(0.2f, 0.2f, 0.9f, 1), modeName.c_str());
+			}
 
 			if (ImGui::IsKeyPressed(84))
 				mCurrentGizmoOperation = ImGuizmo::TRANSLATE;

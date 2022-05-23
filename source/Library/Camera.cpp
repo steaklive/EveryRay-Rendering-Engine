@@ -293,7 +293,7 @@ namespace Library
 			bool isInstanced = object.second->IsInstanced();
 			std::vector<InstancedData> newInstanceData;
 			int instanceCount = object.second->GetInstanceCount();
-			auto aabb = object.second->GetLocalAABB();
+			auto aabb = object.second->GetGlobalAABB();
 			XMFLOAT3 position; 
 			XMMATRIX instanceWorldMatrix = XMMatrixIdentity();
 
@@ -301,6 +301,7 @@ namespace Library
 			{
 				bool cull = false;
 				MatrixHelper::GetTranslation(object.second->GetTransformationMatrix(), position);
+				position = XMFLOAT3(0.0, 0.0, 0.0); 
 				instanceWorldMatrix = XMMatrixIdentity();
 
 				if (isInstanced)

@@ -54,7 +54,7 @@ namespace Library
 
 			//objects
 			ImGui::TextColored(ImVec4(0.12f, 0.78f, 0.44f, 1), "Scene objects");
-			if (ImGui::CollapsingHeader("LOD Properties"))
+			if (ImGui::CollapsingHeader("Global LOD Properties"))
 			{
 				ImGui::SliderFloat("LOD #0 distance", &Utility::DistancesLOD[0], 0.0f, 100.0f);
 				ImGui::SliderFloat("LOD #1 distance", &Utility::DistancesLOD[1], Utility::DistancesLOD[0], 250.0f);

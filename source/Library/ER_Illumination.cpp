@@ -214,13 +214,11 @@ namespace Library {
 				
 				mVoxelCameraPositions[i] = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f);
 				
-				mDebugVoxelZonesGizmos.push_back(new RenderableAABB(*mGame, mCamera, XMFLOAT4(0.1f, 0.34f, 0.1f, 1.0f)));
-				mDebugVoxelZonesGizmos[i]->Initialize();
+				mDebugVoxelZonesGizmos.push_back(new RenderableAABB(*mGame, XMFLOAT4(0.1f, 0.34f, 0.1f, 1.0f)));
 				float maxBB = voxelCascadesSizes[i] / mWorldVoxelScales[i] * 0.5f;
 				mVoxelCascadesAABBs[i].first = XMFLOAT3(-maxBB, -maxBB, -maxBB);
 				mVoxelCascadesAABBs[i].second = XMFLOAT3(maxBB, maxBB, maxBB);
-				mDebugVoxelZonesGizmos[i]->InitializeGeometry({ mVoxelCascadesAABBs[i].first, mVoxelCascadesAABBs[i].second }, XMMatrixScaling(1, 1, 1));
-				mDebugVoxelZonesGizmos[i]->SetPosition(XMFLOAT3(mVoxelCameraPositions[i].x, mVoxelCameraPositions[i].y, mVoxelCameraPositions[i].z));
+				mDebugVoxelZonesGizmos[i]->InitializeGeometry({ mVoxelCascadesAABBs[i].first, mVoxelCascadesAABBs[i].second });
 			}
 			mVCTMainRT = new ER_GPUTexture(mGame->Direct3DDevice(), 
 				static_cast<UINT>(mGame->ScreenWidth()) * VCT_GI_MAIN_PASS_DOWNSCALE, static_cast<UINT>(mGame->ScreenHeight()) * VCT_GI_MAIN_PASS_DOWNSCALE, 1u, 
@@ -602,9 +600,6 @@ namespace Library {
 			}
 			else
 				mIsVCTVoxelCameraPositionsUpdated = false;
-
-			mDebugVoxelZonesGizmos[i]->SetPosition(XMFLOAT3(mVoxelCameraPositions[i].x, mVoxelCameraPositions[i].y, mVoxelCameraPositions[i].z));
-			mDebugVoxelZonesGizmos[i]->Update();
 		}
 	}
 
