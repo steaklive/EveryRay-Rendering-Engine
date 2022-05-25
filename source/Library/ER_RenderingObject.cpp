@@ -387,8 +387,15 @@ namespace Library
 	}
 	
 	void ER_RenderingObject::Draw(const std::string& materialName, bool toDepth, int meshIndex) {
-		for (int lod = 0; lod < GetLODCount(); lod++)
-			DrawLOD(materialName, toDepth, meshIndex, lod);
+		
+		// for instanced objects we run DrawLOD() for all available LODs (some instances might end up in one LOD, others in other LODs)
+		if (mIsInstanced)
+		{
+			for (int lod = 0; lod < GetLODCount(); lod++)
+				DrawLOD(materialName, toDepth, meshIndex, lod);
+		}
+		else
+			DrawLOD(materialName, toDepth, meshIndex, mCurrentLODIndex);
 	}
 
 	void ER_RenderingObject::DrawLOD(const std::string& materialName, bool toDepth, int meshIndex, int lod)
@@ -761,8 +768,12 @@ namespace Library
 				if (mInstanceCullingFlags[mEditorSelectedInstancedObjectIndex]) //showing info for main LOD only in editor
 					name += " (Culled)";
 			}
-			else if (mIsCulled && !mIsInstanced)
-				name += " (Culled)";
+			else
+			{
+				name += " LOD #" + std::to_string(mCurrentLODIndex);
+				if (mIsCulled)
+					name += " (Culled)";
+			}
 
 			ImGui::TextColored(ImVec4(0.8f, 0.2f, 0.24f, 1), name.c_str());
 
@@ -955,7 +966,28 @@ namespace Library
 			for (int i = 0; i < GetLODCount(); i++)
 				UpdateInstanceBuffer(mTempPostLoddingInstanceData[i], i);
 		}
-		//TODO add LOD support for non-instanced objects
+		else
+		{
+			XMFLOAT3 pos;
+			MatrixHelper::GetTranslation(mTransformationMatrix, pos);
+
+			float distanceToCameraSqr =
+				(mCamera.Position().x - pos.x) * (mCamera.Position().x - pos.x) +
+				(mCamera.Position().y - pos.y) * (mCamera.Position().y - pos.y) +
+				(mCamera.Position().z - pos.z) * (mCamera.Position().z - pos.z);
+
+			if (distanceToCameraSqr <= Utility::DistancesLOD[0] * Utility::DistancesLOD[0]) {
+				mCurrentLODIndex = 0;
+			}
+			else if (Utility::DistancesLOD[0] * Utility::DistancesLOD[0] < distanceToCameraSqr && distanceToCameraSqr <= Utility::DistancesLOD[1] * Utility::DistancesLOD[1]) {
+				mCurrentLODIndex = 1;
+			}
+			else if (Utility::DistancesLOD[1] * Utility::DistancesLOD[1] < distanceToCameraSqr && distanceToCameraSqr <= Utility::DistancesLOD[2] * Utility::DistancesLOD[2]) {
+				mCurrentLODIndex = 2;
+			}
+
+			mCurrentLODIndex = std::min(mCurrentLODIndex, GetLODCount());
+		}
 	}
 }
 

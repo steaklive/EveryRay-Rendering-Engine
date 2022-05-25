@@ -290,6 +290,7 @@ namespace Library
 		std::string												mName;
 		const char*												mInstancedNamesUI[MAX_INSTANCE_COUNT];
 		int														mIndexInScene = -1;
+		int														mCurrentLODIndex = 0; //only used for non-instanced object
 		int														mEditorSelectedInstancedObjectIndex = 0;
 		int														mNumInstancesPerVegetationZone = 0;
 		bool													mEnableAABBDebug = true;

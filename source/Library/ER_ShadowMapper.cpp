@@ -262,7 +262,11 @@ namespace Library
 					for (int meshIndex = 0; meshIndex < it->second->GetMeshCount(); meshIndex++)
 					{
 						static_cast<ER_ShadowMapMaterial*>(materialInfo->second)->PrepareForRendering(materialSystems, it->second, meshIndex, i);
-						it->second->Draw(name, true, meshIndex);
+						if (!it->second->IsInstanced())
+							it->second->DrawLOD(name, true, meshIndex, it->second->GetLODCount() - 1); //drawing highest LOD
+						else
+							it->second->Draw(name, true, meshIndex);
+
 					}
 				}
 			}

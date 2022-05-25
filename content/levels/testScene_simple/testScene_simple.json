@@ -57,6 +57,63 @@
 			"use_in_global_lightprobe_rendering" : true
 		},
 		{
+			"instanced" : false,
+			"model_lods" : 
+			[
+				{
+					"path" : "content\\models\\rocks\\rock_1\\rock_1_lod_high.fbx"
+				},
+				{
+					"path" : "content\\models\\rocks\\rock_1\\rock_1_lod_mid.fbx"
+				},
+				{
+					"path" : "content\\models\\rocks\\rock_1\\rock_1_lod_low.fbx"
+				}
+			],
+			"model_path" : "content\\models\\rocks\\rock_1\\rock_1_lod_high.fbx",
+			"name" : "Rock 1",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\models\\rocks\\rock_1\\rock_low_Base_Color.png",
+					"metalness" : "content\\models\\rocks\\rock_1\\rock_low_Metallic.png",
+					"normal" : "content\\models\\rocks\\rock_1\\rock_low_Normal_DirectX.png",
+					"roughness" : "content\\models\\rocks\\rock_1\\rock_low_Roughness.png"
+				}
+			],
+			"transform" : 
+			[
+				0.90517723560333252,
+				0.0,
+				0.4250321090221405,
+				38.242660522460938,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				-0.4250321090221405,
+				0.0,
+				0.90517723560333252,
+				41.258087158203125,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
 			"instanced" : true,
 			"instances_transforms" : 
 			[
@@ -103,7 +160,19 @@
 					]
 				}
 			],
-			"model_path" : "content\\models\\bunny.fbx",
+			"model_path" : "content\\models\\bunny\\bunny_lod_high.fbx",
+			"model_lods" : 
+			[
+				{
+					"path" : "content\\models\\bunny\\bunny_lod_high.fbx"
+				},
+				{
+					"path" : "content\\models\\bunny\\bunny_lod_mid.fbx"
+				},
+				{
+					"path" : "content\\models\\bunny\\bunny_lod_low.fbx"
+				}
+			],
 			"name" : "Bunny (Blue)",
 			"new_materials" : 
 			[
@@ -145,7 +214,19 @@
 		},
 		{
 			"instanced" : false,
-			"model_path" : "content\\models\\dragon.fbx",
+			"model_path" : "content\\models\\dragon\\dragon_lod_high.fbx",
+			"model_lods" : 
+			[
+				{
+					"path" : "content\\models\\dragon\\dragon_lod_high.fbx"
+				},
+				{
+					"path" : "content\\models\\dragon\\dragon_lod_mid.fbx"
+				},
+				{
+					"path" : "content\\models\\dragon\\dragon_lod_low.fbx"
+				}
+			],
 			"name" : "Dragon (Green)",
 			"new_materials" : 
 			[
