@@ -26,11 +26,18 @@ https://youtu.be/_htQNxesr9U
 
 (^) - needs to be tested or refactored
 
-# Some of the engine features
-- 3D model loading (.obj, .fbx and etc.) with Assimp Library
-- Loading/saving to JSON scene files
-- Simple objects editor
-- AABB, OBB, collision detection
+# Some of the engine concepts/features
+- Concept of a simplified generic game object - "ER_RenderingObject":
+- - supports model loading (.obj, .fbx and etc.) with Assimp Library
+- - supports multiple meshes
+- - supports texture loading (.png, .jpg, .dds, .tga)
+- - supports materials
+- - supports GPU instancing
+- - supports LOD groups
+- - customizable via "Object editor" (with instancing support)
+- Concept of a generic scene, which contains "ER_RenderingObject" elements + scene data (lights, GI and other info):
+- - supports loading from & saving to JSON scene files
+- AABB, OBB, collision detection (with octree)
 - ImGUI, ImGuizmo
  
 # Roadmap (big architectural engine tasks)
