@@ -148,8 +148,9 @@ namespace Library
 		XMFLOAT4X4 GetTransformationMatrix4X4() const { return XMFLOAT4X4(mCurrentObjectTransformMatrix); }
 		XMMATRIX GetTransformationMatrix() const { return mTransformationMatrix; }
 
-		const ER_AABB& GetLocalAABB() { return mLocalAABB; } //local space (no transforms)
-		const ER_AABB& GetGlobalAABB() { return mGlobalAABB; } //world space (with transforms)
+		ER_AABB& GetLocalAABB() { return mLocalAABB; } //local space (no transforms)
+		ER_AABB& GetGlobalAABB() { return mGlobalAABB; } //world space (with transforms)
+		ER_AABB& GetInstanceAABB(int index) { return mInstanceAABBs[index]; } //world space (with transforms)
 
 		void SetTransformationMatrix(const XMMATRIX& mat);
 		void SetTranslation(float x, float y, float z);
@@ -162,6 +163,8 @@ namespace Library
 		void AddInstanceData(const XMMATRIX& worldMatrix, int lod = -1);
 		UINT InstanceSize() const;
 		
+		void PerformCPUFrustumCull(Camera* camera);
+		
 		void Rename(const std::string& name) { mName = name; }
 		const std::string& GetName() { return mName; }
 
@@ -170,11 +173,6 @@ namespace Library
 		}
 		void UpdateLODs();
 		void LoadLOD(std::unique_ptr<Model> pModel);
-		void LoadPostCullingInstanceData(std::vector<InstancedData>& instanceData) {
-			mPostCullingInstanceDataPerLOD.clear();
-			for (int i = 0; i < GetLODCount(); i++)
-				mPostCullingInstanceDataPerLOD.push_back(instanceData);
-		}
 		
 		float GetMinScale() { return mMinScale; }
 		void SetMinScale(float v) { mMinScale = v; }
@@ -244,41 +242,55 @@ namespace Library
 		std::vector<std::string>								mCustomHeightTextures;
 		std::vector<std::string>								mCustomReflectionMaskTextures;
 	private:
+		void UpdateAABB(ER_AABB& aabb, const XMMATRIX& transformMatrix);
 		void LoadAssignedMeshTextures();
 		void LoadTexture(TextureType type, const std::wstring& path, int meshIndex);
 		void CreateInstanceBuffer(ID3D11Device* device, InstancedData* instanceData, UINT instanceCount, ID3D11Buffer** instanceBuffer);
 		
-		void ShowInstancesListUI();
-		void UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix);
+		void ShowInstancesListWindow();
+		void ShowObjectsEditorWindow(const float *cameraView, float *cameraProjection, float* matrix);
 		
 		Game* mGame = nullptr;
 		Camera& mCamera;
 
+		std::map<std::string, ER_Material*>						mMaterials;
+
+		///****************************************************************************************************************************
+		// *** mesh/model data (buffers, textures, etc.) ***
+		std::vector<std::map<std::string, std::vector<RenderBufferData*>>>	mMeshesRenderBuffers;
 		std::vector<TextureData>								mMeshesTextureBuffers;
 		std::vector<std::vector<InstanceBufferData*>>			mMeshesInstanceBuffers;
-		std::vector<std::vector<std::vector<XMFLOAT3>>>			mMeshVertices; 
-		std::vector<std::vector<XMFLOAT3>>						mMeshAllVertices; 
-		std::vector<std::map<std::string, std::vector<RenderBufferData*>>>	mMeshesRenderBuffers;
+		std::vector<std::vector<std::vector<XMFLOAT3>>>			mMeshVertices; // vertices per mesh, per LOD group
+		std::vector<std::vector<XMFLOAT3>>						mMeshAllVertices; // vertices of all meshes combined, per LOD group
 		std::vector<float>										mMeshesReflectionFactors; 
-		std::map<std::string, ER_Material*>						mMaterials;
-		ER_AABB													mLocalAABB;
-		ER_AABB													mGlobalAABB;
-		XMFLOAT3												mCurrentGlobalAABBVertices[8];
-		ER_RenderableAABB*											mDebugAABB;
+		std::vector<int>										mMeshesCount;
 		std::unique_ptr<Model>									mModel;
 		std::vector<std::unique_ptr<Model>>						mModelLODs;
-		std::vector<int>										mMeshesCount;
-		std::vector<UINT>										mInstanceCount;
-		std::vector<UINT>										mInstanceCountToRender;
-		std::vector<std::vector<InstancedData>>					mInstanceData;
-		std::vector<std::vector<std::string>>					mInstancesNames;
-		std::vector<std::vector<InstancedData>>					mTempInstanceDataPerLOD;
-		std::vector<std::vector<InstancedData>>					mPostCullingInstanceDataPerLOD;
+		// 
+		///****************************************************************************************************************************
+
+		///****************************************************************************************************************************
+		// *** instancing data (counters, transforms etc.) ***
+		UINT													mInstanceCount;
+		std::vector<std::string>								mInstancesNames; // collection of names of instances (mName + index)
+		std::vector<ER_AABB>									mInstanceAABBs; // collection of AABBs for every instance (shared for LODs)
+		std::vector<bool>										mInstanceCullingFlags; // collection of culling flags for every instance (vector is lame here btw...)
+		std::vector<InstancedData>								mTempPostCullingInstanceData; // temp instance data after CPU culling
+		std::vector<std::vector<InstancedData>>					mTempPostLoddingInstanceData; // temp instance data after lodding (per LOD group)
+		std::vector<UINT>										mInstanceCountToRender; //instance render count  (per LOD group)
+		std::vector<std::vector<InstancedData>>					mInstanceData; //original instance data  (per LOD group)
+		// 
+		///****************************************************************************************************************************
+
+		ER_AABB													mLocalAABB; //mesh space AABB
+		ER_AABB													mGlobalAABB; //world space AABB
+		XMFLOAT3												mCurrentGlobalAABBVertices[8];
+		ER_RenderableAABB*										mDebugGizmoAABB;
 	
 		std::string												mName;
 		const char*												mInstancedNamesUI[MAX_INSTANCE_COUNT];
 		int														mIndexInScene = -1;
-		int														mSelectedInstancedObjectIndex = 0;
+		int														mEditorSelectedInstancedObjectIndex = 0;
 		int														mNumInstancesPerVegetationZone = 0;
 		bool													mEnableAABBDebug = true;
 		bool													mWireframeMode = false;
@@ -290,7 +302,7 @@ namespace Library
 		bool													mIsPOM = false;
 		bool													mPlacedOnTerrain = false;
 		bool													mSavedOnTerrain = false;
-		bool													mIsCulled = false;
+		bool													mIsCulled = false; //only for non-instanced objects
 		bool													mFoliageMask = false;
 		bool													mIsInLightProbe = false;
 		bool													mIsInVoxelization = false;

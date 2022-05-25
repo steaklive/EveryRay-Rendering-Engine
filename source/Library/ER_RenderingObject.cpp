@@ -24,7 +24,7 @@ namespace Library
 		mModel(std::move(pModel)),
 		mMeshesReflectionFactors(0),
 		mName(pName),
-		mDebugAABB(nullptr),
+		mDebugGizmoAABB(nullptr),
 		mAvailableInEditorMode(availableInEditor),
 		mTransformationMatrix(XMMatrixIdentity()),
 		mIsInstanced(isInstanced),
@@ -69,8 +69,8 @@ namespace Library
 		mGlobalAABB = mLocalAABB;
 
 		if (mAvailableInEditorMode) {
-			mDebugAABB = new ER_RenderableAABB(*mGame, XMFLOAT4{ 0.0f, 0.0f, 1.0f, 1.0f });
-			mDebugAABB->InitializeGeometry({ mLocalAABB.first, mLocalAABB.second });
+			mDebugGizmoAABB = new ER_RenderableAABB(*mGame, XMFLOAT4{ 0.0f, 0.0f, 1.0f, 1.0f });
+			mDebugGizmoAABB->InitializeGeometry({ mLocalAABB.first, mLocalAABB.second });
 		}
 
 		XMFLOAT4X4 transform = XMFLOAT4X4( mCurrentObjectTransformMatrix );
@@ -96,7 +96,7 @@ namespace Library
 
 		mMeshesTextureBuffers.clear();
 
-		DeleteObject(mDebugAABB);
+		DeleteObject(mDebugGizmoAABB);
 	}
 
 	void ER_RenderingObject::LoadMaterial(ER_Material* pMaterial, const std::string& materialName)
@@ -452,7 +452,7 @@ namespace Library
 	void ER_RenderingObject::DrawAABB()
 	{
 		if (mIsSelected && mAvailableInEditorMode && mEnableAABBDebug && Utility::IsEditorMode)
-			mDebugAABB->Draw();
+			mDebugGizmoAABB->Draw();
 	}
 
 	void ER_RenderingObject::SetTransformationMatrix(const XMMATRIX& mat)
@@ -489,39 +489,33 @@ namespace Library
 		mInstanceData.push_back({});
 		assert(lod < mInstanceData.size());
 
-		mInstanceCount.push_back(mInstanceData[lod].size());
-		assert(lod == mInstanceCount.size() - 1);
-		
-		mInstanceCountToRender.push_back(mInstanceData.size());
+		mInstanceCountToRender.push_back(0);
 		assert(lod == mInstanceCountToRender.size() - 1);
 
 		mMeshesInstanceBuffers.push_back({});
 		assert(lod == mMeshesInstanceBuffers.size() - 1);
 
-		mInstancesNames.push_back({});
-		assert(lod == mInstancesNames.size() - 1);
-
 		//adding extra instance data until we reach MAX_INSTANCE_COUNT 
 		for (int i = mInstanceData[lod].size(); i < MAX_INSTANCE_COUNT; i++)
 			AddInstanceData(XMMatrixIdentity(), lod);
-
-		for (int i = 0; i < mInstanceCount[lod]; i++)
-			mInstancesNames[lod].push_back(mName + " LOD " + std::to_string(lod) + " #" + std::to_string(i));
 
 		//mMeshesInstanceBuffers.clear();
 		for (size_t i = 0; i < mMeshesCount[lod]; i++)
 		{
 			mMeshesInstanceBuffers[lod].push_back(new InstanceBufferData());
-			CreateInstanceBuffer(mGame->Direct3DDevice(), &mInstanceData[lod][0], mInstanceCount[lod], &(mMeshesInstanceBuffers[lod][i]->InstanceBuffer));
+			CreateInstanceBuffer(mGame->Direct3DDevice(), &mInstanceData[lod][0], MAX_INSTANCE_COUNT, &(mMeshesInstanceBuffers[lod][i]->InstanceBuffer));
 			mMeshesInstanceBuffers[lod][i]->Stride = sizeof(InstancedData);
 		}
 	}
 	// new instancing code
 	void ER_RenderingObject::CreateInstanceBuffer(ID3D11Device* device, InstancedData* instanceData, UINT instanceCount, ID3D11Buffer** instanceBuffer)
 	{
+		if (instanceCount > MAX_INSTANCE_COUNT)
+			throw GameException("Instances count limit is exceeded!");
+
 		D3D11_BUFFER_DESC instanceBufferDesc;
 		ZeroMemory(&instanceBufferDesc, sizeof(instanceBufferDesc));
-		instanceBufferDesc.ByteWidth = InstanceSize()/* *instanceCount*/ * MAX_INSTANCE_COUNT;
+		instanceBufferDesc.ByteWidth = InstanceSize() * MAX_INSTANCE_COUNT;
 		instanceBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 		instanceBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		instanceBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -551,7 +545,6 @@ namespace Library
 			mGame->Direct3DDeviceContext()->Map(mMeshesInstanceBuffers[lod][i]->InstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 			memcpy(mappedResource.pData, (instanceData.size() != 0) ? &instanceData[0] : NULL, InstanceSize() * mInstanceCountToRender[lod]);
 			mGame->Direct3DDeviceContext()->Unmap(mMeshesInstanceBuffers[lod][i]->InstanceBuffer, 0);
-
 		}
 	}
 
@@ -560,96 +553,192 @@ namespace Library
 		return sizeof(InstancedData);
 	}
 
-	//Updates
-
-	void ER_RenderingObject::Update(const GameTime & time)
+	void ER_RenderingObject::PerformCPUFrustumCull(Camera* camera)
 	{
+		auto frustum = camera->GetFrustum();
+		auto cullFunction = [frustum](ER_AABB& aabb) {
+			bool culled = false;
+			// start a loop through all frustum planes
+			for (int planeID = 0; planeID < 6; ++planeID)
+			{
+				XMVECTOR planeNormal = XMVectorSet(frustum.Planes()[planeID].x, frustum.Planes()[planeID].y, frustum.Planes()[planeID].z, 0.0f);
+				float planeConstant = frustum.Planes()[planeID].w;
 
-		if (mAvailableInEditorMode && mIsSelected && mIsInstanced /*&& mInstanceCount[0]*/ && Utility::IsEditorMode)
+				XMFLOAT3 axisVert;
+
+				// x-axis
+				if (frustum.Planes()[planeID].x > 0.0f)
+					axisVert.x = aabb.first.x;
+				else
+					axisVert.x = aabb.second.x;
+
+				// y-axis
+				if (frustum.Planes()[planeID].y > 0.0f)
+					axisVert.y = aabb.first.y;
+				else
+					axisVert.y = aabb.second.y;
+
+				// z-axis
+				if (frustum.Planes()[planeID].z > 0.0f)
+					axisVert.z = aabb.first.z;
+				else
+					axisVert.z = aabb.second.z;
+
+
+				if (XMVectorGetX(XMVector3Dot(planeNormal, XMLoadFloat3(&axisVert))) + planeConstant > 0.0f)
+				{
+					culled = true;
+					// Skip remaining planes to check and move on 
+					break;
+				}
+			}
+			return culled;
+		};
+
+		assert(mInstanceCullingFlags.size() == mInstanceCount);
+
+		if (mIsInstanced)
 		{
-			ShowInstancesListUI();
-			MatrixHelper::GetFloatArray(mInstanceData[0][mSelectedInstancedObjectIndex].World, mCurrentObjectTransformMatrix);
+			XMMATRIX instanceWorldMatrix = XMMatrixIdentity();
+			const int currentLOD = 0; // no need to iterate through LODs (AABBs are shared between LODs, so culling results will be identical)
+
+			mTempPostCullingInstanceData.clear();
+			{
+				std::vector<InstancedData> newInstanceData;
+				for (int instanceIndex = 0; instanceIndex < mInstanceCount; instanceIndex++)
+				{
+					instanceWorldMatrix = XMLoadFloat4x4(&(mInstanceData[currentLOD][instanceIndex].World));
+					mInstanceCullingFlags[instanceIndex] = cullFunction(mInstanceAABBs[instanceIndex]);
+					if (!mInstanceCullingFlags[instanceIndex])
+						newInstanceData.push_back(instanceWorldMatrix);
+				}
+				mTempPostCullingInstanceData = newInstanceData; //we store a copy for future usages
+
+				//update every LOD group with new instance data after CPU frustum culling
+				for (int lodIndex = 0; lodIndex < GetLODCount(); lodIndex++)
+					UpdateInstanceBuffer(mTempPostCullingInstanceData, lodIndex);
+			}
+		}
+		else
+			mIsCulled = cullFunction(mGlobalAABB);
+	}
+
+	void ER_RenderingObject::Update(const GameTime& time)
+	{
+		Camera* camera = (Camera*)(mGame->Services().GetService(Camera::TypeIdClass()));
+		assert(camera);
+
+		bool editable = Utility::IsEditorMode && mAvailableInEditorMode && mIsSelected;
+
+		if (editable && mIsInstanced)
+		{
+			// load current selected instance's transform to temp transform (for UI)
+			MatrixHelper::GetFloatArray(mInstanceData[0][mEditorSelectedInstancedObjectIndex].World, mCurrentObjectTransformMatrix);
 		}
 
-		if (mIsSelected)
-			UpdateGizmos();
+		//update AABBs (global and instanced)
+		{
+			mGlobalAABB = mLocalAABB;
+			UpdateAABB(mGlobalAABB, mTransformationMatrix);
 
-		for (int lod = 0; lod < GetLODCount(); lod++) {
-			if (/*mIsSelected &&*/ mIsInstanced)
+			if (mIsInstanced)
 			{
-				mInstanceData[lod][mSelectedInstancedObjectIndex].World = XMFLOAT4X4(mCurrentObjectTransformMatrix);
-				if (!Utility::IsCameraCulling)
-					UpdateInstanceBuffer(mInstanceData[lod], lod);
-				else {
-					if (mPostCullingInstanceDataPerLOD[lod].size() > 0)
-						UpdateInstanceBuffer(mPostCullingInstanceDataPerLOD[lod], lod);
+				XMMATRIX instanceWorldMatrix = XMMatrixIdentity();
+				for (int instanceIndex = 0; instanceIndex < mInstanceCount; instanceIndex++)
+				{
+					instanceWorldMatrix = XMLoadFloat4x4(&(mInstanceData[0][instanceIndex].World));
+					mInstanceAABBs[instanceIndex] = mLocalAABB;
+					UpdateAABB(mInstanceAABBs[instanceIndex], instanceWorldMatrix);
 				}
 			}
 		}
 
-		//update global AABB
+		if (Utility::IsMainCameraCPUFrustumCulling && camera)
+			PerformCPUFrustumCull(camera);
+		else
 		{
-			mGlobalAABB = mLocalAABB;
-
-			// computing AABB from the non-axis aligned BB
-			mCurrentGlobalAABBVertices[0] = (XMFLOAT3(mGlobalAABB.first.x, mGlobalAABB.second.y, mGlobalAABB.first.z));
-			mCurrentGlobalAABBVertices[1] = (XMFLOAT3(mGlobalAABB.second.x, mGlobalAABB.second.y, mGlobalAABB.first.z));
-			mCurrentGlobalAABBVertices[2] = (XMFLOAT3(mGlobalAABB.second.x, mGlobalAABB.first.y, mGlobalAABB.first.z));
-			mCurrentGlobalAABBVertices[3] = (XMFLOAT3(mGlobalAABB.first.x, mGlobalAABB.first.y, mGlobalAABB.first.z));
-			mCurrentGlobalAABBVertices[4] = (XMFLOAT3(mGlobalAABB.first.x, mGlobalAABB.second.y, mGlobalAABB.second.z));
-			mCurrentGlobalAABBVertices[5] = (XMFLOAT3(mGlobalAABB.second.x, mGlobalAABB.second.y, mGlobalAABB.second.z));
-			mCurrentGlobalAABBVertices[6] = (XMFLOAT3(mGlobalAABB.second.x, mGlobalAABB.first.y, mGlobalAABB.second.z));
-			mCurrentGlobalAABBVertices[7] = (XMFLOAT3(mGlobalAABB.first.x, mGlobalAABB.first.y, mGlobalAABB.second.z));
-			
-			// non-axis-aligned BB (applying transform)
-			for (size_t i = 0; i < 8; i++)
+			if (mIsInstanced)
 			{
-				XMVECTOR point = XMVector3Transform(XMLoadFloat3(&(mCurrentGlobalAABBVertices[i])), mTransformationMatrix);
-				XMStoreFloat3(&(mCurrentGlobalAABBVertices[i]), point);
+				//just updating transforms (that could be changed in a previous frame); this is not optimal (GPU buffer map() every frame...)
+				for (int lod = 0; lod < GetLODCount(); lod++)
+					UpdateInstanceBuffer(mInstanceData[lod], lod);
 			}
-
-			XMFLOAT3 minVertex = XMFLOAT3(FLT_MAX, FLT_MAX, FLT_MAX);
-			XMFLOAT3 maxVertex = XMFLOAT3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-
-			for (UINT i = 0; i < 8; i++)
-			{
-				//Get the smallest vertex 
-				minVertex.x = std::min(minVertex.x, mCurrentGlobalAABBVertices[i].x);    // Find smallest x value in model
-				minVertex.y = std::min(minVertex.y, mCurrentGlobalAABBVertices[i].y);    // Find smallest y value in model
-				minVertex.z = std::min(minVertex.z, mCurrentGlobalAABBVertices[i].z);    // Find smallest z value in model
-
-				//Get the largest vertex 
-				maxVertex.x = std::max(maxVertex.x, mCurrentGlobalAABBVertices[i].x);    // Find largest x value in model
-				maxVertex.y = std::max(maxVertex.y, mCurrentGlobalAABBVertices[i].y);    // Find largest y value in model
-				maxVertex.z = std::max(maxVertex.z, mCurrentGlobalAABBVertices[i].z);    // Find largest z value in model
-			}
-
-			ER_AABB newAABB(minVertex, maxVertex);
-			mGlobalAABB = newAABB;
 		}
-
-		if (mAvailableInEditorMode && mEnableAABBDebug && Utility::IsEditorMode && mIsSelected)
-			mDebugAABB->Update(mGlobalAABB);
 
 		if (GetLODCount() > 1)
 			UpdateLODs();
+
+		if (editable)
+		{
+			UpdateGizmos();
+			ShowInstancesListWindow();
+			if (mEnableAABBDebug)
+				mDebugGizmoAABB->Update(mGlobalAABB);
+		}
+	}
+
+	void ER_RenderingObject::UpdateAABB(ER_AABB& aabb, const XMMATRIX& transformMatrix)
+	{
+		// computing AABB from the non-axis aligned BB
+		mCurrentGlobalAABBVertices[0] = (XMFLOAT3(aabb.first.x, aabb.second.y, aabb.first.z));
+		mCurrentGlobalAABBVertices[1] = (XMFLOAT3(aabb.second.x, aabb.second.y, aabb.first.z));
+		mCurrentGlobalAABBVertices[2] = (XMFLOAT3(aabb.second.x, aabb.first.y, aabb.first.z));
+		mCurrentGlobalAABBVertices[3] = (XMFLOAT3(aabb.first.x, aabb.first.y, aabb.first.z));
+		mCurrentGlobalAABBVertices[4] = (XMFLOAT3(aabb.first.x, aabb.second.y, aabb.second.z));
+		mCurrentGlobalAABBVertices[5] = (XMFLOAT3(aabb.second.x, aabb.second.y, aabb.second.z));
+		mCurrentGlobalAABBVertices[6] = (XMFLOAT3(aabb.second.x, aabb.first.y, aabb.second.z));
+		mCurrentGlobalAABBVertices[7] = (XMFLOAT3(aabb.first.x, aabb.first.y, aabb.second.z));
+
+		// non-axis-aligned BB (applying transform)
+		for (size_t i = 0; i < 8; i++)
+		{
+			XMVECTOR point = XMVector3Transform(XMLoadFloat3(&(mCurrentGlobalAABBVertices[i])), transformMatrix);
+			XMStoreFloat3(&(mCurrentGlobalAABBVertices[i]), point);
+		}
+
+		XMFLOAT3 minVertex = XMFLOAT3(FLT_MAX, FLT_MAX, FLT_MAX);
+		XMFLOAT3 maxVertex = XMFLOAT3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+		for (UINT i = 0; i < 8; i++)
+		{
+			//Get the smallest vertex 
+			minVertex.x = std::min(minVertex.x, mCurrentGlobalAABBVertices[i].x);    // Find smallest x value in model
+			minVertex.y = std::min(minVertex.y, mCurrentGlobalAABBVertices[i].y);    // Find smallest y value in model
+			minVertex.z = std::min(minVertex.z, mCurrentGlobalAABBVertices[i].z);    // Find smallest z value in model
+
+			//Get the largest vertex 
+			maxVertex.x = std::max(maxVertex.x, mCurrentGlobalAABBVertices[i].x);    // Find largest x value in model
+			maxVertex.y = std::max(maxVertex.y, mCurrentGlobalAABBVertices[i].y);    // Find largest y value in model
+			maxVertex.z = std::max(maxVertex.z, mCurrentGlobalAABBVertices[i].z);    // Find largest z value in model
+		}
+
+		aabb = ER_AABB(minVertex, maxVertex);
 	}
 	
 	void ER_RenderingObject::UpdateGizmos()
 	{
-		if (!mAvailableInEditorMode)
+		if (!(mAvailableInEditorMode && mIsSelected))
 			return;
 
 		MatrixHelper::GetFloatArray(mCamera.ViewMatrix4X4(), mCameraViewMatrix);
 		MatrixHelper::GetFloatArray(mCamera.ProjectionMatrix4X4(), mCameraProjectionMatrix);
 
-		UpdateGizmoTransform(mCameraViewMatrix, mCameraProjectionMatrix, mCurrentObjectTransformMatrix);
+		ShowObjectsEditorWindow(mCameraViewMatrix, mCameraProjectionMatrix, mCurrentObjectTransformMatrix);
 
 		XMFLOAT4X4 mat(mCurrentObjectTransformMatrix);
 		mTransformationMatrix = XMLoadFloat4x4(&mat);
+
+		//update instance world transform (from editor's gizmo/UI)
+		if (mIsInstanced && Utility::IsEditorMode)
+		{
+			for (int lod = 0; lod < GetLODCount(); lod++)
+				mInstanceData[lod][mEditorSelectedInstancedObjectIndex].World = XMFLOAT4X4(mCurrentObjectTransformMatrix);
+		}
 	}
 	
-	void ER_RenderingObject::UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix)
+	// Shows and updates an ImGui/ImGizmo window for objects editor.
+	// You can edit transform (via UI or via gizmo), you can move to object, set/read some flags, get some useful info, etc.
+	void ER_RenderingObject::ShowObjectsEditorWindow(const float *cameraView, float *cameraProjection, float* matrix)
 	{
 		static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
 		static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
@@ -666,26 +755,54 @@ namespace Library
 
 			ImGui::Begin("Object Editor");
 			std::string name = mName;
-			if (mIsCulled)
+			if (mIsInstanced)
+			{
+				name = mInstancesNames[mEditorSelectedInstancedObjectIndex];
+				if (mInstanceCullingFlags[mEditorSelectedInstancedObjectIndex]) //showing info for main LOD only in editor
+					name += " (Culled)";
+			}
+			else if (mIsCulled && !mIsInstanced)
 				name += " (Culled)";
 
 			ImGui::TextColored(ImVec4(0.8f, 0.2f, 0.24f, 1), name.c_str());
+
+			ImGui::Separator();
+			std::string lodCountText = "* LOD count: " + std::to_string(GetLODCount());
+			ImGui::Text(lodCountText.c_str());
+			for (int lodI = 0; lodI < GetLODCount(); lodI++)
+			{
+				std::string vertexCountText = "--> Vertex count LOD#" + std::to_string(lodI) + ": " + std::to_string(GetVertices(lodI).size());
+				ImGui::Text(vertexCountText.c_str());
+			}
+
+			std::string meshCountText = "* Mesh count: " + std::to_string(GetMeshCount());
+			ImGui::Text(meshCountText.c_str());
+
+			std::string instanceCountText = "* Instance count: " + std::to_string(GetInstanceCount());
+			ImGui::Text(instanceCountText.c_str());
+
+			std::string shadingModeName = "* Shaded in: ";
+			if (mIsForwardShading)
+				shadingModeName += "Forward";
+			else 
+				shadingModeName += "Deferred";
+			ImGui::Text(shadingModeName.c_str());
+
 			ImGui::Separator();
 			ImGui::Checkbox("Rendered", &mIsRendered);
 			ImGui::Checkbox("Show AABB", &mEnableAABBDebug);
 			ImGui::Checkbox("Show Wireframe", &mWireframeMode);
+			if (ImGui::Button("Move camera to"))
+			{
+				XMFLOAT3 newCameraPos;
+				MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), newCameraPos);
 
-			std::string modeName = "Shaded in: ";
-			if (mIsForwardShading)
-			{
-				modeName += "Forward";
-				ImGui::TextColored(ImVec4(0.2f, 0.2f, 0.9f, 1), modeName.c_str());
+				Camera* camera = (Camera*)(mGame->Services().GetService(Camera::TypeIdClass()));
+				if (camera)
+					camera->SetPosition(newCameraPos);
 			}
-			else
-			{
-				modeName += "Deferred";
-				ImGui::TextColored(ImVec4(0.2f, 0.2f, 0.9f, 1), modeName.c_str());
-			}
+
+			//Transforms
 
 			if (ImGui::IsKeyPressed(84))
 				mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
@@ -717,20 +834,27 @@ namespace Library
 		}
 	}
 	
-	void ER_RenderingObject::ShowInstancesListUI()
+	// Shows an ImGui window for instances list.
+	// You can select an instance, read some useful info about it and edit it via "Objects Editor".
+	// We do not need to edit per LOD (LODs share same transforms, AABBs, names).
+	void ER_RenderingObject::ShowInstancesListWindow()
 	{
-		assert(mInstanceCount.size() != 0);
-		assert(mInstanceData[0].size() != 0);
+		if (!(mAvailableInEditorMode && mIsSelected && mIsInstanced))
+			return;
+
+		assert(mInstanceCount != 0);
+		assert(mInstanceData[0].size() != 0 && mInstanceData[0].size() == mInstanceCount);
+		assert(mInstancesNames.size() == mInstanceCount);
 
 		std::string title = mName + " instances:";
 		ImGui::Begin(title.c_str());
 
-		//for (int i = 0; i < mInstanceData[0].size(); i++) {
-		//	mInstancedNamesUI[i] = dynamic_cast<char*>(i);
-		//}
+		for (int i = 0; i < mInstanceData[0].size(); i++) {
+			mInstancedNamesUI[i] = mInstancesNames[i].c_str();
+		}
 
 		ImGui::PushItemWidth(-1);
-		ImGui::ListBox("##empty", &mSelectedInstancedObjectIndex, mInstancedNamesUI, mInstanceData[0].size(), 15);
+		ImGui::ListBox("##empty", &mEditorSelectedInstancedObjectIndex, mInstancedNamesUI, mInstanceData[0].size(), 15);
 		ImGui::End();
 	}
 	
@@ -762,16 +886,22 @@ namespace Library
 	{
 		assert(lod < GetLODCount());
 
-		mInstancesNames[lod].clear();
-		mInstanceCount[lod] = count;
 		mInstanceCountToRender[lod] = count;
 
-		for (int i = 0; i < mInstanceCount[lod]; i++)
-			mInstancesNames[lod].push_back(mName + " LOD " + std::to_string(lod) + " #" + std::to_string(i));
+		if (lod == 0)
+		{
+			mInstanceCount = count;
+			for (int i = 0; i < mInstanceCount; i++)
+			{
+				std::string instanceName = mName + " #" + std::to_string(i);
+				mInstancesNames.push_back(instanceName);
+				mInstanceAABBs.push_back(mLocalAABB);
+				mInstanceCullingFlags.push_back(false);
+			}
+		}
 
 		if (clear)
 			mInstanceData[lod].clear();
-		
 	}
 	void ER_RenderingObject::AddInstanceData(const XMMATRIX& worldMatrix, int lod)
 	{
@@ -788,21 +918,21 @@ namespace Library
 	void ER_RenderingObject::UpdateLODs()
 	{
 		if (mIsInstanced) {
-			if (!Utility::IsCameraCulling && mInstanceData.size() == 0)
+			if (!Utility::IsMainCameraCPUFrustumCulling && mInstanceData.size() == 0)
 				return;
-			if (Utility::IsCameraCulling && mPostCullingInstanceDataPerLOD.size() == 0)
+			if (Utility::IsMainCameraCPUFrustumCulling && mTempPostCullingInstanceData.size() == 0)
 				return;
 
-			mTempInstanceDataPerLOD.clear();
+			mTempPostLoddingInstanceData.clear();
 			for (int lod = 0; lod < GetLODCount(); lod++)
-				mTempInstanceDataPerLOD.push_back({});
+				mTempPostLoddingInstanceData.push_back({});
 
 			//traverse through original or culled instance data (sort of "read-only") to rebalance LOD's instance buffers
-			int length = (Utility::IsCameraCulling) ? mPostCullingInstanceDataPerLOD[0].size() : mInstanceData[0].size();
+			int length = (Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData.size() : mInstanceData[0].size();
 			for (int i = 0; i < length; i++)
 			{
 				XMFLOAT3 pos;
-				XMMATRIX mat = (Utility::IsCameraCulling) ? XMLoadFloat4x4(&mPostCullingInstanceDataPerLOD[0][i].World) : XMLoadFloat4x4(&mInstanceData[0][i].World);
+				XMMATRIX mat = (Utility::IsMainCameraCPUFrustumCulling) ? XMLoadFloat4x4(&mTempPostCullingInstanceData[i].World) : XMLoadFloat4x4(&mInstanceData[0][i].World);
 				MatrixHelper::GetTranslation(mat, pos);
 
 				float distanceToCameraSqr =
@@ -812,18 +942,18 @@ namespace Library
 
 				XMMATRIX newMat;
 				if (distanceToCameraSqr <= Utility::DistancesLOD[0] * Utility::DistancesLOD[0]) {
-					mTempInstanceDataPerLOD[0].push_back((Utility::IsCameraCulling) ? mPostCullingInstanceDataPerLOD[0][i].World : mInstanceData[0][i].World);
+					mTempPostLoddingInstanceData[0].push_back((Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
 				}
 				else if (Utility::DistancesLOD[0] * Utility::DistancesLOD[0] < distanceToCameraSqr && distanceToCameraSqr <= Utility::DistancesLOD[1] * Utility::DistancesLOD[1]) {
-					mTempInstanceDataPerLOD[1].push_back((Utility::IsCameraCulling) ? mPostCullingInstanceDataPerLOD[0][i].World : mInstanceData[0][i].World);
+					mTempPostLoddingInstanceData[1].push_back((Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
 				}
 				else if (Utility::DistancesLOD[1] * Utility::DistancesLOD[1] < distanceToCameraSqr && distanceToCameraSqr <= Utility::DistancesLOD[2] * Utility::DistancesLOD[2]) {
-					mTempInstanceDataPerLOD[2].push_back((Utility::IsCameraCulling) ? mPostCullingInstanceDataPerLOD[0][i].World : mInstanceData[0][i].World);
+					mTempPostLoddingInstanceData[2].push_back((Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
 				}
 			}
 
 			for (int i = 0; i < GetLODCount(); i++)
-				UpdateInstanceBuffer(mTempInstanceDataPerLOD[i], i);
+				UpdateInstanceBuffer(mTempPostLoddingInstanceData[i], i);
 		}
 		//TODO add LOD support for non-instanced objects
 	}

@@ -32,6 +32,7 @@ namespace Library
 		float FieldOfView() const;
 		float NearPlaneDistance() const;
 		float FarPlaneDistance() const;
+		Frustum GetFrustum() const { return mFrustum; }
 
 		XMMATRIX ViewMatrix() const;
 		XMFLOAT4X4 ViewMatrix4X4() const;
@@ -40,7 +41,6 @@ namespace Library
 		XMMATRIX ViewProjectionMatrix() const;
 		XMMATRIX RotationTransformMatrix() const;
 
-		void Cull(const std::map<std::string, ER_RenderingObject*>& objects);
 		float GetCameraFarShadowCascadeDistance (int index) const;
 		float GetCameraNearShadowCascadeDistance (int index) const;
 

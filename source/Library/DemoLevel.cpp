@@ -179,7 +179,6 @@ namespace Library {
 			((Camera*)game.Services().GetService(Camera::TypeIdClass()))->ViewMatrix4X4(),
 			((Camera*)game.Services().GetService(Camera::TypeIdClass()))->ProjectionMatrix4X4()); //TODO refactor to DebugRenderer
 
-		mScene->GetCamera().Cull(mScene->objects);
 		for (auto& object : mScene->objects)
 			object.second->Update(gameTime);
 

@@ -238,7 +238,7 @@ namespace Rendering
 			mCamera->SetNearPlaneDistance(nearPlaneDist);
 			ImGui::SliderFloat("Camera Far Plane", &farPlaneDist, 150.0f, 200000.0f);
 			mCamera->SetFarPlaneDistance(farPlaneDist);
-			ImGui::Checkbox("Enable culling", &Utility::IsCameraCulling);
+			ImGui::Checkbox("CPU frustum culling", &Utility::IsMainCameraCPUFrustumCulling);
 			ImGui::End();
 		}
 			
