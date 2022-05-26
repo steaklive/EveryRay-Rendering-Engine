@@ -38,6 +38,7 @@ https://youtu.be/_htQNxesr9U
 - Concept of a generic scene, which contains "ER_RenderingObject" elements + scene data (lights, GI and other info):
 - - supports loading from & saving to JSON scene files
 - AABB, OBB, collision detection (with octree)
+- CPU frustum culling
 - ImGUI, ImGuizmo
  
 # Roadmap (big architectural engine tasks)
