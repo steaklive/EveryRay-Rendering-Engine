@@ -133,7 +133,6 @@ namespace Library
 		void Draw(const std::string& materialName, bool toDepth = false, int meshIndex = -1);
 		void DrawLOD(const std::string& materialName, bool toDepth, int meshIndex, int lod);
 		void DrawAABB();
-		void UpdateGizmos();
 		void Update(const GameTime& time);
 
 		std::map<std::string, ER_Material*>& GetMaterials() { return mMaterials; }
@@ -247,6 +246,7 @@ namespace Library
 		void LoadTexture(TextureType type, const std::wstring& path, int meshIndex);
 		void CreateInstanceBuffer(ID3D11Device* device, InstancedData* instanceData, UINT instanceCount, ID3D11Buffer** instanceBuffer);
 		
+		void UpdateGizmos();
 		void ShowInstancesListWindow();
 		void ShowObjectsEditorWindow(const float *cameraView, float *cameraProjection, float* matrix);
 		
@@ -323,6 +323,5 @@ namespace Library
 			0.f, 0.f, 1.f, 0.f,
 			0.f, 0.f, 0.f, 1.f 
 		};
-
 	};
 }

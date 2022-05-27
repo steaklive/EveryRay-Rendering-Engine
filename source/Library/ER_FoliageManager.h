@@ -4,6 +4,8 @@
 #include "GeneralEvent.h"
 #include "ConstantBuffer.h"
 
+#define MAX_FOLIAGE_ZONES 4096
+
 namespace Library
 {
 	class Scene;
@@ -12,6 +14,7 @@ namespace Library
 	class ER_ShadowMapper;
 	class ER_PostProcessingStack;
 	class ER_Illumination;
+	class ER_RenderableAABB;
 
 	namespace FoliageCBufferData {
 		struct FoliageData {
@@ -69,16 +72,18 @@ namespace Library
 		float scale;
 	};
 
-	class ER_Foliage : public GameComponent
+	class ER_Foliage
 	{
-
 	public:
-		ER_Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale = 1.0f, float distributionRadius = 100, const XMFLOAT3& distributionCenter = XMFLOAT3(0.0f, 0.0f, 0.0f), FoliageBillboardType bType = FoliageBillboardType::SINGLE);
+		ER_Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, const std::string& textureName, float scale = 1.0f, float distributionRadius = 100, const XMFLOAT3& distributionCenter = XMFLOAT3(0.0f, 0.0f, 0.0f), FoliageBillboardType bType = FoliageBillboardType::SINGLE);
 		~ER_Foliage();
 
 		void Initialize();
 		void Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass);
 		void Update(const GameTime& gameTime);
+
+		bool IsSelected() { return mIsSelectedInEditor; }
+		void SetSelected(bool val) { mIsSelectedInEditor = val; }
 
 		int GetPatchesCount() { return mPatchesCount; }
 		void SetWireframe(bool flag) { mIsWireframe = flag; }
@@ -100,6 +105,8 @@ namespace Library
 		float GetPatchPositionX(int i) { return mPatchesBufferCPU[i].xPos; }
 		float GetPatchPositionZ(int i) { return mPatchesBufferCPU[i].zPos; }
 
+		const XMFLOAT3& GetDistributionCenter() { return mDistributionCenter; }
+
 		void CreateBufferGPU();
 		void UpdateBuffersGPU();
 
@@ -109,6 +116,11 @@ namespace Library
 			mVoxelCameraPos = voxelCameraPos;
 			mVoxelTextureDimension = voxelTexDimension;
 		}
+
+		bool PerformCPUFrustumCull(Camera* camera);
+
+		void SetName(const std::string& name) { mName = name; }
+		const std::string& GetName() { return mName; }
 	private:
 		void InitializeBuffersGPU(int count);
 		void InitializeBuffersCPU();
@@ -116,6 +128,7 @@ namespace Library
 		void CalculateDynamicLOD(float distanceToCam);
 		void CreateBlendStates();
 
+		Game& mGame;
 		Camera& mCamera;
 		DirectionalLight& mDirectionalLight;
 
@@ -140,6 +153,17 @@ namespace Library
 		CPUFoliageData* mPatchesBufferCPU = nullptr;
 
 		FoliageBillboardType mType;
+
+		ER_RenderableAABB* mDebugGizmoAABB = nullptr;
+		ER_AABB mAABB;
+		const float mAABBExtentY = 5.0f;
+		const float mAABBExtentXZ = 1.0f;
+
+		std::string mName;
+		std::string mTextureName;
+
+		bool mIsSelectedInEditor = false;
+		bool mIsCulled = false;
 
 		int mPatchesCount;
 		int mPatchesCountVisible;
@@ -166,12 +190,26 @@ namespace Library
 		float* mWorldVoxelScale;
 		const float* mVoxelTextureDimension;
 		XMFLOAT4* mVoxelCameraPos;
+
+		float		mCameraViewMatrix[16];
+		float		mCameraProjectionMatrix[16];
+		XMMATRIX	mTransformationMatrix;
+		float		mMatrixTranslation[3];
+		float		mMatrixRotation[3];
+		float		mMatrixScale[3];
+		float		mCurrentObjectTransformMatrix[16] =
+		{
+			1.f, 0.f, 0.f, 0.f,
+			0.f, 1.f, 0.f, 0.f,
+			0.f, 0.f, 1.f, 0.f,
+			0.f, 0.f, 0.f, 1.f
+		};
 	};
 
-	class ER_FoliageManager
+	class ER_FoliageManager : public GameComponent
 	{
 	public:
-		ER_FoliageManager(Scene* aScene, DirectionalLight& light);
+		ER_FoliageManager(Game& pGame, Scene* aScene, DirectionalLight& light);
 		~ER_FoliageManager();
 
 		void Initialize();
@@ -179,10 +217,21 @@ namespace Library
 		void Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass);
 		void AddFoliage(ER_Foliage* foliage);
 		void SetVoxelizationParams(float* scale, const float* dimensions, XMFLOAT4* voxelCamera);
+		void Config() { mShowDebug = !mShowDebug; }
 
 		using Delegate_FoliageSystemInitialized = std::function<void()>;
 		GeneralEvent<Delegate_FoliageSystemInitialized>* FoliageSystemInitializedEvent = new GeneralEvent<Delegate_FoliageSystemInitialized>();
 	private:
+		void UpdateImGui();
 		std::vector<ER_Foliage*> mFoliageCollection;
+		Scene* mScene;
+
+		const char* mFoliageZonesNamesUI[MAX_FOLIAGE_ZONES];
+
+		int mEditorSelectedFoliageZoneIndex = 0;
+
+		bool mShowDebug = false;
+		bool mEnabled = true;
+		bool mEnableCulling = true;
 	};
 }

@@ -10,6 +10,7 @@ namespace Library
 {
 	bool Utility::IsEditorMode = false;
 	bool Utility::IsLightEditor = false;
+	bool Utility::IsFoliageEditor = false;
 	bool Utility::IsMainCameraCPUFrustumCulling = true;
 	float Utility::DistancesLOD[MAX_LOD] = { 100.0f, 240.0f, 400.0f };
 

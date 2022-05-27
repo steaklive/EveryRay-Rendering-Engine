@@ -122,7 +122,7 @@ namespace Library {
 
 		#pragma region INIT_FOLIAGE_MANAGER
 		game.CPUProfiler()->BeginCPUTime("Foliage init");
-		mFoliageSystem = new ER_FoliageManager(mScene, *mDirectionalLight);
+		mFoliageSystem = new ER_FoliageManager(game, mScene, *mDirectionalLight);
 		mFoliageSystem->FoliageSystemInitializedEvent->AddListener("foliage initialized for GI",  [&]() { mIllumination->SetFoliageSystemForGI(mFoliageSystem); });
 		mFoliageSystem->Initialize();
 		game.CPUProfiler()->EndCPUTime("Foliage init");
@@ -200,6 +200,9 @@ namespace Library {
 
         if (ImGui::Button("Global Illumination"))
 			mIllumination->Config();
+
+		if (ImGui::Button("Foliage"))
+			mFoliageSystem->Config();
 
 		if (ImGui::CollapsingHeader("Wind"))
 		{

@@ -27,6 +27,7 @@ namespace Library
 		static float RandomFloat(float a, float b);
 		static bool IsEditorMode;
 		static bool IsLightEditor;
+		static bool IsFoliageEditor;
 		static bool IsMainCameraCPUFrustumCulling;
 		static float DistancesLOD[MAX_LOD];
 	private:

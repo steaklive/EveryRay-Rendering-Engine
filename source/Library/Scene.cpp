@@ -380,6 +380,34 @@ namespace Library
 		}
 	}
 
+	void Scene::SaveFoliageZonesTransforms(const std::vector<ER_Foliage*>& foliageZones)
+	{
+		if (mScenePath.empty())
+			throw GameException("Can't save to scene json file! Empty scene name...");
+
+		if (root.isMember("foliage_zones")) {
+			assert(foliageZones.size() == root["foliage_zones"].size());
+			float vec3[3];
+			for (Json::Value::ArrayIndex iz = 0; iz != root["foliage_zones"].size(); iz++)
+			{
+				Json::Value content(Json::arrayValue);
+				vec3[0] = foliageZones[iz]->GetDistributionCenter().x;
+				vec3[1] = foliageZones[iz]->GetDistributionCenter().y;
+				vec3[2] = foliageZones[iz]->GetDistributionCenter().z;
+				for (Json::Value::ArrayIndex i = 0; i < 3; i++)
+					content.append(vec3[i]);
+				root["foliage_zones"][iz]["position"] = content;
+			}
+		}
+
+		Json::StreamWriterBuilder builder;
+		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+
+		std::ofstream file_id;
+		file_id.open(mScenePath.c_str());
+		writer->write(root, &file_id);
+	}
+
 	void Scene::SaveRenderingObjectsTransforms()
 	{
 		if (mScenePath.empty())

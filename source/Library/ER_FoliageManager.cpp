@@ -14,10 +14,12 @@
 #include "ER_Illumination.h"
 #include "Camera.h"
 #include "ShaderCompiler.h"
+#include "ER_RenderableAABB.h"
 
 namespace Library
 {
-	ER_FoliageManager::ER_FoliageManager(Scene* aScene, DirectionalLight& light) 
+	ER_FoliageManager::ER_FoliageManager(Game& pGame, Scene* aScene, DirectionalLight& light) 
+		: GameComponent(pGame), mScene(aScene)
 	{
 		assert(aScene);
 		if (aScene->HasFoliage())
@@ -32,8 +34,13 @@ namespace Library
 
 	void ER_FoliageManager::Initialize()
 	{
+		int zoneIndex = 0;
+		std::string name;
 		for (auto& foliage : mFoliageCollection) {
 			foliage->CreateBufferGPU();
+			name = "Foliage zone #" + std::to_string(zoneIndex);
+			foliage->SetName(name);
+			zoneIndex++;
 		}
 
 		for (auto listener : FoliageSystemInitializedEvent->GetListeners())
@@ -42,15 +49,25 @@ namespace Library
 
 	void ER_FoliageManager::Update(const GameTime& gameTime, float gustDistance, float strength, float frequency)
 	{
-		for (auto& foliage : mFoliageCollection)
+		Camera* camera = (Camera*)(mGame->Services().GetService(Camera::TypeIdClass()));
+
+		if (mEnabled)
 		{
-			foliage->SetWindParams(gustDistance, strength, frequency);
-			foliage->Update(gameTime);
+			for (auto& foliage : mFoliageCollection)
+			{
+				foliage->SetWindParams(gustDistance, strength, frequency);
+				foliage->Update(gameTime);
+				foliage->PerformCPUFrustumCull((Utility::IsMainCameraCPUFrustumCulling && mEnableCulling) ? camera : nullptr);
+			}
 		}
+		UpdateImGui();
 	}
 
 	void ER_FoliageManager::Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass)
 	{
+		if (!mEnabled)
+			return;
+
 		for (auto& object : mFoliageCollection)
 			object->Draw(gameTime, worldShadowMapper, renderPass);
 	}
@@ -68,11 +85,38 @@ namespace Library
 			object->SetVoxelizationParams(scale, dimensions, voxelCamera);
 	}
 	
+	const std::string showNoteInEditorText = "Note: enable full editor mode for this to work.";
+
+	void ER_FoliageManager::UpdateImGui()
+	{
+		if (!mShowDebug || mFoliageCollection.size() == 0)
+			return;
+
+		ImGui::Begin("Foliage System");
+		ImGui::Checkbox("Enabled", &mEnabled);
+		ImGui::Checkbox("CPU frustum cull", &mEnableCulling);
+		ImGui::Checkbox("Enable foliage editor", &Utility::IsFoliageEditor);
+		if (ImGui::Button("Save foliage changes"))
+			mScene->SaveFoliageZonesTransforms(mFoliageCollection);
+
+		ImGui::Text(showNoteInEditorText.c_str());
+
+		for (int i = 0; i < mFoliageCollection.size(); i++)
+			mFoliageZonesNamesUI[i] = mFoliageCollection[i]->GetName().c_str();
+
+		ImGui::PushItemWidth(-1);
+		ImGui::ListBox("##empty", &mEditorSelectedFoliageZoneIndex, mFoliageZonesNamesUI, mFoliageCollection.size(), 15);
+		ImGui::End();
+
+		for (int i = 0; i < mFoliageCollection.size(); i++)
+			mFoliageCollection[i]->SetSelected(i == mEditorSelectedFoliageZoneIndex);
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	ER_Foliage::ER_Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, std::string textureName, float scale, float distributionRadius, const XMFLOAT3& distributionCenter, FoliageBillboardType bType)
+	ER_Foliage::ER_Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, const std::string& textureName, float scale, float distributionRadius, const XMFLOAT3& distributionCenter, FoliageBillboardType bType)
 		:
-		GameComponent(pGame),
+		mGame(pGame),
 		mCamera(pCamera),
 		mDirectionalLight(pLight),
 		mPatchesCount(pPatchesCount),
@@ -80,14 +124,16 @@ namespace Library
 		mScale(scale),
 		mDistributionRadius(distributionRadius - 0.1f),
 		mDistributionCenter(distributionCenter),
-		mType(bType)
+		mType(bType),
+		mTextureName(textureName)
 	{
 
+		//shaders
 		{
 			ID3DBlob* blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
 				throw GameException("Failed to load VSMain from shader: Foliage.hlsl!");
-			if (FAILED(GetGame()->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVS)))
+			if (FAILED(mGame.Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVS)))
 				throw GameException("Failed to create vertex shader from Foliage.hlsl!");
 
 			D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
@@ -101,7 +147,7 @@ namespace Library
 				{ "WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
 			};
 
-			HRESULT hr = GetGame()->Direct3DDevice()->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), blob->GetBufferPointer(), blob->GetBufferSize(), &mInputLayout);
+			HRESULT hr = mGame.Direct3DDevice()->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), blob->GetBufferPointer(), blob->GetBufferSize(), &mInputLayout);
 			if (FAILED(hr))
 				throw GameException("CreateInputLayout() failed when creating foliage's vertex shader.", hr);
 			blob->Release();
@@ -109,35 +155,35 @@ namespace Library
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "GSMain", "gs_5_0", &blob)))
 				throw GameException("Failed to load GSMain from shader: Foliage.hlsl!");
-			if (FAILED(GetGame()->Direct3DDevice()->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mGS)))
+			if (FAILED(mGame.Direct3DDevice()->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mGS)))
 				throw GameException("Failed to create geometry shader from Foliage.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
 				throw GameException("Failed to load PSMain from shader: Foliage.hlsl!");
-			if (FAILED(GetGame()->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS)))
+			if (FAILED(mGame.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS)))
 				throw GameException("Failed to create pixel shader from Foliage.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "PSMain_gbuffer", "ps_5_0", &blob)))
 				throw GameException("Failed to load PSMain_gbuffer from shader: Foliage.hlsl!");
-			if (FAILED(GetGame()->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS_GBuffer)))
+			if (FAILED(mGame.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS_GBuffer)))
 				throw GameException("Failed to create pixel shader from Foliage.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "PSMain_voxelization", "ps_5_0", &blob)))
 				throw GameException("Failed to load PSMain_voxelization from shader: Foliage.hlsl!");
-			if (FAILED(GetGame()->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS_Voxelization)))
+			if (FAILED(mGame.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS_Voxelization)))
 				throw GameException("Failed to create pixel shader from Foliage.hlsl!");
 			blob->Release();
 		}
 
 		LoadBillboardModel(mType);
 
-		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::ToWideString(textureName).c_str(), nullptr, &mAlbedoTexture)))
+		if (FAILED(DirectX::CreateWICTextureFromFile(mGame.Direct3DDevice(), mGame.Direct3DDeviceContext(), Utility::ToWideString(textureName).c_str(), nullptr, &mAlbedoTexture)))
 		{
 			std::string message = "Failed to create Foliage Albedo Map: ";
 			message += textureName;
@@ -158,6 +204,7 @@ namespace Library
 		ReleaseObject(mNoBlendState);
 		DeleteObject(mPatchesBufferCPU);
 		DeleteObject(mPatchesBufferGPU);
+		DeleteObject(mDebugGizmoAABB);
 		ReleaseObject(mInputLayout);
 		ReleaseObject(mVS);
 		ReleaseObject(mGS);
@@ -171,21 +218,21 @@ namespace Library
 	{
 		if (bType == FoliageBillboardType::SINGLE) {
 			mIsRotating = true;
-			std::unique_ptr<Model> quadSingleModel(new Model(*mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_single.obj"), true));
+			std::unique_ptr<Model> quadSingleModel(new Model(mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_single.obj"), true));
 			quadSingleModel->Meshes()[0]->CreateVertexBuffer_PositionUvNormal(&mVertexBuffer);
 			quadSingleModel->Meshes()[0]->CreateIndexBuffer(&mIndexBuffer);
 			mVerticesCount = quadSingleModel->Meshes()[0]->Indices().size();
 		}
 		else if (bType == FoliageBillboardType::TWO_QUADS_CROSSING) {
 			mIsRotating = false;
-			std::unique_ptr<Model> quadDoubleModel(new Model(*mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_double.obj"), true));
+			std::unique_ptr<Model> quadDoubleModel(new Model(mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_double.obj"), true));
 			quadDoubleModel->Meshes()[0]->CreateVertexBuffer_PositionUvNormal(&mVertexBuffer);
 			quadDoubleModel->Meshes()[0]->CreateIndexBuffer(&mIndexBuffer);
 			mVerticesCount = quadDoubleModel->Meshes()[0]->Indices().size();
 		}
 		else if (bType == FoliageBillboardType::THREE_QUADS_CROSSING) {
 			mIsRotating = false;
-			std::unique_ptr<Model> quadTripleModel(new Model(*mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_triple.obj"), true));
+			std::unique_ptr<Model> quadTripleModel(new Model(mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_triple.obj"), true));
 			quadTripleModel->Meshes()[0]->CreateVertexBuffer_PositionUvNormal(&mVertexBuffer);
 			quadTripleModel->Meshes()[0]->CreateIndexBuffer(&mIndexBuffer);
 			mVerticesCount = quadTripleModel->Meshes()[0]->Indices().size();
@@ -193,9 +240,20 @@ namespace Library
 	}
 	void ER_Foliage::Initialize()
 	{
-		mFoliageConstantBuffer.Initialize(GetGame()->Direct3DDevice());
+		mFoliageConstantBuffer.Initialize(mGame.Direct3DDevice());
 		InitializeBuffersCPU();
 		//InitializeBuffersGPU();
+
+		float radius = mDistributionRadius * 0.5f + mAABBExtentXZ;
+		XMFLOAT3 minP = XMFLOAT3(mDistributionCenter.x - radius, mDistributionCenter.y - mAABBExtentY, mDistributionCenter.z - radius);
+		XMFLOAT3 maxP = XMFLOAT3(mDistributionCenter.x + radius, mDistributionCenter.y + mAABBExtentY, mDistributionCenter.z + radius);
+		mAABB = ER_AABB(minP, maxP);
+
+		mDebugGizmoAABB = new ER_RenderableAABB(mGame, XMFLOAT4(0.0, 0.0, 1.0, 1.0));
+		mDebugGizmoAABB->InitializeGeometry({ mAABB.first, mAABB.second });
+
+		mTransformationMatrix = XMMatrixTranslation(mDistributionCenter.x, mDistributionCenter.y, mDistributionCenter.z);
+		MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
 	}
 
 	void ER_Foliage::CreateBlendStates()
@@ -215,12 +273,12 @@ namespace Library
 		blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
 
 		// Create the blend state using the description.
-		if (FAILED(mGame->Direct3DDevice()->CreateBlendState(&blendStateDescription, &mAlphaToCoverageState)))
+		if (FAILED(mGame.Direct3DDevice()->CreateBlendState(&blendStateDescription, &mAlphaToCoverageState)))
 			throw GameException("ID3D11Device::CreateBlendState() failed while create alpha-to-coverage blend state for foliage");
 
 		blendStateDescription.RenderTarget[0].BlendEnable = FALSE;
 		blendStateDescription.AlphaToCoverageEnable = FALSE;
-		if (FAILED(mGame->Direct3DDevice()->CreateBlendState(&blendStateDescription, &mNoBlendState)))
+		if (FAILED(mGame.Direct3DDevice()->CreateBlendState(&blendStateDescription, &mNoBlendState)))
 			throw GameException("ID3D11Device::CreateBlendState() failed while create no blend state for foliage");
 	}
 
@@ -228,49 +286,6 @@ namespace Library
 	{
 		D3D11_BUFFER_DESC vertexBufferDesc, instanceBufferDesc;
 		D3D11_SUBRESOURCE_DATA vertexData, instanceData;
-		
-		#pragma region QUAD_GENERATION
-		//int vertexCount = 6;
-		//FoliagePatchData* patchData = new FoliagePatchData[vertexCount];
-		//
-		//// Load the vertex array with data.
-		//patchData[0].pos = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);  // Bottom left.
-		//patchData[0].uv = XMFLOAT2(0.0f, 1.0f);
-		//
-		//patchData[1].pos = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);  // Top left.
-		//patchData[1].uv = XMFLOAT2(0.0f, 0.0f);
-		//
-		//patchData[2].pos = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);  // Bottom right.
-		//patchData[2].uv = XMFLOAT2(1.0f, 1.0f);
-		//
-		//patchData[3].pos = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);  // Bottom right.
-		//patchData[3].uv = XMFLOAT2(1.0f, 1.0f);
-		//
-		//patchData[4].pos = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);  // Top left.
-		//patchData[4].uv = XMFLOAT2(0.0f, 0.0f);
-		//
-		//patchData[5].pos = XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f);  // Top right.
-		//patchData[5].uv = XMFLOAT2(1.0f, 0.0f);
-		//
-		//// Set up the description of the vertex buffer.
-		//vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		//vertexBufferDesc.ByteWidth = sizeof(FoliagePatchData) * vertexCount;
-		//vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		//vertexBufferDesc.CPUAccessFlags = 0;
-		//vertexBufferDesc.MiscFlags = 0;
-		//vertexBufferDesc.StructureByteStride = 0;
-		//
-		//// Give the subresource structure a pointer to the vertex data.
-		//vertexData.pSysMem = patchData;
-		//vertexData.SysMemPitch = 0;
-		//vertexData.SysMemSlicePitch = 0;
-		//
-		//if (FAILED(mGame->Direct3DDevice()->CreateBuffer(&vertexBufferDesc, &vertexData, &mVertexBuffer)))
-		//	throw GameException("ID3D11Device::CreateBuffer() failed while generating vertex buffer of foliage mesh patch");
-		//
-		//delete patchData;
-		//patchData = nullptr;
-#pragma endregion
 
 		// instance buffer
 		int instanceCount = count;
@@ -297,7 +312,7 @@ namespace Library
 		instanceData.SysMemPitch = 0;
 		instanceData.SysMemSlicePitch = 0;
 
-		if (FAILED(mGame->Direct3DDevice()->CreateBuffer(&instanceBufferDesc, &instanceData, &mInstanceBuffer)))
+		if (FAILED(mGame.Direct3DDevice()->CreateBuffer(&instanceBufferDesc, &instanceData, &mInstanceBuffer)))
 			throw GameException("ID3D11Device::CreateBuffer() failed while generating instance buffer of foliage patches");
 	}
 
@@ -323,9 +338,9 @@ namespace Library
 		if(renderPass == TO_VOXELIZATION)
 			assert(worldShadowMapper);
 
-		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
+		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
 
-		if (mPatchesCountToRender == 0)
+		if (mPatchesCountToRender == 0 || mIsCulled)
 			return;
 
 		float blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -423,21 +438,95 @@ namespace Library
 
 		ID3D11SamplerState* nullSSs[] = { NULL };
 		context->PSSetSamplers(0, 1, nullSSs);
+
+		if (Utility::IsEditorMode && Utility::IsFoliageEditor && mIsSelectedInEditor)
+			mDebugGizmoAABB->Draw();
 	}
 
 	void ER_Foliage::Update(const GameTime& gameTime)
 	{
-		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
+		bool editable = mIsSelectedInEditor && Utility::IsEditorMode && Utility::IsFoliageEditor;
+
+		if (editable)
+		{
+			mDistributionCenter = XMFLOAT3(mMatrixTranslation[0], mMatrixTranslation[1], mMatrixTranslation[2]);
+			for (int i = 0; i < mPatchesCount; i++)
+			{
+				mPatchesBufferCPU[i].xPos = mDistributionCenter.x + ((float)rand() / (float)(RAND_MAX)) * mDistributionRadius - mDistributionRadius / 2;
+				mPatchesBufferCPU[i].yPos = mDistributionCenter.y;
+				mPatchesBufferCPU[i].zPos = mDistributionCenter.z + ((float)rand() / (float)(RAND_MAX)) * mDistributionRadius - mDistributionRadius / 2;
+			}
+			UpdateBuffersGPU();
+
+			float radius = mDistributionRadius * 0.5f + mAABBExtentXZ;
+			XMFLOAT3 minP = XMFLOAT3(mDistributionCenter.x - radius, mDistributionCenter.y - mAABBExtentY, mDistributionCenter.z - radius);
+			XMFLOAT3 maxP = XMFLOAT3(mDistributionCenter.x + radius, mDistributionCenter.y + mAABBExtentY, mDistributionCenter.z + radius);
+			mAABB = ER_AABB(minP, maxP);
+		}
+
+		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
 		XMFLOAT3 toCam = { mDistributionCenter.x - mCamera.Position().x, mDistributionCenter.y - mCamera.Position().y, mDistributionCenter.z - mCamera.Position().z };
-		float distanceToCam = sqrt(toCam.x * toCam.x + toCam.y*toCam.y + toCam.z*toCam.z);
+		float distanceToCam = sqrt(toCam.x * toCam.x + toCam.y * toCam.y + toCam.z * toCam.z);
 
 		//UpdateBufferGPU();
 		CalculateDynamicLOD(distanceToCam);
+
+		if (mDebugGizmoAABB)
+			mDebugGizmoAABB->Update(mAABB);
+
+		//imgui
+		if (editable)
+		{
+
+			MatrixHelper::GetFloatArray(mCamera.ViewMatrix4X4(), mCameraViewMatrix);
+			MatrixHelper::GetFloatArray(mCamera.ProjectionMatrix4X4(), mCameraProjectionMatrix);
+
+			static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
+			static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
+			static bool useSnap = false;
+			static float snap[3] = { 1.f, 1.f, 1.f };
+			static float bounds[] = { -0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f };
+			static float boundsSnap[] = { 0.1f, 0.1f, 0.1f };
+			static bool boundSizing = false;
+			static bool boundSizingSnap = false;
+			std::string fullName = mName;
+			if (mIsCulled)
+				fullName += " (Culled)";
+
+			const char* name = fullName.c_str();
+
+			ImGui::Begin("Foliage Editor");
+			ImGui::TextColored(ImVec4(0.0f, 0.9f, 0.1f, 1), name);
+			ImGui::Separator();
+
+			std::string patchCountText = "* Patch count: " + std::to_string(mPatchesCount);
+			ImGui::Text(patchCountText.c_str());
+
+			std::string textureText = "* Texture: " + mTextureName;
+			ImGui::Text(textureText.c_str());
+
+			ImGui::Checkbox("Wireframe", &mIsWireframe);
+
+			if (ImGui::IsKeyPressed(84))
+				mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+
+			ImGuizmo::DecomposeMatrixToComponents(mCurrentObjectTransformMatrix, mMatrixTranslation, mMatrixRotation, mMatrixScale);
+			ImGui::InputFloat3("Tr", mMatrixTranslation, 3);
+			ImGuizmo::RecomposeMatrixFromComponents(mMatrixTranslation, mMatrixRotation, mMatrixScale, mCurrentObjectTransformMatrix);
+			ImGui::End();
+
+			ImGuiIO& io = ImGui::GetIO();
+			ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+			ImGuizmo::Manipulate(mCameraViewMatrix, mCameraProjectionMatrix, mCurrentGizmoOperation, mCurrentGizmoMode, mCurrentObjectTransformMatrix, NULL, useSnap ? &snap[0] : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
+
+			XMFLOAT4X4 mat(mCurrentObjectTransformMatrix);
+			mTransformationMatrix = XMLoadFloat4x4(&mat);
+		}
 	}
 
 	void ER_Foliage::CreateBufferGPU()
 	{
-		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
+		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
 
 		mPatchesCountVisible = 0;
 		for (int i = 0; i < mPatchesCount; i++)
@@ -454,7 +543,7 @@ namespace Library
 	// updating world matrices of visible patches
 	void ER_Foliage::UpdateBuffersGPU() 
 	{
-		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
+		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
 
 		double angle;
 		float rotation, windRotation;
@@ -476,6 +565,54 @@ namespace Library
 
 		memcpy(instancesPtr, (void*)mPatchesBufferGPU, (sizeof(GPUFoliageInstanceData) * /*mPatchesCount*/mPatchesCountVisible));
 		context->Unmap(mInstanceBuffer, 0);
+	}
+
+	bool ER_Foliage::PerformCPUFrustumCull(Camera* camera)
+	{
+		if (!camera)
+		{
+			mIsCulled = false;
+			return mIsCulled;
+		}
+
+		auto frustum = camera->GetFrustum();
+		bool culled = false;
+		// start a loop through all frustum planes
+		for (int planeID = 0; planeID < 6; ++planeID)
+		{
+			XMVECTOR planeNormal = XMVectorSet(frustum.Planes()[planeID].x, frustum.Planes()[planeID].y, frustum.Planes()[planeID].z, 0.0f);
+			float planeConstant = frustum.Planes()[planeID].w;
+
+			XMFLOAT3 axisVert;
+
+			// x-axis
+			if (frustum.Planes()[planeID].x > 0.0f)
+				axisVert.x = mAABB.first.x;
+			else
+				axisVert.x = mAABB.second.x;
+
+			// y-axis
+			if (frustum.Planes()[planeID].y > 0.0f)
+				axisVert.y = mAABB.first.y;
+			else
+				axisVert.y = mAABB.second.y;
+
+			// z-axis
+			if (frustum.Planes()[planeID].z > 0.0f)
+				axisVert.z = mAABB.first.z;
+			else
+				axisVert.z = mAABB.second.z;
+
+
+			if (XMVectorGetX(XMVector3Dot(planeNormal, XMLoadFloat3(&axisVert))) + planeConstant > 0.0f)
+			{
+				culled = true;
+				// Skip remaining planes to check and move on 
+				break;
+			}
+		}
+		mIsCulled = culled;
+		return culled;
 	}
 
 	void ER_Foliage::CalculateDynamicLOD(float distanceToCam)

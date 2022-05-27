@@ -759,6 +759,7 @@ namespace Library
 		if (Utility::IsEditorMode) {
 
 			Utility::IsLightEditor = false;
+			Utility::IsFoliageEditor = false;
 
 			ImGui::Begin("Object Editor");
 			std::string name = mName;

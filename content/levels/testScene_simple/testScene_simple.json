@@ -11,6 +11,61 @@
 		6.7999999999999998,
 		37.0
 	],
+	"foliage_zones" : 
+	[
+		{
+			"average_scale" : 3.5,
+			"distribution_radius" : 30.0,
+			"patch_count" : 50,
+			"position" : 
+			[
+				30.0,
+				-0.10000000149011612,
+				0.0
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_flower_type1.png",
+			"type" : 0
+		},
+		{
+			"average_scale" : 2.5,
+			"distribution_radius" : 30.0,
+			"patch_count" : 600,
+			"position" : 
+			[
+				30.0,
+				-0.10000000149011612,
+				0.0
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"type" : 1
+		},
+		{
+			"average_scale" : 2.0,
+			"distribution_radius" : 30.0,
+			"patch_count" : 20,
+			"position" : 
+			[
+				65.0,
+				-0.10000000149011612,
+				0.0
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_flower_type3.png",
+			"type" : 0
+		},
+		{
+			"average_scale" : 2.5,
+			"distribution_radius" : 30.0,
+			"patch_count" : 600,
+			"position" : 
+			[
+				65.0,
+				-0.10000000149011612,
+				0.0
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"type" : 1
+		}
+	],
 	"rendering_objects" : 
 	[
 		{
@@ -160,7 +215,6 @@
 					]
 				}
 			],
-			"model_path" : "content\\models\\bunny\\bunny_lod_high.fbx",
 			"model_lods" : 
 			[
 				{
@@ -173,6 +227,7 @@
 					"path" : "content\\models\\bunny\\bunny_lod_low.fbx"
 				}
 			],
+			"model_path" : "content\\models\\bunny\\bunny_lod_high.fbx",
 			"name" : "Bunny (Blue)",
 			"new_materials" : 
 			[
@@ -214,7 +269,6 @@
 		},
 		{
 			"instanced" : false,
-			"model_path" : "content\\models\\dragon\\dragon_lod_high.fbx",
 			"model_lods" : 
 			[
 				{
@@ -227,6 +281,7 @@
 					"path" : "content\\models\\dragon\\dragon_lod_low.fbx"
 				}
 			],
+			"model_path" : "content\\models\\dragon\\dragon_lod_high.fbx",
 			"name" : "Dragon (Green)",
 			"new_materials" : 
 			[

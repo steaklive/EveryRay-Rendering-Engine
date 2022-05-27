@@ -20,6 +20,7 @@ namespace Library
 		~Scene();
 
 		void SaveRenderingObjectsTransforms();
+		void SaveFoliageZonesTransforms(const std::vector<ER_Foliage*>& foliageZones);
 
 		ER_Material* GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries, bool instanced);
 		Camera& GetCamera() { return mCamera; }
