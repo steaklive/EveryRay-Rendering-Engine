@@ -5,7 +5,11 @@
 Rendering engine/framework written in C++/DirectX 11. 
 https://youtu.be/_htQNxesr9U
 
-!!!TEMP!!! At the moment only **"testScene"** and **"testScene_simple"** load correctly (other, like "sponzaScene", "terrainScene" are to be added). "testScene" contains GI support with light probes which are generated with the first launch (generating diffuse+specular probes and saving them on disk might take several minutes depending on your PC specs; in the future I will be adding pregenerated archives of probes for scenes to this repo). The second one has no probes assigned to the level, so you can use that scene if you do not need GI (its a very lightweight scene) 
+***
+**Note (will be removed with v1.0)**: after years of development and increased popularity on Github in recent months, I decided to start preparing the release of the first proper version of this project (v1.0). I would like to: add a wiki page, license, refactored structure and, most importantly, clean all the previous functionalities and make them ready to be used by the public. In addition, since I started working on this project, I've learned a lot of concepts that are used in the industry and I would like to bring some of them to v1.0: i.e., graphics API abstraction which does not exist here at the moment.  Currently, if you pull master, things will work and you will be able to run the project and do whatever you want, however, a lot will change with v1.0 that should come out around summer 2022. The engine grew a lot with years and became a bit messy, although it still is (and will be) a rendering engine (not a game engine). 
+
+At the moment only **"testScene"** and **"testScene_simple"** load correctly (other, like "sponzaScene", "terrainScene" are to be added). "testScene" contains GI support with light probes which are generated with the first launch (generating diffuse+specular probes and saving them on disk might take several minutes depending on your PC specs; in the future I will be adding pregenerated archives of probes for scenes to this repo). The second one has no probes assigned to the level, so you can use that scene if you do not need GI (its a very lightweight scene).
+***
 
 # Some of the rendering features
 - Deferred + Forward Rendering
