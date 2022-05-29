@@ -50,6 +50,7 @@ namespace Library
 		void Update(const GameTime& gameTime);
 		void Config() { mShowDebug = !mShowDebug; }
 		bool IsEnabled() { return mEnabled; }
+		void SetEnabled(bool val) { mEnabled = val; }
 
 		ER_GPUTexture* GetVoxelFogTexture() { return mFinalVoxelAccumulationTexture3D; }
 	private:

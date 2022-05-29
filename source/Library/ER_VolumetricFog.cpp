@@ -92,6 +92,9 @@ namespace Library {
 		UpdateImGui();
 		auto context = GetGame()->Direct3DDeviceContext();
 
+		if (!mEnabled)
+			return;
+
 		mMainConstantBuffer.Data.InvViewProj = XMMatrixTranspose(XMMatrixInverse(nullptr, camera->ViewMatrix() * camera->ProjectionMatrix()));
 		mMainConstantBuffer.Data.PrevViewProj = mPrevViewProj;
 		mMainConstantBuffer.Data.ShadowMatrix = mShadowMapper.GetViewMatrix(0) * mShadowMapper.GetProjectionMatrix(0) /** XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix())*/;
