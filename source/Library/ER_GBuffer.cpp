@@ -5,7 +5,7 @@
 #include "ER_MaterialsCallbacks.h"
 #include "ER_RenderingObject.h"
 #include "Utility.h"
-#include "Scene.h"
+#include "ER_Scene.h"
 
 namespace Library {
 
@@ -80,7 +80,7 @@ namespace Library {
 		mGame->ResetRenderTargets();
 	}
 
-	void ER_GBuffer::Draw(const Scene* scene)
+	void ER_GBuffer::Draw(const ER_Scene* scene)
 	{
 		ER_MaterialSystems materialSystems;
 

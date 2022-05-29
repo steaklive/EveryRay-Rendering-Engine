@@ -7,7 +7,7 @@
 #include "Mesh.h"
 #include "VertexDeclarations.h"
 #include "RasterizerStates.h"
-#include "Scene.h"
+#include "ER_Scene.h"
 #include "DirectionalLight.h"
 #include "ER_ShadowMapper.h"
 #include "ER_PostProcessingStack.h"
@@ -18,7 +18,7 @@
 
 namespace Library
 {
-	ER_FoliageManager::ER_FoliageManager(Game& pGame, Scene* aScene, DirectionalLight& light) 
+	ER_FoliageManager::ER_FoliageManager(Game& pGame, ER_Scene* aScene, DirectionalLight& light) 
 		: GameComponent(pGame), mScene(aScene)
 	{
 		assert(aScene);

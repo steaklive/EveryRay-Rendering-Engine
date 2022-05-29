@@ -14,7 +14,7 @@
 #include "..\Library\ER_ShadowMapper.h"
 #include "..\Library\Terrain.h"
 #include "..\Library\ER_FoliageManager.h"
-#include "..\Library\Scene.h"
+#include "..\Library\ER_Scene.h"
 #include "..\Library\ER_VolumetricClouds.h"
 #include "..\Library\ER_VolumetricFog.h"
 #include "..\Library\ER_Illumination.h"

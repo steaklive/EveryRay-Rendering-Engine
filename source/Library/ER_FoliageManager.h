@@ -8,7 +8,7 @@
 
 namespace Library
 {
-	class Scene;
+	class ER_Scene;
 	class Camera;
 	class DirectionalLight;
 	class ER_ShadowMapper;
@@ -204,7 +204,7 @@ namespace Library
 	class ER_FoliageManager : public GameComponent
 	{
 	public:
-		ER_FoliageManager(Game& pGame, Scene* aScene, DirectionalLight& light);
+		ER_FoliageManager(Game& pGame, ER_Scene* aScene, DirectionalLight& light);
 		~ER_FoliageManager();
 
 		void Initialize();
@@ -219,7 +219,7 @@ namespace Library
 	private:
 		void UpdateImGui();
 		std::vector<ER_Foliage*> mFoliageCollection;
-		Scene* mScene;
+		ER_Scene* mScene;
 
 		const char* mFoliageZonesNamesUI[MAX_FOLIAGE_ZONES];
 

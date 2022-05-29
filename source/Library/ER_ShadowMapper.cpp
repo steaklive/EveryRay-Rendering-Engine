@@ -9,7 +9,7 @@
 #include "Game.h"
 #include "DepthMap.h"
 #include "GameException.h"
-#include "Scene.h"
+#include "ER_Scene.h"
 #include "MaterialHelper.h"
 #include "ER_RenderingObject.h"
 #include "ER_ShadowMapMaterial.h"
@@ -241,7 +241,7 @@ namespace Library
 		return projectionMatrix;
 	}
 
-	void ER_ShadowMapper::Draw(const Scene* scene)
+	void ER_ShadowMapper::Draw(const ER_Scene* scene)
 	{
 		GetGame()->Direct3DDeviceContext()->OMSetDepthStencilState(mDepthStencilState, 0);
 

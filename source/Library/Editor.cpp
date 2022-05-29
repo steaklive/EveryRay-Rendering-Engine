@@ -7,7 +7,7 @@
 #include "MatrixHelper.h"
 #include "ER_RenderingObject.h"
 #include "Utility.h"
-#include "Scene.h"
+#include "ER_Scene.h"
 
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
@@ -32,7 +32,7 @@ namespace Library
 
 	}
 
-	void Editor::LoadScene(Scene* scene)
+	void Editor::LoadScene(ER_Scene* scene)
 	{
 		mScene = scene;
 	}

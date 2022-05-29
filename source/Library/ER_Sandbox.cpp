@@ -37,7 +37,7 @@ namespace Library {
 
 		#pragma region INIT_SCENE
 		game.CPUProfiler()->BeginCPUTime("Scene init: " + sceneName);
-        mScene = new Scene(game, camera, sceneFolderPath + sceneName + ".json");
+        mScene = new ER_Scene(game, camera, sceneFolderPath + sceneName + ".json");
 		//TODO move to scene
         camera.SetPosition(mScene->cameraPosition);
         camera.SetDirection(mScene->cameraDirection);

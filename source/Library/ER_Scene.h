@@ -13,11 +13,11 @@ namespace Library
 	class DirectionalLight;
 	class ER_Foliage;
 
-	class Scene : public GameComponent
+	class ER_Scene : public GameComponent
 	{
 	public:
-		Scene(Game& pGame, Camera& pCamera, const std::string& path);
-		~Scene();
+		ER_Scene(Game& pGame, Camera& pCamera, const std::string& path);
+		~ER_Scene();
 
 		void SaveRenderingObjectsTransforms();
 		void SaveFoliageZonesTransforms(const std::vector<ER_Foliage*>& foliageZones);

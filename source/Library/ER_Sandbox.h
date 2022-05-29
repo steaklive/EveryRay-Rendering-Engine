@@ -6,7 +6,7 @@ namespace Library
     class Game;
     class GameTime;
     class Camera;
-    class Scene;
+    class ER_Scene;
     class Editor;
     class Keyboard;
     class RenderStateHelper;
@@ -33,7 +33,7 @@ namespace Library
 		virtual void Update(Game& game, const GameTime& time);
 		virtual void Draw(Game& game, const GameTime& time);
 
-        Scene* mScene = nullptr;
+        ER_Scene* mScene = nullptr;
 		Editor* mEditor = nullptr;
         Keyboard* mKeyboard = nullptr;
         RenderStateHelper* mRenderStateHelper = nullptr;

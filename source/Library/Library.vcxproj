@@ -247,7 +247,7 @@
     <ClInclude Include="RenderTarget.h" />
     <ClInclude Include="RTTI.h" />
     <ClInclude Include="SamplerStates.h" />
-    <ClInclude Include="Scene.h" />
+    <ClInclude Include="ER_Scene.h" />
     <ClInclude Include="ServiceContainer.h" />
     <ClInclude Include="ShaderCompiler.h" />
     <ClInclude Include="ER_ShadowMapper.h" />
@@ -324,7 +324,7 @@
     <ClCompile Include="RenderStateHelper.cpp" />
     <ClCompile Include="RenderTarget.cpp" />
     <ClCompile Include="SamplerStates.cpp" />
-    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="ER_Scene.cpp" />
     <ClCompile Include="ServiceContainer.cpp" />
     <ClCompile Include="ER_ShadowMapper.cpp" />
     <ClCompile Include="SpatialElement.cpp" />

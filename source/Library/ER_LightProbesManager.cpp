@@ -10,7 +10,7 @@
 #include "ShaderCompiler.h"
 #include "ER_RenderingObject.h"
 #include "Model.h"
-#include "Scene.h"
+#include "ER_Scene.h"
 #include "ER_RenderableAABB.h"
 #include "ER_GPUBuffer.h"
 #include "ER_LightProbe.h"
@@ -20,7 +20,7 @@
 
 namespace Library
 {
-	ER_LightProbesManager::ER_LightProbesManager(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
+	ER_LightProbesManager::ER_LightProbesManager(Game& game, Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 		: mMainCamera(camera)
 	{
 		if (!scene)
@@ -115,14 +115,14 @@ namespace Library
 		DeleteObject(mSpecularProbesTexArrayIndicesGPUBuffer);
 	}
 
-	void ER_LightProbesManager::SetupGlobalDiffuseProbe(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
+	void ER_LightProbesManager::SetupGlobalDiffuseProbe(Game& game, Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 	{
 		mGlobalDiffuseProbe = new ER_LightProbe(game, light, shadowMapper, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE);
 		mGlobalDiffuseProbe->SetIndex(-1);
 		mGlobalDiffuseProbe->SetPosition(XMFLOAT3(0.0f, 2.0f, 0.0f)); //just a bit above the ground
 		mGlobalDiffuseProbe->SetShaderInfoForConvolution(mConvolutionPS);
 	}
-	void ER_LightProbesManager::SetupGlobalSpecularProbe(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
+	void ER_LightProbesManager::SetupGlobalSpecularProbe(Game& game, Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 	{
 		mGlobalSpecularProbe = new ER_LightProbe(game, light, shadowMapper, SPECULAR_PROBE_SIZE, SPECULAR_PROBE);
 		mGlobalSpecularProbe->SetIndex(-1);
@@ -130,7 +130,7 @@ namespace Library
 		mGlobalSpecularProbe->SetShaderInfoForConvolution(mConvolutionPS);
 	}
 
-	void ER_LightProbesManager::SetupDiffuseProbes(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
+	void ER_LightProbesManager::SetupDiffuseProbes(Game& game, Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 	{
 		ER_MaterialSystems materialSystems;
 		materialSystems.mCamera = &camera;
@@ -255,7 +255,7 @@ namespace Library
 		mDiffuseProbeRenderingObject->UpdateInstanceBuffer(mDiffuseProbeRenderingObject->GetInstancesData());
 	}
 
-	void ER_LightProbesManager::SetupSpecularProbes(Game& game, Camera& camera, Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
+	void ER_LightProbesManager::SetupSpecularProbes(Game& game, Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 	{
 		ER_MaterialSystems materialSystems;
 		materialSystems.mCamera = &camera;

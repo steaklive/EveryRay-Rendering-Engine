@@ -4,7 +4,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "Scene.h"
+#include "ER_Scene.h"
 #include "GameException.h"
 #include "Utility.h"
 #include "Model.h"
@@ -20,7 +20,7 @@
 
 namespace Library 
 {
-	Scene::Scene(Game& pGame, Camera& pCamera, const std::string& path) :
+	ER_Scene::ER_Scene(Game& pGame, Camera& pCamera, const std::string& path) :
 		GameComponent(pGame), mCamera(pCamera), mScenePath(path)
 	{
 		Json::Reader reader;
@@ -159,7 +159,7 @@ namespace Library
 		}
 	}
 
-	Scene::~Scene()
+	ER_Scene::~ER_Scene()
 	{
 		for (auto object : objects)
 		{
@@ -169,7 +169,7 @@ namespace Library
 		objects.clear();
 	}
 
-	void Scene::LoadRenderingObjectData(ER_RenderingObject* aObject)
+	void ER_Scene::LoadRenderingObjectData(ER_RenderingObject* aObject)
 	{
 		if (!aObject)
 			return;
@@ -329,7 +329,7 @@ namespace Library
 	}
 
 	// [WARNING] NOT THREAD-SAFE!
-	void Scene::LoadRenderingObjectInstancedData(ER_RenderingObject* aObject)
+	void ER_Scene::LoadRenderingObjectInstancedData(ER_RenderingObject* aObject)
 	{
 		int i = aObject->GetIndexInScene();
 		bool isInstanced = aObject->IsInstanced();
@@ -380,7 +380,7 @@ namespace Library
 		}
 	}
 
-	void Scene::SaveFoliageZonesTransforms(const std::vector<ER_Foliage*>& foliageZones)
+	void ER_Scene::SaveFoliageZonesTransforms(const std::vector<ER_Foliage*>& foliageZones)
 	{
 		if (mScenePath.empty())
 			throw GameException("Can't save to scene json file! Empty scene name...");
@@ -408,7 +408,7 @@ namespace Library
 		writer->write(root, &file_id);
 	}
 
-	void Scene::SaveRenderingObjectsTransforms()
+	void ER_Scene::SaveRenderingObjectsTransforms()
 	{
 		if (mScenePath.empty())
 			throw GameException("Can't save to scene json file! Empty scene name...");
@@ -474,7 +474,7 @@ namespace Library
 		writer->write(root, &file_id);
 	}
 
-	ER_Material* Scene::GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries, bool instanced)
+	ER_Material* ER_Scene::GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries, bool instanced)
 	{
 		auto core = GetGame();
 		assert(core);
@@ -498,7 +498,7 @@ namespace Library
 		return material;
 	}
 
-	void Scene::LoadFoliageZones(std::vector<ER_Foliage*>& foliageZones, DirectionalLight& light)
+	void ER_Scene::LoadFoliageZones(std::vector<ER_Foliage*>& foliageZones, DirectionalLight& light)
 	{
 		Json::Reader reader;
 		std::ifstream scene(mScenePath.c_str(), std::ifstream::binary);

@@ -8,7 +8,7 @@ namespace Library
 {
 	class ER_RenderingObject;
 	class GameTime;
-	class Scene;
+	class ER_Scene;
 
 	class Editor : public GameComponent
 	{
@@ -20,13 +20,13 @@ namespace Library
 
 		virtual void Initialize() override;
 		virtual void Update(const GameTime& gameTime) override;
-		void LoadScene(Scene* scene);
+		void LoadScene(ER_Scene* scene);
 
 		XMFLOAT4 GetBottomSkyColor() { return XMFLOAT4(bottomColorSky[0],bottomColorSky[1],bottomColorSky[2],bottomColorSky[3]); }
 		XMFLOAT4 GetTopSkyColor() { return XMFLOAT4(topColorSky[0], topColorSky[1], topColorSky[2], topColorSky[3]); }
 		bool IsSkyboxUsingCustomColor() { return mUseCustomSkyboxColor; }
 	private:
-		Scene* mScene;
+		ER_Scene* mScene;
 
 		Editor(const Editor& rhs);
 		Editor& operator=(const Editor& rhs);

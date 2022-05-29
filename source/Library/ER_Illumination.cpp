@@ -18,7 +18,7 @@
 #include "ShaderCompiler.h"
 #include "ER_VoxelizationMaterial.h"
 #include "ER_RenderToLightProbeMaterial.h"
-#include "Scene.h"
+#include "ER_Scene.h"
 #include "ER_GBuffer.h"
 #include "ER_ShadowMapper.h"
 #include "ER_FoliageManager.h"
@@ -34,7 +34,7 @@ namespace Library {
 
 	const float voxelCascadesSizes[NUM_VOXEL_GI_CASCADES] = { 256.0f, 256.0f };
 
-	ER_Illumination::ER_Illumination(Game& game, Camera& camera, const DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const Scene* scene)
+	ER_Illumination::ER_Illumination(Game& game, Camera& camera, const DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const ER_Scene* scene)
 		: 
 		GameComponent(game),
 		mCamera(camera),
@@ -81,7 +81,7 @@ namespace Library {
 		mLightProbesConstantBuffer.Release();
 	}
 
-	void ER_Illumination::Initialize(const Scene* scene)
+	void ER_Illumination::Initialize(const ER_Scene* scene)
 	{
 		if (!scene)
 			return;
@@ -527,7 +527,7 @@ namespace Library {
 		}
 	}
 
-	void ER_Illumination::Update(const GameTime& gameTime, const Scene* scene)
+	void ER_Illumination::Update(const GameTime& gameTime, const ER_Scene* scene)
 	{
 		CPUCullObjectsAgainstVoxelCascades(scene);
 		UpdateVoxelCameraPosition();
@@ -762,7 +762,7 @@ namespace Library {
 		}
 	}
 
-	void ER_Illumination::CPUCullObjectsAgainstVoxelCascades(const Scene* scene)
+	void ER_Illumination::CPUCullObjectsAgainstVoxelCascades(const ER_Scene* scene)
 	{
 		//TODO add instancing support
 		//TODO fix repetition checks when the object AABB is bigger than the lower cascade (i.e. sponza)

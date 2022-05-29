@@ -16,7 +16,7 @@ namespace Library
 	class FullScreenRenderTarget;
 	class DirectionalLight;
 	class Camera;
-	class Scene;
+	class ER_Scene;
 	class ER_GBuffer;
 	class ER_ShadowMapper;
 	class ER_FoliageManager;
@@ -95,10 +95,10 @@ namespace Library
 	class ER_Illumination : public GameComponent
 	{
 	public:
-		ER_Illumination(Game& game, Camera& camera, const DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const Scene* scene);
+		ER_Illumination(Game& game, Camera& camera, const DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const ER_Scene* scene);
 		~ER_Illumination();
 
-		void Initialize(const Scene* scene);
+		void Initialize(const ER_Scene* scene);
 
 		void DrawLocalIllumination(ER_GBuffer* gbuffer, ER_Skybox* skybox);
 		void DrawGlobalIllumination(ER_GBuffer* gbuffer, const GameTime& gameTime);
@@ -106,7 +106,7 @@ namespace Library
 
 		void DrawDebugGizmos();
 
-		void Update(const GameTime& gameTime, const Scene* scene);
+		void Update(const GameTime& gameTime, const ER_Scene* scene);
 		void Config() { mShowDebug = !mShowDebug; }
 
 		void SetShadowMapSRV(ID3D11ShaderResourceView* srv) { mShadowMapSRV = srv; }
@@ -124,7 +124,7 @@ namespace Library
 		void UpdateImGui();
 		void UpdateVoxelCameraPosition();
 
-		void CPUCullObjectsAgainstVoxelCascades(const Scene* scene);
+		void CPUCullObjectsAgainstVoxelCascades(const ER_Scene* scene);
 
 		Camera& mCamera;
 		const DirectionalLight& mDirectionalLight;

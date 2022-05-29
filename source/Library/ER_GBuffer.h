@@ -7,7 +7,7 @@
 
 namespace Library
 {
-	class Scene;
+	class ER_Scene;
 	class ER_GBuffer: public DrawableGameComponent
 	{
 	public:
@@ -19,7 +19,7 @@ namespace Library
 
 		void Start();
 		void End();
-		void Draw(const Scene* scene);
+		void Draw(const ER_Scene* scene);
 
 		ER_GPUTexture* GetAlbedo() { return mAlbedoBuffer; }
 		ER_GPUTexture* GetNormals() { return mNormalBuffer; }

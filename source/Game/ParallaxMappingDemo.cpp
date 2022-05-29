@@ -34,7 +34,7 @@
 #include "..\Library\ShadowMapper.h"
 #include "..\Library\Terrain.h"
 #include "..\Library\Foliage.h"
-#include "..\Library\Scene.h"
+#include "..\Library\ER_Scene.h"
 
 #include "imgui.h"
 #include "imgui_impl_dx11.h"

@@ -34,7 +34,7 @@
 #include "..\Library\ShadowMapper.h"
 #include "..\Library\Terrain.h"
 #include "..\Library\ER_Foliage.h"
-#include "..\Library\Scene.h"
+#include "..\Library\ER_Scene.h"
 #include "..\Library\ER_VolumetricClouds.h"
 #include "..\Library\ShaderCompiler.h"
 
