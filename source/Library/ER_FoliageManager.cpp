@@ -37,7 +37,6 @@ namespace Library
 		int zoneIndex = 0;
 		std::string name;
 		for (auto& foliage : mFoliageCollection) {
-			foliage->CreateBufferGPU();
 			name = "Foliage zone #" + std::to_string(zoneIndex);
 			foliage->SetName(name);
 			zoneIndex++;
@@ -242,7 +241,7 @@ namespace Library
 	{
 		mFoliageConstantBuffer.Initialize(mGame.Direct3DDevice());
 		InitializeBuffersCPU();
-		//InitializeBuffersGPU();
+		InitializeBuffersGPU(mPatchesCount);
 
 		float radius = mDistributionRadius * 0.5f + mAABBExtentXZ;
 		XMFLOAT3 minP = XMFLOAT3(mDistributionCenter.x - radius, mDistributionCenter.y - mAABBExtentY, mDistributionCenter.z - radius);
@@ -284,6 +283,8 @@ namespace Library
 
 	void ER_Foliage::InitializeBuffersGPU(int count)
 	{
+		assert(count > 0);
+
 		D3D11_BUFFER_DESC vertexBufferDesc, instanceBufferDesc;
 		D3D11_SUBRESOURCE_DATA vertexData, instanceData;
 
@@ -502,10 +503,14 @@ namespace Library
 			std::string patchCountText = "* Patch count: " + std::to_string(mPatchesCount);
 			ImGui::Text(patchCountText.c_str());
 
+			std::string patchRenderedCountText = "* Patch count rendered: " + std::to_string(mPatchesCountToRender);
+			ImGui::Text(patchRenderedCountText.c_str());
+
 			std::string textureText = "* Texture: " + mTextureName;
 			ImGui::Text(textureText.c_str());
 
-			ImGui::Checkbox("Wireframe", &mIsWireframe);
+			ImGui::SliderFloat("Max LOD distance", &mMaxDistanceToCamera, 150.0f, 1500.0f);
+			ImGui::SliderFloat("Delta LOD distance", &mDeltaDistanceToCamera, 15.0f, 150.0f);
 
 			if (ImGui::IsKeyPressed(84))
 				mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
@@ -524,22 +529,6 @@ namespace Library
 		}
 	}
 
-	void ER_Foliage::CreateBufferGPU()
-	{
-		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
-
-		mPatchesCountVisible = 0;
-		for (int i = 0; i < mPatchesCount; i++)
-		{
-			if (mPatchesBufferCPU[i].yPos != -999.0f /*|| culledPatch */) {
-				mPatchesCountVisible++;
-			}
-		}
-
-		InitializeBuffersGPU(mPatchesCountVisible);
-		UpdateBuffersGPU();
-	}
-
 	// updating world matrices of visible patches
 	void ER_Foliage::UpdateBuffersGPU() 
 	{
@@ -549,7 +538,7 @@ namespace Library
 		float rotation, windRotation;
 		XMMATRIX translationMatrix;
 
-		for (int i = 0; i < mPatchesCountVisible; i++)
+		for (int i = 0; i < mPatchesCount; i++)
 		{
 			translationMatrix = XMMatrixTranslation(mPatchesBufferCPU[i].xPos, mPatchesBufferCPU[i].yPos, mPatchesBufferCPU[i].zPos);
 			mPatchesBufferGPU[i].worldMatrix = XMMatrixScaling(mPatchesBufferCPU[i].scale, mPatchesBufferCPU[i].scale, mPatchesBufferCPU[i].scale) * translationMatrix;
@@ -563,7 +552,7 @@ namespace Library
 
 		instancesPtr = (GPUFoliageInstanceData*)mappedResource.pData;
 
-		memcpy(instancesPtr, (void*)mPatchesBufferGPU, (sizeof(GPUFoliageInstanceData) * /*mPatchesCount*/mPatchesCountVisible));
+		memcpy(instancesPtr, (void*)mPatchesBufferGPU, (sizeof(GPUFoliageInstanceData) * mPatchesCount));
 		context->Unmap(mInstanceBuffer, 0);
 	}
 
@@ -617,14 +606,14 @@ namespace Library
 
 	void ER_Foliage::CalculateDynamicLOD(float distanceToCam)
 	{
-		float factor = (distanceToCam - 150.0f) / mMaxDistanceToCamera;
+		float factor = (distanceToCam - mDeltaDistanceToCamera) / mMaxDistanceToCamera;
 
 		if (factor > 1.0f)
 			factor = 1.0f;
 		else if (factor < 0.0f)
 			factor = 0.0f;
 
-		mPatchesCountToRender = /*mPatchesCount*/mPatchesCountVisible * (1.0f - factor);
+		mPatchesCountToRender = mPatchesCount * (1.0f - factor);
 	}
 
 }

@@ -84,8 +84,7 @@ namespace Library
 
 		bool IsSelected() { return mIsSelectedInEditor; }
 		void SetSelected(bool val) { mIsSelectedInEditor = val; }
-
-		int GetPatchesCount() { return mPatchesCount; }
+		
 		void SetWireframe(bool flag) { mIsWireframe = flag; }
 		void SetDynamicLODMaxDistance(float val) { mMaxDistanceToCamera = val; }
 		bool IsRotating() { return mIsRotating; }
@@ -96,18 +95,17 @@ namespace Library
 			mWindFrequency = frequency;
 		}
 
+		int GetPatchesCount() { return mPatchesCount; }
 		void SetPatchPosition(int i, float x, float y, float z) {
 			mPatchesBufferCPU[i].xPos = x;
 			mPatchesBufferCPU[i].yPos = y;
 			mPatchesBufferCPU[i].zPos = z;
 		}
-
 		float GetPatchPositionX(int i) { return mPatchesBufferCPU[i].xPos; }
+		float GetPatchPositionY(int i) { return mPatchesBufferCPU[i].yPos; }
 		float GetPatchPositionZ(int i) { return mPatchesBufferCPU[i].zPos; }
-
 		const XMFLOAT3& GetDistributionCenter() { return mDistributionCenter; }
 
-		void CreateBufferGPU();
 		void UpdateBuffersGPU();
 
 		void SetVoxelizationParams(float* worldVoxelScale, const float* voxelTexDimension, XMFLOAT4* voxelCameraPos)
@@ -165,9 +163,8 @@ namespace Library
 		bool mIsSelectedInEditor = false;
 		bool mIsCulled = false;
 
-		int mPatchesCount;
-		int mPatchesCountVisible;
-		int mPatchesCountToRender;
+		int mPatchesCount = 0;
+		int mPatchesCountToRender = 0;
 
 		bool mIsWireframe = false;
 		float mScale;
@@ -175,10 +172,8 @@ namespace Library
 		float mDistributionRadius;
 		bool mRotateFromCamPosition = false;
 
-		bool mDynamicLOD = true;
-		float mDynamicLODFactor = 0.001;
-		float mDoRotationDistance = 300.0f;
-		float mMaxDistanceToCamera = 650.0f;
+		float mMaxDistanceToCamera = 300.0f; // more than this => culled completely
+		float mDeltaDistanceToCamera = 30.0f; // from which distance we start dynamic culling (patches)
 
 		int mVerticesCount = 0;
 		bool mIsRotating = false;

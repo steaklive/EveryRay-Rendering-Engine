@@ -408,7 +408,7 @@ namespace Library
 		if (mMaterials.find(materialName) == mMaterials.end() && !isForwardPass)
 			return;
 		
-		if (mIsRendered && !mIsCulled)
+		if (mIsRendered && !mIsCulled && mCurrentLODIndex != -1)
 		{
 			if (!isForwardPass && (!mMaterials.size() || mMeshesRenderBuffers[lod].size() == 0))
 				return;
@@ -986,6 +986,8 @@ namespace Library
 			else if (Utility::DistancesLOD[1] * Utility::DistancesLOD[1] < distanceToCameraSqr && distanceToCameraSqr <= Utility::DistancesLOD[2] * Utility::DistancesLOD[2]) {
 				mCurrentLODIndex = 2;
 			}
+			else
+				mCurrentLODIndex = -1; //culled
 
 			mCurrentLODIndex = std::min(mCurrentLODIndex, GetLODCount());
 		}
