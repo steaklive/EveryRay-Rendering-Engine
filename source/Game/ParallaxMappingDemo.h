@@ -1,7 +1,7 @@
 #pragma once
 
 #include "..\Library\DrawableGameComponent.h"
-#include "..\Library\DemoLevel.h"
+#include "..\Library\ER_Sandbox.h"
 #include "..\Library\Frustum.h"
 
 using namespace Library;

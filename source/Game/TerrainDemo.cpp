@@ -17,7 +17,7 @@
 #include "..\Library\Light.h"
 #include "..\Library\ER_Skybox.h"
 #include "..\Library\Grid.h"
-#include "..\Library\DemoLevel.h"
+#include "..\Library\ER_Sandbox.h"
 #include "..\Library\RenderStateHelper.h"
 #include "..\Library\RenderingObject.h"
 #include "..\Library\DepthMap.h"

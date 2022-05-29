@@ -1,18 +1,18 @@
-#include "DemoLevel.h"
+#include "ER_Sandbox.h"
 #include "Utility.h"
 #include "Systems.inl"
 #include "ER_MaterialsCallbacks.h"
 
 namespace Library {
 
-	DemoLevel::DemoLevel()
+	ER_Sandbox::ER_Sandbox()
 	{
 	}
-	DemoLevel::~DemoLevel()
+	ER_Sandbox::~ER_Sandbox()
 	{
 	}
 	
-	void DemoLevel::Destroy(Game& game)
+	void ER_Sandbox::Destroy(Game& game)
 	{
 		game.CPUProfiler()->BeginCPUTime("Destroying scene: " + mName);
 		DeleteObject(mRenderStateHelper);
@@ -30,7 +30,7 @@ namespace Library {
 		game.CPUProfiler()->EndCPUTime("Destroying scene: " + mName);
 	}
 
-    void DemoLevel::Initialize(Game& game, Camera& camera, const std::string& sceneName, const std::string& sceneFolderPath)
+    void ER_Sandbox::Initialize(Game& game, Camera& camera, const std::string& sceneName, const std::string& sceneFolderPath)
     {
         mRenderStateHelper = new RenderStateHelper(game);
 		mName = sceneName;
@@ -154,7 +154,7 @@ namespace Library {
 
     }
 
-	void DemoLevel::UpdateLevel(Game& game, const GameTime& gameTime)
+	void ER_Sandbox::Update(Game& game, const GameTime& gameTime)
 	{
 		//TODO refactor to updates for elements of ER_CoreComponent type
 
@@ -185,7 +185,7 @@ namespace Library {
         UpdateImGui();
 	}
 
-    void DemoLevel::UpdateImGui()
+    void ER_Sandbox::UpdateImGui()
     {
         ImGui::Begin("Systems Config");
 
@@ -217,7 +217,7 @@ namespace Library {
         ImGui::End();
     }
 
-	void DemoLevel::DrawLevel(Game& game, const GameTime& gameTime)
+	void ER_Sandbox::Draw(Game& game, const GameTime& gameTime)
 	{
 		//TODO set proper RS
 		//TODO set proper DS

@@ -8,7 +8,7 @@
 #include "..\Library\SkinShadingColorMaterial.h"
 #include "..\Library\SkinShadingScatterMaterial.h"
 
-#include "..\Library\DemoLevel.h"
+#include "..\Library\ER_Sandbox.h"
 #include "..\Library\Frustum.h"
 
 #include "..\Library\DirectionalLight.h"

@@ -1,5 +1,3 @@
-// Simple class for level management
-// Works for now...
 #pragma once
 #include "Common.h"
 
@@ -24,16 +22,16 @@ namespace Library
     class ER_LightProbesManager;
     class ER_PostProcessingStack;
 
-	class DemoLevel
+	class ER_Sandbox
 	{
 	public:
-        DemoLevel();
-        ~DemoLevel();
+        ER_Sandbox();
+        ~ER_Sandbox();
 
         void Initialize(Game& game, Camera& camera, const std::string& sceneName, const std::string& sceneFolderPath);
 		virtual void Destroy(Game& game);
-		virtual void UpdateLevel(Game& game, const GameTime& time);
-		virtual void DrawLevel(Game& game, const GameTime& time);
+		virtual void Update(Game& game, const GameTime& time);
+		virtual void Draw(Game& game, const GameTime& time);
 
         Scene* mScene = nullptr;
 		Editor* mEditor = nullptr;

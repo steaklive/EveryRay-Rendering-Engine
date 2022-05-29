@@ -4,7 +4,7 @@
 #include "..\Library\InstancingMaterial.h"
 #include "..\Library\AmbientLightingMaterial.h"
 
-#include "..\Library\DemoLevel.h"
+#include "..\Library\ER_Sandbox.h"
 #include "..\Library\Frustum.h"
 
 #include "..\Library\DirectionalLight.h"

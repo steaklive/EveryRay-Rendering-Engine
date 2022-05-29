@@ -201,9 +201,6 @@
     <ClInclude Include="ShaderCompiler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DemoLevel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DepthTarget.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -321,6 +318,9 @@
     <ClInclude Include="ER_RenderableAABB.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_Sandbox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -412,9 +412,6 @@
     </ClCompile>
     <ClCompile Include="Projector.cpp">
       <Filter>Source Files\Objects\Frustums</Filter>
-    </ClCompile>
-    <ClCompile Include="DemoLevel.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DepthTarget.cpp">
       <Filter>Source Files\Objects\RenderTarget</Filter>
@@ -529,6 +526,9 @@
     </ClCompile>
     <ClCompile Include="ER_RenderableAABB.cpp">
       <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_Sandbox.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

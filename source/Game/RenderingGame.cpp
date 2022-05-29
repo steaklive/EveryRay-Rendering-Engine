@@ -19,7 +19,7 @@
 #include "..\Library\ColorHelper.h"
 #include "..\Library\RenderStateHelper.h"
 #include "..\Library\MatrixHelper.h"
-#include "..\Library\DemoLevel.h"
+#include "..\Library\ER_Sandbox.h"
 #include "..\Library\Editor.h"
 #include "..\Library\RasterizerStates.h"
 #include "..\Library\SamplerStates.h"
@@ -171,15 +171,15 @@ namespace Rendering
 		mCurrentSceneName = aSceneName;
 		mCamera->Reset();
 
-		if (mCurrentDemoLevel)
+		if (mCurrentSandbox)
 		{
-			mCurrentDemoLevel->Destroy(*this);
-			DeleteObject(mCurrentDemoLevel);
+			mCurrentSandbox->Destroy(*this);
+			DeleteObject(mCurrentSandbox);
 		}
 
-		mCurrentDemoLevel = new DemoLevel();
+		mCurrentSandbox = new ER_Sandbox();
 		if (mScenesPaths.find(aSceneName) != mScenesPaths.end())
-			mCurrentDemoLevel->Initialize(*this, *mCamera, aSceneName, Utility::GetFilePath(mScenesPaths[aSceneName]));
+			mCurrentSandbox->Initialize(*this, *mCamera, aSceneName, Utility::GetFilePath(mScenesPaths[aSceneName]));
 		else
 		{
 			std::string message = "Scene was not found with this name: " + aSceneName;
@@ -189,7 +189,7 @@ namespace Rendering
 
 	void RenderingGame::Update(const GameTime& gameTime)
 	{
-		assert(mCurrentDemoLevel);
+		assert(mCurrentSandbox);
 
 		auto startUpdateTimer = std::chrono::high_resolution_clock::now();
 
@@ -199,7 +199,7 @@ namespace Rendering
 		UpdateImGui();
 
 		Game::Update(gameTime); //engine components (input, camera, etc.);
-		mCurrentDemoLevel->UpdateLevel(*this, gameTime); //level components (rendering systems, culling, etc.)
+		mCurrentSandbox->Update(*this, gameTime); //level components (rendering systems, culling, etc.)
 
 		auto endUpdateTimer = std::chrono::high_resolution_clock::now();
 		mElapsedTimeUpdateCPU = endUpdateTimer - startUpdateTimer;
@@ -313,14 +313,14 @@ namespace Rendering
 	
 	void RenderingGame::Draw(const GameTime& gameTime)
 	{
-		assert(mCurrentDemoLevel);
+		assert(mCurrentSandbox);
 
 		auto startRenderTimer = std::chrono::high_resolution_clock::now();
 
 		mDirect3DDeviceContext->ClearRenderTargetView(mRenderTargetView, reinterpret_cast<const float*>(&BackgroundColor));
 		mDirect3DDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 		Game::Draw(gameTime); //TODO remove
-		mCurrentDemoLevel->DrawLevel(*this, gameTime);
+		mCurrentSandbox->Draw(*this, gameTime);
 
 		mRenderStateHelper->SaveAll();
 		mRenderStateHelper->RestoreAll();

@@ -195,7 +195,7 @@
     <ClInclude Include="ER_DebugLightProbeMaterial.h" />
     <ClInclude Include="ER_GBufferMaterial.h" />
     <ClInclude Include="ER_GPUTexture.h" />
-    <ClInclude Include="DemoLevel.h" />
+    <ClInclude Include="ER_Sandbox.h" />
     <ClInclude Include="DepthMap.h" />
     <ClInclude Include="DepthTarget.h" />
     <ClInclude Include="DirectionalLight.h" />
@@ -274,7 +274,6 @@
     <ClCompile Include="ER_DebugLightProbeMaterial.cpp" />
     <ClCompile Include="ER_GBufferMaterial.cpp" />
     <ClCompile Include="ER_GPUTexture.cpp" />
-    <ClCompile Include="DemoLevel.cpp" />
     <ClCompile Include="DepthMap.cpp" />
     <ClCompile Include="DepthTarget.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
@@ -289,6 +288,7 @@
     <ClCompile Include="ER_PostProcessingStack.cpp" />
     <ClCompile Include="ER_RenderingObject.cpp" />
     <ClCompile Include="ER_RenderToLightProbeMaterial.cpp" />
+    <ClCompile Include="ER_Sandbox.cpp" />
     <ClCompile Include="ER_ShadowMapMaterial.cpp" />
     <ClCompile Include="ER_Skybox.cpp" />
     <ClCompile Include="ER_VolumetricClouds.cpp" />
