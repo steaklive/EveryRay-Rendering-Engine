@@ -46,7 +46,8 @@ namespace Library
         ER_VolumetricFog* mVolumetricFog = nullptr;
         ER_Illumination* mIllumination = nullptr;
         ER_LightProbesManager* mIlluminationProbesManager = nullptr;
-        ER_PostProcessingStack* mPostProcessingStack = nullptr; //TODO remove namespace
+        Terrain* mTerrain = nullptr;
+        ER_PostProcessingStack* mPostProcessingStack = nullptr;
     private:
         void UpdateImGui();
         std::string mName;

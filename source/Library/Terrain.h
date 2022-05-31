@@ -5,13 +5,15 @@
 #include "DirectionalLight.h"
 #include "ER_PostProcessingStack.h"
 
-static const int NUM_THREADS_PER_TERRAIN_SIDE = 4;
-static const int NUM_PATCHES = 8;
+#define NUM_THREADS_PER_TERRAIN_SIDE 4
+#define NUM_TERRAIN_PATCHES_PER_TILE 8
+
 static const int TERRAIN_TILE_RESOLUTION = 512;
 
 namespace Library 
 {
 	class ER_ShadowMapper;
+	class ER_Scene;
 	class GameTime;
 
 	enum TerrainSplatChannels {
@@ -61,7 +63,7 @@ namespace Library
 
 		XMFLOAT2 mUVOffsetToTextureSpace;
 
-		Vertex mVertexList[(TERRAIN_TILE_RESOLUTION-1) * (TERRAIN_TILE_RESOLUTION - 1)*6];
+		Vertex mVertexList[(TERRAIN_TILE_RESOLUTION - 1) * (TERRAIN_TILE_RESOLUTION - 1) * 6];
 
 		MapData* mData = nullptr;
 	};
@@ -69,15 +71,19 @@ namespace Library
 	class Terrain : public GameComponent
 	{
 	public:
-		Terrain(std::string path, Game& game, Camera& camera, DirectionalLight& light, ER_PostProcessingStack& pp, bool isWireframe);
+		Terrain(Game& game);
 		~Terrain();
+
+		void LoadTerrainData(ER_Scene* aScene);
 
 		UINT GetWidth() { return mWidth; }
 		UINT GetHeight() { return mHeight; }
 
 		void Draw(ER_ShadowMapper* worldShadowMapper = nullptr);
-		//void Draw(int tileIndex);
 		void Update(const GameTime& gameTime);
+		void Config() { mShowDebug = !mShowDebug; }
+		
+		void SetLevelPath(const std::wstring& aPath) { mLevelPath = aPath; };
 
 		void SetWireframeMode(bool flag) { mIsWireframe = flag; }
 		void SetTessellationTerrainMode(bool flag) { mUseTessellatedTerrain = flag; }
@@ -89,24 +95,20 @@ namespace Library
 		void SetTerrainHeightScale(float scale) { mTerrainTessellatedHeightScale = scale; }
 		HeightMap* GetHeightmap(int index) { return mHeightMaps.at(index); }
 		float GetHeightScale(bool tessellated) { if (tessellated) return mTerrainTessellatedHeightScale; else return mTerrainNonTessellatedHeightScale; }
-
-		void Config() { mShowDebug = !mShowDebug; }
+		
+		void SetEnabled(bool val) { mEnabled = val; }
+		bool IsEnabled() { return mEnabled; }
 	private:
-		void LoadTextures(std::string path);
-		void LoadTileGroup(int threadIndex, std::string path);
+		void LoadTextures(const std::wstring& aTexturesPath, const std::wstring& splatLayer0Path, const std::wstring& splatLayer1Path,	const std::wstring& splatLayer2Path, const std::wstring& splatLayer3Path);
+
+		void LoadTileGroup(int threadIndex, const std::wstring& path);
 		void GenerateTileMesh(int tileIndex);
-		void LoadRawHeightmapPerTileCPU(int tileIndexX, int tileIndexY, std::string path);
-		void LoadSplatmapPerTileGPU(int tileIndexX, int tileIndexY, std::string path);
-		void LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, std::string path);
-		void LoadNormalmapPerTileGPU(int tileIndexX, int tileIndexY, std::string path);
+		void LoadRawHeightmapPerTileCPU(int tileIndexX, int tileIndexY, const std::wstring& aPath);
+		void LoadSplatmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path);
+		void LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path);
+		void LoadNormalmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path);
 		void DrawTessellated(int i, ER_ShadowMapper* worldShadowMapper = nullptr);
 		void DrawNonTessellated(int i, ER_ShadowMapper* worldShadowMapper = nullptr);
-
-		Camera& mCamera;
-		DirectionalLight& mDirectionalLight;
-		ER_PostProcessingStack& mPPStack;
-
-		ER_ShadowMapper* mTerrainShadowMapper = nullptr; // for terrain shadows 
 
 		UINT mWidth = 0;
 		UINT mHeight = 0;
@@ -118,7 +120,9 @@ namespace Library
 		ID3D11ShaderResourceView* mRockTexture = nullptr;
 		ID3D11ShaderResourceView* mMudTexture = nullptr;
 
-		int mNumTiles = 16;
+		std::wstring mLevelPath;
+
+		int mNumTiles = 0;
 		float mTerrainNonTessellatedHeightScale = 200.0f;
 		float mTerrainTessellatedHeightScale = 328.0f;
 		bool mIsWireframe = false;
@@ -130,5 +134,6 @@ namespace Library
 		float mTessellationDistanceFactor = 0.015f;
 
 		bool mShowDebug = false;
+		bool mEnabled = true;
 	};
 }

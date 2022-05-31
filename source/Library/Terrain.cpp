@@ -11,37 +11,61 @@
 #include "VertexDeclarations.h"
 #include "RasterizerStates.h"
 #include "ER_ShadowMapper.h"
+#include "ER_Scene.h"
 
 #define MULTITHREADED_LOAD 1
 
 namespace Library
 {
-
-	Terrain::Terrain(std::string path, Game& pGame, Camera& camera, DirectionalLight& light, ER_PostProcessingStack& pp, bool isWireframe) :
+	Terrain::Terrain(Game& pGame) :
 		GameComponent(pGame),
-		mCamera(camera), 
-		mIsWireframe(isWireframe),
-		mDirectionalLight(light),
-		mHeightMaps(0, nullptr),
-		mPPStack(pp),
-		mWidth(TERRAIN_TILE_RESOLUTION),
-		mHeight(TERRAIN_TILE_RESOLUTION)
+		mIsWireframe(false),
+		mHeightMaps(0, nullptr)
 	{
+	}
+
+	Terrain::~Terrain()
+	{
+		DeletePointerCollection(mHeightMaps);
+		ReleaseObject(mGrassTexture);
+		ReleaseObject(mRockTexture);
+		ReleaseObject(mGroundTexture);
+		ReleaseObject(mMudTexture);
+	}
+
+	void Terrain::LoadTerrainData(ER_Scene* aScene)
+	{
+		if (!aScene->HasTerrain())
+		{
+			mEnabled = false;
+			return;
+		}
+		assert(!mLevelPath.empty());
+
+		mNumTiles = aScene->GetTerrainTilesCount();
+		assert(mNumTiles > 0);
+
+		mWidth = mHeight = /*aTileResolution*/ TERRAIN_TILE_RESOLUTION; //TODO
+
 		if (!(mNumTiles && !(mNumTiles & (mNumTiles - 1))))
 			throw GameException("Number of tiles defined is not a power of 2!");
 
-		auto startTime = std::chrono::system_clock::now();
-		
 		for (int i = 0; i < mNumTiles; i++)
 			mHeightMaps.push_back(new HeightMap(mWidth, mHeight));
 
-		LoadTextures(path);
+		std::wstring path = mLevelPath + L"terrain\\";
+		LoadTextures(path, 
+			path + aScene->GetTerrainSplatLayerTextureName(0),
+			path + aScene->GetTerrainSplatLayerTextureName(1),
+			path + aScene->GetTerrainSplatLayerTextureName(2),
+			path + aScene->GetTerrainSplatLayerTextureName(3)
+		);
 
 #if MULTITHREADED_LOAD
 
 		std::vector<std::thread> threads;
 		threads.reserve(NUM_THREADS_PER_TERRAIN_SIDE);
-		
+
 		int threadOffset = sqrt(mNumTiles) / 2;
 		for (int i = 0; i < NUM_THREADS_PER_TERRAIN_SIDE; i++)
 		{
@@ -55,38 +79,28 @@ namespace Library
 		for (auto& t : threads) t.join();
 #else
 
-		LoadTileGroup(0, path);
+		LoadTileGroup(0, aTexturesPath);
 #endif
-		std::chrono::duration<double> durationTime = std::chrono::system_clock::now() - startTime;
-		//float timeSec = durationTime.count();
-
-		mTerrainShadowMapper = new ER_ShadowMapper(pGame, camera, light, 4096, 4096);
-		mDirectionalLight.RotationUpdateEvent->AddListener("terrain shadow mapper", [&]() { mTerrainShadowMapper->ApplyTransform(); });
 	}
 
-	Terrain::~Terrain()
+	void Terrain::LoadTextures(const std::wstring& aTexturesPath, const std::wstring& splatLayer0Path, const std::wstring& splatLayer1Path, const std::wstring& splatLayer2Path, const std::wstring& splatLayer3Path)
 	{
-		DeletePointerCollection(mHeightMaps);
-		ReleaseObject(mGrassTexture);
-		ReleaseObject(mRockTexture);
-		ReleaseObject(mGroundTexture);
-		ReleaseObject(mMudTexture);
-		DeleteObject(mTerrainShadowMapper);
-	}
+		//TODO change hardcoded names to layers #
+		if (!splatLayer0Path.empty())
+			if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), splatLayer0Path.c_str(), nullptr, &mMudTexture)))
+				throw GameException("Failed to create Terrain Mud Map.");
 
-	void Terrain::LoadTextures(std::string path)
-	{
-		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\terrain\\terrainGrassTexture.jpg").c_str(), nullptr, &mGrassTexture)))
-			throw GameException("Failed to create Terrain Grass Map.");
+		if (!splatLayer1Path.empty())
+			if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), splatLayer1Path.c_str(), nullptr, &mGrassTexture)))
+				throw GameException("Failed to create Terrain Grass Map.");
 
-		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\terrain\\terrainGroundTexture.jpg").c_str(), nullptr, &mGroundTexture)))
-			throw GameException("Failed to create Terrain Ground Map.");
+		if (!splatLayer2Path.empty())
+			if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), splatLayer2Path.c_str(), nullptr, &mRockTexture)))
+				throw GameException("Failed to create Terrain Rock Map.");
 
-		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\terrain\\terrainRockTexture.jpg").c_str(), nullptr, &mRockTexture)))
-			throw GameException("Failed to create Terrain Rock Map.");
-
-		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\terrain\\terrainMudTexture.jpg").c_str(), nullptr, &mMudTexture)))
-			throw GameException("Failed to create Terrain Mud Map.");
+		if (!splatLayer3Path.empty())
+			if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), splatLayer3Path.c_str(), nullptr, &mGroundTexture)))
+				throw GameException("Failed to create Terrain Ground Map.");
 
 		int numTilesSqrt = sqrt(mNumTiles);
 
@@ -96,23 +110,22 @@ namespace Library
 			{
 				int index = i * numTilesSqrt + j;
 				
-				std::string filePathSplatmap = path;
-				filePathSplatmap += "Splat_x" + std::to_string(i) + "_y" + std::to_string(j) + ".png";
-
-				std::string filePathHeightmap = path;
-				filePathHeightmap += "Height_x" + std::to_string(i) + "_y" + std::to_string(j) + ".png"; // "testHeightMap.png";//
-				
-				std::string filePathNormalmap = path;
-				filePathNormalmap += "Normal_x" + std::to_string(i) + "_y" + std::to_string(j) + ".png";
-
+				std::wstring filePathSplatmap = aTexturesPath;
+				filePathSplatmap += L"terrainSplat_x" + std::to_wstring(i) + L"_y" + std::to_wstring(j) + L".png";
 				LoadSplatmapPerTileGPU(i, j, filePathSplatmap); //unfortunately, not thread safe
+
+				std::wstring filePathHeightmap = aTexturesPath;
+				filePathHeightmap += L"terrainHeight_x" + std::to_wstring(i) + L"_y" + std::to_wstring(j) + L".png";
 				LoadHeightmapPerTileGPU(i, j, filePathHeightmap); //unfortunately, not thread safe
+				
+				//std::wstring filePathNormalmap = aTexturesPath;
+				//filePathNormalmap += L"terrainNormal_x" + std::to_wstring(i) + L"_y" + std::to_wstring(j) + L".png";
 				//LoadNormalmapPerTileGPU(i, j, filePathNormalmap); //unfortunately, not thread safe
 			}
 		}
 	}
 	
-	void Terrain::LoadTileGroup(int threadIndex, std::string path)
+	void Terrain::LoadTileGroup(int threadIndex, const std::wstring& aTexturesPath)
 	{
 		int numTilesSqrt = sqrt(mNumTiles);
 #if MULTITHREADED_LOAD
@@ -127,8 +140,8 @@ namespace Library
 			{
 
 				int index = i * numTilesSqrt + j;
-				std::string filePathHeightmap = path;
-				filePathHeightmap += "Height_x" + std::to_string(i) + "_y" + std::to_string(j) + ".r16";	
+				std::wstring filePathHeightmap = aTexturesPath;
+				filePathHeightmap += L"terrainHeight_x" + std::to_wstring(i) + L"_y" + std::to_wstring(j) + L".r16";	
 
 				LoadRawHeightmapPerTileCPU(i, j, filePathHeightmap);
 				GenerateTileMesh(index);
@@ -136,50 +149,51 @@ namespace Library
 		}
 	}
 
-	void Terrain::LoadSplatmapPerTileGPU(int tileIndexX, int tileIndexY, std::string path)
+	void Terrain::LoadSplatmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path)
 	{
 		int tileIndex = tileIndexX * sqrt(mNumTiles) + tileIndexY;
 		if (tileIndex >= mHeightMaps.size())
 			return;
 
-		std::wstring pathW = Utility::ToWideString(path);
-		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), pathW.c_str(), nullptr, &(mHeightMaps[tileIndex]->mSplatTexture))))
+		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), path.c_str(), nullptr, &(mHeightMaps[tileIndex]->mSplatTexture))))
 		{
-			std::string errorMessage = "Failed to create tile's 'Splat Map' SRV: " + path;
+			std::string errorMessage = "Failed to load a splatmap texture for terrain tile's x: " + std::to_string(tileIndexX) + " y: " + std::to_string(tileIndexY);
 			throw GameException(errorMessage.c_str());
 		}
 	}
 
-	void Terrain::LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, std::string path)
+	void Terrain::LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path)
 	{
 		int tileIndex = tileIndexX * sqrt(mNumTiles) + tileIndexY;
 		if (tileIndex >= mHeightMaps.size())
 			return;
 
-		std::wstring pathW = Utility::ToWideString(path);
-		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), pathW.c_str(), nullptr, &(mHeightMaps[tileIndex]->mHeightTexture))))
+		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), path.c_str(), nullptr, &(mHeightMaps[tileIndex]->mHeightTexture))))
 		{
-			std::string errorMessage = "Failed to create tile's 'Heightmap Map' SRV: " + path;
+			std::string errorMessage = "Failed to load a heightmap texture for terrain tile's x: " + std::to_string(tileIndexX) + " y: " + std::to_string(tileIndexY);
 			throw GameException(errorMessage.c_str());
 		}
 	}
 
-	void Terrain::LoadNormalmapPerTileGPU(int tileIndexX, int tileIndexY, std::string path)
-	{
-		int tileIndex = tileIndexX * sqrt(mNumTiles) + tileIndexY;
-		if (tileIndex >= mHeightMaps.size())
-			return;
-
-		std::wstring pathW = Utility::ToWideString(path);
-		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), pathW.c_str(), nullptr, &(mHeightMaps[tileIndex]->mNormalTexture))))
-		{
-			std::string errorMessage = "Failed to create tile's 'Normal Map' SRV: " + path;
-			throw GameException(errorMessage.c_str());
-		}
-	}
+	//void Terrain::LoadNormalmapPerTileGPU(int tileIndexX, int tileIndexY, const std::string& path)
+	//{
+	//	int tileIndex = tileIndexX * sqrt(mNumTiles) + tileIndexY;
+	//	if (tileIndex >= mHeightMaps.size())
+	//		return;
+	//
+	//	std::wstring pathW = Utility::ToWideString(path);
+	//	if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), pathW.c_str(), nullptr, &(mHeightMaps[tileIndex]->mNormalTexture))))
+	//	{
+	//		std::string errorMessage = "Failed to create tile's 'Normal Map' SRV: " + path;
+	//		throw GameException(errorMessage.c_str());
+	//	}
+	//}
 
 	void Terrain::Draw(ER_ShadowMapper* worldShadowMapper)
 	{
+		if (!mEnabled)
+			return;
+
 		if (mUseTessellatedTerrain)
 		{
 			for (int i = 0; i < mHeightMaps.size(); i++)
@@ -194,11 +208,10 @@ namespace Library
 
 	void Terrain::Update(const GameTime& gameTime)
 	{
-		mTerrainShadowMapper->Update(gameTime);
-
 		if (mShowDebug) {
 			//imgui
 			ImGui::Begin("Terrain System");
+			ImGui::Checkbox("Enabled", &mEnabled);
 			ImGui::Checkbox("Render wireframe", &mIsWireframe);
 			ImGui::Checkbox("Render non-tessellated", &mUseNonTessellatedTerrain);
 			ImGui::Checkbox("Render tessellated", &mUseTessellatedTerrain);
@@ -233,7 +246,7 @@ namespace Library
 			}
 		}
 
-		XMMATRIX wvp = mHeightMaps[tileIndex]->mWorldMatrix * mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
+		//XMMATRIX wvp = mHeightMaps[tileIndex]->mWorldMatrix * mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
 		//mMaterial->World() << mHeightMaps[tileIndex]->mWorldMatrixTS;
 		//mMaterial->View() << mCamera.ViewMatrix();
 		//mMaterial->Projection() << mCamera.ProjectionMatrix();
@@ -267,11 +280,11 @@ namespace Library
 		if (mIsWireframe)
 		{
 			context->RSSetState(RasterizerStates::Wireframe);
-			context->Draw(NUM_PATCHES * NUM_PATCHES, 0);
+			context->Draw(NUM_TERRAIN_PATCHES_PER_TILE * NUM_TERRAIN_PATCHES_PER_TILE, 0);
 			context->RSSetState(nullptr);
 		}
 		else
-			context->Draw(NUM_PATCHES * NUM_PATCHES, 0);
+			context->Draw(NUM_TERRAIN_PATCHES_PER_TILE * NUM_TERRAIN_PATCHES_PER_TILE, 0);
 
 		//reset back
 		context->IASetPrimitiveTopology(originalPrimitiveTopology);
@@ -496,7 +509,7 @@ namespace Library
 		indices = NULL;
 	}
 
-	void Terrain::LoadRawHeightmapPerTileCPU(int tileIndexX, int tileIndexY, std::string path)
+	void Terrain::LoadRawHeightmapPerTileCPU(int tileIndexX, int tileIndexY, const std::wstring& aPath)
 	{
 		int tileIndex = tileIndexX * sqrt(mNumTiles) + tileIndexY;
 		if (tileIndex >= mHeightMaps.size())
@@ -511,7 +524,7 @@ namespace Library
 		unsigned short* rawImage;
 
 		// Open the 16 bit raw height map file for reading in binary.
-		error = fopen_s(&filePtr, path.c_str(), "rb");
+		error = _wfopen_s(&filePtr, aPath.c_str(), L"rb");
 		if (error != 0)
 			throw GameException("Can not open the terrain's heightmap RAW!");
 
@@ -537,21 +550,21 @@ namespace Library
 		// genertate tessellated vertex buffers
 		{
 			// creating terrain vertex buffer for patches
-			float* patches_rawdata = new float[NUM_PATCHES * NUM_PATCHES * 4];
-			for (int i = 0; i < NUM_PATCHES; i++)
-				for (int j = 0; j < NUM_PATCHES; j++)
+			float* patches_rawdata = new float[NUM_TERRAIN_PATCHES_PER_TILE * NUM_TERRAIN_PATCHES_PER_TILE * 4];
+			for (int i = 0; i < NUM_TERRAIN_PATCHES_PER_TILE; i++)
+				for (int j = 0; j < NUM_TERRAIN_PATCHES_PER_TILE; j++)
 				{
-					patches_rawdata[(i + j * NUM_PATCHES) * 4 + 0] = i * (TERRAIN_TILE_RESOLUTION) / NUM_PATCHES;
-					patches_rawdata[(i + j * NUM_PATCHES) * 4 + 1] = j * (TERRAIN_TILE_RESOLUTION) / NUM_PATCHES;
+					patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 0] = i * (TERRAIN_TILE_RESOLUTION) / NUM_TERRAIN_PATCHES_PER_TILE;
+					patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 1] = j * (TERRAIN_TILE_RESOLUTION) / NUM_TERRAIN_PATCHES_PER_TILE;
 
-					patches_rawdata[(i + j * NUM_PATCHES) * 4 + 2] = TERRAIN_TILE_RESOLUTION / NUM_PATCHES;
-					patches_rawdata[(i + j * NUM_PATCHES) * 4 + 3] = TERRAIN_TILE_RESOLUTION / NUM_PATCHES;
+					patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 2] = TERRAIN_TILE_RESOLUTION / NUM_TERRAIN_PATCHES_PER_TILE;
+					patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 3] = TERRAIN_TILE_RESOLUTION / NUM_TERRAIN_PATCHES_PER_TILE;
 				}
 
 			D3D11_BUFFER_DESC buf_desc;
 			memset(&buf_desc, 0, sizeof(buf_desc));
 
-			buf_desc.ByteWidth = NUM_PATCHES * NUM_PATCHES * 4 * sizeof(float);
+			buf_desc.ByteWidth = NUM_TERRAIN_PATCHES_PER_TILE * NUM_TERRAIN_PATCHES_PER_TILE * 4 * sizeof(float);
 			buf_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 			buf_desc.Usage = D3D11_USAGE_DEFAULT;
 

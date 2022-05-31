@@ -271,7 +271,7 @@ namespace Library
 
 		///****************************************************************************************************************************
 		// *** instancing data (counters, transforms etc.) ***
-		UINT													mInstanceCount;
+		UINT													mInstanceCount = 0;
 		std::vector<std::string>								mInstancesNames; // collection of names of instances (mName + index)
 		std::vector<ER_AABB>									mInstanceAABBs; // collection of AABBs for every instance (shared for LODs)
 		std::vector<bool>										mInstanceCullingFlags; // collection of culling flags for every instance (vector is lame here btw...)

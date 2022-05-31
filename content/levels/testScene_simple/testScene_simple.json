@@ -11,6 +11,11 @@
 		6.7999999999999998,
 		37.0
 	],
+	"terrain_num_tiles" : 16,
+	"terrain_texture_splat_layer0" : "terrainMudTexture.jpg",
+	"terrain_texture_splat_layer1" : "terrainGrassTexture.jpg",
+	"terrain_texture_splat_layer2" : "terrainGroundTexture.jpg",
+	"terrain_texture_splat_layer3" : "terrainGroundTexture_.jpg",
 	"foliage_zones" : 
 	[
 		{

@@ -27,6 +27,7 @@ namespace Library {
 		DeleteObject(mIllumination);
 		DeleteObject(mScene);
 		DeleteObject(mIlluminationProbesManager);
+		DeleteObject(mTerrain);
 		game.CPUProfiler()->EndCPUTime("Destroying scene: " + mName);
 	}
 
@@ -129,6 +130,14 @@ namespace Library {
 		game.CPUProfiler()->EndCPUTime("Foliage init");
 #pragma endregion
 
+		#pragma region INIT_TERRAIN
+		game.CPUProfiler()->BeginCPUTime("Terrain init");
+		mTerrain = new Terrain(game);
+		mTerrain->SetLevelPath(Utility::ToWideString(sceneFolderPath));
+		mTerrain->LoadTerrainData(mScene);
+		game.CPUProfiler()->EndCPUTime("Terrain init");
+#pragma endregion
+
 		#pragma region INIT_MATERIAL_CALLBACKS
 		game.CPUProfiler()->BeginCPUTime("Material callbacks init");
 		ER_MaterialSystems materialSystems;
@@ -170,6 +179,7 @@ namespace Library {
 		mPostProcessingStack->Update();
 		mVolumetricClouds->Update(gameTime);
 		mVolumetricFog->Update(gameTime);
+		mTerrain->Update(gameTime);
 		mIllumination->Update(gameTime, mScene);
 		if (mScene->HasLightProbesSupport() && mIlluminationProbesManager->IsEnabled())
 			mIlluminationProbesManager->UpdateProbes(game);
@@ -204,6 +214,9 @@ namespace Library {
 		if (ImGui::Button("Foliage"))
 			mFoliageSystem->Config();
 
+		if (ImGui::Button("Terrain"))
+			mTerrain->Config();
+
 		if (ImGui::CollapsingHeader("Wind"))
 		{
 			ImGui::SliderFloat("Wind strength", &mWindStrength, 0.0f, 100.0f);
@@ -231,6 +244,8 @@ namespace Library {
 		#pragma region DRAW_GBUFFER
 		mGBuffer->Start();
 		mGBuffer->Draw(mScene);
+		//if (mTerrain)
+		//	mTerrain->Draw(nullptr);
 		if (mFoliageSystem)
 			mFoliageSystem->Draw(gameTime, nullptr, FoliageRenderingPass::TO_GBUFFER);
 		mGBuffer->End();

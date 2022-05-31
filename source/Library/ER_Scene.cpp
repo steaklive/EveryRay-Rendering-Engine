@@ -75,6 +75,29 @@ namespace Library
 				skyboxPath = root["skybox_path"].asString();
 			}
 
+			// terrain config
+			{
+				if (root.isMember("terrain_num_tiles")) {
+					mHasTerrain = true;
+					mTerrainTilesCount = root["terrain_num_tiles"].asInt();
+					std::string fieldName = "terrain_texture_splat_layer";
+					std::wstring result = L"";
+					for (int i = 0; i < 4; i ++)
+					{
+						fieldName += std::to_string(i);
+						if (root.isMember(fieldName.c_str()))
+							result = Utility::ToWideString(root[fieldName.c_str()].asString());
+						else
+							result = L"";
+
+						fieldName = "terrain_texture_splat_layer";
+						mTerrainSplatLayersTextureNames[i] = result;
+					}
+				}
+				else
+					mHasTerrain = false;
+			}
+
 			// light probes config
 			{
 				if (root.isMember("light_probes_volume_bounds_min")) {
