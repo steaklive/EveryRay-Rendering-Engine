@@ -132,7 +132,7 @@ namespace Library {
 
 		#pragma region INIT_TERRAIN
 		game.CPUProfiler()->BeginCPUTime("Terrain init");
-		mTerrain = new Terrain(game, *mDirectionalLight);
+		mTerrain = new ER_Terrain(game, *mDirectionalLight);
 		mTerrain->SetLevelPath(Utility::ToWideString(sceneFolderPath));
 		mTerrain->LoadTerrainData(mScene);
 		game.CPUProfiler()->EndCPUTime("Terrain init");

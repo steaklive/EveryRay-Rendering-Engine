@@ -12,7 +12,7 @@
 #include "..\Library\ER_PostProcessingStack.h"
 #include "..\Library\ER_GBuffer.h"
 #include "..\Library\ER_ShadowMapper.h"
-#include "..\Library\Terrain.h"
+#include "..\Library\ER_Terrain.h"
 #include "..\Library\ER_FoliageManager.h"
 #include "..\Library\ER_Scene.h"
 #include "..\Library\ER_VolumetricClouds.h"

@@ -14,7 +14,7 @@ namespace Library
     class ER_Skybox;
     class ER_GBuffer;
     class ER_ShadowMapper;
-    class Terrain;
+    class ER_Terrain;
     class ER_FoliageManager;
     class ER_VolumetricClouds;
 	class ER_VolumetricFog;
@@ -46,7 +46,7 @@ namespace Library
         ER_VolumetricFog* mVolumetricFog = nullptr;
         ER_Illumination* mIllumination = nullptr;
         ER_LightProbesManager* mIlluminationProbesManager = nullptr;
-        Terrain* mTerrain = nullptr;
+        ER_Terrain* mTerrain = nullptr;
         ER_PostProcessingStack* mPostProcessingStack = nullptr;
     private:
         void UpdateImGui();

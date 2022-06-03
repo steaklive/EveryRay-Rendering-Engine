@@ -85,11 +85,11 @@ namespace Library
 
 	};
 
-	class Terrain : public GameComponent
+	class ER_Terrain : public GameComponent
 	{
 	public:
-		Terrain(Game& game, DirectionalLight& light);
-		~Terrain();
+		ER_Terrain(Game& game, DirectionalLight& light);
+		~ER_Terrain();
 
 		void LoadTerrainData(ER_Scene* aScene);
 

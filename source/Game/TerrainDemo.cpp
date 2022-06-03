@@ -32,7 +32,7 @@
 #include "..\Library\GBuffer.h"
 #include "..\Library\FullScreenQuad.h"
 #include "..\Library\ShadowMapper.h"
-#include "..\Library\Terrain.h"
+#include "..\Library\ER_Terrain.h"
 #include "..\Library\ER_Foliage.h"
 #include "..\Library\ER_Scene.h"
 #include "..\Library\ER_VolumetricClouds.h"

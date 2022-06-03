@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include <stdio.h>
 
-#include "Terrain.h"
+#include "ER_Terrain.h"
 #include "GameException.h"
 #include "Model.h"
 #include "Mesh.h"
@@ -17,7 +17,7 @@
 
 namespace Library
 {
-	Terrain::Terrain(Game& pGame, DirectionalLight& light) :
+	ER_Terrain::ER_Terrain(Game& pGame, DirectionalLight& light) :
 		GameComponent(pGame),
 		mIsWireframe(false),
 		mHeightMaps(0, nullptr),
@@ -66,7 +66,7 @@ namespace Library
 		mTerrainConstantBuffer.Initialize(GetGame()->Direct3DDevice());
 	}
 
-	Terrain::~Terrain()
+	ER_Terrain::~ER_Terrain()
 	{
 		DeletePointerCollection(mHeightMaps);
 		for (size_t i = 0; i < NUM_TEXTURE_SPLAT_CHANNELS; i++)
@@ -80,7 +80,7 @@ namespace Library
 		mTerrainConstantBuffer.Release();
 	}
 
-	void Terrain::LoadTerrainData(ER_Scene* aScene)
+	void ER_Terrain::LoadTerrainData(ER_Scene* aScene)
 	{
 		if (!aScene->HasTerrain())
 		{
@@ -112,7 +112,7 @@ namespace Library
 			LoadTile(i, path); //not thread-safe
 	}
 
-	void Terrain::LoadTextures(const std::wstring& aTexturesPath, const std::wstring& splatLayer0Path, const std::wstring& splatLayer1Path, const std::wstring& splatLayer2Path, const std::wstring& splatLayer3Path)
+	void ER_Terrain::LoadTextures(const std::wstring& aTexturesPath, const std::wstring& splatLayer0Path, const std::wstring& splatLayer1Path, const std::wstring& splatLayer2Path, const std::wstring& splatLayer3Path)
 	{
 		if (!splatLayer0Path.empty())
 			mSplatChannelTextures[0] = new ER_GPUTexture(GetGame()->Direct3DDevice(), GetGame()->Direct3DDeviceContext(), splatLayer0Path, true);
@@ -146,7 +146,7 @@ namespace Library
 		}
 	}
 	
-	void Terrain::LoadTile(int threadIndex, const std::wstring& aTexturesPath)
+	void ER_Terrain::LoadTile(int threadIndex, const std::wstring& aTexturesPath)
 	{
 		int numTilesSqrt = sqrt(mNumTiles);
 
@@ -160,7 +160,7 @@ namespace Library
 		LoadRawHeightmapPerTileCPU(tileX, tileY, filePathHeightmap);
 	}
 
-	void Terrain::LoadSplatmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path)
+	void ER_Terrain::LoadSplatmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path)
 	{
 		int tileIndex = tileIndexX * sqrt(mNumTiles) + tileIndexY;
 		if (tileIndex >= mHeightMaps.size())
@@ -169,7 +169,7 @@ namespace Library
 		mHeightMaps[tileIndex]->mSplatTexture = new ER_GPUTexture(GetGame()->Direct3DDevice(), GetGame()->Direct3DDeviceContext(), path, true);
 	}
 
-	void Terrain::LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path)
+	void ER_Terrain::LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path)
 	{
 		int tileIndex = tileIndexX * sqrt(mNumTiles) + tileIndexY;
 		if (tileIndex >= mHeightMaps.size())
@@ -192,7 +192,7 @@ namespace Library
 	//	}
 	//}
 
-	void Terrain::LoadRawHeightmapPerTileCPU(int tileIndexX, int tileIndexY, const std::wstring& aPath)
+	void ER_Terrain::LoadRawHeightmapPerTileCPU(int tileIndexX, int tileIndexY, const std::wstring& aPath)
 	{
 		int tileIndex = tileIndexX * sqrt(mNumTiles) + tileIndexY;
 		if (tileIndex >= mHeightMaps.size())
@@ -487,7 +487,7 @@ namespace Library
 		}
 	}
 
-	void Terrain::Draw(ER_ShadowMapper* worldShadowMapper)
+	void ER_Terrain::Draw(ER_ShadowMapper* worldShadowMapper)
 	{
 		if (!mEnabled)
 			return;
@@ -496,7 +496,7 @@ namespace Library
 			DrawTessellated(i, worldShadowMapper);
 	}
 
-	void Terrain::Update(const GameTime& gameTime)
+	void ER_Terrain::Update(const GameTime& gameTime)
 	{
 		if (mShowDebug) {
 			ImGui::Begin("Terrain System");
@@ -511,7 +511,7 @@ namespace Library
 		}
 	}
 
-	void Terrain::DrawTessellated(int tileIndex, ER_ShadowMapper* worldShadowMapper)
+	void ER_Terrain::DrawTessellated(int tileIndex, ER_ShadowMapper* worldShadowMapper)
 	{
 		Camera* camera = (Camera*)(mGame->Services().GetService(Camera::TypeIdClass()));
 		assert(camera);
