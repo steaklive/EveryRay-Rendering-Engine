@@ -26,7 +26,7 @@ namespace Library {
 		DeleteObject(mVolumetricFog);
 		DeleteObject(mIllumination);
 		DeleteObject(mScene);
-		DeleteObject(mIlluminationProbesManager);
+		DeleteObject(mLightProbesManager);
 		DeleteObject(mTerrain);
 		game.CPUProfiler()->EndCPUTime("Destroying scene: " + mName);
 	}
@@ -116,9 +116,9 @@ namespace Library {
 
 		#pragma region INIT_LIGHTPROBES_MANAGER
 		game.CPUProfiler()->BeginCPUTime("Light probes manager init");
-		mIlluminationProbesManager = new ER_LightProbesManager(game, camera, mScene, *mDirectionalLight, *mShadowMapper);
-		mIlluminationProbesManager->SetLevelPath(Utility::ToWideString(sceneFolderPath));
-		mIllumination->SetProbesManager(mIlluminationProbesManager);
+		mLightProbesManager = new ER_LightProbesManager(game, camera, mScene, *mDirectionalLight, *mShadowMapper);
+		mLightProbesManager->SetLevelPath(Utility::ToWideString(sceneFolderPath));
+		mIllumination->SetProbesManager(mLightProbesManager);
 		game.CPUProfiler()->EndCPUTime("Light probes manager init");
 #pragma endregion
 
@@ -144,7 +144,7 @@ namespace Library {
 		materialSystems.mCamera = &camera;
 		materialSystems.mDirectionalLight = mDirectionalLight;
 		materialSystems.mShadowMapper = mShadowMapper;
-		materialSystems.mProbesManager = mIlluminationProbesManager;
+		materialSystems.mProbesManager = mLightProbesManager;
 
 		for (auto& object : mScene->objects) {
 			for (auto& layeredMaterial : object.second->GetMaterials())
@@ -181,8 +181,8 @@ namespace Library {
 		mVolumetricFog->Update(gameTime);
 		mTerrain->Update(gameTime);
 		mIllumination->Update(gameTime, mScene);
-		if (mScene->HasLightProbesSupport() && mIlluminationProbesManager->IsEnabled())
-			mIlluminationProbesManager->UpdateProbes(game);
+		if (mScene->HasLightProbesSupport() && mLightProbesManager->IsEnabled())
+			mLightProbesManager->UpdateProbes(game);
 		mShadowMapper->Update(gameTime);
 		mFoliageSystem->Update(gameTime, mWindGustDistance, mWindStrength, mWindFrequency);
 		mDirectionalLight->UpdateProxyModel(gameTime, 
@@ -255,15 +255,15 @@ namespace Library {
 
 		#pragma region DRAW_GLOBAL_ILLUMINATION
 		{
-			if (mScene->HasLightProbesSupport() && !mIlluminationProbesManager->AreProbesReady())
+			if (mScene->HasLightProbesSupport() && !mLightProbesManager->AreProbesReady())
 			{
 				game.CPUProfiler()->BeginCPUTime("Compute or load light probes");
-				mIlluminationProbesManager->ComputeOrLoadLocalProbes(game, mScene->objects, mSkybox);
-				mIlluminationProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
+				mLightProbesManager->ComputeOrLoadLocalProbes(game, mScene->objects, mSkybox);
+				mLightProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
 				game.CPUProfiler()->EndCPUTime("Compute or load light probes");
 			}
-			else if (!mIlluminationProbesManager->IsEnabled() && !mIlluminationProbesManager->AreGlobalProbesReady())
-				mIlluminationProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
+			else if (!mLightProbesManager->IsEnabled() && !mLightProbesManager->AreGlobalProbesReady())
+				mLightProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
 		}
 
 		mRenderStateHelper->SaveAll();
@@ -292,7 +292,7 @@ namespace Library {
 
 		#pragma region DRAW_TERRAIN
 		if (mTerrain)
-			mTerrain->Draw(mShadowMapper);
+			mTerrain->Draw(mShadowMapper, mLightProbesManager);
 #pragma endregion
 
 		#pragma region DRAW_DEBUG_GIZMOS

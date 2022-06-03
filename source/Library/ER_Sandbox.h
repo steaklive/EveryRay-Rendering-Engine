@@ -45,7 +45,7 @@ namespace Library
         ER_VolumetricClouds* mVolumetricClouds = nullptr;
         ER_VolumetricFog* mVolumetricFog = nullptr;
         ER_Illumination* mIllumination = nullptr;
-        ER_LightProbesManager* mIlluminationProbesManager = nullptr;
+        ER_LightProbesManager* mLightProbesManager = nullptr;
         ER_Terrain* mTerrain = nullptr;
         ER_PostProcessingStack* mPostProcessingStack = nullptr;
     private:

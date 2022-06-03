@@ -1,4 +1,22 @@
+// ================================================================================================
+// Vertex/Domain/Hull/Pixel shader for terrain rendering 
+//
+// Supports:
+// - Cascaded Shadow Mapping
+// - PBR with Image Based Lighting (via global light probes)
+// - dynamic GPU tessellation
+//
+// TODO:
+// - move to "Forward+"
+// - add support for point/spot lights
+// - add support for ambient occlusion
+//
+// Written by Gen Afanasev for 'EveryRay Rendering Engine', 2017-2022
+// ================================================================================================
+
+
 #include "..\Common.hlsli"
+#include "..\Lighting.hlsli"
 
 static const int TILE_SIZE = 512;
 static const int DETAIL_TEXTURE_REPEAT = 32;
@@ -40,18 +58,18 @@ struct HS_OUTPUT
 struct DS_OUTPUT
 {
     float4 position : SV_Position;
-    centroid float2 texcoord : TEXCOORD0;
+    float4 worldPos : TEXCOORD0;
+    centroid float2 texcoord : TEXCOORD1;
     centroid float3 normal : NORMAL;
-    float3 shadowCoord0 : TEXCOORD2;
-    float3 shadowCoord1 : TEXCOORD3;
-    float3 shadowCoord2 : TEXCOORD4;
+    float3 shadowCoord0 : TEXCOORD3;
+    float3 shadowCoord1 : TEXCOORD4;
+    float3 shadowCoord2 : TEXCOORD5;
 };
 
 struct PatchData
 {
     float Edges[4] : SV_TessFactor;
     float Inside[2] : SV_InsideTessFactor;
-
     float2 origin : ORIGIN;
     float2 size : SIZE;
 };
@@ -60,13 +78,16 @@ SamplerState LinearSampler : register(s0);
 SamplerState LinearSamplerClamp : register(s1);
 SamplerComparisonState CascadedPcfShadowMapSampler : register(s2);
 
-Texture2D<float> heightTexture : register(t0);
-Texture2D<float4> splatTexture : register(t1);
-Texture2D<float4> channel0Texture : register(t2);
-Texture2D<float4> channel1Texture : register(t3);
-Texture2D<float4> channel2Texture : register(t4);
-Texture2D<float4> channel3Texture : register(t5);
-Texture2D<float> cascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t6);
+Texture2D<float4> SplatTexture : register(t0);
+Texture2D<float4> Channel0Texture : register(t1);
+Texture2D<float4> Channel1Texture : register(t2);
+Texture2D<float4> Channel2Texture : register(t3);
+Texture2D<float4> Channel3Texture : register(t4);
+Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t5);
+
+// here go some GI probe textures from Lighting.hlsli (from t8 to t17), thats why we start from t18 
+
+Texture2D<float> HeightTexture : register(t18);
 
 HS_INPUT VSMain(VS_INPUT_TS IN)
 {
@@ -75,41 +96,6 @@ HS_INPUT VSMain(VS_INPUT_TS IN)
     OUT.origin = IN.PatchInfo.xy;
     OUT.size = IN.PatchInfo.zw;
     return OUT;
-}
-
-float CalculateShadow(float3 ShadowCoord, int index)
-{
-    const float Dilation = 2.0;
-    float d1 = Dilation * ShadowTexelSize.x * 0.125;
-    float d2 = Dilation * ShadowTexelSize.x * 0.875;
-    float d3 = Dilation * ShadowTexelSize.x * 0.625;
-    float d4 = Dilation * ShadowTexelSize.x * 0.375;
-    float result = (
-        2.0 *
-        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy, ShadowCoord.z) +
-        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d2, d1), ShadowCoord.z) +
-        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d1, -d2), ShadowCoord.z) +
-        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d2, -d1), ShadowCoord.z) +
-        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d1, d2), ShadowCoord.z) +
-        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d4, d3), ShadowCoord.z) +
-        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d3, -d4), ShadowCoord.z) +
-        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d4, -d3), ShadowCoord.z) +
-        cascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d3, d4), ShadowCoord.z)
-        ) / 10.0;
-
-    return result * result;
-}
-float GetShadow(float3 ShadowCoord0, float3 ShadowCoord1, float3 ShadowCoord2, float depthDistance)
-{
-    if (depthDistance < ShadowCascadeDistances.x)
-        return CalculateShadow(ShadowCoord0, 0);
-    else if (depthDistance < ShadowCascadeDistances.y)
-        return CalculateShadow(ShadowCoord1, 1);
-    else if (depthDistance < ShadowCascadeDistances.z)
-        return CalculateShadow(ShadowCoord2, 2);
-    else
-        return 1.0f;
-    
 }
 
 // hyperbolic function that determines a factor
@@ -122,10 +108,10 @@ float GetTessellationFactorFromCamera(float distance)
 float3 GetNormalFromHeightmap(float2 uv, float texelSize, float maxHeight)
 {
     float4 h;
-    h[0] = heightTexture.SampleLevel(LinearSampler, uv + texelSize * float2(0, -1), 0).r * maxHeight;
-    h[1] = heightTexture.SampleLevel(LinearSampler, uv + texelSize * float2(-1, 0), 0).r * maxHeight;
-    h[2] = heightTexture.SampleLevel(LinearSampler, uv + texelSize * float2(1, 0), 0).r * maxHeight;
-    h[3] = heightTexture.SampleLevel(LinearSampler, uv + texelSize * float2(0, 1), 0).r * maxHeight;
+    h[0] = HeightTexture.SampleLevel(LinearSampler, uv + texelSize * float2(0, -1), 0).r * maxHeight;
+    h[1] = HeightTexture.SampleLevel(LinearSampler, uv + texelSize * float2(-1, 0), 0).r * maxHeight;
+    h[2] = HeightTexture.SampleLevel(LinearSampler, uv + texelSize * float2(1, 0), 0).r * maxHeight;
+    h[3] = HeightTexture.SampleLevel(LinearSampler, uv + texelSize * float2(0, 1), 0).r * maxHeight;
     
     float3 n;
     n.z = h[0] - h[3];
@@ -193,7 +179,7 @@ DS_OUTPUT DSMain(PatchData input, float2 uv : SV_DomainLocation, OutputPatch<HS_
     float3 vertexPosition;
     
     float2 texcoord01 = (input.origin + uv * input.size) / float(TILE_SIZE);
-    float height = heightTexture.SampleLevel(LinearSamplerClamp, texcoord01, 0).r;
+    float height = HeightTexture.SampleLevel(LinearSamplerClamp, texcoord01, 0).r;
 	
     vertexPosition.xz = input.origin + uv * input.size;
     vertexPosition.y = TerrainHeightScale * height;
@@ -211,6 +197,7 @@ DS_OUTPUT DSMain(PatchData input, float2 uv : SV_DomainLocation, OutputPatch<HS_
     
 	// writing output params
     output.position = mul(float4(vertexPosition, 1.0), World);
+    output.worldPos = output.position;
     output.position = mul(output.position, View);
     output.position = mul(output.position, Projection);
     output.texcoord = texcoord01;
@@ -230,26 +217,25 @@ float4 PSMain(DS_OUTPUT IN) : SV_Target
    
     uvTile.y = 1.0f - uvTile.y;
     
-    float4 splat = splatTexture.Sample(LinearSampler, uvTile);
-    float3 channel0 = channel0Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
-    float3 channel1 = channel1Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
-    float3 channel2 = channel2Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
-    float3 channel3 = channel3Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
-    
-    float3 albedo = splat.r * channel0 + splat.g * channel1 + splat.b * channel2 + splat.a * channel3;
-    
-    float3 color = float3(0.1f, 0.1f, 0.1f);//AmbientColor.rgb;
+    float4 splat = SplatTexture.Sample(LinearSampler, uvTile);
+    float3 channel0 = Channel0Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
+    float3 channel1 = Channel1Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
+    float3 channel2 = Channel2Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
+    float3 channel3 = Channel3Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
+    float3 diffuseAlbedo = splat.r * channel0 + splat.g * channel1 + splat.b * channel2 + splat.a * channel3;
 
-    float shadow = GetShadow(IN.shadowCoord0, IN.shadowCoord1, IN.shadowCoord2, IN.position.w);
-    shadow = clamp(shadow, 0.5f, 1.0f);
+    float3 shadowCoords[3] = { IN.shadowCoord0, IN.shadowCoord1, IN.shadowCoord2 };
+    float shadow = Forward_GetShadow(ShadowCascadeDistances, shadowCoords, ShadowTexelSize.r, CascadedShadowTextures, CascadedPcfShadowMapSampler, IN.position.w, -1);
     
-    float lightIntensity = saturate(dot(normal, SunDirection.rgb));
-
-    if (lightIntensity > 0.0f)
-        color += SunColor.rgb * lightIntensity;
-
-    color = saturate(color);
-    color *= albedo * shadow;
+    float roughness = 1.0f;
+    float metalness = 0.0f;
+    float ao = 1.0f;
     
-    return float4(color, 1.0f);
+    LightProbeInfo probesInfo;
+    probesInfo.globalIrradianceDiffuseProbeTexture = DiffuseGlobalProbeTexture;
+    probesInfo.globalIrradianceSpecularProbeTexture = SpecularGlobalProbeTexture;
+    
+    float3 directLighting = DirectLightingPBR(normal, SunColor, SunDirection.xyz, diffuseAlbedo.rgb, IN.worldPos.xyz, roughness, float3(0.04, 0.04, 0.04), metalness, CameraPosition.xyz);
+    float3 indirectLighting = IndirectLightingPBR(normal, diffuseAlbedo.rgb, IN.worldPos.xyz, roughness, float3(0.04, 0.04, 0.04), metalness, CameraPosition.xyz, true, probesInfo, LinearSampler, IntegrationTexture, ao);
+    return float4(directLighting * shadow + indirectLighting, 1.0f);
 }

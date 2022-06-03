@@ -14,6 +14,8 @@
 #include "ER_Scene.h"
 #include "ShaderCompiler.h"
 #include "DirectionalLight.h"
+#include "ER_LightProbesManager.h"
+#include "ER_LightProbe.h"
 
 namespace Library
 {
@@ -487,13 +489,13 @@ namespace Library
 		}
 	}
 
-	void ER_Terrain::Draw(ER_ShadowMapper* worldShadowMapper)
+	void ER_Terrain::Draw(ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager)
 	{
 		if (!mEnabled)
 			return;
 
 		for (int i = 0; i < mHeightMaps.size(); i++)
-			DrawTessellated(i, worldShadowMapper);
+			DrawTessellated(i, worldShadowMapper, probeManager);
 	}
 
 	void ER_Terrain::Update(const GameTime& gameTime)
@@ -511,7 +513,7 @@ namespace Library
 		}
 	}
 
-	void ER_Terrain::DrawTessellated(int tileIndex, ER_ShadowMapper* worldShadowMapper)
+	void ER_Terrain::DrawTessellated(int tileIndex, ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager)
 	{
 		Camera* camera = (Camera*)(mGame->Services().GetService(Camera::TypeIdClass()));
 		assert(camera);
@@ -553,9 +555,9 @@ namespace Library
 		context->HSSetConstantBuffers(0, 1, CBs);
 		context->PSSetConstantBuffers(0, 1, CBs);
 
-		ID3D11ShaderResourceView* SRVS[2 + 4 + NUM_SHADOW_CASCADES] =
+		const int probesShift = 10; //WARNING: verify with Illumination system
+		ID3D11ShaderResourceView* SRVs[1 /*splat*/ + 4 /*splat channels*/ + NUM_SHADOW_CASCADES + probesShift /*probe GI*/ + 1 /*height*/] =
 		{
-			mHeightMaps[tileIndex]->mHeightTexture->GetSRV(),
 			mHeightMaps[tileIndex]->mSplatTexture->GetSRV(),
 			mSplatChannelTextures[0]->GetSRV(),
 			mSplatChannelTextures[1]->GetSRV(),
@@ -565,10 +567,26 @@ namespace Library
 
 		if (worldShadowMapper)
 			for (int c = 0; c < NUM_SHADOW_CASCADES; c++)
-				SRVS[6 + c] = worldShadowMapper->GetShadowTexture(c);
+				SRVs[1 + 4 + c] = worldShadowMapper->GetShadowTexture(c);
 
-		context->DSSetShaderResources(0, 2 + 4 + NUM_SHADOW_CASCADES, SRVS);
-		context->PSSetShaderResources(0, 2 + 4 + NUM_SHADOW_CASCADES, SRVS);
+		if (probeManager)
+		{
+			SRVs[8] = (probeManager->IsEnabled() || probeManager->AreGlobalProbesReady()) ? probeManager->GetGlobalDiffuseProbe()->GetCubemapSRV() : nullptr;
+			SRVs[9] = nullptr;
+			SRVs[10] = nullptr;
+			SRVs[11] = nullptr;
+			SRVs[12] = (probeManager->IsEnabled() || probeManager->AreGlobalProbesReady()) ? probeManager->GetGlobalSpecularProbe()->GetCubemapSRV() : nullptr;
+			SRVs[13] = nullptr;
+			SRVs[14] = nullptr;
+			SRVs[15] = nullptr;
+			SRVs[16] = nullptr;
+			SRVs[17] = (probeManager->IsEnabled() || probeManager->AreGlobalProbesReady()) ? probeManager->GetIntegrationMap() : nullptr;
+		}
+
+		SRVs[18] = mHeightMaps[tileIndex]->mHeightTexture->GetSRV();
+
+		context->DSSetShaderResources(0, 1 + 4 + NUM_SHADOW_CASCADES + probesShift + 1, SRVs);
+		context->PSSetShaderResources(0, 1 + 4 + NUM_SHADOW_CASCADES + probesShift + 1, SRVs);
 
 		ID3D11SamplerState* SS[3] = { SamplerStates::TrilinearWrap, SamplerStates::TrilinearClamp, SamplerStates::ShadowSamplerState };
 		context->DSSetSamplers(0, 3, SS);

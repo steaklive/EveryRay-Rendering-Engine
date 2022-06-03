@@ -18,6 +18,7 @@ namespace Library
 	class ER_Scene;
 	class GameTime;
 	class DirectionalLight;
+	class ER_LightProbesManager;
 
 	enum TerrainSplatChannels {
 		CHANNEL_0,
@@ -96,7 +97,7 @@ namespace Library
 		UINT GetWidth() { return mWidth; }
 		UINT GetHeight() { return mHeight; }
 
-		void Draw(ER_ShadowMapper* worldShadowMapper = nullptr);
+		void Draw(ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr);
 		void Update(const GameTime& gameTime);
 		void Config() { mShowDebug = !mShowDebug; }
 		
@@ -117,15 +118,12 @@ namespace Library
 		bool IsEnabled() { return mEnabled; }
 	private:
 		void LoadTextures(const std::wstring& aTexturesPath, const std::wstring& splatLayer0Path, const std::wstring& splatLayer1Path,	const std::wstring& splatLayer2Path, const std::wstring& splatLayer3Path);
-
 		void LoadTile(int threadIndex, const std::wstring& path);
-		void GenerateTileMesh(int tileIndex);
 		void LoadRawHeightmapPerTileCPU(int tileIndexX, int tileIndexY, const std::wstring& aPath);
 		void LoadSplatmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path);
 		void LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path);
-		void LoadNormalmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path);
-		void DrawTessellated(int i, ER_ShadowMapper* worldShadowMapper = nullptr);
-		void DrawNonTessellated(int i, ER_ShadowMapper* worldShadowMapper = nullptr);
+		//void LoadNormalmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path);
+		void DrawTessellated(int i, ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr);
 
 		DirectionalLight& mDirectionalLight;
 
