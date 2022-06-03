@@ -209,16 +209,109 @@ ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, UINT width, UINT height, UINT
 	mTexture3D = tex3D;
 }
 
-ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, ID3D11DeviceContext* context, const std::string& aPath)
+ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, ID3D11DeviceContext* context, const std::string& aPath, bool isFullPath)
+{
+	std::string originalPath = aPath;
+
+	mIsLoadedFromFile = true;
+	const char* postfixDDS = ".dds";
+	const char* postfixDDS_Capital = ".DDS";
+	bool isDDS = (originalPath.substr(originalPath.length() - 4) == std::string(postfixDDS)) || (originalPath.substr(originalPath.length() - 4) == std::string(postfixDDS_Capital));
+
+	if (isFullPath)
+	{
+		if (isDDS)
+		{
+			if (FAILED(DirectX::CreateDDSTextureFromFile(device, context, Library::Utility::ToWideString(aPath).c_str(), nullptr, &mSRV)))
+			{
+				std::string msg = "Failed to load DDS texture from disk: ";
+				msg += aPath;
+				throw Library::GameException(msg.c_str());
+			}
+		}
+		else
+		{
+			if (FAILED(DirectX::CreateWICTextureFromFile(device, context, Library::Utility::ToWideString(aPath).c_str(), nullptr, &mSRV)))
+			{
+				std::string msg = "Failed to load WIC texture from disk: ";
+				msg += aPath;
+				throw Library::GameException(msg.c_str());
+			}
+		}
+	}
+	else
+	{
+		if (isDDS)
+		{
+			if (FAILED(DirectX::CreateDDSTextureFromFile(device, context, Library::Utility::GetFilePath(Library::Utility::ToWideString(aPath)).c_str(), nullptr, &mSRV)))
+			{
+				std::string msg = "Failed to load DDS texture from disk: ";
+				msg += aPath;
+				throw Library::GameException(msg.c_str());
+			}
+		}
+		else
+		{
+			if (FAILED(DirectX::CreateWICTextureFromFile(device, context, Library::Utility::GetFilePath(Library::Utility::ToWideString(aPath)).c_str(), nullptr, &mSRV)))
+			{
+				std::string msg = "Failed to load WIC texture from disk: ";
+				msg += aPath;
+				throw Library::GameException(msg.c_str());
+			}
+		}
+	}
+
+}
+ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, ID3D11DeviceContext* context, const std::wstring& aPath, bool isFullPath)
 {
 	mIsLoadedFromFile = true;
 
-	if (FAILED(DirectX::CreateDDSTextureFromFile(device, context,
-		Library::Utility::GetFilePath(Library::Utility::ToWideString(aPath)).c_str(), nullptr, &mSRV)))
+	std::wstring originalPath = aPath;
+	const wchar_t* postfixDDS = L".dds";
+	const wchar_t* postfixDDS_Capital = L".DDS";
+	bool isDDS = (originalPath.substr(originalPath.length() - 4) == std::wstring(postfixDDS)) || (originalPath.substr(originalPath.length() - 4) == std::wstring(postfixDDS_Capital));
+
+	if (isFullPath)
 	{
-		std::string msg = "Failed to load DDS texture from disk: ";
-		msg += aPath;
-		throw Library::GameException(msg.c_str());
+		if (isDDS)
+		{
+			if (FAILED(DirectX::CreateDDSTextureFromFile(device, context, aPath.c_str(), nullptr, &mSRV)))
+			{
+				std::string msg = "Failed to load DDS texture from disk: ";
+				//msg += aPath;
+				throw Library::GameException(msg.c_str());
+			}
+		}
+		else
+		{
+			if (FAILED(DirectX::CreateWICTextureFromFile(device, context, aPath.c_str(), nullptr, &mSRV)))
+			{
+				std::string msg = "Failed to load WIC texture from disk: ";
+				//msg += aPath;
+				throw Library::GameException(msg.c_str());
+			}
+		}
+	}
+	else
+	{
+		if (isDDS)
+		{
+			if (FAILED(DirectX::CreateDDSTextureFromFile(device, context, Library::Utility::GetFilePath(aPath).c_str(), nullptr, &mSRV)))
+			{
+				std::string msg = "Failed to load DDS texture from disk: ";
+				//msg += aPath;
+				throw Library::GameException(msg.c_str());
+			}
+		}
+		else
+		{
+			if (FAILED(DirectX::CreateWICTextureFromFile(device, context, Library::Utility::GetFilePath(aPath).c_str(), nullptr, &mSRV)))
+			{
+				std::string msg = "Failed to load WIC texture from disk: ";
+				//msg += aPath;
+				throw Library::GameException(msg.c_str());
+			}
+		}
 	}
 }
 

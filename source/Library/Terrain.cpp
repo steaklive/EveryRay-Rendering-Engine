@@ -12,25 +12,72 @@
 #include "RasterizerStates.h"
 #include "ER_ShadowMapper.h"
 #include "ER_Scene.h"
-
-#define MULTITHREADED_LOAD 1
+#include "ShaderCompiler.h"
+#include "DirectionalLight.h"
 
 namespace Library
 {
-	Terrain::Terrain(Game& pGame) :
+	Terrain::Terrain(Game& pGame, DirectionalLight& light) :
 		GameComponent(pGame),
 		mIsWireframe(false),
-		mHeightMaps(0, nullptr)
+		mHeightMaps(0, nullptr),
+		mDirectionalLight(light)
 	{
+		//shaders
+		{
+			ID3DBlob* blob = nullptr;
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
+				throw GameException("Failed to load VSMain from shader: Terrain.hlsl!");
+			if (FAILED(GetGame()->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVS)))
+				throw GameException("Failed to create vertex shader from Terrain.hlsl!");
+
+			D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
+			{
+				{ "PATCH_INFO", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 }
+			};
+
+			HRESULT hr = GetGame()->Direct3DDevice()->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), blob->GetBufferPointer(), blob->GetBufferSize(), &mInputLayout);
+			if (FAILED(hr))
+				throw GameException("CreateInputLayout() failed when creating terrain's vertex shader.", hr);
+			blob->Release();
+
+			blob = nullptr;
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "HSMain", "hs_5_0", &blob)))
+				throw GameException("Failed to load HSMain from shader: Terrain.hlsl!");
+			if (FAILED(GetGame()->Direct3DDevice()->CreateHullShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mHS)))
+				throw GameException("Failed to create hull shader from Terrain.hlsl!");
+			blob->Release();
+
+			blob = nullptr;
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "DSMain", "ds_5_0", &blob)))
+				throw GameException("Failed to load DSMain from shader: Terrain.hlsl!");
+			if (FAILED(GetGame()->Direct3DDevice()->CreateDomainShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mDS)))
+				throw GameException("Failed to create domain shader from Terrain.hlsl!");
+			blob->Release();
+
+			blob = nullptr;
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
+				throw GameException("Failed to load PSMain from shader: Terrain.hlsl!");
+			if (FAILED(GetGame()->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS)))
+				throw GameException("Failed to create pixel shader from Terrain.hlsl!");
+			blob->Release();
+		}
+
+		mTerrainConstantBuffer.Initialize(GetGame()->Direct3DDevice());
 	}
 
 	Terrain::~Terrain()
 	{
 		DeletePointerCollection(mHeightMaps);
-		ReleaseObject(mGrassTexture);
-		ReleaseObject(mRockTexture);
-		ReleaseObject(mGroundTexture);
-		ReleaseObject(mMudTexture);
+		for (size_t i = 0; i < NUM_TEXTURE_SPLAT_CHANNELS; i++)
+			DeleteObject(mSplatChannelTextures[i]);
+
+		ReleaseObject(mVS);
+		ReleaseObject(mHS);
+		ReleaseObject(mDS);
+		ReleaseObject(mPS);
+		ReleaseObject(mInputLayout);
+		mTerrainConstantBuffer.Release();
 	}
 
 	void Terrain::LoadTerrainData(ER_Scene* aScene)
@@ -59,48 +106,22 @@ namespace Library
 			path + aScene->GetTerrainSplatLayerTextureName(1),
 			path + aScene->GetTerrainSplatLayerTextureName(2),
 			path + aScene->GetTerrainSplatLayerTextureName(3)
-		);
+		); //not thread-safe
 
-#if MULTITHREADED_LOAD
-
-		std::vector<std::thread> threads;
-		threads.reserve(NUM_THREADS_PER_TERRAIN_SIDE);
-
-		int threadOffset = sqrt(mNumTiles) / 2;
-		for (int i = 0; i < NUM_THREADS_PER_TERRAIN_SIDE; i++)
-		{
-			threads.push_back(
-				std::thread
-				(
-					[&, this] {this->LoadTileGroup(i, path); }
-				)
-			);
-		}
-		for (auto& t : threads) t.join();
-#else
-
-		LoadTileGroup(0, aTexturesPath);
-#endif
+		for (int i = 0; i < mNumTiles; i++)
+			LoadTile(i, path); //not thread-safe
 	}
 
 	void Terrain::LoadTextures(const std::wstring& aTexturesPath, const std::wstring& splatLayer0Path, const std::wstring& splatLayer1Path, const std::wstring& splatLayer2Path, const std::wstring& splatLayer3Path)
 	{
-		//TODO change hardcoded names to layers #
 		if (!splatLayer0Path.empty())
-			if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), splatLayer0Path.c_str(), nullptr, &mMudTexture)))
-				throw GameException("Failed to create Terrain Mud Map.");
-
+			mSplatChannelTextures[0] = new ER_GPUTexture(GetGame()->Direct3DDevice(), GetGame()->Direct3DDeviceContext(), splatLayer0Path, true);
 		if (!splatLayer1Path.empty())
-			if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), splatLayer1Path.c_str(), nullptr, &mGrassTexture)))
-				throw GameException("Failed to create Terrain Grass Map.");
-
+			mSplatChannelTextures[1] = new ER_GPUTexture(GetGame()->Direct3DDevice(), GetGame()->Direct3DDeviceContext(), splatLayer1Path, true);
 		if (!splatLayer2Path.empty())
-			if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), splatLayer2Path.c_str(), nullptr, &mRockTexture)))
-				throw GameException("Failed to create Terrain Rock Map.");
-
+			mSplatChannelTextures[2] = new ER_GPUTexture(GetGame()->Direct3DDevice(), GetGame()->Direct3DDeviceContext(), splatLayer2Path, true);
 		if (!splatLayer3Path.empty())
-			if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), splatLayer3Path.c_str(), nullptr, &mGroundTexture)))
-				throw GameException("Failed to create Terrain Ground Map.");
+			mSplatChannelTextures[3] = new ER_GPUTexture(GetGame()->Direct3DDevice(), GetGame()->Direct3DDeviceContext(), splatLayer3Path, true);
 
 		int numTilesSqrt = sqrt(mNumTiles);
 
@@ -125,28 +146,18 @@ namespace Library
 		}
 	}
 	
-	void Terrain::LoadTileGroup(int threadIndex, const std::wstring& aTexturesPath)
+	void Terrain::LoadTile(int threadIndex, const std::wstring& aTexturesPath)
 	{
 		int numTilesSqrt = sqrt(mNumTiles);
-#if MULTITHREADED_LOAD
-		int offset = numTilesSqrt / NUM_THREADS_PER_TERRAIN_SIDE;
-#else
-		int offset = numTilesSqrt;
-#endif
 
-		for (int i = threadIndex; i < (threadIndex + 1) * offset; i++)
-		{
-			for (int j = 0; j < numTilesSqrt; j++)
-			{
+		int tileX = threadIndex / numTilesSqrt;
+		int tileY = threadIndex - numTilesSqrt * tileX;
 
-				int index = i * numTilesSqrt + j;
-				std::wstring filePathHeightmap = aTexturesPath;
-				filePathHeightmap += L"terrainHeight_x" + std::to_wstring(i) + L"_y" + std::to_wstring(j) + L".r16";	
+		int index = tileX * numTilesSqrt + tileY;
+		std::wstring filePathHeightmap = aTexturesPath;
+		filePathHeightmap += L"terrainHeight_x" + std::to_wstring(tileX) + L"_y" + std::to_wstring(tileY) + L".r16";
 
-				LoadRawHeightmapPerTileCPU(i, j, filePathHeightmap);
-				GenerateTileMesh(index);
-			}
-		}
+		LoadRawHeightmapPerTileCPU(tileX, tileY, filePathHeightmap);
 	}
 
 	void Terrain::LoadSplatmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path)
@@ -155,11 +166,7 @@ namespace Library
 		if (tileIndex >= mHeightMaps.size())
 			return;
 
-		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), path.c_str(), nullptr, &(mHeightMaps[tileIndex]->mSplatTexture))))
-		{
-			std::string errorMessage = "Failed to load a splatmap texture for terrain tile's x: " + std::to_string(tileIndexX) + " y: " + std::to_string(tileIndexY);
-			throw GameException(errorMessage.c_str());
-		}
+		mHeightMaps[tileIndex]->mSplatTexture = new ER_GPUTexture(GetGame()->Direct3DDevice(), GetGame()->Direct3DDeviceContext(), path, true);
 	}
 
 	void Terrain::LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path)
@@ -168,11 +175,7 @@ namespace Library
 		if (tileIndex >= mHeightMaps.size())
 			return;
 
-		if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), path.c_str(), nullptr, &(mHeightMaps[tileIndex]->mHeightTexture))))
-		{
-			std::string errorMessage = "Failed to load a heightmap texture for terrain tile's x: " + std::to_string(tileIndexX) + " y: " + std::to_string(tileIndexY);
-			throw GameException(errorMessage.c_str());
-		}
+		mHeightMaps[tileIndex]->mHeightTexture = new ER_GPUTexture(GetGame()->Direct3DDevice(), GetGame()->Direct3DDeviceContext(), path, true);
 	}
 
 	//void Terrain::LoadNormalmapPerTileGPU(int tileIndexX, int tileIndexY, const std::string& path)
@@ -188,326 +191,6 @@ namespace Library
 	//		throw GameException(errorMessage.c_str());
 	//	}
 	//}
-
-	void Terrain::Draw(ER_ShadowMapper* worldShadowMapper)
-	{
-		if (!mEnabled)
-			return;
-
-		if (mUseTessellatedTerrain)
-		{
-			for (int i = 0; i < mHeightMaps.size(); i++)
-				DrawTessellated(i, worldShadowMapper);
-		}
-		if (mUseNonTessellatedTerrain)
-		{
-			for (int i = 0; i < mHeightMaps.size(); i++)
-				DrawNonTessellated(i, worldShadowMapper);
-		}
-	}
-
-	void Terrain::Update(const GameTime& gameTime)
-	{
-		if (mShowDebug) {
-			//imgui
-			ImGui::Begin("Terrain System");
-			ImGui::Checkbox("Enabled", &mEnabled);
-			ImGui::Checkbox("Render wireframe", &mIsWireframe);
-			ImGui::Checkbox("Render non-tessellated", &mUseNonTessellatedTerrain);
-			ImGui::Checkbox("Render tessellated", &mUseTessellatedTerrain);
-			ImGui::SliderInt("Tessellation factor static", &mTessellationFactor, 1, 64);
-			ImGui::SliderInt("Tessellation factor dynamic", &mTessellationFactorDynamic, 1, 64);
-			ImGui::Checkbox("Use dynamic tessellation", &mUseDynamicTessellation);
-			ImGui::SliderFloat("Dynamic LOD distance factor", &mTessellationDistanceFactor, 0.0001f, 0.1f);
-			ImGui::SliderFloat("Tessellated terrain height scale", &mTerrainTessellatedHeightScale, 0.0f, 1000.0f);
-			ImGui::End();
-		}
-	}
-
-	void Terrain::DrawTessellated(int tileIndex, ER_ShadowMapper* worldShadowMapper)
-	{
-		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
-		D3D11_PRIMITIVE_TOPOLOGY originalPrimitiveTopology;
-		context->IAGetPrimitiveTopology(&originalPrimitiveTopology);
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST);
-		//TODO context->IASetInputLayout(inputLayout);
-
-		UINT stride = sizeof(float) * 4;
-		UINT offset = 0;
-		context->IASetVertexBuffers(0, 1, &(mHeightMaps[tileIndex]->mVertexBufferTS), &stride, &offset);
-
-		XMMATRIX shadowMatrices[NUM_SHADOW_CASCADES];
-		ID3D11ShaderResourceView* shadowMaps[NUM_SHADOW_CASCADES];
-		if (worldShadowMapper) {
-			for (int cascade = 0; cascade < NUM_SHADOW_CASCADES; cascade++)
-			{
-				shadowMatrices[cascade] = worldShadowMapper->GetViewMatrix(cascade) *  worldShadowMapper->GetProjectionMatrix(cascade) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix());
-				shadowMaps[cascade] = worldShadowMapper->GetShadowTexture(cascade);
-			}
-		}
-
-		//XMMATRIX wvp = mHeightMaps[tileIndex]->mWorldMatrix * mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
-		//mMaterial->World() << mHeightMaps[tileIndex]->mWorldMatrixTS;
-		//mMaterial->View() << mCamera.ViewMatrix();
-		//mMaterial->Projection() << mCamera.ProjectionMatrix();
-		//mMaterial->ShadowMatrices().SetMatrixArray(shadowMatrices, 0, NUM_SHADOW_CASCADES);
-		//mMaterial->heightTexture() << mHeightMaps[tileIndex]->mHeightTexture;
-		//mMaterial->grassTexture() << mGrassTexture;
-		//mMaterial->groundTexture() << mGroundTexture;
-		//mMaterial->rockTexture() << mRockTexture;
-		//mMaterial->mudTexture() << mMudTexture;
-		//mMaterial->cascadedShadowTextures().SetResourceArray(shadowMaps, 0, NUM_SHADOW_CASCADES);
-		////mMaterial->normalTexture() << mHeightMaps[tileIndex]->mNormalTexture;
-		//mMaterial->splatTexture() << mHeightMaps[tileIndex]->mSplatTexture;
-		//mMaterial->SunDirection() << XMVectorNegate(mDirectionalLight.DirectionVector());
-		//mMaterial->SunColor() << XMVECTOR{ mDirectionalLight.GetDirectionalLightColor().x,  mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z , 1.0f };
-		//mMaterial->AmbientColor() << XMVECTOR{ mDirectionalLight.GetAmbientLightColor().x,  mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
-		//if (worldShadowMapper)
-		//	mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f / worldShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
-		//else 
-		//	mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f , 1.0f, 1.0f , 1.0f };
-		//mMaterial->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
-		//mMaterial->CameraPosition() << mCamera.PositionVector();
-		//mMaterial->TessellationFactor() << (float)mTessellationFactor;
-		//mMaterial->TerrainHeightScale() << mTerrainTessellatedHeightScale;
-		//float val = (mUseDynamicTessellation) ? 1.0f : 0.0f;
-		//mMaterial->UseDynamicTessellation() << val;
-		//mMaterial->TessellationFactorDynamic() << (float)mTessellationFactorDynamic;
-		//mMaterial->DistanceFactor() << mTessellationDistanceFactor;
-		//
-		//pass->Apply(0, context);
-
-		if (mIsWireframe)
-		{
-			context->RSSetState(RasterizerStates::Wireframe);
-			context->Draw(NUM_TERRAIN_PATCHES_PER_TILE * NUM_TERRAIN_PATCHES_PER_TILE, 0);
-			context->RSSetState(nullptr);
-		}
-		else
-			context->Draw(NUM_TERRAIN_PATCHES_PER_TILE * NUM_TERRAIN_PATCHES_PER_TILE, 0);
-
-		//reset back
-		context->IASetPrimitiveTopology(originalPrimitiveTopology);
-		context->VSSetShader(NULL, NULL, 0);
-		context->HSSetShader(NULL, NULL, 0);
-		context->DSSetShader(NULL, NULL, 0);
-	}
-
-	void Terrain::DrawNonTessellated(int tileIndex, ER_ShadowMapper* worldShadowMapper)
-	{
-		//ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
-		//context->IASetPrimitiveTopology(/*D3D11_PRIMITIVE_TOPOLOGY_LINELIST*/D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		//
-		//Pass* pass = mMaterial->CurrentTechnique()->Passes().at(0);
-		//ID3D11InputLayout* inputLayout = mMaterial->InputLayouts().at(pass);
-		//context->IASetInputLayout(inputLayout);
-		//
-		//UINT stride = sizeof(TerrainVertexInput);
-		//UINT offset = 0;
-		//context->IASetVertexBuffers(0, 1, &(mHeightMaps[tileIndex]->mVertexBuffer), &stride, &offset);
-		//context->IASetIndexBuffer(mHeightMaps[tileIndex]->mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-		//
-		////mHeightMaps[tileIndex]->mWorldMatrix = XMMatrixTranslation(1.0f, 0.0f, 0.0f);
-		//XMMATRIX wvp = mHeightMaps[tileIndex]->mWorldMatrix * mCamera.ViewMatrix() * mCamera.ProjectionMatrix();
-		//mMaterial->World() << mHeightMaps[tileIndex]->mWorldMatrix;
-		//mMaterial->View() << mCamera.ViewMatrix();
-		//mMaterial->Projection() << mCamera.ProjectionMatrix();
-		//mMaterial->grassTexture() << mGrassTexture;
-		//mMaterial->groundTexture() << mGroundTexture;
-		//mMaterial->rockTexture() << mRockTexture;
-		//mMaterial->mudTexture() << mMudTexture;
-		//mMaterial->splatTexture() << mHeightMaps[tileIndex]->mSplatTexture;
-		////mMaterial->normalTexture() << mHeightMaps[tileIndex]->mNormalTexture;
-		//mMaterial->SunDirection() << XMVectorNegate(mDirectionalLight.DirectionVector());
-		//mMaterial->SunColor() << XMVECTOR{ mDirectionalLight.GetDirectionalLightColor().x,  mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z , 1.0f };
-		//mMaterial->AmbientColor() << XMVECTOR{ mDirectionalLight.GetAmbientLightColor().x,  mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
-		//mMaterial->ShadowTexelSize() << XMVECTOR{ 1.0f, 1.0f, 1.0f , 1.0f }; //todo
-		//mMaterial->ShadowCascadeDistances() << XMVECTOR{ mCamera.GetCameraFarCascadeDistance(0), mCamera.GetCameraFarCascadeDistance(1), mCamera.GetCameraFarCascadeDistance(2), 1.0f };
-		//mMaterial->CameraPosition() << mCamera.PositionVector();
-		//
-		//pass->Apply(0, context);
-		//
-		//if (mIsWireframe)
-		//{
-		//	context->RSSetState(RasterizerStates::Wireframe);
-		//	context->DrawIndexed(mHeightMaps[tileIndex]->mIndexCount, 0, 0);
-		//	context->RSSetState(nullptr);
-		//}
-		//else
-		//	context->DrawIndexed(mHeightMaps[tileIndex]->mIndexCount, 0, 0);
-	
-	}
-	
-	void Terrain::GenerateTileMesh(int tileIndex)
-	{
-		if (tileIndex >= mHeightMaps.size())
-			return;
-		//assert(tileIndex < mHeightMaps.size());
-
-		ID3D11Device* device = GetGame()->Direct3DDevice();
-
-		mHeightMaps[tileIndex]->mVertexCount = (mWidth - 1) * (mHeight - 1) * 6;
-		int size = sizeof(TerrainVertexInput) * mHeightMaps[tileIndex]->mVertexCount;
-
-		TerrainVertexInput* vertices = new TerrainVertexInput[mHeightMaps[tileIndex]->mVertexCount];
-
-		unsigned long* indices;
-		mHeightMaps[tileIndex]->mIndexCount = mHeightMaps[tileIndex]->mVertexCount;
-		indices = new unsigned long[mHeightMaps[tileIndex]->mIndexCount];
-
-		//XMFLOAT4 vertexColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-			
-		int index = 0;
-		int index1, index2, index3, index4;
-		// Load the vertex and index array with the terrain data.
-		for (int j = 0; j < ((int)mHeight - 1); j++)
-		{
-			for (int i = 0; i < ((int)mWidth - 1); i++)
-			{
-				index1 = (mHeight * j) + i;					// Bottom left.	
-				index2 = (mHeight * j) + (i + 1);			// Bottom right.
-				index3 = (mHeight * (j + 1)) + i;			// Upper left.	
-				index4 = (mHeight * (j + 1)) + (i + 1);		// Upper right.	
-				
-				float u, v;
-				float uTile, vTile;
-
-				// Upper left.
-				v = mHeightMaps[tileIndex]->mData[index3].v;
-				if (v == 1.0f)
-					v = 0.0f;
-
-				vTile = mHeightMaps[tileIndex]->mData[index3].vTile;
-				if (vTile == 1.0f)
-					vTile = 0.0f;
-
-				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index3].x, mHeightMaps[tileIndex]->mData[index3].y, mHeightMaps[tileIndex]->mData[index3].z, 1.0f);
-				vertices[index].TextureCoordinates = XMFLOAT4(mHeightMaps[tileIndex]->mData[index3].u, v, mHeightMaps[tileIndex]->mData[index3].uTile, vTile);
-				vertices[index].Normal = XMFLOAT3(mHeightMaps[tileIndex]->mData[index3].normalX, mHeightMaps[tileIndex]->mData[index3].normalY, mHeightMaps[tileIndex]->mData[index3].normalZ);
-				indices[index] = index;
-				index++;
-
-				// Upper right.
-				u = mHeightMaps[tileIndex]->mData[index4].u;
-				v = mHeightMaps[tileIndex]->mData[index4].v;
-
-				if (u == 0.0f)
-					u = 1.0f; 
-				if (v == 1.0f) 
-					v = 0.0f; 
-
-				uTile = mHeightMaps[tileIndex]->mData[index4].uTile;
-				vTile = mHeightMaps[tileIndex]->mData[index4].vTile;
-
-				if (uTile == 0.0f)
-					uTile = 1.0f;
-				if (vTile == 1.0f)
-					vTile = 0.0f;
-
-				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index4].x, mHeightMaps[tileIndex]->mData[index4].y, mHeightMaps[tileIndex]->mData[index4].z, 1.0f);
-				vertices[index].TextureCoordinates = XMFLOAT4(u, v, uTile, vTile);
-				vertices[index].Normal = XMFLOAT3(mHeightMaps[tileIndex]->mData[index4].normalX, mHeightMaps[tileIndex]->mData[index4].normalY, mHeightMaps[tileIndex]->mData[index4].normalZ);
-				indices[index] = index;
-				index++;
-
-
-				// Bottom left.
-				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index1].x, mHeightMaps[tileIndex]->mData[index1].y, mHeightMaps[tileIndex]->mData[index1].z, 1.0f);
-				vertices[index].TextureCoordinates = XMFLOAT4(mHeightMaps[tileIndex]->mData[index1].u,mHeightMaps[tileIndex]->mData[index1].v, mHeightMaps[tileIndex]->mData[index1].uTile, mHeightMaps[tileIndex]->mData[index1].vTile);
-				vertices[index].Normal = XMFLOAT3(mHeightMaps[tileIndex]->mData[index1].normalX, mHeightMaps[tileIndex]->mData[index1].normalY, mHeightMaps[tileIndex]->mData[index1].normalZ);
-				indices[index] = index;
-				index++;
-
-
-				// Bottom left.
-				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index1].x, mHeightMaps[tileIndex]->mData[index1].y, mHeightMaps[tileIndex]->mData[index1].z, 1.0f);
-				vertices[index].TextureCoordinates = XMFLOAT4(mHeightMaps[tileIndex]->mData[index1].u, mHeightMaps[tileIndex]->mData[index1].v, mHeightMaps[tileIndex]->mData[index1].uTile, mHeightMaps[tileIndex]->mData[index1].vTile);
-				vertices[index].Normal = XMFLOAT3(mHeightMaps[tileIndex]->mData[index1].normalX, mHeightMaps[tileIndex]->mData[index1].normalY, mHeightMaps[tileIndex]->mData[index1].normalZ);
-				indices[index] = index;
-				index++;
-
-				// Upper right.
-				u = mHeightMaps[tileIndex]->mData[index4].u;
-				v = mHeightMaps[tileIndex]->mData[index4].v;
-				if (u == 0.0f) 
-				    u = 1.0f; 
-				if (v == 1.0f)
-					v = 0.0f; 
-
-				uTile = mHeightMaps[tileIndex]->mData[index4].uTile;
-				vTile = mHeightMaps[tileIndex]->mData[index4].vTile;
-				if (uTile == 0.0f)
-					uTile = 1.0f;
-				if (vTile == 1.0f)
-					vTile = 0.0f;
-
-				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index4].x, mHeightMaps[tileIndex]->mData[index4].y, mHeightMaps[tileIndex]->mData[index4].z, 1.0f);
-				vertices[index].TextureCoordinates = XMFLOAT4(u, v, uTile, vTile);
-				vertices[index].Normal = XMFLOAT3(mHeightMaps[tileIndex]->mData[index4].normalX, mHeightMaps[tileIndex]->mData[index4].normalY, mHeightMaps[tileIndex]->mData[index4].normalZ);
-				indices[index] = index;
-				index++;
-				
-				// Bottom right.
-				u = mHeightMaps[tileIndex]->mData[index2].u;
-				if (u == 0.0f)
-					u = 1.0f; 
-
-				uTile = mHeightMaps[tileIndex]->mData[index2].uTile;
-				if (uTile == 0.0f)
-					uTile = 1.0f;
-
-				vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index2].x, mHeightMaps[tileIndex]->mData[index2].y, mHeightMaps[tileIndex]->mData[index2].z, 1.0f);
-				vertices[index].TextureCoordinates = XMFLOAT4(u, mHeightMaps[tileIndex]->mData[index2].v, uTile, mHeightMaps[tileIndex]->mData[index2].vTile);
-				vertices[index].Normal = XMFLOAT3(mHeightMaps[tileIndex]->mData[index2].normalX, mHeightMaps[tileIndex]->mData[index2].normalY, mHeightMaps[tileIndex]->mData[index2].normalZ);
-				indices[index] = index;
-				index++;
-			}
-		}
-
-		D3D11_BUFFER_DESC vertexBufferDesc;
-		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
-		vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-		vertexBufferDesc.ByteWidth = size;
-		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-
-		D3D11_SUBRESOURCE_DATA vertexSubResourceData;
-		ZeroMemory(&vertexSubResourceData, sizeof(vertexSubResourceData));
-		vertexSubResourceData.pSysMem = vertices;
-
-		HRESULT hr;
-		if (FAILED(hr = device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, &(mHeightMaps[tileIndex]->mVertexBuffer))))
-			throw GameException("ID3D11Device::CreateBuffer() failed while generating vertex buffer of terrain mesh");
-
-		for (int i = 0; i < mHeightMaps[tileIndex]->mVertexCount; i++)
-		{
-			mHeightMaps[tileIndex]->mVertexList[i].x = vertices[i].Position.x;
-			mHeightMaps[tileIndex]->mVertexList[i].y = vertices[i].Position.y;
-			mHeightMaps[tileIndex]->mVertexList[i].z = vertices[i].Position.z;
-		}
-
-		delete[] vertices;
-		vertices = NULL;
-
-		D3D11_BUFFER_DESC indexBufferDesc;
-		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		indexBufferDesc.ByteWidth = sizeof(unsigned long) * mHeightMaps[tileIndex]->mIndexCount;
-		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-		indexBufferDesc.CPUAccessFlags = 0;
-		indexBufferDesc.MiscFlags = 0;
-		indexBufferDesc.StructureByteStride = 0;
-
-		// Give the subresource structure a pointer to the index data.
-		D3D11_SUBRESOURCE_DATA indexSubResourceData;
-		ZeroMemory(&indexSubResourceData, sizeof(indexSubResourceData));
-		indexSubResourceData.pSysMem = indices;
-
-		HRESULT hr2;
-		if (FAILED(hr2 = device->CreateBuffer(&indexBufferDesc, &indexSubResourceData, &(mHeightMaps[tileIndex]->mIndexBuffer))))
-			throw GameException("ID3D11Device::CreateBuffer() failed while generating index buffer of terrain mesh");
-
-		delete[] indices;
-		indices = NULL;
-	}
 
 	void Terrain::LoadRawHeightmapPerTileCPU(int tileIndexX, int tileIndexY, const std::wstring& aPath)
 	{
@@ -556,7 +239,6 @@ namespace Library
 				{
 					patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 0] = i * (TERRAIN_TILE_RESOLUTION) / NUM_TERRAIN_PATCHES_PER_TILE;
 					patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 1] = j * (TERRAIN_TILE_RESOLUTION) / NUM_TERRAIN_PATCHES_PER_TILE;
-
 					patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 2] = TERRAIN_TILE_RESOLUTION / NUM_TERRAIN_PATCHES_PER_TILE;
 					patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 3] = TERRAIN_TILE_RESOLUTION / NUM_TERRAIN_PATCHES_PER_TILE;
 				}
@@ -580,21 +262,21 @@ namespace Library
 		}
 
 		// Copy the image data into the height map array.
-		for (j = 0; j < (int)mHeight; j++)
+		for (j = 0; j < static_cast<int>(mHeight); j++)
 		{
-			for (i = 0; i < (int)mWidth; i++)
+			for (i = 0; i < static_cast<int>(mWidth); i++)
 			{
 				index = (mWidth * j) + i;
 
 				// Store the height at this point in the height map array.
-				mHeightMaps[tileIndex]->mData[index].x = (float)(i + (int)mWidth * (tileIndexX - 1));
-				mHeightMaps[tileIndex]->mData[index].y = (float)rawImage[index] / mTerrainNonTessellatedHeightScale;
-				mHeightMaps[tileIndex]->mData[index].z = (float)(j - (int)mHeight * tileIndexY);
+				mHeightMaps[tileIndex]->mData[index].x = static_cast<float>((i + static_cast<int>(mWidth) * (tileIndexX - 1)));
+				mHeightMaps[tileIndex]->mData[index].y = static_cast<float>(rawImage[index]) / 200.0f;//TODO mTerrainNonTessellatedHeightScale;
+				mHeightMaps[tileIndex]->mData[index].z = static_cast<float>((j - static_cast<int>(mHeight) * tileIndexY));
 
 				if (tileIndex > 0) //a way to fix the seams between tiles...
 				{
-					mHeightMaps[tileIndex]->mData[index].x -= (float)tileIndexX /** scale*/;
-					mHeightMaps[tileIndex]->mData[index].z += (float)tileIndexY /** scale*/;
+					mHeightMaps[tileIndex]->mData[index].x -= static_cast<float>(tileIndexX) /** scale*/;
+					mHeightMaps[tileIndex]->mData[index].z += static_cast<float>(tileIndexY) /** scale*/;
 				}
 
 			}
@@ -604,15 +286,17 @@ namespace Library
 		delete[] rawImage;
 		rawImage = 0;
 
+		return; //i dont remember why i wrote the code below, but its not needed for the GPU tessellated terrain
+
 		//calculate normals
 		{
 			int i, j, index1, index2, index3, index, count;
 			float vertex1[3], vertex2[3], vertex3[3], vector1[3], vector2[3], sum[3], length;
 			NormalVector* normals = new NormalVector[((int)mHeight - 1) * ((int)mWidth - 1)];
 
-			for (j = 0; j < ((int)mHeight - 1); j++)
+			for (j = 0; j < (static_cast<int>(mHeight) - 1); j++)
 			{
-				for (i = 0; i < ((int)mWidth - 1); i++)
+				for (i = 0; i < (static_cast<int>(mWidth) - 1); i++)
 				{
 					index1 = (j * mHeight) + i;
 					index2 = (j * mHeight) + (i + 1);
@@ -648,9 +332,9 @@ namespace Library
 
 			// Now go through all the vertices and take an average of each face normal 	
 			// that the vertex touches to get the averaged normal for that vertex.
-			for (j = 0; j < (int)mHeight; j++)
+			for (j = 0; j < static_cast<int>(mHeight); j++)
 			{
-				for (i = 0; i < (int)mWidth; i++)
+				for (i = 0; i < static_cast<int>(mWidth); i++)
 				{
 					// Initialize the sum.
 					sum[0] = 0.0f;
@@ -663,7 +347,7 @@ namespace Library
 					// Bottom left face.
 					if (((i - 1) >= 0) && ((j - 1) >= 0))
 					{
-						index = ((j - 1) * ((int)mHeight - 1)) + (i - 1);
+						index = ((j - 1) * (static_cast<int>(mHeight) - 1)) + (i - 1);
 
 						sum[0] += normals[index].x;
 						sum[1] += normals[index].y;
@@ -674,7 +358,7 @@ namespace Library
 					// Bottom right face.
 					if ((i < ((int)mWidth - 1)) && ((j - 1) >= 0))
 					{
-						index = ((j - 1) * ((int)mHeight - 1)) + i;
+						index = ((j - 1) * (static_cast<int>(mHeight) - 1)) + i;
 
 						sum[0] += normals[index].x;
 						sum[1] += normals[index].y;
@@ -683,9 +367,9 @@ namespace Library
 					}
 
 					// Upper left face.
-					if (((i - 1) >= 0) && (j < ((int)mHeight - 1)))
+					if (((i - 1) >= 0) && (j < (static_cast<int>(mHeight) - 1)))
 					{
-						index = (j * ((int)mHeight - 1)) + (i - 1);
+						index = (j * (static_cast<int>(mHeight) - 1)) + (i - 1);
 
 						sum[0] += normals[index].x;
 						sum[1] += normals[index].y;
@@ -694,9 +378,9 @@ namespace Library
 					}
 
 					// Upper right face.
-					if ((i < ((int)mWidth - 1)) && (j < ((int)mHeight - 1)))
+					if (i < ((static_cast<int>(mWidth) - 1)) && j < (static_cast<int>(mHeight) - 1))
 					{
-						index = (j * ((int)mHeight - 1)) + i;
+						index = (j * (static_cast<int>(mHeight) - 1)) + i;
 
 						sum[0] += normals[index].x;
 						sum[1] += normals[index].y;
@@ -705,15 +389,15 @@ namespace Library
 					}
 
 					// Take the average of the faces touching this vertex.
-					sum[0] = (sum[0] / (float)count);
-					sum[1] = (sum[1] / (float)count);
-					sum[2] = (sum[2] / (float)count);
+					sum[0] = (sum[0] / static_cast<float>(count));
+					sum[1] = (sum[1] / static_cast<float>(count));
+					sum[2] = (sum[2] / static_cast<float>(count));
 
 					// Calculate the length of this normal.
 					length = sqrt((sum[0] * sum[0]) + (sum[1] * sum[1]) + (sum[2] * sum[2]));
 
 					// Get an index to the vertex location in the height map array.
-					index = (j * (int)mHeight) + i;
+					index = (j * static_cast<int>(mHeight)) + i;
 
 					// Normalize the final shared normal for this vertex and store it in the height map array.
 					mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index].normalX = (sum[0] / length);
@@ -731,12 +415,11 @@ namespace Library
 			int index, incrementCount, incrementCountTile, i, j, uCount, vCount, uCountTile, vCountTile, repeatValue = 32;
 			float incrementValue, incrementValueTile, uCoord, vCoord, uCoordTile, vCoordTile;
 
-			incrementValue = (float)repeatValue / (float)mWidth;
-			incrementCount = (int)mWidth / repeatValue;	
+			incrementValue = static_cast<float>(repeatValue) / static_cast<float>(mWidth);
+			incrementCount = static_cast<int>(mWidth) / repeatValue;	
 
-			incrementValueTile = 1.0f / (float)mWidth;
-			incrementCountTile = (int)mWidth;
-
+			incrementValueTile = 1.0f / static_cast<float>(mWidth);
+			incrementCountTile = static_cast<int>(mWidth);
 
 			uCoord = 0.0f;
 			vCoord = 1.0f;	
@@ -749,11 +432,11 @@ namespace Library
 			uCountTile = 0;
 			vCountTile = 0;
 
-			for (j = 0; j < (int)mHeight; j++)
+			for (j = 0; j < static_cast<int>(mHeight); j++)
 			{
-				for (i = 0; i < (int)mWidth; i++)
+				for (i = 0; i < static_cast<int>(mWidth); i++)
 				{
-					index = (j * (int)mHeight) + i;
+					index = (j * static_cast<int>(mHeight)) + i;
 
 					// Store the texture coordinate in the height map.
 					mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index].u = uCoord;
@@ -803,6 +486,120 @@ namespace Library
 			}
 		}
 	}
+
+	void Terrain::Draw(ER_ShadowMapper* worldShadowMapper)
+	{
+		if (!mEnabled)
+			return;
+
+		for (int i = 0; i < mHeightMaps.size(); i++)
+			DrawTessellated(i, worldShadowMapper);
+	}
+
+	void Terrain::Update(const GameTime& gameTime)
+	{
+		if (mShowDebug) {
+			ImGui::Begin("Terrain System");
+			ImGui::Checkbox("Enabled", &mEnabled);
+			ImGui::Checkbox("Render wireframe", &mIsWireframe);
+			ImGui::SliderInt("Tessellation factor static", &mTessellationFactor, 1, 64);
+			ImGui::SliderInt("Tessellation factor dynamic", &mTessellationFactorDynamic, 1, 64);
+			ImGui::Checkbox("Use dynamic tessellation", &mUseDynamicTessellation);
+			ImGui::SliderFloat("Dynamic LOD distance factor", &mTessellationDistanceFactor, 0.0001f, 0.1f);
+			ImGui::SliderFloat("Tessellated terrain height scale", &mTerrainTessellatedHeightScale, 0.0f, 1000.0f);
+			ImGui::End();
+		}
+	}
+
+	void Terrain::DrawTessellated(int tileIndex, ER_ShadowMapper* worldShadowMapper)
+	{
+		Camera* camera = (Camera*)(mGame->Services().GetService(Camera::TypeIdClass()));
+		assert(camera);
+
+		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
+		D3D11_PRIMITIVE_TOPOLOGY originalPrimitiveTopology;
+		context->IAGetPrimitiveTopology(&originalPrimitiveTopology);
+		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST);
+		context->IASetInputLayout(mInputLayout);
+
+		UINT stride = sizeof(float) * 4;
+		UINT offset = 0;
+		context->IASetVertexBuffers(0, 1, &(mHeightMaps[tileIndex]->mVertexBufferTS), &stride, &offset);
+
+		if (worldShadowMapper)
+		{
+			for (int cascade = 0; cascade < NUM_SHADOW_CASCADES; cascade++)
+				mTerrainConstantBuffer.Data.ShadowMatrices[cascade] = XMMatrixTranspose(worldShadowMapper->GetViewMatrix(cascade) * worldShadowMapper->GetProjectionMatrix(cascade) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()));
+			mTerrainConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / worldShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
+			mTerrainConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ camera->GetCameraFarShadowCascadeDistance(0), camera->GetCameraFarShadowCascadeDistance(1), camera->GetCameraFarShadowCascadeDistance(2), 1.0f };
+		}
+
+		mTerrainConstantBuffer.Data.World = XMMatrixTranspose(mHeightMaps[tileIndex]->mWorldMatrixTS);
+		mTerrainConstantBuffer.Data.View = XMMatrixTranspose(camera->ViewMatrix());
+		mTerrainConstantBuffer.Data.Projection = XMMatrixTranspose(camera->ProjectionMatrix());
+		mTerrainConstantBuffer.Data.SunDirection = XMFLOAT4(-mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f);
+		mTerrainConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z , 1.0f };
+		mTerrainConstantBuffer.Data.CameraPosition = XMFLOAT4(camera->Position().x, camera->Position().y, camera->Position().z, 1.0f);
+		mTerrainConstantBuffer.Data.TessellationFactor = static_cast<float>(mTessellationFactor);
+		mTerrainConstantBuffer.Data.TerrainHeightScale = mTerrainTessellatedHeightScale;
+		mTerrainConstantBuffer.Data.TessellationFactorDynamic = static_cast<float>(mTessellationFactorDynamic);
+		mTerrainConstantBuffer.Data.UseDynamicTessellation = mUseDynamicTessellation ? 1.0f : 0.0f;
+		mTerrainConstantBuffer.Data.DistanceFactor = mTessellationDistanceFactor;
+		mTerrainConstantBuffer.ApplyChanges(context);
+		ID3D11Buffer* CBs[1] = { mTerrainConstantBuffer.Buffer() };
+
+		context->VSSetConstantBuffers(0, 1, CBs);
+		context->DSSetConstantBuffers(0, 1, CBs);
+		context->HSSetConstantBuffers(0, 1, CBs);
+		context->PSSetConstantBuffers(0, 1, CBs);
+
+		ID3D11ShaderResourceView* SRVS[2 + 4 + NUM_SHADOW_CASCADES] =
+		{
+			mHeightMaps[tileIndex]->mHeightTexture->GetSRV(),
+			mHeightMaps[tileIndex]->mSplatTexture->GetSRV(),
+			mSplatChannelTextures[0]->GetSRV(),
+			mSplatChannelTextures[1]->GetSRV(),
+			mSplatChannelTextures[2]->GetSRV(),
+			mSplatChannelTextures[3]->GetSRV()
+		};
+
+		if (worldShadowMapper)
+			for (int c = 0; c < NUM_SHADOW_CASCADES; c++)
+				SRVS[6 + c] = worldShadowMapper->GetShadowTexture(c);
+
+		context->DSSetShaderResources(0, 2 + 4 + NUM_SHADOW_CASCADES, SRVS);
+		context->PSSetShaderResources(0, 2 + 4 + NUM_SHADOW_CASCADES, SRVS);
+
+		ID3D11SamplerState* SS[3] = { SamplerStates::TrilinearWrap, SamplerStates::TrilinearClamp, SamplerStates::ShadowSamplerState };
+		context->DSSetSamplers(0, 3, SS);
+		context->PSSetSamplers(0, 3, SS);
+
+		context->VSSetShader(mVS, NULL, NULL);
+		context->HSSetShader(mHS, NULL, NULL);
+		context->DSSetShader(mDS, NULL, NULL);
+		context->PSSetShader(mPS, NULL, NULL);
+
+		if (mIsWireframe)
+		{
+			context->RSSetState(RasterizerStates::Wireframe);
+			context->Draw(NUM_TERRAIN_PATCHES_PER_TILE * NUM_TERRAIN_PATCHES_PER_TILE, 0);
+			context->RSSetState(nullptr);
+		}
+		else
+			context->Draw(NUM_TERRAIN_PATCHES_PER_TILE * NUM_TERRAIN_PATCHES_PER_TILE, 0);
+
+		//reset back
+		ID3D11SamplerState* SS_null[1] = { nullptr };
+		context->DSSetSamplers(0, 1, SS_null);
+		context->PSSetSamplers(0, 1, SS_null);
+
+		context->IASetPrimitiveTopology(originalPrimitiveTopology);
+		context->VSSetShader(NULL, NULL, 0);
+		context->HSSetShader(NULL, NULL, 0);
+		context->DSSetShader(NULL, NULL, 0);
+		context->PSSetShader(NULL, NULL, 0);
+	}
+
 
 	float HeightMap::FindHeightFromPosition(float x, float z)
 	{
@@ -1026,12 +823,9 @@ namespace Library
 
 	HeightMap::~HeightMap()
 	{		
-		ReleaseObject(mVertexBuffer);
 		ReleaseObject(mVertexBufferTS);
-		ReleaseObject(mIndexBuffer);
-		ReleaseObject(mSplatTexture);
-		ReleaseObject(mHeightTexture);
-		ReleaseObject(mNormalTexture);
+		DeleteObject(mSplatTexture);
+		DeleteObject(mHeightTexture);
 		DeleteObjects(mData);
 	}
 }

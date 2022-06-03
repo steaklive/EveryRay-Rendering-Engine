@@ -6,7 +6,8 @@ class ER_GPUTexture
 public:
 	ER_GPUTexture(ID3D11Device* device, UINT width, UINT height, UINT samples, DXGI_FORMAT format, UINT bindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET,
 		int mip = 1, int depth = -1, int arraySize = 1, bool isCubemap = false, int cubemapArraySize = -1);
-	ER_GPUTexture(ID3D11Device* device, ID3D11DeviceContext* context, const std::string& aPath);
+	ER_GPUTexture(ID3D11Device* device, ID3D11DeviceContext* context, const std::string& aPath, bool isFullPath = false);
+	ER_GPUTexture(ID3D11Device* device, ID3D11DeviceContext* context, const std::wstring& aPath, bool isFullPath = false);
 	~ER_GPUTexture();
 
 	ID3D11RenderTargetView* GetRTV() { return mRTVs[0]; }

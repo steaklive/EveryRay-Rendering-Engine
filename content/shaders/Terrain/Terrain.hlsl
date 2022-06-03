@@ -11,7 +11,6 @@ cbuffer TerrainDataCBuffer : register(b0)
     float4x4 Projection;
     float4 SunDirection;
     float4 SunColor;
-    float4 AmbientColor;
     float4 ShadowTexelSize;
     float4 ShadowCascadeDistances;
     float4 CameraPosition;
@@ -20,18 +19,6 @@ cbuffer TerrainDataCBuffer : register(b0)
     float UseDynamicTessellation;
     float TessellationFactorDynamic;
     float DistanceFactor;
-};
-struct VS_INPUT
-{
-	float4 ObjectPosition: POSITION;
-    float4 TextureCoordinates : TEXCOORD;
-	float3 Normal : NORMAL;
-};
-struct VS_OUTPUT 
-{
-	float4 Position: SV_Position;
-	float4 TextureCoordinates : TEXCOORD0;	
-    float3 Normal : NORMAL;
 };
 
 struct VS_INPUT_TS
@@ -69,68 +56,19 @@ struct PatchData
     float2 size : SIZE;
 };
 
-SamplerState TerrainTextureSampler
-{
-    Filter = Anisotropic;
-    AddressU = WRAP;
-    AddressV = WRAP;
-};
+SamplerState LinearSampler : register(s0);
+SamplerState LinearSamplerClamp : register(s1);
+SamplerComparisonState CascadedPcfShadowMapSampler : register(s2);
 
-SamplerState TerrainSplatSampler
-{
-    Filter = MIN_MAG_MIP_LINEAR;
-    AddressU = WRAP;
-    AddressV = WRAP;
-    AddressW = WRAP;
-    //MaxAnisotropy = 16;
-};
+Texture2D<float> heightTexture : register(t0);
+Texture2D<float4> splatTexture : register(t1);
+Texture2D<float4> channel0Texture : register(t2);
+Texture2D<float4> channel1Texture : register(t3);
+Texture2D<float4> channel2Texture : register(t4);
+Texture2D<float4> channel3Texture : register(t5);
+Texture2D<float> cascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t6);
 
-SamplerState TerrainHeightSampler
-{
-    Filter = MIN_MAG_MIP_LINEAR;
-    AddressU = CLAMP;//WRAP;
-    AddressV = CLAMP;//WRAP;
-    AddressW = CLAMP;//WRAP;
-    //MaxAnisotropy = 16;
-};
-
-SamplerState BilinearSampler
-{
-    Filter = MIN_MAG_LINEAR_MIP_POINT;
-    AddressU = CLAMP;
-    AddressV = CLAMP;
-};
-
-SamplerComparisonState CascadedPcfShadowMapSampler
-{
-    Filter = COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
-    AddressU = BORDER;
-    AddressV = BORDER;
-    BorderColor = ColorWhite;
-    ComparisonFunc = LESS_EQUAL;
-};
-
-Texture2D heightTexture;
-Texture2D splatTexture;
-Texture2D groundTexture;
-Texture2D grassTexture;
-Texture2D rockTexture;
-Texture2D mudTexture;
-Texture2D cascadedShadowTextures[NUM_OF_SHADOW_CASCADES];
-
-VS_OUTPUT vertex_shader(VS_INPUT IN)
-{
-	VS_OUTPUT OUT = (VS_OUTPUT)0;
-	
-    OUT.Position = mul(IN.ObjectPosition, World);
-    OUT.Position = mul(OUT.Position, View);
-    OUT.Position = mul(OUT.Position, Projection);
-    OUT.Normal = normalize(mul(float4(IN.Normal, 0), World).xyz);
-    OUT.TextureCoordinates = IN.TextureCoordinates;
-	return OUT;
-}
-
-HS_INPUT vertex_shader_ts(VS_INPUT_TS IN)
+HS_INPUT VSMain(VS_INPUT_TS IN)
 {
     HS_INPUT OUT = (HS_INPUT) 0;
 	
@@ -184,10 +122,10 @@ float GetTessellationFactorFromCamera(float distance)
 float3 GetNormalFromHeightmap(float2 uv, float texelSize, float maxHeight)
 {
     float4 h;
-    h[0] = heightTexture.SampleLevel(BilinearSampler, uv + texelSize * float2(0, -1), 0).r * maxHeight;
-    h[1] = heightTexture.SampleLevel(BilinearSampler, uv + texelSize * float2(-1, 0), 0).r * maxHeight;
-    h[2] = heightTexture.SampleLevel(BilinearSampler, uv + texelSize * float2(1, 0), 0).r * maxHeight;
-    h[3] = heightTexture.SampleLevel(BilinearSampler, uv + texelSize * float2(0, 1), 0).r * maxHeight;
+    h[0] = heightTexture.SampleLevel(LinearSampler, uv + texelSize * float2(0, -1), 0).r * maxHeight;
+    h[1] = heightTexture.SampleLevel(LinearSampler, uv + texelSize * float2(-1, 0), 0).r * maxHeight;
+    h[2] = heightTexture.SampleLevel(LinearSampler, uv + texelSize * float2(1, 0), 0).r * maxHeight;
+    h[3] = heightTexture.SampleLevel(LinearSampler, uv + texelSize * float2(0, 1), 0).r * maxHeight;
     
     float3 n;
     n.z = h[0] - h[3];
@@ -243,19 +181,19 @@ PatchData hull_constant_function(InputPatch<HS_INPUT, 1> inputPatch)
 [outputtopology("triangle_cw")]
 [outputcontrolpoints(1)]
 [patchconstantfunc("hull_constant_function")]
-HS_OUTPUT hull_shader(InputPatch<HS_INPUT, 1> inputPatch)
+HS_OUTPUT HSMain(InputPatch<HS_INPUT, 1> inputPatch)
 {
     return (HS_OUTPUT)0;
 }
 
 [domain("quad")]
-DS_OUTPUT domain_shader(PatchData input, float2 uv : SV_DomainLocation, OutputPatch<HS_OUTPUT, 1> inputPatch)
+DS_OUTPUT DSMain(PatchData input, float2 uv : SV_DomainLocation, OutputPatch<HS_OUTPUT, 1> inputPatch)
 {
     DS_OUTPUT output;
     float3 vertexPosition;
     
     float2 texcoord01 = (input.origin + uv * input.size) / float(TILE_SIZE);
-    float height = heightTexture.SampleLevel(TerrainHeightSampler, texcoord01, 0).r;
+    float height = heightTexture.SampleLevel(LinearSamplerClamp, texcoord01, 0).r;
 	
     vertexPosition.xz = input.origin + uv * input.size;
     vertexPosition.y = TerrainHeightScale * height;
@@ -283,32 +221,7 @@ DS_OUTPUT domain_shader(PatchData input, float2 uv : SV_DomainLocation, OutputPa
     return output;
 }
 
-
-float4 pixel_shader(VS_OUTPUT IN) : SV_Target
-{
-    float4 splat = splatTexture.Sample(TerrainSplatSampler, IN.TextureCoordinates.zw);
-    
-    float3 ground = groundTexture.Sample(TerrainTextureSampler, IN.TextureCoordinates.xy).rgb;
-    float3 grass = grassTexture.Sample(TerrainTextureSampler, IN.TextureCoordinates.xy).rgb;
-    float3 rock = rockTexture.Sample(TerrainTextureSampler, IN.TextureCoordinates.xy).rgb;
-    float3 mud = mudTexture.Sample(TerrainTextureSampler, IN.TextureCoordinates.xy).rgb;
-    
-    float3 albedo = splat.r * mud + splat.g * grass + splat.b * rock + splat.a * ground;
-        
-    float3 color = AmbientColor.rgb;
-
-    float lightIntensity = saturate(dot(IN.Normal, SunDirection.rgb));
-
-    if (lightIntensity > 0.0f)
-        color += SunColor.rgb * lightIntensity;
-
-    color = saturate(color);
-    color *= albedo;
-    
-    return float4(color, 1.0f);
-}
-
-float4 pixel_shader_ts(DS_OUTPUT IN) : SV_Target
+float4 PSMain(DS_OUTPUT IN) : SV_Target
 {   
     float2 uvTile = IN.texcoord;
     
@@ -317,15 +230,15 @@ float4 pixel_shader_ts(DS_OUTPUT IN) : SV_Target
    
     uvTile.y = 1.0f - uvTile.y;
     
-    float4 splat = splatTexture.Sample(TerrainSplatSampler, uvTile);
-    float3 ground = groundTexture.Sample(TerrainTextureSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
-    float3 grass = grassTexture.Sample(TerrainTextureSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
-    float3 rock = rockTexture.Sample(TerrainTextureSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
-    float3 mud = mudTexture.Sample(TerrainTextureSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
+    float4 splat = splatTexture.Sample(LinearSampler, uvTile);
+    float3 channel0 = channel0Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
+    float3 channel1 = channel1Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
+    float3 channel2 = channel2Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
+    float3 channel3 = channel3Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
     
-    float3 albedo = splat.r * mud + splat.g * grass + splat.b * rock + splat.a * ground;
+    float3 albedo = splat.r * channel0 + splat.g * channel1 + splat.b * channel2 + splat.a * channel3;
     
-    float3 color = AmbientColor.rgb;
+    float3 color = float3(0.1f, 0.1f, 0.1f);//AmbientColor.rgb;
 
     float shadow = GetShadow(IN.shadowCoord0, IN.shadowCoord1, IN.shadowCoord2, IN.position.w);
     shadow = clamp(shadow, 0.5f, 1.0f);
@@ -340,27 +253,3 @@ float4 pixel_shader_ts(DS_OUTPUT IN) : SV_Target
     
     return float4(color, 1.0f);
 }
-
-//technique11 main
-//{
-//    pass p0
-//	{
-//        SetVertexShader(CompileShader(vs_5_0, vertex_shader()));
-//		SetGeometryShader(NULL);
-//        SetPixelShader(CompileShader(ps_5_0, pixel_shader()));
-//    }
-//
-//    pass tessellation
-//    {
-//        SetVertexShader(CompileShader(vs_5_0, vertex_shader_ts()));
-//        SetHullShader(CompileShader(hs_5_0, hull_shader()));
-//        SetDomainShader(CompileShader(ds_5_0, domain_shader()));
-//        SetGeometryShader(NULL);
-//        SetPixelShader(CompileShader(ps_5_0, pixel_shader_ts()));
-//    }
-//
-//    //pass placeObjects
-//    //{
-//    //    SetComputeShader(CompileShader(cs_5_0, displaceOnTerrainCS()));
-//    //}
-//}

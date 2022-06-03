@@ -132,7 +132,7 @@ namespace Library {
 
 		#pragma region INIT_TERRAIN
 		game.CPUProfiler()->BeginCPUTime("Terrain init");
-		mTerrain = new Terrain(game);
+		mTerrain = new Terrain(game, *mDirectionalLight);
 		mTerrain->SetLevelPath(Utility::ToWideString(sceneFolderPath));
 		mTerrain->LoadTerrainData(mScene);
 		game.CPUProfiler()->EndCPUTime("Terrain init");
@@ -244,8 +244,6 @@ namespace Library {
 		#pragma region DRAW_GBUFFER
 		mGBuffer->Start();
 		mGBuffer->Draw(mScene);
-		//if (mTerrain)
-		//	mTerrain->Draw(nullptr);
 		if (mFoliageSystem)
 			mFoliageSystem->Draw(gameTime, nullptr, FoliageRenderingPass::TO_GBUFFER);
 		mGBuffer->End();
@@ -290,6 +288,11 @@ namespace Library {
 					it->second->Draw(mat.first);
 			}
 		}
+#pragma endregion
+
+		#pragma region DRAW_TERRAIN
+		if (mTerrain)
+			mTerrain->Draw(mShadowMapper);
 #pragma endregion
 
 		#pragma region DRAW_DEBUG_GIZMOS
