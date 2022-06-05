@@ -12,6 +12,7 @@
 		37.0
 	],
 	"terrain_num_tiles" : 16,
+	"terrain_tile_scale" : 1.0,
 	"terrain_texture_splat_layer0" : "terrainMudTexture.jpg",
 	"terrain_texture_splat_layer1" : "terrainGrassTexture.jpg",
 	"terrain_texture_splat_layer2" : "terrainGroundTexture.jpg",

@@ -105,7 +105,6 @@ namespace Library
 
 		for (UINT i = 0; i < vertices.size(); i++)
 		{
-
 			//Get the smallest vertex 
 			minVertex.x = std::min(minVertex.x, vertices[i].x);    // Find smallest x value in model
 			minVertex.y = std::min(minVertex.y, vertices[i].y);    // Find smallest y value in model

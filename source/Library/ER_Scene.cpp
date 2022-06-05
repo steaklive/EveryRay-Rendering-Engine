@@ -80,6 +80,8 @@ namespace Library
 				if (root.isMember("terrain_num_tiles")) {
 					mHasTerrain = true;
 					mTerrainTilesCount = root["terrain_num_tiles"].asInt();
+					if (root.isMember("terrain_tile_scale"))
+						mTerrainTileScale = root["terrain_tile_scale"].asFloat();
 					std::string fieldName = "terrain_texture_splat_layer";
 					std::wstring result = L"";
 					for (int i = 0; i < 4; i ++)

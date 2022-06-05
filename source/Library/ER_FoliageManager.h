@@ -115,7 +115,7 @@ namespace Library
 			mVoxelTextureDimension = voxelTexDimension;
 		}
 
-		bool PerformCPUFrustumCull(Camera* camera);
+		bool PerformCPUFrustumCulling(Camera* camera);
 
 		void SetName(const std::string& name) { mName = name; }
 		const std::string& GetName() { return mName; }

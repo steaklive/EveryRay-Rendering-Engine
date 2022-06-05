@@ -100,18 +100,14 @@ namespace Library
 			: Position(position), TextureCoordinates(textureCoordinates), Color(color) { }
 	} VertexPositionTextureColor;
 
-	typedef struct _TerrainVertexInput
+	typedef struct _DebugTerrainVertexInput
 	{
 		XMFLOAT4 Position;
-		XMFLOAT4 TextureCoordinates;
-		XMFLOAT3 Normal;
-		//XMFLOAT2 TileTextureCoordinates;
+		_DebugTerrainVertexInput() { }
 
-		_TerrainVertexInput() { }
-
-		_TerrainVertexInput(const XMFLOAT4& position, const XMFLOAT4& textureCoordinates, const XMFLOAT3& normal/*, const XMFLOAT4& tileTextureCoordinates*/)
-			: Position(position), TextureCoordinates(textureCoordinates), Normal(normal)/*, TileTextureCoordinates(tileTextureCoordinates)*/ { }
-	} TerrainVertexInput;
+		_DebugTerrainVertexInput(const XMFLOAT4& position)
+			: Position(position) { }
+	} DebugTerrainVertexInput;
 
 	typedef struct _VertexSkinnedPositionTextureNormal
 	{

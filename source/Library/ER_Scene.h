@@ -36,6 +36,7 @@ namespace Library
 
 		bool HasTerrain() { return mHasTerrain; }
 		int GetTerrainTilesCount() { return mTerrainTilesCount; }
+		float GetTerrainTileScale() { return mTerrainTileScale; }
 		const std::wstring& GetTerrainSplatLayerTextureName(int index) { return mTerrainSplatLayersTextureNames[index]; }
 
 		bool HasVolumetricFog() { return mHasVolumetricFog; }
@@ -64,6 +65,7 @@ namespace Library
 
 		bool mHasTerrain = false;
 		int mTerrainTilesCount = 0;
+		float mTerrainTileScale = 1.0f;
 		std::wstring mTerrainSplatLayersTextureNames[4];
 
 		bool mHasLightProbes = true;

@@ -16,6 +16,8 @@
 #include "DirectionalLight.h"
 #include "ER_LightProbesManager.h"
 #include "ER_LightProbe.h"
+#include "ER_RenderableAABB.h"
+#include "Camera.h"
 
 namespace Library
 {
@@ -94,7 +96,7 @@ namespace Library
 		mNumTiles = aScene->GetTerrainTilesCount();
 		assert(mNumTiles > 0);
 
-		mWidth = mHeight = /*aTileResolution*/ TERRAIN_TILE_RESOLUTION; //TODO
+		mWidth = mHeight = TERRAIN_TILE_RESOLUTION * aScene->GetTerrainTileScale();
 
 		if (!(mNumTiles && !(mNumTiles & (mNumTiles - 1))))
 			throw GameException("Number of tiles defined is not a power of 2!");
@@ -140,10 +142,6 @@ namespace Library
 				std::wstring filePathHeightmap = aTexturesPath;
 				filePathHeightmap += L"terrainHeight_x" + std::to_wstring(i) + L"_y" + std::to_wstring(j) + L".png";
 				LoadHeightmapPerTileGPU(i, j, filePathHeightmap); //unfortunately, not thread safe
-				
-				//std::wstring filePathNormalmap = aTexturesPath;
-				//filePathNormalmap += L"terrainNormal_x" + std::to_wstring(i) + L"_y" + std::to_wstring(j) + L".png";
-				//LoadNormalmapPerTileGPU(i, j, filePathNormalmap); //unfortunately, not thread safe
 			}
 		}
 	}
@@ -159,7 +157,8 @@ namespace Library
 		std::wstring filePathHeightmap = aTexturesPath;
 		filePathHeightmap += L"terrainHeight_x" + std::to_wstring(tileX) + L"_y" + std::to_wstring(tileY) + L".r16";
 
-		LoadRawHeightmapPerTileCPU(tileX, tileY, filePathHeightmap);
+		CreateTerrainTileDataCPU(tileX, tileY, filePathHeightmap);
+		CreateTerrainTileDataGPU(tileX, tileY);
 	}
 
 	void ER_Terrain::LoadSplatmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path)
@@ -180,312 +179,219 @@ namespace Library
 		mHeightMaps[tileIndex]->mHeightTexture = new ER_GPUTexture(GetGame()->Direct3DDevice(), GetGame()->Direct3DDeviceContext(), path, true);
 	}
 
-	//void Terrain::LoadNormalmapPerTileGPU(int tileIndexX, int tileIndexY, const std::string& path)
-	//{
-	//	int tileIndex = tileIndexX * sqrt(mNumTiles) + tileIndexY;
-	//	if (tileIndex >= mHeightMaps.size())
-	//		return;
-	//
-	//	std::wstring pathW = Utility::ToWideString(path);
-	//	if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), pathW.c_str(), nullptr, &(mHeightMaps[tileIndex]->mNormalTexture))))
-	//	{
-	//		std::string errorMessage = "Failed to create tile's 'Normal Map' SRV: " + path;
-	//		throw GameException(errorMessage.c_str());
-	//	}
-	//}
-
-	void ER_Terrain::LoadRawHeightmapPerTileCPU(int tileIndexX, int tileIndexY, const std::wstring& aPath)
+	// Create pre-tessellated patch data which is used for terrain rendering (using GPU tessellation pipeline)
+	void ER_Terrain::CreateTerrainTileDataGPU(int tileIndexX, int tileIndexY)
 	{
 		int tileIndex = tileIndexX * sqrt(mNumTiles) + tileIndexY;
-		if (tileIndex >= mHeightMaps.size())
-			return;
-		//assert(tileIndex < mHeightMaps.size());
+		assert(tileIndex < mHeightMaps.size());
 
-		mHeightMaps[tileIndex]->mUVOffsetToTextureSpace = XMFLOAT2(TERRAIN_TILE_RESOLUTION - tileIndexX * TERRAIN_TILE_RESOLUTION, tileIndexY * TERRAIN_TILE_RESOLUTION);
+		// creating terrain vertex buffer for patches
+		float* patches_rawdata = new float[NUM_TERRAIN_PATCHES_PER_TILE * NUM_TERRAIN_PATCHES_PER_TILE * 4];
+		for (int i = 0; i < NUM_TERRAIN_PATCHES_PER_TILE; i++)
+			for (int j = 0; j < NUM_TERRAIN_PATCHES_PER_TILE; j++)
+			{
+				patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 0] = i * (TERRAIN_TILE_RESOLUTION) / NUM_TERRAIN_PATCHES_PER_TILE;
+				patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 1] = j * (TERRAIN_TILE_RESOLUTION) / NUM_TERRAIN_PATCHES_PER_TILE;
+				patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 2] = TERRAIN_TILE_RESOLUTION / NUM_TERRAIN_PATCHES_PER_TILE;
+				patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 3] = TERRAIN_TILE_RESOLUTION / NUM_TERRAIN_PATCHES_PER_TILE;
+			}
+
+		D3D11_BUFFER_DESC buf_desc;
+		memset(&buf_desc, 0, sizeof(buf_desc));
+
+		buf_desc.ByteWidth = NUM_TERRAIN_PATCHES_PER_TILE * NUM_TERRAIN_PATCHES_PER_TILE * 4 * sizeof(float);
+		buf_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		buf_desc.Usage = D3D11_USAGE_DEFAULT;
+
+		D3D11_SUBRESOURCE_DATA subresource_data;
+		subresource_data.pSysMem = patches_rawdata;
+		subresource_data.SysMemPitch = 0;
+		subresource_data.SysMemSlicePitch = 0;
+
+		if (FAILED(GetGame()->Direct3DDevice()->CreateBuffer(&buf_desc, &subresource_data, &(mHeightMaps[tileIndex]->mVertexBufferTS))))
+			throw GameException("ID3D11Device::CreateBuffer() failed while generating vertex buffer of GPU terrain mesh patch (pre-tessellation)");
+
+		free(patches_rawdata);
+
+		mHeightMaps[tileIndex]->mWorldMatrixTS = XMMatrixTranslation(TERRAIN_TILE_RESOLUTION * (tileIndexX - 1), 0.0f, TERRAIN_TILE_RESOLUTION * -tileIndexY);
+	}
+
+	// Create CPU tile data which is used for terrain debugging, collisions, placement of ER_RenderingObject(s) (no GPU tessellation pipeline)
+	void ER_Terrain::CreateTerrainTileDataCPU(int tileIndexX, int tileIndexY, const std::wstring& aPath)
+	{
+		int tileIndex = tileIndexX * sqrt(mNumTiles) + tileIndexY;
+		assert(tileIndex < mHeightMaps.size());
+		auto device = GetGame()->Direct3DDevice();
 
 		int error, i, j, index;
 		FILE* filePtr;
 		unsigned long long imageSize, count;
 		unsigned short* rawImage;
 
-		// Open the 16 bit raw height map file for reading in binary.
-		error = _wfopen_s(&filePtr, aPath.c_str(), L"rb");
-		if (error != 0)
-			throw GameException("Can not open the terrain's heightmap RAW!");
-
-		// Calculate the size of the raw image data.
-		imageSize = mWidth * mHeight;
-
-		// Allocate memory for the raw image data.
-		rawImage = new unsigned short[imageSize];
-
-		// Read in the raw image data.
-		count = fread(rawImage, sizeof(unsigned short), imageSize, filePtr);
-		if (count != imageSize)
-			throw GameException("Can not read the terrain's heightmap RAW file!");
-
-		// Close the file.
-		error = fclose(filePtr);
-		if (error != 0)
-			throw GameException("Can not close the terrain's heightmap RAW file!");
-
-
-		mHeightMaps[tileIndex]->mWorldMatrixTS = XMMatrixTranslation(TERRAIN_TILE_RESOLUTION * (tileIndexX - 1), 0.0f, TERRAIN_TILE_RESOLUTION * -tileIndexY);
-
-		// genertate tessellated vertex buffers
+		// Load raw heightmap file
 		{
-			// creating terrain vertex buffer for patches
-			float* patches_rawdata = new float[NUM_TERRAIN_PATCHES_PER_TILE * NUM_TERRAIN_PATCHES_PER_TILE * 4];
-			for (int i = 0; i < NUM_TERRAIN_PATCHES_PER_TILE; i++)
-				for (int j = 0; j < NUM_TERRAIN_PATCHES_PER_TILE; j++)
-				{
-					patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 0] = i * (TERRAIN_TILE_RESOLUTION) / NUM_TERRAIN_PATCHES_PER_TILE;
-					patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 1] = j * (TERRAIN_TILE_RESOLUTION) / NUM_TERRAIN_PATCHES_PER_TILE;
-					patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 2] = TERRAIN_TILE_RESOLUTION / NUM_TERRAIN_PATCHES_PER_TILE;
-					patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 3] = TERRAIN_TILE_RESOLUTION / NUM_TERRAIN_PATCHES_PER_TILE;
-				}
+			// Open the 16 bit raw height map file for reading in binary.
+			error = _wfopen_s(&filePtr, aPath.c_str(), L"rb");
+			if (error != 0)
+				throw GameException("Can not open the terrain's heightmap RAW!");
 
-			D3D11_BUFFER_DESC buf_desc;
-			memset(&buf_desc, 0, sizeof(buf_desc));
+			// Calculate the size of the raw image data.
+			imageSize = mWidth * mHeight;
 
-			buf_desc.ByteWidth = NUM_TERRAIN_PATCHES_PER_TILE * NUM_TERRAIN_PATCHES_PER_TILE * 4 * sizeof(float);
-			buf_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-			buf_desc.Usage = D3D11_USAGE_DEFAULT;
+			// Allocate memory for the raw image data.
+			rawImage = new unsigned short[imageSize];
 
-			D3D11_SUBRESOURCE_DATA subresource_data;
-			subresource_data.pSysMem = patches_rawdata;
-			subresource_data.SysMemPitch = 0;
-			subresource_data.SysMemSlicePitch = 0;
+			// Read in the raw image data.
+			count = fread(rawImage, sizeof(unsigned short), imageSize, filePtr);
+			if (count != imageSize)
+				throw GameException("Can not read the terrain's heightmap RAW file!");
 
-			if (FAILED(mGame->Direct3DDevice()->CreateBuffer(&buf_desc, &subresource_data, &(mHeightMaps[tileIndex]->mVertexBufferTS))))
-				throw GameException("ID3D11Device::CreateBuffer() failed while generating vertex buffer of terrain mesh patch");
-
-			free(patches_rawdata);
+			// Close the file.
+			error = fclose(filePtr);
+			if (error != 0)
+				throw GameException("Can not close the terrain's heightmap RAW file!");
 		}
 
 		// Copy the image data into the height map array.
-		for (j = 0; j < static_cast<int>(mHeight); j++)
 		{
-			for (i = 0; i < static_cast<int>(mWidth); i++)
-			{
-				index = (mWidth * j) + i;
-
-				// Store the height at this point in the height map array.
-				mHeightMaps[tileIndex]->mData[index].x = static_cast<float>((i + static_cast<int>(mWidth) * (tileIndexX - 1)));
-				mHeightMaps[tileIndex]->mData[index].y = static_cast<float>(rawImage[index]) / 200.0f;//TODO mTerrainNonTessellatedHeightScale;
-				mHeightMaps[tileIndex]->mData[index].z = static_cast<float>((j - static_cast<int>(mHeight) * tileIndexY));
-
-				if (tileIndex > 0) //a way to fix the seams between tiles...
-				{
-					mHeightMaps[tileIndex]->mData[index].x -= static_cast<float>(tileIndexX) /** scale*/;
-					mHeightMaps[tileIndex]->mData[index].z += static_cast<float>(tileIndexY) /** scale*/;
-				}
-
-			}
-		}
-
-		// Release image data.
-		delete[] rawImage;
-		rawImage = 0;
-
-		return; //i dont remember why i wrote the code below, but its not needed for the GPU tessellated terrain
-
-		//calculate normals
-		{
-			int i, j, index1, index2, index3, index, count;
-			float vertex1[3], vertex2[3], vertex3[3], vector1[3], vector2[3], sum[3], length;
-			NormalVector* normals = new NormalVector[((int)mHeight - 1) * ((int)mWidth - 1)];
-
-			for (j = 0; j < (static_cast<int>(mHeight) - 1); j++)
-			{
-				for (i = 0; i < (static_cast<int>(mWidth) - 1); i++)
-				{
-					index1 = (j * mHeight) + i;
-					index2 = (j * mHeight) + (i + 1);
-					index3 = ((j + 1) * mHeight) + i;
-
-					// Get three vertices from the face.
-					vertex1[0] = mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index1].x;
-					vertex1[1] = mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index1].y;
-					vertex1[2] = mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index1].z;
-					vertex2[0] = mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index2].x;
-					vertex2[1] = mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index2].y;
-					vertex2[2] = mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index2].z;
-					vertex3[0] = mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index3].x;
-					vertex3[1] = mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index3].y;
-					vertex3[2] = mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index3].z;
-
-					// Calculate the two vectors for this face.
-					vector1[0] = vertex1[0] - vertex3[0];
-					vector1[1] = vertex1[1] - vertex3[1];
-					vector1[2] = vertex1[2] - vertex3[2];
-					vector2[0] = vertex3[0] - vertex2[0];
-					vector2[1] = vertex3[1] - vertex2[1];
-					vector2[2] = vertex3[2] - vertex2[2];
-
-					index = (j * (mHeight - 1)) + i;
-
-					// Calculate the cross product of those two vectors to get the un-normalized value for this face normal.
-					normals[index].x = (vector1[1] * vector2[2]) - (vector1[2] * vector2[1]);
-					normals[index].y = (vector1[2] * vector2[0]) - (vector1[0] * vector2[2]);
-					normals[index].z = (vector1[0] * vector2[1]) - (vector1[1] * vector2[0]);
-				}
-			}
-
-			// Now go through all the vertices and take an average of each face normal 	
-			// that the vertex touches to get the averaged normal for that vertex.
 			for (j = 0; j < static_cast<int>(mHeight); j++)
 			{
 				for (i = 0; i < static_cast<int>(mWidth); i++)
 				{
-					// Initialize the sum.
-					sum[0] = 0.0f;
-					sum[1] = 0.0f;
-					sum[2] = 0.0f;
+					index = (mWidth * j) + i;
 
-					// Initialize the count.
-					count = 0;
+					// Store the height at this point in the height map array.
+					mHeightMaps[tileIndex]->mData[index].x = static_cast<float>((i + static_cast<int>(mWidth) * (tileIndexX - 1)));
+					mHeightMaps[tileIndex]->mData[index].y = static_cast<float>(rawImage[index]) / 200.0f;//TODO mTerrainNonTessellatedHeightScale;
+					mHeightMaps[tileIndex]->mData[index].z = static_cast<float>((j - static_cast<int>(mHeight) * tileIndexY));
 
-					// Bottom left face.
-					if (((i - 1) >= 0) && ((j - 1) >= 0))
+					if (tileIndex > 0) //a way to fix the seams between tiles...
 					{
-						index = ((j - 1) * (static_cast<int>(mHeight) - 1)) + (i - 1);
-
-						sum[0] += normals[index].x;
-						sum[1] += normals[index].y;
-						sum[2] += normals[index].z;
-						count++;
+						mHeightMaps[tileIndex]->mData[index].x -= static_cast<float>(tileIndexX) /** scale*/;
+						mHeightMaps[tileIndex]->mData[index].z += static_cast<float>(tileIndexY) /** scale*/;
 					}
 
-					// Bottom right face.
-					if ((i < ((int)mWidth - 1)) && ((j - 1) >= 0))
-					{
-						index = ((j - 1) * (static_cast<int>(mHeight) - 1)) + i;
-
-						sum[0] += normals[index].x;
-						sum[1] += normals[index].y;
-						sum[2] += normals[index].z;
-						count++;
-					}
-
-					// Upper left face.
-					if (((i - 1) >= 0) && (j < (static_cast<int>(mHeight) - 1)))
-					{
-						index = (j * (static_cast<int>(mHeight) - 1)) + (i - 1);
-
-						sum[0] += normals[index].x;
-						sum[1] += normals[index].y;
-						sum[2] += normals[index].z;
-						count++;
-					}
-
-					// Upper right face.
-					if (i < ((static_cast<int>(mWidth) - 1)) && j < (static_cast<int>(mHeight) - 1))
-					{
-						index = (j * (static_cast<int>(mHeight) - 1)) + i;
-
-						sum[0] += normals[index].x;
-						sum[1] += normals[index].y;
-						sum[2] += normals[index].z;
-						count++;
-					}
-
-					// Take the average of the faces touching this vertex.
-					sum[0] = (sum[0] / static_cast<float>(count));
-					sum[1] = (sum[1] / static_cast<float>(count));
-					sum[2] = (sum[2] / static_cast<float>(count));
-
-					// Calculate the length of this normal.
-					length = sqrt((sum[0] * sum[0]) + (sum[1] * sum[1]) + (sum[2] * sum[2]));
-
-					// Get an index to the vertex location in the height map array.
-					index = (j * static_cast<int>(mHeight)) + i;
-
-					// Normalize the final shared normal for this vertex and store it in the height map array.
-					mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index].normalX = (sum[0] / length);
-					mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index].normalY = (sum[1] / length);
-					mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index].normalZ = (sum[2] / length);
 				}
 			}
-			
-			delete[] normals;
-			normals = NULL;
+
+			// Release image data.
+			delete[] rawImage;
+			rawImage = 0;
 		}
 
-		//calculate uvs
+		// Generate CPU mesh (and its GPU vertex/index buffers) + calculate AABB of the tile
 		{
-			int index, incrementCount, incrementCountTile, i, j, uCount, vCount, uCountTile, vCountTile, repeatValue = 32;
-			float incrementValue, incrementValueTile, uCoord, vCoord, uCoordTile, vCoordTile;
+			mHeightMaps[tileIndex]->mVertexCountNonTS = (mWidth - 1) * (mHeight - 1) * 6;
+			DebugTerrainVertexInput* vertices = new DebugTerrainVertexInput[mHeightMaps[tileIndex]->mVertexCountNonTS];
 
-			incrementValue = static_cast<float>(repeatValue) / static_cast<float>(mWidth);
-			incrementCount = static_cast<int>(mWidth) / repeatValue;	
+			mHeightMaps[tileIndex]->mIndexCountNonTS = mHeightMaps[tileIndex]->mVertexCountNonTS;
+			unsigned long* indices = new unsigned long[mHeightMaps[tileIndex]->mIndexCountNonTS];
 
-			incrementValueTile = 1.0f / static_cast<float>(mWidth);
-			incrementCountTile = static_cast<int>(mWidth);
-
-			uCoord = 0.0f;
-			vCoord = 1.0f;	
-			uCoordTile = 0.0f;
-			vCoordTile = 1.0f;
-
-			// Initialize the tu and tv coordinate indices.
-			uCount = 0;
-			vCount = 0;	
-			uCountTile = 0;
-			vCountTile = 0;
-
-			for (j = 0; j < static_cast<int>(mHeight); j++)
+			int index = 0;
+			int index1, index2, index3, index4;
+			// Load the vertex and index array with the terrain data.
+			for (int j = 0; j < ((int)mHeight - 1); j++)
 			{
-				for (i = 0; i < static_cast<int>(mWidth); i++)
+				for (int i = 0; i < ((int)mWidth - 1); i++)
 				{
-					index = (j * static_cast<int>(mHeight)) + i;
+					index1 = (mHeight * j) + i;					// Bottom left.	
+					index2 = (mHeight * j) + (i + 1);			// Bottom right.
+					index3 = (mHeight * (j + 1)) + i;			// Upper left.	
+					index4 = (mHeight * (j + 1)) + (i + 1);		// Upper right.	
 
-					// Store the texture coordinate in the height map.
-					mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index].u = uCoord;
-					mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index].v = vCoord;	
-					mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index].uTile = uCoordTile;
-					mHeightMaps[tileIndexX *  sqrt(mNumTiles) + tileIndexY]->mData[index].vTile = vCoordTile;
-					
-					// Increment the tu texture coordinate by the increment value and increment the index by one.
-					uCoord += incrementValue;
-					uCount++;
+					// Upper left.
+					vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index3].x, mHeightMaps[tileIndex]->mData[index3].y, mHeightMaps[tileIndex]->mData[index3].z, 1.0f);
+					indices[index] = index;
+					index++;
 
-					uCoordTile += incrementValueTile;
-					uCountTile++;
+					// Upper right.
+					vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index4].x, mHeightMaps[tileIndex]->mData[index4].y, mHeightMaps[tileIndex]->mData[index4].z, 1.0f);
+					indices[index] = index;
+					index++;
 
-					// Check if at the far right end of the texture and if so then start at the beginning again.
-					if (uCount == incrementCount)
-					{
-						uCoord = 0.0f;
-						uCount = 0;
-					}
-					if (uCountTile == incrementCountTile)
-					{
-						uCoordTile = 0.0f;
-						uCountTile = 0;
-					}
-				}
+					// Bottom left.
+					vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index1].x, mHeightMaps[tileIndex]->mData[index1].y, mHeightMaps[tileIndex]->mData[index1].z, 1.0f);
+					indices[index] = index;
+					index++;
 
-				vCoord -= incrementValue;
-				vCount++;
+					// Bottom left.
+					vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index1].x, mHeightMaps[tileIndex]->mData[index1].y, mHeightMaps[tileIndex]->mData[index1].z, 1.0f);
+					indices[index] = index;
+					index++;
 
-				// Check if at the top of the texture and if so then start at the bottom again.
-				if (vCount == incrementCount)
-				{
-					vCoord = 1.0f;
-					vCount = 0;
-				}
+					// Upper right.
+					vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index4].x, mHeightMaps[tileIndex]->mData[index4].y, mHeightMaps[tileIndex]->mData[index4].z, 1.0f);
+					indices[index] = index;
+					index++;
 
-				vCoordTile -= incrementValueTile;
-				vCountTile++;
-
-				// Check if at the top of the texture and if so then start at the bottom again.
-				if (vCountTile == incrementCountTile)
-				{
-					vCoordTile = 1.0f;
-					vCountTile = 0;
+					// Bottom right.
+					vertices[index].Position = XMFLOAT4(mHeightMaps[tileIndex]->mData[index2].x, mHeightMaps[tileIndex]->mData[index2].y, mHeightMaps[tileIndex]->mData[index2].z, 1.0f);
+					indices[index] = index;
+					index++;
 				}
 			}
+
+			D3D11_BUFFER_DESC vertexBufferDesc;
+			ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
+			vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+			vertexBufferDesc.ByteWidth = sizeof(DebugTerrainVertexInput) * mHeightMaps[tileIndex]->mVertexCountNonTS;
+			vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+			D3D11_SUBRESOURCE_DATA vertexSubResourceData;
+			ZeroMemory(&vertexSubResourceData, sizeof(vertexSubResourceData));
+			vertexSubResourceData.pSysMem = vertices;
+
+			HRESULT hr;
+			if (FAILED(hr = device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, &(mHeightMaps[tileIndex]->mVertexBufferNonTS))))
+				throw GameException("ID3D11Device::CreateBuffer() failed while generating vertex buffer of CPU terrain mesh tile");
+
+			XMFLOAT3 minVertex = XMFLOAT3(FLT_MAX, FLT_MAX, FLT_MAX);
+			XMFLOAT3 maxVertex = XMFLOAT3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+			// copy vertices to tile data + calculate AABB
+			for (int i = 0; i < mHeightMaps[tileIndex]->mVertexCountNonTS; i++)
+			{
+				mHeightMaps[tileIndex]->mVertexList[i].x = vertices[i].Position.x;
+				mHeightMaps[tileIndex]->mVertexList[i].y = vertices[i].Position.y;
+				mHeightMaps[tileIndex]->mVertexList[i].z = vertices[i].Position.z;
+
+				//Get the smallest vertex 
+				minVertex.x = std::min(minVertex.x, vertices[i].Position.x);    // Find smallest x value in model
+				minVertex.y = std::min(minVertex.y, vertices[i].Position.y);    // Find smallest y value in model
+				minVertex.z = std::min(minVertex.z, vertices[i].Position.z);    // Find smallest z value in model
+
+				//Get the largest vertex 
+				maxVertex.x = std::max(maxVertex.x, vertices[i].Position.x);    // Find largest x value in model
+				maxVertex.y = std::max(maxVertex.y, vertices[i].Position.y);    // Find largest y value in model
+				maxVertex.z = std::max(maxVertex.z, vertices[i].Position.z);    // Find largest z value in model
+			}
+			mHeightMaps[tileIndex]->mAABB = { minVertex, maxVertex };
+
+			delete[] vertices;
+			vertices = NULL;
+
+			D3D11_BUFFER_DESC indexBufferDesc;
+			indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+			indexBufferDesc.ByteWidth = sizeof(unsigned long) * mHeightMaps[tileIndex]->mIndexCountNonTS;
+			indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+			indexBufferDesc.CPUAccessFlags = 0;
+			indexBufferDesc.MiscFlags = 0;
+			indexBufferDesc.StructureByteStride = 0;
+
+			// Give the subresource structure a pointer to the index data.
+			D3D11_SUBRESOURCE_DATA indexSubResourceData;
+			ZeroMemory(&indexSubResourceData, sizeof(indexSubResourceData));
+			indexSubResourceData.pSysMem = indices;
+
+			HRESULT hr2;
+			if (FAILED(hr2 = device->CreateBuffer(&indexBufferDesc, &indexSubResourceData, &(mHeightMaps[tileIndex]->mIndexBufferNonTS))))
+				throw GameException("ID3D11Device::CreateBuffer() failed while generating index buffer of CPU terrain mesh tile");
+
+			delete[] indices;
+			indices = NULL;
+
+			mHeightMaps[tileIndex]->mDebugGizmoAABB = new ER_RenderableAABB(*GetGame(), XMFLOAT4(0.0, 0.0, 1.0, 1.0));
+			mHeightMaps[tileIndex]->mDebugGizmoAABB->InitializeGeometry({ mHeightMaps[tileIndex]->mAABB.first,mHeightMaps[tileIndex]->mAABB.second });
 		}
 	}
 
@@ -498,11 +404,34 @@ namespace Library
 			DrawTessellated(i, worldShadowMapper, probeManager);
 	}
 
+	void ER_Terrain::DrawDebugGizmos()
+	{
+		if (!mEnabled || !mDrawDebugAABBs)
+			return;
+
+		for (int i = 0; i < mHeightMaps.size(); i++)
+			mHeightMaps[i]->mDebugGizmoAABB->Draw();
+	}
+
 	void ER_Terrain::Update(const GameTime& gameTime)
 	{
+		Camera* camera = (Camera*)(mGame->Services().GetService(Camera::TypeIdClass()));
+
+		int visibleTiles = 0;
+		for (int i = 0; i < mHeightMaps.size(); i++)
+		{
+			if (!mHeightMaps[i]->PerformCPUFrustumCulling(mDoCPUFrustumCulling ? camera : nullptr))
+				visibleTiles++;
+		}
+
 		if (mShowDebug) {
 			ImGui::Begin("Terrain System");
+			
+			std::string cullText = "Visible tiles: " + std::to_string(visibleTiles) + "/" + std::to_string(mHeightMaps.size());
+			ImGui::Text(cullText.c_str());
 			ImGui::Checkbox("Enabled", &mEnabled);
+			ImGui::Checkbox("CPU frustum culling", &mDoCPUFrustumCulling);
+			ImGui::Checkbox("Debug tiles AABBs", &mDrawDebugAABBs);
 			ImGui::Checkbox("Render wireframe", &mIsWireframe);
 			ImGui::SliderInt("Tessellation factor static", &mTessellationFactor, 1, 64);
 			ImGui::SliderInt("Tessellation factor dynamic", &mTessellationFactorDynamic, 1, 64);
@@ -515,6 +444,9 @@ namespace Library
 
 	void ER_Terrain::DrawTessellated(int tileIndex, ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager)
 	{
+		if (mHeightMaps[tileIndex]->IsCulled())
+			return;
+
 		Camera* camera = (Camera*)(mGame->Services().GetService(Camera::TypeIdClass()));
 		assert(camera);
 
@@ -622,13 +554,18 @@ namespace Library
 	float HeightMap::FindHeightFromPosition(float x, float z)
 	{
 		int index = 0;
-		float vertex1[3], vertex2[3], vertex3[3], vector1[3], vector2[3], normals[3];
+		float vertex1[3] = { 0.0, 0.0, 0.0 };
+		float vertex2[3] = { 0.0, 0.0, 0.0 }; 
+		float vertex3[3] = { 0.0, 0.0, 0.0 }; 
+		float normals[3] = { 0.0, 0.0, 0.0 }; 
 		float height = 0.0f;
 		bool isFound = false;
 
-		int index1, index2, index3;
+		int index1 = 0;
+		int index2 = 0;
+		int index3 = 0;
 
-		for (int i = 0; i < mVertexCount / 3; i++)
+		for (int i = 0; i < mVertexCountNonTS / 3; i++)
 		{
 			index = i * 3;
 
@@ -653,9 +590,58 @@ namespace Library
 		}
 		return -1.0f;
 	}
-	bool HeightMap::RayIntersectsTriangle(float x, float z, float v0[3], float v1[3], float v2[3], float normals[3],float& height)
+
+	bool HeightMap::PerformCPUFrustumCulling(Camera* camera)
 	{
-		const float EPSILON = 0.0000001;
+		if (!camera)
+		{
+			mIsCulled = false;
+			return mIsCulled;
+		}
+
+		auto frustum = camera->GetFrustum();
+		bool culled = false;
+		// start a loop through all frustum planes
+		for (int planeID = 0; planeID < 6; ++planeID)
+		{
+			XMVECTOR planeNormal = XMVectorSet(frustum.Planes()[planeID].x, frustum.Planes()[planeID].y, frustum.Planes()[planeID].z, 0.0f);
+			float planeConstant = frustum.Planes()[planeID].w;
+
+			XMFLOAT3 axisVert;
+
+			// x-axis
+			if (frustum.Planes()[planeID].x > 0.0f)
+				axisVert.x = mAABB.first.x;
+			else
+				axisVert.x = mAABB.second.x;
+
+			// y-axis
+			if (frustum.Planes()[planeID].y > 0.0f)
+				axisVert.y = mAABB.first.y;
+			else
+				axisVert.y = mAABB.second.y;
+
+			// z-axis
+			if (frustum.Planes()[planeID].z > 0.0f)
+				axisVert.z = mAABB.first.z;
+			else
+				axisVert.z = mAABB.second.z;
+
+
+			if (XMVectorGetX(XMVector3Dot(planeNormal, XMLoadFloat3(&axisVert))) + planeConstant > 0.0f)
+			{
+				culled = true;
+				// Skip remaining planes to check and move on 
+				break;
+			}
+		}
+		mIsCulled = culled;
+		return culled;
+	}
+
+	bool HeightMap::RayIntersectsTriangle(float x, float z, float v0[3], float v1[3], float v2[3], float normals[3], float& height)
+	{
+		const float EPSILON = 0.00001f;
 
 		XMVECTOR directionVector = { 0.0f, 1.0f, 0.0f };
 		XMVECTOR originVector = { x, 0.0f, z };
@@ -665,12 +651,12 @@ namespace Library
 
 		XMVECTOR h = XMVector3Cross(directionVector, edge2);
 
-		float a;
+		float a = 0.0f;
 		XMStoreFloat(&a, XMVector3Dot(edge1, h));
 
 		if (a > -EPSILON && a < EPSILON)
 			return false;    // This ray is parallel to this triangle.
-		float f = 1.0 / a;
+		float f = 1.0f / a;
 		XMVECTOR s = XMVectorSubtract(originVector, XMVECTOR{v0[0],v0[1],v0[2]});
 		
 		float dotSH;
@@ -842,8 +828,11 @@ namespace Library
 	HeightMap::~HeightMap()
 	{		
 		ReleaseObject(mVertexBufferTS);
+		ReleaseObject(mVertexBufferNonTS);
+		ReleaseObject(mIndexBufferNonTS);
 		DeleteObject(mSplatTexture);
 		DeleteObject(mHeightTexture);
 		DeleteObjects(mData);
+		DeleteObject(mDebugGizmoAABB);
 	}
 }

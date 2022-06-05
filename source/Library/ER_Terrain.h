@@ -1,9 +1,6 @@
 #pragma once
 #include "Common.h"
 #include "GameComponent.h"
-#include "Camera.h"
-#include "DirectionalLight.h"
-#include "ER_PostProcessingStack.h"
 #include "ConstantBuffer.h"
 #include "ER_GPUTexture.h"
 
@@ -19,6 +16,8 @@ namespace Library
 	class GameTime;
 	class DirectionalLight;
 	class ER_LightProbesManager;
+	class ER_RenderableAABB;
+	class Camera;
 
 	enum TerrainSplatChannels {
 		CHANNEL_0,
@@ -56,9 +55,6 @@ namespace Library
 		struct MapData
 		{
 			float x, y, z;
-			float normalX, normalY, normalZ;
-			float u, v;
-			float uTile, vTile;
 		};
 
 		struct Vertex {
@@ -69,6 +65,8 @@ namespace Library
 		bool GetHeightFromTriangle(float x, float z, float v0[3], float v1[3], float v2[3], float normal[3], float& height);
 		bool RayIntersectsTriangle(float x, float z, float v0[3], float v1[3], float v2[3], float normals[3], float& height);
 		float FindHeightFromPosition(float x, float z);
+		bool PerformCPUFrustumCulling(Camera* camera);
+		bool IsCulled() { return mIsCulled; }
 
 		HeightMap(int width, int height);
 		~HeightMap();
@@ -76,14 +74,21 @@ namespace Library
 		Vertex mVertexList[(TERRAIN_TILE_RESOLUTION - 1) * (TERRAIN_TILE_RESOLUTION - 1) * 6];
 		MapData* mData = nullptr;
 
-		ID3D11Buffer* mVertexBufferTS = nullptr;
 		ER_GPUTexture* mSplatTexture = nullptr;
 		ER_GPUTexture* mHeightTexture = nullptr;
+
+		ER_RenderableAABB* mDebugGizmoAABB = nullptr;
+		ER_AABB mAABB; //based on the CPU terrain
+
+		ID3D11Buffer* mVertexBufferTS = nullptr;
 		XMMATRIX mWorldMatrixTS = XMMatrixIdentity();
-		int mVertexCount = 0; //not used in GPU tessellated terrain
 
-		XMFLOAT2 mUVOffsetToTextureSpace;
+		ID3D11Buffer* mVertexBufferNonTS = nullptr;
+		int mVertexCountNonTS = 0; //not used in GPU tessellated terrain
+		ID3D11Buffer* mIndexBufferNonTS = nullptr;
+		int mIndexCountNonTS = 0; //not used in GPU tessellated terrain
 
+		bool mIsCulled = false;
 	};
 
 	class ER_Terrain : public GameComponent
@@ -98,6 +103,7 @@ namespace Library
 		UINT GetHeight() { return mHeight; }
 
 		void Draw(ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr);
+		void DrawDebugGizmos();
 		void Update(const GameTime& gameTime);
 		void Config() { mShowDebug = !mShowDebug; }
 		
@@ -117,12 +123,12 @@ namespace Library
 		void SetEnabled(bool val) { mEnabled = val; }
 		bool IsEnabled() { return mEnabled; }
 	private:
-		void LoadTextures(const std::wstring& aTexturesPath, const std::wstring& splatLayer0Path, const std::wstring& splatLayer1Path,	const std::wstring& splatLayer2Path, const std::wstring& splatLayer3Path);
 		void LoadTile(int threadIndex, const std::wstring& path);
-		void LoadRawHeightmapPerTileCPU(int tileIndexX, int tileIndexY, const std::wstring& aPath);
+		void CreateTerrainTileDataCPU(int tileIndexX, int tileIndexY, const std::wstring& aPath);
+		void CreateTerrainTileDataGPU(int tileIndexX, int tileIndexY);
+		void LoadTextures(const std::wstring& aTexturesPath, const std::wstring& splatLayer0Path, const std::wstring& splatLayer1Path,	const std::wstring& splatLayer2Path, const std::wstring& splatLayer3Path);
 		void LoadSplatmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path);
 		void LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path);
-		//void LoadNormalmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path);
 		void DrawTessellated(int i, ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr);
 
 		DirectionalLight& mDirectionalLight;
@@ -152,6 +158,8 @@ namespace Library
 		int mTessellationFactorDynamic = 64;
 		float mTessellationDistanceFactor = 0.015f;
 
+		bool mDrawDebugAABBs = false;
+		bool mDoCPUFrustumCulling = true;
 		bool mShowDebug = false;
 		bool mEnabled = true;
 	};

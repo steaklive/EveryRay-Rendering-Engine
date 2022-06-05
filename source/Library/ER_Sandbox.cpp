@@ -80,7 +80,7 @@ namespace Library {
 
 		#pragma region INIT_SHADOWMAPPER
 		game.CPUProfiler()->BeginCPUTime("Shadow mapper init");
-        mShadowMapper = new ER_ShadowMapper(game, camera, *mDirectionalLight, 4096, 4096);
+        mShadowMapper = new ER_ShadowMapper(game, camera, *mDirectionalLight, 2048, 2048);
         mDirectionalLight->RotationUpdateEvent->AddListener("shadow mapper", [&]() { mShadowMapper->ApplyTransform(); });
 		game.CPUProfiler()->EndCPUTime("Shadow mapper init");
 #pragma endregion
@@ -301,6 +301,7 @@ namespace Library {
 		{
 			mDirectionalLight->DrawProxyModel(gameTime);
 			mIllumination->DrawDebugGizmos();
+			mTerrain->DrawDebugGizmos();
 			for (auto& it = mScene->objects.begin(); it != mScene->objects.end(); it++)
 				it->second->DrawAABB();
 		}

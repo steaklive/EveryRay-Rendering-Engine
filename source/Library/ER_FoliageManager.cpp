@@ -56,7 +56,7 @@ namespace Library
 			{
 				foliage->SetWindParams(gustDistance, strength, frequency);
 				foliage->Update(gameTime);
-				foliage->PerformCPUFrustumCull((Utility::IsMainCameraCPUFrustumCulling && mEnableCulling) ? camera : nullptr);
+				foliage->PerformCPUFrustumCulling((Utility::IsMainCameraCPUFrustumCulling && mEnableCulling) ? camera : nullptr);
 			}
 		}
 		UpdateImGui();
@@ -556,7 +556,7 @@ namespace Library
 		context->Unmap(mInstanceBuffer, 0);
 	}
 
-	bool ER_Foliage::PerformCPUFrustumCull(Camera* camera)
+	bool ER_Foliage::PerformCPUFrustumCulling(Camera* camera)
 	{
 		if (!camera)
 		{
