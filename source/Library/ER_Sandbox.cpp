@@ -250,7 +250,7 @@ namespace Library {
 #pragma endregion
 
 		#pragma region DRAW_SHADOWS
-		mShadowMapper->Draw(mScene);
+		mShadowMapper->Draw(mScene, mTerrain);
 #pragma endregion
 
 		#pragma region DRAW_GLOBAL_ILLUMINATION

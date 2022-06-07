@@ -24,6 +24,7 @@ static const int DETAIL_TEXTURE_REPEAT = 32;
 cbuffer TerrainDataCBuffer : register(b0)
 {
     float4x4 ShadowMatrices[NUM_OF_SHADOW_CASCADES];
+    float4x4 WorldLightViewProjection; //for shadow map generation pass
     float4x4 World;
     float4x4 View;
     float4x4 Projection;
@@ -64,6 +65,7 @@ struct DS_OUTPUT
     float3 shadowCoord0 : TEXCOORD3;
     float3 shadowCoord1 : TEXCOORD4;
     float3 shadowCoord2 : TEXCOORD5;
+    float2 Depth : TEXCOORD6; //for shadow map generation pass
 };
 
 struct PatchData
@@ -208,6 +210,25 @@ DS_OUTPUT DSMain(PatchData input, float2 uv : SV_DomainLocation, OutputPatch<HS_
     return output;
 }
 
+[domain("quad")]
+DS_OUTPUT DSShadowMap(PatchData input, float2 uv : SV_DomainLocation, OutputPatch<HS_OUTPUT, 1> inputPatch)
+{
+    DS_OUTPUT output;
+    float3 vertexPosition;
+    
+    float2 texcoord01 = (input.origin + uv * input.size) / float(TILE_SIZE);
+    float height = HeightTexture.SampleLevel(LinearSamplerClamp, texcoord01, 0).r;
+	
+    vertexPosition.xz = input.origin + uv * input.size;
+    vertexPosition.y = TerrainHeightScale * height;
+    
+	// writing output params
+    output.position = mul(float4(vertexPosition, 1.0), WorldLightViewProjection);
+    output.Depth = output.position.zw;
+ 
+    return output;
+}
+
 float4 PSMain(DS_OUTPUT IN) : SV_Target
 {   
     float2 uvTile = IN.texcoord;
@@ -235,7 +256,13 @@ float4 PSMain(DS_OUTPUT IN) : SV_Target
     probesInfo.globalIrradianceDiffuseProbeTexture = DiffuseGlobalProbeTexture;
     probesInfo.globalIrradianceSpecularProbeTexture = SpecularGlobalProbeTexture;
     
-    float3 directLighting = DirectLightingPBR(normal, SunColor, SunDirection.xyz, diffuseAlbedo.rgb, IN.worldPos.xyz, roughness, float3(0.04, 0.04, 0.04), metalness, CameraPosition.xyz);
+    float3 directLighting = DirectLightingPBR(normal, float4(SunColor.rgb, 1.0f), SunDirection.xyz, diffuseAlbedo.rgb, IN.worldPos.xyz, roughness, float3(0.04, 0.04, 0.04), metalness, CameraPosition.xyz);
     float3 indirectLighting = IndirectLightingPBR(normal, diffuseAlbedo.rgb, IN.worldPos.xyz, roughness, float3(0.04, 0.04, 0.04), metalness, CameraPosition.xyz, true, probesInfo, LinearSampler, IntegrationTexture, ao);
     return float4(directLighting * shadow + indirectLighting, 1.0f);
+}
+
+float4 PSShadowMap(DS_OUTPUT IN) : SV_Target
+{
+    IN.Depth.x /= IN.Depth.y;
+    return float4(IN.Depth.x, 0, 0, 1);
 }

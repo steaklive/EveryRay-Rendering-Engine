@@ -10,6 +10,7 @@ namespace Library
 	class Camera;
 	class DirectionalLight;
 	class ER_Scene;
+	class ER_Terrain;
 
 	class ER_ShadowMapper : public GameComponent 
 	{
@@ -18,7 +19,7 @@ namespace Library
 		ER_ShadowMapper(Game& pGame, Camera& camera, DirectionalLight& dirLight, UINT pWidth, UINT pHeight, bool isCascaded = true);
 		~ER_ShadowMapper();
 
-		void Draw(const ER_Scene* scene);
+		void Draw(const ER_Scene* scene, ER_Terrain* terrain = nullptr);
 		void Update(const GameTime& gameTime);
 		void BeginRenderingToShadowMap(int cascadeIndex = 0);
 		void StopRenderingToShadowMap(int cascadeIndex = 0);

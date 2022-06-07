@@ -29,6 +29,7 @@ namespace Library
 	namespace TerrainCBufferData {
 		struct TerrainData {
 			XMMATRIX ShadowMatrices[NUM_SHADOW_CASCADES];
+			XMMATRIX WorldLightViewProjection;
 			XMMATRIX World;
 			XMMATRIX View;
 			XMMATRIX Projection;
@@ -102,7 +103,7 @@ namespace Library
 		UINT GetWidth() { return mWidth; }
 		UINT GetHeight() { return mHeight; }
 
-		void Draw(ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr);
+		void Draw(ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr, int shadowMapCascade = -1);
 		void DrawDebugGizmos();
 		void Update(const GameTime& gameTime);
 		void Config() { mShowDebug = !mShowDebug; }
@@ -122,6 +123,7 @@ namespace Library
 		
 		void SetEnabled(bool val) { mEnabled = val; }
 		bool IsEnabled() { return mEnabled; }
+		bool IsLoaded() { return mLoaded; }
 	private:
 		void LoadTile(int threadIndex, const std::wstring& path);
 		void CreateTerrainTileDataCPU(int tileIndexX, int tileIndexY, const std::wstring& aPath);
@@ -129,7 +131,7 @@ namespace Library
 		void LoadTextures(const std::wstring& aTexturesPath, const std::wstring& splatLayer0Path, const std::wstring& splatLayer1Path,	const std::wstring& splatLayer2Path, const std::wstring& splatLayer3Path);
 		void LoadSplatmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path);
 		void LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path);
-		void DrawTessellated(int i, ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr);
+		void DrawTessellated(int i, ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr, int shadowMapCascade = -1);
 
 		DirectionalLight& mDirectionalLight;
 
@@ -140,7 +142,9 @@ namespace Library
 		ID3D11VertexShader* mVS = nullptr;
 		ID3D11HullShader* mHS = nullptr;
 		ID3D11DomainShader* mDS = nullptr;
+		ID3D11DomainShader* mDS_ShadowMap = nullptr;
 		ID3D11PixelShader* mPS = nullptr;
+		ID3D11PixelShader* mPS_ShadowMap = nullptr;
 		
 		std::vector<HeightMap*> mHeightMaps;
 		ER_GPUTexture* mSplatChannelTextures[NUM_TEXTURE_SPLAT_CHANNELS];
@@ -162,5 +166,6 @@ namespace Library
 		bool mDoCPUFrustumCulling = true;
 		bool mShowDebug = false;
 		bool mEnabled = true;
+		bool mLoaded = false;
 	};
 }

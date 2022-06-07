@@ -13,10 +13,10 @@
 	],
 	"terrain_num_tiles" : 16,
 	"terrain_tile_scale" : 1.0,
-	"terrain_texture_splat_layer0" : "terrainMudTexture.jpg",
-	"terrain_texture_splat_layer1" : "terrainGrassTexture.jpg",
-	"terrain_texture_splat_layer2" : "terrainGroundTexture.jpg",
-	"terrain_texture_splat_layer3" : "terrainGroundTexture_.jpg",
+	"terrain_texture_splat_layer0" : "splat_terrainMeadowTexture.jpg",
+	"terrain_texture_splat_layer1" : "splat_terrainGrassTexture.jpg",
+	"terrain_texture_splat_layer2" : "splat_terrainSoilTexture.jpg",
+	"terrain_texture_splat_layer3" : "splat_terrainMeadowTexture.jpg",
 	"foliage_zones" : 
 	[
 		{

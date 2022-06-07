@@ -14,13 +14,12 @@
 #include "ER_RenderingObject.h"
 #include "ER_ShadowMapMaterial.h"
 #include "ER_MaterialsCallbacks.h"
+#include "ER_Terrain.h"
 
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
 #include <limits>
-
-using namespace std;
 
 namespace Library
 {
@@ -184,12 +183,12 @@ namespace Library
 
 			XMStoreFloat3(&frustumCorners[j], frustumCornerVector);
 
-			minX = min(minX, frustumCorners[j].x);
-			maxX = max(maxX, frustumCorners[j].x);
-			minY = min(minY, frustumCorners[j].y);
-			maxY = max(maxY, frustumCorners[j].y);
-			minZ = min(minZ, frustumCorners[j].z);
-			maxZ = max(maxZ, frustumCorners[j].z);
+			minX = std::min(minX, frustumCorners[j].x);
+			maxX = std::max(maxX, frustumCorners[j].x);
+			minY = std::min(minY, frustumCorners[j].y);
+			maxY = std::max(maxY, frustumCorners[j].y);
+			minZ = std::min(minZ, frustumCorners[j].z);
+			maxZ = std::max(maxZ, frustumCorners[j].z);
 		}
 
 		mLightProjectorCenteredPositions[index] =
@@ -241,7 +240,7 @@ namespace Library
 		return projectionMatrix;
 	}
 
-	void ER_ShadowMapper::Draw(const ER_Scene* scene)
+	void ER_ShadowMapper::Draw(const ER_Scene* scene, ER_Terrain* terrain)
 	{
 		GetGame()->Direct3DDeviceContext()->OMSetDepthStencilState(mDepthStencilState, 0);
 
@@ -251,6 +250,10 @@ namespace Library
 		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 		{
 			BeginRenderingToShadowMap(i);
+
+			if (terrain)
+				terrain->Draw(this, nullptr, i);
+
 			const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(i);
 
 			int objectIndex = 0;

@@ -60,9 +60,23 @@ namespace Library
 			blob->Release();
 
 			blob = nullptr;
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "DSShadowMap", "ds_5_0", &blob)))
+				throw GameException("Failed to load DSShadowMap from shader: Terrain.hlsl!");
+			if (FAILED(GetGame()->Direct3DDevice()->CreateDomainShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mDS_ShadowMap)))
+				throw GameException("Failed to create domain shader from Terrain.hlsl!");
+			blob->Release();
+
+			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
 				throw GameException("Failed to load PSMain from shader: Terrain.hlsl!");
 			if (FAILED(GetGame()->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS)))
+				throw GameException("Failed to create pixel shader from Terrain.hlsl!");
+			blob->Release();
+
+			blob = nullptr;
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "PSShadowMap", "ps_5_0", &blob)))
+				throw GameException("Failed to load PSShadowMap from shader: Terrain.hlsl!");
+			if (FAILED(GetGame()->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS_ShadowMap)))
 				throw GameException("Failed to create pixel shader from Terrain.hlsl!");
 			blob->Release();
 		}
@@ -79,7 +93,9 @@ namespace Library
 		ReleaseObject(mVS);
 		ReleaseObject(mHS);
 		ReleaseObject(mDS);
+		ReleaseObject(mDS_ShadowMap);
 		ReleaseObject(mPS);
+		ReleaseObject(mPS_ShadowMap);
 		ReleaseObject(mInputLayout);
 		mTerrainConstantBuffer.Release();
 	}
@@ -89,8 +105,11 @@ namespace Library
 		if (!aScene->HasTerrain())
 		{
 			mEnabled = false;
+			mLoaded = false;
 			return;
 		}
+		else
+			mLoaded = true;
 		assert(!mLevelPath.empty());
 
 		mNumTiles = aScene->GetTerrainTilesCount();
@@ -395,18 +414,18 @@ namespace Library
 		}
 	}
 
-	void ER_Terrain::Draw(ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager)
+	void ER_Terrain::Draw(ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade)
 	{
-		if (!mEnabled)
+		if (!mEnabled || !mLoaded)
 			return;
 
 		for (int i = 0; i < mHeightMaps.size(); i++)
-			DrawTessellated(i, worldShadowMapper, probeManager);
+			DrawTessellated(i, worldShadowMapper, probeManager, shadowMapCascade);
 	}
 
 	void ER_Terrain::DrawDebugGizmos()
 	{
-		if (!mEnabled || !mDrawDebugAABBs)
+		if (!mEnabled || !mLoaded || !mDrawDebugAABBs)
 			return;
 
 		for (int i = 0; i < mHeightMaps.size(); i++)
@@ -442,9 +461,9 @@ namespace Library
 		}
 	}
 
-	void ER_Terrain::DrawTessellated(int tileIndex, ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager)
+	void ER_Terrain::DrawTessellated(int tileIndex, ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade)
 	{
-		if (mHeightMaps[tileIndex]->IsCulled())
+		if (mHeightMaps[tileIndex]->IsCulled() && shadowMapCascade == -1) //for shadow mapping pass we dont want to cull with main camera frustum
 			return;
 
 		Camera* camera = (Camera*)(mGame->Services().GetService(Camera::TypeIdClass()));
@@ -466,13 +485,19 @@ namespace Library
 				mTerrainConstantBuffer.Data.ShadowMatrices[cascade] = XMMatrixTranspose(worldShadowMapper->GetViewMatrix(cascade) * worldShadowMapper->GetProjectionMatrix(cascade) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()));
 			mTerrainConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / worldShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
 			mTerrainConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ camera->GetCameraFarShadowCascadeDistance(0), camera->GetCameraFarShadowCascadeDistance(1), camera->GetCameraFarShadowCascadeDistance(2), 1.0f };
+			
+			if (shadowMapCascade != -1)
+			{
+				XMMATRIX lvp = worldShadowMapper->GetViewMatrix(shadowMapCascade) * worldShadowMapper->GetProjectionMatrix(shadowMapCascade);
+				mTerrainConstantBuffer.Data.WorldLightViewProjection = XMMatrixTranspose(mHeightMaps[tileIndex]->mWorldMatrixTS * lvp);
+			}
 		}
 
 		mTerrainConstantBuffer.Data.World = XMMatrixTranspose(mHeightMaps[tileIndex]->mWorldMatrixTS);
 		mTerrainConstantBuffer.Data.View = XMMatrixTranspose(camera->ViewMatrix());
 		mTerrainConstantBuffer.Data.Projection = XMMatrixTranspose(camera->ProjectionMatrix());
 		mTerrainConstantBuffer.Data.SunDirection = XMFLOAT4(-mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f);
-		mTerrainConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z , 1.0f };
+		mTerrainConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLight.GetDirectionalLightIntensity() };
 		mTerrainConstantBuffer.Data.CameraPosition = XMFLOAT4(camera->Position().x, camera->Position().y, camera->Position().z, 1.0f);
 		mTerrainConstantBuffer.Data.TessellationFactor = static_cast<float>(mTessellationFactor);
 		mTerrainConstantBuffer.Data.TerrainHeightScale = mTerrainTessellatedHeightScale;
@@ -526,8 +551,8 @@ namespace Library
 
 		context->VSSetShader(mVS, NULL, NULL);
 		context->HSSetShader(mHS, NULL, NULL);
-		context->DSSetShader(mDS, NULL, NULL);
-		context->PSSetShader(mPS, NULL, NULL);
+		context->DSSetShader((shadowMapCascade != -1) ? mDS_ShadowMap : mDS, NULL, NULL);
+		context->PSSetShader((shadowMapCascade != -1) ? mPS_ShadowMap : mPS, NULL, NULL);
 
 		if (mIsWireframe)
 		{
