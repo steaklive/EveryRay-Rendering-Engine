@@ -147,7 +147,7 @@ namespace Library
 		ID3D11PixelShader* mPS_ShadowMap = nullptr;
 		
 		std::vector<HeightMap*> mHeightMaps;
-		ER_GPUTexture* mSplatChannelTextures[NUM_TEXTURE_SPLAT_CHANNELS];
+		ER_GPUTexture* mSplatChannelTextures[NUM_TEXTURE_SPLAT_CHANNELS] = { nullptr };
 
 		std::wstring mLevelPath;
 

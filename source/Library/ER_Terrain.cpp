@@ -87,7 +87,7 @@ namespace Library
 	ER_Terrain::~ER_Terrain()
 	{
 		DeletePointerCollection(mHeightMaps);
-		for (size_t i = 0; i < NUM_TEXTURE_SPLAT_CHANNELS; i++)
+		for (int i = 0; i < NUM_TEXTURE_SPLAT_CHANNELS; i++)
 			DeleteObject(mSplatChannelTextures[i]);
 
 		ReleaseObject(mVS);
