@@ -82,6 +82,8 @@ namespace Library
 					mTerrainTilesCount = root["terrain_num_tiles"].asInt();
 					if (root.isMember("terrain_tile_scale"))
 						mTerrainTileScale = root["terrain_tile_scale"].asFloat();
+					if (root.isMember("terrain_tile_resolution"))
+						mTerrainTileResolution = root["terrain_tile_resolution"].asInt();
 					std::string fieldName = "terrain_texture_splat_layer";
 					std::wstring result = L"";
 					for (int i = 0; i < 4; i ++)

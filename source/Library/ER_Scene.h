@@ -36,6 +36,7 @@ namespace Library
 
 		bool HasTerrain() { return mHasTerrain; }
 		int GetTerrainTilesCount() { return mTerrainTilesCount; }
+		int GetTerrainTileResolution() { return mTerrainTileResolution; }
 		float GetTerrainTileScale() { return mTerrainTileScale; }
 		const std::wstring& GetTerrainSplatLayerTextureName(int index) { return mTerrainSplatLayersTextureNames[index]; }
 
@@ -65,6 +66,7 @@ namespace Library
 
 		bool mHasTerrain = false;
 		int mTerrainTilesCount = 0;
+		int mTerrainTileResolution = 0;
 		float mTerrainTileScale = 1.0f;
 		std::wstring mTerrainSplatLayersTextureNames[4];
 

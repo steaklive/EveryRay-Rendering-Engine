@@ -18,7 +18,6 @@
 #include "..\Common.hlsli"
 #include "..\Lighting.hlsli"
 
-static const int TILE_SIZE = 512;
 static const int DETAIL_TEXTURE_REPEAT = 32;
 
 cbuffer TerrainDataCBuffer : register(b0)
@@ -38,6 +37,7 @@ cbuffer TerrainDataCBuffer : register(b0)
     float UseDynamicTessellation;
     float TessellationFactorDynamic;
     float DistanceFactor;
+    float TileSize;
 };
 
 struct VS_INPUT_TS
@@ -180,7 +180,7 @@ DS_OUTPUT DSMain(PatchData input, float2 uv : SV_DomainLocation, OutputPatch<HS_
     DS_OUTPUT output;
     float3 vertexPosition;
     
-    float2 texcoord01 = (input.origin + uv * input.size) / float(TILE_SIZE);
+    float2 texcoord01 = (input.origin + uv * input.size) / TileSize;
     float height = HeightTexture.SampleLevel(LinearSamplerClamp, texcoord01, 0).r;
 	
     vertexPosition.xz = input.origin + uv * input.size;
@@ -216,7 +216,7 @@ DS_OUTPUT DSShadowMap(PatchData input, float2 uv : SV_DomainLocation, OutputPatc
     DS_OUTPUT output;
     float3 vertexPosition;
     
-    float2 texcoord01 = (input.origin + uv * input.size) / float(TILE_SIZE);
+    float2 texcoord01 = (input.origin + uv * input.size) / TileSize;
     float height = HeightTexture.SampleLevel(LinearSamplerClamp, texcoord01, 0).r;
 	
     vertexPosition.xz = input.origin + uv * input.size;
@@ -234,7 +234,7 @@ float4 PSMain(DS_OUTPUT IN) : SV_Target
     float2 uvTile = IN.texcoord;
     
     //float4 height = heightTexture.Sample(TerrainHeightSampler, uvTile);
-    float3 normal = GetNormalFromHeightmap(uvTile, 1.0f / (float) (TILE_SIZE), TerrainHeightScale);
+    float3 normal = GetNormalFromHeightmap(uvTile, 1.0f / TileSize, TerrainHeightScale);
    
     uvTile.y = 1.0f - uvTile.y;
     

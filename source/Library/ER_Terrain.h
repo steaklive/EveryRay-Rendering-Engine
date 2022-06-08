@@ -7,7 +7,6 @@
 #define NUM_THREADS_PER_TERRAIN_SIDE 4
 #define NUM_TERRAIN_PATCHES_PER_TILE 8
 #define NUM_TEXTURE_SPLAT_CHANNELS 4
-#define TERRAIN_TILE_RESOLUTION 512 //texture res. of one terrain tile (based on heightmap)
 
 namespace Library 
 {
@@ -43,6 +42,7 @@ namespace Library
 			float UseDynamicTessellation;
 			float TessellationFactorDynamic;
 			float DistanceFactor;
+			float TileSize;
 		};
 	}
 
@@ -72,7 +72,7 @@ namespace Library
 		HeightMap(int width, int height);
 		~HeightMap();
 
-		Vertex mVertexList[(TERRAIN_TILE_RESOLUTION - 1) * (TERRAIN_TILE_RESOLUTION - 1) * 6];
+		Vertex* mVertexList = nullptr;
 		MapData* mData = nullptr;
 
 		ER_GPUTexture* mSplatTexture = nullptr;
@@ -155,6 +155,8 @@ namespace Library
 		UINT mHeight = 0;
 
 		int mNumTiles = 0;
+		int mTileResolution = 0; //texture res. of one terrain tile (based on heightmap)
+		float mTileScale = 0.0f;
 		float mTerrainTessellatedHeightScale = 328.0f;
 		bool mIsWireframe = false;
 		bool mUseDynamicTessellation = true;

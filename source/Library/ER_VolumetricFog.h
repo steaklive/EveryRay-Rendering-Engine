@@ -27,6 +27,7 @@ namespace Library
 			float Anisotropy;
 			float Density;
 			float Strength;
+			float ThicknessFactor;
 			float AmbientIntensity;
 			float PreviousFrameBlend;
 		};	
@@ -77,6 +78,7 @@ namespace Library
 		float mAnisotropy = 0.05f;
 		float mDensity = 0.350f;
 		float mStrength = 2.0f;
+		float mThicknessFactor = 0.01f;
 		float mAmbientIntensity = 0.1f;
 		float mBlendingWithSceneColorFactor = 1.0f;
 		float mPreviousFrameBlendFactor = 0.05f;

@@ -105,6 +105,7 @@ namespace Library {
 		mMainConstantBuffer.Data.Anisotropy = mAnisotropy;
 		mMainConstantBuffer.Data.Density = mDensity;
 		mMainConstantBuffer.Data.Strength = mStrength;
+		mMainConstantBuffer.Data.ThicknessFactor = mThicknessFactor;
 		mMainConstantBuffer.Data.AmbientIntensity = mAmbientIntensity;
 		mMainConstantBuffer.Data.PreviousFrameBlend = mPreviousFrameBlendFactor;
 		mMainConstantBuffer.ApplyChanges(context);
@@ -127,6 +128,7 @@ namespace Library {
 		ImGui::SliderFloat("Anisotropy", &mAnisotropy, 0.0f, 1.0f);
 		ImGui::SliderFloat("Density", &mDensity, 0.1f, 10.0f);
 		ImGui::SliderFloat("Strength", &mStrength, 0.0f, 50.0f);
+		ImGui::SliderFloat("Thickness", &mThicknessFactor, 0.0f, 0.1f);
 		ImGui::SliderFloat("Ambient Intensity", &mAmbientIntensity, 0.0f, 1.0f);
 		ImGui::SliderFloat("Blending with scene", &mBlendingWithSceneColorFactor, 0.0f, 1.0f);
 		ImGui::SliderFloat("Blending with previous frame", &mPreviousFrameBlendFactor, 0.0f, 0.1f);

@@ -112,11 +112,14 @@ namespace Library
 			mLoaded = true;
 		assert(!mLevelPath.empty());
 
+		mTileResolution = aScene->GetTerrainTileResolution();
+		if (mTileResolution == 0)
+			throw GameException("Tile resolution (= heightmap texture tile resolution) of the terrain is 0!");
+
+		mTileScale = aScene->GetTerrainTileScale();
+		mWidth = mHeight = mTileResolution;
+
 		mNumTiles = aScene->GetTerrainTilesCount();
-		assert(mNumTiles > 0);
-
-		mWidth = mHeight = TERRAIN_TILE_RESOLUTION * aScene->GetTerrainTileScale();
-
 		if (!(mNumTiles && !(mNumTiles & (mNumTiles - 1))))
 			throw GameException("Number of tiles defined is not a power of 2!");
 
@@ -204,15 +207,17 @@ namespace Library
 		int tileIndex = tileIndexX * sqrt(mNumTiles) + tileIndexY;
 		assert(tileIndex < mHeightMaps.size());
 
+		int terrainTileSize = mTileResolution * mTileScale;
+
 		// creating terrain vertex buffer for patches
 		float* patches_rawdata = new float[NUM_TERRAIN_PATCHES_PER_TILE * NUM_TERRAIN_PATCHES_PER_TILE * 4];
 		for (int i = 0; i < NUM_TERRAIN_PATCHES_PER_TILE; i++)
 			for (int j = 0; j < NUM_TERRAIN_PATCHES_PER_TILE; j++)
 			{
-				patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 0] = i * (TERRAIN_TILE_RESOLUTION) / NUM_TERRAIN_PATCHES_PER_TILE;
-				patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 1] = j * (TERRAIN_TILE_RESOLUTION) / NUM_TERRAIN_PATCHES_PER_TILE;
-				patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 2] = TERRAIN_TILE_RESOLUTION / NUM_TERRAIN_PATCHES_PER_TILE;
-				patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 3] = TERRAIN_TILE_RESOLUTION / NUM_TERRAIN_PATCHES_PER_TILE;
+				patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 0] = i * terrainTileSize / NUM_TERRAIN_PATCHES_PER_TILE;
+				patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 1] = j * terrainTileSize / NUM_TERRAIN_PATCHES_PER_TILE;
+				patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 2] = terrainTileSize / NUM_TERRAIN_PATCHES_PER_TILE;
+				patches_rawdata[(i + j * NUM_TERRAIN_PATCHES_PER_TILE) * 4 + 3] = terrainTileSize / NUM_TERRAIN_PATCHES_PER_TILE;
 			}
 
 		D3D11_BUFFER_DESC buf_desc;
@@ -232,7 +237,7 @@ namespace Library
 
 		free(patches_rawdata);
 
-		mHeightMaps[tileIndex]->mWorldMatrixTS = XMMatrixTranslation(TERRAIN_TILE_RESOLUTION * (tileIndexX - 1), 0.0f, TERRAIN_TILE_RESOLUTION * -tileIndexY);
+		mHeightMaps[tileIndex]->mWorldMatrixTS = XMMatrixTranslation(terrainTileSize * (tileIndexX - 1), 0.0f, terrainTileSize * -tileIndexY);
 	}
 
 	// Create CPU tile data which is used for terrain debugging, collisions, placement of ER_RenderingObject(s) (no GPU tessellation pipeline)
@@ -273,6 +278,7 @@ namespace Library
 
 		// Copy the image data into the height map array.
 		{
+			int tileSize = mTileResolution * mTileScale;
 			for (j = 0; j < static_cast<int>(mHeight); j++)
 			{
 				for (i = 0; i < static_cast<int>(mWidth); i++)
@@ -280,9 +286,9 @@ namespace Library
 					index = (mWidth * j) + i;
 
 					// Store the height at this point in the height map array.
-					mHeightMaps[tileIndex]->mData[index].x = static_cast<float>((i + static_cast<int>(mWidth) * (tileIndexX - 1)));
+					mHeightMaps[tileIndex]->mData[index].x = static_cast<float>(i * mTileScale + tileSize * (tileIndexX - 1));
 					mHeightMaps[tileIndex]->mData[index].y = static_cast<float>(rawImage[index]) / 200.0f;//TODO mTerrainNonTessellatedHeightScale;
-					mHeightMaps[tileIndex]->mData[index].z = static_cast<float>((j - static_cast<int>(mHeight) * tileIndexY));
+					mHeightMaps[tileIndex]->mData[index].z = static_cast<float>(j * mTileScale - tileSize * tileIndexY);
 
 					if (tileIndex > 0) //a way to fix the seams between tiles...
 					{
@@ -504,6 +510,7 @@ namespace Library
 		mTerrainConstantBuffer.Data.TessellationFactorDynamic = static_cast<float>(mTessellationFactorDynamic);
 		mTerrainConstantBuffer.Data.UseDynamicTessellation = mUseDynamicTessellation ? 1.0f : 0.0f;
 		mTerrainConstantBuffer.Data.DistanceFactor = mTessellationDistanceFactor;
+		mTerrainConstantBuffer.Data.TileSize = mTileResolution * mTileScale;
 		mTerrainConstantBuffer.ApplyChanges(context);
 		ID3D11Buffer* CBs[1] = { mTerrainConstantBuffer.Buffer() };
 
@@ -848,6 +855,7 @@ namespace Library
 	HeightMap::HeightMap(int width, int height)
 	{
 		mData = new MapData[width * height];
+		mVertexList = new Vertex[(width - 1) * (height - 1) * 6];
 	}
 
 	HeightMap::~HeightMap()
@@ -857,6 +865,7 @@ namespace Library
 		ReleaseObject(mIndexBufferNonTS);
 		DeleteObject(mSplatTexture);
 		DeleteObject(mHeightTexture);
+		DeleteObjects(mVertexList);
 		DeleteObjects(mData);
 		DeleteObject(mDebugGizmoAABB);
 	}
