@@ -14,6 +14,7 @@
 #include "ER_Material.h"
 #include "Camera.h"
 #include "MatrixHelper.h"
+#include "ER_Terrain.h"
 
 namespace Library
 {
@@ -813,7 +814,17 @@ namespace Library
 				if (camera)
 					camera->SetPosition(newCameraPos);
 			}
+			if (ImGui::Button("Place on terrain") && mGame->GetLevel()->mTerrain)
+			{
+				XMFLOAT4 currentPos;
+				MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), currentPos);
+				mGame->GetLevel()->mTerrain->PlaceOnTerrain(currentPos);
 
+				mMatrixTranslation[0] = currentPos.x;
+				mMatrixTranslation[1] = currentPos.y;
+				mMatrixTranslation[2] = currentPos.z;
+				ImGuizmo::RecomposeMatrixFromComponents(mMatrixTranslation, mMatrixRotation, mMatrixScale, matrix);
+			}
 			//Transforms
 
 			if (ImGui::IsKeyPressed(84))

@@ -10,6 +10,7 @@ namespace Library
 		static ID3D11SamplerState* TrilinearWrap;
 		static ID3D11SamplerState* TrilinearMirror;
 		static ID3D11SamplerState* TrilinearClamp;
+		static ID3D11SamplerState* TrilinearPointClamp;
 		static ID3D11SamplerState* TrilinerBorder;
 		static ID3D11SamplerState* ShadowSamplerState;
 

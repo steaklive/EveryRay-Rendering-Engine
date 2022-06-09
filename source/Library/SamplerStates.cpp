@@ -8,6 +8,7 @@ namespace Library
 	ID3D11SamplerState* SamplerStates::TrilinearWrap = nullptr;
 	ID3D11SamplerState* SamplerStates::TrilinearMirror = nullptr;
 	ID3D11SamplerState* SamplerStates::TrilinearClamp = nullptr;
+	ID3D11SamplerState* SamplerStates::TrilinearPointClamp = nullptr;
 	ID3D11SamplerState* SamplerStates::TrilinerBorder = nullptr;
 	ID3D11SamplerState* SamplerStates::ShadowSamplerState = nullptr;
 
@@ -52,6 +53,18 @@ namespace Library
 		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
 
 		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &TrilinearClamp);
+		if (FAILED(hr))
+		{
+			throw GameException("ID3D11Device::CreateSamplerState() failed.", hr);
+		}
+
+		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
+		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+
+		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &TrilinearPointClamp);
 		if (FAILED(hr))
 		{
 			throw GameException("ID3D11Device::CreateSamplerState() failed.", hr);

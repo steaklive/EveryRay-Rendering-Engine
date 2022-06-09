@@ -242,7 +242,8 @@ namespace Library
 
 	void ER_ShadowMapper::Draw(const ER_Scene* scene, ER_Terrain* terrain)
 	{
-		GetGame()->Direct3DDeviceContext()->OMSetDepthStencilState(mDepthStencilState, 0);
+		auto context = GetGame()->Direct3DDeviceContext();
+		context->OMSetDepthStencilState(mDepthStencilState, 0);
 
 		ER_MaterialSystems materialSystems;
 		materialSystems.mShadowMapper = this;

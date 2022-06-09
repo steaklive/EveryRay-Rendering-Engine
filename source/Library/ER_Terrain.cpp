@@ -19,6 +19,8 @@
 #include "ER_RenderableAABB.h"
 #include "Camera.h"
 
+#define USE_RAYCASTING_FOR_ON_TERRAIN_PLACEMENT 0
+
 namespace Library
 {
 	ER_Terrain::ER_Terrain(Game& pGame, DirectionalLight& light) :
@@ -79,9 +81,17 @@ namespace Library
 			if (FAILED(GetGame()->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS_ShadowMap)))
 				throw GameException("Failed to create pixel shader from Terrain.hlsl!");
 			blob->Release();
+
+			blob = nullptr;
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Terrain\\PlaceObjectsOnTerrain.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
+				throw GameException("Failed to load a shader: CSMain from PlaceObjectsOnTerrain.hlsl!");
+			if (FAILED(GetGame()->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPlaceOnTerrainCS)))
+				throw GameException("Failed to create compute shader from PlaceObjectsOnTerrain.hlsl!");
+			blob->Release();
 		}
 
 		mTerrainConstantBuffer.Initialize(GetGame()->Direct3DDevice());
+		mPlaceOnTerrainConstantBuffer.Initialize(GetGame()->Direct3DDevice());
 	}
 
 	ER_Terrain::~ER_Terrain()
@@ -96,8 +106,10 @@ namespace Library
 		ReleaseObject(mDS_ShadowMap);
 		ReleaseObject(mPS);
 		ReleaseObject(mPS_ShadowMap);
+		ReleaseObject(mPlaceOnTerrainCS);
 		ReleaseObject(mInputLayout);
 		mTerrainConstantBuffer.Release();
+		mPlaceOnTerrainConstantBuffer.Release();
 	}
 
 	void ER_Terrain::LoadTerrainData(ER_Scene* aScene)
@@ -238,6 +250,7 @@ namespace Library
 		free(patches_rawdata);
 
 		mHeightMaps[tileIndex]->mWorldMatrixTS = XMMatrixTranslation(terrainTileSize * (tileIndexX - 1), 0.0f, terrainTileSize * -tileIndexY);
+		mHeightMaps[tileIndex]->mTileUVOffset = XMFLOAT2(terrainTileSize - tileIndexX * terrainTileSize, tileIndexY * terrainTileSize);
 	}
 
 	// Create CPU tile data which is used for terrain debugging, collisions, placement of ER_RenderingObject(s) (no GPU tessellation pipeline)
@@ -850,6 +863,165 @@ namespace Library
 		height = Q[1];
 
 		return true;
+	}
+
+	bool HeightMap::IsColliding(const XMFLOAT4& position, bool onlyXZCheck)
+	{
+		bool isColliding =  onlyXZCheck ?
+			((position.x <= mAABB.second.x && position.x >= mAABB.first.x) &&
+			(position.z <= mAABB.second.z && position.z >= mAABB.first.z)) :
+			((position.x <= mAABB.second.x && position.x >= mAABB.first.x) &&
+			(position.y <= mAABB.second.y && position.y >= mAABB.first.y) &&
+			(position.z <= mAABB.second.z && position.z >= mAABB.first.z));
+
+		return isColliding;
+	}
+
+	void ER_Terrain::PlaceOnTerrain(XMFLOAT4& position, int splatChannel /*= -1*/)
+	{
+		int collidedTileIndex = -1;
+		for (int tileIndex = 0; tileIndex < mHeightMaps.size(); tileIndex++)
+		{
+			if (mHeightMaps[tileIndex]->IsColliding(position, true)) // we only need to check xz of tile AABB
+			{
+				collidedTileIndex = tileIndex;
+				break;
+			}
+		}
+
+		if (collidedTileIndex != -1)
+			PlaceOnTerrainTile(collidedTileIndex, &position, 1);
+		else
+		{
+			//TODO: LOG - could not find a terrain tile to place a position
+		}
+	}
+
+	// Method for displacing positions by height of the terrain (GPU calculation in CS)
+	// It basically changes the input 4D vector array of positions (only "Y" values)
+	// TODO: remove resource creation from this method
+	void ER_Terrain::PlaceOnTerrainTile(int tileIndex, XMFLOAT4* objectsPositions, int objectsCount, XMFLOAT4* terrainVertices, int terrainVertexCount, int splatChannel)
+	{
+		auto context = GetGame()->Direct3DDeviceContext();
+		assert(tileIndex < mHeightMaps.size());
+
+		UINT initCounts = 0;
+
+		ID3D11Buffer* posBuffer = NULL;
+		ID3D11Buffer* outputPosBuffer = NULL;
+		ID3D11UnorderedAccessView* posUAV = NULL;
+		ID3D11ShaderResourceView* terrainBufferSRV = NULL;
+		ID3D11Buffer* terrainBuffer = NULL;
+
+		int tileSize = mTileScale * mTileResolution;
+		mPlaceOnTerrainConstantBuffer.Data.UVOffsetTileSize = XMFLOAT4(mHeightMaps[tileIndex]->mTileUVOffset.x, mHeightMaps[tileIndex]->mTileUVOffset.y, tileSize, tileSize);
+		mPlaceOnTerrainConstantBuffer.Data.HeightScale = mTerrainTessellatedHeightScale;
+		mPlaceOnTerrainConstantBuffer.Data.SplatChannel = static_cast<float>(splatChannel);
+		mPlaceOnTerrainConstantBuffer.ApplyChanges(context);
+
+		// terrain vertex buffer
+#if USE_RAYCASTING_FOR_ON_TERRAIN_PLACEMENT
+		{
+			D3D11_SUBRESOURCE_DATA data = { terrainVertices, 0, 0 };
+
+			D3D11_BUFFER_DESC buf_descTerrain;
+			buf_descTerrain.ByteWidth = sizeof(XMFLOAT4) * terrainVertexCount;
+			buf_descTerrain.Usage = D3D11_USAGE_DEFAULT;
+			buf_descTerrain.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+			buf_descTerrain.CPUAccessFlags = 0;
+			buf_descTerrain.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+			buf_descTerrain.StructureByteStride = sizeof(XMFLOAT4);
+			if (FAILED(mGame->Direct3DDevice()->CreateBuffer(&buf_descTerrain, terrainVertices != NULL ? &data : NULL, &terrainBuffer)))
+				throw GameException("Failed to create terrain vertices buffer in ER_Terrain::PlaceOnTerrainTile(). Maybe increase TDR of your graphics driver...");
+
+			D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc;
+			srv_desc.Format = DXGI_FORMAT_UNKNOWN;
+			srv_desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+			srv_desc.Buffer.FirstElement = 0;
+			srv_desc.Buffer.NumElements = terrainVertexCount;
+			if (FAILED(mGame->Direct3DDevice()->CreateShaderResourceView(terrainBuffer, &srv_desc, &terrainBufferSRV)))
+				throw GameException("Failed to create terrain vertices SRV buffer in ER_Terrain::PlaceOnTerrainTile().");
+		}
+#endif
+		// positions buffers
+		{
+			D3D11_SUBRESOURCE_DATA init_data = { objectsPositions, 0, 0 };
+			D3D11_BUFFER_DESC buf_desc;
+			buf_desc.ByteWidth = sizeof(XMFLOAT4) * objectsCount;
+			buf_desc.Usage = D3D11_USAGE_DEFAULT;
+			buf_desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
+			buf_desc.CPUAccessFlags = 0;
+			buf_desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+			buf_desc.StructureByteStride = sizeof(XMFLOAT4);
+			if (FAILED(mGame->Direct3DDevice()->CreateBuffer(&buf_desc, objectsPositions != NULL ? &init_data : NULL, &posBuffer)))
+				throw GameException("Failed to create positions GPU structured buffer in ER_Terrain::PlaceOnTerrainTile().");
+
+			// uav for positions
+			D3D11_UNORDERED_ACCESS_VIEW_DESC uav_desc;
+			uav_desc.Format = DXGI_FORMAT_UNKNOWN;
+			uav_desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+			uav_desc.Buffer.FirstElement = 0;
+			uav_desc.Buffer.NumElements = objectsCount;// sizeof(objectsPositions) / sizeof(XMFLOAT4);
+			uav_desc.Buffer.Flags = 0;
+			if (FAILED(mGame->Direct3DDevice()->CreateUnorderedAccessView(posBuffer, &uav_desc, &posUAV)))
+				throw GameException("Failed to create UAV of positions buffer in ER_Terrain::PlaceOnTerrainTile().");
+
+			// create the ouput buffer for storing data from GPU for positions
+			buf_desc.Usage = D3D11_USAGE_STAGING;
+			buf_desc.BindFlags = 0;
+			buf_desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+			if (FAILED(mGame->Direct3DDevice()->CreateBuffer(&buf_desc, 0, &outputPosBuffer)))
+				throw GameException("Failed to create positions GPU output buffer in ER_Terrain::PlaceOnTerrain().");
+		}
+
+		context->CSSetShader(mPlaceOnTerrainCS, NULL, 0);
+
+		ID3D11Buffer* CBs[1] = { mPlaceOnTerrainConstantBuffer.Buffer() };
+		context->CSSetConstantBuffers(0, 1, CBs);
+
+		ID3D11SamplerState* SS[2] = { SamplerStates::TrilinearPointClamp, SamplerStates::TrilinearWrap };
+		context->CSSetSamplers(0, 2, SS);
+
+		ID3D11ShaderResourceView* SRVs[3] = { 
+			GetHeightmap(tileIndex)->mHeightTexture->GetSRV(),
+			GetHeightmap(tileIndex)->mSplatTexture->GetSRV(),
+			terrainBufferSRV
+		};
+		context->CSSetShaderResources(0, 3, SRVs);
+		context->CSSetUnorderedAccessViews(0, 1, &posUAV, &initCounts);
+		context->Dispatch(512, 1, 1);
+
+		// read results
+		context->CopyResource(outputPosBuffer, posBuffer);
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+		HRESULT hr = context->Map(outputPosBuffer, 0, D3D11_MAP_READ, 0, &mappedResource);
+
+		if (SUCCEEDED(hr))
+		{
+			XMFLOAT4* positions = reinterpret_cast<XMFLOAT4*>(mappedResource.pData);
+			for (size_t i = 0; i < objectsCount; i++)
+				objectsPositions[i] = positions[i];
+		}
+		else
+			throw GameException("Failed to read objects positions from GPU in output buffer in ER_Terrain::PlaceOnTerrain().");
+
+		context->Unmap(outputPosBuffer, 0);
+
+		// Unbind resources for CS
+		ID3D11UnorderedAccessView* UAViewNULL[1] = { NULL };
+		context->CSSetUnorderedAccessViews(0, 1, UAViewNULL, &initCounts);
+		ID3D11ShaderResourceView* SRVNULL[3] = { NULL, NULL, NULL};
+		context->CSSetShaderResources(0, 3, SRVNULL);
+		ID3D11Buffer* CBNULL[1] = { NULL };
+		context->CSSetConstantBuffers(0, 1, CBNULL);
+		ID3D11SamplerState* SSNULL[2] = { NULL, NULL };
+		context->CSSetSamplers(0, 2, SSNULL);
+
+		ReleaseObject(posBuffer);
+		ReleaseObject(outputPosBuffer);
+		ReleaseObject(posUAV);
+		ReleaseObject(terrainBuffer);
+		ReleaseObject(terrainBufferSRV);
 	}
 
 	HeightMap::HeightMap(int width, int height)

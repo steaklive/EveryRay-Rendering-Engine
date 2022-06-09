@@ -44,6 +44,13 @@ namespace Library
 			float DistanceFactor;
 			float TileSize;
 		};
+
+		struct PlaceOnTerrainData
+		{
+			XMFLOAT4 UVOffsetTileSize;
+			float HeightScale;
+			float SplatChannel;
+		};
 	}
 
 	struct NormalVector
@@ -68,6 +75,7 @@ namespace Library
 		float FindHeightFromPosition(float x, float z);
 		bool PerformCPUFrustumCulling(Camera* camera);
 		bool IsCulled() { return mIsCulled; }
+		bool IsColliding(const XMFLOAT4& position, bool onlyXZCheck = false);
 
 		HeightMap(int width, int height);
 		~HeightMap();
@@ -80,6 +88,8 @@ namespace Library
 
 		ER_RenderableAABB* mDebugGizmoAABB = nullptr;
 		ER_AABB mAABB; //based on the CPU terrain
+
+		XMFLOAT2 mTileUVOffset = XMFLOAT2(0.0, 0.0);
 
 		ID3D11Buffer* mVertexBufferTS = nullptr;
 		XMMATRIX mWorldMatrixTS = XMMatrixIdentity();
@@ -120,7 +130,8 @@ namespace Library
 		void SetTerrainHeightScale(float scale) { mTerrainTessellatedHeightScale = scale; }
 		HeightMap* GetHeightmap(int index) { return mHeightMaps.at(index); }
 		//float GetHeightScale(bool tessellated) { if (tessellated) return mTerrainTessellatedHeightScale; else return mTerrainNonTessellatedHeightScale; }
-		
+		void PlaceOnTerrain(XMFLOAT4& position, int splatChannel = -1);
+
 		void SetEnabled(bool val) { mEnabled = val; }
 		bool IsEnabled() { return mEnabled; }
 		bool IsLoaded() { return mLoaded; }
@@ -132,10 +143,12 @@ namespace Library
 		void LoadSplatmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path);
 		void LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path);
 		void DrawTessellated(int i, ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr, int shadowMapCascade = -1);
+		void PlaceOnTerrainTile(int tileIndex, XMFLOAT4* objectsPositions, int objectsCount, XMFLOAT4* terrainVertices = nullptr, int terrainVertexCount = 0, int splatChannel = -1);
 
 		DirectionalLight& mDirectionalLight;
 
 		ConstantBuffer<TerrainCBufferData::TerrainData> mTerrainConstantBuffer;
+		ConstantBuffer<TerrainCBufferData::PlaceOnTerrainData> mPlaceOnTerrainConstantBuffer;
 
 		ID3D11InputLayout* mInputLayout = nullptr;
 
@@ -145,6 +158,7 @@ namespace Library
 		ID3D11DomainShader* mDS_ShadowMap = nullptr;
 		ID3D11PixelShader* mPS = nullptr;
 		ID3D11PixelShader* mPS_ShadowMap = nullptr;
+		ID3D11ComputeShader* mPlaceOnTerrainCS = nullptr;
 		
 		std::vector<HeightMap*> mHeightMaps;
 		ER_GPUTexture* mSplatChannelTextures[NUM_TEXTURE_SPLAT_CHANNELS] = { nullptr };

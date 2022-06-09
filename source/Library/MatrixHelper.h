@@ -13,8 +13,9 @@ namespace Library
 		static void GetUp(CXMMATRIX matrix, XMFLOAT3 &vector);
 		static void GetRight(CXMMATRIX matrix, XMFLOAT3 &vector);
 		static void GetTranslation(CXMMATRIX matrix, XMFLOAT3 &vector);
+		static void GetTranslation(CXMMATRIX matrix, XMFLOAT4& vector);
 
-		static void SetForward(XMMATRIX& matrix, XMFLOAT3 &forward);
+		static void SetForward(XMMATRIX& matrix, XMFLOAT3& forward);
 		static void SetUp(XMMATRIX& matrix, XMFLOAT3 &up);
 		static void SetRight(XMMATRIX& matrix, XMFLOAT3 &right);
 		static void SetTranslation(XMMATRIX& matrix, XMFLOAT3 &translation);
