@@ -20,7 +20,7 @@ https://youtu.be/_htQNxesr9U
 - Cascaded Shadow Mapping
 - Parallax-Occlusion Mapping w/ soft self-shadowing
 - Separable Subsurface Scattering (^)
-- Terrain w/ GPU tessellation (^)
+- Terrain w/ GPU tessellation
 - Foliage
 - Volumetric clouds
 - Volumetric fog
