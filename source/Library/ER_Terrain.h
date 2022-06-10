@@ -11,6 +11,14 @@
 
 namespace Library 
 {
+	static char* DisplayedSplatChannnelNames[5] = {
+		"Channel 0",
+		"Channel 1",
+		"Channel 2",
+		"Channel 3",
+		"NONE"
+	};
+
 	class ER_ShadowMapper;
 	class ER_Scene;
 	class GameTime;
@@ -27,10 +35,11 @@ namespace Library
 	};
 
 	enum TerrainSplatChannels {
-		CHANNEL_0,
-		CHANNEL_1,
-		CHANNEL_2,
-		CHANNEL_3
+		CHANNEL_0 = 0,
+		CHANNEL_1 = 1,
+		CHANNEL_2 = 2,
+		CHANNEL_3 = 3,
+		NONE = 4
 	};
 
 	namespace TerrainCBufferData {
@@ -137,7 +146,7 @@ namespace Library
 		void SetTerrainHeightScale(float scale) { mTerrainTessellatedHeightScale = scale; }
 		HeightMap* GetHeightmap(int index) { return mHeightMaps.at(index); }
 		//float GetHeightScale(bool tessellated) { if (tessellated) return mTerrainTessellatedHeightScale; else return mTerrainNonTessellatedHeightScale; }
-		void PlaceOnTerrain(XMFLOAT4* positions, int positionsCount, int splatChannel = -1, XMFLOAT4* terrainVertices = nullptr, int terrainVertexCount = 0);
+		void PlaceOnTerrain(XMFLOAT4* positions, int positionsCount, TerrainSplatChannels splatChannel = TerrainSplatChannels::NONE, XMFLOAT4* terrainVertices = nullptr, int terrainVertexCount = 0);
 
 		void SetEnabled(bool val) { mEnabled = val; }
 		bool IsEnabled() { return mEnabled; }

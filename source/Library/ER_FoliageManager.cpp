@@ -19,6 +19,8 @@
 
 namespace Library
 {
+	static int currentSplatChannnel = (int)TerrainSplatChannels::NONE;
+
 	ER_FoliageManager::ER_FoliageManager(Game& pGame, ER_Scene* aScene, DirectionalLight& light) 
 		: GameComponent(pGame), mScene(aScene)
 	{
@@ -517,17 +519,23 @@ namespace Library
 			ImGui::SliderFloat("Max LOD distance", &mMaxDistanceToCamera, 150.0f, 1500.0f);
 			ImGui::SliderFloat("Delta LOD distance", &mDeltaDistanceToCamera, 15.0f, 150.0f);
 
-			if (ImGui::Button("Place patch on terrain") && mGame.GetLevel()->mTerrain)
+			//terrain
 			{
-				mGame.GetLevel()->mTerrain->PlaceOnTerrain(mCurrentPositions, mPatchesCount, -1);
-				for (int i = 0; i < mPatchesCount; i++)
+				ImGui::Combo("Terrain splat channel", &currentSplatChannnel, DisplayedSplatChannnelNames, 5);
+				TerrainSplatChannels currentChannel = (TerrainSplatChannels)currentSplatChannnel;
+
+				if (ImGui::Button("Place patch on terrain") && mGame.GetLevel()->mTerrain)
 				{
-					mPatchesBufferCPU[i].xPos = mCurrentPositions[i].x;
-					mPatchesBufferCPU[i].yPos = mCurrentPositions[i].y;
-					mPatchesBufferCPU[i].zPos = mCurrentPositions[i].z;
+					mGame.GetLevel()->mTerrain->PlaceOnTerrain(mCurrentPositions, mPatchesCount, currentChannel);
+					for (int i = 0; i < mPatchesCount; i++)
+					{
+						mPatchesBufferCPU[i].xPos = mCurrentPositions[i].x;
+						mPatchesBufferCPU[i].yPos = mCurrentPositions[i].y;
+						mPatchesBufferCPU[i].zPos = mCurrentPositions[i].z;
+					}
+					UpdateBuffersGPU();
+					Utility::IsFoliageEditor = false;
 				}
-				UpdateBuffersGPU();
-				Utility::IsFoliageEditor = false;
 			}
 
 			if (ImGui::IsKeyPressed(84))

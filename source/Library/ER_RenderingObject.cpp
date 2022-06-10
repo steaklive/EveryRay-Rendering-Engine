@@ -18,6 +18,8 @@
 
 namespace Library
 {
+	static int currentSplatChannnel = (int)TerrainSplatChannels::NONE;
+
 	ER_RenderingObject::ER_RenderingObject(const std::string& pName, int index, Game& pGame, Camera& pCamera, std::unique_ptr<Model> pModel, bool availableInEditor, bool isInstanced)
 		:
 		mGame(&pGame),
@@ -814,19 +816,26 @@ namespace Library
 				if (camera)
 					camera->SetPosition(newCameraPos);
 			}
-			if (ImGui::Button("Place on terrain") && mGame->GetLevel()->mTerrain)
+
+			//terrain
 			{
-				XMFLOAT4 currentPos;
-				MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), currentPos);
-				mGame->GetLevel()->mTerrain->PlaceOnTerrain(&currentPos, 1, -1);
+				ImGui::Combo("Terrain splat channel", &currentSplatChannnel, DisplayedSplatChannnelNames, 5);
+				TerrainSplatChannels currentChannel = (TerrainSplatChannels)currentSplatChannnel;
 
-				mMatrixTranslation[0] = currentPos.x;
-				mMatrixTranslation[1] = currentPos.y;
-				mMatrixTranslation[2] = currentPos.z;
-				ImGuizmo::RecomposeMatrixFromComponents(mMatrixTranslation, mMatrixRotation, mMatrixScale, matrix);
+				if (ImGui::Button("Place on terrain") && mGame->GetLevel()->mTerrain)
+				{
+					XMFLOAT4 currentPos;
+					MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), currentPos);
+					mGame->GetLevel()->mTerrain->PlaceOnTerrain(&currentPos, 1, currentChannel);
+
+					mMatrixTranslation[0] = currentPos.x;
+					mMatrixTranslation[1] = currentPos.y;
+					mMatrixTranslation[2] = currentPos.z;
+					ImGuizmo::RecomposeMatrixFromComponents(mMatrixTranslation, mMatrixRotation, mMatrixScale, matrix);
+				}
 			}
-			//Transforms
 
+			//Transforms
 			if (ImGui::IsKeyPressed(84))
 				mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
 			if (ImGui::IsKeyPressed(89))

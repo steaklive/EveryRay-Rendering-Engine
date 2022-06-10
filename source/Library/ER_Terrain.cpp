@@ -922,7 +922,7 @@ namespace Library
 	// Use cases: 
 	// - placing ER_RenderingObject(s) on terrain (even their instances individually)
 	// - placing ER_Foliage patches on terrain (batch placement)
-	void ER_Terrain::PlaceOnTerrain(XMFLOAT4* positions, int positionsCount, int splatChannel /*= -1*/, XMFLOAT4* terrainVertices, int terrainVertexCount)
+	void ER_Terrain::PlaceOnTerrain(XMFLOAT4* positions, int positionsCount, TerrainSplatChannels splatChannel, XMFLOAT4* terrainVertices, int terrainVertexCount)
 	{
 		auto context = GetGame()->Direct3DDeviceContext();
 
@@ -992,7 +992,7 @@ namespace Library
 		context->CSSetShader(mPlaceOnTerrainCS, NULL, 0);
 
 		mPlaceOnTerrainConstantBuffer.Data.HeightScale = mTerrainTessellatedHeightScale;
-		mPlaceOnTerrainConstantBuffer.Data.SplatChannel = static_cast<float>(splatChannel);
+		mPlaceOnTerrainConstantBuffer.Data.SplatChannel = splatChannel == TerrainSplatChannels::NONE ? -1.0f : static_cast<float>(splatChannel);
 		mPlaceOnTerrainConstantBuffer.Data.TerrainTileCount = static_cast<int>(mNumTiles);
 		mPlaceOnTerrainConstantBuffer.Data.PlacementHeightDelta = mPlacementHeightDelta;
 		mPlaceOnTerrainConstantBuffer.ApplyChanges(context);
