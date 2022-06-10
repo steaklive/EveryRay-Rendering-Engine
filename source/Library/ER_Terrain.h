@@ -3,6 +3,7 @@
 #include "GameComponent.h"
 #include "ConstantBuffer.h"
 #include "ER_GPUTexture.h"
+#include "ER_GPUBuffer.h"
 
 #define NUM_THREADS_PER_TERRAIN_SIDE 4
 #define NUM_TERRAIN_PATCHES_PER_TILE 8
@@ -17,6 +18,13 @@ namespace Library
 	class ER_LightProbesManager;
 	class ER_RenderableAABB;
 	class Camera;
+
+	struct TerrainTileDataGPU
+	{
+		XMFLOAT4 UVoffsetTileSize; // x,y - offsets, z,w - tile size
+		XMFLOAT4 AABBMinPoint;
+		XMFLOAT4 AABBMaxPoint;
+	};
 
 	enum TerrainSplatChannels {
 		CHANNEL_0,
@@ -47,9 +55,10 @@ namespace Library
 
 		struct PlaceOnTerrainData
 		{
-			XMFLOAT4 UVOffsetTileSize;
 			float HeightScale;
 			float SplatChannel;
+			float TerrainTileCount;
+			float PlacementHeightDelta;
 		};
 	}
 
@@ -121,8 +130,6 @@ namespace Library
 		void SetLevelPath(const std::wstring& aPath) { mLevelPath = aPath; };
 
 		void SetWireframeMode(bool flag) { mIsWireframe = flag; }
-		//void SetTessellationTerrainMode(bool flag) { mUseTessellatedTerrain = flag; }
-		//void SetNormalTerrainMode(bool flag) { mUseNonTessellatedTerrain = flag; }
 		void SetDynamicTessellation(bool flag) { mUseDynamicTessellation = flag; }
 		void SetTessellationFactor(int tessellationFactor) { mTessellationFactor = tessellationFactor; }
 		void SetDynamicTessellationDistanceFactor(float factor) { mTessellationDistanceFactor = factor; }
@@ -130,7 +137,7 @@ namespace Library
 		void SetTerrainHeightScale(float scale) { mTerrainTessellatedHeightScale = scale; }
 		HeightMap* GetHeightmap(int index) { return mHeightMaps.at(index); }
 		//float GetHeightScale(bool tessellated) { if (tessellated) return mTerrainTessellatedHeightScale; else return mTerrainNonTessellatedHeightScale; }
-		void PlaceOnTerrain(XMFLOAT4& position, int splatChannel = -1);
+		void PlaceOnTerrain(XMFLOAT4* positions, int positionsCount, int splatChannel = -1, XMFLOAT4* terrainVertices = nullptr, int terrainVertexCount = 0);
 
 		void SetEnabled(bool val) { mEnabled = val; }
 		bool IsEnabled() { return mEnabled; }
@@ -143,7 +150,6 @@ namespace Library
 		void LoadSplatmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path);
 		void LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path);
 		void DrawTessellated(int i, ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr, int shadowMapCascade = -1);
-		void PlaceOnTerrainTile(int tileIndex, XMFLOAT4* objectsPositions, int objectsCount, XMFLOAT4* terrainVertices = nullptr, int terrainVertexCount = 0, int splatChannel = -1);
 
 		DirectionalLight& mDirectionalLight;
 
@@ -160,6 +166,10 @@ namespace Library
 		ID3D11PixelShader* mPS_ShadowMap = nullptr;
 		ID3D11ComputeShader* mPlaceOnTerrainCS = nullptr;
 		
+		ER_GPUBuffer* mTerrainTilesDataGPU = nullptr;
+		ER_GPUTexture* mTerrainTilesHeightmapsArrayTexture = nullptr;
+		ER_GPUTexture* mTerrainTilesSplatmapsArrayTexture = nullptr;
+
 		std::vector<HeightMap*> mHeightMaps;
 		ER_GPUTexture* mSplatChannelTextures[NUM_TEXTURE_SPLAT_CHANNELS] = { nullptr };
 
@@ -177,6 +187,7 @@ namespace Library
 		int mTessellationFactor = 4;
 		int mTessellationFactorDynamic = 64;
 		float mTessellationDistanceFactor = 0.015f;
+		float mPlacementHeightDelta = 0.5f; // how much we want to damp the point on terrain
 
 		bool mDrawDebugAABBs = false;
 		bool mDoCPUFrustumCulling = true;

@@ -818,7 +818,7 @@ namespace Library
 			{
 				XMFLOAT4 currentPos;
 				MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), currentPos);
-				mGame->GetLevel()->mTerrain->PlaceOnTerrain(currentPos);
+				mGame->GetLevel()->mTerrain->PlaceOnTerrain(&currentPos, 1, -1);
 
 				mMatrixTranslation[0] = currentPos.x;
 				mMatrixTranslation[1] = currentPos.y;

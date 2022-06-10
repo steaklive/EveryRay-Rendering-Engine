@@ -8,16 +8,9 @@
 	"camera_position" : 
 	[
 		-27.0,
-		150.7999999999999998,
+		150.80000000000001,
 		-400.0
 	],
-	"terrain_num_tiles" : 16,
-	"terrain_tile_scale" : 2.0,
-	"terrain_tile_resolution" : 512,
-	"terrain_texture_splat_layer0" : "splat_terrainMeadowTexture.jpg",
-	"terrain_texture_splat_layer1" : "splat_terrainGrassTexture.jpg",
-	"terrain_texture_splat_layer2" : "splat_terrainSoilTexture.jpg",
-	"terrain_texture_splat_layer3" : "splat_terrainMeadowTexture.jpg",
 	"rendering_objects" : 
 	[
 		{
@@ -47,15 +40,15 @@
 				0.46295559406280518,
 				0.0,
 				0.0,
+				501.5732421875,
+				0.0,
+				0.46295559406280518,
+				0.0,
+				75.33013916015625,
 				0.0,
 				0.0,
 				0.46295559406280518,
-				0.0,
-				-0.34852281212806702,
-				0.0,
-				0.0,
-				0.46295559406280518,
-				6.9110264778137207,
+				-500.44598388671875,
 				0.0,
 				0.0,
 				0.0,
@@ -70,5 +63,12 @@
 		0.94999999999999996
 	],
 	"sun_direction" : [],
+	"terrain_num_tiles" : 16,
+	"terrain_texture_splat_layer0" : "splat_terrainMeadowTexture.jpg",
+	"terrain_texture_splat_layer1" : "splat_terrainGrassTexture.jpg",
+	"terrain_texture_splat_layer2" : "splat_terrainSoilTexture.jpg",
+	"terrain_texture_splat_layer3" : "splat_terrainMeadowTexture.jpg",
+	"terrain_tile_resolution" : 512,
+	"terrain_tile_scale" : 2.0,
 	"use_volumetric_fog" : false
 }

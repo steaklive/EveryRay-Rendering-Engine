@@ -1,19 +1,44 @@
+// ================================================================================================
+// Compute shader for placement of points on terrain 
+//
+// Supports:
+// - Heightmap collision (fast, default) or geometry raycasting collision (slow)
+// - Placement based on splat channel
+//
+// Other info:
+// - Terrain tile is found first (point vs terrain tile AABB check)
+// - Terrain tile is processed (i.e., its height/splat textures are sampled)
+// - New position is calculated
+//
+// Written by Gen Afanasev for 'EveryRay Rendering Engine', 2017-2022
+// ================================================================================================
 
+#define MAX_TERRAIN_TILE_COUNT 256
 #define USE_RAYCASTING 0
-
-RWStructuredBuffer<float4> InputOutputPositions : register(u0);
-Texture2D HeightTexture : register(t0);
-Texture2D SplatTexture : register(t1);
-#if USE_RAYCASTING
-StructuredBuffer<float4> terrainVertices : register(t2);
-#endif
 
 cbuffer CBufferTerrain : register(b0)
 {
-    float4 UVoffsetTileSize; // x,y - offsets, z,w - tile size
     float HeightScale;
     float SplatChannel;
+    float TerrainTileCount;
+    float PlacementHeightDelta;
 }
+
+struct TerrainTileData
+{
+    float4 UVoffsetTileSize; // x,y - offsets, z,w - tile size
+    float4 AABBMinPoint;
+    float4 AABBMaxPoint;
+};
+
+StructuredBuffer<TerrainTileData> TerrainTilesData : register(t0);
+#if USE_RAYCASTING
+StructuredBuffer<float4> terrainVertices : register(t1);
+#endif
+Texture2DArray<float> TerrainTilesHeightTextures : register(t2);
+Texture2DArray<float4> TerrainTilesSplatTextures : register(t3);
+
+RWStructuredBuffer<float4> InputOutputPositions : register(u0);
 
 SamplerState BilinearSampler : register(s0);
 SamplerState LinearSampler : register(s1);
@@ -186,26 +211,41 @@ float FindHeightFromPosition(int vertexCount, float x, float z)
 }
 #endif
 
-float2 GetTextureCoordinates(float x, float z)
+int GetTileIndex(float x, float z)
 {
-    float2 texcoord = (float2(x, z) + UVoffsetTileSize.xy) / UVoffsetTileSize.zw;
+    // Collision check with tile AABB
+    for (int i = 0; i < int(TerrainTileCount); i++)
+    {
+        bool isColliding =
+			(x <= TerrainTilesData[i].AABBMaxPoint.x && x >= TerrainTilesData[i].AABBMinPoint.x) &&
+			(z <= TerrainTilesData[i].AABBMaxPoint.z && z >= TerrainTilesData[i].AABBMinPoint.z);
+        
+        if (isColliding)
+            return i;
+    }
+    return -1;
+}
+
+float2 GetTextureCoordinates(float x, float z, int tileIndex)
+{
+    float2 texcoord = (float2(x, z) + TerrainTilesData[tileIndex].UVoffsetTileSize.xy) / TerrainTilesData[tileIndex].UVoffsetTileSize.zw;
     return texcoord;
 }
 
-float FindHeightFromHeightmap(float x, float z)
+float FindHeightFromHeightmap(float x, float z, int tileIndex)
 {
-    float height = HeightTexture.SampleLevel(BilinearSampler, GetTextureCoordinates(x, z), 0).r;
+    float height = TerrainTilesHeightTextures.SampleLevel(BilinearSampler, float3(GetTextureCoordinates(x, z, tileIndex), tileIndex), 0).r;
     return height * HeightScale;
 }
 
-bool IsOnSplatMap(float x, float z, float channel)
+bool IsOnSplatMap(float x, float z, int tileIndex, float channel)
 {
-    float2 uv = GetTextureCoordinates(x, z);
+    float2 uv = GetTextureCoordinates(x, z, tileIndex);
     uv.y = 1.0f - uv.y;
     
     float percentage = 0.2f;
     
-    float4 value = SplatTexture.SampleLevel(LinearSampler, uv, 0);
+    float4 value = TerrainTilesSplatTextures.SampleLevel(LinearSampler, float3(uv, tileIndex), 0);
     if (channel == 0.0f && value.r > percentage)
         return true;
     else if (channel == 1.0f && value.g > percentage)
@@ -232,14 +272,19 @@ void CSMain(uint3 threadID : SV_DispatchThreadID, uint groupIndex : SV_GroupInde
     
     float x = InputOutputPositions[threadID.x].x;
     float z = InputOutputPositions[threadID.x].z;
-    float delta = 0.3f;
+    int tileIndex = GetTileIndex(x, z);
     
-    if (SplatChannel == -1.0f || IsOnSplatMap(x, z, SplatChannel))
+    if (tileIndex >= 0)
+    {
+        if (SplatChannel == -1.0f || IsOnSplatMap(x, z, tileIndex, SplatChannel))
 #if USE_RAYCASTING
         InputOutputPositions[threadID.x].y = FindHeightFromPosition(vertexCount, x, z);
 #else
-        InputOutputPositions[threadID.x].y = FindHeightFromHeightmap(x, z);
+            InputOutputPositions[threadID.x].y = FindHeightFromHeightmap(x, z, tileIndex) - PlacementHeightDelta;
 #endif
+        else
+            InputOutputPositions[threadID.x].y = -999.0f; //culled
+    }
     else
         InputOutputPositions[threadID.x].y = -999.0f; //culled
 }
