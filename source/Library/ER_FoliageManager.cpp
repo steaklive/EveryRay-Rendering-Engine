@@ -15,6 +15,7 @@
 #include "Camera.h"
 #include "ShaderCompiler.h"
 #include "ER_RenderableAABB.h"
+#include "ER_Terrain.h"
 
 namespace Library
 {
@@ -202,6 +203,7 @@ namespace Library
 		ReleaseObject(mAlphaToCoverageState);
 		ReleaseObject(mNoBlendState);
 		DeleteObject(mPatchesBufferCPU);
+		DeleteObject(mCurrentPositions);
 		DeleteObject(mPatchesBufferGPU);
 		DeleteObject(mDebugGizmoAABB);
 		ReleaseObject(mInputLayout);
@@ -298,6 +300,7 @@ namespace Library
 			mPatchesBufferCPU[i].scale = randomScale;
 			mPatchesBufferGPU[i].worldMatrix = XMMatrixScaling(randomScale, randomScale, randomScale) * XMMatrixTranslation(mPatchesBufferCPU[i].xPos, mPatchesBufferCPU[i].yPos, mPatchesBufferCPU[i].zPos);
 			//mPatchesBufferGPU[i].color = XMFLOAT3(mPatchesBufferCPU[i].r, mPatchesBufferCPU[i].g, mPatchesBufferCPU[i].b);
+			mCurrentPositions[i] = XMFLOAT4(mPatchesBufferCPU[i].xPos, mPatchesBufferCPU[i].yPos, mPatchesBufferCPU[i].zPos, 1.0f);
 		}
 
 		// Set up the description of the instance buffer.
@@ -321,12 +324,14 @@ namespace Library
 	{
 		// randomly generate positions and color
 		mPatchesBufferCPU = new CPUFoliageData[mPatchesCount];
-		
+		mCurrentPositions = new XMFLOAT4[mPatchesCount];
+
 		for (int i = 0; i < mPatchesCount; i++)
 		{
 			mPatchesBufferCPU[i].xPos = mDistributionCenter.x + ((float)rand() / (float)(RAND_MAX)) * mDistributionRadius - mDistributionRadius /2;
 			mPatchesBufferCPU[i].yPos = mDistributionCenter.y;
 			mPatchesBufferCPU[i].zPos = mDistributionCenter.z + ((float)rand() / (float)(RAND_MAX)) * mDistributionRadius - mDistributionRadius /2;
+			mCurrentPositions[i] = XMFLOAT4(mPatchesBufferCPU[i].xPos, mPatchesBufferCPU[i].yPos, mPatchesBufferCPU[i].zPos, 1.0f);
 
 			mPatchesBufferCPU[i].r = ((float)rand() / (float)(RAND_MAX)) * 1.0f + 1.0f;
 			mPatchesBufferCPU[i].g = ((float)rand() / (float)(RAND_MAX)) * 1.0f + 0.5f;
@@ -456,6 +461,7 @@ namespace Library
 				mPatchesBufferCPU[i].xPos = mDistributionCenter.x + ((float)rand() / (float)(RAND_MAX)) * mDistributionRadius - mDistributionRadius / 2;
 				mPatchesBufferCPU[i].yPos = mDistributionCenter.y;
 				mPatchesBufferCPU[i].zPos = mDistributionCenter.z + ((float)rand() / (float)(RAND_MAX)) * mDistributionRadius - mDistributionRadius / 2;
+				mCurrentPositions[i] = XMFLOAT4(mPatchesBufferCPU[i].xPos, mPatchesBufferCPU[i].yPos, mPatchesBufferCPU[i].zPos, 1.0f);
 			}
 			UpdateBuffersGPU();
 
@@ -478,7 +484,6 @@ namespace Library
 		//imgui
 		if (editable)
 		{
-
 			MatrixHelper::GetFloatArray(mCamera.ViewMatrix4X4(), mCameraViewMatrix);
 			MatrixHelper::GetFloatArray(mCamera.ProjectionMatrix4X4(), mCameraProjectionMatrix);
 
@@ -511,6 +516,19 @@ namespace Library
 
 			ImGui::SliderFloat("Max LOD distance", &mMaxDistanceToCamera, 150.0f, 1500.0f);
 			ImGui::SliderFloat("Delta LOD distance", &mDeltaDistanceToCamera, 15.0f, 150.0f);
+
+			if (ImGui::Button("Place patch on terrain") && mGame.GetLevel()->mTerrain)
+			{
+				mGame.GetLevel()->mTerrain->PlaceOnTerrain(mCurrentPositions, mPatchesCount, -1);
+				for (int i = 0; i < mPatchesCount; i++)
+				{
+					mPatchesBufferCPU[i].xPos = mCurrentPositions[i].x;
+					mPatchesBufferCPU[i].yPos = mCurrentPositions[i].y;
+					mPatchesBufferCPU[i].zPos = mCurrentPositions[i].z;
+				}
+				UpdateBuffersGPU();
+				Utility::IsFoliageEditor = false;
+			}
 
 			if (ImGui::IsKeyPressed(84))
 				mCurrentGizmoOperation = ImGuizmo::TRANSLATE;

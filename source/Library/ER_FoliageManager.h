@@ -149,6 +149,7 @@ namespace Library
 
 		GPUFoliageInstanceData* mPatchesBufferGPU = nullptr;
 		CPUFoliageData* mPatchesBufferCPU = nullptr;
+		XMFLOAT4* mCurrentPositions = nullptr;
 
 		FoliageBillboardType mType;
 

@@ -10,6 +10,22 @@
 		-27.0,
 		150.80000000000001,
 		-400.0
+	],	
+	"foliage_zones" : 
+	[
+		{
+			"average_scale" : 2.5,
+			"distribution_radius" : 30.0,
+			"patch_count" : 600,
+			"position" : 
+			[
+				30.0,
+				-0.10000000149011612,
+				0.0
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"type" : 1
+		}
 	],
 	"rendering_objects" : 
 	[
