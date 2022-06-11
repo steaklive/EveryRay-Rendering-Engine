@@ -821,12 +821,13 @@ namespace Library
 			{
 				ImGui::Combo("Terrain splat channel", &currentSplatChannnel, DisplayedSplatChannnelNames, 5);
 				TerrainSplatChannels currentChannel = (TerrainSplatChannels)currentSplatChannnel;
+				ER_Terrain* terrain = mGame->GetLevel()->mTerrain;
 
-				if (ImGui::Button("Place on terrain") && mGame->GetLevel()->mTerrain)
+				if (ImGui::Button("Place on terrain") && terrain && terrain->IsLoaded())
 				{
 					XMFLOAT4 currentPos;
 					MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), currentPos);
-					mGame->GetLevel()->mTerrain->PlaceOnTerrain(&currentPos, 1, currentChannel);
+					terrain->PlaceOnTerrain(&currentPos, 1, currentChannel);
 
 					mMatrixTranslation[0] = currentPos.x;
 					mMatrixTranslation[1] = currentPos.y;

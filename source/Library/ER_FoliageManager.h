@@ -50,7 +50,8 @@ namespace Library
 	{
 		SINGLE = 0,
 		TWO_QUADS_CROSSING = 1,
-		THREE_QUADS_CROSSING = 2
+		THREE_QUADS_CROSSING = 2,
+		MULTIPLE_QUADS_CROSSING = 3
 	};
 
 	struct GPUFoliagePatchData //for GPU vertex buffer
@@ -155,7 +156,7 @@ namespace Library
 
 		ER_RenderableAABB* mDebugGizmoAABB = nullptr;
 		ER_AABB mAABB;
-		const float mAABBExtentY = 5.0f;
+		const float mAABBExtentY = 50.0f;
 		const float mAABBExtentXZ = 1.0f;
 
 		std::string mName;

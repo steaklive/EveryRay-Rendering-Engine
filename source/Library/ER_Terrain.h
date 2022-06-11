@@ -145,8 +145,8 @@ namespace Library
 		void SetTessellationFactorDynamic(float factor) { mTessellationFactorDynamic = factor; }
 		void SetTerrainHeightScale(float scale) { mTerrainTessellatedHeightScale = scale; }
 		HeightMap* GetHeightmap(int index) { return mHeightMaps.at(index); }
-		//float GetHeightScale(bool tessellated) { if (tessellated) return mTerrainTessellatedHeightScale; else return mTerrainNonTessellatedHeightScale; }
 		void PlaceOnTerrain(XMFLOAT4* positions, int positionsCount, TerrainSplatChannels splatChannel = TerrainSplatChannels::NONE, XMFLOAT4* terrainVertices = nullptr, int terrainVertexCount = 0);
+		//float GetHeightScale(bool tessellated) { if (tessellated) return mTerrainTessellatedHeightScale; else return mTerrainNonTessellatedHeightScale; }
 
 		void SetEnabled(bool val) { mEnabled = val; }
 		bool IsEnabled() { return mEnabled; }

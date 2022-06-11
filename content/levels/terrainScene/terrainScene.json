@@ -10,21 +10,34 @@
 		-27.0,
 		150.80000000000001,
 		-400.0
-	],	
+	],
 	"foliage_zones" : 
 	[
 		{
-			"average_scale" : 2.5,
-			"distribution_radius" : 30.0,
-			"patch_count" : 600,
+			"average_scale" : 3.5,
+			"distribution_radius" : 100.0,
+			"patch_count" : 1000,
 			"position" : 
 			[
-				30.0,
-				-0.10000000149011612,
-				0.0
+				500.0,
+				68.105323791503906,
+				-82.051254272460938
 			],
-			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
-			"type" : 1
+			"texture_path" : "content\\textures\\foliage\\grass_type5.png",
+			"type" : 3
+		},
+		{
+			"average_scale" : 2.5,
+			"distribution_radius" : 100.0,
+			"patch_count" : 50,
+			"position" : 
+			[
+				498.87045288085938,
+				75.099998474121094,
+				-79.840042114257812
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_flower_type10.png",
+			"type" : 0
 		}
 	],
 	"rendering_objects" : 
@@ -80,10 +93,10 @@
 	],
 	"sun_direction" : [],
 	"terrain_num_tiles" : 16,
-	"terrain_texture_splat_layer0" : "splat_terrainMeadowTexture.jpg",
-	"terrain_texture_splat_layer1" : "splat_terrainGrassTexture.jpg",
-	"terrain_texture_splat_layer2" : "splat_terrainSoilTexture.jpg",
-	"terrain_texture_splat_layer3" : "splat_terrainMeadowTexture.jpg",
+	"terrain_texture_splat_layer0" : "splat_terrainMeadowTexture.png",
+	"terrain_texture_splat_layer1" : "splat_terrainGrassTexture.png",
+	"terrain_texture_splat_layer2" : "splat_terrainSoilTexture.png",
+	"terrain_texture_splat_layer3" : "splat_terrainMeadowTexture.png",
 	"terrain_tile_resolution" : 512,
 	"terrain_tile_scale" : 2.0,
 	"use_volumetric_fog" : false

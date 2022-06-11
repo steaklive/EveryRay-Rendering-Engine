@@ -239,11 +239,11 @@ float4 PSMain(DS_OUTPUT IN) : SV_Target
     uvTile.y = 1.0f - uvTile.y;
     
     float4 splat = SplatTexture.Sample(LinearSampler, uvTile);
-    float3 channel0 = Channel0Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
-    float3 channel1 = Channel1Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
-    float3 channel2 = Channel2Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
-    float3 channel3 = Channel3Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
-    float3 diffuseAlbedo = splat.r * channel0 + splat.g * channel1 + splat.b * channel2 + splat.a * channel3;
+    float3 channel0 = pow(Channel0Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb, 2.2);
+    float3 channel1 = pow(Channel1Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb, 2.2);
+    float3 channel2 = pow(Channel2Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb, 2.2);
+    float3 channel3 = pow(Channel3Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb, 2.2);
+    float3 diffuseAlbedo = saturate(splat.r * channel0 + splat.g * channel1 + splat.b * channel2 + splat.a * channel3);
 
     float3 shadowCoords[3] = { IN.shadowCoord0, IN.shadowCoord1, IN.shadowCoord2 };
     float shadow = Forward_GetShadow(ShadowCascadeDistances, shadowCoords, ShadowTexelSize.r, CascadedShadowTextures, CascadedPcfShadowMapSampler, IN.position.w, -1);
@@ -256,7 +256,7 @@ float4 PSMain(DS_OUTPUT IN) : SV_Target
     probesInfo.globalIrradianceDiffuseProbeTexture = DiffuseGlobalProbeTexture;
     probesInfo.globalIrradianceSpecularProbeTexture = SpecularGlobalProbeTexture;
     
-    float3 directLighting = DirectLightingPBR(normal, float4(SunColor.rgb, 1.0f), SunDirection.xyz, diffuseAlbedo.rgb, IN.worldPos.xyz, roughness, float3(0.04, 0.04, 0.04), metalness, CameraPosition.xyz);
+    float3 directLighting = DirectLightingPBR(normal, SunColor, SunDirection.xyz, diffuseAlbedo.rgb, IN.worldPos.xyz, roughness, float3(0.04, 0.04, 0.04), metalness, CameraPosition.xyz);
     float3 indirectLighting = IndirectLightingPBR(normal, diffuseAlbedo.rgb, IN.worldPos.xyz, roughness, float3(0.04, 0.04, 0.04), metalness, CameraPosition.xyz, true, probesInfo, LinearSampler, IntegrationTexture, ao);
     return float4(directLighting * shadow + indirectLighting, 1.0f);
 }

@@ -13,6 +13,7 @@ bin/x64/Release/Library.lib
 # ignore files debug files
 *.obj
 !content/models/*.obj
+!content/models/vegetation/*.obj
 
 # ignore generated light probes in levels (except global probes):
 # - testScene

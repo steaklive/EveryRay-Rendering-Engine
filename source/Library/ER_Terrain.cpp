@@ -906,7 +906,8 @@ namespace Library
 	{
 		bool isColliding =  onlyXZCheck ?
 			((position.x <= mAABB.second.x && position.x >= mAABB.first.x) &&
-			(position.z <= mAABB.second.z && position.z >= mAABB.first.z)) :
+			(position.z <= mAABB.second.z && position.z >= mAABB.first.z))
+			:
 			((position.x <= mAABB.second.x && position.x >= mAABB.first.x) &&
 			(position.y <= mAABB.second.y && position.y >= mAABB.first.y) &&
 			(position.z <= mAABB.second.z && position.z >= mAABB.first.z));

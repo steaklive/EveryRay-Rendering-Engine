@@ -173,6 +173,7 @@ VS_OUTPUT VSMain(VS_INPUT IN)
     }
 
     OUT.Position = mul(OUT.Position, Projection);
+    IN.Normal = float3(0.0, 1.0, 0.0);
     OUT.Normal = normalize(mul(float4(IN.Normal, 0), IN.World).xyz);
     OUT.TextureCoordinates = IN.TextureCoordinates;
     OUT.ShadowCoord0 = mul(IN.Position, mul(IN.World, ShadowMatrices[0])).xyz;

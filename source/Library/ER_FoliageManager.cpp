@@ -240,6 +240,13 @@ namespace Library
 			quadTripleModel->Meshes()[0]->CreateIndexBuffer(&mIndexBuffer);
 			mVerticesCount = quadTripleModel->Meshes()[0]->Indices().size();
 		}
+		else if (bType == FoliageBillboardType::MULTIPLE_QUADS_CROSSING) {
+			mIsRotating = false;
+			std::unique_ptr<Model> quadMultipleModel(new Model(mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_multiple.obj"), true));
+			quadMultipleModel->Meshes()[0]->CreateVertexBuffer_PositionUvNormal(&mVertexBuffer);
+			quadMultipleModel->Meshes()[0]->CreateIndexBuffer(&mIndexBuffer);
+			mVerticesCount = quadMultipleModel->Meshes()[0]->Indices().size();
+		}
 	}
 	void ER_Foliage::Initialize()
 	{
@@ -524,9 +531,10 @@ namespace Library
 				ImGui::Combo("Terrain splat channel", &currentSplatChannnel, DisplayedSplatChannnelNames, 5);
 				TerrainSplatChannels currentChannel = (TerrainSplatChannels)currentSplatChannnel;
 
-				if (ImGui::Button("Place patch on terrain") && mGame.GetLevel()->mTerrain)
+				ER_Terrain* terrain = mGame.GetLevel()->mTerrain;
+				if (ImGui::Button("Place patch on terrain") && terrain && terrain->IsLoaded())
 				{
-					mGame.GetLevel()->mTerrain->PlaceOnTerrain(mCurrentPositions, mPatchesCount, currentChannel);
+					terrain->PlaceOnTerrain(mCurrentPositions, mPatchesCount, currentChannel);
 					for (int i = 0; i < mPatchesCount; i++)
 					{
 						mPatchesBufferCPU[i].xPos = mCurrentPositions[i].x;
@@ -535,6 +543,12 @@ namespace Library
 					}
 					UpdateBuffersGPU();
 					Utility::IsFoliageEditor = false;
+
+					//update AABB based on the first patch Y position (not accurate, but fast)
+					float radius = mDistributionRadius * 0.5f + mAABBExtentXZ;
+					XMFLOAT3 minP = XMFLOAT3(mDistributionCenter.x - radius, mPatchesBufferCPU[0].yPos - mAABBExtentY, mDistributionCenter.z - radius);
+					XMFLOAT3 maxP = XMFLOAT3(mDistributionCenter.x + radius, mPatchesBufferCPU[0].yPos + mAABBExtentY, mDistributionCenter.z + radius);
+					mAABB = ER_AABB(minP, maxP);
 				}
 			}
 

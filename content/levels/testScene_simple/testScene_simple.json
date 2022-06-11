@@ -14,56 +14,121 @@
 	"foliage_zones" : 
 	[
 		{
-			"average_scale" : 3.5,
-			"distribution_radius" : 30.0,
-			"patch_count" : 50,
+			"average_scale" : 2.5,
+			"distribution_radius" : 13.0,
+			"patch_count" : 10,
 			"position" : 
 			[
 				30.0,
-				-0.10000000149011612,
+				0.33339524269104004,
 				0.0
 			],
 			"texture_path" : "content\\textures\\foliage\\grass_flower_type1.png",
 			"type" : 0
 		},
 		{
-			"average_scale" : 2.5,
-			"distribution_radius" : 30.0,
-			"patch_count" : 600,
+			"average_scale" : 3.0,
+			"distribution_radius" : 7.0,
+			"patch_count" : 15,
 			"position" : 
 			[
 				30.0,
-				-0.10000000149011612,
+				0.79759275913238525,
 				0.0
 			],
 			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
-			"type" : 1
+			"type" : 3
 		},
 		{
-			"average_scale" : 2.0,
-			"distribution_radius" : 30.0,
-			"patch_count" : 20,
+			"average_scale" : 3.0,
+			"distribution_radius" : 13.0,
+			"patch_count" : 150,
 			"position" : 
 			[
-				65.0,
-				-0.10000000149011612,
+				30.0,
+				0.5495452880859375,
+				0.0
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"type" : 2
+		},
+		{
+			"average_scale" : 2.5,
+			"distribution_radius" : 13.0,
+			"patch_count" : 10,
+			"position" : 
+			[
+				50.0,
+				0.33339524269104004,
 				0.0
 			],
 			"texture_path" : "content\\textures\\foliage\\grass_flower_type3.png",
 			"type" : 0
 		},
 		{
-			"average_scale" : 2.5,
-			"distribution_radius" : 30.0,
-			"patch_count" : 600,
+			"average_scale" : 3.0,
+			"distribution_radius" : 7.0,
+			"patch_count" : 15,
 			"position" : 
 			[
-				65.0,
-				-0.10000000149011612,
+				50.0,
+				0.79759275913238525,
 				0.0
 			],
 			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
-			"type" : 1
+			"type" : 3
+		},
+		{
+			"average_scale" : 3.0,
+			"distribution_radius" : 13.0,
+			"patch_count" : 150,
+			"position" : 
+			[
+				50.0,
+				0.5495452880859375,
+				0.0
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"type" : 2
+		},
+		{
+			"average_scale" : 2.5,
+			"distribution_radius" : 13.0,
+			"patch_count" : 10,
+			"position" : 
+			[
+				70.0,
+				0.33339524269104004,
+				0.0
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_flower_type10.png",
+			"type" : 0
+		},
+		{
+			"average_scale" : 3.0,
+			"distribution_radius" : 7.0,
+			"patch_count" : 15,
+			"position" : 
+			[
+				70.0,
+				0.79759275913238525,
+				0.0
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"type" : 3
+		},
+		{
+			"average_scale" : 3.0,
+			"distribution_radius" : 13.0,
+			"patch_count" : 150,
+			"position" : 
+			[
+				70.0,
+				0.5495452880859375,
+				0.0
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"type" : 2
 		}
 	],
 	"rendering_objects" : 
@@ -110,6 +175,119 @@
 				1.0
 			],
 			"use_in_global_lightprobe_rendering" : true
+		},
+		{
+			"instanced" : true,
+			"instances_transforms" : 
+			[
+				{
+					"transform" : 
+					[
+						9.0576000213623047,
+						0.0,
+						0.0,
+						30.0,
+						0.0,
+						9.0576000213623047,
+						0.0,
+						-0.13127541542053223,
+						0.0,
+						0.0,
+						9.0576000213623047,
+						0.0,
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					]
+				},
+				{
+					"transform" : 
+					[
+						9.0576000213623047,
+						0.0,
+						0.0,
+						50.0,
+						0.0,
+						9.0576000213623047,
+						0.0,
+						-0.13127541542053223,
+						0.0,
+						0.0,
+						9.0576000213623047,
+						0.0,
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					]
+				},
+				{
+					"transform" : 
+					[
+						9.0576000213623047,
+						0.0,
+						0.0,
+						70.0,
+						0.0,
+						9.0576000213623047,
+						0.0,
+						-0.13127541542053223,
+						0.0,
+						0.0,
+						9.0576000213623047,
+						0.0,
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					]
+				}
+			],
+			"model_path" : "content\\models\\flowerbed.fbx",
+			"name" : "Flowerbed",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\groundTexture.png"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\Concrete\\concrete2_albedo.png",
+					"normal" : "content\\textures\\PBR\\Concrete\\concrete2_Normal-dx.png",
+					"roughness" : "content\\textures\\PBR\\Concrete\\concrete2_Roughness.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
 		},
 		{
 			"instanced" : false,

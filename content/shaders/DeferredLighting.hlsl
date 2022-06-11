@@ -85,15 +85,21 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     float ao = 1.0f; // TODO sample AO texture
     
     bool usePOM = extra2Gbuffer.g > -1.0f; // TODO add POM support to Deferred
-
+    
+    bool isFoliage = extraGbuffer.a >= 1.0f;
+    
     //reflectance at normal incidence for dia-electic or metal
     float3 F0 = float3(0.04, 0.04, 0.04);
     F0 = lerp(F0, diffuseAlbedo.rgb, metalness);
 
-    float3 directLighting = DirectLightingPBR(normalWS, SunColor, SunDirection.xyz, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness, CameraPosition.xyz);
+    float3 directLighting = float3(0.0, 0.0, 0.0);
+    if (isFoliage)
+        directLighting = SunColor.rgb * diffuseAlbedo.rgb * max(dot(normalWS, SunDirection.xyz), 0.0);
+    else
+        directLighting = DirectLightingPBR(normalWS, SunColor, SunDirection.xyz, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness, CameraPosition.xyz);
     
-    float3 indirectLighting = float3(0.0, 0.0, 0.0);
-    if (extraGbuffer.a < 1.0f && SkipIndirectLighting <= 0.0f)
+    float3 indirectLighting = float3(0.0, 0.0, 0.0);    
+    if (!isFoliage && SkipIndirectLighting <= 0.0f)
     {
         LightProbeInfo probesInfo;      
         probesInfo.globalIrradianceDiffuseProbeTexture = DiffuseGlobalProbeTexture;
