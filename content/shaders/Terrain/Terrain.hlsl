@@ -110,10 +110,10 @@ float GetTessellationFactorFromCamera(float distance)
 float3 GetNormalFromHeightmap(float2 uv, float texelSize, float maxHeight)
 {
     float4 h;
-    h[0] = HeightTexture.SampleLevel(LinearSampler, uv + texelSize * float2(0, -1), 0).r * maxHeight;
-    h[1] = HeightTexture.SampleLevel(LinearSampler, uv + texelSize * float2(-1, 0), 0).r * maxHeight;
-    h[2] = HeightTexture.SampleLevel(LinearSampler, uv + texelSize * float2(1, 0), 0).r * maxHeight;
-    h[3] = HeightTexture.SampleLevel(LinearSampler, uv + texelSize * float2(0, 1), 0).r * maxHeight;
+    h[0] = HeightTexture.SampleLevel(LinearSamplerClamp, uv + texelSize * float2(0, -1), 0).r * maxHeight;
+    h[1] = HeightTexture.SampleLevel(LinearSamplerClamp, uv + texelSize * float2(-1, 0), 0).r * maxHeight;
+    h[2] = HeightTexture.SampleLevel(LinearSamplerClamp, uv + texelSize * float2(1, 0), 0).r * maxHeight;
+    h[3] = HeightTexture.SampleLevel(LinearSamplerClamp, uv + texelSize * float2(0, 1), 0).r * maxHeight;
     
     float3 n;
     n.z = h[0] - h[3];
@@ -233,12 +233,13 @@ float4 PSMain(DS_OUTPUT IN) : SV_Target
 {   
     float2 uvTile = IN.texcoord;
     
-    //float4 height = heightTexture.Sample(TerrainHeightSampler, uvTile);
+    //float4 height = HeightTexture.Sample(LinearSamplerClamp, uvTile + 1.0f / TileSize);
+    //return height;
+    
     float3 normal = GetNormalFromHeightmap(uvTile, 1.0f / TileSize, TerrainHeightScale);
-   
     uvTile.y = 1.0f - uvTile.y;
     
-    float4 splat = SplatTexture.Sample(LinearSampler, uvTile);
+    float4 splat = SplatTexture.Sample(LinearSamplerClamp, uvTile + 1.0f / TileSize);
     float3 channel0 = pow(Channel0Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb, 2.2);
     float3 channel1 = pow(Channel1Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb, 2.2);
     float3 channel2 = pow(Channel2Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb, 2.2);

@@ -15,6 +15,7 @@ namespace Library
 	class ER_PostProcessingStack;
 	class ER_Illumination;
 	class ER_RenderableAABB;
+	class ER_Terrain;
 
 	namespace FoliageCBufferData {
 		struct FoliageData {
@@ -76,7 +77,9 @@ namespace Library
 	class ER_Foliage
 	{
 	public:
-		ER_Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, const std::string& textureName, float scale = 1.0f, float distributionRadius = 100, const XMFLOAT3& distributionCenter = XMFLOAT3(0.0f, 0.0f, 0.0f), FoliageBillboardType bType = FoliageBillboardType::SINGLE);
+		ER_Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, const std::string& textureName, float scale = 1.0f, float distributionRadius = 100, 
+			const XMFLOAT3& distributionCenter = XMFLOAT3(0.0f, 0.0f, 0.0f), FoliageBillboardType bType = FoliageBillboardType::SINGLE,
+			bool isPlacedOnTerrain = false, int terrainPlaceChannel = 4);
 		~ER_Foliage();
 
 		void Initialize();
@@ -88,6 +91,8 @@ namespace Library
 		
 		void SetWireframe(bool flag) { mIsWireframe = flag; }
 		void SetDynamicLODMaxDistance(float val) { mMaxDistanceToCamera = val; }
+		void SetDynamicDeltaDistanceToCamera(float val) { mDeltaDistanceToCamera = val; }
+
 		bool IsRotating() { return mIsRotating; }
 		void SetWindParams(float gustDistance, float strength, float frequency) 
 		{
@@ -154,6 +159,9 @@ namespace Library
 
 		FoliageBillboardType mType;
 
+		int mTerrainSplatChannel = 4;
+		bool mIsPlacedOnTerrain = false;
+
 		ER_RenderableAABB* mDebugGizmoAABB = nullptr;
 		ER_AABB mAABB;
 		const float mAABBExtentY = 50.0f;
@@ -168,14 +176,14 @@ namespace Library
 		int mPatchesCount = 0;
 		int mPatchesCountToRender = 0;
 
+		float mMaxDistanceToCamera = 0.0f;
+		float mDeltaDistanceToCamera = 0.0f;
+
 		bool mIsWireframe = false;
 		float mScale;
 		XMFLOAT3 mDistributionCenter;
 		float mDistributionRadius;
 		bool mRotateFromCamPosition = false;
-
-		float mMaxDistanceToCamera = 300.0f; // more than this => culled completely
-		float mDeltaDistanceToCamera = 30.0f; // from which distance we start dynamic culling (patches)
 
 		int mVerticesCount = 0;
 		bool mIsRotating = false;
@@ -226,6 +234,9 @@ namespace Library
 		const char* mFoliageZonesNamesUI[MAX_FOLIAGE_ZONES];
 
 		int mEditorSelectedFoliageZoneIndex = 0;
+
+		float mMaxDistanceToCamera = 300.0f; // more than this => culled completely
+		float mDeltaDistanceToCamera = 30.0f; // from which distance we start dynamic culling (patches)
 
 		bool mShowDebug = false;
 		bool mEnabled = true;

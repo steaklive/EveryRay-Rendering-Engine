@@ -57,6 +57,9 @@ namespace Library
 		{
 			for (auto& foliage : mFoliageCollection)
 			{
+				foliage->SetDynamicDeltaDistanceToCamera(mDeltaDistanceToCamera);
+				foliage->SetDynamicLODMaxDistance(mMaxDistanceToCamera);
+
 				foliage->SetWindParams(gustDistance, strength, frequency);
 				foliage->Update(gameTime);
 				foliage->PerformCPUFrustumCulling((Utility::IsMainCameraCPUFrustumCulling && mEnableCulling) ? camera : nullptr);
@@ -97,6 +100,8 @@ namespace Library
 		ImGui::Begin("Foliage System");
 		ImGui::Checkbox("Enabled", &mEnabled);
 		ImGui::Checkbox("CPU frustum cull", &mEnableCulling);
+		ImGui::SliderFloat("Max LOD distance", &mMaxDistanceToCamera, 150.0f, 1500.0f);
+		ImGui::SliderFloat("Delta LOD distance", &mDeltaDistanceToCamera, 15.0f, 150.0f);
 		ImGui::Checkbox("Enable foliage editor", &Utility::IsFoliageEditor);
 		if (ImGui::Button("Save foliage changes"))
 			mScene->SaveFoliageZonesTransforms(mFoliageCollection);
@@ -116,7 +121,8 @@ namespace Library
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	ER_Foliage::ER_Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, const std::string& textureName, float scale, float distributionRadius, const XMFLOAT3& distributionCenter, FoliageBillboardType bType)
+	ER_Foliage::ER_Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, const std::string& textureName, float scale, float distributionRadius,
+		const XMFLOAT3& distributionCenter, FoliageBillboardType bType, bool isPlacedOnTerrain, int placeChannel)
 		:
 		mGame(pGame),
 		mCamera(pCamera),
@@ -127,7 +133,9 @@ namespace Library
 		mDistributionRadius(distributionRadius - 0.1f),
 		mDistributionCenter(distributionCenter),
 		mType(bType),
-		mTextureName(textureName)
+		mTextureName(textureName),
+		mIsPlacedOnTerrain(isPlacedOnTerrain),
+		mTerrainSplatChannel(placeChannel)
 	{
 
 		//shaders
@@ -261,6 +269,28 @@ namespace Library
 
 		mDebugGizmoAABB = new ER_RenderableAABB(mGame, XMFLOAT4(0.0, 0.0, 1.0, 1.0));
 		mDebugGizmoAABB->InitializeGeometry({ mAABB.first, mAABB.second });
+
+		if (mIsPlacedOnTerrain)
+		{
+			ER_Terrain* terrain = mGame.GetLevel()->mTerrain;
+			if (terrain && terrain->IsLoaded())
+			{
+				terrain->PlaceOnTerrain(mCurrentPositions, mPatchesCount, (TerrainSplatChannels)mTerrainSplatChannel);
+				for (int i = 0; i < mPatchesCount; i++)
+				{
+					mPatchesBufferCPU[i].xPos = mCurrentPositions[i].x;
+					mPatchesBufferCPU[i].yPos = mCurrentPositions[i].y;
+					mPatchesBufferCPU[i].zPos = mCurrentPositions[i].z;
+				}
+				UpdateBuffersGPU();
+
+				//update AABB based on the first patch Y position (not accurate, but fast)
+				float radius = mDistributionRadius * 0.5f + mAABBExtentXZ;
+				XMFLOAT3 minP = XMFLOAT3(mDistributionCenter.x - radius, mPatchesBufferCPU[0].yPos - mAABBExtentY, mDistributionCenter.z - radius);
+				XMFLOAT3 maxP = XMFLOAT3(mDistributionCenter.x + radius, mPatchesBufferCPU[0].yPos + mAABBExtentY, mDistributionCenter.z + radius);
+				mAABB = ER_AABB(minP, maxP);
+			}
+		}
 
 		mTransformationMatrix = XMMatrixTranslation(mDistributionCenter.x, mDistributionCenter.y, mDistributionCenter.z);
 		MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
@@ -522,50 +552,50 @@ namespace Library
 
 			std::string textureText = "* Texture: " + mTextureName;
 			ImGui::Text(textureText.c_str());
-
-			ImGui::SliderFloat("Max LOD distance", &mMaxDistanceToCamera, 150.0f, 1500.0f);
-			ImGui::SliderFloat("Delta LOD distance", &mDeltaDistanceToCamera, 15.0f, 150.0f);
-
-			//terrain
+			
+			if (!mIsPlacedOnTerrain)
 			{
-				ImGui::Combo("Terrain splat channel", &currentSplatChannnel, DisplayedSplatChannnelNames, 5);
-				TerrainSplatChannels currentChannel = (TerrainSplatChannels)currentSplatChannnel;
-
-				ER_Terrain* terrain = mGame.GetLevel()->mTerrain;
-				if (ImGui::Button("Place patch on terrain") && terrain && terrain->IsLoaded())
+				//terrain
 				{
-					terrain->PlaceOnTerrain(mCurrentPositions, mPatchesCount, currentChannel);
-					for (int i = 0; i < mPatchesCount; i++)
+					ImGui::Combo("Terrain splat channel", &currentSplatChannnel, DisplayedSplatChannnelNames, 5);
+					TerrainSplatChannels currentChannel = (TerrainSplatChannels)currentSplatChannnel;
+
+					ER_Terrain* terrain = mGame.GetLevel()->mTerrain;
+					if (ImGui::Button("Place patch on terrain") && terrain && terrain->IsLoaded())
 					{
-						mPatchesBufferCPU[i].xPos = mCurrentPositions[i].x;
-						mPatchesBufferCPU[i].yPos = mCurrentPositions[i].y;
-						mPatchesBufferCPU[i].zPos = mCurrentPositions[i].z;
+						terrain->PlaceOnTerrain(mCurrentPositions, mPatchesCount, currentChannel);
+						for (int i = 0; i < mPatchesCount; i++)
+						{
+							mPatchesBufferCPU[i].xPos = mCurrentPositions[i].x;
+							mPatchesBufferCPU[i].yPos = mCurrentPositions[i].y;
+							mPatchesBufferCPU[i].zPos = mCurrentPositions[i].z;
+						}
+						UpdateBuffersGPU();
+						Utility::IsFoliageEditor = false;
+
+						//update AABB based on the first patch Y position (not accurate, but fast)
+						float radius = mDistributionRadius * 0.5f + mAABBExtentXZ;
+						XMFLOAT3 minP = XMFLOAT3(mDistributionCenter.x - radius, mPatchesBufferCPU[0].yPos - mAABBExtentY, mDistributionCenter.z - radius);
+						XMFLOAT3 maxP = XMFLOAT3(mDistributionCenter.x + radius, mPatchesBufferCPU[0].yPos + mAABBExtentY, mDistributionCenter.z + radius);
+						mAABB = ER_AABB(minP, maxP);
 					}
-					UpdateBuffersGPU();
-					Utility::IsFoliageEditor = false;
-
-					//update AABB based on the first patch Y position (not accurate, but fast)
-					float radius = mDistributionRadius * 0.5f + mAABBExtentXZ;
-					XMFLOAT3 minP = XMFLOAT3(mDistributionCenter.x - radius, mPatchesBufferCPU[0].yPos - mAABBExtentY, mDistributionCenter.z - radius);
-					XMFLOAT3 maxP = XMFLOAT3(mDistributionCenter.x + radius, mPatchesBufferCPU[0].yPos + mAABBExtentY, mDistributionCenter.z + radius);
-					mAABB = ER_AABB(minP, maxP);
 				}
+
+				if (ImGui::IsKeyPressed(84))
+					mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+
+				ImGuizmo::DecomposeMatrixToComponents(mCurrentObjectTransformMatrix, mMatrixTranslation, mMatrixRotation, mMatrixScale);
+				ImGui::InputFloat3("Tr", mMatrixTranslation, 3);
+				ImGuizmo::RecomposeMatrixFromComponents(mMatrixTranslation, mMatrixRotation, mMatrixScale, mCurrentObjectTransformMatrix);
+				ImGui::End();
+
+				ImGuiIO& io = ImGui::GetIO();
+				ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+				ImGuizmo::Manipulate(mCameraViewMatrix, mCameraProjectionMatrix, mCurrentGizmoOperation, mCurrentGizmoMode, mCurrentObjectTransformMatrix, NULL, useSnap ? &snap[0] : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
+
+				XMFLOAT4X4 mat(mCurrentObjectTransformMatrix);
+				mTransformationMatrix = XMLoadFloat4x4(&mat);
 			}
-
-			if (ImGui::IsKeyPressed(84))
-				mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-
-			ImGuizmo::DecomposeMatrixToComponents(mCurrentObjectTransformMatrix, mMatrixTranslation, mMatrixRotation, mMatrixScale);
-			ImGui::InputFloat3("Tr", mMatrixTranslation, 3);
-			ImGuizmo::RecomposeMatrixFromComponents(mMatrixTranslation, mMatrixRotation, mMatrixScale, mCurrentObjectTransformMatrix);
-			ImGui::End();
-
-			ImGuiIO& io = ImGui::GetIO();
-			ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-			ImGuizmo::Manipulate(mCameraViewMatrix, mCameraProjectionMatrix, mCurrentGizmoOperation, mCurrentGizmoMode, mCurrentObjectTransformMatrix, NULL, useSnap ? &snap[0] : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
-
-			XMFLOAT4X4 mat(mCurrentObjectTransformMatrix);
-			mTransformationMatrix = XMLoadFloat4x4(&mat);
 		}
 	}
 

@@ -15,29 +15,123 @@
 	[
 		{
 			"average_scale" : 3.5,
-			"distribution_radius" : 100.0,
-			"patch_count" : 1000,
+			"distribution_radius" : 128.0,
+			"patch_count" : 2048,
+			"placed_on_terrain" : true,
+			"placed_splat_channel" : 0,
 			"position" : 
 			[
-				500.0,
-				68.105323791503906,
-				-82.051254272460938
+				-64,
+				0,
+				-64
 			],
 			"texture_path" : "content\\textures\\foliage\\grass_type5.png",
 			"type" : 3
 		},
 		{
-			"average_scale" : 2.5,
-			"distribution_radius" : 100.0,
-			"patch_count" : 50,
+			"average_scale" : 3.5,
+			"distribution_radius" : 128.0,
+			"patch_count" : 2048,	
+			"placed_on_terrain" : true,
+			"placed_splat_channel" : 0,
 			"position" : 
 			[
-				498.87045288085938,
-				75.099998474121094,
-				-79.840042114257812
+				-64,
+				0,
+				-192
 			],
-			"texture_path" : "content\\textures\\foliage\\grass_flower_type10.png",
-			"type" : 0
+			"texture_path" : "content\\textures\\foliage\\grass_type5.png",
+			"type" : 3
+		},
+		{
+			"average_scale" : 3.5,
+			"distribution_radius" : 128.0,
+			"patch_count" : 2048,
+			"placed_on_terrain" : true,
+			"placed_splat_channel" : 0,
+			"position" : 
+			[
+				-64,
+				0,
+				-320
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type5.png",
+			"type" : 3
+		},
+		{
+			"average_scale" : 3.5,
+			"distribution_radius" : 128.0,
+			"patch_count" : 2048,
+			"placed_on_terrain" : true,
+			"placed_splat_channel" : 0,
+			"position" : 
+			[
+				-64,
+				0,
+				-448
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type5.png",
+			"type" : 3
+		},
+		{
+			"average_scale" : 3.5,
+			"distribution_radius" : 128.0,
+			"patch_count" : 2048,
+			"placed_on_terrain" : true,
+			"placed_splat_channel" : 0,
+			"position" : 
+			[
+				-64,
+				0,
+				-576
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type5.png",
+			"type" : 3
+		},
+		{
+			"average_scale" : 3.5,
+			"distribution_radius" : 128.0,
+			"patch_count" : 2048,
+			"placed_on_terrain" : true,
+			"placed_splat_channel" : 0,
+			"position" : 
+			[
+				-64,
+				0,
+				-704
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type5.png",
+			"type" : 3
+		},
+		{
+			"average_scale" : 3.5,
+			"distribution_radius" : 128.0,
+			"patch_count" : 2048,
+			"placed_on_terrain" : true,
+			"placed_splat_channel" : 0,
+			"position" : 
+			[
+				-64,
+				0,
+				-832
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type5.png",
+			"type" : 3
+		},
+		{
+			"average_scale" : 3.5,
+			"distribution_radius" : 256.0,
+			"patch_count" : 2048,
+			"placed_on_terrain" : true,
+			"placed_splat_channel" : 0,
+			"position" : 
+			[
+				-64,
+				0,
+				-960
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type5.png",
+			"type" : 3
 		}
 	],
 	"rendering_objects" : 
@@ -96,7 +190,7 @@
 	"terrain_texture_splat_layer0" : "splat_terrainMeadowTexture.png",
 	"terrain_texture_splat_layer1" : "splat_terrainGrassTexture.png",
 	"terrain_texture_splat_layer2" : "splat_terrainSoilTexture.png",
-	"terrain_texture_splat_layer3" : "splat_terrainMeadowTexture.png",
+	"terrain_texture_splat_layer3" : "splat_terrainGroundTexture.png",
 	"terrain_tile_resolution" : 512,
 	"terrain_tile_scale" : 2.0,
 	"use_volumetric_fog" : false

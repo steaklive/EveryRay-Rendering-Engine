@@ -122,20 +122,20 @@ namespace Library {
 		game.CPUProfiler()->EndCPUTime("Light probes manager init");
 #pragma endregion
 
-		#pragma region INIT_FOLIAGE_MANAGER
-		game.CPUProfiler()->BeginCPUTime("Foliage init");
-		mFoliageSystem = new ER_FoliageManager(game, mScene, *mDirectionalLight);
-		mFoliageSystem->FoliageSystemInitializedEvent->AddListener("foliage initialized for GI",  [&]() { mIllumination->SetFoliageSystemForGI(mFoliageSystem); });
-		mFoliageSystem->Initialize();
-		game.CPUProfiler()->EndCPUTime("Foliage init");
-#pragma endregion
-
 		#pragma region INIT_TERRAIN
 		game.CPUProfiler()->BeginCPUTime("Terrain init");
 		mTerrain = new ER_Terrain(game, *mDirectionalLight);
 		mTerrain->SetLevelPath(Utility::ToWideString(sceneFolderPath));
 		mTerrain->LoadTerrainData(mScene);
 		game.CPUProfiler()->EndCPUTime("Terrain init");
+#pragma endregion
+
+		#pragma region INIT_FOLIAGE_MANAGER
+		game.CPUProfiler()->BeginCPUTime("Foliage init");
+		mFoliageSystem = new ER_FoliageManager(game, mScene, *mDirectionalLight);
+		mFoliageSystem->FoliageSystemInitializedEvent->AddListener("foliage initialized for GI",  [&]() { mIllumination->SetFoliageSystemForGI(mFoliageSystem); });
+		mFoliageSystem->Initialize();
+		game.CPUProfiler()->EndCPUTime("Foliage init");
 #pragma endregion
 
 		#pragma region INIT_MATERIAL_CALLBACKS

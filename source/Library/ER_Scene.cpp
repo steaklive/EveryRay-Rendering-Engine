@@ -15,6 +15,7 @@
 #include "ER_LightProbesManager.h"
 #include "ER_FoliageManager.h"
 #include "DirectionalLight.h"
+#include "ER_Terrain.h"
 
 #define MULTITHREADED_SCENE_LOAD 1
 
@@ -543,13 +544,21 @@ namespace Library
 					for (Json::Value::ArrayIndex ia = 0; ia != root["foliage_zones"][i]["position"].size(); ia++)
 						vec3[ia] = root["foliage_zones"][i]["position"][ia].asFloat();
 
+					bool placedOnTerrain = false;
+					if (root["foliage_zones"][i].isMember("placed_on_terrain"))
+						placedOnTerrain = root["foliage_zones"][i]["placed_on_terrain"].asBool();
+					
+					TerrainSplatChannels terrainChannel = TerrainSplatChannels::NONE;
+					if (root["foliage_zones"][i].isMember("placed_splat_channel"))
+						terrainChannel = (TerrainSplatChannels)(root["foliage_zones"][i]["placed_splat_channel"].asInt());
+
 					foliageZones.push_back(new ER_Foliage(*core, mCamera, light,
 						root["foliage_zones"][i]["patch_count"].asInt(),
 						Utility::GetFilePath(root["foliage_zones"][i]["texture_path"].asString()),
 						root["foliage_zones"][i]["average_scale"].asFloat(),
 						root["foliage_zones"][i]["distribution_radius"].asFloat(),
 						XMFLOAT3(vec3[0], vec3[1], vec3[2]),
-						(FoliageBillboardType)root["foliage_zones"][i]["type"].asInt()));
+						(FoliageBillboardType)root["foliage_zones"][i]["type"].asInt(), placedOnTerrain, terrainChannel));
 				}
 			}
 			else
