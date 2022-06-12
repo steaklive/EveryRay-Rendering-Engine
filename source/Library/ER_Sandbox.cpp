@@ -302,6 +302,7 @@ namespace Library {
 			mDirectionalLight->DrawProxyModel(gameTime);
 			mIllumination->DrawDebugGizmos();
 			mTerrain->DrawDebugGizmos();
+			mFoliageSystem->DrawDebugGizmos();
 			for (auto& it = mScene->objects.begin(); it != mScene->objects.end(); it++)
 				it->second->DrawAABB();
 		}

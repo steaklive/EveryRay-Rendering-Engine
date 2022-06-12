@@ -77,6 +77,13 @@ namespace Library
 			object->Draw(gameTime, worldShadowMapper, renderPass);
 	}
 
+	void ER_FoliageManager::DrawDebugGizmos()
+	{
+		if (Utility::IsEditorMode && Utility::IsFoliageEditor)
+			for (auto& object : mFoliageCollection)
+				object->DrawDebugGizmos();
+	}
+
 	void ER_FoliageManager::AddFoliage(ER_Foliage* foliage)
 	{
 		assert(foliage);
@@ -483,8 +490,11 @@ namespace Library
 
 		ID3D11SamplerState* nullSSs[] = { NULL };
 		context->PSSetSamplers(0, 1, nullSSs);
+	}
 
-		if (Utility::IsEditorMode && Utility::IsFoliageEditor && mIsSelectedInEditor)
+	void ER_Foliage::DrawDebugGizmos()
+	{
+		if (mDebugGizmoAABB && mIsSelectedInEditor)
 			mDebugGizmoAABB->Draw();
 	}
 

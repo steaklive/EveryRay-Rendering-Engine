@@ -84,6 +84,7 @@ namespace Library
 
 		void Initialize();
 		void Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass);
+		void DrawDebugGizmos();
 		void Update(const GameTime& gameTime);
 
 		bool IsSelected() { return mIsSelectedInEditor; }
@@ -125,6 +126,8 @@ namespace Library
 
 		void SetName(const std::string& name) { mName = name; }
 		const std::string& GetName() { return mName; }
+
+		bool IsSelectedInEditor() { return mIsSelectedInEditor; }
 	private:
 		void InitializeBuffersGPU(int count);
 		void InitializeBuffersCPU();
@@ -164,7 +167,7 @@ namespace Library
 
 		ER_RenderableAABB* mDebugGizmoAABB = nullptr;
 		ER_AABB mAABB;
-		const float mAABBExtentY = 50.0f;
+		const float mAABBExtentY = 25.0f;
 		const float mAABBExtentXZ = 1.0f;
 
 		std::string mName;
@@ -220,6 +223,7 @@ namespace Library
 		void Initialize();
 		void Update(const GameTime& gameTime, float gustDistance, float strength, float frequency);
 		void Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass);
+		void DrawDebugGizmos();
 		void AddFoliage(ER_Foliage* foliage);
 		void SetVoxelizationParams(float* scale, const float* dimensions, XMFLOAT4* voxelCamera);
 		void Config() { mShowDebug = !mShowDebug; }
