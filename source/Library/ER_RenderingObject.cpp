@@ -633,6 +633,57 @@ namespace Library
 			mIsCulled = cullFunction(mGlobalAABB);
 	}
 
+	// Placement on terrain based on object's properties defined in level file (instance count, terrain splat, object scale variation, etc.)
+	// This method is not supposed to run every frame, but during initialization or on request
+	void ER_RenderingObject::PlaceProcedurallyOnTerrain()
+	{
+		ER_Terrain* terrain = mGame->GetLevel()->mTerrain;
+		if (!terrain || !terrain->IsLoaded())
+			return;
+
+		if (!mIsInstanced)
+		{
+			XMFLOAT4 currentPos;
+			MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), currentPos);
+			terrain->PlaceOnTerrain(&currentPos, 1, (TerrainSplatChannels)mTerrainProceduralPlacementSplatChannel);
+
+			MatrixHelper::SetTranslation(mTransformationMatrix, XMFLOAT3(currentPos.x, currentPos.y, currentPos.z));
+			SetTransformationMatrix(mTransformationMatrix);
+		}
+		else
+		{
+			XMFLOAT4* instancesPositions = new XMFLOAT4[mInstanceCount];
+			for (int instanceI = 0; instanceI < mInstanceCount; instanceI++)
+			{
+				instancesPositions[instanceI] = XMFLOAT4(
+					mTerrainProceduralZoneCenterPos.x + Utility::RandomFloat(-mTerrainProceduralZoneRadius, mTerrainProceduralZoneRadius),
+					mTerrainProceduralZoneCenterPos.y,
+					mTerrainProceduralZoneCenterPos.z + Utility::RandomFloat(-mTerrainProceduralZoneRadius, mTerrainProceduralZoneRadius), 1.0f);
+			}
+			terrain->PlaceOnTerrain(instancesPositions, mInstanceCount, (TerrainSplatChannels)mTerrainProceduralPlacementSplatChannel);
+			XMMATRIX worldMatrix = XMMatrixIdentity();
+
+			for (int lod = 0; lod < GetLODCount(); lod++)
+			{
+				for (int instanceI = 0; instanceI < mInstanceCount; instanceI++)
+				{
+					float scale = Utility::RandomFloat(mTerrainProceduralObjectMinScale, mTerrainProceduralObjectMaxScale);
+					float roll = Utility::RandomFloat(mTerrainProceduralObjectMinRoll, mTerrainProceduralObjectMaxRoll);
+					float pitch = Utility::RandomFloat(mTerrainProceduralObjectMinPitch, mTerrainProceduralObjectMaxPitch);
+					float yaw = Utility::RandomFloat(mTerrainProceduralObjectMinYaw, mTerrainProceduralObjectMaxYaw);
+
+					worldMatrix = XMMatrixScaling(scale, scale, scale) * XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
+					MatrixHelper::SetTranslation(worldMatrix, XMFLOAT3(instancesPositions[instanceI].x, instancesPositions[instanceI].y, instancesPositions[instanceI].z));
+					XMStoreFloat4x4(&(mInstanceData[lod][instanceI].World), worldMatrix);
+					worldMatrix = XMMatrixIdentity();
+				}
+				UpdateInstanceBuffer(mInstanceData[lod], lod);
+			}
+			DeleteObjects(instancesPositions);
+		}
+		mIsTerrainPlacementFinished = true;
+		
+	}
 	void ER_RenderingObject::Update(const GameTime& time)
 	{
 		Camera* camera = (Camera*)(mGame->Services().GetService(Camera::TypeIdClass()));
@@ -645,6 +696,10 @@ namespace Library
 			// load current selected instance's transform to temp transform (for UI)
 			MatrixHelper::GetFloatArray(mInstanceData[0][mEditorSelectedInstancedObjectIndex].World, mCurrentObjectTransformMatrix);
 		}
+
+		// place procedurally on terrain (only executed once, on load)
+		if (mIsTerrainPlacement && !mIsTerrainPlacementFinished)
+			PlaceProcedurallyOnTerrain();
 
 		//update AABBs (global and instanced)
 		{

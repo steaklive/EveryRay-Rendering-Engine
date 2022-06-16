@@ -210,21 +210,70 @@ namespace Library
 		{
 			if (root["rendering_objects"][i].isMember("foliageMask"))
 				aObject->SetFoliageMask(root["rendering_objects"][i]["foliageMask"].asBool());
+			
 			if (root["rendering_objects"][i].isMember("use_indirect_global_lightprobe"))
 				aObject->SetUseIndirectGlobalLightProbe(root["rendering_objects"][i]["use_indirect_global_lightprobe"].asBool());
+			
 			if (root["rendering_objects"][i].isMember("use_in_global_lightprobe_rendering"))
 				aObject->SetIsUsedForGlobalLightProbeRendering(root["rendering_objects"][i]["use_in_global_lightprobe_rendering"].asBool());
+			
 			if (root["rendering_objects"][i].isMember("use_parallax_occlusion_mapping"))
 				aObject->SetParallaxOcclusionMapping(root["rendering_objects"][i]["use_parallax_occlusion_mapping"].asBool());
+			
 			if (root["rendering_objects"][i].isMember("use_forward_shading"))
 				aObject->SetForwardShading(root["rendering_objects"][i]["use_forward_shading"].asBool());
-			if (root["rendering_objects"][i].isMember("placed_on_terrain")) {
-				aObject->SetPlacedOnTerrain(root["rendering_objects"][i]["placed_on_terrain"].asBool());
-				if (isInstanced && root["rendering_objects"][i].isMember("num_instances_per_vegetation_zone"))
-					aObject->SetNumInstancesPerVegetationZone(root["rendering_objects"][i]["num_instances_per_vegetation_zone"].asInt());
+			
+			//terrain
+			if (root["rendering_objects"][i].isMember("terrain_placement"))
+			{
+				aObject->SetTerrainPlacement(root["rendering_objects"][i]["terrain_placement"].asBool());
+
+				if (root["rendering_objects"][i].isMember("terrain_splat_channel"))
+					aObject->SetTerrainProceduralPlacementSplatChannel(root["rendering_objects"][i]["terrain_splat_channel"].asInt());
+
+				//procedural flags
+				{
+					if (root["rendering_objects"][i].isMember("terrain_procedural_instance_scale_min") && root["rendering_objects"][i].isMember("terrain_procedural_instance_scale_max"))
+						aObject->SetTerrainProceduralObjectsMinMaxScale(
+							root["rendering_objects"][i]["terrain_procedural_instance_scale_min"].asFloat(),
+							root["rendering_objects"][i]["terrain_procedural_instance_scale_max"].asFloat());
+
+					if (root["rendering_objects"][i].isMember("terrain_procedural_instance_pitch_min") && root["rendering_objects"][i].isMember("terrain_procedural_instance_pitch_max"))
+						aObject->SetTerrainProceduralObjectsMinMaxPitch(
+							root["rendering_objects"][i]["terrain_procedural_instance_pitch_min"].asFloat(),
+							root["rendering_objects"][i]["terrain_procedural_instance_pitch_max"].asFloat());
+
+					if (root["rendering_objects"][i].isMember("terrain_procedural_instance_roll_min") && root["rendering_objects"][i].isMember("terrain_procedural_instance_roll_max"))
+						aObject->SetTerrainProceduralObjectsMinMaxRoll(
+							root["rendering_objects"][i]["terrain_procedural_instance_roll_min"].asFloat(),
+							root["rendering_objects"][i]["terrain_procedural_instance_roll_max"].asFloat());
+
+					if (root["rendering_objects"][i].isMember("terrain_procedural_instance_yaw_min") && root["rendering_objects"][i].isMember("terrain_procedural_instance_yaw_max"))
+						aObject->SetTerrainProceduralObjectsMinMaxYaw(
+							root["rendering_objects"][i]["terrain_procedural_instance_yaw_min"].asFloat(),
+							root["rendering_objects"][i]["terrain_procedural_instance_yaw_max"].asFloat());
+
+					if (isInstanced && root["rendering_objects"][i].isMember("terrain_procedural_instance_count"))
+						aObject->SetTerrainProceduralInstanceCount(root["rendering_objects"][i]["terrain_procedural_instance_count"].asInt());
+
+					if (root["rendering_objects"][i].isMember("terrain_procedural_zone_center_pos"))
+					{
+						float vec3[3];
+						for (Json::Value::ArrayIndex vecI = 0; vecI != root["rendering_objects"][i]["terrain_procedural_zone_center_pos"].size(); vecI++)
+							vec3[vecI] = root["rendering_objects"][i]["terrain_procedural_zone_center_pos"][vecI].asFloat();
+
+						XMFLOAT3 centerPos = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+						aObject->SetTerrainProceduralZoneCenterPos(centerPos);
+					}
+
+					if (isInstanced && root["rendering_objects"][i].isMember("terrain_procedural_zone_radius"))
+						aObject->SetTerrainProceduralZoneRadius(root["rendering_objects"][i]["terrain_procedural_zone_radius"].asFloat());
+				}
 			}
+			
 			if (root["rendering_objects"][i].isMember("min_scale"))
 				aObject->SetMinScale(root["rendering_objects"][i]["min_scale"].asFloat());
+			
 			if (root["rendering_objects"][i].isMember("max_scale"))
 				aObject->SetMaxScale(root["rendering_objects"][i]["max_scale"].asFloat());
 		}
@@ -368,40 +417,61 @@ namespace Library
 				for (int lod = 0; lod < root["rendering_objects"][i]["model_lods"].size(); lod++)
 				{
 					aObject->LoadInstanceBuffers(lod);
-					if (root["rendering_objects"][i].isMember("instances_transforms")) {
-						aObject->ResetInstanceData(root["rendering_objects"][i]["instances_transforms"].size(), true, lod);
-						for (Json::Value::ArrayIndex instance = 0; instance != root["rendering_objects"][i]["instances_transforms"].size(); instance++) {
-							float matrix[16];
-							for (Json::Value::ArrayIndex matC = 0; matC != root["rendering_objects"][i]["instances_transforms"][instance]["transform"].size(); matC++) {
-								matrix[matC] = root["rendering_objects"][i]["instances_transforms"][instance]["transform"][matC].asFloat();
-							}
-							XMFLOAT4X4 worldTransform(matrix);
-							aObject->AddInstanceData(XMMatrixTranspose(XMLoadFloat4x4(&worldTransform)), lod);
-						}
+					if (aObject->GetTerrainPlacement() && aObject->GetTerrainProceduralInstanceCount() > 0)
+					{
+						int instanceCount = aObject->GetTerrainProceduralInstanceCount();
+						aObject->ResetInstanceData(instanceCount, true, lod);
+						for (int i = 0; i < instanceCount; i++)
+							aObject->AddInstanceData(XMMatrixIdentity(), lod);
 					}
-					else {
-						aObject->ResetInstanceData(1, true, lod);
-						aObject->AddInstanceData(aObject->GetTransformationMatrix(), lod);
+					else
+					{
+						if (root["rendering_objects"][i].isMember("instances_transforms")) {
+							aObject->ResetInstanceData(root["rendering_objects"][i]["instances_transforms"].size(), true, lod);
+							for (Json::Value::ArrayIndex instance = 0; instance != root["rendering_objects"][i]["instances_transforms"].size(); instance++) {
+								float matrix[16];
+								for (Json::Value::ArrayIndex matC = 0; matC != root["rendering_objects"][i]["instances_transforms"][instance]["transform"].size(); matC++) {
+									matrix[matC] = root["rendering_objects"][i]["instances_transforms"][instance]["transform"][matC].asFloat();
+								}
+								XMFLOAT4X4 worldTransform(matrix);
+								aObject->AddInstanceData(XMMatrixTranspose(XMLoadFloat4x4(&worldTransform)), lod);
+							}
+						}
+						else {
+							aObject->ResetInstanceData(1, true, lod);
+							aObject->AddInstanceData(aObject->GetTransformationMatrix(), lod);
+						}
 					}
 					aObject->UpdateInstanceBuffer(aObject->GetInstancesData(), lod);
 				}
 			}
 			else {
 				aObject->LoadInstanceBuffers();
-				if (root["rendering_objects"][i].isMember("instances_transforms")) {
-					aObject->ResetInstanceData(root["rendering_objects"][i]["instances_transforms"].size(), true);
-					for (Json::Value::ArrayIndex instance = 0; instance != root["rendering_objects"][i]["instances_transforms"].size(); instance++) {
-						float matrix[16];
-						for (Json::Value::ArrayIndex matC = 0; matC != root["rendering_objects"][i]["instances_transforms"][instance]["transform"].size(); matC++) {
-							matrix[matC] = root["rendering_objects"][i]["instances_transforms"][instance]["transform"][matC].asFloat();
-						}
-						XMFLOAT4X4 worldTransform(matrix);
-						aObject->AddInstanceData(XMMatrixTranspose(XMLoadFloat4x4(&worldTransform)));
-					}
+
+				if (aObject->GetTerrainPlacement() && aObject->GetTerrainProceduralInstanceCount() > 0)
+				{
+					int instanceCount = aObject->GetTerrainProceduralInstanceCount();
+					aObject->ResetInstanceData(instanceCount, true);
+					for (int i = 0; i < instanceCount; i++)
+						aObject->AddInstanceData(XMMatrixIdentity());
 				}
-				else {
-					aObject->ResetInstanceData(1, true);
-					aObject->AddInstanceData(aObject->GetTransformationMatrix());
+				else
+				{
+					if (root["rendering_objects"][i].isMember("instances_transforms")) {
+						aObject->ResetInstanceData(root["rendering_objects"][i]["instances_transforms"].size(), true);
+						for (Json::Value::ArrayIndex instance = 0; instance != root["rendering_objects"][i]["instances_transforms"].size(); instance++) {
+							float matrix[16];
+							for (Json::Value::ArrayIndex matC = 0; matC != root["rendering_objects"][i]["instances_transforms"][instance]["transform"].size(); matC++) {
+								matrix[matC] = root["rendering_objects"][i]["instances_transforms"][instance]["transform"][matC].asFloat();
+							}
+							XMFLOAT4X4 worldTransform(matrix);
+							aObject->AddInstanceData(XMMatrixTranspose(XMLoadFloat4x4(&worldTransform)));
+						}
+					}
+					else {
+						aObject->ResetInstanceData(1, true);
+						aObject->AddInstanceData(aObject->GetTransformationMatrix());
+					}
 				}
 				aObject->UpdateInstanceBuffer(aObject->GetInstancesData());
 			}

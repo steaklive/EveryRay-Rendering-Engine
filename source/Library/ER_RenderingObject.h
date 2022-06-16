@@ -163,7 +163,7 @@ namespace Library
 		UINT InstanceSize() const;
 		
 		void PerformCPUFrustumCull(Camera* camera);
-		
+
 		void Rename(const std::string& name) { mName = name; }
 		const std::string& GetName() { return mName; }
 
@@ -188,21 +188,28 @@ namespace Library
 		bool IsVisible() { return mIsRendered; }
 		void SetVisible(bool val) { mIsRendered = val; }
 
-		//TODO remove that (culling can be different in different views)
+		// main camera view flag
 		bool IsCulled() { return mIsCulled; }
 		void SetCulled(bool val) { mIsCulled = val; }
 
+		void PlaceProcedurallyOnTerrain();
+		void SetTerrainPlacement(bool flag) { mIsTerrainPlacement = flag; }
+		bool GetTerrainPlacement() { return mIsTerrainPlacement; }
+		void SetTerrainProceduralPlacementSplatChannel(int channel) { mTerrainProceduralPlacementSplatChannel = channel; }
+		int GetTerrainProceduralPlacementSplatChannel() { return mTerrainProceduralPlacementSplatChannel; }
+		void SetTerrainProceduralInstanceCount(int count) { mTerrainProceduralInstanceCount = count; }
+		int GetTerrainProceduralInstanceCount() { return mTerrainProceduralInstanceCount; }
+		void SetTerrainProceduralZoneCenterPos(const XMFLOAT3& pos) { mTerrainProceduralZoneCenterPos = pos; }
+		const XMFLOAT3& GetTerrainProceduralZoneCenterPos(const XMFLOAT3& pos) { return mTerrainProceduralZoneCenterPos; }
+		void SetTerrainProceduralZoneRadius(float radius) { mTerrainProceduralZoneRadius = radius; }
+		float GetTerrainProceduralZoneRadius() { return mTerrainProceduralZoneRadius; }
+		void SetTerrainProceduralObjectsMinMaxScale(float minScale, float maxScale) { mTerrainProceduralObjectMinScale = minScale; mTerrainProceduralObjectMaxScale = maxScale; }
+		void SetTerrainProceduralObjectsMinMaxYaw(float minYaw, float maxYaw) { mTerrainProceduralObjectMinYaw = XMConvertToRadians(minYaw); mTerrainProceduralObjectMaxYaw = XMConvertToRadians(maxYaw); }
+		void SetTerrainProceduralObjectsMinMaxPitch(float minPitch, float maxPitch) { mTerrainProceduralObjectMinPitch = XMConvertToRadians(minPitch); mTerrainProceduralObjectMaxPitch = XMConvertToRadians(maxPitch); }
+		void SetTerrainProceduralObjectsMinMaxRoll(float minRoll, float maxRoll) { mTerrainProceduralObjectMinRoll = XMConvertToRadians(minRoll); mTerrainProceduralObjectMaxRoll = XMConvertToRadians(maxRoll); }
+
 		void SetMeshReflectionFactor(int meshIndex, float factor) { mMeshesReflectionFactors[meshIndex] = factor; }
 		float GetMeshReflectionFactor(int meshIndex) { return mMeshesReflectionFactors[meshIndex]; }
-
-		void SetPlacedOnTerrain(bool flag) { mPlacedOnTerrain = flag; }
-		bool IsPlacedOnTerrain() { return mPlacedOnTerrain; }
-
-		bool GetIsSavedOnTerrain() { return mSavedOnTerrain; }
-		void SetSavedOnTerrain(bool flag) { mSavedOnTerrain = flag; }
-		
-		void SetNumInstancesPerVegetationZone(int count) { mNumInstancesPerVegetationZone = count; }
-		int GetNumInstancesPerVegetationZone() { return mNumInstancesPerVegetationZone; }
 
 		bool GetFoliageMask() { return mFoliageMask; }
 		void SetFoliageMask(bool value) { mFoliageMask = value; }
@@ -282,6 +289,24 @@ namespace Library
 		// 
 		///****************************************************************************************************************************
 
+		///****************************************************************************************************************************
+		// *** terrain placement & procedural fields ***
+		int														mTerrainProceduralPlacementSplatChannel = 4; //TerrainSplatChannel::NONE // on which terrain splat to place
+		int														mTerrainProceduralInstanceCount = 0;
+		XMFLOAT3												mTerrainProceduralZoneCenterPos; // center of procedural placement
+		float													mTerrainProceduralZoneRadius = 0.0f; // radius of procedural placement
+		float													mTerrainProceduralObjectMinScale = 1.0f;
+		float													mTerrainProceduralObjectMaxScale = 1.0f;
+		float													mTerrainProceduralObjectMinRoll = 0.0f;
+		float													mTerrainProceduralObjectMaxRoll = 0.0f;
+		float													mTerrainProceduralObjectMinPitch = 0.0f;
+		float													mTerrainProceduralObjectMaxPitch = 0.0f;
+		float													mTerrainProceduralObjectMinYaw = 0.0f;
+		float													mTerrainProceduralObjectMaxYaw = 0.0f;
+		bool													mIsTerrainPlacementFinished = false;
+		bool													mIsTerrainPlacement = false;
+		///****************************************************************************************************************************
+
 		ER_AABB													mLocalAABB; //mesh space AABB
 		ER_AABB													mGlobalAABB; //world space AABB
 		XMFLOAT3												mCurrentGlobalAABBVertices[8];
@@ -292,7 +317,6 @@ namespace Library
 		int														mIndexInScene = -1;
 		int														mCurrentLODIndex = 0; //only used for non-instanced object
 		int														mEditorSelectedInstancedObjectIndex = 0;
-		int														mNumInstancesPerVegetationZone = 0;
 		bool													mEnableAABBDebug = true;
 		bool													mWireframeMode = false;
 		bool													mAvailableInEditorMode = false;
@@ -301,8 +325,6 @@ namespace Library
 		bool													mIsInstanced = false;
 		bool													mIsForwardShading = false;
 		bool													mIsPOM = false;
-		bool													mPlacedOnTerrain = false;
-		bool													mSavedOnTerrain = false;
 		bool													mIsCulled = false; //only for non-instanced objects
 		bool													mFoliageMask = false;
 		bool													mIsInLightProbe = false;

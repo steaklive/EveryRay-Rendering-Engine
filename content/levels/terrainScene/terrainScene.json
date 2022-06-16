@@ -177,6 +177,135 @@
 				0.0,
 				1.0
 			]
+		},
+		{
+			"instanced" : false,
+			"terrain_placement" : true,
+			"terrain_splat_channel" : 4,
+			"model_lods" : 
+			[
+				{
+					"path" : "content\\models\\dragon\\dragon_lod_high.fbx"
+				},
+				{
+					"path" : "content\\models\\dragon\\dragon_lod_mid.fbx"
+				},
+				{
+					"path" : "content\\models\\dragon\\dragon_lod_low.fbx"
+				}
+			],
+			"model_path" : "content\\models\\dragon\\dragon_lod_high.fbx",
+			"name" : "Dragon (Green)",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\green.png",
+					"normal" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_normal-dx.png",
+					"roughness" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_roughness.png"
+				}
+			],
+			"transform" : 
+			[
+				1.6671211719512939,
+				0.0,
+				1.2030911445617676,
+				-3.1524653434753418,
+				0.0,
+				2.0559000968933105,
+				0.0,
+				-0.16924595832824707,
+				-1.2030911445617676,
+				0.0,
+				1.6671211719512939,
+				-5.2266368865966797,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"instanced" : true,
+			"terrain_placement" : true,
+			"terrain_procedural_instance_count" : 2000,
+			"terrain_procedural_instance_scale_min" : 0.5,
+			"terrain_procedural_instance_scale_max" : 0.9,
+			"terrain_procedural_instance_yaw_min" : -180.0,
+			"terrain_procedural_instance_yaw_max" : 180.0,
+			"terrain_procedural_zone_center_pos" : 
+			[
+				501.5732421875,
+				75.33013916015625,
+				-500.44598388671875
+			],
+			"terrain_procedural_zone_radius" : 1000,
+			"terrain_splat_channel" : 4,
+			"model_lods" : 
+			[
+				{
+					"path" : "content\\models\\rocks\\rock_1\\rock_1_lod_high.fbx"
+				},
+				{
+					"path" : "content\\models\\rocks\\rock_1\\rock_1_lod_mid.fbx"
+				},
+				{
+					"path" : "content\\models\\rocks\\rock_1\\rock_1_lod_low.fbx"
+				}
+			],
+			"model_path" : "content\\models\\rocks\\rock_1\\rock_1_lod_high.fbx",
+			"name" : "Rock 1",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\models\\rocks\\rock_1\\rock_low_Base_Color.png",
+					"metalness" : "content\\models\\rocks\\rock_1\\rock_low_Metallic.png",
+					"normal" : "content\\models\\rocks\\rock_1\\rock_low_Normal_DirectX.png",
+					"roughness" : "content\\models\\rocks\\rock_1\\rock_low_Roughness.png"
+				}
+			],
+			"transform" : 
+			[
+				0.90517723560333252,
+				0.0,
+				0.4250321090221405,
+				38.242660522460938,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				-0.4250321090221405,
+				0.0,
+				0.90517723560333252,
+				41.258087158203125,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
 		}
 	],
 	"sun_color" : 
