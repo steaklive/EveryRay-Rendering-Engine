@@ -336,10 +336,14 @@ namespace Library
 	{
 		assert(lod < GetLODCount());
 		assert(mModel);
-		assert(mGame->Direct3DDevice() != nullptr);
 
 		mMeshesRenderBuffers.push_back({});
 		assert(mMeshesRenderBuffers.size() - 1 == lod);
+
+		auto createIndexBuffer = [this](Mesh& aMesh, int meshIndex, int lod, const std::string& materialName) {
+			aMesh.CreateIndexBuffer(&(mMeshesRenderBuffers[lod][materialName][meshIndex]->IndexBuffer));
+			mMeshesRenderBuffers[lod][materialName][meshIndex]->IndicesCount = aMesh.Indices().size();
+		};
 
 		for (auto material : mMaterials)
 		{
@@ -347,17 +351,9 @@ namespace Library
 			for (size_t i = 0; i < mMeshesCount[lod]; i++)
 			{
 				mMeshesRenderBuffers[lod][material.first].push_back(new RenderBufferData());
-				if (lod == 0) {
-					material.second->CreateVertexBuffer(*mModel->Meshes()[i], &(mMeshesRenderBuffers[lod][material.first][i]->VertexBuffer));
-					mModel->Meshes()[i]->CreateIndexBuffer(&(mMeshesRenderBuffers[lod][material.first][i]->IndexBuffer));
-					mMeshesRenderBuffers[lod][material.first][i]->IndicesCount = mModel->Meshes()[i]->Indices().size();
-				}
-				else
-				{
-					material.second->CreateVertexBuffer(*mModelLODs[lod - 1]->Meshes()[i], &(mMeshesRenderBuffers[lod][material.first][i]->VertexBuffer));
-					mModelLODs[lod - 1]->Meshes()[i]->CreateIndexBuffer(&(mMeshesRenderBuffers[lod][material.first][i]->IndexBuffer));
-					mMeshesRenderBuffers[lod][material.first][i]->IndicesCount = mModelLODs[lod - 1]->Meshes()[i]->Indices().size();
-				}
+
+				material.second->CreateVertexBuffer((lod == 0) ? (*mModel->Meshes()[i]) : (*mModelLODs[lod - 1]->Meshes()[i]), &(mMeshesRenderBuffers[lod][material.first][i]->VertexBuffer));
+				createIndexBuffer((lod == 0) ? (*mModel->Meshes()[i]) : (*mModelLODs[lod - 1]->Meshes()[i]), i, lod, material.first);
 
 				mMeshesRenderBuffers[lod][material.first][i]->Stride = mMaterials[material.first]->VertexSize();
 				mMeshesRenderBuffers[lod][material.first][i]->Offset = 0;
@@ -371,17 +367,13 @@ namespace Library
 			for (size_t i = 0; i < mMeshesCount[lod]; i++)
 			{
 				mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName].push_back(new RenderBufferData());
-				if (lod == 0) {
+
+				if (lod == 0)
 					mModel->Meshes()[i]->CreateVertexBuffer_PositionUvNormalTangent(&(mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer));
-					mModel->Meshes()[i]->CreateIndexBuffer(&(mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->IndexBuffer));
-					mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->IndicesCount = mModel->Meshes()[i]->Indices().size();
-				}
 				else
-				{
-					mModel->Meshes()[i]->CreateVertexBuffer_PositionUvNormalTangent(&(mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer));
-					mModelLODs[lod - 1]->Meshes()[i]->CreateIndexBuffer(&(mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->IndexBuffer));
-					mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->IndicesCount = mModelLODs[lod - 1]->Meshes()[i]->Indices().size();
-				}
+					mModelLODs[lod - 1]->Meshes()[i]->CreateVertexBuffer_PositionUvNormalTangent(&(mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer));
+
+				createIndexBuffer((lod == 0) ? (*mModel->Meshes()[i]) : (*mModelLODs[lod - 1]->Meshes()[i]), i, lod, MaterialHelper::forwardLightingNonMaterialName);
 
 				mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->Stride = sizeof(VertexPositionTextureNormalTangent);
 				mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->Offset = 0;
