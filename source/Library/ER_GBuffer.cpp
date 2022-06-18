@@ -86,13 +86,13 @@ namespace Library {
 
 		for (auto it = scene->objects.begin(); it != scene->objects.end(); it++)
 		{
-			auto materialInfo = it->second->GetMaterials().find(MaterialHelper::gbufferMaterialName);
+			auto materialInfo = it->second->GetMaterials().find(ER_MaterialHelper::gbufferMaterialName);
 			if (materialInfo != it->second->GetMaterials().end())
 			{
 				for (int meshIndex = 0; meshIndex < it->second->GetMeshCount(); meshIndex++)
 				{
 					static_cast<ER_GBufferMaterial*>(materialInfo->second)->PrepareForRendering(materialSystems, it->second, meshIndex);
-					it->second->Draw(MaterialHelper::gbufferMaterialName, true, meshIndex);
+					it->second->Draw(ER_MaterialHelper::gbufferMaterialName, true, meshIndex);
 				}
 			}
 		}

@@ -360,20 +360,20 @@ namespace Library
 		//special case for forward lighting (non-material case)
 		if (mIsForwardShading)
 		{
-			mMeshesRenderBuffers[lod].insert(std::pair<std::string, std::vector<RenderBufferData*>>(MaterialHelper::forwardLightingNonMaterialName, std::vector<RenderBufferData*>()));
+			mMeshesRenderBuffers[lod].insert(std::pair<std::string, std::vector<RenderBufferData*>>(ER_MaterialHelper::forwardLightingNonMaterialName, std::vector<RenderBufferData*>()));
 			for (size_t i = 0; i < mMeshesCount[lod]; i++)
 			{
-				mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName].push_back(new RenderBufferData());
+				mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName].push_back(new RenderBufferData());
 
 				if (lod == 0)
-					mModel->GetMesh(i).CreateVertexBuffer_PositionUvNormalTangent(&(mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer));
+					mModel->GetMesh(i).CreateVertexBuffer_PositionUvNormalTangent(&(mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer));
 				else
-					mModelLODs[lod - 1]->GetMesh(i).CreateVertexBuffer_PositionUvNormalTangent(&(mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer));
+					mModelLODs[lod - 1]->GetMesh(i).CreateVertexBuffer_PositionUvNormalTangent(&(mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer));
 
-				createIndexBuffer((lod == 0) ? mModel->GetMesh(i) : mModelLODs[lod - 1]->GetMesh(i), i, lod, MaterialHelper::forwardLightingNonMaterialName);
+				createIndexBuffer((lod == 0) ? mModel->GetMesh(i) : mModelLODs[lod - 1]->GetMesh(i), i, lod, ER_MaterialHelper::forwardLightingNonMaterialName);
 
-				mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->Stride = sizeof(VertexPositionTextureNormalTangent);
-				mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->Offset = 0;
+				mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName][i]->Stride = sizeof(VertexPositionTextureNormalTangent);
+				mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName][i]->Offset = 0;
 			}
 		}
 	}
@@ -392,7 +392,7 @@ namespace Library
 
 	void ER_RenderingObject::DrawLOD(const std::string& materialName, bool toDepth, int meshIndex, int lod)
 	{
-		bool isForwardPass = materialName == MaterialHelper::forwardLightingNonMaterialName && mIsForwardShading;
+		bool isForwardPass = materialName == ER_MaterialHelper::forwardLightingNonMaterialName && mIsForwardShading;
 
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
 		context->IASetPrimitiveTopology(mWireframeMode ? D3D11_PRIMITIVE_TOPOLOGY_LINELIST : D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

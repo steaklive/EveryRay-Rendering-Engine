@@ -11,7 +11,7 @@
 #include "GameException.h"
 #include "Utility.h"
 #include "MatrixHelper.h"
-#include "MaterialHelper.h"
+#include "ER_MaterialHelper.h"
 #include "VectorHelper.h"
 #include "DirectionalLight.h"
 #include "ER_QuadRenderer.h"
@@ -152,7 +152,7 @@ namespace Library
 		float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		bool isGlobal = (mIndex == -1);
 
-		std::string materialListenerName = ((mProbeType == DIFFUSE_PROBE) ? "diffuse_" : "specular_") + MaterialHelper::renderToLightProbeMaterialName;
+		std::string materialListenerName = ((mProbeType == DIFFUSE_PROBE) ? "diffuse_" : "specular_") + ER_MaterialHelper::renderToLightProbeMaterialName;
 		
 		ER_MaterialSystems matSystems;
 		matSystems.mDirectionalLight = &mDirectionalLight;

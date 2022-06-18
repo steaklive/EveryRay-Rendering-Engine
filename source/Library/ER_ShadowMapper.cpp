@@ -10,7 +10,7 @@
 #include "DepthMap.h"
 #include "GameException.h"
 #include "ER_Scene.h"
-#include "MaterialHelper.h"
+#include "ER_MaterialHelper.h"
 #include "ER_RenderingObject.h"
 #include "ER_ShadowMapMaterial.h"
 #include "ER_MaterialsCallbacks.h"
@@ -255,7 +255,7 @@ namespace Library
 			if (terrain)
 				terrain->Draw(this, nullptr, i);
 
-			const std::string name = MaterialHelper::shadowMapMaterialName + " " + std::to_string(i);
+			const std::string name = ER_MaterialHelper::shadowMapMaterialName + " " + std::to_string(i);
 
 			int objectIndex = 0;
 			for (auto it = scene->objects.begin(); it != scene->objects.end(); it++, objectIndex++)

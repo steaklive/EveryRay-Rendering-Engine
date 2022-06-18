@@ -5,7 +5,7 @@
 #include "Utility.h"
 #include "DirectionalLight.h"
 #include "MatrixHelper.h"
-#include "MaterialHelper.h"
+#include "ER_MaterialHelper.h"
 #include "VectorHelper.h"
 #include "ShaderCompiler.h"
 #include "ER_RenderingObject.h"
@@ -244,7 +244,7 @@ namespace Library
 		shaderEntries.vertexEntry += "_instancing";
 
 		mDiffuseProbeRenderingObject = result.first->second;
-		mDiffuseProbeRenderingObject->LoadMaterial(new ER_DebugLightProbeMaterial(game, shaderEntries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, true), MaterialHelper::debugLightProbeMaterialName);
+		mDiffuseProbeRenderingObject->LoadMaterial(new ER_DebugLightProbeMaterial(game, shaderEntries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, true), ER_MaterialHelper::debugLightProbeMaterialName);
 		mDiffuseProbeRenderingObject->LoadRenderBuffers();
 		mDiffuseProbeRenderingObject->LoadInstanceBuffers();
 		mDiffuseProbeRenderingObject->ResetInstanceData(mDiffuseProbesCountTotal, true);
@@ -370,7 +370,7 @@ namespace Library
 		shaderEntries.vertexEntry += "_instancing";
 
 		mSpecularProbeRenderingObject = result.first->second;
-		mSpecularProbeRenderingObject->LoadMaterial(new ER_DebugLightProbeMaterial(game, shaderEntries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, true), MaterialHelper::debugLightProbeMaterialName);
+		mSpecularProbeRenderingObject->LoadMaterial(new ER_DebugLightProbeMaterial(game, shaderEntries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, true), ER_MaterialHelper::debugLightProbeMaterialName);
 		mSpecularProbeRenderingObject->LoadRenderBuffers();
 		mSpecularProbeRenderingObject->LoadInstanceBuffers();
 		mSpecularProbeRenderingObject->ResetInstanceData(mSpecularProbesCountTotal, true);
@@ -619,11 +619,11 @@ namespace Library
 
 		if (probeObject && ready)
 		{
-			auto materialInfo = probeObject->GetMaterials().find(MaterialHelper::debugLightProbeMaterialName);
+			auto materialInfo = probeObject->GetMaterials().find(ER_MaterialHelper::debugLightProbeMaterialName);
 			if (materialInfo != probeObject->GetMaterials().end())
 			{
 				static_cast<ER_DebugLightProbeMaterial*>(materialInfo->second)->PrepareForRendering(materialSystems, probeObject, 0, static_cast<int>(aType));
-				probeObject->Draw(MaterialHelper::debugLightProbeMaterialName);
+				probeObject->Draw(ER_MaterialHelper::debugLightProbeMaterialName);
 			}
 		}
 

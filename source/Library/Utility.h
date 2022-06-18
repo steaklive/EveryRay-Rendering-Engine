@@ -5,7 +5,7 @@
 #include "VectorHelper.h"
 #include "MatrixHelper.h"
 #include "ColorHelper.h"
-#include "MaterialHelper.h"
+#include "ER_MaterialHelper.h"
 
 namespace Library
 {

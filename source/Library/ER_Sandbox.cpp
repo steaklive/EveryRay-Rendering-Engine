@@ -154,7 +154,7 @@ namespace Library {
 					object.second->MeshMaterialVariablesUpdateEvent->AddListener(layeredMaterial.first, [&, matSystems = materialSystems](int meshIndex) { layeredMaterial.second->PrepareForRendering(matSystems, object.second, meshIndex); });
 
 				// gbuffer material (special, but since its draws are not processed in 
-				if (layeredMaterial.first == MaterialHelper::gbufferMaterialName)
+				if (layeredMaterial.first == ER_MaterialHelper::gbufferMaterialName)
 					object.second->MeshMaterialVariablesUpdateEvent->AddListener(layeredMaterial.first, [&, matSystems = materialSystems](int meshIndex) { layeredMaterial.second->PrepareForRendering(matSystems, object.second, meshIndex); });
 			}
 		}

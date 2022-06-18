@@ -225,11 +225,11 @@
     <ClInclude Include="ER_Illumination.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Light.h" />
-    <ClInclude Include="MaterialHelper.h" />
+    <ClInclude Include="ER_MaterialHelper.h" />
     <ClInclude Include="MatrixHelper.h" />
     <ClInclude Include="ER_Mesh.h" />
     <ClInclude Include="ER_Model.h" />
-    <ClInclude Include="ModelMaterial.h" />
+    <ClInclude Include="ER_ModelMaterial.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="OceanSimulator.h" />
     <ClInclude Include="OctreeStructure.h" />
@@ -306,11 +306,11 @@
     <ClCompile Include="ER_GBuffer.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Light.cpp" />
-    <ClCompile Include="MaterialHelper.cpp" />
+    <ClCompile Include="ER_MaterialHelper.cpp" />
     <ClCompile Include="MatrixHelper.cpp" />
     <ClCompile Include="ER_Mesh.cpp" />
     <ClCompile Include="ER_Model.cpp" />
-    <ClCompile Include="ModelMaterial.cpp" />
+    <ClCompile Include="ER_ModelMaterial.cpp" />
     <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="OctreeStructure.cpp" />
     <ClCompile Include="PointLight.cpp" />

@@ -11,7 +11,7 @@
 #include "ER_Mesh.h"
 #include "Game.h"
 #include "MatrixHelper.h"
-#include "MaterialHelper.h"
+#include "ER_MaterialHelper.h"
 #include "Utility.h"
 #include "VertexDeclarations.h"
 #include "RasterizerStates.h"
@@ -312,7 +312,7 @@ namespace Library {
 				context->OMSetRenderTargetsAndUnorderedAccessViews(0, nullRTVs, NULL, 0, 1, UAV, NULL);
 				context->ClearUnorderedAccessViewFloat(UAV[0], clearColorBlack);
 
-				std::string materialName = MaterialHelper::voxelizationMaterialName + "_" + std::to_string(cascade);
+				std::string materialName = ER_MaterialHelper::voxelizationMaterialName + "_" + std::to_string(cascade);
 				for (auto& obj : mVoxelizationObjects[cascade]) {
 					if (!obj.second->IsInVoxelization())
 						continue;
@@ -692,7 +692,7 @@ namespace Library {
 		context->OMSetRenderTargets(1, aRenderTarget->GetRTVs(), gbuffer->GetDepth()->getDSV());
 
 		for (auto& obj : mForwardPassObjects)
-			obj.second->Draw(MaterialHelper::forwardLightingNonMaterialName);
+			obj.second->Draw(ER_MaterialHelper::forwardLightingNonMaterialName);
 	}
 
 	void ER_Illumination::PrepareForForwardLighting(ER_RenderingObject* aObj, int meshIndex)

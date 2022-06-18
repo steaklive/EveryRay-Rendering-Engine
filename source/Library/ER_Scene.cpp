@@ -10,7 +10,7 @@
 #include "ER_Model.h"
 #include "Materials.inl"
 #include "ER_RenderingObject.h"
-#include "MaterialHelper.h"
+#include "ER_MaterialHelper.h"
 #include "ER_Illumination.h"
 #include "ER_LightProbesManager.h"
 #include "ER_FoliageManager.h"
@@ -304,29 +304,29 @@ namespace Library
 					if (isInstanced) //be careful with the instancing support in shaders of the materials! (i.e., maybe the material does not have instancing entry point/support)
 						shaderEntries.vertexEntry = shaderEntries.vertexEntry + "_instancing";
 					
-					if (name == MaterialHelper::gbufferMaterialName)
+					if (name == ER_MaterialHelper::gbufferMaterialName)
 						aObject->SetInGBuffer(true);
-					if (name == MaterialHelper::renderToLightProbeMaterialName)
+					if (name == ER_MaterialHelper::renderToLightProbeMaterialName)
 						aObject->SetInLightProbe(true);
 
-					if (name == MaterialHelper::shadowMapMaterialName)
+					if (name == ER_MaterialHelper::shadowMapMaterialName)
 					{
 						for (int cascade = 0; cascade < NUM_SHADOW_CASCADES; cascade++)
 						{
-							std::string cascadedname = MaterialHelper::shadowMapMaterialName + " " + std::to_string(cascade);
+							std::string cascadedname = ER_MaterialHelper::shadowMapMaterialName + " " + std::to_string(cascade);
 							aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), cascadedname);
 						}
 					}
-					else if (name == MaterialHelper::voxelizationMaterialName)
+					else if (name == ER_MaterialHelper::voxelizationMaterialName)
 					{
 						aObject->SetInVoxelization(true);
 						for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
 						{
-							const std::string fullname = MaterialHelper::voxelizationMaterialName + "_" + std::to_string(cascade);
+							const std::string fullname = ER_MaterialHelper::voxelizationMaterialName + "_" + std::to_string(cascade);
 							aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), fullname);
 						}
 					}
-					else if (name == MaterialHelper::renderToLightProbeMaterialName)
+					else if (name == ER_MaterialHelper::renderToLightProbeMaterialName)
 					{
 						std::string originalPSEntry = shaderEntries.pixelEntry;
 						for (int cubemapFaceIndex = 0; cubemapFaceIndex < CUBEMAP_FACES_COUNT; cubemapFaceIndex++)
@@ -335,13 +335,13 @@ namespace Library
 							//diffuse
 							{
 								shaderEntries.pixelEntry = originalPSEntry + "_DiffuseProbes";
-								newName = "diffuse_" + MaterialHelper::renderToLightProbeMaterialName + "_" + std::to_string(cubemapFaceIndex);
+								newName = "diffuse_" + ER_MaterialHelper::renderToLightProbeMaterialName + "_" + std::to_string(cubemapFaceIndex);
 								aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), newName);
 							}
 							//specular
 							{
 								shaderEntries.pixelEntry = originalPSEntry + "_SpecularProbes";
-								newName = "specular_" + MaterialHelper::renderToLightProbeMaterialName + "_" + std::to_string(cubemapFaceIndex);
+								newName = "specular_" + ER_MaterialHelper::renderToLightProbeMaterialName + "_" + std::to_string(cubemapFaceIndex);
 								aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), newName);
 							}
 						}

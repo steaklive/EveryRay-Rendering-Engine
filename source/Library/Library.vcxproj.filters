@@ -147,9 +147,6 @@
     <ClInclude Include="RenderStateHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ModelMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Light.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -229,9 +226,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TGATextureLoader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MaterialHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Editor.h">
@@ -319,6 +313,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ER_Mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ER_ModelMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ER_MaterialHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -482,9 +482,6 @@
     <ClCompile Include="ER_Skybox.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
-    <ClCompile Include="ModelMaterial.cpp">
-      <Filter>Source Files\Graphics\Mesh &amp; Model</Filter>
-    </ClCompile>
     <ClCompile Include="ER_FoliageManager.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
@@ -498,9 +495,6 @@
       <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
     <ClCompile Include="ER_Material.cpp">
-      <Filter>Source Files\Graphics\Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="MaterialHelper.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
     <ClCompile Include="ER_VolumetricFog.cpp">
@@ -529,6 +523,12 @@
     </ClCompile>
     <ClCompile Include="ER_Mesh.cpp">
       <Filter>Source Files\Graphics\Mesh &amp; Model</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_ModelMaterial.cpp">
+      <Filter>Source Files\Graphics\Mesh &amp; Model</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_MaterialHelper.cpp">
+      <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
