@@ -323,6 +323,8 @@ namespace Library
 				break;
 			case TextureType::TextureTypeDisplacementMap:
 				LoadTexture(type, Utility::GetFilePath(L"content\\textures\\emptyRoughness.png"), meshIndex);
+			default:
+				LoadTexture(type, Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), meshIndex);
 				break;
 			}
 		}
