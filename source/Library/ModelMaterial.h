@@ -20,29 +20,27 @@ namespace Library
 		TextureTypeEnd
 	};
 
+	class Model;
+
 	class ModelMaterial
 	{
-		friend class Model;
-
 	public:
+		ModelMaterial(Model& model, aiMaterial* material);
 		ModelMaterial(Model& model);
 		~ModelMaterial();
 
 		Model& GetModel();
 		const std::string& Name() const;
-		const std::map<TextureType, std::vector<std::wstring>*> Textures() const;
-		std::vector<std::wstring>* GetTexturesByType(TextureType type);
+		const std::map<TextureType, std::vector<std::wstring>>& Textures() const;
+		const std::vector<std::wstring>& GetTexturesByType(TextureType type) const;
+		bool HasTexturesOfType(TextureType type) const;
 
 	private:
 		static void InitializeTextureTypeMappings();
 		static std::map<TextureType, UINT> sTextureTypeMappings;
 
-		ModelMaterial(Model& model, aiMaterial* material);
-		ModelMaterial(const ModelMaterial& rhs);
-		ModelMaterial& operator=(const ModelMaterial& rhs);
-
 		Model& mModel;
 		std::string mName;
-		std::map<TextureType, std::vector<std::wstring>*> mTextures;
+		std::map<TextureType, std::vector<std::wstring>> mTextures;
 	};
 }

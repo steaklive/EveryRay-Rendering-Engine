@@ -103,7 +103,7 @@ namespace Library
 		context->PSSetSamplers(0, 2, SS);
 	}
 
-	void ER_RenderToLightProbeMaterial::CreateVertexBuffer(Mesh& mesh, ID3D11Buffer** vertexBuffer)
+	void ER_RenderToLightProbeMaterial::CreateVertexBuffer(const Mesh& mesh, ID3D11Buffer** vertexBuffer)
 	{
 		mesh.CreateVertexBuffer_PositionUvNormalTangent(vertexBuffer);
 	}

@@ -1,10 +1,10 @@
 #include "stdafx.h"
 
 #include "Model.h"
-#include "Game.h"
-#include "GameException.h"
 #include "Mesh.h"
 #include "ModelMaterial.h"
+#include "Game.h"
+#include "GameException.h"
 
 #include "assimp\Importer.hpp"
 #include "assimp\scene.h"
@@ -33,20 +33,13 @@ namespace Library
 		if (scene->HasMaterials())
 		{
 			for (UINT i = 0; i < scene->mNumMaterials; i++)
-			{
-				mMaterials.push_back(new ModelMaterial(*this, scene->mMaterials[i]));
-			}
+				mMaterials.push_back(ModelMaterial(*this, scene->mMaterials[i]));
 		}
 
 		if (scene->HasMeshes())
 		{
 			for (UINT i = 0; i < scene->mNumMeshes; i++)
-			{
-				ModelMaterial* material = (mMaterials.size() > i ? mMaterials.at(i) : nullptr);
-
-				Mesh* mesh = new Mesh(*this, *(scene->mMeshes[i]));
-				mMeshes.push_back(mesh);
-			}
+				mMeshes.push_back(Mesh(*this, mMaterials[scene->mMeshes[i]->mMaterialIndex], *(scene->mMeshes[i])));
 		}
 
 		mFilename = filename;
@@ -54,15 +47,6 @@ namespace Library
 
 	Model::~Model()
 	{
-		for (Mesh* mesh : mMeshes)
-		{
-			delete mesh;
-		}
-
-		for (ModelMaterial* material : mMaterials)
-		{
-			delete material;
-		}
 	}
 
 	Game& Model::GetGame()
@@ -80,25 +64,27 @@ namespace Library
 		return (mMaterials.size() > 0);
 	}
 
-	const std::vector<Mesh*>& Model::Meshes() const
+	const std::vector<Mesh>& Model::Meshes() const
 	{
 		return mMeshes;
 	}
 
-	const std::vector<ModelMaterial*>& Model::Materials() const
+	const Mesh& Model::GetMesh(int index) const
+	{
+		return mMeshes.at(index);
+	}
+
+	const std::vector<ModelMaterial>& Model::Materials() const
 	{
 		return mMaterials;
 	}
 
-	std::vector<XMFLOAT3> Model::GenerateAABB()
+	const ER_AABB& Model::GenerateAABB()
 	{
 		std::vector<XMFLOAT3> vertices;
 
-		for (Mesh* mesh : mMeshes)
-		{
-			vertices.insert(vertices.end(), mesh->Vertices().begin(), mesh->Vertices().end());
-		}
-
+		for (Mesh& mesh : mMeshes)
+			vertices.insert(vertices.end(), mesh.Vertices().begin(), mesh.Vertices().end());
 
 		XMFLOAT3 minVertex = XMFLOAT3(FLT_MAX, FLT_MAX, FLT_MAX);
 		XMFLOAT3 maxVertex = XMFLOAT3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
@@ -116,12 +102,7 @@ namespace Library
 			maxVertex.z = std::max(maxVertex.z, vertices[i].z);    // Find largest z value in model
 		}
 
-		std::vector<XMFLOAT3> AABB;
-
-		// Our AABB [0] is the min vertex and [1] is the max
-		AABB.push_back(minVertex);
-		AABB.push_back(maxVertex);
-
-		return AABB;
+		mAABB = { minVertex, maxVertex };
+		return mAABB;
 	}
 }

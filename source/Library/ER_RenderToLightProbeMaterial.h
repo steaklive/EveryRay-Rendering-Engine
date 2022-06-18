@@ -28,7 +28,7 @@ namespace Library
 		~ER_RenderToLightProbeMaterial();
 
 		void PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, Camera* cubemapCamera);
-		virtual void CreateVertexBuffer(Mesh& mesh, ID3D11Buffer** vertexBuffer) override;
+		virtual void CreateVertexBuffer(const Mesh& mesh, ID3D11Buffer** vertexBuffer) override;
 		virtual int VertexSize() override;
 
 		ConstantBuffer<RenderToLightProbeMaterial_CBufferData::RenderToLightProbeCB> mConstantBuffer;

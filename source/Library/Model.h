@@ -1,6 +1,3 @@
-#ifndef MODELH
-#define MODELH
-
 #pragma once
 
 #include "Common.h"
@@ -21,21 +18,21 @@ namespace Library
 		bool HasMeshes() const;
 		bool HasMaterials() const;
 
-		const std::vector<Mesh*>& Meshes() const;
-		const std::vector<ModelMaterial*>& Materials() const;
-		const std::string GetFileName() { return mFilename; }
+		const std::vector<Mesh>& Meshes() const;
+		const Mesh& GetMesh(int index) const;
+		const std::vector<ModelMaterial>& Materials() const;
+		const std::string& GetFileName() { return mFilename; }
 		const char* GetFileNameChar() { return mFilename.c_str(); }
-		std::vector<XMFLOAT3> GenerateAABB();
-
+		const ER_AABB& GenerateAABB();
 
 	private:
 		Model(const Model& rhs);
 		Model& operator=(const Model& rhs);
 
 		Game& mGame;
-		std::vector<Mesh*> mMeshes;
-		std::vector<ModelMaterial*> mMaterials;
+		ER_AABB mAABB;
+		std::vector<Mesh> mMeshes;
+		std::vector<ModelMaterial> mMaterials;
 		std::string mFilename;
 	};
 }
-#endif // !MODELH

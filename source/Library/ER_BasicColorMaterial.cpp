@@ -74,7 +74,7 @@ namespace Library
 		context->PSSetConstantBuffers(0, 1, CBs);
 	}
 
-	void ER_BasicColorMaterial::CreateVertexBuffer(Mesh& mesh, ID3D11Buffer** vertexBuffer)
+	void ER_BasicColorMaterial::CreateVertexBuffer(const Mesh& mesh, ID3D11Buffer** vertexBuffer)
 	{
 		mesh.CreateVertexBuffer_Position(vertexBuffer);
 	}

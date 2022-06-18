@@ -1,6 +1,8 @@
 #include "stdafx.h"
 
 #include "Mesh.h"
+#include "Model.h"
+#include "ModelMaterial.h"
 #include "Game.h"
 #include "GameException.h"
 #include "VertexDeclarations.h"
@@ -10,10 +12,8 @@
 namespace Library
 {
 
-	Mesh::Mesh(Model& model, aiMesh& mesh) : mModel(model), mMaterial(nullptr), mName(mesh.mName.C_Str()), mVertices(), mNormals(), mTangents(), mBiNormals(), mTextureCoordinates(), mVertexColors(), mFaceCount(0), mIndices()
+	Mesh::Mesh(Model& model, ModelMaterial& material, aiMesh& mesh) : mModel(model), mMaterial(material), mName(mesh.mName.C_Str()), mVertices(), mNormals(), mTangents(), mBiNormals(), mTextureCoordinates(), mVertexColors(), mFaceCount(0), mIndices()
 	{
-		mMaterial = mModel.Materials().at(mesh.mMaterialIndex);
-
 		// Vertices
 		mVertices.reserve(mesh.mNumVertices);
 		for (UINT i = 0; i < mesh.mNumVertices; i++)
@@ -47,30 +47,28 @@ namespace Library
 		UINT uvChannelCount = mesh.GetNumUVChannels();
 		for (UINT i = 0; i < uvChannelCount; i++)
 		{
-			std::vector<XMFLOAT3>* textureCoordinates = new std::vector<XMFLOAT3>();
-			textureCoordinates->reserve(mesh.mNumVertices);
-			mTextureCoordinates.push_back(textureCoordinates);
+			std::vector<XMFLOAT3> textureCoordinates;
+			textureCoordinates.reserve(mesh.mNumVertices);
 
 			aiVector3D* aiTextureCoordinates = mesh.mTextureCoords[i];
 			for (UINT j = 0; j < mesh.mNumVertices; j++)
-			{
-				textureCoordinates->push_back(XMFLOAT3(reinterpret_cast<const float*>(&aiTextureCoordinates[j])));
-			}
+				textureCoordinates.push_back(XMFLOAT3(reinterpret_cast<const float*>(&aiTextureCoordinates[j])));
+
+			mTextureCoordinates.push_back(textureCoordinates);
 		}
 
 		// Vertex Colors
 		UINT colorChannelCount = mesh.GetNumColorChannels();
 		for (UINT i = 0; i < colorChannelCount; i++)
 		{
-			std::vector<XMFLOAT4>* vertexColors = new std::vector<XMFLOAT4>();
-			vertexColors->reserve(mesh.mNumVertices);
-			mVertexColors.push_back(vertexColors);
+			std::vector<XMFLOAT4> vertexColors;
+			vertexColors.reserve(mesh.mNumVertices);
 
 			aiColor4D* aiVertexColors = mesh.mColors[i];
 			for (UINT j = 0; j < mesh.mNumVertices; j++)
-			{
-				vertexColors->push_back(XMFLOAT4(reinterpret_cast<const float*>(&aiVertexColors[j])));
-			}
+				vertexColors.push_back(XMFLOAT4(reinterpret_cast<const float*>(&aiVertexColors[j])));
+
+			mVertexColors.push_back(vertexColors);
 		}
 
 		// Faces (note: could pre-reserve if we limit primitive types)
@@ -95,15 +93,6 @@ namespace Library
 
 	Mesh::~Mesh()
 	{
-		for (std::vector<XMFLOAT3>* textureCoordinates : mTextureCoordinates)
-		{
-			delete textureCoordinates;
-		}
-
-		for (std::vector<XMFLOAT4>* vertexColors : mVertexColors)
-		{
-			delete vertexColors;
-		}
 	}
 
 	Model& Mesh::GetModel()
@@ -111,7 +100,7 @@ namespace Library
 		return mModel;
 	}
 
-	ModelMaterial* Mesh::GetMaterial()
+	const ModelMaterial& Mesh::GetMaterial() const
 	{
 		return mMaterial;
 	}
@@ -141,12 +130,12 @@ namespace Library
 		return mBiNormals;
 	}
 
-	const std::vector<std::vector<XMFLOAT3>*>& Mesh::TextureCoordinates() const
+	const std::vector<std::vector<XMFLOAT3>>& Mesh::TextureCoordinates() const
 	{
 		return mTextureCoordinates;
 	}
 
-	const std::vector<std::vector<XMFLOAT4>*>& Mesh::VertexColors() const
+	const std::vector<std::vector<XMFLOAT4>>& Mesh::VertexColors() const
 	{
 		return mVertexColors;
 	}
@@ -161,7 +150,7 @@ namespace Library
 		return mIndices;
 	}
 
-	void Mesh::CreateIndexBuffer(ID3D11Buffer** indexBuffer)
+	void Mesh::CreateIndexBuffer(ID3D11Buffer** indexBuffer) const
 	{
 		assert(indexBuffer != nullptr);
 
@@ -180,7 +169,7 @@ namespace Library
 		}
 	}
 
-	void Mesh::CreateVertexBuffer_Position(ID3D11Buffer** vertexBuffer)
+	void Mesh::CreateVertexBuffer_Position(ID3D11Buffer** vertexBuffer) const
 	{
 		const std::vector<XMFLOAT3>& sourceVertices = Vertices();
 		std::vector<VertexPosition> vertices;
@@ -196,7 +185,7 @@ namespace Library
 
 		D3D11_BUFFER_DESC vertexBufferDesc;
 		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
-		vertexBufferDesc.ByteWidth = sizeof(VertexPosition) * vertices.size();
+		vertexBufferDesc.ByteWidth = sizeof(VertexPosition) * static_cast<UINT>(vertices.size());
 		vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
@@ -208,18 +197,18 @@ namespace Library
 
 	}
 
-	void Mesh::CreateVertexBuffer_PositionUv(ID3D11Buffer** vertexBuffer)
+	void Mesh::CreateVertexBuffer_PositionUv(ID3D11Buffer** vertexBuffer, int uvChannel) const
 	{
 		const std::vector<XMFLOAT3>& sourceVertices = Vertices();
-		std::vector<XMFLOAT3>* textureCoordinates = TextureCoordinates().at(0);
-		assert(textureCoordinates->size() == sourceVertices.size());
+		const std::vector<XMFLOAT3>& textureCoordinates = mTextureCoordinates[uvChannel];
+		assert(textureCoordinates.size() == sourceVertices.size());
 
 		std::vector<VertexPositionTexture> vertices;
 		vertices.reserve(sourceVertices.size());
 		for (UINT i = 0; i < sourceVertices.size(); i++)
 		{
 			XMFLOAT3 position = sourceVertices.at(i);
-			XMFLOAT3 uv = textureCoordinates->at(i);
+			XMFLOAT3 uv = textureCoordinates.at(i);
 			vertices.push_back(VertexPositionTexture(XMFLOAT4(position.x, position.y, position.z, 1.0f), XMFLOAT2(uv.x, uv.y)));
 		}
 
@@ -227,7 +216,7 @@ namespace Library
 
 		D3D11_BUFFER_DESC vertexBufferDesc;
 		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
-		vertexBufferDesc.ByteWidth = sizeof(VertexPositionTexture) * vertices.size();
+		vertexBufferDesc.ByteWidth = sizeof(VertexPositionTexture) * static_cast<UINT>(vertices.size());
 		vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
@@ -238,11 +227,11 @@ namespace Library
 			throw GameException("ID3D11Device::CreateBuffer() failed.");
 	}
 
-	void Mesh::CreateVertexBuffer_PositionUvNormal(ID3D11Buffer** vertexBuffer)
+	void Mesh::CreateVertexBuffer_PositionUvNormal(ID3D11Buffer** vertexBuffer, int uvChannel) const
 	{
 		const std::vector<XMFLOAT3>& sourceVertices = Vertices();
-		std::vector<XMFLOAT3>* textureCoordinates = TextureCoordinates().at(0);
-		assert(textureCoordinates->size() == sourceVertices.size());
+		const std::vector<XMFLOAT3>& textureCoordinates = mTextureCoordinates[uvChannel];
+		assert(textureCoordinates.size() == sourceVertices.size());
 
 		const std::vector<XMFLOAT3>& normals = Normals();
 		assert(normals.size() == sourceVertices.size());
@@ -253,7 +242,7 @@ namespace Library
 		for (UINT i = 0; i < sourceVertices.size(); i++)
 		{
 			XMFLOAT3 position = sourceVertices.at(i);
-			XMFLOAT3 uv = textureCoordinates->at(i);
+			XMFLOAT3 uv = textureCoordinates.at(i);
 			XMFLOAT3 normal = normals.at(i);
 
 			vertices.push_back(VertexPositionTextureNormal(XMFLOAT4(position.x, position.y, position.z, 1.0f), XMFLOAT2(uv.x, uv.y), normal));
@@ -263,7 +252,7 @@ namespace Library
 
 		D3D11_BUFFER_DESC vertexBufferDesc;
 		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
-		vertexBufferDesc.ByteWidth = sizeof(VertexPositionTextureNormal) * vertices.size();
+		vertexBufferDesc.ByteWidth = sizeof(VertexPositionTextureNormal) * static_cast<UINT>(vertices.size());
 		vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
@@ -274,11 +263,11 @@ namespace Library
 			throw GameException("ID3D11Device::CreateBuffer() failed during vertex buffer creation for CreateVertexBuffer_PositionUvNormal.");
 	}
 
-	void Mesh::CreateVertexBuffer_PositionUvNormalTangent(ID3D11Buffer** vertexBuffer)
+	void Mesh::CreateVertexBuffer_PositionUvNormalTangent(ID3D11Buffer** vertexBuffer, int uvChannel) const
 	{
 		const std::vector<XMFLOAT3>& sourceVertices = Vertices();
-		std::vector<XMFLOAT3>* textureCoordinates = TextureCoordinates().at(0);
-		assert(textureCoordinates->size() == sourceVertices.size());
+		const std::vector<XMFLOAT3>& textureCoordinates = mTextureCoordinates[uvChannel];
+		assert(textureCoordinates.size() == sourceVertices.size());
 
 		const std::vector<XMFLOAT3>& normals = Normals();
 		assert(normals.size() == sourceVertices.size());
@@ -292,7 +281,7 @@ namespace Library
 		for (UINT i = 0; i < sourceVertices.size(); i++)
 		{
 			XMFLOAT3 position = sourceVertices.at(i);
-			XMFLOAT3 uv = textureCoordinates->at(i);
+			XMFLOAT3 uv = textureCoordinates.at(i);
 			XMFLOAT3 normal = normals.at(i);
 			XMFLOAT3 tangent = tangents.at(i);
 
@@ -303,7 +292,7 @@ namespace Library
 
 		D3D11_BUFFER_DESC vertexBufferDesc;
 		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
-		vertexBufferDesc.ByteWidth = sizeof(VertexPositionTextureNormalTangent) * vertices.size();
+		vertexBufferDesc.ByteWidth = sizeof(VertexPositionTextureNormalTangent) * static_cast<UINT>(vertices.size());
 		vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 

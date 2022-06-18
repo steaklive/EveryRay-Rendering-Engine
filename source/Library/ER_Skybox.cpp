@@ -45,10 +45,10 @@ namespace Library
 
 		std::unique_ptr<Model> model(new Model(mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.obj"), true));
 
-		Mesh* mesh = model->Meshes().at(0);
-		mesh->CreateVertexBuffer_Position(&mVertexBuffer);
-		mesh->CreateIndexBuffer(&mIndexBuffer);
-		mIndexCount = mesh->Indices().size();
+		auto& meshes = model->Meshes();
+		meshes[0].CreateVertexBuffer_Position(&mVertexBuffer);
+		meshes[0].CreateIndexBuffer(&mIndexBuffer);
+		mIndexCount = meshes[0].Indices().size();
 
 		//skybox
 		{

@@ -23,7 +23,7 @@ namespace Library
 		virtual void PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex) override;
 		void PrepareForRendering(const XMMATRIX& worldTransform, const XMFLOAT4& color);
 
-		virtual void CreateVertexBuffer(Mesh& mesh, ID3D11Buffer** vertexBuffer) override;
+		virtual void CreateVertexBuffer(const Mesh& mesh, ID3D11Buffer** vertexBuffer) override;
 		virtual int VertexSize() override;
 
 		ConstantBuffer<BasicMaterial_CBufferData::BasicMaterialCB> mConstantBuffer;

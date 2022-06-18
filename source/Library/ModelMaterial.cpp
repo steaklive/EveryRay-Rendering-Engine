@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "ModelMaterial.h"
+#include "Model.h"
 #include "GameException.h"
 #include "Utility.h"
 #include "assimp\scene.h"
@@ -32,10 +33,7 @@ namespace Library
 			UINT textureCount = material->GetTextureCount(mappedTextureType);
 			if (textureCount > 0)
 			{
-				std::vector<std::wstring>* textures = new std::vector<std::wstring>();
-				mTextures.insert(std::pair<TextureType, std::vector<std::wstring>*>(textureType, textures));
-
-				textures->reserve(textureCount);
+				mTextures.insert(std::pair<TextureType, std::vector<std::wstring>>(textureType, {}));
 				for (UINT textureIndex = 0; textureIndex < textureCount; textureIndex++)
 				{
 					aiString path;
@@ -43,8 +41,7 @@ namespace Library
 					{
 						std::wstring wPath;
 						Utility::ToWideString(path.C_Str(), wPath);
-
-						textures->push_back(wPath);
+						mTextures[textureType].push_back(wPath);
 					}
 				}
 			}
@@ -53,10 +50,6 @@ namespace Library
 
 	ModelMaterial::~ModelMaterial()
 	{
-		for (std::pair<TextureType, std::vector<std::wstring>*> textures : mTextures)
-		{
-			DeleteObject(textures.second);
-		}
 	}
 
 	Model& ModelMaterial::GetModel()
@@ -69,18 +62,27 @@ namespace Library
 		return mName;
 	}
 
-	const std::map<TextureType, std::vector<std::wstring>*> ModelMaterial::Textures() const
+	const std::map<TextureType, std::vector<std::wstring>>& ModelMaterial::Textures() const
 	{
 		return mTextures;
 	}
 
-	std::vector<std::wstring>* ModelMaterial::GetTexturesByType(TextureType type)
+	const std::vector<std::wstring>& ModelMaterial::GetTexturesByType(TextureType type) const
 	{
 		auto it = mTextures.find(type);
 		if (it != mTextures.end())
-			return mTextures[type];
+			return it->second;
 		else
-			return nullptr;
+			return {};
+	}
+
+	bool ModelMaterial::HasTexturesOfType(TextureType type) const
+	{
+		auto it = mTextures.find(type);
+		if (it != mTextures.end())
+			return true;
+		else
+			return false;
 	}
 
 	void ModelMaterial::InitializeTextureTypeMappings()

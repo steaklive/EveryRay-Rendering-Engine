@@ -17,7 +17,11 @@
 #include "DirectionalLight.h"
 #include "ER_Terrain.h"
 
-#define MULTITHREADED_SCENE_LOAD 1
+#if defined(DEBUG) || defined(_DEBUG)  
+	#define MULTITHREADED_SCENE_LOAD 0
+#else
+	#define MULTITHREADED_SCENE_LOAD 1
+#endif
 
 namespace Library 
 {

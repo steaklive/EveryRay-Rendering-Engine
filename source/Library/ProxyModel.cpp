@@ -152,10 +152,10 @@ namespace Library
 
 		mMaterial = new ER_BasicColorMaterial(*mGame, {}, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER);
 
-		Mesh* mesh = model->Meshes().at(0);
-		mMaterial->CreateVertexBuffer(*mesh, &mVertexBuffer);
-		mesh->CreateIndexBuffer(&mIndexBuffer);
-		mIndexCount = mesh->Indices().size();
+		auto& meshes = model->Meshes();
+		mMaterial->CreateVertexBuffer(meshes[0], &mVertexBuffer);
+		meshes[0].CreateIndexBuffer(&mIndexBuffer);
+		mIndexCount = meshes[0].Indices().size();
 	}
 
 	void ProxyModel::Update(const GameTime& gameTime)

@@ -38,7 +38,7 @@ namespace Library
 
 		virtual void PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex);
 
-		virtual void CreateVertexBuffer(Mesh& mesh, ID3D11Buffer** vertexBuffer) = 0;
+		virtual void CreateVertexBuffer(const Mesh& mesh, ID3D11Buffer** vertexBuffer) = 0;
 
 		/*virtual*/ void CreateVertexShader(const std::string& path, D3D11_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount);
 		/*virtual*/ void CreatePixelShader(const std::string& path);

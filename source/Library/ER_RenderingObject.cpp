@@ -47,7 +47,7 @@ namespace Library
 		mMeshesCount[0] = mModel->Meshes().size();
 		for (size_t i = 0; i < mMeshesCount[0]; i++)
 		{
-			mMeshVertices[0].push_back(mModel->Meshes().at(i)->Vertices());
+			mMeshVertices[0].push_back(mModel->GetMesh(i).Vertices());
 			mMeshesTextureBuffers.push_back(TextureData());
 			mMeshesReflectionFactors.push_back(0.0f);
 
@@ -68,7 +68,7 @@ namespace Library
 		}
 
 		LoadAssignedMeshTextures();
-		mLocalAABB = std::make_pair(mModel->GenerateAABB()[0], mModel->GenerateAABB()[1]);
+		mLocalAABB = mModel->GenerateAABB();
 		mGlobalAABB = mLocalAABB;
 
 		if (mAvailableInEditorMode) {
@@ -123,15 +123,12 @@ namespace Library
 
 		for (size_t i = 0; i < mMeshesCount[0]; i++)
 		{
-			//if (mModel->Meshes()[i]->GetMaterial()->Textures().size() == 0) 
-			//	continue;
-
-			std::vector<std::wstring>* texturesAlbedo = mModel->Meshes()[i]->GetMaterial()->GetTexturesByType(TextureType::TextureTypeDifffuse);
-			if (texturesAlbedo != nullptr)
+			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeDifffuse))
 			{
-				if (texturesAlbedo->size() != 0)
+				const std::vector<std::wstring>& texturesAlbedo = mModel->GetMesh(i).GetMaterial().GetTexturesByType(TextureType::TextureTypeDifffuse);
+				if (texturesAlbedo.size() != 0)
 				{
-					std::wstring result = pathBuilder(texturesAlbedo->at(0));
+					std::wstring result = pathBuilder(texturesAlbedo.at(0));
 					LoadTexture(TextureType::TextureTypeDifffuse, result, i);
 				}
 				else
@@ -140,12 +137,12 @@ namespace Library
 			else
 				LoadTexture(TextureType::TextureTypeDifffuse, Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), i);
 
-			std::vector<std::wstring>* texturesNormal = mModel->Meshes()[i]->GetMaterial()->GetTexturesByType(TextureType::TextureTypeNormalMap);
-			if (texturesNormal != nullptr )
+			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeNormalMap))
 			{
-				if(texturesNormal->size() != 0)
+				const std::vector<std::wstring>& texturesNormal = mModel->GetMesh(i).GetMaterial().GetTexturesByType(TextureType::TextureTypeNormalMap);
+				if (texturesNormal.size() != 0)
 				{
-					std::wstring result = pathBuilder(texturesNormal->at(0));
+					std::wstring result = pathBuilder(texturesNormal.at(0));
 					LoadTexture(TextureType::TextureTypeNormalMap, result, i);
 				}
 				else
@@ -154,12 +151,12 @@ namespace Library
 			else
 				LoadTexture(TextureType::TextureTypeNormalMap, Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"), i);
 
-			std::vector<std::wstring>* texturesSpec = mModel->Meshes()[i]->GetMaterial()->GetTexturesByType(TextureType::TextureTypeSpecularMap);
-			if (texturesSpec != nullptr)
+			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeSpecularMap))
 			{
-				if (texturesSpec->size() != 0)
+				const std::vector<std::wstring>& texturesSpec = mModel->GetMesh(i).GetMaterial().GetTexturesByType(TextureType::TextureTypeSpecularMap);
+				if (texturesSpec.size() != 0)
 				{
-					std::wstring result = pathBuilder(texturesSpec->at(0));
+					std::wstring result = pathBuilder(texturesSpec.at(0));
 					LoadTexture(TextureType::TextureTypeSpecularMap, result, i);
 				}
 				else
@@ -168,12 +165,12 @@ namespace Library
 			else
 				LoadTexture(TextureType::TextureTypeSpecularMap, Utility::GetFilePath(L"content\\textures\\emptySpecularMap.png"), i);
 
-			std::vector<std::wstring>* texturesRoughness = mModel->Meshes()[i]->GetMaterial()->GetTexturesByType(TextureType::TextureTypeDisplacementMap);
-			if (texturesRoughness != nullptr)
+			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeDisplacementMap))
 			{
-				if (texturesRoughness->size() != 0)
+				const std::vector<std::wstring>& texturesRoughness = mModel->GetMesh(i).GetMaterial().GetTexturesByType(TextureType::TextureTypeDisplacementMap);
+				if (texturesRoughness.size() != 0)
 				{
-					std::wstring result = pathBuilder(texturesRoughness->at(0));
+					std::wstring result = pathBuilder(texturesRoughness.at(0));
 					LoadTexture(TextureType::TextureTypeDisplacementMap, result, i);
 				}
 				else
@@ -181,13 +178,13 @@ namespace Library
 			}
 			else
 				LoadTexture(TextureType::TextureTypeDisplacementMap, Utility::GetFilePath(L"content\\textures\\emptyRoughnessMap.png"), i);
-			
-			std::vector<std::wstring>* texturesMetallic = mModel->Meshes()[i]->GetMaterial()->GetTexturesByType(TextureType::TextureTypeEmissive);
-			if (texturesMetallic != nullptr)
+
+			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeEmissive))
 			{
-				if (texturesMetallic->size() != 0)
+				const std::vector<std::wstring>& texturesMetallic = mModel->GetMesh(i).GetMaterial().GetTexturesByType(TextureType::TextureTypeEmissive);
+				if (texturesMetallic.size() != 0)
 				{
-					std::wstring result = pathBuilder(texturesMetallic->at(0));
+					std::wstring result = pathBuilder(texturesMetallic.at(0));
 					LoadTexture(TextureType::TextureTypeEmissive, result, i);
 				}
 				else
@@ -340,7 +337,7 @@ namespace Library
 		mMeshesRenderBuffers.push_back({});
 		assert(mMeshesRenderBuffers.size() - 1 == lod);
 
-		auto createIndexBuffer = [this](Mesh& aMesh, int meshIndex, int lod, const std::string& materialName) {
+		auto createIndexBuffer = [this](const Mesh& aMesh, int meshIndex, int lod, const std::string& materialName) {
 			aMesh.CreateIndexBuffer(&(mMeshesRenderBuffers[lod][materialName][meshIndex]->IndexBuffer));
 			mMeshesRenderBuffers[lod][materialName][meshIndex]->IndicesCount = aMesh.Indices().size();
 		};
@@ -352,8 +349,8 @@ namespace Library
 			{
 				mMeshesRenderBuffers[lod][material.first].push_back(new RenderBufferData());
 
-				material.second->CreateVertexBuffer((lod == 0) ? (*mModel->Meshes()[i]) : (*mModelLODs[lod - 1]->Meshes()[i]), &(mMeshesRenderBuffers[lod][material.first][i]->VertexBuffer));
-				createIndexBuffer((lod == 0) ? (*mModel->Meshes()[i]) : (*mModelLODs[lod - 1]->Meshes()[i]), i, lod, material.first);
+				material.second->CreateVertexBuffer((lod == 0) ? mModel->GetMesh(i) : mModelLODs[lod - 1]->GetMesh(i), &(mMeshesRenderBuffers[lod][material.first][i]->VertexBuffer));
+				createIndexBuffer((lod == 0) ? mModel->GetMesh(i) : mModelLODs[lod - 1]->GetMesh(i), i, lod, material.first);
 
 				mMeshesRenderBuffers[lod][material.first][i]->Stride = mMaterials[material.first]->VertexSize();
 				mMeshesRenderBuffers[lod][material.first][i]->Offset = 0;
@@ -369,11 +366,11 @@ namespace Library
 				mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName].push_back(new RenderBufferData());
 
 				if (lod == 0)
-					mModel->Meshes()[i]->CreateVertexBuffer_PositionUvNormalTangent(&(mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer));
+					mModel->GetMesh(i).CreateVertexBuffer_PositionUvNormalTangent(&(mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer));
 				else
-					mModelLODs[lod - 1]->Meshes()[i]->CreateVertexBuffer_PositionUvNormalTangent(&(mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer));
+					mModelLODs[lod - 1]->GetMesh(i).CreateVertexBuffer_PositionUvNormalTangent(&(mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer));
 
-				createIndexBuffer((lod == 0) ? (*mModel->Meshes()[i]) : (*mModelLODs[lod - 1]->Meshes()[i]), i, lod, MaterialHelper::forwardLightingNonMaterialName);
+				createIndexBuffer((lod == 0) ? mModel->GetMesh(i) : mModelLODs[lod - 1]->GetMesh(i), i, lod, MaterialHelper::forwardLightingNonMaterialName);
 
 				mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->Stride = sizeof(VertexPositionTextureNormalTangent);
 				mMeshesRenderBuffers[lod][MaterialHelper::forwardLightingNonMaterialName][i]->Offset = 0;
@@ -949,7 +946,7 @@ namespace Library
 		int lodIndex = mMeshesCount.size() - 1;
 
 		for (size_t i = 0; i < mMeshesCount[lodIndex]; i++)
-			mMeshVertices[lodIndex].push_back(mModelLODs[lodIndex - 1]->Meshes().at(i)->Vertices());
+			mMeshVertices[lodIndex].push_back(mModelLODs[lodIndex - 1]->GetMesh(i).Vertices());
 
 		for (size_t i = 0; i < mMeshVertices[lodIndex].size(); i++)
 		{

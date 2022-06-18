@@ -82,7 +82,7 @@ namespace Library
 		context->PSSetSamplers(0, 1, SS);
 	}
 
-	void ER_ShadowMapMaterial::CreateVertexBuffer(Mesh& mesh, ID3D11Buffer** vertexBuffer)
+	void ER_ShadowMapMaterial::CreateVertexBuffer(const Mesh& mesh, ID3D11Buffer** vertexBuffer)
 	{
 		mesh.CreateVertexBuffer_PositionUv(vertexBuffer);
 	}
