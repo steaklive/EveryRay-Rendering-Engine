@@ -4,7 +4,7 @@
 #include "ER_Terrain.h"
 #include "GameException.h"
 #include "ER_Model.h"
-#include "Mesh.h"
+#include "ER_Mesh.h"
 #include "Game.h"
 #include "MatrixHelper.h"
 #include "Utility.h"

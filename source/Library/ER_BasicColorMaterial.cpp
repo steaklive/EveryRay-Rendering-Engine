@@ -5,7 +5,7 @@
 #include "Game.h"
 #include "Camera.h"
 #include "ER_RenderingObject.h"
-#include "Mesh.h"
+#include "ER_Mesh.h"
 #include "ER_MaterialsCallbacks.h"
 namespace Library
 {
@@ -74,7 +74,7 @@ namespace Library
 		context->PSSetConstantBuffers(0, 1, CBs);
 	}
 
-	void ER_BasicColorMaterial::CreateVertexBuffer(const Mesh& mesh, ID3D11Buffer** vertexBuffer)
+	void ER_BasicColorMaterial::CreateVertexBuffer(const ER_Mesh& mesh, ID3D11Buffer** vertexBuffer)
 	{
 		mesh.CreateVertexBuffer_Position(vertexBuffer);
 	}

@@ -9,11 +9,11 @@ namespace Library
 	class ER_Model;
 	class ModelMaterial;
 
-	class Mesh
+	class ER_Mesh
 	{
 	public:
-		Mesh(ER_Model& model, ModelMaterial& material, aiMesh& mesh);
-		~Mesh();
+		ER_Mesh(ER_Model& model, ModelMaterial& material, aiMesh& mesh);
+		~ER_Mesh();
 
 		ER_Model& GetModel();
 		const ModelMaterial& GetMaterial() const;

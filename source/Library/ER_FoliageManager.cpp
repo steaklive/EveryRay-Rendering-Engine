@@ -4,7 +4,7 @@
 #include "MatrixHelper.h"
 #include "Utility.h"
 #include "ER_Model.h"
-#include "Mesh.h"
+#include "ER_Mesh.h"
 #include "VertexDeclarations.h"
 #include "RasterizerStates.h"
 #include "ER_Scene.h"

@@ -3,7 +3,7 @@
 
 namespace Library
 {
-	class Mesh;
+	class ER_Mesh;
 	class ER_RenderingObject;
 
 	namespace GBufferMaterial_CBufferData {
@@ -22,7 +22,7 @@ namespace Library
 		~ER_GBufferMaterial();
 
 		virtual void PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex) override;
-		virtual void CreateVertexBuffer(const Mesh& mesh, ID3D11Buffer** vertexBuffer) override;
+		virtual void CreateVertexBuffer(const ER_Mesh& mesh, ID3D11Buffer** vertexBuffer) override;
 		virtual int VertexSize() override;
 
 		ConstantBuffer<GBufferMaterial_CBufferData::GBufferCB> mConstantBuffer;

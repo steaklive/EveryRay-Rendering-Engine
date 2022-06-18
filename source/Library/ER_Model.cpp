@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "ER_Model.h"
-#include "Mesh.h"
+#include "ER_Mesh.h"
 #include "ModelMaterial.h"
 #include "Game.h"
 #include "GameException.h"
@@ -39,7 +39,7 @@ namespace Library
 		if (scene->HasMeshes())
 		{
 			for (UINT i = 0; i < scene->mNumMeshes; i++)
-				mMeshes.push_back(Mesh(*this, mMaterials[scene->mMeshes[i]->mMaterialIndex], *(scene->mMeshes[i])));
+				mMeshes.push_back(ER_Mesh(*this, mMaterials[scene->mMeshes[i]->mMaterialIndex], *(scene->mMeshes[i])));
 		}
 
 		mFilename = filename;
@@ -64,12 +64,12 @@ namespace Library
 		return (mMaterials.size() > 0);
 	}
 
-	const std::vector<Mesh>& ER_Model::Meshes() const
+	const std::vector<ER_Mesh>& ER_Model::Meshes() const
 	{
 		return mMeshes;
 	}
 
-	const Mesh& ER_Model::GetMesh(int index) const
+	const ER_Mesh& ER_Model::GetMesh(int index) const
 	{
 		return mMeshes.at(index);
 	}
@@ -83,7 +83,7 @@ namespace Library
 	{
 		std::vector<XMFLOAT3> vertices;
 
-		for (Mesh& mesh : mMeshes)
+		for (ER_Mesh& mesh : mMeshes)
 			vertices.insert(vertices.end(), mesh.Vertices().begin(), mesh.Vertices().end());
 
 		XMFLOAT3 minVertex = XMFLOAT3(FLT_MAX, FLT_MAX, FLT_MAX);

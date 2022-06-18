@@ -7,7 +7,7 @@
 #include "Camera.h"
 #include "MatrixHelper.h"
 #include "ER_Model.h"
-#include "Mesh.h"
+#include "ER_Mesh.h"
 #include "Utility.h"
 #include "ShaderCompiler.h"
 #include "FullScreenRenderTarget.h"

@@ -7,7 +7,7 @@
 #include "Game.h"
 #include "GameTime.h"
 #include "ER_Model.h"
-#include "Mesh.h"
+#include "ER_Mesh.h"
 #include "Utility.h"
 #include "ER_Illumination.h"
 #include "ER_RenderableAABB.h"
@@ -337,7 +337,7 @@ namespace Library
 		mMeshesRenderBuffers.push_back({});
 		assert(mMeshesRenderBuffers.size() - 1 == lod);
 
-		auto createIndexBuffer = [this](const Mesh& aMesh, int meshIndex, int lod, const std::string& materialName) {
+		auto createIndexBuffer = [this](const ER_Mesh& aMesh, int meshIndex, int lod, const std::string& materialName) {
 			aMesh.CreateIndexBuffer(&(mMeshesRenderBuffers[lod][materialName][meshIndex]->IndexBuffer));
 			mMeshesRenderBuffers[lod][materialName][meshIndex]->IndicesCount = aMesh.Indices().size();
 		};

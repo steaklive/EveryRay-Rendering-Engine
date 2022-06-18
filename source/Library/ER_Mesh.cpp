@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "Mesh.h"
+#include "ER_Mesh.h"
 #include "ER_Model.h"
 #include "ModelMaterial.h"
 #include "Game.h"
@@ -11,8 +11,7 @@
 
 namespace Library
 {
-
-	Mesh::Mesh(ER_Model& model, ModelMaterial& material, aiMesh& mesh) : mModel(model), mMaterial(material), mName(mesh.mName.C_Str()), mVertices(), mNormals(), mTangents(), mBiNormals(), mTextureCoordinates(), mVertexColors(), mFaceCount(0), mIndices()
+	ER_Mesh::ER_Mesh(ER_Model& model, ModelMaterial& material, aiMesh& mesh) : mModel(model), mMaterial(material), mName(mesh.mName.C_Str()), mVertices(), mNormals(), mTangents(), mBiNormals(), mTextureCoordinates(), mVertexColors(), mFaceCount(0), mIndices()
 	{
 		// Vertices
 		mVertices.reserve(mesh.mNumVertices);
@@ -87,70 +86,70 @@ namespace Library
 		}
 	}
 
-	/*Mesh::Mesh(Model & model, ModelMaterial * material)
+	/*ER_Mesh::ER_Mesh(Model & model, ModelMaterial * material)
 	{
 	}*/
 
-	Mesh::~Mesh()
+	ER_Mesh::~ER_Mesh()
 	{
 	}
 
-	ER_Model& Mesh::GetModel()
+	ER_Model& ER_Mesh::GetModel()
 	{
 		return mModel;
 	}
 
-	const ModelMaterial& Mesh::GetMaterial() const
+	const ModelMaterial& ER_Mesh::GetMaterial() const
 	{
 		return mMaterial;
 	}
 
-	const std::string& Mesh::Name() const
+	const std::string& ER_Mesh::Name() const
 	{
 		return mName;
 	}
 
-	const std::vector<XMFLOAT3>& Mesh::Vertices() const
+	const std::vector<XMFLOAT3>& ER_Mesh::Vertices() const
 	{
 		return mVertices;
 	}
 
-	const std::vector<XMFLOAT3>& Mesh::Normals() const
+	const std::vector<XMFLOAT3>& ER_Mesh::Normals() const
 	{
 		return mNormals;
 	}
 
-	const std::vector<XMFLOAT3>& Mesh::Tangents() const
+	const std::vector<XMFLOAT3>& ER_Mesh::Tangents() const
 	{
 		return mTangents;
 	}
 
-	const std::vector<XMFLOAT3>& Mesh::BiNormals() const
+	const std::vector<XMFLOAT3>& ER_Mesh::BiNormals() const
 	{
 		return mBiNormals;
 	}
 
-	const std::vector<std::vector<XMFLOAT3>>& Mesh::TextureCoordinates() const
+	const std::vector<std::vector<XMFLOAT3>>& ER_Mesh::TextureCoordinates() const
 	{
 		return mTextureCoordinates;
 	}
 
-	const std::vector<std::vector<XMFLOAT4>>& Mesh::VertexColors() const
+	const std::vector<std::vector<XMFLOAT4>>& ER_Mesh::VertexColors() const
 	{
 		return mVertexColors;
 	}
 
-	UINT Mesh::FaceCount() const
+	UINT ER_Mesh::FaceCount() const
 	{
 		return mFaceCount;
 	}
 
-	const std::vector<UINT>& Mesh::Indices() const
+	const std::vector<UINT>& ER_Mesh::Indices() const
 	{
 		return mIndices;
 	}
 
-	void Mesh::CreateIndexBuffer(ID3D11Buffer** indexBuffer) const
+	void ER_Mesh::CreateIndexBuffer(ID3D11Buffer** indexBuffer) const
 	{
 		assert(indexBuffer != nullptr);
 
@@ -165,11 +164,11 @@ namespace Library
 		indexSubResourceData.pSysMem = &mIndices[0];
 		if (FAILED(mModel.GetGame().Direct3DDevice()->CreateBuffer(&indexBufferDesc, &indexSubResourceData, indexBuffer)))
 		{
-			throw GameException("ID3D11Device::CreateBuffer() failed during the creation of the index buffer in Mesh.");
+			throw GameException("ID3D11Device::CreateBuffer() failed during the creation of the index buffer in ER_Mesh.");
 		}
 	}
 
-	void Mesh::CreateVertexBuffer_Position(ID3D11Buffer** vertexBuffer) const
+	void ER_Mesh::CreateVertexBuffer_Position(ID3D11Buffer** vertexBuffer) const
 	{
 		const std::vector<XMFLOAT3>& sourceVertices = Vertices();
 		std::vector<VertexPosition> vertices;
@@ -197,7 +196,7 @@ namespace Library
 
 	}
 
-	void Mesh::CreateVertexBuffer_PositionUv(ID3D11Buffer** vertexBuffer, int uvChannel) const
+	void ER_Mesh::CreateVertexBuffer_PositionUv(ID3D11Buffer** vertexBuffer, int uvChannel) const
 	{
 		const std::vector<XMFLOAT3>& sourceVertices = Vertices();
 		const std::vector<XMFLOAT3>& textureCoordinates = mTextureCoordinates[uvChannel];
@@ -227,7 +226,7 @@ namespace Library
 			throw GameException("ID3D11Device::CreateBuffer() failed.");
 	}
 
-	void Mesh::CreateVertexBuffer_PositionUvNormal(ID3D11Buffer** vertexBuffer, int uvChannel) const
+	void ER_Mesh::CreateVertexBuffer_PositionUvNormal(ID3D11Buffer** vertexBuffer, int uvChannel) const
 	{
 		const std::vector<XMFLOAT3>& sourceVertices = Vertices();
 		const std::vector<XMFLOAT3>& textureCoordinates = mTextureCoordinates[uvChannel];
@@ -263,7 +262,7 @@ namespace Library
 			throw GameException("ID3D11Device::CreateBuffer() failed during vertex buffer creation for CreateVertexBuffer_PositionUvNormal.");
 	}
 
-	void Mesh::CreateVertexBuffer_PositionUvNormalTangent(ID3D11Buffer** vertexBuffer, int uvChannel) const
+	void ER_Mesh::CreateVertexBuffer_PositionUvNormalTangent(ID3D11Buffer** vertexBuffer, int uvChannel) const
 	{
 		const std::vector<XMFLOAT3>& sourceVertices = Vertices();
 		const std::vector<XMFLOAT3>& textureCoordinates = mTextureCoordinates[uvChannel];

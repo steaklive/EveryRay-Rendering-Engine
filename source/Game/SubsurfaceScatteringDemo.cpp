@@ -12,7 +12,7 @@
 #include "..\Library\ColorHelper.h"
 #include "..\Library\Camera.h"
 #include "..\Library\ER_Model.h"
-#include "..\Library\Mesh.h"
+#include "..\Library\ER_Mesh.h"
 #include "..\Library\Utility.h"
 #include "..\Library\DirectionalLight.h"
 #include "..\Library\Keyboard.h"
