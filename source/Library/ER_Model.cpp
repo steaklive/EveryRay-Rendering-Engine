@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "Model.h"
+#include "ER_Model.h"
 #include "Mesh.h"
 #include "ModelMaterial.h"
 #include "Game.h"
@@ -12,7 +12,7 @@
 
 namespace Library
 {
-	Model::Model(Game& game, const std::string& filename, bool flipUVs)
+	ER_Model::ER_Model(Game& game, const std::string& filename, bool flipUVs)
 		: mGame(game), mMeshes(), mMaterials()
 	{
 		Assimp::Importer importer;
@@ -45,41 +45,41 @@ namespace Library
 		mFilename = filename;
 	}
 
-	Model::~Model()
+	ER_Model::~ER_Model()
 	{
 	}
 
-	Game& Model::GetGame()
+	Game& ER_Model::GetGame()
 	{
 		return mGame;
 	}
 
-	bool Model::HasMeshes() const
+	bool ER_Model::HasMeshes() const
 	{
 		return (mMeshes.size() > 0);
 	}
 
-	bool Model::HasMaterials() const
+	bool ER_Model::HasMaterials() const
 	{
 		return (mMaterials.size() > 0);
 	}
 
-	const std::vector<Mesh>& Model::Meshes() const
+	const std::vector<Mesh>& ER_Model::Meshes() const
 	{
 		return mMeshes;
 	}
 
-	const Mesh& Model::GetMesh(int index) const
+	const Mesh& ER_Model::GetMesh(int index) const
 	{
 		return mMeshes.at(index);
 	}
 
-	const std::vector<ModelMaterial>& Model::Materials() const
+	const std::vector<ModelMaterial>& ER_Model::Materials() const
 	{
 		return mMaterials;
 	}
 
-	const ER_AABB& Model::GenerateAABB()
+	const ER_AABB& ER_Model::GenerateAABB()
 	{
 		std::vector<XMFLOAT3> vertices;
 

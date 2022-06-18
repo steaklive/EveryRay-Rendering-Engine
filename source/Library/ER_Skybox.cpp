@@ -6,7 +6,7 @@
 #include "GameTime.h"
 #include "Camera.h"
 #include "MatrixHelper.h"
-#include "Model.h"
+#include "ER_Model.h"
 #include "Mesh.h"
 #include "Utility.h"
 #include "ShaderCompiler.h"
@@ -43,7 +43,7 @@ namespace Library
 	{
 		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
 
-		std::unique_ptr<Model> model(new Model(mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.obj"), true));
+		std::unique_ptr<ER_Model> model(new ER_Model(mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.obj"), true));
 
 		auto& meshes = model->Meshes();
 		meshes[0].CreateVertexBuffer_Position(&mVertexBuffer);

@@ -13,7 +13,7 @@ namespace Library
 	class ER_Material;
 	class ER_RenderableAABB;
 	class Camera;
-	class Model;
+	class ER_Model;
 
 	struct RenderBufferData
 	{
@@ -124,7 +124,7 @@ namespace Library
 		using Delegate_MeshMaterialVariablesUpdate = std::function<void(int)>; // mesh index for input
 
 	public:
-		ER_RenderingObject(const std::string& pName, int index, Game& pGame, Camera& pCamera, std::unique_ptr<Model> pModel, bool availableInEditor = false, bool isInstanced = false);
+		ER_RenderingObject(const std::string& pName, int index, Game& pGame, Camera& pCamera, std::unique_ptr<ER_Model> pModel, bool availableInEditor = false, bool isInstanced = false);
 		~ER_RenderingObject();
 
 		void LoadCustomMeshTextures(int meshIndex);
@@ -171,7 +171,7 @@ namespace Library
 			return 1 + mModelLODs.size();
 		}
 		void UpdateLODs();
-		void LoadLOD(std::unique_ptr<Model> pModel);
+		void LoadLOD(std::unique_ptr<ER_Model> pModel);
 		
 		float GetMinScale() { return mMinScale; }
 		void SetMinScale(float v) { mMinScale = v; }
@@ -271,8 +271,8 @@ namespace Library
 		std::vector<std::vector<XMFLOAT3>>						mMeshAllVertices; // vertices of all meshes combined, per LOD group
 		std::vector<float>										mMeshesReflectionFactors; 
 		std::vector<int>										mMeshesCount;
-		std::unique_ptr<Model>									mModel;
-		std::vector<std::unique_ptr<Model>>						mModelLODs;
+		std::unique_ptr<ER_Model>									mModel;
+		std::vector<std::unique_ptr<ER_Model>>						mModelLODs;
 		// 
 		///****************************************************************************************************************************
 

@@ -3,7 +3,7 @@
 #include "ER_Material.h"
 #include "Game.h"
 #include "GameException.h"
-#include "Model.h"
+#include "ER_Model.h"
 #include "ER_RenderingObject.h"
 #include "ShaderCompiler.h"
 #include "Utility.h"

@@ -147,9 +147,6 @@
     <ClInclude Include="RenderStateHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Model.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ModelMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -321,6 +318,9 @@
     <ClInclude Include="ER_Terrain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_Model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -488,9 +488,6 @@
     <ClCompile Include="Mesh.cpp">
       <Filter>Source Files\Graphics\Mesh &amp; Model</Filter>
     </ClCompile>
-    <ClCompile Include="Model.cpp">
-      <Filter>Source Files\Graphics\Mesh &amp; Model</Filter>
-    </ClCompile>
     <ClCompile Include="ER_FoliageManager.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
@@ -529,6 +526,9 @@
     </ClCompile>
     <ClCompile Include="ER_Terrain.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_Model.cpp">
+      <Filter>Source Files\Graphics\Mesh &amp; Model</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

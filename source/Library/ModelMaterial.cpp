@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "ModelMaterial.h"
-#include "Model.h"
+#include "ER_Model.h"
 #include "GameException.h"
 #include "Utility.h"
 #include "assimp\scene.h"
@@ -11,13 +11,13 @@ namespace Library
 	std::map<TextureType, UINT> ModelMaterial::sTextureTypeMappings;
 	
 	
-	ModelMaterial::ModelMaterial(Model& model)
+	ModelMaterial::ModelMaterial(ER_Model& model)
 		: mModel(model), mTextures()
 	{
 		InitializeTextureTypeMappings();
 	}
 
-	ModelMaterial::ModelMaterial(Model& model, aiMaterial* material)
+	ModelMaterial::ModelMaterial(ER_Model& model, aiMaterial* material)
 		: mModel(model), mTextures()
 	{
 		InitializeTextureTypeMappings();
@@ -52,7 +52,7 @@ namespace Library
 	{
 	}
 
-	Model& ModelMaterial::GetModel()
+	ER_Model& ModelMaterial::GetModel()
 	{
 		return mModel;
 	}

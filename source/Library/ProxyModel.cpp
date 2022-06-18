@@ -5,7 +5,7 @@
 #include "GameException.h"
 #include "MatrixHelper.h"
 #include "VectorHelper.h"
-#include "Model.h"
+#include "ER_Model.h"
 #include "Mesh.h"
 #include "Utility.h"
 #include "Camera.h"
@@ -148,7 +148,7 @@ namespace Library
 	{
 		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
 
-		std::unique_ptr<Model> model(new Model(*mGame, mModelFileName, true));
+		std::unique_ptr<ER_Model> model(new ER_Model(*mGame, mModelFileName, true));
 
 		mMaterial = new ER_BasicColorMaterial(*mGame, {}, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER);
 

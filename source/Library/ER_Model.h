@@ -8,11 +8,11 @@ namespace Library
 	class Mesh;
 	class ModelMaterial;
 
-	class Model
+	class ER_Model
 	{
 	public:
-		Model(Game& game, const std::string& filename, bool flipUVs = false);
-		~Model();
+		ER_Model(Game& game, const std::string& filename, bool flipUVs = false);
+		~ER_Model();
 
 		Game& GetGame();
 		bool HasMeshes() const;
@@ -26,8 +26,8 @@ namespace Library
 		const ER_AABB& GenerateAABB();
 
 	private:
-		Model(const Model& rhs);
-		Model& operator=(const Model& rhs);
+		ER_Model(const ER_Model& rhs);
+		ER_Model& operator=(const ER_Model& rhs);
 
 		Game& mGame;
 		ER_AABB mAABB;

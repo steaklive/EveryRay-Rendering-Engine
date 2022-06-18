@@ -7,7 +7,7 @@
 #include "ER_Scene.h"
 #include "GameException.h"
 #include "Utility.h"
-#include "Model.h"
+#include "ER_Model.h"
 #include "Materials.inl"
 #include "ER_RenderingObject.h"
 #include "MaterialHelper.h"
@@ -150,7 +150,7 @@ namespace Library
 				std::string name = root["rendering_objects"][i]["name"].asString();
 				std::string modelPath = root["rendering_objects"][i]["model_path"].asString();
 				bool isInstanced = root["rendering_objects"][i]["instanced"].asBool();
-				objects.emplace(name, new ER_RenderingObject(name, i, *mGame, mCamera, std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath(modelPath), true)), true, isInstanced));
+				objects.emplace(name, new ER_RenderingObject(name, i, *mGame, mCamera, std::unique_ptr<ER_Model>(new ER_Model(*mGame, Utility::GetFilePath(modelPath), true)), true, isInstanced));
 			}
 
 			assert(numRenderingObjects == objects.size());
@@ -403,7 +403,7 @@ namespace Library
 			if (hasLODs) {
 				for (Json::Value::ArrayIndex lod = 1 /* 0 is main model loaded before */; lod != root["rendering_objects"][i]["model_lods"].size(); lod++) {
 					std::string path = root["rendering_objects"][i]["model_lods"][lod]["path"].asString();
-					aObject->LoadLOD(std::unique_ptr<Model>(new Model(*mGame, Utility::GetFilePath(path), true)));
+					aObject->LoadLOD(std::unique_ptr<ER_Model>(new ER_Model(*mGame, Utility::GetFilePath(path), true)));
 				}
 			}
 		}

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "Mesh.h"
-#include "Model.h"
+#include "ER_Model.h"
 #include "ModelMaterial.h"
 #include "Game.h"
 #include "GameException.h"
@@ -12,7 +12,7 @@
 namespace Library
 {
 
-	Mesh::Mesh(Model& model, ModelMaterial& material, aiMesh& mesh) : mModel(model), mMaterial(material), mName(mesh.mName.C_Str()), mVertices(), mNormals(), mTangents(), mBiNormals(), mTextureCoordinates(), mVertexColors(), mFaceCount(0), mIndices()
+	Mesh::Mesh(ER_Model& model, ModelMaterial& material, aiMesh& mesh) : mModel(model), mMaterial(material), mName(mesh.mName.C_Str()), mVertices(), mNormals(), mTangents(), mBiNormals(), mTextureCoordinates(), mVertexColors(), mFaceCount(0), mIndices()
 	{
 		// Vertices
 		mVertices.reserve(mesh.mNumVertices);
@@ -95,7 +95,7 @@ namespace Library
 	{
 	}
 
-	Model& Mesh::GetModel()
+	ER_Model& Mesh::GetModel()
 	{
 		return mModel;
 	}

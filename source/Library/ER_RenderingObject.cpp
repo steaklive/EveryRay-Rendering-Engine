@@ -6,7 +6,7 @@
 #include "GameException.h"
 #include "Game.h"
 #include "GameTime.h"
-#include "Model.h"
+#include "ER_Model.h"
 #include "Mesh.h"
 #include "Utility.h"
 #include "ER_Illumination.h"
@@ -20,7 +20,7 @@ namespace Library
 {
 	static int currentSplatChannnel = (int)TerrainSplatChannels::NONE;
 
-	ER_RenderingObject::ER_RenderingObject(const std::string& pName, int index, Game& pGame, Camera& pCamera, std::unique_ptr<Model> pModel, bool availableInEditor, bool isInstanced)
+	ER_RenderingObject::ER_RenderingObject(const std::string& pName, int index, Game& pGame, Camera& pCamera, std::unique_ptr<ER_Model> pModel, bool availableInEditor, bool isInstanced)
 		:
 		mGame(&pGame),
 		mCamera(pCamera),
@@ -935,7 +935,7 @@ namespace Library
 		ImGui::End();
 	}
 	
-	void ER_RenderingObject::LoadLOD(std::unique_ptr<Model> pModel)
+	void ER_RenderingObject::LoadLOD(std::unique_ptr<ER_Model> pModel)
 	{
 		//assert();
 		mMeshesCount.push_back(pModel->Meshes().size());

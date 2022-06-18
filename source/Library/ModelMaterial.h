@@ -20,16 +20,16 @@ namespace Library
 		TextureTypeEnd
 	};
 
-	class Model;
+	class ER_Model;
 
 	class ModelMaterial
 	{
 	public:
-		ModelMaterial(Model& model, aiMaterial* material);
-		ModelMaterial(Model& model);
+		ModelMaterial(ER_Model& model, aiMaterial* material);
+		ModelMaterial(ER_Model& model);
 		~ModelMaterial();
 
-		Model& GetModel();
+		ER_Model& GetModel();
 		const std::string& Name() const;
 		const std::map<TextureType, std::vector<std::wstring>>& Textures() const;
 		const std::vector<std::wstring>& GetTexturesByType(TextureType type) const;
@@ -39,7 +39,7 @@ namespace Library
 		static void InitializeTextureTypeMappings();
 		static std::map<TextureType, UINT> sTextureTypeMappings;
 
-		Model& mModel;
+		ER_Model& mModel;
 		std::string mName;
 		std::map<TextureType, std::vector<std::wstring>> mTextures;
 	};

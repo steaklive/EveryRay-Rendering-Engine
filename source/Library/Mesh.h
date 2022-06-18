@@ -6,16 +6,16 @@ struct aiMesh;
 
 namespace Library
 {
-	class Model;
+	class ER_Model;
 	class ModelMaterial;
 
 	class Mesh
 	{
 	public:
-		Mesh(Model& model, ModelMaterial& material, aiMesh& mesh);
+		Mesh(ER_Model& model, ModelMaterial& material, aiMesh& mesh);
 		~Mesh();
 
-		Model& GetModel();
+		ER_Model& GetModel();
 		const ModelMaterial& GetMaterial() const;
 		const std::string& Name() const;
 
@@ -36,7 +36,7 @@ namespace Library
 		void CreateVertexBuffer_PositionUvNormalTangent(ID3D11Buffer** vertexBuffer, int uvChannel = 0) const;
 
 	private:
-		Model& mModel;
+		ER_Model& mModel;
 		ModelMaterial& mMaterial;
 		std::string mName;
 		std::vector<XMFLOAT3> mVertices;

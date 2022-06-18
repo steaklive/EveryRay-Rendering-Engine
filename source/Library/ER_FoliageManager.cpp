@@ -3,7 +3,7 @@
 #include "Game.h"
 #include "MatrixHelper.h"
 #include "Utility.h"
-#include "Model.h"
+#include "ER_Model.h"
 #include "Mesh.h"
 #include "VertexDeclarations.h"
 #include "RasterizerStates.h"
@@ -236,28 +236,28 @@ namespace Library
 	{
 		if (bType == FoliageBillboardType::SINGLE) {
 			mIsRotating = true;
-			std::unique_ptr<Model> quadSingleModel(new Model(mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_single.obj"), true));
+			std::unique_ptr<ER_Model> quadSingleModel(new ER_Model(mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_single.obj"), true));
 			quadSingleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(&mVertexBuffer);
 			quadSingleModel->GetMesh(0).CreateIndexBuffer(&mIndexBuffer);
 			mVerticesCount = quadSingleModel->GetMesh(0).Indices().size();
 		}
 		else if (bType == FoliageBillboardType::TWO_QUADS_CROSSING) {
 			mIsRotating = false;
-			std::unique_ptr<Model> quadDoubleModel(new Model(mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_double.obj"), true));
+			std::unique_ptr<ER_Model> quadDoubleModel(new ER_Model(mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_double.obj"), true));
 			quadDoubleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(&mVertexBuffer);
 			quadDoubleModel->GetMesh(0).CreateIndexBuffer(&mIndexBuffer);
 			mVerticesCount = quadDoubleModel->GetMesh(0).Indices().size();
 		}
 		else if (bType == FoliageBillboardType::THREE_QUADS_CROSSING) {
 			mIsRotating = false;
-			std::unique_ptr<Model> quadTripleModel(new Model(mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_triple.obj"), true));
+			std::unique_ptr<ER_Model> quadTripleModel(new ER_Model(mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_triple.obj"), true));
 			quadTripleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(&mVertexBuffer);
 			quadTripleModel->GetMesh(0).CreateIndexBuffer(&mIndexBuffer);
 			mVerticesCount = quadTripleModel->GetMesh(0).Indices().size();
 		}
 		else if (bType == FoliageBillboardType::MULTIPLE_QUADS_CROSSING) {
 			mIsRotating = false;
-			std::unique_ptr<Model> quadMultipleModel(new Model(mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_multiple.obj"), true));
+			std::unique_ptr<ER_Model> quadMultipleModel(new ER_Model(mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_multiple.obj"), true));
 			quadMultipleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(&mVertexBuffer);
 			quadMultipleModel->GetMesh(0).CreateIndexBuffer(&mIndexBuffer);
 			mVerticesCount = quadMultipleModel->GetMesh(0).Indices().size();

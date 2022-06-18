@@ -2,7 +2,7 @@
 
 #include "Material.h"
 #include "GameException.h"
-#include "Model.h"
+#include "ER_Model.h"
 
 namespace Library
 {

@@ -9,7 +9,7 @@
 #include "VectorHelper.h"
 #include "ShaderCompiler.h"
 #include "ER_RenderingObject.h"
-#include "Model.h"
+#include "ER_Model.h"
 #include "ER_Scene.h"
 #include "ER_RenderableAABB.h"
 #include "ER_GPUBuffer.h"
@@ -234,7 +234,7 @@ namespace Library
 		std::string name = "Debug diffuse lightprobes ";
 		auto result = scene->objects.insert(
 			std::pair<std::string, ER_RenderingObject*>(name, new ER_RenderingObject(name, scene->objects.size(), game, camera,
-				std::unique_ptr<Model>(new Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true))
+				std::unique_ptr<ER_Model>(new ER_Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true))
 		);
 
 		if (!result.second)
@@ -360,7 +360,7 @@ namespace Library
 		std::string name = "Debug specular lightprobes ";
 		auto result = scene->objects.insert(
 			std::pair<std::string, ER_RenderingObject*>(name, new ER_RenderingObject(name, scene->objects.size(), game, camera,
-				std::unique_ptr<Model>(new Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true))
+				std::unique_ptr<ER_Model>(new ER_Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true))
 		);
 
 		if (!result.second)
