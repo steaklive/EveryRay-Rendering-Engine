@@ -2,7 +2,7 @@
 
 #include "Common.h"
 #include "GeneralEvent.h"
-#include "ModelMaterial.h"
+#include "ER_ModelMaterial.h"
 
 const UINT MAX_INSTANCE_COUNT = 20000;
 

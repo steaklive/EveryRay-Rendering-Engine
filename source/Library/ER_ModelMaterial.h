@@ -22,12 +22,12 @@ namespace Library
 
 	class ER_Model;
 
-	class ModelMaterial
+	class ER_ModelMaterial
 	{
 	public:
-		ModelMaterial(ER_Model& model, aiMaterial* material);
-		ModelMaterial(ER_Model& model);
-		~ModelMaterial();
+		ER_ModelMaterial(ER_Model& model, aiMaterial* material);
+		ER_ModelMaterial(ER_Model& model);
+		~ER_ModelMaterial();
 
 		ER_Model& GetModel();
 		const std::string& Name() const;

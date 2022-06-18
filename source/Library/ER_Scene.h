@@ -2,7 +2,7 @@
 #include "Common.h"
 #include "GameComponent.h"
 #include "Camera.h"
-#include "ModelMaterial.h"
+#include "ER_ModelMaterial.h"
 #include "ER_Material.h"
 
 #include "..\JsonCpp\include\json\json.h"

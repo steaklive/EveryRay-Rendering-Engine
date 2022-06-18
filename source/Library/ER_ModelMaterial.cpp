@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "ModelMaterial.h"
+#include "ER_ModelMaterial.h"
 #include "ER_Model.h"
 #include "GameException.h"
 #include "Utility.h"
@@ -8,16 +8,15 @@
 
 namespace Library
 {
-	std::map<TextureType, UINT> ModelMaterial::sTextureTypeMappings;
+	std::map<TextureType, UINT> ER_ModelMaterial::sTextureTypeMappings;
 	
-	
-	ModelMaterial::ModelMaterial(ER_Model& model)
+	ER_ModelMaterial::ER_ModelMaterial(ER_Model& model)
 		: mModel(model), mTextures()
 	{
 		InitializeTextureTypeMappings();
 	}
 
-	ModelMaterial::ModelMaterial(ER_Model& model, aiMaterial* material)
+	ER_ModelMaterial::ER_ModelMaterial(ER_Model& model, aiMaterial* material)
 		: mModel(model), mTextures()
 	{
 		InitializeTextureTypeMappings();
@@ -48,26 +47,26 @@ namespace Library
 		}
 	}
 
-	ModelMaterial::~ModelMaterial()
+	ER_ModelMaterial::~ER_ModelMaterial()
 	{
 	}
 
-	ER_Model& ModelMaterial::GetModel()
+	ER_Model& ER_ModelMaterial::GetModel()
 	{
 		return mModel;
 	}
 
-	const std::string& ModelMaterial::Name() const
+	const std::string& ER_ModelMaterial::Name() const
 	{
 		return mName;
 	}
 
-	const std::map<TextureType, std::vector<std::wstring>>& ModelMaterial::Textures() const
+	const std::map<TextureType, std::vector<std::wstring>>& ER_ModelMaterial::Textures() const
 	{
 		return mTextures;
 	}
 
-	const std::vector<std::wstring>& ModelMaterial::GetTexturesByType(TextureType type) const
+	const std::vector<std::wstring>& ER_ModelMaterial::GetTexturesByType(TextureType type) const
 	{
 		auto it = mTextures.find(type);
 		if (it != mTextures.end())
@@ -76,7 +75,7 @@ namespace Library
 			return {};
 	}
 
-	bool ModelMaterial::HasTexturesOfType(TextureType type) const
+	bool ER_ModelMaterial::HasTexturesOfType(TextureType type) const
 	{
 		auto it = mTextures.find(type);
 		if (it != mTextures.end())
@@ -85,7 +84,7 @@ namespace Library
 			return false;
 	}
 
-	void ModelMaterial::InitializeTextureTypeMappings()
+	void ER_ModelMaterial::InitializeTextureTypeMappings()
 	{
 		if (sTextureTypeMappings.size() != TextureTypeEnd)
 		{

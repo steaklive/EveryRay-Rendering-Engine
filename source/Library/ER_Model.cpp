@@ -2,7 +2,7 @@
 
 #include "ER_Model.h"
 #include "ER_Mesh.h"
-#include "ModelMaterial.h"
+#include "ER_ModelMaterial.h"
 #include "Game.h"
 #include "GameException.h"
 
@@ -33,7 +33,7 @@ namespace Library
 		if (scene->HasMaterials())
 		{
 			for (UINT i = 0; i < scene->mNumMaterials; i++)
-				mMaterials.push_back(ModelMaterial(*this, scene->mMaterials[i]));
+				mMaterials.push_back(ER_ModelMaterial(*this, scene->mMaterials[i]));
 		}
 
 		if (scene->HasMeshes())
@@ -74,7 +74,7 @@ namespace Library
 		return mMeshes.at(index);
 	}
 
-	const std::vector<ModelMaterial>& ER_Model::Materials() const
+	const std::vector<ER_ModelMaterial>& ER_Model::Materials() const
 	{
 		return mMaterials;
 	}

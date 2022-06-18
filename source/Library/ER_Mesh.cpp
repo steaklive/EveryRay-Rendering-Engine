@@ -2,7 +2,7 @@
 
 #include "ER_Mesh.h"
 #include "ER_Model.h"
-#include "ModelMaterial.h"
+#include "ER_ModelMaterial.h"
 #include "Game.h"
 #include "GameException.h"
 #include "VertexDeclarations.h"
@@ -11,7 +11,7 @@
 
 namespace Library
 {
-	ER_Mesh::ER_Mesh(ER_Model& model, ModelMaterial& material, aiMesh& mesh) : mModel(model), mMaterial(material), mName(mesh.mName.C_Str()), mVertices(), mNormals(), mTangents(), mBiNormals(), mTextureCoordinates(), mVertexColors(), mFaceCount(0), mIndices()
+	ER_Mesh::ER_Mesh(ER_Model& model, ER_ModelMaterial& material, aiMesh& mesh) : mModel(model), mMaterial(material), mName(mesh.mName.C_Str()), mVertices(), mNormals(), mTangents(), mBiNormals(), mTextureCoordinates(), mVertexColors(), mFaceCount(0), mIndices()
 	{
 		// Vertices
 		mVertices.reserve(mesh.mNumVertices);
@@ -86,7 +86,7 @@ namespace Library
 		}
 	}
 
-	/*ER_Mesh::ER_Mesh(Model & model, ModelMaterial * material)
+	/*ER_Mesh::ER_Mesh(Model & model, ER_ModelMaterial * material)
 	{
 	}*/
 
@@ -99,7 +99,7 @@ namespace Library
 		return mModel;
 	}
 
-	const ModelMaterial& ER_Mesh::GetMaterial() const
+	const ER_ModelMaterial& ER_Mesh::GetMaterial() const
 	{
 		return mMaterial;
 	}

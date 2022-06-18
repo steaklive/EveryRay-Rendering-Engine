@@ -7,16 +7,16 @@ struct aiMesh;
 namespace Library
 {
 	class ER_Model;
-	class ModelMaterial;
+	class ER_ModelMaterial;
 
 	class ER_Mesh
 	{
 	public:
-		ER_Mesh(ER_Model& model, ModelMaterial& material, aiMesh& mesh);
+		ER_Mesh(ER_Model& model, ER_ModelMaterial& material, aiMesh& mesh);
 		~ER_Mesh();
 
 		ER_Model& GetModel();
-		const ModelMaterial& GetMaterial() const;
+		const ER_ModelMaterial& GetMaterial() const;
 		const std::string& Name() const;
 
 		const std::vector<XMFLOAT3>& Vertices() const;
@@ -37,7 +37,7 @@ namespace Library
 
 	private:
 		ER_Model& mModel;
-		ModelMaterial& mMaterial;
+		ER_ModelMaterial& mMaterial;
 		std::string mName;
 		std::vector<XMFLOAT3> mVertices;
 		std::vector<XMFLOAT3> mNormals;

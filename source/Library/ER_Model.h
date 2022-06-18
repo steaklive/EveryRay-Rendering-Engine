@@ -6,7 +6,7 @@ namespace Library
 {
 	class Game;
 	class ER_Mesh;
-	class ModelMaterial;
+	class ER_ModelMaterial;
 
 	class ER_Model
 	{
@@ -20,7 +20,7 @@ namespace Library
 
 		const std::vector<ER_Mesh>& Meshes() const;
 		const ER_Mesh& GetMesh(int index) const;
-		const std::vector<ModelMaterial>& Materials() const;
+		const std::vector<ER_ModelMaterial>& Materials() const;
 		const std::string& GetFileName() { return mFilename; }
 		const char* GetFileNameChar() { return mFilename.c_str(); }
 		const ER_AABB& GenerateAABB();
@@ -32,7 +32,7 @@ namespace Library
 		Game& mGame;
 		ER_AABB mAABB;
 		std::vector<ER_Mesh> mMeshes;
-		std::vector<ModelMaterial> mMaterials;
+		std::vector<ER_ModelMaterial> mMaterials;
 		std::string mFilename;
 	};
 }
