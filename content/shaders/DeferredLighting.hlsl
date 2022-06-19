@@ -98,7 +98,10 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     else
         directLighting = DirectLightingPBR(normalWS, SunColor, SunDirection.xyz, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness, CameraPosition.xyz);
     
-    float3 indirectLighting = float3(0.0, 0.0, 0.0);    
+    float3 indirectLighting = float3(0.0, 0.0, 0.0);
+    if (isFoliage)
+        indirectLighting = float3(0.1f, 0.1f, 0.1f) * diffuseAlbedo.rgb; // fake ambient for foliage
+    
     if (!isFoliage && SkipIndirectLighting <= 0.0f)
     {
         LightProbeInfo probesInfo;      

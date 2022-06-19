@@ -183,17 +183,17 @@
 				{
 					"transform" : 
 					[
-						9.0576000213623047,
+						8.2,
 						0.0,
 						0.0,
 						30.0,
 						0.0,
-						9.0576000213623047,
+						8.2,
 						0.0,
-						-0.13127541542053223,
+						-0.2,
 						0.0,
 						0.0,
-						9.0576000213623047,
+						8.2,
 						0.0,
 						0.0,
 						0.0,
@@ -204,17 +204,17 @@
 				{
 					"transform" : 
 					[
-						9.0576000213623047,
+						8.2,
 						0.0,
 						0.0,
 						50.0,
 						0.0,
-						9.0576000213623047,
+						8.2,
 						0.0,
-						-0.13127541542053223,
+						-0.2,
 						0.0,
 						0.0,
-						9.0576000213623047,
+						8.2,
 						0.0,
 						0.0,
 						0.0,
@@ -225,17 +225,17 @@
 				{
 					"transform" : 
 					[
-						9.0576000213623047,
+						8.2,
 						0.0,
 						0.0,
 						70.0,
 						0.0,
-						9.0576000213623047,
+						8.2,
 						0.0,
-						-0.13127541542053223,
+						-0.2,
 						0.0,
 						0.0,
-						9.0576000213623047,
+						8.2,
 						0.0,
 						0.0,
 						0.0,
@@ -261,7 +261,7 @@
 			"textures" : 
 			[
 				{
-					"albedo" : "content\\textures\\groundTexture.png"
+					"albedo" : "content\\textures\\grassGroundTexture.jpg"
 				},
 				{
 					"albedo" : "content\\textures\\PBR\\Concrete\\concrete2_albedo.png",
@@ -340,6 +340,53 @@
 				0.0,
 				0.90517723560333252,
 				-17.154722213745117,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\vegetation\\trees\\acer\\tree_acer_middle2.fbx",
+			"name" : "Acer Tree",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\models\\vegetation\\trees\\acer\\leaves0018_41_m_przod.png",
+					"normal" : "content\\models\\vegetation\\trees\\acer\\leaves0018_41_m_przod_n.png"
+				},
+				{
+					"albedo" : "content\\models\\vegetation\\trees\\acer\\BarkDecidious0164_5_M_TILED_dark.jpg",
+					"normal" : "content\\models\\vegetation\\trees\\acer\\BarkDecidious0164_5_M_TILED_dark_normal-min.png"
+				}
+			],
+			"transform" : 
+			[
+				0.82977449893951416,
+				0.0,
+				0.0,
+				30.0,
+				0.0,
+				0.8297722339630127,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				0.82977449893951416,
+				0.0,
 				0.0,
 				0.0,
 				0.0,

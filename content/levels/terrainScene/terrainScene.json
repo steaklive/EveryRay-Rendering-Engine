@@ -306,6 +306,101 @@
 				0.0,
 				1.0
 			]
+		},
+		{
+			"instanced" : true,
+			"terrain_placement" : true,
+			"terrain_procedural_instance_count" : 100,
+			"terrain_procedural_instance_scale_min" : 0.5,
+			"terrain_procedural_instance_scale_max" : 1.5,
+			"terrain_procedural_instance_yaw_min" : -180.0,
+			"terrain_procedural_instance_yaw_max" : 180.0,
+			"terrain_procedural_zone_center_pos" : 
+			[
+				501.5732421875,
+				75.33013916015625,
+				-500.44598388671875
+			],
+			"terrain_procedural_zone_radius" : 500,
+			"terrain_splat_channel" : 4,
+			"model_lods" : 
+			[
+				{
+					"path" : "content\\models\\vegetation\\trees\\pine\\pine_mid_2_lod_high.fbx"
+				},
+				{
+					"path" : "content\\models\\vegetation\\trees\\pine\\pine_mid_2_lod_mid.fbx"
+				},
+				{
+					"path" : "content\\models\\vegetation\\trees\\pine\\pine_mid_2_lod_low.fbx"
+				}
+			],
+			"model_path" : "content\\models\\vegetation\\trees\\pine\\pine_mid_2_lod_high.fbx",
+			"name" : "Pine Mid 2",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\models\\vegetation\\trees\\pine\\Bark\\bark_Diffuse.png",
+					"metalness" : "content\\textures\\emptyMetallicMap.png",
+					"normal" : "content\\models\\vegetation\\trees\\pine\\Bark\\Bark_Normal.png",
+					"roughness" : "content\\models\\vegetation\\trees\\pine\\Bark\\Bark_Roughness.png"
+				},
+				{
+					"albedo" : "content\\models\\vegetation\\trees\\pine\\Branches_2\\branches_2_Diffuse_a.png",
+					"metalness" : "content\\textures\\emptyMetallicMap.png",
+					"normal" : "content\\models\\vegetation\\trees\\pine\\Branches_2\\branches_2_Normal.png",
+					"roughness" : "content\\models\\vegetation\\trees\\pine\\Branches_2\\branches_2_roughness.png"
+				},
+				{
+					"albedo" : "content\\models\\vegetation\\trees\\pine\\Needles\\needles_Diffuse_a.png",
+					"metalness" : "content\\textures\\emptyMetallicMap.png",
+					"normal" : "content\\models\\vegetation\\trees\\pine\\Needles\\needles_Normal.png",
+					"roughness" : "content\\models\\vegetation\\trees\\pine\\Needles\\needles_roughness.png"
+				},
+				{
+					"albedo" : "content\\models\\vegetation\\trees\\pine\\Bark\\bark_Diffuse.png",
+					"metalness" : "content\\textures\\emptyMetallicMap.png",
+					"normal" : "content\\models\\vegetation\\trees\\pine\\Bark\\Bark_Normal.png",
+					"roughness" : "content\\models\\vegetation\\trees\\pine\\Bark\\Bark_Roughness.png"
+				},
+				{
+					"albedo" : "content\\models\\vegetation\\trees\\pine\\Branches_1\\branches_1_Diffuse_a.png",
+					"metalness" : "content\\textures\\emptyMetallicMap.png",
+					"normal" : "content\\models\\vegetation\\trees\\pine\\Branches_1\\branches_1_Normal.png",
+					"roughness" : "content\\models\\vegetation\\trees\\pine\\Branches_1\\branches_1_roughness.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
 		}
 	],
 	"sun_color" : 
