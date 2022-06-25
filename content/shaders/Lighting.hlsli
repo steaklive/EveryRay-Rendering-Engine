@@ -345,7 +345,7 @@ float3 DirectDiffuseBRDF(float3 diffuseAlbedo, float3 lightDir, float3 viewDir, 
     
     return (diffuseAlbedo * kD) / Pi;
 }
-float3 DirectSpecularBRDF(float3 normalWS, float3 lightDir, float3 viewDir, float roughness, float3 F0, float3 halfVec)
+float3 DirectSpecularBRDF_CookTorrance(float3 normalWS, float3 lightDir, float3 viewDir, float roughness, float3 F0, float3 halfVec)
 {
     // Cook-Torrance BRDF
     float NDF = DistributionGGX(normalWS, halfVec, roughness);
@@ -366,7 +366,7 @@ float3 DirectLightingPBR(float3 normalWS, float4 lightColor, float3 lightDir, fl
     
     float nDotL = max(dot(normalWS, lightDir), 0.0);
    
-    float3 lighting = DirectDiffuseBRDF(diffuseAlbedo, lightDir, viewDir, F0, metallic, halfVec) + DirectSpecularBRDF(normalWS, lightDir, viewDir, roughness, F0, halfVec);
+    float3 lighting = DirectDiffuseBRDF(diffuseAlbedo, lightDir, viewDir, F0, metallic, halfVec) + DirectSpecularBRDF_CookTorrance(normalWS, lightDir, viewDir, roughness, F0, halfVec);
 
     float lightIntensity = lightColor.a;
     return max(lighting, 0.0f) * nDotL * lightColor.xyz * lightIntensity;
@@ -502,4 +502,105 @@ float3 IndirectLightingPBR(float3 normalWS, float3 diffuseAlbedo, float3 positio
     float3 indirectSpecularLighting = prefilteredColor * (Schlick_Fresnel_Roughness(nDotV, F0, roughness) * environmentBRDF.x + float3(environmentBRDF.y, environmentBRDF.y, environmentBRDF.y));
     
     return (indirectDiffuseLighting + indirectSpecularLighting) * ambientOcclusion;
+}
+
+/**
+ * Copyright (C) 2012 Jorge Jimenez (jorge@iryoku.com)
+ * Copyright (C) 2012 Diego Gutierrez (diegog@unizar.es)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ *    1. Redistributions of source code must retain the above copyright notice,
+ *       this list of conditions and the following disclaimer.
+ *
+ *    2. Redistributions in binary form must reproduce the following disclaimer
+ *       in the documentation and/or other materials provided with the 
+ *       distribution:
+ *
+ *       "Uses Separable SSS. Copyright (C) 2012 by Jorge Jimenez and Diego
+ *        Gutierrez."
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS 
+ * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR 
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDERS OR CONTRIBUTORS 
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ * The views and conclusions contained in the software and documentation are 
+ * those of the authors and should not be interpreted as representing official
+ * policies, either expressed or implied, of the copyright holders.
+ */
+
+//********** https://github.com/iryoku/separable-sss ************//
+///////////////////////////////////////////////////////////////////
+// Shader is modified by Gen Afanasev (for educational purposes) //
+//***************************************************************//
+
+float3 SSSSTransmittance(
+        /**
+         * This parameter allows to control the transmittance effect. Its range
+         * should be 0..1. Higher values translate to a stronger effect.
+         */
+        float translucency,
+        /**
+         * This parameter should be the same as the 'SSSSBlurPS' one. See below
+         * for more details.
+         */
+        float sssWidth,
+        float3 worldPosition, float3 normalWS, float3 lightDir,
+        float4x4 ShadowMatrix, in SamplerComparisonState CascadedPcfShadowMapSampler,
+        float ShadowTexelSize, in Texture2D<float> CascadedShadowTexture, float lightFarPlane)
+{
+    /**
+     * Calculate the scale of the effect.
+     */
+    float scale = 8.25 * (1.0 - translucency) / sssWidth;
+       
+    /**
+     * First we shrink the position inwards the surface to avoid artifacts:
+     * (Note that this can be done once for all the lights)
+     */
+    float4 shrinkedPos = float4(worldPosition - 0.005f * normalWS, 1.0);
+
+    /**
+     * Now we calculate the thickness from the light point of view:
+     */
+    
+    float4 lightSpacePos = mul(ShadowMatrix, shrinkedPos);
+    float4 ShadowCoord = lightSpacePos / lightSpacePos.w;
+    ShadowCoord.rg = ShadowCoord.rg * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+
+    float d1 = CascadedShadowTexture.SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy, ShadowCoord.z); // 'd1' has a range of 0..1
+    float d2 = lightSpacePos.z; // 'd2' has a range of 0..'lightFarPlane'
+
+
+    d1 *= lightFarPlane; // So we scale 'd1' accordingly:
+    float d = scale * abs(d1 - d2);
+
+    /**
+     * Armed with the thickness, we can now calculate the color by means of the
+     * precalculated transmittance profile.
+     * (It can be precomputed into a texture, for maximum performance):
+     */
+    float dd = -d * d;
+    float3 profile = float3(0.233, 0.455, 0.649) * exp(dd / 0.0064) +
+                     float3(0.1, 0.336, 0.344) * exp(dd / 0.0484) +
+                     float3(0.118, 0.198, 0.0) * exp(dd / 0.187) +
+                     float3(0.113, 0.007, 0.007) * exp(dd / 0.567) +
+                     float3(0.358, 0.004, 0.0) * exp(dd / 1.99) +
+                     float3(0.078, 0.0, 0.0) * exp(dd / 7.41);
+
+    /** 
+     * Using the profile, we finally approximate the transmitted lighting from
+     * the back of the object:
+     */
+    return profile * saturate(0.3 + dot(lightDir, -normalWS));
 }

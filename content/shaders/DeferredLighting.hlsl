@@ -25,7 +25,7 @@ Texture2D<float4> GbufferAlbedoTexture : register(t0);
 Texture2D<float4> GbufferNormalTexture : register(t1);
 Texture2D<float4> GbufferWorldPosTexture : register(t2);
 Texture2D<float4> GbufferExtraTexture : register(t3); // [reflection mask, roughness, metalness, foliage mask]
-Texture2D<float4> GbufferExtra2Texture : register(t4); // [global diffuse probe mask, POM, empty, skip deferred lighting]
+Texture2D<float4> GbufferExtra2Texture : register(t4); // [global diffuse probe mask, POM, SSS, skip deferred lighting]
 
 Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t5);
 
@@ -41,6 +41,10 @@ cbuffer DeferredLightingCBuffer : register(b0)
     float4 CameraNearFarPlanes;
     float UseGlobalProbe;
     float SkipIndirectLighting;
+    float SSSTranslucency;
+    float SSSWidth;
+    float SSSDirectionLightMaxPlane;
+    float SSSAvailable;
 }
 
 cbuffer LightProbesCBuffer : register(b1)
@@ -85,7 +89,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     float ao = 1.0f; // TODO sample AO texture
     
     bool usePOM = extra2Gbuffer.g > -1.0f; // TODO add POM support to Deferred
-    
+    bool useSSS = extra2Gbuffer.b > -1.0f && SSSAvailable > 0.0f;
     bool isFoliage = extraGbuffer.a >= 1.0f;
     
     //reflectance at normal incidence for dia-electic or metal
@@ -97,6 +101,12 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
         directLighting = SunColor.rgb * diffuseAlbedo.rgb * max(dot(normalWS, SunDirection.xyz), 0.0);
     else
         directLighting = DirectLightingPBR(normalWS, SunColor, SunDirection.xyz, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness, CameraPosition.xyz);
+    
+    if (useSSS)
+    {
+        directLighting += SunColor.rgb * diffuseAlbedo.rgb * 
+            SSSSTransmittance(SSSTranslucency, SSSWidth, worldPos.rgb, normalWS, SunDirection.xyz, ShadowMatrices[0], CascadedPcfShadowMapSampler, ShadowTexelSize.x, CascadedShadowTextures[0], SSSDirectionLightMaxPlane);        
+    }
     
     float3 indirectLighting = float3(0.0, 0.0, 0.0);
     if (isFoliage)

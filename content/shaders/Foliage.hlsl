@@ -307,7 +307,7 @@ PS_OUTPUT_GBUFFER PSMain_gbuffer(VS_OUTPUT IN) : SV_Target
     OUT.Normal = float4(IN.Normal, 1.0f);
     OUT.WorldPos = float4(IN.WorldPos, 1.0f);
     OUT.Extra = float4(0.0, 0.0, 0.0, 1.0f);
-    OUT.Extra2 = float4(0.0, -1.0f, 0.0, 0.0f);
+    OUT.Extra2 = float4(0.0, -1.0f, 0.1, 0.0f); // b - custom alpha discard
     return OUT;
 
 }

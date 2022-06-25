@@ -25,7 +25,7 @@ namespace Library
 		ER_GPUTexture* GetNormals() { return mNormalBuffer; }
 		ER_GPUTexture* GetPositions() { return mPositionsBuffer; }
 		ER_GPUTexture* GetExtraBuffer() { return mExtraBuffer; } // [reflection mask, roughness, metalness, foliage mask]
-		ER_GPUTexture* GetExtra2Buffer() { return mExtra2Buffer; } // [global diffuse probe mask, height (for POM, etc.), empty, skip deferred lighting]
+		ER_GPUTexture* GetExtra2Buffer() { return mExtra2Buffer; } // [global diffuse probe mask, height (for POM, etc.), SSS, skip deferred lighting]
 		DepthTarget* GetDepth() { return mDepthBuffer; }
 
 	private:

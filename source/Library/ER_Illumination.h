@@ -68,6 +68,10 @@ namespace Library
 			XMFLOAT4 CameraNearFarPlanes;
 			float UseGlobalProbe;
 			float SkipIndirectProbeLighting;
+			float SSSTranslucency;
+			float SSSWidth;
+			float SSSDirectionLightMaxPlane;
+			float SSSAvailable;
 		};
 		struct ForwardLightingCB
 		{
@@ -117,6 +121,17 @@ namespace Library
 
 		ER_GPUTexture* GetLocalIlluminationRT() const { return mLocalIlluminationRT; }
 		ER_GPUTexture* GetFinalIlluminationRT() const { return mFinalIlluminationRT; }
+
+		void SetSSS(bool val) { mIsSSS = val; }
+		bool IsSSSBlurring() { return mIsSSS && !mIsSSSCulled; }
+		float GetSSSWidth() { return mSSSWidth; }
+		void SetSSSWidth(float val) { mSSSWidth = val; }
+		float GetSSSStrength() { return mSSSStrength; }
+		void SetSSSStrength(float val) { mSSSStrength = val; }
+		float GetSSSTranslucency() { return mSSSTranslucency; }
+		void SetSSSTranslucency(float val) { mSSSTranslucency = val; }
+		float GetSSSDirLightPlaneScale() { return mSSSDirectionalLightPlaneScale; }
+		void SetSSSDirLightPlaneScale(float val) { mSSSDirectionalLightPlaneScale = val; }
 	private:
 		void DrawDeferredLighting(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget);
 		void DrawForwardLighting(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget);
@@ -183,6 +198,7 @@ namespace Library
 		
 		std::vector<ER_RenderableAABB*> mDebugVoxelZonesGizmos;
 
+		//VCT GI
 		float mVCTIndirectDiffuseStrength = 1.0f;
 		float mVCTIndirectSpecularStrength = 1.0f;
 		float mVCTMaxConeTraceDistance = 100.0f;
@@ -195,9 +211,18 @@ namespace Library
 		bool mShowVCTAmbientOcclusionOnly = false;
 		bool mDrawVCTVoxelZonesGizmos = false;
 
+		//light probes
 		bool mDrawDiffuseProbes = false;
 		bool mDrawSpecularProbes = false;
 		bool mDebugSkipIndirectProbeLighting = false;
+
+		//SSS
+		bool mIsSSS = true; //global on/off flag
+		bool mIsSSSCulled = false; //if there are any SSS objects on screen (false)
+		float mSSSTranslucency = 0.993f;
+		float mSSSWidth = 0.013f;
+		float mSSSStrength = 1.35f;
+		float mSSSDirectionalLightPlaneScale = 0.15f;
 
 		bool mEnabled = false;
 		bool mShowDebug = false;

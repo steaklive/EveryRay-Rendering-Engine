@@ -529,6 +529,20 @@ namespace Library {
 
 	void ER_Illumination::Update(const GameTime& gameTime, const ER_Scene* scene)
 	{
+		//check SSS culling
+		{
+			for (auto& objectInfo : scene->objects)
+			{
+				if (!objectInfo.second->IsCulled() && objectInfo.second->IsRendered() && objectInfo.second->IsSeparableSubsurfaceScattering())
+				{
+					mIsSSSCulled = false;
+					break;
+				}
+				else
+					mIsSSSCulled = true;
+			}
+		}
+
 		CPUCullObjectsAgainstVoxelCascades(scene);
 		UpdateVoxelCameraPosition();
 		UpdateImGui();
@@ -623,6 +637,10 @@ namespace Library {
 			mDeferredLightingConstantBuffer.Data.CameraNearFarPlanes = XMFLOAT4{ mCamera.GetCameraNearShadowCascadeDistance(0), mCamera.GetCameraFarShadowCascadeDistance(0), 0.0f, 0.0f };
 			mDeferredLightingConstantBuffer.Data.UseGlobalProbe = !mProbesManager->IsEnabled() && mProbesManager->AreGlobalProbesReady();
 			mDeferredLightingConstantBuffer.Data.SkipIndirectProbeLighting = mDebugSkipIndirectProbeLighting;
+			mDeferredLightingConstantBuffer.Data.SSSTranslucency = mSSSTranslucency;
+			mDeferredLightingConstantBuffer.Data.SSSWidth = mSSSWidth;
+			mDeferredLightingConstantBuffer.Data.SSSDirectionLightMaxPlane = mSSSDirectionalLightPlaneScale;
+			mDeferredLightingConstantBuffer.Data.SSSAvailable = (mIsSSS && !mIsSSSCulled) ? 1.0f : -1.0f;
 			mDeferredLightingConstantBuffer.ApplyChanges(context);
 
 			if (mProbesManager->IsEnabled())

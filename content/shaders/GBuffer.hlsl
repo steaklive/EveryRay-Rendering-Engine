@@ -19,7 +19,7 @@ cbuffer GBufferCBuffer : register(b0)
     float4x4 ViewProjection;
     float4x4 World;
     float4 Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor;
-    float4 SkipDeferredLighting;
+    float4 SkipDeferredLighting_UseSSS_CustomAlphaDiscard; // a - empty
 }
 
 SamplerState Sampler : register(s0);
@@ -90,7 +90,7 @@ PS_OUTPUT PSMain(VS_OUTPUT IN) : SV_Target
 {
     PS_OUTPUT OUT;
     float4 albedo = AlbedoMap.Sample(Sampler, IN.TextureCoordinate);
-    if (albedo.a < 0.1f)
+    if (albedo.a < SkipDeferredLighting_UseSSS_CustomAlphaDiscard.b)
         discard;
     
     OUT.Color = albedo;
@@ -107,7 +107,10 @@ PS_OUTPUT PSMain(VS_OUTPUT IN) : SV_Target
     float metalness = MetallicMap.Sample(Sampler, IN.TextureCoordinate).r;
     float reflectionMask = ReflectionMaskMap.Sample(Sampler, IN.TextureCoordinate).r;
     OUT.Extra = float4(reflectionMask, roughness, metalness, Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor.g);
-    OUT.Extra2 = float4(Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor.b, 
-        Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor.a ? HeightMap.Sample(Sampler, IN.TextureCoordinate).r : -1.0f, 0.0, SkipDeferredLighting.r);
+    OUT.Extra2 = float4(
+        Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor.b, 
+        Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor.a ? HeightMap.Sample(Sampler, IN.TextureCoordinate).r : -1.0f, 
+        SkipDeferredLighting_UseSSS_CustomAlphaDiscard.g,
+        SkipDeferredLighting_UseSSS_CustomAlphaDiscard.r);
     return OUT;
 }

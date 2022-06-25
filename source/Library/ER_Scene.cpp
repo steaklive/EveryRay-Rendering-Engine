@@ -226,7 +226,13 @@ namespace Library
 			
 			if (root["rendering_objects"][i].isMember("use_forward_shading"))
 				aObject->SetForwardShading(root["rendering_objects"][i]["use_forward_shading"].asBool());
+
+			if (root["rendering_objects"][i].isMember("use_sss"))
+				aObject->SetSeparableSubsurfaceScattering(root["rendering_objects"][i]["use_sss"].asBool());
 			
+			if (root["rendering_objects"][i].isMember("use_custom_alpha_discard"))
+				aObject->SetCustomAlphaDiscard(root["rendering_objects"][i]["use_custom_alpha_discard"].asFloat());
+
 			//terrain
 			if (root["rendering_objects"][i].isMember("terrain_placement"))
 			{

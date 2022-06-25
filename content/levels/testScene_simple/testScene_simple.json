@@ -177,6 +177,52 @@
 			"use_in_global_lightprobe_rendering" : true
 		},
 		{
+			"instanced" : false,
+			"model_path" : "content\\models\\lpshead\\lpshead.fbx",
+			"name" : "Head",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\models\\lpshead\\DiffuseMap.dds",
+					"normal" : "content\\models\\lpshead\\NormalMap.png",
+					"roughness" : "content\\models\\lpshead\\RoughnessMap.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"use_custom_alpha_discard" : 0.0,
+			"use_sss" : true
+		},
+		{
 			"instanced" : true,
 			"instances_transforms" : 
 			[

@@ -11,6 +11,7 @@
 #include "Camera.h"
 #include "ER_VolumetricClouds.h"
 #include "ER_VolumetricFog.h"
+#include "ER_Illumination.h"
 
 namespace Library {
 
@@ -23,6 +24,7 @@ namespace Library {
 	{
 		DeleteObject(mTonemappingRT);
 		DeleteObject(mSSRRT);
+		DeleteObject(mSSSRT);
 		DeleteObject(mColorGradingRT);
 		DeleteObject(mVignetteRT);
 		DeleteObject(mFXAART);
@@ -31,6 +33,7 @@ namespace Library {
 
 		ReleaseObject(mTonemappingPS);
 		ReleaseObject(mSSRPS);
+		ReleaseObject(mSSSPS);
 		ReleaseObject(mColorGradingPS);
 		ReleaseObject(mVignettePS);
 		ReleaseObject(mFXAAPS);
@@ -38,6 +41,7 @@ namespace Library {
 		ReleaseObject(mFinalResolvePS);
 
 		mSSRConstantBuffer.Release();
+		mSSSConstantBuffer.Release();
 		mFXAAConstantBuffer.Release();
 		mVignetteConstantBuffer.Release();
 		mLinearFogConstantBuffer.Release();
@@ -79,6 +83,19 @@ namespace Library {
 
 			mSSRConstantBuffer.Initialize(game.Direct3DDevice());
 			mSSRRT = new ER_GPUTexture(game.Direct3DDevice(), static_cast<UINT>(game.ScreenWidth()), static_cast<UINT>(game.ScreenHeight()), 1u,
+				DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+		}
+
+		//SSS
+		{
+			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\SSS.hlsl").c_str(), "BlurPS", "ps_5_0", &pShaderBlob)))
+				throw GameException("Failed to load BlurPS pass from shader: SSS.hlsl!");
+			if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mSSSPS)))
+				throw GameException("Failed to create BlurPS shader from SSS.hlsl!");
+			pShaderBlob->Release();
+
+			mSSSConstantBuffer.Initialize(game.Direct3DDevice());
+			mSSSRT = new ER_GPUTexture(game.Direct3DDevice(), static_cast<UINT>(game.ScreenWidth()), static_cast<UINT>(game.ScreenHeight()), 1u,
 				DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 		}
 
@@ -164,6 +181,30 @@ namespace Library {
 			ImGui::Checkbox("Fog - On", &mUseLinearFog);
 			ImGui::ColorEdit3("Color", mLinearFogColor);
 			ImGui::SliderFloat("Density", &mLinearFogDensity, 1.0f, 10000.0f);
+		}
+
+		if (ImGui::CollapsingHeader("Separable Subsurface Scattering"))
+		{
+			ER_Illumination* illumination = game.GetLevel()->mIllumination;
+
+			ImGui::Checkbox("SSS - On", &mUseSSS);
+			illumination->SetSSS(mUseSSS);
+
+			float strength = illumination->GetSSSStrength();
+			ImGui::SliderFloat("SSS Strength", &strength, 0.0f, 15.0f);
+			illumination->SetSSSStrength(strength);
+
+			float translucency = illumination->GetSSSTranslucency();
+			ImGui::SliderFloat("SSS Translucency", &translucency, 0.0f, 1.0f);
+			illumination->SetSSSTranslucency(translucency);
+
+			float width = illumination->GetSSSWidth();
+			ImGui::SliderFloat("SSS Width", &width, 0.0f, 0.1f);
+			illumination->SetSSSWidth(width);
+
+			float lightPlaneScale = illumination->GetSSSDirLightPlaneScale();
+			ImGui::SliderFloat("Dir light plane scale", &lightPlaneScale, 0.0f, 10.0f);
+			illumination->SetSSSDirLightPlaneScale(lightPlaneScale);
 		}
 
 		if (ImGui::CollapsingHeader("Screen Space Reflections"))
@@ -287,6 +328,32 @@ namespace Library {
 		context->PSSetShaderResources(0, 4, SRs);
 	}
 
+	void ER_PostProcessingStack::PrepareDrawingSSS(const GameTime& gameTime, ER_GPUTexture* aInputTexture, ER_GBuffer* gbuffer, bool verticalPass)
+	{
+		auto context = game.Direct3DDeviceContext();
+
+		ER_Illumination* illumination = game.GetLevel()->mIllumination;
+		assert(illumination);
+		assert(aInputTexture);
+
+		if (verticalPass)
+			mSSSConstantBuffer.Data.SSSStrengthWidthDir = XMFLOAT4(illumination->GetSSSStrength(), illumination->GetSSSWidth(), 1.0f, 0.0f);
+		else
+			mSSSConstantBuffer.Data.SSSStrengthWidthDir = XMFLOAT4(illumination->GetSSSStrength(), illumination->GetSSSWidth(), 0.0f, 1.0f);
+		mSSSConstantBuffer.Data.CameraFOV = camera.FieldOfView();
+		mSSSConstantBuffer.ApplyChanges(context);
+		ID3D11Buffer* CBs[1] = { mSSSConstantBuffer.Buffer() };
+		context->PSSetConstantBuffers(0, 1, CBs);
+
+		context->PSSetShader(mSSSPS, NULL, NULL);
+
+		ID3D11SamplerState* SS[1] = { SamplerStates::TrilinearWrap };
+		context->PSSetSamplers(0, 1, SS);
+
+		ID3D11ShaderResourceView* SRs[3] = { aInputTexture->GetSRV(), mDepthTarget->getSRV(), gbuffer->GetExtra2Buffer()->GetSRV() };
+		context->PSSetShaderResources(0, 3, SRs);
+	}
+
 	void ER_PostProcessingStack::PrepareDrawingLinearFog(ER_GPUTexture* aInputTexture)
 	{
 		assert(aInputTexture);
@@ -376,6 +443,31 @@ namespace Library {
 
 			//[WARNING] Set from last post processing effect
 			mRenderTargetBeforeResolve = mLinearFogRT;
+		}
+
+		// SSS
+		if (mUseSSS)
+		{
+			ER_Illumination* illumination = game.GetLevel()->mIllumination;
+			if (illumination->IsSSSBlurring())
+			{
+				//vertical
+				{
+					game.SetCustomRenderTarget(mSSSRT, nullptr);
+					PrepareDrawingSSS(gameTime, mRenderTargetBeforeResolve, gbuffer, true);
+					quad->Draw(context);
+					game.UnsetCustomRenderTarget();
+				}
+				//horizontal
+				{
+					game.SetCustomRenderTarget(mSSSRT, nullptr);
+					PrepareDrawingSSS(gameTime, mRenderTargetBeforeResolve, gbuffer, false);
+					quad->Draw(context);
+					game.UnsetCustomRenderTarget();
+				}
+				//[WARNING] Set from last post processing effect
+				mRenderTargetBeforeResolve = mSSSRT;
+			}
 		}
 
 		// SSR

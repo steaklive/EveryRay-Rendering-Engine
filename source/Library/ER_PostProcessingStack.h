@@ -44,6 +44,11 @@ namespace Library
 			float Time;
 			int MaxRayCount;
 		};
+		struct SSSCB
+		{
+			XMFLOAT4 SSSStrengthWidthDir;
+			float CameraFOV;
+		};
 	}
 
 	class ER_PostProcessingStack
@@ -70,6 +75,7 @@ namespace Library
 	private:
 		void PrepareDrawingTonemapping(ER_GPUTexture* aInputTexture);
 		void PrepareDrawingSSR(const GameTime& gameTime, ER_GPUTexture* aInputTexture, ER_GBuffer* gbuffer);
+		void PrepareDrawingSSS(const GameTime& gameTime, ER_GPUTexture* aInputTexture, ER_GBuffer* gbuffer, bool verticalPass);
 		void PrepareDrawingLinearFog(ER_GPUTexture* aInputTexture);
 		void PrepareDrawingColorGrading(ER_GPUTexture* aInputTexture);
 		void PrepareDrawingVignette(ER_GPUTexture* aInputTexture);
@@ -94,6 +100,12 @@ namespace Library
 		int mSSRRayCount = 50;
 		float mSSRStepSize = 0.741f;
 		float mSSRMaxThickness = 0.00021f;
+
+		// SSS
+		ER_GPUTexture* mSSSRT = nullptr;
+		bool mUseSSS = true;
+		ID3D11PixelShader* mSSSPS = nullptr;
+		ConstantBuffer<PostEffectsCBuffers::SSSCB> mSSSConstantBuffer;
 
 		// Linear Fog
 		ER_GPUTexture* mLinearFogRT = nullptr;

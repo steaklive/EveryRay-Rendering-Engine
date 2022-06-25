@@ -75,7 +75,11 @@ namespace Library
 			aObj->GetFoliageMask() ? 1.0f : 0.0f,
 			aObj->GetUseIndirectGlobalLightProbeMask() ? 1.0f : 0.0f,
 			aObj->IsParallaxOcclusionMapping() ? 1.0f : 0.0f);
-		mConstantBuffer.Data.SkipDeferredLighting = XMFLOAT4(aObj->IsForwardShading() ? 1.0f : 0.0f, 0.0, 0.0, 0.0);
+		mConstantBuffer.Data.SkipDeferredLighting_UseSSS_CustomAlphaDiscard = XMFLOAT4(
+			aObj->IsForwardShading() ? 1.0f : 0.0f,
+			aObj->IsSeparableSubsurfaceScattering() ? 1.0f : -1.0f,
+			aObj->GetCustomAlphaDiscard(),
+			0.0);
 		mConstantBuffer.ApplyChanges(context);
 		ID3D11Buffer* CBs[1] = { mConstantBuffer.Buffer() };
 

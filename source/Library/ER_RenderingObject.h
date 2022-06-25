@@ -185,12 +185,15 @@ namespace Library
 		bool IsInstanced() { return mIsInstanced; }
 		bool IsAvailableInEditor() { return mAvailableInEditorMode; }
 
-		bool IsVisible() { return mIsRendered; }
-		void SetVisible(bool val) { mIsRendered = val; }
+		bool IsRendered() { return mIsRendered; }
+		void SetRendered(bool val) { mIsRendered = val; }
 
 		// main camera view flag
 		bool IsCulled() { return mIsCulled; }
 		void SetCulled(bool val) { mIsCulled = val; }
+
+		float GetCustomAlphaDiscard() { return mCustomAlphaDiscard; }
+		void SetCustomAlphaDiscard(float val) { mCustomAlphaDiscard = val; }
 
 		void PlaceProcedurallyOnTerrain();
 		void SetTerrainPlacement(bool flag) { mIsTerrainPlacement = flag; }
@@ -229,6 +232,9 @@ namespace Library
 		bool IsInLightProbe() { return mIsInLightProbe; }
 		void SetInLightProbe(bool value) { mIsInLightProbe = value; }
 		
+		bool IsSeparableSubsurfaceScattering() { return mIsSeparableSubsurfaceScattering; }
+		void SetSeparableSubsurfaceScattering(bool value) { mIsSeparableSubsurfaceScattering = value; }
+
 		void SetUseIndirectGlobalLightProbe(bool value) { mUseIndirectGlobalLightProbe = value; }
 		bool GetUseIndirectGlobalLightProbe() { return mUseIndirectGlobalLightProbe; }
 		float GetUseIndirectGlobalLightProbeMask() { return mUseIndirectGlobalLightProbe ? 1.0f : 0.0f; }
@@ -328,10 +334,12 @@ namespace Library
 		bool													mIsCulled = false; //only for non-instanced objects
 		bool													mFoliageMask = false;
 		bool													mIsInLightProbe = false;
+		bool													mIsSeparableSubsurfaceScattering = false;
 		bool													mIsInVoxelization = false;
 		bool													mIsInGbuffer = false;
 		bool													mUseIndirectGlobalLightProbe = false;
 		bool													mIsUsedForGlobalLightProbeRendering = false;
+		float													mCustomAlphaDiscard = 0.1f;
 		float													mMinScale = 1.0f;
 		float													mMaxScale = 1.0f;
 		float													mCameraViewMatrix[16];
