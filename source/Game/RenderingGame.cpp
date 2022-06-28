@@ -12,7 +12,7 @@
 #include <dinput.h>
 
 #include "..\Library\GameException.h"
-#include "..\Library\Keyboard.h"
+#include "..\Library\ER_Keyboard.h"
 #include "..\Library\Mouse.h"
 #include "..\Library\Utility.h"
 #include "..\Library\ER_CameraFPS.h"
@@ -78,9 +78,9 @@ namespace Rendering
 				throw GameException("DirectInput8Create() failed");
 			}
 
-			mKeyboard = new Keyboard(*this, mDirectInput);
+			mKeyboard = new ER_Keyboard(*this, mDirectInput);
 			components.push_back(mKeyboard);
-			mServices.AddService(Keyboard::TypeIdClass(), mKeyboard);
+			mServices.AddService(ER_Keyboard::TypeIdClass(), mKeyboard);
 
 			mMouse = new Mouse(*this, mDirectInput);
 			components.push_back(mMouse);

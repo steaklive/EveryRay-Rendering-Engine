@@ -60,7 +60,7 @@ namespace Library {
 #pragma endregion
 
 		#pragma region INIT_CONTROLS
-        mKeyboard = (Keyboard*)game.Services().GetService(Keyboard::TypeIdClass());
+        mKeyboard = (ER_Keyboard*)game.Services().GetService(ER_Keyboard::TypeIdClass());
         assert(mKeyboard);
 #pragma endregion
 

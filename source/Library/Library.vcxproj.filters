@@ -114,9 +114,6 @@
     <ClInclude Include="Utility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Keyboard.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Mouse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -297,6 +294,9 @@
     <ClInclude Include="ER_Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_Keyboard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -304,9 +304,6 @@
     </ClCompile>
     <ClCompile Include="ColorHelper.cpp">
       <Filter>Source Files\Helpers</Filter>
-    </ClCompile>
-    <ClCompile Include="Keyboard.cpp">
-      <Filter>Source Files\Controls</Filter>
     </ClCompile>
     <ClCompile Include="VectorHelper.cpp">
       <Filter>Source Files\Helpers</Filter>
@@ -490,6 +487,9 @@
     </ClCompile>
     <ClCompile Include="ER_CameraFPS.cpp">
       <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_Keyboard.cpp">
+      <Filter>Source Files\Controls</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

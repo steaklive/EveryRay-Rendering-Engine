@@ -9,7 +9,7 @@ using namespace Library;
 namespace Library
 {
 	class Mouse;
-	class Keyboard;
+	class ER_Keyboard;
 	class ER_CameraFPS;
 	class RenderStateHelper;
 	class ER_Editor;
@@ -41,7 +41,7 @@ namespace Rendering
 		static const XMVECTORF32 BackgroundColor2;
 
 		LPDIRECTINPUT8 mDirectInput;
-		Keyboard* mKeyboard;
+		ER_Keyboard* mKeyboard;
 		Mouse* mMouse;
 		ER_CameraFPS* mCamera;
 		ER_Editor* mEditor;

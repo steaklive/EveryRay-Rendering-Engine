@@ -1,15 +1,15 @@
 #include "stdafx.h"
 
-#include "Keyboard.h"
+#include "ER_Keyboard.h"
 #include "Game.h"
 #include "GameTime.h"
 #include "GameException.h"
 
 namespace Library
 {
-	RTTI_DEFINITIONS(Keyboard)
+	RTTI_DEFINITIONS(ER_Keyboard)
 
-		Keyboard::Keyboard(Game& game, LPDIRECTINPUT8 directInput)
+	ER_Keyboard::ER_Keyboard(Game& game, LPDIRECTINPUT8 directInput)
 		: GameComponent(game), mDirectInput(directInput), mDevice(nullptr)
 	{
 		assert(mDirectInput != nullptr);
@@ -17,7 +17,7 @@ namespace Library
 		ZeroMemory(mLastState, sizeof(mLastState));
 	}
 
-	Keyboard::~Keyboard()
+	ER_Keyboard::~ER_Keyboard()
 	{
 		if (mDevice != nullptr)
 		{
@@ -27,17 +27,17 @@ namespace Library
 		}
 	}
 
-	const byte* const Keyboard::CurrentState() const
+	const byte* const ER_Keyboard::CurrentState() const
 	{
 		return mCurrentState;
 	}
 
-	const byte* const Keyboard::LastState() const
+	const byte* const ER_Keyboard::LastState() const
 	{
 		return mLastState;
 	}
 
-	void Keyboard::Initialize()
+	void ER_Keyboard::Initialize()
 	{
 		if (FAILED(mDirectInput->CreateDevice(GUID_SysKeyboard, &mDevice, nullptr)))
 		{
@@ -57,7 +57,7 @@ namespace Library
 		mDevice->Acquire();
 	}
 
-	void Keyboard::Update(const GameTime& gameTime)
+	void ER_Keyboard::Update(const GameTime& gameTime)
 	{
 		if (mDevice != nullptr)
 		{
@@ -74,37 +74,37 @@ namespace Library
 		}
 	}
 
-	bool Keyboard::IsKeyUp(byte key) const
+	bool ER_Keyboard::IsKeyUp(byte key) const
 	{
 		return ((mCurrentState[key] & 0x80) == 0);
 	}
 
-	bool Keyboard::IsKeyDown(byte key) const
+	bool ER_Keyboard::IsKeyDown(byte key) const
 	{
 		return ((mCurrentState[key] & 0x80) != 0);
 	}
 
-	bool Keyboard::WasKeyUp(byte key) const
+	bool ER_Keyboard::WasKeyUp(byte key) const
 	{
 		return ((mLastState[key] & 0x80) == 0);
 	}
 
-	bool Keyboard::WasKeyDown(byte key) const
+	bool ER_Keyboard::WasKeyDown(byte key) const
 	{
 		return ((mLastState[key] & 0x80) != 0);
 	}
 
-	bool Keyboard::WasKeyPressedThisFrame(byte key) const
+	bool ER_Keyboard::WasKeyPressedThisFrame(byte key) const
 	{
 		return (IsKeyDown(key) && WasKeyUp(key));
 	}
 
-	bool Keyboard::WasKeyReleasedThisFrame(byte key) const
+	bool ER_Keyboard::WasKeyReleasedThisFrame(byte key) const
 	{
 		return (IsKeyUp(key) && WasKeyDown(key));
 	}
 
-	bool Keyboard::IsKeyHeldDown(byte key) const
+	bool ER_Keyboard::IsKeyHeldDown(byte key) const
 	{
 		return (IsKeyDown(key) && WasKeyDown(key));
 	}

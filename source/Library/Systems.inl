@@ -7,7 +7,7 @@
 #include "..\Library\ER_QuadRenderer.h"
 #include "..\Library\ER_Camera.h"
 #include "..\Library\DirectionalLight.h"
-#include "..\Library\Keyboard.h"
+#include "..\Library\ER_Keyboard.h"
 #include "..\Library\ER_Skybox.h"
 #include "..\Library\ER_PostProcessingStack.h"
 #include "..\Library\ER_GBuffer.h"

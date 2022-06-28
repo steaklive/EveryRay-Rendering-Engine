@@ -220,7 +220,7 @@
     <ClInclude Include="ER_GBuffer.h" />
     <ClInclude Include="GeneralEvent.h" />
     <ClInclude Include="ER_Illumination.h" />
-    <ClInclude Include="Keyboard.h" />
+    <ClInclude Include="ER_Keyboard.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="ER_MaterialHelper.h" />
     <ClInclude Include="MatrixHelper.h" />
@@ -295,7 +295,7 @@
     <ClCompile Include="GameException.cpp" />
     <ClCompile Include="GameTime.cpp" />
     <ClCompile Include="ER_GBuffer.cpp" />
-    <ClCompile Include="Keyboard.cpp" />
+    <ClCompile Include="ER_Keyboard.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="ER_MaterialHelper.cpp" />
     <ClCompile Include="MatrixHelper.cpp" />

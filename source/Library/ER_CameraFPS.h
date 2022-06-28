@@ -4,7 +4,7 @@
 
 namespace Library
 {
-	class Keyboard;
+	class ER_Keyboard;
 	class Mouse;
 
 	class ER_CameraFPS : public ER_Camera
@@ -17,8 +17,8 @@ namespace Library
 
 		virtual ~ER_CameraFPS();
 
-		const Keyboard& GetKeyboard() const;
-		void SetKeyboard(Keyboard& keyboard);
+		const ER_Keyboard& GetKeyboard() const;
+		void SetKeyboard(ER_Keyboard& keyboard);
 
 		const Mouse& GetMouse() const;
 		void SetMouse(Mouse& mouse);
@@ -41,7 +41,7 @@ namespace Library
 		float mRotationRate;
 		float mMovementRate;
 
-		Keyboard* mKeyboard;
+		ER_Keyboard* mKeyboard;
 		Mouse* mMouse;
 
 	private:

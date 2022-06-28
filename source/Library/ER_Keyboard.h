@@ -4,13 +4,13 @@
 
 namespace Library
 {
-	class Keyboard : public GameComponent
+	class ER_Keyboard : public GameComponent
 	{
-		RTTI_DECLARATIONS(Keyboard, GameComponent)
+		RTTI_DECLARATIONS(ER_Keyboard, GameComponent)
 
 	public:
-		Keyboard(Game& game, LPDIRECTINPUT8 directInput);
-		~Keyboard();
+		ER_Keyboard(Game& game, LPDIRECTINPUT8 directInput);
+		~ER_Keyboard();
 
 		const byte* const CurrentState() const;
 		const byte* const LastState() const;
@@ -27,11 +27,11 @@ namespace Library
 		bool IsKeyHeldDown(byte key) const;
 
 	private:
-		Keyboard();
+		ER_Keyboard();
 
 		static const int KeyCount = 256;
 
-		Keyboard(const Keyboard& rhs);
+		ER_Keyboard(const ER_Keyboard& rhs);
 
 		LPDIRECTINPUT8 mDirectInput;
 		LPDIRECTINPUTDEVICE8 mDevice;
