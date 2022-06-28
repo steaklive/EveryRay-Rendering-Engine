@@ -5,7 +5,6 @@
 #include "GameTime.h"
 #include "Camera.h"
 #include "DirectionalLight.h"
-#include "FullScreenRenderTarget.h"
 #include "GameException.h"
 #include "ER_Model.h"
 #include "ER_Mesh.h"

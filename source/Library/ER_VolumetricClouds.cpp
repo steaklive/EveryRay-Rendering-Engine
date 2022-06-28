@@ -4,7 +4,6 @@
 #include "GameTime.h"
 #include "Camera.h"
 #include "DirectionalLight.h"
-#include "FullScreenRenderTarget.h"
 #include "GameException.h"
 #include "ER_Model.h"
 #include "ER_Mesh.h"
@@ -101,8 +100,7 @@ namespace Library {
 		mIlluminationResultDepthTarget = aIlluminationDepth;
 
 		mMainRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
-		
-		mBlurRT = new FullScreenRenderTarget(*mGame);
+		mBlurRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 		mSkyRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 		mSkyAndSunRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 	}
@@ -215,7 +213,7 @@ namespace Library {
 
 		//blur pass
 		{
-			mBlurRT->Begin();
+			context->OMSetRenderTargets(1, mBlurRT->GetRTVs(), nullptr);
 			ID3D11ShaderResourceView* SR_Blur[2] = {
 				mMainRT->GetSRV(),
 				mIlluminationResultDepthTarget->getSRV(),
@@ -223,7 +221,9 @@ namespace Library {
 			context->PSSetShaderResources(0, 2, SR_Blur);
 			context->PSSetShader(mBlurPS, NULL, NULL);
 			quadRenderer->Draw(context);
-			mBlurRT->End();
+
+			ID3D11RenderTargetView* nullRTVs[1] = { NULL };
+			context->OMSetRenderTargets(1, nullRTVs, nullptr);
 		}
 
 		//composite pass (happens in PostProcessing)
@@ -235,7 +235,7 @@ namespace Library {
 		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
 
 		context->OMSetRenderTargets(1, aRenderTarget->GetRTVs(), nullptr);
-		ID3D11ShaderResourceView* SR[2] = { mIlluminationResultDepthTarget->getSRV(), mBlurRT->OutputColorTexture() };
+		ID3D11ShaderResourceView* SR[2] = { mIlluminationResultDepthTarget->getSRV(), mBlurRT->GetSRV() };
 		context->PSSetShaderResources(0, 2, SR);
 		context->PSSetShader(mCompositePS, NULL, NULL);
 		

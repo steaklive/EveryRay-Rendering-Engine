@@ -7,7 +7,6 @@
 
 namespace Library
 {
-	class FullScreenRenderTarget;
 	class DirectionalLight;
 	class GameTime;
 	class Camera;
@@ -68,7 +67,7 @@ namespace Library
 		ER_GPUTexture* mSkyRT = nullptr;
 		ER_GPUTexture* mSkyAndSunRT = nullptr;
 		ER_GPUTexture* mMainRT = nullptr;
-		FullScreenRenderTarget* mBlurRT = nullptr;
+		ER_GPUTexture* mBlurRT = nullptr;
 
 		ID3D11ComputeShader* mMainCS = nullptr;
 		ID3D11PixelShader* mCompositePS = nullptr;

@@ -168,9 +168,6 @@
     <ClInclude Include="SpotLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FullScreenRenderTarget.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Projector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -391,9 +388,6 @@
     </ClCompile>
     <ClCompile Include="Ray.cpp">
       <Filter>Source Files\Helpers</Filter>
-    </ClCompile>
-    <ClCompile Include="FullScreenRenderTarget.cpp">
-      <Filter>Source Files\Objects\RenderTarget</Filter>
     </ClCompile>
     <ClCompile Include="RenderTarget.cpp">
       <Filter>Source Files\Objects\RenderTarget</Filter>

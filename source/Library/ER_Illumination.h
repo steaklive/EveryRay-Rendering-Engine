@@ -13,7 +13,6 @@
 namespace Library
 {
 	class GameTime;
-	class FullScreenRenderTarget;
 	class DirectionalLight;
 	class Camera;
 	class ER_Scene;

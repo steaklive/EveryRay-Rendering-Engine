@@ -10,7 +10,6 @@
 #include "ER_Mesh.h"
 #include "Utility.h"
 #include "ShaderCompiler.h"
-#include "FullScreenRenderTarget.h"
 #include "ER_QuadRenderer.h"
 #include "VertexDeclarations.h"
 
@@ -33,8 +32,6 @@ namespace Library
 		ReleaseObject(mSkyboxPS);
 		ReleaseObject(mSunPS);
 		ReleaseObject(mSunOcclusionPS);
-		DeleteObject(mSunRenderTarget);
-		DeleteObject(mSunOcclusionRenderTarget);
 		mSunConstantBuffer.Release();
 		mSkyboxConstantBuffer.Release();
 	}
@@ -42,6 +39,9 @@ namespace Library
 	void ER_Skybox::Initialize()
 	{
 		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
+
+		auto device = mGame.Direct3DDevice();
+		auto context = mGame.Direct3DDeviceContext();
 
 		std::unique_ptr<ER_Model> model(new ER_Model(mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.obj"), true));
 
@@ -55,14 +55,14 @@ namespace Library
 			ID3DBlob* blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Skybox.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
 				throw GameException("Failed to load VSMain from shader: Skybox.hlsl!");
-			if (FAILED(mGame.Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSkyboxVS)))
+			if (FAILED(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSkyboxVS)))
 				throw GameException("Failed to create vertex shader from Skybox.hlsl!");
 			
 			D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 			{
 				{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 			};
-			HRESULT hr = mGame.Direct3DDevice()->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), blob->GetBufferPointer(), blob->GetBufferSize(), &mInputLayout);
+			HRESULT hr = device->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), blob->GetBufferPointer(), blob->GetBufferSize(), &mInputLayout);
 			if (FAILED(hr))
 				throw GameException("CreateInputLayout() failed when creating skybox's vertex shader.", hr);
 			blob->Release();
@@ -70,11 +70,11 @@ namespace Library
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Skybox.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
 				throw GameException("Failed to load PSMain from shader: Skybox.hlsl!");
-			if (FAILED(mGame.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSkyboxPS)))
+			if (FAILED(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSkyboxPS)))
 				throw GameException("Failed to create pixel shader from Skybox.hlsl!");
 			blob->Release();
 			
-			mSkyboxConstantBuffer.Initialize(mGame.Direct3DDevice());
+			mSkyboxConstantBuffer.Initialize(device);
 		}
 
 		//sun
@@ -93,9 +93,7 @@ namespace Library
 				throw GameException("Failed to create shader from Sun.hlsl!");
 			blob->Release();
 
-			mSunConstantBuffer.Initialize(mGame.Direct3DDevice());
-			mSunRenderTarget = new FullScreenRenderTarget(mGame);
-			mSunOcclusionRenderTarget = new FullScreenRenderTarget(mGame);
+			mSunConstantBuffer.Initialize(device);
 		}
 	}
 
@@ -182,38 +180,7 @@ namespace Library
 			context->PSSetShader(mSunPS, NULL, NULL);
 
 			quadRenderer->Draw(context);
-			
-			return;// TODO fix for light shafts
-			//draw occlusion texture for light shafts
-			{
-				mSunOcclusionRenderTarget->Begin();
-				context->PSSetConstantBuffers(0, 1, CBs);
-				context->PSSetShaderResources(0, 2, SR);
-				//context->PSSetSamplers(0, 2, SS);
-				context->PSSetShader(mSunOcclusionPS, NULL, NULL);
-				quadRenderer->Draw(context);
-				mSunOcclusionRenderTarget->End();
-
-				XMFLOAT4 posWorld = CalculateSunPositionOnSkybox(XMFLOAT3(-mSunDir.x, -mSunDir.y, -mSunDir.z), aCustomCamera);
-				XMVECTOR ndc;
-				if (aCustomCamera)
-					ndc = XMVector3Transform(XMLoadFloat4(&posWorld), aCustomCamera->ViewProjectionMatrix());
-				else
-					ndc = XMVector3Transform(XMLoadFloat4(&posWorld), mCamera.ViewProjectionMatrix());
-
-				XMFLOAT4 ndcF;
-				XMStoreFloat4(&ndcF, ndc);
-				ndcF = XMFLOAT4(ndcF.x / ndcF.w, ndcF.y / ndcF.w, ndcF.z / ndcF.w, ndcF.w / ndcF.w);
-				XMFLOAT2 ndcPos = XMFLOAT2(ndcF.x * 0.5f + 0.5f, -ndcF.y * 0.5f + 0.5f);
-				//XMFLOAT2 screenPos = XMFLOAT2(ndcPos.x * mGame->ScreenWidth(), (1 - ndcPos.y) * mGame->ScreenHeight());
-				//TODO postprocess->SetSunNDCPos(ndcPos);
-			}
 		}
-	}
-
-	ID3D11ShaderResourceView* ER_Skybox::GetSunOcclusionOutputTexture() const
-	{
-		return mSunOcclusionRenderTarget->OutputColorTexture();
 	}
 
 	XMFLOAT4 ER_Skybox::CalculateSunPositionOnSkybox(XMFLOAT3 dir, Camera* aCustomCamera)

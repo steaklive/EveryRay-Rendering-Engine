@@ -215,7 +215,6 @@
     <ClInclude Include="FirstPersonCamera.h" />
     <ClInclude Include="ER_FoliageManager.h" />
     <ClInclude Include="Frustum.h" />
-    <ClInclude Include="FullScreenRenderTarget.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameClock.h" />
     <ClInclude Include="GameComponent.h" />
@@ -297,7 +296,6 @@
     <ClCompile Include="FirstPersonCamera.cpp" />
     <ClCompile Include="ER_FoliageManager.cpp" />
     <ClCompile Include="Frustum.cpp" />
-    <ClCompile Include="FullScreenRenderTarget.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameClock.cpp" />
     <ClCompile Include="GameComponent.cpp" />

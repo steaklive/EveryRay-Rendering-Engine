@@ -7,7 +7,6 @@
 
 namespace Library
 {
-	class FullScreenRenderTarget;
 	class Camera;
 	class GameTime;
 
@@ -90,8 +89,6 @@ namespace Library
 		XMFLOAT4 mSunColor;
 		float mSunExponent;
 		float mSunBrightness;
-		FullScreenRenderTarget* mSunRenderTarget = nullptr;
-		FullScreenRenderTarget* mSunOcclusionRenderTarget = nullptr;
 		float mScale;
 	};
 }
