@@ -40,9 +40,6 @@
     <Filter Include="Shaders\VolumetricLighting">
       <UniqueIdentifier>{b4952fdd-8615-41aa-879e-346bf0c5e5b6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Objects\Spatial hierarchies">
-      <UniqueIdentifier>{e080a665-c4ec-411c-a175-d36f961e12bf}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shaders\WaterSimulation">
       <UniqueIdentifier>{4d1d2b2b-ec22-4805-b87f-528f0912b78e}</UniqueIdentifier>
     </Filter>
@@ -193,24 +190,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ER_GPUTexture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderableOBB.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OctreeStructure.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SpatialElement.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SpatialCell.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BruteforceStructure.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CollisionDetectionTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="OceanSimulator.h">
@@ -410,15 +389,6 @@
     <ClCompile Include="DepthTarget.cpp">
       <Filter>Source Files\Objects\RenderTarget</Filter>
     </ClCompile>
-    <ClCompile Include="OctreeStructure.cpp">
-      <Filter>Source Files\Objects\Spatial hierarchies</Filter>
-    </ClCompile>
-    <ClCompile Include="SpatialElement.cpp">
-      <Filter>Source Files\Objects\Spatial hierarchies</Filter>
-    </ClCompile>
-    <ClCompile Include="BruteforceStructure.cpp">
-      <Filter>Source Files\Objects\Spatial hierarchies</Filter>
-    </ClCompile>
     <ClCompile Include="TGATextureLoader.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
@@ -433,9 +403,6 @@
     </ClCompile>
     <ClCompile Include="ER_GPUTexture.cpp">
       <Filter>Source Files\Graphics\Graphics API</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderableOBB.cpp">
-      <Filter>Source Files\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="ER_LightProbe.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
