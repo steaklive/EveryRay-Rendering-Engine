@@ -1,99 +1,99 @@
 #include "stdafx.h"
 
-#include "Frustum.h"
+#include "ER_Frustum.h"
 
 namespace Library
 {
-	Frustum::Frustum(CXMMATRIX matrix)
+	ER_Frustum::ER_Frustum(CXMMATRIX matrix)
 		: mMatrix(), mCorners(), mPlanes()
 	{
 		SetMatrix(matrix);
 	}
 
-	const XMFLOAT4& Frustum::Near() const
+	const XMFLOAT4& ER_Frustum::Near() const
 	{
 		return mPlanes[FrustumPlaneNear];
 	}
 
-	const XMFLOAT4& Frustum::Far() const
+	const XMFLOAT4& ER_Frustum::Far() const
 	{
 		return mPlanes[FrustumPlaneFar];
 	}
 
-	const XMFLOAT4& Frustum::Left() const
+	const XMFLOAT4& ER_Frustum::Left() const
 	{
 		return mPlanes[FrustumPlaneLeft];
 	}
 
-	const XMFLOAT4& Frustum::Right() const
+	const XMFLOAT4& ER_Frustum::Right() const
 	{
 		return mPlanes[FrustumPlaneRight];
 	}
 
-	const XMFLOAT4& Frustum::Top() const
+	const XMFLOAT4& ER_Frustum::Top() const
 	{
 		return mPlanes[FrustumPlaneTop];
 	}
 
-	const XMFLOAT4& Frustum::Bottom() const
+	const XMFLOAT4& ER_Frustum::Bottom() const
 	{
 		return mPlanes[FrustumPlaneBottom];
 	}
 
-	XMVECTOR Frustum::NearVector() const
+	XMVECTOR ER_Frustum::NearVector() const
 	{
 		return XMLoadFloat4(&mPlanes[FrustumPlaneNear]);
 	}
 
-	XMVECTOR Frustum::FarVector() const
+	XMVECTOR ER_Frustum::FarVector() const
 	{
 		return XMLoadFloat4(&mPlanes[FrustumPlaneFar]);
 	}
 
-	XMVECTOR Frustum::LeftVector() const
+	XMVECTOR ER_Frustum::LeftVector() const
 	{
 		return XMLoadFloat4(&mPlanes[FrustumPlaneLeft]);
 	}
 
-	XMVECTOR Frustum::RightVector() const
+	XMVECTOR ER_Frustum::RightVector() const
 	{
 		return XMLoadFloat4(&mPlanes[FrustumPlaneRight]);
 	}
 
-	XMVECTOR Frustum::TopVector() const
+	XMVECTOR ER_Frustum::TopVector() const
 	{
 		return XMLoadFloat4(&mPlanes[FrustumPlaneTop]);
 	}
 
-	XMVECTOR Frustum::BottomVector() const
+	XMVECTOR ER_Frustum::BottomVector() const
 	{
 		return XMLoadFloat4(&mPlanes[FrustumPlaneBottom]);
 	}
 
-	const XMFLOAT3* Frustum::Corners() const
+	const XMFLOAT3* ER_Frustum::Corners() const
 	{
 		return mCorners;
 	}
 
-	const XMFLOAT4* Frustum::Planes() const
+	const XMFLOAT4* ER_Frustum::Planes() const
 	{
 		return mPlanes;
 	}
 
 
-	XMMATRIX Frustum::Matrix() const
+	XMMATRIX ER_Frustum::Matrix() const
 	{
 		return XMLoadFloat4x4(&mMatrix);
 	}
 
-	void Frustum::SetMatrix(CXMMATRIX matrix)
+	void ER_Frustum::SetMatrix(CXMMATRIX matrix)
 	{
 		XMFLOAT4X4 m;
 		XMStoreFloat4x4(&m, matrix);
 		SetMatrix(m);
 	}
 
-	void Frustum::SetMatrix(const XMFLOAT4X4& matrix)
+	void ER_Frustum::SetMatrix(const XMFLOAT4X4& matrix)
 	{
 		mMatrix = matrix;
 
@@ -152,7 +152,7 @@ namespace Library
 		XMStoreFloat3(&mCorners[6], ComputeIntersection(XMLoadFloat4(&mPlanes[5]), ray));
 	}
 
-	Ray Frustum::ComputeIntersectionLine(FXMVECTOR p1, FXMVECTOR p2)
+	Ray ER_Frustum::ComputeIntersectionLine(FXMVECTOR p1, FXMVECTOR p2)
 	{
 		XMVECTOR direction = XMVector3Cross(p1, p2);
 		XMVECTOR lengthSquared = XMVector3LengthSq(direction);
@@ -161,7 +161,7 @@ namespace Library
 		return Ray(position, direction);
 	}
 
-	XMVECTOR Frustum::ComputeIntersection(FXMVECTOR& plane, Ray& ray)
+	XMVECTOR ER_Frustum::ComputeIntersection(FXMVECTOR& plane, Ray& ray)
 	{
 		float value = (-XMVectorGetW(plane) - XMVectorGetX(XMVector3Dot(plane, ray.PositionVector()))) / XMVectorGetX(XMVector3Dot(plane, ray.DirectionVector()));
 

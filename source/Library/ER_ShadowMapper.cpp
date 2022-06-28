@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "ER_ShadowMapper.h"
-#include "Frustum.h"
+#include "ER_Frustum.h"
 #include "Projector.h"
 #include "Camera.h"
 #include "DirectionalLight.h"
@@ -135,7 +135,7 @@ namespace Library
 			mLightProjectors[i]->ApplyTransform(mDirectionalLight.GetTransform());
 	}
 
-	XMMATRIX ER_ShadowMapper::GetLightProjectionMatrixInFrustum(int index, Frustum& cameraFrustum, DirectionalLight& light)
+	XMMATRIX ER_ShadowMapper::GetLightProjectionMatrixInFrustum(int index, ER_Frustum& cameraFrustum, DirectionalLight& light)
 	{
 		assert(index < NUM_SHADOW_CASCADES);
 

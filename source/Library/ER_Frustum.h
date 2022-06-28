@@ -15,10 +15,10 @@ namespace Library
 		FrustumPlaneBottom
 	};
 
-	class Frustum
+	class ER_Frustum
 	{
 	public:
-		Frustum(CXMMATRIX matrix);
+		ER_Frustum(CXMMATRIX matrix);
 
 		const XMFLOAT4& Near() const;
 		const XMFLOAT4& Far() const;
@@ -43,7 +43,7 @@ namespace Library
 		void SetMatrix(const XMFLOAT4X4& matrix);
 
 	private:
-		Frustum();
+		ER_Frustum();
 
 		static Ray ComputeIntersectionLine(FXMVECTOR p1, FXMVECTOR p2);
 		static XMVECTOR ComputeIntersection(FXMVECTOR& plane, Ray& ray);

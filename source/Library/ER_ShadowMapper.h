@@ -5,7 +5,7 @@
 namespace Library
 {
 	class DepthMap;
-	class Frustum;
+	class ER_Frustum;
 	class Projector;
 	class Camera;
 	class DirectionalLight;
@@ -31,7 +31,7 @@ namespace Library
 		//void ApplyRotation();
 
 	private:
-		XMMATRIX GetLightProjectionMatrixInFrustum(int index, Frustum& cameraFrustum, DirectionalLight& light);
+		XMMATRIX GetLightProjectionMatrixInFrustum(int index, ER_Frustum& cameraFrustum, DirectionalLight& light);
 		XMMATRIX GetProjectionBoundingSphere(int index);
 
 		Camera& mCamera;
@@ -39,7 +39,7 @@ namespace Library
 
 		std::vector<DepthMap*> mShadowMaps;
 		std::vector<Projector*> mLightProjectors;
-		std::vector<Frustum> mCameraCascadesFrustums;
+		std::vector<ER_Frustum> mCameraCascadesFrustums;
 		std::vector<XMFLOAT3> mLightProjectorCenteredPositions;
 
 		XMMATRIX mShadowMapViewMatrix;

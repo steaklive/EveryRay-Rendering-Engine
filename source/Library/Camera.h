@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GameComponent.h"
-#include "Frustum.h"
+#include "ER_Frustum.h"
 
 namespace Library
 {
@@ -32,7 +32,7 @@ namespace Library
 		float FieldOfView() const;
 		float NearPlaneDistance() const;
 		float FarPlaneDistance() const;
-		Frustum GetFrustum() const { return mFrustum; }
+		ER_Frustum GetFrustum() const { return mFrustum; }
 
 		XMMATRIX ViewMatrix() const;
 		XMFLOAT4X4 ViewMatrix4X4() const;
@@ -87,6 +87,6 @@ namespace Library
 		Camera(const Camera& rhs);
 		Camera& operator=(const Camera& rhs);
 
-		Frustum mFrustum;
+		ER_Frustum mFrustum;
 	};
 }
