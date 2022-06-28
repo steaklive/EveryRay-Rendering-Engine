@@ -19,14 +19,12 @@ https://youtu.be/_htQNxesr9U
 - - Dynamic: Cascaded Voxel Cone Tracing (AO, diffuse, specular)
 - Cascaded Shadow Mapping
 - Parallax-Occlusion Mapping w/ soft self-shadowing
-- Separable Subsurface Scattering (^)
+- Separable Subsurface Scattering
 - Terrain w/ GPU tessellation
 - Foliage
 - Volumetric clouds
 - Volumetric fog
 - Post Processing: Linear Fog, SSR, Tonemap, LUT color grading, Vignette, FXAA
-
-(^) - needs to be tested or refactored
 
 # Some of the engine concepts/features
 - Concept of a simplified generic game object - "ER_RenderingObject":
@@ -62,7 +60,6 @@ https://youtu.be/_htQNxesr9U
 
 ![picture](screenshots/EveryRayTerrain.png)
 ![picture](screenshots/EveryRayMaterials.png)
-![picture](screenshots/EveryRaySSSS.png)
 ![picture](screenshots/EveryRayWater.png)
 ![picture](screenshots/EveryRayCollisionDetection.png)
 ![picture](screenshots/EveryRayTestScene.png)
