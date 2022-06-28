@@ -47,7 +47,7 @@ namespace Library {
 #pragma endregion
 
 		#pragma region INIT_EDITOR
-		mEditor = (Editor*)game.Services().GetService(Editor::TypeIdClass());
+		mEditor = (ER_Editor*)game.Services().GetService(ER_Editor::TypeIdClass());
 		assert(mEditor);
 		mEditor->LoadScene(mScene);
 #pragma endregion

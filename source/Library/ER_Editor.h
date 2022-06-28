@@ -10,13 +10,13 @@ namespace Library
 	class GameTime;
 	class ER_Scene;
 
-	class Editor : public GameComponent
+	class ER_Editor : public GameComponent
 	{
-		RTTI_DECLARATIONS(Editor, GameComponent)
+		RTTI_DECLARATIONS(ER_Editor, GameComponent)
 
 	public:
-		Editor(Game& game);
-		virtual ~Editor();
+		ER_Editor(Game& game);
+		virtual ~ER_Editor();
 
 		virtual void Initialize() override;
 		virtual void Update(const GameTime& gameTime) override;
@@ -28,8 +28,8 @@ namespace Library
 	private:
 		ER_Scene* mScene;
 
-		Editor(const Editor& rhs);
-		Editor& operator=(const Editor& rhs);
+		ER_Editor(const ER_Editor& rhs);
+		ER_Editor& operator=(const ER_Editor& rhs);
 
 		const char* editorObjectsNames[MAX_OBJECTS_COUNT];
 

@@ -7,7 +7,7 @@ namespace Library
     class GameTime;
     class Camera;
     class ER_Scene;
-    class Editor;
+    class ER_Editor;
     class Keyboard;
     class RenderStateHelper;
     class DirectionalLight;
@@ -34,7 +34,7 @@ namespace Library
 		virtual void Draw(Game& game, const GameTime& time);
 
         ER_Scene* mScene = nullptr;
-		Editor* mEditor = nullptr;
+		ER_Editor* mEditor = nullptr;
         Keyboard* mKeyboard = nullptr;
         RenderStateHelper* mRenderStateHelper = nullptr;
         ER_Skybox* mSkybox = nullptr;

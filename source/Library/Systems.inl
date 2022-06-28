@@ -3,7 +3,7 @@
 #include "..\Library\Game.h"
 #include "..\Library\GameTime.h"
 #include "..\Library\GameException.h"
-#include "..\Library\Editor.h"
+#include "..\Library\ER_Editor.h"
 #include "..\Library\ER_QuadRenderer.h"
 #include "..\Library\Camera.h"
 #include "..\Library\DirectionalLight.h"

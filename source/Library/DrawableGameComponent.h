@@ -5,7 +5,7 @@
 namespace Library
 {
 	class Camera;
-	class Editor;
+	class ER_Editor;
 
 	class DrawableGameComponent : public GameComponent {
 
@@ -22,7 +22,7 @@ namespace Library
 
 		Camera* GetCamera();
 		void SetCamera(Camera* camera);
-		void SetEditor(Editor* editor);
+		void SetEditor(ER_Editor* editor);
 
 		virtual void Draw(const GameTime& gameTime);
 

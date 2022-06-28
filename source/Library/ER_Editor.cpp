@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "Editor.h"
+#include "ER_Editor.h"
 #include "Game.h"
 #include "GameTime.h"
 #include "VectorHelper.h"
@@ -15,29 +15,29 @@
 
 namespace Library
 {
-	RTTI_DEFINITIONS(Editor)
+	RTTI_DEFINITIONS(ER_Editor)
 	static int selectedObjectIndex = -1;
 	
-	Editor::Editor(Game& game)
+	ER_Editor::ER_Editor(Game& game)
 		: GameComponent(game)
 	{
 	}
 
-	Editor::~Editor()
+	ER_Editor::~ER_Editor()
 	{
 	}
 
-	void Editor::Initialize()
+	void ER_Editor::Initialize()
 	{
 
 	}
 
-	void Editor::LoadScene(ER_Scene* scene)
+	void ER_Editor::LoadScene(ER_Scene* scene)
 	{
 		mScene = scene;
 	}
 
-	void Editor::Update(const GameTime& gameTime)
+	void ER_Editor::Update(const GameTime& gameTime)
 	{
 		if (Utility::IsEditorMode) {
 			ImGui::Begin("Scene Editor");

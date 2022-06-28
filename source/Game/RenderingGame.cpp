@@ -20,7 +20,7 @@
 #include "..\Library\RenderStateHelper.h"
 #include "..\Library\MatrixHelper.h"
 #include "..\Library\ER_Sandbox.h"
-#include "..\Library\Editor.h"
+#include "..\Library\ER_Editor.h"
 #include "..\Library\RasterizerStates.h"
 #include "..\Library\SamplerStates.h"
 #include "..\Library\ER_QuadRenderer.h"
@@ -96,9 +96,9 @@ namespace Rendering
 		components.push_back(mCamera);
 		mServices.AddService(Camera::TypeIdClass(), mCamera);
 
-		mEditor = new Editor(*this);
+		mEditor = new ER_Editor(*this);
 		components.push_back(mEditor);
-		mServices.AddService(Editor::TypeIdClass(), mEditor);
+		mServices.AddService(ER_Editor::TypeIdClass(), mEditor);
 
 		mQuadRenderer = new ER_QuadRenderer(*this);
 		components.push_back(mQuadRenderer);

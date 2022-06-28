@@ -198,7 +198,7 @@
     <ClInclude Include="DepthTarget.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="DrawableGameComponent.h" />
-    <ClInclude Include="Editor.h" />
+    <ClInclude Include="ER_Editor.h" />
     <ClInclude Include="ER_CPUProfiler.h" />
     <ClInclude Include="ER_GPUBuffer.h" />
     <ClInclude Include="ER_LightProbesManager.h" />
@@ -270,7 +270,7 @@
     <ClCompile Include="DepthTarget.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="DrawableGameComponent.cpp" />
-    <ClCompile Include="Editor.cpp" />
+    <ClCompile Include="ER_Editor.cpp" />
     <ClCompile Include="ER_CPUProfiler.cpp" />
     <ClCompile Include="ER_GPUBuffer.cpp" />
     <ClCompile Include="ER_Illumination.cpp" />
