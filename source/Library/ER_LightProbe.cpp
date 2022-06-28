@@ -3,7 +3,7 @@
 
 #include "ER_LightProbe.h"
 #include "ER_Skybox.h"
-#include "Camera.h"
+#include "ER_Camera.h"
 #include "Game.h"
 #include "ER_ShadowMapper.h"
 #include "Game.h"
@@ -55,7 +55,7 @@ namespace Library
 
 		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
 		{
-			mCubemapCameras[i] = new Camera(game, XM_PIDIV2, 1.0f, 0.1f, 100000.0f);
+			mCubemapCameras[i] = new ER_Camera(game, XM_PIDIV2, 1.0f, 0.1f, 100000.0f);
 			mCubemapCameras[i]->Initialize();
 			mCubemapCameras[i]->SetDirection(cubemapFacesDirections[i]);
 			mCubemapCameras[i]->SetUp(cubemapUpDirections[i]);

@@ -16,7 +16,7 @@ namespace Library
 
 	public:
 		DirectionalLight(Game& game);
-		DirectionalLight(Game& game, Camera& camera);
+		DirectionalLight(Game& game, ER_Camera& camera);
 		virtual ~DirectionalLight();
 
 		const XMFLOAT3& Direction() const;

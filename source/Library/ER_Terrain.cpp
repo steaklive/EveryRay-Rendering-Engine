@@ -17,7 +17,7 @@
 #include "ER_LightProbesManager.h"
 #include "ER_LightProbe.h"
 #include "ER_RenderableAABB.h"
-#include "Camera.h"
+#include "ER_Camera.h"
 
 #define USE_RAYCASTING_FOR_ON_TERRAIN_PLACEMENT 0
 #define MAX_TERRAIN_TILE_COUNT 256
@@ -489,7 +489,7 @@ namespace Library
 
 	void ER_Terrain::Update(const GameTime& gameTime)
 	{
-		Camera* camera = (Camera*)(mGame->Services().GetService(Camera::TypeIdClass()));
+		ER_Camera* camera = (ER_Camera*)(mGame->Services().GetService(ER_Camera::TypeIdClass()));
 
 		int visibleTiles = 0;
 		for (int i = 0; i < mHeightMaps.size(); i++)
@@ -522,7 +522,7 @@ namespace Library
 		if (mHeightMaps[tileIndex]->IsCulled() && shadowMapCascade == -1) //for shadow mapping pass we dont want to cull with main camera frustum
 			return;
 
-		Camera* camera = (Camera*)(mGame->Services().GetService(Camera::TypeIdClass()));
+		ER_Camera* camera = (ER_Camera*)(mGame->Services().GetService(ER_Camera::TypeIdClass()));
 		assert(camera);
 
 		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
@@ -673,7 +673,7 @@ namespace Library
 		return -1.0f;
 	}
 
-	bool HeightMap::PerformCPUFrustumCulling(Camera* camera)
+	bool HeightMap::PerformCPUFrustumCulling(ER_Camera* camera)
 	{
 		if (!camera)
 		{

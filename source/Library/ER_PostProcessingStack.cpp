@@ -8,14 +8,14 @@
 #include "ER_QuadRenderer.h"
 #include "SamplerStates.h"
 #include "ER_GBuffer.h"
-#include "Camera.h"
+#include "ER_Camera.h"
 #include "ER_VolumetricClouds.h"
 #include "ER_VolumetricFog.h"
 #include "ER_Illumination.h"
 
 namespace Library {
 
-	ER_PostProcessingStack::ER_PostProcessingStack(Game& pGame, Camera& pCamera)
+	ER_PostProcessingStack::ER_PostProcessingStack(Game& pGame, ER_Camera& pCamera)
 		: game(pGame), camera(pCamera)
 	{
 	}

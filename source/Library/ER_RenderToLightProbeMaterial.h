@@ -5,7 +5,7 @@ namespace Library
 {
 	class ER_RenderingObject;
 	class ER_Mesh;
-	class Camera;
+	class ER_Camera;
 
 	namespace RenderToLightProbeMaterial_CBufferData {
 		struct RenderToLightProbeCB
@@ -27,7 +27,7 @@ namespace Library
 		ER_RenderToLightProbeMaterial(Game& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced = false);
 		~ER_RenderToLightProbeMaterial();
 
-		void PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, Camera* cubemapCamera);
+		void PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, ER_Camera* cubemapCamera);
 		virtual void CreateVertexBuffer(const ER_Mesh& mesh, ID3D11Buffer** vertexBuffer) override;
 		virtual int VertexSize() override;
 

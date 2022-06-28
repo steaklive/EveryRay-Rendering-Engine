@@ -4,7 +4,7 @@
 
 namespace Library
 {
-	class Camera;
+	class ER_Camera;
 	class ER_Editor;
 
 	class DrawableGameComponent : public GameComponent {
@@ -14,21 +14,21 @@ namespace Library
 	public:
 		DrawableGameComponent();
 		DrawableGameComponent(Game& game);
-		DrawableGameComponent(Game& game, Camera& camera);
+		DrawableGameComponent(Game& game, ER_Camera& camera);
 		virtual ~DrawableGameComponent();
 
 		bool Visible() const;
 		void SetVisible(bool visible);
 
-		Camera* GetCamera();
-		void SetCamera(Camera* camera);
+		ER_Camera* GetCamera();
+		void SetCamera(ER_Camera* camera);
 		void SetEditor(ER_Editor* editor);
 
 		virtual void Draw(const GameTime& gameTime);
 
 	protected:
 		bool mVisible;
-		Camera* mCamera;
+		ER_Camera* mCamera;
 	
 	private:
 		DrawableGameComponent(const DrawableGameComponent& rhs);

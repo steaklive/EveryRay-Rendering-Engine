@@ -5,7 +5,7 @@ namespace Library
 {
 	class ER_RenderingObject;
 	class ER_Mesh;
-	class Camera;
+	class ER_Camera;
 
 	namespace VoxelizationMaterial_CBufferData {
 		struct VoxelizationCB

@@ -14,7 +14,7 @@ namespace Library
 {
 	class GameTime;
 	class DirectionalLight;
-	class Camera;
+	class ER_Camera;
 	class ER_Scene;
 	class ER_GBuffer;
 	class ER_ShadowMapper;
@@ -98,7 +98,7 @@ namespace Library
 	class ER_Illumination : public GameComponent
 	{
 	public:
-		ER_Illumination(Game& game, Camera& camera, const DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const ER_Scene* scene);
+		ER_Illumination(Game& game, ER_Camera& camera, const DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const ER_Scene* scene);
 		~ER_Illumination();
 
 		void Initialize(const ER_Scene* scene);
@@ -140,7 +140,7 @@ namespace Library
 
 		void CPUCullObjectsAgainstVoxelCascades(const ER_Scene* scene);
 
-		Camera& mCamera;
+		ER_Camera& mCamera;
 		const DirectionalLight& mDirectionalLight;
 		const ER_ShadowMapper& mShadowMapper;
 

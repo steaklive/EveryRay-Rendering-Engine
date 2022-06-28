@@ -9,7 +9,7 @@
 namespace Library
 {
 	class ER_Scene;
-	class Camera;
+	class ER_Camera;
 	class DirectionalLight;
 	class ER_ShadowMapper;
 	class ER_PostProcessingStack;
@@ -77,7 +77,7 @@ namespace Library
 	class ER_Foliage
 	{
 	public:
-		ER_Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, const std::string& textureName, float scale = 1.0f, float distributionRadius = 100, 
+		ER_Foliage(Game& pGame, ER_Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, const std::string& textureName, float scale = 1.0f, float distributionRadius = 100, 
 			const XMFLOAT3& distributionCenter = XMFLOAT3(0.0f, 0.0f, 0.0f), FoliageBillboardType bType = FoliageBillboardType::SINGLE,
 			bool isPlacedOnTerrain = false, int terrainPlaceChannel = 4);
 		~ER_Foliage();
@@ -122,7 +122,7 @@ namespace Library
 			mVoxelTextureDimension = voxelTexDimension;
 		}
 
-		bool PerformCPUFrustumCulling(Camera* camera);
+		bool PerformCPUFrustumCulling(ER_Camera* camera);
 
 		void SetName(const std::string& name) { mName = name; }
 		const std::string& GetName() { return mName; }
@@ -136,7 +136,7 @@ namespace Library
 		void CreateBlendStates();
 
 		Game& mGame;
-		Camera& mCamera;
+		ER_Camera& mCamera;
 		DirectionalLight& mDirectionalLight;
 
 		ID3D11InputLayout* mInputLayout = nullptr;

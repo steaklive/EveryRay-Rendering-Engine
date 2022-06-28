@@ -3,7 +3,7 @@
 #include "ER_ShadowMapper.h"
 #include "ER_Frustum.h"
 #include "ER_Projector.h"
-#include "Camera.h"
+#include "ER_Camera.h"
 #include "DirectionalLight.h"
 #include "GameTime.h"
 #include "Game.h"
@@ -23,7 +23,7 @@
 
 namespace Library
 {
-	ER_ShadowMapper::ER_ShadowMapper(Game& pGame, Camera& camera, DirectionalLight& dirLight,  UINT pWidth, UINT pHeight, bool isCascaded)
+	ER_ShadowMapper::ER_ShadowMapper(Game& pGame, ER_Camera& camera, DirectionalLight& dirLight,  UINT pWidth, UINT pHeight, bool isCascaded)
 		: GameComponent(pGame),
 		mShadowMaps(0, nullptr), 
 		mShadowRasterizerState(nullptr),

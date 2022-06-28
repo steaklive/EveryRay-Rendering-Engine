@@ -4,7 +4,7 @@
 #include "Utility.h"
 #include "GameException.h"
 #include "Game.h"
-#include "Camera.h"
+#include "ER_Camera.h"
 #include "ER_RenderingObject.h"
 #include "ER_Mesh.h"
 #include "ER_ShadowMapper.h"
@@ -65,7 +65,7 @@ namespace Library
 	void ER_VoxelizationMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, float voxelScale, float voxelTexSize, const XMFLOAT4& voxelCameraPos)
 	{
 		auto context = ER_Material::GetGame()->Direct3DDeviceContext();
-		Camera* camera = (Camera*)(ER_Material::GetGame()->Services().GetService(Camera::TypeIdClass()));
+		ER_Camera* camera = (ER_Camera*)(ER_Material::GetGame()->Services().GetService(ER_Camera::TypeIdClass()));
 
 		assert(aObj);
 		assert(camera);

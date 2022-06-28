@@ -4,7 +4,7 @@
 #include "Utility.h"
 #include "GameException.h"
 #include "Game.h"
-#include "Camera.h"
+#include "ER_Camera.h"
 #include "ER_RenderingObject.h"
 #include "ER_Mesh.h"
 #include "ER_ShadowMapper.h"
@@ -59,7 +59,7 @@ namespace Library
 		ER_Material::~ER_Material();
 	}
 
-	void ER_RenderToLightProbeMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, Camera* cubemapCamera)
+	void ER_RenderToLightProbeMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, ER_Camera* cubemapCamera)
 	{
 		auto context = ER_Material::GetGame()->Direct3DDeviceContext();
 

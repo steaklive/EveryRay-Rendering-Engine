@@ -12,7 +12,7 @@ namespace Library
 	class GameTime;
 	class ER_Material;
 	class ER_RenderableAABB;
-	class Camera;
+	class ER_Camera;
 	class ER_Model;
 
 	struct RenderBufferData
@@ -124,7 +124,7 @@ namespace Library
 		using Delegate_MeshMaterialVariablesUpdate = std::function<void(int)>; // mesh index for input
 
 	public:
-		ER_RenderingObject(const std::string& pName, int index, Game& pGame, Camera& pCamera, std::unique_ptr<ER_Model> pModel, bool availableInEditor = false, bool isInstanced = false);
+		ER_RenderingObject(const std::string& pName, int index, Game& pGame, ER_Camera& pCamera, std::unique_ptr<ER_Model> pModel, bool availableInEditor = false, bool isInstanced = false);
 		~ER_RenderingObject();
 
 		void LoadCustomMeshTextures(int meshIndex);
@@ -162,7 +162,7 @@ namespace Library
 		void AddInstanceData(const XMMATRIX& worldMatrix, int lod = -1);
 		UINT InstanceSize() const;
 		
-		void PerformCPUFrustumCull(Camera* camera);
+		void PerformCPUFrustumCull(ER_Camera* camera);
 
 		void Rename(const std::string& name) { mName = name; }
 		const std::string& GetName() { return mName; }
@@ -264,7 +264,7 @@ namespace Library
 		void ShowObjectsEditorWindow(const float *cameraView, float *cameraProjection, float* matrix);
 		
 		Game* mGame = nullptr;
-		Camera& mCamera;
+		ER_Camera& mCamera;
 
 		std::map<std::string, ER_Material*>						mMaterials;
 

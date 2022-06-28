@@ -8,7 +8,7 @@
 
 namespace Library
 {
-	class Camera;
+	class ER_Camera;
 	class DirectionalLight;
 	class ER_QuadRenderer;
 	class ER_GBuffer;
@@ -54,7 +54,7 @@ namespace Library
 	class ER_PostProcessingStack
 	{
 	public:
-		ER_PostProcessingStack(Game& pGame, Camera& pCamera);
+		ER_PostProcessingStack(Game& pGame, ER_Camera& pCamera);
 		~ER_PostProcessingStack();
 
 		void Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR = true, bool pFog = false, bool pLightShafts = false);
@@ -84,7 +84,7 @@ namespace Library
 		void ShowPostProcessingWindow();
 
 		Game& game;
-		Camera& camera;
+		ER_Camera& camera;
 		const DirectionalLight* light;
 
 		// Tonemap

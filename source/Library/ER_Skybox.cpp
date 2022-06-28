@@ -4,7 +4,7 @@
 #include "Game.h"
 #include "GameException.h"
 #include "GameTime.h"
-#include "Camera.h"
+#include "ER_Camera.h"
 #include "MatrixHelper.h"
 #include "ER_Model.h"
 #include "ER_Mesh.h"
@@ -15,7 +15,7 @@
 
 namespace Library
 {
-	ER_Skybox::ER_Skybox(Game& game, Camera& camera, float scale)
+	ER_Skybox::ER_Skybox(Game& game, ER_Camera& camera, float scale)
 		: GameComponent(game), mGame(game), mCamera(camera),
 		mVertexBuffer(nullptr), mIndexBuffer(nullptr), mIndexCount(0),
 		mWorldMatrix(MatrixHelper::Identity), mScaleMatrix(MatrixHelper::Identity), mScale(scale)
@@ -97,7 +97,7 @@ namespace Library
 		}
 	}
 
-	void ER_Skybox::Update(Camera* aCustomCamera)
+	void ER_Skybox::Update(ER_Camera* aCustomCamera)
 	{
 		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
 		XMFLOAT3 position;
@@ -109,7 +109,7 @@ namespace Library
 		XMStoreFloat4x4(&mWorldMatrix, XMLoadFloat4x4(&mScaleMatrix) * XMMatrixTranslation(position.x, position.y, position.z));
 	}
 
-	void ER_Skybox::UpdateSun(const GameTime& gameTime, Camera* aCustomCamera)
+	void ER_Skybox::UpdateSun(const GameTime& gameTime, ER_Camera* aCustomCamera)
 	{
 		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
 
@@ -130,7 +130,7 @@ namespace Library
 		mSunConstantBuffer.ApplyChanges(context);
 	}
 
-	void ER_Skybox::Draw(Camera* aCustomCamera)
+	void ER_Skybox::Draw(ER_Camera* aCustomCamera)
 	{
 		auto context = mGame.Direct3DDeviceContext();
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -163,7 +163,7 @@ namespace Library
 		context->DrawIndexed(mIndexCount, 0, 0);
 	}
 
-	void ER_Skybox::DrawSun(Camera* aCustomCamera, ER_GPUTexture* aSky, DepthTarget* aSceneDepth)
+	void ER_Skybox::DrawSun(ER_Camera* aCustomCamera, ER_GPUTexture* aSky, DepthTarget* aSceneDepth)
 	{
 		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
 		assert(aSceneDepth);
@@ -183,7 +183,7 @@ namespace Library
 		}
 	}
 
-	XMFLOAT4 ER_Skybox::CalculateSunPositionOnSkybox(XMFLOAT3 dir, Camera* aCustomCamera)
+	XMFLOAT4 ER_Skybox::CalculateSunPositionOnSkybox(XMFLOAT3 dir, ER_Camera* aCustomCamera)
 	{
 		float t = 0.0f;
 

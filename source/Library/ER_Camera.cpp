@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "Camera.h"
+#include "ER_Camera.h"
 #include "Game.h"
 #include "GameTime.h"
 #include "VectorHelper.h"
@@ -12,113 +12,113 @@
 
 namespace Library
 {
-	RTTI_DEFINITIONS(Camera)
+	RTTI_DEFINITIONS(ER_Camera)
 
-	const float Camera::DefaultFieldOfView = XM_PIDIV2;
-	const float Camera::DefaultNearPlaneDistance = 0.01f;
-	const float Camera::DefaultFarPlaneDistance = 600;
+	const float ER_Camera::DefaultFieldOfView = XM_PIDIV2;
+	const float ER_Camera::DefaultNearPlaneDistance = 0.01f;
+	const float ER_Camera::DefaultFarPlaneDistance = 600;
 
 	const float cameraCascadeDistances[MAX_NUM_CASCADES] = { 125.0f, 500.0f, 1200.0f };
 	//const float cascadeDistances[MAX_NUM_CASCADES] = { 75.0f, 150.0f, 600.0f };
 
-	Camera::Camera(Game& game)
+	ER_Camera::ER_Camera(Game& game)
 		: GameComponent(game),
 		mFieldOfView(DefaultFieldOfView), mAspectRatio(game.AspectRatio()), mNearPlaneDistance(DefaultNearPlaneDistance), mFarPlaneDistance(DefaultFarPlaneDistance),
 		mPosition(), mDirection(), mUp(), mRight(), mViewMatrix(), mProjectionMatrix(), mFrustum(XMMatrixIdentity())
 	{
 	}
 
-	Camera::Camera(Game& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance)
+	ER_Camera::ER_Camera(Game& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance)
 		: GameComponent(game),
 		mFieldOfView(fieldOfView), mAspectRatio(aspectRatio), mNearPlaneDistance(nearPlaneDistance), mFarPlaneDistance(farPlaneDistance),
 		mPosition(), mDirection(), mUp(), mRight(), mViewMatrix(), mProjectionMatrix(), mFrustum(XMMatrixIdentity())
 	{
 	}
 
-	Camera::~Camera()
+	ER_Camera::~ER_Camera()
 	{
 	}
 
-	const XMFLOAT3& Camera::Position() const
+	const XMFLOAT3& ER_Camera::Position() const
 	{
 		return mPosition;
 	}
 
-	const XMFLOAT3& Camera::Direction() const
+	const XMFLOAT3& ER_Camera::Direction() const
 	{
 		return mDirection;
 	}
 
-	const XMFLOAT3& Camera::Up() const
+	const XMFLOAT3& ER_Camera::Up() const
 	{
 		return mUp;
 	}
 
-	const XMFLOAT3& Camera::Right() const
+	const XMFLOAT3& ER_Camera::Right() const
 	{
 		return mRight;
 	}
 
-	XMVECTOR Camera::PositionVector() const
+	XMVECTOR ER_Camera::PositionVector() const
 	{
 		return XMLoadFloat3(&mPosition);
 	}
 
-	XMVECTOR Camera::DirectionVector() const
+	XMVECTOR ER_Camera::DirectionVector() const
 	{
 		return XMLoadFloat3(&mDirection);
 	}
 
-	XMVECTOR Camera::UpVector() const
+	XMVECTOR ER_Camera::UpVector() const
 	{
 		return XMLoadFloat3(&mUp);
 	}
 
-	XMVECTOR Camera::RightVector() const
+	XMVECTOR ER_Camera::RightVector() const
 	{
 		return XMLoadFloat3(&mRight);
 	}
 
-	float Camera::AspectRatio() const
+	float ER_Camera::AspectRatio() const
 	{
 		return mAspectRatio;
 	}
 
-	float Camera::FieldOfView() const
+	float ER_Camera::FieldOfView() const
 	{
 		return mFieldOfView;
 	}
 
-	float Camera::NearPlaneDistance() const
+	float ER_Camera::NearPlaneDistance() const
 	{
 		return mNearPlaneDistance;
 	}
 
-	float Camera::FarPlaneDistance() const
+	float ER_Camera::FarPlaneDistance() const
 	{
 		return mFarPlaneDistance;
 	}
 
-	XMMATRIX Camera::ViewMatrix() const
+	XMMATRIX ER_Camera::ViewMatrix() const
 	{
 		return XMLoadFloat4x4(&mViewMatrix);
 	}	
-	XMFLOAT4X4 Camera::ViewMatrix4X4() const
+	XMFLOAT4X4 ER_Camera::ViewMatrix4X4() const
 	{
 		return mViewMatrix;
 	}
 
-	XMMATRIX Camera::ProjectionMatrix() const
+	XMMATRIX ER_Camera::ProjectionMatrix() const
 	{
 		return XMLoadFloat4x4(&mProjectionMatrix);
 	}
 
-	XMFLOAT4X4 Camera::ProjectionMatrix4X4() const
+	XMFLOAT4X4 ER_Camera::ProjectionMatrix4X4() const
 	{
 		return mProjectionMatrix;
 	}
 
-	XMMATRIX Camera::ViewProjectionMatrix() const
+	XMMATRIX ER_Camera::ViewProjectionMatrix() const
 	{
 		XMMATRIX viewMatrix = XMLoadFloat4x4(&mViewMatrix);
 		XMMATRIX projectionMatrix = XMLoadFloat4x4(&mProjectionMatrix);
@@ -126,45 +126,45 @@ namespace Library
 		return XMMatrixMultiply(viewMatrix, projectionMatrix);
 	}
 
-	void Camera::SetPosition(FLOAT x, FLOAT y, FLOAT z)
+	void ER_Camera::SetPosition(FLOAT x, FLOAT y, FLOAT z)
 	{
 		XMVECTOR position = XMVectorSet(x, y, z, 1.0f);
 		SetPosition(position);
 	}
 
-	void Camera::SetPosition(FXMVECTOR position)
+	void ER_Camera::SetPosition(FXMVECTOR position)
 	{
 		XMStoreFloat3(&mPosition, position);
 	}
 
-	void Camera::SetPosition(const XMFLOAT3& position)
+	void ER_Camera::SetPosition(const XMFLOAT3& position)
 	{
 		mPosition = position;
 	}
 
-	void Camera::SetDirection(const XMFLOAT3& direction)
+	void ER_Camera::SetDirection(const XMFLOAT3& direction)
 	{
 		mDirection = direction;
 	}
 
-	void Camera::SetUp(const XMFLOAT3& up)
+	void ER_Camera::SetUp(const XMFLOAT3& up)
 	{
 		mUp = up;
 	}
 
-	void Camera::SetFOV(float fov)
+	void ER_Camera::SetFOV(float fov)
 	{
 		mFieldOfView = fov;
 		UpdateProjectionMatrix();
 	}
 
-	void Camera::SetFarPlaneDistance(float value)
+	void ER_Camera::SetFarPlaneDistance(float value)
 	{
 		mFarPlaneDistance = value;
 		UpdateProjectionMatrix();
 	}
 
-	XMMATRIX Camera::GetCustomViewProjectionMatrixForCascade(int cascadeIndex)
+	XMMATRIX ER_Camera::GetCustomViewProjectionMatrixForCascade(int cascadeIndex)
 	{
 		XMMATRIX projectionMatrix;
 		float delta = 5.0f;
@@ -191,13 +191,13 @@ namespace Library
 		return XMMatrixMultiply(viewMatrix, projectionMatrix);
 	}
 
-	void Camera::SetNearPlaneDistance(float value)
+	void ER_Camera::SetNearPlaneDistance(float value)
 	{
 		mNearPlaneDistance = value;
 		UpdateProjectionMatrix();
 	}
 
-	void Camera::Reset()
+	void ER_Camera::Reset()
 	{
 		mPosition = Vector3Helper::Zero;
 		mDirection = Vector3Helper::Forward;
@@ -207,7 +207,7 @@ namespace Library
 		UpdateViewMatrix();
 	}
 
-	void Camera::Initialize()
+	void ER_Camera::Initialize()
 	{
 		UpdateProjectionMatrix();
 		Reset();
@@ -215,13 +215,13 @@ namespace Library
 		mFrustum.SetMatrix(ViewProjectionMatrix());
 	}
 
-	void Camera::Update(const GameTime& gameTime)
+	void ER_Camera::Update(const GameTime& gameTime)
 	{
 		UpdateViewMatrix();
 		mFrustum.SetMatrix(ViewProjectionMatrix());
 	}
 
-	void Camera::UpdateViewMatrix(bool leftHanded)
+	void ER_Camera::UpdateViewMatrix(bool leftHanded)
 	{
 		XMVECTOR eyePosition = XMLoadFloat3(&mPosition);
 		XMVECTOR direction = XMLoadFloat3(&mDirection);
@@ -233,7 +233,7 @@ namespace Library
 		XMStoreFloat4x4(&mViewMatrix, viewMatrix);
 	}
 
-	void Camera::UpdateProjectionMatrix(bool leftHanded)
+	void ER_Camera::UpdateProjectionMatrix(bool leftHanded)
 	{
 		XMMATRIX projectionMatrix = (leftHanded) 
 			? XMMatrixPerspectiveFovLH(mFieldOfView, mAspectRatio, mNearPlaneDistance, mFarPlaneDistance)
@@ -241,7 +241,7 @@ namespace Library
 		XMStoreFloat4x4(&mProjectionMatrix, projectionMatrix);
 	}
 
-	void Camera::ApplyRotation(CXMMATRIX transform)
+	void ER_Camera::ApplyRotation(CXMMATRIX transform)
 	{
 		XMVECTOR direction = XMLoadFloat3(&mDirection);
 		XMVECTOR up = XMLoadFloat3(&mUp);
@@ -262,23 +262,23 @@ namespace Library
 		mRotationMatrix = transform;
 	}
 
-	void Camera::ApplyRotation(const XMFLOAT4X4& transform)
+	void ER_Camera::ApplyRotation(const XMFLOAT4X4& transform)
 	{
 		XMMATRIX transformMatrix = XMLoadFloat4x4(&transform);
 		ApplyRotation(transformMatrix);
 	}
 
-	XMMATRIX Camera::RotationTransformMatrix() const
+	XMMATRIX ER_Camera::RotationTransformMatrix() const
 	{
 		return mRotationMatrix;
 	}
 
-	float Camera::GetCameraFarShadowCascadeDistance (int index) const
+	float ER_Camera::GetCameraFarShadowCascadeDistance (int index) const
 	{
 		assert(index < (sizeof(cameraCascadeDistances) / sizeof(cameraCascadeDistances[0])));
 		return cameraCascadeDistances[index];
 	}
-	float Camera::GetCameraNearShadowCascadeDistance (int index) const
+	float ER_Camera::GetCameraNearShadowCascadeDistance (int index) const
 	{
 		assert(index < (sizeof(cameraCascadeDistances) / sizeof(cameraCascadeDistances[0])));
 		if (index == 0)

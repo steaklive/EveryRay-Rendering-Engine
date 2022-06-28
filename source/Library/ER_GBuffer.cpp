@@ -9,7 +9,7 @@
 
 namespace Library {
 
-	ER_GBuffer::ER_GBuffer(Game& game, Camera& camera, int width, int height):
+	ER_GBuffer::ER_GBuffer(Game& game, ER_Camera& camera, int width, int height):
 		DrawableGameComponent(game, camera)
 	{
 		mWidth = width;

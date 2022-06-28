@@ -10,7 +10,7 @@ namespace Library
 {
 	class DirectionalLight;
 	class GameTime;
-	class Camera;
+	class ER_Camera;
 	class ER_Skybox;
 	class ER_ShadowMapper;
 

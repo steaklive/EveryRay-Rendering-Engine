@@ -11,7 +11,7 @@ namespace Library
 	class ER_GBuffer: public DrawableGameComponent
 	{
 	public:
-		ER_GBuffer(Game& game, Camera& camera, int width, int height);
+		ER_GBuffer(Game& game, ER_Camera& camera, int width, int height);
 		~ER_GBuffer();
 	
 		void Initialize();

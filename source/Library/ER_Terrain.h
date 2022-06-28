@@ -25,7 +25,7 @@ namespace Library
 	class DirectionalLight;
 	class ER_LightProbesManager;
 	class ER_RenderableAABB;
-	class Camera;
+	class ER_Camera;
 
 	struct TerrainTileDataGPU
 	{
@@ -91,7 +91,7 @@ namespace Library
 		bool GetHeightFromTriangle(float x, float z, float v0[3], float v1[3], float v2[3], float normal[3], float& height);
 		bool RayIntersectsTriangle(float x, float z, float v0[3], float v1[3], float v2[3], float normals[3], float& height);
 		float FindHeightFromPosition(float x, float z);
-		bool PerformCPUFrustumCulling(Camera* camera);
+		bool PerformCPUFrustumCulling(ER_Camera* camera);
 		bool IsCulled() { return mIsCulled; }
 		bool IsColliding(const XMFLOAT4& position, bool onlyXZCheck = false);
 

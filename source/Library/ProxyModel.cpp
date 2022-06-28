@@ -8,7 +8,7 @@
 #include "ER_Model.h"
 #include "ER_Mesh.h"
 #include "Utility.h"
-#include "Camera.h"
+#include "ER_Camera.h"
 #include "RasterizerStates.h"
 #include "ER_BasicColorMaterial.h"
 #include "ER_MaterialsCallbacks.h"
@@ -17,7 +17,7 @@ namespace Library
 {
 	RTTI_DEFINITIONS(ProxyModel)
 
-		ProxyModel::ProxyModel(Game& game, Camera& camera, const std::string& modelFileName, float scale)
+		ProxyModel::ProxyModel(Game& game, ER_Camera& camera, const std::string& modelFileName, float scale)
 		: DrawableGameComponent(game, camera),
 		mModelFileName(modelFileName), mMaterial(nullptr),
 		mVertexBuffer(nullptr), mIndexBuffer(nullptr), mIndexCount(0),

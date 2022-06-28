@@ -31,7 +31,7 @@ namespace Library {
 		game.CPUProfiler()->EndCPUTime("Destroying scene: " + mName);
 	}
 
-    void ER_Sandbox::Initialize(Game& game, Camera& camera, const std::string& sceneName, const std::string& sceneFolderPath)
+    void ER_Sandbox::Initialize(Game& game, ER_Camera& camera, const std::string& sceneName, const std::string& sceneFolderPath)
     {
         mRenderStateHelper = new RenderStateHelper(game);
 		mName = sceneName;
@@ -186,8 +186,8 @@ namespace Library {
 		mShadowMapper->Update(gameTime);
 		mFoliageSystem->Update(gameTime, mWindGustDistance, mWindStrength, mWindFrequency);
 		mDirectionalLight->UpdateProxyModel(gameTime, 
-			((Camera*)game.Services().GetService(Camera::TypeIdClass()))->ViewMatrix4X4(),
-			((Camera*)game.Services().GetService(Camera::TypeIdClass()))->ProjectionMatrix4X4()); //TODO refactor to DebugRenderer
+			((ER_Camera*)game.Services().GetService(ER_Camera::TypeIdClass()))->ViewMatrix4X4(),
+			((ER_Camera*)game.Services().GetService(ER_Camera::TypeIdClass()))->ProjectionMatrix4X4()); //TODO refactor to DebugRenderer
 
 		for (auto& object : mScene->objects)
 			object.second->Update(gameTime);

@@ -7,7 +7,7 @@ namespace Library
 	class DepthMap;
 	class ER_Frustum;
 	class ER_Projector;
-	class Camera;
+	class ER_Camera;
 	class DirectionalLight;
 	class ER_Scene;
 	class ER_Terrain;
@@ -16,7 +16,7 @@ namespace Library
 	{
 
 	public:
-		ER_ShadowMapper(Game& pGame, Camera& camera, DirectionalLight& dirLight, UINT pWidth, UINT pHeight, bool isCascaded = true);
+		ER_ShadowMapper(Game& pGame, ER_Camera& camera, DirectionalLight& dirLight, UINT pWidth, UINT pHeight, bool isCascaded = true);
 		~ER_ShadowMapper();
 
 		void Draw(const ER_Scene* scene, ER_Terrain* terrain = nullptr);
@@ -34,7 +34,7 @@ namespace Library
 		XMMATRIX GetLightProjectionMatrixInFrustum(int index, ER_Frustum& cameraFrustum, DirectionalLight& light);
 		XMMATRIX GetProjectionBoundingSphere(int index);
 
-		Camera& mCamera;
+		ER_Camera& mCamera;
 		DirectionalLight& mDirectionalLight;
 
 		std::vector<DepthMap*> mShadowMaps;

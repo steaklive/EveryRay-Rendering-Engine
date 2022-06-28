@@ -6,7 +6,7 @@
 #include "ShaderCompiler.h"
 #include "DirectionalLight.h"
 #include "Utility.h"
-#include "Camera.h"
+#include "ER_Camera.h"
 #include "SamplerStates.h"
 #include "ER_QuadRenderer.h"
 
@@ -86,7 +86,7 @@ namespace Library {
 
 	void ER_VolumetricFog::Update(const GameTime& gameTime)
 	{
-		Camera* camera = (Camera*)GetGame()->Services().GetService(Camera::TypeIdClass());
+		ER_Camera* camera = (ER_Camera*)GetGame()->Services().GetService(ER_Camera::TypeIdClass());
 		assert(camera);
 
 		UpdateImGui();

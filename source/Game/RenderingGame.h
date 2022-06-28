@@ -10,7 +10,7 @@ namespace Library
 {
 	class Mouse;
 	class Keyboard;
-	class FirstPersonCamera;
+	class ER_CameraFPS;
 	class RenderStateHelper;
 	class ER_Editor;
 	class ER_QuadRenderer;
@@ -43,7 +43,7 @@ namespace Rendering
 		LPDIRECTINPUT8 mDirectInput;
 		Keyboard* mKeyboard;
 		Mouse* mMouse;
-		FirstPersonCamera* mCamera;
+		ER_CameraFPS* mCamera;
 		ER_Editor* mEditor;
 		ER_QuadRenderer* mQuadRenderer;
 

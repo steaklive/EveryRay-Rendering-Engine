@@ -12,7 +12,7 @@
 #include "ER_Illumination.h"
 #include "ER_RenderableAABB.h"
 #include "ER_Material.h"
-#include "Camera.h"
+#include "ER_Camera.h"
 #include "MatrixHelper.h"
 #include "ER_Terrain.h"
 
@@ -20,7 +20,7 @@ namespace Library
 {
 	static int currentSplatChannnel = (int)TerrainSplatChannels::NONE;
 
-	ER_RenderingObject::ER_RenderingObject(const std::string& pName, int index, Game& pGame, Camera& pCamera, std::unique_ptr<ER_Model> pModel, bool availableInEditor, bool isInstanced)
+	ER_RenderingObject::ER_RenderingObject(const std::string& pName, int index, Game& pGame, ER_Camera& pCamera, std::unique_ptr<ER_Model> pModel, bool availableInEditor, bool isInstanced)
 		:
 		mGame(&pGame),
 		mCamera(pCamera),
@@ -554,7 +554,7 @@ namespace Library
 		return sizeof(InstancedData);
 	}
 
-	void ER_RenderingObject::PerformCPUFrustumCull(Camera* camera)
+	void ER_RenderingObject::PerformCPUFrustumCull(ER_Camera* camera)
 	{
 		auto frustum = camera->GetFrustum();
 		auto cullFunction = [frustum](ER_AABB& aabb) {
@@ -677,7 +677,7 @@ namespace Library
 	}
 	void ER_RenderingObject::Update(const GameTime& time)
 	{
-		Camera* camera = (Camera*)(mGame->Services().GetService(Camera::TypeIdClass()));
+		ER_Camera* camera = (ER_Camera*)(mGame->Services().GetService(ER_Camera::TypeIdClass()));
 		assert(camera);
 
 		bool editable = Utility::IsEditorMode && mAvailableInEditorMode && mIsSelected;
@@ -858,7 +858,7 @@ namespace Library
 				XMFLOAT3 newCameraPos;
 				MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), newCameraPos);
 
-				Camera* camera = (Camera*)(mGame->Services().GetService(Camera::TypeIdClass()));
+				ER_Camera* camera = (ER_Camera*)(mGame->Services().GetService(ER_Camera::TypeIdClass()));
 				if (camera)
 					camera->SetPosition(newCameraPos);
 			}

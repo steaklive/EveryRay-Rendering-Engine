@@ -1,21 +1,21 @@
 #pragma once
 
-#include "Camera.h"
+#include "ER_Camera.h"
 
 namespace Library
 {
 	class Keyboard;
 	class Mouse;
 
-	class FirstPersonCamera : public Camera
+	class ER_CameraFPS : public ER_Camera
 	{
-		RTTI_DECLARATIONS(FirstPersonCamera, Camera)
+		RTTI_DECLARATIONS(ER_CameraFPS, ER_Camera)
 
 	public:
-		FirstPersonCamera(Game& game);
-		FirstPersonCamera(Game& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance);
+		ER_CameraFPS(Game& game);
+		ER_CameraFPS(Game& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance);
 
-		virtual ~FirstPersonCamera();
+		virtual ~ER_CameraFPS();
 
 		const Keyboard& GetKeyboard() const;
 		void SetKeyboard(Keyboard& keyboard);
@@ -45,7 +45,7 @@ namespace Library
 		Mouse* mMouse;
 
 	private:
-		FirstPersonCamera(const FirstPersonCamera& rhs);
-		FirstPersonCamera& operator=(const FirstPersonCamera& rhs);
+		ER_CameraFPS(const ER_CameraFPS& rhs);
+		ER_CameraFPS& operator=(const ER_CameraFPS& rhs);
 	};
 }

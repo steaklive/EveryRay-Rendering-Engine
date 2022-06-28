@@ -185,7 +185,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\Game\GameException.h" />
-    <ClInclude Include="Camera.h" />
+    <ClInclude Include="ER_Camera.h" />
     <ClInclude Include="ColorHelper.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="ConstantBuffer.h" />
@@ -210,7 +210,7 @@
     <ClInclude Include="ER_VolumetricFog.h" />
     <ClInclude Include="ER_VoxelizationMaterial.h" />
     <ClInclude Include="FastFourierTransform.h" />
-    <ClInclude Include="FirstPersonCamera.h" />
+    <ClInclude Include="ER_CameraFPS.h" />
     <ClInclude Include="ER_FoliageManager.h" />
     <ClInclude Include="ER_Frustum.h" />
     <ClInclude Include="Game.h" />
@@ -260,9 +260,10 @@
   <ItemGroup>
     <ClCompile Include="..\..\external\DirectXMath\SHMath\DirectXSH.cpp" />
     <ClCompile Include="..\..\external\DirectXMath\SHMath\DirectXSHD3D11.cpp" />
-    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ColorHelper.cpp" />
     <ClCompile Include="ER_BasicColorMaterial.cpp" />
+    <ClCompile Include="ER_Camera.cpp" />
+    <ClCompile Include="ER_CameraFPS.cpp" />
     <ClCompile Include="ER_DebugLightProbeMaterial.cpp" />
     <ClCompile Include="ER_GBufferMaterial.cpp" />
     <ClCompile Include="ER_GPUTexture.cpp" />
@@ -286,7 +287,6 @@
     <ClCompile Include="ER_VolumetricClouds.cpp" />
     <ClCompile Include="ER_VolumetricFog.cpp" />
     <ClCompile Include="ER_VoxelizationMaterial.cpp" />
-    <ClCompile Include="FirstPersonCamera.cpp" />
     <ClCompile Include="ER_FoliageManager.cpp" />
     <ClCompile Include="ER_Frustum.cpp" />
     <ClCompile Include="Game.cpp" />

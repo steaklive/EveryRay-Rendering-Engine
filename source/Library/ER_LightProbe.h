@@ -10,7 +10,7 @@ namespace Library
 			int MipIndex;
 		};
 	}
-	class Camera;
+	class ER_Camera;
 
 	class ER_LightProbe
 	{
@@ -52,7 +52,7 @@ namespace Library
 		ER_ShadowMapper& mShadowMapper;
 
 		LightProbeRenderingObjectsInfo mObjectsToRenderPerFace[CUBEMAP_FACES_COUNT];
-		Camera* mCubemapCameras[CUBEMAP_FACES_COUNT];
+		ER_Camera* mCubemapCameras[CUBEMAP_FACES_COUNT];
 
 		ER_GPUTexture* mCubemapTexture = nullptr; // for regular diffuse probe it should be null (because we use SH)
 		ConstantBuffer<LightProbeCBufferData::ProbeConvolutionCB> mConvolutionCB;

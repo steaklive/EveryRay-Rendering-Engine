@@ -1,7 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "GameComponent.h"
-#include "Camera.h"
+#include "ER_Camera.h"
 #include "ER_ModelMaterial.h"
 #include "ER_Material.h"
 
@@ -16,14 +16,14 @@ namespace Library
 	class ER_Scene : public GameComponent
 	{
 	public:
-		ER_Scene(Game& pGame, Camera& pCamera, const std::string& path);
+		ER_Scene(Game& pGame, ER_Camera& pCamera, const std::string& path);
 		~ER_Scene();
 
 		void SaveRenderingObjectsTransforms();
 		void SaveFoliageZonesTransforms(const std::vector<ER_Foliage*>& foliageZones);
 
 		ER_Material* GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries, bool instanced);
-		Camera& GetCamera() { return mCamera; }
+		ER_Camera& GetCamera() { return mCamera; }
 
 		bool HasLightProbesSupport() { return mHasLightProbes; }
 		const XMFLOAT3& GetLightProbesVolumeMinBounds() const { return mLightProbesVolumeMinBounds; }
@@ -57,7 +57,7 @@ namespace Library
 		void LoadRenderingObjectInstancedData(ER_RenderingObject* aObject);
 
 		Json::Value root;
-		Camera& mCamera;
+		ER_Camera& mCamera;
 		std::string mScenePath;
 		
 		bool mHasVolumetricFog = false;

@@ -13,7 +13,7 @@ namespace Library {
 	{
 	}
 
-	DrawableGameComponent::DrawableGameComponent(Game& game, Camera& camera)
+	DrawableGameComponent::DrawableGameComponent(Game& game, ER_Camera& camera)
 		: GameComponent(game), mVisible(true), mCamera(&camera)
 	{
 	}
@@ -32,12 +32,12 @@ namespace Library {
 		mVisible = visible;
 	}
 
-	Camera* DrawableGameComponent::GetCamera()
+	ER_Camera* DrawableGameComponent::GetCamera()
 	{
 		return mCamera;
 	}
 
-	void DrawableGameComponent::SetCamera(Camera* camera)
+	void DrawableGameComponent::SetCamera(ER_Camera* camera)
 	{
 		mCamera = camera;
 	}

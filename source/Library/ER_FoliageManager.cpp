@@ -12,7 +12,7 @@
 #include "ER_ShadowMapper.h"
 #include "ER_PostProcessingStack.h"
 #include "ER_Illumination.h"
-#include "Camera.h"
+#include "ER_Camera.h"
 #include "ShaderCompiler.h"
 #include "ER_RenderableAABB.h"
 #include "ER_Terrain.h"
@@ -51,7 +51,7 @@ namespace Library
 
 	void ER_FoliageManager::Update(const GameTime& gameTime, float gustDistance, float strength, float frequency)
 	{
-		Camera* camera = (Camera*)(mGame->Services().GetService(Camera::TypeIdClass()));
+		ER_Camera* camera = (ER_Camera*)(mGame->Services().GetService(ER_Camera::TypeIdClass()));
 
 		if (mEnabled)
 		{
@@ -128,7 +128,7 @@ namespace Library
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	ER_Foliage::ER_Foliage(Game& pGame, Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, const std::string& textureName, float scale, float distributionRadius,
+	ER_Foliage::ER_Foliage(Game& pGame, ER_Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, const std::string& textureName, float scale, float distributionRadius,
 		const XMFLOAT3& distributionCenter, FoliageBillboardType bType, bool isPlacedOnTerrain, int placeChannel)
 		:
 		mGame(pGame),
@@ -636,7 +636,7 @@ namespace Library
 		context->Unmap(mInstanceBuffer, 0);
 	}
 
-	bool ER_Foliage::PerformCPUFrustumCulling(Camera* camera)
+	bool ER_Foliage::PerformCPUFrustumCulling(ER_Camera* camera)
 	{
 		if (!camera)
 		{

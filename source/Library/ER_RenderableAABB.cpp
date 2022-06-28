@@ -8,7 +8,7 @@
 #include "ColorHelper.h"
 #include "MatrixHelper.h"
 #include "VectorHelper.h"
-#include "Camera.h"
+#include "ER_Camera.h"
 #include "Utility.h"
 #include "ER_GPUBuffer.h"
 

@@ -20,7 +20,7 @@
 
 namespace Library
 {
-	class Camera;
+	class ER_Camera;
 	class ER_ShadowMapper;
 	class DirectionalLight;
 	class ER_Skybox;
@@ -49,7 +49,7 @@ namespace Library
 	{
 	public:
 		using ProbesRenderingObjectsInfo = std::map<std::string, ER_RenderingObject*>;
-		ER_LightProbesManager(Game& game, Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
+		ER_LightProbesManager(Game& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
 		~ER_LightProbesManager();
 
 		bool AreProbesReady() { return mDiffuseProbesReady && mSpecularProbesReady; }
@@ -87,16 +87,16 @@ namespace Library
 
 		bool mDebugDiscardCulledProbes = false;//used in DebugLightProbeMaterial
 	private:
-		void SetupGlobalDiffuseProbe(Game& game, Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
-		void SetupGlobalSpecularProbe(Game& game, Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
-		void SetupDiffuseProbes(Game& game, Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
-		void SetupSpecularProbes(Game& game, Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
+		void SetupGlobalDiffuseProbe(Game& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
+		void SetupGlobalSpecularProbe(Game& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
+		void SetupDiffuseProbes(Game& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
+		void SetupSpecularProbes(Game& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
 		void AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds);
 		bool IsProbeInCell(ER_LightProbe* aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds);
 		void UpdateProbesByType(Game& game, ER_ProbeType aType);
 		
 		ER_QuadRenderer* mQuadRenderer = nullptr;
-		Camera& mMainCamera;
+		ER_Camera& mMainCamera;
 
 		ID3D11PixelShader* mConvolutionPS = nullptr;
 

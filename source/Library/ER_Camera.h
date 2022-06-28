@@ -8,15 +8,15 @@ namespace Library
 	class ER_RenderingObject;
 	class GameTime;
 
-	class Camera : public GameComponent
+	class ER_Camera : public GameComponent
 	{
-		RTTI_DECLARATIONS(Camera, GameComponent)
+		RTTI_DECLARATIONS(ER_Camera, GameComponent)
 
 	public:
-		Camera(Game& game);
-		Camera(Game& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance);
+		ER_Camera(Game& game);
+		ER_Camera(Game& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance);
 
-		virtual ~Camera();
+		virtual ~ER_Camera();
 
 		const XMFLOAT3& Position() const;
 		const XMFLOAT3& Direction() const;
@@ -84,8 +84,8 @@ namespace Library
 		XMFLOAT4X4 mProjectionMatrix;
 
 	private:
-		Camera(const Camera& rhs);
-		Camera& operator=(const Camera& rhs);
+		ER_Camera(const ER_Camera& rhs);
+		ER_Camera& operator=(const ER_Camera& rhs);
 
 		ER_Frustum mFrustum;
 	};

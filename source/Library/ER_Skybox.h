@@ -7,7 +7,7 @@
 
 namespace Library
 {
-	class Camera;
+	class ER_Camera;
 	class GameTime;
 
 	namespace SkyCBufferData {
@@ -32,14 +32,14 @@ namespace Library
 	class ER_Skybox : public GameComponent
 	{
 	public:
-		ER_Skybox(Game& game, Camera& camera, float scale);
+		ER_Skybox(Game& game, ER_Camera& camera, float scale);
 		~ER_Skybox();
 
 		void Initialize();
-		void Draw(Camera* aCustomCamera = nullptr);
-		void Update(Camera* aCustomCamera = nullptr);
-		void UpdateSun(const GameTime& gameTime, Camera* aCustomCamera = nullptr);
-		void DrawSun(Camera* aCustomCamera = nullptr, ER_GPUTexture* aSky = nullptr, DepthTarget* aSceneDepth = nullptr);
+		void Draw(ER_Camera* aCustomCamera = nullptr);
+		void Update(ER_Camera* aCustomCamera = nullptr);
+		void UpdateSun(const GameTime& gameTime, ER_Camera* aCustomCamera = nullptr);
+		void DrawSun(ER_Camera* aCustomCamera = nullptr, ER_GPUTexture* aSky = nullptr, DepthTarget* aSceneDepth = nullptr);
 
 		void SetMovable(bool value) { mIsMovable = value; };
 		void SetUseCustomSkyColor(bool value) { mUseCustomColor = value; }
@@ -57,10 +57,10 @@ namespace Library
 		ID3D11ShaderResourceView* GetSunOcclusionOutputTexture() const;
 	private:
 
-		XMFLOAT4 CalculateSunPositionOnSkybox(XMFLOAT3 dir, Camera* aCustomCamera = nullptr);
+		XMFLOAT4 CalculateSunPositionOnSkybox(XMFLOAT3 dir, ER_Camera* aCustomCamera = nullptr);
 		
 		Game& mGame;
-		Camera& mCamera;
+		ER_Camera& mCamera;
 
 		ID3D11Buffer* mVertexBuffer = nullptr;
 		ID3D11Buffer* mIndexBuffer = nullptr;

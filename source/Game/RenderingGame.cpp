@@ -15,7 +15,7 @@
 #include "..\Library\Keyboard.h"
 #include "..\Library\Mouse.h"
 #include "..\Library\Utility.h"
-#include "..\Library\FirstPersonCamera.h"
+#include "..\Library\ER_CameraFPS.h"
 #include "..\Library\ColorHelper.h"
 #include "..\Library\RenderStateHelper.h"
 #include "..\Library\MatrixHelper.h"
@@ -87,14 +87,14 @@ namespace Rendering
 			mServices.AddService(Mouse::TypeIdClass(), mMouse);
 		}
 
-		mCamera = new FirstPersonCamera(*this, 1.5708f, this->AspectRatio(), nearPlaneDist, farPlaneDist );
+		mCamera = new ER_CameraFPS(*this, 1.5708f, this->AspectRatio(), nearPlaneDist, farPlaneDist );
 		mCamera->SetPosition(0.0f, 20.0f, 65.0f);
 		mCamera->SetMovementRate(movementRate);
 		mCamera->SetFOV(fov*XM_PI / 180.0f);
 		mCamera->SetNearPlaneDistance(nearPlaneDist);
 		mCamera->SetFarPlaneDistance(farPlaneDist);
 		components.push_back(mCamera);
-		mServices.AddService(Camera::TypeIdClass(), mCamera);
+		mServices.AddService(ER_Camera::TypeIdClass(), mCamera);
 
 		mEditor = new ER_Editor(*this);
 		components.push_back(mEditor);

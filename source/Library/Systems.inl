@@ -5,7 +5,7 @@
 #include "..\Library\GameException.h"
 #include "..\Library\ER_Editor.h"
 #include "..\Library\ER_QuadRenderer.h"
-#include "..\Library\Camera.h"
+#include "..\Library\ER_Camera.h"
 #include "..\Library\DirectionalLight.h"
 #include "..\Library\Keyboard.h"
 #include "..\Library\ER_Skybox.h"

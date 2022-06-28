@@ -17,7 +17,7 @@ namespace Library
 	{
 	}
 
-	DirectionalLight::DirectionalLight(Game& game, Camera& camera) : Light(game),
+	DirectionalLight::DirectionalLight(Game& game, ER_Camera& camera) : Light(game),
 		mDirection(Vector3Helper::Forward),
 		mUp(Vector3Helper::Up), mRight(Vector3Helper::Right), mProxyModel(nullptr)
 	{

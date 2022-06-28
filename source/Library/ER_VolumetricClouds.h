@@ -9,7 +9,7 @@ namespace Library
 {
 	class DirectionalLight;
 	class GameTime;
-	class Camera;
+	class ER_Camera;
 	class ER_Skybox;
 
 	namespace VolumetricCloudsCBufferData {
@@ -47,7 +47,7 @@ namespace Library
 	class ER_VolumetricClouds : public GameComponent
 	{
 	public:
-		ER_VolumetricClouds(Game& game, Camera& camera, DirectionalLight& light, ER_Skybox& skybox);
+		ER_VolumetricClouds(Game& game, ER_Camera& camera, DirectionalLight& light, ER_Skybox& skybox);
 		~ER_VolumetricClouds();
 
 		void Initialize(DepthTarget* aIlluminationDepth);
@@ -61,7 +61,7 @@ namespace Library
 	private:
 		void UpdateImGui();
 
-		Camera& mCamera;
+		ER_Camera& mCamera;
 		DirectionalLight& mDirectionalLight;
 		ER_Skybox& mSkybox;
 		

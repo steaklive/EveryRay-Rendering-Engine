@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "FirstPersonCamera.h"
+#include "ER_CameraFPS.h"
 #include "Game.h"
 #include "GameTime.h"
 #include "Keyboard.h"
@@ -11,82 +11,82 @@
 
 namespace Library
 {
-	RTTI_DEFINITIONS(FirstPersonCamera)
+	RTTI_DEFINITIONS(ER_CameraFPS)
 
-	const float FirstPersonCamera::DefaultRotationRate = XMConvertToRadians(1.0f);
-	const float FirstPersonCamera::DefaultMovementRate = 10.0f;
-	const float FirstPersonCamera::DefaultMouseSensitivity = 50.0f;
+	const float ER_CameraFPS::DefaultRotationRate = XMConvertToRadians(1.0f);
+	const float ER_CameraFPS::DefaultMovementRate = 10.0f;
+	const float ER_CameraFPS::DefaultMouseSensitivity = 50.0f;
 
-	FirstPersonCamera::FirstPersonCamera(Game& game)
-		: Camera(game), mKeyboard(nullptr), mMouse(nullptr),
+	ER_CameraFPS::ER_CameraFPS(Game& game)
+		: ER_Camera(game), mKeyboard(nullptr), mMouse(nullptr),
 		mMouseSensitivity(DefaultMouseSensitivity), mRotationRate(DefaultRotationRate), mMovementRate(DefaultMovementRate)
 	{
 	}
 
-	FirstPersonCamera::FirstPersonCamera(Game& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance)
-		: Camera(game, fieldOfView, aspectRatio, nearPlaneDistance, farPlaneDistance), mKeyboard(nullptr), mMouse(nullptr),
+	ER_CameraFPS::ER_CameraFPS(Game& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance)
+		: ER_Camera(game, fieldOfView, aspectRatio, nearPlaneDistance, farPlaneDistance), mKeyboard(nullptr), mMouse(nullptr),
 		mMouseSensitivity(DefaultMouseSensitivity), mRotationRate(DefaultRotationRate), mMovementRate(DefaultMovementRate)
 
 	{
 	}
 
-	FirstPersonCamera::~FirstPersonCamera()
+	ER_CameraFPS::~ER_CameraFPS()
 	{
 		mKeyboard = nullptr;
 		mMouse = nullptr;
 	}
 
-	const Keyboard& FirstPersonCamera::GetKeyboard() const
+	const Keyboard& ER_CameraFPS::GetKeyboard() const
 	{
 		return *mKeyboard;
 	}
 
-	void FirstPersonCamera::SetKeyboard(Keyboard& keyboard)
+	void ER_CameraFPS::SetKeyboard(Keyboard& keyboard)
 	{
 		mKeyboard = &keyboard;
 	}
 
-	const Mouse& FirstPersonCamera::GetMouse() const
+	const Mouse& ER_CameraFPS::GetMouse() const
 	{
 		return *mMouse;
 	}
 
-	void FirstPersonCamera::SetMouse(Mouse& mouse)
+	void ER_CameraFPS::SetMouse(Mouse& mouse)
 	{
 		mMouse = &mouse;
 	}
 
-	float&FirstPersonCamera::MouseSensitivity()
+	float&ER_CameraFPS::MouseSensitivity()
 	{
 		return mMouseSensitivity;
 	}
 
 
-	float& FirstPersonCamera::RotationRate()
+	float& ER_CameraFPS::RotationRate()
 	{
 		return mRotationRate;
 	}
 
-	float& FirstPersonCamera::MovementRate()
+	float& ER_CameraFPS::MovementRate()
 	{
 		return mMovementRate;
 	}
 
-	void FirstPersonCamera::SetMovementRate(float value)
+	void ER_CameraFPS::SetMovementRate(float value)
 	{
 		mMovementRate = value;
 	}
 
 
-	void FirstPersonCamera::Initialize()
+	void ER_CameraFPS::Initialize()
 	{
 		mKeyboard = (Keyboard*)mGame->Services().GetService(Keyboard::TypeIdClass());
 		mMouse = (Mouse*)mGame->Services().GetService(Mouse::TypeIdClass());
 
-		Camera::Initialize();
+		ER_Camera::Initialize();
 	}
 
-	void FirstPersonCamera::Update(const GameTime& gameTime)
+	void ER_CameraFPS::Update(const GameTime& gameTime)
 	{
 		XMFLOAT3 movementAmount = Vector3Helper::Zero;
 		if (mKeyboard != nullptr )
@@ -155,6 +155,6 @@ namespace Library
 
 		XMStoreFloat3(&mPosition, position);
 
-		Camera::Update(gameTime);
+		ER_Camera::Update(gameTime);
 	}
 }

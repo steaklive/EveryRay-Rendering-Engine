@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "ER_VolumetricClouds.h"
 #include "GameTime.h"
-#include "Camera.h"
+#include "ER_Camera.h"
 #include "DirectionalLight.h"
 #include "GameException.h"
 #include "ER_Model.h"
@@ -18,7 +18,7 @@
 #include "SamplerStates.h"
 
 namespace Library {
-	ER_VolumetricClouds::ER_VolumetricClouds(Game& game, Camera& camera, DirectionalLight& light, ER_Skybox& skybox)
+	ER_VolumetricClouds::ER_VolumetricClouds(Game& game, ER_Camera& camera, DirectionalLight& light, ER_Skybox& skybox)
 		: GameComponent(game),
 		mCamera(camera), 
 		mDirectionalLight(light),

@@ -22,9 +22,6 @@
     <Filter Include="Source Files\Components">
       <UniqueIdentifier>{29680abb-8006-4c10-b2a3-389f1d0cd8a5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Objects">
-      <UniqueIdentifier>{e5657760-8042-479c-9f78-93af2408e19a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shaders">
       <UniqueIdentifier>{09f1a3ac-1868-41c5-8c47-d866e35cd170}</UniqueIdentifier>
     </Filter>
@@ -73,11 +70,14 @@
     <Filter Include="Source Files\Graphics\Rendering helpers">
       <UniqueIdentifier>{69b35c96-dcdb-4ca0-ad4f-840b0cc51cf9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Cameras">
-      <UniqueIdentifier>{ba15a7ae-5982-4560-abb8-8ce93a36b7d4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Graphics\RenderTarget">
       <UniqueIdentifier>{4aa63e57-78cb-4ffa-a397-0ca6cabfa803}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Profilers">
+      <UniqueIdentifier>{131ca24d-32b9-4518-a106-29c5278136e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Core">
+      <UniqueIdentifier>{d1278e64-2155-4c2e-93c9-0c6227f488bc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -123,16 +123,10 @@
     <ClInclude Include="ServiceContainer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MatrixHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VectorHelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FirstPersonCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ColorHelper.h">
@@ -297,21 +291,15 @@
     <ClInclude Include="ER_Editor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_CameraFPS.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ER_Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GameTime.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GameClock.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GameException.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ColorHelper.cpp">
@@ -368,12 +356,6 @@
     <ClCompile Include="RenderTarget.cpp">
       <Filter>Source Files\Graphics\RenderTarget</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Source Files\Cameras</Filter>
-    </ClCompile>
-    <ClCompile Include="FirstPersonCamera.cpp">
-      <Filter>Source Files\Cameras</Filter>
-    </ClCompile>
     <ClCompile Include="DepthMap.cpp">
       <Filter>Source Files\Graphics\RenderTarget</Filter>
     </ClCompile>
@@ -382,9 +364,6 @@
     </ClCompile>
     <ClCompile Include="TGATextureLoader.cpp">
       <Filter>Source Files\Helpers</Filter>
-    </ClCompile>
-    <ClCompile Include="ER_CPUProfiler.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ER_GPUBuffer.cpp">
       <Filter>Source Files\Graphics\Graphics API</Filter>
@@ -419,9 +398,6 @@
     <ClCompile Include="ER_VoxelizationMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
-    <ClCompile Include="ER_RenderingObject.cpp">
-      <Filter>Source Files\Objects</Filter>
-    </ClCompile>
     <ClCompile Include="ER_PostProcessingStack.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>
@@ -451,12 +427,6 @@
     </ClCompile>
     <ClCompile Include="..\..\external\DirectXMath\SHMath\DirectXSHD3D11.cpp">
       <Filter>Source Files\Helpers\DirectXSH</Filter>
-    </ClCompile>
-    <ClCompile Include="ER_Sandbox.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ER_Scene.cpp">
-      <Filter>Source Files\Objects</Filter>
     </ClCompile>
     <ClCompile Include="ER_Terrain.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
@@ -488,8 +458,38 @@
     <ClCompile Include="ER_QuadRenderer.cpp">
       <Filter>Source Files\Graphics\Rendering helpers</Filter>
     </ClCompile>
+    <ClCompile Include="ER_CPUProfiler.cpp">
+      <Filter>Source Files\Profilers</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="GameClock.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="GameException.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="GameTime.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_RenderingObject.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_Scene.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
     <ClCompile Include="ER_Editor.cpp">
-      <Filter>Source Files\Objects</Filter>
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_Sandbox.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_Camera.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_CameraFPS.cpp">
+      <Filter>Source Files\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
