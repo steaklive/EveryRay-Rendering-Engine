@@ -165,9 +165,6 @@
     <ClInclude Include="SpotLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Projector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DepthMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -297,6 +294,9 @@
     <ClInclude Include="ER_Ray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_Projector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -376,9 +376,6 @@
     </ClCompile>
     <ClCompile Include="DepthMap.cpp">
       <Filter>Source Files\Objects\RenderTarget</Filter>
-    </ClCompile>
-    <ClCompile Include="Projector.cpp">
-      <Filter>Source Files\Objects\Frustums</Filter>
     </ClCompile>
     <ClCompile Include="DepthTarget.cpp">
       <Filter>Source Files\Objects\RenderTarget</Filter>
@@ -490,6 +487,9 @@
     </ClCompile>
     <ClCompile Include="ER_Ray.cpp">
       <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_Projector.cpp">
+      <Filter>Source Files\Objects\Frustums</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

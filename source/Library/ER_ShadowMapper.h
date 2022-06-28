@@ -6,7 +6,7 @@ namespace Library
 {
 	class DepthMap;
 	class ER_Frustum;
-	class Projector;
+	class ER_Projector;
 	class Camera;
 	class DirectionalLight;
 	class ER_Scene;
@@ -38,7 +38,7 @@ namespace Library
 		DirectionalLight& mDirectionalLight;
 
 		std::vector<DepthMap*> mShadowMaps;
-		std::vector<Projector*> mLightProjectors;
+		std::vector<ER_Projector*> mLightProjectors;
 		std::vector<ER_Frustum> mCameraCascadesFrustums;
 		std::vector<XMFLOAT3> mLightProjectorCenteredPositions;
 

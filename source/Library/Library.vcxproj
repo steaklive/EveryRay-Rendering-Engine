@@ -231,7 +231,7 @@
     <ClInclude Include="OceanSimulator.h" />
     <ClInclude Include="PointLight.h" />
     <ClInclude Include="ER_PostProcessingStack.h" />
-    <ClInclude Include="Projector.h" />
+    <ClInclude Include="ER_Projector.h" />
     <ClInclude Include="ProxyModel.h" />
     <ClInclude Include="ER_QuadRenderer.h" />
     <ClInclude Include="RasterizerStates.h" />
@@ -304,7 +304,7 @@
     <ClCompile Include="ER_ModelMaterial.cpp" />
     <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="PointLight.cpp" />
-    <ClCompile Include="Projector.cpp" />
+    <ClCompile Include="ER_Projector.cpp" />
     <ClCompile Include="ProxyModel.cpp" />
     <ClCompile Include="ER_QuadRenderer.cpp" />
     <ClCompile Include="RasterizerStates.cpp" />

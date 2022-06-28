@@ -1,19 +1,18 @@
 #pragma once
-#include "GameComponent.h"
+#include "Common.h"
 
 namespace Library
 {
+	class Game;
 	class GameTime;
 
-	class Projector : public GameComponent
+	class ER_Projector
 	{
-		RTTI_DECLARATIONS(Projector, GameComponent)
-
 	public:
-		Projector(Game& game);
-		Projector(Game& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance);
+		ER_Projector(Game& game);
+		ER_Projector(Game& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance);
 
-		virtual ~Projector();
+		~ER_Projector();
 
 		const XMFLOAT3& Position() const;
 		const XMFLOAT3& Direction() const;
@@ -34,19 +33,19 @@ namespace Library
 		XMMATRIX ProjectionMatrix() const;
 		XMMATRIX ViewProjectionMatrix() const;
 
-		virtual void SetPosition(FLOAT x, FLOAT y, FLOAT z);
-		virtual void SetPosition(FXMVECTOR position);
-		virtual void SetPosition(const XMFLOAT3& position);
+		void SetPosition(FLOAT x, FLOAT y, FLOAT z);
+		void SetPosition(FXMVECTOR position);
+		void SetPosition(const XMFLOAT3& position);
 
-		virtual void Reset();
-		virtual void Initialize() override;
-		virtual void Update(const GameTime& gameTime) override;
-		virtual void UpdateViewMatrix();
+		void Reset();
+		void Initialize();
+		void Update();
+		void UpdateViewMatrix();
 		void SetViewMatrix(XMFLOAT3 pos, XMFLOAT3 dir, XMFLOAT3 up);
-		virtual void UpdateProjectionMatrix();
-		virtual void SetProjectionMatrix(CXMMATRIX matrix);
-		virtual void ApplyRotation(CXMMATRIX transform);
-		virtual void ApplyRotation(const XMFLOAT4X4& transform);
+		void UpdateProjectionMatrix();
+		void SetProjectionMatrix(CXMMATRIX matrix);
+		void ApplyRotation(CXMMATRIX transform);
+		void ApplyRotation(const XMFLOAT4X4& transform);
 		void ApplyTransform(CXMMATRIX transform);
 
 		static const float DefaultFieldOfView;
@@ -58,7 +57,7 @@ namespace Library
 		static const float DefaultScreenHeight;
 		static const float DefaultScreenWidth;
 
-	protected:
+	private:
 		float mFieldOfView;
 		float mAspectRatio;
 		float mNearPlaneDistance;
@@ -71,9 +70,5 @@ namespace Library
 
 		XMFLOAT4X4 mViewMatrix;
 		XMFLOAT4X4 mProjectionMatrix;
-
-	private:
-		Projector(const Projector& rhs);
-		Projector& operator=(const Projector& rhs);
 	};
 }

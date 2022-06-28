@@ -2,7 +2,7 @@
 
 #include "ER_ShadowMapper.h"
 #include "ER_Frustum.h"
-#include "Projector.h"
+#include "ER_Projector.h"
 #include "Camera.h"
 #include "DirectionalLight.h"
 #include "GameTime.h"
@@ -40,7 +40,7 @@ namespace Library
 			mCameraCascadesFrustums.push_back(XMMatrixIdentity());
 			(isCascaded) ? mCameraCascadesFrustums[i].SetMatrix(mCamera.GetCustomViewProjectionMatrixForCascade(i)) : mCameraCascadesFrustums[i].SetMatrix(mCamera.ProjectionMatrix());
 
-			mLightProjectors.push_back(new Projector(pGame));
+			mLightProjectors.push_back(new ER_Projector(pGame));
 			mLightProjectors[i]->Initialize();
 			mLightProjectors[i]->SetProjectionMatrix(GetProjectionBoundingSphere(i));
 			//mLightProjectors[i]->ApplyRotation(mDirectionalLight.GetTransform());
@@ -86,7 +86,7 @@ namespace Library
 			mLightProjectors[i]->SetPosition(mLightProjectorCenteredPositions[i].x, mLightProjectorCenteredPositions[i].y, mLightProjectorCenteredPositions[i].z);
 			mLightProjectors[i]->SetProjectionMatrix(GetProjectionBoundingSphere(i));
 			mLightProjectors[i]->SetViewMatrix(mLightProjectorCenteredPositions[i], mDirectionalLight.Direction(), mDirectionalLight.Up());
-			mLightProjectors[i]->Update(gameTime);
+			mLightProjectors[i]->Update();
 		}
 	}
 

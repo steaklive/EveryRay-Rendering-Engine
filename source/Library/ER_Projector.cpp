@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "Projector.h"
+#include "ER_Projector.h"
 #include "Game.h"
 #include "GameTime.h"
 #include "VectorHelper.h"
@@ -8,104 +8,102 @@
 
 namespace Library
 {
-	RTTI_DEFINITIONS(Projector)
+	const float ER_Projector::DefaultFieldOfView = XM_PIDIV4;
+	const float ER_Projector::DefaultAspectRatio = 4.0f / 3.0f;
+	const float ER_Projector::DefaultNearPlaneDistance = .5f;
+	const float ER_Projector::DefaultFarPlaneDistance = 500.0f;
+	const float ER_Projector::DefaultScreenWidth = 1024.0f;
+	const float ER_Projector::DefaultScreenHeight = 1024.0f;
 
-	const float Projector::DefaultFieldOfView = XM_PIDIV4;
-	const float Projector::DefaultAspectRatio = 4.0f / 3.0f;
-	const float Projector::DefaultNearPlaneDistance = .5f;
-	const float Projector::DefaultFarPlaneDistance = 500.0f;
-	const float Projector::DefaultScreenWidth = 1024.0f;
-	const float Projector::DefaultScreenHeight = 1024.0f;
-
-	Projector::Projector(Game& game)
-		: GameComponent(game),
+	ER_Projector::ER_Projector(Game& game)
+		: 
 		mFieldOfView(DefaultFieldOfView), mAspectRatio(DefaultAspectRatio), mNearPlaneDistance(DefaultNearPlaneDistance), mFarPlaneDistance(DefaultFarPlaneDistance),
 		mPosition(), mDirection(), mUp(), mRight(), mViewMatrix(), mProjectionMatrix()
 	{
 	}
 
-	Projector::Projector(Game& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance)
-		: GameComponent(game),
+	ER_Projector::ER_Projector(Game& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance)
+		:
 		mFieldOfView(fieldOfView), mAspectRatio(aspectRatio), mNearPlaneDistance(nearPlaneDistance), mFarPlaneDistance(farPlaneDistance),
 		mPosition(), mDirection(), mUp(), mRight(), mViewMatrix(), mProjectionMatrix()
 	{
 	}
 
-	Projector::~Projector()
+	ER_Projector::~ER_Projector()
 	{
 	}
 
-	const XMFLOAT3& Projector::Position() const
+	const XMFLOAT3& ER_Projector::Position() const
 	{
 		return mPosition;
 	}
 
-	const XMFLOAT3& Projector::Direction() const
+	const XMFLOAT3& ER_Projector::Direction() const
 	{
 		return mDirection;
 	}
 
-	const XMFLOAT3& Projector::Up() const
+	const XMFLOAT3& ER_Projector::Up() const
 	{
 		return mUp;
 	}
 
-	const XMFLOAT3& Projector::Right() const
+	const XMFLOAT3& ER_Projector::Right() const
 	{
 		return mRight;
 	}
 
-	XMVECTOR Projector::PositionVector() const
+	XMVECTOR ER_Projector::PositionVector() const
 	{
 		return XMLoadFloat3(&mPosition);
 	}
 
-	XMVECTOR Projector::DirectionVector() const
+	XMVECTOR ER_Projector::DirectionVector() const
 	{
 		return XMLoadFloat3(&mDirection);
 	}
 
-	XMVECTOR Projector::UpVector() const
+	XMVECTOR ER_Projector::UpVector() const
 	{
 		return XMLoadFloat3(&mUp);
 	}
 
-	XMVECTOR Projector::RightVector() const
+	XMVECTOR ER_Projector::RightVector() const
 	{
 		return XMLoadFloat3(&mRight);
 	}
 
-	float Projector::AspectRatio() const
+	float ER_Projector::AspectRatio() const
 	{
 		return mAspectRatio;
 	}
 
-	float Projector::FieldOfView() const
+	float ER_Projector::FieldOfView() const
 	{
 		return mFieldOfView;
 	}
 
-	float Projector::NearPlaneDistance() const
+	float ER_Projector::NearPlaneDistance() const
 	{
 		return mNearPlaneDistance;
 	}
 
-	float Projector::FarPlaneDistance() const
+	float ER_Projector::FarPlaneDistance() const
 	{
 		return mFarPlaneDistance;
 	}
 
-	XMMATRIX Projector::ViewMatrix() const
+	XMMATRIX ER_Projector::ViewMatrix() const
 	{
 		return XMLoadFloat4x4(&mViewMatrix);
 	}
 
-	XMMATRIX Projector::ProjectionMatrix() const
+	XMMATRIX ER_Projector::ProjectionMatrix() const
 	{
 		return XMLoadFloat4x4(&mProjectionMatrix);
 	}
 
-	XMMATRIX Projector::ViewProjectionMatrix() const
+	XMMATRIX ER_Projector::ViewProjectionMatrix() const
 	{
 		XMMATRIX viewMatrix = XMLoadFloat4x4(&mViewMatrix);
 		XMMATRIX projectionMatrix = XMLoadFloat4x4(&mProjectionMatrix);
@@ -113,23 +111,23 @@ namespace Library
 		return XMMatrixMultiply(viewMatrix, projectionMatrix);
 	}
 
-	void Projector::SetPosition(FLOAT x, FLOAT y, FLOAT z)
+	void ER_Projector::SetPosition(FLOAT x, FLOAT y, FLOAT z)
 	{
 		XMVECTOR position = XMVectorSet(x, y, z, 1.0f);
 		SetPosition(position);
 	}
 
-	void Projector::SetPosition(FXMVECTOR position)
+	void ER_Projector::SetPosition(FXMVECTOR position)
 	{
 		XMStoreFloat3(&mPosition, position);
 	}
 
-	void Projector::SetPosition(const XMFLOAT3& position)
+	void ER_Projector::SetPosition(const XMFLOAT3& position)
 	{
 		mPosition = position;
 	}
 
-	void Projector::Reset()
+	void ER_Projector::Reset()
 	{
 		mPosition = Vector3Helper::Zero;
 		mDirection = Vector3Helper::Forward;
@@ -139,19 +137,19 @@ namespace Library
 		UpdateViewMatrix();
 	}
 
-	void Projector::Initialize()
+	void ER_Projector::Initialize()
 	{
 		//UpdateProjectionMatrix();
 		//SetProjectionMatrix();
 		Reset();
 	}
 
-	void Projector::Update(const GameTime& gameTime)
+	void ER_Projector::Update()
 	{
 		UpdateViewMatrix();
 	}
 
-	void Projector::UpdateViewMatrix()
+	void ER_Projector::UpdateViewMatrix()
 	{
 		XMVECTOR eyePosition = XMLoadFloat3(&mPosition);
 		XMVECTOR direction = XMLoadFloat3(&mDirection);
@@ -161,7 +159,7 @@ namespace Library
 		XMStoreFloat4x4(&mViewMatrix, viewMatrix);
 	}
 
-	void Projector::SetViewMatrix(XMFLOAT3 pos, XMFLOAT3 dir, XMFLOAT3 up)
+	void ER_Projector::SetViewMatrix(XMFLOAT3 pos, XMFLOAT3 dir, XMFLOAT3 up)
 	{
 		mPosition = pos;
 		mDirection = dir;
@@ -175,7 +173,7 @@ namespace Library
 		XMStoreFloat4x4(&mViewMatrix, viewMatrix);
 	}
 
-	void Projector::SetProjectionMatrix(CXMMATRIX projectionMatrix)
+	void ER_Projector::SetProjectionMatrix(CXMMATRIX projectionMatrix)
 	{
 		//orthographic
 		//XMMATRIX projectionMatrix = XMMatrixOrthographicLH(256.0f, 256.0f, mNearPlaneDistance, -mFarPlaneDistance);
@@ -186,7 +184,7 @@ namespace Library
 		XMStoreFloat4x4(&mProjectionMatrix, projectionMatrix);
 	}
 
-	void Projector::UpdateProjectionMatrix()
+	void ER_Projector::UpdateProjectionMatrix()
 	{
 		//orthographic
 		XMMATRIX projectionMatrix = XMMatrixOrthographicLH(256.0f, 256.0f, mNearPlaneDistance, -mFarPlaneDistance);
@@ -197,7 +195,7 @@ namespace Library
 		XMStoreFloat4x4(&mProjectionMatrix, projectionMatrix);
 	}
 
-	void Projector::ApplyRotation(CXMMATRIX transform)
+	void ER_Projector::ApplyRotation(CXMMATRIX transform)
 	{
 		XMVECTOR direction = XMLoadFloat3(&mDirection);
 		XMVECTOR up = XMLoadFloat3(&mUp);
@@ -216,13 +214,13 @@ namespace Library
 		XMStoreFloat3(&mRight, right);
 	}
 
-	void Projector::ApplyRotation(const XMFLOAT4X4& transform)
+	void ER_Projector::ApplyRotation(const XMFLOAT4X4& transform)
 	{
 		XMMATRIX transformMatrix = XMLoadFloat4x4(&transform);
 		ApplyRotation(transformMatrix);
 	}
 
-	void Projector::ApplyTransform(CXMMATRIX transform)
+	void ER_Projector::ApplyTransform(CXMMATRIX transform)
 	{
 		XMVECTOR direction = XMVECTOR{ 0.0f, 0.0, -1.0f };
 		XMVECTOR up = XMVECTOR{ 0.0f, 1.0, 0.0f };
