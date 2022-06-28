@@ -114,9 +114,6 @@
     <ClInclude Include="Utility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mouse.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ServiceContainer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -297,6 +294,9 @@
     <ClInclude Include="ER_Keyboard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_Mouse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -322,9 +322,6 @@
     </ClCompile>
     <ClCompile Include="RenderStateHelper.cpp">
       <Filter>Source Files\Helpers</Filter>
-    </ClCompile>
-    <ClCompile Include="Mouse.cpp">
-      <Filter>Source Files\Controls</Filter>
     </ClCompile>
     <ClCompile Include="Light.cpp">
       <Filter>Source Files\Graphics\Lights</Filter>
@@ -489,6 +486,9 @@
       <Filter>Source Files\Core</Filter>
     </ClCompile>
     <ClCompile Include="ER_Keyboard.cpp">
+      <Filter>Source Files\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_Mouse.cpp">
       <Filter>Source Files\Controls</Filter>
     </ClCompile>
   </ItemGroup>

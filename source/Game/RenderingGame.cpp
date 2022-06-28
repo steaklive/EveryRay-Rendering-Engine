@@ -13,7 +13,7 @@
 
 #include "..\Library\GameException.h"
 #include "..\Library\ER_Keyboard.h"
-#include "..\Library\Mouse.h"
+#include "..\Library\ER_Mouse.h"
 #include "..\Library\Utility.h"
 #include "..\Library\ER_CameraFPS.h"
 #include "..\Library\ColorHelper.h"
@@ -82,9 +82,9 @@ namespace Rendering
 			components.push_back(mKeyboard);
 			mServices.AddService(ER_Keyboard::TypeIdClass(), mKeyboard);
 
-			mMouse = new Mouse(*this, mDirectInput);
+			mMouse = new ER_Mouse(*this, mDirectInput);
 			components.push_back(mMouse);
-			mServices.AddService(Mouse::TypeIdClass(), mMouse);
+			mServices.AddService(ER_Mouse::TypeIdClass(), mMouse);
 		}
 
 		mCamera = new ER_CameraFPS(*this, 1.5708f, this->AspectRatio(), nearPlaneDist, farPlaneDist );

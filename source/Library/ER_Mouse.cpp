@@ -1,15 +1,15 @@
 #include "stdafx.h"
 
-#include "Mouse.h"
+#include "ER_Mouse.h"
 #include "Game.h"
 #include "GameTime.h"
 #include "GameException.h"
 
 namespace Library
 {
-	RTTI_DEFINITIONS(Mouse)
+	RTTI_DEFINITIONS(ER_Mouse)
 
-		Mouse::Mouse(Game& game, LPDIRECTINPUT8 directInput)
+	ER_Mouse::ER_Mouse(Game& game, LPDIRECTINPUT8 directInput)
 		: GameComponent(game), mDirectInput(directInput), mDevice(nullptr), mX(0), mY(0), mWheel(0)
 	{
 		assert(mDirectInput != nullptr);
@@ -17,7 +17,7 @@ namespace Library
 		ZeroMemory(&mLastState, sizeof(mLastState));
 	}
 
-	Mouse::~Mouse()
+	ER_Mouse::~ER_Mouse()
 	{
 		if (mDevice != nullptr)
 		{
@@ -27,32 +27,32 @@ namespace Library
 		}
 	}
 
-	LPDIMOUSESTATE Mouse::CurrentState()
+	LPDIMOUSESTATE ER_Mouse::CurrentState()
 	{
 		return &mCurrentState;
 	}
 
-	LPDIMOUSESTATE Mouse::LastState()
+	LPDIMOUSESTATE ER_Mouse::LastState()
 	{
 		return &mLastState;
 	}
 
-	long Mouse::X() const
+	long ER_Mouse::X() const
 	{
 		return mX;
 	}
 
-	long Mouse::Y() const
+	long ER_Mouse::Y() const
 	{
 		return mY;
 	}
 
-	long Mouse::Wheel() const
+	long ER_Mouse::Wheel() const
 	{
 		return mWheel;
 	}
 
-	void Mouse::Initialize()
+	void ER_Mouse::Initialize()
 	{
 		if (FAILED(mDirectInput->CreateDevice(GUID_SysMouse, &mDevice, nullptr)))
 		{
@@ -72,7 +72,7 @@ namespace Library
 		mDevice->Acquire();
 	}
 
-	void Mouse::Update(const GameTime& gameTime)
+	void ER_Mouse::Update(const GameTime& gameTime)
 	{
 		if (mDevice != nullptr)
 		{
@@ -97,37 +97,37 @@ namespace Library
 		}
 	}
 
-	bool Mouse::IsButtonUp(MouseButtons button) const
+	bool ER_Mouse::IsButtonUp(MouseButtons button) const
 	{
 		return ((mCurrentState.rgbButtons[button] & 0x80) == 0);
 	}
 
-	bool Mouse::IsButtonDown(MouseButtons button) const
+	bool ER_Mouse::IsButtonDown(MouseButtons button) const
 	{
 		return ((mCurrentState.rgbButtons[button] & 0x80) != 0);
 	}
 
-	bool Mouse::WasButtonUp(MouseButtons button) const
+	bool ER_Mouse::WasButtonUp(MouseButtons button) const
 	{
 		return ((mLastState.rgbButtons[button] & 0x80) == 0);
 	}
 
-	bool Mouse::WasButtonDown(MouseButtons button) const
+	bool ER_Mouse::WasButtonDown(MouseButtons button) const
 	{
 		return ((mLastState.rgbButtons[button] & 0x80) != 0);
 	}
 
-	bool Mouse::WasButtonPressedThisFrame(MouseButtons button) const
+	bool ER_Mouse::WasButtonPressedThisFrame(MouseButtons button) const
 	{
 		return (IsButtonDown(button) && WasButtonUp(button));
 	}
 
-	bool Mouse::WasButtonReleasedThisFrame(MouseButtons button) const
+	bool ER_Mouse::WasButtonReleasedThisFrame(MouseButtons button) const
 	{
 		return (IsButtonUp(button) && WasButtonDown(button));
 	}
 
-	bool Mouse::IsButtonHeldDown(MouseButtons button) const
+	bool ER_Mouse::IsButtonHeldDown(MouseButtons button) const
 	{
 		return (IsButtonDown(button) && WasButtonDown(button));
 	}

@@ -14,13 +14,13 @@ namespace Library
 		MouseButtonsX1 = 3
 	};
 
-	class Mouse : public GameComponent
+	class ER_Mouse : public GameComponent
 	{
-		RTTI_DECLARATIONS(Mouse, GameComponent)
+		RTTI_DECLARATIONS(ER_Mouse, GameComponent)
 
 	public:
-		Mouse(Game& game, LPDIRECTINPUT8 directInput);
-		~Mouse();
+		ER_Mouse(Game& game, LPDIRECTINPUT8 directInput);
+		~ER_Mouse();
 
 		LPDIMOUSESTATE CurrentState();
 		LPDIMOUSESTATE LastState();
@@ -41,7 +41,7 @@ namespace Library
 		bool IsButtonHeldDown(MouseButtons button) const;
 
 	private:
-		Mouse();
+		ER_Mouse();
 
 		LPDIRECTINPUT8 mDirectInput;
 		LPDIRECTINPUTDEVICE8 mDevice;

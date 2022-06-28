@@ -4,7 +4,7 @@
 #include "Game.h"
 #include "GameTime.h"
 #include "ER_Keyboard.h"
-#include "Mouse.h"
+#include "ER_Mouse.h"
 #include "VectorHelper.h"
 
 #include "imgui.h"
@@ -46,12 +46,12 @@ namespace Library
 		mKeyboard = &keyboard;
 	}
 
-	const Mouse& ER_CameraFPS::GetMouse() const
+	const ER_Mouse& ER_CameraFPS::GetMouse() const
 	{
 		return *mMouse;
 	}
 
-	void ER_CameraFPS::SetMouse(Mouse& mouse)
+	void ER_CameraFPS::SetMouse(ER_Mouse& mouse)
 	{
 		mMouse = &mouse;
 	}
@@ -81,7 +81,7 @@ namespace Library
 	void ER_CameraFPS::Initialize()
 	{
 		mKeyboard = (ER_Keyboard*)mGame->Services().GetService(ER_Keyboard::TypeIdClass());
-		mMouse = (Mouse*)mGame->Services().GetService(Mouse::TypeIdClass());
+		mMouse = (ER_Mouse*)mGame->Services().GetService(ER_Mouse::TypeIdClass());
 
 		ER_Camera::Initialize();
 	}

@@ -8,7 +8,7 @@
 using namespace Library;
 namespace Library
 {
-	class Mouse;
+	class ER_Mouse;
 	class ER_Keyboard;
 	class ER_CameraFPS;
 	class RenderStateHelper;
@@ -42,7 +42,7 @@ namespace Rendering
 
 		LPDIRECTINPUT8 mDirectInput;
 		ER_Keyboard* mKeyboard;
-		Mouse* mMouse;
+		ER_Mouse* mMouse;
 		ER_CameraFPS* mCamera;
 		ER_Editor* mEditor;
 		ER_QuadRenderer* mQuadRenderer;

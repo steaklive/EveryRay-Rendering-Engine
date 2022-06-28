@@ -227,7 +227,7 @@
     <ClInclude Include="ER_Mesh.h" />
     <ClInclude Include="ER_Model.h" />
     <ClInclude Include="ER_ModelMaterial.h" />
-    <ClInclude Include="Mouse.h" />
+    <ClInclude Include="ER_Mouse.h" />
     <ClInclude Include="OceanSimulator.h" />
     <ClInclude Include="PointLight.h" />
     <ClInclude Include="ER_PostProcessingStack.h" />
@@ -302,7 +302,7 @@
     <ClCompile Include="ER_Mesh.cpp" />
     <ClCompile Include="ER_Model.cpp" />
     <ClCompile Include="ER_ModelMaterial.cpp" />
-    <ClCompile Include="Mouse.cpp" />
+    <ClCompile Include="ER_Mouse.cpp" />
     <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="ER_Projector.cpp" />
     <ClCompile Include="ProxyModel.cpp" />
