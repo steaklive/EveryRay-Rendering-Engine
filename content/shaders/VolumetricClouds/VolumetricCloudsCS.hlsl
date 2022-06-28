@@ -19,7 +19,7 @@ cbuffer FrameConstants : register(b0)
     float4 LightDir;
     float4 LightColor;
     float4 CameraPos;
-    float2 Resolution;
+    float2 UpsampleRatio;
 };
 
 cbuffer CloudsConstants : register(b1)
@@ -237,7 +237,7 @@ float RaymarchToLight(float3 origin, float stepSize, float3 lightDir, float orig
     return finalTransmittance;
 }
 
-float4 RaymarchToCloud(float2 texCoord, float3 startPos, float3 endPos, float3 skyColor, out float4 cloudPos)
+float4 RaymarchToCloud(float2 texCoord, float3 startPos, float3 endPos, float3 skyColor, out float4 cloudPos, float2 outputDim)
 {
     const float minTransmittance = 0.1f;
     const int steps = 64;
@@ -250,7 +250,7 @@ float4 RaymarchToCloud(float2 texCoord, float3 startPos, float3 endPos, float3 s
     float3 dir = path / len;
     dir *= deltaStep;
     
-    float2 fragCoord = texCoord * Resolution;
+    float2 fragCoord = texCoord * outputDim / UpsampleRatio;
     int a = int(fragCoord.x) % 4;
     int b = int(fragCoord.y) % 4;
     startPos += dir * BAYER_FILTER[a * 4 + b];
@@ -295,15 +295,18 @@ float4 RaymarchToCloud(float2 texCoord, float3 startPos, float3 endPos, float3 s
     return finalColor;
 }
 
-[numthreads(32, 32, 1)]
+[numthreads(8, 8, 1)]
 void main(int3 dispatchThreadID : SV_DispatchThreadID) // Thread ID
 {
-    float2 tex = dispatchThreadID.xy/Resolution;
+    uint width, height;
+    inputTex.GetDimensions(width, height);
+    
+    float2 tex = dispatchThreadID.xy / float2(width / UpsampleRatio.x, height / UpsampleRatio.y);
     float4 finalColor = float4(0.0, 0.0, 0.0, 1.0f);
     finalColor = inputTex.SampleLevel(SimpleSampler, tex, 0);
     float4 cloudsColor = float4(0.0, 0.0, 0.0, 0.0f);
     
-    if (sceneDepthTex.Load(float3(dispatchThreadID.xy, 0)).r < 0.999f)
+    if (sceneDepthTex.SampleLevel(SimpleSampler, tex, 0).r < 0.999f)
     {
         output[dispatchThreadID.xy] = finalColor;
         return;
@@ -338,7 +341,7 @@ void main(int3 dispatchThreadID : SV_DispatchThreadID) // Thread ID
     }
     
     float4 cloudDistance;
-    cloudsColor = RaymarchToCloud(tex, startPos, endPos, finalColor.rgb, cloudDistance);
+    cloudsColor = RaymarchToCloud(tex, startPos, endPos, finalColor.rgb, cloudDistance, float2(width, height));
     cloudsColor.rgb = cloudsColor.rgb * 1.8f - 0.1f;
    
     finalColor.rgb = finalColor.rgb * (1.0 - cloudsColor.a) + cloudsColor.rgb;

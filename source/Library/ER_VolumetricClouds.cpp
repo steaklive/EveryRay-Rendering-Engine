@@ -15,6 +15,7 @@
 #include "ShaderCompiler.h"
 #include "ER_Skybox.h"
 #include "ER_QuadRenderer.h"
+#include "SamplerStates.h"
 
 namespace Library {
 	ER_VolumetricClouds::ER_VolumetricClouds(Game& game, Camera& camera, DirectionalLight& light, ER_Skybox& skybox)
@@ -37,9 +38,11 @@ namespace Library {
 		DeleteObject(mMainRT);
 		DeleteObject(mSkyRT);
 		DeleteObject(mSkyAndSunRT);
+		DeleteObject(mUpsampleAndBlurRT);
 		DeleteObject(mBlurRT);
 		mFrameConstantBuffer.Release();
 		mCloudsConstantBuffer.Release();
+		mUpsampleBlurConstantBuffer.Release();
 	}
 
 	void ER_VolumetricClouds::Initialize(DepthTarget* aIlluminationDepth) {
@@ -65,6 +68,13 @@ namespace Library {
 			throw GameException("Failed to create shader from VolumetricCloudsCS.hlsl!");
 		blob->Release();
 
+		blob = nullptr;
+		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\UpsampleBlur.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
+			throw GameException("Failed to load CSMain from shader: UpsampleBlur.hlsl!");
+		if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mUpsampleBlurCS)))
+			throw GameException("Failed to create shader from UpsampleBlur.hlsl!");
+		blob->Release();
+
 		//textures
 		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\cloud.dds").c_str(), nullptr, &mCloudTextureSRV)))
 			throw GameException("Failed to create Cloud Map.");
@@ -78,6 +88,7 @@ namespace Library {
 		//cbuffers
 		mFrameConstantBuffer.Initialize(mGame->Direct3DDevice());
 		mCloudsConstantBuffer.Initialize(mGame->Direct3DDevice());
+		mUpsampleBlurConstantBuffer.Initialize(mGame->Direct3DDevice());
 
 		//sampler states
 		D3D11_SAMPLER_DESC sam_desc;
@@ -99,7 +110,8 @@ namespace Library {
 		assert(aIlluminationDepth);
 		mIlluminationResultDepthTarget = aIlluminationDepth;
 
-		mMainRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
+		mMainRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()) * mDownscaleFactor, static_cast<UINT>(mGame->ScreenHeight()) * mDownscaleFactor, 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
+		mUpsampleAndBlurRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
 		mBlurRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 		mSkyRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 		mSkyAndSunRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
@@ -119,7 +131,7 @@ namespace Library {
 		mFrameConstantBuffer.Data.LightDir = -mDirectionalLight.DirectionVector();
 		mFrameConstantBuffer.Data.LightCol = XMVECTOR{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, 1.0f };
 		mFrameConstantBuffer.Data.CameraPos = mCamera.PositionVector();
-		mFrameConstantBuffer.Data.Resolution = XMFLOAT2(mGame->ScreenWidth(), mGame->ScreenHeight());
+		mFrameConstantBuffer.Data.UpsampleRatio = XMFLOAT2(1.0f / mDownscaleFactor, 1.0f / mDownscaleFactor);
 		mFrameConstantBuffer.ApplyChanges(context);
 
 		mCloudsConstantBuffer.Data.AmbientColor = XMVECTOR{ mAmbientColor[0], mAmbientColor[1], mAmbientColor[2], 1.0f };
@@ -135,6 +147,8 @@ namespace Library {
 		mCloudsConstantBuffer.Data.DensityFactor = mDensityFactor;
 		mCloudsConstantBuffer.ApplyChanges(context);
 
+		mUpsampleBlurConstantBuffer.Data.Upsample = true;
+		mUpsampleBlurConstantBuffer.ApplyChanges(context);
 	}
 
 	void ER_VolumetricClouds::UpdateImGui()
@@ -199,7 +213,7 @@ namespace Library {
 			context->CSSetSamplers(0, 2, SS);
 			context->CSSetShader(mMainCS, NULL, NULL);
 			context->CSSetUnorderedAccessViews(0, 1, UAV, NULL);
-			context->Dispatch(INT_CEIL(mGame->ScreenWidth(), 32), INT_CEIL(mGame->ScreenHeight(), 32), 1);
+			context->Dispatch(DivideByMultiple(static_cast<UINT>(mMainRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mMainRT->GetHeight()), 8u), 1u);
 
 			ID3D11ShaderResourceView* nullSRV[] = { NULL };
 			context->CSSetShaderResources(0, 1, nullSRV);
@@ -211,20 +225,48 @@ namespace Library {
 			context->CSSetSamplers(0, 1, nullSSs);
 		}
 
-		//blur pass
+		//upsample and blur
 		{
-			context->OMSetRenderTargets(1, mBlurRT->GetRTVs(), nullptr);
-			ID3D11ShaderResourceView* SR_Blur[2] = {
-				mMainRT->GetSRV(),
-				mIlluminationResultDepthTarget->getSRV(),
-			};
-			context->PSSetShaderResources(0, 2, SR_Blur);
-			context->PSSetShader(mBlurPS, NULL, NULL);
-			quadRenderer->Draw(context);
+			mUpsampleBlurConstantBuffer.Data.Upsample = true;
+			mUpsampleBlurConstantBuffer.ApplyChanges(context);
 
-			ID3D11RenderTargetView* nullRTVs[1] = { NULL };
-			context->OMSetRenderTargets(1, nullRTVs, nullptr);
+			ID3D11UnorderedAccessView* UAV[1] = { mUpsampleAndBlurRT->GetUAV() };
+			ID3D11Buffer* CBs[1] = { mUpsampleBlurConstantBuffer.Buffer() };
+			ID3D11ShaderResourceView* SRVs[1] = { mMainRT->GetSRV() };
+			ID3D11SamplerState* SSs[] = { SamplerStates::TrilinearWrap };
+
+			context->CSSetSamplers(0, 1, SSs);
+			context->CSSetShaderResources(0, 1, SRVs);
+			context->CSSetConstantBuffers(0, 1, CBs);
+			context->CSSetShader(mUpsampleBlurCS, NULL, NULL);
+			context->CSSetUnorderedAccessViews(0, 1, UAV, NULL);
+
+			context->Dispatch(DivideByMultiple(static_cast<UINT>(mUpsampleAndBlurRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mUpsampleAndBlurRT->GetHeight()), 8u), 1u);
+
+			ID3D11ShaderResourceView* nullSRV[] = { NULL };
+			context->CSSetShaderResources(0, 1, nullSRV);
+			ID3D11UnorderedAccessView* nullUAV[] = { NULL };
+			context->CSSetUnorderedAccessViews(0, 1, nullUAV, 0);
+			ID3D11Buffer* nullCBs[] = { NULL };
+			context->CSSetConstantBuffers(0, 1, nullCBs);
+			ID3D11SamplerState* nullSSs[] = { NULL };
+			context->CSSetSamplers(0, 1, nullSSs);
 		}
+
+		//blur pass (not for upsample, but cloud specific blur to smooth the clouds)
+		//{
+		//	context->OMSetRenderTargets(1, mBlurRT->GetRTVs(), nullptr);
+		//	ID3D11ShaderResourceView* SR_Blur[2] = {
+		//		mUpsampleAndBlurRT->GetSRV(),
+		//		mIlluminationResultDepthTarget->getSRV(),
+		//	};
+		//	context->PSSetShaderResources(0, 2, SR_Blur);
+		//	context->PSSetShader(mBlurPS, NULL, NULL);
+		//	quadRenderer->Draw(context);
+		//
+		//	ID3D11RenderTargetView* nullRTVs[1] = { NULL };
+		//	context->OMSetRenderTargets(1, nullRTVs, nullptr);
+		//}
 
 		//composite pass (happens in PostProcessing)
 	}
@@ -235,7 +277,7 @@ namespace Library {
 		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
 
 		context->OMSetRenderTargets(1, aRenderTarget->GetRTVs(), nullptr);
-		ID3D11ShaderResourceView* SR[2] = { mIlluminationResultDepthTarget->getSRV(), mBlurRT->GetSRV() };
+		ID3D11ShaderResourceView* SR[2] = { mIlluminationResultDepthTarget->getSRV(), /*mBlurRT*/mUpsampleAndBlurRT->GetSRV() };
 		context->PSSetShaderResources(0, 2, SR);
 		context->PSSetShader(mCompositePS, NULL, NULL);
 		

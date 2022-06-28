@@ -20,7 +20,7 @@ namespace Library
 			XMVECTOR	LightDir;
 			XMVECTOR	LightCol;
 			XMVECTOR	CameraPos;
-			XMFLOAT2	Resolution;
+			XMFLOAT2	UpsampleRatio;
 		};
 
 		struct CloudsCB
@@ -37,6 +37,11 @@ namespace Library
 			float CloudsTopHeight;
 			float DensityFactor;
 		};
+
+		struct UpsampleBlurCB
+		{
+			bool Upsample;
+		};
 	}
 
 	class ER_VolumetricClouds : public GameComponent
@@ -52,6 +57,7 @@ namespace Library
 		void Config() { mShowDebug = !mShowDebug; }
 		void Composite(ER_GPUTexture* aRenderTarget);
 		bool IsEnabled() { return mEnabled; }
+		void SetDownscaleFactor(float val) { mDownscaleFactor = val; }
 	private:
 		void UpdateImGui();
 
@@ -61,17 +67,20 @@ namespace Library
 		
 		ConstantBuffer<VolumetricCloudsCBufferData::FrameCB> mFrameConstantBuffer;
 		ConstantBuffer<VolumetricCloudsCBufferData::CloudsCB> mCloudsConstantBuffer;
+		ConstantBuffer<VolumetricCloudsCBufferData::UpsampleBlurCB> mUpsampleBlurConstantBuffer;
 
 		DepthTarget* mIlluminationResultDepthTarget = nullptr; // not allocated here, just a pointer
 
 		ER_GPUTexture* mSkyRT = nullptr;
 		ER_GPUTexture* mSkyAndSunRT = nullptr;
 		ER_GPUTexture* mMainRT = nullptr;
+		ER_GPUTexture* mUpsampleAndBlurRT = nullptr;
 		ER_GPUTexture* mBlurRT = nullptr;
 
 		ID3D11ComputeShader* mMainCS = nullptr;
 		ID3D11PixelShader* mCompositePS = nullptr;
 		ID3D11PixelShader* mBlurPS = nullptr;
+		ID3D11ComputeShader* mUpsampleBlurCS = nullptr;
 
 		ID3D11ShaderResourceView* mCloudTextureSRV = nullptr;
 		ID3D11ShaderResourceView* mWeatherTextureSRV = nullptr;
@@ -89,6 +98,7 @@ namespace Library
 		float mCloudsBottomHeight = 2340.0f;
 		float mCloudsTopHeight = 16400.0f;
 		float mDensityFactor = 0.012f;
+		float mDownscaleFactor = 0.5f;
 
 		bool mEnabled = true;
 		bool mShowDebug = false;
