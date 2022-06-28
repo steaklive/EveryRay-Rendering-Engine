@@ -34,11 +34,11 @@ https://youtu.be/_htQNxesr9U
 - - supports materials
 - - supports GPU instancing
 - - supports LOD groups
+- - supports AABB (with visualization)
 - - supports on-terrain procedural placement & instances distribution
 - - customizable via "Object editor" (with instancing support)
 - Concept of a generic scene, which contains "ER_RenderingObject" elements + scene data (lights, terrain, GI and other info):
 - - supports loading from & saving to JSON scene files
-- AABB, OBB, collision detection (with octree)
 - CPU frustum culling
 - ImGUI, ImGuizmo
  
