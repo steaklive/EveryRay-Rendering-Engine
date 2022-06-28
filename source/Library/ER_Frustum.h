@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Common.h"
-#include "Ray.h"
+#include "ER_Ray.h"
 
 namespace Library
 {
@@ -45,8 +45,8 @@ namespace Library
 	private:
 		ER_Frustum();
 
-		static Ray ComputeIntersectionLine(FXMVECTOR p1, FXMVECTOR p2);
-		static XMVECTOR ComputeIntersection(FXMVECTOR& plane, Ray& ray);
+		static ER_Ray ComputeIntersectionLine(FXMVECTOR p1, FXMVECTOR p2);
+		static XMVECTOR ComputeIntersection(FXMVECTOR& plane, ER_Ray& ray);
 
 		XMFLOAT4X4 mMatrix;
 		XMFLOAT3 mCorners[8];

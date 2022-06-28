@@ -1,69 +1,69 @@
 #include "stdafx.h"
 
-#include "Ray.h"
+#include "ER_Ray.h"
 
 namespace Library
 {
-	Ray::Ray(FXMVECTOR position, FXMVECTOR direction)
+	ER_Ray::ER_Ray(FXMVECTOR position, FXMVECTOR direction)
 		: mPosition(), mDirection()
 	{
 		XMStoreFloat3(&mPosition, position);
 		XMStoreFloat3(&mDirection, direction);
 	}
 
-	Ray::Ray(const XMFLOAT3& position, const XMFLOAT3& direction)
+	ER_Ray::ER_Ray(const XMFLOAT3& position, const XMFLOAT3& direction)
 		: mPosition(position), mDirection(direction)
 	{
 	}
 
-	const XMFLOAT3& Ray::Position() const
+	const XMFLOAT3& ER_Ray::Position() const
 	{
 		return mPosition;
 	}
 
-	const XMFLOAT3& Ray::Direction() const
+	const XMFLOAT3& ER_Ray::Direction() const
 	{
 		return mDirection;
 	}
 
-	XMVECTOR Ray::PositionVector() const
+	XMVECTOR ER_Ray::PositionVector() const
 	{
 		return XMLoadFloat3(&mPosition);
 	}
 
-	XMVECTOR Ray::DirectionVector() const
+	XMVECTOR ER_Ray::DirectionVector() const
 	{
 		return XMLoadFloat3(&mDirection);
 	}
 
-	void Ray::SetPosition(FLOAT x, FLOAT y, FLOAT z)
+	void ER_Ray::SetPosition(FLOAT x, FLOAT y, FLOAT z)
 	{
 		XMVECTOR position = XMVectorSet(x, y, z, 1.0f);
 		SetPosition(position);
 	}
 
-	void Ray::SetPosition(FXMVECTOR position)
+	void ER_Ray::SetPosition(FXMVECTOR position)
 	{
 		XMStoreFloat3(&mPosition, position);
 	}
 
-	void Ray::SetPosition(const XMFLOAT3& position)
+	void ER_Ray::SetPosition(const XMFLOAT3& position)
 	{
 		mPosition = position;
 	}
 
-	void Ray::SetDirection(FLOAT x, FLOAT y, FLOAT z)
+	void ER_Ray::SetDirection(FLOAT x, FLOAT y, FLOAT z)
 	{
 		XMVECTOR direction = XMVectorSet(x, y, z, 0.0f);
 		SetDirection(direction);
 	}
 
-	void Ray::SetDirection(FXMVECTOR direction)
+	void ER_Ray::SetDirection(FXMVECTOR direction)
 	{
 		XMStoreFloat3(&mDirection, direction);
 	}
 
-	void Ray::SetDirection(const XMFLOAT3& direction)
+	void ER_Ray::SetDirection(const XMFLOAT3& direction)
 	{
 		mDirection = direction;
 	}

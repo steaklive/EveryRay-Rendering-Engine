@@ -212,7 +212,7 @@
     <ClInclude Include="FastFourierTransform.h" />
     <ClInclude Include="FirstPersonCamera.h" />
     <ClInclude Include="ER_FoliageManager.h" />
-    <ClInclude Include="Frustum.h" />
+    <ClInclude Include="ER_Frustum.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameClock.h" />
     <ClInclude Include="GameComponent.h" />
@@ -235,7 +235,7 @@
     <ClInclude Include="ProxyModel.h" />
     <ClInclude Include="ER_QuadRenderer.h" />
     <ClInclude Include="RasterizerStates.h" />
-    <ClInclude Include="Ray.h" />
+    <ClInclude Include="ER_Ray.h" />
     <ClInclude Include="ER_RenderableAABB.h" />
     <ClInclude Include="ER_RenderingObject.h" />
     <ClInclude Include="RenderStateHelper.h" />
@@ -288,7 +288,7 @@
     <ClCompile Include="ER_VoxelizationMaterial.cpp" />
     <ClCompile Include="FirstPersonCamera.cpp" />
     <ClCompile Include="ER_FoliageManager.cpp" />
-    <ClCompile Include="Frustum.cpp" />
+    <ClCompile Include="ER_Frustum.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameClock.cpp" />
     <ClCompile Include="GameComponent.cpp" />
@@ -308,7 +308,7 @@
     <ClCompile Include="ProxyModel.cpp" />
     <ClCompile Include="ER_QuadRenderer.cpp" />
     <ClCompile Include="RasterizerStates.cpp" />
-    <ClCompile Include="Ray.cpp" />
+    <ClCompile Include="ER_Ray.cpp" />
     <ClCompile Include="ER_RenderableAABB.cpp" />
     <ClCompile Include="RenderStateHelper.cpp" />
     <ClCompile Include="RenderTarget.cpp" />

@@ -3,11 +3,11 @@
 
 namespace Library
 {
-	class Ray
+	class ER_Ray
 	{
 	public:
-		Ray(FXMVECTOR position, FXMVECTOR direction);
-		Ray(const XMFLOAT3& position, const XMFLOAT3& direction);
+		ER_Ray(FXMVECTOR position, FXMVECTOR direction);
+		ER_Ray(const XMFLOAT3& position, const XMFLOAT3& direction);
 
 		const XMFLOAT3& Position() const;
 		const XMFLOAT3& Direction() const;
@@ -24,7 +24,7 @@ namespace Library
 		virtual void SetDirection(const XMFLOAT3& direction);
 
 	private:
-		Ray();
+		ER_Ray();
 
 		XMFLOAT3 mPosition;
 		XMFLOAT3 mDirection;

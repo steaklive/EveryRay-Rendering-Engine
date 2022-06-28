@@ -135,7 +135,7 @@ namespace Library
 			XMStoreFloat4(&mPlanes[i], XMVectorDivide(vector, length));
 		}
 
-		Ray ray = ComputeIntersectionLine(XMLoadFloat4(&mPlanes[0]), XMLoadFloat4(&mPlanes[2]));
+		ER_Ray ray = ComputeIntersectionLine(XMLoadFloat4(&mPlanes[0]), XMLoadFloat4(&mPlanes[2]));
 		XMStoreFloat3(&mCorners[0], ComputeIntersection(XMLoadFloat4(&mPlanes[4]), ray));
 		XMStoreFloat3(&mCorners[3], ComputeIntersection(XMLoadFloat4(&mPlanes[5]), ray));
 
@@ -152,16 +152,16 @@ namespace Library
 		XMStoreFloat3(&mCorners[6], ComputeIntersection(XMLoadFloat4(&mPlanes[5]), ray));
 	}
 
-	Ray ER_Frustum::ComputeIntersectionLine(FXMVECTOR p1, FXMVECTOR p2)
+	ER_Ray ER_Frustum::ComputeIntersectionLine(FXMVECTOR p1, FXMVECTOR p2)
 	{
 		XMVECTOR direction = XMVector3Cross(p1, p2);
 		XMVECTOR lengthSquared = XMVector3LengthSq(direction);
 		XMVECTOR position = XMVector3Cross((-XMVectorGetW(p1) * p2) + (XMVectorGetW(p2) * p1), direction) / lengthSquared;
 
-		return Ray(position, direction);
+		return ER_Ray(position, direction);
 	}
 
-	XMVECTOR ER_Frustum::ComputeIntersection(FXMVECTOR& plane, Ray& ray)
+	XMVECTOR ER_Frustum::ComputeIntersection(FXMVECTOR& plane, ER_Ray& ray)
 	{
 		float value = (-XMVectorGetW(plane) - XMVectorGetX(XMVector3Dot(plane, ray.PositionVector()))) / XMVectorGetX(XMVector3Dot(plane, ray.DirectionVector()));
 

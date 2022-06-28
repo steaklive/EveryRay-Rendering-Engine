@@ -168,12 +168,6 @@
     <ClInclude Include="Projector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Frustum.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Ray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DepthMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -297,6 +291,12 @@
     <ClInclude Include="ER_MaterialHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_Frustum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ER_Ray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -365,9 +365,6 @@
     <ClCompile Include="SpotLight.cpp">
       <Filter>Source Files\Graphics\Lights</Filter>
     </ClCompile>
-    <ClCompile Include="Ray.cpp">
-      <Filter>Source Files\Helpers</Filter>
-    </ClCompile>
     <ClCompile Include="RenderTarget.cpp">
       <Filter>Source Files\Objects\RenderTarget</Filter>
     </ClCompile>
@@ -379,9 +376,6 @@
     </ClCompile>
     <ClCompile Include="DepthMap.cpp">
       <Filter>Source Files\Objects\RenderTarget</Filter>
-    </ClCompile>
-    <ClCompile Include="Frustum.cpp">
-      <Filter>Source Files\Objects\Frustums</Filter>
     </ClCompile>
     <ClCompile Include="Projector.cpp">
       <Filter>Source Files\Objects\Frustums</Filter>
@@ -490,6 +484,12 @@
     </ClCompile>
     <ClCompile Include="ER_MaterialHelper.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_Frustum.cpp">
+      <Filter>Source Files\Objects\Frustums</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_Ray.cpp">
+      <Filter>Source Files\Helpers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
