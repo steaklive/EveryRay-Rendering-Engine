@@ -2,7 +2,7 @@
 
 #include "ER_ModelMaterial.h"
 #include "ER_Model.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 #include "Utility.h"
 #include "assimp\scene.h"
 

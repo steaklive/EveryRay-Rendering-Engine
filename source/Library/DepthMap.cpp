@@ -2,7 +2,7 @@
 
 #include "DepthMap.h"
 #include "Game.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 
 namespace Library
 {
@@ -26,7 +26,7 @@ namespace Library
 		ID3D11Texture2D* texture = nullptr;
 		if (FAILED(hr = game.Direct3DDevice()->CreateTexture2D(&textureDesc, nullptr, &texture)))
 		{
-			throw GameException("IDXGIDevice::CreateTexture2D() failed.", hr);
+			throw ER_CoreException("IDXGIDevice::CreateTexture2D() failed.", hr);
 		}
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC resourceViewDesc;
@@ -38,7 +38,7 @@ namespace Library
 		if (FAILED(hr = game.Direct3DDevice()->CreateShaderResourceView(texture, &resourceViewDesc, &mOutputTexture)))
 		{
 			ReleaseObject(texture);
-			throw GameException("IDXGIDevice::CreateShaderResourceView() failed.", hr);
+			throw ER_CoreException("IDXGIDevice::CreateShaderResourceView() failed.", hr);
 		}
 
 		D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
@@ -50,7 +50,7 @@ namespace Library
 		if (FAILED(hr = game.Direct3DDevice()->CreateDepthStencilView(texture, &depthStencilViewDesc, &mDepthStencilView)))
 		{
 			ReleaseObject(texture);
-			throw GameException("IDXGIDevice::CreateDepthStencilView() failed.", hr);
+			throw ER_CoreException("IDXGIDevice::CreateDepthStencilView() failed.", hr);
 		}
 
 		ReleaseObject(texture);

@@ -1,6 +1,6 @@
 #include "ER_PostProcessingStack.h"
 #include "ShaderCompiler.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 #include "Utility.h"
 #include "ColorHelper.h"
 #include "MatrixHelper.h"
@@ -51,18 +51,18 @@ namespace Library {
 	{
 		ID3DBlob* pShaderBlob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\EmptyColorResolve.hlsl").c_str(), "PSMain", "ps_5_0", &pShaderBlob)))
-			throw GameException("Failed to load PSMain pass from shader: EmptyColorResolve.hlsl!");
+			throw ER_CoreException("Failed to load PSMain pass from shader: EmptyColorResolve.hlsl!");
 		if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mFinalResolvePS)))
-			throw GameException("Failed to create PSMain shader from EmptyColorResolve.hlsl!");
+			throw ER_CoreException("Failed to create PSMain shader from EmptyColorResolve.hlsl!");
 		pShaderBlob->Release();
 
 
 		//Linear fog
 		{
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\LinearFog.hlsl").c_str(), "PSMain", "ps_5_0", &pShaderBlob)))
-				throw GameException("Failed to load PSMain pass from shader: LinearFog.hlsl!");
+				throw ER_CoreException("Failed to load PSMain pass from shader: LinearFog.hlsl!");
 			if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mLinearFogPS)))
-				throw GameException("Failed to create PSMain shader from LinearFog.hlsl!");
+				throw ER_CoreException("Failed to create PSMain shader from LinearFog.hlsl!");
 			pShaderBlob->Release();
 
 			mLinearFogConstantBuffer.Initialize(game.Direct3DDevice());
@@ -76,9 +76,9 @@ namespace Library {
 		//SSR
 		{
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\SSR.hlsl").c_str(), "PSMain", "ps_5_0", &pShaderBlob)))
-				throw GameException("Failed to load PSMain pass from shader: SSR.hlsl!");
+				throw ER_CoreException("Failed to load PSMain pass from shader: SSR.hlsl!");
 			if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mSSRPS)))
-				throw GameException("Failed to create PSMain shader from SSR.hlsl!");
+				throw ER_CoreException("Failed to create PSMain shader from SSR.hlsl!");
 			pShaderBlob->Release();
 
 			mSSRConstantBuffer.Initialize(game.Direct3DDevice());
@@ -89,9 +89,9 @@ namespace Library {
 		//SSS
 		{
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\SSS.hlsl").c_str(), "BlurPS", "ps_5_0", &pShaderBlob)))
-				throw GameException("Failed to load BlurPS pass from shader: SSS.hlsl!");
+				throw ER_CoreException("Failed to load BlurPS pass from shader: SSS.hlsl!");
 			if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mSSSPS)))
-				throw GameException("Failed to create BlurPS shader from SSS.hlsl!");
+				throw ER_CoreException("Failed to create BlurPS shader from SSS.hlsl!");
 			pShaderBlob->Release();
 
 			mSSSConstantBuffer.Initialize(game.Direct3DDevice());
@@ -102,9 +102,9 @@ namespace Library {
 		//Tonemap
 		{
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Tonemap.hlsl").c_str(), "PSMain", "ps_5_0", &pShaderBlob)))
-				throw GameException("Failed to load PSMain pass from shader: Tonemap.hlsl!");
+				throw ER_CoreException("Failed to load PSMain pass from shader: Tonemap.hlsl!");
 			if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mTonemappingPS)))
-				throw GameException("Failed to create PSMain shader from Tonemap.hlsl!");
+				throw ER_CoreException("Failed to create PSMain shader from Tonemap.hlsl!");
 			pShaderBlob->Release();
 
 			//mSSRConstantBuffer.Initialize(game.Direct3DDevice());
@@ -116,20 +116,20 @@ namespace Library {
 		{
 			std::wstring LUTtexture1 = Utility::GetFilePath(L"content\\shaders\\LUT_1.png");
 			if (FAILED(DirectX::CreateWICTextureFromFile(game.Direct3DDevice(), game.Direct3DDeviceContext(), LUTtexture1.c_str(), nullptr, &mLUTs[0])))
-				throw GameException("Failed to load LUT1 texture.");
+				throw ER_CoreException("Failed to load LUT1 texture.");
 
 			std::wstring LUTtexture2 = Utility::GetFilePath(L"content\\shaders\\LUT_2.png");
 			if (FAILED(DirectX::CreateWICTextureFromFile(game.Direct3DDevice(), game.Direct3DDeviceContext(), LUTtexture2.c_str(), nullptr, &mLUTs[1])))
-				throw GameException("Failed to load LUT2 texture.");
+				throw ER_CoreException("Failed to load LUT2 texture.");
 
 			std::wstring LUTtexture3 = Utility::GetFilePath(L"content\\shaders\\LUT_3.png");
 			if (FAILED(DirectX::CreateWICTextureFromFile(game.Direct3DDevice(), game.Direct3DDeviceContext(), LUTtexture3.c_str(), nullptr, &mLUTs[2])))
-				throw GameException("Failed to load LUT3 texture.");
+				throw ER_CoreException("Failed to load LUT3 texture.");
 
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\ColorGrading.hlsl").c_str(), "PSMain", "ps_5_0", &pShaderBlob)))
-				throw GameException("Failed to load PSMain pass from shader: ColorGrading.hlsl!");
+				throw ER_CoreException("Failed to load PSMain pass from shader: ColorGrading.hlsl!");
 			if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mColorGradingPS)))
-				throw GameException("Failed to create PSMain shader from ColorGrading.hlsl!");
+				throw ER_CoreException("Failed to create PSMain shader from ColorGrading.hlsl!");
 			pShaderBlob->Release();
 
 			mColorGradingRT = new ER_GPUTexture(game.Direct3DDevice(), static_cast<UINT>(game.ScreenWidth()), static_cast<UINT>(game.ScreenHeight()), 1u,
@@ -139,9 +139,9 @@ namespace Library {
 		//Vignette
 		{
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Vignette.hlsl").c_str(), "PSMain", "ps_5_0", &pShaderBlob)))
-				throw GameException("Failed to load PSMain pass from shader: Vignette.hlsl!");
+				throw ER_CoreException("Failed to load PSMain pass from shader: Vignette.hlsl!");
 			if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mVignettePS)))
-				throw GameException("Failed to create PSMain shader from Vignette.hlsl!");
+				throw ER_CoreException("Failed to create PSMain shader from Vignette.hlsl!");
 			pShaderBlob->Release();
 
 			mVignetteConstantBuffer.Initialize(game.Direct3DDevice());
@@ -152,9 +152,9 @@ namespace Library {
 		//FXAA
 		{
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\FXAA.hlsl").c_str(), "PSMain", "ps_5_0", &pShaderBlob)))
-				throw GameException("Failed to load PSMain pass from shader: FXAA.hlsl!");
+				throw ER_CoreException("Failed to load PSMain pass from shader: FXAA.hlsl!");
 			if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mFXAAPS)))
-				throw GameException("Failed to create PSMain shader from FXAA.hlsl!");
+				throw ER_CoreException("Failed to create PSMain shader from FXAA.hlsl!");
 			pShaderBlob->Release();
 
 			mFXAAConstantBuffer.Initialize(game.Direct3DDevice());

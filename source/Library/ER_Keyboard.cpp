@@ -3,7 +3,7 @@
 #include "ER_Keyboard.h"
 #include "Game.h"
 #include "GameTime.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 
 namespace Library
 {
@@ -41,17 +41,17 @@ namespace Library
 	{
 		if (FAILED(mDirectInput->CreateDevice(GUID_SysKeyboard, &mDevice, nullptr)))
 		{
-			throw GameException("IDIRECTINPUT8::CreateDevice() failed");
+			throw ER_CoreException("IDIRECTINPUT8::CreateDevice() failed");
 		}
 
 		if (FAILED(mDevice->SetDataFormat(&c_dfDIKeyboard)))
 		{
-			throw GameException("IDIRECTINPUTDEVICE8::SetDataFormat() failed");
+			throw ER_CoreException("IDIRECTINPUTDEVICE8::SetDataFormat() failed");
 		}
 
 		if (FAILED(mDevice->SetCooperativeLevel(mGame->WindowHandle(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE)))
 		{
-			throw GameException("IDIRECTINPUTDEVICE8::SetCooperativeLevel() failed");
+			throw ER_CoreException("IDIRECTINPUTDEVICE8::SetCooperativeLevel() failed");
 		}
 
 		mDevice->Acquire();

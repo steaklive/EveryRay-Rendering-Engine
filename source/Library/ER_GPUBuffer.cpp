@@ -1,5 +1,5 @@
 #include "ER_GPUBuffer.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 
 namespace Library
 {
@@ -16,7 +16,7 @@ namespace Library
 		buf_desc.MiscFlags = miscFlags;
 		buf_desc.StructureByteStride = byteStride;
 		if (FAILED(device->CreateBuffer(&buf_desc, aData != NULL ? &init_data : NULL, &mBuffer)))
-			throw GameException("Failed to create GPU buffer.");
+			throw ER_CoreException("Failed to create GPU buffer.");
 
 		if (buf_desc.BindFlags & D3D11_BIND_SHADER_RESOURCE)
 		{
@@ -26,7 +26,7 @@ namespace Library
 			srv_desc.Buffer.FirstElement = 0;
 			srv_desc.Buffer.NumElements = objectsCount;
 			if (FAILED(device->CreateShaderResourceView(mBuffer, &srv_desc, &mBufferSRV)))
-				throw GameException("Failed to create SRV of GPU buffer.");
+				throw ER_CoreException("Failed to create SRV of GPU buffer.");
 
 		}
 
@@ -40,7 +40,7 @@ namespace Library
 			uav_desc.Buffer.NumElements = objectsCount;
 			uav_desc.Buffer.Flags = 0;
 			if (FAILED(device->CreateUnorderedAccessView(mBuffer, &uav_desc, &mBufferUAV)))
-				throw GameException("Failed to create UAV of GPU buffer.");
+				throw ER_CoreException("Failed to create UAV of GPU buffer.");
 		}
 	}
 
@@ -53,7 +53,7 @@ namespace Library
 	void ER_GPUBuffer::Map(ID3D11DeviceContext* context, D3D11_MAP mapFlags, D3D11_MAPPED_SUBRESOURCE* outMappedResource)
 	{
 		if (FAILED(context->Map(mBuffer, 0, mapFlags, 0, outMappedResource)))
-			throw GameException("Failed to map GPU buffer.");
+			throw ER_CoreException("Failed to map GPU buffer.");
 	}
 
 	void ER_GPUBuffer::Unmap(ID3D11DeviceContext* context)

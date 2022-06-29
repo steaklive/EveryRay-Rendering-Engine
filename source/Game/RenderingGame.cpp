@@ -11,7 +11,7 @@
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
 
-#include "..\Library\GameException.h"
+#include "..\Library\ER_CoreException.h"
 #include "..\Library\ER_Keyboard.h"
 #include "..\Library\ER_Mouse.h"
 #include "..\Library\Utility.h"
@@ -75,7 +75,7 @@ namespace Rendering
 		{
 			if (FAILED(DirectInput8Create(mInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (LPVOID*)&mDirectInput, nullptr)))
 			{
-				throw GameException("DirectInput8Create() failed");
+				throw ER_CoreException("DirectInput8Create() failed");
 			}
 
 			mKeyboard = new ER_Keyboard(*this, mDirectInput);
@@ -134,16 +134,16 @@ namespace Rendering
 		Json::Value root;
 
 		if (!reader.parse(globalConfig, root)) {
-			throw GameException(reader.getFormattedErrorMessages().c_str());
+			throw ER_CoreException(reader.getFormattedErrorMessages().c_str());
 		}
 		else
 		{
 			if (root["scenes"].size() == 0)
-				throw GameException("No scenes defined in global_scenes_config.json");
+				throw ER_CoreException("No scenes defined in global_scenes_config.json");
 
 			mNumParsedScenesFromConfig = root["scenes"].size();
 			if (mNumParsedScenesFromConfig > MAX_SCENES_COUNT)
-				throw GameException("Amount of parsed scenes is bigger than MAX_SCENES_COUNT. Increase MAX_SCENES_COUNT!");
+				throw ER_CoreException("Amount of parsed scenes is bigger than MAX_SCENES_COUNT. Increase MAX_SCENES_COUNT!");
 
 			for (int i = 0; i < mNumParsedScenesFromConfig; i++)
 				mDisplayedLevelNames[i] = (char*)malloc(sizeof(char) * 100);
@@ -156,12 +156,12 @@ namespace Rendering
 			}
 
 			if (!root.isMember("startup_scene"))
-				throw GameException("No startup scene defined in global_scenes_config.json");
+				throw ER_CoreException("No startup scene defined in global_scenes_config.json");
 			else
 			{
 				mStartupSceneName = root["startup_scene"].asString();
 				if (mScenesPaths.find(mStartupSceneName) == mScenesPaths.end())
-					throw GameException("No startup scene defined in global_scenes_config.json");
+					throw ER_CoreException("No startup scene defined in global_scenes_config.json");
 			}
 		}
 	}
@@ -183,7 +183,7 @@ namespace Rendering
 		else
 		{
 			std::string message = "Scene was not found with this name: " + aSceneName;
-			throw GameException(message.c_str());
+			throw ER_CoreException(message.c_str());
 		}
 	}
 
@@ -327,7 +327,7 @@ namespace Rendering
 
 		HRESULT hr = mSwapChain->Present(0, 0);
 		if (FAILED(hr))
-			throw GameException("IDXGISwapChain::Present() failed.", hr);
+			throw ER_CoreException("IDXGISwapChain::Present() failed.", hr);
 
 		auto endRenderTimer = std::chrono::high_resolution_clock::now();
 		mElapsedTimeRenderCPU = endRenderTimer - startRenderTimer;

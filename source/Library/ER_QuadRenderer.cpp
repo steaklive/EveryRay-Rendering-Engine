@@ -1,5 +1,5 @@
 #include "ER_QuadRenderer.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 #include "ShaderCompiler.h"
 #include "Game.h"
 #include "Utility.h"
@@ -79,9 +79,9 @@ namespace Library {
 
 		ID3DBlob* blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Quad.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
-			throw GameException("Failed to load VSMain from shader: Quad.hlsl!");
+			throw ER_CoreException("Failed to load VSMain from shader: Quad.hlsl!");
 		if (FAILED(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVS)))
-			throw GameException("Failed to create vertex shader from Quad.hlsl!");
+			throw ER_CoreException("Failed to create vertex shader from Quad.hlsl!");
 		{
 			D3D11_INPUT_ELEMENT_DESC inputLayoutDesc[2];
 			inputLayoutDesc[0].SemanticName = "POSITION";

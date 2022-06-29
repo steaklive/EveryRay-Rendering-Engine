@@ -1,5 +1,5 @@
 #include "ER_GPUTexture.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 #include "Utility.h"
 
 ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, UINT width, UINT height, UINT samples, DXGI_FORMAT format, UINT bindFlags,
@@ -228,7 +228,7 @@ ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, ID3D11DeviceContext* context,
 			{
 				std::string msg = "Failed to load DDS texture from disk: ";
 				msg += aPath;
-				throw Library::GameException(msg.c_str());
+				throw Library::ER_CoreException(msg.c_str());
 			}
 		}
 		else
@@ -237,7 +237,7 @@ ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, ID3D11DeviceContext* context,
 			{
 				std::string msg = "Failed to load WIC texture from disk: ";
 				msg += aPath;
-				throw Library::GameException(msg.c_str());
+				throw Library::ER_CoreException(msg.c_str());
 			}
 		}
 	}
@@ -249,7 +249,7 @@ ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, ID3D11DeviceContext* context,
 			{
 				std::string msg = "Failed to load DDS texture from disk: ";
 				msg += aPath;
-				throw Library::GameException(msg.c_str());
+				throw Library::ER_CoreException(msg.c_str());
 			}
 		}
 		else
@@ -258,13 +258,13 @@ ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, ID3D11DeviceContext* context,
 			{
 				std::string msg = "Failed to load WIC texture from disk: ";
 				msg += aPath;
-				throw Library::GameException(msg.c_str());
+				throw Library::ER_CoreException(msg.c_str());
 			}
 		}
 	}
 
 	if (FAILED(resourceTex->QueryInterface(IID_ID3D11Texture2D, (void**)&mTexture2D))) {
-		throw Library::GameException("Could not cast loaded texture resource to Texture2D. Maybe wrong dimension?");
+		throw Library::ER_CoreException("Could not cast loaded texture resource to Texture2D. Maybe wrong dimension?");
 	}
 }
 ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, ID3D11DeviceContext* context, const std::wstring& aPath, bool isFullPath)
@@ -286,7 +286,7 @@ ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, ID3D11DeviceContext* context,
 			{
 				std::string msg = "Failed to load DDS texture from disk: ";
 				//msg += aPath;
-				throw Library::GameException(msg.c_str());
+				throw Library::ER_CoreException(msg.c_str());
 			}
 		}
 		else
@@ -295,7 +295,7 @@ ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, ID3D11DeviceContext* context,
 			{
 				std::string msg = "Failed to load WIC texture from disk: ";
 				//msg += aPath;
-				throw Library::GameException(msg.c_str());
+				throw Library::ER_CoreException(msg.c_str());
 			}
 		}
 	}
@@ -307,7 +307,7 @@ ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, ID3D11DeviceContext* context,
 			{
 				std::string msg = "Failed to load DDS texture from disk: ";
 				//msg += aPath;
-				throw Library::GameException(msg.c_str());
+				throw Library::ER_CoreException(msg.c_str());
 			}
 		}
 		else
@@ -316,13 +316,13 @@ ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, ID3D11DeviceContext* context,
 			{
 				std::string msg = "Failed to load WIC texture from disk: ";
 				//msg += aPath;
-				throw Library::GameException(msg.c_str());
+				throw Library::ER_CoreException(msg.c_str());
 			}
 		}
 	}
 
 	if (FAILED(resourceTex->QueryInterface(IID_ID3D11Texture2D, (void**)&mTexture2D))) {
-		throw Library::GameException("Could not cast loaded texture resource to Texture2D. Maybe wrong dimension?");
+		throw Library::ER_CoreException("Could not cast loaded texture resource to Texture2D. Maybe wrong dimension?");
 	}
 }
 

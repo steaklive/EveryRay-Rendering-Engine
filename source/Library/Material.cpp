@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "Material.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 #include "ER_Model.h"
 
 namespace Library

@@ -1,7 +1,7 @@
 #include "ER_LightProbesManager.h"
 #include "Game.h"
 #include "GameTime.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 #include "Utility.h"
 #include "DirectionalLight.h"
 #include "MatrixHelper.h"
@@ -24,7 +24,7 @@ namespace Library
 		: mMainCamera(camera)
 	{
 		if (!scene)
-			throw GameException("No scene to load light probes for!");
+			throw ER_CoreException("No scene to load light probes for!");
 
 		mTempDiffuseCubemapFacesRT = new ER_GPUTexture(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R16G16B16A16_FLOAT,
 			D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1, -1, CUBEMAP_FACES_COUNT, true);
@@ -46,16 +46,16 @@ namespace Library
 		{
 			ID3DBlob* blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\IBL\\ProbeConvolution.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
-				throw GameException("Failed to load PSMain from shader: ProbeConvolution.hlsl!");
+				throw ER_CoreException("Failed to load PSMain from shader: ProbeConvolution.hlsl!");
 			if (FAILED(game.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mConvolutionPS)))
-				throw GameException("Failed to create pixel shader from ProbeConvolution.hlsl!");
+				throw ER_CoreException("Failed to create pixel shader from ProbeConvolution.hlsl!");
 			blob->Release();
 		}
 
 		// Load a pre-computed Integration Map
 		if (FAILED(DirectX::CreateDDSTextureFromFile(game.Direct3DDevice(), game.Direct3DDeviceContext(),
 			Utility::GetFilePath(L"content\\textures\\IntegrationMapBrdf.dds").c_str(), nullptr, &mIntegrationMapTextureSRV)))
-			throw GameException("Failed to create Integration Texture.");
+			throw ER_CoreException("Failed to create Integration Texture.");
 
 		if (!scene->HasLightProbesSupport())
 		{
@@ -73,7 +73,7 @@ namespace Library
 		mDistanceBetweenSpecularProbes = scene->GetLightProbesSpecularDistance();
 
 		if (mDistanceBetweenDiffuseProbes <= 0.0f || mDistanceBetweenSpecularProbes <= 0.0f)
-			throw GameException("Loaded level has incorrect distances between probes (either diffuse or specular or both). Did you forget to assign them in the level file?");
+			throw ER_CoreException("Loaded level has incorrect distances between probes (either diffuse or specular or both). Did you forget to assign them in the level file?");
 
 		mSpecularProbesVolumeSize = MAX_CUBEMAPS_IN_VOLUME_PER_AXIS * mDistanceBetweenSpecularProbes * 0.5f;
 		mMaxSpecularProbesInVolumeCount = MAX_CUBEMAPS_IN_VOLUME_PER_AXIS * MAX_CUBEMAPS_IN_VOLUME_PER_AXIS * MAX_CUBEMAPS_IN_VOLUME_PER_AXIS;
@@ -238,7 +238,7 @@ namespace Library
 		);
 
 		if (!result.second)
-			throw GameException("Could not add a diffuse probe global object into scene");
+			throw ER_CoreException("Could not add a diffuse probe global object into scene");
 
 		MaterialShaderEntries shaderEntries;
 		shaderEntries.vertexEntry += "_instancing";
@@ -364,7 +364,7 @@ namespace Library
 		);
 
 		if (!result.second)
-			throw GameException("Could not add a specular probe global object into scene");
+			throw ER_CoreException("Could not add a specular probe global object into scene");
 		
 		MaterialShaderEntries shaderEntries;
 		shaderEntries.vertexEntry += "_instancing";
@@ -396,7 +396,7 @@ namespace Library
 					cell.lightProbeIndices.push_back(index);
 
 				if (cell.lightProbeIndices.size() > PROBE_COUNT_PER_CELL)
-					throw GameException("Too many diffuse probes per cell!");
+					throw ER_CoreException("Too many diffuse probes per cell!");
 			}
 		}
 		else
@@ -408,7 +408,7 @@ namespace Library
 					cell.lightProbeIndices.push_back(index);
 
 				if (cell.lightProbeIndices.size() > PROBE_COUNT_PER_CELL)
-					throw GameException("Too many specular probes per cell!");
+					throw ER_CoreException("Too many specular probes per cell!");
 			}
 		}
 	}

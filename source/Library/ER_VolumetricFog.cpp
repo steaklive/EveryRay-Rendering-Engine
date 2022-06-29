@@ -2,7 +2,7 @@
 #include "ER_ShadowMapper.h"
 #include "ER_GPUTexture.h"
 #include "Game.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 #include "ShaderCompiler.h"
 #include "DirectionalLight.h"
 #include "Utility.h"
@@ -52,23 +52,23 @@ namespace Library {
 
 		ID3DBlob* blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricFog\\VolumetricFogMain.hlsl").c_str(), "CSInjection", "cs_5_0", &blob)))
-			throw GameException("Failed to load CSInjection from shader: VolumetricFogMain.hlsl!");
+			throw ER_CoreException("Failed to load CSInjection from shader: VolumetricFogMain.hlsl!");
 		if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mInjectionCS)))
-			throw GameException("Failed to create shader from VolumetricFogMain.hlsl!");
+			throw ER_CoreException("Failed to create shader from VolumetricFogMain.hlsl!");
 		blob->Release();
 		
 		blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricFog\\VolumetricFogMain.hlsl").c_str(), "CSAccumulation", "cs_5_0", &blob)))
-			throw GameException("Failed to load CSAccumulation from shader: VolumetricFogMain.hlsl!");
+			throw ER_CoreException("Failed to load CSAccumulation from shader: VolumetricFogMain.hlsl!");
 		if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mAccumulationCS)))
-			throw GameException("Failed to create shader from VolumetricFogMain.hlsl!");
+			throw ER_CoreException("Failed to create shader from VolumetricFogMain.hlsl!");
 		blob->Release();
 
 		blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricFog\\VolumetricFogComposite.hlsl").c_str(), "PSComposite", "ps_5_0", &blob)))
-			throw GameException("Failed to load PSComposite from shader: VolumetricFogComposite.hlsl!");
+			throw ER_CoreException("Failed to load PSComposite from shader: VolumetricFogComposite.hlsl!");
 		if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mCompositePS)))
-			throw GameException("Failed to create shader from VolumetricFogComposite.hlsl!");
+			throw ER_CoreException("Failed to create shader from VolumetricFogComposite.hlsl!");
 		blob->Release();
 
 		mMainConstantBuffer.Initialize(device);

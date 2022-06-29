@@ -4,7 +4,7 @@
 #include "ER_Model.h"
 #include "ER_ModelMaterial.h"
 #include "Game.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 #include "VertexDeclarations.h"
 
 #include "assimp\scene.h"
@@ -164,7 +164,7 @@ namespace Library
 		indexSubResourceData.pSysMem = &mIndices[0];
 		if (FAILED(mModel.GetGame().Direct3DDevice()->CreateBuffer(&indexBufferDesc, &indexSubResourceData, indexBuffer)))
 		{
-			throw GameException("ID3D11Device::CreateBuffer() failed during the creation of the index buffer in ER_Mesh.");
+			throw ER_CoreException("ID3D11Device::CreateBuffer() failed during the creation of the index buffer in ER_Mesh.");
 		}
 	}
 
@@ -192,7 +192,7 @@ namespace Library
 		ZeroMemory(&vertexSubResourceData, sizeof(vertexSubResourceData));
 		vertexSubResourceData.pSysMem = &vertices[0];
 		if (FAILED(device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, vertexBuffer)))
-			throw GameException("ID3D11Device::CreateBuffer() failed during vertex buffer creation for CreateVertexBuffer_Position.");
+			throw ER_CoreException("ID3D11Device::CreateBuffer() failed during vertex buffer creation for CreateVertexBuffer_Position.");
 
 	}
 
@@ -223,7 +223,7 @@ namespace Library
 		ZeroMemory(&vertexSubResourceData, sizeof(vertexSubResourceData));
 		vertexSubResourceData.pSysMem = &vertices[0];
 		if (FAILED(device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, vertexBuffer)))
-			throw GameException("ID3D11Device::CreateBuffer() failed.");
+			throw ER_CoreException("ID3D11Device::CreateBuffer() failed.");
 	}
 
 	void ER_Mesh::CreateVertexBuffer_PositionUvNormal(ID3D11Buffer** vertexBuffer, int uvChannel) const
@@ -259,7 +259,7 @@ namespace Library
 		ZeroMemory(&vertexSubResourceData, sizeof(vertexSubResourceData));
 		vertexSubResourceData.pSysMem = &vertices[0];
 		if (FAILED(device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, vertexBuffer)))
-			throw GameException("ID3D11Device::CreateBuffer() failed during vertex buffer creation for CreateVertexBuffer_PositionUvNormal.");
+			throw ER_CoreException("ID3D11Device::CreateBuffer() failed during vertex buffer creation for CreateVertexBuffer_PositionUvNormal.");
 	}
 
 	void ER_Mesh::CreateVertexBuffer_PositionUvNormalTangent(ID3D11Buffer** vertexBuffer, int uvChannel) const
@@ -299,7 +299,7 @@ namespace Library
 		ZeroMemory(&vertexSubResourceData, sizeof(vertexSubResourceData));
 		vertexSubResourceData.pSysMem = &vertices[0];
 		if (FAILED(device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, vertexBuffer)))
-			throw GameException("ID3D11Device::CreateBuffer() failed during vertex buffer creation for CreateVertexBuffer_PositionUvNormalTangent.");
+			throw ER_CoreException("ID3D11Device::CreateBuffer() failed during vertex buffer creation for CreateVertexBuffer_PositionUvNormalTangent.");
 
 	}
 

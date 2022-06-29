@@ -3,7 +3,7 @@
 
 #include "ER_RenderingObject.h"
 #include "ER_CoreComponent.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 #include "Game.h"
 #include "GameTime.h"
 #include "ER_Model.h"
@@ -37,7 +37,7 @@ namespace Library
 		{
 			std::string message = "Failed to create a RenderingObject from a model: ";
 			message.append(pName);
-			throw GameException(message.c_str());
+			throw ER_CoreException(message.c_str());
 		}
 
 		mMeshesCount.push_back(0); // main LOD
@@ -512,7 +512,7 @@ namespace Library
 	void ER_RenderingObject::CreateInstanceBuffer(ID3D11Device* device, InstancedData* instanceData, UINT instanceCount, ID3D11Buffer** instanceBuffer)
 	{
 		if (instanceCount > MAX_INSTANCE_COUNT)
-			throw GameException("Instances count limit is exceeded!");
+			throw ER_CoreException("Instances count limit is exceeded!");
 
 		D3D11_BUFFER_DESC instanceBufferDesc;
 		ZeroMemory(&instanceBufferDesc, sizeof(instanceBufferDesc));
@@ -526,7 +526,7 @@ namespace Library
 		instanceSubResourceData.pSysMem = instanceData;
 		if (FAILED(device->CreateBuffer(&instanceBufferDesc, &instanceSubResourceData, instanceBuffer)))
 		{
-			throw GameException("ID3D11Device::CreateBuffer() failed while creating InstanceBuffer in RenderObject.");
+			throw ER_CoreException("ID3D11Device::CreateBuffer() failed while creating InstanceBuffer in RenderObject.");
 		}
 	}
 	// new instancing code

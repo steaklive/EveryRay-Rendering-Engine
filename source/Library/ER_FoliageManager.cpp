@@ -1,5 +1,5 @@
 #include "ER_FoliageManager.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 #include "Game.h"
 #include "MatrixHelper.h"
 #include "Utility.h"
@@ -149,9 +149,9 @@ namespace Library
 		{
 			ID3DBlob* blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
-				throw GameException("Failed to load VSMain from shader: Foliage.hlsl!");
+				throw ER_CoreException("Failed to load VSMain from shader: Foliage.hlsl!");
 			if (FAILED(mGame.Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVS)))
-				throw GameException("Failed to create vertex shader from Foliage.hlsl!");
+				throw ER_CoreException("Failed to create vertex shader from Foliage.hlsl!");
 
 			D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 			{
@@ -166,35 +166,35 @@ namespace Library
 
 			HRESULT hr = mGame.Direct3DDevice()->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), blob->GetBufferPointer(), blob->GetBufferSize(), &mInputLayout);
 			if (FAILED(hr))
-				throw GameException("CreateInputLayout() failed when creating foliage's vertex shader.", hr);
+				throw ER_CoreException("CreateInputLayout() failed when creating foliage's vertex shader.", hr);
 			blob->Release();
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "GSMain", "gs_5_0", &blob)))
-				throw GameException("Failed to load GSMain from shader: Foliage.hlsl!");
+				throw ER_CoreException("Failed to load GSMain from shader: Foliage.hlsl!");
 			if (FAILED(mGame.Direct3DDevice()->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mGS)))
-				throw GameException("Failed to create geometry shader from Foliage.hlsl!");
+				throw ER_CoreException("Failed to create geometry shader from Foliage.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
-				throw GameException("Failed to load PSMain from shader: Foliage.hlsl!");
+				throw ER_CoreException("Failed to load PSMain from shader: Foliage.hlsl!");
 			if (FAILED(mGame.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS)))
-				throw GameException("Failed to create pixel shader from Foliage.hlsl!");
+				throw ER_CoreException("Failed to create pixel shader from Foliage.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "PSMain_gbuffer", "ps_5_0", &blob)))
-				throw GameException("Failed to load PSMain_gbuffer from shader: Foliage.hlsl!");
+				throw ER_CoreException("Failed to load PSMain_gbuffer from shader: Foliage.hlsl!");
 			if (FAILED(mGame.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS_GBuffer)))
-				throw GameException("Failed to create pixel shader from Foliage.hlsl!");
+				throw ER_CoreException("Failed to create pixel shader from Foliage.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "PSMain_voxelization", "ps_5_0", &blob)))
-				throw GameException("Failed to load PSMain_voxelization from shader: Foliage.hlsl!");
+				throw ER_CoreException("Failed to load PSMain_voxelization from shader: Foliage.hlsl!");
 			if (FAILED(mGame.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS_Voxelization)))
-				throw GameException("Failed to create pixel shader from Foliage.hlsl!");
+				throw ER_CoreException("Failed to create pixel shader from Foliage.hlsl!");
 			blob->Release();
 		}
 
@@ -204,7 +204,7 @@ namespace Library
 		{
 			std::string message = "Failed to create Foliage Albedo Map: ";
 			message += textureName;
-			throw GameException(message.c_str());
+			throw ER_CoreException(message.c_str());
 		}
 
 		CreateBlendStates();
@@ -321,12 +321,12 @@ namespace Library
 
 		// Create the blend state using the description.
 		if (FAILED(mGame.Direct3DDevice()->CreateBlendState(&blendStateDescription, &mAlphaToCoverageState)))
-			throw GameException("ID3D11Device::CreateBlendState() failed while create alpha-to-coverage blend state for foliage");
+			throw ER_CoreException("ID3D11Device::CreateBlendState() failed while create alpha-to-coverage blend state for foliage");
 
 		blendStateDescription.RenderTarget[0].BlendEnable = FALSE;
 		blendStateDescription.AlphaToCoverageEnable = FALSE;
 		if (FAILED(mGame.Direct3DDevice()->CreateBlendState(&blendStateDescription, &mNoBlendState)))
-			throw GameException("ID3D11Device::CreateBlendState() failed while create no blend state for foliage");
+			throw ER_CoreException("ID3D11Device::CreateBlendState() failed while create no blend state for foliage");
 	}
 
 	void ER_Foliage::InitializeBuffersGPU(int count)
@@ -363,7 +363,7 @@ namespace Library
 		instanceData.SysMemSlicePitch = 0;
 
 		if (FAILED(mGame.Direct3DDevice()->CreateBuffer(&instanceBufferDesc, &instanceData, &mInstanceBuffer)))
-			throw GameException("ID3D11Device::CreateBuffer() failed while generating instance buffer of foliage patches");
+			throw ER_CoreException("ID3D11Device::CreateBuffer() failed while generating instance buffer of foliage patches");
 	}
 
 	void ER_Foliage::InitializeBuffersCPU()
@@ -628,7 +628,7 @@ namespace Library
 		GPUFoliageInstanceData* instancesPtr;
 
 		if (FAILED(context->Map(mInstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource)))
-			throw GameException("Map() failed while updating instance buffer of foliage patches");
+			throw ER_CoreException("Map() failed while updating instance buffer of foliage patches");
 
 		instancesPtr = (GPUFoliageInstanceData*)mappedResource.pData;
 

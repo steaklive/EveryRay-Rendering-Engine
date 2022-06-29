@@ -1,6 +1,6 @@
 #include "ER_GBuffer.h"
 #include "Game.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 #include "ER_Camera.h"
 #include "ER_GBufferMaterial.h"
 #include "ER_MaterialsCallbacks.h"
@@ -44,7 +44,7 @@ namespace Library {
 		HRESULT hr = mGame->Direct3DDevice()->CreateRasterizerState(&rasterizerStateDesc, &mRS);
 		if (FAILED(hr))
 		{
-			throw GameException("ID3D11Device::CreateRasterizerState() in GBuffer failed.", hr);
+			throw ER_CoreException("ID3D11Device::CreateRasterizerState() in GBuffer failed.", hr);
 		}
 	}
 

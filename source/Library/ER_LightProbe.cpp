@@ -8,7 +8,7 @@
 #include "ER_ShadowMapper.h"
 #include "Game.h"
 #include "GameTime.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 #include "Utility.h"
 #include "MatrixHelper.h"
 #include "ER_MaterialHelper.h"
@@ -399,7 +399,7 @@ namespace Library
 			{
 				std::string str(probeName.begin(), probeName.end());
 				std::string msg = "Failed to create a probe SH file: " + str;
-				throw GameException(msg.c_str());
+				throw ER_CoreException(msg.c_str());
 			}
 
 		}
@@ -408,19 +408,19 @@ namespace Library
 			DirectX::ScratchImage tempImage;
 			HRESULT res = DirectX::CaptureTexture(game.Direct3DDevice(), game.Direct3DDeviceContext(), aTextureConvoluted->GetTexture2D(), tempImage);
 			if (FAILED(res))
-				throw GameException("Failed to capture a probe texture when saving!", res);
+				throw ER_CoreException("Failed to capture a probe texture when saving!", res);
 
 			res = DirectX::SaveToDDSFile(tempImage.GetImages(), tempImage.GetImageCount(), tempImage.GetMetadata(), DDS_FLAGS_NONE, probeName.c_str());
 			if (FAILED(res))
 			{
 				std::string str(probeName.begin(), probeName.end());
 				std::string msg = "Failed to save a probe texture: " + str;
-				throw GameException(msg.c_str());
+				throw ER_CoreException(msg.c_str());
 			}
 
 			//loading the same probe from disk, since aTextureConvoluted is a temp texture and otherwise we need a GPU resource copy to mCubemapTexture (better than this, but I am just too lazy...)
 			if (!LoadProbeFromDisk(game, levelPath))
-				throw GameException("Could not load probe that was already generated :(");
+				throw ER_CoreException("Could not load probe that was already generated :(");
 		}
 	}
 

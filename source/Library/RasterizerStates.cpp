@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "RasterizerStates.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 
 namespace Library
 {
@@ -24,7 +24,7 @@ namespace Library
 		HRESULT hr = direct3DDevice->CreateRasterizerState(&rasterizerStateDesc, &BackCulling);
 		if (FAILED(hr))
 		{
-			throw GameException("ID3D11Device::CreateRasterizerState() failed.", hr);
+			throw ER_CoreException("ID3D11Device::CreateRasterizerState() failed.", hr);
 		}
 
 		ZeroMemory(&rasterizerStateDesc, sizeof(rasterizerStateDesc));
@@ -36,7 +36,7 @@ namespace Library
 		hr = direct3DDevice->CreateRasterizerState(&rasterizerStateDesc, &FrontCulling);
 		if (FAILED(hr))
 		{
-			throw GameException("ID3D11Device::CreateRasterizerState() failed.", hr);
+			throw ER_CoreException("ID3D11Device::CreateRasterizerState() failed.", hr);
 		}
 
 		ZeroMemory(&rasterizerStateDesc, sizeof(rasterizerStateDesc));
@@ -47,7 +47,7 @@ namespace Library
 		hr = direct3DDevice->CreateRasterizerState(&rasterizerStateDesc, &DisabledCulling);
 		if (FAILED(hr))
 		{
-			throw GameException("ID3D11Device::CreateRasterizerState() failed.", hr);
+			throw ER_CoreException("ID3D11Device::CreateRasterizerState() failed.", hr);
 		}
 
 		ZeroMemory(&rasterizerStateDesc, sizeof(rasterizerStateDesc));
@@ -58,7 +58,7 @@ namespace Library
 		hr = direct3DDevice->CreateRasterizerState(&rasterizerStateDesc, &Wireframe);
 		if (FAILED(hr))
 		{
-			throw GameException("ID3D11Device::CreateRasterizerState() failed.", hr);
+			throw ER_CoreException("ID3D11Device::CreateRasterizerState() failed.", hr);
 		}
 
 		ZeroMemory(&rasterizerStateDesc, sizeof(rasterizerStateDesc));
@@ -70,7 +70,7 @@ namespace Library
 		hr = direct3DDevice->CreateRasterizerState(&rasterizerStateDesc, &NoCullingNoDepthEnabledScissorRect);
 		if (FAILED(hr))
 		{
-			throw GameException("ID3D11Device::CreateRasterizerState() failed.", hr);
+			throw ER_CoreException("ID3D11Device::CreateRasterizerState() failed.", hr);
 		}
 	}
 

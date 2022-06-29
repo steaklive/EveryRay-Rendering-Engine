@@ -2,7 +2,7 @@
 
 #include "..\Library\Game.h"
 #include "..\Library\GameTime.h"
-#include "..\Library\GameException.h"
+#include "..\Library\ER_CoreException.h"
 #include "..\Library\ER_Editor.h"
 #include "..\Library\ER_QuadRenderer.h"
 #include "..\Library\ER_Camera.h"

@@ -4,7 +4,7 @@
 #include "ER_Mesh.h"
 #include "ER_ModelMaterial.h"
 #include "Game.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 
 #include "assimp\Importer.hpp"
 #include "assimp\scene.h"
@@ -27,7 +27,7 @@ namespace Library
 		
 		if (scene == nullptr)
 		{
-			throw GameException(importer.GetErrorString());
+			throw ER_CoreException(importer.GetErrorString());
 		}
 
 		if (scene->HasMaterials())

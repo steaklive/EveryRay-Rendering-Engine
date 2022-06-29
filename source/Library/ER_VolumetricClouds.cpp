@@ -4,7 +4,7 @@
 #include "GameTime.h"
 #include "ER_Camera.h"
 #include "DirectionalLight.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 #include "ER_Model.h"
 #include "ER_Mesh.h"
 #include "Game.h"
@@ -49,41 +49,41 @@ namespace Library {
 		//shaders
 		ID3DBlob* blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsComposite.hlsl").c_str(), "main", "ps_5_0", &blob)))
-			throw GameException("Failed to load main pass from shader: VolumetricCloudsComposite.hlsl!");
+			throw ER_CoreException("Failed to load main pass from shader: VolumetricCloudsComposite.hlsl!");
 		if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mCompositePS)))
-			throw GameException("Failed to create shader from VolumetricCloudsComposite.hlsl!");
+			throw ER_CoreException("Failed to create shader from VolumetricCloudsComposite.hlsl!");
 		blob->Release();
 
 		blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsBlur.hlsl").c_str(), "main", "ps_5_0", &blob)))
-			throw GameException("Failed to load main pass from shader: VolumetricCloudsBlur.hlsl!");
+			throw ER_CoreException("Failed to load main pass from shader: VolumetricCloudsBlur.hlsl!");
 		if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mBlurPS)))
-			throw GameException("Failed to create shader from VolumetricCloudsBlur.hlsl!");
+			throw ER_CoreException("Failed to create shader from VolumetricCloudsBlur.hlsl!");
 		blob->Release();
 
 		blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsCS.hlsl").c_str(), "main", "cs_5_0", &blob)))
-			throw GameException("Failed to load main pass from shader: VolumetricCloudsCS.hlsl!");
+			throw ER_CoreException("Failed to load main pass from shader: VolumetricCloudsCS.hlsl!");
 		if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mMainCS)))
-			throw GameException("Failed to create shader from VolumetricCloudsCS.hlsl!");
+			throw ER_CoreException("Failed to create shader from VolumetricCloudsCS.hlsl!");
 		blob->Release();
 
 		blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\UpsampleBlur.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
-			throw GameException("Failed to load CSMain from shader: UpsampleBlur.hlsl!");
+			throw ER_CoreException("Failed to load CSMain from shader: UpsampleBlur.hlsl!");
 		if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mUpsampleBlurCS)))
-			throw GameException("Failed to create shader from UpsampleBlur.hlsl!");
+			throw ER_CoreException("Failed to create shader from UpsampleBlur.hlsl!");
 		blob->Release();
 
 		//textures
 		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\cloud.dds").c_str(), nullptr, &mCloudTextureSRV)))
-			throw GameException("Failed to create Cloud Map.");
+			throw ER_CoreException("Failed to create Cloud Map.");
 
 		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\weather.dds").c_str(), nullptr, &mWeatherTextureSRV)))
-			throw GameException("Failed to create Weather Map.");
+			throw ER_CoreException("Failed to create Weather Map.");
 
 		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\worley.dds").c_str(), nullptr, &mWorleyTextureSRV)))
-			throw GameException("Failed to create Worley Map.");
+			throw ER_CoreException("Failed to create Worley Map.");
 
 		//cbuffers
 		mFrameConstantBuffer.Initialize(mGame->Direct3DDevice());
@@ -101,11 +101,11 @@ namespace Library {
 		sam_desc.MinLOD = -1000.0f;
 		sam_desc.MaxLOD = 1000.0f;
 		if (FAILED(mGame->Direct3DDevice()->CreateSamplerState(&sam_desc, &mCloudSS)))
-			throw GameException("Failed to create sampler mCloudSS!");
+			throw ER_CoreException("Failed to create sampler mCloudSS!");
 
 		sam_desc.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
 		if (FAILED(mGame->Direct3DDevice()->CreateSamplerState(&sam_desc, &mWeatherSS)))
-			throw GameException("Failed to create sampler mWeatherSS!");
+			throw ER_CoreException("Failed to create sampler mWeatherSS!");
 
 		assert(aIlluminationDepth);
 		mIlluminationResultDepthTarget = aIlluminationDepth;

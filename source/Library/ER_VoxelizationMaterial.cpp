@@ -2,7 +2,7 @@
 #include "ER_MaterialsCallbacks.h"
 #include "ShaderCompiler.h"
 #include "Utility.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 #include "Game.h"
 #include "ER_Camera.h"
 #include "ER_RenderingObject.h"

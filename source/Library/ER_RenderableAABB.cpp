@@ -2,7 +2,7 @@
 
 #include "ER_RenderableAABB.h"
 #include "Game.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 #include "ER_BasicColorMaterial.h"
 #include "VertexDeclarations.h"
 #include "ColorHelper.h"

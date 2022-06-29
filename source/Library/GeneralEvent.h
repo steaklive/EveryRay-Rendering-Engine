@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <vector>
 #include <functional>
-#include "GameException.h"
+#include "ER_CoreException.h"
 
 template<typename T>
 class GeneralEvent
@@ -51,7 +51,7 @@ public:
 		else
 		{
 			std::string msg = "Listener was not found: " + pName;
-			throw GameException(msg.c_str());
+			throw ER_CoreException(msg.c_str());
 		}
 	}
 	

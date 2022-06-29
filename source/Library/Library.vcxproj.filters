@@ -129,9 +129,6 @@
     <ClInclude Include="DirectionalLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ProxyModel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RasterizerStates.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -291,6 +288,9 @@
     <ClInclude Include="ER_CoreComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_DebugProxyObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -318,9 +318,6 @@
       <Filter>Source Files\Graphics\Lights</Filter>
     </ClCompile>
     <ClCompile Include="RasterizerStates.cpp">
-      <Filter>Source Files\Helpers</Filter>
-    </ClCompile>
-    <ClCompile Include="ProxyModel.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="ServiceContainer.cpp">
@@ -449,9 +446,6 @@
     <ClCompile Include="GameClock.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
-    <ClCompile Include="GameException.cpp">
-      <Filter>Source Files\Core</Filter>
-    </ClCompile>
     <ClCompile Include="GameTime.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
@@ -480,6 +474,12 @@
       <Filter>Source Files\Controls</Filter>
     </ClCompile>
     <ClCompile Include="ER_CoreComponent.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_DebugProxyObject.cpp">
+      <Filter>Source Files\Graphics\Rendering helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_CoreException.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
   </ItemGroup>

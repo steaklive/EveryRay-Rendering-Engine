@@ -6,10 +6,10 @@
 
 namespace Library
 {
-	class GameException : public std::exception
+	class ER_CoreException : public std::exception
 	{
 	public:
-		GameException(const char* const& message, HRESULT hr = S_OK);
+		ER_CoreException(const char* const& message, HRESULT hr = S_OK);
 
 		HRESULT HR() const;
 		std::wstring whatw() const;

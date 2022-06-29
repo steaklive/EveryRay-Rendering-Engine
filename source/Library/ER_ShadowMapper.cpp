@@ -8,7 +8,7 @@
 #include "GameTime.h"
 #include "Game.h"
 #include "DepthMap.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 #include "ER_Scene.h"
 #include "ER_MaterialHelper.h"
 #include "ER_RenderingObject.h"
@@ -57,7 +57,7 @@ namespace Library
 		rasterizerStateDesc.FrontCounterClockwise = false;
 		HRESULT hr = GetGame()->Direct3DDevice()->CreateRasterizerState(&rasterizerStateDesc, &mShadowRasterizerState);
 		if (FAILED(hr))
-			throw GameException("CreateRasterizerState() failed while generating a shadow mapper.", hr);
+			throw ER_CoreException("CreateRasterizerState() failed while generating a shadow mapper.", hr);
 
 		D3D11_DEPTH_STENCIL_DESC depthStencilStateDesc;
 		depthStencilStateDesc.DepthEnable = TRUE;
@@ -66,7 +66,7 @@ namespace Library
 		depthStencilStateDesc.StencilEnable = FALSE;
 		hr = GetGame()->Direct3DDevice()->CreateDepthStencilState(&depthStencilStateDesc, &mDepthStencilState);
 		if (FAILED(hr))
-			throw GameException("CreateDepthStencilState() failed while generating a shadow mapper.", hr);
+			throw ER_CoreException("CreateDepthStencilState() failed while generating a shadow mapper.", hr);
 	}
 
 	ER_ShadowMapper::~ER_ShadowMapper()

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include <memory>
-#include "..\Library\GameException.h"
+#include "..\Library\ER_CoreException.h"
 #include "RenderingGame.h"
 
 #if defined(DEBUG) || defined(_DEBUG)
@@ -23,7 +23,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR command
 	try {
 		game->Run();
 	}
-	catch (GameException ex)
+	catch (ER_CoreException ex)
 	{
 		MessageBox(game->WindowHandle(), ex.whatw().c_str(), game->WindowTitle().c_str(), MB_ABORTRETRYIGNORE);
 	}

@@ -3,7 +3,7 @@
 #include "ER_DebugProxyObject.h"
 #include "Game.h"
 #include "GameTime.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 #include "MatrixHelper.h"
 #include "VectorHelper.h"
 #include "ER_Model.h"

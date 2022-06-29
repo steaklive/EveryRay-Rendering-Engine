@@ -1,19 +1,19 @@
 #include "stdafx.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 
 namespace Library
 {
-	GameException::GameException(const char* const& message, HRESULT hr)
+	ER_CoreException::ER_CoreException(const char* const& message, HRESULT hr)
 		: exception(message), mHR(hr)
 	{
 	}
 
-	HRESULT GameException::HR() const
+	HRESULT ER_CoreException::HR() const
 	{
 		return mHR;
 	}
 
-	std::wstring GameException::whatw() const
+	std::wstring ER_CoreException::whatw() const
 	{
 		std::string whatString(what());
 		std::wstring whatw;

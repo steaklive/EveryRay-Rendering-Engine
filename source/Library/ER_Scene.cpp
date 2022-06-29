@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include "ER_Scene.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 #include "Utility.h"
 #include "ER_Model.h"
 #include "Materials.inl"
@@ -32,7 +32,7 @@ namespace Library
 		std::ifstream scene(path.c_str(), std::ifstream::binary);
 
 		if (!reader.parse(scene, root)) {
-			throw GameException(reader.getFormattedErrorMessages().c_str());
+			throw ER_CoreException(reader.getFormattedErrorMessages().c_str());
 		}
 		else {
 
@@ -491,7 +491,7 @@ namespace Library
 	void ER_Scene::SaveFoliageZonesTransforms(const std::vector<ER_Foliage*>& foliageZones)
 	{
 		if (mScenePath.empty())
-			throw GameException("Can't save to scene json file! Empty scene name...");
+			throw ER_CoreException("Can't save to scene json file! Empty scene name...");
 
 		if (root.isMember("foliage_zones")) {
 			assert(foliageZones.size() == root["foliage_zones"].size());
@@ -519,7 +519,7 @@ namespace Library
 	void ER_Scene::SaveRenderingObjectsTransforms()
 	{
 		if (mScenePath.empty())
-			throw GameException("Can't save to scene json file! Empty scene name...");
+			throw ER_CoreException("Can't save to scene json file! Empty scene name...");
 
 		// store world transform
 		for (Json::Value::ArrayIndex i = 0; i != root["rendering_objects"].size(); i++) {
@@ -554,7 +554,7 @@ namespace Library
 					if (root["rendering_objects"][i].isMember("instances_transforms")) {
 
 						if (root["rendering_objects"][i]["instances_transforms"].size() != objects[root["rendering_objects"][i]["name"].asString()]->GetInstanceCount())
-							throw GameException("Can't save instances transforms to scene json file! RenderObject's instance count is not equal to the number of instance transforms in scene file.");
+							throw ER_CoreException("Can't save instances transforms to scene json file! RenderObject's instance count is not equal to the number of instance transforms in scene file.");
 
 						for (Json::Value::ArrayIndex instance = 0; instance != root["rendering_objects"][i]["instances_transforms"].size(); instance++) {
 							Json::Value contentInstanceTransform(Json::arrayValue);
@@ -614,7 +614,7 @@ namespace Library
 		assert(core);
 
 		if (!reader.parse(scene, root)) {
-			throw GameException(reader.getFormattedErrorMessages().c_str());
+			throw ER_CoreException(reader.getFormattedErrorMessages().c_str());
 		}
 		else {
 			if (root.isMember("foliage_zones")) {

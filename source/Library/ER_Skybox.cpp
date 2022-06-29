@@ -2,7 +2,7 @@
 
 #include "ER_Skybox.h"
 #include "Game.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 #include "GameTime.h"
 #include "ER_Camera.h"
 #include "MatrixHelper.h"
@@ -54,9 +54,9 @@ namespace Library
 		{
 			ID3DBlob* blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Skybox.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
-				throw GameException("Failed to load VSMain from shader: Skybox.hlsl!");
+				throw ER_CoreException("Failed to load VSMain from shader: Skybox.hlsl!");
 			if (FAILED(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSkyboxVS)))
-				throw GameException("Failed to create vertex shader from Skybox.hlsl!");
+				throw ER_CoreException("Failed to create vertex shader from Skybox.hlsl!");
 			
 			D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 			{
@@ -64,14 +64,14 @@ namespace Library
 			};
 			HRESULT hr = device->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), blob->GetBufferPointer(), blob->GetBufferSize(), &mInputLayout);
 			if (FAILED(hr))
-				throw GameException("CreateInputLayout() failed when creating skybox's vertex shader.", hr);
+				throw ER_CoreException("CreateInputLayout() failed when creating skybox's vertex shader.", hr);
 			blob->Release();
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Skybox.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
-				throw GameException("Failed to load PSMain from shader: Skybox.hlsl!");
+				throw ER_CoreException("Failed to load PSMain from shader: Skybox.hlsl!");
 			if (FAILED(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSkyboxPS)))
-				throw GameException("Failed to create pixel shader from Skybox.hlsl!");
+				throw ER_CoreException("Failed to create pixel shader from Skybox.hlsl!");
 			blob->Release();
 			
 			mSkyboxConstantBuffer.Initialize(device);
@@ -81,16 +81,16 @@ namespace Library
 		{
 			ID3DBlob* blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Sun.hlsl").c_str(), "main", "ps_5_0", &blob)))
-				throw GameException("Failed to load main pass from shader: Sun.hlsl!");
+				throw ER_CoreException("Failed to load main pass from shader: Sun.hlsl!");
 			if (FAILED(mGame.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSunPS)))
-				throw GameException("Failed to create shader from Sun.hlsl!");
+				throw ER_CoreException("Failed to create shader from Sun.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Sun.hlsl").c_str(), "occlusion", "ps_5_0", &blob)))
-				throw GameException("Failed to load occlusion pass from shader: Sun.hlsl!");
+				throw ER_CoreException("Failed to load occlusion pass from shader: Sun.hlsl!");
 			if (FAILED(mGame.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSunOcclusionPS)))
-				throw GameException("Failed to create shader from Sun.hlsl!");
+				throw ER_CoreException("Failed to create shader from Sun.hlsl!");
 			blob->Release();
 
 			mSunConstantBuffer.Initialize(device);

@@ -231,7 +231,7 @@
     <ClInclude Include="PointLight.h" />
     <ClInclude Include="ER_PostProcessingStack.h" />
     <ClInclude Include="ER_Projector.h" />
-    <ClInclude Include="ProxyModel.h" />
+    <ClInclude Include="ER_DebugProxyObject.h" />
     <ClInclude Include="ER_QuadRenderer.h" />
     <ClInclude Include="RasterizerStates.h" />
     <ClInclude Include="ER_Ray.h" />
@@ -290,7 +290,7 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameClock.cpp" />
     <ClCompile Include="ER_CoreComponent.cpp" />
-    <ClCompile Include="GameException.cpp" />
+    <ClCompile Include="ER_CoreException.cpp" />
     <ClCompile Include="GameTime.cpp" />
     <ClCompile Include="ER_GBuffer.cpp" />
     <ClCompile Include="ER_Keyboard.cpp" />
@@ -303,7 +303,7 @@
     <ClCompile Include="ER_Mouse.cpp" />
     <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="ER_Projector.cpp" />
-    <ClCompile Include="ProxyModel.cpp" />
+    <ClCompile Include="ER_DebugProxyObject.cpp" />
     <ClCompile Include="ER_QuadRenderer.cpp" />
     <ClCompile Include="RasterizerStates.cpp" />
     <ClCompile Include="ER_Ray.cpp" />

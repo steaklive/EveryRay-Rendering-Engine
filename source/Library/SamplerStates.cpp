@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "SamplerStates.h"
-#include "GameException.h"
+#include "ER_CoreException.h"
 
 namespace Library
 {
@@ -31,7 +31,7 @@ namespace Library
 		HRESULT hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &TrilinearWrap);
 		if (FAILED(hr))
 		{
-			throw GameException("ID3D11Device::CreateSamplerState() failed.", hr);
+			throw ER_CoreException("ID3D11Device::CreateSamplerState() failed.", hr);
 		}
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
@@ -43,7 +43,7 @@ namespace Library
 		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &TrilinearMirror);
 		if (FAILED(hr))
 		{
-			throw GameException("ID3D11Device::CreateSamplerState() failed.", hr);
+			throw ER_CoreException("ID3D11Device::CreateSamplerState() failed.", hr);
 		}
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
@@ -55,7 +55,7 @@ namespace Library
 		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &TrilinearClamp);
 		if (FAILED(hr))
 		{
-			throw GameException("ID3D11Device::CreateSamplerState() failed.", hr);
+			throw ER_CoreException("ID3D11Device::CreateSamplerState() failed.", hr);
 		}
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
@@ -67,7 +67,7 @@ namespace Library
 		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &TrilinearPointClamp);
 		if (FAILED(hr))
 		{
-			throw GameException("ID3D11Device::CreateSamplerState() failed.", hr);
+			throw ER_CoreException("ID3D11Device::CreateSamplerState() failed.", hr);
 		}
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
@@ -80,7 +80,7 @@ namespace Library
 		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &TrilinerBorder);
 		if (FAILED(hr))
 		{
-			throw GameException("ID3D11Device::CreateSamplerState() failed.", hr);
+			throw ER_CoreException("ID3D11Device::CreateSamplerState() failed.", hr);
 		}
 
 		samplerStateDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
@@ -95,7 +95,7 @@ namespace Library
 		memcpy(samplerStateDesc.BorderColor, reinterpret_cast<FLOAT*>(&white), sizeof(FLOAT) * 4);
 		samplerStateDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
 		if (FAILED(direct3DDevice->CreateSamplerState(&samplerStateDesc, &ShadowSamplerState)))
-			throw GameException("Failed to create sampler ShadowSamplerState!");
+			throw ER_CoreException("Failed to create sampler ShadowSamplerState!");
 	}
 
 	void SamplerStates::Release()
