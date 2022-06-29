@@ -1,39 +1,39 @@
 #include "stdafx.h"
-#include "GameClock.h"
+#include "ER_CoreClock.h"
 #include "ER_CoreTime.h"
 
 namespace Library
 {
-	GameClock::GameClock()
+	ER_CoreClock::ER_CoreClock()
 		: mStartTime(), mCurrentTime(), mLastTime(), mFrequency()
 	{
 		mFrequency = GetFrequency();
 		Reset();
 	}
 
-	const LARGE_INTEGER& GameClock::StartTime() const
+	const LARGE_INTEGER& ER_CoreClock::StartTime() const
 	{
 		return mStartTime;
 	}
 
-	const LARGE_INTEGER& GameClock::CurrentTime() const
+	const LARGE_INTEGER& ER_CoreClock::CurrentTime() const
 	{
 		return mCurrentTime;
 	}
 
-	const LARGE_INTEGER& GameClock::LastTime() const
+	const LARGE_INTEGER& ER_CoreClock::LastTime() const
 	{
 		return mLastTime;
 	}
 
-	void GameClock::Reset()
+	void ER_CoreClock::Reset()
 	{
 		GetTime(mStartTime);
 		mCurrentTime = mStartTime;
 		mLastTime = mCurrentTime;
 	}
 
-	double GameClock::GetFrequency() const
+	double ER_CoreClock::GetFrequency() const
 	{
 		LARGE_INTEGER frequency;
 
@@ -45,12 +45,12 @@ namespace Library
 		return (double)frequency.QuadPart;
 	}
 
-	void GameClock::GetTime(LARGE_INTEGER& time) const
+	void ER_CoreClock::GetTime(LARGE_INTEGER& time) const
 	{
 		QueryPerformanceCounter(&time);
 	}
 
-	void GameClock::UpdateGameTime(ER_CoreTime& gameTime)
+	void ER_CoreClock::UpdateGameTime(ER_CoreTime& gameTime)
 	{
 		GetTime(mCurrentTime);
 		gameTime.SetTotalGameTime((mCurrentTime.QuadPart - mStartTime.QuadPart) / mFrequency);

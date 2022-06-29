@@ -8,10 +8,10 @@ namespace Library
 {
 	class ER_CoreTime;
 
-	class GameClock
+	class ER_CoreClock
 	{
 	public:
-		GameClock();
+		ER_CoreClock();
 
 		const LARGE_INTEGER& StartTime() const;
 		const LARGE_INTEGER& CurrentTime() const;
@@ -23,8 +23,8 @@ namespace Library
 		void UpdateGameTime(ER_CoreTime& gameTime);
 
 	private:
-		GameClock(const GameClock& rhs);
-		GameClock& operator=(const GameClock& rhs);
+		ER_CoreClock(const ER_CoreClock& rhs);
+		ER_CoreClock& operator=(const ER_CoreClock& rhs);
 
 		LARGE_INTEGER mStartTime;
 		LARGE_INTEGER mCurrentTime;
