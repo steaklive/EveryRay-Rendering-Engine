@@ -35,7 +35,7 @@ namespace Library {
 
 	ER_Illumination::ER_Illumination(Game& game, ER_Camera& camera, const DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const ER_Scene* scene)
 		: 
-		GameComponent(game),
+		ER_CoreComponent(game),
 		mCamera(camera),
 		mDirectionalLight(light),
 		mShadowMapper(shadowMapper)

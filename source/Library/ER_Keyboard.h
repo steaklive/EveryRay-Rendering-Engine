@@ -1,12 +1,12 @@
 #pragma once
 
-#include "GameComponent.h"
+#include "ER_CoreComponent.h"
 
 namespace Library
 {
-	class ER_Keyboard : public GameComponent
+	class ER_Keyboard : public ER_CoreComponent
 	{
-		RTTI_DECLARATIONS(ER_Keyboard, GameComponent)
+		RTTI_DECLARATIONS(ER_Keyboard, ER_CoreComponent)
 
 	public:
 		ER_Keyboard(Game& game, LPDIRECTINPUT8 directInput);

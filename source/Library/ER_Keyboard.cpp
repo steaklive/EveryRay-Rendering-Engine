@@ -10,7 +10,7 @@ namespace Library
 	RTTI_DEFINITIONS(ER_Keyboard)
 
 	ER_Keyboard::ER_Keyboard(Game& game, LPDIRECTINPUT8 directInput)
-		: GameComponent(game), mDirectInput(directInput), mDevice(nullptr)
+		: ER_CoreComponent(game), mDirectInput(directInput), mDevice(nullptr)
 	{
 		assert(mDirectInput != nullptr);
 		ZeroMemory(mCurrentState, sizeof(mCurrentState));

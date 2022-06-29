@@ -16,7 +16,7 @@
 namespace Library
 {
 	ER_Skybox::ER_Skybox(Game& game, ER_Camera& camera, float scale)
-		: GameComponent(game), mGame(game), mCamera(camera),
+		: ER_CoreComponent(game), mGame(game), mCamera(camera),
 		mVertexBuffer(nullptr), mIndexBuffer(nullptr), mIndexCount(0),
 		mWorldMatrix(MatrixHelper::Identity), mScaleMatrix(MatrixHelper::Identity), mScale(scale)
 	{

@@ -197,7 +197,6 @@
     <ClInclude Include="DepthMap.h" />
     <ClInclude Include="DepthTarget.h" />
     <ClInclude Include="DirectionalLight.h" />
-    <ClInclude Include="DrawableGameComponent.h" />
     <ClInclude Include="ER_Editor.h" />
     <ClInclude Include="ER_CPUProfiler.h" />
     <ClInclude Include="ER_GPUBuffer.h" />
@@ -215,7 +214,7 @@
     <ClInclude Include="ER_Frustum.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameClock.h" />
-    <ClInclude Include="GameComponent.h" />
+    <ClInclude Include="ER_CoreComponent.h" />
     <ClInclude Include="GameTime.h" />
     <ClInclude Include="ER_GBuffer.h" />
     <ClInclude Include="GeneralEvent.h" />
@@ -270,7 +269,6 @@
     <ClCompile Include="DepthMap.cpp" />
     <ClCompile Include="DepthTarget.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
-    <ClCompile Include="DrawableGameComponent.cpp" />
     <ClCompile Include="ER_Editor.cpp" />
     <ClCompile Include="ER_CPUProfiler.cpp" />
     <ClCompile Include="ER_GPUBuffer.cpp" />
@@ -291,7 +289,7 @@
     <ClCompile Include="ER_Frustum.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameClock.cpp" />
-    <ClCompile Include="GameComponent.cpp" />
+    <ClCompile Include="ER_CoreComponent.cpp" />
     <ClCompile Include="GameException.cpp" />
     <ClCompile Include="GameTime.cpp" />
     <ClCompile Include="ER_GBuffer.cpp" />

@@ -1,14 +1,16 @@
 #pragma once
 
 #include "Common.h"
-#include "DrawableGameComponent.h"
+#include "ER_CoreComponent.h"
 #include "ER_GPUTexture.h"
 #include "DepthTarget.h"
 
 namespace Library
 {
 	class ER_Scene;
-	class ER_GBuffer: public DrawableGameComponent
+	class ER_Camera;
+
+	class ER_GBuffer: public ER_CoreComponent
 	{
 	public:
 		ER_GBuffer(Game& game, ER_Camera& camera, int width, int height);
@@ -29,7 +31,6 @@ namespace Library
 		DepthTarget* GetDepth() { return mDepthBuffer; }
 
 	private:
-	
 		DepthTarget* mDepthBuffer = nullptr;
 		ER_GPUTexture* mAlbedoBuffer= nullptr;
 		ER_GPUTexture* mNormalBuffer= nullptr;

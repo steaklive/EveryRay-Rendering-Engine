@@ -18,7 +18,7 @@ static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 namespace Library {
 	ER_VolumetricFog::ER_VolumetricFog(Game& game, const DirectionalLight& aLight, const ER_ShadowMapper& aShadowMapper)
-	    : GameComponent(game), mShadowMapper(aShadowMapper), mDirectionalLight(aLight)
+	    : ER_CoreComponent(game), mShadowMapper(aShadowMapper), mDirectionalLight(aLight)
 	{	
 		mPrevViewProj = XMMatrixIdentity();
 	}

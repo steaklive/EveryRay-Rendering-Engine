@@ -24,7 +24,7 @@
 namespace Library
 {
 	ER_ShadowMapper::ER_ShadowMapper(Game& pGame, ER_Camera& camera, DirectionalLight& dirLight,  UINT pWidth, UINT pHeight, bool isCascaded)
-		: GameComponent(pGame),
+		: ER_CoreComponent(pGame),
 		mShadowMaps(0, nullptr), 
 		mShadowRasterizerState(nullptr),
 		mDirectionalLight(dirLight),

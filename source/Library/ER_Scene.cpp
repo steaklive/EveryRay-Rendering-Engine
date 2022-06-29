@@ -26,7 +26,7 @@
 namespace Library 
 {
 	ER_Scene::ER_Scene(Game& pGame, ER_Camera& pCamera, const std::string& path) :
-		GameComponent(pGame), mCamera(pCamera), mScenePath(path)
+		ER_CoreComponent(pGame), mCamera(pCamera), mScenePath(path)
 	{
 		Json::Reader reader;
 		std::ifstream scene(path.c_str(), std::ifstream::binary);

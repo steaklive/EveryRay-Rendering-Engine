@@ -4,7 +4,7 @@
 #include "ConstantBuffer.h"
 #include "ER_GPUTexture.h"
 #include "DepthTarget.h"
-#include "GameComponent.h"
+#include "ER_CoreComponent.h"
 
 namespace Library
 {
@@ -39,7 +39,7 @@ namespace Library
 		};
 	}
 
-	class ER_VolumetricFog : public GameComponent
+	class ER_VolumetricFog : public ER_CoreComponent
 	{
 	public:
 		ER_VolumetricFog(Game& game, const DirectionalLight& aLight, const ER_ShadowMapper& aShadowMapper);

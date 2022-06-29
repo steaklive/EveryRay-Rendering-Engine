@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GameComponent.h"
+#include "ER_CoreComponent.h"
 #include "ER_Frustum.h"
 
 namespace Library
@@ -8,9 +8,9 @@ namespace Library
 	class ER_RenderingObject;
 	class GameTime;
 
-	class ER_Camera : public GameComponent
+	class ER_Camera : public ER_CoreComponent
 	{
-		RTTI_DECLARATIONS(ER_Camera, GameComponent)
+		RTTI_DECLARATIONS(ER_Camera, ER_CoreComponent)
 
 	public:
 		ER_Camera(Game& game);

@@ -1,16 +1,15 @@
 #pragma once
 #include "Common.h"
-#include "DrawableGameComponent.h"
 
 namespace Library
 {
-	class Effect;
+	class Game;
+	class GameTime;
 	class ER_BasicColorMaterial;
+	class ER_Camera;
 
-	class ProxyModel : public DrawableGameComponent
+	class ProxyModel
 	{
-		RTTI_DECLARATIONS(ProxyModel, DrawableGameComponent)
-
 	public:
 		ProxyModel(Game& game, ER_Camera& camera, const std::string& modelFileName, float scale = 1.0f);
 		~ProxyModel();
@@ -36,14 +35,16 @@ namespace Library
 		void ApplyRotation(const XMFLOAT4X4& transform);
 		void ApplyRotaitonAroundPoint(float radius, float angle);
 
-		virtual void Initialize() override;
-		virtual void Update(const GameTime& gameTime) override;
-		virtual void Draw(const GameTime& gameTime) override;
+		void Initialize();
+		void Update(const GameTime& gameTime);
+		void Draw(const GameTime& gameTime);
 
 	private:
 		ProxyModel();
 		ProxyModel(const ProxyModel& rhs);
 		ProxyModel& operator=(const ProxyModel& rhs);
+
+		Game& mGame;
 
 		std::string mModelFileName;
 		ER_BasicColorMaterial* mMaterial;

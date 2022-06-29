@@ -1,6 +1,6 @@
 #pragma once
 #include "Common.h"
-#include "GameComponent.h"
+#include "ER_CoreComponent.h"
 #include "ConstantBuffer.h"
 #include "ER_GPUTexture.h"
 #include "ER_GPUBuffer.h"
@@ -120,7 +120,7 @@ namespace Library
 		bool mIsCulled = false;
 	};
 
-	class ER_Terrain : public GameComponent
+	class ER_Terrain : public ER_CoreComponent
 	{
 	public:
 		ER_Terrain(Game& game, DirectionalLight& light);

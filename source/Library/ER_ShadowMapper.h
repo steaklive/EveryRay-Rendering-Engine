@@ -1,6 +1,6 @@
 #pragma once
 #include "Common.h"
-#include "GameComponent.h"
+#include "ER_CoreComponent.h"
 
 namespace Library
 {
@@ -12,7 +12,7 @@ namespace Library
 	class ER_Scene;
 	class ER_Terrain;
 
-	class ER_ShadowMapper : public GameComponent 
+	class ER_ShadowMapper : public ER_CoreComponent 
 	{
 
 	public:

@@ -22,7 +22,7 @@ namespace Library
 	static int currentSplatChannnel = (int)TerrainSplatChannels::NONE;
 
 	ER_FoliageManager::ER_FoliageManager(Game& pGame, ER_Scene* aScene, DirectionalLight& light) 
-		: GameComponent(pGame), mScene(aScene)
+		: ER_CoreComponent(pGame), mScene(aScene)
 	{
 		assert(aScene);
 		if (aScene->HasFoliage())

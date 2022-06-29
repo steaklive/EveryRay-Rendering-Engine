@@ -19,7 +19,7 @@ namespace Library
 	static int selectedObjectIndex = -1;
 	
 	ER_Editor::ER_Editor(Game& game)
-		: GameComponent(game)
+		: ER_CoreComponent(game)
 	{
 	}
 

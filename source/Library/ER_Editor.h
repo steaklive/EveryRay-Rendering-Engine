@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GameComponent.h"
+#include "ER_CoreComponent.h"
 #define MAX_OBJECTS_COUNT 1000
 #define MAX_LOD 3
 
@@ -10,9 +10,9 @@ namespace Library
 	class GameTime;
 	class ER_Scene;
 
-	class ER_Editor : public GameComponent
+	class ER_Editor : public ER_CoreComponent
 	{
-		RTTI_DECLARATIONS(ER_Editor, GameComponent)
+		RTTI_DECLARATIONS(ER_Editor, ER_CoreComponent)
 
 	public:
 		ER_Editor(Game& game);

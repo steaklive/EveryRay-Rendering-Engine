@@ -3,7 +3,7 @@
 #include "ConstantBuffer.h"
 #include "ER_GPUTexture.h"
 #include "DepthTarget.h"
-#include "GameComponent.h"
+#include "ER_CoreComponent.h"
 
 namespace Library
 {
@@ -44,7 +44,7 @@ namespace Library
 		};
 	}
 
-	class ER_VolumetricClouds : public GameComponent
+	class ER_VolumetricClouds : public ER_CoreComponent
 	{
 	public:
 		ER_VolumetricClouds(Game& game, ER_Camera& camera, DirectionalLight& light, ER_Skybox& skybox);

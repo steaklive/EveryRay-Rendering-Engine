@@ -2,7 +2,7 @@
 #include <iostream>
 
 #include "ER_RenderingObject.h"
-#include "GameComponent.h"
+#include "ER_CoreComponent.h"
 #include "GameException.h"
 #include "Game.h"
 #include "GameTime.h"

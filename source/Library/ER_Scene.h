@@ -1,6 +1,6 @@
 #pragma once
 #include "Common.h"
-#include "GameComponent.h"
+#include "ER_CoreComponent.h"
 #include "ER_Camera.h"
 #include "ER_ModelMaterial.h"
 #include "ER_Material.h"
@@ -13,7 +13,7 @@ namespace Library
 	class DirectionalLight;
 	class ER_Foliage;
 
-	class ER_Scene : public GameComponent
+	class ER_Scene : public ER_CoreComponent
 	{
 	public:
 		ER_Scene(Game& pGame, ER_Camera& pCamera, const std::string& path);

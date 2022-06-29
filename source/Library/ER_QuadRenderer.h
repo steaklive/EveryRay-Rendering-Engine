@@ -1,6 +1,6 @@
 #pragma once
 #include "Common.h"
-#include "GameComponent.h"
+#include "ER_CoreComponent.h"
 
 namespace Library {
 	struct QuadVertex
@@ -8,9 +8,9 @@ namespace Library {
 		XMFLOAT3 Position;
 		XMFLOAT2 TextureCoordinates;
 	};
-	class ER_QuadRenderer : public GameComponent
+	class ER_QuadRenderer : public ER_CoreComponent
 	{
-		RTTI_DECLARATIONS(ER_QuadRenderer, GameComponent)
+		RTTI_DECLARATIONS(ER_QuadRenderer, ER_CoreComponent)
 	public:
 		ER_QuadRenderer(Game& game);
 		~ER_QuadRenderer();

@@ -10,7 +10,7 @@ namespace Library
 	RTTI_DEFINITIONS(ER_Mouse)
 
 	ER_Mouse::ER_Mouse(Game& game, LPDIRECTINPUT8 directInput)
-		: GameComponent(game), mDirectInput(directInput), mDevice(nullptr), mX(0), mY(0), mWheel(0)
+		: ER_CoreComponent(game), mDirectInput(directInput), mDevice(nullptr), mX(0), mY(0), mWheel(0)
 	{
 		assert(mDirectInput != nullptr);
 		ZeroMemory(&mCurrentState, sizeof(mCurrentState));

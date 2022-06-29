@@ -7,7 +7,7 @@
 namespace Library {
 	RTTI_DEFINITIONS(ER_QuadRenderer)
 
-	ER_QuadRenderer::ER_QuadRenderer(Game& game) : GameComponent(game)
+	ER_QuadRenderer::ER_QuadRenderer(Game& game) : ER_CoreComponent(game)
 	{
 		auto device = game.Direct3DDevice();
 		QuadVertex* vertices = new QuadVertex[4];

@@ -1,13 +1,13 @@
 #pragma once
 
 #include "Common.h"
-#include "GameComponent.h"
+#include "ER_CoreComponent.h"
 
 namespace Library
 {
-	class Light : public GameComponent
+	class Light : public ER_CoreComponent
 	{
-		RTTI_DECLARATIONS(Light, GameComponent)
+		RTTI_DECLARATIONS(Light, ER_CoreComponent)
 
 	public:
 		Light(Game& game);

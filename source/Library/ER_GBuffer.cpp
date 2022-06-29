@@ -1,6 +1,7 @@
 #include "ER_GBuffer.h"
 #include "Game.h"
 #include "GameException.h"
+#include "ER_Camera.h"
 #include "ER_GBufferMaterial.h"
 #include "ER_MaterialsCallbacks.h"
 #include "ER_RenderingObject.h"
@@ -10,10 +11,8 @@
 namespace Library {
 
 	ER_GBuffer::ER_GBuffer(Game& game, ER_Camera& camera, int width, int height):
-		DrawableGameComponent(game, camera)
+		ER_CoreComponent(game), mWidth(width), mHeight(height)
 	{
-		mWidth = width;
-		mHeight = height;
 	}
 
 	ER_GBuffer::~ER_GBuffer()

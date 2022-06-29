@@ -1,6 +1,6 @@
 #pragma once
 #include "Common.h"
-#include "GameComponent.h"
+#include "ER_CoreComponent.h"
 #include "GeneralEvent.h"
 #include "ConstantBuffer.h"
 
@@ -214,7 +214,7 @@ namespace Library
 		};
 	};
 
-	class ER_FoliageManager : public GameComponent
+	class ER_FoliageManager : public ER_CoreComponent
 	{
 	public:
 		ER_FoliageManager(Game& pGame, ER_Scene* aScene, DirectionalLight& light);

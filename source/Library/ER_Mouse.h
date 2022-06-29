@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GameComponent.h"
+#include "ER_CoreComponent.h"
 
 namespace Library
 {
@@ -14,9 +14,9 @@ namespace Library
 		MouseButtonsX1 = 3
 	};
 
-	class ER_Mouse : public GameComponent
+	class ER_Mouse : public ER_CoreComponent
 	{
-		RTTI_DECLARATIONS(ER_Mouse, GameComponent)
+		RTTI_DECLARATIONS(ER_Mouse, ER_CoreComponent)
 
 	public:
 		ER_Mouse(Game& game, LPDIRECTINPUT8 directInput);

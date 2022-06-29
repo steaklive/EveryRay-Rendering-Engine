@@ -1,6 +1,6 @@
 #pragma once
 #include "Common.h"
-#include "GameComponent.h"
+#include "ER_CoreComponent.h"
 #include "ConstantBuffer.h"
 #include "ER_GPUTexture.h"
 #include "DepthTarget.h"
@@ -95,7 +95,7 @@ namespace Library
 		};
 	}
 
-	class ER_Illumination : public GameComponent
+	class ER_Illumination : public ER_CoreComponent
 	{
 	public:
 		ER_Illumination(Game& game, ER_Camera& camera, const DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const ER_Scene* scene);

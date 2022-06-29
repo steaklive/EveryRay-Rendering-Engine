@@ -2,7 +2,7 @@
 
 #include "Common.h"
 #include "ConstantBuffer.h"
-#include "GameComponent.h"
+#include "ER_CoreComponent.h"
 #include "VertexDeclarations.h"
 #include "SamplerStates.h"
 
@@ -10,7 +10,7 @@ namespace Library
 {
 	class ER_RenderingObject;
 	class ER_Mesh;
-	class GameComponent;
+	class ER_CoreComponent;
 	struct ER_MaterialSystems;
 
 	struct MaterialShaderEntries 
@@ -30,7 +30,7 @@ namespace Library
 		HAS_TESSELLATION_SHADER = 0x8L
 	};
 
-	class ER_Material : public GameComponent
+	class ER_Material : public ER_CoreComponent
 	{
 	public:
 		ER_Material(Game& game, const MaterialShaderEntries& shaderEntry, unsigned int shaderFlags, bool instanced = false);

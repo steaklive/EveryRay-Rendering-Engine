@@ -25,7 +25,7 @@
 namespace Library
 {
 	ER_Terrain::ER_Terrain(Game& pGame, DirectionalLight& light) :
-		GameComponent(pGame),
+		ER_CoreComponent(pGame),
 		mIsWireframe(false),
 		mHeightMaps(0, nullptr),
 		mDirectionalLight(light)

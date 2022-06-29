@@ -18,7 +18,7 @@ namespace Library
 	static const std::string geometryShaderModel = "gs_5_0";
 
 	ER_Material::ER_Material(Game& game, const MaterialShaderEntries& shaderEntry, unsigned int shaderFlags, bool instanced)
-		: GameComponent(game),
+		: ER_CoreComponent(game),
 		mShaderFlags(shaderFlags),
 		mShaderEntries(shaderEntry)
 	{

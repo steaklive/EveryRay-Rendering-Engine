@@ -2,6 +2,7 @@
 
 #include "ProxyModel.h"
 #include "Game.h"
+#include "GameTime.h"
 #include "GameException.h"
 #include "MatrixHelper.h"
 #include "VectorHelper.h"
@@ -15,10 +16,9 @@
 
 namespace Library
 {
-	RTTI_DEFINITIONS(ProxyModel)
-
-		ProxyModel::ProxyModel(Game& game, ER_Camera& camera, const std::string& modelFileName, float scale)
-		: DrawableGameComponent(game, camera),
+	ProxyModel::ProxyModel(Game& game, ER_Camera& camera, const std::string& modelFileName, float scale)
+		:
+		mGame(game),
 		mModelFileName(modelFileName), mMaterial(nullptr),
 		mVertexBuffer(nullptr), mIndexBuffer(nullptr), mIndexCount(0),
 		mWorldMatrix(MatrixHelper::Identity), mScaleMatrix(MatrixHelper::Identity), mDisplayWireframe(false),
@@ -148,9 +148,9 @@ namespace Library
 	{
 		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
 
-		std::unique_ptr<ER_Model> model(new ER_Model(*mGame, mModelFileName, true));
+		std::unique_ptr<ER_Model> model(new ER_Model(mGame, mModelFileName, true));
 
-		mMaterial = new ER_BasicColorMaterial(*mGame, {}, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER);
+		mMaterial = new ER_BasicColorMaterial(mGame, {}, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER);
 
 		auto& meshes = model->Meshes();
 		mMaterial->CreateVertexBuffer(meshes[0], &mVertexBuffer);
@@ -170,7 +170,7 @@ namespace Library
 
 	void ProxyModel::Draw(const GameTime& gametime)
 	{
-		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+		auto context = mGame.Direct3DDeviceContext();
 
 		UINT stride = mMaterial->VertexSize();
 		UINT offset = 0;

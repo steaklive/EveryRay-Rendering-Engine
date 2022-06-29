@@ -22,14 +22,14 @@ namespace Library
 	//const float cascadeDistances[MAX_NUM_CASCADES] = { 75.0f, 150.0f, 600.0f };
 
 	ER_Camera::ER_Camera(Game& game)
-		: GameComponent(game),
+		: ER_CoreComponent(game),
 		mFieldOfView(DefaultFieldOfView), mAspectRatio(game.AspectRatio()), mNearPlaneDistance(DefaultNearPlaneDistance), mFarPlaneDistance(DefaultFarPlaneDistance),
 		mPosition(), mDirection(), mUp(), mRight(), mViewMatrix(), mProjectionMatrix(), mFrustum(XMMatrixIdentity())
 	{
 	}
 
 	ER_Camera::ER_Camera(Game& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance)
-		: GameComponent(game),
+		: ER_CoreComponent(game),
 		mFieldOfView(fieldOfView), mAspectRatio(aspectRatio), mNearPlaneDistance(nearPlaneDistance), mFarPlaneDistance(farPlaneDistance),
 		mPosition(), mDirection(), mUp(), mRight(), mViewMatrix(), mProjectionMatrix(), mFrustum(XMMatrixIdentity())
 	{

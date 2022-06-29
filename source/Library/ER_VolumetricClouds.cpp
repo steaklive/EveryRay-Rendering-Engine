@@ -19,7 +19,7 @@
 
 namespace Library {
 	ER_VolumetricClouds::ER_VolumetricClouds(Game& game, ER_Camera& camera, DirectionalLight& light, ER_Skybox& skybox)
-		: GameComponent(game),
+		: ER_CoreComponent(game),
 		mCamera(camera), 
 		mDirectionalLight(light),
 		mSkybox(skybox)

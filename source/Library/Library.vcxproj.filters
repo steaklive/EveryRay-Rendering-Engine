@@ -19,9 +19,6 @@
     <Filter Include="Source Files\Helpers">
       <UniqueIdentifier>{3277bcd5-4b62-4be5-a4f4-a1b8cff1a9ae}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Components">
-      <UniqueIdentifier>{29680abb-8006-4c10-b2a3-389f1d0cd8a5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shaders">
       <UniqueIdentifier>{09f1a3ac-1868-41c5-8c47-d866e35cd170}</UniqueIdentifier>
     </Filter>
@@ -100,12 +97,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Common.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DrawableGameComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RTTI.h">
@@ -297,6 +288,9 @@
     <ClInclude Include="ER_Mouse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_CoreComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -313,12 +307,6 @@
     </ClCompile>
     <ClCompile Include="MatrixHelper.cpp">
       <Filter>Source Files\Helpers</Filter>
-    </ClCompile>
-    <ClCompile Include="DrawableGameComponent.cpp">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="GameComponent.cpp">
-      <Filter>Source Files\Components</Filter>
     </ClCompile>
     <ClCompile Include="RenderStateHelper.cpp">
       <Filter>Source Files\Helpers</Filter>
@@ -490,6 +478,9 @@
     </ClCompile>
     <ClCompile Include="ER_Mouse.cpp">
       <Filter>Source Files\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_CoreComponent.cpp">
+      <Filter>Source Files\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

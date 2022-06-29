@@ -7,7 +7,7 @@ namespace Library
 {
 	RTTI_DEFINITIONS(Light)
 
-	Light::Light(Game& game) : GameComponent(game), mColor(reinterpret_cast<const float*>(&ColorHelper::White))
+	Light::Light(Game& game) : ER_CoreComponent(game), mColor(reinterpret_cast<const float*>(&ColorHelper::White))
 	{}
 
 	Light::~Light() {}

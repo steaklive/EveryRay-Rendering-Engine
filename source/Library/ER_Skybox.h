@@ -1,6 +1,6 @@
 #pragma once
 #include "Common.h"
-#include "GameComponent.h"
+#include "ER_CoreComponent.h"
 #include "ConstantBuffer.h"
 #include "DepthTarget.h"
 #include "ER_GPUTexture.h"
@@ -29,7 +29,7 @@ namespace Library
 		};
 	}
 
-	class ER_Skybox : public GameComponent
+	class ER_Skybox : public ER_CoreComponent
 	{
 	public:
 		ER_Skybox(Game& game, ER_Camera& camera, float scale);
