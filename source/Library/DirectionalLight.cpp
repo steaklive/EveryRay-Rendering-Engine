@@ -22,7 +22,7 @@ namespace Library
 		mUp(Vector3Helper::Up), mRight(Vector3Helper::Right), mProxyModel(nullptr)
 	{
 		//directional gizmo model
-		mProxyModel = new ProxyModel(*mGame, camera, Utility::GetFilePath("content\\models\\proxy\\proxy_direction_arrow.obj"), 1.0f);
+		mProxyModel = new ER_DebugProxyObject(*mGame, camera, Utility::GetFilePath("content\\models\\proxy\\proxy_direction_arrow.obj"), 1.0f);
 		mProxyModel->Initialize();
 		mProxyModel->SetPosition(0.0f, 50.0, 0.0f);
 		mPseudoTranslation = XMMatrixTranslation(mProxyModel->Position().x, mProxyModel->Position().y ,mProxyModel->Position().z);

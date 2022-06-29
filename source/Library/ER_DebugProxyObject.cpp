@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "ProxyModel.h"
+#include "ER_DebugProxyObject.h"
 #include "Game.h"
 #include "GameTime.h"
 #include "GameException.h"
@@ -16,7 +16,7 @@
 
 namespace Library
 {
-	ProxyModel::ProxyModel(Game& game, ER_Camera& camera, const std::string& modelFileName, float scale)
+	ER_DebugProxyObject::ER_DebugProxyObject(Game& game, ER_Camera& camera, const std::string& modelFileName, float scale)
 		:
 		mGame(game),
 		mModelFileName(modelFileName), mMaterial(nullptr),
@@ -27,75 +27,75 @@ namespace Library
 		XMStoreFloat4x4(&mScaleMatrix, XMMatrixScaling(scale, scale, scale));
 	}
 
-	ProxyModel::~ProxyModel()
+	ER_DebugProxyObject::~ER_DebugProxyObject()
 	{
 		DeleteObject(mMaterial);
 		ReleaseObject(mVertexBuffer);
 		ReleaseObject(mIndexBuffer);
 	}
 
-	const XMFLOAT3& ProxyModel::Position() const
+	const XMFLOAT3& ER_DebugProxyObject::Position() const
 	{
 		return mPosition;
 	}
 
-	const XMFLOAT3& ProxyModel::Direction() const
+	const XMFLOAT3& ER_DebugProxyObject::Direction() const
 	{
 		return mDirection;
 	}
 
-	const XMFLOAT3& ProxyModel::Up() const
+	const XMFLOAT3& ER_DebugProxyObject::Up() const
 	{
 		return mUp;
 	}
 
-	const XMFLOAT3& ProxyModel::Right() const
+	const XMFLOAT3& ER_DebugProxyObject::Right() const
 	{
 		return mRight;
 	}
 
-	XMVECTOR ProxyModel::PositionVector() const
+	XMVECTOR ER_DebugProxyObject::PositionVector() const
 	{
 		return XMLoadFloat3(&mPosition);
 	}
 
-	XMVECTOR ProxyModel::DirectionVector() const
+	XMVECTOR ER_DebugProxyObject::DirectionVector() const
 	{
 		return XMLoadFloat3(&mDirection);
 	}
 
-	XMVECTOR ProxyModel::UpVector() const
+	XMVECTOR ER_DebugProxyObject::UpVector() const
 	{
 		return XMLoadFloat3(&mUp);
 	}
 
-	XMVECTOR ProxyModel::RightVector() const
+	XMVECTOR ER_DebugProxyObject::RightVector() const
 	{
 		return XMLoadFloat3(&mRight);
 	}
 
-	bool& ProxyModel::DisplayWireframe()
+	bool& ER_DebugProxyObject::DisplayWireframe()
 	{
 		return mDisplayWireframe;
 	}
 
-	void ProxyModel::SetPosition(FLOAT x, FLOAT y, FLOAT z)
+	void ER_DebugProxyObject::SetPosition(FLOAT x, FLOAT y, FLOAT z)
 	{
 		XMVECTOR position = XMVectorSet(x, y, z, 1.0f);
 		SetPosition(position);
 	}
 
-	void ProxyModel::SetPosition(FXMVECTOR position)
+	void ER_DebugProxyObject::SetPosition(FXMVECTOR position)
 	{
 		XMStoreFloat3(&mPosition, position);
 	}
 
-	void ProxyModel::SetPosition(const XMFLOAT3& position)
+	void ER_DebugProxyObject::SetPosition(const XMFLOAT3& position)
 	{
 		mPosition = position;
 	}
 
-	void ProxyModel::ApplyRotation(CXMMATRIX transform)
+	void ER_DebugProxyObject::ApplyRotation(CXMMATRIX transform)
 	{
 		XMVECTOR direction = XMLoadFloat3(&mDirection);
 		XMVECTOR up = XMLoadFloat3(&mUp);
@@ -113,7 +113,7 @@ namespace Library
 		XMStoreFloat3(&mUp, up);
 		XMStoreFloat3(&mRight, right);
 	}
-	void ProxyModel::ApplyTransform(XMMATRIX transformMatrix)
+	void ER_DebugProxyObject::ApplyTransform(XMMATRIX transformMatrix)
 	{
 		XMVECTOR direction = XMVECTOR{ 0.0f, 0.0, -1.0f };
 		XMVECTOR up = XMVECTOR{ 0.0f, 1.0, 0.0f };
@@ -131,20 +131,20 @@ namespace Library
 		XMStoreFloat3(&mUp, up);
 		XMStoreFloat3(&mRight, right);
 	}
-	void ProxyModel::ApplyRotation(const XMFLOAT4X4& transform)
+	void ER_DebugProxyObject::ApplyRotation(const XMFLOAT4X4& transform)
 	{
 		XMMATRIX transformMatrix = XMLoadFloat4x4(&transform);
 		ApplyRotation(transformMatrix);
 	}
 
-	void ProxyModel::ApplyRotaitonAroundPoint(float radius, float angle)
+	void ER_DebugProxyObject::ApplyRotaitonAroundPoint(float radius, float angle)
 	{
 		XMMATRIX rotation = XMMatrixRotationX(angle);
 		XMMATRIX translate = XMMatrixTranslation(0.0f, 0.0f, radius);
 		XMMATRIX matFinal = rotation * translate;
 	}
 
-	void ProxyModel::Initialize()
+	void ER_DebugProxyObject::Initialize()
 	{
 		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
 
@@ -158,7 +158,7 @@ namespace Library
 		mIndexCount = meshes[0].Indices().size();
 	}
 
-	void ProxyModel::Update(const GameTime& gameTime)
+	void ER_DebugProxyObject::Update(const GameTime& gameTime)
 	{
 		XMMATRIX worldMatrix = XMMatrixIdentity();
 		MatrixHelper::SetForward(worldMatrix, mDirection);
@@ -168,7 +168,7 @@ namespace Library
 		XMStoreFloat4x4(&mWorldMatrix, XMLoadFloat4x4(&mScaleMatrix) * worldMatrix);
 	}
 
-	void ProxyModel::Draw(const GameTime& gametime)
+	void ER_DebugProxyObject::Draw(const GameTime& gametime)
 	{
 		auto context = mGame.Direct3DDeviceContext();
 

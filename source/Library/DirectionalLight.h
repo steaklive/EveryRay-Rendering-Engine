@@ -2,7 +2,7 @@
 
 #include "Common.h"
 #include "Light.h"
-#include "ProxyModel.h"
+#include "ER_DebugProxyObject.h"
 #include "GeneralEvent.h"
 
 
@@ -64,7 +64,7 @@ namespace Library
 	private:
 		void UpdateTransformArray(CXMMATRIX transform);
 
-		ProxyModel* mProxyModel;
+		ER_DebugProxyObject* mProxyModel;
 
 		float mObjectTransformMatrix[16] =
 		{

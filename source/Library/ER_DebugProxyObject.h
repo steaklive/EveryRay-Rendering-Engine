@@ -8,11 +8,11 @@ namespace Library
 	class ER_BasicColorMaterial;
 	class ER_Camera;
 
-	class ProxyModel
+	class ER_DebugProxyObject
 	{
 	public:
-		ProxyModel(Game& game, ER_Camera& camera, const std::string& modelFileName, float scale = 1.0f);
-		~ProxyModel();
+		ER_DebugProxyObject(Game& game, ER_Camera& camera, const std::string& modelFileName, float scale = 1.0f);
+		~ER_DebugProxyObject();
 
 		const XMFLOAT3& Position() const;
 		const XMFLOAT3& Direction() const;
@@ -40,9 +40,9 @@ namespace Library
 		void Draw(const GameTime& gameTime);
 
 	private:
-		ProxyModel();
-		ProxyModel(const ProxyModel& rhs);
-		ProxyModel& operator=(const ProxyModel& rhs);
+		ER_DebugProxyObject();
+		ER_DebugProxyObject(const ER_DebugProxyObject& rhs);
+		ER_DebugProxyObject& operator=(const ER_DebugProxyObject& rhs);
 
 		Game& mGame;
 
