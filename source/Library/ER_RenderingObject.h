@@ -9,7 +9,7 @@ const UINT MAX_INSTANCE_COUNT = 20000;
 namespace Library
 {
 	class Game;
-	class GameTime;
+	class ER_CoreTime;
 	class ER_Material;
 	class ER_RenderableAABB;
 	class ER_Camera;
@@ -133,7 +133,7 @@ namespace Library
 		void Draw(const std::string& materialName, bool toDepth = false, int meshIndex = -1);
 		void DrawLOD(const std::string& materialName, bool toDepth, int meshIndex, int lod);
 		void DrawAABB();
-		void Update(const GameTime& time);
+		void Update(const ER_CoreTime& time);
 
 		std::map<std::string, ER_Material*>& GetMaterials() { return mMaterials; }
 		

@@ -20,7 +20,7 @@ namespace Library
 		~ER_ShadowMapper();
 
 		void Draw(const ER_Scene* scene, ER_Terrain* terrain = nullptr);
-		void Update(const GameTime& gameTime);
+		void Update(const ER_CoreTime& gameTime);
 		void BeginRenderingToShadowMap(int cascadeIndex = 0);
 		void StopRenderingToShadowMap(int cascadeIndex = 0);
 		XMMATRIX GetViewMatrix(int cascadeIndex = 0) const;

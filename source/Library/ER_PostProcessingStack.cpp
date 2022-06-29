@@ -301,7 +301,7 @@ namespace Library {
 		context->PSSetShaderResources(0, 1, SRs);
 	}
 
-	void ER_PostProcessingStack::PrepareDrawingSSR(const GameTime& gameTime, ER_GPUTexture* aInputTexture, ER_GBuffer* gbuffer)
+	void ER_PostProcessingStack::PrepareDrawingSSR(const ER_CoreTime& gameTime, ER_GPUTexture* aInputTexture, ER_GBuffer* gbuffer)
 	{
 		assert(aInputTexture);
 		auto context = game.Direct3DDeviceContext();
@@ -328,7 +328,7 @@ namespace Library {
 		context->PSSetShaderResources(0, 4, SRs);
 	}
 
-	void ER_PostProcessingStack::PrepareDrawingSSS(const GameTime& gameTime, ER_GPUTexture* aInputTexture, ER_GBuffer* gbuffer, bool verticalPass)
+	void ER_PostProcessingStack::PrepareDrawingSSS(const ER_CoreTime& gameTime, ER_GPUTexture* aInputTexture, ER_GBuffer* gbuffer, bool verticalPass)
 	{
 		auto context = game.Direct3DDeviceContext();
 
@@ -425,7 +425,7 @@ namespace Library {
 		context->PSSetShaderResources(0, 1, SRs);
 	}
 
-	void ER_PostProcessingStack::DrawEffects(const GameTime& gameTime, ER_QuadRenderer* quad, ER_GBuffer* gbuffer, ER_VolumetricClouds* aVolumetricClouds, ER_VolumetricFog* aVolumetricFog)
+	void ER_PostProcessingStack::DrawEffects(const ER_CoreTime& gameTime, ER_QuadRenderer* quad, ER_GBuffer* gbuffer, ER_VolumetricClouds* aVolumetricClouds, ER_VolumetricFog* aVolumetricFog)
 	{
 		assert(quad);
 		assert(gbuffer);

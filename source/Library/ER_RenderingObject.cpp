@@ -5,7 +5,7 @@
 #include "ER_CoreComponent.h"
 #include "ER_CoreException.h"
 #include "Game.h"
-#include "GameTime.h"
+#include "ER_CoreTime.h"
 #include "ER_Model.h"
 #include "ER_Mesh.h"
 #include "Utility.h"
@@ -675,7 +675,7 @@ namespace Library
 		mIsTerrainPlacementFinished = true;
 		
 	}
-	void ER_RenderingObject::Update(const GameTime& time)
+	void ER_RenderingObject::Update(const ER_CoreTime& time)
 	{
 		ER_Camera* camera = (ER_Camera*)(mGame->Services().GetService(ER_Camera::TypeIdClass()));
 		assert(camera);

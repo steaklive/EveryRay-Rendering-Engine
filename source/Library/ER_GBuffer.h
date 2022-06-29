@@ -17,7 +17,7 @@ namespace Library
 		~ER_GBuffer();
 	
 		void Initialize();
-		void Update(const GameTime& time);
+		void Update(const ER_CoreTime& time);
 
 		void Start();
 		void End();

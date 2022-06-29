@@ -2,7 +2,7 @@
 
 #include "ER_Keyboard.h"
 #include "Game.h"
-#include "GameTime.h"
+#include "ER_CoreTime.h"
 #include "ER_CoreException.h"
 
 namespace Library
@@ -57,7 +57,7 @@ namespace Library
 		mDevice->Acquire();
 	}
 
-	void ER_Keyboard::Update(const GameTime& gameTime)
+	void ER_Keyboard::Update(const ER_CoreTime& gameTime)
 	{
 		if (mDevice != nullptr)
 		{

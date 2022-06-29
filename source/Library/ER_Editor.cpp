@@ -2,7 +2,7 @@
 
 #include "ER_Editor.h"
 #include "Game.h"
-#include "GameTime.h"
+#include "ER_CoreTime.h"
 #include "VectorHelper.h"
 #include "MatrixHelper.h"
 #include "ER_RenderingObject.h"
@@ -37,7 +37,7 @@ namespace Library
 		mScene = scene;
 	}
 
-	void ER_Editor::Update(const GameTime& gameTime)
+	void ER_Editor::Update(const ER_CoreTime& gameTime)
 	{
 		if (Utility::IsEditorMode) {
 			ImGui::Begin("Scene Editor");

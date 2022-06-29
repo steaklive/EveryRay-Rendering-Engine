@@ -6,7 +6,7 @@
 namespace Library
 {
 	class ER_RenderingObject;
-	class GameTime;
+	class ER_CoreTime;
 
 	class ER_Camera : public ER_CoreComponent
 	{
@@ -57,7 +57,7 @@ namespace Library
 
 		virtual void Reset();
 		virtual void Initialize() override;
-		virtual void Update(const GameTime& gameTime) override;
+		virtual void Update(const ER_CoreTime& gameTime) override;
 		virtual void UpdateViewMatrix(bool leftHanded = false);
 		virtual void UpdateProjectionMatrix(bool leftHanded = false);
 		void ApplyRotation(CXMMATRIX transform);

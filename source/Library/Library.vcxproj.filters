@@ -87,9 +87,6 @@
     <ClInclude Include="..\Game\GameException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GameTime.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GameClock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -291,6 +288,9 @@
     <ClInclude Include="ER_DebugProxyObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_CoreTime.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -446,9 +446,6 @@
     <ClCompile Include="GameClock.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
-    <ClCompile Include="GameTime.cpp">
-      <Filter>Source Files\Core</Filter>
-    </ClCompile>
     <ClCompile Include="ER_RenderingObject.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
@@ -480,6 +477,9 @@
       <Filter>Source Files\Graphics\Rendering helpers</Filter>
     </ClCompile>
     <ClCompile Include="ER_CoreException.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_CoreTime.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
   </ItemGroup>

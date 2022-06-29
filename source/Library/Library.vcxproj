@@ -215,7 +215,7 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameClock.h" />
     <ClInclude Include="ER_CoreComponent.h" />
-    <ClInclude Include="GameTime.h" />
+    <ClInclude Include="ER_CoreTime.h" />
     <ClInclude Include="ER_GBuffer.h" />
     <ClInclude Include="GeneralEvent.h" />
     <ClInclude Include="ER_Illumination.h" />
@@ -291,7 +291,7 @@
     <ClCompile Include="GameClock.cpp" />
     <ClCompile Include="ER_CoreComponent.cpp" />
     <ClCompile Include="ER_CoreException.cpp" />
-    <ClCompile Include="GameTime.cpp" />
+    <ClCompile Include="ER_CoreTime.cpp" />
     <ClCompile Include="ER_GBuffer.cpp" />
     <ClCompile Include="ER_Keyboard.cpp" />
     <ClCompile Include="Light.cpp" />

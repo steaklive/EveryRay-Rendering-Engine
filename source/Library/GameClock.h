@@ -6,7 +6,7 @@
 
 namespace Library
 {
-	class GameTime;
+	class ER_CoreTime;
 
 	class GameClock
 	{
@@ -20,7 +20,7 @@ namespace Library
 		void Reset();
 		double GetFrequency() const;
 		void GetTime(LARGE_INTEGER& time) const;
-		void UpdateGameTime(GameTime& gameTime);
+		void UpdateGameTime(ER_CoreTime& gameTime);
 
 	private:
 		GameClock(const GameClock& rhs);

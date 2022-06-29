@@ -21,7 +21,7 @@ namespace Library
 
 		void Compute(Game& game, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted, DepthTarget** aDepthBuffers,
 			const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, ER_QuadRenderer* quadRenderer, ER_Skybox* skybox = nullptr);
-		void UpdateProbe(const GameTime& gameTime);
+		void UpdateProbe(const ER_CoreTime& gameTime);
 		bool LoadProbeFromDisk(Game& game, const std::wstring& levelPath);
 		ID3D11ShaderResourceView* GetCubemapSRV() const { return mCubemapTexture->GetSRV(); }
 		ID3D11Texture2D* GetCubemapTexture2D() const { return mCubemapTexture->GetTexture2D(); }

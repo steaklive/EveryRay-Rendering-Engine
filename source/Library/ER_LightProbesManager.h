@@ -24,7 +24,7 @@ namespace Library
 	class ER_ShadowMapper;
 	class DirectionalLight;
 	class ER_Skybox;
-	class GameTime;
+	class ER_CoreTime;
 	class ER_QuadRenderer;
 	class ER_Scene;
 	class ER_RenderableAABB;

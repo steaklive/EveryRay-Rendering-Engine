@@ -7,7 +7,7 @@
 #include "Game.h"
 #include "ER_ShadowMapper.h"
 #include "Game.h"
-#include "GameTime.h"
+#include "ER_CoreTime.h"
 #include "ER_CoreException.h"
 #include "Utility.h"
 #include "MatrixHelper.h"

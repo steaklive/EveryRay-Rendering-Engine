@@ -30,7 +30,7 @@ namespace Library
 
 
 		virtual void Initialize() override;
-		virtual void Update(const GameTime& gameTime) override;
+		virtual void Update(const ER_CoreTime& gameTime) override;
 
 		static const float DefaultMouseSensitivity;
 		static const float DefaultRotationRate;

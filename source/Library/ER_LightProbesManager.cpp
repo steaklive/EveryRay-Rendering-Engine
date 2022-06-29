@@ -1,6 +1,6 @@
 #include "ER_LightProbesManager.h"
 #include "Game.h"
-#include "GameTime.h"
+#include "ER_CoreTime.h"
 #include "ER_CoreException.h"
 #include "Utility.h"
 #include "DirectionalLight.h"

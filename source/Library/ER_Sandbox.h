@@ -4,7 +4,7 @@
 namespace Library
 {
     class Game;
-    class GameTime;
+    class ER_CoreTime;
     class ER_Camera;
     class ER_Scene;
     class ER_Editor;
@@ -30,8 +30,8 @@ namespace Library
 
         void Initialize(Game& game, ER_Camera& camera, const std::string& sceneName, const std::string& sceneFolderPath);
 		virtual void Destroy(Game& game);
-		virtual void Update(Game& game, const GameTime& time);
-		virtual void Draw(Game& game, const GameTime& time);
+		virtual void Update(Game& game, const ER_CoreTime& time);
+		virtual void Draw(Game& game, const ER_CoreTime& time);
 
         ER_Scene* mScene = nullptr;
 		ER_Editor* mEditor = nullptr;

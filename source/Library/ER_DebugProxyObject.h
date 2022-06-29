@@ -4,7 +4,7 @@
 namespace Library
 {
 	class Game;
-	class GameTime;
+	class ER_CoreTime;
 	class ER_BasicColorMaterial;
 	class ER_Camera;
 
@@ -36,8 +36,8 @@ namespace Library
 		void ApplyRotaitonAroundPoint(float radius, float angle);
 
 		void Initialize();
-		void Update(const GameTime& gameTime);
-		void Draw(const GameTime& gameTime);
+		void Update(const ER_CoreTime& gameTime);
+		void Draw(const ER_CoreTime& gameTime);
 
 	private:
 		ER_DebugProxyObject();

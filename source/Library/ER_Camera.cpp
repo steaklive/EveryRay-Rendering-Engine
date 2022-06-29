@@ -2,7 +2,7 @@
 
 #include "ER_Camera.h"
 #include "Game.h"
-#include "GameTime.h"
+#include "ER_CoreTime.h"
 #include "VectorHelper.h"
 #include "MatrixHelper.h"
 #include "ER_RenderingObject.h"
@@ -215,7 +215,7 @@ namespace Library
 		mFrustum.SetMatrix(ViewProjectionMatrix());
 	}
 
-	void ER_Camera::Update(const GameTime& gameTime)
+	void ER_Camera::Update(const ER_CoreTime& gameTime)
 	{
 		UpdateViewMatrix();
 		mFrustum.SetMatrix(ViewProjectionMatrix());

@@ -487,7 +487,7 @@ namespace Library
 			mHeightMaps[i]->mDebugGizmoAABB->Draw();
 	}
 
-	void ER_Terrain::Update(const GameTime& gameTime)
+	void ER_Terrain::Update(const ER_CoreTime& gameTime)
 	{
 		ER_Camera* camera = (ER_Camera*)(mGame->Services().GetService(ER_Camera::TypeIdClass()));
 

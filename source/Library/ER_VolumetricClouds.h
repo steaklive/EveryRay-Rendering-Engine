@@ -8,7 +8,7 @@
 namespace Library
 {
 	class DirectionalLight;
-	class GameTime;
+	class ER_CoreTime;
 	class ER_Camera;
 	class ER_Skybox;
 
@@ -52,8 +52,8 @@ namespace Library
 
 		void Initialize(DepthTarget* aIlluminationDepth);
 
-		void Draw(const GameTime& gametime);
-		void Update(const GameTime& gameTime);
+		void Draw(const ER_CoreTime& gametime);
+		void Update(const ER_CoreTime& gameTime);
 		void Config() { mShowDebug = !mShowDebug; }
 		void Composite(ER_GPUTexture* aRenderTarget);
 		bool IsEnabled() { return mEnabled; }

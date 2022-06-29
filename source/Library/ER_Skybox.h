@@ -8,7 +8,7 @@
 namespace Library
 {
 	class ER_Camera;
-	class GameTime;
+	class ER_CoreTime;
 
 	namespace SkyCBufferData {
 		struct SunData {
@@ -38,7 +38,7 @@ namespace Library
 		void Initialize();
 		void Draw(ER_Camera* aCustomCamera = nullptr);
 		void Update(ER_Camera* aCustomCamera = nullptr);
-		void UpdateSun(const GameTime& gameTime, ER_Camera* aCustomCamera = nullptr);
+		void UpdateSun(const ER_CoreTime& gameTime, ER_Camera* aCustomCamera = nullptr);
 		void DrawSun(ER_Camera* aCustomCamera = nullptr, ER_GPUTexture* aSky = nullptr, DepthTarget* aSceneDepth = nullptr);
 
 		void SetMovable(bool value) { mIsMovable = value; };

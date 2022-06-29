@@ -2,7 +2,7 @@
 
 #include "ER_DebugProxyObject.h"
 #include "Game.h"
-#include "GameTime.h"
+#include "ER_CoreTime.h"
 #include "ER_CoreException.h"
 #include "MatrixHelper.h"
 #include "VectorHelper.h"
@@ -158,7 +158,7 @@ namespace Library
 		mIndexCount = meshes[0].Indices().size();
 	}
 
-	void ER_DebugProxyObject::Update(const GameTime& gameTime)
+	void ER_DebugProxyObject::Update(const ER_CoreTime& gameTime)
 	{
 		XMMATRIX worldMatrix = XMMatrixIdentity();
 		MatrixHelper::SetForward(worldMatrix, mDirection);
@@ -168,7 +168,7 @@ namespace Library
 		XMStoreFloat4x4(&mWorldMatrix, XMLoadFloat4x4(&mScaleMatrix) * worldMatrix);
 	}
 
-	void ER_DebugProxyObject::Draw(const GameTime& gametime)
+	void ER_DebugProxyObject::Draw(const ER_CoreTime& gametime)
 	{
 		auto context = mGame.Direct3DDeviceContext();
 

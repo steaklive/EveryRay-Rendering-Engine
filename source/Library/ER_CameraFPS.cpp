@@ -2,7 +2,7 @@
 
 #include "ER_CameraFPS.h"
 #include "Game.h"
-#include "GameTime.h"
+#include "ER_CoreTime.h"
 #include "ER_Keyboard.h"
 #include "ER_Mouse.h"
 #include "VectorHelper.h"
@@ -86,7 +86,7 @@ namespace Library
 		ER_Camera::Initialize();
 	}
 
-	void ER_CameraFPS::Update(const GameTime& gameTime)
+	void ER_CameraFPS::Update(const ER_CoreTime& gameTime)
 	{
 		XMFLOAT3 movementAmount = Vector3Helper::Zero;
 		if (mKeyboard != nullptr )

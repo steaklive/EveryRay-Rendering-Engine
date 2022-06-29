@@ -48,7 +48,7 @@ namespace Library {
 		}
 	}
 
-	void ER_GBuffer::Update(const GameTime& time)
+	void ER_GBuffer::Update(const ER_CoreTime& time)
 	{
 	}
 

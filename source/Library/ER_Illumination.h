@@ -12,7 +12,7 @@
 
 namespace Library
 {
-	class GameTime;
+	class ER_CoreTime;
 	class DirectionalLight;
 	class ER_Camera;
 	class ER_Scene;
@@ -104,12 +104,12 @@ namespace Library
 		void Initialize(const ER_Scene* scene);
 
 		void DrawLocalIllumination(ER_GBuffer* gbuffer, ER_Skybox* skybox);
-		void DrawGlobalIllumination(ER_GBuffer* gbuffer, const GameTime& gameTime);
+		void DrawGlobalIllumination(ER_GBuffer* gbuffer, const ER_CoreTime& gameTime);
 		void CompositeTotalIllumination();
 
 		void DrawDebugGizmos();
 
-		void Update(const GameTime& gameTime, const ER_Scene* scene);
+		void Update(const ER_CoreTime& gameTime, const ER_Scene* scene);
 		void Config() { mShowDebug = !mShowDebug; }
 
 		void SetShadowMapSRV(ID3D11ShaderResourceView* srv) { mShadowMapSRV = srv; }

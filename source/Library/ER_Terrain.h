@@ -21,7 +21,7 @@ namespace Library
 
 	class ER_ShadowMapper;
 	class ER_Scene;
-	class GameTime;
+	class ER_CoreTime;
 	class DirectionalLight;
 	class ER_LightProbesManager;
 	class ER_RenderableAABB;
@@ -133,7 +133,7 @@ namespace Library
 
 		void Draw(ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr, int shadowMapCascade = -1);
 		void DrawDebugGizmos();
-		void Update(const GameTime& gameTime);
+		void Update(const ER_CoreTime& gameTime);
 		void Config() { mShowDebug = !mShowDebug; }
 		
 		void SetLevelPath(const std::wstring& aPath) { mLevelPath = aPath; };

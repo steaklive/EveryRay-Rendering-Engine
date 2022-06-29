@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include <stdio.h>
 #include "ER_VolumetricClouds.h"
-#include "GameTime.h"
+#include "ER_CoreTime.h"
 #include "ER_Camera.h"
 #include "DirectionalLight.h"
 #include "ER_CoreException.h"
@@ -117,7 +117,7 @@ namespace Library {
 		mSkyAndSunRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 	}
 	
-	void ER_VolumetricClouds::Update(const GameTime& gameTime)
+	void ER_VolumetricClouds::Update(const ER_CoreTime& gameTime)
 	{
 		UpdateImGui();
 
@@ -170,7 +170,7 @@ namespace Library {
 		ImGui::End();
 	}
 
-	void ER_VolumetricClouds::Draw(const GameTime& gametime)
+	void ER_VolumetricClouds::Draw(const ER_CoreTime& gametime)
 	{
 		if (!mEnabled)
 			return;

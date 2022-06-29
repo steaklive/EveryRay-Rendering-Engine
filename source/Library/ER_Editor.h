@@ -7,7 +7,7 @@
 namespace Library
 {
 	class ER_RenderingObject;
-	class GameTime;
+	class ER_CoreTime;
 	class ER_Scene;
 
 	class ER_Editor : public ER_CoreComponent
@@ -19,7 +19,7 @@ namespace Library
 		virtual ~ER_Editor();
 
 		virtual void Initialize() override;
-		virtual void Update(const GameTime& gameTime) override;
+		virtual void Update(const ER_CoreTime& gameTime) override;
 		void LoadScene(ER_Scene* scene);
 
 		XMFLOAT4 GetBottomSkyColor() { return XMFLOAT4(bottomColorSky[0],bottomColorSky[1],bottomColorSky[2],bottomColorSky[3]); }

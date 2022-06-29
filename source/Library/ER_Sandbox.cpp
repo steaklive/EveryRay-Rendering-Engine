@@ -163,7 +163,7 @@ namespace Library {
 
     }
 
-	void ER_Sandbox::Update(Game& game, const GameTime& gameTime)
+	void ER_Sandbox::Update(Game& game, const ER_CoreTime& gameTime)
 	{
 		//TODO refactor to updates for elements of ER_CoreComponent type
 
@@ -230,7 +230,7 @@ namespace Library {
         ImGui::End();
     }
 
-	void ER_Sandbox::Draw(Game& game, const GameTime& gameTime)
+	void ER_Sandbox::Draw(Game& game, const ER_CoreTime& gameTime)
 	{
 		//TODO set proper RS
 		//TODO set proper DS

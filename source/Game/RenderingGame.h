@@ -25,8 +25,8 @@ namespace Rendering
 		~RenderingGame();
 
 		virtual void Initialize() override;
-		virtual void Update(const GameTime& gameTime) override;
-		virtual void Draw(const GameTime& gameTime) override;
+		virtual void Update(const ER_CoreTime& gameTime) override;
+		virtual void Draw(const ER_CoreTime& gameTime) override;
 
 		void CollectGPUTimestamps(ID3D11DeviceContext * pContext);	
 	protected:

@@ -9,7 +9,7 @@
 namespace Library
 {
 	class DirectionalLight;
-	class GameTime;
+	class ER_CoreTime;
 	class ER_Camera;
 	class ER_Skybox;
 	class ER_ShadowMapper;
@@ -48,7 +48,7 @@ namespace Library
 		void Initialize();
 		void Draw();
 		void Composite(ER_GPUTexture* aInputColorTexture, ER_GPUTexture* aGbufferWorldPos);
-		void Update(const GameTime& gameTime);
+		void Update(const ER_CoreTime& gameTime);
 		void Config() { mShowDebug = !mShowDebug; }
 		bool IsEnabled() { return mEnabled; }
 		void SetEnabled(bool val) { mEnabled = val; }

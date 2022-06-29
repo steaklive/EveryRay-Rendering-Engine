@@ -128,13 +128,13 @@ namespace Library
 			listener();
 	}
 
-	void DirectionalLight::DrawProxyModel(const GameTime & time)
+	void DirectionalLight::DrawProxyModel(const ER_CoreTime & time)
 	{
 		if (mProxyModel)
 			mProxyModel->Draw(time);
 	}
 
-	void DirectionalLight::UpdateProxyModel(const GameTime & time, XMFLOAT4X4 viewMatrix, XMFLOAT4X4 projectionMatrix)
+	void DirectionalLight::UpdateProxyModel(const ER_CoreTime & time, XMFLOAT4X4 viewMatrix, XMFLOAT4X4 projectionMatrix)
 	{
 		if (mProxyModel)
 		{

@@ -4,7 +4,7 @@
 namespace Library
 {
 	class Game;
-	class GameTime;
+	class ER_CoreTime;
 
 	class ER_Projector
 	{

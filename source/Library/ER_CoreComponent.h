@@ -5,7 +5,7 @@
 namespace Library
 {
 	class Game;
-	class GameTime;
+	class ER_CoreTime;
 
 	class ER_CoreComponent : public RTTI
 	{
@@ -23,7 +23,7 @@ namespace Library
 		void SetEnabled(bool enabled);
 
 		virtual void Initialize();
-		virtual void Update(const GameTime& gameTime);
+		virtual void Update(const ER_CoreTime& gameTime);
 		
 	protected:
 		Game * mGame;

@@ -16,7 +16,7 @@ namespace Library
 		const byte* const LastState() const;
 
 		virtual void Initialize() override;
-		virtual void Update(const GameTime& gameTime) override;
+		virtual void Update(const ER_CoreTime& gameTime) override;
 
 		bool IsKeyUp(byte key) const;
 		bool IsKeyDown(byte key) const;

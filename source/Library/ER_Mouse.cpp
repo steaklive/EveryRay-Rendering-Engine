@@ -2,7 +2,7 @@
 
 #include "ER_Mouse.h"
 #include "Game.h"
-#include "GameTime.h"
+#include "ER_CoreTime.h"
 #include "ER_CoreException.h"
 
 namespace Library
@@ -72,7 +72,7 @@ namespace Library
 		mDevice->Acquire();
 	}
 
-	void ER_Mouse::Update(const GameTime& gameTime)
+	void ER_Mouse::Update(const ER_CoreTime& gameTime)
 	{
 		if (mDevice != nullptr)
 		{

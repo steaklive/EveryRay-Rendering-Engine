@@ -1,7 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "Game.h"
-#include "GameTime.h"
+#include "ER_CoreTime.h"
 #include "ER_GPUTexture.h"
 #include "DepthTarget.h"
 #include "ConstantBuffer.h"
@@ -62,7 +62,7 @@ namespace Library
 		void Begin(ER_GPUTexture* aInitialRT, DepthTarget* aDepthTarget);
 		void End(ER_GPUTexture* aResolveRT = nullptr);
 
-		void DrawEffects(const GameTime& gameTime, ER_QuadRenderer* quad, ER_GBuffer* gbuffer, 
+		void DrawEffects(const ER_CoreTime& gameTime, ER_QuadRenderer* quad, ER_GBuffer* gbuffer, 
 			ER_VolumetricClouds* aVolumetricClouds = nullptr, ER_VolumetricFog* aVolumetricFog = nullptr);
 
 		void Update();
@@ -74,8 +74,8 @@ namespace Library
 
 	private:
 		void PrepareDrawingTonemapping(ER_GPUTexture* aInputTexture);
-		void PrepareDrawingSSR(const GameTime& gameTime, ER_GPUTexture* aInputTexture, ER_GBuffer* gbuffer);
-		void PrepareDrawingSSS(const GameTime& gameTime, ER_GPUTexture* aInputTexture, ER_GBuffer* gbuffer, bool verticalPass);
+		void PrepareDrawingSSR(const ER_CoreTime& gameTime, ER_GPUTexture* aInputTexture, ER_GBuffer* gbuffer);
+		void PrepareDrawingSSS(const ER_CoreTime& gameTime, ER_GPUTexture* aInputTexture, ER_GBuffer* gbuffer, bool verticalPass);
 		void PrepareDrawingLinearFog(ER_GPUTexture* aInputTexture);
 		void PrepareDrawingColorGrading(ER_GPUTexture* aInputTexture);
 		void PrepareDrawingVignette(ER_GPUTexture* aInputTexture);

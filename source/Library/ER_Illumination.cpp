@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "ER_Illumination.h"
-#include "GameTime.h"
+#include "ER_CoreTime.h"
 #include "ER_Camera.h"
 #include "DirectionalLight.h"
 #include "ER_CoreException.h"
@@ -269,7 +269,7 @@ namespace Library {
 
 	//voxel GI based on "Interactive Indirect Illumination Using Voxel Cone Tracing" by C.Crassin et al.
 	//https://research.nvidia.com/sites/default/files/pubs/2011-09_Interactive-Indirect-Illumination/GIVoxels-pg2011-authors.pdf
-	void ER_Illumination::DrawGlobalIllumination(ER_GBuffer* gbuffer, const GameTime& gameTime)
+	void ER_Illumination::DrawGlobalIllumination(ER_GBuffer* gbuffer, const ER_CoreTime& gameTime)
 	{
 		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
@@ -526,7 +526,7 @@ namespace Library {
 		}
 	}
 
-	void ER_Illumination::Update(const GameTime& gameTime, const ER_Scene* scene)
+	void ER_Illumination::Update(const ER_CoreTime& gameTime, const ER_Scene* scene)
 	{
 		//check SSS culling
 		{

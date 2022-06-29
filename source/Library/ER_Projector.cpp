@@ -2,7 +2,7 @@
 
 #include "ER_Projector.h"
 #include "Game.h"
-#include "GameTime.h"
+#include "ER_CoreTime.h"
 #include "VectorHelper.h"
 #include "MatrixHelper.h"
 

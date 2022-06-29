@@ -83,9 +83,9 @@ namespace Library
 		~ER_Foliage();
 
 		void Initialize();
-		void Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass);
+		void Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass);
 		void DrawDebugGizmos();
-		void Update(const GameTime& gameTime);
+		void Update(const ER_CoreTime& gameTime);
 
 		bool IsSelected() { return mIsSelectedInEditor; }
 		void SetSelected(bool val) { mIsSelectedInEditor = val; }
@@ -221,8 +221,8 @@ namespace Library
 		~ER_FoliageManager();
 
 		void Initialize();
-		void Update(const GameTime& gameTime, float gustDistance, float strength, float frequency);
-		void Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass);
+		void Update(const ER_CoreTime& gameTime, float gustDistance, float strength, float frequency);
+		void Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass);
 		void DrawDebugGizmos();
 		void AddFoliage(ER_Foliage* foliage);
 		void SetVoxelizationParams(float* scale, const float* dimensions, XMFLOAT4* voxelCamera);

@@ -4,7 +4,7 @@
 
 namespace Library
 {
-	class GameTime;
+	class ER_CoreTime;
 
 	enum MouseButtons
 	{
@@ -26,7 +26,7 @@ namespace Library
 		LPDIMOUSESTATE LastState();
 
 		virtual void Initialize() override;
-		virtual void Update(const GameTime& gameTime) override;
+		virtual void Update(const ER_CoreTime& gameTime) override;
 
 		long X() const;
 		long Y() const;

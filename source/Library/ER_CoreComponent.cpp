@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "ER_CoreComponent.h"
-#include "GameTime.h"
+#include "ER_CoreTime.h"
 
 namespace Library
 {
@@ -42,7 +42,7 @@ namespace Library
 	{
 	}
 
-	void ER_CoreComponent::Update(const GameTime& gameTime)
+	void ER_CoreComponent::Update(const ER_CoreTime& gameTime)
 	{
 	}
 }

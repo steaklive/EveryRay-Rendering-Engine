@@ -5,7 +5,7 @@
 #include "ER_Projector.h"
 #include "ER_Camera.h"
 #include "DirectionalLight.h"
-#include "GameTime.h"
+#include "ER_CoreTime.h"
 #include "Game.h"
 #include "DepthMap.h"
 #include "ER_CoreException.h"
@@ -77,7 +77,7 @@ namespace Library
 		ReleaseObject(mDepthStencilState);
 	}
 
-	void ER_ShadowMapper::Update(const GameTime& gameTime)
+	void ER_ShadowMapper::Update(const ER_CoreTime& gameTime)
 	{
 		for (size_t i = 0; i < NUM_SHADOW_CASCADES; i++)
 		{

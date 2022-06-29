@@ -3,7 +3,7 @@
 #include "ER_Skybox.h"
 #include "Game.h"
 #include "ER_CoreException.h"
-#include "GameTime.h"
+#include "ER_CoreTime.h"
 #include "ER_Camera.h"
 #include "MatrixHelper.h"
 #include "ER_Model.h"
@@ -109,7 +109,7 @@ namespace Library
 		XMStoreFloat4x4(&mWorldMatrix, XMLoadFloat4x4(&mScaleMatrix) * XMMatrixTranslation(position.x, position.y, position.z));
 	}
 
-	void ER_Skybox::UpdateSun(const GameTime& gameTime, ER_Camera* aCustomCamera)
+	void ER_Skybox::UpdateSun(const ER_CoreTime& gameTime, ER_Camera* aCustomCamera)
 	{
 		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
 

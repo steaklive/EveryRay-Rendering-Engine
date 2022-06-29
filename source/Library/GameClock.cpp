@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "GameClock.h"
-#include "GameTime.h"
+#include "ER_CoreTime.h"
 
 namespace Library
 {
@@ -50,7 +50,7 @@ namespace Library
 		QueryPerformanceCounter(&time);
 	}
 
-	void GameClock::UpdateGameTime(GameTime& gameTime)
+	void GameClock::UpdateGameTime(ER_CoreTime& gameTime)
 	{
 		GetTime(mCurrentTime);
 		gameTime.SetTotalGameTime((mCurrentTime.QuadPart - mStartTime.QuadPart) / mFrequency);

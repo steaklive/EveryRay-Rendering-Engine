@@ -49,7 +49,7 @@ namespace Library
 			listener();
 	}
 
-	void ER_FoliageManager::Update(const GameTime& gameTime, float gustDistance, float strength, float frequency)
+	void ER_FoliageManager::Update(const ER_CoreTime& gameTime, float gustDistance, float strength, float frequency)
 	{
 		ER_Camera* camera = (ER_Camera*)(mGame->Services().GetService(ER_Camera::TypeIdClass()));
 
@@ -68,7 +68,7 @@ namespace Library
 		UpdateImGui();
 	}
 
-	void ER_FoliageManager::Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass)
+	void ER_FoliageManager::Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass)
 	{
 		if (!mEnabled)
 			return;
@@ -385,7 +385,7 @@ namespace Library
 		}
 	}
 
-	void ER_Foliage::Draw(const GameTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass)
+	void ER_Foliage::Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass)
 	{
 		if(renderPass == TO_VOXELIZATION)
 			assert(worldShadowMapper);
@@ -498,7 +498,7 @@ namespace Library
 			mDebugGizmoAABB->Draw();
 	}
 
-	void ER_Foliage::Update(const GameTime& gameTime)
+	void ER_Foliage::Update(const ER_CoreTime& gameTime)
 	{
 		bool editable = mIsSelectedInEditor && Utility::IsEditorMode && Utility::IsFoliageEditor;
 

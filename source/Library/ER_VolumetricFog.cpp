@@ -84,7 +84,7 @@ namespace Library {
 		ComputeAccumulation();
 	}
 
-	void ER_VolumetricFog::Update(const GameTime& gameTime)
+	void ER_VolumetricFog::Update(const ER_CoreTime& gameTime)
 	{
 		ER_Camera* camera = (ER_Camera*)GetGame()->Services().GetService(ER_Camera::TypeIdClass());
 		assert(camera);

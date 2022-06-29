@@ -187,7 +187,7 @@ namespace Rendering
 		}
 	}
 
-	void RenderingGame::Update(const GameTime& gameTime)
+	void RenderingGame::Update(const ER_CoreTime& gameTime)
 	{
 		assert(mCurrentSandbox);
 
@@ -311,7 +311,7 @@ namespace Rendering
 		Game::Shutdown();
 	}
 	
-	void RenderingGame::Draw(const GameTime& gameTime)
+	void RenderingGame::Draw(const ER_CoreTime& gameTime)
 	{
 		assert(mCurrentSandbox);
 
