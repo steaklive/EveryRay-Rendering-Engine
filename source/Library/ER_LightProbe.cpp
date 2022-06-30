@@ -119,7 +119,7 @@ namespace Library
 	}
 
 	void ER_LightProbe::Compute(Game& game, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted,
-		DepthTarget** aDepthBuffers, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, ER_QuadRenderer* quadRenderer, ER_Skybox* skybox)
+		ER_GPUTexture** aDepthBuffers, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, ER_QuadRenderer* quadRenderer, ER_Skybox* skybox)
 	{
 		if (mIsProbeLoadedFromDisk)
 			return;
@@ -145,7 +145,7 @@ namespace Library
 		mIsProbeLoadedFromDisk = true;
 	}
 
-	void ER_LightProbe::DrawGeometryToProbe(Game& game, ER_GPUTexture* aTextureNonConvoluted, DepthTarget** aDepthBuffers,
+	void ER_LightProbe::DrawGeometryToProbe(Game& game, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture** aDepthBuffers,
 		const LightProbeRenderingObjectsInfo& objectsToRender, ER_Skybox* skybox)
 	{
 		auto context = game.Direct3DDeviceContext();
@@ -163,9 +163,9 @@ namespace Library
 		{
 			// Set the render target and clear it.
 			int rtvShift = (mProbeType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT;
-			context->OMSetRenderTargets(1, &aTextureNonConvoluted->GetRTVs()[cubeMapFaceIndex * rtvShift], aDepthBuffers[cubeMapFaceIndex]->getDSV());
+			context->OMSetRenderTargets(1, &aTextureNonConvoluted->GetRTVs()[cubeMapFaceIndex * rtvShift], aDepthBuffers[cubeMapFaceIndex]->GetDSV());
 			context->ClearRenderTargetView(aTextureNonConvoluted->GetRTVs()[cubeMapFaceIndex], clearColor);
-			context->ClearDepthStencilView(aDepthBuffers[cubeMapFaceIndex]->getDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+			context->ClearDepthStencilView(aDepthBuffers[cubeMapFaceIndex]->GetDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 			//rendering objects and sky
 			{

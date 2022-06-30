@@ -3,7 +3,6 @@
 #include "Game.h"
 #include "ER_CoreTime.h"
 #include "ER_GPUTexture.h"
-#include "DepthTarget.h"
 #include "ConstantBuffer.h"
 
 namespace Library
@@ -59,7 +58,7 @@ namespace Library
 
 		void Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR = true, bool pFog = false, bool pLightShafts = false);
 	
-		void Begin(ER_GPUTexture* aInitialRT, DepthTarget* aDepthTarget);
+		void Begin(ER_GPUTexture* aInitialRT, ER_GPUTexture* aDepthTarget);
 		void End(ER_GPUTexture* aResolveRT = nullptr);
 
 		void DrawEffects(const ER_CoreTime& gameTime, ER_QuadRenderer* quad, ER_GBuffer* gbuffer, 
@@ -145,7 +144,7 @@ namespace Library
 		// just pointers to RTs (not allocated in this system)
 		ER_GPUTexture* mRenderTargetBeforeResolve = nullptr; 
 		ER_GPUTexture* mRenderTargetBeforePostProcessingPasses = nullptr;
-		DepthTarget* mDepthTarget = nullptr;
+		ER_GPUTexture* mDepthTarget = nullptr;
 
 		bool mShowDebug = false;
 	};

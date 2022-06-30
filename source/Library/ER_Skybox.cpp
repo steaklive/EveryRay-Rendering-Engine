@@ -163,7 +163,7 @@ namespace Library
 		context->DrawIndexed(mIndexCount, 0, 0);
 	}
 
-	void ER_Skybox::DrawSun(ER_Camera* aCustomCamera, ER_GPUTexture* aSky, DepthTarget* aSceneDepth)
+	void ER_Skybox::DrawSun(ER_Camera* aCustomCamera, ER_GPUTexture* aSky, ER_GPUTexture* aSceneDepth)
 	{
 		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
 		assert(aSceneDepth);
@@ -174,7 +174,7 @@ namespace Library
 			ID3D11Buffer* CBs[1] = { mSunConstantBuffer.Buffer() };
 			context->PSSetConstantBuffers(0, 1, CBs);
 
-			ID3D11ShaderResourceView* SR[2] = { aSky->GetSRV(), aSceneDepth->getSRV() };
+			ID3D11ShaderResourceView* SR[2] = { aSky->GetSRV(), aSceneDepth->GetSRV() };
 			context->PSSetShaderResources(0, 2, SR);
 
 			context->PSSetShader(mSunPS, NULL, NULL);

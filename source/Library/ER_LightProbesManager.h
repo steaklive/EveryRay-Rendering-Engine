@@ -15,7 +15,6 @@
 #include "Common.h"
 #include "ER_RenderingObject.h"
 #include "ER_GPUTexture.h"
-#include "DepthTarget.h"
 #include "ConstantBuffer.h"
 
 namespace Library
@@ -115,7 +114,7 @@ namespace Library
 
 		ER_GPUTexture* mTempDiffuseCubemapFacesRT = nullptr;
 		ER_GPUTexture* mTempDiffuseCubemapFacesConvolutedRT = nullptr;
-		DepthTarget* mTempDiffuseCubemapDepthBuffers[CUBEMAP_FACES_COUNT] = { nullptr };
+		ER_GPUTexture* mTempDiffuseCubemapDepthBuffers[CUBEMAP_FACES_COUNT] = { nullptr };
 		std::vector<ER_LightProbeCell> mDiffuseProbesCells;
 		ER_AABB mDiffuseProbesCellBounds;
 		int mDiffuseProbesCountTotal = 0;
@@ -141,7 +140,7 @@ namespace Library
 
 		ER_GPUTexture* mTempSpecularCubemapFacesRT = nullptr;
 		ER_GPUTexture* mTempSpecularCubemapFacesConvolutedRT = nullptr;
-		DepthTarget* mTempSpecularCubemapDepthBuffers[CUBEMAP_FACES_COUNT] = { nullptr };
+		ER_GPUTexture* mTempSpecularCubemapDepthBuffers[CUBEMAP_FACES_COUNT] = { nullptr };
 		ER_GPUTexture* mSpecularCubemapArrayRT = nullptr;
 		std::vector<ER_LightProbeCell> mSpecularProbesCells;
 		ER_AABB mSpecularProbesCellBounds;

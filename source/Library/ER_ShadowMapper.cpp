@@ -7,7 +7,6 @@
 #include "DirectionalLight.h"
 #include "ER_CoreTime.h"
 #include "Game.h"
-#include "DepthMap.h"
 #include "ER_CoreException.h"
 #include "ER_Scene.h"
 #include "ER_MaterialHelper.h"
@@ -35,7 +34,7 @@ namespace Library
 		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 		{
 			mLightProjectorCenteredPositions.push_back(XMFLOAT3(0, 0, 0));
-			mShadowMaps.push_back(new DepthMap(pGame, pWidth, pHeight));
+			mShadowMaps.push_back(new ER_GPUTexture(pGame.Direct3DDevice(), pWidth, pHeight, 1u, DXGI_FORMAT_D24_UNORM_S8_UINT, D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE));
 
 			mCameraCascadesFrustums.push_back(XMMatrixIdentity());
 			(isCascaded) ? mCameraCascadesFrustums[i].SetMatrix(mCamera.GetCustomViewProjectionMatrixForCascade(i)) : mCameraCascadesFrustums[i].SetMatrix(mCamera.ProjectionMatrix());
@@ -93,18 +92,39 @@ namespace Library
 	void ER_ShadowMapper::BeginRenderingToShadowMap(int cascadeIndex)
 	{
 		assert(cascadeIndex < NUM_SHADOW_CASCADES);
-		GetGame()->Direct3DDeviceContext()->RSGetState(&mOriginalRasterizerState);
 
-		mShadowMaps[cascadeIndex]->Begin();
-		GetGame()->Direct3DDeviceContext()->ClearDepthStencilView(mShadowMaps[cascadeIndex]->DepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-		GetGame()->Direct3DDeviceContext()->RSSetState(mShadowRasterizerState);
+		auto context = GetGame()->Direct3DDeviceContext();
+		context->RSGetState(&mOriginalRasterizerState);
+		UINT numViewports = 1;
+
+		context->RSGetViewports(&numViewports, &mOriginalViewport);
+
+		D3D11_VIEWPORT newViewport;
+		newViewport.TopLeftX = 0.0f;
+		newViewport.TopLeftY = 0.0f;
+		newViewport.Width = static_cast<float>(mShadowMaps[cascadeIndex]->GetWidth());
+		newViewport.Height = static_cast<float>(mShadowMaps[cascadeIndex]->GetHeight());
+		newViewport.MinDepth = 0.0f;
+		newViewport.MaxDepth = 1.0f;
+
+		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
+		context->OMSetRenderTargets(1, nullRTVs, mShadowMaps[cascadeIndex]->GetDSV());
+		context->RSSetViewports(1, &newViewport);
+
+		context->ClearDepthStencilView(mShadowMaps[cascadeIndex]->GetDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+		context->RSSetState(mShadowRasterizerState);
 	}
 
 	void ER_ShadowMapper::StopRenderingToShadowMap(int cascadeIndex)
 	{
 		assert(cascadeIndex < NUM_SHADOW_CASCADES);
-		mShadowMaps[cascadeIndex]->End();
-		GetGame()->Direct3DDeviceContext()->RSSetState(mOriginalRasterizerState);
+
+		auto context = GetGame()->Direct3DDeviceContext();
+
+		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
+		context->OMSetRenderTargets(1, nullRTVs, nullptr);
+		context->RSSetViewports(1, &mOriginalViewport);
+		context->RSSetState(mOriginalRasterizerState);
 	}
 
 	XMMATRIX ER_ShadowMapper::GetViewMatrix(int cascadeIndex /*= 0*/) const
@@ -121,7 +141,7 @@ namespace Library
 	ID3D11ShaderResourceView* ER_ShadowMapper::GetShadowTexture(int cascadeIndex) const
 	{
 		assert(cascadeIndex < NUM_SHADOW_CASCADES);
-		return mShadowMaps.at(cascadeIndex)->OutputTexture();
+		return mShadowMaps.at(cascadeIndex)->GetSRV();
 	}
 
 	//void ShadowMapper::ApplyRotation()

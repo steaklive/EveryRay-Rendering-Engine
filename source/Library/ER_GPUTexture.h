@@ -13,6 +13,8 @@ public:
 	ID3D11RenderTargetView* GetRTV() { return mRTVs[0]; }
 	ID3D11RenderTargetView** GetRTVs() { return mRTVs; }
 
+	ID3D11DepthStencilView* GetDSV(bool readOnly = false) { if (readOnly) return mDSV_ReadOnly; else return mDSV; }
+
 	ID3D11ShaderResourceView* GetSRV() { return mSRV; }
 	void SetSRV(ID3D11ShaderResourceView* SRV) { mSRV = SRV; }
 
@@ -36,6 +38,8 @@ private:
 	ID3D11RenderTargetView** mRTVs = nullptr;
 	ID3D11UnorderedAccessView** mUAVs = nullptr;
 	ID3D11ShaderResourceView* mSRV = nullptr; 
+	ID3D11DepthStencilView* mDSV = nullptr;
+	ID3D11DepthStencilView* mDSV_ReadOnly = nullptr;
 	ID3D11Texture2D* mTexture2D = nullptr;
 	ID3D11Texture3D* mTexture3D = nullptr;
 
@@ -46,5 +50,6 @@ private:
 	UINT mDepth = 0;
 	UINT mArraySize = 0;
 	bool mIsCubemap = false;
+	bool mIsDepthStencil = false;
 	bool mIsLoadedFromFile = false;
 };

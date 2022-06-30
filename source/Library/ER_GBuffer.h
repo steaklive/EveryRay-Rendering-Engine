@@ -3,7 +3,6 @@
 #include "Common.h"
 #include "ER_CoreComponent.h"
 #include "ER_GPUTexture.h"
-#include "DepthTarget.h"
 
 namespace Library
 {
@@ -28,10 +27,10 @@ namespace Library
 		ER_GPUTexture* GetPositions() { return mPositionsBuffer; }
 		ER_GPUTexture* GetExtraBuffer() { return mExtraBuffer; } // [reflection mask, roughness, metalness, foliage mask]
 		ER_GPUTexture* GetExtra2Buffer() { return mExtra2Buffer; } // [global diffuse probe mask, height (for POM, etc.), SSS, skip deferred lighting]
-		DepthTarget* GetDepth() { return mDepthBuffer; }
+		ER_GPUTexture* GetDepth() { return mDepthBuffer; }
 
 	private:
-		DepthTarget* mDepthBuffer = nullptr;
+		ER_GPUTexture* mDepthBuffer = nullptr;
 		ER_GPUTexture* mAlbedoBuffer= nullptr;
 		ER_GPUTexture* mNormalBuffer= nullptr;
 		ER_GPUTexture* mPositionsBuffer = nullptr;

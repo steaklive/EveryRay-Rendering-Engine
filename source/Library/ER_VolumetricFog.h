@@ -3,7 +3,6 @@
 #include "Common.h"
 #include "ConstantBuffer.h"
 #include "ER_GPUTexture.h"
-#include "DepthTarget.h"
 #include "ER_CoreComponent.h"
 
 namespace Library

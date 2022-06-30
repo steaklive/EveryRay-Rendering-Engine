@@ -194,8 +194,6 @@
     <ClInclude Include="ER_GBufferMaterial.h" />
     <ClInclude Include="ER_GPUTexture.h" />
     <ClInclude Include="ER_Sandbox.h" />
-    <ClInclude Include="DepthMap.h" />
-    <ClInclude Include="DepthTarget.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="ER_Editor.h" />
     <ClInclude Include="ER_CPUProfiler.h" />
@@ -213,7 +211,7 @@
     <ClInclude Include="ER_FoliageManager.h" />
     <ClInclude Include="ER_Frustum.h" />
     <ClInclude Include="Game.h" />
-    <ClInclude Include="GameClock.h" />
+    <ClInclude Include="ER_CoreClock.h" />
     <ClInclude Include="ER_CoreComponent.h" />
     <ClInclude Include="ER_CoreTime.h" />
     <ClInclude Include="ER_GBuffer.h" />
@@ -266,8 +264,6 @@
     <ClCompile Include="ER_DebugLightProbeMaterial.cpp" />
     <ClCompile Include="ER_GBufferMaterial.cpp" />
     <ClCompile Include="ER_GPUTexture.cpp" />
-    <ClCompile Include="DepthMap.cpp" />
-    <ClCompile Include="DepthTarget.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="ER_Editor.cpp" />
     <ClCompile Include="ER_CPUProfiler.cpp" />
@@ -288,7 +284,7 @@
     <ClCompile Include="ER_FoliageManager.cpp" />
     <ClCompile Include="ER_Frustum.cpp" />
     <ClCompile Include="Game.cpp" />
-    <ClCompile Include="GameClock.cpp" />
+    <ClCompile Include="ER_CoreClock.cpp" />
     <ClCompile Include="ER_CoreComponent.cpp" />
     <ClCompile Include="ER_CoreException.cpp" />
     <ClCompile Include="ER_CoreTime.cpp" />

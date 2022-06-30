@@ -2,7 +2,6 @@
 #include "Common.h"
 #include "ER_CoreComponent.h"
 #include "ConstantBuffer.h"
-#include "DepthTarget.h"
 #include "ER_GPUTexture.h"
 
 namespace Library
@@ -39,7 +38,7 @@ namespace Library
 		void Draw(ER_Camera* aCustomCamera = nullptr);
 		void Update(ER_Camera* aCustomCamera = nullptr);
 		void UpdateSun(const ER_CoreTime& gameTime, ER_Camera* aCustomCamera = nullptr);
-		void DrawSun(ER_Camera* aCustomCamera = nullptr, ER_GPUTexture* aSky = nullptr, DepthTarget* aSceneDepth = nullptr);
+		void DrawSun(ER_Camera* aCustomCamera = nullptr, ER_GPUTexture* aSky = nullptr, ER_GPUTexture* aSceneDepth = nullptr);
 
 		void SetMovable(bool value) { mIsMovable = value; };
 		void SetUseCustomSkyColor(bool value) { mUseCustomColor = value; }

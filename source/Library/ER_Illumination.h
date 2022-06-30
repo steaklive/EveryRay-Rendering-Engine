@@ -3,7 +3,7 @@
 #include "ER_CoreComponent.h"
 #include "ConstantBuffer.h"
 #include "ER_GPUTexture.h"
-#include "DepthTarget.h"
+
 #include "ER_LightProbesManager.h"
 
 #define NUM_VOXEL_GI_CASCADES 2
@@ -169,7 +169,7 @@ namespace Library
 
 		ER_GBuffer* mGbuffer = nullptr;
 
-		DepthTarget* mDepthBuffer = nullptr;
+		ER_GPUTexture* mDepthBuffer = nullptr;
 
 		ID3D11VertexShader* mVCTVoxelizationDebugVS = nullptr;
 		ID3D11GeometryShader* mVCTVoxelizationDebugGS = nullptr;

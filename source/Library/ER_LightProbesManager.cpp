@@ -37,8 +37,8 @@ namespace Library
 
 		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
 		{
-			mTempDiffuseCubemapDepthBuffers[i] = DepthTarget::Create(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
-			mTempSpecularCubemapDepthBuffers[i] = DepthTarget::Create(game.Direct3DDevice(), SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
+			mTempDiffuseCubemapDepthBuffers[i] = new ER_GPUTexture(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1u, DXGI_FORMAT_D24_UNORM_S8_UINT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL);
+			mTempSpecularCubemapDepthBuffers[i] = new ER_GPUTexture(game.Direct3DDevice(), SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1u, DXGI_FORMAT_D24_UNORM_S8_UINT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL);
 		}
 
 		mQuadRenderer = (ER_QuadRenderer*)game.Services().GetService(ER_QuadRenderer::TypeIdClass());

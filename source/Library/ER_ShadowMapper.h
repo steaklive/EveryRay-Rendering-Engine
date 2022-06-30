@@ -1,10 +1,10 @@
 #pragma once
 #include "Common.h"
 #include "ER_CoreComponent.h"
+#include "ER_GPUTexture.h"
 
 namespace Library
 {
-	class DepthMap;
 	class ER_Frustum;
 	class ER_Projector;
 	class ER_Camera;
@@ -37,11 +37,12 @@ namespace Library
 		ER_Camera& mCamera;
 		DirectionalLight& mDirectionalLight;
 
-		std::vector<DepthMap*> mShadowMaps;
+		std::vector<ER_GPUTexture*> mShadowMaps;
 		std::vector<ER_Projector*> mLightProjectors;
 		std::vector<ER_Frustum> mCameraCascadesFrustums;
 		std::vector<XMFLOAT3> mLightProjectorCenteredPositions;
 
+		D3D11_VIEWPORT mOriginalViewport;
 		XMMATRIX mShadowMapViewMatrix;
 		XMMATRIX mShadowMapProjectionMatrix;
 		ID3D11RasterizerState* mShadowRasterizerState;

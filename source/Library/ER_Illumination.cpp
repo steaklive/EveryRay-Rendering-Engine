@@ -232,7 +232,7 @@ namespace Library {
 			mLocalIlluminationRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u,
 				DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS, 1);
 			
-			mDepthBuffer = DepthTarget::Create(mGame->Direct3DDevice(), mGame->ScreenWidth(), mGame->ScreenHeight(), 1u, DXGI_FORMAT_D24_UNORM_S8_UINT);
+			mDepthBuffer = new ER_GPUTexture(mGame->Direct3DDevice(), mGame->ScreenWidth(), mGame->ScreenHeight(), 1u, DXGI_FORMAT_D24_UNORM_S8_UINT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL);
 		}
 
 		//callbacks for materials updates
@@ -254,7 +254,7 @@ namespace Library {
 	{
 		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		auto context = GetGame()->Direct3DDeviceContext();
-		context->OMSetRenderTargets(1, mLocalIlluminationRT->GetRTVs(), gbuffer->GetDepth()->getDSV());
+		context->OMSetRenderTargets(1, mLocalIlluminationRT->GetRTVs(), gbuffer->GetDepth()->GetDSV());
 		context->ClearRenderTargetView(mLocalIlluminationRT->GetRTV(), clearColorBlack);
 
 		if (skybox)
@@ -363,10 +363,10 @@ namespace Library {
 				ID3D11RenderTargetView* RTVs[1] = { mVCTVoxelizationDebugRT->GetRTV() };
 
 				context->RSSetState(RasterizerStates::BackCulling);
-				context->OMSetRenderTargets(1, RTVs, mDepthBuffer->getDSV());
+				context->OMSetRenderTargets(1, RTVs, mDepthBuffer->GetDSV());
 				context->OMSetDepthStencilState(mDepthStencilStateRW, 0);
 				context->ClearRenderTargetView(mVCTVoxelizationDebugRT->GetRTV(), clearColorBlack);
-				context->ClearDepthStencilView(mDepthBuffer->getDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+				context->ClearDepthStencilView(mDepthBuffer->GetDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 				context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_POINTLIST);
 				context->IASetInputLayout(nullptr);
@@ -706,7 +706,7 @@ namespace Library {
 	void ER_Illumination::DrawForwardLighting(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget)
 	{
 		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
-		context->OMSetRenderTargets(1, aRenderTarget->GetRTVs(), gbuffer->GetDepth()->getDSV());
+		context->OMSetRenderTargets(1, aRenderTarget->GetRTVs(), gbuffer->GetDepth()->GetDSV());
 
 		for (auto& obj : mForwardPassObjects)
 			obj.second->Draw(ER_MaterialHelper::forwardLightingNonMaterialName);

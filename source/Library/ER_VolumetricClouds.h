@@ -2,7 +2,6 @@
 #include "Common.h"
 #include "ConstantBuffer.h"
 #include "ER_GPUTexture.h"
-#include "DepthTarget.h"
 #include "ER_CoreComponent.h"
 
 namespace Library
@@ -50,7 +49,7 @@ namespace Library
 		ER_VolumetricClouds(Game& game, ER_Camera& camera, DirectionalLight& light, ER_Skybox& skybox);
 		~ER_VolumetricClouds();
 
-		void Initialize(DepthTarget* aIlluminationDepth);
+		void Initialize(ER_GPUTexture* aIlluminationDepth);
 
 		void Draw(const ER_CoreTime& gametime);
 		void Update(const ER_CoreTime& gameTime);
@@ -69,7 +68,7 @@ namespace Library
 		ConstantBuffer<VolumetricCloudsCBufferData::CloudsCB> mCloudsConstantBuffer;
 		ConstantBuffer<VolumetricCloudsCBufferData::UpsampleBlurCB> mUpsampleBlurConstantBuffer;
 
-		DepthTarget* mIlluminationResultDepthTarget = nullptr; // not allocated here, just a pointer
+		ER_GPUTexture* mIlluminationResultDepthTarget = nullptr; // not allocated here, just a pointer
 
 		ER_GPUTexture* mSkyRT = nullptr;
 		ER_GPUTexture* mSkyAndSunRT = nullptr;

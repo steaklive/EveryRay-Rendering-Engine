@@ -45,7 +45,7 @@ namespace Library {
 		mUpsampleBlurConstantBuffer.Release();
 	}
 
-	void ER_VolumetricClouds::Initialize(DepthTarget* aIlluminationDepth) {
+	void ER_VolumetricClouds::Initialize(ER_GPUTexture* aIlluminationDepth) {
 		//shaders
 		ID3DBlob* blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsComposite.hlsl").c_str(), "main", "ps_5_0", &blob)))
@@ -200,7 +200,7 @@ namespace Library {
 			mWeatherTextureSRV,
 			mCloudTextureSRV,
 			mWorleyTextureSRV,
-			mIlluminationResultDepthTarget->getSRV()
+			mIlluminationResultDepthTarget->GetSRV()
 		};
 		ID3D11SamplerState* SS[2] = { mCloudSS, mWeatherSS };
 
@@ -258,7 +258,7 @@ namespace Library {
 		//	context->OMSetRenderTargets(1, mBlurRT->GetRTVs(), nullptr);
 		//	ID3D11ShaderResourceView* SR_Blur[2] = {
 		//		mUpsampleAndBlurRT->GetSRV(),
-		//		mIlluminationResultDepthTarget->getSRV(),
+		//		mIlluminationResultDepthTarget->GetSRV(),
 		//	};
 		//	context->PSSetShaderResources(0, 2, SR_Blur);
 		//	context->PSSetShader(mBlurPS, NULL, NULL);
@@ -277,7 +277,7 @@ namespace Library {
 		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
 
 		context->OMSetRenderTargets(1, aRenderTarget->GetRTVs(), nullptr);
-		ID3D11ShaderResourceView* SR[2] = { mIlluminationResultDepthTarget->getSRV(), /*mBlurRT*/mUpsampleAndBlurRT->GetSRV() };
+		ID3D11ShaderResourceView* SR[2] = { mIlluminationResultDepthTarget->GetSRV(), /*mBlurRT*/mUpsampleAndBlurRT->GetSRV() };
 		context->PSSetShaderResources(0, 2, SR);
 		context->PSSetShader(mCompositePS, NULL, NULL);
 		

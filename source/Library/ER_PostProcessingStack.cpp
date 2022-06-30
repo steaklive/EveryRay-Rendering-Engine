@@ -245,12 +245,12 @@ namespace Library {
 		ImGui::End();
 	}
 	
-	void ER_PostProcessingStack::Begin(ER_GPUTexture* aInitialRT, DepthTarget* aDepthTarget)
+	void ER_PostProcessingStack::Begin(ER_GPUTexture* aInitialRT, ER_GPUTexture* aDepthTarget)
 	{
 		assert(aInitialRT && aDepthTarget);
 		mRenderTargetBeforePostProcessingPasses = aInitialRT;
 		mDepthTarget = aDepthTarget;
-		game.Direct3DDeviceContext()->OMSetRenderTargets(1, aInitialRT->GetRTVs(), aDepthTarget->getDSV());
+		game.Direct3DDeviceContext()->OMSetRenderTargets(1, aInitialRT->GetRTVs(), aDepthTarget->GetDSV());
 	}
 
 	void ER_PostProcessingStack::End(ER_GPUTexture* aResolveRT)
@@ -324,7 +324,7 @@ namespace Library {
 		ID3D11SamplerState* SS[1] = { SamplerStates::TrilinearWrap };
 		context->PSSetSamplers(0, 1, SS);
 
-		ID3D11ShaderResourceView* SRs[4] = { aInputTexture->GetSRV(), gbuffer->GetNormals()->GetSRV(), gbuffer->GetExtraBuffer()->GetSRV(), mDepthTarget->getSRV() };
+		ID3D11ShaderResourceView* SRs[4] = { aInputTexture->GetSRV(), gbuffer->GetNormals()->GetSRV(), gbuffer->GetExtraBuffer()->GetSRV(), mDepthTarget->GetSRV() };
 		context->PSSetShaderResources(0, 4, SRs);
 	}
 
@@ -350,7 +350,7 @@ namespace Library {
 		ID3D11SamplerState* SS[1] = { SamplerStates::TrilinearWrap };
 		context->PSSetSamplers(0, 1, SS);
 
-		ID3D11ShaderResourceView* SRs[3] = { aInputTexture->GetSRV(), mDepthTarget->getSRV(), gbuffer->GetExtra2Buffer()->GetSRV() };
+		ID3D11ShaderResourceView* SRs[3] = { aInputTexture->GetSRV(), mDepthTarget->GetSRV(), gbuffer->GetExtra2Buffer()->GetSRV() };
 		context->PSSetShaderResources(0, 3, SRs);
 	}
 
@@ -372,7 +372,7 @@ namespace Library {
 		ID3D11SamplerState* SS[1] = { SamplerStates::TrilinearWrap };
 		context->PSSetSamplers(0, 1, SS);
 
-		ID3D11ShaderResourceView* SRs[2] = { aInputTexture->GetSRV(), mDepthTarget->getSRV() };
+		ID3D11ShaderResourceView* SRs[2] = { aInputTexture->GetSRV(), mDepthTarget->GetSRV() };
 		context->PSSetShaderResources(0, 2, SRs);
 	}
 

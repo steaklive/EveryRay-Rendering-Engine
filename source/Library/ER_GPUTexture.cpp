@@ -20,17 +20,44 @@ ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, UINT width, UINT height, UINT
 	mWidth = width;
 	mHeight = height;
 	mIsCubemap = isCubemap;
+	mIsDepthStencil = bindFlags & D3D11_BIND_DEPTH_STENCIL;
+
+	DXGI_FORMAT depthstencil_tex_format;
+	DXGI_FORMAT depthstencil_srv_format;
+	DXGI_FORMAT depthstencil_dsv_format;
+	if (mIsDepthStencil)
+	{
+		switch (format)
+		{
+		case DXGI_FORMAT_D32_FLOAT:
+			depthstencil_tex_format = DXGI_FORMAT_R32_TYPELESS;
+			depthstencil_srv_format = DXGI_FORMAT_R32_FLOAT;
+			depthstencil_dsv_format = DXGI_FORMAT_D32_FLOAT;
+			break;
+		case DXGI_FORMAT_D16_UNORM:
+			depthstencil_tex_format = DXGI_FORMAT_R16_TYPELESS;
+			depthstencil_srv_format = DXGI_FORMAT_R16_UNORM;
+			depthstencil_dsv_format = DXGI_FORMAT_D16_UNORM;
+			break;
+		case DXGI_FORMAT_D24_UNORM_S8_UINT:
+		default:
+			depthstencil_tex_format = DXGI_FORMAT_R24G8_TYPELESS;
+			depthstencil_srv_format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+			depthstencil_dsv_format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+			break;
+		}
+	}
 
 	if (depth > 0) {
 		CD3D11_TEXTURE3D_DESC texDesc;
 		texDesc.BindFlags = bindFlags;
 		texDesc.CPUAccessFlags = 0;
-		texDesc.Format = format;
+		texDesc.Format = mIsDepthStencil ? depthstencil_tex_format : format;
 		texDesc.Width = width;
 		texDesc.Height = height;
 		texDesc.Depth = depth;
 		texDesc.MipLevels = mMipLevels;
-		if (mMipLevels > 1 && (D3D11_BIND_RENDER_TARGET & bindFlags) != 0)
+		if (mMipLevels > 1 && (D3D11_BIND_RENDER_TARGET & bindFlags) != 0 && !mIsDepthStencil)
 			texDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
 		else
 			texDesc.MiscFlags = 0;
@@ -44,10 +71,10 @@ ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, UINT width, UINT height, UINT
 		texDesc.MiscFlags = 0;
 		if (mIsCubemap)
 			texDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
-		if (mMipLevels > 1 && (D3D11_BIND_RENDER_TARGET & bindFlags) != 0)
+		if (mMipLevels > 1 && (D3D11_BIND_RENDER_TARGET & bindFlags) != 0 && !mIsDepthStencil)
 			texDesc.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
 		texDesc.CPUAccessFlags = 0;
-		texDesc.Format = format;
+		texDesc.Format = mIsDepthStencil ? depthstencil_tex_format : format;
 		texDesc.Width = width;
 		texDesc.Height = height;
 		texDesc.MipLevels = mMipLevels;
@@ -71,6 +98,8 @@ ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, UINT width, UINT height, UINT
 
 	if (bindFlags & D3D11_BIND_RENDER_TARGET)
 	{
+		assert(!mIsDepthStencil);
+
 		D3D11_RENDER_TARGET_VIEW_DESC rDesc;
 		rDesc.Format = format;
 		if (arraySize == 1)
@@ -118,8 +147,50 @@ ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, UINT width, UINT height, UINT
 		}
 
 	}
+	if (bindFlags & D3D11_BIND_DEPTH_STENCIL)
+	{
+		D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+		dsvDesc.Flags = 0;
+		dsvDesc.Format = depthstencil_dsv_format;
+		if (depth == 1)
+		{
+			if (samples > 1)
+			{
+				dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+			}
+			else
+			{
+				dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+				dsvDesc.Texture2D.MipSlice = 0;
+			}
+		}
+		else
+		{
+			if (samples > 1)
+			{
+				dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMSARRAY;
+				dsvDesc.Texture2DMSArray.FirstArraySlice = 0;
+				dsvDesc.Texture2DMSArray.ArraySize = depth;
+			}
+			else
+			{
+				dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+				dsvDesc.Texture2DArray.MipSlice = 0;
+				dsvDesc.Texture2DArray.FirstArraySlice = 0;
+				dsvDesc.Texture2DArray.ArraySize = depth;
+			}
+		}
+
+		device->CreateDepthStencilView(tex2D, &dsvDesc, &mDSV);
+		dsvDesc.Flags |= D3D11_DSV_READ_ONLY_DEPTH;
+		if (depthstencil_dsv_format == DXGI_FORMAT_D24_UNORM_S8_UINT)
+			dsvDesc.Flags |= D3D11_DSV_READ_ONLY_STENCIL;
+		device->CreateDepthStencilView(tex2D, &dsvDesc, &mDSV_ReadOnly);
+	}
 	if (bindFlags & D3D11_BIND_UNORDERED_ACCESS)
 	{
+		assert(!mIsDepthStencil);
+
 		D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
 		uavDesc.Buffer.FirstElement = 0;
 		uavDesc.Buffer.Flags = 0;
@@ -150,7 +221,7 @@ ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, UINT width, UINT height, UINT
 	if (bindFlags & D3D11_BIND_SHADER_RESOURCE)
 	{
 		D3D11_SHADER_RESOURCE_VIEW_DESC sDesc = CD3D11_SHADER_RESOURCE_VIEW_DESC();
-		sDesc.Format = format;
+		sDesc.Format = mIsDepthStencil ? depthstencil_srv_format : format;
 		if (arraySize > 1)
 		{
 			if (mIsCubemap)
@@ -334,6 +405,12 @@ ER_GPUTexture::~ER_GPUTexture()
 
 	if (mIsLoadedFromFile)
 		return;
+
+	if (mIsDepthStencil)
+	{
+		ReleaseObject(mDSV);
+		ReleaseObject(mDSV_ReadOnly);
+	}
 
 	if (mBindFlags & D3D11_BIND_RENDER_TARGET)
 	{

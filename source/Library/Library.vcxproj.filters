@@ -87,9 +87,6 @@
     <ClInclude Include="..\Game\GameException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GameClock.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Game.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -138,9 +135,6 @@
     <ClInclude Include="SpotLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DepthMap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RenderTarget.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -148,9 +142,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ShaderCompiler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DepthTarget.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ER_GPUTexture.h">
@@ -291,6 +282,9 @@
     <ClInclude Include="ER_CoreTime.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_CoreClock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -333,12 +327,6 @@
       <Filter>Source Files\Graphics\Lights</Filter>
     </ClCompile>
     <ClCompile Include="RenderTarget.cpp">
-      <Filter>Source Files\Graphics\RenderTarget</Filter>
-    </ClCompile>
-    <ClCompile Include="DepthMap.cpp">
-      <Filter>Source Files\Graphics\RenderTarget</Filter>
-    </ClCompile>
-    <ClCompile Include="DepthTarget.cpp">
       <Filter>Source Files\Graphics\RenderTarget</Filter>
     </ClCompile>
     <ClCompile Include="TGATextureLoader.cpp">
@@ -443,9 +431,6 @@
     <ClCompile Include="Game.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
-    <ClCompile Include="GameClock.cpp">
-      <Filter>Source Files\Core</Filter>
-    </ClCompile>
     <ClCompile Include="ER_RenderingObject.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
@@ -480,6 +465,9 @@
       <Filter>Source Files\Core</Filter>
     </ClCompile>
     <ClCompile Include="ER_CoreTime.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_CoreClock.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
   </ItemGroup>
