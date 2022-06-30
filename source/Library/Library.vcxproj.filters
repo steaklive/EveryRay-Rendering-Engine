@@ -67,9 +67,6 @@
     <Filter Include="Source Files\Graphics\Rendering helpers">
       <UniqueIdentifier>{69b35c96-dcdb-4ca0-ad4f-840b0cc51cf9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Graphics\RenderTarget">
-      <UniqueIdentifier>{4aa63e57-78cb-4ffa-a397-0ca6cabfa803}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Profilers">
       <UniqueIdentifier>{131ca24d-32b9-4518-a106-29c5278136e8}</UniqueIdentifier>
     </Filter>
@@ -133,9 +130,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SpotLight.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderTarget.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ConstantBuffer.h">
@@ -325,9 +319,6 @@
     </ClCompile>
     <ClCompile Include="SpotLight.cpp">
       <Filter>Source Files\Graphics\Lights</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderTarget.cpp">
-      <Filter>Source Files\Graphics\RenderTarget</Filter>
     </ClCompile>
     <ClCompile Include="TGATextureLoader.cpp">
       <Filter>Source Files\Helpers</Filter>

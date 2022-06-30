@@ -236,7 +236,6 @@
     <ClInclude Include="ER_RenderableAABB.h" />
     <ClInclude Include="ER_RenderingObject.h" />
     <ClInclude Include="RenderStateHelper.h" />
-    <ClInclude Include="RenderTarget.h" />
     <ClInclude Include="RTTI.h" />
     <ClInclude Include="SamplerStates.h" />
     <ClInclude Include="ER_Scene.h" />
@@ -305,7 +304,6 @@
     <ClCompile Include="ER_Ray.cpp" />
     <ClCompile Include="ER_RenderableAABB.cpp" />
     <ClCompile Include="RenderStateHelper.cpp" />
-    <ClCompile Include="RenderTarget.cpp" />
     <ClCompile Include="SamplerStates.cpp" />
     <ClCompile Include="ER_Scene.cpp" />
     <ClCompile Include="ServiceContainer.cpp" />
