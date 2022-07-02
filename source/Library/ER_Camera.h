@@ -13,8 +13,8 @@ namespace Library
 		RTTI_DECLARATIONS(ER_Camera, ER_CoreComponent)
 
 	public:
-		ER_Camera(Game& game);
-		ER_Camera(Game& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance);
+		ER_Camera(ER_Core& game);
+		ER_Camera(ER_Core& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance);
 
 		virtual ~ER_Camera();
 

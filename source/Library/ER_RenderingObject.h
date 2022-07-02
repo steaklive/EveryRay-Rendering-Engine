@@ -8,7 +8,7 @@ const UINT MAX_INSTANCE_COUNT = 20000;
 
 namespace Library
 {
-	class Game;
+	class ER_Core;
 	class ER_CoreTime;
 	class ER_Material;
 	class ER_RenderableAABB;
@@ -124,7 +124,7 @@ namespace Library
 		using Delegate_MeshMaterialVariablesUpdate = std::function<void(int)>; // mesh index for input
 
 	public:
-		ER_RenderingObject(const std::string& pName, int index, Game& pGame, ER_Camera& pCamera, std::unique_ptr<ER_Model> pModel, bool availableInEditor = false, bool isInstanced = false);
+		ER_RenderingObject(const std::string& pName, int index, ER_Core& pCore, ER_Camera& pCamera, std::unique_ptr<ER_Model> pModel, bool availableInEditor = false, bool isInstanced = false);
 		~ER_RenderingObject();
 
 		void LoadCustomMeshTextures(int meshIndex);
@@ -263,7 +263,7 @@ namespace Library
 		void ShowInstancesListWindow();
 		void ShowObjectsEditorWindow(const float *cameraView, float *cameraProjection, float* matrix);
 		
-		Game* mGame = nullptr;
+		ER_Core* mCore = nullptr;
 		ER_Camera& mCamera;
 
 		std::map<std::string, ER_Material*>						mMaterials;

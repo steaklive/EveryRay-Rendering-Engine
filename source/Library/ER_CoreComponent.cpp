@@ -7,25 +7,25 @@ namespace Library
 {
 	RTTI_DEFINITIONS(ER_CoreComponent);
 
-	ER_CoreComponent::ER_CoreComponent() : mGame(nullptr), mEnabled(true)
+	ER_CoreComponent::ER_CoreComponent() : mCore(nullptr), mEnabled(true)
 	{
 	}
 
-	ER_CoreComponent::ER_CoreComponent(Game& game) : mGame(&game), mEnabled(true)
+	ER_CoreComponent::ER_CoreComponent(ER_Core& game) : mCore(&game), mEnabled(true)
 	{	
 	}
 	ER_CoreComponent::~ER_CoreComponent()
 	{
 	}
 
-	Game* ER_CoreComponent::GetGame()
+	ER_Core* ER_CoreComponent::GetCore()
 	{
-		return mGame;
+		return mCore;
 	}
 
-	void ER_CoreComponent::SetGame(Game& game)
+	void ER_CoreComponent::SetCore(ER_Core& game)
 	{
-		mGame = &game;
+		mCore = &game;
 	}
 
 	bool ER_CoreComponent::Enabled() const

@@ -12,7 +12,7 @@ namespace Library {
 	{
 		RTTI_DECLARATIONS(ER_QuadRenderer, ER_CoreComponent)
 	public:
-		ER_QuadRenderer(Game& game);
+		ER_QuadRenderer(ER_Core& game);
 		~ER_QuadRenderer();
 
 		void Draw(ID3D11DeviceContext* context);

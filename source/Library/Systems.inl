@@ -1,6 +1,6 @@
 #pragma once
 
-#include "..\Library\Game.h"
+#include "..\Library\ER_Core.h"
 #include "..\Library\ER_CoreTime.h"
 #include "..\Library\ER_CoreException.h"
 #include "..\Library\ER_Editor.h"

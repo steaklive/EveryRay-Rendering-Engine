@@ -47,7 +47,7 @@ namespace Rendering
 	bool showWorldGrid = false;
 
 	RenderingGame::RenderingGame(HINSTANCE instance, const std::wstring& windowClass, const std::wstring& windowTitle, int showCommand)
-		: Game(instance, windowClass, windowTitle, showCommand),
+		: ER_Core(instance, windowClass, windowTitle, showCommand),
 		mDirectInput(nullptr),
 		mKeyboard(nullptr),
 		mMouse(nullptr),
@@ -120,7 +120,7 @@ namespace Rendering
 
 #pragma endregion
 
-		Game::Initialize();
+		ER_Core::Initialize();
 		LoadGlobalLevelsConfig();
 		SetLevel(mStartupSceneName);
 	}
@@ -198,7 +198,7 @@ namespace Rendering
 
 		UpdateImGui();
 
-		Game::Update(gameTime); //engine components (input, camera, etc.);
+		ER_Core::Update(gameTime); //engine components (input, camera, etc.);
 		mCurrentSandbox->Update(*this, gameTime); //level components (rendering systems, culling, etc.)
 
 		auto endUpdateTimer = std::chrono::high_resolution_clock::now();
@@ -308,7 +308,7 @@ namespace Rendering
 			ImGui::DestroyContext();
 		}
 
-		Game::Shutdown();
+		ER_Core::Shutdown();
 	}
 	
 	void RenderingGame::Draw(const ER_CoreTime& gameTime)
@@ -319,7 +319,7 @@ namespace Rendering
 
 		mDirect3DDeviceContext->ClearRenderTargetView(mRenderTargetView, reinterpret_cast<const float*>(&BackgroundColor));
 		mDirect3DDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-		Game::Draw(gameTime); //TODO remove
+		ER_Core::Draw(gameTime); //TODO remove
 		mCurrentSandbox->Draw(*this, gameTime);
 
 		mRenderStateHelper->SaveAll();

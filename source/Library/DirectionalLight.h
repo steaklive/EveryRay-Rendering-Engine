@@ -15,8 +15,8 @@ namespace Library
 		using Delegate_RotationUpdate = std::function<void()>; 
 
 	public:
-		DirectionalLight(Game& game);
-		DirectionalLight(Game& game, ER_Camera& camera);
+		DirectionalLight(ER_Core& game);
+		DirectionalLight(ER_Core& game, ER_Camera& camera);
 		virtual ~DirectionalLight();
 
 		const XMFLOAT3& Direction() const;

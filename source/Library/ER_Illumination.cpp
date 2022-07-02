@@ -8,7 +8,7 @@
 #include "ER_CoreException.h"
 #include "ER_Model.h"
 #include "ER_Mesh.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_MatrixHelper.h"
 #include "ER_MaterialHelper.h"
 #include "ER_Utility.h"
@@ -33,7 +33,7 @@ namespace Library {
 
 	const float voxelCascadesSizes[NUM_VOXEL_GI_CASCADES] = { 256.0f, 256.0f };
 
-	ER_Illumination::ER_Illumination(Game& game, ER_Camera& camera, const DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const ER_Scene* scene)
+	ER_Illumination::ER_Illumination(ER_Core& game, ER_Camera& camera, const DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const ER_Scene* scene)
 		: 
 		ER_CoreComponent(game),
 		mCamera(camera),
@@ -90,55 +90,55 @@ namespace Library {
 			ID3DBlob* blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
 				throw ER_CoreException("Failed to load VSMain from shader: VoxelConeTracingVoxelization.hlsl!");
-			if (FAILED(mGame->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTVoxelizationDebugVS)))
+			if (FAILED(mCore->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTVoxelizationDebugVS)))
 				throw ER_CoreException("Failed to create vertex shader from VoxelConeTracingVoxelization.hlsl!");
 			blob->Release();
 			
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl").c_str(), "GSMain", "gs_5_0", &blob)))
 				throw ER_CoreException("Failed to load GSMain from shader: VoxelConeTracingVoxelization.hlsl!");
-			if (FAILED(mGame->Direct3DDevice()->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTVoxelizationDebugGS)))
+			if (FAILED(mCore->Direct3DDevice()->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTVoxelizationDebugGS)))
 				throw ER_CoreException("Failed to create geometry shader from VoxelConeTracingVoxelization.hlsl!");
 			blob->Release();
 			
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load PSMain from shader: VoxelConeTracingVoxelization.hlsl!");
-			if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTVoxelizationDebugPS)))
+			if (FAILED(mCore->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTVoxelizationDebugPS)))
 				throw ER_CoreException("Failed to create pixel shader from VoxelConeTracingVoxelization.hlsl!");
 			blob->Release();
 			
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingMain.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
 				throw ER_CoreException("Failed to load CSMain from shader: VoxelConeTracingMain.hlsl!");
-			if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTMainCS)))
+			if (FAILED(mCore->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTMainCS)))
 				throw ER_CoreException("Failed to create shader from VoxelConeTracingMain.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\UpsampleBlur.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
 				throw ER_CoreException("Failed to load CSMain from shader: UpsampleBlur.hlsl!");
-			if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mUpsampleBlurCS)))
+			if (FAILED(mCore->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mUpsampleBlurCS)))
 				throw ER_CoreException("Failed to create shader from UpsampleBlur.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\CompositeIllumination.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
 				throw ER_CoreException("Failed to load CSMain from shader: CompositeIllumination.hlsl!");
-			if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mCompositeIlluminationCS)))
+			if (FAILED(mCore->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mCompositeIlluminationCS)))
 				throw ER_CoreException("Failed to create shader from CompositeIllumination.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\DeferredLighting.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
 				throw ER_CoreException("Failed to load CSMain from shader: DeferredLighting.hlsl!");
-			if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mDeferredLightingCS)))
+			if (FAILED(mCore->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mDeferredLightingCS)))
 				throw ER_CoreException("Failed to create shader from DeferredLighting.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
 				throw ER_CoreException("Failed to load VSMain from shader: ForwardLighting.hlsl!");
-			if (FAILED(mGame->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingVS)))
+			if (FAILED(mCore->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingVS)))
 				throw ER_CoreException("Failed to create vertex shader from ForwardLighting.hlsl!");
 			D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 			{
@@ -147,13 +147,13 @@ namespace Library {
 				{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 				{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 			};
-			if (FAILED(GetGame()->Direct3DDevice()->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), blob->GetBufferPointer(), blob->GetBufferSize(), &mForwardLightingRenderingObjectInputLayout)))
+			if (FAILED(GetCore()->Direct3DDevice()->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), blob->GetBufferPointer(), blob->GetBufferSize(), &mForwardLightingRenderingObjectInputLayout)))
 				throw ER_CoreException("ID3D11Device::CreateInputLayout() failed for Forward Lighting Input Layout.");
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "VSMain_instancing", "vs_5_0", &blob)))
 				throw ER_CoreException("Failed to load VSMain from shader: ForwardLighting.hlsl!");
-			if (FAILED(mGame->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingVS_Instancing)))
+			if (FAILED(mCore->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingVS_Instancing)))
 				throw ER_CoreException("Failed to create vertex shader from ForwardLighting.hlsl!");
 			D3D11_INPUT_ELEMENT_DESC inputElementDescriptionsInstancing[] =
 			{
@@ -166,7 +166,7 @@ namespace Library {
 				{ "WORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
 				{ "WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
 			};
-			if (FAILED(GetGame()->Direct3DDevice()->CreateInputLayout(inputElementDescriptionsInstancing, ARRAYSIZE(inputElementDescriptionsInstancing), blob->GetBufferPointer(), blob->GetBufferSize(), &mForwardLightingRenderingObjectInputLayout_Instancing)))
+			if (FAILED(GetCore()->Direct3DDevice()->CreateInputLayout(inputElementDescriptionsInstancing, ARRAYSIZE(inputElementDescriptionsInstancing), blob->GetBufferPointer(), blob->GetBufferSize(), &mForwardLightingRenderingObjectInputLayout_Instancing)))
 				throw ER_CoreException("ID3D11Device::CreateInputLayout() failed for Forward Lighting Input Layout (Instancing).");
 
 			blob->Release();
@@ -174,65 +174,65 @@ namespace Library {
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load PSMain from shader: ForwardLighting.hlsl!");
-			if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingPS)))
+			if (FAILED(mCore->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingPS)))
 				throw ER_CoreException("Failed to create main pixel shader from ForwardLighting.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "PSMain_DiffuseProbes", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load PSMain_DiffuseProbes from shader: ForwardLighting.hlsl!");
-			if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingDiffuseProbesPS)))
+			if (FAILED(mCore->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingDiffuseProbesPS)))
 				throw ER_CoreException("Failed to create diffuse probes pixel shader from ForwardLighting.hlsl!");
 			blob->Release();	
 			
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "PSMain_SpecularProbes", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load PSMain_SpecularProbes from shader: ForwardLighting.hlsl!");
-			if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingSpecularProbesPS)))
+			if (FAILED(mCore->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingSpecularProbesPS)))
 				throw ER_CoreException("Failed to create specular probes pixel shader from ForwardLighting.hlsl!");
 			blob->Release();
 		}
 		
 		//cbuffers
 		{
-			mVoxelizationDebugConstantBuffer.Initialize(mGame->Direct3DDevice());
-			mVoxelConeTracingMainConstantBuffer.Initialize(mGame->Direct3DDevice());
-			mCompositeTotalIlluminationConstantBuffer.Initialize(mGame->Direct3DDevice());
-			mUpsampleBlurConstantBuffer.Initialize(mGame->Direct3DDevice());
-			mDeferredLightingConstantBuffer.Initialize(mGame->Direct3DDevice());
-			mForwardLightingConstantBuffer.Initialize(mGame->Direct3DDevice());
-			mLightProbesConstantBuffer.Initialize(mGame->Direct3DDevice());
+			mVoxelizationDebugConstantBuffer.Initialize(mCore->Direct3DDevice());
+			mVoxelConeTracingMainConstantBuffer.Initialize(mCore->Direct3DDevice());
+			mCompositeTotalIlluminationConstantBuffer.Initialize(mCore->Direct3DDevice());
+			mUpsampleBlurConstantBuffer.Initialize(mCore->Direct3DDevice());
+			mDeferredLightingConstantBuffer.Initialize(mCore->Direct3DDevice());
+			mForwardLightingConstantBuffer.Initialize(mCore->Direct3DDevice());
+			mLightProbesConstantBuffer.Initialize(mCore->Direct3DDevice());
 		}
 
 		//RTs and gizmos
 		{
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 			{
-				mVCTVoxelCascades3DRTs.push_back(new ER_GPUTexture(mGame->Direct3DDevice(), voxelCascadesSizes[i], voxelCascadesSizes[i], 1u, 
+				mVCTVoxelCascades3DRTs.push_back(new ER_GPUTexture(mCore->Direct3DDevice(), voxelCascadesSizes[i], voxelCascadesSizes[i], 1u, 
 					DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS, 6, voxelCascadesSizes[i]));
 				
 				mVoxelCameraPositions[i] = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f);
 				
-				mDebugVoxelZonesGizmos.push_back(new ER_RenderableAABB(*mGame, XMFLOAT4(0.1f, 0.34f, 0.1f, 1.0f)));
+				mDebugVoxelZonesGizmos.push_back(new ER_RenderableAABB(*mCore, XMFLOAT4(0.1f, 0.34f, 0.1f, 1.0f)));
 				float maxBB = voxelCascadesSizes[i] / mWorldVoxelScales[i] * 0.5f;
 				mVoxelCascadesAABBs[i].first = XMFLOAT3(-maxBB, -maxBB, -maxBB);
 				mVoxelCascadesAABBs[i].second = XMFLOAT3(maxBB, maxBB, maxBB);
 				mDebugVoxelZonesGizmos[i]->InitializeGeometry({ mVoxelCascadesAABBs[i].first, mVoxelCascadesAABBs[i].second });
 			}
-			mVCTMainRT = new ER_GPUTexture(mGame->Direct3DDevice(), 
-				static_cast<UINT>(mGame->ScreenWidth()) * VCT_GI_MAIN_PASS_DOWNSCALE, static_cast<UINT>(mGame->ScreenHeight()) * VCT_GI_MAIN_PASS_DOWNSCALE, 1u, 
+			mVCTMainRT = new ER_GPUTexture(mCore->Direct3DDevice(), 
+				static_cast<UINT>(mCore->ScreenWidth()) * VCT_GI_MAIN_PASS_DOWNSCALE, static_cast<UINT>(mCore->ScreenHeight()) * VCT_GI_MAIN_PASS_DOWNSCALE, 1u, 
 				DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
-			mVCTUpsampleAndBlurRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u,
+			mVCTUpsampleAndBlurRT = new ER_GPUTexture(mCore->Direct3DDevice(), static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
 				DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
-			mVCTVoxelizationDebugRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u,
+			mVCTVoxelizationDebugRT = new ER_GPUTexture(mCore->Direct3DDevice(), static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
 				DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 			
-			mFinalIlluminationRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u,
+			mFinalIlluminationRT = new ER_GPUTexture(mCore->Direct3DDevice(), static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
 				DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS, 1);
-			mLocalIlluminationRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u,
+			mLocalIlluminationRT = new ER_GPUTexture(mCore->Direct3DDevice(), static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
 				DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS, 1);
 			
-			mDepthBuffer = new ER_GPUTexture(mGame->Direct3DDevice(), mGame->ScreenWidth(), mGame->ScreenHeight(), 1u, DXGI_FORMAT_D24_UNORM_S8_UINT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL);
+			mDepthBuffer = new ER_GPUTexture(mCore->Direct3DDevice(), mCore->ScreenWidth(), mCore->ScreenHeight(), 1u, DXGI_FORMAT_D24_UNORM_S8_UINT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL);
 		}
 
 		//callbacks for materials updates
@@ -253,7 +253,7 @@ namespace Library {
 	void ER_Illumination::DrawLocalIllumination(ER_GBuffer* gbuffer, ER_Skybox* skybox)
 	{
 		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-		auto context = GetGame()->Direct3DDeviceContext();
+		auto context = GetCore()->Direct3DDeviceContext();
 		context->OMSetRenderTargets(1, mLocalIlluminationRT->GetRTVs(), gbuffer->GetDepth()->GetDSV());
 		context->ClearRenderTargetView(mLocalIlluminationRT->GetRTV(), clearColorBlack);
 
@@ -272,7 +272,7 @@ namespace Library {
 	void ER_Illumination::DrawGlobalIllumination(ER_GBuffer* gbuffer, const ER_CoreTime& gameTime)
 	{
 		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+		ID3D11DeviceContext* context = mCore->Direct3DDeviceContext();
 
 		if (!mEnabled)
 		{
@@ -281,7 +281,7 @@ namespace Library {
 			return;
 		}
 
-		D3D11_RECT rect = { 0.0f, 0.0f, mGame->ScreenWidth(), mGame->ScreenHeight() };
+		D3D11_RECT rect = { 0.0f, 0.0f, mCore->ScreenWidth(), mCore->ScreenHeight() };
 		D3D11_VIEWPORT viewport;
 		UINT num_viewport = 1;
 		context->RSGetViewports(&num_viewport, &viewport);
@@ -473,7 +473,7 @@ namespace Library {
 	// Combine GI output (Voxel Cone Tracing) with local illumination output
 	void ER_Illumination::CompositeTotalIllumination()
 	{
-		auto context = GetGame()->Direct3DDeviceContext();
+		auto context = GetCore()->Direct3DDeviceContext();
 
 		mCompositeTotalIlluminationConstantBuffer.Data.DebugVoxelAO = XMFLOAT4(mShowVCTVoxelizationOnly ? 1.0f : -1.0f, mShowVCTAmbientOcclusionOnly ? 1.0f : -1.0f, 0.0, 0.0);
 		mCompositeTotalIlluminationConstantBuffer.ApplyChanges(context);
@@ -620,7 +620,7 @@ namespace Library {
 	{
 		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+		ID3D11DeviceContext* context = mCore->Direct3DDeviceContext();
 
 		//compute pass
 		if (aRenderTarget)
@@ -705,7 +705,7 @@ namespace Library {
 
 	void ER_Illumination::DrawForwardLighting(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget)
 	{
-		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+		ID3D11DeviceContext* context = mCore->Direct3DDeviceContext();
 		context->OMSetRenderTargets(1, aRenderTarget->GetRTVs(), gbuffer->GetDepth()->GetDSV());
 
 		for (auto& obj : mForwardPassObjects)
@@ -714,7 +714,7 @@ namespace Library {
 
 	void ER_Illumination::PrepareForForwardLighting(ER_RenderingObject* aObj, int meshIndex)
 	{
-		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+		ID3D11DeviceContext* context = mCore->Direct3DDeviceContext();
 
 		if (aObj && aObj->IsForwardShading())
 		{

@@ -10,7 +10,7 @@ namespace Library
 		RTTI_DECLARATIONS(SpotLight, PointLight)
 
 	public:
-		SpotLight(Game& game);
+		SpotLight(ER_Core& game);
 		virtual ~SpotLight();
 
 		const XMFLOAT3& Direction() const;

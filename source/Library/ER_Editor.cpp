@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "ER_Editor.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_CoreTime.h"
 #include "ER_VectorHelper.h"
 #include "ER_MatrixHelper.h"
@@ -18,7 +18,7 @@ namespace Library
 	RTTI_DEFINITIONS(ER_Editor)
 	static int selectedObjectIndex = -1;
 	
-	ER_Editor::ER_Editor(Game& game)
+	ER_Editor::ER_Editor(ER_Core& game)
 		: ER_CoreComponent(game)
 	{
 	}

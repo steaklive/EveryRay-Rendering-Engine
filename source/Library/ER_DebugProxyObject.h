@@ -3,7 +3,7 @@
 
 namespace Library
 {
-	class Game;
+	class ER_Core;
 	class ER_CoreTime;
 	class ER_BasicColorMaterial;
 	class ER_Camera;
@@ -11,7 +11,7 @@ namespace Library
 	class ER_DebugProxyObject
 	{
 	public:
-		ER_DebugProxyObject(Game& game, ER_Camera& camera, const std::string& modelFileName, float scale = 1.0f);
+		ER_DebugProxyObject(ER_Core& game, ER_Camera& camera, const std::string& modelFileName, float scale = 1.0f);
 		~ER_DebugProxyObject();
 
 		const XMFLOAT3& Position() const;
@@ -44,7 +44,7 @@ namespace Library
 		ER_DebugProxyObject(const ER_DebugProxyObject& rhs);
 		ER_DebugProxyObject& operator=(const ER_DebugProxyObject& rhs);
 
-		Game& mGame;
+		ER_Core& mCore;
 
 		std::string mModelFileName;
 		ER_BasicColorMaterial* mMaterial;

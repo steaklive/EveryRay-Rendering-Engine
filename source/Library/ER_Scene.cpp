@@ -25,8 +25,8 @@
 
 namespace Library 
 {
-	ER_Scene::ER_Scene(Game& pGame, ER_Camera& pCamera, const std::string& path) :
-		ER_CoreComponent(pGame), mCamera(pCamera), mScenePath(path)
+	ER_Scene::ER_Scene(ER_Core& pCore, ER_Camera& pCamera, const std::string& path) :
+		ER_CoreComponent(pCore), mCamera(pCamera), mScenePath(path)
 	{
 		Json::Reader reader;
 		std::ifstream scene(path.c_str(), std::ifstream::binary);
@@ -150,7 +150,7 @@ namespace Library
 				std::string name = root["rendering_objects"][i]["name"].asString();
 				std::string modelPath = root["rendering_objects"][i]["model_path"].asString();
 				bool isInstanced = root["rendering_objects"][i]["instanced"].asBool();
-				objects.emplace(name, new ER_RenderingObject(name, i, *mGame, mCamera, std::unique_ptr<ER_Model>(new ER_Model(*mGame, ER_Utility::GetFilePath(modelPath), true)), true, isInstanced));
+				objects.emplace(name, new ER_RenderingObject(name, i, *mCore, mCamera, std::unique_ptr<ER_Model>(new ER_Model(*mCore, ER_Utility::GetFilePath(modelPath), true)), true, isInstanced));
 			}
 
 			assert(numRenderingObjects == objects.size());
@@ -409,7 +409,7 @@ namespace Library
 			if (hasLODs) {
 				for (Json::Value::ArrayIndex lod = 1 /* 0 is main model loaded before */; lod != root["rendering_objects"][i]["model_lods"].size(); lod++) {
 					std::string path = root["rendering_objects"][i]["model_lods"][lod]["path"].asString();
-					aObject->LoadLOD(std::unique_ptr<ER_Model>(new ER_Model(*mGame, ER_Utility::GetFilePath(path), true)));
+					aObject->LoadLOD(std::unique_ptr<ER_Model>(new ER_Model(*mCore, ER_Utility::GetFilePath(path), true)));
 				}
 			}
 		}
@@ -584,7 +584,7 @@ namespace Library
 
 	ER_Material* ER_Scene::GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries, bool instanced)
 	{
-		auto core = GetGame();
+		auto core = GetCore();
 		assert(core);
 
 		ER_Material* material = nullptr;
@@ -610,7 +610,7 @@ namespace Library
 	{
 		Json::Reader reader;
 		std::ifstream scene(mScenePath.c_str(), std::ifstream::binary);
-		Game* core = GetGame();
+		ER_Core* core = GetCore();
 		assert(core);
 
 		if (!reader.parse(scene, root)) {

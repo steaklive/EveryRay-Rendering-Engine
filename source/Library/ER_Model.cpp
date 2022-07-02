@@ -3,7 +3,7 @@
 #include "ER_Model.h"
 #include "ER_Mesh.h"
 #include "ER_ModelMaterial.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_CoreException.h"
 
 #include "assimp\Importer.hpp"
@@ -12,8 +12,8 @@
 
 namespace Library
 {
-	ER_Model::ER_Model(Game& game, const std::string& filename, bool flipUVs)
-		: mGame(game), mMeshes(), mMaterials()
+	ER_Model::ER_Model(ER_Core& game, const std::string& filename, bool flipUVs)
+		: mCore(game), mMeshes(), mMaterials()
 	{
 		Assimp::Importer importer;
 
@@ -49,9 +49,9 @@ namespace Library
 	{
 	}
 
-	Game& ER_Model::GetGame()
+	ER_Core& ER_Model::GetGame()
 	{
-		return mGame;
+		return mCore;
 	}
 
 	bool ER_Model::HasMeshes() const

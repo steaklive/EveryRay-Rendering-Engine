@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "ER_Material.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_CoreException.h"
 #include "ER_Model.h"
 #include "ER_RenderingObject.h"
@@ -17,7 +17,7 @@ namespace Library
 	static const std::string domainShaderModel = "ds_5_0";
 	static const std::string geometryShaderModel = "gs_5_0";
 
-	ER_Material::ER_Material(Game& game, const MaterialShaderEntries& shaderEntry, unsigned int shaderFlags, bool instanced)
+	ER_Material::ER_Material(ER_Core& game, const MaterialShaderEntries& shaderEntry, unsigned int shaderFlags, bool instanced)
 		: ER_CoreComponent(game),
 		mShaderFlags(shaderFlags),
 		mShaderEntries(shaderEntry)
@@ -37,7 +37,7 @@ namespace Library
 	// Setting up the pipeline before the draw call
 	void ER_Material::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex)
 	{
-		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
+		ID3D11DeviceContext* context = GetCore()->Direct3DDeviceContext();
 
 		context->IASetInputLayout(mInputLayout);
 
@@ -69,7 +69,7 @@ namespace Library
 		ID3DBlob* blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(ER_Utility::ToWideString(path)).c_str(), mShaderEntries.vertexEntry.c_str(), vertexShaderModel.c_str(), &blob)))
 			throw ER_CoreException(compilerErrorMessage.c_str());
-		if (FAILED(GetGame()->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVS)))
+		if (FAILED(GetCore()->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVS)))
 			throw ER_CoreException(createErrorMessage.c_str());
 
 		CreateInputLayout(inputElementDescriptions, inputElementDescriptionCount, blob->GetBufferPointer(), blob->GetBufferSize());
@@ -87,7 +87,7 @@ namespace Library
 		ID3DBlob* blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(ER_Utility::ToWideString(path)).c_str(), mShaderEntries.pixelEntry.c_str(), pixelShaderModel.c_str(), &blob)))
 			throw ER_CoreException(compilerErrorMessage.c_str());
-		if (FAILED(GetGame()->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS)))
+		if (FAILED(GetCore()->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS)))
 			throw ER_CoreException(createErrorMessage.c_str());
 		blob->Release();
 	}
@@ -102,7 +102,7 @@ namespace Library
 		ID3DBlob* blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(ER_Utility::ToWideString(path)).c_str(), mShaderEntries.geometryEntry.c_str(), geometryShaderModel.c_str(), &blob)))
 			throw ER_CoreException(compilerErrorMessage.c_str());
-		if (FAILED(GetGame()->Direct3DDevice()->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mGS)))
+		if (FAILED(GetCore()->Direct3DDevice()->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mGS)))
 			throw ER_CoreException(createErrorMessage.c_str());
 		blob->Release();
 	}
@@ -114,7 +114,7 @@ namespace Library
 
 	void ER_Material::CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount, const void* shaderBytecodeWithInputSignature, UINT byteCodeLength)
 	{
-		HRESULT hr = GetGame()->Direct3DDevice()->CreateInputLayout(inputElementDescriptions, inputElementDescriptionCount, shaderBytecodeWithInputSignature, byteCodeLength, &mInputLayout);
+		HRESULT hr = GetCore()->Direct3DDevice()->CreateInputLayout(inputElementDescriptions, inputElementDescriptionCount, shaderBytecodeWithInputSignature, byteCodeLength, &mInputLayout);
 		if (FAILED(hr))
 			throw ER_CoreException("CreateInputLayout() failed when creating material's vertex shader.", hr);
 	}

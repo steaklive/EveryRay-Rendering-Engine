@@ -41,7 +41,7 @@ namespace Library
 	class ER_VolumetricFog : public ER_CoreComponent
 	{
 	public:
-		ER_VolumetricFog(Game& game, const DirectionalLight& aLight, const ER_ShadowMapper& aShadowMapper);
+		ER_VolumetricFog(ER_Core& game, const DirectionalLight& aLight, const ER_ShadowMapper& aShadowMapper);
 		~ER_VolumetricFog();
 	
 		void Initialize();

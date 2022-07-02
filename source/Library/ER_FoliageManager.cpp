@@ -1,6 +1,6 @@
 #include "ER_FoliageManager.h"
 #include "ER_CoreException.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_MatrixHelper.h"
 #include "ER_Utility.h"
 #include "ER_Model.h"
@@ -21,8 +21,8 @@ namespace Library
 {
 	static int currentSplatChannnel = (int)TerrainSplatChannels::NONE;
 
-	ER_FoliageManager::ER_FoliageManager(Game& pGame, ER_Scene* aScene, DirectionalLight& light) 
-		: ER_CoreComponent(pGame), mScene(aScene)
+	ER_FoliageManager::ER_FoliageManager(ER_Core& pCore, ER_Scene* aScene, DirectionalLight& light) 
+		: ER_CoreComponent(pCore), mScene(aScene)
 	{
 		assert(aScene);
 		if (aScene->HasFoliage())
@@ -51,7 +51,7 @@ namespace Library
 
 	void ER_FoliageManager::Update(const ER_CoreTime& gameTime, float gustDistance, float strength, float frequency)
 	{
-		ER_Camera* camera = (ER_Camera*)(mGame->Services().GetService(ER_Camera::TypeIdClass()));
+		ER_Camera* camera = (ER_Camera*)(mCore->Services().GetService(ER_Camera::TypeIdClass()));
 
 		if (mEnabled)
 		{
@@ -128,10 +128,10 @@ namespace Library
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	ER_Foliage::ER_Foliage(Game& pGame, ER_Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, const std::string& textureName, float scale, float distributionRadius,
+	ER_Foliage::ER_Foliage(ER_Core& pCore, ER_Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, const std::string& textureName, float scale, float distributionRadius,
 		const XMFLOAT3& distributionCenter, FoliageBillboardType bType, bool isPlacedOnTerrain, int placeChannel)
 		:
-		mGame(pGame),
+		mCore(pCore),
 		mCamera(pCamera),
 		mDirectionalLight(pLight),
 		mPatchesCount(pPatchesCount),
@@ -150,7 +150,7 @@ namespace Library
 			ID3DBlob* blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
 				throw ER_CoreException("Failed to load VSMain from shader: Foliage.hlsl!");
-			if (FAILED(mGame.Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVS)))
+			if (FAILED(mCore.Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVS)))
 				throw ER_CoreException("Failed to create vertex shader from Foliage.hlsl!");
 
 			D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
@@ -164,7 +164,7 @@ namespace Library
 				{ "WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
 			};
 
-			HRESULT hr = mGame.Direct3DDevice()->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), blob->GetBufferPointer(), blob->GetBufferSize(), &mInputLayout);
+			HRESULT hr = mCore.Direct3DDevice()->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), blob->GetBufferPointer(), blob->GetBufferSize(), &mInputLayout);
 			if (FAILED(hr))
 				throw ER_CoreException("CreateInputLayout() failed when creating foliage's vertex shader.", hr);
 			blob->Release();
@@ -172,35 +172,35 @@ namespace Library
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "GSMain", "gs_5_0", &blob)))
 				throw ER_CoreException("Failed to load GSMain from shader: Foliage.hlsl!");
-			if (FAILED(mGame.Direct3DDevice()->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mGS)))
+			if (FAILED(mCore.Direct3DDevice()->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mGS)))
 				throw ER_CoreException("Failed to create geometry shader from Foliage.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load PSMain from shader: Foliage.hlsl!");
-			if (FAILED(mGame.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS)))
+			if (FAILED(mCore.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS)))
 				throw ER_CoreException("Failed to create pixel shader from Foliage.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "PSMain_gbuffer", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load PSMain_gbuffer from shader: Foliage.hlsl!");
-			if (FAILED(mGame.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS_GBuffer)))
+			if (FAILED(mCore.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS_GBuffer)))
 				throw ER_CoreException("Failed to create pixel shader from Foliage.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "PSMain_voxelization", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load PSMain_voxelization from shader: Foliage.hlsl!");
-			if (FAILED(mGame.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS_Voxelization)))
+			if (FAILED(mCore.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS_Voxelization)))
 				throw ER_CoreException("Failed to create pixel shader from Foliage.hlsl!");
 			blob->Release();
 		}
 
 		LoadBillboardModel(mType);
 
-		if (FAILED(DirectX::CreateWICTextureFromFile(mGame.Direct3DDevice(), mGame.Direct3DDeviceContext(), ER_Utility::ToWideString(textureName).c_str(), nullptr, &mAlbedoTexture)))
+		if (FAILED(DirectX::CreateWICTextureFromFile(mCore.Direct3DDevice(), mCore.Direct3DDeviceContext(), ER_Utility::ToWideString(textureName).c_str(), nullptr, &mAlbedoTexture)))
 		{
 			std::string message = "Failed to create Foliage Albedo Map: ";
 			message += textureName;
@@ -236,28 +236,28 @@ namespace Library
 	{
 		if (bType == FoliageBillboardType::SINGLE) {
 			mIsRotating = true;
-			std::unique_ptr<ER_Model> quadSingleModel(new ER_Model(mGame, ER_Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_single.obj"), true));
+			std::unique_ptr<ER_Model> quadSingleModel(new ER_Model(mCore, ER_Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_single.obj"), true));
 			quadSingleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(&mVertexBuffer);
 			quadSingleModel->GetMesh(0).CreateIndexBuffer(&mIndexBuffer);
 			mVerticesCount = quadSingleModel->GetMesh(0).Indices().size();
 		}
 		else if (bType == FoliageBillboardType::TWO_QUADS_CROSSING) {
 			mIsRotating = false;
-			std::unique_ptr<ER_Model> quadDoubleModel(new ER_Model(mGame, ER_Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_double.obj"), true));
+			std::unique_ptr<ER_Model> quadDoubleModel(new ER_Model(mCore, ER_Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_double.obj"), true));
 			quadDoubleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(&mVertexBuffer);
 			quadDoubleModel->GetMesh(0).CreateIndexBuffer(&mIndexBuffer);
 			mVerticesCount = quadDoubleModel->GetMesh(0).Indices().size();
 		}
 		else if (bType == FoliageBillboardType::THREE_QUADS_CROSSING) {
 			mIsRotating = false;
-			std::unique_ptr<ER_Model> quadTripleModel(new ER_Model(mGame, ER_Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_triple.obj"), true));
+			std::unique_ptr<ER_Model> quadTripleModel(new ER_Model(mCore, ER_Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_triple.obj"), true));
 			quadTripleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(&mVertexBuffer);
 			quadTripleModel->GetMesh(0).CreateIndexBuffer(&mIndexBuffer);
 			mVerticesCount = quadTripleModel->GetMesh(0).Indices().size();
 		}
 		else if (bType == FoliageBillboardType::MULTIPLE_QUADS_CROSSING) {
 			mIsRotating = false;
-			std::unique_ptr<ER_Model> quadMultipleModel(new ER_Model(mGame, ER_Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_multiple.obj"), true));
+			std::unique_ptr<ER_Model> quadMultipleModel(new ER_Model(mCore, ER_Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_multiple.obj"), true));
 			quadMultipleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(&mVertexBuffer);
 			quadMultipleModel->GetMesh(0).CreateIndexBuffer(&mIndexBuffer);
 			mVerticesCount = quadMultipleModel->GetMesh(0).Indices().size();
@@ -265,7 +265,7 @@ namespace Library
 	}
 	void ER_Foliage::Initialize()
 	{
-		mFoliageConstantBuffer.Initialize(mGame.Direct3DDevice());
+		mFoliageConstantBuffer.Initialize(mCore.Direct3DDevice());
 		InitializeBuffersCPU();
 		InitializeBuffersGPU(mPatchesCount);
 
@@ -274,12 +274,12 @@ namespace Library
 		XMFLOAT3 maxP = XMFLOAT3(mDistributionCenter.x + radius, mDistributionCenter.y + mAABBExtentY, mDistributionCenter.z + radius);
 		mAABB = ER_AABB(minP, maxP);
 
-		mDebugGizmoAABB = new ER_RenderableAABB(mGame, XMFLOAT4(0.0, 0.0, 1.0, 1.0));
+		mDebugGizmoAABB = new ER_RenderableAABB(mCore, XMFLOAT4(0.0, 0.0, 1.0, 1.0));
 		mDebugGizmoAABB->InitializeGeometry({ mAABB.first, mAABB.second });
 
 		if (mIsPlacedOnTerrain)
 		{
-			ER_Terrain* terrain = mGame.GetLevel()->mTerrain;
+			ER_Terrain* terrain = mCore.GetLevel()->mTerrain;
 			if (terrain && terrain->IsLoaded())
 			{
 				terrain->PlaceOnTerrain(mCurrentPositions, mPatchesCount, (TerrainSplatChannels)mTerrainSplatChannel);
@@ -320,12 +320,12 @@ namespace Library
 		blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
 
 		// Create the blend state using the description.
-		if (FAILED(mGame.Direct3DDevice()->CreateBlendState(&blendStateDescription, &mAlphaToCoverageState)))
+		if (FAILED(mCore.Direct3DDevice()->CreateBlendState(&blendStateDescription, &mAlphaToCoverageState)))
 			throw ER_CoreException("ID3D11Device::CreateBlendState() failed while create alpha-to-coverage blend state for foliage");
 
 		blendStateDescription.RenderTarget[0].BlendEnable = FALSE;
 		blendStateDescription.AlphaToCoverageEnable = FALSE;
-		if (FAILED(mGame.Direct3DDevice()->CreateBlendState(&blendStateDescription, &mNoBlendState)))
+		if (FAILED(mCore.Direct3DDevice()->CreateBlendState(&blendStateDescription, &mNoBlendState)))
 			throw ER_CoreException("ID3D11Device::CreateBlendState() failed while create no blend state for foliage");
 	}
 
@@ -362,7 +362,7 @@ namespace Library
 		instanceData.SysMemPitch = 0;
 		instanceData.SysMemSlicePitch = 0;
 
-		if (FAILED(mGame.Direct3DDevice()->CreateBuffer(&instanceBufferDesc, &instanceData, &mInstanceBuffer)))
+		if (FAILED(mCore.Direct3DDevice()->CreateBuffer(&instanceBufferDesc, &instanceData, &mInstanceBuffer)))
 			throw ER_CoreException("ID3D11Device::CreateBuffer() failed while generating instance buffer of foliage patches");
 	}
 
@@ -390,7 +390,7 @@ namespace Library
 		if(renderPass == TO_VOXELIZATION)
 			assert(worldShadowMapper);
 
-		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
+		ID3D11DeviceContext* context = mCore.Direct3DDeviceContext();
 
 		if (mPatchesCountToRender == 0 || mIsCulled)
 			return;
@@ -520,7 +520,7 @@ namespace Library
 			mAABB = ER_AABB(minP, maxP);
 		}
 
-		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
+		ID3D11DeviceContext* context = mCore.Direct3DDeviceContext();
 		XMFLOAT3 toCam = { mDistributionCenter.x - mCamera.Position().x, mDistributionCenter.y - mCamera.Position().y, mDistributionCenter.z - mCamera.Position().z };
 		float distanceToCam = sqrt(toCam.x * toCam.x + toCam.y * toCam.y + toCam.z * toCam.z);
 
@@ -570,7 +570,7 @@ namespace Library
 					ImGui::Combo("Terrain splat channel", &currentSplatChannnel, DisplayedSplatChannnelNames, 5);
 					TerrainSplatChannels currentChannel = (TerrainSplatChannels)currentSplatChannnel;
 
-					ER_Terrain* terrain = mGame.GetLevel()->mTerrain;
+					ER_Terrain* terrain = mCore.GetLevel()->mTerrain;
 					if (ImGui::Button("Place patch on terrain") && terrain && terrain->IsLoaded())
 					{
 						terrain->PlaceOnTerrain(mCurrentPositions, mPatchesCount, currentChannel);
@@ -612,7 +612,7 @@ namespace Library
 	// updating world matrices of visible patches
 	void ER_Foliage::UpdateBuffersGPU() 
 	{
-		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
+		ID3D11DeviceContext* context = mCore.Direct3DDeviceContext();
 
 		double angle;
 		float rotation, windRotation;

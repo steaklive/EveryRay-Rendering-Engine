@@ -10,7 +10,7 @@ namespace Library
 		RTTI_DECLARATIONS(PointLight, Light)
 
 	public:
-		PointLight(Game& game);
+		PointLight(ER_Core& game);
 		virtual ~PointLight();
 
 		XMFLOAT3& Position();

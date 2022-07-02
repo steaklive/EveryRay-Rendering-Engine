@@ -18,7 +18,7 @@ namespace Library
 	class ER_GBufferMaterial : public ER_Material
 	{
 	public:
-		ER_GBufferMaterial(Game& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced = false);
+		ER_GBufferMaterial(ER_Core& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced = false);
 		~ER_GBufferMaterial();
 
 		virtual void PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex) override;

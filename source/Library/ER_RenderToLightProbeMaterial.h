@@ -24,7 +24,7 @@ namespace Library
 	class ER_RenderToLightProbeMaterial : public ER_Material
 	{
 	public:
-		ER_RenderToLightProbeMaterial(Game& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced = false);
+		ER_RenderToLightProbeMaterial(ER_Core& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced = false);
 		~ER_RenderToLightProbeMaterial();
 
 		void PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, ER_Camera* cubemapCamera);

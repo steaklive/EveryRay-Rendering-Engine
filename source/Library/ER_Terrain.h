@@ -123,7 +123,7 @@ namespace Library
 	class ER_Terrain : public ER_CoreComponent
 	{
 	public:
-		ER_Terrain(Game& game, DirectionalLight& light);
+		ER_Terrain(ER_Core& game, DirectionalLight& light);
 		~ER_Terrain();
 
 		void LoadTerrainData(ER_Scene* aScene);

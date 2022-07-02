@@ -33,7 +33,7 @@ namespace Library
 	class ER_Material : public ER_CoreComponent
 	{
 	public:
-		ER_Material(Game& game, const MaterialShaderEntries& shaderEntry, unsigned int shaderFlags, bool instanced = false);
+		ER_Material(ER_Core& game, const MaterialShaderEntries& shaderEntry, unsigned int shaderFlags, bool instanced = false);
 		~ER_Material();
 
 		virtual void PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex);

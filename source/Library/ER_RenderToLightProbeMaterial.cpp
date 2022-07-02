@@ -3,7 +3,7 @@
 #include "ShaderCompiler.h"
 #include "ER_Utility.h"
 #include "ER_CoreException.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_Camera.h"
 #include "ER_RenderingObject.h"
 #include "ER_Mesh.h"
@@ -12,7 +12,7 @@
 
 namespace Library
 {
-	ER_RenderToLightProbeMaterial::ER_RenderToLightProbeMaterial(Game& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced)
+	ER_RenderToLightProbeMaterial::ER_RenderToLightProbeMaterial(ER_Core& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced)
 		: ER_Material(game, entries, shaderFlags)
 	{
 		mIsSpecial = true;
@@ -50,7 +50,7 @@ namespace Library
 		if (shaderFlags & HAS_PIXEL_SHADER)
 			ER_Material::CreatePixelShader("content\\shaders\\ForwardLighting.hlsl");
 
-		mConstantBuffer.Initialize(ER_Material::GetGame()->Direct3DDevice());
+		mConstantBuffer.Initialize(ER_Material::GetCore()->Direct3DDevice());
 	}
 
 	ER_RenderToLightProbeMaterial::~ER_RenderToLightProbeMaterial()
@@ -61,7 +61,7 @@ namespace Library
 
 	void ER_RenderToLightProbeMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, ER_Camera* cubemapCamera)
 	{
-		auto context = ER_Material::GetGame()->Direct3DDeviceContext();
+		auto context = ER_Material::GetCore()->Direct3DDeviceContext();
 
 		assert(aObj);
 		assert(cubemapCamera);

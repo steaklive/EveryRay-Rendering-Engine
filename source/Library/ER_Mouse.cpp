@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "ER_Mouse.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_CoreTime.h"
 #include "ER_CoreException.h"
 
@@ -9,7 +9,7 @@ namespace Library
 {
 	RTTI_DEFINITIONS(ER_Mouse)
 
-	ER_Mouse::ER_Mouse(Game& game, LPDIRECTINPUT8 directInput)
+	ER_Mouse::ER_Mouse(ER_Core& game, LPDIRECTINPUT8 directInput)
 		: ER_CoreComponent(game), mDirectInput(directInput), mDevice(nullptr), mX(0), mY(0), mWheel(0)
 	{
 		assert(mDirectInput != nullptr);
@@ -64,7 +64,7 @@ namespace Library
 			throw ER_CoreException("IDIRECTINPUTDEVICE8::SetDataFormat() failed");
 		}
 
-		if (FAILED(mDevice->SetCooperativeLevel(mGame->WindowHandle(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE)))
+		if (FAILED(mDevice->SetCooperativeLevel(mCore->WindowHandle(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE)))
 		{
 			throw ER_CoreException("IDIRECTINPUTDEVICE8::SetCooperativeLevel() failed");
 		}

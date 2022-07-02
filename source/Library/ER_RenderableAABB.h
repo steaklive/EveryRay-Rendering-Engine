@@ -3,14 +3,14 @@
 
 namespace Library
 {
-	class Game;
+	class ER_Core;
 	class ER_BasicColorMaterial;
 	class ER_GPUBuffer;
 
 	class ER_RenderableAABB
 	{
 	public:
-		ER_RenderableAABB(Game& game, const XMFLOAT4& color);
+		ER_RenderableAABB(ER_Core& game, const XMFLOAT4& color);
 		~ER_RenderableAABB();
 
 		void InitializeGeometry(const std::vector<XMFLOAT3>& aabb);
@@ -22,7 +22,7 @@ namespace Library
 	private:
 		void UpdateVertices();
 
-		Game& mGame;
+		ER_Core& mCore;
 
 		ER_GPUBuffer* mVertexBuffer;
 		ER_GPUBuffer* mIndexBuffer;

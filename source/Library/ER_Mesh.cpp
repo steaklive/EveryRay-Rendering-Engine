@@ -3,7 +3,7 @@
 #include "ER_Mesh.h"
 #include "ER_Model.h"
 #include "ER_ModelMaterial.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_CoreException.h"
 #include "ER_VertexDeclarations.h"
 

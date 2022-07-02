@@ -77,7 +77,7 @@ namespace Library
 	class ER_Foliage
 	{
 	public:
-		ER_Foliage(Game& pGame, ER_Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, const std::string& textureName, float scale = 1.0f, float distributionRadius = 100, 
+		ER_Foliage(ER_Core& pCore, ER_Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, const std::string& textureName, float scale = 1.0f, float distributionRadius = 100, 
 			const XMFLOAT3& distributionCenter = XMFLOAT3(0.0f, 0.0f, 0.0f), FoliageBillboardType bType = FoliageBillboardType::SINGLE,
 			bool isPlacedOnTerrain = false, int terrainPlaceChannel = 4);
 		~ER_Foliage();
@@ -135,7 +135,7 @@ namespace Library
 		void CalculateDynamicLOD(float distanceToCam);
 		void CreateBlendStates();
 
-		Game& mGame;
+		ER_Core& mCore;
 		ER_Camera& mCamera;
 		DirectionalLight& mDirectionalLight;
 
@@ -217,7 +217,7 @@ namespace Library
 	class ER_FoliageManager : public ER_CoreComponent
 	{
 	public:
-		ER_FoliageManager(Game& pGame, ER_Scene* aScene, DirectionalLight& light);
+		ER_FoliageManager(ER_Core& pCore, ER_Scene* aScene, DirectionalLight& light);
 		~ER_FoliageManager();
 
 		void Initialize();

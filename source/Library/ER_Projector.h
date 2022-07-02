@@ -3,14 +3,14 @@
 
 namespace Library
 {
-	class Game;
+	class ER_Core;
 	class ER_CoreTime;
 
 	class ER_Projector
 	{
 	public:
-		ER_Projector(Game& game);
-		ER_Projector(Game& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance);
+		ER_Projector(ER_Core& game);
+		ER_Projector(ER_Core& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance);
 
 		~ER_Projector();
 

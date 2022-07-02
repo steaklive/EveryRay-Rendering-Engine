@@ -18,7 +18,7 @@ namespace Library
 	class ER_DebugLightProbeMaterial : public ER_Material
 	{
 	public:
-		ER_DebugLightProbeMaterial(Game& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced = false);
+		ER_DebugLightProbeMaterial(ER_Core& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced = false);
 		~ER_DebugLightProbeMaterial();
 
 		void PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, int aProbeType);

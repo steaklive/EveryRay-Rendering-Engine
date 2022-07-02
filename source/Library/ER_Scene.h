@@ -16,7 +16,7 @@ namespace Library
 	class ER_Scene : public ER_CoreComponent
 	{
 	public:
-		ER_Scene(Game& pGame, ER_Camera& pCamera, const std::string& path);
+		ER_Scene(ER_Core& pCore, ER_Camera& pCamera, const std::string& path);
 		~ER_Scene();
 
 		void SaveRenderingObjectsTransforms();

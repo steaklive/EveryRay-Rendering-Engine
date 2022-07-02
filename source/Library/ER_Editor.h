@@ -15,7 +15,7 @@ namespace Library
 		RTTI_DECLARATIONS(ER_Editor, ER_CoreComponent)
 
 	public:
-		ER_Editor(Game& game);
+		ER_Editor(ER_Core& game);
 		virtual ~ER_Editor();
 
 		virtual void Initialize() override;

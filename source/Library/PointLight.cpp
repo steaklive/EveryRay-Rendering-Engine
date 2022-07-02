@@ -9,7 +9,7 @@ namespace Library
 
 	const float PointLight::DefaultRadius = 10.0f;
 
-	PointLight::PointLight(Game& game)
+	PointLight::PointLight(ER_Core& game)
 		: Light(game), mPosition(ER_Vector3Helper::Zero), mRadius(DefaultRadius)
 	{
 	}

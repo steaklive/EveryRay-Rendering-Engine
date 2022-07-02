@@ -3,7 +3,7 @@
 
 namespace Library
 {
-    class Game;
+    class ER_Core;
     class ER_CoreTime;
     class ER_Camera;
     class ER_Scene;
@@ -28,10 +28,10 @@ namespace Library
         ER_Sandbox();
         ~ER_Sandbox();
 
-        void Initialize(Game& game, ER_Camera& camera, const std::string& sceneName, const std::string& sceneFolderPath);
-		virtual void Destroy(Game& game);
-		virtual void Update(Game& game, const ER_CoreTime& time);
-		virtual void Draw(Game& game, const ER_CoreTime& time);
+        void Initialize(ER_Core& game, ER_Camera& camera, const std::string& sceneName, const std::string& sceneFolderPath);
+		virtual void Destroy(ER_Core& game);
+		virtual void Update(ER_Core& game, const ER_CoreTime& time);
+		virtual void Draw(ER_Core& game, const ER_CoreTime& time);
 
         ER_Scene* mScene = nullptr;
 		ER_Editor* mEditor = nullptr;

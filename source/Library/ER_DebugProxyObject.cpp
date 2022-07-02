@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "ER_DebugProxyObject.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_CoreTime.h"
 #include "ER_CoreException.h"
 #include "ER_MatrixHelper.h"
@@ -16,9 +16,9 @@
 
 namespace Library
 {
-	ER_DebugProxyObject::ER_DebugProxyObject(Game& game, ER_Camera& camera, const std::string& modelFileName, float scale)
+	ER_DebugProxyObject::ER_DebugProxyObject(ER_Core& game, ER_Camera& camera, const std::string& modelFileName, float scale)
 		:
-		mGame(game),
+		mCore(game),
 		mModelFileName(modelFileName), mMaterial(nullptr),
 		mVertexBuffer(nullptr), mIndexBuffer(nullptr), mIndexCount(0),
 		mWorldMatrix(ER_MatrixHelper::Identity), mScaleMatrix(ER_MatrixHelper::Identity), mDisplayWireframe(false),
@@ -148,9 +148,9 @@ namespace Library
 	{
 		SetCurrentDirectory(ER_Utility::ExecutableDirectory().c_str());
 
-		std::unique_ptr<ER_Model> model(new ER_Model(mGame, mModelFileName, true));
+		std::unique_ptr<ER_Model> model(new ER_Model(mCore, mModelFileName, true));
 
-		mMaterial = new ER_BasicColorMaterial(mGame, {}, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER);
+		mMaterial = new ER_BasicColorMaterial(mCore, {}, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER);
 
 		auto& meshes = model->Meshes();
 		mMaterial->CreateVertexBuffer(meshes[0], &mVertexBuffer);
@@ -170,7 +170,7 @@ namespace Library
 
 	void ER_DebugProxyObject::Draw(const ER_CoreTime& gametime)
 	{
-		auto context = mGame.Direct3DDeviceContext();
+		auto context = mCore.Direct3DDeviceContext();
 
 		UINT stride = mMaterial->VertexSize();
 		UINT offset = 0;

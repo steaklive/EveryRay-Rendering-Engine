@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "ER_CameraFPS.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_CoreTime.h"
 #include "ER_Keyboard.h"
 #include "ER_Mouse.h"
@@ -17,13 +17,13 @@ namespace Library
 	const float ER_CameraFPS::DefaultMovementRate = 10.0f;
 	const float ER_CameraFPS::DefaultMouseSensitivity = 50.0f;
 
-	ER_CameraFPS::ER_CameraFPS(Game& game)
+	ER_CameraFPS::ER_CameraFPS(ER_Core& game)
 		: ER_Camera(game), mKeyboard(nullptr), mMouse(nullptr),
 		mMouseSensitivity(DefaultMouseSensitivity), mRotationRate(DefaultRotationRate), mMovementRate(DefaultMovementRate)
 	{
 	}
 
-	ER_CameraFPS::ER_CameraFPS(Game& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance)
+	ER_CameraFPS::ER_CameraFPS(ER_Core& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance)
 		: ER_Camera(game, fieldOfView, aspectRatio, nearPlaneDistance, farPlaneDistance), mKeyboard(nullptr), mMouse(nullptr),
 		mMouseSensitivity(DefaultMouseSensitivity), mRotationRate(DefaultRotationRate), mMovementRate(DefaultMovementRate)
 
@@ -80,8 +80,8 @@ namespace Library
 
 	void ER_CameraFPS::Initialize()
 	{
-		mKeyboard = (ER_Keyboard*)mGame->Services().GetService(ER_Keyboard::TypeIdClass());
-		mMouse = (ER_Mouse*)mGame->Services().GetService(ER_Mouse::TypeIdClass());
+		mKeyboard = (ER_Keyboard*)mCore->Services().GetService(ER_Keyboard::TypeIdClass());
+		mMouse = (ER_Mouse*)mCore->Services().GetService(ER_Mouse::TypeIdClass());
 
 		ER_Camera::Initialize();
 	}

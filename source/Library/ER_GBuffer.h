@@ -12,7 +12,7 @@ namespace Library
 	class ER_GBuffer: public ER_CoreComponent
 	{
 	public:
-		ER_GBuffer(Game& game, ER_Camera& camera, int width, int height);
+		ER_GBuffer(ER_Core& game, ER_Camera& camera, int width, int height);
 		~ER_GBuffer();
 	
 		void Initialize();

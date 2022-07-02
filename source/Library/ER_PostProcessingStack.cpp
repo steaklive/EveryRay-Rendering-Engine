@@ -15,8 +15,8 @@
 
 namespace Library {
 
-	ER_PostProcessingStack::ER_PostProcessingStack(Game& pGame, ER_Camera& pCamera)
-		: game(pGame), camera(pCamera)
+	ER_PostProcessingStack::ER_PostProcessingStack(ER_Core& pCore, ER_Camera& pCamera)
+		: game(pCore), camera(pCamera)
 	{
 	}
 

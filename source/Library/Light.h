@@ -10,7 +10,7 @@ namespace Library
 		RTTI_DECLARATIONS(Light, ER_CoreComponent)
 
 	public:
-		Light(Game& game);
+		Light(ER_Core& game);
 		~Light();
 
 		const XMCOLOR& Color() const;

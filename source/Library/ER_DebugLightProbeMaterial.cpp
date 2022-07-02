@@ -3,7 +3,7 @@
 #include "ShaderCompiler.h"
 #include "ER_Utility.h"
 #include "ER_CoreException.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_Camera.h"
 #include "ER_RenderingObject.h"
 #include "ER_Mesh.h"
@@ -12,7 +12,7 @@
 
 namespace Library
 {
-	ER_DebugLightProbeMaterial::ER_DebugLightProbeMaterial(Game& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced)
+	ER_DebugLightProbeMaterial::ER_DebugLightProbeMaterial(ER_Core& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced)
 		: ER_Material(game, entries, shaderFlags)
 	{
 		mIsSpecial = true;
@@ -50,7 +50,7 @@ namespace Library
 		if (shaderFlags & HAS_PIXEL_SHADER)
 			ER_Material::CreatePixelShader("content\\shaders\\IBL\\DebugLightProbe.hlsl");
 
-		mConstantBuffer.Initialize(ER_Material::GetGame()->Direct3DDevice());
+		mConstantBuffer.Initialize(ER_Material::GetCore()->Direct3DDevice());
 	}
 
 	ER_DebugLightProbeMaterial::~ER_DebugLightProbeMaterial()
@@ -61,8 +61,8 @@ namespace Library
 
 	void ER_DebugLightProbeMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, int aProbeType)
 	{
-		auto context = ER_Material::GetGame()->Direct3DDeviceContext();
-		ER_Camera* camera = (ER_Camera*)(ER_Material::GetGame()->Services().GetService(ER_Camera::TypeIdClass()));
+		auto context = ER_Material::GetCore()->Direct3DDeviceContext();
+		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->Services().GetService(ER_Camera::TypeIdClass()));
 		
 		assert(aObj);
 		assert(camera);

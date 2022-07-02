@@ -1,5 +1,5 @@
 #include "ER_LightProbesManager.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_CoreTime.h"
 #include "ER_CoreException.h"
 #include "ER_Utility.h"
@@ -20,7 +20,7 @@
 
 namespace Library
 {
-	ER_LightProbesManager::ER_LightProbesManager(Game& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
+	ER_LightProbesManager::ER_LightProbesManager(ER_Core& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 		: mMainCamera(camera)
 	{
 		if (!scene)
@@ -115,14 +115,14 @@ namespace Library
 		DeleteObject(mSpecularProbesTexArrayIndicesGPUBuffer);
 	}
 
-	void ER_LightProbesManager::SetupGlobalDiffuseProbe(Game& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
+	void ER_LightProbesManager::SetupGlobalDiffuseProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 	{
 		mGlobalDiffuseProbe = new ER_LightProbe(game, light, shadowMapper, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE);
 		mGlobalDiffuseProbe->SetIndex(-1);
 		mGlobalDiffuseProbe->SetPosition(XMFLOAT3(0.0f, 2.0f, 0.0f)); //just a bit above the ground
 		mGlobalDiffuseProbe->SetShaderInfoForConvolution(mConvolutionPS);
 	}
-	void ER_LightProbesManager::SetupGlobalSpecularProbe(Game& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
+	void ER_LightProbesManager::SetupGlobalSpecularProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 	{
 		mGlobalSpecularProbe = new ER_LightProbe(game, light, shadowMapper, SPECULAR_PROBE_SIZE, SPECULAR_PROBE);
 		mGlobalSpecularProbe->SetIndex(-1);
@@ -130,7 +130,7 @@ namespace Library
 		mGlobalSpecularProbe->SetShaderInfoForConvolution(mConvolutionPS);
 	}
 
-	void ER_LightProbesManager::SetupDiffuseProbes(Game& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
+	void ER_LightProbesManager::SetupDiffuseProbes(ER_Core& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 	{
 		ER_MaterialSystems materialSystems;
 		materialSystems.mCamera = &camera;
@@ -255,7 +255,7 @@ namespace Library
 		mDiffuseProbeRenderingObject->UpdateInstanceBuffer(mDiffuseProbeRenderingObject->GetInstancesData());
 	}
 
-	void ER_LightProbesManager::SetupSpecularProbes(Game& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
+	void ER_LightProbesManager::SetupSpecularProbes(ER_Core& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 	{
 		ER_MaterialSystems materialSystems;
 		materialSystems.mCamera = &camera;
@@ -503,7 +503,7 @@ namespace Library
 				(pos.z <= (maxBounds.z + epsilon) && pos.z >= (minBounds.z - epsilon));
 	}
 
-	void ER_LightProbesManager::ComputeOrLoadGlobalProbes(Game& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox)
+	void ER_LightProbesManager::ComputeOrLoadGlobalProbes(ER_Core& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox)
 	{
 		assert(skybox);
 
@@ -531,7 +531,7 @@ namespace Library
 		}
 	}
 
-	void ER_LightProbesManager::ComputeOrLoadLocalProbes(Game& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox)
+	void ER_LightProbesManager::ComputeOrLoadLocalProbes(ER_Core& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox)
 	{
 		int numThreads = std::thread::hardware_concurrency();
 		assert(numThreads > 0);
@@ -629,7 +629,7 @@ namespace Library
 
 	}
 
-	void ER_LightProbesManager::UpdateProbesByType(Game& game, ER_ProbeType aType)
+	void ER_LightProbesManager::UpdateProbesByType(ER_Core& game, ER_ProbeType aType)
 	{
 		std::vector<ER_LightProbe*>& probes = (aType == DIFFUSE_PROBE) ? mDiffuseProbes : mSpecularProbes;
 
@@ -717,7 +717,7 @@ namespace Library
 		}
 	}
 
-	void ER_LightProbesManager::UpdateProbes(Game& game)
+	void ER_LightProbesManager::UpdateProbes(ER_Core& game)
 	{
 		//int difProbeCellIndexCamera = GetCellIndex(mMainCamera.Position(), DIFFUSE_PROBE);
 		assert(mMaxSpecularProbesInVolumeCount > 0);

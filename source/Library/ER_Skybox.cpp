@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "ER_Skybox.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_CoreException.h"
 #include "ER_CoreTime.h"
 #include "ER_Camera.h"
@@ -15,8 +15,8 @@
 
 namespace Library
 {
-	ER_Skybox::ER_Skybox(Game& game, ER_Camera& camera, float scale)
-		: ER_CoreComponent(game), mGame(game), mCamera(camera),
+	ER_Skybox::ER_Skybox(ER_Core& game, ER_Camera& camera, float scale)
+		: ER_CoreComponent(game), mCore(game), mCamera(camera),
 		mVertexBuffer(nullptr), mIndexBuffer(nullptr), mIndexCount(0),
 		mWorldMatrix(ER_MatrixHelper::Identity), mScaleMatrix(ER_MatrixHelper::Identity), mScale(scale)
 	{
@@ -40,10 +40,10 @@ namespace Library
 	{
 		SetCurrentDirectory(ER_Utility::ExecutableDirectory().c_str());
 
-		auto device = mGame.Direct3DDevice();
-		auto context = mGame.Direct3DDeviceContext();
+		auto device = mCore.Direct3DDevice();
+		auto context = mCore.Direct3DDeviceContext();
 
-		std::unique_ptr<ER_Model> model(new ER_Model(mGame, ER_Utility::GetFilePath("content\\models\\sphere_lowpoly.obj"), true));
+		std::unique_ptr<ER_Model> model(new ER_Model(mCore, ER_Utility::GetFilePath("content\\models\\sphere_lowpoly.obj"), true));
 
 		auto& meshes = model->Meshes();
 		meshes[0].CreateVertexBuffer_Position(&mVertexBuffer);
@@ -82,14 +82,14 @@ namespace Library
 			ID3DBlob* blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Sun.hlsl").c_str(), "main", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load main pass from shader: Sun.hlsl!");
-			if (FAILED(mGame.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSunPS)))
+			if (FAILED(mCore.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSunPS)))
 				throw ER_CoreException("Failed to create shader from Sun.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Sun.hlsl").c_str(), "occlusion", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load occlusion pass from shader: Sun.hlsl!");
-			if (FAILED(mGame.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSunOcclusionPS)))
+			if (FAILED(mCore.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSunOcclusionPS)))
 				throw ER_CoreException("Failed to create shader from Sun.hlsl!");
 			blob->Release();
 
@@ -99,7 +99,7 @@ namespace Library
 
 	void ER_Skybox::Update(ER_Camera* aCustomCamera)
 	{
-		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
+		ID3D11DeviceContext* context = mCore.Direct3DDeviceContext();
 		XMFLOAT3 position;
 		if (aCustomCamera)
 			position = aCustomCamera->Position();
@@ -111,7 +111,7 @@ namespace Library
 
 	void ER_Skybox::UpdateSun(const ER_CoreTime& gameTime, ER_Camera* aCustomCamera)
 	{
-		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
+		ID3D11DeviceContext* context = mCore.Direct3DDeviceContext();
 
 		if (aCustomCamera)
 		{
@@ -132,7 +132,7 @@ namespace Library
 
 	void ER_Skybox::Draw(ER_Camera* aCustomCamera)
 	{
-		auto context = mGame.Direct3DDeviceContext();
+		auto context = mCore.Direct3DDeviceContext();
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		context->IASetInputLayout(mInputLayout);
 
@@ -165,9 +165,9 @@ namespace Library
 
 	void ER_Skybox::DrawSun(ER_Camera* aCustomCamera, ER_GPUTexture* aSky, ER_GPUTexture* aSceneDepth)
 	{
-		ID3D11DeviceContext* context = mGame.Direct3DDeviceContext();
+		ID3D11DeviceContext* context = mCore.Direct3DDeviceContext();
 		assert(aSceneDepth);
-		auto quadRenderer = (ER_QuadRenderer*)mGame.Services().GetService(ER_QuadRenderer::TypeIdClass());
+		auto quadRenderer = (ER_QuadRenderer*)mCore.Services().GetService(ER_QuadRenderer::TypeIdClass());
 		assert(quadRenderer);
 
 		if (mDrawSun) {

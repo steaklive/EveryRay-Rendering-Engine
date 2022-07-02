@@ -48,15 +48,15 @@ namespace Library
 	{
 	public:
 		using ProbesRenderingObjectsInfo = std::map<std::string, ER_RenderingObject*>;
-		ER_LightProbesManager(Game& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
+		ER_LightProbesManager(ER_Core& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
 		~ER_LightProbesManager();
 
 		bool AreProbesReady() { return mDiffuseProbesReady && mSpecularProbesReady; }
 		void SetLevelPath(const std::wstring& aPath) { mLevelPath = aPath; };
-		void ComputeOrLoadLocalProbes(Game& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox = nullptr);
-		void ComputeOrLoadGlobalProbes(Game& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox);
+		void ComputeOrLoadLocalProbes(ER_Core& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox = nullptr);
+		void ComputeOrLoadGlobalProbes(ER_Core& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox);
 		void DrawDebugProbes(ER_ProbeType aType);
-		void UpdateProbes(Game& game);
+		void UpdateProbes(ER_Core& game);
 		int GetCellIndex(const XMFLOAT3& pos, ER_ProbeType aType);
 
 		ER_LightProbe* GetGlobalDiffuseProbe() { return mGlobalDiffuseProbe; }
@@ -86,13 +86,13 @@ namespace Library
 
 		bool mDebugDiscardCulledProbes = false;//used in DebugLightProbeMaterial
 	private:
-		void SetupGlobalDiffuseProbe(Game& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
-		void SetupGlobalSpecularProbe(Game& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
-		void SetupDiffuseProbes(Game& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
-		void SetupSpecularProbes(Game& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
+		void SetupGlobalDiffuseProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
+		void SetupGlobalSpecularProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
+		void SetupDiffuseProbes(ER_Core& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
+		void SetupSpecularProbes(ER_Core& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
 		void AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds);
 		bool IsProbeInCell(ER_LightProbe* aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds);
-		void UpdateProbesByType(Game& game, ER_ProbeType aType);
+		void UpdateProbesByType(ER_Core& game, ER_ProbeType aType);
 		
 		ER_QuadRenderer* mQuadRenderer = nullptr;
 		ER_Camera& mMainCamera;

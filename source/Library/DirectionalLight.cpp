@@ -11,18 +11,18 @@ namespace Library
 {
 	RTTI_DEFINITIONS(DirectionalLight)
 
-	DirectionalLight::DirectionalLight(Game& game) : Light(game),
+	DirectionalLight::DirectionalLight(ER_Core& game) : Light(game),
 		mDirection(ER_Vector3Helper::Forward),
 		mUp(ER_Vector3Helper::Up), mRight(ER_Vector3Helper::Right), mProxyModel(nullptr)
 	{
 	}
 
-	DirectionalLight::DirectionalLight(Game& game, ER_Camera& camera) : Light(game),
+	DirectionalLight::DirectionalLight(ER_Core& game, ER_Camera& camera) : Light(game),
 		mDirection(ER_Vector3Helper::Forward),
 		mUp(ER_Vector3Helper::Up), mRight(ER_Vector3Helper::Right), mProxyModel(nullptr)
 	{
 		//directional gizmo model
-		mProxyModel = new ER_DebugProxyObject(*mGame, camera, ER_Utility::GetFilePath("content\\models\\proxy\\proxy_direction_arrow.obj"), 1.0f);
+		mProxyModel = new ER_DebugProxyObject(*mCore, camera, ER_Utility::GetFilePath("content\\models\\proxy\\proxy_direction_arrow.obj"), 1.0f);
 		mProxyModel->Initialize();
 		mProxyModel->SetPosition(0.0f, 50.0, 0.0f);
 		mPseudoTranslation = XMMatrixTranslation(mProxyModel->Position().x, mProxyModel->Position().y ,mProxyModel->Position().z);

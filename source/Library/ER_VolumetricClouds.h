@@ -46,7 +46,7 @@ namespace Library
 	class ER_VolumetricClouds : public ER_CoreComponent
 	{
 	public:
-		ER_VolumetricClouds(Game& game, ER_Camera& camera, DirectionalLight& light, ER_Skybox& skybox);
+		ER_VolumetricClouds(ER_Core& game, ER_Camera& camera, DirectionalLight& light, ER_Skybox& skybox);
 		~ER_VolumetricClouds();
 
 		void Initialize(ER_GPUTexture* aIlluminationDepth);

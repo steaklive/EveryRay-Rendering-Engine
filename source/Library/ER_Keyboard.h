@@ -9,7 +9,7 @@ namespace Library
 		RTTI_DECLARATIONS(ER_Keyboard, ER_CoreComponent)
 
 	public:
-		ER_Keyboard(Game& game, LPDIRECTINPUT8 directInput);
+		ER_Keyboard(ER_Core& game, LPDIRECTINPUT8 directInput);
 		~ER_Keyboard();
 
 		const byte* const CurrentState() const;

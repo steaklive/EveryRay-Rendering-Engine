@@ -7,7 +7,7 @@
 #include "ER_CoreException.h"
 #include "ER_Model.h"
 #include "ER_Mesh.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_MatrixHelper.h"
 #include "ER_Utility.h"
 #include "ER_VertexDeclarations.h"
@@ -18,7 +18,7 @@
 #include "SamplerStates.h"
 
 namespace Library {
-	ER_VolumetricClouds::ER_VolumetricClouds(Game& game, ER_Camera& camera, DirectionalLight& light, ER_Skybox& skybox)
+	ER_VolumetricClouds::ER_VolumetricClouds(ER_Core& game, ER_Camera& camera, DirectionalLight& light, ER_Skybox& skybox)
 		: ER_CoreComponent(game),
 		mCamera(camera), 
 		mDirectionalLight(light),
@@ -50,45 +50,45 @@ namespace Library {
 		ID3DBlob* blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsComposite.hlsl").c_str(), "main", "ps_5_0", &blob)))
 			throw ER_CoreException("Failed to load main pass from shader: VolumetricCloudsComposite.hlsl!");
-		if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mCompositePS)))
+		if (FAILED(mCore->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mCompositePS)))
 			throw ER_CoreException("Failed to create shader from VolumetricCloudsComposite.hlsl!");
 		blob->Release();
 
 		blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsBlur.hlsl").c_str(), "main", "ps_5_0", &blob)))
 			throw ER_CoreException("Failed to load main pass from shader: VolumetricCloudsBlur.hlsl!");
-		if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mBlurPS)))
+		if (FAILED(mCore->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mBlurPS)))
 			throw ER_CoreException("Failed to create shader from VolumetricCloudsBlur.hlsl!");
 		blob->Release();
 
 		blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsCS.hlsl").c_str(), "main", "cs_5_0", &blob)))
 			throw ER_CoreException("Failed to load main pass from shader: VolumetricCloudsCS.hlsl!");
-		if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mMainCS)))
+		if (FAILED(mCore->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mMainCS)))
 			throw ER_CoreException("Failed to create shader from VolumetricCloudsCS.hlsl!");
 		blob->Release();
 
 		blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\UpsampleBlur.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
 			throw ER_CoreException("Failed to load CSMain from shader: UpsampleBlur.hlsl!");
-		if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mUpsampleBlurCS)))
+		if (FAILED(mCore->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mUpsampleBlurCS)))
 			throw ER_CoreException("Failed to create shader from UpsampleBlur.hlsl!");
 		blob->Release();
 
 		//textures
-		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), ER_Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\cloud.dds").c_str(), nullptr, &mCloudTextureSRV)))
+		if (FAILED(DirectX::CreateDDSTextureFromFile(mCore->Direct3DDevice(), mCore->Direct3DDeviceContext(), ER_Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\cloud.dds").c_str(), nullptr, &mCloudTextureSRV)))
 			throw ER_CoreException("Failed to create Cloud Map.");
 
-		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), ER_Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\weather.dds").c_str(), nullptr, &mWeatherTextureSRV)))
+		if (FAILED(DirectX::CreateDDSTextureFromFile(mCore->Direct3DDevice(), mCore->Direct3DDeviceContext(), ER_Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\weather.dds").c_str(), nullptr, &mWeatherTextureSRV)))
 			throw ER_CoreException("Failed to create Weather Map.");
 
-		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), ER_Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\worley.dds").c_str(), nullptr, &mWorleyTextureSRV)))
+		if (FAILED(DirectX::CreateDDSTextureFromFile(mCore->Direct3DDevice(), mCore->Direct3DDeviceContext(), ER_Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\worley.dds").c_str(), nullptr, &mWorleyTextureSRV)))
 			throw ER_CoreException("Failed to create Worley Map.");
 
 		//cbuffers
-		mFrameConstantBuffer.Initialize(mGame->Direct3DDevice());
-		mCloudsConstantBuffer.Initialize(mGame->Direct3DDevice());
-		mUpsampleBlurConstantBuffer.Initialize(mGame->Direct3DDevice());
+		mFrameConstantBuffer.Initialize(mCore->Direct3DDevice());
+		mCloudsConstantBuffer.Initialize(mCore->Direct3DDevice());
+		mUpsampleBlurConstantBuffer.Initialize(mCore->Direct3DDevice());
 
 		//sampler states
 		D3D11_SAMPLER_DESC sam_desc;
@@ -100,21 +100,21 @@ namespace Library {
 		sam_desc.MaxAnisotropy = 1;
 		sam_desc.MinLOD = -1000.0f;
 		sam_desc.MaxLOD = 1000.0f;
-		if (FAILED(mGame->Direct3DDevice()->CreateSamplerState(&sam_desc, &mCloudSS)))
+		if (FAILED(mCore->Direct3DDevice()->CreateSamplerState(&sam_desc, &mCloudSS)))
 			throw ER_CoreException("Failed to create sampler mCloudSS!");
 
 		sam_desc.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-		if (FAILED(mGame->Direct3DDevice()->CreateSamplerState(&sam_desc, &mWeatherSS)))
+		if (FAILED(mCore->Direct3DDevice()->CreateSamplerState(&sam_desc, &mWeatherSS)))
 			throw ER_CoreException("Failed to create sampler mWeatherSS!");
 
 		assert(aIlluminationDepth);
 		mIlluminationResultDepthTarget = aIlluminationDepth;
 
-		mMainRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()) * mDownscaleFactor, static_cast<UINT>(mGame->ScreenHeight()) * mDownscaleFactor, 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
-		mUpsampleAndBlurRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
-		mBlurRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
-		mSkyRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
-		mSkyAndSunRT = new ER_GPUTexture(mGame->Direct3DDevice(), static_cast<UINT>(mGame->ScreenWidth()), static_cast<UINT>(mGame->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+		mMainRT = new ER_GPUTexture(mCore->Direct3DDevice(), static_cast<UINT>(mCore->ScreenWidth()) * mDownscaleFactor, static_cast<UINT>(mCore->ScreenHeight()) * mDownscaleFactor, 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
+		mUpsampleAndBlurRT = new ER_GPUTexture(mCore->Direct3DDevice(), static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
+		mBlurRT = new ER_GPUTexture(mCore->Direct3DDevice(), static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+		mSkyRT = new ER_GPUTexture(mCore->Direct3DDevice(), static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+		mSkyAndSunRT = new ER_GPUTexture(mCore->Direct3DDevice(), static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
 	}
 	
 	void ER_VolumetricClouds::Update(const ER_CoreTime& gameTime)
@@ -124,7 +124,7 @@ namespace Library {
 		if (!mEnabled)
 			return;
 
-		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+		ID3D11DeviceContext* context = mCore->Direct3DDeviceContext();
 
 		mFrameConstantBuffer.Data.InvProj = XMMatrixInverse(nullptr, mCamera.ProjectionMatrix());
 		mFrameConstantBuffer.Data.InvView = XMMatrixInverse(nullptr, mCamera.ViewMatrix());
@@ -178,7 +178,7 @@ namespace Library {
 		assert(mIlluminationResultDepthTarget);
 		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
 
-		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+		ID3D11DeviceContext* context = mCore->Direct3DDeviceContext();
 		context->OMSetRenderTargets(1, mSkyRT->GetRTVs(), nullptr);
 		mSkybox.Draw();
 		context->OMSetRenderTargets(1, nullRTVs, nullptr);
@@ -187,7 +187,7 @@ namespace Library {
 		mSkybox.DrawSun(nullptr, mSkyRT, mIlluminationResultDepthTarget);
 		context->OMSetRenderTargets(1, nullRTVs, nullptr);
 
-		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mGame->Services().GetService(ER_QuadRenderer::TypeIdClass());
+		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mCore->Services().GetService(ER_QuadRenderer::TypeIdClass());
 		assert(quadRenderer);
 
 		//main pass
@@ -273,7 +273,7 @@ namespace Library {
 
 	void ER_VolumetricClouds::Composite(ER_GPUTexture* aRenderTarget)
 	{
-		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+		ID3D11DeviceContext* context = mCore->Direct3DDeviceContext();
 		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
 
 		context->OMSetRenderTargets(1, aRenderTarget->GetRTVs(), nullptr);
@@ -281,7 +281,7 @@ namespace Library {
 		context->PSSetShaderResources(0, 2, SR);
 		context->PSSetShader(mCompositePS, NULL, NULL);
 		
-		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mGame->Services().GetService(ER_QuadRenderer::TypeIdClass());
+		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mCore->Services().GetService(ER_QuadRenderer::TypeIdClass());
 		assert(quadRenderer);
 		quadRenderer->Draw(context);
 

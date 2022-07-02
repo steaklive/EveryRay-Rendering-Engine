@@ -4,7 +4,7 @@
 #include "ER_RenderingObject.h"
 #include "ER_CoreComponent.h"
 #include "ER_CoreException.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_CoreTime.h"
 #include "ER_Model.h"
 #include "ER_Mesh.h"
@@ -20,9 +20,9 @@ namespace Library
 {
 	static int currentSplatChannnel = (int)TerrainSplatChannels::NONE;
 
-	ER_RenderingObject::ER_RenderingObject(const std::string& pName, int index, Game& pGame, ER_Camera& pCamera, std::unique_ptr<ER_Model> pModel, bool availableInEditor, bool isInstanced)
+	ER_RenderingObject::ER_RenderingObject(const std::string& pName, int index, ER_Core& pCore, ER_Camera& pCamera, std::unique_ptr<ER_Model> pModel, bool availableInEditor, bool isInstanced)
 		:
-		mGame(&pGame),
+		mCore(&pCore),
 		mCamera(pCamera),
 		mModel(std::move(pModel)),
 		mMeshesReflectionFactors(0),
@@ -72,7 +72,7 @@ namespace Library
 		mGlobalAABB = mLocalAABB;
 
 		if (mAvailableInEditorMode) {
-			mDebugGizmoAABB = new ER_RenderableAABB(*mGame, XMFLOAT4{ 0.0f, 0.0f, 1.0f, 1.0f });
+			mDebugGizmoAABB = new ER_RenderableAABB(*mCore, XMFLOAT4{ 0.0f, 0.0f, 1.0f, 1.0f });
 			mDebugGizmoAABB->InitializeGeometry({ mLocalAABB.first, mLocalAABB.second });
 		}
 
@@ -280,7 +280,7 @@ namespace Library
 		bool failed = false;
 		if (ddsLoader)
 		{
-			if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), path.c_str(), nullptr, resource)))
+			if (FAILED(DirectX::CreateDDSTextureFromFile(mCore->Direct3DDevice(), path.c_str(), nullptr, resource)))
 			{
 				std::string status = "Failed to load DDS Texture" + texType;
 				status += errorMessage;
@@ -292,7 +292,7 @@ namespace Library
 		{
 			//TODO This will not work if accessed from multiple threads, since we need a device context for TGA loader (not thread safe)
 			TGATextureLoader* loader = new TGATextureLoader();
-			if (!loader->Initialize(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), path.c_str(), resource))
+			if (!loader->Initialize(mCore->Direct3DDevice(), mCore->Direct3DDeviceContext(), path.c_str(), resource))
 			{
 				std::string status = "Failed to load TGA Texture" + texType;
 				status += errorMessage;
@@ -301,7 +301,7 @@ namespace Library
 			}
 			loader->Shutdown();
 		}
-		else if (FAILED(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), path.c_str(), nullptr, resource)))
+		else if (FAILED(DirectX::CreateWICTextureFromFile(mCore->Direct3DDevice(), mCore->Direct3DDeviceContext(), path.c_str(), nullptr, resource)))
 		{
 			std::string status = "Failed to load WIC Texture" + texType;
 			status += errorMessage;
@@ -396,7 +396,7 @@ namespace Library
 	{
 		bool isForwardPass = materialName == ER_MaterialHelper::forwardLightingNonMaterialName && mIsForwardShading;
 
-		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+		ID3D11DeviceContext* context = mCore->Direct3DDeviceContext();
 		context->IASetPrimitiveTopology(mWireframeMode ? D3D11_PRIMITIVE_TOPOLOGY_LINELIST : D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		if (mMaterials.find(materialName) == mMaterials.end() && !isForwardPass)
@@ -434,8 +434,8 @@ namespace Library
 					if (prepareMaterialBeforeRendering)
 						prepareMaterialBeforeRendering(i);
 				}
-				else if (isForwardPass && mGame->GetLevel()->mIllumination)
-					mGame->GetLevel()->mIllumination->PrepareForForwardLighting(this, i);
+				else if (isForwardPass && mCore->GetLevel()->mIllumination)
+					mCore->GetLevel()->mIllumination->PrepareForForwardLighting(this, i);
 
 				if (mIsInstanced)
 				{
@@ -484,7 +484,7 @@ namespace Library
 	void ER_RenderingObject::LoadInstanceBuffers(int lod)
 	{
 		assert(mModel != nullptr);
-		assert(mGame->Direct3DDevice() != nullptr);
+		assert(mCore->Direct3DDevice() != nullptr);
 		assert(mIsInstanced == true);
 
 		mInstanceData.push_back({});
@@ -504,7 +504,7 @@ namespace Library
 		for (size_t i = 0; i < mMeshesCount[lod]; i++)
 		{
 			mMeshesInstanceBuffers[lod].push_back(new InstanceBufferData());
-			CreateInstanceBuffer(mGame->Direct3DDevice(), &mInstanceData[lod][0], MAX_INSTANCE_COUNT, &(mMeshesInstanceBuffers[lod][i]->InstanceBuffer));
+			CreateInstanceBuffer(mCore->Direct3DDevice(), &mInstanceData[lod][0], MAX_INSTANCE_COUNT, &(mMeshesInstanceBuffers[lod][i]->InstanceBuffer));
 			mMeshesInstanceBuffers[lod][i]->Stride = sizeof(InstancedData);
 		}
 	}
@@ -543,9 +543,9 @@ namespace Library
 			D3D11_MAPPED_SUBRESOURCE mappedResource;
 			ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
 
-			mGame->Direct3DDeviceContext()->Map(mMeshesInstanceBuffers[lod][i]->InstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+			mCore->Direct3DDeviceContext()->Map(mMeshesInstanceBuffers[lod][i]->InstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 			memcpy(mappedResource.pData, (instanceData.size() != 0) ? &instanceData[0] : NULL, InstanceSize() * mInstanceCountToRender[lod]);
-			mGame->Direct3DDeviceContext()->Unmap(mMeshesInstanceBuffers[lod][i]->InstanceBuffer, 0);
+			mCore->Direct3DDeviceContext()->Unmap(mMeshesInstanceBuffers[lod][i]->InstanceBuffer, 0);
 		}
 	}
 
@@ -628,7 +628,7 @@ namespace Library
 	// This method is not supposed to run every frame, but during initialization or on request
 	void ER_RenderingObject::PlaceProcedurallyOnTerrain()
 	{
-		ER_Terrain* terrain = mGame->GetLevel()->mTerrain;
+		ER_Terrain* terrain = mCore->GetLevel()->mTerrain;
 		if (!terrain || !terrain->IsLoaded())
 			return;
 
@@ -677,7 +677,7 @@ namespace Library
 	}
 	void ER_RenderingObject::Update(const ER_CoreTime& time)
 	{
-		ER_Camera* camera = (ER_Camera*)(mGame->Services().GetService(ER_Camera::TypeIdClass()));
+		ER_Camera* camera = (ER_Camera*)(mCore->Services().GetService(ER_Camera::TypeIdClass()));
 		assert(camera);
 
 		bool editable = ER_Utility::IsEditorMode && mAvailableInEditorMode && mIsSelected;
@@ -858,7 +858,7 @@ namespace Library
 				XMFLOAT3 newCameraPos;
 				ER_MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), newCameraPos);
 
-				ER_Camera* camera = (ER_Camera*)(mGame->Services().GetService(ER_Camera::TypeIdClass()));
+				ER_Camera* camera = (ER_Camera*)(mCore->Services().GetService(ER_Camera::TypeIdClass()));
 				if (camera)
 					camera->SetPosition(newCameraPos);
 			}
@@ -867,7 +867,7 @@ namespace Library
 			{
 				ImGui::Combo("Terrain splat channel", &currentSplatChannnel, DisplayedSplatChannnelNames, 5);
 				TerrainSplatChannels currentChannel = (TerrainSplatChannels)currentSplatChannnel;
-				ER_Terrain* terrain = mGame->GetLevel()->mTerrain;
+				ER_Terrain* terrain = mCore->GetLevel()->mTerrain;
 
 				if (ImGui::Button("Place on terrain") && terrain && terrain->IsLoaded())
 				{

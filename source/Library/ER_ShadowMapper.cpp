@@ -6,7 +6,7 @@
 #include "ER_Camera.h"
 #include "DirectionalLight.h"
 #include "ER_CoreTime.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_CoreException.h"
 #include "ER_Scene.h"
 #include "ER_MaterialHelper.h"
@@ -22,8 +22,8 @@
 
 namespace Library
 {
-	ER_ShadowMapper::ER_ShadowMapper(Game& pGame, ER_Camera& camera, DirectionalLight& dirLight,  UINT pWidth, UINT pHeight, bool isCascaded)
-		: ER_CoreComponent(pGame),
+	ER_ShadowMapper::ER_ShadowMapper(ER_Core& pCore, ER_Camera& camera, DirectionalLight& dirLight,  UINT pWidth, UINT pHeight, bool isCascaded)
+		: ER_CoreComponent(pCore),
 		mShadowMaps(0, nullptr), 
 		mShadowRasterizerState(nullptr),
 		mDirectionalLight(dirLight),
@@ -34,12 +34,12 @@ namespace Library
 		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 		{
 			mLightProjectorCenteredPositions.push_back(XMFLOAT3(0, 0, 0));
-			mShadowMaps.push_back(new ER_GPUTexture(pGame.Direct3DDevice(), pWidth, pHeight, 1u, DXGI_FORMAT_D24_UNORM_S8_UINT, D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE));
+			mShadowMaps.push_back(new ER_GPUTexture(pCore.Direct3DDevice(), pWidth, pHeight, 1u, DXGI_FORMAT_D24_UNORM_S8_UINT, D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE));
 
 			mCameraCascadesFrustums.push_back(XMMatrixIdentity());
 			(isCascaded) ? mCameraCascadesFrustums[i].SetMatrix(mCamera.GetCustomViewProjectionMatrixForCascade(i)) : mCameraCascadesFrustums[i].SetMatrix(mCamera.ProjectionMatrix());
 
-			mLightProjectors.push_back(new ER_Projector(pGame));
+			mLightProjectors.push_back(new ER_Projector(pCore));
 			mLightProjectors[i]->Initialize();
 			mLightProjectors[i]->SetProjectionMatrix(GetProjectionBoundingSphere(i));
 			//mLightProjectors[i]->ApplyRotation(mDirectionalLight.GetTransform());
@@ -54,7 +54,7 @@ namespace Library
 		rasterizerStateDesc.DepthBias = 0.05f;
 		rasterizerStateDesc.SlopeScaledDepthBias = 3.0f;
 		rasterizerStateDesc.FrontCounterClockwise = false;
-		HRESULT hr = GetGame()->Direct3DDevice()->CreateRasterizerState(&rasterizerStateDesc, &mShadowRasterizerState);
+		HRESULT hr = GetCore()->Direct3DDevice()->CreateRasterizerState(&rasterizerStateDesc, &mShadowRasterizerState);
 		if (FAILED(hr))
 			throw ER_CoreException("CreateRasterizerState() failed while generating a shadow mapper.", hr);
 
@@ -63,7 +63,7 @@ namespace Library
 		depthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 		depthStencilStateDesc.StencilEnable = FALSE;
-		hr = GetGame()->Direct3DDevice()->CreateDepthStencilState(&depthStencilStateDesc, &mDepthStencilState);
+		hr = GetCore()->Direct3DDevice()->CreateDepthStencilState(&depthStencilStateDesc, &mDepthStencilState);
 		if (FAILED(hr))
 			throw ER_CoreException("CreateDepthStencilState() failed while generating a shadow mapper.", hr);
 	}
@@ -93,7 +93,7 @@ namespace Library
 	{
 		assert(cascadeIndex < NUM_SHADOW_CASCADES);
 
-		auto context = GetGame()->Direct3DDeviceContext();
+		auto context = GetCore()->Direct3DDeviceContext();
 		context->RSGetState(&mOriginalRasterizerState);
 		UINT numViewports = 1;
 
@@ -119,7 +119,7 @@ namespace Library
 	{
 		assert(cascadeIndex < NUM_SHADOW_CASCADES);
 
-		auto context = GetGame()->Direct3DDeviceContext();
+		auto context = GetCore()->Direct3DDeviceContext();
 
 		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
 		context->OMSetRenderTargets(1, nullRTVs, nullptr);
@@ -262,7 +262,7 @@ namespace Library
 
 	void ER_ShadowMapper::Draw(const ER_Scene* scene, ER_Terrain* terrain)
 	{
-		auto context = GetGame()->Direct3DDeviceContext();
+		auto context = GetCore()->Direct3DDeviceContext();
 		context->OMSetDepthStencilState(mDepthStencilState, 0);
 
 		ER_MaterialSystems materialSystems;

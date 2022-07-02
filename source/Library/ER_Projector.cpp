@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "ER_Projector.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_CoreTime.h"
 #include "ER_VectorHelper.h"
 #include "ER_MatrixHelper.h"
@@ -15,14 +15,14 @@ namespace Library
 	const float ER_Projector::DefaultScreenWidth = 1024.0f;
 	const float ER_Projector::DefaultScreenHeight = 1024.0f;
 
-	ER_Projector::ER_Projector(Game& game)
+	ER_Projector::ER_Projector(ER_Core& game)
 		: 
 		mFieldOfView(DefaultFieldOfView), mAspectRatio(DefaultAspectRatio), mNearPlaneDistance(DefaultNearPlaneDistance), mFarPlaneDistance(DefaultFarPlaneDistance),
 		mPosition(), mDirection(), mUp(), mRight(), mViewMatrix(), mProjectionMatrix()
 	{
 	}
 
-	ER_Projector::ER_Projector(Game& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance)
+	ER_Projector::ER_Projector(ER_Core& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance)
 		:
 		mFieldOfView(fieldOfView), mAspectRatio(aspectRatio), mNearPlaneDistance(nearPlaneDistance), mFarPlaneDistance(farPlaneDistance),
 		mPosition(), mDirection(), mUp(), mRight(), mViewMatrix(), mProjectionMatrix()

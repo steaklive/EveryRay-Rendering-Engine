@@ -1,13 +1,13 @@
 #include "ER_QuadRenderer.h"
 #include "ER_CoreException.h"
 #include "ShaderCompiler.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_Utility.h"
 
 namespace Library {
 	RTTI_DEFINITIONS(ER_QuadRenderer)
 
-	ER_QuadRenderer::ER_QuadRenderer(Game& game) : ER_CoreComponent(game)
+	ER_QuadRenderer::ER_QuadRenderer(ER_Core& game) : ER_CoreComponent(game)
 	{
 		auto device = game.Direct3DDevice();
 		QuadVertex* vertices = new QuadVertex[4];

@@ -1,7 +1,7 @@
 #include "ER_VolumetricFog.h"
 #include "ER_ShadowMapper.h"
 #include "ER_GPUTexture.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_CoreException.h"
 #include "ShaderCompiler.h"
 #include "DirectionalLight.h"
@@ -17,7 +17,7 @@
 static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 namespace Library {
-	ER_VolumetricFog::ER_VolumetricFog(Game& game, const DirectionalLight& aLight, const ER_ShadowMapper& aShadowMapper)
+	ER_VolumetricFog::ER_VolumetricFog(ER_Core& game, const DirectionalLight& aLight, const ER_ShadowMapper& aShadowMapper)
 	    : ER_CoreComponent(game), mShadowMapper(aShadowMapper), mDirectionalLight(aLight)
 	{	
 		mPrevViewProj = XMMatrixIdentity();
@@ -39,7 +39,7 @@ namespace Library {
     
 	void ER_VolumetricFog::Initialize()
 	{
-		auto device = GetGame()->Direct3DDevice();
+		auto device = GetCore()->Direct3DDevice();
 		assert(device);
 		
 		mTempVoxelInjectionTexture3D[0] = new ER_GPUTexture(device, VOXEL_SIZE_X, VOXEL_SIZE_Y, 1, DXGI_FORMAT_R16G16B16A16_FLOAT,
@@ -48,26 +48,26 @@ namespace Library {
 				D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1, VOXEL_SIZE_Z);
 		mFinalVoxelAccumulationTexture3D = new ER_GPUTexture(device, VOXEL_SIZE_X, VOXEL_SIZE_Y, 1, DXGI_FORMAT_R16G16B16A16_FLOAT,
 			D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1, VOXEL_SIZE_Z);
-		mBlueNoiseTexture = new ER_GPUTexture(device, GetGame()->Direct3DDeviceContext(), "content\\textures\\blueNoise.dds");
+		mBlueNoiseTexture = new ER_GPUTexture(device, GetCore()->Direct3DDeviceContext(), "content\\textures\\blueNoise.dds");
 
 		ID3DBlob* blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\VolumetricFog\\VolumetricFogMain.hlsl").c_str(), "CSInjection", "cs_5_0", &blob)))
 			throw ER_CoreException("Failed to load CSInjection from shader: VolumetricFogMain.hlsl!");
-		if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mInjectionCS)))
+		if (FAILED(mCore->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mInjectionCS)))
 			throw ER_CoreException("Failed to create shader from VolumetricFogMain.hlsl!");
 		blob->Release();
 		
 		blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\VolumetricFog\\VolumetricFogMain.hlsl").c_str(), "CSAccumulation", "cs_5_0", &blob)))
 			throw ER_CoreException("Failed to load CSAccumulation from shader: VolumetricFogMain.hlsl!");
-		if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mAccumulationCS)))
+		if (FAILED(mCore->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mAccumulationCS)))
 			throw ER_CoreException("Failed to create shader from VolumetricFogMain.hlsl!");
 		blob->Release();
 
 		blob = nullptr;
 		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\VolumetricFog\\VolumetricFogComposite.hlsl").c_str(), "PSComposite", "ps_5_0", &blob)))
 			throw ER_CoreException("Failed to load PSComposite from shader: VolumetricFogComposite.hlsl!");
-		if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mCompositePS)))
+		if (FAILED(mCore->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mCompositePS)))
 			throw ER_CoreException("Failed to create shader from VolumetricFogComposite.hlsl!");
 		blob->Release();
 
@@ -86,11 +86,11 @@ namespace Library {
 
 	void ER_VolumetricFog::Update(const ER_CoreTime& gameTime)
 	{
-		ER_Camera* camera = (ER_Camera*)GetGame()->Services().GetService(ER_Camera::TypeIdClass());
+		ER_Camera* camera = (ER_Camera*)GetCore()->Services().GetService(ER_Camera::TypeIdClass());
 		assert(camera);
 
 		UpdateImGui();
-		auto context = GetGame()->Direct3DDeviceContext();
+		auto context = GetCore()->Direct3DDeviceContext();
 
 		if (!mEnabled)
 			return;
@@ -137,7 +137,7 @@ namespace Library {
 
 	void ER_VolumetricFog::ComputeInjection()
 	{
-		auto context = GetGame()->Direct3DDeviceContext();
+		auto context = GetCore()->Direct3DDeviceContext();
 
 		int readIndex = mCurrentTexture3DRead;
 		int writeIndex = !mCurrentTexture3DRead;
@@ -175,7 +175,7 @@ namespace Library {
 
 	void ER_VolumetricFog::ComputeAccumulation()
 	{
-		auto context = GetGame()->Direct3DDeviceContext();
+		auto context = GetCore()->Direct3DDeviceContext();
 
 		int readIndex = mCurrentTexture3DRead;
 
@@ -212,7 +212,7 @@ namespace Library {
 	{
 		assert(aGbufferWorldPos && aInputColorTexture);
 
-		ID3D11DeviceContext* context = mGame->Direct3DDeviceContext();
+		ID3D11DeviceContext* context = mCore->Direct3DDeviceContext();
 		
 		ID3D11Buffer* CBs[1] = { mCompositeConstantBuffer.Buffer() };
 		context->PSSetConstantBuffers(0, 1, CBs);
@@ -229,7 +229,7 @@ namespace Library {
 
 		context->PSSetShader(mCompositePS, NULL, NULL);
 
-		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mGame->Services().GetService(ER_QuadRenderer::TypeIdClass());
+		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mCore->Services().GetService(ER_QuadRenderer::TypeIdClass());
 		assert(quadRenderer);
 		quadRenderer->Draw(context);
 	}

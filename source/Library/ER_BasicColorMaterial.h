@@ -17,7 +17,7 @@ namespace Library
 	class ER_BasicColorMaterial : public ER_Material
 	{
 	public:
-		ER_BasicColorMaterial(Game& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced = false);
+		ER_BasicColorMaterial(ER_Core& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced = false);
 		~ER_BasicColorMaterial();
 
 		virtual void PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex) override;

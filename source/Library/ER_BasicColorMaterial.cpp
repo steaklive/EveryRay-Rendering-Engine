@@ -2,14 +2,14 @@
 #include "ShaderCompiler.h"
 #include "ER_Utility.h"
 #include "ER_CoreException.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_Camera.h"
 #include "ER_RenderingObject.h"
 #include "ER_Mesh.h"
 #include "ER_MaterialsCallbacks.h"
 namespace Library
 {
-	ER_BasicColorMaterial::ER_BasicColorMaterial(Game& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced)
+	ER_BasicColorMaterial::ER_BasicColorMaterial(ER_Core& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced)
 		: ER_Material(game, entries, shaderFlags)
 	{
 		//TODO instanced support
@@ -25,7 +25,7 @@ namespace Library
 		if (shaderFlags & HAS_PIXEL_SHADER)
 			ER_Material::CreatePixelShader("content\\shaders\\BasicColor.hlsl");
 
-		mConstantBuffer.Initialize(ER_Material::GetGame()->Direct3DDevice());
+		mConstantBuffer.Initialize(ER_Material::GetCore()->Direct3DDevice());
 	}
 
 	ER_BasicColorMaterial::~ER_BasicColorMaterial()
@@ -36,8 +36,8 @@ namespace Library
 
 	void ER_BasicColorMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex)
 	{
-		auto context = ER_Material::GetGame()->Direct3DDeviceContext();
-		ER_Camera* camera = (ER_Camera*)(ER_Material::GetGame()->Services().GetService(ER_Camera::TypeIdClass()));
+		auto context = ER_Material::GetCore()->Direct3DDeviceContext();
+		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->Services().GetService(ER_Camera::TypeIdClass()));
 		
 		assert(aObj);
 		assert(camera);
@@ -57,8 +57,8 @@ namespace Library
 	// non-callback method for non-"RenderingObject" draws
 	void ER_BasicColorMaterial::PrepareForRendering(const XMMATRIX& worldTransform, const XMFLOAT4& color)
 	{
-		auto context = ER_Material::GetGame()->Direct3DDeviceContext();
-		ER_Camera* camera = (ER_Camera*)(ER_Material::GetGame()->Services().GetService(ER_Camera::TypeIdClass()));
+		auto context = ER_Material::GetCore()->Direct3DDeviceContext();
+		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->Services().GetService(ER_Camera::TypeIdClass()));
 
 		assert(camera);
 

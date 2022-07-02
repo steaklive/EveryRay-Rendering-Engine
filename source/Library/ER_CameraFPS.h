@@ -12,8 +12,8 @@ namespace Library
 		RTTI_DECLARATIONS(ER_CameraFPS, ER_Camera)
 
 	public:
-		ER_CameraFPS(Game& game);
-		ER_CameraFPS(Game& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance);
+		ER_CameraFPS(ER_Core& game);
+		ER_CameraFPS(ER_Core& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance);
 
 		virtual ~ER_CameraFPS();
 

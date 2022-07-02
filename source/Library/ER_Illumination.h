@@ -98,7 +98,7 @@ namespace Library
 	class ER_Illumination : public ER_CoreComponent
 	{
 	public:
-		ER_Illumination(Game& game, ER_Camera& camera, const DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const ER_Scene* scene);
+		ER_Illumination(ER_Core& game, ER_Camera& camera, const DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const ER_Scene* scene);
 		~ER_Illumination();
 
 		void Initialize(const ER_Scene* scene);

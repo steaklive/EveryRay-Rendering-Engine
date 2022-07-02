@@ -3,12 +3,12 @@
 
 namespace Library
 {
-	class Game;
+	class ER_Core;
 
 	class RenderStateHelper
 	{
 	public:
-		RenderStateHelper(Game& game);
+		RenderStateHelper(ER_Core& game);
 		~RenderStateHelper();
 
 		static void ResetAll(ID3D11DeviceContext* deviceContext);
@@ -33,7 +33,7 @@ namespace Library
 		RenderStateHelper(const RenderStateHelper& rhs);
 		RenderStateHelper& operator=(const RenderStateHelper& rhs);
 
-		Game& mGame;
+		ER_Core& mCore;
 
 		ID3D11RasterizerState* mRasterizerState;
 		ID3D11BlendState* mBlendState;

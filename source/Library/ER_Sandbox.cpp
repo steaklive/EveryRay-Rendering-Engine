@@ -12,7 +12,7 @@ namespace Library {
 	{
 	}
 	
-	void ER_Sandbox::Destroy(Game& game)
+	void ER_Sandbox::Destroy(ER_Core& game)
 	{
 		game.CPUProfiler()->BeginCPUTime("Destroying scene: " + mName);
 		DeleteObject(mRenderStateHelper);
@@ -31,7 +31,7 @@ namespace Library {
 		game.CPUProfiler()->EndCPUTime("Destroying scene: " + mName);
 	}
 
-    void ER_Sandbox::Initialize(Game& game, ER_Camera& camera, const std::string& sceneName, const std::string& sceneFolderPath)
+    void ER_Sandbox::Initialize(ER_Core& game, ER_Camera& camera, const std::string& sceneName, const std::string& sceneFolderPath)
     {
         mRenderStateHelper = new RenderStateHelper(game);
 		mName = sceneName;
@@ -163,7 +163,7 @@ namespace Library {
 
     }
 
-	void ER_Sandbox::Update(Game& game, const ER_CoreTime& gameTime)
+	void ER_Sandbox::Update(ER_Core& game, const ER_CoreTime& gameTime)
 	{
 		//TODO refactor to updates for elements of ER_CoreComponent type
 
@@ -230,7 +230,7 @@ namespace Library {
         ImGui::End();
     }
 
-	void ER_Sandbox::Draw(Game& game, const ER_CoreTime& gameTime)
+	void ER_Sandbox::Draw(ER_Core& game, const ER_CoreTime& gameTime)
 	{
 		//TODO set proper RS
 		//TODO set proper DS

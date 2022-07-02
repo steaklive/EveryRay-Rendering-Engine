@@ -1,6 +1,6 @@
 #pragma once
 #include "Common.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_CoreTime.h"
 #include "ER_GPUTexture.h"
 #include "ConstantBuffer.h"
@@ -53,7 +53,7 @@ namespace Library
 	class ER_PostProcessingStack
 	{
 	public:
-		ER_PostProcessingStack(Game& pGame, ER_Camera& pCamera);
+		ER_PostProcessingStack(ER_Core& pCore, ER_Camera& pCamera);
 		~ER_PostProcessingStack();
 
 		void Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR = true, bool pFog = false, bool pLightShafts = false);
@@ -82,7 +82,7 @@ namespace Library
 	
 		void ShowPostProcessingWindow();
 
-		Game& game;
+		ER_Core& game;
 		ER_Camera& camera;
 		const DirectionalLight* light;
 

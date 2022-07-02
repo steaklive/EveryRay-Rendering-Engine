@@ -5,7 +5,7 @@
 #include "ER_CoreException.h"
 #include "ER_Model.h"
 #include "ER_Mesh.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_MatrixHelper.h"
 #include "ER_Utility.h"
 #include "ER_VertexDeclarations.h"
@@ -24,8 +24,8 @@
 
 namespace Library
 {
-	ER_Terrain::ER_Terrain(Game& pGame, DirectionalLight& light) :
-		ER_CoreComponent(pGame),
+	ER_Terrain::ER_Terrain(ER_Core& pCore, DirectionalLight& light) :
+		ER_CoreComponent(pCore),
 		mIsWireframe(false),
 		mHeightMaps(0, nullptr),
 		mDirectionalLight(light)
@@ -35,7 +35,7 @@ namespace Library
 			ID3DBlob* blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
 				throw ER_CoreException("Failed to load VSMain from shader: Terrain.hlsl!");
-			if (FAILED(GetGame()->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVS)))
+			if (FAILED(GetCore()->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVS)))
 				throw ER_CoreException("Failed to create vertex shader from Terrain.hlsl!");
 
 			D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
@@ -43,7 +43,7 @@ namespace Library
 				{ "PATCH_INFO", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 }
 			};
 
-			HRESULT hr = GetGame()->Direct3DDevice()->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), blob->GetBufferPointer(), blob->GetBufferSize(), &mInputLayout);
+			HRESULT hr = GetCore()->Direct3DDevice()->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), blob->GetBufferPointer(), blob->GetBufferSize(), &mInputLayout);
 			if (FAILED(hr))
 				throw ER_CoreException("CreateInputLayout() failed when creating terrain's vertex shader.", hr);
 			blob->Release();
@@ -51,48 +51,48 @@ namespace Library
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "HSMain", "hs_5_0", &blob)))
 				throw ER_CoreException("Failed to load HSMain from shader: Terrain.hlsl!");
-			if (FAILED(GetGame()->Direct3DDevice()->CreateHullShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mHS)))
+			if (FAILED(GetCore()->Direct3DDevice()->CreateHullShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mHS)))
 				throw ER_CoreException("Failed to create hull shader from Terrain.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "DSMain", "ds_5_0", &blob)))
 				throw ER_CoreException("Failed to load DSMain from shader: Terrain.hlsl!");
-			if (FAILED(GetGame()->Direct3DDevice()->CreateDomainShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mDS)))
+			if (FAILED(GetCore()->Direct3DDevice()->CreateDomainShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mDS)))
 				throw ER_CoreException("Failed to create domain shader from Terrain.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "DSShadowMap", "ds_5_0", &blob)))
 				throw ER_CoreException("Failed to load DSShadowMap from shader: Terrain.hlsl!");
-			if (FAILED(GetGame()->Direct3DDevice()->CreateDomainShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mDS_ShadowMap)))
+			if (FAILED(GetCore()->Direct3DDevice()->CreateDomainShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mDS_ShadowMap)))
 				throw ER_CoreException("Failed to create domain shader from Terrain.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load PSMain from shader: Terrain.hlsl!");
-			if (FAILED(GetGame()->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS)))
+			if (FAILED(GetCore()->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS)))
 				throw ER_CoreException("Failed to create pixel shader from Terrain.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "PSShadowMap", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load PSShadowMap from shader: Terrain.hlsl!");
-			if (FAILED(GetGame()->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS_ShadowMap)))
+			if (FAILED(GetCore()->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS_ShadowMap)))
 				throw ER_CoreException("Failed to create pixel shader from Terrain.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
 			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Terrain\\PlaceObjectsOnTerrain.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
 				throw ER_CoreException("Failed to load a shader: CSMain from PlaceObjectsOnTerrain.hlsl!");
-			if (FAILED(GetGame()->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPlaceOnTerrainCS)))
+			if (FAILED(GetCore()->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPlaceOnTerrainCS)))
 				throw ER_CoreException("Failed to create compute shader from PlaceObjectsOnTerrain.hlsl!");
 			blob->Release();
 		}
 
-		mTerrainConstantBuffer.Initialize(GetGame()->Direct3DDevice());
-		mPlaceOnTerrainConstantBuffer.Initialize(GetGame()->Direct3DDevice());
+		mTerrainConstantBuffer.Initialize(GetCore()->Direct3DDevice());
+		mPlaceOnTerrainConstantBuffer.Initialize(GetCore()->Direct3DDevice());
 	}
 
 	ER_Terrain::~ER_Terrain()
@@ -164,14 +164,14 @@ namespace Library
 			terrainTilesDataCPUBuffer[tileIndex].AABBMinPoint = XMFLOAT4(mHeightMaps[tileIndex]->mAABB.first.x, mHeightMaps[tileIndex]->mAABB.first.y, mHeightMaps[tileIndex]->mAABB.first.z, 1.0);
 			terrainTilesDataCPUBuffer[tileIndex].AABBMaxPoint = XMFLOAT4(mHeightMaps[tileIndex]->mAABB.second.x, mHeightMaps[tileIndex]->mAABB.second.y, mHeightMaps[tileIndex]->mAABB.second.z, 1.0);
 		}
-		mTerrainTilesDataGPU = new ER_GPUBuffer(GetGame()->Direct3DDevice(), terrainTilesDataCPUBuffer, mNumTiles, sizeof(TerrainTileDataGPU),
+		mTerrainTilesDataGPU = new ER_GPUBuffer(GetCore()->Direct3DDevice(), terrainTilesDataCPUBuffer, mNumTiles, sizeof(TerrainTileDataGPU),
 			D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
 		DeleteObjects(terrainTilesDataCPUBuffer);
 
-		auto context = GetGame()->Direct3DDeviceContext();
-		mTerrainTilesHeightmapsArrayTexture = new ER_GPUTexture(GetGame()->Direct3DDevice(), mTileResolution, mTileResolution, 1, DXGI_FORMAT_R16_UNORM,
+		auto context = GetCore()->Direct3DDeviceContext();
+		mTerrainTilesHeightmapsArrayTexture = new ER_GPUTexture(GetCore()->Direct3DDevice(), mTileResolution, mTileResolution, 1, DXGI_FORMAT_R16_UNORM,
 			D3D11_BIND_SHADER_RESOURCE, 1, -1, mNumTiles);
-		mTerrainTilesSplatmapsArrayTexture = new ER_GPUTexture(GetGame()->Direct3DDevice(), mTileResolution, mTileResolution, 1, DXGI_FORMAT_R16G16B16A16_UNORM,
+		mTerrainTilesSplatmapsArrayTexture = new ER_GPUTexture(GetCore()->Direct3DDevice(), mTileResolution, mTileResolution, 1, DXGI_FORMAT_R16G16B16A16_UNORM,
 			D3D11_BIND_SHADER_RESOURCE, 1, -1, mNumTiles);
 		for (int tileIndex = 0; tileIndex < mNumTiles; tileIndex++)
 		{
@@ -189,13 +189,13 @@ namespace Library
 	void ER_Terrain::LoadTextures(const std::wstring& aTexturesPath, const std::wstring& splatLayer0Path, const std::wstring& splatLayer1Path, const std::wstring& splatLayer2Path, const std::wstring& splatLayer3Path)
 	{
 		if (!splatLayer0Path.empty())
-			mSplatChannelTextures[0] = new ER_GPUTexture(GetGame()->Direct3DDevice(), GetGame()->Direct3DDeviceContext(), splatLayer0Path, true);
+			mSplatChannelTextures[0] = new ER_GPUTexture(GetCore()->Direct3DDevice(), GetCore()->Direct3DDeviceContext(), splatLayer0Path, true);
 		if (!splatLayer1Path.empty())
-			mSplatChannelTextures[1] = new ER_GPUTexture(GetGame()->Direct3DDevice(), GetGame()->Direct3DDeviceContext(), splatLayer1Path, true);
+			mSplatChannelTextures[1] = new ER_GPUTexture(GetCore()->Direct3DDevice(), GetCore()->Direct3DDeviceContext(), splatLayer1Path, true);
 		if (!splatLayer2Path.empty())
-			mSplatChannelTextures[2] = new ER_GPUTexture(GetGame()->Direct3DDevice(), GetGame()->Direct3DDeviceContext(), splatLayer2Path, true);
+			mSplatChannelTextures[2] = new ER_GPUTexture(GetCore()->Direct3DDevice(), GetCore()->Direct3DDeviceContext(), splatLayer2Path, true);
 		if (!splatLayer3Path.empty())
-			mSplatChannelTextures[3] = new ER_GPUTexture(GetGame()->Direct3DDevice(), GetGame()->Direct3DDeviceContext(), splatLayer3Path, true);
+			mSplatChannelTextures[3] = new ER_GPUTexture(GetCore()->Direct3DDevice(), GetCore()->Direct3DDeviceContext(), splatLayer3Path, true);
 
 		int numTilesSqrt = sqrt(mNumTiles);
 
@@ -237,7 +237,7 @@ namespace Library
 		if (tileIndex >= mHeightMaps.size())
 			return;
 
-		mHeightMaps[tileIndex]->mSplatTexture = new ER_GPUTexture(GetGame()->Direct3DDevice(), GetGame()->Direct3DDeviceContext(), path, true);
+		mHeightMaps[tileIndex]->mSplatTexture = new ER_GPUTexture(GetCore()->Direct3DDevice(), GetCore()->Direct3DDeviceContext(), path, true);
 	}
 
 	void ER_Terrain::LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path)
@@ -246,7 +246,7 @@ namespace Library
 		if (tileIndex >= mHeightMaps.size())
 			return;
 
-		mHeightMaps[tileIndex]->mHeightTexture = new ER_GPUTexture(GetGame()->Direct3DDevice(), GetGame()->Direct3DDeviceContext(), path, true);
+		mHeightMaps[tileIndex]->mHeightTexture = new ER_GPUTexture(GetCore()->Direct3DDevice(), GetCore()->Direct3DDeviceContext(), path, true);
 	}
 
 	// Create pre-tessellated patch data which is used for terrain rendering (using GPU tessellation pipeline)
@@ -280,7 +280,7 @@ namespace Library
 		subresource_data.SysMemPitch = 0;
 		subresource_data.SysMemSlicePitch = 0;
 
-		if (FAILED(GetGame()->Direct3DDevice()->CreateBuffer(&buf_desc, &subresource_data, &(mHeightMaps[tileIndex]->mVertexBufferTS))))
+		if (FAILED(GetCore()->Direct3DDevice()->CreateBuffer(&buf_desc, &subresource_data, &(mHeightMaps[tileIndex]->mVertexBufferTS))))
 			throw ER_CoreException("ID3D11Device::CreateBuffer() failed while generating vertex buffer of GPU terrain mesh patch (pre-tessellation)");
 
 		free(patches_rawdata);
@@ -294,7 +294,7 @@ namespace Library
 	{
 		int tileIndex = tileIndexX * sqrt(mNumTiles) + tileIndexY;
 		assert(tileIndex < mHeightMaps.size());
-		auto device = GetGame()->Direct3DDevice();
+		auto device = GetCore()->Direct3DDevice();
 
 		int error, i, j, index;
 		FILE* filePtr;
@@ -464,7 +464,7 @@ namespace Library
 			delete[] indices;
 			indices = NULL;
 
-			mHeightMaps[tileIndex]->mDebugGizmoAABB = new ER_RenderableAABB(*GetGame(), XMFLOAT4(0.0, 0.0, 1.0, 1.0));
+			mHeightMaps[tileIndex]->mDebugGizmoAABB = new ER_RenderableAABB(*GetCore(), XMFLOAT4(0.0, 0.0, 1.0, 1.0));
 			mHeightMaps[tileIndex]->mDebugGizmoAABB->InitializeGeometry({ mHeightMaps[tileIndex]->mAABB.first,mHeightMaps[tileIndex]->mAABB.second });
 		}
 	}
@@ -489,7 +489,7 @@ namespace Library
 
 	void ER_Terrain::Update(const ER_CoreTime& gameTime)
 	{
-		ER_Camera* camera = (ER_Camera*)(mGame->Services().GetService(ER_Camera::TypeIdClass()));
+		ER_Camera* camera = (ER_Camera*)(mCore->Services().GetService(ER_Camera::TypeIdClass()));
 
 		int visibleTiles = 0;
 		for (int i = 0; i < mHeightMaps.size(); i++)
@@ -522,10 +522,10 @@ namespace Library
 		if (mHeightMaps[tileIndex]->IsCulled() && shadowMapCascade == -1) //for shadow mapping pass we dont want to cull with main camera frustum
 			return;
 
-		ER_Camera* camera = (ER_Camera*)(mGame->Services().GetService(ER_Camera::TypeIdClass()));
+		ER_Camera* camera = (ER_Camera*)(mCore->Services().GetService(ER_Camera::TypeIdClass()));
 		assert(camera);
 
-		ID3D11DeviceContext* context = GetGame()->Direct3DDeviceContext();
+		ID3D11DeviceContext* context = GetCore()->Direct3DDeviceContext();
 		D3D11_PRIMITIVE_TOPOLOGY originalPrimitiveTopology;
 		context->IAGetPrimitiveTopology(&originalPrimitiveTopology);
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST);
@@ -925,7 +925,7 @@ namespace Library
 	// - placing ER_Foliage patches on terrain (batch placement)
 	void ER_Terrain::PlaceOnTerrain(XMFLOAT4* positions, int positionsCount, TerrainSplatChannels splatChannel, XMFLOAT4* terrainVertices, int terrainVertexCount)
 	{
-		auto context = GetGame()->Direct3DDeviceContext();
+		auto context = GetCore()->Direct3DDeviceContext();
 
 		UINT initCounts = 0;
 
@@ -947,7 +947,7 @@ namespace Library
 			buf_descTerrain.CPUAccessFlags = 0;
 			buf_descTerrain.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
 			buf_descTerrain.StructureByteStride = sizeof(XMFLOAT4);
-			if (FAILED(mGame->Direct3DDevice()->CreateBuffer(&buf_descTerrain, terrainVertices != NULL ? &data : NULL, &terrainBuffer)))
+			if (FAILED(mCore->Direct3DDevice()->CreateBuffer(&buf_descTerrain, terrainVertices != NULL ? &data : NULL, &terrainBuffer)))
 				throw ER_CoreException("Failed to create terrain vertices buffer in ER_Terrain::PlaceOnTerrainTile(). Maybe increase TDR of your graphics driver...");
 
 			D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc;
@@ -955,7 +955,7 @@ namespace Library
 			srv_desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
 			srv_desc.Buffer.FirstElement = 0;
 			srv_desc.Buffer.NumElements = terrainVertexCount;
-			if (FAILED(mGame->Direct3DDevice()->CreateShaderResourceView(terrainBuffer, &srv_desc, &terrainBufferSRV)))
+			if (FAILED(mCore->Direct3DDevice()->CreateShaderResourceView(terrainBuffer, &srv_desc, &terrainBufferSRV)))
 				throw ER_CoreException("Failed to create terrain vertices SRV buffer in ER_Terrain::PlaceOnTerrainTile().");
 		}
 #endif
@@ -969,7 +969,7 @@ namespace Library
 			buf_desc.CPUAccessFlags = 0;
 			buf_desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
 			buf_desc.StructureByteStride = sizeof(XMFLOAT4);
-			if (FAILED(mGame->Direct3DDevice()->CreateBuffer(&buf_desc, positions != NULL ? &init_data : NULL, &posBuffer)))
+			if (FAILED(mCore->Direct3DDevice()->CreateBuffer(&buf_desc, positions != NULL ? &init_data : NULL, &posBuffer)))
 				throw ER_CoreException("Failed to create positions GPU structured buffer in ER_Terrain::PlaceOnTerrainTile().");
 
 			// uav for positions
@@ -979,14 +979,14 @@ namespace Library
 			uav_desc.Buffer.FirstElement = 0;
 			uav_desc.Buffer.NumElements = positionsCount;
 			uav_desc.Buffer.Flags = 0;
-			if (FAILED(mGame->Direct3DDevice()->CreateUnorderedAccessView(posBuffer, &uav_desc, &posUAV)))
+			if (FAILED(mCore->Direct3DDevice()->CreateUnorderedAccessView(posBuffer, &uav_desc, &posUAV)))
 				throw ER_CoreException("Failed to create UAV of positions buffer in ER_Terrain::PlaceOnTerrainTile().");
 
 			// create the ouput buffer for storing data from GPU for positions
 			buf_desc.Usage = D3D11_USAGE_STAGING;
 			buf_desc.BindFlags = 0;
 			buf_desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
-			if (FAILED(mGame->Direct3DDevice()->CreateBuffer(&buf_desc, 0, &outputPosBuffer)))
+			if (FAILED(mCore->Direct3DDevice()->CreateBuffer(&buf_desc, 0, &outputPosBuffer)))
 				throw ER_CoreException("Failed to create positions GPU output buffer in ER_Terrain::PlaceOnTerrain().");
 		}
 

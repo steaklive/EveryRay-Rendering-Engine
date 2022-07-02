@@ -16,7 +16,7 @@ namespace Library
 	class ER_ShadowMapMaterial : public ER_Material
 	{
 	public:
-		ER_ShadowMapMaterial(Game& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced = false);
+		ER_ShadowMapMaterial(ER_Core& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced = false);
 		~ER_ShadowMapMaterial();
 
 		void PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, int cascadeIndex);

@@ -3,7 +3,7 @@
 #include "ShaderCompiler.h"
 #include "ER_Utility.h"
 #include "ER_CoreException.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_Camera.h"
 #include "ER_RenderingObject.h"
 #include "ER_Mesh.h"
@@ -11,7 +11,7 @@
 
 namespace Library
 {
-	ER_ShadowMapMaterial::ER_ShadowMapMaterial(Game& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced)
+	ER_ShadowMapMaterial::ER_ShadowMapMaterial(ER_Core& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced)
 		: ER_Material(game, entries, shaderFlags)
 	{
 		mIsSpecial = true;
@@ -45,7 +45,7 @@ namespace Library
 		if (shaderFlags & HAS_PIXEL_SHADER)
 			ER_Material::CreatePixelShader("content\\shaders\\ShadowMap.hlsl");
 
-		mConstantBuffer.Initialize(ER_Material::GetGame()->Direct3DDevice());
+		mConstantBuffer.Initialize(ER_Material::GetCore()->Direct3DDevice());
 	}
 
 	ER_ShadowMapMaterial::~ER_ShadowMapMaterial()
@@ -56,8 +56,8 @@ namespace Library
 
 	void ER_ShadowMapMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, int cascadeIndex)
 	{
-		auto context = ER_Material::GetGame()->Direct3DDeviceContext();
-		ER_Camera* camera = (ER_Camera*)(ER_Material::GetGame()->Services().GetService(ER_Camera::TypeIdClass()));
+		auto context = ER_Material::GetCore()->Direct3DDeviceContext();
+		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->Services().GetService(ER_Camera::TypeIdClass()));
 
 		assert(aObj);
 		assert(camera);

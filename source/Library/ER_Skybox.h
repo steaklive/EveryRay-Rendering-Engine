@@ -31,7 +31,7 @@ namespace Library
 	class ER_Skybox : public ER_CoreComponent
 	{
 	public:
-		ER_Skybox(Game& game, ER_Camera& camera, float scale);
+		ER_Skybox(ER_Core& game, ER_Camera& camera, float scale);
 		~ER_Skybox();
 
 		void Initialize();
@@ -58,7 +58,7 @@ namespace Library
 
 		XMFLOAT4 CalculateSunPositionOnSkybox(XMFLOAT3 dir, ER_Camera* aCustomCamera = nullptr);
 		
-		Game& mGame;
+		ER_Core& mCore;
 		ER_Camera& mCamera;
 
 		ID3D11Buffer* mVertexBuffer = nullptr;

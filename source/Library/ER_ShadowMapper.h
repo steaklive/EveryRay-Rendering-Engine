@@ -16,7 +16,7 @@ namespace Library
 	{
 
 	public:
-		ER_ShadowMapper(Game& pGame, ER_Camera& camera, DirectionalLight& dirLight, UINT pWidth, UINT pHeight, bool isCascaded = true);
+		ER_ShadowMapper(ER_Core& pCore, ER_Camera& camera, DirectionalLight& dirLight, UINT pWidth, UINT pHeight, bool isCascaded = true);
 		~ER_ShadowMapper();
 
 		void Draw(const ER_Scene* scene, ER_Terrain* terrain = nullptr);

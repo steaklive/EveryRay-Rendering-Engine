@@ -10,7 +10,7 @@ namespace Library
 	const float SpotLight::DefaultInnerAngle = 0.75f;
 	const float SpotLight::DefaultOuterAngle = 0.25f;
 
-	SpotLight::SpotLight(Game& game)
+	SpotLight::SpotLight(ER_Core& game)
 		: PointLight(game), mInnerAngle(DefaultInnerAngle), mOuterAngle(DefaultOuterAngle),
 		mDirection(ER_Vector3Helper::Forward), mUp(ER_Vector3Helper::Up), mRight(ER_Vector3Helper::Right)
 	{

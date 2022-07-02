@@ -19,7 +19,7 @@ namespace Library
 		RTTI_DECLARATIONS(ER_Mouse, ER_CoreComponent)
 
 	public:
-		ER_Mouse(Game& game, LPDIRECTINPUT8 directInput);
+		ER_Mouse(ER_Core& game, LPDIRECTINPUT8 directInput);
 		~ER_Mouse();
 
 		LPDIMOUSESTATE CurrentState();

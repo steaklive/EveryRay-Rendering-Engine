@@ -4,17 +4,17 @@
 
 namespace Library
 {
-	class Game;
+	class ER_Core;
 	class ER_Mesh;
 	class ER_ModelMaterial;
 
 	class ER_Model
 	{
 	public:
-		ER_Model(Game& game, const std::string& filename, bool flipUVs = false);
+		ER_Model(ER_Core& game, const std::string& filename, bool flipUVs = false);
 		~ER_Model();
 
-		Game& GetGame();
+		ER_Core& GetGame();
 		bool HasMeshes() const;
 		bool HasMaterials() const;
 
@@ -29,7 +29,7 @@ namespace Library
 		ER_Model(const ER_Model& rhs);
 		ER_Model& operator=(const ER_Model& rhs);
 
-		Game& mGame;
+		ER_Core& mCore;
 		ER_AABB mAABB;
 		std::vector<ER_Mesh> mMeshes;
 		std::vector<ER_ModelMaterial> mMaterials;

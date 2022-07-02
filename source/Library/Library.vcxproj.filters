@@ -81,12 +81,6 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Game\GameException.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Game.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -279,6 +273,9 @@
     <ClInclude Include="ER_VertexDeclarations.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_Core.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -407,9 +404,6 @@
     <ClCompile Include="ER_CPUProfiler.cpp">
       <Filter>Source Files\Profilers</Filter>
     </ClCompile>
-    <ClCompile Include="Game.cpp">
-      <Filter>Source Files\Core</Filter>
-    </ClCompile>
     <ClCompile Include="ER_RenderingObject.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
@@ -460,6 +454,9 @@
     </ClCompile>
     <ClCompile Include="ER_Utility.cpp">
       <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_Core.cpp">
+      <Filter>Source Files\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

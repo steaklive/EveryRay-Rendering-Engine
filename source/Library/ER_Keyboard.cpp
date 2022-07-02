@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "ER_Keyboard.h"
-#include "Game.h"
+#include "ER_Core.h"
 #include "ER_CoreTime.h"
 #include "ER_CoreException.h"
 
@@ -9,7 +9,7 @@ namespace Library
 {
 	RTTI_DEFINITIONS(ER_Keyboard)
 
-	ER_Keyboard::ER_Keyboard(Game& game, LPDIRECTINPUT8 directInput)
+	ER_Keyboard::ER_Keyboard(ER_Core& game, LPDIRECTINPUT8 directInput)
 		: ER_CoreComponent(game), mDirectInput(directInput), mDevice(nullptr)
 	{
 		assert(mDirectInput != nullptr);
@@ -49,7 +49,7 @@ namespace Library
 			throw ER_CoreException("IDIRECTINPUTDEVICE8::SetDataFormat() failed");
 		}
 
-		if (FAILED(mDevice->SetCooperativeLevel(mGame->WindowHandle(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE)))
+		if (FAILED(mDevice->SetCooperativeLevel(mCore->WindowHandle(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE)))
 		{
 			throw ER_CoreException("IDIRECTINPUTDEVICE8::SetCooperativeLevel() failed");
 		}

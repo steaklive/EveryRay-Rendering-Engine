@@ -1,7 +1,7 @@
 #pragma once
 #define MAX_SCENES_COUNT 25
 
-#include "..\Library\Game.h"
+#include "..\Library\ER_Core.h"
 #include "..\Library\Common.h"
 #include <chrono>
 
@@ -18,7 +18,7 @@ namespace Library
 
 namespace Rendering
 {	
-	class RenderingGame : public Game
+	class RenderingGame : public ER_Core
 	{
 	public:
 		RenderingGame(HINSTANCE instance, const std::wstring& windowClass, const std::wstring& windowTitle, int showCommand);
@@ -47,7 +47,7 @@ namespace Rendering
 		ER_Editor* mEditor;
 		ER_QuadRenderer* mQuadRenderer;
 
-		RenderStateHelper* mRenderStateHelper; //TODO move to Game.cpp
+		RenderStateHelper* mRenderStateHelper; //TODO move to ER_Core.cpp
 
 		std::chrono::duration<double> mElapsedTimeUpdateCPU;
 		std::chrono::duration<double> mElapsedTimeRenderCPU;
