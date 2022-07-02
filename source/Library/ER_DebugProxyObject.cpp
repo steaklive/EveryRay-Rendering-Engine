@@ -4,8 +4,8 @@
 #include "Game.h"
 #include "ER_CoreTime.h"
 #include "ER_CoreException.h"
-#include "MatrixHelper.h"
-#include "VectorHelper.h"
+#include "ER_MatrixHelper.h"
+#include "ER_VectorHelper.h"
 #include "ER_Model.h"
 #include "ER_Mesh.h"
 #include "Utility.h"
@@ -21,8 +21,8 @@ namespace Library
 		mGame(game),
 		mModelFileName(modelFileName), mMaterial(nullptr),
 		mVertexBuffer(nullptr), mIndexBuffer(nullptr), mIndexCount(0),
-		mWorldMatrix(MatrixHelper::Identity), mScaleMatrix(MatrixHelper::Identity), mDisplayWireframe(false),
-		mPosition(Vector3Helper::Zero), mDirection(Vector3Helper::Forward), mUp(Vector3Helper::Up), mRight(Vector3Helper::Right)
+		mWorldMatrix(ER_MatrixHelper::Identity), mScaleMatrix(ER_MatrixHelper::Identity), mDisplayWireframe(false),
+		mPosition(ER_Vector3Helper::Zero), mDirection(ER_Vector3Helper::Forward), mUp(ER_Vector3Helper::Up), mRight(ER_Vector3Helper::Right)
 	{
 		XMStoreFloat4x4(&mScaleMatrix, XMMatrixScaling(scale, scale, scale));
 	}
@@ -161,10 +161,10 @@ namespace Library
 	void ER_DebugProxyObject::Update(const ER_CoreTime& gameTime)
 	{
 		XMMATRIX worldMatrix = XMMatrixIdentity();
-		MatrixHelper::SetForward(worldMatrix, mDirection);
-		MatrixHelper::SetUp(worldMatrix, mUp);
-		MatrixHelper::SetRight(worldMatrix, mRight);
-		MatrixHelper::SetTranslation(worldMatrix, mPosition);
+		ER_MatrixHelper::SetForward(worldMatrix, mDirection);
+		ER_MatrixHelper::SetUp(worldMatrix, mUp);
+		ER_MatrixHelper::SetRight(worldMatrix, mRight);
+		ER_MatrixHelper::SetTranslation(worldMatrix, mPosition);
 		XMStoreFloat4x4(&mWorldMatrix, XMLoadFloat4x4(&mScaleMatrix) * worldMatrix);
 	}
 

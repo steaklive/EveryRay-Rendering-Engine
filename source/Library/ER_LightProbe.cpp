@@ -10,9 +10,9 @@
 #include "ER_CoreTime.h"
 #include "ER_CoreException.h"
 #include "Utility.h"
-#include "MatrixHelper.h"
+#include "ER_MatrixHelper.h"
 #include "ER_MaterialHelper.h"
-#include "VectorHelper.h"
+#include "ER_VectorHelper.h"
 #include "DirectionalLight.h"
 #include "ER_QuadRenderer.h"
 #include "ER_RenderToLightProbeMaterial.h"
@@ -25,20 +25,20 @@ namespace Library
 {
 	//X+, X-, Y+, Y-, Z+, Z-
 	static const XMFLOAT3 cubemapFacesDirections[CUBEMAP_FACES_COUNT] = {
-		Vector3Helper::Right,
-		Vector3Helper::Left,
-		Vector3Helper::Up,
-		Vector3Helper::Down,
-		Vector3Helper::Backward,
-		Vector3Helper::Forward
+		ER_Vector3Helper::Right,
+		ER_Vector3Helper::Left,
+		ER_Vector3Helper::Up,
+		ER_Vector3Helper::Down,
+		ER_Vector3Helper::Backward,
+		ER_Vector3Helper::Forward
 	};
 	static const XMFLOAT3 cubemapUpDirections[CUBEMAP_FACES_COUNT] = {
-		Vector3Helper::Up,
-		Vector3Helper::Up,
-		Vector3Helper::Forward,
-		Vector3Helper::Backward,
-		Vector3Helper::Up,
-		Vector3Helper::Up
+		ER_Vector3Helper::Up,
+		ER_Vector3Helper::Up,
+		ER_Vector3Helper::Forward,
+		ER_Vector3Helper::Backward,
+		ER_Vector3Helper::Up,
+		ER_Vector3Helper::Up
 	};
 
 	ER_LightProbe::ER_LightProbe(Game& game, DirectionalLight& light, ER_ShadowMapper& shadowMapper, int size, ER_ProbeType aType)

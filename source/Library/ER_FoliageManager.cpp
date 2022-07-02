@@ -1,7 +1,7 @@
 #include "ER_FoliageManager.h"
 #include "ER_CoreException.h"
 #include "Game.h"
-#include "MatrixHelper.h"
+#include "ER_MatrixHelper.h"
 #include "Utility.h"
 #include "ER_Model.h"
 #include "ER_Mesh.h"
@@ -300,7 +300,7 @@ namespace Library
 		}
 
 		mTransformationMatrix = XMMatrixTranslation(mDistributionCenter.x, mDistributionCenter.y, mDistributionCenter.z);
-		MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
+		ER_MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
 	}
 
 	void ER_Foliage::CreateBlendStates()
@@ -419,7 +419,7 @@ namespace Library
 		if (worldShadowMapper)
 		{
 			for (int cascade = 0; cascade < NUM_SHADOW_CASCADES; cascade++)
-				mFoliageConstantBuffer.Data.ShadowMatrices[cascade] = XMMatrixTranspose(worldShadowMapper->GetViewMatrix(cascade) * worldShadowMapper->GetProjectionMatrix(cascade) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()));
+				mFoliageConstantBuffer.Data.ShadowMatrices[cascade] = XMMatrixTranspose(worldShadowMapper->GetViewMatrix(cascade) * worldShadowMapper->GetProjectionMatrix(cascade) * XMLoadFloat4x4(&ER_MatrixHelper::GetProjectionShadowMatrix()));
 			mFoliageConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / worldShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
 			mFoliageConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ mCamera.GetCameraFarShadowCascadeDistance(0), mCamera.GetCameraFarShadowCascadeDistance(1), mCamera.GetCameraFarShadowCascadeDistance(2), 1.0f };
 		}
@@ -533,8 +533,8 @@ namespace Library
 		//imgui
 		if (editable)
 		{
-			MatrixHelper::GetFloatArray(mCamera.ViewMatrix4X4(), mCameraViewMatrix);
-			MatrixHelper::GetFloatArray(mCamera.ProjectionMatrix4X4(), mCameraProjectionMatrix);
+			ER_MatrixHelper::GetFloatArray(mCamera.ViewMatrix4X4(), mCameraViewMatrix);
+			ER_MatrixHelper::GetFloatArray(mCamera.ProjectionMatrix4X4(), mCameraProjectionMatrix);
 
 			static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
 			static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);

@@ -9,7 +9,7 @@
 #include "ER_Model.h"
 #include "ER_Mesh.h"
 #include "Game.h"
-#include "MatrixHelper.h"
+#include "ER_MatrixHelper.h"
 #include "ER_MaterialHelper.h"
 #include "Utility.h"
 #include "VertexDeclarations.h"
@@ -626,7 +626,7 @@ namespace Library {
 		if (aRenderTarget)
 		{
 			for (size_t i = 0; i < NUM_SHADOW_CASCADES; i++)
-				mDeferredLightingConstantBuffer.Data.ShadowMatrices[i] = mShadowMapper.GetViewMatrix(i) * mShadowMapper.GetProjectionMatrix(i) /** XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix())*/;
+				mDeferredLightingConstantBuffer.Data.ShadowMatrices[i] = mShadowMapper.GetViewMatrix(i) * mShadowMapper.GetProjectionMatrix(i) /** XMLoadFloat4x4(&ER_MatrixHelper::GetProjectionShadowMatrix())*/;
 			mDeferredLightingConstantBuffer.Data.ViewProj = XMMatrixTranspose(mCamera.ViewMatrix() * mCamera.ProjectionMatrix());
 			mDeferredLightingConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ mCamera.GetCameraFarShadowCascadeDistance(0), mCamera.GetCameraFarShadowCascadeDistance(1), mCamera.GetCameraFarShadowCascadeDistance(2), 1.0f };
 			mDeferredLightingConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / mShadowMapper.GetResolution(), 1.0f, 1.0f , 1.0f };
@@ -721,7 +721,7 @@ namespace Library {
 			context->IASetInputLayout(aObj->IsInstanced() ? mForwardLightingRenderingObjectInputLayout_Instancing : mForwardLightingRenderingObjectInputLayout);
 
 			for (size_t i = 0; i < NUM_SHADOW_CASCADES; i++)
-				mForwardLightingConstantBuffer.Data.ShadowMatrices[i] = XMMatrixTranspose(mShadowMapper.GetViewMatrix(i) * mShadowMapper.GetProjectionMatrix(i) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()));
+				mForwardLightingConstantBuffer.Data.ShadowMatrices[i] = XMMatrixTranspose(mShadowMapper.GetViewMatrix(i) * mShadowMapper.GetProjectionMatrix(i) * XMLoadFloat4x4(&ER_MatrixHelper::GetProjectionShadowMatrix()));
 			mForwardLightingConstantBuffer.Data.ViewProjection = XMMatrixTranspose(mCamera.ViewMatrix() * mCamera.ProjectionMatrix());
 			mForwardLightingConstantBuffer.Data.World = XMMatrixTranspose(aObj->GetTransformationMatrix());
 			mForwardLightingConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / mShadowMapper.GetResolution(), 1.0f, 1.0f , 1.0f };
@@ -792,7 +792,7 @@ namespace Library {
 			{
 				auto aabbObj = objectInfo.second->GetLocalAABB();
 				XMFLOAT3 position;
-				MatrixHelper::GetTranslation(objectInfo.second->GetTransformationMatrix(), position);
+				ER_MatrixHelper::GetTranslation(objectInfo.second->GetTransformationMatrix(), position);
 				aabbObj.first.x += position.x;
 				aabbObj.first.y += position.y;
 				aabbObj.first.z += position.z;

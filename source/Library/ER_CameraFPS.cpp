@@ -5,7 +5,7 @@
 #include "ER_CoreTime.h"
 #include "ER_Keyboard.h"
 #include "ER_Mouse.h"
-#include "VectorHelper.h"
+#include "ER_VectorHelper.h"
 
 #include "imgui.h"
 
@@ -88,7 +88,7 @@ namespace Library
 
 	void ER_CameraFPS::Update(const ER_CoreTime& gameTime)
 	{
-		XMFLOAT3 movementAmount = Vector3Helper::Zero;
+		XMFLOAT3 movementAmount = ER_Vector3Helper::Zero;
 		if (mKeyboard != nullptr )
 		{
 			if (mKeyboard->IsKeyDown(DIK_W))
@@ -124,7 +124,7 @@ namespace Library
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-		XMFLOAT2 rotationAmount = Vector2Helper::Zero;
+		XMFLOAT2 rotationAmount = ER_Vector2Helper::Zero;
 		if ((mMouse != nullptr) && (mMouse->IsButtonHeldDown(MouseButtonsRight)) && (!io.WantCaptureMouse))
 		{
 			LPDIMOUSESTATE mouseState = mMouse->CurrentState();

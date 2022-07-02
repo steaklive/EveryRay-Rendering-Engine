@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "PointLight.h"
-#include "VectorHelper.h"
+#include "ER_VectorHelper.h"
 
 namespace Library
 {
@@ -10,7 +10,7 @@ namespace Library
 	const float PointLight::DefaultRadius = 10.0f;
 
 	PointLight::PointLight(Game& game)
-		: Light(game), mPosition(Vector3Helper::Zero), mRadius(DefaultRadius)
+		: Light(game), mPosition(ER_Vector3Helper::Zero), mRadius(DefaultRadius)
 	{
 	}
 

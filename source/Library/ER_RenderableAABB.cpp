@@ -5,16 +5,16 @@
 #include "ER_CoreException.h"
 #include "ER_BasicColorMaterial.h"
 #include "VertexDeclarations.h"
-#include "ColorHelper.h"
-#include "MatrixHelper.h"
-#include "VectorHelper.h"
+#include "ER_ColorHelper.h"
+#include "ER_MatrixHelper.h"
+#include "ER_VectorHelper.h"
 #include "ER_Camera.h"
 #include "Utility.h"
 #include "ER_GPUBuffer.h"
 
 namespace Library
 {
-	const XMVECTORF32 DefaultColor = ColorHelper::Blue;
+	const XMVECTORF32 DefaultColor = ER_ColorHelper::Blue;
 	const UINT AABBVertexCount = 8;
 	const UINT AABBPrimitiveCount = 12;
 	const UINT AABBIndicesPerPrimitive = 2;

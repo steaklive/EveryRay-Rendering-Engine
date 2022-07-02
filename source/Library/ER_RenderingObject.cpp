@@ -13,7 +13,7 @@
 #include "ER_RenderableAABB.h"
 #include "ER_Material.h"
 #include "ER_Camera.h"
-#include "MatrixHelper.h"
+#include "ER_MatrixHelper.h"
 #include "ER_Terrain.h"
 
 namespace Library
@@ -459,25 +459,25 @@ namespace Library
 	void ER_RenderingObject::SetTransformationMatrix(const XMMATRIX& mat)
 	{
 		mTransformationMatrix = mat;
-		MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
+		ER_MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
 	}
 
 	void ER_RenderingObject::SetTranslation(float x, float y, float z)
 	{
 		mTransformationMatrix *= XMMatrixTranslation(x, y, z);
-		MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
+		ER_MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
 	}
 
 	void ER_RenderingObject::SetScale(float x, float y, float z)
 	{
 		mTransformationMatrix *= XMMatrixScaling(x, y, z);
-		MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
+		ER_MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
 	}
 
 	void ER_RenderingObject::SetRotation(float x, float y, float z)
 	{
 		mTransformationMatrix *= XMMatrixRotationRollPitchYaw(x, y, z);
-		MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
+		ER_MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
 	}
 
 	// new instancing code
@@ -635,10 +635,10 @@ namespace Library
 		if (!mIsInstanced)
 		{
 			XMFLOAT4 currentPos;
-			MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), currentPos);
+			ER_MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), currentPos);
 			terrain->PlaceOnTerrain(&currentPos, 1, (TerrainSplatChannels)mTerrainProceduralPlacementSplatChannel);
 
-			MatrixHelper::SetTranslation(mTransformationMatrix, XMFLOAT3(currentPos.x, currentPos.y, currentPos.z));
+			ER_MatrixHelper::SetTranslation(mTransformationMatrix, XMFLOAT3(currentPos.x, currentPos.y, currentPos.z));
 			SetTransformationMatrix(mTransformationMatrix);
 		}
 		else
@@ -664,7 +664,7 @@ namespace Library
 					float yaw = Utility::RandomFloat(mTerrainProceduralObjectMinYaw, mTerrainProceduralObjectMaxYaw);
 
 					worldMatrix = XMMatrixScaling(scale, scale, scale) * XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
-					MatrixHelper::SetTranslation(worldMatrix, XMFLOAT3(instancesPositions[instanceI].x, instancesPositions[instanceI].y, instancesPositions[instanceI].z));
+					ER_MatrixHelper::SetTranslation(worldMatrix, XMFLOAT3(instancesPositions[instanceI].x, instancesPositions[instanceI].y, instancesPositions[instanceI].z));
 					XMStoreFloat4x4(&(mInstanceData[lod][instanceI].World), worldMatrix);
 					worldMatrix = XMMatrixIdentity();
 				}
@@ -685,7 +685,7 @@ namespace Library
 		if (editable && mIsInstanced)
 		{
 			// load current selected instance's transform to temp transform (for UI)
-			MatrixHelper::GetFloatArray(mInstanceData[0][mEditorSelectedInstancedObjectIndex].World, mCurrentObjectTransformMatrix);
+			ER_MatrixHelper::GetFloatArray(mInstanceData[0][mEditorSelectedInstancedObjectIndex].World, mCurrentObjectTransformMatrix);
 		}
 
 		// place procedurally on terrain (only executed once, on load)
@@ -776,8 +776,8 @@ namespace Library
 		if (!(mAvailableInEditorMode && mIsSelected))
 			return;
 
-		MatrixHelper::GetFloatArray(mCamera.ViewMatrix4X4(), mCameraViewMatrix);
-		MatrixHelper::GetFloatArray(mCamera.ProjectionMatrix4X4(), mCameraProjectionMatrix);
+		ER_MatrixHelper::GetFloatArray(mCamera.ViewMatrix4X4(), mCameraViewMatrix);
+		ER_MatrixHelper::GetFloatArray(mCamera.ProjectionMatrix4X4(), mCameraProjectionMatrix);
 
 		ShowObjectsEditorWindow(mCameraViewMatrix, mCameraProjectionMatrix, mCurrentObjectTransformMatrix);
 
@@ -856,7 +856,7 @@ namespace Library
 			if (ImGui::Button("Move camera to"))
 			{
 				XMFLOAT3 newCameraPos;
-				MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), newCameraPos);
+				ER_MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), newCameraPos);
 
 				ER_Camera* camera = (ER_Camera*)(mGame->Services().GetService(ER_Camera::TypeIdClass()));
 				if (camera)
@@ -872,7 +872,7 @@ namespace Library
 				if (ImGui::Button("Place on terrain") && terrain && terrain->IsLoaded())
 				{
 					XMFLOAT4 currentPos;
-					MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), currentPos);
+					ER_MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), currentPos);
 					terrain->PlaceOnTerrain(&currentPos, 1, currentChannel);
 
 					mMatrixTranslation[0] = currentPos.x;
@@ -1012,7 +1012,7 @@ namespace Library
 			{
 				XMFLOAT3 pos;
 				XMMATRIX mat = (Utility::IsMainCameraCPUFrustumCulling) ? XMLoadFloat4x4(&mTempPostCullingInstanceData[i].World) : XMLoadFloat4x4(&mInstanceData[0][i].World);
-				MatrixHelper::GetTranslation(mat, pos);
+				ER_MatrixHelper::GetTranslation(mat, pos);
 
 				float distanceToCameraSqr =
 					(mCamera.Position().x - pos.x) * (mCamera.Position().x - pos.x) +
@@ -1037,7 +1037,7 @@ namespace Library
 		else
 		{
 			XMFLOAT3 pos;
-			MatrixHelper::GetTranslation(mTransformationMatrix, pos);
+			ER_MatrixHelper::GetTranslation(mTransformationMatrix, pos);
 
 			float distanceToCameraSqr =
 				(mCamera.Position().x - pos.x) * (mCamera.Position().x - pos.x) +

@@ -16,9 +16,9 @@
 #include "..\Library\ER_Mouse.h"
 #include "..\Library\Utility.h"
 #include "..\Library\ER_CameraFPS.h"
-#include "..\Library\ColorHelper.h"
+#include "..\Library\ER_ColorHelper.h"
 #include "..\Library\RenderStateHelper.h"
-#include "..\Library\MatrixHelper.h"
+#include "..\Library\ER_MatrixHelper.h"
 #include "..\Library\ER_Sandbox.h"
 #include "..\Library\ER_Editor.h"
 #include "..\Library\RasterizerStates.h"
@@ -35,8 +35,8 @@
 
 namespace Rendering
 {
-	const XMVECTORF32 RenderingGame::BackgroundColor = ColorHelper::Black;
-	const XMVECTORF32 RenderingGame::BackgroundColor2 = ColorHelper::Red;
+	const XMVECTORF32 RenderingGame::BackgroundColor = ER_ColorHelper::Black;
+	const XMVECTORF32 RenderingGame::BackgroundColor2 = ER_ColorHelper::Red;
 	
 	static int currentLevel = 0;
 
@@ -69,7 +69,7 @@ namespace Rendering
 		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
 
 		RasterizerStates::Initialize(mDirect3DDevice);
-		SamplerStates::BorderColor = ColorHelper::Black;
+		SamplerStates::BorderColor = ER_ColorHelper::Black;
 		SamplerStates::Initialize(mDirect3DDevice);
 
 		{

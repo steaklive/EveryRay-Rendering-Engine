@@ -529,7 +529,7 @@ namespace Library
 				XMMATRIX matXM  = XMMatrixTranspose(XMLoadFloat4x4(&mat));
 				XMStoreFloat4x4(&mat, matXM);
 				float matF[16];
-				MatrixHelper::GetFloatArray(mat, matF);
+				ER_MatrixHelper::GetFloatArray(mat, matF);
 				for (int i = 0; i < 16; i++)
 					content.append(matF[i]);
 				root["rendering_objects"][i]["transform"] = content;
@@ -539,7 +539,7 @@ namespace Library
 				float matF[16];
 				XMFLOAT4X4 mat;
 				XMStoreFloat4x4(&mat, XMMatrixTranspose(XMMatrixIdentity()));
-				MatrixHelper::GetFloatArray(mat, matF);
+				ER_MatrixHelper::GetFloatArray(mat, matF);
 
 				for (int i = 0; i < 16; i++)
 					content.append(matF[i]);
@@ -563,7 +563,7 @@ namespace Library
 							XMMATRIX matXM = XMMatrixTranspose(XMLoadFloat4x4(&mat));
 							XMStoreFloat4x4(&mat, matXM);
 							float matF[16];
-							MatrixHelper::GetFloatArray(mat, matF);
+							ER_MatrixHelper::GetFloatArray(mat, matF);
 							for (int i = 0; i < 16; i++)
 								contentInstanceTransform.append(matF[i]);
 

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "SpotLight.h"
-#include "VectorHelper.h"
+#include "ER_VectorHelper.h"
 
 namespace Library
 {
@@ -12,7 +12,7 @@ namespace Library
 
 	SpotLight::SpotLight(Game& game)
 		: PointLight(game), mInnerAngle(DefaultInnerAngle), mOuterAngle(DefaultOuterAngle),
-		mDirection(Vector3Helper::Forward), mUp(Vector3Helper::Up), mRight(Vector3Helper::Right)
+		mDirection(ER_Vector3Helper::Forward), mUp(ER_Vector3Helper::Up), mRight(ER_Vector3Helper::Right)
 	{
 	}
 

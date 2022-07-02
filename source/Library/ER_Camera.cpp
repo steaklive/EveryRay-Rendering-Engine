@@ -3,8 +3,8 @@
 #include "ER_Camera.h"
 #include "Game.h"
 #include "ER_CoreTime.h"
-#include "VectorHelper.h"
-#include "MatrixHelper.h"
+#include "ER_VectorHelper.h"
+#include "ER_MatrixHelper.h"
 #include "ER_RenderingObject.h"
 #include "Utility.h"
 
@@ -199,10 +199,10 @@ namespace Library
 
 	void ER_Camera::Reset()
 	{
-		mPosition = Vector3Helper::Zero;
-		mDirection = Vector3Helper::Forward;
-		mUp = Vector3Helper::Up;
-		mRight = Vector3Helper::Right;
+		mPosition = ER_Vector3Helper::Zero;
+		mDirection = ER_Vector3Helper::Forward;
+		mUp = ER_Vector3Helper::Up;
+		mRight = ER_Vector3Helper::Right;
 
 		UpdateViewMatrix();
 	}

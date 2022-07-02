@@ -1,9 +1,9 @@
 #include "stdafx.h"
 
 #include "DirectionalLight.h"
-#include "VectorHelper.h"
+#include "ER_VectorHelper.h"
 #include "Utility.h"
-#include "MatrixHelper.h"
+#include "ER_MatrixHelper.h"
 
 #include "imgui.h"
 #include "ImGuizmo.h"
@@ -12,14 +12,14 @@ namespace Library
 	RTTI_DEFINITIONS(DirectionalLight)
 
 	DirectionalLight::DirectionalLight(Game& game) : Light(game),
-		mDirection(Vector3Helper::Forward),
-		mUp(Vector3Helper::Up), mRight(Vector3Helper::Right), mProxyModel(nullptr)
+		mDirection(ER_Vector3Helper::Forward),
+		mUp(ER_Vector3Helper::Up), mRight(ER_Vector3Helper::Right), mProxyModel(nullptr)
 	{
 	}
 
 	DirectionalLight::DirectionalLight(Game& game, ER_Camera& camera) : Light(game),
-		mDirection(Vector3Helper::Forward),
-		mUp(Vector3Helper::Up), mRight(Vector3Helper::Right), mProxyModel(nullptr)
+		mDirection(ER_Vector3Helper::Forward),
+		mUp(ER_Vector3Helper::Up), mRight(ER_Vector3Helper::Right), mProxyModel(nullptr)
 	{
 		//directional gizmo model
 		mProxyModel = new ER_DebugProxyObject(*mGame, camera, Utility::GetFilePath("content\\models\\proxy\\proxy_direction_arrow.obj"), 1.0f);
@@ -140,8 +140,8 @@ namespace Library
 		{
 			mProxyModel->Update(time);
 
-			MatrixHelper::GetFloatArray(viewMatrix, mCameraViewMatrix);
-			MatrixHelper::GetFloatArray(projectionMatrix, mCameraProjectionMatrix);
+			ER_MatrixHelper::GetFloatArray(viewMatrix, mCameraViewMatrix);
+			ER_MatrixHelper::GetFloatArray(projectionMatrix, mCameraProjectionMatrix);
 
 			UpdateGizmoTransform(mCameraViewMatrix, mCameraProjectionMatrix, mObjectTransformMatrix);
 		}
@@ -189,7 +189,7 @@ namespace Library
 		XMFLOAT4X4 transformMatrix;
 		XMStoreFloat4x4(&transformMatrix, transform);
 
-		MatrixHelper::GetFloatArray(transformMatrix, mObjectTransformMatrix);
+		ER_MatrixHelper::GetFloatArray(transformMatrix, mObjectTransformMatrix);
 	}
 
 	const XMMATRIX& DirectionalLight::LightMatrix(const XMFLOAT3& mPosition) const

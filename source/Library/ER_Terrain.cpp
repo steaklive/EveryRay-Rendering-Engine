@@ -6,7 +6,7 @@
 #include "ER_Model.h"
 #include "ER_Mesh.h"
 #include "Game.h"
-#include "MatrixHelper.h"
+#include "ER_MatrixHelper.h"
 #include "Utility.h"
 #include "VertexDeclarations.h"
 #include "RasterizerStates.h"
@@ -538,7 +538,7 @@ namespace Library
 		if (worldShadowMapper)
 		{
 			for (int cascade = 0; cascade < NUM_SHADOW_CASCADES; cascade++)
-				mTerrainConstantBuffer.Data.ShadowMatrices[cascade] = XMMatrixTranspose(worldShadowMapper->GetViewMatrix(cascade) * worldShadowMapper->GetProjectionMatrix(cascade) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()));
+				mTerrainConstantBuffer.Data.ShadowMatrices[cascade] = XMMatrixTranspose(worldShadowMapper->GetViewMatrix(cascade) * worldShadowMapper->GetProjectionMatrix(cascade) * XMLoadFloat4x4(&ER_MatrixHelper::GetProjectionShadowMatrix()));
 			mTerrainConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / worldShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
 			mTerrainConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ camera->GetCameraFarShadowCascadeDistance(0), camera->GetCameraFarShadowCascadeDistance(1), camera->GetCameraFarShadowCascadeDistance(2), 1.0f };
 			

@@ -8,7 +8,7 @@
 #include "ER_Model.h"
 #include "ER_Mesh.h"
 #include "Game.h"
-#include "MatrixHelper.h"
+#include "ER_MatrixHelper.h"
 #include "Utility.h"
 #include "VertexDeclarations.h"
 #include "RasterizerStates.h"

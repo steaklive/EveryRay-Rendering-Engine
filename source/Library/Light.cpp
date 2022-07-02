@@ -1,13 +1,13 @@
 #include "stdafx.h"
 
-#include "ColorHelper.h"
+#include "ER_ColorHelper.h"
 #include "Light.h"
 
 namespace Library
 {
 	RTTI_DEFINITIONS(Light)
 
-	Light::Light(Game& game) : ER_CoreComponent(game), mColor(reinterpret_cast<const float*>(&ColorHelper::White))
+	Light::Light(Game& game) : ER_CoreComponent(game), mColor(reinterpret_cast<const float*>(&ER_ColorHelper::White))
 	{}
 
 	Light::~Light() {}

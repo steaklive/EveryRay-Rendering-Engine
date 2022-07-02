@@ -186,7 +186,7 @@
   <ItemGroup>
     <ClInclude Include="..\Game\GameException.h" />
     <ClInclude Include="ER_Camera.h" />
-    <ClInclude Include="ColorHelper.h" />
+    <ClInclude Include="ER_ColorHelper.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="ER_BasicColorMaterial.h" />
@@ -220,7 +220,7 @@
     <ClInclude Include="ER_Keyboard.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="ER_MaterialHelper.h" />
-    <ClInclude Include="MatrixHelper.h" />
+    <ClInclude Include="ER_MatrixHelper.h" />
     <ClInclude Include="ER_Mesh.h" />
     <ClInclude Include="ER_Model.h" />
     <ClInclude Include="ER_ModelMaterial.h" />
@@ -249,14 +249,14 @@
     <ClInclude Include="ER_Terrain.h" />
     <ClInclude Include="TGATextureLoader.h" />
     <ClInclude Include="Utility.h" />
-    <ClInclude Include="VectorHelper.h" />
+    <ClInclude Include="ER_VectorHelper.h" />
     <ClInclude Include="VertexDeclarations.h" />
     <ClInclude Include="ER_VolumetricClouds.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\external\DirectXMath\SHMath\DirectXSH.cpp" />
     <ClCompile Include="..\..\external\DirectXMath\SHMath\DirectXSHD3D11.cpp" />
-    <ClCompile Include="ColorHelper.cpp" />
+    <ClCompile Include="ER_ColorHelper.cpp" />
     <ClCompile Include="ER_BasicColorMaterial.cpp" />
     <ClCompile Include="ER_Camera.cpp" />
     <ClCompile Include="ER_CameraFPS.cpp" />
@@ -291,7 +291,7 @@
     <ClCompile Include="ER_Keyboard.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="ER_MaterialHelper.cpp" />
-    <ClCompile Include="MatrixHelper.cpp" />
+    <ClCompile Include="ER_MatrixHelper.cpp" />
     <ClCompile Include="ER_Mesh.cpp" />
     <ClCompile Include="ER_Model.cpp" />
     <ClCompile Include="ER_ModelMaterial.cpp" />
@@ -318,7 +318,7 @@
     <ClCompile Include="ER_Terrain.cpp" />
     <ClCompile Include="TGATextureLoader.cpp" />
     <ClCompile Include="Utility.cpp" />
-    <ClCompile Include="VectorHelper.cpp" />
+    <ClCompile Include="ER_VectorHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\content\shaders\BasicColor.hlsl">

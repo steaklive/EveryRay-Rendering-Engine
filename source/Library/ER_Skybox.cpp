@@ -5,7 +5,7 @@
 #include "ER_CoreException.h"
 #include "ER_CoreTime.h"
 #include "ER_Camera.h"
-#include "MatrixHelper.h"
+#include "ER_MatrixHelper.h"
 #include "ER_Model.h"
 #include "ER_Mesh.h"
 #include "Utility.h"
@@ -18,7 +18,7 @@ namespace Library
 	ER_Skybox::ER_Skybox(Game& game, ER_Camera& camera, float scale)
 		: ER_CoreComponent(game), mGame(game), mCamera(camera),
 		mVertexBuffer(nullptr), mIndexBuffer(nullptr), mIndexCount(0),
-		mWorldMatrix(MatrixHelper::Identity), mScaleMatrix(MatrixHelper::Identity), mScale(scale)
+		mWorldMatrix(ER_MatrixHelper::Identity), mScaleMatrix(ER_MatrixHelper::Identity), mScale(scale)
 	{
 		XMStoreFloat4x4(&mScaleMatrix, XMMatrixScaling(scale, scale, scale));
 	}

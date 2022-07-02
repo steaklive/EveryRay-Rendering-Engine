@@ -77,7 +77,7 @@ namespace Library
 		int shadowCascadeIndex = 1;
 		mConstantBuffer.Data.World = XMMatrixTranspose(aObj->GetTransformationMatrix());
 		mConstantBuffer.Data.ViewProjection = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());
-		mConstantBuffer.Data.ShadowMatrix = XMMatrixTranspose(neededSystems.mShadowMapper->GetViewMatrix(shadowCascadeIndex) * neededSystems.mShadowMapper->GetProjectionMatrix(shadowCascadeIndex) * XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix()));
+		mConstantBuffer.Data.ShadowMatrix = XMMatrixTranspose(neededSystems.mShadowMapper->GetViewMatrix(shadowCascadeIndex) * neededSystems.mShadowMapper->GetProjectionMatrix(shadowCascadeIndex) * XMLoadFloat4x4(&ER_MatrixHelper::GetProjectionShadowMatrix()));
 		mConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / neededSystems.mShadowMapper->GetResolution(), 1.0f, 1.0f, 1.0f };
 		mConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ camera->GetCameraFarShadowCascadeDistance(0), camera->GetCameraFarShadowCascadeDistance(1), camera->GetCameraFarShadowCascadeDistance(2), 1.0f };
 		mConstantBuffer.Data.VoxelCameraPos = voxelCameraPos;

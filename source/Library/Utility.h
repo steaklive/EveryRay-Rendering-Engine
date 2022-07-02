@@ -2,9 +2,9 @@
 
 #include "Common.h"
 
-#include "VectorHelper.h"
-#include "MatrixHelper.h"
-#include "ColorHelper.h"
+#include "ER_VectorHelper.h"
+#include "ER_MatrixHelper.h"
+#include "ER_ColorHelper.h"
 #include "ER_MaterialHelper.h"
 
 namespace Library
