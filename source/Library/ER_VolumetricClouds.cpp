@@ -9,8 +9,8 @@
 #include "ER_Mesh.h"
 #include "Game.h"
 #include "ER_MatrixHelper.h"
-#include "Utility.h"
-#include "VertexDeclarations.h"
+#include "ER_Utility.h"
+#include "ER_VertexDeclarations.h"
 #include "RasterizerStates.h"
 #include "ShaderCompiler.h"
 #include "ER_Skybox.h"
@@ -48,41 +48,41 @@ namespace Library {
 	void ER_VolumetricClouds::Initialize(ER_GPUTexture* aIlluminationDepth) {
 		//shaders
 		ID3DBlob* blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsComposite.hlsl").c_str(), "main", "ps_5_0", &blob)))
+		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsComposite.hlsl").c_str(), "main", "ps_5_0", &blob)))
 			throw ER_CoreException("Failed to load main pass from shader: VolumetricCloudsComposite.hlsl!");
 		if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mCompositePS)))
 			throw ER_CoreException("Failed to create shader from VolumetricCloudsComposite.hlsl!");
 		blob->Release();
 
 		blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsBlur.hlsl").c_str(), "main", "ps_5_0", &blob)))
+		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsBlur.hlsl").c_str(), "main", "ps_5_0", &blob)))
 			throw ER_CoreException("Failed to load main pass from shader: VolumetricCloudsBlur.hlsl!");
 		if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mBlurPS)))
 			throw ER_CoreException("Failed to create shader from VolumetricCloudsBlur.hlsl!");
 		blob->Release();
 
 		blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsCS.hlsl").c_str(), "main", "cs_5_0", &blob)))
+		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsCS.hlsl").c_str(), "main", "cs_5_0", &blob)))
 			throw ER_CoreException("Failed to load main pass from shader: VolumetricCloudsCS.hlsl!");
 		if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mMainCS)))
 			throw ER_CoreException("Failed to create shader from VolumetricCloudsCS.hlsl!");
 		blob->Release();
 
 		blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\UpsampleBlur.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
+		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\UpsampleBlur.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
 			throw ER_CoreException("Failed to load CSMain from shader: UpsampleBlur.hlsl!");
 		if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mUpsampleBlurCS)))
 			throw ER_CoreException("Failed to create shader from UpsampleBlur.hlsl!");
 		blob->Release();
 
 		//textures
-		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\cloud.dds").c_str(), nullptr, &mCloudTextureSRV)))
+		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), ER_Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\cloud.dds").c_str(), nullptr, &mCloudTextureSRV)))
 			throw ER_CoreException("Failed to create Cloud Map.");
 
-		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\weather.dds").c_str(), nullptr, &mWeatherTextureSRV)))
+		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), ER_Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\weather.dds").c_str(), nullptr, &mWeatherTextureSRV)))
 			throw ER_CoreException("Failed to create Weather Map.");
 
-		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\worley.dds").c_str(), nullptr, &mWorleyTextureSRV)))
+		if (FAILED(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), ER_Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\worley.dds").c_str(), nullptr, &mWorleyTextureSRV)))
 			throw ER_CoreException("Failed to create Worley Map.");
 
 		//cbuffers

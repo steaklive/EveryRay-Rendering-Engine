@@ -8,7 +8,7 @@
 #include "ER_CoreTime.h"
 #include "ER_Model.h"
 #include "ER_Mesh.h"
-#include "Utility.h"
+#include "ER_Utility.h"
 #include "ER_Illumination.h"
 #include "ER_RenderableAABB.h"
 #include "ER_Material.h"
@@ -113,10 +113,10 @@ namespace Library
 		auto pathBuilder = [&](std::wstring relativePath)
 		{
 			std::string fullPath;
-			Utility::GetDirectory(mModel->GetFileName(), fullPath);
+			ER_Utility::GetDirectory(mModel->GetFileName(), fullPath);
 			fullPath += "/";
 			std::wstring resultPath;
-			Utility::ToWideString(fullPath, resultPath);
+			ER_Utility::ToWideString(fullPath, resultPath);
 			resultPath += relativePath;
 			return resultPath;
 		};
@@ -132,10 +132,10 @@ namespace Library
 					LoadTexture(TextureType::TextureTypeDifffuse, result, i);
 				}
 				else
-					LoadTexture(TextureType::TextureTypeDifffuse, Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), i);
+					LoadTexture(TextureType::TextureTypeDifffuse, ER_Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), i);
 			}
 			else
-				LoadTexture(TextureType::TextureTypeDifffuse, Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), i);
+				LoadTexture(TextureType::TextureTypeDifffuse, ER_Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), i);
 
 			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeNormalMap))
 			{
@@ -146,10 +146,10 @@ namespace Library
 					LoadTexture(TextureType::TextureTypeNormalMap, result, i);
 				}
 				else
-					LoadTexture(TextureType::TextureTypeNormalMap, Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"), i);
+					LoadTexture(TextureType::TextureTypeNormalMap, ER_Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"), i);
 			}
 			else
-				LoadTexture(TextureType::TextureTypeNormalMap, Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"), i);
+				LoadTexture(TextureType::TextureTypeNormalMap, ER_Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"), i);
 
 			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeSpecularMap))
 			{
@@ -160,10 +160,10 @@ namespace Library
 					LoadTexture(TextureType::TextureTypeSpecularMap, result, i);
 				}
 				else
-					LoadTexture(TextureType::TextureTypeSpecularMap, Utility::GetFilePath(L"content\\textures\\emptySpecularMap.png"), i);
+					LoadTexture(TextureType::TextureTypeSpecularMap, ER_Utility::GetFilePath(L"content\\textures\\emptySpecularMap.png"), i);
 			}
 			else
-				LoadTexture(TextureType::TextureTypeSpecularMap, Utility::GetFilePath(L"content\\textures\\emptySpecularMap.png"), i);
+				LoadTexture(TextureType::TextureTypeSpecularMap, ER_Utility::GetFilePath(L"content\\textures\\emptySpecularMap.png"), i);
 
 			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeDisplacementMap))
 			{
@@ -174,10 +174,10 @@ namespace Library
 					LoadTexture(TextureType::TextureTypeDisplacementMap, result, i);
 				}
 				else
-					LoadTexture(TextureType::TextureTypeDisplacementMap, Utility::GetFilePath(L"content\\textures\\emptyRoughnessMap.png"), i);
+					LoadTexture(TextureType::TextureTypeDisplacementMap, ER_Utility::GetFilePath(L"content\\textures\\emptyRoughnessMap.png"), i);
 			}
 			else
-				LoadTexture(TextureType::TextureTypeDisplacementMap, Utility::GetFilePath(L"content\\textures\\emptyRoughnessMap.png"), i);
+				LoadTexture(TextureType::TextureTypeDisplacementMap, ER_Utility::GetFilePath(L"content\\textures\\emptyRoughnessMap.png"), i);
 
 			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeEmissive))
 			{
@@ -188,10 +188,10 @@ namespace Library
 					LoadTexture(TextureType::TextureTypeEmissive, result, i);
 				}
 				else
-					LoadTexture(TextureType::TextureTypeEmissive, Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), i);
+					LoadTexture(TextureType::TextureTypeEmissive, ER_Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), i);
 			}
 			else
-				LoadTexture(TextureType::TextureTypeEmissive, Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), i);
+				LoadTexture(TextureType::TextureTypeEmissive, ER_Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), i);
 		}
 	}
 	
@@ -203,27 +203,27 @@ namespace Library
 
 		if (!mCustomAlbedoTextures[meshIndex].empty())
 			if (mCustomAlbedoTextures[meshIndex].back() != '\\')
-				LoadTexture(TextureType::TextureTypeDifffuse, Utility::GetFilePath(Utility::ToWideString(mCustomAlbedoTextures[meshIndex])), meshIndex);
+				LoadTexture(TextureType::TextureTypeDifffuse, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomAlbedoTextures[meshIndex])), meshIndex);
 
 		if (!mCustomNormalTextures[meshIndex].empty())
 			if (mCustomNormalTextures[meshIndex].back() != '\\')
-				LoadTexture(TextureType::TextureTypeNormalMap, Utility::GetFilePath(Utility::ToWideString(mCustomNormalTextures[meshIndex])), meshIndex);
+				LoadTexture(TextureType::TextureTypeNormalMap, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomNormalTextures[meshIndex])), meshIndex);
 
 		if (!mCustomRoughnessTextures[meshIndex].empty())
 			if (mCustomRoughnessTextures[meshIndex].back() != '\\')
-				LoadTexture(TextureType::TextureTypeDisplacementMap, Utility::GetFilePath(Utility::ToWideString(mCustomRoughnessTextures[meshIndex])), meshIndex);
+				LoadTexture(TextureType::TextureTypeDisplacementMap, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomRoughnessTextures[meshIndex])), meshIndex);
 
 		if (!mCustomMetalnessTextures[meshIndex].empty())
 			if (mCustomMetalnessTextures[meshIndex].back() != '\\')
-				LoadTexture(TextureType::TextureTypeEmissive, Utility::GetFilePath(Utility::ToWideString(mCustomMetalnessTextures[meshIndex])), meshIndex);
+				LoadTexture(TextureType::TextureTypeEmissive, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomMetalnessTextures[meshIndex])), meshIndex);
 
 		if (!mCustomHeightTextures[meshIndex].empty())
 			if (mCustomHeightTextures[meshIndex].back() != '\\')
-				LoadTexture(TextureType::TextureTypeHeightmap, Utility::GetFilePath(Utility::ToWideString(mCustomHeightTextures[meshIndex])), meshIndex);
+				LoadTexture(TextureType::TextureTypeHeightmap, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomHeightTextures[meshIndex])), meshIndex);
 
 		if (!mCustomReflectionMaskTextures[meshIndex].empty())
 			if (mCustomReflectionMaskTextures[meshIndex].back() != '\\')
-				LoadTexture(TextureType::TextureTypeLightMap, Utility::GetFilePath(Utility::ToWideString(mCustomReflectionMaskTextures[meshIndex])), meshIndex);
+				LoadTexture(TextureType::TextureTypeLightMap, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomReflectionMaskTextures[meshIndex])), meshIndex);
 
 		//TODO
 		//if (!extra2Path.empty())
@@ -313,18 +313,18 @@ namespace Library
 			switch (type)
 			{
 			case TextureType::TextureTypeDifffuse:
-				LoadTexture(type, Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), meshIndex);
+				LoadTexture(type, ER_Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), meshIndex);
 				break;
 			case TextureType::TextureTypeNormalMap:
-				LoadTexture(type, Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"), meshIndex);
+				LoadTexture(type, ER_Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"), meshIndex);
 				break;
 			case TextureType::TextureTypeEmissive:
-				LoadTexture(type, Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), meshIndex);
+				LoadTexture(type, ER_Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), meshIndex);
 				break;
 			case TextureType::TextureTypeDisplacementMap:
-				LoadTexture(type, Utility::GetFilePath(L"content\\textures\\emptyRoughness.png"), meshIndex);
+				LoadTexture(type, ER_Utility::GetFilePath(L"content\\textures\\emptyRoughness.png"), meshIndex);
 			default:
-				LoadTexture(type, Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), meshIndex);
+				LoadTexture(type, ER_Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), meshIndex);
 				break;
 			}
 		}
@@ -452,7 +452,7 @@ namespace Library
 
 	void ER_RenderingObject::DrawAABB()
 	{
-		if (mIsSelected && mAvailableInEditorMode && mEnableAABBDebug && Utility::IsEditorMode)
+		if (mIsSelected && mAvailableInEditorMode && mEnableAABBDebug && ER_Utility::IsEditorMode)
 			mDebugGizmoAABB->Draw();
 	}
 
@@ -647,9 +647,9 @@ namespace Library
 			for (int instanceI = 0; instanceI < mInstanceCount; instanceI++)
 			{
 				instancesPositions[instanceI] = XMFLOAT4(
-					mTerrainProceduralZoneCenterPos.x + Utility::RandomFloat(-mTerrainProceduralZoneRadius, mTerrainProceduralZoneRadius),
+					mTerrainProceduralZoneCenterPos.x + ER_Utility::RandomFloat(-mTerrainProceduralZoneRadius, mTerrainProceduralZoneRadius),
 					mTerrainProceduralZoneCenterPos.y,
-					mTerrainProceduralZoneCenterPos.z + Utility::RandomFloat(-mTerrainProceduralZoneRadius, mTerrainProceduralZoneRadius), 1.0f);
+					mTerrainProceduralZoneCenterPos.z + ER_Utility::RandomFloat(-mTerrainProceduralZoneRadius, mTerrainProceduralZoneRadius), 1.0f);
 			}
 			terrain->PlaceOnTerrain(instancesPositions, mInstanceCount, (TerrainSplatChannels)mTerrainProceduralPlacementSplatChannel);
 			XMMATRIX worldMatrix = XMMatrixIdentity();
@@ -658,10 +658,10 @@ namespace Library
 			{
 				for (int instanceI = 0; instanceI < mInstanceCount; instanceI++)
 				{
-					float scale = Utility::RandomFloat(mTerrainProceduralObjectMinScale, mTerrainProceduralObjectMaxScale);
-					float roll = Utility::RandomFloat(mTerrainProceduralObjectMinRoll, mTerrainProceduralObjectMaxRoll);
-					float pitch = Utility::RandomFloat(mTerrainProceduralObjectMinPitch, mTerrainProceduralObjectMaxPitch);
-					float yaw = Utility::RandomFloat(mTerrainProceduralObjectMinYaw, mTerrainProceduralObjectMaxYaw);
+					float scale = ER_Utility::RandomFloat(mTerrainProceduralObjectMinScale, mTerrainProceduralObjectMaxScale);
+					float roll = ER_Utility::RandomFloat(mTerrainProceduralObjectMinRoll, mTerrainProceduralObjectMaxRoll);
+					float pitch = ER_Utility::RandomFloat(mTerrainProceduralObjectMinPitch, mTerrainProceduralObjectMaxPitch);
+					float yaw = ER_Utility::RandomFloat(mTerrainProceduralObjectMinYaw, mTerrainProceduralObjectMaxYaw);
 
 					worldMatrix = XMMatrixScaling(scale, scale, scale) * XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
 					ER_MatrixHelper::SetTranslation(worldMatrix, XMFLOAT3(instancesPositions[instanceI].x, instancesPositions[instanceI].y, instancesPositions[instanceI].z));
@@ -680,7 +680,7 @@ namespace Library
 		ER_Camera* camera = (ER_Camera*)(mGame->Services().GetService(ER_Camera::TypeIdClass()));
 		assert(camera);
 
-		bool editable = Utility::IsEditorMode && mAvailableInEditorMode && mIsSelected;
+		bool editable = ER_Utility::IsEditorMode && mAvailableInEditorMode && mIsSelected;
 
 		if (editable && mIsInstanced)
 		{
@@ -709,7 +709,7 @@ namespace Library
 			}
 		}
 
-		if (Utility::IsMainCameraCPUFrustumCulling && camera)
+		if (ER_Utility::IsMainCameraCPUFrustumCulling && camera)
 			PerformCPUFrustumCull(camera);
 		else
 		{
@@ -785,7 +785,7 @@ namespace Library
 		mTransformationMatrix = XMLoadFloat4x4(&mat);
 
 		//update instance world transform (from editor's gizmo/UI)
-		if (mIsInstanced && Utility::IsEditorMode)
+		if (mIsInstanced && ER_Utility::IsEditorMode)
 		{
 			for (int lod = 0; lod < GetLODCount(); lod++)
 				mInstanceData[lod][mEditorSelectedInstancedObjectIndex].World = XMFLOAT4X4(mCurrentObjectTransformMatrix);
@@ -805,10 +805,10 @@ namespace Library
 		static bool boundSizing = false;
 		static bool boundSizingSnap = false;
 
-		if (Utility::IsEditorMode) {
+		if (ER_Utility::IsEditorMode) {
 
-			Utility::IsLightEditor = false;
-			Utility::IsFoliageEditor = false;
+			ER_Utility::IsLightEditor = false;
+			ER_Utility::IsFoliageEditor = false;
 
 			ImGui::Begin("Object Editor");
 			std::string name = mName;
@@ -997,9 +997,9 @@ namespace Library
 	void ER_RenderingObject::UpdateLODs()
 	{
 		if (mIsInstanced) {
-			if (!Utility::IsMainCameraCPUFrustumCulling && mInstanceData.size() == 0)
+			if (!ER_Utility::IsMainCameraCPUFrustumCulling && mInstanceData.size() == 0)
 				return;
-			if (Utility::IsMainCameraCPUFrustumCulling && mTempPostCullingInstanceData.size() == 0)
+			if (ER_Utility::IsMainCameraCPUFrustumCulling && mTempPostCullingInstanceData.size() == 0)
 				return;
 
 			mTempPostLoddingInstanceData.clear();
@@ -1007,11 +1007,11 @@ namespace Library
 				mTempPostLoddingInstanceData.push_back({});
 
 			//traverse through original or culled instance data (sort of "read-only") to rebalance LOD's instance buffers
-			int length = (Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData.size() : mInstanceData[0].size();
+			int length = (ER_Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData.size() : mInstanceData[0].size();
 			for (int i = 0; i < length; i++)
 			{
 				XMFLOAT3 pos;
-				XMMATRIX mat = (Utility::IsMainCameraCPUFrustumCulling) ? XMLoadFloat4x4(&mTempPostCullingInstanceData[i].World) : XMLoadFloat4x4(&mInstanceData[0][i].World);
+				XMMATRIX mat = (ER_Utility::IsMainCameraCPUFrustumCulling) ? XMLoadFloat4x4(&mTempPostCullingInstanceData[i].World) : XMLoadFloat4x4(&mInstanceData[0][i].World);
 				ER_MatrixHelper::GetTranslation(mat, pos);
 
 				float distanceToCameraSqr =
@@ -1020,14 +1020,14 @@ namespace Library
 					(mCamera.Position().z - pos.z) * (mCamera.Position().z - pos.z);
 
 				XMMATRIX newMat;
-				if (distanceToCameraSqr <= Utility::DistancesLOD[0] * Utility::DistancesLOD[0]) {
-					mTempPostLoddingInstanceData[0].push_back((Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
+				if (distanceToCameraSqr <= ER_Utility::DistancesLOD[0] * ER_Utility::DistancesLOD[0]) {
+					mTempPostLoddingInstanceData[0].push_back((ER_Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
 				}
-				else if (Utility::DistancesLOD[0] * Utility::DistancesLOD[0] < distanceToCameraSqr && distanceToCameraSqr <= Utility::DistancesLOD[1] * Utility::DistancesLOD[1]) {
-					mTempPostLoddingInstanceData[1].push_back((Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
+				else if (ER_Utility::DistancesLOD[0] * ER_Utility::DistancesLOD[0] < distanceToCameraSqr && distanceToCameraSqr <= ER_Utility::DistancesLOD[1] * ER_Utility::DistancesLOD[1]) {
+					mTempPostLoddingInstanceData[1].push_back((ER_Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
 				}
-				else if (Utility::DistancesLOD[1] * Utility::DistancesLOD[1] < distanceToCameraSqr && distanceToCameraSqr <= Utility::DistancesLOD[2] * Utility::DistancesLOD[2]) {
-					mTempPostLoddingInstanceData[2].push_back((Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
+				else if (ER_Utility::DistancesLOD[1] * ER_Utility::DistancesLOD[1] < distanceToCameraSqr && distanceToCameraSqr <= ER_Utility::DistancesLOD[2] * ER_Utility::DistancesLOD[2]) {
+					mTempPostLoddingInstanceData[2].push_back((ER_Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
 				}
 			}
 
@@ -1044,13 +1044,13 @@ namespace Library
 				(mCamera.Position().y - pos.y) * (mCamera.Position().y - pos.y) +
 				(mCamera.Position().z - pos.z) * (mCamera.Position().z - pos.z);
 
-			if (distanceToCameraSqr <= Utility::DistancesLOD[0] * Utility::DistancesLOD[0]) {
+			if (distanceToCameraSqr <= ER_Utility::DistancesLOD[0] * ER_Utility::DistancesLOD[0]) {
 				mCurrentLODIndex = 0;
 			}
-			else if (Utility::DistancesLOD[0] * Utility::DistancesLOD[0] < distanceToCameraSqr && distanceToCameraSqr <= Utility::DistancesLOD[1] * Utility::DistancesLOD[1]) {
+			else if (ER_Utility::DistancesLOD[0] * ER_Utility::DistancesLOD[0] < distanceToCameraSqr && distanceToCameraSqr <= ER_Utility::DistancesLOD[1] * ER_Utility::DistancesLOD[1]) {
 				mCurrentLODIndex = 1;
 			}
-			else if (Utility::DistancesLOD[1] * Utility::DistancesLOD[1] < distanceToCameraSqr && distanceToCameraSqr <= Utility::DistancesLOD[2] * Utility::DistancesLOD[2]) {
+			else if (ER_Utility::DistancesLOD[1] * ER_Utility::DistancesLOD[1] < distanceToCameraSqr && distanceToCameraSqr <= ER_Utility::DistancesLOD[2] * ER_Utility::DistancesLOD[2]) {
 				mCurrentLODIndex = 2;
 			}
 			else

@@ -3,7 +3,7 @@
 #include "Common.h"
 #include "ConstantBuffer.h"
 #include "ER_CoreComponent.h"
-#include "VertexDeclarations.h"
+#include "ER_VertexDeclarations.h"
 #include "SamplerStates.h"
 
 namespace Library

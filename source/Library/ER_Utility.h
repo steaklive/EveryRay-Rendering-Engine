@@ -9,7 +9,7 @@
 
 namespace Library
 {
-	class Utility
+	class ER_Utility
 	{
 	public:
 		static std::string CurrentDirectory();
@@ -31,8 +31,8 @@ namespace Library
 		static bool IsMainCameraCPUFrustumCulling;
 		static float DistancesLOD[MAX_LOD];
 	private:
-		Utility();
-		Utility(const Utility& rhs);
-		Utility& operator=(const Utility& rhs);
+		ER_Utility();
+		ER_Utility(const ER_Utility& rhs);
+		ER_Utility& operator=(const ER_Utility& rhs);
 	};
 }

@@ -248,9 +248,9 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="ER_Terrain.h" />
     <ClInclude Include="TGATextureLoader.h" />
-    <ClInclude Include="Utility.h" />
+    <ClInclude Include="ER_Utility.h" />
     <ClInclude Include="ER_VectorHelper.h" />
-    <ClInclude Include="VertexDeclarations.h" />
+    <ClInclude Include="ER_VertexDeclarations.h" />
     <ClInclude Include="ER_VolumetricClouds.h" />
   </ItemGroup>
   <ItemGroup>
@@ -317,7 +317,7 @@
     </ClCompile>
     <ClCompile Include="ER_Terrain.cpp" />
     <ClCompile Include="TGATextureLoader.cpp" />
-    <ClCompile Include="Utility.cpp" />
+    <ClCompile Include="ER_Utility.cpp" />
     <ClCompile Include="ER_VectorHelper.cpp" />
   </ItemGroup>
   <ItemGroup>

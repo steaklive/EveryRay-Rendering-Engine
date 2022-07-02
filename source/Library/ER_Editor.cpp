@@ -6,7 +6,7 @@
 #include "ER_VectorHelper.h"
 #include "ER_MatrixHelper.h"
 #include "ER_RenderingObject.h"
-#include "Utility.h"
+#include "ER_Utility.h"
 #include "ER_Scene.h"
 
 #include "imgui.h"
@@ -39,9 +39,9 @@ namespace Library
 
 	void ER_Editor::Update(const ER_CoreTime& gameTime)
 	{
-		if (Utility::IsEditorMode) {
+		if (ER_Utility::IsEditorMode) {
 			ImGui::Begin("Scene Editor");
-			ImGui::Checkbox("Enable light editor", &Utility::IsLightEditor);
+			ImGui::Checkbox("Enable light editor", &ER_Utility::IsLightEditor);
 			ImGui::Separator();
 
 			//skybox
@@ -56,9 +56,9 @@ namespace Library
 			ImGui::TextColored(ImVec4(0.12f, 0.78f, 0.44f, 1), "Scene objects");
 			if (ImGui::CollapsingHeader("Global LOD Properties"))
 			{
-				ImGui::SliderFloat("LOD #0 distance", &Utility::DistancesLOD[0], 0.0f, 100.0f);
-				ImGui::SliderFloat("LOD #1 distance", &Utility::DistancesLOD[1], Utility::DistancesLOD[0], 250.0f);
-				ImGui::SliderFloat("LOD #2 distance", &Utility::DistancesLOD[2], Utility::DistancesLOD[1], 1000.0f);
+				ImGui::SliderFloat("LOD #0 distance", &ER_Utility::DistancesLOD[0], 0.0f, 100.0f);
+				ImGui::SliderFloat("LOD #1 distance", &ER_Utility::DistancesLOD[1], ER_Utility::DistancesLOD[0], 250.0f);
+				ImGui::SliderFloat("LOD #2 distance", &ER_Utility::DistancesLOD[2], ER_Utility::DistancesLOD[1], 1000.0f);
 				//add more if needed
 			}
 			if (ImGui::Button("Save transforms")) {

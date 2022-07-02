@@ -2,10 +2,10 @@
 #include "ER_CoreException.h"
 #include "Game.h"
 #include "ER_MatrixHelper.h"
-#include "Utility.h"
+#include "ER_Utility.h"
 #include "ER_Model.h"
 #include "ER_Mesh.h"
-#include "VertexDeclarations.h"
+#include "ER_VertexDeclarations.h"
 #include "RasterizerStates.h"
 #include "ER_Scene.h"
 #include "DirectionalLight.h"
@@ -62,7 +62,7 @@ namespace Library
 
 				foliage->SetWindParams(gustDistance, strength, frequency);
 				foliage->Update(gameTime);
-				foliage->PerformCPUFrustumCulling((Utility::IsMainCameraCPUFrustumCulling && mEnableCulling) ? camera : nullptr);
+				foliage->PerformCPUFrustumCulling((ER_Utility::IsMainCameraCPUFrustumCulling && mEnableCulling) ? camera : nullptr);
 			}
 		}
 		UpdateImGui();
@@ -79,7 +79,7 @@ namespace Library
 
 	void ER_FoliageManager::DrawDebugGizmos()
 	{
-		if (Utility::IsEditorMode && Utility::IsFoliageEditor)
+		if (ER_Utility::IsEditorMode && ER_Utility::IsFoliageEditor)
 			for (auto& object : mFoliageCollection)
 				object->DrawDebugGizmos();
 	}
@@ -109,7 +109,7 @@ namespace Library
 		ImGui::Checkbox("CPU frustum cull", &mEnableCulling);
 		ImGui::SliderFloat("Max LOD distance", &mMaxDistanceToCamera, 150.0f, 1500.0f);
 		ImGui::SliderFloat("Delta LOD distance", &mDeltaDistanceToCamera, 15.0f, 150.0f);
-		ImGui::Checkbox("Enable foliage editor", &Utility::IsFoliageEditor);
+		ImGui::Checkbox("Enable foliage editor", &ER_Utility::IsFoliageEditor);
 		if (ImGui::Button("Save foliage changes"))
 			mScene->SaveFoliageZonesTransforms(mFoliageCollection);
 
@@ -148,7 +148,7 @@ namespace Library
 		//shaders
 		{
 			ID3DBlob* blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
 				throw ER_CoreException("Failed to load VSMain from shader: Foliage.hlsl!");
 			if (FAILED(mGame.Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVS)))
 				throw ER_CoreException("Failed to create vertex shader from Foliage.hlsl!");
@@ -170,28 +170,28 @@ namespace Library
 			blob->Release();
 
 			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "GSMain", "gs_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "GSMain", "gs_5_0", &blob)))
 				throw ER_CoreException("Failed to load GSMain from shader: Foliage.hlsl!");
 			if (FAILED(mGame.Direct3DDevice()->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mGS)))
 				throw ER_CoreException("Failed to create geometry shader from Foliage.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load PSMain from shader: Foliage.hlsl!");
 			if (FAILED(mGame.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS)))
 				throw ER_CoreException("Failed to create pixel shader from Foliage.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "PSMain_gbuffer", "ps_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "PSMain_gbuffer", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load PSMain_gbuffer from shader: Foliage.hlsl!");
 			if (FAILED(mGame.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS_GBuffer)))
 				throw ER_CoreException("Failed to create pixel shader from Foliage.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "PSMain_voxelization", "ps_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "PSMain_voxelization", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load PSMain_voxelization from shader: Foliage.hlsl!");
 			if (FAILED(mGame.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS_Voxelization)))
 				throw ER_CoreException("Failed to create pixel shader from Foliage.hlsl!");
@@ -200,7 +200,7 @@ namespace Library
 
 		LoadBillboardModel(mType);
 
-		if (FAILED(DirectX::CreateWICTextureFromFile(mGame.Direct3DDevice(), mGame.Direct3DDeviceContext(), Utility::ToWideString(textureName).c_str(), nullptr, &mAlbedoTexture)))
+		if (FAILED(DirectX::CreateWICTextureFromFile(mGame.Direct3DDevice(), mGame.Direct3DDeviceContext(), ER_Utility::ToWideString(textureName).c_str(), nullptr, &mAlbedoTexture)))
 		{
 			std::string message = "Failed to create Foliage Albedo Map: ";
 			message += textureName;
@@ -236,28 +236,28 @@ namespace Library
 	{
 		if (bType == FoliageBillboardType::SINGLE) {
 			mIsRotating = true;
-			std::unique_ptr<ER_Model> quadSingleModel(new ER_Model(mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_single.obj"), true));
+			std::unique_ptr<ER_Model> quadSingleModel(new ER_Model(mGame, ER_Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_single.obj"), true));
 			quadSingleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(&mVertexBuffer);
 			quadSingleModel->GetMesh(0).CreateIndexBuffer(&mIndexBuffer);
 			mVerticesCount = quadSingleModel->GetMesh(0).Indices().size();
 		}
 		else if (bType == FoliageBillboardType::TWO_QUADS_CROSSING) {
 			mIsRotating = false;
-			std::unique_ptr<ER_Model> quadDoubleModel(new ER_Model(mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_double.obj"), true));
+			std::unique_ptr<ER_Model> quadDoubleModel(new ER_Model(mGame, ER_Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_double.obj"), true));
 			quadDoubleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(&mVertexBuffer);
 			quadDoubleModel->GetMesh(0).CreateIndexBuffer(&mIndexBuffer);
 			mVerticesCount = quadDoubleModel->GetMesh(0).Indices().size();
 		}
 		else if (bType == FoliageBillboardType::THREE_QUADS_CROSSING) {
 			mIsRotating = false;
-			std::unique_ptr<ER_Model> quadTripleModel(new ER_Model(mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_triple.obj"), true));
+			std::unique_ptr<ER_Model> quadTripleModel(new ER_Model(mGame, ER_Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_triple.obj"), true));
 			quadTripleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(&mVertexBuffer);
 			quadTripleModel->GetMesh(0).CreateIndexBuffer(&mIndexBuffer);
 			mVerticesCount = quadTripleModel->GetMesh(0).Indices().size();
 		}
 		else if (bType == FoliageBillboardType::MULTIPLE_QUADS_CROSSING) {
 			mIsRotating = false;
-			std::unique_ptr<ER_Model> quadMultipleModel(new ER_Model(mGame, Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_multiple.obj"), true));
+			std::unique_ptr<ER_Model> quadMultipleModel(new ER_Model(mGame, ER_Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_multiple.obj"), true));
 			quadMultipleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(&mVertexBuffer);
 			quadMultipleModel->GetMesh(0).CreateIndexBuffer(&mIndexBuffer);
 			mVerticesCount = quadMultipleModel->GetMesh(0).Indices().size();
@@ -342,7 +342,7 @@ namespace Library
 
 		for (int i = 0; i < instanceCount; i++)
 		{
-			float randomScale = Utility::RandomFloat(mScale - 1.0f, mScale + 1.0f);
+			float randomScale = ER_Utility::RandomFloat(mScale - 1.0f, mScale + 1.0f);
 			mPatchesBufferCPU[i].scale = randomScale;
 			mPatchesBufferGPU[i].worldMatrix = XMMatrixScaling(randomScale, randomScale, randomScale) * XMMatrixTranslation(mPatchesBufferCPU[i].xPos, mPatchesBufferCPU[i].yPos, mPatchesBufferCPU[i].zPos);
 			//mPatchesBufferGPU[i].color = XMFLOAT3(mPatchesBufferCPU[i].r, mPatchesBufferCPU[i].g, mPatchesBufferCPU[i].b);
@@ -500,7 +500,7 @@ namespace Library
 
 	void ER_Foliage::Update(const ER_CoreTime& gameTime)
 	{
-		bool editable = mIsSelectedInEditor && Utility::IsEditorMode && Utility::IsFoliageEditor;
+		bool editable = mIsSelectedInEditor && ER_Utility::IsEditorMode && ER_Utility::IsFoliageEditor;
 
 		if (editable)
 		{
@@ -581,7 +581,7 @@ namespace Library
 							mPatchesBufferCPU[i].zPos = mCurrentPositions[i].z;
 						}
 						UpdateBuffersGPU();
-						Utility::IsFoliageEditor = false;
+						ER_Utility::IsFoliageEditor = false;
 
 						//update AABB based on the first patch Y position (not accurate, but fast)
 						float radius = mDistributionRadius * 0.5f + mAABBExtentXZ;

@@ -3,7 +3,7 @@
 #include "ER_ModelMaterial.h"
 #include "ER_Model.h"
 #include "ER_CoreException.h"
-#include "Utility.h"
+#include "ER_Utility.h"
 #include "assimp\scene.h"
 
 namespace Library
@@ -39,7 +39,7 @@ namespace Library
 					if (material->GetTexture(mappedTextureType, textureIndex, &path) == AI_SUCCESS)
 					{
 						std::wstring wPath;
-						Utility::ToWideString(path.C_Str(), wPath);
+						ER_Utility::ToWideString(path.C_Str(), wPath);
 						mTextures[textureType].push_back(wPath);
 					}
 				}

@@ -5,7 +5,7 @@
 #include "ER_GBufferMaterial.h"
 #include "ER_MaterialsCallbacks.h"
 #include "ER_RenderingObject.h"
-#include "Utility.h"
+#include "ER_Utility.h"
 #include "ER_Scene.h"
 
 namespace Library {

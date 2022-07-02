@@ -5,7 +5,7 @@
 #include "ER_ModelMaterial.h"
 #include "Game.h"
 #include "ER_CoreException.h"
-#include "VertexDeclarations.h"
+#include "ER_VertexDeclarations.h"
 
 #include "assimp\scene.h"
 

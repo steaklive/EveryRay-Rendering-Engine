@@ -1,6 +1,6 @@
 #include "ER_BasicColorMaterial.h"
 #include "ShaderCompiler.h"
-#include "Utility.h"
+#include "ER_Utility.h"
 #include "ER_CoreException.h"
 #include "Game.h"
 #include "ER_Camera.h"

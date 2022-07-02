@@ -6,7 +6,7 @@
 #include "ER_Model.h"
 #include "ER_RenderingObject.h"
 #include "ShaderCompiler.h"
-#include "Utility.h"
+#include "ER_Utility.h"
 #include "ER_MaterialsCallbacks.h"
 
 namespace Library
@@ -67,7 +67,7 @@ namespace Library
 		std::string createErrorMessage = "Failed to create vertex shader from shader: " + path;
 
 		ID3DBlob* blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(Utility::ToWideString(path)).c_str(), mShaderEntries.vertexEntry.c_str(), vertexShaderModel.c_str(), &blob)))
+		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(ER_Utility::ToWideString(path)).c_str(), mShaderEntries.vertexEntry.c_str(), vertexShaderModel.c_str(), &blob)))
 			throw ER_CoreException(compilerErrorMessage.c_str());
 		if (FAILED(GetGame()->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVS)))
 			throw ER_CoreException(createErrorMessage.c_str());
@@ -85,7 +85,7 @@ namespace Library
 		std::string createErrorMessage = "Failed to create pixel shader from shader: " + path;
 
 		ID3DBlob* blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(Utility::ToWideString(path)).c_str(), mShaderEntries.pixelEntry.c_str(), pixelShaderModel.c_str(), &blob)))
+		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(ER_Utility::ToWideString(path)).c_str(), mShaderEntries.pixelEntry.c_str(), pixelShaderModel.c_str(), &blob)))
 			throw ER_CoreException(compilerErrorMessage.c_str());
 		if (FAILED(GetGame()->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS)))
 			throw ER_CoreException(createErrorMessage.c_str());
@@ -100,7 +100,7 @@ namespace Library
 		std::string createErrorMessage = "Failed to create geometry shader from shader: " + path;
 
 		ID3DBlob* blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(Utility::ToWideString(path)).c_str(), mShaderEntries.geometryEntry.c_str(), geometryShaderModel.c_str(), &blob)))
+		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(ER_Utility::ToWideString(path)).c_str(), mShaderEntries.geometryEntry.c_str(), geometryShaderModel.c_str(), &blob)))
 			throw ER_CoreException(compilerErrorMessage.c_str());
 		if (FAILED(GetGame()->Direct3DDevice()->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mGS)))
 			throw ER_CoreException(createErrorMessage.c_str());

@@ -8,7 +8,7 @@
 #include "ER_VectorHelper.h"
 #include "ER_Model.h"
 #include "ER_Mesh.h"
-#include "Utility.h"
+#include "ER_Utility.h"
 #include "ER_Camera.h"
 #include "RasterizerStates.h"
 #include "ER_BasicColorMaterial.h"
@@ -146,7 +146,7 @@ namespace Library
 
 	void ER_DebugProxyObject::Initialize()
 	{
-		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
+		SetCurrentDirectory(ER_Utility::ExecutableDirectory().c_str());
 
 		std::unique_ptr<ER_Model> model(new ER_Model(mGame, mModelFileName, true));
 

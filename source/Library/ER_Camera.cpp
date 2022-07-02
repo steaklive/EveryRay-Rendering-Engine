@@ -6,7 +6,7 @@
 #include "ER_VectorHelper.h"
 #include "ER_MatrixHelper.h"
 #include "ER_RenderingObject.h"
-#include "Utility.h"
+#include "ER_Utility.h"
 
 #define MAX_NUM_CASCADES 3
 

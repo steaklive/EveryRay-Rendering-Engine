@@ -2,7 +2,7 @@
 #include "ER_CoreException.h"
 #include "ShaderCompiler.h"
 #include "Game.h"
-#include "Utility.h"
+#include "ER_Utility.h"
 
 namespace Library {
 	RTTI_DEFINITIONS(ER_QuadRenderer)
@@ -78,7 +78,7 @@ namespace Library {
 			MessageBox(NULL, L"An error occurred while trying to create the index buffer for Quad.", L"Error", MB_OK);
 
 		ID3DBlob* blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Quad.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
+		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Quad.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
 			throw ER_CoreException("Failed to load VSMain from shader: Quad.hlsl!");
 		if (FAILED(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVS)))
 			throw ER_CoreException("Failed to create vertex shader from Quad.hlsl!");

@@ -6,7 +6,7 @@
 
 #include "ER_Scene.h"
 #include "ER_CoreException.h"
-#include "Utility.h"
+#include "ER_Utility.h"
 #include "ER_Model.h"
 #include "Materials.inl"
 #include "ER_RenderingObject.h"
@@ -95,7 +95,7 @@ namespace Library
 					{
 						fieldName += std::to_string(i);
 						if (root.isMember(fieldName.c_str()))
-							result = Utility::ToWideString(root[fieldName.c_str()].asString());
+							result = ER_Utility::ToWideString(root[fieldName.c_str()].asString());
 						else
 							result = L"";
 
@@ -150,7 +150,7 @@ namespace Library
 				std::string name = root["rendering_objects"][i]["name"].asString();
 				std::string modelPath = root["rendering_objects"][i]["model_path"].asString();
 				bool isInstanced = root["rendering_objects"][i]["instanced"].asBool();
-				objects.emplace(name, new ER_RenderingObject(name, i, *mGame, mCamera, std::unique_ptr<ER_Model>(new ER_Model(*mGame, Utility::GetFilePath(modelPath), true)), true, isInstanced));
+				objects.emplace(name, new ER_RenderingObject(name, i, *mGame, mCamera, std::unique_ptr<ER_Model>(new ER_Model(*mGame, ER_Utility::GetFilePath(modelPath), true)), true, isInstanced));
 			}
 
 			assert(numRenderingObjects == objects.size());
@@ -409,7 +409,7 @@ namespace Library
 			if (hasLODs) {
 				for (Json::Value::ArrayIndex lod = 1 /* 0 is main model loaded before */; lod != root["rendering_objects"][i]["model_lods"].size(); lod++) {
 					std::string path = root["rendering_objects"][i]["model_lods"][lod]["path"].asString();
-					aObject->LoadLOD(std::unique_ptr<ER_Model>(new ER_Model(*mGame, Utility::GetFilePath(path), true)));
+					aObject->LoadLOD(std::unique_ptr<ER_Model>(new ER_Model(*mGame, ER_Utility::GetFilePath(path), true)));
 				}
 			}
 		}
@@ -634,7 +634,7 @@ namespace Library
 
 					foliageZones.push_back(new ER_Foliage(*core, mCamera, light,
 						root["foliage_zones"][i]["patch_count"].asInt(),
-						Utility::GetFilePath(root["foliage_zones"][i]["texture_path"].asString()),
+						ER_Utility::GetFilePath(root["foliage_zones"][i]["texture_path"].asString()),
 						root["foliage_zones"][i]["average_scale"].asFloat(),
 						root["foliage_zones"][i]["distribution_radius"].asFloat(),
 						XMFLOAT3(vec3[0], vec3[1], vec3[2]),

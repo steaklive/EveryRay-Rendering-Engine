@@ -93,13 +93,7 @@
     <ClInclude Include="RTTI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Utility.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ServiceContainer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VertexDeclarations.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RenderStateHelper.h">
@@ -279,13 +273,16 @@
     <ClInclude Include="ER_VectorHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_Utility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ER_VertexDeclarations.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Utility.cpp">
-      <Filter>Source Files\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="RenderStateHelper.cpp">
       <Filter>Source Files\Helpers</Filter>
@@ -459,6 +456,9 @@
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="ER_VectorHelper.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_Utility.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
   </ItemGroup>

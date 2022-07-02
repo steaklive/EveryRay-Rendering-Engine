@@ -14,7 +14,7 @@
 #include "..\Library\ER_CoreException.h"
 #include "..\Library\ER_Keyboard.h"
 #include "..\Library\ER_Mouse.h"
-#include "..\Library\Utility.h"
+#include "..\Library\ER_Utility.h"
 #include "..\Library\ER_CameraFPS.h"
 #include "..\Library\ER_ColorHelper.h"
 #include "..\Library\RenderStateHelper.h"
@@ -66,7 +66,7 @@ namespace Rendering
 
 	void RenderingGame::Initialize()
 	{
-		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
+		SetCurrentDirectory(ER_Utility::ExecutableDirectory().c_str());
 
 		RasterizerStates::Initialize(mDirect3DDevice);
 		SamplerStates::BorderColor = ER_ColorHelper::Black;
@@ -128,7 +128,7 @@ namespace Rendering
 	void RenderingGame::LoadGlobalLevelsConfig()
 	{
 		Json::Reader reader;
-		std::string path = Utility::GetFilePath("content\\levels\\global_scenes_config.json");
+		std::string path = ER_Utility::GetFilePath("content\\levels\\global_scenes_config.json");
 		std::ifstream globalConfig(path.c_str(), std::ifstream::binary);
 		
 		Json::Value root;
@@ -179,7 +179,7 @@ namespace Rendering
 
 		mCurrentSandbox = new ER_Sandbox();
 		if (mScenesPaths.find(aSceneName) != mScenesPaths.end())
-			mCurrentSandbox->Initialize(*this, *mCamera, aSceneName, Utility::GetFilePath(mScenesPaths[aSceneName]));
+			mCurrentSandbox->Initialize(*this, *mCamera, aSceneName, ER_Utility::GetFilePath(mScenesPaths[aSceneName]));
 		else
 		{
 			std::string message = "Scene was not found with this name: " + aSceneName;
@@ -218,9 +218,9 @@ namespace Rendering
 
 		ImGuizmo::BeginFrame();
 		if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Backspace)))
-			Utility::IsEditorMode = !Utility::IsEditorMode;
-		ImGuizmo::Enable(Utility::IsEditorMode);
-		if (Utility::IsEditorMode)
+			ER_Utility::IsEditorMode = !ER_Utility::IsEditorMode;
+		ImGuizmo::Enable(ER_Utility::IsEditorMode);
+		if (ER_Utility::IsEditorMode)
 		{
 			ImGui::Begin("EveryRay Camera Editor");
 
@@ -238,7 +238,7 @@ namespace Rendering
 			mCamera->SetNearPlaneDistance(nearPlaneDist);
 			ImGui::SliderFloat("Camera Far Plane", &farPlaneDist, 150.0f, 200000.0f);
 			mCamera->SetFarPlaneDistance(farPlaneDist);
-			ImGui::Checkbox("CPU frustum culling", &Utility::IsMainCameraCPUFrustumCulling);
+			ImGui::Checkbox("CPU frustum culling", &ER_Utility::IsMainCameraCPUFrustumCulling);
 			ImGui::End();
 		}
 			
@@ -257,7 +257,7 @@ namespace Rendering
 			
 			ImGui::Separator();
 
-			ImGui::Checkbox("Switch to Editor", &Utility::IsEditorMode);
+			ImGui::Checkbox("Switch to Editor", &ER_Utility::IsEditorMode);
 
 			ImGui::Checkbox("Show Profiler", &mShowProfiler);
 			if (mShowProfiler)

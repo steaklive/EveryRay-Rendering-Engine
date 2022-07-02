@@ -9,7 +9,7 @@
 #include "Game.h"
 #include "ER_CoreTime.h"
 #include "ER_CoreException.h"
-#include "Utility.h"
+#include "ER_Utility.h"
 #include "ER_MatrixHelper.h"
 #include "ER_MaterialHelper.h"
 #include "ER_VectorHelper.h"
@@ -369,7 +369,7 @@ namespace Library
 						tempString += "\n";
 					else
 						tempString += " ";
-					shFile << Utility::ToWideString(tempString);
+					shFile << ER_Utility::ToWideString(tempString);
 				}
 
 				shFile << L"g ";
@@ -380,7 +380,7 @@ namespace Library
 						tempString += "\n";
 					else
 						tempString += " ";
-					shFile << Utility::ToWideString(tempString);
+					shFile << ER_Utility::ToWideString(tempString);
 				}
 
 				shFile << L"b ";
@@ -391,7 +391,7 @@ namespace Library
 						tempString += "\n";
 					else
 						tempString += " ";
-					shFile << Utility::ToWideString(tempString);
+					shFile << ER_Utility::ToWideString(tempString);
 				}
 				shFile.close();
 			}

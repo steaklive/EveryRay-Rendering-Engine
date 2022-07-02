@@ -8,10 +8,10 @@
 #include "ER_MatrixHelper.h"
 #include "ER_Model.h"
 #include "ER_Mesh.h"
-#include "Utility.h"
+#include "ER_Utility.h"
 #include "ShaderCompiler.h"
 #include "ER_QuadRenderer.h"
-#include "VertexDeclarations.h"
+#include "ER_VertexDeclarations.h"
 
 namespace Library
 {
@@ -38,12 +38,12 @@ namespace Library
 
 	void ER_Skybox::Initialize()
 	{
-		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
+		SetCurrentDirectory(ER_Utility::ExecutableDirectory().c_str());
 
 		auto device = mGame.Direct3DDevice();
 		auto context = mGame.Direct3DDeviceContext();
 
-		std::unique_ptr<ER_Model> model(new ER_Model(mGame, Utility::GetFilePath("content\\models\\sphere_lowpoly.obj"), true));
+		std::unique_ptr<ER_Model> model(new ER_Model(mGame, ER_Utility::GetFilePath("content\\models\\sphere_lowpoly.obj"), true));
 
 		auto& meshes = model->Meshes();
 		meshes[0].CreateVertexBuffer_Position(&mVertexBuffer);
@@ -53,7 +53,7 @@ namespace Library
 		//skybox
 		{
 			ID3DBlob* blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Skybox.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Skybox.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
 				throw ER_CoreException("Failed to load VSMain from shader: Skybox.hlsl!");
 			if (FAILED(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSkyboxVS)))
 				throw ER_CoreException("Failed to create vertex shader from Skybox.hlsl!");
@@ -68,7 +68,7 @@ namespace Library
 			blob->Release();
 
 			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Skybox.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Skybox.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load PSMain from shader: Skybox.hlsl!");
 			if (FAILED(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSkyboxPS)))
 				throw ER_CoreException("Failed to create pixel shader from Skybox.hlsl!");
@@ -80,14 +80,14 @@ namespace Library
 		//sun
 		{
 			ID3DBlob* blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Sun.hlsl").c_str(), "main", "ps_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Sun.hlsl").c_str(), "main", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load main pass from shader: Sun.hlsl!");
 			if (FAILED(mGame.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSunPS)))
 				throw ER_CoreException("Failed to create shader from Sun.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Sun.hlsl").c_str(), "occlusion", "ps_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Sun.hlsl").c_str(), "occlusion", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load occlusion pass from shader: Sun.hlsl!");
 			if (FAILED(mGame.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSunOcclusionPS)))
 				throw ER_CoreException("Failed to create shader from Sun.hlsl!");

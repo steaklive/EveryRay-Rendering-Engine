@@ -1,6 +1,6 @@
 #include "ER_GPUTexture.h"
 #include "ER_CoreException.h"
-#include "Utility.h"
+#include "ER_Utility.h"
 
 ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, UINT width, UINT height, UINT samples, DXGI_FORMAT format, UINT bindFlags,
 	int mips, int depth, int arraySize, bool isCubemap, int cubemapArraySize) 
@@ -295,7 +295,7 @@ ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, ID3D11DeviceContext* context,
 	{
 		if (isDDS)
 		{
-			if (FAILED(DirectX::CreateDDSTextureFromFile(device, context, Library::Utility::ToWideString(aPath).c_str(), &resourceTex, &mSRV)))
+			if (FAILED(DirectX::CreateDDSTextureFromFile(device, context, Library::ER_Utility::ToWideString(aPath).c_str(), &resourceTex, &mSRV)))
 			{
 				std::string msg = "Failed to load DDS texture from disk: ";
 				msg += aPath;
@@ -304,7 +304,7 @@ ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, ID3D11DeviceContext* context,
 		}
 		else
 		{
-			if (FAILED(DirectX::CreateWICTextureFromFile(device, context, Library::Utility::ToWideString(aPath).c_str(), &resourceTex, &mSRV)))
+			if (FAILED(DirectX::CreateWICTextureFromFile(device, context, Library::ER_Utility::ToWideString(aPath).c_str(), &resourceTex, &mSRV)))
 			{
 				std::string msg = "Failed to load WIC texture from disk: ";
 				msg += aPath;
@@ -316,7 +316,7 @@ ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, ID3D11DeviceContext* context,
 	{
 		if (isDDS)
 		{
-			if (FAILED(DirectX::CreateDDSTextureFromFile(device, context, Library::Utility::GetFilePath(Library::Utility::ToWideString(aPath)).c_str(), &resourceTex, &mSRV)))
+			if (FAILED(DirectX::CreateDDSTextureFromFile(device, context, Library::ER_Utility::GetFilePath(Library::ER_Utility::ToWideString(aPath)).c_str(), &resourceTex, &mSRV)))
 			{
 				std::string msg = "Failed to load DDS texture from disk: ";
 				msg += aPath;
@@ -325,7 +325,7 @@ ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, ID3D11DeviceContext* context,
 		}
 		else
 		{
-			if (FAILED(DirectX::CreateWICTextureFromFile(device, context, Library::Utility::GetFilePath(Library::Utility::ToWideString(aPath)).c_str(), &resourceTex, &mSRV)))
+			if (FAILED(DirectX::CreateWICTextureFromFile(device, context, Library::ER_Utility::GetFilePath(Library::ER_Utility::ToWideString(aPath)).c_str(), &resourceTex, &mSRV)))
 			{
 				std::string msg = "Failed to load WIC texture from disk: ";
 				msg += aPath;
@@ -374,7 +374,7 @@ ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, ID3D11DeviceContext* context,
 	{
 		if (isDDS)
 		{
-			if (FAILED(DirectX::CreateDDSTextureFromFile(device, context, Library::Utility::GetFilePath(aPath).c_str(), &resourceTex, &mSRV)))
+			if (FAILED(DirectX::CreateDDSTextureFromFile(device, context, Library::ER_Utility::GetFilePath(aPath).c_str(), &resourceTex, &mSRV)))
 			{
 				std::string msg = "Failed to load DDS texture from disk: ";
 				//msg += aPath;
@@ -383,7 +383,7 @@ ER_GPUTexture::ER_GPUTexture(ID3D11Device* device, ID3D11DeviceContext* context,
 		}
 		else
 		{
-			if (FAILED(DirectX::CreateWICTextureFromFile(device, context, Library::Utility::GetFilePath(aPath).c_str(), &resourceTex, &mSRV)))
+			if (FAILED(DirectX::CreateWICTextureFromFile(device, context, Library::ER_Utility::GetFilePath(aPath).c_str(), &resourceTex, &mSRV)))
 			{
 				std::string msg = "Failed to load WIC texture from disk: ";
 				//msg += aPath;

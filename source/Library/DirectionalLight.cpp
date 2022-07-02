@@ -2,7 +2,7 @@
 
 #include "DirectionalLight.h"
 #include "ER_VectorHelper.h"
-#include "Utility.h"
+#include "ER_Utility.h"
 #include "ER_MatrixHelper.h"
 
 #include "imgui.h"
@@ -22,7 +22,7 @@ namespace Library
 		mUp(ER_Vector3Helper::Up), mRight(ER_Vector3Helper::Right), mProxyModel(nullptr)
 	{
 		//directional gizmo model
-		mProxyModel = new ER_DebugProxyObject(*mGame, camera, Utility::GetFilePath("content\\models\\proxy\\proxy_direction_arrow.obj"), 1.0f);
+		mProxyModel = new ER_DebugProxyObject(*mGame, camera, ER_Utility::GetFilePath("content\\models\\proxy\\proxy_direction_arrow.obj"), 1.0f);
 		mProxyModel->Initialize();
 		mProxyModel->SetPosition(0.0f, 50.0, 0.0f);
 		mPseudoTranslation = XMMatrixTranslation(mProxyModel->Position().x, mProxyModel->Position().y ,mProxyModel->Position().z);
@@ -158,7 +158,7 @@ namespace Library
 		static bool boundSizing = false;
 		static bool boundSizingSnap = false;
 
-		if (Utility::IsEditorMode && Utility::IsLightEditor) {
+		if (ER_Utility::IsEditorMode && ER_Utility::IsLightEditor) {
 			ImGui::Begin("Directional Light Editor");
 
 			ImGui::ColorEdit3("Sun Color", mSunColor);

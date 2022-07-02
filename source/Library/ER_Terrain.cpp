@@ -7,8 +7,8 @@
 #include "ER_Mesh.h"
 #include "Game.h"
 #include "ER_MatrixHelper.h"
-#include "Utility.h"
-#include "VertexDeclarations.h"
+#include "ER_Utility.h"
+#include "ER_VertexDeclarations.h"
 #include "RasterizerStates.h"
 #include "ER_ShadowMapper.h"
 #include "ER_Scene.h"
@@ -33,7 +33,7 @@ namespace Library
 		//shaders
 		{
 			ID3DBlob* blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
 				throw ER_CoreException("Failed to load VSMain from shader: Terrain.hlsl!");
 			if (FAILED(GetGame()->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVS)))
 				throw ER_CoreException("Failed to create vertex shader from Terrain.hlsl!");
@@ -49,42 +49,42 @@ namespace Library
 			blob->Release();
 
 			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "HSMain", "hs_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "HSMain", "hs_5_0", &blob)))
 				throw ER_CoreException("Failed to load HSMain from shader: Terrain.hlsl!");
 			if (FAILED(GetGame()->Direct3DDevice()->CreateHullShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mHS)))
 				throw ER_CoreException("Failed to create hull shader from Terrain.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "DSMain", "ds_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "DSMain", "ds_5_0", &blob)))
 				throw ER_CoreException("Failed to load DSMain from shader: Terrain.hlsl!");
 			if (FAILED(GetGame()->Direct3DDevice()->CreateDomainShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mDS)))
 				throw ER_CoreException("Failed to create domain shader from Terrain.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "DSShadowMap", "ds_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "DSShadowMap", "ds_5_0", &blob)))
 				throw ER_CoreException("Failed to load DSShadowMap from shader: Terrain.hlsl!");
 			if (FAILED(GetGame()->Direct3DDevice()->CreateDomainShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mDS_ShadowMap)))
 				throw ER_CoreException("Failed to create domain shader from Terrain.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load PSMain from shader: Terrain.hlsl!");
 			if (FAILED(GetGame()->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS)))
 				throw ER_CoreException("Failed to create pixel shader from Terrain.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "PSShadowMap", "ps_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl").c_str(), "PSShadowMap", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load PSShadowMap from shader: Terrain.hlsl!");
 			if (FAILED(GetGame()->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS_ShadowMap)))
 				throw ER_CoreException("Failed to create pixel shader from Terrain.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\Terrain\\PlaceObjectsOnTerrain.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Terrain\\PlaceObjectsOnTerrain.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
 				throw ER_CoreException("Failed to load a shader: CSMain from PlaceObjectsOnTerrain.hlsl!");
 			if (FAILED(GetGame()->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPlaceOnTerrainCS)))
 				throw ER_CoreException("Failed to create compute shader from PlaceObjectsOnTerrain.hlsl!");

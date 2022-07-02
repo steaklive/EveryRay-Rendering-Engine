@@ -1,5 +1,5 @@
 #include "ER_CPUProfiler.h"
-#include "Utility.h"
+#include "ER_Utility.h"
 
 namespace Library {
 	
@@ -33,7 +33,7 @@ namespace Library {
 		{
 			std::chrono::duration<double> finalTime = endTimer - it->second;
 			std::string message = "[CPU Profiler] CPU time of <" + aEventName + "> is " + std::to_string(finalTime.count()) + "s\n";
-			OutputDebugString(Utility::ToWideString(message).c_str());
+			OutputDebugString(ER_Utility::ToWideString(message).c_str());
 		}
 	}
 

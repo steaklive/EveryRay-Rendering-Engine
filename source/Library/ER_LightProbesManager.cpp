@@ -2,7 +2,7 @@
 #include "Game.h"
 #include "ER_CoreTime.h"
 #include "ER_CoreException.h"
-#include "Utility.h"
+#include "ER_Utility.h"
 #include "DirectionalLight.h"
 #include "ER_MatrixHelper.h"
 #include "ER_MaterialHelper.h"
@@ -45,7 +45,7 @@ namespace Library
 		assert(mQuadRenderer);
 		{
 			ID3DBlob* blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\IBL\\ProbeConvolution.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\IBL\\ProbeConvolution.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load PSMain from shader: ProbeConvolution.hlsl!");
 			if (FAILED(game.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mConvolutionPS)))
 				throw ER_CoreException("Failed to create pixel shader from ProbeConvolution.hlsl!");
@@ -54,7 +54,7 @@ namespace Library
 
 		// Load a pre-computed Integration Map
 		if (FAILED(DirectX::CreateDDSTextureFromFile(game.Direct3DDevice(), game.Direct3DDeviceContext(),
-			Utility::GetFilePath(L"content\\textures\\IntegrationMapBrdf.dds").c_str(), nullptr, &mIntegrationMapTextureSRV)))
+			ER_Utility::GetFilePath(L"content\\textures\\IntegrationMapBrdf.dds").c_str(), nullptr, &mIntegrationMapTextureSRV)))
 			throw ER_CoreException("Failed to create Integration Texture.");
 
 		if (!scene->HasLightProbesSupport())
@@ -234,7 +234,7 @@ namespace Library
 		std::string name = "Debug diffuse lightprobes ";
 		auto result = scene->objects.insert(
 			std::pair<std::string, ER_RenderingObject*>(name, new ER_RenderingObject(name, scene->objects.size(), game, camera,
-				std::unique_ptr<ER_Model>(new ER_Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true))
+				std::unique_ptr<ER_Model>(new ER_Model(game, ER_Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true))
 		);
 
 		if (!result.second)
@@ -360,7 +360,7 @@ namespace Library
 		std::string name = "Debug specular lightprobes ";
 		auto result = scene->objects.insert(
 			std::pair<std::string, ER_RenderingObject*>(name, new ER_RenderingObject(name, scene->objects.size(), game, camera,
-				std::unique_ptr<ER_Model>(new ER_Model(game, Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true))
+				std::unique_ptr<ER_Model>(new ER_Model(game, ER_Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true))
 		);
 
 		if (!result.second)

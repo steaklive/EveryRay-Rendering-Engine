@@ -1,5 +1,5 @@
 #include "ER_Sandbox.h"
-#include "Utility.h"
+#include "ER_Utility.h"
 #include "Systems.inl"
 #include "ER_MaterialsCallbacks.h"
 
@@ -117,7 +117,7 @@ namespace Library {
 		#pragma region INIT_LIGHTPROBES_MANAGER
 		game.CPUProfiler()->BeginCPUTime("Light probes manager init");
 		mLightProbesManager = new ER_LightProbesManager(game, camera, mScene, *mDirectionalLight, *mShadowMapper);
-		mLightProbesManager->SetLevelPath(Utility::ToWideString(sceneFolderPath));
+		mLightProbesManager->SetLevelPath(ER_Utility::ToWideString(sceneFolderPath));
 		mIllumination->SetProbesManager(mLightProbesManager);
 		game.CPUProfiler()->EndCPUTime("Light probes manager init");
 #pragma endregion
@@ -125,7 +125,7 @@ namespace Library {
 		#pragma region INIT_TERRAIN
 		game.CPUProfiler()->BeginCPUTime("Terrain init");
 		mTerrain = new ER_Terrain(game, *mDirectionalLight);
-		mTerrain->SetLevelPath(Utility::ToWideString(sceneFolderPath));
+		mTerrain->SetLevelPath(ER_Utility::ToWideString(sceneFolderPath));
 		mTerrain->LoadTerrainData(mScene);
 		game.CPUProfiler()->EndCPUTime("Terrain init");
 #pragma endregion
@@ -297,7 +297,7 @@ namespace Library {
 
 		#pragma region DRAW_DEBUG_GIZMOS
 		// TODO: consider moving all debug gizmos to a separate debug renderer system
-		if (Utility::IsEditorMode)
+		if (ER_Utility::IsEditorMode)
 		{
 			mDirectionalLight->DrawProxyModel(gameTime);
 			mIllumination->DrawDebugGizmos();

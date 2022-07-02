@@ -5,7 +5,7 @@
 #include "ER_CoreException.h"
 #include "ShaderCompiler.h"
 #include "DirectionalLight.h"
-#include "Utility.h"
+#include "ER_Utility.h"
 #include "ER_Camera.h"
 #include "SamplerStates.h"
 #include "ER_QuadRenderer.h"
@@ -51,21 +51,21 @@ namespace Library {
 		mBlueNoiseTexture = new ER_GPUTexture(device, GetGame()->Direct3DDeviceContext(), "content\\textures\\blueNoise.dds");
 
 		ID3DBlob* blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricFog\\VolumetricFogMain.hlsl").c_str(), "CSInjection", "cs_5_0", &blob)))
+		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\VolumetricFog\\VolumetricFogMain.hlsl").c_str(), "CSInjection", "cs_5_0", &blob)))
 			throw ER_CoreException("Failed to load CSInjection from shader: VolumetricFogMain.hlsl!");
 		if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mInjectionCS)))
 			throw ER_CoreException("Failed to create shader from VolumetricFogMain.hlsl!");
 		blob->Release();
 		
 		blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricFog\\VolumetricFogMain.hlsl").c_str(), "CSAccumulation", "cs_5_0", &blob)))
+		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\VolumetricFog\\VolumetricFogMain.hlsl").c_str(), "CSAccumulation", "cs_5_0", &blob)))
 			throw ER_CoreException("Failed to load CSAccumulation from shader: VolumetricFogMain.hlsl!");
 		if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mAccumulationCS)))
 			throw ER_CoreException("Failed to create shader from VolumetricFogMain.hlsl!");
 		blob->Release();
 
 		blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\VolumetricFog\\VolumetricFogComposite.hlsl").c_str(), "PSComposite", "ps_5_0", &blob)))
+		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\VolumetricFog\\VolumetricFogComposite.hlsl").c_str(), "PSComposite", "ps_5_0", &blob)))
 			throw ER_CoreException("Failed to load PSComposite from shader: VolumetricFogComposite.hlsl!");
 		if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mCompositePS)))
 			throw ER_CoreException("Failed to create shader from VolumetricFogComposite.hlsl!");

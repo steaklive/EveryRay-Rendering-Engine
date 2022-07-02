@@ -11,8 +11,8 @@
 #include "Game.h"
 #include "ER_MatrixHelper.h"
 #include "ER_MaterialHelper.h"
-#include "Utility.h"
-#include "VertexDeclarations.h"
+#include "ER_Utility.h"
+#include "ER_VertexDeclarations.h"
 #include "RasterizerStates.h"
 #include "ShaderCompiler.h"
 #include "ER_VoxelizationMaterial.h"
@@ -88,55 +88,55 @@ namespace Library {
 		//shaders
 		{
 			ID3DBlob* blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
 				throw ER_CoreException("Failed to load VSMain from shader: VoxelConeTracingVoxelization.hlsl!");
 			if (FAILED(mGame->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTVoxelizationDebugVS)))
 				throw ER_CoreException("Failed to create vertex shader from VoxelConeTracingVoxelization.hlsl!");
 			blob->Release();
 			
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl").c_str(), "GSMain", "gs_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl").c_str(), "GSMain", "gs_5_0", &blob)))
 				throw ER_CoreException("Failed to load GSMain from shader: VoxelConeTracingVoxelization.hlsl!");
 			if (FAILED(mGame->Direct3DDevice()->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTVoxelizationDebugGS)))
 				throw ER_CoreException("Failed to create geometry shader from VoxelConeTracingVoxelization.hlsl!");
 			blob->Release();
 			
 			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load PSMain from shader: VoxelConeTracingVoxelization.hlsl!");
 			if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTVoxelizationDebugPS)))
 				throw ER_CoreException("Failed to create pixel shader from VoxelConeTracingVoxelization.hlsl!");
 			blob->Release();
 			
 			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingMain.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingMain.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
 				throw ER_CoreException("Failed to load CSMain from shader: VoxelConeTracingMain.hlsl!");
 			if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTMainCS)))
 				throw ER_CoreException("Failed to create shader from VoxelConeTracingMain.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\UpsampleBlur.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\UpsampleBlur.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
 				throw ER_CoreException("Failed to load CSMain from shader: UpsampleBlur.hlsl!");
 			if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mUpsampleBlurCS)))
 				throw ER_CoreException("Failed to create shader from UpsampleBlur.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\CompositeIllumination.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\CompositeIllumination.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
 				throw ER_CoreException("Failed to load CSMain from shader: CompositeIllumination.hlsl!");
 			if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mCompositeIlluminationCS)))
 				throw ER_CoreException("Failed to create shader from CompositeIllumination.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\DeferredLighting.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\DeferredLighting.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
 				throw ER_CoreException("Failed to load CSMain from shader: DeferredLighting.hlsl!");
 			if (FAILED(mGame->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mDeferredLightingCS)))
 				throw ER_CoreException("Failed to create shader from DeferredLighting.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
 				throw ER_CoreException("Failed to load VSMain from shader: ForwardLighting.hlsl!");
 			if (FAILED(mGame->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingVS)))
 				throw ER_CoreException("Failed to create vertex shader from ForwardLighting.hlsl!");
@@ -151,7 +151,7 @@ namespace Library {
 				throw ER_CoreException("ID3D11Device::CreateInputLayout() failed for Forward Lighting Input Layout.");
 
 			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "VSMain_instancing", "vs_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "VSMain_instancing", "vs_5_0", &blob)))
 				throw ER_CoreException("Failed to load VSMain from shader: ForwardLighting.hlsl!");
 			if (FAILED(mGame->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingVS_Instancing)))
 				throw ER_CoreException("Failed to create vertex shader from ForwardLighting.hlsl!");
@@ -172,21 +172,21 @@ namespace Library {
 			blob->Release();
 
 			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load PSMain from shader: ForwardLighting.hlsl!");
 			if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingPS)))
 				throw ER_CoreException("Failed to create main pixel shader from ForwardLighting.hlsl!");
 			blob->Release();
 
 			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "PSMain_DiffuseProbes", "ps_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "PSMain_DiffuseProbes", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load PSMain_DiffuseProbes from shader: ForwardLighting.hlsl!");
 			if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingDiffuseProbesPS)))
 				throw ER_CoreException("Failed to create diffuse probes pixel shader from ForwardLighting.hlsl!");
 			blob->Release();	
 			
 			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "PSMain_SpecularProbes", "ps_5_0", &blob)))
+			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "PSMain_SpecularProbes", "ps_5_0", &blob)))
 				throw ER_CoreException("Failed to load PSMain_SpecularProbes from shader: ForwardLighting.hlsl!");
 			if (FAILED(mGame->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingSpecularProbesPS)))
 				throw ER_CoreException("Failed to create specular probes pixel shader from ForwardLighting.hlsl!");

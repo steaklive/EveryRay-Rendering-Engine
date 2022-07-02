@@ -1,6 +1,6 @@
 
 #include "stdafx.h"
-#include "Utility.h"
+#include "ER_Utility.h"
 #include <algorithm>
 #include <exception>
 #include <Shlwapi.h>
@@ -8,13 +8,13 @@
 
 namespace Library
 {
-	bool Utility::IsEditorMode = false;
-	bool Utility::IsLightEditor = false;
-	bool Utility::IsFoliageEditor = false;
-	bool Utility::IsMainCameraCPUFrustumCulling = true;
-	float Utility::DistancesLOD[MAX_LOD] = { 100.0f, 240.0f, 400.0f };
+	bool ER_Utility::IsEditorMode = false;
+	bool ER_Utility::IsLightEditor = false;
+	bool ER_Utility::IsFoliageEditor = false;
+	bool ER_Utility::IsMainCameraCPUFrustumCulling = true;
+	float ER_Utility::DistancesLOD[MAX_LOD] = { 100.0f, 240.0f, 400.0f };
 
-	std::string Utility::CurrentDirectory()
+	std::string ER_Utility::CurrentDirectory()
 	{
 		WCHAR buffer[MAX_PATH];
 		GetCurrentDirectory(MAX_PATH, buffer);
@@ -23,7 +23,7 @@ namespace Library
 		return std::string(currentDirectoryW.begin(), currentDirectoryW.end());
 	}
 
-	std::wstring Utility::ExecutableDirectory()
+	std::wstring ER_Utility::ExecutableDirectory()
 	{
 		WCHAR buffer[MAX_PATH];
 		GetModuleFileName(nullptr, buffer, MAX_PATH);
@@ -32,7 +32,7 @@ namespace Library
 		return std::wstring(buffer);
 	}
 
-	std::wstring Utility::GetFilePath(const std::wstring& input)
+	std::wstring ER_Utility::GetFilePath(const std::wstring& input)
 	{
 		std::wstring exeDir = ExecutableDirectory();
 		std::wstring key(L"\\");
@@ -44,7 +44,7 @@ namespace Library
 
 		return exeDir;
 	}
-	std::string Utility::GetFilePath(const std::string& input)
+	std::string ER_Utility::GetFilePath(const std::string& input)
 	{
 		std::wstring exeDirL = ExecutableDirectory();
 		std::string exeDir = std::string(exeDirL.begin(), exeDirL.end());
@@ -59,7 +59,7 @@ namespace Library
 		return exeDir;
 	}
 
-	void Utility::GetFileName(const std::string& inputPath, std::string& filename)
+	void ER_Utility::GetFileName(const std::string& inputPath, std::string& filename)
 	{
 		std::string fullPath(inputPath);
 		std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
@@ -76,7 +76,7 @@ namespace Library
 		}
 	}
 
-	void Utility::GetDirectory(const std::string& inputPath, std::string& directory)
+	void ER_Utility::GetDirectory(const std::string& inputPath, std::string& directory)
 	{
 		std::string fullPath(inputPath);
 		std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
@@ -93,7 +93,7 @@ namespace Library
 		}
 	}
 
-	void Utility::GetFileNameAndDirectory(const std::string& inputPath, std::string& directory, std::string& filename)
+	void ER_Utility::GetFileNameAndDirectory(const std::string& inputPath, std::string& directory, std::string& filename)
 	{
 		std::string fullPath(inputPath);
 		std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
@@ -112,7 +112,7 @@ namespace Library
 		}
 	}
 
-	void Utility::LoadBinaryFile(const std::wstring& filename, std::vector<char>& data)
+	void ER_Utility::LoadBinaryFile(const std::wstring& filename, std::vector<char>& data)
 	{
 		std::ifstream file(filename.c_str(), std::ios::binary);
 		if (file.bad())
@@ -133,12 +133,12 @@ namespace Library
 		file.close();
 	}
 
-	void Utility::ToWideString(const std::string& source, std::wstring& dest)
+	void ER_Utility::ToWideString(const std::string& source, std::wstring& dest)
 	{
 		dest.assign(source.begin(), source.end());
 	}
 
-	std::wstring Utility::ToWideString(const std::string& source)
+	std::wstring ER_Utility::ToWideString(const std::string& source)
 	{
 		std::wstring dest;
 		dest.assign(source.begin(), source.end());
@@ -146,7 +146,7 @@ namespace Library
 		return dest;
 	}
 
-	void Utility::PathJoin(std::wstring& dest, const std::wstring& sourceDirectory, const std::wstring& sourceFile)
+	void ER_Utility::PathJoin(std::wstring& dest, const std::wstring& sourceDirectory, const std::wstring& sourceFile)
 	{
 		WCHAR buffer[MAX_PATH];
 
@@ -154,12 +154,12 @@ namespace Library
 		dest = buffer;
 	}
 
-	void Utility::GetPathExtension(const std::wstring& source, std::wstring& dest)
+	void ER_Utility::GetPathExtension(const std::wstring& source, std::wstring& dest)
 	{
 		dest = PathFindExtension(source.c_str());
 	}
 
-	float Utility::RandomFloat(float a, float b) {
+	float ER_Utility::RandomFloat(float a, float b) {
 		float random = ((float)rand()) / (float)RAND_MAX;
 		float diff = b - a;
 		float r = random * diff;

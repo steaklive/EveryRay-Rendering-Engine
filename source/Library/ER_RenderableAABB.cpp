@@ -4,12 +4,12 @@
 #include "Game.h"
 #include "ER_CoreException.h"
 #include "ER_BasicColorMaterial.h"
-#include "VertexDeclarations.h"
+#include "ER_VertexDeclarations.h"
 #include "ER_ColorHelper.h"
 #include "ER_MatrixHelper.h"
 #include "ER_VectorHelper.h"
 #include "ER_Camera.h"
-#include "Utility.h"
+#include "ER_Utility.h"
 #include "ER_GPUBuffer.h"
 
 namespace Library
