@@ -21,20 +21,17 @@
 
 #include "RTTI.h"
 
-#include <d3d11_1.h>
-#include <D3DCompiler.h>
 #include <DirectXMath.h>
 #include <DirectXPackedVector.h>
 #include <dinput.h>
 
-#include "TGATextureLoader.h"
+//#include "TGATextureLoader.h"
 #include <DDSTextureLoader.h>
 #include <WICTextureLoader.h>
 
 #include "DirectXTex.h"
 
 #include "imgui.h"
-#include "imgui_impl_dx11.h"
 #include "imgui_impl_win32.h"
 
 #include "ImGuizmo.h"

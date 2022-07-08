@@ -8,56 +8,35 @@
 #include <fstream>
 #include <iostream>
 
-#define DIRECTINPUT_VERSION 0x0800
-#include <dinput.h>
-
 #include "..\Library\ER_CoreException.h"
 #include "..\Library\ER_Keyboard.h"
 #include "..\Library\ER_Mouse.h"
 #include "..\Library\ER_Utility.h"
 #include "..\Library\ER_CameraFPS.h"
 #include "..\Library\ER_ColorHelper.h"
-#include "..\Library\RenderStateHelper.h"
 #include "..\Library\ER_MatrixHelper.h"
 #include "..\Library\ER_Sandbox.h"
 #include "..\Library\ER_Editor.h"
-#include "..\Library\RasterizerStates.h"
-#include "..\Library\SamplerStates.h"
 #include "..\Library\ER_QuadRenderer.h"
-
-// include scenes
-
-// include IMGUI
-#include "imgui.h"
-#include "imgui_impl_dx11.h"
-#include "imgui_impl_win32.h"
-#include "ImGuizmo.h"
 
 namespace Rendering
 {
-	const XMVECTORF32 RenderingGame::BackgroundColor = ER_ColorHelper::Black;
-	const XMVECTORF32 RenderingGame::BackgroundColor2 = ER_ColorHelper::Red;
-	
+	static float colorBlack[4] = { 0.0, 0.0, 0.0, 0.0 };
 	static int currentLevel = 0;
-
 	static float fov = 60.0f;
 	static float movementRate = 10.0f;
 	static float nearPlaneDist = 0.5f;
 	static float farPlaneDist = 600.0f;
-	bool showWorldGrid = false;
 
-	RenderingGame::RenderingGame(HINSTANCE instance, const std::wstring& windowClass, const std::wstring& windowTitle, int showCommand)
-		: ER_Core(instance, windowClass, windowTitle, showCommand),
+	RenderingGame::RenderingGame(ER_RHI* aRHI, HINSTANCE instance, const std::wstring& windowClass, const std::wstring& windowTitle, int showCommand, UINT width, UINT height, bool isFullscreen)
+		: ER_Core(aRHI, instance, windowClass, windowTitle, showCommand, width, height, isFullscreen),
 		mDirectInput(nullptr),
 		mKeyboard(nullptr),
 		mMouse(nullptr),
 		mShowProfiler(false),
 		mEditor(nullptr),
-		mQuadRenderer(nullptr),
-		mRenderStateHelper(nullptr)
+		mQuadRenderer(nullptr)
 	{
-		mDepthStencilBufferEnabled = true;
-		mMultiSamplingEnabled = false;
 	}
 
 	RenderingGame::~RenderingGame()
@@ -68,10 +47,6 @@ namespace Rendering
 	{
 		SetCurrentDirectory(ER_Utility::ExecutableDirectory().c_str());
 
-		RasterizerStates::Initialize(mDirect3DDevice);
-		SamplerStates::BorderColor = ER_ColorHelper::Black;
-		SamplerStates::Initialize(mDirect3DDevice);
-
 		{
 			if (FAILED(DirectInput8Create(mInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (LPVOID*)&mDirectInput, nullptr)))
 			{
@@ -79,11 +54,11 @@ namespace Rendering
 			}
 
 			mKeyboard = new ER_Keyboard(*this, mDirectInput);
-			components.push_back(mKeyboard);
+			mCoreEngineComponents.push_back(mKeyboard);
 			mServices.AddService(ER_Keyboard::TypeIdClass(), mKeyboard);
 
 			mMouse = new ER_Mouse(*this, mDirectInput);
-			components.push_back(mMouse);
+			mCoreEngineComponents.push_back(mMouse);
 			mServices.AddService(ER_Mouse::TypeIdClass(), mMouse);
 		}
 
@@ -93,18 +68,16 @@ namespace Rendering
 		mCamera->SetFOV(fov*XM_PI / 180.0f);
 		mCamera->SetNearPlaneDistance(nearPlaneDist);
 		mCamera->SetFarPlaneDistance(farPlaneDist);
-		components.push_back(mCamera);
+		mCoreEngineComponents.push_back(mCamera);
 		mServices.AddService(ER_Camera::TypeIdClass(), mCamera);
 
 		mEditor = new ER_Editor(*this);
-		components.push_back(mEditor);
+		mCoreEngineComponents.push_back(mEditor);
 		mServices.AddService(ER_Editor::TypeIdClass(), mEditor);
 
 		mQuadRenderer = new ER_QuadRenderer(*this);
-		components.push_back(mQuadRenderer);
+		mCoreEngineComponents.push_back(mQuadRenderer);
 		mServices.AddService(ER_QuadRenderer::TypeIdClass(), mQuadRenderer);
-
-		mRenderStateHelper = new RenderStateHelper(*this);
 
 		#pragma region INITIALIZE_IMGUI
 
@@ -114,7 +87,8 @@ namespace Rendering
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 
 		ImGui_ImplWin32_Init(mWindowHandle);
-		ImGui_ImplDX11_Init(mDirect3DDevice,mDirect3DDeviceContext);
+		if (mRHI)
+			mRHI->InitImGui();
 		ImGui::StyleEveryRayColor();
 
 
@@ -145,7 +119,7 @@ namespace Rendering
 			if (mNumParsedScenesFromConfig > MAX_SCENES_COUNT)
 				throw ER_CoreException("Amount of parsed scenes is bigger than MAX_SCENES_COUNT. Increase MAX_SCENES_COUNT!");
 
-			for (int i = 0; i < mNumParsedScenesFromConfig; i++)
+			for (int i = 0; i < static_cast<int>(mNumParsedScenesFromConfig); i++)
 				mDisplayedLevelNames[i] = (char*)malloc(sizeof(char) * 100);
 
 			for (Json::Value::ArrayIndex i = 0; i != mNumParsedScenesFromConfig; i++)
@@ -212,7 +186,8 @@ namespace Rendering
 	{
 		#pragma region ENGINE_SPECIFIC_IMGUI
 
-		ImGui_ImplDX11_NewFrame();
+		if (mRHI)
+			mRHI->StartNewImGuiFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
@@ -296,14 +271,11 @@ namespace Rendering
 		DeleteObject(mQuadRenderer);
 		DeleteObject(mMouse);
 		DeleteObject(mCamera);
-		DeleteObject(mRenderStateHelper);
-
-		RasterizerStates::Release();
-		SamplerStates::Release();
 
 		//destroy imgui
 		{
-			ImGui_ImplDX11_Shutdown();
+			if (mRHI)
+				mRHI->ShutdownImGui();
 			ImGui_ImplWin32_Shutdown();
 			ImGui::DestroyContext();
 		}
@@ -314,20 +286,16 @@ namespace Rendering
 	void RenderingGame::Draw(const ER_CoreTime& gameTime)
 	{
 		assert(mCurrentSandbox);
+		assert(mRHI);
 
 		auto startRenderTimer = std::chrono::high_resolution_clock::now();
 
-		mDirect3DDeviceContext->ClearRenderTargetView(mRenderTargetView, reinterpret_cast<const float*>(&BackgroundColor));
-		mDirect3DDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-		ER_Core::Draw(gameTime); //TODO remove
+		mRHI->ClearMainRenderTarget(colorBlack);
+		mRHI->ClearMainDepthStencilTarget(1.0f, 0);
+
 		mCurrentSandbox->Draw(*this, gameTime);
 
-		mRenderStateHelper->SaveAll();
-		mRenderStateHelper->RestoreAll();
-
-		HRESULT hr = mSwapChain->Present(0, 0);
-		if (FAILED(hr))
-			throw ER_CoreException("IDXGISwapChain::Present() failed.", hr);
+		mRHI->PresentGraphics();
 
 		auto endRenderTimer = std::chrono::high_resolution_clock::now();
 		mElapsedTimeRenderCPU = endRenderTimer - startRenderTimer;

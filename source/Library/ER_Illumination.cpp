@@ -29,6 +29,8 @@
 #include "ER_Skybox.h"
 #include "ER_VolumetricFog.h"
 
+static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
 namespace Library {
 
 	const float voxelCascadesSizes[NUM_VOXEL_GI_CASCADES] = { 256.0f, 256.0f };
@@ -251,11 +253,10 @@ namespace Library {
 
 	//deferred rendering approach
 	void ER_Illumination::DrawLocalIllumination(ER_GBuffer* gbuffer, ER_Skybox* skybox)
-	{
-		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-		auto context = GetCore()->Direct3DDeviceContext();
-		context->OMSetRenderTargets(1, mLocalIlluminationRT->GetRTVs(), gbuffer->GetDepth()->GetDSV());
-		context->ClearRenderTargetView(mLocalIlluminationRT->GetRTV(), clearColorBlack);
+	{	
+		ER_RHI* rhi = GetCore()->GetRHI();
+		rhi->SetRenderTargets({ mLocalIlluminationRT }, gbuffer->GetDepth());
+		rhi->ClearRenderTarget(mLocalIlluminationRT, clearColorBlack);
 
 		if (skybox)
 		{
@@ -271,13 +272,12 @@ namespace Library {
 	//https://research.nvidia.com/sites/default/files/pubs/2011-09_Interactive-Indirect-Illumination/GIVoxels-pg2011-authors.pdf
 	void ER_Illumination::DrawGlobalIllumination(ER_GBuffer* gbuffer, const ER_CoreTime& gameTime)
 	{
-		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-		ID3D11DeviceContext* context = mCore->Direct3DDeviceContext();
+		ER_RHI* rhi = GetCore()->GetRHI();
 
 		if (!mEnabled)
 		{
-			context->ClearUnorderedAccessViewFloat(mVCTMainRT->GetUAV(), clearColorBlack);
-			context->ClearUnorderedAccessViewFloat(mVCTUpsampleAndBlurRT->GetUAV(), clearColorBlack);
+			rhi->ClearUAV(mVCTMainRT, clearColorBlack);
+			rhi->ClearUAV(mVCTUpsampleAndBlurRT, clearColorBlack);
 			return;
 		}
 
@@ -288,8 +288,6 @@ namespace Library {
 
 		ID3D11RasterizerState* oldRS;
 		context->RSGetState(&oldRS);
-
-		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
 		
 		ER_MaterialSystems materialSystems;
 		materialSystems.mCamera = &mCamera;
@@ -308,8 +306,8 @@ namespace Library {
 				context->RSSetState(RasterizerStates::NoCullingNoDepthEnabledScissorRect);
 				context->RSSetViewports(1, &vctViewport);
 				context->RSSetScissorRects(1, &vctRect);
-				context->OMSetRenderTargetsAndUnorderedAccessViews(0, nullRTVs, NULL, 0, 1, UAV, NULL);
-				context->ClearUnorderedAccessViewFloat(UAV[0], clearColorBlack);
+				rhi->SetRenderTargets({}, nullptr, mVCTVoxelCascades3DRTs[cascade]);
+				rhi->ClearUAV(mVCTVoxelCascades3DRTs[cascade], clearColorBlack)
 
 				std::string materialName = ER_MaterialHelper::voxelizationMaterialName + "_" + std::to_string(cascade);
 				for (auto& obj : mVoxelizationObjects[cascade]) {
@@ -381,7 +379,7 @@ namespace Library {
 				context->PSSetShader(mVCTVoxelizationDebugPS, NULL, NULL);
 				context->PSSetConstantBuffers(0, 1, CBs);
 
-				context->DrawInstanced(voxelCascadesSizes[cascade] * voxelCascadesSizes[cascade] * voxelCascadesSizes[cascade], 1, 0, 0);
+				rhi->DrawInstanced(voxelCascadesSizes[cascade] * voxelCascadesSizes[cascade] * voxelCascadesSizes[cascade], 1, 0, 0);
 
 				context->RSSetState(oldRS);
 				context->OMSetRenderTargets(1, nullRTVs, NULL);
