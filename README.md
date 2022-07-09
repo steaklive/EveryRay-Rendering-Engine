@@ -44,7 +44,7 @@ https://youtu.be/_htQNxesr9U
  
 # Roadmap (big architectural engine tasks)
  * [X] <del>remove DX11 "Effects" library, all .fx shaders and refactor the material system (DONE)</del> (https://github.com/steaklive/EveryRay-Rendering-Engine/pull/51)
- * [ ] remove all low-level DX11 code and put it into the abstracted RHI
+ * [ ] remove all low-level DX11 code and put it into the abstracted RHI (WIP)
  * [ ] add support for DX12
  * [ ] remove DirectXMath and its usages (maybe come up with a custom math lib)
  * [ ] add cross-API shader compiler
