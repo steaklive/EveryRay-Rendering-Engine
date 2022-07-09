@@ -290,11 +290,14 @@ namespace Rendering
 
 		auto startRenderTimer = std::chrono::high_resolution_clock::now();
 
+		mRHI->BeginGraphicsCommandList();
+
 		mRHI->ClearMainRenderTarget(colorBlack);
 		mRHI->ClearMainDepthStencilTarget(1.0f, 0);
 
 		mCurrentSandbox->Draw(*this, gameTime);
 
+		mRHI->EndGraphicsCommandList();
 		mRHI->PresentGraphics();
 
 		auto endRenderTimer = std::chrono::high_resolution_clock::now();

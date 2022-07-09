@@ -4,6 +4,7 @@
 #define DX11_MAX_BOUND_RENDER_TARGETS_VIEWS 8
 #define DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS 64 
 #define DX11_MAX_BOUND_UNORDERED_ACCESS_VIEWS 16 
+#define DX11_MAX_BOUND_SAMPLERS 8 
 
 namespace Library
 {
@@ -14,6 +15,20 @@ namespace Library
 		ReleaseObject(mMainDepthStencilView);
 		ReleaseObject(mSwapChain);
 		ReleaseObject(mDepthStencilBuffer);
+
+		ReleaseObject(BilinearWrapSS);
+		ReleaseObject(BilinearMirrorSS);
+		ReleaseObject(BilinearClampSS);
+		ReleaseObject(BilinearBorderSS);
+		ReleaseObject(TrilinearWrapSS);
+		ReleaseObject(TrilinearMirrorSS);
+		ReleaseObject(TrilinearClampSS);
+		ReleaseObject(TrilinearBorderSS);
+		ReleaseObject(AnisotropicWrapSS);
+		ReleaseObject(AnisotropicMirrorSS);
+		ReleaseObject(AnisotropicClampSS);
+		ReleaseObject(AnisotropicBorderSS);
+		ReleaseObject(ShadowSS);
 
 		if (mDirect3DDeviceContext)
 			mDirect3DDeviceContext->ClearState();
@@ -45,17 +60,17 @@ namespace Library
 		ID3D11DeviceContext* direct3DDeviceContext = nullptr;
 		if (FAILED(hr = D3D11CreateDevice(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, createDeviceFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &direct3DDevice, &mFeatureLevel, &direct3DDeviceContext)))
 		{
-			throw ER_CoreException("D3D11CreateDevice() failed", hr);
+			throw ER_CoreException("ER_RHI_DX11: D3D11CreateDevice() failed", hr);
 		}
 
 		if (FAILED(hr = direct3DDevice->QueryInterface(__uuidof(ID3D11Device1), reinterpret_cast<void**>(&mDirect3DDevice))))
 		{
-			throw ER_CoreException("ID3D11Device::QueryInterface() failed", hr);
+			throw ER_CoreException("ER_RHI_DX11: ID3D11Device::QueryInterface() failed", hr);
 		}
 
 		if (FAILED(hr = direct3DDeviceContext->QueryInterface(__uuidof(ID3D11DeviceContext1), reinterpret_cast<void**>(&mDirect3DDeviceContext))))
 		{
-			throw ER_CoreException("ID3D11Device::QueryInterface() failed", hr);
+			throw ER_CoreException("ER_RHI_DX11: ID3D11Device::QueryInterface() failed", hr);
 		}
 
 		ReleaseObject(direct3DDevice);
@@ -75,14 +90,14 @@ namespace Library
 		IDXGIDevice* dxgiDevice = nullptr;
 		if (FAILED(hr = mDirect3DDevice->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void**>(&dxgiDevice))))
 		{
-			throw ER_CoreException("ID3D11Device::QueryInterface() failed", hr);
+			throw ER_CoreException("ER_RHI_DX11: ID3D11Device::QueryInterface() failed", hr);
 		}
 
 		IDXGIAdapter* dxgiAdapter = nullptr;
 		if (FAILED(hr = dxgiDevice->GetParent(__uuidof(IDXGIAdapter), reinterpret_cast<void**>(&dxgiAdapter))))
 		{
 			ReleaseObject(dxgiDevice);
-			throw ER_CoreException("IDXGIDevice::GetParent() failed retrieving adapter.", hr);
+			throw ER_CoreException("ER_RHI_DX11: IDXGIDevice::GetParent() failed retrieving adapter.", hr);
 		}
 
 		IDXGIFactory2* dxgiFactory = nullptr;
@@ -90,7 +105,7 @@ namespace Library
 		{
 			ReleaseObject(dxgiDevice);
 			ReleaseObject(dxgiAdapter);
-			throw ER_CoreException("IDXGIAdapter::GetParent() failed retrieving factory.", hr);
+			throw ER_CoreException("ER_RHI_DX11: IDXGIAdapter::GetParent() failed retrieving factory.", hr);
 		}
 
 		DXGI_SWAP_CHAIN_FULLSCREEN_DESC fullScreenDesc;
@@ -104,7 +119,7 @@ namespace Library
 			ReleaseObject(dxgiDevice);
 			ReleaseObject(dxgiAdapter);
 			ReleaseObject(dxgiFactory);
-			throw ER_CoreException("IDXGIDevice::CreateSwapChainForHwnd() failed.", hr);
+			throw ER_CoreException("ER_RHI_DX11: IDXGIDevice::CreateSwapChainForHwnd() failed.", hr);
 		}
 
 		ReleaseObject(dxgiDevice);
@@ -114,7 +129,7 @@ namespace Library
 		ID3D11Texture2D* backBuffer;
 		if (FAILED(hr = mSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer))))
 		{
-			throw ER_CoreException("IDXGISwapChain::GetBuffer() failed.", hr);
+			throw ER_CoreException("ER_RHI_DX11: IDXGISwapChain::GetBuffer() failed.", hr);
 		}
 
 		backBuffer->GetDesc(&mBackBufferDesc);
@@ -123,7 +138,7 @@ namespace Library
 		if (FAILED(hr = mDirect3DDevice->CreateRenderTargetView(backBuffer, nullptr, &mMainRenderTargetView)))
 		{
 			ReleaseObject(backBuffer);
-			throw ER_CoreException("IDXGIDevice::CreateRenderTargetView() failed.", hr);
+			throw ER_CoreException("ER_RHI_DX11: Failed to create main RenderTargetView.", hr);
 		}
 
 		ReleaseObject(backBuffer);
@@ -143,12 +158,12 @@ namespace Library
 
 			if (FAILED(hr = mDirect3DDevice->CreateTexture2D(&depthStencilDesc, nullptr, &mDepthStencilBuffer)))
 			{
-				throw ER_CoreException("IDXGIDevice::CreateTexture2D() failed.", hr);
+				throw ER_CoreException("ER_RHI_DX11: Failed to create main DepthStencil Texture2D.", hr);
 			}
 
 			if (FAILED(hr = mDirect3DDevice->CreateDepthStencilView(mDepthStencilBuffer, nullptr, &mMainDepthStencilView)))
 			{
-				throw ER_CoreException("IDXGIDevice::CreateDepthStencilView() failed.", hr);
+				throw ER_CoreException("ER_RHI_DX11: Failed to create main DepthStencilView.", hr);
 			}
 		}
 
@@ -169,6 +184,10 @@ namespace Library
 
 		mDirect3DDeviceContext->OMSetRenderTargets(1, &mMainRenderTargetView, mMainDepthStencilView);
 		mDirect3DDeviceContext->RSSetViewports(1, &viewport);
+
+		CreateSamplerStates();
+		CreateRasterizerStates();
+		CreateDepthStencilStates();
 
 		return true;
 	}
@@ -252,7 +271,7 @@ namespace Library
 	{
 		HRESULT hr = mSwapChain->Present(0, 0);
 		if (FAILED(hr))
-			throw ER_CoreException("IDXGISwapChain::Present() failed.", hr);
+			throw ER_CoreException("ER_RHI_DX11: IDXGISwapChain::Present() failed.", hr);
 	}
 
 	void ER_RHI_DX11::SetRenderTargets(const std::vector<ER_GPUTexture*>& aRenderTargets, ER_GPUTexture* aDepthTarget /*= nullptr*/, ER_GPUTexture* aUAV /*= nullptr*/)
@@ -288,6 +307,43 @@ namespace Library
 		mDirect3DDeviceContext->OMSetRenderTargets(1, nullRTVs, aDepthTarget->GetDSV());
 	}
 
+	void ER_RHI_DX11::SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot /*= 0*/)
+	{
+		assert(aSamplers.size() > 0);
+		assert(aSamplers.size() <= DX11_MAX_BOUND_SAMPLERS);
+
+		ID3D11SamplerState* SS[DX11_MAX_BOUND_SAMPLERS] = {};
+		UINT ssCount = static_cast<UINT>(aSamplers.size());
+		for (UINT i = 0; i < ssCount; i++)
+		{
+			auto it = mSamplerStates.find(aSamplers[i]);
+			if (it == mSamplerStates.end())
+				throw ER_CoreException("ER_RHI_DX11: Could not find a sampler state that you want to bind to the shader. It is probably not implemented in your graphics API");				
+			else
+				SS[i] = it->second;
+		}
+
+		switch (aShaderType)
+		{
+		case ER_RHI_SHADER_TYPE::VERTEX:
+			mDirect3DDeviceContext->VSSetSamplers(startSlot, ssCount, SS);
+			break;
+		case ER_RHI_SHADER_TYPE::GEOMETRY:
+			mDirect3DDeviceContext->GSSetSamplers(startSlot, ssCount, SS);
+			break;
+		case ER_RHI_SHADER_TYPE::TESSELLATION:
+			mDirect3DDeviceContext->HSSetSamplers(startSlot, ssCount, SS);
+			mDirect3DDeviceContext->DSSetSamplers(startSlot, ssCount, SS);
+			break;
+		case ER_RHI_SHADER_TYPE::PIXEL:
+			mDirect3DDeviceContext->PSSetSamplers(startSlot, ssCount, SS);
+			break;
+		case ER_RHI_SHADER_TYPE::COMPUTE:
+			mDirect3DDeviceContext->CSSetSamplers(startSlot, ssCount, SS);
+			break;
+		}
+	}
+
 	void ER_RHI_DX11::InitImGui()
 	{
 		ImGui_ImplDX11_Init(mDirect3DDevice, mDirect3DDeviceContext);
@@ -303,4 +359,153 @@ namespace Library
 		ImGui_ImplDX11_Shutdown();
 	}
 
+	void ER_RHI_DX11::CreateSamplerStates()
+	{
+		float white[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		float black[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+		auto direct3DDevice = mDirect3DDevice;
+
+		// trilinear samplers
+		D3D11_SAMPLER_DESC samplerStateDesc;
+		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
+		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerStateDesc.MipLODBias = 0;
+		samplerStateDesc.MaxAnisotropy = 1;
+		samplerStateDesc.MinLOD = -1000.0f;
+		samplerStateDesc.MaxLOD = 1000.0f;
+		HRESULT hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &TrilinearWrapSS);
+		if (FAILED(hr))
+			throw ER_CoreException("ER_RHI_DX11: Could not create TrilinearWrapSS", hr);
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::TRILINEAR_WRAP, TrilinearWrapSS));
+
+		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
+		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR;
+		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR;
+		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR;
+		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &TrilinearMirrorSS);
+		if (FAILED(hr))
+			throw ER_CoreException("ER_RHI_DX11: Could not create TrilinearMirrorSS", hr);
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::TRILINEAR_MIRROR, TrilinearMirrorSS));
+
+		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
+		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &TrilinearClampSS);
+		if (FAILED(hr))
+			throw ER_CoreException("ER_RHI_DX11: Could not create TrilinearClampSS", hr);
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::TRILINEAR_CLAMP, TrilinearClampSS));
+
+		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
+		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+		memcpy(samplerStateDesc.BorderColor, reinterpret_cast<FLOAT*>(&black), sizeof(FLOAT) * 4);
+		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &TrilinearBorderSS);
+		if (FAILED(hr))
+			throw ER_CoreException("ER_RHI_DX11: Could not create TrilinearBorderSS", hr);
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::TRILINEAR_BORDER, TrilinearBorderSS));
+
+		// bilinear samplers
+		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
+		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &BilinearWrapSS);
+		if (FAILED(hr))
+			throw ER_CoreException("ER_RHI_DX11: Could not create BilinearWrapSS", hr);
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::BILINEAR_WRAP, BilinearWrapSS));
+
+		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
+		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR;
+		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR;
+		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR;
+		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &BilinearMirrorSS);
+		if (FAILED(hr))
+			throw ER_CoreException("ER_RHI_DX11: Could not create BilinearMirrorSS", hr);
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::BILINEAR_MIRROR, BilinearMirrorSS));
+
+		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
+		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &BilinearClampSS);
+		if (FAILED(hr))
+			throw ER_CoreException("ER_RHI_DX11: Could not create BilinearClampSS", hr);
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::BILINEAR_CLAMP, BilinearClampSS));
+
+		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
+		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+		memcpy(samplerStateDesc.BorderColor, reinterpret_cast<FLOAT*>(&black), sizeof(FLOAT) * 4);
+		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &BilinearBorderSS);
+		if (FAILED(hr))
+			throw ER_CoreException("ER_RHI_DX11: Could not create BilinerBorderSS", hr);
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::BILINEAR_BORDER, BilinearBorderSS));
+
+		// anisotropic samplers
+		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
+		samplerStateDesc.Filter = D3D11_FILTER_ANISOTROPIC;
+		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &AnisotropicWrapSS);
+		if (FAILED(hr))
+			throw ER_CoreException("ER_RHI_DX11: Could not create AnisotropicWrapSS", hr);
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ANISOTROPIC_WRAP, AnisotropicWrapSS));
+
+		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
+		samplerStateDesc.Filter = D3D11_FILTER_ANISOTROPIC;
+		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR;
+		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR;
+		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR;
+		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &AnisotropicMirrorSS);
+		if (FAILED(hr))
+			throw ER_CoreException("ER_RHI_DX11: Could not create AnisotropicMirrorSS", hr);
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ANISOTROPIC_MIRROR, AnisotropicMirrorSS));
+
+		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
+		samplerStateDesc.Filter = D3D11_FILTER_ANISOTROPIC;
+		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &AnisotropicClampSS);
+		if (FAILED(hr))
+			throw ER_CoreException("ER_RHI_DX11: Could not create AnisotropicClampSS", hr);
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ANISOTROPIC_CLAMP, AnisotropicClampSS));
+
+		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
+		samplerStateDesc.Filter = D3D11_FILTER_ANISOTROPIC;
+		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+		memcpy(samplerStateDesc.BorderColor, reinterpret_cast<FLOAT*>(&black), sizeof(FLOAT) * 4);
+		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &AnisotropicBorderSS);
+		if (FAILED(hr))
+			throw ER_CoreException("ER_RHI_DX11: Could not create AnisotropicBorderSS", hr);
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ANISOTROPIC_BORDER, AnisotropicBorderSS));
+
+		// shadow sampler state
+		samplerStateDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+		memcpy(samplerStateDesc.BorderColor, reinterpret_cast<FLOAT*>(&white), sizeof(FLOAT) * 4);
+		samplerStateDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
+		if (FAILED(direct3DDevice->CreateSamplerState(&samplerStateDesc, &ShadowSS)))
+			throw ER_CoreException("ER_RHI_DX11: Could not create ShadowSS!");
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::SHADOW_SS, ShadowSS));
+	}
 }

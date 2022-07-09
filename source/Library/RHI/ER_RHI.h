@@ -3,6 +3,9 @@
 #include "..\ER_GPUBuffer.h"
 #include "..\ER_GPUTexture.h"
 
+#define ER_RHI_MAX_GRAPHICS_COMMAND_LISTS 4
+#define ER_RHI_MAX_COMPUTE_COMMAND_LISTS 2
+
 namespace Library
 {
 	static const int DefaultFrameRate = 60;
@@ -13,7 +16,16 @@ namespace Library
 		DX12
 	};
 
-	enum ER_RHI_DepthStencilState
+	enum ER_RHI_SHADER_TYPE
+	{
+		VERTEX,
+		GEOMETRY,
+		TESSELLATION,
+		PIXEL,
+		COMPUTE
+	};
+
+	enum ER_RHI_DEPTH_STENCIL_STATE
 	{
 		DEPTH_DISABLED,
 		DEPTH_READ,
@@ -22,11 +34,11 @@ namespace Library
 		DEPTH_STENCIL_READ_WRITE
 	};
 
-	enum ER_RHI_BlendState
+	enum ER_RHI_BLEND_STATE
 	{
 	};
 
-	enum ER_RHI_SamplerState
+	enum ER_RHI_SAMPLER_STATE
 	{
 		BILINEAR_WRAP,
 		BILINEAR_CLAMP,
@@ -36,17 +48,25 @@ namespace Library
 		TRILINEAR_CLAMP,
 		TRILINEAR_BORDER,
 		TRILINEAR_MIRROR,
-		ANISOTROPIC,
+		ANISOTROPIC_WRAP,
+		ANISOTROPIC_CLAMP,
+		ANISOTROPIC_BORDER,
+		ANISOTROPIC_MIRROR,
 		SHADOW_SS /* this is dirty */
 	};
 
-	enum ER_RHI_RasterizerState
+	enum ER_RHI_RASTERIZER_STATE
 	{
 		NO_CULLING,
 		BACK_CULLING,
 		FRONT_CULLING,
 		WIREFRAME,
 		SHADOW_RS/* this is dirty */
+	};
+
+	enum ER_RHI_RESOURCE_STATE
+	{
+
 	};
 
 	struct ER_RHI_Viewport
@@ -66,6 +86,12 @@ namespace Library
 		virtual ~ER_RHI();
 
 		virtual bool Initialize(UINT width, UINT height, bool isFullscreen) = 0;
+		
+		virtual void BeginGraphicsCommandList() = 0;
+		virtual void EndGraphicsCommandList() = 0;
+
+		virtual void BeginComputeCommandList() = 0;
+		virtual void EndComputeCommandList() = 0;
 
 		virtual void ClearMainRenderTarget(float colors[4]) = 0;
 		virtual void ClearMainDepthStencilTarget(float depth, UINT stencil = 0) = 0;
@@ -92,50 +118,25 @@ namespace Library
 		virtual void SetRenderTargets(const std::vector<ER_GPUTexture*>& aRenderTargets, ER_GPUTexture* aDepthTarget = nullptr, ER_GPUTexture * aUAV = nullptr) = 0;
 		virtual void SetDepthTarget(ER_GPUTexture* aDepthTarget) = 0;
 
-		virtual void SetDepthStencilState(ER_RHI_DepthStencilState aDS, UINT stencilRef) = 0;
-		virtual ER_RHI_DepthStencilState GetCurrentDepthStencilState() = 0;
+		virtual void SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE aDS, UINT stencilRef) = 0;
+		virtual ER_RHI_DEPTH_STENCIL_STATE GetCurrentDepthStencilState() = 0;
 
-		virtual void SetBlendState(ER_RHI_BlendState aBS, const float BlendFactor[4], UINT SampleMask) = 0;
-		virtual ER_RHI_BlendState GetCurrentBlendState() = 0;
+		virtual void SetBlendState(ER_RHI_BLEND_STATE aBS, const float BlendFactor[4], UINT SampleMask) = 0;
+		virtual ER_RHI_BLEND_STATE GetCurrentBlendState() = 0;
 
-		virtual void SetRasterizerState(ER_RHI_RasterizerState aRS) = 0;
-		virtual ER_RHI_RasterizerState GetCurrentRasterizerState() = 0;
+		virtual void SetRasterizerState(ER_RHI_RASTERIZER_STATE aRS) = 0;
+		virtual ER_RHI_RASTERIZER_STATE GetCurrentRasterizerState() = 0;
 
 		virtual void SetViewport(ER_RHI_Viewport* aViewport) = 0;
 		virtual ER_RHI_Viewport* GetCurrentViewport() = 0;
 
-		virtual void SetVertexShaderCBs(const std::vector<ER_GPUBuffer*>& aCBs, UINT startSlot = 0) = 0;
-		virtual void SetPixelShaderCBs(const std::vector<ER_GPUBuffer*>& aCBs, UINT startSlot = 0) = 0;
-		virtual void SetComputeShaderCBs(const std::vector<ER_GPUBuffer*>& aCBs, UINT startSlot = 0) = 0;
-		virtual void SetGeometryShaderCBs(const std::vector<ER_GPUBuffer*>& aCBs, UINT startSlot = 0) = 0;
+		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_GPUTexture*>& aSRVs, UINT startSlot = 0) = 0;
+		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_GPUTexture*>& aUAVs, UINT startSlot = 0) = 0;
+		virtual void SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_GPUBuffer*>& aCBs, UINT startSlot = 0) = 0;
+		virtual void SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot = 0) = 0;
 
-		virtual void SetVertexShaderSRVs(const std::vector<ER_GPUTexture*>& aSRVs) = 0;
-		virtual void SetPixelShaderSRVs(const std::vector<ER_GPUTexture*>& aSRVs, UINT startSlot = 0) = 0;
-		virtual void SetComputeShaderSRVs(const std::vector<ER_GPUTexture*>& aSRVs, UINT startSlot = 0) = 0;
-		virtual void SetGeometryShaderSRVs(const std::vector<ER_GPUTexture*>& aSRVs, UINT startSlot = 0) = 0;
-
-		virtual void SetVertexShaderUAVs(const std::vector<ER_GPUTexture*>& aUAVs, UINT startSlot = 0) = 0;
-		virtual void SetPixelShaderUAVs(const std::vector<ER_GPUTexture*>& aUAVs, UINT startSlot = 0) = 0;
-		virtual void SetComputeShaderUAVs(const std::vector<ER_GPUTexture*>& aUAVs, UINT startSlot = 0) = 0;
-		virtual void SetGeometryShaderUAVs(const std::vector<ER_GPUTexture*>& aUAVs, UINT startSlot = 0) = 0;
-
-		virtual void SetVertexShaderSamplers(const std::vector<ER_RHI_SamplerState>& aSamplers, UINT startSlot = 0) = 0;
-		virtual void SetPixelShaderSamplers(const std::vector<ER_RHI_SamplerState>& aSamplers, UINT startSlot = 0) = 0;
-		virtual void SetComputeShaderSamplers(const std::vector<ER_RHI_SamplerState>& aSamplers, UINT startSlot = 0) = 0;
-		virtual void SetGeometryShaderSamplers(const std::vector<ER_RHI_SamplerState>& aSamplers, UINT startSlot = 0) = 0;
-
-		// TODO
-		//virtual void SetVertexShader(ER_RHI_Shader* aShader) = 0;
-		//virtual void SetPixelShader(ER_RHI_Shader* aShader) = 0;
-		//virtual void SetComputeShader(ER_RHI_Shader* aShader) = 0;
-		//virtual void SetGeometryShader(ER_RHI_Shader* aShader) = 0;
-		//virtual void SetTessellationShaders(ER_RHI_Shader* aShader) = 0;
-
-		virtual void UnbindVertexResources() = 0;
-		virtual void UnbindPixelResources() = 0;
-		virtual void UnbindComputeResources() = 0;
-		//virtual void UnbindGeometryResources() = 0;
-		//virtual void UnbindTessellationResources() = 0;
+		//TODO virtual void SetShader(ER_RHI_Shader* aShader) = 0;
+		virtual void UnbindResourcesFromShader(ER_RHI_SHADER_TYPE aShaderType) = 0;
 
 		virtual void UpdateBuffer(ER_GPUBuffer* aBuffer, void* aData, int dataSize) = 0;
 
@@ -154,5 +155,8 @@ namespace Library
 
 		ER_GRAPHICS_API mAPI;
 		bool mIsFullScreen = false;
+
+		int mCurrentGraphicsCommandListIndex = 0;
+		int mCurrentComputeCommandListIndex = 0;
 	};
 }

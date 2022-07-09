@@ -15,6 +15,12 @@ namespace Library
 		virtual ~ER_RHI_DX11();
 
 		virtual bool Initialize(UINT width, UINT height, bool isFullscreen) override;
+		
+		virtual void BeginGraphicsCommandList() override {}; //not supported on DX11
+		virtual void EndGraphicsCommandList() override {}; //not supported on DX11
+
+		virtual void BeginComputeCommandList() override {}; //not supported on DX11
+		virtual void EndComputeCommandList() override {}; //not supported on DX11
 
 		virtual void ClearMainRenderTarget(float colors[4]) override;
 		virtual void ClearMainDepthStencilTarget(float depth, UINT stencil = 0) override;
@@ -41,50 +47,26 @@ namespace Library
 		virtual void SetRenderTargets(const std::vector<ER_GPUTexture*>& aRenderTargets, ER_GPUTexture* aDepthTarget = nullptr, ER_GPUTexture* aUAV = nullptr) override;
 		virtual void SetDepthTarget(ER_GPUTexture* aDepthTarget) override;
 
-		virtual void SetDepthStencilState(ER_RHI_DepthStencilState aDS, UINT stencilRef) override;
-		virtual ER_RHI_DepthStencilState GetCurrentDepthStencilState() override;
+		virtual void SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE aDS, UINT stencilRef) override;
+		virtual ER_RHI_DEPTH_STENCIL_STATE GetCurrentDepthStencilState() override;
 
-		virtual void SetBlendState(ER_RHI_BlendState aBS, const float BlendFactor[4], UINT SampleMask) override;
-		virtual ER_RHI_BlendState GetCurrentBlendState() override;
+		virtual void SetBlendState(ER_RHI_BLEND_STATE aBS, const float BlendFactor[4], UINT SampleMask) override;
+		virtual ER_RHI_BLEND_STATE GetCurrentBlendState() override;
 
-		virtual void SetRasterizerState(ER_RHI_RasterizerState aRS) override;
-		virtual ER_RHI_RasterizerState GetCurrentRasterizerState() override;
+		virtual void SetRasterizerState(ER_RHI_RASTERIZER_STATE aRS) override;
+		virtual ER_RHI_RASTERIZER_STATE GetCurrentRasterizerState() override;
 
 		virtual void SetViewport(ER_RHI_Viewport* aViewport) override;
 		virtual ER_RHI_Viewport* GetCurrentViewport() override;
 
-		virtual void SetVertexShaderCBs(const std::vector<ER_GPUBuffer*>& aCBs, UINT startSlot = 0) override;
-		virtual void SetPixelShaderCBs(const std::vector<ER_GPUBuffer*>& aCBs, UINT startSlot = 0) override;
-		virtual void SetComputeShaderCBs(const std::vector<ER_GPUBuffer*>& aCBs, UINT startSlot = 0) override;
-		virtual void SetGeometryShaderCBs(const std::vector<ER_GPUBuffer*>& aCBs, UINT startSlot = 0) override;
+		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_GPUTexture*>& aSRVs, UINT startSlot = 0) override;
+		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_GPUTexture*>& aUAVs, UINT startSlot = 0) override;
+		virtual void SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_GPUBuffer*>& aCBs, UINT startSlot = 0) override;
 
-		virtual void SetVertexShaderSRVs(const std::vector<ER_GPUTexture*>& aSRVs) override;
-		virtual void SetPixelShaderSRVs(const std::vector<ER_GPUTexture*>& aSRVs, UINT startSlot = 0) override;
-		virtual void SetComputeShaderSRVs(const std::vector<ER_GPUTexture*>& aSRVs, UINT startSlot = 0) override;
-		virtual void SetGeometryShaderSRVs(const std::vector<ER_GPUTexture*>& aSRVs, UINT startSlot = 0) override;
+		//TODO virtual void SetShader(ER_RHI_Shader* aShader) = 0;
+		virtual void SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot = 0) override;
 
-		virtual void SetVertexShaderUAVs(const std::vector<ER_GPUTexture*>& aUAVs, UINT startSlot = 0) override;
-		virtual void SetPixelShaderUAVs(const std::vector<ER_GPUTexture*>& aUAVs, UINT startSlot = 0) override;
-		virtual void SetComputeShaderUAVs(const std::vector<ER_GPUTexture*>& aUAVs, UINT startSlot = 0) override;
-		virtual void SetGeometryShaderUAVs(const std::vector<ER_GPUTexture*>& aUAVs, UINT startSlot  = 0) override;
-
-		virtual void SetVertexShaderSamplers(const std::vector<ER_RHI_SamplerState>& aSamplers, UINT startSlot = 0) override;
-		virtual void SetPixelShaderSamplers(const std::vector<ER_RHI_SamplerState>& aSamplers, UINT startSlot = 0) override;
-		virtual void SetComputeShaderSamplers(const std::vector<ER_RHI_SamplerState>& aSamplers, UINT startSlot = 0) override;
-		virtual void SetGeometryShaderSamplers(const std::vector<ER_RHI_SamplerState>& aSamplers, UINT startSlot = 0) override;
-
-		// TODO
-		//virtual void SetVertexShader(ER_RHI_Shader* aShader) override;
-		//virtual void SetPixelShader(ER_RHI_Shader* aShader) override;
-		//virtual void SetComputeShader(ER_RHI_Shader* aShader) override;
-		//virtual void SetGeometryShader(ER_RHI_Shader* aShader) override;
-		//virtual void SetTessellationShaders(ER_RHI_Shader* aShader) override;
-
-		virtual void UnbindVertexResources() override;
-		virtual void UnbindPixelResources() override;
-		virtual void UnbindComputeResources() override;
-		//virtual void UnbindGeometryResources() override;
-		//virtual void UnbindTessellationResources() override;
+		virtual void UnbindResourcesFromShader(ER_RHI_SHADER_TYPE aShaderType) override;
 
 		virtual void UpdateBuffer(ER_GPUBuffer* aBuffer, void* aData, int dataSize) override;
 		
@@ -95,7 +77,13 @@ namespace Library
 		virtual ER_RHI_Viewport GetViewport() override { return mMainViewport; }
 
 		ER_GRAPHICS_API GetAPI() { return mAPI; }
+	protected:
+		virtual void ExecuteCommandLists() = 0;
 	private:
+		void CreateSamplerStates();
+		void CreateRasterizerStates();
+		void CreateDepthStencilStates();
+
 		D3D_FEATURE_LEVEL mFeatureLevel = D3D_FEATURE_LEVEL_11_1;
 		ID3D11Device1* mDirect3DDevice = nullptr;
 		ID3D11DeviceContext1* mDirect3DDeviceContext = nullptr;
@@ -105,6 +93,21 @@ namespace Library
 		D3D11_TEXTURE2D_DESC mBackBufferDesc;
 		ID3D11RenderTargetView* mMainRenderTargetView = nullptr;
 		ID3D11DepthStencilView* mMainDepthStencilView = nullptr;
+
+		ID3D11SamplerState* BilinearWrapSS = nullptr;
+		ID3D11SamplerState* BilinearMirrorSS = nullptr;
+		ID3D11SamplerState* BilinearClampSS = nullptr;
+		ID3D11SamplerState* BilinearBorderSS = nullptr;
+		ID3D11SamplerState* TrilinearWrapSS = nullptr;
+		ID3D11SamplerState* TrilinearMirrorSS = nullptr;
+		ID3D11SamplerState* TrilinearClampSS = nullptr;
+		ID3D11SamplerState* TrilinearBorderSS = nullptr;
+		ID3D11SamplerState* AnisotropicWrapSS = nullptr;
+		ID3D11SamplerState* AnisotropicMirrorSS = nullptr;
+		ID3D11SamplerState* AnisotropicClampSS = nullptr;
+		ID3D11SamplerState* AnisotropicBorderSS = nullptr;
+		ID3D11SamplerState* ShadowSS = nullptr;
+		std::map<ER_RHI_SAMPLER_STATE, ID3D11SamplerState*> mSamplerStates;
 
 		ER_RHI_Viewport mMainViewport;
 	};
