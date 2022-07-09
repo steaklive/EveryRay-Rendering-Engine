@@ -4,6 +4,7 @@
 #define DX11_MAX_BOUND_RENDER_TARGETS_VIEWS 8
 #define DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS 64 
 #define DX11_MAX_BOUND_UNORDERED_ACCESS_VIEWS 16 
+#define DX11_MAX_BOUND_CONSTANT_BUFFERS 8 
 #define DX11_MAX_BOUND_SAMPLERS 8 
 
 namespace Library
@@ -305,6 +306,107 @@ namespace Library
 
 		assert(aDepthTarget);
 		mDirect3DDeviceContext->OMSetRenderTargets(1, nullRTVs, aDepthTarget->GetDSV());
+	}
+
+	void ER_RHI_DX11::SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_GPUTexture*>& aSRVs, UINT startSlot /*= 0*/)
+	{
+		assert(aSRVs.size() > 0);
+		assert(aSRVs.size() <= DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS);
+
+		ID3D11ShaderResourceView* SRs[DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS] = {};
+		UINT srCount = static_cast<UINT>(aSRVs.size());
+		for (UINT i = 0; i < srCount; i++)
+		{
+			assert(aSRVs[i]);
+			SRs[i] = aSRVs[i]->GetSRV();
+		}
+
+		switch (aShaderType)
+		{
+		case ER_RHI_SHADER_TYPE::VERTEX:
+			mDirect3DDeviceContext->VSSetShaderResources(startSlot, srCount, SRs);
+			break;
+		case ER_RHI_SHADER_TYPE::GEOMETRY:
+			mDirect3DDeviceContext->GSSetShaderResources(startSlot, srCount, SRs);
+			break;
+		case ER_RHI_SHADER_TYPE::TESSELLATION:
+			mDirect3DDeviceContext->HSSetShaderResources(startSlot, srCount, SRs);
+			mDirect3DDeviceContext->DSSetShaderResources(startSlot, srCount, SRs);
+			break;
+		case ER_RHI_SHADER_TYPE::PIXEL:
+			mDirect3DDeviceContext->PSSetShaderResources(startSlot, srCount, SRs);
+			break;
+		case ER_RHI_SHADER_TYPE::COMPUTE:
+			mDirect3DDeviceContext->CSSetShaderResources(startSlot, srCount, SRs);
+			break;
+		}
+	}
+
+	void ER_RHI_DX11::SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_GPUTexture*>& aUAVs, UINT startSlot /*= 0*/)
+	{
+		assert(aUAVs.size() > 0);
+		assert(aUAVs.size() <= DX11_MAX_BOUND_UNORDERED_ACCESS_VIEWS);
+
+		ID3D11UnorderedAccessView* UAVs[DX11_MAX_BOUND_UNORDERED_ACCESS_VIEWS] = {};
+		UINT uavCount = static_cast<UINT>(aUAVs.size());
+		for (UINT i = 0; i < uavCount; i++)
+		{
+			assert(aUAVs[i]);
+			UAVs[i] = aUAVs[i]->GetUAV();
+		}
+
+		switch (aShaderType)
+		{
+		case ER_RHI_SHADER_TYPE::VERTEX:
+			throw ER_CoreException("ER_RHI_DX11: Binding UAV to this shader stage is not possible."); //TODO possible with 11_3 i think?
+			break;
+		case ER_RHI_SHADER_TYPE::GEOMETRY:
+			throw ER_CoreException("ER_RHI_DX11: Binding UAV to this shader stage is not possible.");
+			break;
+		case ER_RHI_SHADER_TYPE::TESSELLATION:
+			throw ER_CoreException("ER_RHI_DX11: Binding UAV to this shader stage is not possible.");
+			break;
+		case ER_RHI_SHADER_TYPE::PIXEL:
+			throw ER_CoreException("ER_RHI_DX11: Binding UAV to this shader stage is not possible.");
+			break;
+		case ER_RHI_SHADER_TYPE::COMPUTE:
+			mDirect3DDeviceContext->CSSetUnorderedAccessViews(startSlot, uavCount, UAVs, NULL);
+			break;
+		}
+	}
+
+	void ER_RHI_DX11::SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_GPUBuffer*>& aCBs, UINT startSlot /*= 0*/)
+	{
+		assert(aCBs.size() > 0);
+		assert(aCBs.size() <= DX11_MAX_BOUND_CONSTANT_BUFFERS);
+
+		ID3D11Buffer* CBs[DX11_MAX_BOUND_CONSTANT_BUFFERS] = {};
+		UINT cbsCount = static_cast<UINT>(aCBs.size());
+		for (UINT i = 0; i < cbsCount; i++)
+		{
+			assert(aCBs[i]);
+			CBs[i] = aCBs[i]->GetBuffer();
+		}
+
+		switch (aShaderType)
+		{
+		case ER_RHI_SHADER_TYPE::VERTEX:
+			mDirect3DDeviceContext->VSSetConstantBuffers(startSlot, cbsCount, CBs);
+			break;
+		case ER_RHI_SHADER_TYPE::GEOMETRY:
+			mDirect3DDeviceContext->GSSetConstantBuffers(startSlot, cbsCount, CBs);
+			break;
+		case ER_RHI_SHADER_TYPE::TESSELLATION:
+			mDirect3DDeviceContext->HSSetConstantBuffers(startSlot, cbsCount, CBs);
+			mDirect3DDeviceContext->DSSetConstantBuffers(startSlot, cbsCount, CBs);
+			break;
+		case ER_RHI_SHADER_TYPE::PIXEL:
+			mDirect3DDeviceContext->PSSetConstantBuffers(startSlot, cbsCount, CBs);
+			break;
+		case ER_RHI_SHADER_TYPE::COMPUTE:
+			mDirect3DDeviceContext->CSSetConstantBuffers(startSlot, cbsCount, CBs);
+			break;
+		}
 	}
 
 	void ER_RHI_DX11::SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot /*= 0*/)
