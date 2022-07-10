@@ -6,6 +6,9 @@ namespace Library
 	ER_GPUBuffer::ER_GPUBuffer(ID3D11Device* device, void* aData, UINT objectsCount, UINT byteStride, D3D11_USAGE usage, UINT bindFlags, UINT cpuAccessFlags, UINT miscFlags, DXGI_FORMAT format)
 	{
 		D3D11_SUBRESOURCE_DATA init_data = { aData, 0, 0 };
+
+		mFormat = format;
+		mStride = byteStride;
 		mByteSize = objectsCount * byteStride;
 
 		D3D11_BUFFER_DESC buf_desc;

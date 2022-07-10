@@ -15,11 +15,15 @@ namespace Library
 		ID3D11Buffer* GetBuffer() { return mBuffer; }
 		ID3D11ShaderResourceView* GetBufferSRV() { return mBufferSRV; }
 		ID3D11UnorderedAccessView* GetBufferUAV() { return mBufferUAV; }
+		DXGI_FORMAT GetFormat() { return mFormat; }
+		UINT GetStride() { return mStride; }
 	private:
 		ID3D11Buffer* mBuffer = nullptr;
 		ID3D11UnorderedAccessView* mBufferUAV = nullptr;
 		ID3D11ShaderResourceView* mBufferSRV = nullptr;
 
+		DXGI_FORMAT mFormat;
+		UINT mStride;
 		int mByteSize = 0;
 	};
 }

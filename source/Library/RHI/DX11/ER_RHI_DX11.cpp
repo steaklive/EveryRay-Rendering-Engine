@@ -323,20 +323,20 @@ namespace Library
 
 		switch (aShaderType)
 		{
-		case ER_RHI_SHADER_TYPE::VERTEX:
+		case ER_RHI_SHADER_TYPE::ER_VERTEX:
 			mDirect3DDeviceContext->VSSetShaderResources(startSlot, srCount, SRs);
 			break;
-		case ER_RHI_SHADER_TYPE::GEOMETRY:
+		case ER_RHI_SHADER_TYPE::ER_GEOMETRY:
 			mDirect3DDeviceContext->GSSetShaderResources(startSlot, srCount, SRs);
 			break;
-		case ER_RHI_SHADER_TYPE::TESSELLATION:
+		case ER_RHI_SHADER_TYPE::ER_TESSELLATION:
 			mDirect3DDeviceContext->HSSetShaderResources(startSlot, srCount, SRs);
 			mDirect3DDeviceContext->DSSetShaderResources(startSlot, srCount, SRs);
 			break;
-		case ER_RHI_SHADER_TYPE::PIXEL:
+		case ER_RHI_SHADER_TYPE::ER_PIXEL:
 			mDirect3DDeviceContext->PSSetShaderResources(startSlot, srCount, SRs);
 			break;
-		case ER_RHI_SHADER_TYPE::COMPUTE:
+		case ER_RHI_SHADER_TYPE::ER_COMPUTE:
 			mDirect3DDeviceContext->CSSetShaderResources(startSlot, srCount, SRs);
 			break;
 		}
@@ -357,19 +357,19 @@ namespace Library
 
 		switch (aShaderType)
 		{
-		case ER_RHI_SHADER_TYPE::VERTEX:
+		case ER_RHI_SHADER_TYPE::ER_VERTEX:
 			throw ER_CoreException("ER_RHI_DX11: Binding UAV to this shader stage is not possible."); //TODO possible with 11_3 i think?
 			break;
-		case ER_RHI_SHADER_TYPE::GEOMETRY:
+		case ER_RHI_SHADER_TYPE::ER_GEOMETRY:
 			throw ER_CoreException("ER_RHI_DX11: Binding UAV to this shader stage is not possible.");
 			break;
-		case ER_RHI_SHADER_TYPE::TESSELLATION:
+		case ER_RHI_SHADER_TYPE::ER_TESSELLATION:
 			throw ER_CoreException("ER_RHI_DX11: Binding UAV to this shader stage is not possible.");
 			break;
-		case ER_RHI_SHADER_TYPE::PIXEL:
+		case ER_RHI_SHADER_TYPE::ER_PIXEL:
 			throw ER_CoreException("ER_RHI_DX11: Binding UAV to this shader stage is not possible.");
 			break;
-		case ER_RHI_SHADER_TYPE::COMPUTE:
+		case ER_RHI_SHADER_TYPE::ER_COMPUTE:
 			mDirect3DDeviceContext->CSSetUnorderedAccessViews(startSlot, uavCount, UAVs, NULL);
 			break;
 		}
@@ -390,20 +390,20 @@ namespace Library
 
 		switch (aShaderType)
 		{
-		case ER_RHI_SHADER_TYPE::VERTEX:
+		case ER_RHI_SHADER_TYPE::ER_VERTEX:
 			mDirect3DDeviceContext->VSSetConstantBuffers(startSlot, cbsCount, CBs);
 			break;
-		case ER_RHI_SHADER_TYPE::GEOMETRY:
+		case ER_RHI_SHADER_TYPE::ER_GEOMETRY:
 			mDirect3DDeviceContext->GSSetConstantBuffers(startSlot, cbsCount, CBs);
 			break;
-		case ER_RHI_SHADER_TYPE::TESSELLATION:
+		case ER_RHI_SHADER_TYPE::ER_TESSELLATION:
 			mDirect3DDeviceContext->HSSetConstantBuffers(startSlot, cbsCount, CBs);
 			mDirect3DDeviceContext->DSSetConstantBuffers(startSlot, cbsCount, CBs);
 			break;
-		case ER_RHI_SHADER_TYPE::PIXEL:
+		case ER_RHI_SHADER_TYPE::ER_PIXEL:
 			mDirect3DDeviceContext->PSSetConstantBuffers(startSlot, cbsCount, CBs);
 			break;
-		case ER_RHI_SHADER_TYPE::COMPUTE:
+		case ER_RHI_SHADER_TYPE::ER_COMPUTE:
 			mDirect3DDeviceContext->CSSetConstantBuffers(startSlot, cbsCount, CBs);
 			break;
 		}
@@ -427,23 +427,64 @@ namespace Library
 
 		switch (aShaderType)
 		{
-		case ER_RHI_SHADER_TYPE::VERTEX:
+		case ER_RHI_SHADER_TYPE::ER_VERTEX:
 			mDirect3DDeviceContext->VSSetSamplers(startSlot, ssCount, SS);
 			break;
-		case ER_RHI_SHADER_TYPE::GEOMETRY:
+		case ER_RHI_SHADER_TYPE::ER_GEOMETRY:
 			mDirect3DDeviceContext->GSSetSamplers(startSlot, ssCount, SS);
 			break;
-		case ER_RHI_SHADER_TYPE::TESSELLATION:
+		case ER_RHI_SHADER_TYPE::ER_TESSELLATION:
 			mDirect3DDeviceContext->HSSetSamplers(startSlot, ssCount, SS);
 			mDirect3DDeviceContext->DSSetSamplers(startSlot, ssCount, SS);
 			break;
-		case ER_RHI_SHADER_TYPE::PIXEL:
+		case ER_RHI_SHADER_TYPE::ER_PIXEL:
 			mDirect3DDeviceContext->PSSetSamplers(startSlot, ssCount, SS);
 			break;
-		case ER_RHI_SHADER_TYPE::COMPUTE:
+		case ER_RHI_SHADER_TYPE::ER_COMPUTE:
 			mDirect3DDeviceContext->CSSetSamplers(startSlot, ssCount, SS);
 			break;
 		}
+	}
+
+	void ER_RHI_DX11::SetIndexBuffer(ER_GPUBuffer* aBuffer, UINT offset /*= 0*/)
+	{
+		assert(aBuffer);
+		mDirect3DDeviceContext->IASetIndexBuffer(aBuffer->GetBuffer(), aBuffer->GetFormat(), offset);
+	}
+
+	void ER_RHI_DX11::SetVertexBuffers(const std::vector<ER_GPUBuffer*>& aVertexBuffers)
+	{
+		assert(aVertexBuffers.size() > 0 && aVertexBuffers.size() < ER_RHI_MAX_BOUND_VERTEX_BUFFERS);
+		if (aVertexBuffers.size() == 1)
+		{
+			UINT stride = aVertexBuffers[0]->GetStride();
+			UINT offset = 0;
+			assert(aVertexBuffers[0]);
+			ID3D11Buffer* bufferPointers[1] = { aVertexBuffers[0]->GetBuffer() };
+			mDirect3DDeviceContext->IASetVertexBuffers(0, 1, bufferPointers, &stride, &offset);
+		}
+		else //+ instance buffer
+		{
+			UINT strides[2] = { aVertexBuffers[0]->GetStride(), aVertexBuffers[1]->GetStride() };
+			UINT offsets[2] = { 0, 0 };
+
+			assert(aVertexBuffers[0]);
+			assert(aVertexBuffers[1]);
+			ID3D11Buffer* bufferPointers[2] = { aVertexBuffers[0]->GetBuffer(), aVertexBuffers[1]->GetBuffer() };
+			mDirect3DDeviceContext->IASetVertexBuffers(0, 2, bufferPointers, strides, offsets);
+		}
+	}
+
+	void ER_RHI_DX11::SetTopologyType(ER_RHI_PRIMITIVE_TYPE aType)
+	{
+		mDirect3DDeviceContext->IASetPrimitiveTopology(GetTopologyType(aType));
+	}
+
+	ER_RHI_PRIMITIVE_TYPE ER_RHI_DX11::GetCurrentTopologyType()
+	{
+		D3D11_PRIMITIVE_TOPOLOGY currentTopology;
+		mDirect3DDeviceContext->IAGetPrimitiveTopology(&currentTopology);
+		return GetTopologyType(currentTopology);
 	}
 
 	void ER_RHI_DX11::InitImGui()
@@ -459,6 +500,40 @@ namespace Library
 	void ER_RHI_DX11::ShutdownImGui()
 	{
 		ImGui_ImplDX11_Shutdown();
+	}
+
+	D3D11_PRIMITIVE_TOPOLOGY ER_RHI_DX11::GetTopologyType(ER_RHI_PRIMITIVE_TYPE aType)
+	{
+		switch (aType)
+		{
+		case ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_POINTLIST:
+			return D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
+		case ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST:
+			return D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+		case ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST:
+			return D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		case ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP:
+			return D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+		case ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_CONTROL_POINT_PATCHLIST:
+			return D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST;
+		}
+	}
+
+	ER_RHI_PRIMITIVE_TYPE ER_RHI_DX11::GetTopologyType(D3D11_PRIMITIVE_TOPOLOGY aType)
+	{
+		switch (aType)
+		{
+		case D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_POINTLIST:
+			return ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_POINTLIST;
+		case D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_LINELIST:
+			return ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST;
+		case D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST:
+			return ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		case D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP:
+			return ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+		case D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST:
+			return ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_CONTROL_POINT_PATCHLIST;
+		}
 	}
 
 	void ER_RHI_DX11::CreateSamplerStates()
@@ -482,7 +557,7 @@ namespace Library
 		HRESULT hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &TrilinearWrapSS);
 		if (FAILED(hr))
 			throw ER_CoreException("ER_RHI_DX11: Could not create TrilinearWrapSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::TRILINEAR_WRAP, TrilinearWrapSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, TrilinearWrapSS));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
 		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -492,7 +567,7 @@ namespace Library
 		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &TrilinearMirrorSS);
 		if (FAILED(hr))
 			throw ER_CoreException("ER_RHI_DX11: Could not create TrilinearMirrorSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::TRILINEAR_MIRROR, TrilinearMirrorSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_TRILINEAR_MIRROR, TrilinearMirrorSS));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
 		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -502,7 +577,7 @@ namespace Library
 		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &TrilinearClampSS);
 		if (FAILED(hr))
 			throw ER_CoreException("ER_RHI_DX11: Could not create TrilinearClampSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::TRILINEAR_CLAMP, TrilinearClampSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP, TrilinearClampSS));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
 		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -513,7 +588,7 @@ namespace Library
 		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &TrilinearBorderSS);
 		if (FAILED(hr))
 			throw ER_CoreException("ER_RHI_DX11: Could not create TrilinearBorderSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::TRILINEAR_BORDER, TrilinearBorderSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_TRILINEAR_BORDER, TrilinearBorderSS));
 
 		// bilinear samplers
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
@@ -524,7 +599,7 @@ namespace Library
 		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &BilinearWrapSS);
 		if (FAILED(hr))
 			throw ER_CoreException("ER_RHI_DX11: Could not create BilinearWrapSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::BILINEAR_WRAP, BilinearWrapSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_BILINEAR_WRAP, BilinearWrapSS));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
 		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
@@ -534,7 +609,7 @@ namespace Library
 		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &BilinearMirrorSS);
 		if (FAILED(hr))
 			throw ER_CoreException("ER_RHI_DX11: Could not create BilinearMirrorSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::BILINEAR_MIRROR, BilinearMirrorSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_BILINEAR_MIRROR, BilinearMirrorSS));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
 		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
@@ -544,7 +619,7 @@ namespace Library
 		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &BilinearClampSS);
 		if (FAILED(hr))
 			throw ER_CoreException("ER_RHI_DX11: Could not create BilinearClampSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::BILINEAR_CLAMP, BilinearClampSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_BILINEAR_CLAMP, BilinearClampSS));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
 		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
@@ -555,7 +630,7 @@ namespace Library
 		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &BilinearBorderSS);
 		if (FAILED(hr))
 			throw ER_CoreException("ER_RHI_DX11: Could not create BilinerBorderSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::BILINEAR_BORDER, BilinearBorderSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_BILINEAR_BORDER, BilinearBorderSS));
 
 		// anisotropic samplers
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
@@ -566,7 +641,7 @@ namespace Library
 		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &AnisotropicWrapSS);
 		if (FAILED(hr))
 			throw ER_CoreException("ER_RHI_DX11: Could not create AnisotropicWrapSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ANISOTROPIC_WRAP, AnisotropicWrapSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_ANISOTROPIC_WRAP, AnisotropicWrapSS));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
 		samplerStateDesc.Filter = D3D11_FILTER_ANISOTROPIC;
@@ -576,7 +651,7 @@ namespace Library
 		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &AnisotropicMirrorSS);
 		if (FAILED(hr))
 			throw ER_CoreException("ER_RHI_DX11: Could not create AnisotropicMirrorSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ANISOTROPIC_MIRROR, AnisotropicMirrorSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_ANISOTROPIC_MIRROR, AnisotropicMirrorSS));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
 		samplerStateDesc.Filter = D3D11_FILTER_ANISOTROPIC;
@@ -586,7 +661,7 @@ namespace Library
 		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &AnisotropicClampSS);
 		if (FAILED(hr))
 			throw ER_CoreException("ER_RHI_DX11: Could not create AnisotropicClampSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ANISOTROPIC_CLAMP, AnisotropicClampSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_ANISOTROPIC_CLAMP, AnisotropicClampSS));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
 		samplerStateDesc.Filter = D3D11_FILTER_ANISOTROPIC;
@@ -597,7 +672,7 @@ namespace Library
 		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &AnisotropicBorderSS);
 		if (FAILED(hr))
 			throw ER_CoreException("ER_RHI_DX11: Could not create AnisotropicBorderSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ANISOTROPIC_BORDER, AnisotropicBorderSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_ANISOTROPIC_BORDER, AnisotropicBorderSS));
 
 		// shadow sampler state
 		samplerStateDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
@@ -608,6 +683,6 @@ namespace Library
 		samplerStateDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
 		if (FAILED(direct3DDevice->CreateSamplerState(&samplerStateDesc, &ShadowSS)))
 			throw ER_CoreException("ER_RHI_DX11: Could not create ShadowSS!");
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::SHADOW_SS, ShadowSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ShadowSS));
 	}
 }

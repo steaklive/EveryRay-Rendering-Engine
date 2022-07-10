@@ -65,6 +65,12 @@ namespace Library
 
 		//TODO virtual void SetShader(ER_RHI_Shader* aShader) = 0;
 		virtual void SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot = 0) override;
+		
+		virtual void SetIndexBuffer(ER_GPUBuffer* aBuffer, UINT offset = 0) override;
+		virtual void SetVertexBuffers(const std::vector<ER_GPUBuffer*>& aVertexBuffers) override;
+		
+		virtual void SetTopologyType(ER_RHI_PRIMITIVE_TYPE aType) override;
+		virtual ER_RHI_PRIMITIVE_TYPE GetCurrentTopologyType() override;
 
 		virtual void UnbindResourcesFromShader(ER_RHI_SHADER_TYPE aShaderType) override;
 
@@ -80,6 +86,10 @@ namespace Library
 	protected:
 		virtual void ExecuteCommandLists() = 0;
 	private:
+		DXGI_FORMAT GetFormat(ER_RHI_FORMAT aFormat);
+		D3D11_PRIMITIVE_TOPOLOGY GetTopologyType(ER_RHI_PRIMITIVE_TYPE aType);
+		ER_RHI_PRIMITIVE_TYPE GetTopologyType(D3D11_PRIMITIVE_TOPOLOGY aType);
+
 		void CreateSamplerStates();
 		void CreateRasterizerStates();
 		void CreateDepthStencilStates();
