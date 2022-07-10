@@ -37,6 +37,8 @@ namespace Library
 
 	enum ER_RHI_BLEND_STATE
 	{
+		ER_NO_BLEND,
+		ER_ALPHA_TO_COVERAGE
 	};
 
 	enum ER_RHI_SAMPLER_STATE

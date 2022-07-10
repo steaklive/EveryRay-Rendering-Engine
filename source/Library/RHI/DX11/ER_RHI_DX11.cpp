@@ -31,6 +31,9 @@ namespace Library
 		ReleaseObject(AnisotropicBorderSS);
 		ReleaseObject(ShadowSS);
 
+		ReleaseObject(mNoBlendState);
+		ReleaseObject(mAlphaToCoverageState);
+
 		if (mDirect3DDeviceContext)
 			mDirect3DDeviceContext->ClearState();
 
@@ -306,6 +309,15 @@ namespace Library
 
 		assert(aDepthTarget);
 		mDirect3DDeviceContext->OMSetRenderTargets(1, nullRTVs, aDepthTarget->GetDSV());
+	}
+
+	void ER_RHI_DX11::SetBlendState(ER_RHI_BLEND_STATE aBS, const float BlendFactor[4], UINT SampleMask)
+	{
+		auto it = mBlendStates.find(aBS);
+		if (it != mBlendStates.end())
+			mDirect3DDeviceContext->OMSetBlendState(it->second, BlendFactor, SampleMask);
+		else
+			throw ER_CoreException("ER_RHI_DX11: Blend state is not found.");
 	}
 
 	void ER_RHI_DX11::SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_GPUTexture*>& aSRVs, UINT startSlot /*= 0*/)
@@ -685,4 +697,28 @@ namespace Library
 			throw ER_CoreException("ER_RHI_DX11: Could not create ShadowSS!");
 		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ShadowSS));
 	}
+
+	void ER_RHI_DX11::CreateBlendStates()
+	{
+		D3D11_BLEND_DESC blendStateDescription;
+		ZeroMemory(&blendStateDescription, sizeof(D3D11_BLEND_DESC));
+
+		blendStateDescription.AlphaToCoverageEnable = TRUE;
+		blendStateDescription.RenderTarget[0].BlendEnable = TRUE;
+		blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+		blendStateDescription.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+		blendStateDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+		blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+		blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+		blendStateDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+		blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
+		if (FAILED(mDirect3DDevice->CreateBlendState(&blendStateDescription, &mAlphaToCoverageState)))
+			throw ER_CoreException("ER_RHI_DX11: ID3D11Device::CreateBlendState() failed while create alpha-to-coverage blend state.");
+
+		blendStateDescription.RenderTarget[0].BlendEnable = FALSE;
+		blendStateDescription.AlphaToCoverageEnable = FALSE;
+		if (FAILED(mDirect3DDevice->CreateBlendState(&blendStateDescription, &mNoBlendState)))
+			throw ER_CoreException("ER_RHI_DX11: ID3D11Device::CreateBlendState() failed while create no blend state.");
+	}
+
 }

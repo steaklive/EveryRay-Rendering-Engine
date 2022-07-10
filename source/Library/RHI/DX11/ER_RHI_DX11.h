@@ -51,7 +51,7 @@ namespace Library
 		virtual ER_RHI_DEPTH_STENCIL_STATE GetCurrentDepthStencilState() override;
 
 		virtual void SetBlendState(ER_RHI_BLEND_STATE aBS, const float BlendFactor[4], UINT SampleMask) override;
-		virtual ER_RHI_BLEND_STATE GetCurrentBlendState() override;
+		virtual ER_RHI_BLEND_STATE GetCurrentBlendState() override; //TODO
 
 		virtual void SetRasterizerState(ER_RHI_RASTERIZER_STATE aRS) override;
 		virtual ER_RHI_RASTERIZER_STATE GetCurrentRasterizerState() override;
@@ -91,6 +91,7 @@ namespace Library
 		ER_RHI_PRIMITIVE_TYPE GetTopologyType(D3D11_PRIMITIVE_TOPOLOGY aType);
 
 		void CreateSamplerStates();
+		void CreateBlendStates();
 		void CreateRasterizerStates();
 		void CreateDepthStencilStates();
 
@@ -118,6 +119,10 @@ namespace Library
 		ID3D11SamplerState* AnisotropicBorderSS = nullptr;
 		ID3D11SamplerState* ShadowSS = nullptr;
 		std::map<ER_RHI_SAMPLER_STATE, ID3D11SamplerState*> mSamplerStates;
+
+		ID3D11BlendState* mNoBlendState = nullptr;
+		ID3D11BlendState* mAlphaToCoverageState = nullptr;
+		std::map<ER_RHI_BLEND_STATE, ID3D11BlendState*> mBlendStates;
 
 		ER_RHI_Viewport mMainViewport;
 	};
