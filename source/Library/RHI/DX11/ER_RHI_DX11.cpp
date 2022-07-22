@@ -1,6 +1,7 @@
 #include "ER_RHI_DX11.h"
 #include "ER_RHI_DX11_GPUBuffer.h"
 #include "ER_RHI_DX11_GPUTexture.h"
+#include "ER_RHI_DX11_GPUShader.h"
 #include "..\..\ER_CoreException.h"
 
 #define DX11_MAX_BOUND_RENDER_TARGETS_VIEWS 8
@@ -420,8 +421,10 @@ namespace Library
 		case ER_RHI_SHADER_TYPE::ER_GEOMETRY:
 			mDirect3DDeviceContext->GSSetShaderResources(startSlot, srCount, SRs);
 			break;
-		case ER_RHI_SHADER_TYPE::ER_TESSELLATION:
+		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_HULL:
 			mDirect3DDeviceContext->HSSetShaderResources(startSlot, srCount, SRs);
+			break;
+		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_DOMAIN:
 			mDirect3DDeviceContext->DSSetShaderResources(startSlot, srCount, SRs);
 			break;
 		case ER_RHI_SHADER_TYPE::ER_PIXEL:
@@ -455,7 +458,8 @@ namespace Library
 		case ER_RHI_SHADER_TYPE::ER_GEOMETRY:
 			throw ER_CoreException("ER_RHI_DX11: Binding UAV to this shader stage is not possible.");
 			break;
-		case ER_RHI_SHADER_TYPE::ER_TESSELLATION:
+		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_HULL:
+		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_DOMAIN:
 			throw ER_CoreException("ER_RHI_DX11: Binding UAV to this shader stage is not possible.");
 			break;
 		case ER_RHI_SHADER_TYPE::ER_PIXEL:
@@ -489,8 +493,10 @@ namespace Library
 		case ER_RHI_SHADER_TYPE::ER_GEOMETRY:
 			mDirect3DDeviceContext->GSSetConstantBuffers(startSlot, cbsCount, CBs);
 			break;
-		case ER_RHI_SHADER_TYPE::ER_TESSELLATION:
+		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_HULL:
 			mDirect3DDeviceContext->HSSetConstantBuffers(startSlot, cbsCount, CBs);
+			break;
+		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_DOMAIN:
 			mDirect3DDeviceContext->DSSetConstantBuffers(startSlot, cbsCount, CBs);
 			break;
 		case ER_RHI_SHADER_TYPE::ER_PIXEL:
@@ -498,6 +504,57 @@ namespace Library
 			break;
 		case ER_RHI_SHADER_TYPE::ER_COMPUTE:
 			mDirect3DDeviceContext->CSSetConstantBuffers(startSlot, cbsCount, CBs);
+			break;
+		}
+	}
+
+	void ER_RHI_DX11::SetShader(ER_RHI_GPUShader* aShader)
+	{
+		assert(aShader);
+
+		switch (aShader->mShaderType)
+		{
+		case ER_RHI_SHADER_TYPE::ER_VERTEX:
+		{
+			ID3D11VertexShader* vs = static_cast<ID3D11VertexShader*>(aShader->GetShaderObject());
+			assert(vs);
+			mDirect3DDeviceContext->VSSetShader(vs, NULL, NULL);
+		}
+			break;
+		case ER_RHI_SHADER_TYPE::ER_GEOMETRY:
+		{
+			ID3D11GeometryShader* gs = static_cast<ID3D11GeometryShader*>(aShader->GetShaderObject());
+			assert(gs);
+			mDirect3DDeviceContext->GSSetShader(gs, NULL, NULL);
+		}
+			break;
+		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_HULL:
+		{
+			ID3D11HullShader* hs = static_cast<ID3D11HullShader*>(aShader->GetShaderObject());
+			assert(hs);
+			mDirect3DDeviceContext->HSSetShader(hs, NULL, NULL);
+		}
+			break;
+		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_DOMAIN:
+		{
+			ID3D11DomainShader* ds = static_cast<ID3D11DomainShader*>(aShader->GetShaderObject());
+			assert(ds);
+			mDirect3DDeviceContext->DSSetShader(ds, NULL, NULL);
+		}
+			break;
+		case ER_RHI_SHADER_TYPE::ER_PIXEL:
+		{
+			ID3D11PixelShader* ps = static_cast<ID3D11PixelShader*>(aShader->GetShaderObject());
+			assert(ps);
+			mDirect3DDeviceContext->PSSetShader(ps, NULL, NULL);
+		}
+			break;
+		case ER_RHI_SHADER_TYPE::ER_COMPUTE:
+		{
+			ID3D11ComputeShader* cs = static_cast<ID3D11ComputeShader*>(aShader->GetShaderObject());
+			assert(cs);
+			mDirect3DDeviceContext->CSSetShader(cs, NULL, NULL);
+		}
 			break;
 		}
 	}
@@ -526,8 +583,10 @@ namespace Library
 		case ER_RHI_SHADER_TYPE::ER_GEOMETRY:
 			mDirect3DDeviceContext->GSSetSamplers(startSlot, ssCount, SS);
 			break;
-		case ER_RHI_SHADER_TYPE::ER_TESSELLATION:
+		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_HULL:
 			mDirect3DDeviceContext->HSSetSamplers(startSlot, ssCount, SS);
+			break;
+		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_DOMAIN:
 			mDirect3DDeviceContext->DSSetSamplers(startSlot, ssCount, SS);
 			break;
 		case ER_RHI_SHADER_TYPE::ER_PIXEL:
@@ -591,6 +650,74 @@ namespace Library
 		D3D11_PRIMITIVE_TOPOLOGY currentTopology;
 		mDirect3DDeviceContext->IAGetPrimitiveTopology(&currentTopology);
 		return GetTopologyType(currentTopology);
+	}
+
+	void ER_RHI_DX11::UnbindResourcesFromShader(ER_RHI_SHADER_TYPE aShaderType, bool unbindShader)
+	{
+		auto context = GetContext();
+
+		ID3D11ShaderResourceView* nullSRV[] = { NULL };
+		ID3D11Buffer* nullCBs[] = { NULL };
+		ID3D11SamplerState* nullSSs[] = { NULL };
+		ID3D11UnorderedAccessView* nullUAV[] = { NULL };
+
+		switch (aShaderType)
+		{
+		case ER_RHI_SHADER_TYPE::ER_VERTEX:
+		{
+			if (unbindShader)
+				context->VSSetShader(NULL, NULL, NULL);
+			context->VSSetShaderResources(0, 1, nullSRV);
+			context->VSSetConstantBuffers(0, 1, nullCBs);
+		}
+		break;
+		case ER_RHI_SHADER_TYPE::ER_GEOMETRY:
+		{
+			if (unbindShader)
+				context->GSSetShader(NULL, NULL, NULL);
+			context->GSSetShaderResources(0, 1, nullSRV);
+			context->GSSetConstantBuffers(0, 1, nullCBs);
+			context->GSSetSamplers(0, 1, nullSSs);
+		}
+		break;
+		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_HULL:
+		{
+			if (unbindShader)
+				context->HSSetShader(NULL, NULL, NULL);
+			context->HSSetShaderResources(0, 1, nullSRV);
+			context->HSSetConstantBuffers(0, 1, nullCBs);
+			context->HSSetSamplers(0, 1, nullSSs);
+		}
+		break;
+		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_DOMAIN:
+		{
+			if (unbindShader)
+				context->DSSetShader(NULL, NULL, NULL);
+			context->DSSetShaderResources(0, 1, nullSRV);
+			context->DSSetConstantBuffers(0, 1, nullCBs);
+			context->DSSetSamplers(0, 1, nullSSs);
+		}
+		break;
+		case ER_RHI_SHADER_TYPE::ER_PIXEL:
+		{
+			if (unbindShader)
+				context->PSSetShader(NULL, NULL, NULL);
+			context->PSSetShaderResources(0, 1, nullSRV);
+			context->PSSetConstantBuffers(0, 1, nullCBs);
+			context->PSSetSamplers(0, 1, nullSSs);
+		}
+		break;
+		case ER_RHI_SHADER_TYPE::ER_COMPUTE:
+		{
+			if (unbindShader)
+				context->CSSetShader(NULL, NULL, NULL);
+			context->CSSetShaderResources(0, 1, nullSRV);
+			context->CSSetConstantBuffers(0, 1, nullCBs);
+			context->CSSetSamplers(0, 1, nullSSs);
+			context->CSSetUnorderedAccessViews(0, 1, nullUAV, 0);
+		}
+		break;
+		}
 	}
 
 	void ER_RHI_DX11::UpdateBuffer(ER_RHI_GPUBuffer* aBuffer, void* aData, int dataSize)

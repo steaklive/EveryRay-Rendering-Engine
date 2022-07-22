@@ -19,7 +19,8 @@ namespace Library
 	{
 		ER_VERTEX,
 		ER_GEOMETRY,
-		ER_TESSELLATION,
+		ER_TESSELLATION_HULL,
+		ER_TESSELLATION_DOMAIN,
 		ER_PIXEL,
 		ER_COMPUTE
 	};
@@ -167,6 +168,7 @@ namespace Library
 	class ER_RHI_GPUResource;
 	class ER_RHI_GPUTexture;
 	class ER_RHI_GPUBuffer;
+	class ER_RHI_GPUShader;
 
 	class ER_RHI
 	{
@@ -229,6 +231,7 @@ namespace Library
 		virtual void SetViewport(ER_RHI_Viewport* aViewport) = 0;
 		virtual ER_RHI_Viewport* GetCurrentViewport() = 0;
 
+		virtual void SetShader(ER_RHI_GPUShader* aShader) = 0;
 		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot = 0) = 0;
 		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot = 0) = 0;
 		virtual void SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot = 0) = 0;
@@ -239,8 +242,7 @@ namespace Library
 		virtual void SetInputLayout(ER_RHI_InputLayout* aIL) = 0;
 		virtual void SetTopologyType(ER_RHI_PRIMITIVE_TYPE aType) = 0;
 
-		//TODO virtual void SetShader(ER_RHI_Shader* aShader) = 0;
-		virtual void UnbindResourcesFromShader(ER_RHI_SHADER_TYPE aShaderType) = 0;
+		virtual void UnbindResourcesFromShader(ER_RHI_SHADER_TYPE aShaderType, bool unbindShader = true) = 0;
 
 		virtual void UpdateBuffer(ER_RHI_GPUBuffer* aBuffer, void* aData, int dataSize) = 0;
 
@@ -300,5 +302,17 @@ namespace Library
 		virtual int GetSize() = 0;
 		virtual UINT GetStride() = 0;
 		virtual ER_RHI_FORMAT GetFormatRhi() = 0;
+	};
+
+	class ER_RHI_GPUShader
+	{
+	public:
+		ER_RHI_GPUShader();
+		virtual ~ER_RHI_GPUShader();
+
+		virtual void CompileShader(ER_RHI* aRHI, const std::string& path, const std::string& shaderEntry, ER_RHI_SHADER_TYPE type) = 0;
+		virtual void* GetShaderObject() = 0;
+
+		ER_RHI_SHADER_TYPE mShaderType;
 	};
 }

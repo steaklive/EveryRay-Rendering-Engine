@@ -285,6 +285,9 @@
     <ClInclude Include="RHI\DX11\ER_RHI_DX11_GPUTexture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RHI\DX11\ER_RHI_DX11_GPUShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -468,6 +471,9 @@
       <Filter>Source Files\Graphics\RHI\DX11</Filter>
     </ClCompile>
     <ClCompile Include="RHI\DX11\ER_RHI_DX11_GPUTexture.cpp">
+      <Filter>Source Files\Graphics\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="RHI\DX11\ER_RHI_DX11_GPUShader.cpp">
       <Filter>Source Files\Graphics\RHI\DX11</Filter>
     </ClCompile>
   </ItemGroup>

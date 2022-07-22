@@ -59,7 +59,7 @@ namespace Library
 		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture) override;
 
 		virtual void PresentGraphics() override;
-		virtual void PresentCompute() override; //TODO
+		virtual void PresentCompute() override; //not supported on DX11
 
 		virtual void SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr, ER_RHI_GPUTexture* aUAV = nullptr) override;
 		virtual void SetDepthTarget(ER_RHI_GPUTexture* aDepthTarget) override;
@@ -80,7 +80,7 @@ namespace Library
 		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot = 0) override;
 		virtual void SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot = 0) override;
 
-		//TODO virtual void SetShader(ER_RHI_Shader* aShader) = 0;
+		virtual void SetShader(ER_RHI_GPUShader* aShader) override;
 		virtual void SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot = 0) override;
 		virtual void SetInputLayout(ER_RHI_InputLayout* aIL) override;
 		virtual void SetIndexBuffer(ER_RHI_GPUBuffer* aBuffer, UINT offset = 0) override;
@@ -89,7 +89,7 @@ namespace Library
 		virtual void SetTopologyType(ER_RHI_PRIMITIVE_TYPE aType) override;
 		virtual ER_RHI_PRIMITIVE_TYPE GetCurrentTopologyType() override;
 
-		virtual void UnbindResourcesFromShader(ER_RHI_SHADER_TYPE aShaderType) override;
+		virtual void UnbindResourcesFromShader(ER_RHI_SHADER_TYPE aShaderType, bool unbindShader = true) override;
 
 		virtual void UpdateBuffer(ER_RHI_GPUBuffer* aBuffer, void* aData, int dataSize) override;
 		
