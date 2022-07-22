@@ -14,7 +14,6 @@
 
 #include "Common.h"
 #include "ER_RenderingObject.h"
-#include "ER_GPUTexture.h"
 #include "ConstantBuffer.h"
 
 namespace Library

@@ -243,91 +243,64 @@ namespace Library
 		std::string errorMessage = mModel->GetFileName() + " of mesh index: " + std::to_string(meshIndex);
 
 		std::string texType;
-		ID3D11ShaderResourceView** resource;
+		ER_RHI_GPUTexture* resource;
 
 		switch (type)
 		{
 		case TextureType::TextureTypeDifffuse:
 			texType = "Albedo Texture";
-			resource = &(mMeshesTextureBuffers[meshIndex].AlbedoMap);
+			resource = (mMeshesTextureBuffers[meshIndex].AlbedoMap);
 			break;
 		case TextureType::TextureTypeNormalMap:
 			texType = "Normal Texture";
-			resource = &(mMeshesTextureBuffers[meshIndex].NormalMap);
+			resource = (mMeshesTextureBuffers[meshIndex].NormalMap);
 			break;
 		case TextureType::TextureTypeSpecularMap:
 			texType = "Specular Texture";
-			resource = &(mMeshesTextureBuffers[meshIndex].SpecularMap);
+			resource = (mMeshesTextureBuffers[meshIndex].SpecularMap);
 			break;
 		case TextureType::TextureTypeEmissive:
 			texType = "Metallic Texture";
-			resource = &(mMeshesTextureBuffers[meshIndex].MetallicMap);
+			resource = (mMeshesTextureBuffers[meshIndex].MetallicMap);
 			break;	
 		case TextureType::TextureTypeDisplacementMap:
 			texType = "Roughness Texture";
-			resource = &(mMeshesTextureBuffers[meshIndex].RoughnessMap);
+			resource = (mMeshesTextureBuffers[meshIndex].RoughnessMap);
 			break;
 		case TextureType::TextureTypeHeightmap:
 			texType = "Height Texture";
-			resource = &(mMeshesTextureBuffers[meshIndex].HeightMap);
+			resource = (mMeshesTextureBuffers[meshIndex].HeightMap);
 			break;	
 		case TextureType::TextureTypeLightMap:
 			texType = "Reflection Mask Texture";
-			resource = &(mMeshesTextureBuffers[meshIndex].ReflectionMaskMap);
+			resource = (mMeshesTextureBuffers[meshIndex].ReflectionMaskMap);
 			break;
 		}
 
-		bool failed = false;
-		if (ddsLoader)
-		{
-			if (FAILED(DirectX::CreateDDSTextureFromFile(mCore->Direct3DDevice(), path.c_str(), nullptr, resource)))
-			{
-				std::string status = "Failed to load DDS Texture" + texType;
-				status += errorMessage;
-				std::cout << status;
-				failed = true;
-			}
-		}
-		else if (tgaLoader)
-		{
-			//TODO This will not work if accessed from multiple threads, since we need a device context for TGA loader (not thread safe)
-			TGATextureLoader* loader = new TGATextureLoader();
-			if (!loader->Initialize(mCore->Direct3DDevice(), mCore->Direct3DDeviceContext(), path.c_str(), resource))
-			{
-				std::string status = "Failed to load TGA Texture" + texType;
-				status += errorMessage;
-				std::cout << status;
-				failed = true;
-			}
-			loader->Shutdown();
-		}
-		else if (FAILED(DirectX::CreateWICTextureFromFile(mCore->Direct3DDevice(), mCore->Direct3DDeviceContext(), path.c_str(), nullptr, resource)))
-		{
-			std::string status = "Failed to load WIC Texture" + texType;
-			status += errorMessage;
-			std::cout << status;
-			failed = true;
-		}
+		ER_RHI* rhi = mCore->GetRHI();
+		resource = new ER_RHI_GPUTexture();
+		resource->CreateGPUTextureResource(rhi, path, true);
 
-		if (failed) {
-			switch (type)
-			{
-			case TextureType::TextureTypeDifffuse:
-				LoadTexture(type, ER_Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), meshIndex);
-				break;
-			case TextureType::TextureTypeNormalMap:
-				LoadTexture(type, ER_Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"), meshIndex);
-				break;
-			case TextureType::TextureTypeEmissive:
-				LoadTexture(type, ER_Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), meshIndex);
-				break;
-			case TextureType::TextureTypeDisplacementMap:
-				LoadTexture(type, ER_Utility::GetFilePath(L"content\\textures\\emptyRoughness.png"), meshIndex);
-			default:
-				LoadTexture(type, ER_Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), meshIndex);
-				break;
-			}
-		}
+		//TODO fallback
+		//if (failed) {
+		//	switch (type)
+		//	{
+		//	case TextureType::TextureTypeDifffuse:
+		//		LoadTexture(type, ER_Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), meshIndex);
+		//		break;
+		//	case TextureType::TextureTypeNormalMap:
+		//		LoadTexture(type, ER_Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"), meshIndex);
+		//		break;
+		//	case TextureType::TextureTypeEmissive:
+		//		LoadTexture(type, ER_Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), meshIndex);
+		//		break;
+		//	case TextureType::TextureTypeDisplacementMap:
+		//		LoadTexture(type, ER_Utility::GetFilePath(L"content\\textures\\emptyRoughness.png"), meshIndex);
+		//	default:
+		//		LoadTexture(type, ER_Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), meshIndex);
+		//		break;
+		//	}
+		//}
 	}
 
 	//TODO refactor (remove duplicated code)
@@ -396,8 +369,9 @@ namespace Library
 	{
 		bool isForwardPass = materialName == ER_MaterialHelper::forwardLightingNonMaterialName && mIsForwardShading;
 
-		ID3D11DeviceContext* context = mCore->Direct3DDeviceContext();
-		context->IASetPrimitiveTopology(mWireframeMode ? D3D11_PRIMITIVE_TOPOLOGY_LINELIST : D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		ER_RHI* rhi = mCore->GetRHI();
+
+		rhi->SetTopologyType(mWireframeMode ? ER_PRIMITIVE_TOPOLOGY_LINELIST : ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
 
 		if (mMaterials.find(materialName) == mMaterials.end() && !isForwardPass)
 			return;
@@ -411,21 +385,10 @@ namespace Library
 			for (int i = (isSpecificMesh) ? meshIndex : 0; i < ((isSpecificMesh) ? meshIndex + 1 : mMeshesCount[lod]); i++)
 			{
 				if (mIsInstanced)
-				{
-					ID3D11Buffer* vertexBuffers[2] = { mMeshesRenderBuffers[lod][materialName][i]->VertexBuffer, mMeshesInstanceBuffers[lod][i]->InstanceBuffer };
-					UINT strides[2] = { mMeshesRenderBuffers[lod][materialName][i]->Stride, mMeshesInstanceBuffers[lod][i]->Stride };
-					UINT offsets[2] = { mMeshesRenderBuffers[lod][materialName][i]->Offset, mMeshesInstanceBuffers[lod][i]->Offset };
-
-					context->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
-					context->IASetIndexBuffer(mMeshesRenderBuffers[lod][materialName][i]->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-				}
+					rhi->SetVertexBuffers({ mMeshesRenderBuffers[lod][materialName][i]->VertexBuffer, mMeshesInstanceBuffers[lod][i]->InstanceBuffer });
 				else
-				{
-					UINT stride = mMeshesRenderBuffers[lod][materialName][i]->Stride;
-					UINT offset = mMeshesRenderBuffers[lod][materialName][i]->Offset;
-					context->IASetVertexBuffers(0, 1, &(mMeshesRenderBuffers[lod][materialName][i]->VertexBuffer), &stride, &offset);
-					context->IASetIndexBuffer(mMeshesRenderBuffers[lod][materialName][i]->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-				}
+					rhi->SetVertexBuffers({ mMeshesRenderBuffers[lod][materialName][i]->VertexBuffer });
+				rhi->SetIndexBuffer(mMeshesRenderBuffers[lod][materialName][i]->IndexBuffer);
 
 				// run prepare callbacks for non-special materials (specials are, i.e., shadow mapping, which are processed in their own systems)
 				if (!isForwardPass && !mMaterials[materialName]->IsSpecial())
@@ -440,12 +403,12 @@ namespace Library
 				if (mIsInstanced)
 				{
 					if (mInstanceCountToRender[lod] > 0)
-						context->DrawIndexedInstanced(mMeshesRenderBuffers[lod][materialName][i]->IndicesCount, mInstanceCountToRender[lod], 0, 0, 0);
+						rhi->DrawIndexedInstanced(mMeshesRenderBuffers[lod][materialName][i]->IndicesCount, mInstanceCountToRender[lod], 0, 0, 0);
 					else 
 						continue;
 				}
 				else
-					context->DrawIndexed(mMeshesRenderBuffers[lod][materialName][i]->IndicesCount, 0, 0);
+					rhi->DrawIndexed(mMeshesRenderBuffers[lod][materialName][i]->IndicesCount);
 			}
 		}
 	}
@@ -504,31 +467,20 @@ namespace Library
 		for (size_t i = 0; i < mMeshesCount[lod]; i++)
 		{
 			mMeshesInstanceBuffers[lod].push_back(new InstanceBufferData());
-			CreateInstanceBuffer(mCore->Direct3DDevice(), &mInstanceData[lod][0], MAX_INSTANCE_COUNT, &(mMeshesInstanceBuffers[lod][i]->InstanceBuffer));
+			CreateInstanceBuffer(&mInstanceData[lod][0], MAX_INSTANCE_COUNT, mMeshesInstanceBuffers[lod][i]->InstanceBuffer);
 			mMeshesInstanceBuffers[lod][i]->Stride = sizeof(InstancedData);
 		}
 	}
 	// new instancing code
-	void ER_RenderingObject::CreateInstanceBuffer(ID3D11Device* device, InstancedData* instanceData, UINT instanceCount, ID3D11Buffer** instanceBuffer)
+	void ER_RenderingObject::CreateInstanceBuffer(InstancedData* instanceData, UINT instanceCount, ER_RHI_GPUBuffer* instanceBuffer)
 	{
 		if (instanceCount > MAX_INSTANCE_COUNT)
 			throw ER_CoreException("Instances count limit is exceeded!");
 
-		D3D11_BUFFER_DESC instanceBufferDesc;
-		ZeroMemory(&instanceBufferDesc, sizeof(instanceBufferDesc));
-		instanceBufferDesc.ByteWidth = InstanceSize() * MAX_INSTANCE_COUNT;
-		instanceBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-		instanceBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		instanceBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-
-		D3D11_SUBRESOURCE_DATA instanceSubResourceData;
-		ZeroMemory(&instanceSubResourceData, sizeof(instanceSubResourceData));
-		instanceSubResourceData.pSysMem = instanceData;
-		if (FAILED(device->CreateBuffer(&instanceBufferDesc, &instanceSubResourceData, instanceBuffer)))
-		{
-			throw ER_CoreException("ID3D11Device::CreateBuffer() failed while creating InstanceBuffer in RenderObject.");
-		}
+		instanceBuffer = new ER_RHI_GPUBuffer();
+		instanceBuffer->CreateGPUBufferResource(mCore->GetRHI(), instanceData, MAX_INSTANCE_COUNT, InstanceSize(), true, ER_BIND_VERTEX_BUFFER);
 	}
+
 	// new instancing code
 	void ER_RenderingObject::UpdateInstanceBuffer(std::vector<InstancedData>& instanceData, int lod)
 	{
@@ -540,12 +492,7 @@ namespace Library
 			mInstanceCountToRender[lod] = instanceData.size();
 
 			// dynamically update instance buffer
-			D3D11_MAPPED_SUBRESOURCE mappedResource;
-			ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
-
-			mCore->Direct3DDeviceContext()->Map(mMeshesInstanceBuffers[lod][i]->InstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-			memcpy(mappedResource.pData, (instanceData.size() != 0) ? &instanceData[0] : NULL, InstanceSize() * mInstanceCountToRender[lod]);
-			mCore->Direct3DDeviceContext()->Unmap(mMeshesInstanceBuffers[lod][i]->InstanceBuffer, 0);
+			mCore->GetRHI()->UpdateBuffer(mMeshesInstanceBuffers[lod][i]->InstanceBuffer, &instanceData[0], InstanceSize() * mInstanceCountToRender[lod]);
 		}
 	}
 

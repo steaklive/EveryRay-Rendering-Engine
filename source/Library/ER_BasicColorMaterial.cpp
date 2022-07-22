@@ -1,5 +1,4 @@
 #include "ER_BasicColorMaterial.h"
-#include "ShaderCompiler.h"
 #include "ER_Utility.h"
 #include "ER_CoreException.h"
 #include "ER_Core.h"
@@ -15,9 +14,9 @@ namespace Library
 		//TODO instanced support
 		if (shaderFlags & HAS_VERTEX_SHADER)
 		{
-			D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
+			ER_RHI_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 			{
-				{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+				{ "POSITION", 0, ER_FORMAT_R32G32B32A32_FLOAT, 0, 0, true, 0 }
 			};
 			ER_Material::CreateVertexShader("content\\shaders\\BasicColor.hlsl", inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
 		}
@@ -36,7 +35,7 @@ namespace Library
 
 	void ER_BasicColorMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex)
 	{
-		auto context = ER_Material::GetCore()->Direct3DDeviceContext();
+		auto rhi = ER_Material::GetCore()->GetRHI();
 		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->Services().GetService(ER_Camera::TypeIdClass()));
 		
 		assert(aObj);
@@ -50,14 +49,14 @@ namespace Library
 		mConstantBuffer.ApplyChanges(context);
 		ID3D11Buffer* CBs[1] = { mConstantBuffer.Buffer() };
 
-		context->VSSetConstantBuffers(0, 1, CBs);
-		context->PSSetConstantBuffers(0, 1, CBs);
+		rhi->SetConstantBuffers(ER_VERTEX, { CBs });
+		rhi->SetConstantBuffers(ER_PIXEL, { CBs });
 	}
 
 	// non-callback method for non-"RenderingObject" draws
 	void ER_BasicColorMaterial::PrepareForRendering(const XMMATRIX& worldTransform, const XMFLOAT4& color)
 	{
-		auto context = ER_Material::GetCore()->Direct3DDeviceContext();
+		auto rhi = ER_Material::GetCore()->GetRHI();
 		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->Services().GetService(ER_Camera::TypeIdClass()));
 
 		assert(camera);
@@ -70,8 +69,8 @@ namespace Library
 		mConstantBuffer.ApplyChanges(context);
 		ID3D11Buffer* CBs[1] = { mConstantBuffer.Buffer() };
 
-		context->VSSetConstantBuffers(0, 1, CBs);
-		context->PSSetConstantBuffers(0, 1, CBs);
+		rhi->SetConstantBuffers(ER_VERTEX, { CBs });
+		rhi->SetConstantBuffers(ER_PIXEL, { CBs });
 	}
 
 	void ER_BasicColorMaterial::CreateVertexBuffer(const ER_Mesh& mesh, ID3D11Buffer** vertexBuffer)

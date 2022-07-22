@@ -242,7 +242,6 @@
     <ClInclude Include="SamplerStates.h" />
     <ClInclude Include="ER_Scene.h" />
     <ClInclude Include="ServiceContainer.h" />
-    <ClInclude Include="ShaderCompiler.h" />
     <ClInclude Include="ER_ShadowMapper.h" />
     <ClInclude Include="ER_Skybox.h" />
     <ClInclude Include="SpotLight.h" />

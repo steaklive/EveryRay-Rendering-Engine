@@ -161,8 +161,15 @@ namespace Library
 	class ER_RHI_InputLayout
 	{
 	public:
-		ER_RHI_InputLayout();
+		ER_RHI_InputLayout(ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount)
+		{
+			mInputElementDescriptions = inputElementDescriptions;
+			mInputElementDescriptionCount = inputElementDescriptionCount;
+		};
 		virtual ~ER_RHI_InputLayout();
+
+		ER_RHI_INPUT_ELEMENT_DESC* mInputElementDescriptions;
+		UINT mInputElementDescriptionCount;
 	};
 	
 	class ER_RHI_GPUResource;
@@ -310,7 +317,7 @@ namespace Library
 		ER_RHI_GPUShader();
 		virtual ~ER_RHI_GPUShader();
 
-		virtual void CompileShader(ER_RHI* aRHI, const std::string& path, const std::string& shaderEntry, ER_RHI_SHADER_TYPE type) = 0;
+		virtual void CompileShader(ER_RHI* aRHI, const std::string& path, const std::string& shaderEntry, ER_RHI_SHADER_TYPE type, ER_RHI_InputLayout* aIL = nullptr) = 0;
 		virtual void* GetShaderObject() = 0;
 
 		ER_RHI_SHADER_TYPE mShaderType;

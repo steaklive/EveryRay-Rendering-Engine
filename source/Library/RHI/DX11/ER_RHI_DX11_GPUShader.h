@@ -9,7 +9,7 @@ namespace Library
 		ER_RHI_DX11_GPUShader();
 		virtual ~ER_RHI_DX11_GPUShader();
 
-		virtual void CompileShader(ER_RHI* aRHI, const std::string& path, const std::string& shaderEntry, ER_RHI_SHADER_TYPE type) override;
+		virtual void CompileShader(ER_RHI* aRHI, const std::string& path, const std::string& shaderEntry, ER_RHI_SHADER_TYPE type, ER_RHI_InputLayout* aIL = nullptr) override;
 		virtual void* GetShaderObject() override;
 
 	private:
