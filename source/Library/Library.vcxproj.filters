@@ -120,9 +120,6 @@
     <ClInclude Include="ShaderCompiler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ER_GPUTexture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="OceanSimulator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -136,9 +133,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ER_CPUProfiler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ER_GPUBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ER_LightProbe.h">
@@ -285,6 +279,12 @@
     <ClInclude Include="RHI\DX11\ER_RHI_DX11.h">
       <Filter>Source Files\Graphics\RHI\DX11</Filter>
     </ClInclude>
+    <ClInclude Include="RHI\DX11\ER_RHI_DX11_GPUBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\DX11\ER_RHI_DX11_GPUTexture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -316,12 +316,6 @@
     </ClCompile>
     <ClCompile Include="TGATextureLoader.cpp">
       <Filter>Source Files\Helpers</Filter>
-    </ClCompile>
-    <ClCompile Include="ER_GPUBuffer.cpp">
-      <Filter>Source Files\Graphics\RHI</Filter>
-    </ClCompile>
-    <ClCompile Include="ER_GPUTexture.cpp">
-      <Filter>Source Files\Graphics\RHI</Filter>
     </ClCompile>
     <ClCompile Include="ER_LightProbe.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
@@ -468,6 +462,12 @@
       <Filter>Source Files\Core</Filter>
     </ClCompile>
     <ClCompile Include="RHI\DX11\ER_RHI_DX11.cpp">
+      <Filter>Source Files\Graphics\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="RHI\DX11\ER_RHI_DX11_GPUBuffer.cpp">
+      <Filter>Source Files\Graphics\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="RHI\DX11\ER_RHI_DX11_GPUTexture.cpp">
       <Filter>Source Files\Graphics\RHI\DX11</Filter>
     </ClCompile>
   </ItemGroup>

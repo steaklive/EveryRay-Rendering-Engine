@@ -1,4 +1,6 @@
 #include "ER_RHI_DX11.h"
+#include "ER_RHI_DX11_GPUBuffer.h"
+#include "ER_RHI_DX11_GPUTexture.h"
 #include "..\..\ER_CoreException.h"
 
 #define DX11_MAX_BOUND_RENDER_TARGETS_VIEWS 8
@@ -206,30 +208,85 @@ namespace Library
 		mDirect3DDeviceContext->ClearDepthStencilView(mMainDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
 
-	void ER_RHI_DX11::ClearRenderTarget(ER_GPUTexture* aRenderTarget, float colors[4])
+	void ER_RHI_DX11::ClearRenderTarget(ER_RHI_GPUTexture* aRenderTarget, float colors[4])
 	{
 		assert(aRenderTarget);
-		mDirect3DDeviceContext->ClearRenderTargetView(aRenderTarget->GetRTV(), colors);
+		ID3D11RenderTargetView* rtv = static_cast<ID3D11RenderTargetView*>(aRenderTarget->GetRTV());
+
+		mDirect3DDeviceContext->ClearRenderTargetView(rtv, colors);
 	}
 
-	void ER_RHI_DX11::ClearDepthStencilTarget(ER_GPUTexture* aDepthTarget, float depth, UINT stencil /*= 0*/)
+	void ER_RHI_DX11::ClearDepthStencilTarget(ER_RHI_GPUTexture* aDepthTarget, float depth, UINT stencil /*= 0*/)
 	{
 		assert(aDepthTarget);
-		mDirect3DDeviceContext->ClearDepthStencilView(aDepthTarget->GetDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, depth, stencil);
+		ID3D11DepthStencilView* pDepthStencilView = static_cast<ID3D11DepthStencilView*>(aDepthTarget->GetDSV());
+		assert(pDepthStencilView);
+		mDirect3DDeviceContext->ClearDepthStencilView(pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, depth, stencil);
 	}
 
-	void ER_RHI_DX11::ClearUAV(ER_GPUTexture* aRenderTarget, float colors[4])
+	void ER_RHI_DX11::ClearUAV(ER_RHI_GPUResource* aRenderTarget, float colors[4])
 	{
 		assert(aRenderTarget);
-		mDirect3DDeviceContext->ClearUnorderedAccessViewFloat(aRenderTarget->GetUAV(), colors);
+		ID3D11UnorderedAccessView* pUnorderedAccessView = static_cast<ID3D11UnorderedAccessView*>(aRenderTarget->GetUAV());
+		assert(pUnorderedAccessView);
+		mDirect3DDeviceContext->ClearUnorderedAccessViewFloat(pUnorderedAccessView, colors);
 	}
 
-	void ER_RHI_DX11::CopyBuffer(ER_GPUBuffer* aDestBuffer, ER_GPUBuffer* aSrcBuffer)
+	void ER_RHI_DX11::CreateInputLayout(ER_RHI_InputLayout* aOutInputLayout, ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount, const void* shaderBytecodeWithInputSignature, UINT byteCodeLength)
+	{
+		assert(inputElementDescriptions);
+		aOutInputLayout = new ER_RHI_DX11_InputLayout();
+		D3D11_INPUT_ELEMENT_DESC* descriptions = new D3D11_INPUT_ELEMENT_DESC[inputElementDescriptionCount];
+		for (UINT i = 0; i < inputElementDescriptionCount; i++)
+		{
+			descriptions[i].SemanticName = inputElementDescriptions[i].SemanticName;
+			descriptions[i].SemanticIndex = inputElementDescriptions[i].SemanticIndex;
+			descriptions[i].Format = GetFormat(inputElementDescriptions[i].Format);
+			descriptions[i].InputSlot = inputElementDescriptions[i].InputSlot;
+			descriptions[i].AlignedByteOffset = inputElementDescriptions[i].AlignedByteOffset;
+			descriptions[i].InputSlotClass = inputElementDescriptions[i].IsPerVertex ? D3D11_INPUT_PER_VERTEX_DATA : D3D11_INPUT_PER_INSTANCE_DATA;
+			descriptions[i].InstanceDataStepRate = inputElementDescriptions[i].InstanceDataStepRate;
+		}
+		mDirect3DDevice->CreateInputLayout(descriptions, inputElementDescriptionCount, shaderBytecodeWithInputSignature, byteCodeLength, &(static_cast<ER_RHI_DX11_InputLayout*>(aOutInputLayout)->mInputLayout));
+		DeleteObject(descriptions);
+	}
+
+	void ER_RHI_DX11::CreateTexture(ER_RHI_GPUTexture* aOutTexture, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags /*= ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET*/, int mip /*= 1*/, int depth /*= -1*/, int arraySize /*= 1*/, bool isCubemap /*= false*/, int cubemapArraySize /*= -1*/)
+	{
+		assert(aOutTexture);
+		aOutTexture->CreateGPUTextureResource(this, width, height, samples, format, bindFlags, mip, depth, arraySize, isCubemap, cubemapArraySize);
+	}
+
+	void ER_RHI_DX11::CreateTexture(ER_RHI_GPUTexture* aOutTexture, const std::string& aPath, bool isFullPath /*= false*/)
+	{
+		assert(aOutTexture);
+		aOutTexture->CreateGPUTextureResource(this, aPath, isFullPath);
+	}
+
+	void ER_RHI_DX11::CreateTexture(ER_RHI_GPUTexture* aOutTexture, const std::wstring& aPath, bool isFullPath /*= false*/)
+	{
+		assert(aOutTexture);
+		aOutTexture->CreateGPUTextureResource(this, aPath, isFullPath);
+	}
+
+	void ER_RHI_DX11::CreateBuffer(ER_RHI_GPUBuffer* aOutBuffer, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic /*= false*/, ER_RHI_BIND_FLAG bindFlags /*= 0*/, UINT cpuAccessFlags /*= 0*/, UINT miscFlags /*= 0*/, ER_RHI_FORMAT format /*= ER_FORMAT_UNKNOWN*/)
+	{
+		assert(aOutBuffer);
+		aOutBuffer->CreateGPUBufferResource(this, aData, objectsCount, byteStride, isDynamic, bindFlags, cpuAccessFlags, miscFlags, format);
+	}
+
+	void ER_RHI_DX11::CopyBuffer(ER_RHI_GPUBuffer* aDestBuffer, ER_RHI_GPUBuffer* aSrcBuffer)
 	{
 		assert(aDestBuffer);
 		assert(aSrcBuffer);
 
-		mDirect3DDeviceContext->CopyResource(aDestBuffer->GetBuffer(), aSrcBuffer->GetBuffer());
+		ID3D11Resource* dstResource = static_cast<ID3D11Resource*>(aDestBuffer->GetBuffer());
+		ID3D11Resource* srcResource = static_cast<ID3D11Resource*>(aSrcBuffer->GetBuffer());
+		
+		assert(dstResource);
+		assert(srcResource);
+
+		mDirect3DDeviceContext->CopyResource(dstResource, srcResource);
 	}
 
 	void ER_RHI_DX11::Draw(UINT VertexCount)
@@ -265,10 +322,13 @@ namespace Library
 		mDirect3DDeviceContext->Dispatch(ThreadGroupCountX, ThreadGroupCountY, ThreadGroupCountZ);
 	}
 
-	void ER_RHI_DX11::GenerateMips(ER_GPUTexture* aTexture)
+	void ER_RHI_DX11::GenerateMips(ER_RHI_GPUTexture* aTexture)
 	{
 		assert(aTexture);
-		mDirect3DDeviceContext->GenerateMips(aTexture->GetSRV());
+		ID3D11ShaderResourceView* pShaderResourceView = static_cast<ID3D11ShaderResourceView*>(aTexture->GetSRV());
+		assert(pShaderResourceView);
+
+		mDirect3DDeviceContext->GenerateMips(pShaderResourceView);
 	}
 
 	void ER_RHI_DX11::PresentGraphics()
@@ -278,7 +338,7 @@ namespace Library
 			throw ER_CoreException("ER_RHI_DX11: IDXGISwapChain::Present() failed.", hr);
 	}
 
-	void ER_RHI_DX11::SetRenderTargets(const std::vector<ER_GPUTexture*>& aRenderTargets, ER_GPUTexture* aDepthTarget /*= nullptr*/, ER_GPUTexture* aUAV /*= nullptr*/)
+	void ER_RHI_DX11::SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget /*= nullptr*/, ER_RHI_GPUTexture* aUAV /*= nullptr*/)
 	{
 		if (!aUAV)
 		{
@@ -290,25 +350,43 @@ namespace Library
 			for (UINT i = 0; i < rtCount; i++)
 			{
 				assert(aRenderTargets[i]);
-				RTVs[i] = aRenderTargets[i]->GetRTV();
+				RTVs[i] = static_cast<ID3D11RenderTargetView*>(aRenderTargets[i]->GetRTV());
+				assert(RTVs[i]);
 			}
+			if (!aDepthTarget)
+			{
+				ID3D11DepthStencilView* DSV = static_cast<ID3D11DepthStencilView*>(aDepthTarget->GetDSV());
+				mDirect3DDeviceContext->OMSetRenderTargets(rtCount, RTVs, DSV);
+			}
+			else
+				mDirect3DDeviceContext->OMSetRenderTargets(rtCount, RTVs, NULL);
 
-			mDirect3DDeviceContext->OMSetRenderTargets(rtCount, RTVs, aDepthTarget ? aDepthTarget->GetDSV() : NULL);
 		}
 		else
 		{
 			ID3D11RenderTargetView* nullRTVs[1] = { NULL };
-			ID3D11UnorderedAccessView* UAVs[1] = { aUAV->GetUAV() };
-			mDirect3DDeviceContext->OMSetRenderTargetsAndUnorderedAccessViews(0, nullRTVs, aDepthTarget ? aDepthTarget->GetDSV() : NULL, 0, 1, UAVs, NULL);
+			ID3D11UnorderedAccessView* UAVs[1] = { static_cast<ID3D11UnorderedAccessView*>(aUAV->GetUAV()) };
+			assert(UAVs[0]);
+			if (aDepthTarget)
+			{
+				ID3D11DepthStencilView* dsv = static_cast<ID3D11DepthStencilView*>(aDepthTarget->GetDSV());
+				assert(dsv);
+				mDirect3DDeviceContext->OMSetRenderTargetsAndUnorderedAccessViews(0, nullRTVs, dsv, 0, 1, UAVs, NULL);
+			}
+			else
+				mDirect3DDeviceContext->OMSetRenderTargetsAndUnorderedAccessViews(0, nullRTVs, NULL, 0, 1, UAVs, NULL);
 		}
 	}
 
-	void ER_RHI_DX11::SetDepthTarget(ER_GPUTexture* aDepthTarget)
+	void ER_RHI_DX11::SetDepthTarget(ER_RHI_GPUTexture* aDepthTarget)
 	{
 		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
 
 		assert(aDepthTarget);
-		mDirect3DDeviceContext->OMSetRenderTargets(1, nullRTVs, aDepthTarget->GetDSV());
+		ID3D11DepthStencilView* dsv = static_cast<ID3D11DepthStencilView*>(aDepthTarget->GetDSV());
+		assert(dsv);
+
+		mDirect3DDeviceContext->OMSetRenderTargets(1, nullRTVs, dsv);
 	}
 
 	void ER_RHI_DX11::SetBlendState(ER_RHI_BLEND_STATE aBS, const float BlendFactor[4], UINT SampleMask)
@@ -320,7 +398,7 @@ namespace Library
 			throw ER_CoreException("ER_RHI_DX11: Blend state is not found.");
 	}
 
-	void ER_RHI_DX11::SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_GPUTexture*>& aSRVs, UINT startSlot /*= 0*/)
+	void ER_RHI_DX11::SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot /*= 0*/)
 	{
 		assert(aSRVs.size() > 0);
 		assert(aSRVs.size() <= DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS);
@@ -330,7 +408,8 @@ namespace Library
 		for (UINT i = 0; i < srCount; i++)
 		{
 			assert(aSRVs[i]);
-			SRs[i] = aSRVs[i]->GetSRV();
+			SRs[i] = static_cast<ID3D11ShaderResourceView*>(aSRVs[i]->GetSRV());
+			assert(SRs[i]);
 		}
 
 		switch (aShaderType)
@@ -354,7 +433,7 @@ namespace Library
 		}
 	}
 
-	void ER_RHI_DX11::SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_GPUTexture*>& aUAVs, UINT startSlot /*= 0*/)
+	void ER_RHI_DX11::SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot /*= 0*/)
 	{
 		assert(aUAVs.size() > 0);
 		assert(aUAVs.size() <= DX11_MAX_BOUND_UNORDERED_ACCESS_VIEWS);
@@ -364,7 +443,8 @@ namespace Library
 		for (UINT i = 0; i < uavCount; i++)
 		{
 			assert(aUAVs[i]);
-			UAVs[i] = aUAVs[i]->GetUAV();
+			UAVs[i] = static_cast<ID3D11UnorderedAccessView*>(aUAVs[i]->GetUAV());
+			assert(UAVs[i]);
 		}
 
 		switch (aShaderType)
@@ -387,7 +467,7 @@ namespace Library
 		}
 	}
 
-	void ER_RHI_DX11::SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_GPUBuffer*>& aCBs, UINT startSlot /*= 0*/)
+	void ER_RHI_DX11::SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot /*= 0*/)
 	{
 		assert(aCBs.size() > 0);
 		assert(aCBs.size() <= DX11_MAX_BOUND_CONSTANT_BUFFERS);
@@ -397,7 +477,8 @@ namespace Library
 		for (UINT i = 0; i < cbsCount; i++)
 		{
 			assert(aCBs[i]);
-			CBs[i] = aCBs[i]->GetBuffer();
+			CBs[i] = static_cast<ID3D11Buffer*>(aCBs[i]->GetBuffer());
+			assert(CBs[i]);
 		}
 
 		switch (aShaderType)
@@ -458,13 +539,23 @@ namespace Library
 		}
 	}
 
-	void ER_RHI_DX11::SetIndexBuffer(ER_GPUBuffer* aBuffer, UINT offset /*= 0*/)
+	void ER_RHI_DX11::SetInputLayout(ER_RHI_InputLayout* aIL)
 	{
-		assert(aBuffer);
-		mDirect3DDeviceContext->IASetIndexBuffer(aBuffer->GetBuffer(), aBuffer->GetFormat(), offset);
+		ER_RHI_DX11_InputLayout* aDX11_IL = static_cast<ER_RHI_DX11_InputLayout*>(aIL);
+		assert(aDX11_IL);
+		assert(aDX11_IL->mInputLayout);
+		mDirect3DDeviceContext->IASetInputLayout(aDX11_IL->mInputLayout);
 	}
 
-	void ER_RHI_DX11::SetVertexBuffers(const std::vector<ER_GPUBuffer*>& aVertexBuffers)
+	void ER_RHI_DX11::SetIndexBuffer(ER_RHI_GPUBuffer* aBuffer, UINT offset /*= 0*/)
+	{
+		assert(aBuffer);
+		ID3D11Buffer* buf = static_cast<ID3D11Buffer*>(aBuffer->GetBuffer());
+		assert(buf);
+		mDirect3DDeviceContext->IASetIndexBuffer(buf, GetFormat(aBuffer->GetFormatRhi()), offset);
+	}
+
+	void ER_RHI_DX11::SetVertexBuffers(const std::vector<ER_RHI_GPUBuffer*>& aVertexBuffers)
 	{
 		assert(aVertexBuffers.size() > 0 && aVertexBuffers.size() < ER_RHI_MAX_BOUND_VERTEX_BUFFERS);
 		if (aVertexBuffers.size() == 1)
@@ -472,7 +563,8 @@ namespace Library
 			UINT stride = aVertexBuffers[0]->GetStride();
 			UINT offset = 0;
 			assert(aVertexBuffers[0]);
-			ID3D11Buffer* bufferPointers[1] = { aVertexBuffers[0]->GetBuffer() };
+			ID3D11Buffer* bufferPointers[1] = { static_cast<ID3D11Buffer*>(aVertexBuffers[0]->GetBuffer()) };
+			assert(bufferPointers[0]);
 			mDirect3DDeviceContext->IASetVertexBuffers(0, 1, bufferPointers, &stride, &offset);
 		}
 		else //+ instance buffer
@@ -482,7 +574,9 @@ namespace Library
 
 			assert(aVertexBuffers[0]);
 			assert(aVertexBuffers[1]);
-			ID3D11Buffer* bufferPointers[2] = { aVertexBuffers[0]->GetBuffer(), aVertexBuffers[1]->GetBuffer() };
+			ID3D11Buffer* bufferPointers[2] = { static_cast<ID3D11Buffer*>(aVertexBuffers[0]->GetBuffer()), static_cast<ID3D11Buffer*>(aVertexBuffers[1]->GetBuffer()) };
+			assert(bufferPointers[0]);
+			assert(bufferPointers[1]);
 			mDirect3DDeviceContext->IASetVertexBuffers(0, 2, bufferPointers, strides, offsets);
 		}
 	}
@@ -499,6 +593,20 @@ namespace Library
 		return GetTopologyType(currentTopology);
 	}
 
+	void ER_RHI_DX11::UpdateBuffer(ER_RHI_GPUBuffer* aBuffer, void* aData, int dataSize)
+	{
+		assert(aBuffer->GetSize() == dataSize);
+
+		ER_RHI_DX11_GPUBuffer* buffer = static_cast<ER_RHI_DX11_GPUBuffer*>(aBuffer);
+		assert(buffer);
+
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+		ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
+		buffer->Map(this, D3D11_MAP_WRITE_DISCARD, &mappedResource);
+		memcpy(mappedResource.pData, aData, dataSize);
+		buffer->Unmap(this);
+	}
+
 	void ER_RHI_DX11::InitImGui()
 	{
 		ImGui_ImplDX11_Init(mDirect3DDevice, mDirect3DDeviceContext);
@@ -512,6 +620,12 @@ namespace Library
 	void ER_RHI_DX11::ShutdownImGui()
 	{
 		ImGui_ImplDX11_Shutdown();
+	}
+
+	DXGI_FORMAT ER_RHI_DX11::GetFormat(ER_RHI_FORMAT aFormat)
+	{
+		throw ER_CoreException("Implement this method!");
+		return DXGI_FORMAT_UNKNOWN;
 	}
 
 	D3D11_PRIMITIVE_TOPOLOGY ER_RHI_DX11::GetTopologyType(ER_RHI_PRIMITIVE_TYPE aType)

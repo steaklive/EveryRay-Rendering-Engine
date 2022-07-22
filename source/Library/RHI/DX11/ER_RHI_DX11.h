@@ -8,6 +8,16 @@
 
 namespace Library
 {
+	class ER_RHI_DX11_InputLayout : public ER_RHI_InputLayout
+	{
+	public:
+		ER_RHI_DX11_InputLayout();
+		virtual ~ER_RHI_DX11_InputLayout() {
+			ReleaseObject(mInputLayout);
+		};
+		ID3D11InputLayout* mInputLayout = nullptr;
+	};
+
 	class ER_RHI_DX11: public ER_RHI
 	{
 	public:
@@ -24,12 +34,19 @@ namespace Library
 
 		virtual void ClearMainRenderTarget(float colors[4]) override;
 		virtual void ClearMainDepthStencilTarget(float depth, UINT stencil = 0) override;
-		virtual void ClearRenderTarget(ER_GPUTexture* aRenderTarget, float colors[4]) override;
-		virtual void ClearDepthStencilTarget(ER_GPUTexture* aDepthTarget, float depth, UINT stencil = 0) override;
-		virtual void ClearUAV(ER_GPUTexture* aRenderTarget, float colors[4]) override;
-
-		virtual void CopyBuffer(ER_GPUBuffer* aDestBuffer, ER_GPUBuffer* aSrcBuffer) override;
+		virtual void ClearRenderTarget(ER_RHI_GPUTexture* aRenderTarget, float colors[4]) override;
+		virtual void ClearDepthStencilTarget(ER_RHI_GPUTexture* aDepthTarget, float depth, UINT stencil = 0) override;
+		virtual void ClearUAV(ER_RHI_GPUResource* aRenderTarget, float colors[4]) override;
+		virtual void CreateInputLayout(ER_RHI_InputLayout* aOutInputLayout, ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount, const void* shaderBytecodeWithInputSignature, UINT byteCodeLength) = 0;
 		
+		virtual void CreateTexture(ER_RHI_GPUTexture* aOutTexture, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE,
+			int mip = 1, int depth = -1, int arraySize = 1, bool isCubemap = false, int cubemapArraySize = -1) = 0;
+		virtual void CreateTexture(ER_RHI_GPUTexture* aOutTexture, const std::string& aPath, bool isFullPath = false) override;
+		virtual void CreateTexture(ER_RHI_GPUTexture* aOutTexture, const std::wstring& aPath, bool isFullPath = false) override;
+
+		virtual void CreateBuffer(ER_RHI_GPUBuffer* aOutBuffer, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic = false, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, UINT miscFlags = 0, ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN) override;
+		virtual void CopyBuffer(ER_RHI_GPUBuffer* aDestBuffer, ER_RHI_GPUBuffer* aSrcBuffer) override;
+
 		virtual void Draw(UINT VertexCount) override;
 		virtual void DrawIndexed(UINT IndexCount) override;
 		virtual void DrawInstanced(UINT VertexCountPerInstance, UINT InstanceCount, UINT StartVertexLocation, UINT StartInstanceLocation) override;
@@ -39,13 +56,13 @@ namespace Library
 		virtual void Dispatch(UINT ThreadGroupCountX, UINT ThreadGroupCountY, UINT ThreadGroupCountZ) override;
 		//TODO DispatchIndirect
 
-		virtual void GenerateMips(ER_GPUTexture* aTexture) override;
+		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture) override;
 
 		virtual void PresentGraphics() override;
 		virtual void PresentCompute() override; //TODO
 
-		virtual void SetRenderTargets(const std::vector<ER_GPUTexture*>& aRenderTargets, ER_GPUTexture* aDepthTarget = nullptr, ER_GPUTexture* aUAV = nullptr) override;
-		virtual void SetDepthTarget(ER_GPUTexture* aDepthTarget) override;
+		virtual void SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr, ER_RHI_GPUTexture* aUAV = nullptr) override;
+		virtual void SetDepthTarget(ER_RHI_GPUTexture* aDepthTarget) override;
 
 		virtual void SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE aDS, UINT stencilRef) override;
 		virtual ER_RHI_DEPTH_STENCIL_STATE GetCurrentDepthStencilState() override;
@@ -59,22 +76,22 @@ namespace Library
 		virtual void SetViewport(ER_RHI_Viewport* aViewport) override;
 		virtual ER_RHI_Viewport* GetCurrentViewport() override;
 
-		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_GPUTexture*>& aSRVs, UINT startSlot = 0) override;
-		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_GPUTexture*>& aUAVs, UINT startSlot = 0) override;
-		virtual void SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_GPUBuffer*>& aCBs, UINT startSlot = 0) override;
+		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot = 0) override;
+		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot = 0) override;
+		virtual void SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot = 0) override;
 
 		//TODO virtual void SetShader(ER_RHI_Shader* aShader) = 0;
 		virtual void SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot = 0) override;
-		
-		virtual void SetIndexBuffer(ER_GPUBuffer* aBuffer, UINT offset = 0) override;
-		virtual void SetVertexBuffers(const std::vector<ER_GPUBuffer*>& aVertexBuffers) override;
+		virtual void SetInputLayout(ER_RHI_InputLayout* aIL) override;
+		virtual void SetIndexBuffer(ER_RHI_GPUBuffer* aBuffer, UINT offset = 0) override;
+		virtual void SetVertexBuffers(const std::vector<ER_RHI_GPUBuffer*>& aVertexBuffers) override;
 		
 		virtual void SetTopologyType(ER_RHI_PRIMITIVE_TYPE aType) override;
 		virtual ER_RHI_PRIMITIVE_TYPE GetCurrentTopologyType() override;
 
 		virtual void UnbindResourcesFromShader(ER_RHI_SHADER_TYPE aShaderType) override;
 
-		virtual void UpdateBuffer(ER_GPUBuffer* aBuffer, void* aData, int dataSize) override;
+		virtual void UpdateBuffer(ER_RHI_GPUBuffer* aBuffer, void* aData, int dataSize) override;
 		
 		virtual void InitImGui() override;
 		virtual void StartNewImGuiFrame() override;
@@ -82,11 +99,14 @@ namespace Library
 
 		virtual ER_RHI_Viewport GetViewport() override { return mMainViewport; }
 
+		ID3D11Device1* GetDevice() { return mDirect3DDevice; }
+		ID3D11DeviceContext1* GetContext() { return mDirect3DDeviceContext; }
+		DXGI_FORMAT GetFormat(ER_RHI_FORMAT aFormat);
+
 		ER_GRAPHICS_API GetAPI() { return mAPI; }
 	protected:
 		virtual void ExecuteCommandLists() = 0;
 	private:
-		DXGI_FORMAT GetFormat(ER_RHI_FORMAT aFormat);
 		D3D11_PRIMITIVE_TOPOLOGY GetTopologyType(ER_RHI_PRIMITIVE_TYPE aType);
 		ER_RHI_PRIMITIVE_TYPE GetTopologyType(D3D11_PRIMITIVE_TOPOLOGY aType);
 

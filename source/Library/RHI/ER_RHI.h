@@ -1,7 +1,5 @@
 #pragma once
 #include "..\Common.h"
-#include "..\ER_GPUBuffer.h"
-#include "..\ER_GPUTexture.h"
 
 #define ER_RHI_MAX_GRAPHICS_COMMAND_LISTS 4
 #define ER_RHI_MAX_COMPUTE_COMMAND_LISTS 2
@@ -125,6 +123,30 @@ namespace Library
 		ER_PRIMITIVE_TOPOLOGY_CONTROL_POINT_PATCHLIST
 	};
 
+	enum ER_RHI_BIND_FLAG
+	{
+		ER_BIND_NONE = 0x0L,
+		ER_BIND_VERTEX_BUFFER = 0x1L,
+		ER_BIND_INDEX_BUFFER = 0x2L,
+		ER_BIND_CONSTANT_BUFFER = 0x4L,
+		ER_BIND_SHADER_RESOURCE = 0x8L,
+		ER_BIND_STREAM_OUTPUT = 0x10L,
+		ER_BIND_RENDER_TARGET = 0x20L,
+		ER_BIND_DEPTH_STENCIL = 0x40L,
+		ER_BIND_UNORDERED_ACCESS = 0x80L
+	};
+
+	struct ER_RHI_INPUT_ELEMENT_DESC
+	{
+		LPCSTR SemanticName;
+		UINT SemanticIndex;
+		ER_RHI_FORMAT Format;
+		UINT InputSlot;
+		UINT AlignedByteOffset;
+		bool IsPerVertex = true;
+		UINT InstanceDataStepRate = 0;
+	};
+
 	struct ER_RHI_Viewport
 	{
 		float TopLeftX;
@@ -134,6 +156,17 @@ namespace Library
 		float MinDepth = 0.0f;
 		float MaxDepth = 1.0f;
 	};
+
+	class ER_RHI_InputLayout
+	{
+	public:
+		ER_RHI_InputLayout();
+		virtual ~ER_RHI_InputLayout();
+	};
+	
+	class ER_RHI_GPUResource;
+	class ER_RHI_GPUTexture;
+	class ER_RHI_GPUBuffer;
 
 	class ER_RHI
 	{
@@ -151,11 +184,19 @@ namespace Library
 
 		virtual void ClearMainRenderTarget(float colors[4]) = 0;
 		virtual void ClearMainDepthStencilTarget(float depth, UINT stencil = 0) = 0;
-		virtual void ClearRenderTarget(ER_GPUTexture* aRenderTarget, float colors[4]) = 0;
-		virtual void ClearDepthStencilTarget(ER_GPUTexture* aDepthTarget, float depth, UINT stencil = 0) = 0;
-		virtual void ClearUAV(ER_GPUTexture* aRenderTarget, float colors[4]) = 0;
-	
-		virtual void CopyBuffer(ER_GPUBuffer* aDestBuffer, ER_GPUBuffer* aSrcBuffer) = 0;
+		virtual void ClearRenderTarget(ER_RHI_GPUTexture* aRenderTarget, float colors[4]) = 0;
+		virtual void ClearDepthStencilTarget(ER_RHI_GPUTexture* aDepthTarget, float depth, UINT stencil = 0) = 0;
+		virtual void ClearUAV(ER_RHI_GPUResource* aRenderTarget, float colors[4]) = 0;
+		virtual void CreateInputLayout(ER_RHI_InputLayout* aOutInputLayout, ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount, const void* shaderBytecodeWithInputSignature, UINT byteCodeLength) = 0;
+		
+		virtual void CreateTexture(ER_RHI_GPUTexture* aOutTexture, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags,
+			int mip = 1, int depth = -1, int arraySize = 1, bool isCubemap = false, int cubemapArraySize = -1) = 0;
+		virtual void CreateTexture(ER_RHI_GPUTexture* aOutTexture, const std::string& aPath, bool isFullPath = false) = 0;
+		virtual void CreateTexture(ER_RHI_GPUTexture* aOutTexture, const std::wstring& aPath, bool isFullPath = false) = 0;
+
+		virtual void CreateBuffer(ER_RHI_GPUBuffer* aOutBuffer, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic = false, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, UINT miscFlags = 0, ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN) = 0;
+		virtual void CopyBuffer(ER_RHI_GPUBuffer* aDestBuffer, ER_RHI_GPUBuffer* aSrcBuffer) = 0;
+		//TODO UpdateBuffer()
 
 		virtual void Draw(UINT VertexCount) = 0;
 		virtual void DrawIndexed(UINT IndexCount) = 0;
@@ -166,15 +207,15 @@ namespace Library
 		virtual void Dispatch(UINT ThreadGroupCountX, UINT ThreadGroupCountY, UINT ThreadGroupCountZ) = 0;
 		//TODO DispatchIndirect
 
-		virtual void GenerateMips(ER_GPUTexture* aTexture) = 0; // not every API supports that!
+		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture) = 0; // not every API supports that!
 
 		virtual ER_RHI_PRIMITIVE_TYPE GetCurrentTopologyType() = 0;
 
 		virtual void PresentGraphics() = 0;
 		virtual void PresentCompute() = 0;
 
-		virtual void SetRenderTargets(const std::vector<ER_GPUTexture*>& aRenderTargets, ER_GPUTexture* aDepthTarget = nullptr, ER_GPUTexture * aUAV = nullptr) = 0;
-		virtual void SetDepthTarget(ER_GPUTexture* aDepthTarget) = 0;
+		virtual void SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr, ER_RHI_GPUTexture* aUAV = nullptr) = 0;
+		virtual void SetDepthTarget(ER_RHI_GPUTexture* aDepthTarget) = 0;
 
 		virtual void SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE aDS, UINT stencilRef) = 0;
 		virtual ER_RHI_DEPTH_STENCIL_STATE GetCurrentDepthStencilState() = 0;
@@ -188,20 +229,20 @@ namespace Library
 		virtual void SetViewport(ER_RHI_Viewport* aViewport) = 0;
 		virtual ER_RHI_Viewport* GetCurrentViewport() = 0;
 
-		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_GPUTexture*>& aSRVs, UINT startSlot = 0) = 0;
-		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_GPUTexture*>& aUAVs, UINT startSlot = 0) = 0;
-		virtual void SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_GPUBuffer*>& aCBs, UINT startSlot = 0) = 0;
+		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot = 0) = 0;
+		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot = 0) = 0;
+		virtual void SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot = 0) = 0;
 		virtual void SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot = 0) = 0;
 
-		virtual void SetIndexBuffer(ER_GPUBuffer* aBuffer, UINT offset = 0) = 0;
-		virtual void SetVertexBuffers(const std::vector<ER_GPUBuffer*>& aVertexBuffers) = 0;
-
+		virtual void SetIndexBuffer(ER_RHI_GPUBuffer* aBuffer, UINT offset = 0) = 0;
+		virtual void SetVertexBuffers(const std::vector<ER_RHI_GPUBuffer*>& aVertexBuffers) = 0;
+		virtual void SetInputLayout(ER_RHI_InputLayout* aIL) = 0;
 		virtual void SetTopologyType(ER_RHI_PRIMITIVE_TYPE aType) = 0;
 
 		//TODO virtual void SetShader(ER_RHI_Shader* aShader) = 0;
 		virtual void UnbindResourcesFromShader(ER_RHI_SHADER_TYPE aShaderType) = 0;
 
-		virtual void UpdateBuffer(ER_GPUBuffer* aBuffer, void* aData, int dataSize) = 0;
+		virtual void UpdateBuffer(ER_RHI_GPUBuffer* aBuffer, void* aData, int dataSize) = 0;
 
 		virtual void InitImGui() = 0;
 		virtual void StartNewImGuiFrame() = 0;
@@ -221,5 +262,43 @@ namespace Library
 
 		int mCurrentGraphicsCommandListIndex = 0;
 		int mCurrentComputeCommandListIndex = 0;
+	};
+
+	class ER_RHI_GPUResource
+	{
+	public:
+		ER_RHI_GPUResource();
+		virtual ~ER_RHI_GPUResource();
+
+		virtual void* GetSRV() = 0;
+		virtual void* GetUAV() = 0;
+	};
+
+	class ER_RHI_GPUTexture : public ER_RHI_GPUResource
+	{
+	public:
+		ER_RHI_GPUTexture();
+		virtual ~ER_RHI_GPUTexture();
+
+		virtual void CreateGPUTextureResource(ER_RHI* aRHI, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE,
+			int mip = 1, int depth = -1, int arraySize = 1, bool isCubemap = false, int cubemapArraySize = -1) = 0;
+		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath = false) = 0;
+		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath = false) = 0;
+
+		virtual void* GetRTV(void* aEmpty = nullptr) = 0;
+		virtual void* GetDSV() = 0;
+	};
+
+	class ER_RHI_GPUBuffer : public ER_RHI_GPUResource
+	{
+	public:
+		ER_RHI_GPUBuffer();
+		virtual ~ER_RHI_GPUBuffer();
+
+		virtual void CreateGPUBufferResource(ER_RHI* aRHI, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic = false, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, UINT miscFlags = 0, ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN) = 0;
+		virtual void* GetBuffer() = 0;
+		virtual int GetSize() = 0;
+		virtual UINT GetStride() = 0;
+		virtual ER_RHI_FORMAT GetFormatRhi() = 0;
 	};
 }

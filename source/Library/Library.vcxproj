@@ -191,12 +191,10 @@
     <ClInclude Include="ER_BasicColorMaterial.h" />
     <ClInclude Include="ER_DebugLightProbeMaterial.h" />
     <ClInclude Include="ER_GBufferMaterial.h" />
-    <ClInclude Include="ER_GPUTexture.h" />
     <ClInclude Include="ER_Sandbox.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="ER_Editor.h" />
     <ClInclude Include="ER_CPUProfiler.h" />
-    <ClInclude Include="ER_GPUBuffer.h" />
     <ClInclude Include="ER_LightProbesManager.h" />
     <ClInclude Include="ER_LightProbe.h" />
     <ClInclude Include="ER_Material.h" />
@@ -236,6 +234,8 @@
     <ClInclude Include="ER_RenderingObject.h" />
     <ClInclude Include="RenderStateHelper.h" />
     <ClInclude Include="RHI\DX11\ER_RHI_DX11.h" />
+    <ClInclude Include="RHI\DX11\ER_RHI_DX11_GPUBuffer.h" />
+    <ClInclude Include="RHI\DX11\ER_RHI_DX11_GPUTexture.h" />
     <ClInclude Include="RHI\ER_RHI.h" />
     <ClInclude Include="RTTI.h" />
     <ClInclude Include="SamplerStates.h" />
@@ -263,11 +263,9 @@
     <ClCompile Include="ER_CameraFPS.cpp" />
     <ClCompile Include="ER_DebugLightProbeMaterial.cpp" />
     <ClCompile Include="ER_GBufferMaterial.cpp" />
-    <ClCompile Include="ER_GPUTexture.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="ER_Editor.cpp" />
     <ClCompile Include="ER_CPUProfiler.cpp" />
-    <ClCompile Include="ER_GPUBuffer.cpp" />
     <ClCompile Include="ER_Illumination.cpp" />
     <ClCompile Include="ER_LightProbe.cpp" />
     <ClCompile Include="ER_LightProbesManager.cpp" />
@@ -306,6 +304,8 @@
     <ClCompile Include="ER_RenderableAABB.cpp" />
     <ClCompile Include="RenderStateHelper.cpp" />
     <ClCompile Include="RHI\DX11\ER_RHI_DX11.cpp" />
+    <ClCompile Include="RHI\DX11\ER_RHI_DX11_GPUBuffer.cpp" />
+    <ClCompile Include="RHI\DX11\ER_RHI_DX11_GPUTexture.cpp" />
     <ClCompile Include="SamplerStates.cpp" />
     <ClCompile Include="ER_Scene.cpp" />
     <ClCompile Include="ServiceContainer.cpp" />
