@@ -313,7 +313,8 @@ namespace Library
 		assert(mMeshesRenderBuffers.size() - 1 == lod);
 
 		auto createIndexBuffer = [this](const ER_Mesh& aMesh, int meshIndex, int lod, const std::string& materialName) {
-			aMesh.CreateIndexBuffer(&(mMeshesRenderBuffers[lod][materialName][meshIndex]->IndexBuffer));
+			mMeshesRenderBuffers[lod][materialName][meshIndex]->IndexBuffer = new ER_RHI_GPUBuffer();
+			aMesh.CreateIndexBuffer(mMeshesRenderBuffers[lod][materialName][meshIndex]->IndexBuffer);
 			mMeshesRenderBuffers[lod][materialName][meshIndex]->IndicesCount = aMesh.Indices().size();
 		};
 
@@ -323,8 +324,8 @@ namespace Library
 			for (size_t i = 0; i < mMeshesCount[lod]; i++)
 			{
 				mMeshesRenderBuffers[lod][material.first].push_back(new RenderBufferData());
-
-				material.second->CreateVertexBuffer((lod == 0) ? mModel->GetMesh(i) : mModelLODs[lod - 1]->GetMesh(i), &(mMeshesRenderBuffers[lod][material.first][i]->VertexBuffer));
+				mMeshesRenderBuffers[lod][material.first][i]->VertexBuffer = new ER_RHI_GPUBuffer();
+				material.second->CreateVertexBuffer((lod == 0) ? mModel->GetMesh(i) : mModelLODs[lod - 1]->GetMesh(i), mMeshesRenderBuffers[lod][material.first][i]->VertexBuffer);
 				createIndexBuffer((lod == 0) ? mModel->GetMesh(i) : mModelLODs[lod - 1]->GetMesh(i), i, lod, material.first);
 
 				mMeshesRenderBuffers[lod][material.first][i]->Stride = mMaterials[material.first]->VertexSize();
@@ -339,11 +340,12 @@ namespace Library
 			for (size_t i = 0; i < mMeshesCount[lod]; i++)
 			{
 				mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName].push_back(new RenderBufferData());
+				mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer = new ER_RHI_GPUBuffer();
 
 				if (lod == 0)
-					mModel->GetMesh(i).CreateVertexBuffer_PositionUvNormalTangent(&(mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer));
+					mModel->GetMesh(i).CreateVertexBuffer_PositionUvNormalTangent(mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer);
 				else
-					mModelLODs[lod - 1]->GetMesh(i).CreateVertexBuffer_PositionUvNormalTangent(&(mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer));
+					mModelLODs[lod - 1]->GetMesh(i).CreateVertexBuffer_PositionUvNormalTangent(mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer);
 
 				createIndexBuffer((lod == 0) ? mModel->GetMesh(i) : mModelLODs[lod - 1]->GetMesh(i), i, lod, ER_MaterialHelper::forwardLightingNonMaterialName);
 
@@ -447,7 +449,6 @@ namespace Library
 	void ER_RenderingObject::LoadInstanceBuffers(int lod)
 	{
 		assert(mModel != nullptr);
-		assert(mCore->Direct3DDevice() != nullptr);
 		assert(mIsInstanced == true);
 
 		mInstanceData.push_back({});
@@ -467,6 +468,7 @@ namespace Library
 		for (size_t i = 0; i < mMeshesCount[lod]; i++)
 		{
 			mMeshesInstanceBuffers[lod].push_back(new InstanceBufferData());
+			mMeshesInstanceBuffers[lod][i]->InstanceBuffer = new ER_RHI_GPUBuffer();
 			CreateInstanceBuffer(&mInstanceData[lod][0], MAX_INSTANCE_COUNT, mMeshesInstanceBuffers[lod][i]->InstanceBuffer);
 			mMeshesInstanceBuffers[lod][i]->Stride = sizeof(InstancedData);
 		}
@@ -477,7 +479,7 @@ namespace Library
 		if (instanceCount > MAX_INSTANCE_COUNT)
 			throw ER_CoreException("Instances count limit is exceeded!");
 
-		instanceBuffer = new ER_RHI_GPUBuffer();
+		assert(instanceBuffer);
 		instanceBuffer->CreateGPUBufferResource(mCore->GetRHI(), instanceData, MAX_INSTANCE_COUNT, InstanceSize(), true, ER_BIND_VERTEX_BUFFER);
 	}
 

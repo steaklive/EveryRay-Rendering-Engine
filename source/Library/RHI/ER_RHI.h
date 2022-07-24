@@ -255,6 +255,7 @@ namespace Library
 
 		virtual void InitImGui() = 0;
 		virtual void StartNewImGuiFrame() = 0;
+		virtual void RenderDrawDataImGui() = 0;
 		virtual void ShutdownImGui() = 0;
 
 		virtual void SetWindowHandle(void* handle) { (HWND)mWindowHandle; }

@@ -744,6 +744,11 @@ namespace Library
 		ImGui_ImplDX11_NewFrame();
 	}
 
+	void ER_RHI_DX11::RenderDrawDataImGui()
+	{
+		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+	}
+
 	void ER_RHI_DX11::ShutdownImGui()
 	{
 		ImGui_ImplDX11_Shutdown();

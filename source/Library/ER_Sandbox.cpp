@@ -1,7 +1,9 @@
 #include "ER_Sandbox.h"
 #include "ER_Utility.h"
-#include "Systems.inl"
 #include "ER_MaterialsCallbacks.h"
+#include "Systems.inl"
+
+#include "RHI/ER_RHI.h"
 
 namespace Library {
 
@@ -232,14 +234,8 @@ namespace Library {
 
 	void ER_Sandbox::Draw(ER_Core& game, const ER_CoreTime& gameTime)
 	{
-		//TODO set proper RS
-		//TODO set proper DS
-
-		if (mRenderStateHelper)
-			mRenderStateHelper->SaveRasterizerState();
-
-		ID3D11DeviceContext* context = game.Direct3DDeviceContext();
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		ER_RHI* rhi = game.GetRHI();
+		rhi->SetTopologyType(ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		#pragma region DRAW_GBUFFER
 		mGBuffer->Start();
@@ -266,9 +262,7 @@ namespace Library {
 				mLightProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
 		}
 
-		mRenderStateHelper->SaveAll();
 		mIllumination->DrawGlobalIllumination(mGBuffer, gameTime);
-		mRenderStateHelper->RestoreAll();
 #pragma endregion
 
 		#pragma region DRAW_VOLUMETRIC_FOG
@@ -327,8 +321,7 @@ namespace Library {
 
 		#pragma region DRAW_IMGUI
 		ImGui::Render();
-		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-
+		rhi->RenderDrawDataImGui();
 #pragma endregion
 	}
 }

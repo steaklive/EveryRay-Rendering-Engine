@@ -2,7 +2,7 @@
 #include "Common.h"
 #include "ER_CoreComponent.h"
 #include "ConstantBuffer.h"
-#include "ER_GPUTexture.h"
+#include "RHI/ER_RHI.h"
 
 namespace Library
 {
@@ -61,8 +61,8 @@ namespace Library
 		ER_Core& mCore;
 		ER_Camera& mCamera;
 
-		ID3D11Buffer* mVertexBuffer = nullptr;
-		ID3D11Buffer* mIndexBuffer = nullptr;
+		ER_RHI_GPUBuffer* mVertexBuffer = nullptr;
+		ER_RHI_GPUBuffer* mIndexBuffer = nullptr;
 		ID3D11InputLayout* mInputLayout = nullptr;
 		UINT mIndexCount;
 

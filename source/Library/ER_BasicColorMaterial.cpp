@@ -24,7 +24,7 @@ namespace Library
 		if (shaderFlags & HAS_PIXEL_SHADER)
 			ER_Material::CreatePixelShader("content\\shaders\\BasicColor.hlsl");
 
-		mConstantBuffer.Initialize(ER_Material::GetCore()->Direct3DDevice());
+		mConstantBuffer.Initialize(ER_Material::GetCore()->GetRHI());
 	}
 
 	ER_BasicColorMaterial::~ER_BasicColorMaterial()
@@ -46,11 +46,10 @@ namespace Library
 		mConstantBuffer.Data.World = XMMatrixTranspose(aObj->GetTransformationMatrix());
 		mConstantBuffer.Data.ViewProjection = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());
 		mConstantBuffer.Data.Color = XMFLOAT4{0.0, 1.0, 0.0, 0.0};
-		mConstantBuffer.ApplyChanges(context);
-		ID3D11Buffer* CBs[1] = { mConstantBuffer.Buffer() };
+		mConstantBuffer.ApplyChanges(rhi);
 
-		rhi->SetConstantBuffers(ER_VERTEX, { CBs });
-		rhi->SetConstantBuffers(ER_PIXEL, { CBs });
+		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() });
+		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() });
 	}
 
 	// non-callback method for non-"RenderingObject" draws
@@ -66,14 +65,13 @@ namespace Library
 		mConstantBuffer.Data.World = XMMatrixTranspose(worldTransform);
 		mConstantBuffer.Data.ViewProjection = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());
 		mConstantBuffer.Data.Color = color;
-		mConstantBuffer.ApplyChanges(context);
-		ID3D11Buffer* CBs[1] = { mConstantBuffer.Buffer() };
+		mConstantBuffer.ApplyChanges(rhi);
 
-		rhi->SetConstantBuffers(ER_VERTEX, { CBs });
-		rhi->SetConstantBuffers(ER_PIXEL, { CBs });
+		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() });
+		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() });
 	}
 
-	void ER_BasicColorMaterial::CreateVertexBuffer(const ER_Mesh& mesh, ID3D11Buffer** vertexBuffer)
+	void ER_BasicColorMaterial::CreateVertexBuffer(const ER_Mesh& mesh, ER_RHI_GPUBuffer* vertexBuffer)
 	{
 		mesh.CreateVertexBuffer_Position(vertexBuffer);
 	}

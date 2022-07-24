@@ -143,7 +143,7 @@ namespace Library
 		
 		const int GetMeshCount(int lod = 0) const { return mMeshesCount[lod]; }
 		const std::vector<XMFLOAT3>& GetVertices(int lod = 0) { return mMeshAllVertices[lod]; }
-		const UINT GetInstanceCount(int lod = 0) { return (mIsInstanced ? mInstanceData[lod].size() : 0); }
+		const UINT GetInstanceCount(int lod = 0) { return (mIsInstanced ? static_cast<UINT>(mInstanceData[lod].size()) : 0); }
 		std::vector<InstancedData>& GetInstancesData(int lod = 0) { return mInstanceData[lod]; }
 		
 		XMFLOAT4X4 GetTransformationMatrix4X4() const { return XMFLOAT4X4(mCurrentObjectTransformMatrix); }
@@ -170,7 +170,7 @@ namespace Library
 		const std::string& GetName() { return mName; }
 
 		int GetLODCount() {
-			return 1 + mModelLODs.size();
+			return 1 + static_cast<int>(mModelLODs.size());
 		}
 		void UpdateLODs();
 		void LoadLOD(std::unique_ptr<ER_Model> pModel);

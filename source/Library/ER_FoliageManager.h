@@ -3,6 +3,7 @@
 #include "ER_CoreComponent.h"
 #include "GeneralEvent.h"
 #include "ConstantBuffer.h"
+#include "RHI/ER_RHI.h"
 
 #define MAX_FOLIAGE_ZONES 4096
 
@@ -147,9 +148,9 @@ namespace Library
 		ID3D11PixelShader* mPS_Voxelization = nullptr;
 		ConstantBuffer<FoliageCBufferData::FoliageData> mFoliageConstantBuffer;
 
-		ID3D11Buffer* mVertexBuffer = nullptr;
-		ID3D11Buffer* mIndexBuffer = nullptr;
-		ID3D11Buffer* mInstanceBuffer = nullptr;
+		ER_RHI_GPUBuffer* mVertexBuffer = nullptr;
+		ER_RHI_GPUBuffer* mIndexBuffer = nullptr;
+		ER_RHI_GPUBuffer* mInstanceBuffer = nullptr;
 		ID3D11ShaderResourceView* mAlbedoTexture = nullptr;
 		ID3D11BlendState* mAlphaToCoverageState = nullptr;
 		ID3D11BlendState* mNoBlendState = nullptr;

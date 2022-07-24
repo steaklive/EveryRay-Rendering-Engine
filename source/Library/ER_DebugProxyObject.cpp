@@ -30,8 +30,8 @@ namespace Library
 	ER_DebugProxyObject::~ER_DebugProxyObject()
 	{
 		DeleteObject(mMaterial);
-		ReleaseObject(mVertexBuffer);
-		ReleaseObject(mIndexBuffer);
+		DeleteObject(mVertexBuffer);
+		DeleteObject(mIndexBuffer);
 	}
 
 	const XMFLOAT3& ER_DebugProxyObject::Position() const
@@ -153,8 +153,10 @@ namespace Library
 		mMaterial = new ER_BasicColorMaterial(mCore, {}, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER);
 
 		auto& meshes = model->Meshes();
-		mMaterial->CreateVertexBuffer(meshes[0], &mVertexBuffer);
-		meshes[0].CreateIndexBuffer(&mIndexBuffer);
+		mVertexBuffer = new ER_RHI_GPUBuffer();
+		mMaterial->CreateVertexBuffer(meshes[0], mVertexBuffer);
+		mIndexBuffer = new ER_RHI_GPUBuffer();
+		meshes[0].CreateIndexBuffer(mIndexBuffer);
 		mIndexCount = meshes[0].Indices().size();
 	}
 

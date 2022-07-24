@@ -9,10 +9,6 @@
 #include "ER_Utility.h"
 #include "ER_Scene.h"
 
-#include "imgui.h"
-#include "imgui_impl_dx11.h"
-#include "imgui_impl_win32.h"
-
 namespace Library
 {
 	RTTI_DEFINITIONS(ER_Editor)

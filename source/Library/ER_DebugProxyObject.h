@@ -1,5 +1,6 @@
 #pragma once
 #include "Common.h"
+#include "RHI/ER_RHI.h"
 
 namespace Library
 {
@@ -48,8 +49,8 @@ namespace Library
 
 		std::string mModelFileName;
 		ER_BasicColorMaterial* mMaterial;
-		ID3D11Buffer* mVertexBuffer;
-		ID3D11Buffer* mIndexBuffer;
+		ER_RHI_GPUBuffer* mVertexBuffer;
+		ER_RHI_GPUBuffer* mIndexBuffer;
 		UINT mIndexCount;
 
 		XMFLOAT4X4 mWorldMatrix;

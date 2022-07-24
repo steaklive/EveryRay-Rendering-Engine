@@ -95,6 +95,7 @@ namespace Library
 		
 		virtual void InitImGui() override;
 		virtual void StartNewImGuiFrame() override;
+		virtual void RenderDrawDataImGui() override;
 		virtual void ShutdownImGui() override;
 
 		virtual ER_RHI_Viewport GetViewport() override { return mMainViewport; }

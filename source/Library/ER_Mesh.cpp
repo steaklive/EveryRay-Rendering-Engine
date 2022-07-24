@@ -149,26 +149,13 @@ namespace Library
 		return mIndices;
 	}
 
-	void ER_Mesh::CreateIndexBuffer(ID3D11Buffer** indexBuffer) const
+	void ER_Mesh::CreateIndexBuffer(ER_RHI_GPUBuffer* indexBuffer) const
 	{
-		assert(indexBuffer != nullptr);
-
-		D3D11_BUFFER_DESC indexBufferDesc;
-		ZeroMemory(&indexBufferDesc, sizeof(indexBufferDesc));
-		indexBufferDesc.ByteWidth = sizeof(UINT) * mIndices.size();
-		indexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-
-		D3D11_SUBRESOURCE_DATA indexSubResourceData;
-		ZeroMemory(&indexSubResourceData, sizeof(indexSubResourceData));
-		indexSubResourceData.pSysMem = &mIndices[0];
-		if (FAILED(mModel.GetGame().Direct3DDevice()->CreateBuffer(&indexBufferDesc, &indexSubResourceData, indexBuffer)))
-		{
-			throw ER_CoreException("ID3D11Device::CreateBuffer() failed during the creation of the index buffer in ER_Mesh.");
-		}
+		assert(indexBuffer);
+		indexBuffer->CreateGPUBufferResource(mModel.GetCore().GetRHI(), &mIndices[0], static_cast<UINT>(mIndices.size()), sizeof(UINT), false, ER_BIND_INDEX_BUFFER);
 	}
 
-	void ER_Mesh::CreateVertexBuffer_Position(ID3D11Buffer** vertexBuffer) const
+	void ER_Mesh::CreateVertexBuffer_Position(ER_RHI_GPUBuffer* vertexBuffer) const
 	{
 		const std::vector<XMFLOAT3>& sourceVertices = Vertices();
 		std::vector<VertexPosition> vertices;
@@ -180,23 +167,11 @@ namespace Library
 			vertices.push_back(VertexPosition(XMFLOAT4(position.x, position.y, position.z, 1.0f)));
 		}
 
-		ID3D11Device* device = mModel.GetGame().Direct3DDevice();
-
-		D3D11_BUFFER_DESC vertexBufferDesc;
-		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
-		vertexBufferDesc.ByteWidth = sizeof(VertexPosition) * static_cast<UINT>(vertices.size());
-		vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-
-		D3D11_SUBRESOURCE_DATA vertexSubResourceData;
-		ZeroMemory(&vertexSubResourceData, sizeof(vertexSubResourceData));
-		vertexSubResourceData.pSysMem = &vertices[0];
-		if (FAILED(device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, vertexBuffer)))
-			throw ER_CoreException("ID3D11Device::CreateBuffer() failed during vertex buffer creation for CreateVertexBuffer_Position.");
-
+		assert(vertexBuffer);
+		vertexBuffer->CreateGPUBufferResource(mModel.GetCore().GetRHI(), &vertices[0], static_cast<UINT>(vertices.size()), sizeof(VertexPosition), false, ER_BIND_VERTEX_BUFFER);
 	}
 
-	void ER_Mesh::CreateVertexBuffer_PositionUv(ID3D11Buffer** vertexBuffer, int uvChannel) const
+	void ER_Mesh::CreateVertexBuffer_PositionUv(ER_RHI_GPUBuffer* vertexBuffer, int uvChannel) const
 	{
 		const std::vector<XMFLOAT3>& sourceVertices = Vertices();
 		const std::vector<XMFLOAT3>& textureCoordinates = mTextureCoordinates[uvChannel];
@@ -211,22 +186,11 @@ namespace Library
 			vertices.push_back(VertexPositionTexture(XMFLOAT4(position.x, position.y, position.z, 1.0f), XMFLOAT2(uv.x, uv.y)));
 		}
 
-		ID3D11Device* device = mModel.GetGame().Direct3DDevice();
-
-		D3D11_BUFFER_DESC vertexBufferDesc;
-		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
-		vertexBufferDesc.ByteWidth = sizeof(VertexPositionTexture) * static_cast<UINT>(vertices.size());
-		vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-
-		D3D11_SUBRESOURCE_DATA vertexSubResourceData;
-		ZeroMemory(&vertexSubResourceData, sizeof(vertexSubResourceData));
-		vertexSubResourceData.pSysMem = &vertices[0];
-		if (FAILED(device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, vertexBuffer)))
-			throw ER_CoreException("ID3D11Device::CreateBuffer() failed.");
+		assert(vertexBuffer);
+		vertexBuffer->CreateGPUBufferResource(mModel.GetCore().GetRHI(), &vertices[0], static_cast<UINT>(vertices.size()), sizeof(VertexPositionTexture), false, ER_BIND_VERTEX_BUFFER);
 	}
 
-	void ER_Mesh::CreateVertexBuffer_PositionUvNormal(ID3D11Buffer** vertexBuffer, int uvChannel) const
+	void ER_Mesh::CreateVertexBuffer_PositionUvNormal(ER_RHI_GPUBuffer* vertexBuffer, int uvChannel) const
 	{
 		const std::vector<XMFLOAT3>& sourceVertices = Vertices();
 		const std::vector<XMFLOAT3>& textureCoordinates = mTextureCoordinates[uvChannel];
@@ -247,22 +211,11 @@ namespace Library
 			vertices.push_back(VertexPositionTextureNormal(XMFLOAT4(position.x, position.y, position.z, 1.0f), XMFLOAT2(uv.x, uv.y), normal));
 		}
 
-		ID3D11Device* device = mModel.GetGame().Direct3DDevice();
-
-		D3D11_BUFFER_DESC vertexBufferDesc;
-		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
-		vertexBufferDesc.ByteWidth = sizeof(VertexPositionTextureNormal) * static_cast<UINT>(vertices.size());
-		vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-
-		D3D11_SUBRESOURCE_DATA vertexSubResourceData;
-		ZeroMemory(&vertexSubResourceData, sizeof(vertexSubResourceData));
-		vertexSubResourceData.pSysMem = &vertices[0];
-		if (FAILED(device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, vertexBuffer)))
-			throw ER_CoreException("ID3D11Device::CreateBuffer() failed during vertex buffer creation for CreateVertexBuffer_PositionUvNormal.");
+		assert(vertexBuffer);
+		vertexBuffer->CreateGPUBufferResource(mModel.GetCore().GetRHI(), &vertices[0], static_cast<UINT>(vertices.size()), sizeof(VertexPositionTextureNormal), false, ER_BIND_VERTEX_BUFFER);
 	}
 
-	void ER_Mesh::CreateVertexBuffer_PositionUvNormalTangent(ID3D11Buffer** vertexBuffer, int uvChannel) const
+	void ER_Mesh::CreateVertexBuffer_PositionUvNormalTangent(ER_RHI_GPUBuffer* vertexBuffer, int uvChannel) const
 	{
 		const std::vector<XMFLOAT3>& sourceVertices = Vertices();
 		const std::vector<XMFLOAT3>& textureCoordinates = mTextureCoordinates[uvChannel];
@@ -287,20 +240,7 @@ namespace Library
 			vertices.push_back(VertexPositionTextureNormalTangent(XMFLOAT4(position.x, position.y, position.z, 1.0f), XMFLOAT2(uv.x, uv.y), normal, tangent));
 		}
 
-		ID3D11Device* device = mModel.GetGame().Direct3DDevice();
-
-		D3D11_BUFFER_DESC vertexBufferDesc;
-		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
-		vertexBufferDesc.ByteWidth = sizeof(VertexPositionTextureNormalTangent) * static_cast<UINT>(vertices.size());
-		vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-
-		D3D11_SUBRESOURCE_DATA vertexSubResourceData;
-		ZeroMemory(&vertexSubResourceData, sizeof(vertexSubResourceData));
-		vertexSubResourceData.pSysMem = &vertices[0];
-		if (FAILED(device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, vertexBuffer)))
-			throw ER_CoreException("ID3D11Device::CreateBuffer() failed during vertex buffer creation for CreateVertexBuffer_PositionUvNormalTangent.");
-
+		assert(vertexBuffer);
+		vertexBuffer->CreateGPUBufferResource(mModel.GetCore().GetRHI(), &vertices[0], static_cast<UINT>(vertices.size()), sizeof(VertexPositionTextureNormalTangent), false, ER_BIND_VERTEX_BUFFER);
 	}
-
 }

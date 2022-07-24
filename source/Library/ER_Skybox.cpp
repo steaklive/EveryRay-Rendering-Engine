@@ -25,8 +25,8 @@ namespace Library
 
 	ER_Skybox::~ER_Skybox()
 	{
-		ReleaseObject(mVertexBuffer);
-		ReleaseObject(mIndexBuffer);
+		DeleteObject(mVertexBuffer);
+		DeleteObject(mIndexBuffer);
 		ReleaseObject(mInputLayout);
 		ReleaseObject(mSkyboxVS);
 		ReleaseObject(mSkyboxPS);
@@ -40,14 +40,13 @@ namespace Library
 	{
 		SetCurrentDirectory(ER_Utility::ExecutableDirectory().c_str());
 
-		auto device = mCore.Direct3DDevice();
-		auto context = mCore.Direct3DDeviceContext();
-
 		std::unique_ptr<ER_Model> model(new ER_Model(mCore, ER_Utility::GetFilePath("content\\models\\sphere_lowpoly.obj"), true));
 
 		auto& meshes = model->Meshes();
-		meshes[0].CreateVertexBuffer_Position(&mVertexBuffer);
-		meshes[0].CreateIndexBuffer(&mIndexBuffer);
+		mVertexBuffer = new ER_RHI_GPUBuffer();
+		meshes[0].CreateVertexBuffer_Position(mVertexBuffer);
+		mIndexBuffer = new ER_RHI_GPUBuffer();
+		meshes[0].CreateIndexBuffer(mIndexBuffer);
 		mIndexCount = meshes[0].Indices().size();
 
 		//skybox

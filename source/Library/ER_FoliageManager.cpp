@@ -213,9 +213,9 @@ namespace Library
 
 	ER_Foliage::~ER_Foliage()
 	{
-		ReleaseObject(mVertexBuffer);
-		ReleaseObject(mInstanceBuffer);
-		ReleaseObject(mIndexBuffer);
+		DeleteObject(mVertexBuffer);
+		DeleteObject(mInstanceBuffer);
+		DeleteObject(mIndexBuffer);
 		ReleaseObject(mAlbedoTexture);
 		ReleaseObject(mAlphaToCoverageState);
 		ReleaseObject(mNoBlendState);
@@ -234,38 +234,40 @@ namespace Library
 
 	void ER_Foliage::LoadBillboardModel(FoliageBillboardType bType)
 	{
+		mVertexBuffer = new ER_RHI_GPUBuffer();
+		mIndexBuffer = new ER_RHI_GPUBuffer();
 		if (bType == FoliageBillboardType::SINGLE) {
 			mIsRotating = true;
 			std::unique_ptr<ER_Model> quadSingleModel(new ER_Model(mCore, ER_Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_single.obj"), true));
-			quadSingleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(&mVertexBuffer);
-			quadSingleModel->GetMesh(0).CreateIndexBuffer(&mIndexBuffer);
+			quadSingleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(mVertexBuffer);
+			quadSingleModel->GetMesh(0).CreateIndexBuffer(mIndexBuffer);
 			mVerticesCount = quadSingleModel->GetMesh(0).Indices().size();
 		}
 		else if (bType == FoliageBillboardType::TWO_QUADS_CROSSING) {
 			mIsRotating = false;
 			std::unique_ptr<ER_Model> quadDoubleModel(new ER_Model(mCore, ER_Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_double.obj"), true));
-			quadDoubleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(&mVertexBuffer);
-			quadDoubleModel->GetMesh(0).CreateIndexBuffer(&mIndexBuffer);
+			quadDoubleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(mVertexBuffer);
+			quadDoubleModel->GetMesh(0).CreateIndexBuffer(mIndexBuffer);
 			mVerticesCount = quadDoubleModel->GetMesh(0).Indices().size();
 		}
 		else if (bType == FoliageBillboardType::THREE_QUADS_CROSSING) {
 			mIsRotating = false;
 			std::unique_ptr<ER_Model> quadTripleModel(new ER_Model(mCore, ER_Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_triple.obj"), true));
-			quadTripleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(&mVertexBuffer);
-			quadTripleModel->GetMesh(0).CreateIndexBuffer(&mIndexBuffer);
+			quadTripleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(mVertexBuffer);
+			quadTripleModel->GetMesh(0).CreateIndexBuffer(mIndexBuffer);
 			mVerticesCount = quadTripleModel->GetMesh(0).Indices().size();
 		}
 		else if (bType == FoliageBillboardType::MULTIPLE_QUADS_CROSSING) {
 			mIsRotating = false;
 			std::unique_ptr<ER_Model> quadMultipleModel(new ER_Model(mCore, ER_Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_multiple.obj"), true));
-			quadMultipleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(&mVertexBuffer);
-			quadMultipleModel->GetMesh(0).CreateIndexBuffer(&mIndexBuffer);
+			quadMultipleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(mVertexBuffer);
+			quadMultipleModel->GetMesh(0).CreateIndexBuffer(mIndexBuffer);
 			mVerticesCount = quadMultipleModel->GetMesh(0).Indices().size();
 		}
 	}
 	void ER_Foliage::Initialize()
 	{
-		mFoliageConstantBuffer.Initialize(mCore.Direct3DDevice());
+		mFoliageConstantBuffer.Initialize(mCore.GetRHI());
 		InitializeBuffersCPU();
 		InitializeBuffersGPU(mPatchesCount);
 
@@ -349,21 +351,8 @@ namespace Library
 			mCurrentPositions[i] = XMFLOAT4(mPatchesBufferCPU[i].xPos, mPatchesBufferCPU[i].yPos, mPatchesBufferCPU[i].zPos, 1.0f);
 		}
 
-		// Set up the description of the instance buffer.
-		instanceBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-		instanceBufferDesc.ByteWidth = sizeof(GPUFoliageInstanceData) * instanceCount;
-		instanceBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		instanceBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		instanceBufferDesc.MiscFlags = 0;
-		instanceBufferDesc.StructureByteStride = 0;
-
-		// Give the subresource structure a pointer to the instance data.
-		instanceData.pSysMem = mPatchesBufferGPU;
-		instanceData.SysMemPitch = 0;
-		instanceData.SysMemSlicePitch = 0;
-
-		if (FAILED(mCore.Direct3DDevice()->CreateBuffer(&instanceBufferDesc, &instanceData, &mInstanceBuffer)))
-			throw ER_CoreException("ID3D11Device::CreateBuffer() failed while generating instance buffer of foliage patches");
+		mInstanceBuffer = new ER_RHI_GPUBuffer();
+		mInstanceBuffer->CreateGPUBufferResource(mCore.GetRHI(), &instanceData, instanceCount, sizeof(GPUFoliageInstanceData), true, ER_BIND_VERTEX_BUFFER);
 	}
 
 	void ER_Foliage::InitializeBuffersCPU()
@@ -612,7 +601,7 @@ namespace Library
 	// updating world matrices of visible patches
 	void ER_Foliage::UpdateBuffersGPU() 
 	{
-		ID3D11DeviceContext* context = mCore.Direct3DDeviceContext();
+		ER_RHI* rhi = mCore.GetRHI();
 
 		double angle;
 		float rotation, windRotation;
@@ -624,16 +613,7 @@ namespace Library
 			mPatchesBufferGPU[i].worldMatrix = XMMatrixScaling(mPatchesBufferCPU[i].scale, mPatchesBufferCPU[i].scale, mPatchesBufferCPU[i].scale) * translationMatrix;
 		}
 
-		D3D11_MAPPED_SUBRESOURCE mappedResource;
-		GPUFoliageInstanceData* instancesPtr;
-
-		if (FAILED(context->Map(mInstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource)))
-			throw ER_CoreException("Map() failed while updating instance buffer of foliage patches");
-
-		instancesPtr = (GPUFoliageInstanceData*)mappedResource.pData;
-
-		memcpy(instancesPtr, (void*)mPatchesBufferGPU, (sizeof(GPUFoliageInstanceData) * mPatchesCount));
-		context->Unmap(mInstanceBuffer, 0);
+		rhi->UpdateBuffer(mInstanceBuffer, (void*)mPatchesBufferGPU, (sizeof(GPUFoliageInstanceData) * mPatchesCount));
 	}
 
 	bool ER_Foliage::PerformCPUFrustumCulling(ER_Camera* camera)

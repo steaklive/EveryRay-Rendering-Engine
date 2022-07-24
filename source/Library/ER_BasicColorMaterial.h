@@ -1,5 +1,6 @@
 #pragma once
 #include "ER_Material.h"
+#include "RHI/ER_RHI.h"
 
 namespace Library
 {
@@ -23,7 +24,7 @@ namespace Library
 		virtual void PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex) override;
 		void PrepareForRendering(const XMMATRIX& worldTransform, const XMFLOAT4& color);
 
-		virtual void CreateVertexBuffer(const ER_Mesh& mesh, ID3D11Buffer** vertexBuffer) override;
+		virtual void CreateVertexBuffer(const ER_Mesh& mesh, ER_RHI_GPUBuffer* vertexBuffer) override;
 		virtual int VertexSize() override;
 
 		ConstantBuffer<BasicMaterial_CBufferData::BasicMaterialCB> mConstantBuffer;

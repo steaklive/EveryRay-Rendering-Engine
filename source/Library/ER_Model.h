@@ -14,7 +14,7 @@ namespace Library
 		ER_Model(ER_Core& game, const std::string& filename, bool flipUVs = false);
 		~ER_Model();
 
-		ER_Core& GetGame();
+		ER_Core& GetCore();
 		bool HasMeshes() const;
 		bool HasMaterials() const;
 

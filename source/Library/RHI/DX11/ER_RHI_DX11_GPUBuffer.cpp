@@ -38,6 +38,8 @@ namespace Library
 		buf_desc.CPUAccessFlags = cpuAccessFlags;
 		buf_desc.MiscFlags = miscFlags;
 		buf_desc.StructureByteStride = byteStride;
+		if (buf_desc.BindFlags & D3D11_BIND_CONSTANT_BUFFER)
+			buf_desc.StructureByteStride = 0;
 		if (FAILED(device->CreateBuffer(&buf_desc, aData != NULL ? &init_data : NULL, &mBuffer)))
 			throw ER_CoreException("ER_RHI_DX11: Failed to create GPU buffer.");
 
