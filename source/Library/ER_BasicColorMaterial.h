@@ -1,6 +1,5 @@
 #pragma once
 #include "ER_Material.h"
-#include "RHI/ER_RHI.h"
 
 namespace Library
 {

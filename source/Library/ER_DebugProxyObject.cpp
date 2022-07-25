@@ -10,7 +10,6 @@
 #include "ER_Mesh.h"
 #include "ER_Utility.h"
 #include "ER_Camera.h"
-#include "RasterizerStates.h"
 #include "ER_BasicColorMaterial.h"
 #include "ER_MaterialsCallbacks.h"
 
@@ -172,14 +171,12 @@ namespace Library
 
 	void ER_DebugProxyObject::Draw(const ER_CoreTime& gametime)
 	{
-		auto context = mCore.Direct3DDeviceContext();
+		auto rhi = mCore.GetRHI();
 
-		UINT stride = mMaterial->VertexSize();
-		UINT offset = 0;
-		context->IASetVertexBuffers(0, 1, &mVertexBuffer, &stride, &offset);
-		context->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		rhi->SetVertexBuffers({ mVertexBuffer });
+		rhi->SetIndexBuffer({ mIndexBuffer });
 
 		mMaterial->PrepareForRendering(XMLoadFloat4x4(&mWorldMatrix), { 1.0f, 0.65f, 0.0f, 1.0f });
-		context->DrawIndexed(mIndexCount, 0, 0);
+		rhi->DrawIndexed(mIndexCount);
 	}
 }
