@@ -295,6 +295,9 @@ namespace Rendering
 		mRHI->ClearMainRenderTarget(colorBlack);
 		mRHI->ClearMainDepthStencilTarget(1.0f, 0);
 
+		mRHI->SetDepthStencilState(ER_DISABLED);
+		mRHI->SetRasterizerState(ER_BACK_CULLING);
+
 		mCurrentSandbox->Draw(*this, gameTime);
 
 		mRHI->EndGraphicsCommandList();

@@ -64,17 +64,14 @@ namespace Library
 		virtual void SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr, ER_RHI_GPUTexture* aUAV = nullptr) override;
 		virtual void SetDepthTarget(ER_RHI_GPUTexture* aDepthTarget) override;
 
-		virtual void SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE aDS, UINT stencilRef) override;
-		virtual ER_RHI_DEPTH_STENCIL_STATE GetCurrentDepthStencilState() override;
+		virtual void SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE aDS, UINT stencilRef = 0xffffffff) override;
+		virtual ER_RHI_DEPTH_STENCIL_STATE GetCurrentDepthStencilState() override; //TODO
 
 		virtual void SetBlendState(ER_RHI_BLEND_STATE aBS, const float BlendFactor[4], UINT SampleMask) override;
-		virtual ER_RHI_BLEND_STATE GetCurrentBlendState() override; //TODO
 
 		virtual void SetRasterizerState(ER_RHI_RASTERIZER_STATE aRS) override;
-		virtual ER_RHI_RASTERIZER_STATE GetCurrentRasterizerState() override;
 
-		virtual void SetViewport(ER_RHI_Viewport* aViewport) override;
-		virtual ER_RHI_Viewport* GetCurrentViewport() override;
+		virtual void SetViewport(const ER_RHI_Viewport& aViewport) override;
 
 		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot = 0) override;
 		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot = 0) override;
@@ -89,6 +86,7 @@ namespace Library
 		virtual void SetTopologyType(ER_RHI_PRIMITIVE_TYPE aType) override;
 		virtual ER_RHI_PRIMITIVE_TYPE GetCurrentTopologyType() override;
 
+		virtual void UnbindRenderTargets() override;
 		virtual void UnbindResourcesFromShader(ER_RHI_SHADER_TYPE aShaderType, bool unbindShader = true) override;
 
 		virtual void UpdateBuffer(ER_RHI_GPUBuffer* aBuffer, void* aData, int dataSize) override;
@@ -97,8 +95,6 @@ namespace Library
 		virtual void StartNewImGuiFrame() override;
 		virtual void RenderDrawDataImGui() override;
 		virtual void ShutdownImGui() override;
-
-		virtual ER_RHI_Viewport GetViewport() override { return mMainViewport; }
 
 		ID3D11Device1* GetDevice() { return mDirect3DDevice; }
 		ID3D11DeviceContext1* GetContext() { return mDirect3DDeviceContext; }
@@ -144,6 +140,33 @@ namespace Library
 		ID3D11BlendState* mNoBlendState = nullptr;
 		ID3D11BlendState* mAlphaToCoverageState = nullptr;
 		std::map<ER_RHI_BLEND_STATE, ID3D11BlendState*> mBlendStates;
+
+		ID3D11RasterizerState* BackCullingRS = nullptr;
+		ID3D11RasterizerState* FrontCullingRS = nullptr;
+		ID3D11RasterizerState* NoCullingRS = nullptr;
+		ID3D11RasterizerState* WireframeRS = nullptr;
+		ID3D11RasterizerState* NoCullingNoDepthEnabledScissorRS = nullptr;
+		ID3D11RasterizerState* ShadowRS = nullptr;
+		std::map<ER_RHI_RASTERIZER_STATE, ID3D11RasterizerState*> mRasterizerStates;
+
+		ID3D11DepthStencilState* DisabledDS = nullptr;
+		ID3D11DepthStencilState* DepthOnlyReadComparisonNeverDS = nullptr;
+		ID3D11DepthStencilState* DepthOnlyReadComparisonLessDS = nullptr;
+		ID3D11DepthStencilState* DepthOnlyReadComparisonEqualDS = nullptr;
+		ID3D11DepthStencilState* DepthOnlyReadComparisonLessEqualDS = nullptr;
+		ID3D11DepthStencilState* DepthOnlyReadComparisonGreaterDS = nullptr;
+		ID3D11DepthStencilState* DepthOnlyReadComparisonNotEqualDS = nullptr;
+		ID3D11DepthStencilState* DepthOnlyReadComparisonGreaterEqualDS = nullptr;
+		ID3D11DepthStencilState* DepthOnlyReadComparisonAlwaysDS = nullptr;
+		ID3D11DepthStencilState* DepthOnlyWriteComparisonNeverDS = nullptr;
+		ID3D11DepthStencilState* DepthOnlyWriteComparisonLessDS = nullptr;
+		ID3D11DepthStencilState* DepthOnlyWriteComparisonEqualDS = nullptr;
+		ID3D11DepthStencilState* DepthOnlyWriteComparisonLessEqualDS = nullptr;
+		ID3D11DepthStencilState* DepthOnlyWriteComparisonGreaterDS = nullptr;
+		ID3D11DepthStencilState* DepthOnlyWriteComparisonNotEqualDS = nullptr;
+		ID3D11DepthStencilState* DepthOnlyWriteComparisonGreaterEqualDS = nullptr;
+		ID3D11DepthStencilState* DepthOnlyWriteComparisonAlwaysDS = nullptr;
+		std::map<ER_RHI_DEPTH_STENCIL_STATE, ID3D11DepthStencilState*> mDepthStates;
 
 		ER_RHI_Viewport mMainViewport;
 	};

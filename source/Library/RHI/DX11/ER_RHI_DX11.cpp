@@ -37,6 +37,30 @@ namespace Library
 		ReleaseObject(mNoBlendState);
 		ReleaseObject(mAlphaToCoverageState);
 
+		ReleaseObject(BackCullingRS);
+		ReleaseObject(FrontCullingRS);
+		ReleaseObject(NoCullingRS);
+		ReleaseObject(WireframeRS);
+		ReleaseObject(NoCullingNoDepthEnabledScissorRS);
+		ReleaseObject(ShadowRS);
+
+		ReleaseObject(DepthOnlyReadComparisonNeverDS);
+		ReleaseObject(DepthOnlyReadComparisonLessDS);
+		ReleaseObject(DepthOnlyReadComparisonEqualDS);
+		ReleaseObject(DepthOnlyReadComparisonLessEqualDS);
+		ReleaseObject(DepthOnlyReadComparisonGreaterDS);
+		ReleaseObject(DepthOnlyReadComparisonNotEqualDS);
+		ReleaseObject(DepthOnlyReadComparisonGreaterEqualDS);
+		ReleaseObject(DepthOnlyReadComparisonAlwaysDS);
+		ReleaseObject(DepthOnlyWriteComparisonNeverDS);
+		ReleaseObject(DepthOnlyWriteComparisonLessDS);
+		ReleaseObject(DepthOnlyWriteComparisonEqualDS);
+		ReleaseObject(DepthOnlyWriteComparisonLessEqualDS);
+		ReleaseObject(DepthOnlyWriteComparisonGreaterDS);
+		ReleaseObject(DepthOnlyWriteComparisonNotEqualDS);
+		ReleaseObject(DepthOnlyWriteComparisonGreaterEqualDS);
+		ReleaseObject(DepthOnlyWriteComparisonAlwaysDS);
+
 		if (mDirect3DDeviceContext)
 			mDirect3DDeviceContext->ClearState();
 
@@ -390,13 +414,58 @@ namespace Library
 		mDirect3DDeviceContext->OMSetRenderTargets(1, nullRTVs, dsv);
 	}
 
+	void ER_RHI_DX11::SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE aDS, UINT stencilRef)
+	{
+		if (aDS == ER_DISABLED)
+		{
+			mDirect3DDeviceContext->OMSetDepthStencilState(nullptr, 0xffffffff);
+			return;
+		}
+
+		auto it = mDepthStates.find(aDS);
+		if (it != mDepthStates.end())
+			mDirect3DDeviceContext->OMSetDepthStencilState(it->second, stencilRef);
+		else
+			throw ER_CoreException("ER_RHI_DX11: DepthStencil state is not found.");
+	}
+
 	void ER_RHI_DX11::SetBlendState(ER_RHI_BLEND_STATE aBS, const float BlendFactor[4], UINT SampleMask)
 	{
 		auto it = mBlendStates.find(aBS);
 		if (it != mBlendStates.end())
+		{
+			mCurrentBS = aBS;
 			mDirect3DDeviceContext->OMSetBlendState(it->second, BlendFactor, SampleMask);
+		}
 		else
 			throw ER_CoreException("ER_RHI_DX11: Blend state is not found.");
+	}
+
+	void ER_RHI_DX11::SetRasterizerState(ER_RHI_RASTERIZER_STATE aRS)
+	{
+		auto it = mRasterizerStates.find(aRS);
+		if (it != mRasterizerStates.end())
+		{
+			mCurrentRS = aRS;
+			mDirect3DDeviceContext->RSSetState(it->second);
+		}
+		else
+			throw ER_CoreException("ER_RHI_DX11: Rasterizer state is not found.");
+	}
+
+	void ER_RHI_DX11::SetViewport(const ER_RHI_Viewport& aViewport)
+	{
+		D3D11_VIEWPORT viewport;
+		viewport.TopLeftX = aViewport.TopLeftX;
+		viewport.TopLeftY = aViewport.TopLeftY;
+		viewport.Width = aViewport.Width;
+		viewport.Height = aViewport.Height;
+		viewport.MinDepth = aViewport.MinDepth;
+		viewport.MaxDepth = aViewport.MaxDepth;
+
+		mCurrentViewport = aViewport;
+
+		mDirect3DDeviceContext->RSSetViewports(1, &viewport);
 	}
 
 	void ER_RHI_DX11::SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot /*= 0*/)
@@ -650,6 +719,12 @@ namespace Library
 		D3D11_PRIMITIVE_TOPOLOGY currentTopology;
 		mDirect3DDeviceContext->IAGetPrimitiveTopology(&currentTopology);
 		return GetTopologyType(currentTopology);
+	}
+
+	void ER_RHI_DX11::UnbindRenderTargets()
+	{
+		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
+		mDirect3DDeviceContext->OMSetRenderTargets(1, nullRTVs, nullptr);
 	}
 
 	void ER_RHI_DX11::UnbindResourcesFromShader(ER_RHI_SHADER_TYPE aShaderType, bool unbindShader)
@@ -965,6 +1040,82 @@ namespace Library
 		blendStateDescription.AlphaToCoverageEnable = FALSE;
 		if (FAILED(mDirect3DDevice->CreateBlendState(&blendStateDescription, &mNoBlendState)))
 			throw ER_CoreException("ER_RHI_DX11: ID3D11Device::CreateBlendState() failed while create no blend state.");
+	}
+
+	void ER_RHI_DX11::CreateRasterizerStates()
+	{
+		D3D11_RASTERIZER_DESC rasterizerStateDesc;
+		ZeroMemory(&rasterizerStateDesc, sizeof(rasterizerStateDesc));
+		rasterizerStateDesc.FillMode = D3D11_FILL_SOLID;
+		rasterizerStateDesc.CullMode = D3D11_CULL_BACK;
+		rasterizerStateDesc.DepthClipEnable = true;
+		HRESULT hr = mDirect3DDevice->CreateRasterizerState(&rasterizerStateDesc, &BackCullingRS);
+		if (FAILED(hr))
+			throw ER_CoreException("ER_RHI_DX11: CreateRasterizerStates() failed when creating BackCullingRS.", hr);
+		mRasterizerStates.insert(std::make_pair(ER_RHI_RASTERIZER_STATE::ER_BACK_CULLING, BackCullingRS));
+
+		ZeroMemory(&rasterizerStateDesc, sizeof(rasterizerStateDesc));
+		rasterizerStateDesc.FillMode = D3D11_FILL_SOLID;
+		rasterizerStateDesc.CullMode = D3D11_CULL_BACK;
+		rasterizerStateDesc.FrontCounterClockwise = true;
+		rasterizerStateDesc.DepthClipEnable = true;
+		hr = mDirect3DDevice->CreateRasterizerState(&rasterizerStateDesc, &FrontCullingRS);
+		if (FAILED(hr))
+			throw ER_CoreException("ER_RHI_DX11: CreateRasterizerStates() failed when creating FrontCullingRS.", hr);
+		mRasterizerStates.insert(std::make_pair(ER_RHI_RASTERIZER_STATE::ER_FRONT_CULLING, FrontCullingRS));
+
+		ZeroMemory(&rasterizerStateDesc, sizeof(rasterizerStateDesc));
+		rasterizerStateDesc.FillMode = D3D11_FILL_SOLID;
+		rasterizerStateDesc.CullMode = D3D11_CULL_NONE;
+		rasterizerStateDesc.DepthClipEnable = true;
+		hr = mDirect3DDevice->CreateRasterizerState(&rasterizerStateDesc, &NoCullingRS);
+		if (FAILED(hr))
+			throw ER_CoreException("ER_RHI_DX11: CreateRasterizerStates() failed when creating NoCullingRS.", hr);
+		mRasterizerStates.insert(std::make_pair(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING, NoCullingRS));
+
+		ZeroMemory(&rasterizerStateDesc, sizeof(rasterizerStateDesc));
+		rasterizerStateDesc.FillMode = D3D11_FILL_WIREFRAME;
+		rasterizerStateDesc.CullMode = D3D11_CULL_NONE;
+		rasterizerStateDesc.DepthClipEnable = true;
+		hr = mDirect3DDevice->CreateRasterizerState(&rasterizerStateDesc, &WireframeRS);
+		if (FAILED(hr))
+			throw ER_CoreException("ER_RHI_DX11: CreateRasterizerStates() failed when creating WireframeRS.", hr);
+		mRasterizerStates.insert(std::make_pair(ER_RHI_RASTERIZER_STATE::ER_WIREFRAME, WireframeRS));
+
+		ZeroMemory(&rasterizerStateDesc, sizeof(rasterizerStateDesc));
+		rasterizerStateDesc.FillMode = D3D11_FILL_SOLID;
+		rasterizerStateDesc.CullMode = D3D11_CULL_NONE;
+		rasterizerStateDesc.DepthClipEnable = false;
+		rasterizerStateDesc.ScissorEnable = true;
+		hr = mDirect3DDevice->CreateRasterizerState(&rasterizerStateDesc, &NoCullingNoDepthEnabledScissorRS);
+		if (FAILED(hr))
+			throw ER_CoreException("ER_RHI_DX11: CreateRasterizerStates() failed when creating NoCullingNoDepthEnabledScissorRS.", hr);
+		mRasterizerStates.insert(std::make_pair(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING_NO_DEPTH_SCISSOR_ENABLED, NoCullingNoDepthEnabledScissorRS));
+
+		ZeroMemory(&rasterizerStateDesc, sizeof(rasterizerStateDesc));
+		rasterizerStateDesc.FillMode = D3D11_FILL_SOLID;
+		rasterizerStateDesc.CullMode = D3D11_CULL_BACK;
+		rasterizerStateDesc.DepthClipEnable = false;
+		rasterizerStateDesc.DepthBias = 0; //0.05f
+		rasterizerStateDesc.SlopeScaledDepthBias = 3.0f;
+		rasterizerStateDesc.FrontCounterClockwise = false;
+		hr = mDirect3DDevice->CreateRasterizerState(&rasterizerStateDesc, &ShadowRS);
+		if (FAILED(hr))
+			throw ER_CoreException("ER_RHI_DX11: CreateRasterizerStates() failed when creating ShadowRS.", hr);
+		mRasterizerStates.insert(std::make_pair(ER_RHI_RASTERIZER_STATE::ER_SHADOW_RS, ShadowRS));
+	}
+
+	void ER_RHI_DX11::CreateDepthStencilStates()
+	{
+		//TODO
+		D3D11_DEPTH_STENCIL_DESC depthStencilStateDesc;
+		depthStencilStateDesc.DepthEnable = TRUE;
+		depthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+		depthStencilStateDesc.StencilEnable = FALSE;
+		HRESULT hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &mDepthStencilState);
+		if (FAILED(hr))
+			throw ER_CoreException("CreateDepthStencilState() failed while generating a shadow mapper.", hr);
 	}
 
 }

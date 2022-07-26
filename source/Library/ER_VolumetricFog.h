@@ -2,8 +2,8 @@
 
 #include "Common.h"
 #include "ConstantBuffer.h"
-#include "ER_GPUTexture.h"
 #include "ER_CoreComponent.h"
+#include "RHI/ER_RHI.h"
 
 namespace Library
 {
@@ -46,13 +46,13 @@ namespace Library
 	
 		void Initialize();
 		void Draw();
-		void Composite(ER_GPUTexture* aInputColorTexture, ER_GPUTexture* aGbufferWorldPos);
+		void Composite(ER_RHI_GPUTexture* aInputColorTexture, ER_RHI_GPUTexture* aGbufferWorldPos);
 		void Update(const ER_CoreTime& gameTime);
 		void Config() { mShowDebug = !mShowDebug; }
 		bool IsEnabled() { return mEnabled; }
 		void SetEnabled(bool val) { mEnabled = val; }
 
-		ER_GPUTexture* GetVoxelFogTexture() { return mFinalVoxelAccumulationTexture3D; }
+		ER_RHI_GPUTexture* GetVoxelFogTexture() { return mFinalVoxelAccumulationTexture3D; }
 	private:
 		void ComputeInjection();
 		void ComputeAccumulation();
@@ -61,16 +61,16 @@ namespace Library
 		const ER_ShadowMapper& mShadowMapper;
 		const DirectionalLight& mDirectionalLight;
 
-		ER_GPUTexture* mTempVoxelInjectionTexture3D[2] = { nullptr, nullptr }; //read-write
-		ER_GPUTexture* mFinalVoxelAccumulationTexture3D = nullptr;
-		ER_GPUTexture* mBlueNoiseTexture = nullptr;
+		ER_RHI_GPUTexture* mTempVoxelInjectionTexture3D[2] = { nullptr, nullptr }; //read-write
+		ER_RHI_GPUTexture* mFinalVoxelAccumulationTexture3D = nullptr;
+		ER_RHI_GPUTexture* mBlueNoiseTexture = nullptr;
 
 		ConstantBuffer<VolumetricFogCBufferData::MainCB> mMainConstantBuffer;
 		ConstantBuffer<VolumetricFogCBufferData::CompositeCB> mCompositeConstantBuffer;
 
-		ID3D11ComputeShader* mInjectionCS = nullptr;
-		ID3D11ComputeShader* mAccumulationCS = nullptr;
-		ID3D11PixelShader* mCompositePS = nullptr;
+		ER_RHI_GPUShader* mInjectionCS = nullptr;
+		ER_RHI_GPUShader* mAccumulationCS = nullptr;
+		ER_RHI_GPUShader* mCompositePS = nullptr;
 
 		XMMATRIX mPrevViewProj;
 

@@ -27,11 +27,24 @@ namespace Library
 
 	enum ER_RHI_DEPTH_STENCIL_STATE
 	{
-		ER_DEPTH_DISABLED,
-		ER_DEPTH_READ,
-		ER_DEPTH_READ_WRITE,
-		ER_DEPTH_STENCIL_READ,
-		ER_DEPTH_STENCIL_READ_WRITE
+		ER_DISABLED,
+		ER_DEPTH_ONLY_READ_COMPARISON_NEVER,
+		ER_DEPTH_ONLY_READ_COMPARISON_LESS,
+		ER_DEPTH_ONLY_READ_COMPARISON_EQUAL,
+		ER_DEPTH_ONLY_READ_COMPARISON_LESS_EQUAL,
+		ER_DEPTH_ONLY_READ_COMPARISON_GREATER,
+		ER_DEPTH_ONLY_READ_COMPARISON_NOT_EQUAL,
+		ER_DEPTH_ONLY_READ_COMPARISON_GREATER_EQUAL,
+		ER_DEPTH_ONLY_READ_COMPARISON_ALWAYS,
+		ER_DEPTH_ONLY_WRITE_COMPARISON_NEVER,
+		ER_DEPTH_ONLY_WRITE_COMPARISON_LESS,
+		ER_DEPTH_ONLY_WRITE_COMPARISON_EQUAL,
+		ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL,
+		ER_DEPTH_ONLY_WRITE_COMPARISON_GREATER,
+		ER_DEPTH_ONLY_WRITE_COMPARISON_NOT_EQUAL,
+		ER_DEPTH_ONLY_WRITE_COMPARISON_GREATER_EQUAL,
+		ER_DEPTH_ONLY_WRITE_COMPARISON_ALWAYS
+		//TODO: add support for stencil
 	};
 
 	enum ER_RHI_BLEND_STATE
@@ -63,6 +76,7 @@ namespace Library
 		ER_BACK_CULLING,
 		ER_FRONT_CULLING,
 		ER_WIREFRAME,
+		ER_NO_CULLING_NO_DEPTH_SCISSOR_ENABLED,
 		ER_SHADOW_RS/* this is dirty */
 	};
 
@@ -226,17 +240,17 @@ namespace Library
 		virtual void SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr, ER_RHI_GPUTexture* aUAV = nullptr) = 0;
 		virtual void SetDepthTarget(ER_RHI_GPUTexture* aDepthTarget) = 0;
 
-		virtual void SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE aDS, UINT stencilRef) = 0;
+		virtual void SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE aDS, UINT stencilRef = 0xffffffff) = 0;
 		virtual ER_RHI_DEPTH_STENCIL_STATE GetCurrentDepthStencilState() = 0;
 
 		virtual void SetBlendState(ER_RHI_BLEND_STATE aBS, const float BlendFactor[4], UINT SampleMask) = 0;
-		virtual ER_RHI_BLEND_STATE GetCurrentBlendState() = 0;
+		virtual ER_RHI_BLEND_STATE GetCurrentBlendState() { return mCurrentBS; }
 
 		virtual void SetRasterizerState(ER_RHI_RASTERIZER_STATE aRS) = 0;
-		virtual ER_RHI_RASTERIZER_STATE GetCurrentRasterizerState() = 0;
+		virtual ER_RHI_RASTERIZER_STATE GetCurrentRasterizerState() { return mCurrentRS; }
 
-		virtual void SetViewport(ER_RHI_Viewport* aViewport) = 0;
-		virtual ER_RHI_Viewport* GetCurrentViewport() = 0;
+		virtual void SetViewport(const ER_RHI_Viewport& aViewport) = 0;
+		virtual const ER_RHI_Viewport& GetCurrentViewport() { return mCurrentViewport; }
 
 		virtual void SetShader(ER_RHI_GPUShader* aShader) = 0;
 		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot = 0) = 0;
@@ -249,6 +263,7 @@ namespace Library
 		virtual void SetInputLayout(ER_RHI_InputLayout* aIL) = 0;
 		virtual void SetTopologyType(ER_RHI_PRIMITIVE_TYPE aType) = 0;
 
+		virtual void UnbindRenderTargets() = 0;
 		virtual void UnbindResourcesFromShader(ER_RHI_SHADER_TYPE aShaderType, bool unbindShader = true) = 0;
 
 		virtual void UpdateBuffer(ER_RHI_GPUBuffer* aBuffer, void* aData, int dataSize) = 0;
@@ -260,15 +275,17 @@ namespace Library
 
 		virtual void SetWindowHandle(void* handle) { (HWND)mWindowHandle; }
 
-		virtual ER_RHI_Viewport GetViewport() = 0;
-
 		ER_GRAPHICS_API GetAPI() { return mAPI; }
-
 	protected:
 		HWND mWindowHandle;
 
 		ER_GRAPHICS_API mAPI;
 		bool mIsFullScreen = false;
+
+		ER_RHI_RASTERIZER_STATE mCurrentRS;
+		ER_RHI_BLEND_STATE mCurrentBS;
+
+		ER_RHI_Viewport mCurrentViewport;
 
 		int mCurrentGraphicsCommandListIndex = 0;
 		int mCurrentComputeCommandListIndex = 0;
