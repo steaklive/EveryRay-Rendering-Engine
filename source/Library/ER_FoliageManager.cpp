@@ -6,14 +6,12 @@
 #include "ER_Model.h"
 #include "ER_Mesh.h"
 #include "ER_VertexDeclarations.h"
-#include "RasterizerStates.h"
 #include "ER_Scene.h"
 #include "DirectionalLight.h"
 #include "ER_ShadowMapper.h"
 #include "ER_PostProcessingStack.h"
 #include "ER_Illumination.h"
 #include "ER_Camera.h"
-#include "ShaderCompiler.h"
 #include "ER_RenderableAABB.h"
 #include "ER_Terrain.h"
 
@@ -144,70 +142,43 @@ namespace Library
 		mIsPlacedOnTerrain(isPlacedOnTerrain),
 		mTerrainSplatChannel(placeChannel)
 	{
+		auto rhi = mCore.GetRHI();
 
 		//shaders
 		{
-			ID3DBlob* blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
-				throw ER_CoreException("Failed to load VSMain from shader: Foliage.hlsl!");
-			if (FAILED(mCore.Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVS)))
-				throw ER_CoreException("Failed to create vertex shader from Foliage.hlsl!");
-
-			D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
+			ER_RHI_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 			{
-				{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-				{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-				{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-				{ "WORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-				{ "WORLD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-				{ "WORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-				{ "WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+				{ "POSITION", 0, ER_FORMAT_R32G32B32A32_FLOAT, 0, 0, true, 0 },
+				{ "TEXCOORD", 0, ER_FORMAT_R32G32_FLOAT, 0, 0xffffffff, true, 0 },
+				{ "NORMAL", 0, ER_FORMAT_R32G32B32_FLOAT, 0, 0xffffffff, true, 0 },
+				{ "WORLD", 0, ER_FORMAT_R32G32B32A32_FLOAT, 1, 0,  false, 1 },
+				{ "WORLD", 1, ER_FORMAT_R32G32B32A32_FLOAT, 1, 16, false, 1 },
+				{ "WORLD", 2, ER_FORMAT_R32G32B32A32_FLOAT, 1, 32, false, 1 },
+				{ "WORLD", 3, ER_FORMAT_R32G32B32A32_FLOAT, 1, 48, false, 1 }
 			};
+			mInputLayout = new ER_RHI_InputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
 
-			HRESULT hr = mCore.Direct3DDevice()->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), blob->GetBufferPointer(), blob->GetBufferSize(), &mInputLayout);
-			if (FAILED(hr))
-				throw ER_CoreException("CreateInputLayout() failed when creating foliage's vertex shader.", hr);
-			blob->Release();
+			mVS = new ER_RHI_GPUShader();
+			mVS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl"), "VSMain", ER_VERTEX, mInputLayout);
 
-			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "GSMain", "gs_5_0", &blob)))
-				throw ER_CoreException("Failed to load GSMain from shader: Foliage.hlsl!");
-			if (FAILED(mCore.Direct3DDevice()->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mGS)))
-				throw ER_CoreException("Failed to create geometry shader from Foliage.hlsl!");
-			blob->Release();
+			mGS = new ER_RHI_GPUShader();
+			mGS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl"), "GSMain", ER_GEOMETRY);
 
-			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
-				throw ER_CoreException("Failed to load PSMain from shader: Foliage.hlsl!");
-			if (FAILED(mCore.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS)))
-				throw ER_CoreException("Failed to create pixel shader from Foliage.hlsl!");
-			blob->Release();
+			mPS = new ER_RHI_GPUShader();
+			mPS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl"), "PSMain", ER_PIXEL);
 
-			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "PSMain_gbuffer", "ps_5_0", &blob)))
-				throw ER_CoreException("Failed to load PSMain_gbuffer from shader: Foliage.hlsl!");
-			if (FAILED(mCore.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS_GBuffer)))
-				throw ER_CoreException("Failed to create pixel shader from Foliage.hlsl!");
-			blob->Release();
+			mPS_GBuffer = new ER_RHI_GPUShader();
+			mPS_GBuffer->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl"), "PSMain_gbuffer", ER_PIXEL);
 
-			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl").c_str(), "PSMain_voxelization", "ps_5_0", &blob)))
-				throw ER_CoreException("Failed to load PSMain_voxelization from shader: Foliage.hlsl!");
-			if (FAILED(mCore.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS_Voxelization)))
-				throw ER_CoreException("Failed to create pixel shader from Foliage.hlsl!");
-			blob->Release();
+			mPS_Voxelization = new ER_RHI_GPUShader();
+			mPS_Voxelization->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl"), "PSMain_voxelization", ER_PIXEL);
 		}
 
 		LoadBillboardModel(mType);
 
-		if (FAILED(DirectX::CreateWICTextureFromFile(mCore.Direct3DDevice(), mCore.Direct3DDeviceContext(), ER_Utility::ToWideString(textureName).c_str(), nullptr, &mAlbedoTexture)))
-		{
-			std::string message = "Failed to create Foliage Albedo Map: ";
-			message += textureName;
-			throw ER_CoreException(message.c_str());
-		}
+		mAlbedoTexture = new ER_RHI_GPUTexture();
+		mAlbedoTexture->CreateGPUTextureResource(rhi, textureName, true);
 
-		CreateBlendStates();
 		Initialize();
 	}
 
@@ -216,19 +187,17 @@ namespace Library
 		DeleteObject(mVertexBuffer);
 		DeleteObject(mInstanceBuffer);
 		DeleteObject(mIndexBuffer);
-		ReleaseObject(mAlbedoTexture);
-		ReleaseObject(mAlphaToCoverageState);
-		ReleaseObject(mNoBlendState);
+		DeleteObject(mAlbedoTexture);
 		DeleteObject(mPatchesBufferCPU);
 		DeleteObject(mCurrentPositions);
 		DeleteObject(mPatchesBufferGPU);
 		DeleteObject(mDebugGizmoAABB);
-		ReleaseObject(mInputLayout);
-		ReleaseObject(mVS);
-		ReleaseObject(mGS);
-		ReleaseObject(mPS);
-		ReleaseObject(mPS_GBuffer);
-		ReleaseObject(mPS_Voxelization);
+		DeleteObject(mInputLayout);
+		DeleteObject(mVS);
+		DeleteObject(mGS);
+		DeleteObject(mPS);
+		DeleteObject(mPS_GBuffer);
+		DeleteObject(mPS_Voxelization);
 		mFoliageConstantBuffer.Release();
 	}
 
@@ -305,38 +274,9 @@ namespace Library
 		ER_MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
 	}
 
-	void ER_Foliage::CreateBlendStates()
-	{
-		D3D11_BLEND_DESC blendStateDescription;
-		ZeroMemory(&blendStateDescription, sizeof(D3D11_BLEND_DESC));
-
-		// Create an alpha enabled blend state description.
-		blendStateDescription.AlphaToCoverageEnable = TRUE;
-		blendStateDescription.RenderTarget[0].BlendEnable = TRUE;
-		blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-		blendStateDescription.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-		blendStateDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-		blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-		blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-		blendStateDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-		blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
-
-		// Create the blend state using the description.
-		if (FAILED(mCore.Direct3DDevice()->CreateBlendState(&blendStateDescription, &mAlphaToCoverageState)))
-			throw ER_CoreException("ID3D11Device::CreateBlendState() failed while create alpha-to-coverage blend state for foliage");
-
-		blendStateDescription.RenderTarget[0].BlendEnable = FALSE;
-		blendStateDescription.AlphaToCoverageEnable = FALSE;
-		if (FAILED(mCore.Direct3DDevice()->CreateBlendState(&blendStateDescription, &mNoBlendState)))
-			throw ER_CoreException("ID3D11Device::CreateBlendState() failed while create no blend state for foliage");
-	}
-
 	void ER_Foliage::InitializeBuffersGPU(int count)
 	{
 		assert(count > 0);
-
-		D3D11_BUFFER_DESC vertexBufferDesc, instanceBufferDesc;
-		D3D11_SUBRESOURCE_DATA vertexData, instanceData;
 
 		// instance buffer
 		int instanceCount = count;
@@ -379,31 +319,17 @@ namespace Library
 		if(renderPass == TO_VOXELIZATION)
 			assert(worldShadowMapper);
 
-		ID3D11DeviceContext* context = mCore.Direct3DDeviceContext();
+		auto rhi = mCore.GetRHI();
 
 		if (mPatchesCountToRender == 0 || mIsCulled)
 			return;
 
 		float blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-		context->OMSetBlendState(mAlphaToCoverageState, blendFactor, 0xffffffff);
+		rhi->SetBlendState(ER_ALPHA_TO_COVERAGE, blendFactor, 0xffffffff);
 
-		unsigned int strides[2];
-		unsigned int offsets[2];
-		ID3D11Buffer* bufferPointers[2];
-
-		strides[0] = sizeof(GPUFoliagePatchData);
-		strides[1] = sizeof(GPUFoliageInstanceData);
-
-		offsets[0] = 0;
-		offsets[1] = 0;
-
-		// Set the array of pointers to the vertex and instance buffers.
-		bufferPointers[0] = mVertexBuffer;
-		bufferPointers[1] = mInstanceBuffer;
-
-		context->IASetVertexBuffers(0, 2, bufferPointers, strides, offsets);
-		context->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-		context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		rhi->SetVertexBuffers({mVertexBuffer, mInstanceBuffer});
+		rhi->SetIndexBuffer(mIndexBuffer);
+		rhi->SetTopologyType(ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		if (worldShadowMapper)
 		{
@@ -430,55 +356,41 @@ namespace Library
 		mFoliageConstantBuffer.Data.WindGustDistance = mWindGustDistance;
 		mFoliageConstantBuffer.Data.WorldVoxelScale = *mWorldVoxelScale;
 		mFoliageConstantBuffer.Data.VoxelTextureDimension = *mVoxelTextureDimension;
-		mFoliageConstantBuffer.ApplyChanges(context);
-		ID3D11Buffer* CBs[1] = { mFoliageConstantBuffer.Buffer() };
-		
-		ID3D11SamplerState* SS[2] = { SamplerStates::TrilinearWrap, SamplerStates::ShadowSamplerState };
+		mFoliageConstantBuffer.ApplyChanges(rhi);
 
-		context->IASetInputLayout(mInputLayout);
-		context->VSSetShader(mVS, NULL, NULL);
-		context->VSSetConstantBuffers(0, 1, CBs);
+		rhi->SetInputLayout(mInputLayout);
+		rhi->SetShader(mVS);
+		rhi->SetConstantBuffers(ER_VERTEX, { mFoliageConstantBuffer.Buffer() });
 
 		if (renderPass == TO_VOXELIZATION)
 		{
-			context->GSSetShader(mGS, NULL, NULL);
-			context->GSSetConstantBuffers(0, 1, CBs);
-
-			context->PSSetShader(mPS_Voxelization, NULL, NULL);
+			rhi->SetShader(mGS);
+			rhi->SetConstantBuffers(ER_GEOMETRY, { mFoliageConstantBuffer.Buffer() });
+			rhi->SetShader(mPS_Voxelization);
 		}
 		else if (renderPass == TO_GBUFFER)
-		{
-			context->PSSetShader(mPS_GBuffer, NULL, NULL);
-		}
-		context->PSSetConstantBuffers(0, 1, CBs);
-		context->PSSetSamplers(0, 2, SS);
+			rhi->SetShader(mPS_GBuffer);
+
+		rhi->SetConstantBuffers(ER_PIXEL, { mFoliageConstantBuffer.Buffer() });
+		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
 		
-		ID3D11ShaderResourceView* SRs[1 + NUM_SHADOW_CASCADES] = { mAlbedoTexture };
+		std::vector<ER_RHI_GPUResource*> resources(1 + NUM_SHADOW_CASCADES);
+		resources[0] = mAlbedoTexture;
 		if (worldShadowMapper)
+		{
 			for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
-				SRs[1 + i] = worldShadowMapper->GetShadowTexture(i);
+				resources[1 + i] = worldShadowMapper->GetShadowTexture(i);
+			rhi->SetShaderResources(ER_PIXEL, resources);
+		}
+		else
+			rhi->SetShaderResources(ER_PIXEL, { mAlbedoTexture });
 
-		context->PSSetShaderResources(0, 1 + NUM_SHADOW_CASCADES, SRs);
+		rhi->DrawIndexedInstanced(mVerticesCount, mPatchesCountToRender, 0, 0, 0);
+		rhi->SetBlendState(ER_NO_BLEND);
 
-		context->DrawIndexedInstanced(mVerticesCount, mPatchesCountToRender, 0, 0, 0);
-		context->OMSetBlendState(mNoBlendState, blendFactor, 0xffffffff);
-
-		context->VSSetShader(NULL, NULL, NULL);
-		context->PSSetShader(NULL, NULL, NULL);
-		if (renderPass == TO_VOXELIZATION)
-			context->GSSetShader(NULL, NULL, NULL);
-
-		ID3D11ShaderResourceView* nullSRV[] = { NULL };
-		context->PSSetShaderResources(0, 1, nullSRV);
-
-		ID3D11Buffer* nullCBs[] = { NULL };
-		context->VSSetConstantBuffers(0, 1, nullCBs);
-		context->PSSetConstantBuffers(0, 1, nullCBs);
-		if (renderPass == TO_VOXELIZATION)
-			context->GSSetConstantBuffers(0, 1, nullCBs);
-
-		ID3D11SamplerState* nullSSs[] = { NULL };
-		context->PSSetSamplers(0, 1, nullSSs);
+		rhi->UnbindResourcesFromShader(ER_VERTEX);
+		rhi->UnbindResourcesFromShader(ER_GEOMETRY);
+		rhi->UnbindResourcesFromShader(ER_PIXEL);
 	}
 
 	void ER_Foliage::DrawDebugGizmos()
@@ -509,7 +421,6 @@ namespace Library
 			mAABB = ER_AABB(minP, maxP);
 		}
 
-		ID3D11DeviceContext* context = mCore.Direct3DDeviceContext();
 		XMFLOAT3 toCam = { mDistributionCenter.x - mCamera.Position().x, mDistributionCenter.y - mCamera.Position().y, mDistributionCenter.z - mCamera.Position().z };
 		float distanceToCam = sqrt(toCam.x * toCam.x + toCam.y * toCam.y + toCam.z * toCam.z);
 

@@ -1,8 +1,8 @@
 #pragma once
 #include "Common.h"
 #include "ConstantBuffer.h"
-#include "ER_GPUTexture.h"
 #include "ER_CoreComponent.h"
+#include "RHI/ER_RHI.h"
 
 namespace Library
 {
@@ -49,12 +49,12 @@ namespace Library
 		ER_VolumetricClouds(ER_Core& game, ER_Camera& camera, DirectionalLight& light, ER_Skybox& skybox);
 		~ER_VolumetricClouds();
 
-		void Initialize(ER_GPUTexture* aIlluminationDepth);
+		void Initialize(ER_RHI_GPUTexture* aIlluminationDepth);
 
 		void Draw(const ER_CoreTime& gametime);
 		void Update(const ER_CoreTime& gameTime);
 		void Config() { mShowDebug = !mShowDebug; }
-		void Composite(ER_GPUTexture* aRenderTarget);
+		void Composite(ER_RHI_GPUTexture* aRenderTarget);
 		bool IsEnabled() { return mEnabled; }
 		void SetDownscaleFactor(float val) { mDownscaleFactor = val; }
 	private:
@@ -68,25 +68,20 @@ namespace Library
 		ConstantBuffer<VolumetricCloudsCBufferData::CloudsCB> mCloudsConstantBuffer;
 		ConstantBuffer<VolumetricCloudsCBufferData::UpsampleBlurCB> mUpsampleBlurConstantBuffer;
 
-		ER_GPUTexture* mIlluminationResultDepthTarget = nullptr; // not allocated here, just a pointer
+		ER_RHI_GPUTexture* mIlluminationResultDepthTarget = nullptr; // not allocated here, just a pointer
+		ER_RHI_GPUTexture* mSkyRT = nullptr;
+		ER_RHI_GPUTexture* mSkyAndSunRT = nullptr;
+		ER_RHI_GPUTexture* mMainRT = nullptr;
+		ER_RHI_GPUTexture* mUpsampleAndBlurRT = nullptr;
+		ER_RHI_GPUTexture* mBlurRT = nullptr;
+		ER_RHI_GPUTexture* mCloudTextureSRV = nullptr;
+		ER_RHI_GPUTexture* mWeatherTextureSRV = nullptr;
+		ER_RHI_GPUTexture* mWorleyTextureSRV = nullptr;
 
-		ER_GPUTexture* mSkyRT = nullptr;
-		ER_GPUTexture* mSkyAndSunRT = nullptr;
-		ER_GPUTexture* mMainRT = nullptr;
-		ER_GPUTexture* mUpsampleAndBlurRT = nullptr;
-		ER_GPUTexture* mBlurRT = nullptr;
-
-		ID3D11ComputeShader* mMainCS = nullptr;
-		ID3D11PixelShader* mCompositePS = nullptr;
-		ID3D11PixelShader* mBlurPS = nullptr;
-		ID3D11ComputeShader* mUpsampleBlurCS = nullptr;
-
-		ID3D11ShaderResourceView* mCloudTextureSRV = nullptr;
-		ID3D11ShaderResourceView* mWeatherTextureSRV = nullptr;
-		ID3D11ShaderResourceView* mWorleyTextureSRV = nullptr;
-
-		ID3D11SamplerState* mCloudSS = nullptr;
-		ID3D11SamplerState* mWeatherSS = nullptr;
+		ER_RHI_GPUShader* mMainCS = nullptr;
+		ER_RHI_GPUShader* mCompositePS = nullptr;
+		ER_RHI_GPUShader* mBlurPS = nullptr;
+		ER_RHI_GPUShader* mUpsampleBlurCS = nullptr;
 
 		float mCrispiness = 43.0f;
 		float mCurliness = 1.1f;
