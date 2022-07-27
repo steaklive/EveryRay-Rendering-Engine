@@ -72,6 +72,7 @@ namespace Library
 		virtual void SetRasterizerState(ER_RHI_RASTERIZER_STATE aRS) override;
 
 		virtual void SetViewport(const ER_RHI_Viewport& aViewport) override;
+		virtual void SetRect(const ER_RHI_Rect& rect) override;
 
 		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot = 0) override;
 		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot = 0) override;
@@ -80,6 +81,7 @@ namespace Library
 		virtual void SetShader(ER_RHI_GPUShader* aShader) override;
 		virtual void SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot = 0) override;
 		virtual void SetInputLayout(ER_RHI_InputLayout* aIL) override;
+		virtual void SetEmptyInputLayout() override;
 		virtual void SetIndexBuffer(ER_RHI_GPUBuffer* aBuffer, UINT offset = 0) override;
 		virtual void SetVertexBuffers(const std::vector<ER_RHI_GPUBuffer*>& aVertexBuffers) override;
 		

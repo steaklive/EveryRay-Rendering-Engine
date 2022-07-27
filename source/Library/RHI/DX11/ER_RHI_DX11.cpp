@@ -468,6 +468,12 @@ namespace Library
 		mDirect3DDeviceContext->RSSetViewports(1, &viewport);
 	}
 
+	void ER_RHI_DX11::SetRect(const ER_RHI_Rect& rect)
+	{
+		D3D11_RECT currentRect = { rect.left, rect.top, rect.right, rect.bottom };
+		mDirect3DDeviceContext->RSSetScissorRects(1, &currentRect);
+	}
+
 	void ER_RHI_DX11::SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot /*= 0*/)
 	{
 		assert(aSRVs.size() > 0);
@@ -673,6 +679,11 @@ namespace Library
 		assert(aDX11_IL);
 		assert(aDX11_IL->mInputLayout);
 		mDirect3DDeviceContext->IASetInputLayout(aDX11_IL->mInputLayout);
+	}
+
+	void ER_RHI_DX11::SetEmptyInputLayout()
+	{
+		mDirect3DDeviceContext->IASetInputLayout(nullptr);
 	}
 
 	void ER_RHI_DX11::SetIndexBuffer(ER_RHI_GPUBuffer* aBuffer, UINT offset /*= 0*/)

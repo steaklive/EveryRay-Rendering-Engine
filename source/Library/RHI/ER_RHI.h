@@ -172,6 +172,14 @@ namespace Library
 		float MaxDepth = 1.0f;
 	};
 
+	struct ER_RHI_Rect
+	{
+		LONG left;
+		LONG top;
+		LONG right;
+		LONG bottom;
+	};
+
 	class ER_RHI_InputLayout
 	{
 	public:
@@ -252,6 +260,8 @@ namespace Library
 		virtual void SetViewport(const ER_RHI_Viewport& aViewport) = 0;
 		virtual const ER_RHI_Viewport& GetCurrentViewport() { return mCurrentViewport; }
 
+		virtual void SetRect(const ER_RHI_Rect& rect) = 0;
+
 		virtual void SetShader(ER_RHI_GPUShader* aShader) = 0;
 		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot = 0) = 0;
 		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot = 0) = 0;
@@ -261,6 +271,7 @@ namespace Library
 		virtual void SetIndexBuffer(ER_RHI_GPUBuffer* aBuffer, UINT offset = 0) = 0;
 		virtual void SetVertexBuffers(const std::vector<ER_RHI_GPUBuffer*>& aVertexBuffers) = 0;
 		virtual void SetInputLayout(ER_RHI_InputLayout* aIL) = 0;
+		virtual void SetEmptyInputLayout() = 0;
 		virtual void SetTopologyType(ER_RHI_PRIMITIVE_TYPE aType) = 0;
 
 		virtual void UnbindRenderTargets() = 0;
