@@ -294,7 +294,7 @@ namespace Library
 		aOutTexture->CreateGPUTextureResource(this, aPath, isFullPath);
 	}
 
-	void ER_RHI_DX11::CreateBuffer(ER_RHI_GPUBuffer* aOutBuffer, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic /*= false*/, ER_RHI_BIND_FLAG bindFlags /*= 0*/, UINT cpuAccessFlags /*= 0*/, UINT miscFlags /*= 0*/, ER_RHI_FORMAT format /*= ER_FORMAT_UNKNOWN*/)
+	void ER_RHI_DX11::CreateBuffer(ER_RHI_GPUBuffer* aOutBuffer, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic /*= false*/, ER_RHI_BIND_FLAG bindFlags /*= 0*/, UINT cpuAccessFlags /*= 0*/, ER_RHI_RESOURCE_MISC_FLAG miscFlags /*= 0*/, ER_RHI_FORMAT format /*= ER_FORMAT_UNKNOWN*/)
 	{
 		assert(aOutBuffer);
 		aOutBuffer->CreateGPUBufferResource(this, aData, objectsCount, byteStride, isDynamic, bindFlags, cpuAccessFlags, miscFlags, format);
@@ -312,6 +312,47 @@ namespace Library
 		assert(srcResource);
 
 		mDirect3DDeviceContext->CopyResource(dstResource, srcResource);
+	}
+
+	void ER_RHI_DX11::BeginBufferRead(ER_RHI_GPUBuffer* aBuffer, void* output)
+	{
+		assert(aBuffer);
+		assert(!mIsContextReadingBuffer);
+
+		ER_RHI_DX11_GPUBuffer* buffer = static_cast<ER_RHI_DX11_GPUBuffer*>(aBuffer);
+		assert(buffer);
+
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+		buffer->Map(this, D3D11_MAP_READ, &mappedResource);
+		output = mappedResource.pData;
+		mIsContextReadingBuffer = true;
+	}
+
+	void ER_RHI_DX11::EndBufferRead(ER_RHI_GPUBuffer* aBuffer)
+	{
+		ER_RHI_DX11_GPUBuffer* buffer = static_cast<ER_RHI_DX11_GPUBuffer*>(aBuffer);
+		assert(buffer);
+
+		buffer->Unmap(this);
+		mIsContextReadingBuffer = false;
+	}
+
+	void ER_RHI_DX11::CopyGPUTextureSubresourceRegion(ER_RHI_GPUResource* aDestBuffer, UINT DstSubresource, UINT DstX, UINT DstY, UINT DstZ, ER_RHI_GPUResource* aSrcBuffer, UINT SrcSubresource)
+	{
+		assert(aDestBuffer);
+		assert(aSrcBuffer);
+
+		ER_RHI_DX11_GPUTexture* dstbuffer = static_cast<ER_RHI_DX11_GPUTexture*>(aDestBuffer);
+		assert(dstbuffer);
+		ER_RHI_DX11_GPUTexture* srcbuffer = static_cast<ER_RHI_DX11_GPUTexture*>(aSrcBuffer);
+		assert(srcbuffer);
+
+		assert(dstbuffer->GetDepth() == srcbuffer->GetDepth());
+
+		if (dstbuffer->GetDepth() == 0)
+			mDirect3DDeviceContext->CopySubresourceRegion(dstbuffer->GetTexture2D(), DstSubresource, DstX, DstY, DstZ, srcbuffer->GetTexture2D(), SrcSubresource, NULL);
+		else
+			mDirect3DDeviceContext->CopySubresourceRegion(dstbuffer->GetTexture3D(), DstSubresource, DstX, DstY, DstZ, srcbuffer->GetTexture3D(), SrcSubresource, NULL);
 	}
 
 	void ER_RHI_DX11::Draw(UINT VertexCount)

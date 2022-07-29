@@ -2,7 +2,6 @@
 #include "Common.h"
 #include "ER_Core.h"
 #include "ER_CoreTime.h"
-#include "ER_GPUTexture.h"
 #include "ConstantBuffer.h"
 
 namespace Library
@@ -58,8 +57,8 @@ namespace Library
 
 		void Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR = true, bool pFog = false, bool pLightShafts = false);
 	
-		void Begin(ER_GPUTexture* aInitialRT, ER_GPUTexture* aDepthTarget);
-		void End(ER_GPUTexture* aResolveRT = nullptr);
+		void Begin(ER_RHI_GPUTexture* aInitialRT, ER_RHI_GPUTexture* aDepthTarget);
+		void End(ER_RHI_GPUTexture* aResolveRT = nullptr);
 
 		void DrawEffects(const ER_CoreTime& gameTime, ER_QuadRenderer* quad, ER_GBuffer* gbuffer, 
 			ER_VolumetricClouds* aVolumetricClouds = nullptr, ER_VolumetricFog* aVolumetricFog = nullptr);
@@ -72,79 +71,79 @@ namespace Library
 		bool isWindowOpened = false;
 
 	private:
-		void PrepareDrawingTonemapping(ER_GPUTexture* aInputTexture);
-		void PrepareDrawingSSR(const ER_CoreTime& gameTime, ER_GPUTexture* aInputTexture, ER_GBuffer* gbuffer);
-		void PrepareDrawingSSS(const ER_CoreTime& gameTime, ER_GPUTexture* aInputTexture, ER_GBuffer* gbuffer, bool verticalPass);
-		void PrepareDrawingLinearFog(ER_GPUTexture* aInputTexture);
-		void PrepareDrawingColorGrading(ER_GPUTexture* aInputTexture);
-		void PrepareDrawingVignette(ER_GPUTexture* aInputTexture);
-		void PrepareDrawingFXAA(ER_GPUTexture* aInputTexture);
+		void PrepareDrawingTonemapping(ER_RHI_GPUTexture* aInputTexture);
+		void PrepareDrawingSSR(const ER_CoreTime& gameTime, ER_RHI_GPUTexture* aInputTexture, ER_GBuffer* gbuffer);
+		void PrepareDrawingSSS(const ER_CoreTime& gameTime, ER_RHI_GPUTexture* aInputTexture, ER_GBuffer* gbuffer, bool verticalPass);
+		void PrepareDrawingLinearFog(ER_RHI_GPUTexture* aInputTexture);
+		void PrepareDrawingColorGrading(ER_RHI_GPUTexture* aInputTexture);
+		void PrepareDrawingVignette(ER_RHI_GPUTexture* aInputTexture);
+		void PrepareDrawingFXAA(ER_RHI_GPUTexture* aInputTexture);
 	
 		void ShowPostProcessingWindow();
 
-		ER_Core& game;
+		ER_Core& mCore;
 		ER_Camera& camera;
 		const DirectionalLight* light;
 
 		// Tonemap
-		ER_GPUTexture* mTonemappingRT = nullptr;
-		ID3D11PixelShader* mTonemappingPS = nullptr;
+		ER_RHI_GPUTexture* mTonemappingRT = nullptr;
+		ER_RHI_GPUShader* mTonemappingPS = nullptr;
 		bool mUseTonemap = true;
 
 		// SSR
-		ER_GPUTexture* mSSRRT = nullptr;
+		ER_RHI_GPUTexture* mSSRRT = nullptr;
 		ConstantBuffer<PostEffectsCBuffers::SSRCB> mSSRConstantBuffer;
-		ID3D11PixelShader* mSSRPS = nullptr;
+		ER_RHI_GPUShader* mSSRPS = nullptr;
 		bool mUseSSR = false;
 		int mSSRRayCount = 50;
 		float mSSRStepSize = 0.741f;
 		float mSSRMaxThickness = 0.00021f;
 
 		// SSS
-		ER_GPUTexture* mSSSRT = nullptr;
+		ER_RHI_GPUTexture* mSSSRT = nullptr;
 		bool mUseSSS = true;
-		ID3D11PixelShader* mSSSPS = nullptr;
+		ER_RHI_GPUShader* mSSSPS = nullptr;
 		ConstantBuffer<PostEffectsCBuffers::SSSCB> mSSSConstantBuffer;
 
 		// Linear Fog
-		ER_GPUTexture* mLinearFogRT = nullptr;
+		ER_RHI_GPUTexture* mLinearFogRT = nullptr;
 		ConstantBuffer<PostEffectsCBuffers::LinearFogCB> mLinearFogConstantBuffer;
-		ID3D11PixelShader* mLinearFogPS = nullptr;
+		ER_RHI_GPUShader* mLinearFogPS = nullptr;
 		bool mUseLinearFog = false;
 		float mLinearFogColor[3] = { 166.0f / 255.0f, 188.0f / 255.0f, 196.0f / 255.0f };
 		float mLinearFogDensity = 730.0f;
 		float mLinearFogNearZ = 0.0f;
 		float mLinearFogFarZ = 0.0f;
 
-		ER_GPUTexture* mVolumetricFogRT = nullptr;
+		ER_RHI_GPUTexture* mVolumetricFogRT = nullptr;
 
 		// LUT Color Grading
-		ER_GPUTexture* mColorGradingRT = nullptr;
-		ID3D11ShaderResourceView* mLUTs[3];
-		ID3D11PixelShader* mColorGradingPS = nullptr;
+		ER_RHI_GPUTexture* mColorGradingRT = nullptr;
+		ER_RHI_GPUTexture* mLUTs[3] = { nullptr, nullptr, nullptr };
+		ER_RHI_GPUShader* mColorGradingPS = nullptr;
 		int mColorGradingCurrentLUTIndex = 2;
 		bool mUseColorGrading = true;
 
 		// FXAA
-		ER_GPUTexture* mFXAART = nullptr;
+		ER_RHI_GPUTexture* mFXAART = nullptr;
 		ConstantBuffer<PostEffectsCBuffers::FXAACB> mFXAAConstantBuffer;
-		ID3D11PixelShader* mFXAAPS = nullptr;
+		ER_RHI_GPUShader* mFXAAPS = nullptr;
 		bool mUseFXAA = true;
 
 		// Vignette
-		ER_GPUTexture* mVignetteRT = nullptr;
+		ER_RHI_GPUTexture* mVignetteRT = nullptr;
 		ConstantBuffer<PostEffectsCBuffers::VignetteCB> mVignetteConstantBuffer;
-		ID3D11PixelShader* mVignettePS = nullptr;
+		ER_RHI_GPUShader* mVignettePS = nullptr;
 		float mVignetteRadius = 0.75f;
 		float mVignetteSoftness = 0.5f;
 		bool mUseVignette = true;
 
-		ID3D11PixelShader* mFinalResolvePS = nullptr;
+		ER_RHI_GPUShader* mFinalResolvePS = nullptr;
 
 		// just pointers to RTs (not allocated in this system)
-		ER_GPUTexture* mRenderTargetBeforeResolve = nullptr; 
-		ER_GPUTexture* mRenderTargetBeforePostProcessingPasses = nullptr;
-		ER_GPUTexture* mDepthTarget = nullptr;
+		ER_RHI_GPUTexture* mRenderTargetBeforeResolve = nullptr;
+		ER_RHI_GPUTexture* mRenderTargetBeforePostProcessingPasses = nullptr;
+		ER_RHI_GPUTexture* mDepthTarget = nullptr;
 
 		bool mShowDebug = false;
 	};

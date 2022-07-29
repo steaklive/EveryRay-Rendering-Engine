@@ -44,8 +44,12 @@ namespace Library
 		virtual void CreateTexture(ER_RHI_GPUTexture* aOutTexture, const std::string& aPath, bool isFullPath = false) override;
 		virtual void CreateTexture(ER_RHI_GPUTexture* aOutTexture, const std::wstring& aPath, bool isFullPath = false) override;
 
-		virtual void CreateBuffer(ER_RHI_GPUBuffer* aOutBuffer, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic = false, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, UINT miscFlags = 0, ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN) override;
+		virtual void CreateBuffer(ER_RHI_GPUBuffer* aOutBuffer, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic = false, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, ER_RHI_RESOURCE_MISC_FLAG miscFlags = ER_RESOURCE_MISC_NONE, ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN) override;
 		virtual void CopyBuffer(ER_RHI_GPUBuffer* aDestBuffer, ER_RHI_GPUBuffer* aSrcBuffer) override;
+		virtual void BeginBufferRead(ER_RHI_GPUBuffer* aBuffer, void* output) override;
+		virtual void EndBufferRead(ER_RHI_GPUBuffer* aBuffer) override;
+
+		virtual void CopyGPUTextureSubresourceRegion(ER_RHI_GPUResource* aDestBuffer, UINT DstSubresource, UINT DstX, UINT DstY, UINT DstZ, ER_RHI_GPUResource* aSrcBuffer, UINT SrcSubresource) override;
 
 		virtual void Draw(UINT VertexCount) override;
 		virtual void DrawIndexed(UINT IndexCount) override;
@@ -171,5 +175,7 @@ namespace Library
 		std::map<ER_RHI_DEPTH_STENCIL_STATE, ID3D11DepthStencilState*> mDepthStates;
 
 		ER_RHI_Viewport mMainViewport;
+
+		bool mIsContextReadingBuffer = false;
 	};
 }

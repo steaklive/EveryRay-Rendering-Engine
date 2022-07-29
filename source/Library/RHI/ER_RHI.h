@@ -151,6 +151,14 @@ namespace Library
 		ER_BIND_UNORDERED_ACCESS = 0x80L
 	};
 
+	enum ER_RHI_RESOURCE_MISC_FLAG
+	{
+		ER_RESOURCE_MISC_NONE = 0x0L,
+		ER_RESOURCE_MISC_TEXTURECUBE = 0x4L,
+		ER_RESOURCE_MISC_DRAWINDIRECT_ARGS = 0x10L,
+		ER_RESOURCE_MISC_BUFFER_STRUCTURED = 0x40L,
+	};
+
 	struct ER_RHI_INPUT_ELEMENT_DESC
 	{
 		LPCSTR SemanticName;
@@ -225,9 +233,12 @@ namespace Library
 		virtual void CreateTexture(ER_RHI_GPUTexture* aOutTexture, const std::string& aPath, bool isFullPath = false) = 0;
 		virtual void CreateTexture(ER_RHI_GPUTexture* aOutTexture, const std::wstring& aPath, bool isFullPath = false) = 0;
 
-		virtual void CreateBuffer(ER_RHI_GPUBuffer* aOutBuffer, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic = false, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, UINT miscFlags = 0, ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN) = 0;
+		virtual void CreateBuffer(ER_RHI_GPUBuffer* aOutBuffer, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic = false, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, ER_RHI_RESOURCE_MISC_FLAG miscFlags = ER_RESOURCE_MISC_NONE, ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN) = 0;
 		virtual void CopyBuffer(ER_RHI_GPUBuffer* aDestBuffer, ER_RHI_GPUBuffer* aSrcBuffer) = 0;
-		//TODO UpdateBuffer()
+		virtual void BeginBufferRead(ER_RHI_GPUBuffer* aBuffer, void* output) = 0;
+		virtual void EndBufferRead(ER_RHI_GPUBuffer* aBuffer) = 0;
+
+		virtual void CopyGPUTextureSubresourceRegion(ER_RHI_GPUResource* aDestBuffer, UINT DstSubresource, UINT DstX, UINT DstY, UINT DstZ, ER_RHI_GPUResource* aSrcBuffer, UINT SrcSubresource) = 0;
 
 		virtual void Draw(UINT VertexCount) = 0;
 		virtual void DrawIndexed(UINT IndexCount) = 0;
@@ -333,7 +344,7 @@ namespace Library
 		ER_RHI_GPUBuffer();
 		virtual ~ER_RHI_GPUBuffer();
 
-		virtual void CreateGPUBufferResource(ER_RHI* aRHI, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic = false, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, UINT miscFlags = 0, ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN) = 0;
+		virtual void CreateGPUBufferResource(ER_RHI* aRHI, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic = false, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, ER_RHI_RESOURCE_MISC_FLAG miscFlags = ER_RESOURCE_MISC_NONE, ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN) = 0;
 		virtual void* GetBuffer() = 0;
 		virtual int GetSize() = 0;
 		virtual UINT GetStride() = 0;
