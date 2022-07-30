@@ -256,6 +256,10 @@ namespace Library
 		virtual void PresentGraphics() = 0;
 		virtual void PresentCompute() = 0;
 
+		virtual bool ProjectCubemapToSH(ER_RHI_GPUTexture* aTexture, UINT order, float* resultR, float* resultG, float* resultB) = 0; //WARNING: only works on DX11 for now
+
+		virtual void SaveGPUTextureToFile(ER_RHI_GPUTexture* aTexture, const std::wstring& aPathName) = 0; //WARNING: only works on DX11 for now
+
 		virtual void SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr, ER_RHI_GPUTexture* aUAV = nullptr) = 0;
 		virtual void SetDepthTarget(ER_RHI_GPUTexture* aDepthTarget) = 0;
 

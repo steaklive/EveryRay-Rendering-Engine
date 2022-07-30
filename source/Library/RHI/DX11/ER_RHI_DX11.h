@@ -64,6 +64,10 @@ namespace Library
 
 		virtual void PresentGraphics() override;
 		virtual void PresentCompute() override; //not supported on DX11
+		
+		virtual bool ProjectCubemapToSH(ER_RHI_GPUTexture* aTexture, UINT order, float* resultR, float* resultG, float* resultB) override;
+		
+		virtual void SaveGPUTextureToFile(ER_RHI_GPUTexture* aTexture, const std::wstring& aPathName) override;
 
 		virtual void SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr, ER_RHI_GPUTexture* aUAV = nullptr) override;
 		virtual void SetDepthTarget(ER_RHI_GPUTexture* aDepthTarget) override;

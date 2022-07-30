@@ -389,6 +389,8 @@ namespace Library
 		if (FAILED(resourceTex->QueryInterface(IID_ID3D11Texture2D, (void**)&mTexture2D))) {
 			throw Library::ER_CoreException("ER_RHI_DX11: Could not cast loaded texture resource to Texture2D. Maybe wrong dimension?");
 		}
+
+		resourceTex->Release();
 	}
 	void ER_RHI_DX11_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath /*= false*/)
 	{
@@ -454,6 +456,8 @@ namespace Library
 		if (FAILED(resourceTex->QueryInterface(IID_ID3D11Texture2D, (void**)&mTexture2D))) {
 			throw Library::ER_CoreException("ER_RHI_DX11: Could not cast loaded texture resource to Texture2D. Maybe wrong dimension?");
 		}
+
+		resourceTex->Release();
 	}
 }
 

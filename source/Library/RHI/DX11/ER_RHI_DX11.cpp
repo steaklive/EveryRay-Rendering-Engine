@@ -4,6 +4,8 @@
 #include "ER_RHI_DX11_GPUShader.h"
 #include "..\..\ER_CoreException.h"
 
+#include "DirectXSH.h"
+
 #define DX11_MAX_BOUND_RENDER_TARGETS_VIEWS 8
 #define DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS 64 
 #define DX11_MAX_BOUND_UNORDERED_ACCESS_VIEWS 16 
@@ -402,6 +404,37 @@ namespace Library
 		HRESULT hr = mSwapChain->Present(0, 0);
 		if (FAILED(hr))
 			throw ER_CoreException("ER_RHI_DX11: IDXGISwapChain::Present() failed.", hr);
+	}
+
+	bool ER_RHI_DX11::ProjectCubemapToSH(ER_RHI_GPUTexture* aTexture, UINT order, float* resultR, float* resultG, float* resultB)
+	{
+		assert(aTexture);
+
+		ER_RHI_DX11_GPUTexture* tex = static_cast<ER_RHI_DX11_GPUTexture*>(aTexture);
+		assert(tex);
+
+		return !(FAILED(DirectX::SHProjectCubeMap(mDirect3DDeviceContext, order, tex->GetTexture2D(), resultR, resultG, resultB)));
+	}
+
+	void ER_RHI_DX11::SaveGPUTextureToFile(ER_RHI_GPUTexture* aTexture, const std::wstring& aPathName)
+	{
+		assert(aTexture);
+
+		ER_RHI_DX11_GPUTexture* tex = static_cast<ER_RHI_DX11_GPUTexture*>(aTexture);
+		assert(tex);
+
+		DirectX::ScratchImage tempImage;
+		HRESULT res = DirectX::CaptureTexture(mDirect3DDevice, mDirect3DDeviceContext, tex->GetTexture2D(), tempImage);
+		if (FAILED(res))
+			throw ER_CoreException("Failed to capture a probe texture when saving!", res);
+
+		res = DirectX::SaveToDDSFile(tempImage.GetImages(), tempImage.GetImageCount(), tempImage.GetMetadata(), DDS_FLAGS_NONE, aPathName.c_str());
+		if (FAILED(res))
+		{
+			std::string str(aPathName.begin(), aPathName.end());
+			std::string msg = "Failed to save a texture to a file: " + str;
+			throw ER_CoreException(msg.c_str());
+		}
 	}
 
 	void ER_RHI_DX11::SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget /*= nullptr*/, ER_RHI_GPUTexture* aUAV /*= nullptr*/)
