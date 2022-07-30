@@ -69,7 +69,7 @@ namespace Library
 
 		ER_Material::PrepareForRendering(neededSystems, aObj, meshIndex);
 
-		for (size_t i = 0; i < NUM_SHADOW_CASCADES; i++)
+		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 			mConstantBuffer.Data.ShadowMatrices[i] = XMMatrixTranspose(neededSystems.mShadowMapper->GetViewMatrix(i) * neededSystems.mShadowMapper->GetProjectionMatrix(i) * XMLoadFloat4x4(&ER_MatrixHelper::GetProjectionShadowMatrix()));
 		mConstantBuffer.Data.ViewProjection = XMMatrixTranspose(cubemapCamera->ViewMatrix() * cubemapCamera->ProjectionMatrix());
 		mConstantBuffer.Data.World = XMMatrixTranspose(aObj->GetTransformationMatrix());

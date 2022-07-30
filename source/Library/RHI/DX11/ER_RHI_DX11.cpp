@@ -14,6 +14,9 @@
 
 namespace Library
 {
+	ER_RHI_DX11::ER_RHI_DX11()
+	{
+	}
 
 	ER_RHI_DX11::~ER_RHI_DX11()
 	{
@@ -235,11 +238,15 @@ namespace Library
 		mDirect3DDeviceContext->ClearDepthStencilView(mMainDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
 
-	void ER_RHI_DX11::ClearRenderTarget(ER_RHI_GPUTexture* aRenderTarget, float colors[4])
+	void ER_RHI_DX11::ClearRenderTarget(ER_RHI_GPUTexture* aRenderTarget, float colors[4], int rtvArrayIndex)
 	{
 		assert(aRenderTarget);
-		ID3D11RenderTargetView* rtv = static_cast<ID3D11RenderTargetView*>(aRenderTarget->GetRTV());
 
+		ID3D11RenderTargetView* rtv;
+		if (rtvArrayIndex > 0)
+			rtv = static_cast<ID3D11RenderTargetView*>(aRenderTarget->GetRTV(rtvArrayIndex));
+		else
+			rtv = static_cast<ID3D11RenderTargetView*>(aRenderTarget->GetRTV());
 		mDirect3DDeviceContext->ClearRenderTargetView(rtv, colors);
 	}
 
@@ -262,7 +269,7 @@ namespace Library
 	void ER_RHI_DX11::CreateInputLayout(ER_RHI_InputLayout* aOutInputLayout, ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount, const void* shaderBytecodeWithInputSignature, UINT byteCodeLength)
 	{
 		assert(inputElementDescriptions);
-		aOutInputLayout = new ER_RHI_DX11_InputLayout();
+		aOutInputLayout = new ER_RHI_DX11_InputLayout(inputElementDescriptions, inputElementDescriptionCount);
 		D3D11_INPUT_ELEMENT_DESC* descriptions = new D3D11_INPUT_ELEMENT_DESC[inputElementDescriptionCount];
 		for (UINT i = 0; i < inputElementDescriptionCount; i++)
 		{
@@ -276,6 +283,21 @@ namespace Library
 		}
 		mDirect3DDevice->CreateInputLayout(descriptions, inputElementDescriptionCount, shaderBytecodeWithInputSignature, byteCodeLength, &(static_cast<ER_RHI_DX11_InputLayout*>(aOutInputLayout)->mInputLayout));
 		DeleteObject(descriptions);
+	}
+
+	ER_RHI_GPUShader* ER_RHI_DX11::CreateGPUShader()
+	{
+		return new ER_RHI_DX11_GPUShader();
+	}
+
+	ER_RHI_GPUBuffer* ER_RHI_DX11::CreateGPUBuffer()
+	{
+		return new ER_RHI_DX11_GPUBuffer();
+	}
+
+	ER_RHI_GPUTexture* ER_RHI_DX11::CreateGPUTexture()
+	{
+		return new ER_RHI_DX11_GPUTexture();
 	}
 
 	void ER_RHI_DX11::CreateTexture(ER_RHI_GPUTexture* aOutTexture, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags /*= ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET*/, int mip /*= 1*/, int depth /*= -1*/, int arraySize /*= 1*/, bool isCubemap /*= false*/, int cubemapArraySize /*= -1*/)
@@ -438,10 +460,13 @@ namespace Library
 		}
 	}
 
-	void ER_RHI_DX11::SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget /*= nullptr*/, ER_RHI_GPUTexture* aUAV /*= nullptr*/)
+	void ER_RHI_DX11::SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget /*= nullptr*/, ER_RHI_GPUTexture* aUAV /*= nullptr*/, int rtvArrayIndex)
 	{
 		if (!aUAV)
 		{
+			if (rtvArrayIndex > 0)
+				assert(aRenderTargets.size() == 1);
+
 			assert(aRenderTargets.size() > 0);
 			assert(aRenderTargets.size() <= DX11_MAX_BOUND_RENDER_TARGETS_VIEWS);
 
@@ -450,7 +475,10 @@ namespace Library
 			for (UINT i = 0; i < rtCount; i++)
 			{
 				assert(aRenderTargets[i]);
-				RTVs[i] = static_cast<ID3D11RenderTargetView*>(aRenderTargets[i]->GetRTV());
+				if (rtvArrayIndex > 0)
+					RTVs[i] = static_cast<ID3D11RenderTargetView*>(aRenderTargets[i]->GetRTV(rtvArrayIndex));
+				else
+					RTVs[i] = static_cast<ID3D11RenderTargetView*>(aRenderTargets[i]->GetRTV());
 				assert(RTVs[i]);
 			}
 			if (!aDepthTarget)

@@ -295,9 +295,9 @@ namespace Rendering
 		mRHI->ClearMainRenderTarget(colorBlack);
 		mRHI->ClearMainDepthStencilTarget(1.0f, 0);
 
-		mRHI->SetDepthStencilState(ER_RHI:ER_RHI_DEPTH_STENCIL_STATE::ER_DISABLED);
+		mRHI->SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE::ER_DISABLED);
 		mRHI->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING);
-		mRHI->SetBlendState(ER_RHI_BLEND_STATE::ER_NO_BLEND);
+		//mRHI->SetBlendState(ER_RHI_BLEND_STATE::ER_NO_BLEND);
 
 		mCurrentSandbox->Draw(*this, gameTime);
 

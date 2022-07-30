@@ -26,7 +26,7 @@ namespace Library
 	{
 		DeleteObject(mVertexBuffer);
 		DeleteObject(mIndexBuffer);
-		ReleaseObject(mInputLayout);
+		DeleteObject(mInputLayout);
 		DeleteObject(mSkyboxVS);
 		DeleteObject(mSkyboxPS);
 		DeleteObject(mSunPS);
@@ -42,9 +42,9 @@ namespace Library
 		std::unique_ptr<ER_Model> model(new ER_Model(mCore, ER_Utility::GetFilePath("content\\models\\sphere_lowpoly.obj"), true));
 
 		auto& meshes = model->Meshes();
-		mVertexBuffer = new ER_RHI_GPUBuffer();
+		mVertexBuffer = rhi->CreateGPUBuffer();
 		meshes[0].CreateVertexBuffer_Position(mVertexBuffer);
-		mIndexBuffer = new ER_RHI_GPUBuffer();
+		mIndexBuffer = rhi->CreateGPUBuffer();
 		meshes[0].CreateIndexBuffer(mIndexBuffer);
 		mIndexCount = meshes[0].Indices().size();
 
@@ -56,22 +56,22 @@ namespace Library
 			};
 			mInputLayout = new ER_RHI_InputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
 			
-			mSkyboxVS = new ER_RHI_GPUShader();
-			mSkyboxVS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\Skybox.hlsl"), "VSMain", ER_VERTEX, mInputLayout);
+			mSkyboxVS = rhi->CreateGPUShader();
+			mSkyboxVS->CompileShader(rhi, "content\\shaders\\Skybox.hlsl", "VSMain", ER_VERTEX, mInputLayout);
 
-			mSkyboxPS = new ER_RHI_GPUShader();
-			mSkyboxPS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\Skybox.hlsl"), "PSMain", ER_PIXEL);		
+			mSkyboxPS = rhi->CreateGPUShader();
+			mSkyboxPS->CompileShader(rhi, "content\\shaders\\Skybox.hlsl", "PSMain", ER_PIXEL);		
 
 			mSkyboxConstantBuffer.Initialize(rhi);
 		}
 
 		//sun
 		{
-			mSunPS = new ER_RHI_GPUShader();
-			mSunPS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\Sun.hlsl"), "main", ER_PIXEL);
+			mSunPS = rhi->CreateGPUShader();
+			mSunPS->CompileShader(rhi, "content\\shaders\\Sun.hlsl", "main", ER_PIXEL);
 
-			mSunOcclusionPS = new ER_RHI_GPUShader();
-			mSunOcclusionPS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\Sun.hlsl"), "occlusion", ER_PIXEL);
+			mSunOcclusionPS = rhi->CreateGPUShader();
+			mSunOcclusionPS->CompileShader(rhi, "content\\shaders\\Sun.hlsl", "occlusion", ER_PIXEL);
 
 			mSunConstantBuffer.Initialize(rhi);
 		}

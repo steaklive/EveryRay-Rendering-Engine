@@ -27,7 +27,7 @@ namespace Library
 		ReleaseObject(mCS);
 	}
 
-	void ER_RHI_DX11_GPUShader::CompileShader(ER_RHI* aRHI, const std::string& path, const std::string& shaderEntry, ER_RHI_SHADER_TYPE type, ER_RHI_InputLayout* aIL = nullptr)
+	void ER_RHI_DX11_GPUShader::CompileShader(ER_RHI* aRHI, const std::string& path, const std::string& shaderEntry, ER_RHI_SHADER_TYPE type, ER_RHI_InputLayout* aIL)
 	{
 		mShaderType = type;
 
@@ -82,7 +82,7 @@ namespace Library
 		}
 
 		if (aIL && mShaderType == ER_VERTEX)
-			GetCore()->GetRHI()->CreateInputLayout(aIL, aIL->mInputElementDescriptions, aIL->mInputElementDescriptionCount, blob->GetBufferPointer(), blob->GetBufferSize());
+			aDX11RHI->CreateInputLayout(aIL, aIL->mInputElementDescriptions, aIL->mInputElementDescriptionCount, blob->GetBufferPointer(), static_cast<UINT>(blob->GetBufferSize()));
 
 		blob->Release();
 	}

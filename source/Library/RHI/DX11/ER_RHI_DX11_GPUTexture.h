@@ -15,6 +15,8 @@ namespace Library
 		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath = false) override;
 
 		virtual void* GetRTV(void* aEmpty = nullptr) override { return mRTVs[0]; }
+		virtual void* GetRTV(int index) override { return mRTVs[index]; }
+
 		ID3D11RenderTargetView* GetRTV() { return mRTVs[0]; }
 		ID3D11RenderTargetView** GetRTVs() { return mRTVs; }
 
@@ -33,10 +35,10 @@ namespace Library
 		virtual void* GetUAV() override { return mUAVs[0]; }
 		ID3D11UnorderedAccessView** GetUAVs() { return mUAVs; }
 
-		UINT GetMips() { return mMipLevels; }
-		UINT GetWidth() { return mWidth; }
-		UINT GetHeight() { return mHeight; }
-		UINT GetDepth() { return mDepth; }
+		UINT GetMips() override { return mMipLevels; }
+		UINT GetWidth() override { return mWidth; }
+		UINT GetHeight() override { return mHeight; }
+		UINT GetDepth() override { return mDepth; }
 
 		bool IsLoadedFromFile() { return mIsLoadedFromFile; }
 

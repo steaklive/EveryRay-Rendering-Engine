@@ -53,7 +53,6 @@ namespace Library
 	{
 		DeletePointerCollection(mShadowMaps);
 		DeletePointerCollection(mLightProjectors);
-		ReleaseObject(mDepthStencilState);
 	}
 
 	void ER_ShadowMapper::Update(const ER_CoreTime& gameTime)

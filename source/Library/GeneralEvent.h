@@ -51,7 +51,7 @@ public:
 		else
 		{
 			std::string msg = "Listener was not found: " + pName;
-			throw ER_CoreException(msg.c_str());
+			//throw ER_CoreException(msg.c_str());
 		}
 	}
 	

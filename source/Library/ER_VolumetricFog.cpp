@@ -11,7 +11,7 @@
 #define VOXEL_SIZE_Y 90
 #define VOXEL_SIZE_Z 128
 
-static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+static float clearColorBlack[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 namespace Library {
 	ER_VolumetricFog::ER_VolumetricFog(ER_Core& game, const DirectionalLight& aLight, const ER_ShadowMapper& aShadowMapper)
@@ -38,29 +38,29 @@ namespace Library {
 	{
 		auto rhi = GetCore()->GetRHI();
 		
-		mTempVoxelInjectionTexture3D[0] = new ER_RHI_GPUTexture();
+		mTempVoxelInjectionTexture3D[0] = rhi->CreateGPUTexture();
 		mTempVoxelInjectionTexture3D[0]->CreateGPUTextureResource(rhi, VOXEL_SIZE_X, VOXEL_SIZE_Y, 1, ER_FORMAT_R16G16B16A16_FLOAT,
 			ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1, VOXEL_SIZE_Z);
 
-		mTempVoxelInjectionTexture3D[1] = new ER_RHI_GPUTexture();
+		mTempVoxelInjectionTexture3D[1] = rhi->CreateGPUTexture();
 		mTempVoxelInjectionTexture3D[1]->CreateGPUTextureResource(rhi, VOXEL_SIZE_X, VOXEL_SIZE_Y, 1, ER_FORMAT_R16G16B16A16_FLOAT,
 			ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1, VOXEL_SIZE_Z);
 
-		mFinalVoxelAccumulationTexture3D = new ER_RHI_GPUTexture();
+		mFinalVoxelAccumulationTexture3D = rhi->CreateGPUTexture();
 		mFinalVoxelAccumulationTexture3D->CreateGPUTextureResource(rhi, VOXEL_SIZE_X, VOXEL_SIZE_Y, 1, ER_FORMAT_R16G16B16A16_FLOAT,
 			ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1, VOXEL_SIZE_Z);
 
-		mBlueNoiseTexture = new ER_RHI_GPUTexture();
+		mBlueNoiseTexture = rhi->CreateGPUTexture();
 		mBlueNoiseTexture->CreateGPUTextureResource(rhi, "content\\textures\\blueNoise.dds");
 
-		mInjectionCS = new ER_RHI_GPUShader();
-		mInjectionCS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\VolumetricFog\\VolumetricFogMain.hlsl"), "CSInjection", ER_COMPUTE);
+		mInjectionCS = rhi->CreateGPUShader();
+		mInjectionCS->CompileShader(rhi, "content\\shaders\\VolumetricFog\\VolumetricFogMain.hlsl", "CSInjection", ER_COMPUTE);
 		
-		mAccumulationCS = new ER_RHI_GPUShader();
-		mAccumulationCS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\VolumetricFog\\VolumetricFogMain.hlsl"), "CSAccumulation", ER_COMPUTE);
+		mAccumulationCS = rhi->CreateGPUShader();
+		mAccumulationCS->CompileShader(rhi, "content\\shaders\\VolumetricFog\\VolumetricFogMain.hlsl", "CSAccumulation", ER_COMPUTE);
 
-		mCompositePS = new ER_RHI_GPUShader();
-		mCompositePS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\VolumetricFog\\VolumetricFogComposite.hlsl"), "PSComposite", ER_PIXEL);
+		mCompositePS = rhi->CreateGPUShader();
+		mCompositePS->CompileShader(rhi, "content\\shaders\\VolumetricFog\\VolumetricFogComposite.hlsl", "PSComposite", ER_PIXEL);
 
 		mMainConstantBuffer.Initialize(rhi);
 		mCompositeConstantBuffer.Initialize(rhi);

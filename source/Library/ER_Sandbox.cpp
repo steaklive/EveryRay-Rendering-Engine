@@ -315,8 +315,6 @@ namespace Library {
 		mPostProcessingStack->End();
 #pragma endregion
 
-		mRenderStateHelper->SaveAll();
-
 		#pragma region DRAW_IMGUI
 		ImGui::Render();
 		rhi->RenderDrawDataImGui();

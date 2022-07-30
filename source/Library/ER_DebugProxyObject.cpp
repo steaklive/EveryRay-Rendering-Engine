@@ -151,10 +151,11 @@ namespace Library
 
 		mMaterial = new ER_BasicColorMaterial(mCore, {}, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER);
 
+		auto rhi = mCore.GetRHI();
 		auto& meshes = model->Meshes();
-		mVertexBuffer = new ER_RHI_GPUBuffer();
+		mVertexBuffer = rhi->CreateGPUBuffer();
 		mMaterial->CreateVertexBuffer(meshes[0], mVertexBuffer);
-		mIndexBuffer = new ER_RHI_GPUBuffer();
+		mIndexBuffer = rhi->CreateGPUBuffer();
 		meshes[0].CreateIndexBuffer(mIndexBuffer);
 		mIndexCount = meshes[0].Indices().size();
 	}

@@ -28,7 +28,7 @@ namespace Library
 
 		void Initialize(ER_RHI* rhi)
 		{
-			buffer = new ER_RHI_GPUBuffer();
+			buffer = rhi->CreateGPUBuffer();
 			buffer->CreateGPUBufferResource(rhi, nullptr, 1, static_cast<UINT32>(sizeof(T) + (16 - (sizeof(T) % 16))), true, ER_BIND_CONSTANT_BUFFER);
 			initialized = true;
 		}

@@ -152,7 +152,8 @@ namespace Library
 	void ER_Mesh::CreateIndexBuffer(ER_RHI_GPUBuffer* indexBuffer) const
 	{
 		assert(indexBuffer);
-		indexBuffer->CreateGPUBufferResource(mModel.GetCore().GetRHI(), &mIndices[0], static_cast<UINT>(mIndices.size()), sizeof(UINT), false, ER_BIND_INDEX_BUFFER, 0, 0, ER_FORMAT_R32_UINT);
+		indexBuffer->CreateGPUBufferResource(mModel.GetCore().GetRHI(), (void*)(mIndices.data()), static_cast<UINT>(mIndices.size()), sizeof(UINT), false,
+			ER_BIND_INDEX_BUFFER, 0, ER_RHI_RESOURCE_MISC_FLAG::ER_RESOURCE_MISC_NONE, ER_FORMAT_R32_UINT);
 	}
 
 	void ER_Mesh::CreateVertexBuffer_Position(ER_RHI_GPUBuffer* vertexBuffer) const

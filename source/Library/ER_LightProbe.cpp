@@ -50,8 +50,8 @@ namespace Library
 		for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
 			mSphericalHarmonicsRGB.push_back(XMFLOAT3(0.0, 0.0, 0.0));
 
-		mCubemapTexture = new ER_RHI_GPUTexture();
-		mCubemapTexture->CreateGPUTextureResource(rhi, size, size, 1, ER_FORMAT_R8G8B8A8_UNORM, 0, (aType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
+		mCubemapTexture = rhi->CreateGPUTexture();
+		mCubemapTexture->CreateGPUTextureResource(rhi, size, size, 1, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_NONE, (aType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
 
 		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
 		{
@@ -107,7 +107,7 @@ namespace Library
 			0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
 			0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
 		};
-		if (!rhi->ProjectCubemapToSH(rhi, SPHERICAL_HARMONICS_ORDER + 1, aTextureConvoluted, &rgbCoefficients[0][0], &rgbCoefficients[1][0], &rgbCoefficients[2][0])))
+		if (!rhi->ProjectCubemapToSH(aTextureConvoluted, SPHERICAL_HARMONICS_ORDER + 1, &rgbCoefficients[0][0], &rgbCoefficients[1][0], &rgbCoefficients[2][0]))
 		{
 			//TODO write to log
 			for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
@@ -131,7 +131,11 @@ namespace Library
 
 		ER_RHI_Viewport oldViewport = rhi->GetCurrentViewport();
 
-		ER_RHI_Viewport newViewPort(0.0f, 0.0f, static_cast<float>(mSize), static_cast<float>(mSize));
+		ER_RHI_Viewport newViewPort;
+		newViewPort.TopLeftX = 0.0f;
+		newViewPort.TopLeftY = 0.0f;
+		newViewPort.Width = static_cast<float>(mSize);
+		newViewPort.Height = static_cast<float>(mSize);
 		rhi->SetViewport(newViewPort);
 
 		//sadly, we can't combine or multi-thread these two functions, because of the artifacts on edges of the convoluted faces of the cubemap...
@@ -235,7 +239,11 @@ namespace Library
 				mConvolutionCB.Data.MipIndex = (mProbeType == DIFFUSE_PROBE) ? -1 : mip;
 				mConvolutionCB.ApplyChanges(rhi);
 
-				ER_RHI_Viewport newViewPort(0.0f, 0.0f, static_cast<float>(currentSize), static_cast<float>(currentSize));
+				ER_RHI_Viewport newViewPort;
+				newViewPort.TopLeftX = 0.0f;
+				newViewPort.TopLeftY = 0.0f;
+				newViewPort.Width = static_cast<float>(currentSize);
+				newViewPort.Height = static_cast<float>(currentSize);
 				rhi->SetViewport(newViewPort);
 
 				rhi->SetRenderTargets({ aTextureConvoluted }, nullptr, nullptr, cubeMapFace * rtvShift + mip);
@@ -315,7 +323,7 @@ namespace Library
 		}
 		else
 		{
-			rhi->SaveGPUTextureToFile(aTextureConvoluted, probeName);
+			game.GetRHI()->SaveGPUTextureToFile(aTextureConvoluted, probeName);
 
 			//loading the same probe from disk, since aTextureConvoluted is a temp texture and otherwise we need a GPU resource copy to mCubemapTexture (better than this, but I am just too lazy...)
 			if (!LoadProbeFromDisk(game, levelPath))

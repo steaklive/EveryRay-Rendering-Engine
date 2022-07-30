@@ -38,26 +38,26 @@ namespace Library
 			};
 			mInputLayout = new ER_RHI_InputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
 
-			mVS = new ER_RHI_GPUShader();
-			mVS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl"), "VSMain", ER_VERTEX, mInputLayout);
+			mVS = rhi->CreateGPUShader();
+			mVS->CompileShader(rhi, "content\\shaders\\Terrain\\Terrain.hlsl", "VSMain", ER_VERTEX, mInputLayout);
 
-			mHS = new ER_RHI_GPUShader();
-			mHS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl"), "HSMain", ER_TESSELLATION_HULL);
+			mHS = rhi->CreateGPUShader();
+			mHS->CompileShader(rhi, "content\\shaders\\Terrain\\Terrain.hlsl", "HSMain", ER_TESSELLATION_HULL);
 
-			mDS = new ER_RHI_GPUShader();
-			mDS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl"), "DSMain", ER_TESSELLATION_DOMAIN);	
+			mDS = rhi->CreateGPUShader();
+			mDS->CompileShader(rhi, "content\\shaders\\Terrain\\Terrain.hlsl", "DSMain", ER_TESSELLATION_DOMAIN);	
 			
-			mDS_ShadowMap = new ER_RHI_GPUShader();
-			mDS_ShadowMap->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl"), "DSShadowMap", ER_TESSELLATION_DOMAIN);
+			mDS_ShadowMap = rhi->CreateGPUShader();
+			mDS_ShadowMap->CompileShader(rhi, "content\\shaders\\Terrain\\Terrain.hlsl", "DSShadowMap", ER_TESSELLATION_DOMAIN);
 
-			mPS = new ER_RHI_GPUShader();
-			mPS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl"), "PSMain", ER_PIXEL);
+			mPS = rhi->CreateGPUShader();
+			mPS->CompileShader(rhi, "content\\shaders\\Terrain\\Terrain.hlsl", "PSMain", ER_PIXEL);
 
-			mPS_ShadowMap = new ER_RHI_GPUShader();
-			mPS_ShadowMap->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\Terrain\\Terrain.hlsl"), "PSShadowMap", ER_PIXEL);
+			mPS_ShadowMap = rhi->CreateGPUShader();
+			mPS_ShadowMap->CompileShader(rhi, "content\\shaders\\Terrain\\Terrain.hlsl", "PSShadowMap", ER_PIXEL);
 
-			mPlaceOnTerrainCS = new ER_RHI_GPUShader();
-			mPlaceOnTerrainCS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\Terrain\\PlaceObjectsOnTerrain.hlsl"), "CSMain", ER_COMPUTE);
+			mPlaceOnTerrainCS = rhi->CreateGPUShader();
+			mPlaceOnTerrainCS->CompileShader(rhi, "content\\shaders\\Terrain\\PlaceObjectsOnTerrain.hlsl", "CSMain", ER_COMPUTE);
 		}
 
 		mTerrainConstantBuffer.Initialize(rhi);
@@ -87,6 +87,8 @@ namespace Library
 
 	void ER_Terrain::LoadTerrainData(ER_Scene* aScene)
 	{
+		ER_RHI* rhi = GetCore()->GetRHI();
+
 		if (!aScene->HasTerrain())
 		{
 			mEnabled = false;
@@ -133,14 +135,14 @@ namespace Library
 			terrainTilesDataCPUBuffer[tileIndex].AABBMinPoint = XMFLOAT4(mHeightMaps[tileIndex]->mAABB.first.x, mHeightMaps[tileIndex]->mAABB.first.y, mHeightMaps[tileIndex]->mAABB.first.z, 1.0);
 			terrainTilesDataCPUBuffer[tileIndex].AABBMaxPoint = XMFLOAT4(mHeightMaps[tileIndex]->mAABB.second.x, mHeightMaps[tileIndex]->mAABB.second.y, mHeightMaps[tileIndex]->mAABB.second.z, 1.0);
 		}
-		mTerrainTilesDataGPU = new ER_RHI_GPUBuffer();
+		mTerrainTilesDataGPU = rhi->CreateGPUBuffer();
 		mTerrainTilesDataGPU->CreateGPUBufferResource(rhi, terrainTilesDataCPUBuffer, mNumTiles, sizeof(TerrainTileDataGPU), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 		DeleteObjects(terrainTilesDataCPUBuffer);
 
-		mTerrainTilesHeightmapsArrayTexture = new ER_RHI_GPUTexture();
+		mTerrainTilesHeightmapsArrayTexture = rhi->CreateGPUTexture();
 		mTerrainTilesHeightmapsArrayTexture->CreateGPUTextureResource(rhi, mTileResolution, mTileResolution, 1, ER_FORMAT_R16_UNORM, ER_BIND_SHADER_RESOURCE, 1, -1, mNumTiles);
 		
-		mTerrainTilesSplatmapsArrayTexture = new ER_RHI_GPUTexture();
+		mTerrainTilesSplatmapsArrayTexture = rhi->CreateGPUTexture();
 		mTerrainTilesSplatmapsArrayTexture->CreateGPUTextureResource(rhi, mTileResolution, mTileResolution, 1, ER_FORMAT_R16G16B16A16_UNORM, ER_BIND_SHADER_RESOURCE, 1, -1, mNumTiles);
 		
 		for (int tileIndex = 0; tileIndex < mNumTiles; tileIndex++)
@@ -157,23 +159,23 @@ namespace Library
 
 		if (!splatLayer0Path.empty())
 		{
-			mSplatChannelTextures[0] = new ER_RHI_GPUTexture();
+			mSplatChannelTextures[0] = rhi->CreateGPUTexture();
 			mSplatChannelTextures[0]->CreateGPUTextureResource(rhi, splatLayer0Path, true);
 
 		}
 		if (!splatLayer1Path.empty())
 		{
-			mSplatChannelTextures[1] = new ER_RHI_GPUTexture();
+			mSplatChannelTextures[1] = rhi->CreateGPUTexture();
 			mSplatChannelTextures[1]->CreateGPUTextureResource(rhi, splatLayer1Path, true);
 		}
 		if (!splatLayer2Path.empty())
 		{
-			mSplatChannelTextures[2] = new ER_RHI_GPUTexture();
+			mSplatChannelTextures[2] = rhi->CreateGPUTexture();
 			mSplatChannelTextures[2]->CreateGPUTextureResource(rhi, splatLayer2Path, true);
 		}
 		if (!splatLayer3Path.empty())
 		{
-			mSplatChannelTextures[3] = new ER_RHI_GPUTexture();
+			mSplatChannelTextures[3] = rhi->CreateGPUTexture();
 			mSplatChannelTextures[3]->CreateGPUTextureResource(rhi, splatLayer3Path, true);
 		}
 
@@ -219,7 +221,7 @@ namespace Library
 		if (tileIndex >= mHeightMaps.size())
 			return;
 
-		mHeightMaps[tileIndex]->mSplatTexture = new ER_RHI_GPUTexture();
+		mHeightMaps[tileIndex]->mSplatTexture = rhi->CreateGPUTexture();
 		mHeightMaps[tileIndex]->mSplatTexture->CreateGPUTextureResource(rhi, path, true);
 	}
 
@@ -231,7 +233,7 @@ namespace Library
 		if (tileIndex >= mHeightMaps.size())
 			return;
 		
-		mHeightMaps[tileIndex]->mHeightTexture = new ER_RHI_GPUTexture();
+		mHeightMaps[tileIndex]->mHeightTexture = rhi->CreateGPUTexture();
 		mHeightMaps[tileIndex]->mHeightTexture->CreateGPUTextureResource(rhi, path, true);
 	}
 
@@ -258,7 +260,7 @@ namespace Library
 			}
 		}
 
-		mHeightMaps[tileIndex]->mVertexBufferTS = new ER_RHI_GPUBuffer();
+		mHeightMaps[tileIndex]->mVertexBufferTS = rhi->CreateGPUBuffer();
 		mHeightMaps[tileIndex]->mVertexBufferTS->CreateGPUBufferResource(rhi, patches_rawdata, NUM_TERRAIN_PATCHES_PER_TILE * NUM_TERRAIN_PATCHES_PER_TILE, 4 * sizeof(float), false, ER_BIND_VERTEX_BUFFER);
 
 		DeleteObjects(patches_rawdata);
@@ -383,7 +385,7 @@ namespace Library
 				}
 			}
 
-			mHeightMaps[tileIndex]->mVertexBufferNonTS = new ER_RHI_GPUBuffer();
+			mHeightMaps[tileIndex]->mVertexBufferNonTS = rhi->CreateGPUBuffer();
 			mHeightMaps[tileIndex]->mVertexBufferNonTS->CreateGPUBufferResource(rhi, vertices, mHeightMaps[tileIndex]->mVertexCountNonTS, sizeof(DebugTerrainVertexInput), false, ER_BIND_VERTEX_BUFFER);
 
 			XMFLOAT3 minVertex = XMFLOAT3(FLT_MAX, FLT_MAX, FLT_MAX);
@@ -410,7 +412,7 @@ namespace Library
 
 			DeleteObjects(vertices);
 
-			mHeightMaps[tileIndex]->mIndexBufferNonTS = new ER_RHI_GPUBuffer();
+			mHeightMaps[tileIndex]->mIndexBufferNonTS = rhi->CreateGPUBuffer();
 			mHeightMaps[tileIndex]->mIndexBufferNonTS->CreateGPUBufferResource(rhi, indices, mHeightMaps[tileIndex]->mIndexCountNonTS, sizeof(unsigned long), false, ER_BIND_INDEX_BUFFER);
 
 			DeleteObjects(indices);
@@ -546,12 +548,12 @@ namespace Library
 
 		if (probeManager && probeManager->AreGlobalProbesReady())
 		{
-			rhi->SetShaderResources(ER_TESSELLATION_DOMAIN, {probeManager->GetGlobalDiffuseProbe()}, 8);
-			rhi->SetShaderResources(ER_TESSELLATION_DOMAIN, {probeManager->GetGlobalSpecularProbe()}, 12);
+			rhi->SetShaderResources(ER_TESSELLATION_DOMAIN, {probeManager->GetGlobalDiffuseProbe()->GetCubemapTexture()}, 8);
+			rhi->SetShaderResources(ER_TESSELLATION_DOMAIN, {probeManager->GetGlobalSpecularProbe()->GetCubemapTexture() }, 12);
 			rhi->SetShaderResources(ER_TESSELLATION_DOMAIN, { probeManager->GetIntegrationMap() }, 17);
 
-			rhi->SetShaderResources(ER_PIXEL, { probeManager->GetGlobalDiffuseProbe() }, 8);
-			rhi->SetShaderResources(ER_PIXEL, { probeManager->GetGlobalSpecularProbe() }, 12);
+			rhi->SetShaderResources(ER_PIXEL, { probeManager->GetGlobalDiffuseProbe()->GetCubemapTexture() }, 8);
+			rhi->SetShaderResources(ER_PIXEL, { probeManager->GetGlobalSpecularProbe()->GetCubemapTexture() }, 12);
 			rhi->SetShaderResources(ER_PIXEL, { probeManager->GetIntegrationMap() }, 17);
 		}
 
@@ -880,13 +882,13 @@ namespace Library
 
 		ER_RHI* rhi = GetCore()->GetRHI();
 
+		ER_RHI_GPUBuffer* terrainBuffer = rhi->CreateGPUBuffer();
 #if USE_RAYCASTING_FOR_ON_TERRAIN_PLACEMENT
-		ER_RHI_GPUBuffer* terrainBuffer = new ER_RHI_GPUBuffer();
 		terrainBuffer->CreateGPUBufferResource(rhi, terrainVertices, terrainVertexCount, sizeof(XMFLOAT4), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 #endif
-		ER_RHI_GPUBuffer* posBuffer = new ER_RHI_GPUBuffer();
+		ER_RHI_GPUBuffer* posBuffer = rhi->CreateGPUBuffer();
 		posBuffer->CreateGPUBufferResource(rhi, positions, positionsCount, sizeof(XMFLOAT4), false, ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
-		ER_RHI_GPUBuffer* outputPosBuffer = new ER_RHI_GPUBuffer();
+		ER_RHI_GPUBuffer* outputPosBuffer = rhi->CreateGPUBuffer();
 		outputPosBuffer->CreateGPUBufferResource(rhi, positions, positionsCount, sizeof(XMFLOAT4), true, ER_BIND_NONE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //TODO should be STAGING
 
 		rhi->SetShader(mPlaceOnTerrainCS);

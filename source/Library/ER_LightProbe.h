@@ -28,7 +28,7 @@ namespace Library
 		bool LoadProbeFromDisk(ER_Core& game, const std::wstring& levelPath);
 		bool IsLoadedFromDisk() { return mIsProbeLoadedFromDisk; }
 		
-		ER_RHI_GPUTexture* GetCubemapSRV() const { return mCubemapTexture; }
+		ER_RHI_GPUTexture* GetCubemapTexture() const { return mCubemapTexture; }
 
 		//TODO refactor
 		void SetShaderInfoForConvolution(ER_RHI_GPUShader* ps)	{ mConvolutionPS = ps; }

@@ -105,7 +105,7 @@ namespace Library
 	{
 		UINT				Stride = 0; 
 		UINT				Offset = 0;
-		ER_RHI_GPUTexture*	InstanceBuffer = nullptr;
+		ER_RHI_GPUBuffer*	InstanceBuffer = nullptr;
 
 		InstanceBufferData() : 
 			Stride(0),

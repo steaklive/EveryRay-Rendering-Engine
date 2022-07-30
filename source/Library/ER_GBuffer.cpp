@@ -29,23 +29,23 @@ namespace Library {
 	{
 		auto rhi = GetCore()->GetRHI();
 
-		mAlbedoBuffer = new ER_RHI_GPUTexture();
+		mAlbedoBuffer = rhi->CreateGPUTexture();
 		mAlbedoBuffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
 
-		mNormalBuffer = new ER_RHI_GPUTexture();
+		mNormalBuffer = rhi->CreateGPUTexture();
 		mNormalBuffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_R16G16B16A16_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
 
-		mPositionsBuffer = new ER_RHI_GPUTexture();
+		mPositionsBuffer = rhi->CreateGPUTexture();
 		mPositionsBuffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_R32G32B32A32_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
 
-		mExtraBuffer = new ER_RHI_GPUTexture();
+		mExtraBuffer = rhi->CreateGPUTexture();
 		mExtraBuffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
 
-		mExtraBuffer = new ER_RHI_GPUTexture();
+		mExtraBuffer = rhi->CreateGPUTexture();
 		mExtraBuffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_R16G16B16A16_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
 
-		mDepthBuffer = new ER_RHI_GPUTexture();
-		mDepthBuffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_D24_UNORM_S8_UINT, ER_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL);
+		mDepthBuffer = rhi->CreateGPUTexture();
+		mDepthBuffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_D24_UNORM_S8_UINT, ER_BIND_SHADER_RESOURCE | ER_BIND_DEPTH_STENCIL);
 	}
 
 	void ER_GBuffer::Update(const ER_CoreTime& time)

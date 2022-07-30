@@ -49,96 +49,96 @@ namespace Library {
 	{
 		auto rhi = mCore.GetRHI();
 
-		mFinalResolvePS = new ER_RHI_GPUShader();
-		mFinalResolvePS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\EmptyColorResolve.hlsl"), "PSMain", ER_PIXEL);
+		mFinalResolvePS = rhi->CreateGPUShader();
+		mFinalResolvePS->CompileShader(rhi, "content\\shaders\\EmptyColorResolve.hlsl", "PSMain", ER_PIXEL);
 
 		//Linear fog
 		{
-			mLinearFogPS = new ER_RHI_GPUShader();
-			mLinearFogPS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\LinearFog.hlsl"), "PSMain", ER_PIXEL);
+			mLinearFogPS = rhi->CreateGPUShader();
+			mLinearFogPS->CompileShader(rhi, "content\\shaders\\LinearFog.hlsl", "PSMain", ER_PIXEL);
 			
 			mLinearFogConstantBuffer.Initialize(rhi);
 
-			mLinearFogRT = new ER_RHI_GPUTexture();
+			mLinearFogRT = rhi->CreateGPUTexture();
 			mLinearFogRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 		}
 
-		mVolumetricFogRT = new ER_RHI_GPUTexture();
+		mVolumetricFogRT = rhi->CreateGPUTexture();
 		mVolumetricFogRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
 			ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 
 		//SSR
 		{
-			mSSRPS = new ER_RHI_GPUShader();
-			mSSRPS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\SSR.hlsl"), "PSMain", ER_PIXEL);
+			mSSRPS = rhi->CreateGPUShader();
+			mSSRPS->CompileShader(rhi, "content\\shaders\\SSR.hlsl", "PSMain", ER_PIXEL);
 
 			mSSRConstantBuffer.Initialize(rhi);
 			
-			mSSRRT = new ER_RHI_GPUTexture();
+			mSSRRT = rhi->CreateGPUTexture();
 			mSSRRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 		}
 
 		//SSS
 		{
-			mSSRPS = new ER_RHI_GPUShader();
-			mSSRPS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\SSS.hlsl"), "BlurPS", ER_PIXEL);
+			mSSRPS = rhi->CreateGPUShader();
+			mSSRPS->CompileShader(rhi, "content\\shaders\\SSS.hlsl", "BlurPS", ER_PIXEL);
 
 			mSSSConstantBuffer.Initialize(rhi);
 
-			mSSSRT = new ER_RHI_GPUTexture();
+			mSSSRT = rhi->CreateGPUTexture();
 			mSSSRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 		}
 
 		//Tonemap
 		{		
-			mTonemappingPS = new ER_RHI_GPUShader();
-			mTonemappingPS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\Tonemap.hlsl"), "PSMain", ER_PIXEL);
+			mTonemappingPS = rhi->CreateGPUShader();
+			mTonemappingPS->CompileShader(rhi, "content\\shaders\\Tonemap.hlsl", "PSMain", ER_PIXEL);
 
-			mTonemappingRT = new ER_RHI_GPUTexture();
+			mTonemappingRT = rhi->CreateGPUTexture();
 			mTonemappingRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 		}
 
 		//Color grading
 		{
-			mLUTs[0] = new ER_RHI_GPUTexture();
-			mLUTs[0]->CreateGPUTextureResource(rhi, ER_Utility::GetFilePath(L"content\\shaders\\LUT_1.png"), true);
-			mLUTs[1] = new ER_RHI_GPUTexture();
-			mLUTs[1]->CreateGPUTextureResource(rhi, ER_Utility::GetFilePath(L"content\\shaders\\LUT_2.png"), true);
-			mLUTs[2] = new ER_RHI_GPUTexture();
-			mLUTs[2]->CreateGPUTextureResource(rhi, ER_Utility::GetFilePath(L"content\\shaders\\LUT_3.png"), true);
+			mLUTs[0] = rhi->CreateGPUTexture();
+			mLUTs[0]->CreateGPUTextureResource(rhi, "content\\shaders\\LUT_1.png", true);
+			mLUTs[1] = rhi->CreateGPUTexture();
+			mLUTs[1]->CreateGPUTextureResource(rhi, "content\\shaders\\LUT_2.png", true);
+			mLUTs[2] = rhi->CreateGPUTexture();
+			mLUTs[2]->CreateGPUTextureResource(rhi, "content\\shaders\\LUT_3.png", true);
 			
-			mColorGradingPS = new ER_RHI_GPUShader();
-			mColorGradingPS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\ColorGrading.hlsl"), "PSMain", ER_PIXEL);
+			mColorGradingPS = rhi->CreateGPUShader();
+			mColorGradingPS->CompileShader(rhi, "content\\shaders\\ColorGrading.hlsl", "PSMain", ER_PIXEL);
 
-			mColorGradingRT = new ER_RHI_GPUTexture();
+			mColorGradingRT = rhi->CreateGPUTexture();
 			mColorGradingRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 		}
 
 		//Vignette
 		{
-			mVignettePS = new ER_RHI_GPUShader();
-			mVignettePS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\Vignette.hlsl"), "PSMain", ER_PIXEL);
+			mVignettePS = rhi->CreateGPUShader();
+			mVignettePS->CompileShader(rhi, "content\\shaders\\Vignette.hlsl", "PSMain", ER_PIXEL);
 
 			mVignetteConstantBuffer.Initialize(rhi);
 			
-			mVignetteRT = new ER_RHI_GPUTexture();
+			mVignetteRT = rhi->CreateGPUTexture();
 			mVignetteRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 		}	
 		
 		//FXAA
 		{
-			mFXAAPS = new ER_RHI_GPUShader();
-			mFXAAPS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\FXAA.hlsl"), "PSMain", ER_PIXEL);
+			mFXAAPS = rhi->CreateGPUShader();
+			mFXAAPS->CompileShader(rhi, "content\\shaders\\FXAA.hlsl", "PSMain", ER_PIXEL);
 
 			mFXAAConstantBuffer.Initialize(rhi);
 
-			mFXAART = new ER_RHI_GPUTexture();
+			mFXAART = rhi->CreateGPUTexture();
 			mFXAART->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 		}

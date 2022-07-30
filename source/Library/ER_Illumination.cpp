@@ -26,7 +26,7 @@
 #include "ER_Skybox.h"
 #include "ER_VolumetricFog.h"
 
-static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+static float clearColorBlack[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 namespace Library {
 
@@ -84,26 +84,26 @@ namespace Library {
 
 		//shaders
 		{
-			mVCTVoxelizationDebugVS = new ER_RHI_GPUShader();
-			mVCTVoxelizationDebugVS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl"), "VSMain", ER_VERTEX);
+			mVCTVoxelizationDebugVS = rhi->CreateGPUShader();
+			mVCTVoxelizationDebugVS->CompileShader(rhi, "content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl", "VSMain", ER_VERTEX);
 
-			mVCTVoxelizationDebugGS = new ER_RHI_GPUShader();
-			mVCTVoxelizationDebugGS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl"), "GSMain", ER_GEOMETRY);
+			mVCTVoxelizationDebugGS = rhi->CreateGPUShader();
+			mVCTVoxelizationDebugGS->CompileShader(rhi, "content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl", "GSMain", ER_GEOMETRY);
 			
-			mVCTVoxelizationDebugPS = new ER_RHI_GPUShader();
-			mVCTVoxelizationDebugPS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl"), "PSMain", ER_PIXEL);
+			mVCTVoxelizationDebugPS = rhi->CreateGPUShader();
+			mVCTVoxelizationDebugPS->CompileShader(rhi, "content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl", "PSMain", ER_PIXEL);
 			
-			mVCTMainCS = new ER_RHI_GPUShader();
-			mVCTMainCS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingMain.hlsl"), "CSMain", ER_COMPUTE);
+			mVCTMainCS = rhi->CreateGPUShader();
+			mVCTMainCS->CompileShader(rhi, "content\\shaders\\GI\\VoxelConeTracingMain.hlsl", "CSMain", ER_COMPUTE);
 			
-			mUpsampleBlurCS = new ER_RHI_GPUShader();
-			mUpsampleBlurCS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\UpsampleBlur.hlsl"), "CSMain", ER_COMPUTE);	
+			mUpsampleBlurCS = rhi->CreateGPUShader();
+			mUpsampleBlurCS->CompileShader(rhi, "content\\shaders\\UpsampleBlur.hlsl", "CSMain", ER_COMPUTE);	
 			
-			mCompositeIlluminationCS = new ER_RHI_GPUShader();
-			mCompositeIlluminationCS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\CompositeIllumination.hlsl"), "CSMain", ER_COMPUTE);
+			mCompositeIlluminationCS = rhi->CreateGPUShader();
+			mCompositeIlluminationCS->CompileShader(rhi, "content\\shaders\\CompositeIllumination.hlsl", "CSMain", ER_COMPUTE);
 
-			mDeferredLightingCS = new ER_RHI_GPUShader();
-			mDeferredLightingCS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\DeferredLighting.hlsl"), "CSMain", ER_COMPUTE);
+			mDeferredLightingCS = rhi->CreateGPUShader();
+			mDeferredLightingCS->CompileShader(rhi, "content\\shaders\\DeferredLighting.hlsl", "CSMain", ER_COMPUTE);
 
 			ER_RHI_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 			{
@@ -113,8 +113,8 @@ namespace Library {
 				{ "TANGENT", 0, ER_FORMAT_R32G32B32_FLOAT, 0, 0xffffffff, true, 0 }
 			};
 			mForwardLightingRenderingObjectInputLayout = new ER_RHI_InputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
-			mForwardLightingVS = new ER_RHI_GPUShader();
-			mForwardLightingVS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl"), "VSMain", ER_VERTEX, mForwardLightingRenderingObjectInputLayout);
+			mForwardLightingVS = rhi->CreateGPUShader();
+			mForwardLightingVS->CompileShader(rhi, "content\\shaders\\ForwardLighting.hlsl", "VSMain", ER_VERTEX, mForwardLightingRenderingObjectInputLayout);
 
 			ER_RHI_INPUT_ELEMENT_DESC inputElementDescriptionsInstancing[] =
 			{
@@ -128,17 +128,17 @@ namespace Library {
 				{ "WORLD", 3, ER_FORMAT_R32G32B32A32_FLOAT, 1, 48,false, 1 }
 			};
 			mForwardLightingRenderingObjectInputLayout_Instancing = new ER_RHI_InputLayout(inputElementDescriptionsInstancing, ARRAYSIZE(inputElementDescriptionsInstancing));
-			mForwardLightingVS_Instancing = new ER_RHI_GPUShader();
-			mForwardLightingVS_Instancing->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl"), "VSMain_instancing", ER_VERTEX, mForwardLightingRenderingObjectInputLayout_Instancing);
+			mForwardLightingVS_Instancing = rhi->CreateGPUShader();
+			mForwardLightingVS_Instancing->CompileShader(rhi, "content\\shaders\\ForwardLighting.hlsl", "VSMain_instancing", ER_VERTEX, mForwardLightingRenderingObjectInputLayout_Instancing);
 
-			mForwardLightingPS = new ER_RHI_GPUShader();
-			mForwardLightingPS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl"), "PSMain", ER_PIXEL);
+			mForwardLightingPS = rhi->CreateGPUShader();
+			mForwardLightingPS->CompileShader(rhi, "content\\shaders\\ForwardLighting.hlsl", "PSMain", ER_PIXEL);
 
-			mForwardLightingDiffuseProbesPS = new ER_RHI_GPUShader();
-			mForwardLightingDiffuseProbesPS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl"), "PSMain_DiffuseProbes", ER_PIXEL);
+			mForwardLightingDiffuseProbesPS = rhi->CreateGPUShader();
+			mForwardLightingDiffuseProbesPS->CompileShader(rhi, "content\\shaders\\ForwardLighting.hlsl", "PSMain_DiffuseProbes", ER_PIXEL);
 
-			mForwardLightingSpecularProbesPS = new ER_RHI_GPUShader();
-			mForwardLightingSpecularProbesPS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl"), "PSMain_SpecularProbes", ER_PIXEL);
+			mForwardLightingSpecularProbesPS = rhi->CreateGPUShader();
+			mForwardLightingSpecularProbesPS->CompileShader(rhi, "content\\shaders\\ForwardLighting.hlsl", "PSMain_SpecularProbes", ER_PIXEL);
 		}
 		
 		//cbuffers
@@ -158,7 +158,7 @@ namespace Library {
 			{
 				mVCTVoxelCascades3DRTs.push_back(new ER_RHI_GPUTexture());
 				mVCTVoxelCascades3DRTs[i]->CreateGPUTextureResource(rhi, voxelCascadesSizes[i], voxelCascadesSizes[i], 1u,
-					ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET | ER_BIND_UNORDERED_ACCESS, 6, voxelCascadesSizes[i]));
+					ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET | ER_BIND_UNORDERED_ACCESS, 6, voxelCascadesSizes[i]);
 				
 				mVoxelCameraPositions[i] = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f);
 				
@@ -168,27 +168,27 @@ namespace Library {
 				mVoxelCascadesAABBs[i].second = XMFLOAT3(maxBB, maxBB, maxBB);
 				mDebugVoxelZonesGizmos[i]->InitializeGeometry({ mVoxelCascadesAABBs[i].first, mVoxelCascadesAABBs[i].second });
 			}
-			mVCTMainRT = new ER_RHI_GPUTexture();
+			mVCTMainRT = rhi->CreateGPUTexture();
 			mVCTMainRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()) * VCT_GI_MAIN_PASS_DOWNSCALE, static_cast<UINT>(mCore->ScreenHeight()) * VCT_GI_MAIN_PASS_DOWNSCALE, 1u, 
 				ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1);
 			
-			mVCTUpsampleAndBlurRT = new ER_RHI_GPUTexture();
+			mVCTUpsampleAndBlurRT = rhi->CreateGPUTexture();
 			mVCTUpsampleAndBlurRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
 				ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1);
 			
-			mVCTVoxelizationDebugRT = new ER_RHI_GPUTexture();
+			mVCTVoxelizationDebugRT = rhi->CreateGPUTexture();
 			mVCTVoxelizationDebugRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
 				ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 			
-			mFinalIlluminationRT = new ER_RHI_GPUTexture();
+			mFinalIlluminationRT = rhi->CreateGPUTexture();
 			mFinalIlluminationRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET | ER_BIND_UNORDERED_ACCESS, 1);
 			
-			mLocalIlluminationRT = new ER_RHI_GPUTexture();
+			mLocalIlluminationRT = rhi->CreateGPUTexture();
 			mLocalIlluminationRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET | ER_BIND_UNORDERED_ACCESS, 1);
 			
-			mDepthBuffer = new ER_RHI_GPUTexture();
+			mDepthBuffer = rhi->CreateGPUTexture();
 			mDepthBuffer->CreateGPUTextureResource(rhi, mCore->ScreenWidth(), mCore->ScreenHeight(), 1u, ER_FORMAT_D24_UNORM_S8_UINT, ER_BIND_SHADER_RESOURCE | ER_BIND_DEPTH_STENCIL);
 		}
 
@@ -309,14 +309,13 @@ namespace Library {
 				mVoxelizationDebugConstantBuffer.ApplyChanges(rhi);
 
 				rhi->SetRenderTargets({ mVCTVoxelizationDebugRT }, mDepthBuffer);
-				rhi->SetDepthStencilState();
 				rhi->SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE::ER_DISABLED);
 				
 				rhi->ClearRenderTarget(mVCTVoxelizationDebugRT, clearColorBlack);
 				rhi->ClearDepthStencilTarget(mDepthBuffer, 1.0f, 0);
 
 				rhi->SetTopologyType(ER_PRIMITIVE_TOPOLOGY_POINTLIST);
-				rhi->SetEmptyInputLayout(nullptr);
+				rhi->SetEmptyInputLayout();
 
 				rhi->SetShader(mVCTVoxelizationDebugVS);
 				rhi->SetConstantBuffers(ER_VERTEX, { mVoxelizationDebugConstantBuffer.Buffer() });
@@ -520,9 +519,9 @@ namespace Library {
 		}
 	}
 
-	void ER_Illumination::DrawDeferredLighting(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget)
+	void ER_Illumination::DrawDeferredLighting(ER_GBuffer* gbuffer, ER_RHI_GPUTexture* aRenderTarget)
 	{
-		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+		static const float clearColorBlack[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 		auto rhi = mCore->GetRHI();
 
@@ -573,12 +572,12 @@ namespace Library {
 				for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 					resources[5 + i] = mShadowMapper.GetShadowTexture(i);
 
-				resources[8] =  mProbesManager->GetGlobalDiffuseProbe();
+				resources[8] =  mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture();
 				resources[9] =  mProbesManager->GetDiffuseProbesCellsIndicesBuffer();
 				resources[10] = mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer();
 				resources[11] = mProbesManager->GetDiffuseProbesPositionsBuffer();
 
-				resources[12] = mProbesManager->GetGlobalSpecularProbe();
+				resources[12] = mProbesManager->GetGlobalSpecularProbe()->GetCubemapTexture();
 				resources[13] = mProbesManager->GetCulledSpecularProbesTextureArray();
 				resources[14] = mProbesManager->GetSpecularProbesCellsIndicesBuffer();
 				resources[15] = mProbesManager->GetSpecularProbesTexArrayIndicesBuffer();
@@ -601,8 +600,8 @@ namespace Library {
 					resources[5 + i] = mShadowMapper.GetShadowTexture(i);
 
 				rhi->SetShaderResources(ER_COMPUTE, resources);
-				rhi->SetShaderResources(ER_COMPUTE, { mProbesManager->GetGlobalDiffuseProbe() }, 8);
-				rhi->SetShaderResources(ER_COMPUTE, { mProbesManager->GetGlobalSpecularProbe() }, 12);
+				rhi->SetShaderResources(ER_COMPUTE, { mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture() }, 8);
+				rhi->SetShaderResources(ER_COMPUTE, { mProbesManager->GetGlobalSpecularProbe()->GetCubemapTexture() }, 12);
 				rhi->SetShaderResources(ER_COMPUTE, { mProbesManager->GetIntegrationMap() }, 17);
 			}
 
@@ -659,21 +658,21 @@ namespace Library {
 				rhi->SetConstantBuffers(ER_PIXEL, { mForwardLightingConstantBuffer.Buffer(), mLightProbesConstantBuffer.Buffer() });
 
 				std::vector<ER_RHI_GPUResource*> resources(18);
-				resources[0] = gbuffer->GetAlbedo();
-				resources[1] = gbuffer->GetNormals();
-				resources[2] = gbuffer->GetPositions();
-				resources[3] = gbuffer->GetExtraBuffer();
-				resources[4] = gbuffer->GetExtra2Buffer();
+				resources[0] = aObj->GetTextureData(meshIndex).AlbedoMap;
+				resources[1] = aObj->GetTextureData(meshIndex).NormalMap;
+				resources[2] = aObj->GetTextureData(meshIndex).MetallicMap;
+				resources[3] = aObj->GetTextureData(meshIndex).RoughnessMap;
+				resources[4] = aObj->GetTextureData(meshIndex).HeightMap;
 
 				for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 					resources[5 + i] = mShadowMapper.GetShadowTexture(i);
 
-				resources[8] = mProbesManager->GetGlobalDiffuseProbe();
+				resources[8] = mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture();
 				resources[9] = mProbesManager->GetDiffuseProbesCellsIndicesBuffer();
 				resources[10] = mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer();
 				resources[11] = mProbesManager->GetDiffuseProbesPositionsBuffer();
 
-				resources[12] = mProbesManager->GetGlobalSpecularProbe();
+				resources[12] = mProbesManager->GetGlobalSpecularProbe()->GetCubemapTexture();
 				resources[13] = mProbesManager->GetCulledSpecularProbesTextureArray();
 				resources[14] = mProbesManager->GetSpecularProbesCellsIndicesBuffer();
 				resources[15] = mProbesManager->GetSpecularProbesTexArrayIndicesBuffer();
@@ -689,18 +688,18 @@ namespace Library {
 				rhi->SetConstantBuffers(ER_PIXEL, { mForwardLightingConstantBuffer.Buffer() });
 
 				std::vector<ER_RHI_GPUResource*> resources(8);
-				resources[0] = gbuffer->GetAlbedo();
-				resources[1] = gbuffer->GetNormals();
-				resources[2] = gbuffer->GetPositions();
-				resources[3] = gbuffer->GetExtraBuffer();
-				resources[4] = gbuffer->GetExtra2Buffer();
+				resources[0] = aObj->GetTextureData(meshIndex).AlbedoMap;
+				resources[1] = aObj->GetTextureData(meshIndex).NormalMap;
+				resources[2] = aObj->GetTextureData(meshIndex).MetallicMap;
+				resources[3] = aObj->GetTextureData(meshIndex).RoughnessMap;
+				resources[4] = aObj->GetTextureData(meshIndex).HeightMap;
 
 				for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 					resources[5 + i] = mShadowMapper.GetShadowTexture(i);
 
 				rhi->SetShaderResources(ER_PIXEL, resources);
-				rhi->SetShaderResources(ER_PIXEL, { mProbesManager->GetGlobalDiffuseProbe() }, 8);
-				rhi->SetShaderResources(ER_PIXEL, { mProbesManager->GetGlobalSpecularProbe() }, 12);
+				rhi->SetShaderResources(ER_PIXEL, { mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture() }, 8);
+				rhi->SetShaderResources(ER_PIXEL, { mProbesManager->GetGlobalSpecularProbe()->GetCubemapTexture() }, 12);
 				rhi->SetShaderResources(ER_PIXEL, { mProbesManager->GetIntegrationMap() }, 17);
 			}
 			rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });

@@ -158,25 +158,25 @@ namespace Library
 			};
 			mInputLayout = new ER_RHI_InputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
 
-			mVS = new ER_RHI_GPUShader();
-			mVS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl"), "VSMain", ER_VERTEX, mInputLayout);
+			mVS = rhi->CreateGPUShader();
+			mVS->CompileShader(rhi, "content\\shaders\\Foliage.hlsl", "VSMain", ER_VERTEX, mInputLayout);
 
-			mGS = new ER_RHI_GPUShader();
-			mGS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl"), "GSMain", ER_GEOMETRY);
+			mGS = rhi->CreateGPUShader();
+			mGS->CompileShader(rhi, "content\\shaders\\Foliage.hlsl", "GSMain", ER_GEOMETRY);
 
-			mPS = new ER_RHI_GPUShader();
-			mPS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl"), "PSMain", ER_PIXEL);
+			mPS = rhi->CreateGPUShader();
+			mPS->CompileShader(rhi, "content\\shaders\\Foliage.hlsl", "PSMain", ER_PIXEL);
 
-			mPS_GBuffer = new ER_RHI_GPUShader();
-			mPS_GBuffer->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl"), "PSMain_gbuffer", ER_PIXEL);
+			mPS_GBuffer = rhi->CreateGPUShader();
+			mPS_GBuffer->CompileShader(rhi, "content\\shaders\\Foliage.hlsl", "PSMain_gbuffer", ER_PIXEL);
 
-			mPS_Voxelization = new ER_RHI_GPUShader();
-			mPS_Voxelization->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\Foliage.hlsl"), "PSMain_voxelization", ER_PIXEL);
+			mPS_Voxelization = rhi->CreateGPUShader();
+			mPS_Voxelization->CompileShader(rhi, "content\\shaders\\Foliage.hlsl", "PSMain_voxelization", ER_PIXEL);
 		}
 
 		LoadBillboardModel(mType);
 
-		mAlbedoTexture = new ER_RHI_GPUTexture();
+		mAlbedoTexture = rhi->CreateGPUTexture();
 		mAlbedoTexture->CreateGPUTextureResource(rhi, textureName, true);
 
 		Initialize();
@@ -203,8 +203,10 @@ namespace Library
 
 	void ER_Foliage::LoadBillboardModel(FoliageBillboardType bType)
 	{
-		mVertexBuffer = new ER_RHI_GPUBuffer();
-		mIndexBuffer = new ER_RHI_GPUBuffer();
+		auto rhi = mCore.GetRHI();
+
+		mVertexBuffer = rhi->CreateGPUBuffer();
+		mIndexBuffer = rhi->CreateGPUBuffer();
 		if (bType == FoliageBillboardType::SINGLE) {
 			mIsRotating = true;
 			std::unique_ptr<ER_Model> quadSingleModel(new ER_Model(mCore, ER_Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_single.obj"), true));
@@ -276,6 +278,8 @@ namespace Library
 
 	void ER_Foliage::InitializeBuffersGPU(int count)
 	{
+		auto rhi = mCore.GetRHI();
+
 		assert(count > 0);
 
 		// instance buffer
@@ -291,8 +295,8 @@ namespace Library
 			mCurrentPositions[i] = XMFLOAT4(mPatchesBufferCPU[i].xPos, mPatchesBufferCPU[i].yPos, mPatchesBufferCPU[i].zPos, 1.0f);
 		}
 
-		mInstanceBuffer = new ER_RHI_GPUBuffer();
-		mInstanceBuffer->CreateGPUBufferResource(mCore.GetRHI(), &instanceData, instanceCount, sizeof(GPUFoliageInstanceData), true, ER_BIND_VERTEX_BUFFER);
+		mInstanceBuffer = rhi->CreateGPUBuffer();
+		mInstanceBuffer->CreateGPUBufferResource(mCore.GetRHI(), mPatchesBufferGPU, instanceCount, sizeof(GPUFoliageInstanceData), true, ER_BIND_VERTEX_BUFFER);
 	}
 
 	void ER_Foliage::InitializeBuffersCPU()

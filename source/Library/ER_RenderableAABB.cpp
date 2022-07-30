@@ -47,8 +47,8 @@ namespace Library
 		mMaterial = new ER_BasicColorMaterial(mCore, {}, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER);
 
 		auto rhi = mCore.GetRHI();
-		mIndexBuffer = new ER_RHI_GPUBuffer();
-		mIndexBuffer->CreateGPUBufferResource(rhi, AABBIndices, AABBIndexCount, sizeof(USHORT), false, ER_BIND_INDEX_BUFFER, 0, 0, ER_FORMAT_R16_UINT);
+		mIndexBuffer = rhi->CreateGPUBuffer();
+		mIndexBuffer->CreateGPUBufferResource(rhi, AABBIndices, AABBIndexCount, sizeof(USHORT), false, ER_BIND_INDEX_BUFFER, 0, ER_RESOURCE_MISC_NONE, ER_FORMAT_R16_UINT);
 	}
 
 	ER_RenderableAABB::~ER_RenderableAABB()
@@ -77,7 +77,7 @@ namespace Library
 		mVertices[7] = XMFLOAT4(aabb[0].x, aabb[0].y, aabb[1].z, 1.0f);
 
 		auto rhi = mCore.GetRHI();
-		mVertexBuffer = new ER_RHI_GPUBuffer();
+		mVertexBuffer = rhi->CreateGPUBuffer();
 		mVertexBuffer->CreateGPUBufferResource(rhi, mVertices, AABBVertexCount, sizeof(VertexPosition), true, ER_BIND_VERTEX_BUFFER);
 	}
 

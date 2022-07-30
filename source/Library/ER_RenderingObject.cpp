@@ -278,7 +278,7 @@ namespace Library
 		}
 
 		ER_RHI* rhi = mCore->GetRHI();
-		resource = new ER_RHI_GPUTexture();
+		resource = rhi->CreateGPUTexture();
 		resource->CreateGPUTextureResource(rhi, path, true);
 
 		//TODO fallback
@@ -308,12 +308,13 @@ namespace Library
 	{
 		assert(lod < GetLODCount());
 		assert(mModel);
+		ER_RHI* rhi = mCore->GetRHI();
 
 		mMeshesRenderBuffers.push_back({});
 		assert(mMeshesRenderBuffers.size() - 1 == lod);
 
-		auto createIndexBuffer = [this](const ER_Mesh& aMesh, int meshIndex, int lod, const std::string& materialName) {
-			mMeshesRenderBuffers[lod][materialName][meshIndex]->IndexBuffer = new ER_RHI_GPUBuffer();
+		auto createIndexBuffer = [this, rhi](const ER_Mesh& aMesh, int meshIndex, int lod, const std::string& materialName) {
+			mMeshesRenderBuffers[lod][materialName][meshIndex]->IndexBuffer = rhi->CreateGPUBuffer();
 			aMesh.CreateIndexBuffer(mMeshesRenderBuffers[lod][materialName][meshIndex]->IndexBuffer);
 			mMeshesRenderBuffers[lod][materialName][meshIndex]->IndicesCount = aMesh.Indices().size();
 		};
@@ -324,7 +325,7 @@ namespace Library
 			for (size_t i = 0; i < mMeshesCount[lod]; i++)
 			{
 				mMeshesRenderBuffers[lod][material.first].push_back(new RenderBufferData());
-				mMeshesRenderBuffers[lod][material.first][i]->VertexBuffer = new ER_RHI_GPUBuffer();
+				mMeshesRenderBuffers[lod][material.first][i]->VertexBuffer = rhi->CreateGPUBuffer();
 				material.second->CreateVertexBuffer((lod == 0) ? mModel->GetMesh(i) : mModelLODs[lod - 1]->GetMesh(i), mMeshesRenderBuffers[lod][material.first][i]->VertexBuffer);
 				createIndexBuffer((lod == 0) ? mModel->GetMesh(i) : mModelLODs[lod - 1]->GetMesh(i), i, lod, material.first);
 
@@ -340,7 +341,7 @@ namespace Library
 			for (size_t i = 0; i < mMeshesCount[lod]; i++)
 			{
 				mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName].push_back(new RenderBufferData());
-				mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer = new ER_RHI_GPUBuffer();
+				mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer = rhi->CreateGPUBuffer();
 
 				if (lod == 0)
 					mModel->GetMesh(i).CreateVertexBuffer_PositionUvNormalTangent(mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer);
@@ -373,7 +374,7 @@ namespace Library
 
 		ER_RHI* rhi = mCore->GetRHI();
 
-		rhi->SetTopologyType(mWireframeMode ? ER_PRIMITIVE_TOPOLOGY_LINELIST : ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
+		rhi->SetTopologyType(mWireframeMode ? ER_PRIMITIVE_TOPOLOGY_LINELIST : ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		if (mMaterials.find(materialName) == mMaterials.end() && !isForwardPass)
 			return;
@@ -448,6 +449,7 @@ namespace Library
 	// new instancing code
 	void ER_RenderingObject::LoadInstanceBuffers(int lod)
 	{
+		auto rhi = mCore->GetRHI();
 		assert(mModel != nullptr);
 		assert(mIsInstanced == true);
 
@@ -468,7 +470,7 @@ namespace Library
 		for (size_t i = 0; i < mMeshesCount[lod]; i++)
 		{
 			mMeshesInstanceBuffers[lod].push_back(new InstanceBufferData());
-			mMeshesInstanceBuffers[lod][i]->InstanceBuffer = new ER_RHI_GPUBuffer();
+			mMeshesInstanceBuffers[lod][i]->InstanceBuffer = rhi->CreateGPUBuffer();
 			CreateInstanceBuffer(&mInstanceData[lod][0], MAX_INSTANCE_COUNT, mMeshesInstanceBuffers[lod][i]->InstanceBuffer);
 			mMeshesInstanceBuffers[lod][i]->Stride = sizeof(InstancedData);
 		}

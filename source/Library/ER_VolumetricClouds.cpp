@@ -45,17 +45,17 @@ namespace Library {
 		//shaders
 		auto rhi = GetCore()->GetRHI();
 
-		mCompositePS = new ER_RHI_GPUShader();
-		mCompositePS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsComposite.hlsl"), "main", ER_PIXEL);
+		mCompositePS = rhi->CreateGPUShader();
+		mCompositePS->CompileShader(rhi, "content\\shaders\\VolumetricClouds\\VolumetricCloudsComposite.hlsl", "main", ER_PIXEL);
 
-		mBlurPS = new ER_RHI_GPUShader();
-		mBlurPS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsBlur.hlsl"), "main", ER_PIXEL);
+		mBlurPS = rhi->CreateGPUShader();
+		mBlurPS->CompileShader(rhi, "content\\shaders\\VolumetricClouds\\VolumetricCloudsBlur.hlsl", "main", ER_PIXEL);
 
-		mMainCS = new ER_RHI_GPUShader();
-		mMainCS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\VolumetricClouds\\VolumetricCloudsCS.hlsl"), "main", ER_COMPUTE);
+		mMainCS = rhi->CreateGPUShader();
+		mMainCS->CompileShader(rhi, "content\\shaders\\VolumetricClouds\\VolumetricCloudsCS.hlsl", "main", ER_COMPUTE);
 
-		mUpsampleBlurCS = new ER_RHI_GPUShader();
-		mUpsampleBlurCS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\UpsampleBlur.hlsl"), "CSMain", ER_COMPUTE);
+		mUpsampleBlurCS = rhi->CreateGPUShader();
+		mUpsampleBlurCS->CompileShader(rhi, "content\\shaders\\UpsampleBlur.hlsl", "CSMain", ER_COMPUTE);
 
 
 		//cbuffers
@@ -67,26 +67,26 @@ namespace Library {
 		mIlluminationResultDepthTarget = aIlluminationDepth;
 
 		//textures
-		mCloudTextureSRV = new ER_RHI_GPUTexture();
+		mCloudTextureSRV = rhi->CreateGPUTexture();
 		mCloudTextureSRV->CreateGPUTextureResource(rhi, ER_Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\cloud.dds"), true);	
-		mWeatherTextureSRV = new ER_RHI_GPUTexture();
+		mWeatherTextureSRV = rhi->CreateGPUTexture();
 		mWeatherTextureSRV->CreateGPUTextureResource(rhi, ER_Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\weather.dds"), true);
-		mWorleyTextureSRV = new ER_RHI_GPUTexture();
+		mWorleyTextureSRV = rhi->CreateGPUTexture();
 		mWorleyTextureSRV->CreateGPUTextureResource(rhi, ER_Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\worley.dds"), true);
 
-		mMainRT = new ER_RHI_GPUTexture();
+		mMainRT = rhi->CreateGPUTexture();
 		mMainRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()) * mDownscaleFactor, static_cast<UINT>(mCore->ScreenHeight()) * mDownscaleFactor, 1u, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS);
 	
-		mUpsampleAndBlurRT = new ER_RHI_GPUTexture();
+		mUpsampleAndBlurRT = rhi->CreateGPUTexture();
 		mUpsampleAndBlurRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS);
 		
-		mBlurRT = new ER_RHI_GPUTexture();
+		mBlurRT = rhi->CreateGPUTexture();
 		mBlurRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
 
-		mSkyRT = new ER_RHI_GPUTexture();
+		mSkyRT = rhi->CreateGPUTexture();
 		mSkyRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
 		
-		mSkyAndSunRT = new ER_RHI_GPUTexture();
+		mSkyAndSunRT = rhi->CreateGPUTexture();
 		mSkyAndSunRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
 	}
 	
@@ -192,7 +192,7 @@ namespace Library {
 
 	void ER_VolumetricClouds::Composite(ER_RHI_GPUTexture* aRenderTarget)
 	{
-		auto rhi = mCore.GetRHI();
+		auto rhi = mCore->GetRHI();
 
 		rhi->SetRenderTargets({ aRenderTarget });
 

@@ -53,20 +53,26 @@ namespace Library
 
 	void ER_Material::CreateVertexShader(const std::string& path, ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount)
 	{
+		ER_RHI* rhi = GetCore()->GetRHI();
+
 		mInputLayout = new ER_RHI_InputLayout(inputElementDescriptions, inputElementDescriptionCount);
-		mVertexShader = new ER_RHI_GPUShader();
+		mVertexShader = rhi->CreateGPUShader();
 		mVertexShader->CompileShader(GetCore()->GetRHI(), path, mShaderEntries.vertexEntry, ER_VERTEX, mInputLayout);
 	}
 
 	void ER_Material::CreatePixelShader(const std::string& path)
 	{
-		mPixelShader = new ER_RHI_GPUShader();
+		ER_RHI* rhi = GetCore()->GetRHI();
+
+		mPixelShader = rhi->CreateGPUShader();
 		mPixelShader->CompileShader(GetCore()->GetRHI(), path, mShaderEntries.pixelEntry, ER_PIXEL);
 	}
 
 	void ER_Material::CreateGeometryShader(const std::string& path)
 	{
-		mGeometryShader = new ER_RHI_GPUShader();
+		ER_RHI* rhi = GetCore()->GetRHI();
+
+		mGeometryShader = rhi->CreateGPUShader();
 		mGeometryShader->CompileShader(GetCore()->GetRHI(), path, mShaderEntries.geometryEntry, ER_GEOMETRY);
 	}
 

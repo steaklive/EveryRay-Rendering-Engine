@@ -138,7 +138,7 @@ namespace Library
 		ER_PRIMITIVE_TOPOLOGY_CONTROL_POINT_PATCHLIST
 	};
 
-	enum ER_RHI_BIND_FLAG
+	typedef enum ER_RHI_BIND_FLAG
 	{
 		ER_BIND_NONE = 0x0L,
 		ER_BIND_VERTEX_BUFFER = 0x1L,
@@ -149,7 +149,12 @@ namespace Library
 		ER_BIND_RENDER_TARGET = 0x20L,
 		ER_BIND_DEPTH_STENCIL = 0x40L,
 		ER_BIND_UNORDERED_ACCESS = 0x80L
-	};
+	} ER_RHI_BIND_FLAG;
+
+	constexpr inline ER_RHI_BIND_FLAG operator~ (ER_RHI_BIND_FLAG a) { return static_cast<ER_RHI_BIND_FLAG>(~static_cast<std::underlying_type<ER_RHI_BIND_FLAG>::type>(a)); }
+	constexpr inline ER_RHI_BIND_FLAG operator| (ER_RHI_BIND_FLAG a, ER_RHI_BIND_FLAG b) { return static_cast<ER_RHI_BIND_FLAG>(static_cast<std::underlying_type<ER_RHI_BIND_FLAG>::type>(a) | static_cast<std::underlying_type<ER_RHI_BIND_FLAG>::type>(b)); }
+	constexpr inline ER_RHI_BIND_FLAG operator& (ER_RHI_BIND_FLAG a, ER_RHI_BIND_FLAG b) { return static_cast<ER_RHI_BIND_FLAG>(static_cast<std::underlying_type<ER_RHI_BIND_FLAG>::type>(a) & static_cast<std::underlying_type<ER_RHI_BIND_FLAG>::type>(b)); }
+	constexpr inline ER_RHI_BIND_FLAG operator^ (ER_RHI_BIND_FLAG a, ER_RHI_BIND_FLAG b) { return static_cast<ER_RHI_BIND_FLAG>(static_cast<std::underlying_type<ER_RHI_BIND_FLAG>::type>(a) ^ static_cast<std::underlying_type<ER_RHI_BIND_FLAG>::type>(b)); }
 
 	enum ER_RHI_RESOURCE_MISC_FLAG
 	{
@@ -196,7 +201,7 @@ namespace Library
 			mInputElementDescriptions = inputElementDescriptions;
 			mInputElementDescriptionCount = inputElementDescriptionCount;
 		};
-		virtual ~ER_RHI_InputLayout();
+		virtual ~ER_RHI_InputLayout() {}
 
 		ER_RHI_INPUT_ELEMENT_DESC* mInputElementDescriptions;
 		UINT mInputElementDescriptionCount;
@@ -210,8 +215,8 @@ namespace Library
 	class ER_RHI
 	{
 	public:
-		ER_RHI();
-		virtual ~ER_RHI();
+		ER_RHI() {}
+		virtual ~ER_RHI() {}
 
 		virtual bool Initialize(UINT width, UINT height, bool isFullscreen) = 0;
 		
@@ -223,11 +228,15 @@ namespace Library
 
 		virtual void ClearMainRenderTarget(float colors[4]) = 0;
 		virtual void ClearMainDepthStencilTarget(float depth, UINT stencil = 0) = 0;
-		virtual void ClearRenderTarget(ER_RHI_GPUTexture* aRenderTarget, float colors[4]) = 0;
+		virtual void ClearRenderTarget(ER_RHI_GPUTexture* aRenderTarget, float colors[4], int rtvArrayIndex = -1) = 0;
 		virtual void ClearDepthStencilTarget(ER_RHI_GPUTexture* aDepthTarget, float depth, UINT stencil = 0) = 0;
 		virtual void ClearUAV(ER_RHI_GPUResource* aRenderTarget, float colors[4]) = 0;
 		virtual void CreateInputLayout(ER_RHI_InputLayout* aOutInputLayout, ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount, const void* shaderBytecodeWithInputSignature, UINT byteCodeLength) = 0;
 		
+		virtual ER_RHI_GPUShader* CreateGPUShader() = 0;
+		virtual ER_RHI_GPUBuffer* CreateGPUBuffer() = 0;
+		virtual ER_RHI_GPUTexture* CreateGPUTexture() = 0;
+
 		virtual void CreateTexture(ER_RHI_GPUTexture* aOutTexture, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags,
 			int mip = 1, int depth = -1, int arraySize = 1, bool isCubemap = false, int cubemapArraySize = -1) = 0;
 		virtual void CreateTexture(ER_RHI_GPUTexture* aOutTexture, const std::string& aPath, bool isFullPath = false) = 0;
@@ -252,19 +261,19 @@ namespace Library
 		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture) = 0; // not every API supports that!
 
 		virtual void PresentGraphics() = 0;
-		virtual void PresentCompute() = 0;
+		//virtual void PresentCompute() = 0;
 
 		virtual bool ProjectCubemapToSH(ER_RHI_GPUTexture* aTexture, UINT order, float* resultR, float* resultG, float* resultB) = 0; //WARNING: only works on DX11 for now
 
 		virtual void SaveGPUTextureToFile(ER_RHI_GPUTexture* aTexture, const std::wstring& aPathName) = 0; //WARNING: only works on DX11 for now
 
-		virtual void SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr, ER_RHI_GPUTexture* aUAV = nullptr) = 0;
+		virtual void SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr, ER_RHI_GPUTexture* aUAV = nullptr, int rtvArrayIndex = -1) = 0;
 		virtual void SetDepthTarget(ER_RHI_GPUTexture* aDepthTarget) = 0;
 
 		virtual void SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE aDS, UINT stencilRef = 0xffffffff) = 0;
-		virtual ER_RHI_DEPTH_STENCIL_STATE GetCurrentDepthStencilState() = 0;
+		//virtual ER_RHI_DEPTH_STENCIL_STATE GetCurrentDepthStencilState() = 0;
 
-		virtual void SetBlendState(ER_RHI_BLEND_STATE aBS, const float BlendFactor[4], UINT SampleMask) = 0;
+		virtual void SetBlendState(ER_RHI_BLEND_STATE aBS, const float BlendFactor[4] = nullptr, UINT SampleMask = 0xffffffff) = 0;
 		virtual ER_RHI_BLEND_STATE GetCurrentBlendState() { return mCurrentBS; }
 
 		virtual void SetRasterizerState(ER_RHI_RASTERIZER_STATE aRS) = 0;
@@ -318,8 +327,8 @@ namespace Library
 	class ER_RHI_GPUResource
 	{
 	public:
-		ER_RHI_GPUResource();
-		virtual ~ER_RHI_GPUResource();
+		ER_RHI_GPUResource() {}
+		virtual ~ER_RHI_GPUResource() {}
 
 		virtual void* GetSRV() = 0;
 		virtual void* GetUAV() = 0;
@@ -328,39 +337,52 @@ namespace Library
 	class ER_RHI_GPUTexture : public ER_RHI_GPUResource
 	{
 	public:
-		ER_RHI_GPUTexture();
-		virtual ~ER_RHI_GPUTexture();
+		ER_RHI_GPUTexture() {}
+		virtual ~ER_RHI_GPUTexture() {}
 
 		virtual void CreateGPUTextureResource(ER_RHI* aRHI, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE,
-			int mip = 1, int depth = -1, int arraySize = 1, bool isCubemap = false, int cubemapArraySize = -1) = 0;
-		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath = false) = 0;
-		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath = false) = 0;
+			int mip = 1, int depth = -1, int arraySize = 1, bool isCubemap = false, int cubemapArraySize = -1) { assert(0);	}
+		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath = false) { assert(0); }
+		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath = false) { assert(0); }
 
-		virtual void* GetRTV(void* aEmpty = nullptr) = 0;
-		virtual void* GetDSV() = 0;
+		virtual void* GetRTV(void* aEmpty = nullptr) { assert(0); return nullptr; }
+		virtual void* GetRTV(int index) { assert(0); return nullptr; }
+		virtual void* GetDSV() { assert(0); return nullptr; }
+
+		virtual void* GetSRV() { assert(0); return nullptr; }
+		virtual void* GetUAV() { assert(0); return nullptr; }
+
+		virtual UINT GetMips() { assert(0); return 0; }
+		virtual UINT GetWidth() { assert(0); return 0; }
+		virtual UINT GetHeight() { assert(0); return 0; }
+		virtual UINT GetDepth() { assert(0); return 0; }
 	};
 
 	class ER_RHI_GPUBuffer : public ER_RHI_GPUResource
 	{
 	public:
-		ER_RHI_GPUBuffer();
-		virtual ~ER_RHI_GPUBuffer();
+		ER_RHI_GPUBuffer() {}
+		virtual ~ER_RHI_GPUBuffer() {}
 
-		virtual void CreateGPUBufferResource(ER_RHI* aRHI, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic = false, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, ER_RHI_RESOURCE_MISC_FLAG miscFlags = ER_RESOURCE_MISC_NONE, ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN) = 0;
-		virtual void* GetBuffer() = 0;
-		virtual int GetSize() = 0;
-		virtual UINT GetStride() = 0;
-		virtual ER_RHI_FORMAT GetFormatRhi() = 0;
+		virtual void CreateGPUBufferResource(ER_RHI* aRHI, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic = false, 
+			ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, ER_RHI_RESOURCE_MISC_FLAG miscFlags = ER_RESOURCE_MISC_NONE, ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN) { assert(0); }
+		virtual void* GetBuffer() { assert(0);  return nullptr; }
+		virtual int GetSize() { assert(0); return 0; }
+		virtual UINT GetStride() { assert(0); return 0; }
+		virtual ER_RHI_FORMAT GetFormatRhi() { assert(0); return ER_RHI_FORMAT::ER_FORMAT_UNKNOWN; }
+
+		virtual void* GetSRV() { assert(0); return nullptr; }
+		virtual void* GetUAV() { assert(0); return nullptr; }
 	};
 
 	class ER_RHI_GPUShader
 	{
 	public:
-		ER_RHI_GPUShader();
-		virtual ~ER_RHI_GPUShader();
+		ER_RHI_GPUShader() {}
+		virtual ~ER_RHI_GPUShader() {}
 
-		virtual void CompileShader(ER_RHI* aRHI, const std::string& path, const std::string& shaderEntry, ER_RHI_SHADER_TYPE type, ER_RHI_InputLayout* aIL = nullptr) = 0;
-		virtual void* GetShaderObject() = 0;
+		virtual void CompileShader(ER_RHI* aRHI, const std::string& path, const std::string& shaderEntry, ER_RHI_SHADER_TYPE type, ER_RHI_InputLayout* aIL = nullptr) { assert(0); };
+		virtual void* GetShaderObject() { assert(0); return nullptr; }
 
 		ER_RHI_SHADER_TYPE mShaderType;
 	};
