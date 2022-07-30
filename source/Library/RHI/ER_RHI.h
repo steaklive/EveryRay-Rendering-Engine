@@ -251,8 +251,6 @@ namespace Library
 
 		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture) = 0; // not every API supports that!
 
-		virtual ER_RHI_PRIMITIVE_TYPE GetCurrentTopologyType() = 0;
-
 		virtual void PresentGraphics() = 0;
 		virtual void PresentCompute() = 0;
 
@@ -276,18 +274,18 @@ namespace Library
 		virtual const ER_RHI_Viewport& GetCurrentViewport() { return mCurrentViewport; }
 
 		virtual void SetRect(const ER_RHI_Rect& rect) = 0;
-
 		virtual void SetShader(ER_RHI_GPUShader* aShader) = 0;
 		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot = 0) = 0;
 		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot = 0) = 0;
 		virtual void SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot = 0) = 0;
 		virtual void SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot = 0) = 0;
-
 		virtual void SetIndexBuffer(ER_RHI_GPUBuffer* aBuffer, UINT offset = 0) = 0;
 		virtual void SetVertexBuffers(const std::vector<ER_RHI_GPUBuffer*>& aVertexBuffers) = 0;
 		virtual void SetInputLayout(ER_RHI_InputLayout* aIL) = 0;
 		virtual void SetEmptyInputLayout() = 0;
+
 		virtual void SetTopologyType(ER_RHI_PRIMITIVE_TYPE aType) = 0;
+		virtual ER_RHI_PRIMITIVE_TYPE GetCurrentTopologyType() = 0;
 
 		virtual void UnbindRenderTargets() = 0;
 		virtual void UnbindResourcesFromShader(ER_RHI_SHADER_TYPE aShaderType, bool unbindShader = true) = 0;

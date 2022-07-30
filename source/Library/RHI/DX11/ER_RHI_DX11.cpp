@@ -431,9 +431,10 @@ namespace Library
 		res = DirectX::SaveToDDSFile(tempImage.GetImages(), tempImage.GetImageCount(), tempImage.GetMetadata(), DDS_FLAGS_NONE, aPathName.c_str());
 		if (FAILED(res))
 		{
-			std::string str(aPathName.begin(), aPathName.end());
-			std::string msg = "Failed to save a texture to a file: " + str;
-			throw ER_CoreException(msg.c_str());
+			throw ER_CoreException("Failed to save a texture to a file: ");
+			//std::string str(aPathName.begin(), aPathName.end());
+			//std::string msg = "Failed to save a texture to a file: " + str;
+			//throw ER_CoreException(msg.c_str());
 		}
 	}
 
@@ -1195,12 +1196,100 @@ namespace Library
 		//TODO
 		D3D11_DEPTH_STENCIL_DESC depthStencilStateDesc;
 		depthStencilStateDesc.DepthEnable = TRUE;
-		depthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+		depthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_NEVER;
 		depthStencilStateDesc.StencilEnable = FALSE;
-		HRESULT hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &mDepthStencilState);
+		HRESULT hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyReadComparisonNeverDS);
 		if (FAILED(hr))
-			throw ER_CoreException("CreateDepthStencilState() failed while generating a shadow mapper.", hr);
+			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyReadComparisonNeverDS.", hr);
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_NEVER, DepthOnlyReadComparisonNeverDS));
+
+		// read only 
+		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS;
+		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyReadComparisonLessDS);
+		if (FAILED(hr))
+			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyReadComparisonLessDS.", hr);
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_LESS, DepthOnlyReadComparisonLessDS));
+
+		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_EQUAL;
+		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyReadComparisonEqualDS);
+		if (FAILED(hr))
+			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyReadComparisonEqualDS.", hr);
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_EQUAL, DepthOnlyReadComparisonEqualDS));
+
+		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyReadComparisonLessEqualDS);
+		if (FAILED(hr))
+			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyReadComparisonLessEqualDS.", hr);
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_LESS_EQUAL, DepthOnlyReadComparisonLessEqualDS));
+
+		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_GREATER;
+		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyReadComparisonGreaterDS);
+		if (FAILED(hr))
+			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyReadComparisonGreaterDS.", hr);
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_GREATER, DepthOnlyReadComparisonGreaterDS));
+
+		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_NOT_EQUAL;
+		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyReadComparisonNotEqualDS);
+		if (FAILED(hr))
+			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyReadComparisonNotEqualDS.", hr);
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_NOT_EQUAL, DepthOnlyReadComparisonNotEqualDS));
+
+		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL;
+		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyReadComparisonGreaterEqualDS);
+		if (FAILED(hr))
+			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyReadComparisonGreaterEqualDS.", hr);
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_GREATER_EQUAL, DepthOnlyReadComparisonGreaterEqualDS));
+
+		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_ALWAYS;
+		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyReadComparisonAlwaysDS);
+		if (FAILED(hr))
+			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyReadComparisonAlwaysDS.", hr);
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_ALWAYS, DepthOnlyReadComparisonAlwaysDS));
+
+		//write
+		depthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS;
+		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyWriteComparisonLessDS);
+		if (FAILED(hr))
+			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyWriteComparisonLessDS.", hr);
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_LESS, DepthOnlyWriteComparisonLessDS));
+
+		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_EQUAL;
+		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyWriteComparisonEqualDS);
+		if (FAILED(hr))
+			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyWriteComparisonEqualDS.", hr);
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_EQUAL, DepthOnlyWriteComparisonEqualDS));
+
+		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyWriteComparisonLessEqualDS);
+		if (FAILED(hr))
+			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyWriteComparisonLessEqualDS.", hr);
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL, DepthOnlyWriteComparisonLessEqualDS));
+
+		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_GREATER;
+		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyWriteComparisonGreaterDS);
+		if (FAILED(hr))
+			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyWriteComparisonGreaterDS.", hr);
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_GREATER, DepthOnlyWriteComparisonGreaterDS));
+
+		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_NOT_EQUAL;
+		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyWriteComparisonNotEqualDS);
+		if (FAILED(hr))
+			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyWriteComparisonNotEqualDS.", hr);
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_NOT_EQUAL, DepthOnlyWriteComparisonNotEqualDS));
+
+		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL;
+		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyWriteComparisonGreaterEqualDS);
+		if (FAILED(hr))
+			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyWriteComparisonGreaterEqualDS.", hr);
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_GREATER_EQUAL, DepthOnlyWriteComparisonGreaterEqualDS));
+
+		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_ALWAYS;
+		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyWriteComparisonAlwaysDS);
+		if (FAILED(hr))
+			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyWriteComparisonAlwaysDS.", hr);
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_ALWAYS, DepthOnlyWriteComparisonAlwaysDS));
 	}
 
 }

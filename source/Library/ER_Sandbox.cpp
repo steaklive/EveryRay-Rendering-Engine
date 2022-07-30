@@ -17,7 +17,6 @@ namespace Library {
 	void ER_Sandbox::Destroy(ER_Core& game)
 	{
 		game.CPUProfiler()->BeginCPUTime("Destroying scene: " + mName);
-		DeleteObject(mRenderStateHelper);
 		DeleteObject(mDirectionalLight);
 		DeleteObject(mSkybox);
 		DeleteObject(mPostProcessingStack);
@@ -35,7 +34,6 @@ namespace Library {
 
     void ER_Sandbox::Initialize(ER_Core& game, ER_Camera& camera, const std::string& sceneName, const std::string& sceneFolderPath)
     {
-        mRenderStateHelper = new RenderStateHelper(game);
 		mName = sceneName;
 
 		#pragma region INIT_SCENE
