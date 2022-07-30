@@ -36,6 +36,8 @@
 
 #include "ImGuizmo.h"
 
+#define ER_PLATFORM_WIN64_DX11 1
+
 #define DeleteObject(object) if((object) != NULL) { delete object; object = NULL; }
 #define DeleteObjects(objects) if((objects) != NULL) { delete[] objects; objects = NULL; }
 #define ReleaseObject(object) if((object) != NULL) { object->Release(); object = NULL; }

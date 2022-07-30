@@ -1,5 +1,6 @@
 #pragma once
 #include "ER_LightProbesManager.h"
+#include "RHI/ER_RHI.h"
 
 namespace Library
 {
@@ -19,15 +20,18 @@ namespace Library
 		ER_LightProbe(ER_Core& game, DirectionalLight& light, ER_ShadowMapper& shadowMapper, int size, ER_ProbeType aType);
 		~ER_LightProbe();
 
-		void Compute(ER_Core& game, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted, ER_GPUTexture** aDepthBuffers,
+#ifdef ER_PLATFORM_WIN64_DX11
+		void Compute(ER_Core& game, ER_RHI_GPUTexture* aTextureNonConvoluted, ER_RHI_GPUTexture* aTextureConvoluted, ER_RHI_GPUTexture** aDepthBuffers,
 			const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, ER_QuadRenderer* quadRenderer, ER_Skybox* skybox = nullptr);
 		void UpdateProbe(const ER_CoreTime& gameTime);
+#endif
 		bool LoadProbeFromDisk(ER_Core& game, const std::wstring& levelPath);
-		ID3D11ShaderResourceView* GetCubemapSRV() const { return mCubemapTexture->GetSRV(); }
-		ID3D11Texture2D* GetCubemapTexture2D() const { return mCubemapTexture->GetTexture2D(); }
+		bool IsLoadedFromDisk() { return mIsProbeLoadedFromDisk; }
+		
+		ER_RHI_GPUTexture* GetCubemapSRV() const { return mCubemapTexture; }
 
 		//TODO refactor
-		void SetShaderInfoForConvolution(ID3D11PixelShader* ps)	{ mConvolutionPS = ps; }
+		void SetShaderInfoForConvolution(ER_RHI_GPUShader* ps)	{ mConvolutionPS = ps; }
 
 		const std::vector<XMFLOAT3>& GetSphericalHarmonics() { return mSphericalHarmonicsRGB; }
 
@@ -38,12 +42,13 @@ namespace Library
 
 		void CPUCullAgainstProbeBoundingVolume(const XMFLOAT3& aMin, const XMFLOAT3& aMax);
 		bool IsCulled() { return mIsCulled; }
-		bool IsLoadedFromDisk() { return mIsProbeLoadedFromDisk; }
 	private:
-		void StoreSphericalHarmonicsFromCubemap(ER_Core& game, ER_GPUTexture* aTextureConvoluted);
-		void DrawGeometryToProbe(ER_Core& game, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture** aDepthBuffers, const LightProbeRenderingObjectsInfo& objectsToRender, ER_Skybox* skybox);
-		void ConvoluteProbe(ER_Core& game, ER_QuadRenderer* quadRenderer, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted);
-		void SaveProbeOnDisk(ER_Core& game, const std::wstring& levelPath, ER_GPUTexture* aTextureConvoluted);
+#ifdef ER_PLATFORM_WIN64_DX11
+		void StoreSphericalHarmonicsFromCubemap(ER_Core& game, ER_RHI_GPUTexture* aTextureConvoluted);
+		void SaveProbeOnDisk(ER_Core& game, const std::wstring& levelPath, ER_RHI_GPUTexture* aTextureConvoluted);
+		void DrawGeometryToProbe(ER_Core& game, ER_RHI_GPUTexture* aTextureNonConvoluted, ER_RHI_GPUTexture** aDepthBuffers, const LightProbeRenderingObjectsInfo& objectsToRender, ER_Skybox* skybox);
+		void ConvoluteProbe(ER_Core& game, ER_QuadRenderer* quadRenderer, ER_RHI_GPUTexture* aTextureNonConvoluted, ER_RHI_GPUTexture* aTextureConvoluted);
+#endif
 		std::wstring GetConstructedProbeName(const std::wstring& levelPath, bool inSphericalHarmonics = false);
 
 		ER_ProbeType mProbeType;
@@ -54,10 +59,10 @@ namespace Library
 		LightProbeRenderingObjectsInfo mObjectsToRenderPerFace[CUBEMAP_FACES_COUNT];
 		ER_Camera* mCubemapCameras[CUBEMAP_FACES_COUNT];
 
-		ER_GPUTexture* mCubemapTexture = nullptr; // for regular diffuse probe it should be null (because we use SH)
+		ER_RHI_GPUTexture* mCubemapTexture = nullptr; // for regular diffuse probe it should be null (because we use SH)
 		ConstantBuffer<LightProbeCBufferData::ProbeConvolutionCB> mConvolutionCB;
 
-		ID3D11PixelShader* mConvolutionPS = nullptr;
+		ER_RHI_GPUShader* mConvolutionPS = nullptr; //just a pointer (deleted in the mananager) TODO remove
 
 		std::vector<XMFLOAT3> mSphericalHarmonicsRGB;
 

@@ -7,12 +7,10 @@
 #include "ER_MatrixHelper.h"
 #include "ER_MaterialHelper.h"
 #include "ER_VectorHelper.h"
-#include "ShaderCompiler.h"
 #include "ER_RenderingObject.h"
 #include "ER_Model.h"
 #include "ER_Scene.h"
 #include "ER_RenderableAABB.h"
-#include "ER_GPUBuffer.h"
 #include "ER_LightProbe.h"
 #include "ER_QuadRenderer.h"
 #include "ER_DebugLightProbeMaterial.h"
@@ -26,36 +24,40 @@ namespace Library
 		if (!scene)
 			throw ER_CoreException("No scene to load light probes for!");
 
-		mTempDiffuseCubemapFacesRT = new ER_GPUTexture(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R16G16B16A16_FLOAT,
-			D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1, -1, CUBEMAP_FACES_COUNT, true);
-		mTempDiffuseCubemapFacesConvolutedRT = new ER_GPUTexture(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, DXGI_FORMAT_R16G16B16A16_FLOAT,
-			D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1, -1, CUBEMAP_FACES_COUNT, true);
-		mTempSpecularCubemapFacesRT = new ER_GPUTexture(game.Direct3DDevice(), SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
-			D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
-		mTempSpecularCubemapFacesConvolutedRT = new ER_GPUTexture(game.Direct3DDevice(), SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
-			D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
+		ER_RHI* rhi = game.GetRHI();
+
+		mTempDiffuseCubemapFacesRT = new ER_RHI_GPUTexture();
+		mTempDiffuseCubemapFacesRT->CreateGPUTextureResource(rhi, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, ER_FORMAT_R16G16B16A16_FLOAT,
+			ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1, -1, CUBEMAP_FACES_COUNT, true);
+
+		mTempDiffuseCubemapFacesConvolutedRT = new ER_RHI_GPUTexture();
+		mTempDiffuseCubemapFacesConvolutedRT->CreateGPUTextureResource(rhi, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, ER_FORMAT_R16G16B16A16_FLOAT,
+			ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1, -1, CUBEMAP_FACES_COUNT, true);
+		
+		mTempSpecularCubemapFacesRT = new ER_RHI_GPUTexture();
+		mTempSpecularCubemapFacesRT->CreateGPUTextureResource(rhi, SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, ER_FORMAT_R8G8B8A8_UNORM,
+			ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
+
+		mTempSpecularCubemapFacesConvolutedRT = new ER_RHI_GPUTexture(); 
+		mTempSpecularCubemapFacesConvolutedRT->CreateGPUTextureResource(rhi, SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, ER_FORMAT_R8G8B8A8_UNORM,
+			ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
 
 		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
 		{
-			mTempDiffuseCubemapDepthBuffers[i] = new ER_GPUTexture(game.Direct3DDevice(), DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1u, DXGI_FORMAT_D24_UNORM_S8_UINT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL);
-			mTempSpecularCubemapDepthBuffers[i] = new ER_GPUTexture(game.Direct3DDevice(), SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1u, DXGI_FORMAT_D24_UNORM_S8_UINT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL);
+			mTempDiffuseCubemapDepthBuffers[i] = new ER_RHI_GPUTexture();
+			mTempDiffuseCubemapDepthBuffers[i]->CreateGPUTextureResource(rhi, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1u, ER_FORMAT_D24_UNORM_S8_UINT,ER_BIND_SHADER_RESOURCE | ER_BIND_DEPTH_STENCIL);
+			
+			mTempSpecularCubemapDepthBuffers[i] = new ER_RHI_GPUTexture();
+			mTempSpecularCubemapDepthBuffers[i]->CreateGPUTextureResource(rhi, SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1u, ER_FORMAT_D24_UNORM_S8_UINT, ER_BIND_SHADER_RESOURCE | ER_BIND_DEPTH_STENCIL);
 		}
 
 		mQuadRenderer = (ER_QuadRenderer*)game.Services().GetService(ER_QuadRenderer::TypeIdClass());
 		assert(mQuadRenderer);
-		{
-			ID3DBlob* blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\IBL\\ProbeConvolution.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
-				throw ER_CoreException("Failed to load PSMain from shader: ProbeConvolution.hlsl!");
-			if (FAILED(game.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mConvolutionPS)))
-				throw ER_CoreException("Failed to create pixel shader from ProbeConvolution.hlsl!");
-			blob->Release();
-		}
+		mConvolutionPS = new ER_RHI_GPUShader();
+		mConvolutionPS->CompileShader(rhi, ER_Utility::GetFilePath(L"content\\shaders\\IBL\\ProbeConvolution.hlsl"), "PSMain", ER_PIXEL);
 
-		// Load a pre-computed Integration Map
-		if (FAILED(DirectX::CreateDDSTextureFromFile(game.Direct3DDevice(), game.Direct3DDeviceContext(),
-			ER_Utility::GetFilePath(L"content\\textures\\IntegrationMapBrdf.dds").c_str(), nullptr, &mIntegrationMapTextureSRV)))
-			throw ER_CoreException("Failed to create Integration Texture.");
+		mIntegrationMapTextureSRV = new ER_RHI_GPUTexture();
+		mIntegrationMapTextureSRV->CreateGPUTextureResource(rhi, ER_Utility::GetFilePath(L"content\\textures\\IntegrationMapBrdf.dds"), true);
 
 		if (!scene->HasLightProbesSupport())
 		{
@@ -89,7 +91,7 @@ namespace Library
 		DeletePointerCollection(mDiffuseProbes);
 		DeletePointerCollection(mSpecularProbes);
 
-		ReleaseObject(mConvolutionPS);
+		DeleteObject(mConvolutionPS);
 
 		DeleteObject(mTempDiffuseCubemapFacesRT);
 		DeleteObject(mTempDiffuseCubemapFacesConvolutedRT);
@@ -100,7 +102,7 @@ namespace Library
 			DeleteObject(mTempDiffuseCubemapDepthBuffers[i]);
 			DeleteObject(mTempSpecularCubemapDepthBuffers[i]);
 		}
-		ReleaseObject(mIntegrationMapTextureSRV);
+		DeleteObject(mIntegrationMapTextureSRV);
 
 		DeleteObject(mDiffuseProbesSphericalHarmonicsGPUBuffer);
 
@@ -130,8 +132,10 @@ namespace Library
 		mGlobalSpecularProbe->SetShaderInfoForConvolution(mConvolutionPS);
 	}
 
-	void ER_LightProbesManager::SetupDiffuseProbes(ER_Core& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
+	void ER_LightProbesManager::SetupDiffuseProbes(ER_Core& core, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 	{
+		ER_RHI* rhi = core.GetRHI();
+
 		ER_MaterialSystems materialSystems;
 		materialSystems.mCamera = &camera;
 		materialSystems.mDirectionalLight = &light;
@@ -141,7 +145,7 @@ namespace Library
 		XMFLOAT3& minBounds = mSceneProbesMinBounds;
 		XMFLOAT3& maxBounds = mSceneProbesMaxBounds;
 
-		SetupGlobalDiffuseProbe(game, camera, scene, light, shadowMapper);
+		SetupGlobalDiffuseProbe(core, camera, scene, light, shadowMapper);
 
 		mDiffuseProbesCountX = (maxBounds.x - minBounds.x) / mDistanceBetweenDiffuseProbes + 1;
 		mDiffuseProbesCountY = (maxBounds.y - minBounds.y) / mDistanceBetweenDiffuseProbes + 1;
@@ -185,7 +189,7 @@ namespace Library
 
 		// simple 3D grid distribution of probes
 		for (size_t i = 0; i < mDiffuseProbesCountTotal; i++)
-			mDiffuseProbes.emplace_back(new ER_LightProbe(game, light, shadowMapper, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE));
+			mDiffuseProbes.emplace_back(new ER_LightProbe(core, light, shadowMapper, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE));
 		for (int probesY = 0; probesY < mDiffuseProbesCountY; probesY++)
 		{
 			for (int probesX = 0; probesX < mDiffuseProbesCountX; probesX++)
@@ -209,12 +213,11 @@ namespace Library
 		XMFLOAT3* diffuseProbesPositionsCPUBuffer = new XMFLOAT3[mDiffuseProbesCountTotal];
 		for (int probeIndex = 0; probeIndex < mDiffuseProbesCountTotal; probeIndex++)
 			diffuseProbesPositionsCPUBuffer[probeIndex] = mDiffuseProbes[probeIndex]->GetPosition();
-		mDiffuseProbesPositionsGPUBuffer = new ER_GPUBuffer(game.Direct3DDevice(), diffuseProbesPositionsCPUBuffer, mDiffuseProbesCountTotal, sizeof(XMFLOAT3),
-			D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
+		mDiffuseProbesPositionsGPUBuffer = new ER_RHI_GPUBuffer();
+		mDiffuseProbesPositionsGPUBuffer->CreateGPUBufferResource(rhi, diffuseProbesPositionsCPUBuffer, mDiffuseProbesCountTotal, sizeof(XMFLOAT3), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 		DeleteObjects(diffuseProbesPositionsCPUBuffer);
 
 		// probe cell's indices GPU buffer, tex. array indices GPU/CPU buffers
-
 		int* diffuseProbeCellsIndicesCPUBuffer = new int[mDiffuseProbesCellsCountTotal * PROBE_COUNT_PER_CELL];
 		for (int probeIndex = 0; probeIndex < mDiffuseProbesCellsCountTotal; probeIndex++)
 		{
@@ -226,15 +229,14 @@ namespace Library
 					diffuseProbeCellsIndicesCPUBuffer[probeIndex * PROBE_COUNT_PER_CELL + indices] = mDiffuseProbesCells[probeIndex].lightProbeIndices[indices];
 			}
 		}
-		mDiffuseProbesCellsIndicesGPUBuffer = new ER_GPUBuffer(game.Direct3DDevice(), diffuseProbeCellsIndicesCPUBuffer,
-			mDiffuseProbesCellsCountTotal * PROBE_COUNT_PER_CELL, sizeof(int),
-			D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
+		mDiffuseProbesCellsIndicesGPUBuffer = new ER_RHI_GPUBuffer();
+		mDiffuseProbesCellsIndicesGPUBuffer->CreateGPUBufferResource(rhi, diffuseProbeCellsIndicesCPUBuffer, mDiffuseProbesCellsCountTotal * PROBE_COUNT_PER_CELL, sizeof(int), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 		DeleteObjects(diffuseProbeCellsIndicesCPUBuffer);
 		
 		std::string name = "Debug diffuse lightprobes ";
 		auto result = scene->objects.insert(
-			std::pair<std::string, ER_RenderingObject*>(name, new ER_RenderingObject(name, scene->objects.size(), game, camera,
-				std::unique_ptr<ER_Model>(new ER_Model(game, ER_Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true))
+			std::pair<std::string, ER_RenderingObject*>(name, new ER_RenderingObject(name, scene->objects.size(), core, camera,
+				std::unique_ptr<ER_Model>(new ER_Model(core, ER_Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true))
 		);
 
 		if (!result.second)
@@ -244,7 +246,7 @@ namespace Library
 		shaderEntries.vertexEntry += "_instancing";
 
 		mDiffuseProbeRenderingObject = result.first->second;
-		mDiffuseProbeRenderingObject->LoadMaterial(new ER_DebugLightProbeMaterial(game, shaderEntries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, true), ER_MaterialHelper::debugLightProbeMaterialName);
+		mDiffuseProbeRenderingObject->LoadMaterial(new ER_DebugLightProbeMaterial(core, shaderEntries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, true), ER_MaterialHelper::debugLightProbeMaterialName);
 		mDiffuseProbeRenderingObject->LoadRenderBuffers();
 		mDiffuseProbeRenderingObject->LoadInstanceBuffers();
 		mDiffuseProbeRenderingObject->ResetInstanceData(mDiffuseProbesCountTotal, true);
@@ -257,6 +259,8 @@ namespace Library
 
 	void ER_LightProbesManager::SetupSpecularProbes(ER_Core& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 	{
+		ER_RHI* rhi = core.GetRHI();
+
 		ER_MaterialSystems materialSystems;
 		materialSystems.mCamera = &camera;
 		materialSystems.mDirectionalLight = &light;
@@ -332,8 +336,8 @@ namespace Library
 		XMFLOAT3* specularProbesPositionsCPUBuffer = new XMFLOAT3[mSpecularProbesCountTotal];
 		for (int probeIndex = 0; probeIndex < mSpecularProbesCountTotal; probeIndex++)
 			specularProbesPositionsCPUBuffer[probeIndex] = mSpecularProbes[probeIndex]->GetPosition();
-		mSpecularProbesPositionsGPUBuffer = new ER_GPUBuffer(game.Direct3DDevice(), specularProbesPositionsCPUBuffer, mSpecularProbesCountTotal, sizeof(XMFLOAT3),
-			D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
+		mSpecularProbesPositionsGPUBuffer = new ER_RHI_GPUBuffer();
+		mSpecularProbesPositionsGPUBuffer->CreateGPUBufferResource(rhi, specularProbesPositionsCPUBuffer, mSpecularProbesCountTotal, sizeof(XMFLOAT3), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 		DeleteObjects(specularProbesPositionsCPUBuffer);
 
 		// probe cell's indices GPU buffer, tex. array indices GPU/CPU buffers
@@ -348,14 +352,13 @@ namespace Library
 					specularProbeCellsIndicesCPUBuffer[probeIndex * PROBE_COUNT_PER_CELL + indices] = mSpecularProbesCells[probeIndex].lightProbeIndices[indices];
 			}
 		}
-		mSpecularProbesCellsIndicesGPUBuffer = new ER_GPUBuffer(game.Direct3DDevice(), specularProbeCellsIndicesCPUBuffer,
-			mSpecularProbesCellsCountTotal * PROBE_COUNT_PER_CELL, sizeof(int),
-			D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
+		mSpecularProbesCellsIndicesGPUBuffer = new ER_RHI_GPUBuffer();
+		mSpecularProbesCellsIndicesGPUBuffer->CreateGPUBufferResource(rhi, specularProbeCellsIndicesCPUBuffer,	mSpecularProbesCellsCountTotal * PROBE_COUNT_PER_CELL, sizeof(int), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 		DeleteObjects(specularProbeCellsIndicesCPUBuffer);
 
 		mSpecularProbesTexArrayIndicesCPUBuffer = new int[mSpecularProbesCountTotal];
-		mSpecularProbesTexArrayIndicesGPUBuffer = new ER_GPUBuffer(game.Direct3DDevice(), mSpecularProbesTexArrayIndicesCPUBuffer, mSpecularProbesCountTotal, sizeof(int),
-			D3D11_USAGE_DYNAMIC, D3D11_BIND_SHADER_RESOURCE, D3D11_CPU_ACCESS_WRITE, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
+		mSpecularProbesTexArrayIndicesGPUBuffer = new ER_RHI_GPUBuffer();
+		mSpecularProbesTexArrayIndicesGPUBuffer->CreateGPUBufferResource(rhi, mSpecularProbesTexArrayIndicesCPUBuffer, mSpecularProbesCountTotal, sizeof(int), true, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 
 		std::string name = "Debug specular lightprobes ";
 		auto result = scene->objects.insert(
@@ -380,8 +383,8 @@ namespace Library
 		}
 		mSpecularProbeRenderingObject->UpdateInstanceBuffer(mSpecularProbeRenderingObject->GetInstancesData());
 
-		mSpecularCubemapArrayRT = new ER_GPUTexture(game.Direct3DDevice(), SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
-			D3D11_BIND_SHADER_RESOURCE, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true, mMaxSpecularProbesInVolumeCount);
+		mSpecularCubemapArrayRT = new ER_RHI_GPUTexture();
+		mSpecularCubemapArrayRT->CreateGPUTextureResource(rhi, SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true, mMaxSpecularProbesInVolumeCount);
 	}
 
 	void ER_LightProbesManager::AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds)
@@ -514,8 +517,11 @@ namespace Library
 
 			std::wstring diffuseProbesPath = mLevelPath + L"diffuse_probes\\";
 			if (!mGlobalDiffuseProbe->LoadProbeFromDisk(game, diffuseProbesPath))
+#ifdef ER_PLATFORM_WIN64_DX11
 				mGlobalDiffuseProbe->Compute(game, mTempDiffuseCubemapFacesRT, mTempDiffuseCubemapFacesConvolutedRT, mTempDiffuseCubemapDepthBuffers, diffuseProbesPath, aObjects, mQuadRenderer, skybox);
-
+#else
+				//TODO: load empty texture
+#endif
 			mGlobalDiffuseProbeReady = true;
 		}
 		// SPECULAR_PROBE
@@ -524,15 +530,21 @@ namespace Library
 				return;
 
 			std::wstring specularProbesPath = mLevelPath + L"specular_probes\\";
-			if (!mGlobalSpecularProbe->LoadProbeFromDisk(game, specularProbesPath))
-				mGlobalSpecularProbe->Compute(game, mTempSpecularCubemapFacesRT, mTempSpecularCubemapFacesConvolutedRT, mTempSpecularCubemapDepthBuffers, specularProbesPath, aObjects, mQuadRenderer, skybox);
 
+			if (!mGlobalSpecularProbe->LoadProbeFromDisk(game, specularProbesPath))
+#ifdef ER_PLATFORM_WIN64_DX11
+				mGlobalSpecularProbe->Compute(game, mTempSpecularCubemapFacesRT, mTempSpecularCubemapFacesConvolutedRT, mTempSpecularCubemapDepthBuffers, specularProbesPath, aObjects, mQuadRenderer, skybox);
+#else
+				//TODO: load empty texture
+#endif
 			mGlobalSpecularProbeReady = true;
 		}
 	}
 
 	void ER_LightProbesManager::ComputeOrLoadLocalProbes(ER_Core& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox)
 	{
+		ER_RHI* rhi = game.GetRHI();
+
 		int numThreads = std::thread::hardware_concurrency();
 		assert(numThreads > 0);
 
@@ -559,7 +571,11 @@ namespace Library
 			for (auto& probe : mDiffuseProbes)
 			{
 				if (!probe->IsLoadedFromDisk())
+#ifdef ER_PLATFORM_WIN64_DX11
 					probe->Compute(game, mTempDiffuseCubemapFacesRT, mTempDiffuseCubemapFacesConvolutedRT, mTempDiffuseCubemapDepthBuffers, diffuseProbesPath, aObjects, mQuadRenderer, skybox);
+#else
+					//TODO load empty
+#endif
 			}
 			
 			mDiffuseProbesReady = true;
@@ -574,8 +590,9 @@ namespace Library
 				for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
 					shCPUBuffer[probeIndex * SPHERICAL_HARMONICS_COEF_COUNT + i] = sh[i];
 			}
-			mDiffuseProbesSphericalHarmonicsGPUBuffer = new ER_GPUBuffer(game.Direct3DDevice(), shCPUBuffer, mDiffuseProbesCountTotal * SPHERICAL_HARMONICS_COEF_COUNT, sizeof(XMFLOAT3),
-				D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, D3D11_CPU_ACCESS_WRITE, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
+			mDiffuseProbesSphericalHarmonicsGPUBuffer = new ER_RHI_GPUBuffer();
+			mDiffuseProbesSphericalHarmonicsGPUBuffer->CreateGPUBufferResource(rhi, shCPUBuffer, mDiffuseProbesCountTotal* SPHERICAL_HARMONICS_COEF_COUNT, sizeof(XMFLOAT3),
+				false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 			DeleteObjects(shCPUBuffer);
 		}
 
@@ -603,7 +620,11 @@ namespace Library
 			for (auto& probe : mSpecularProbes)
 			{
 				if (!probe->IsLoadedFromDisk())
+#ifdef ER_PLATFORM_WIN64_DX11
 					probe->Compute(game, mTempSpecularCubemapFacesRT, mTempSpecularCubemapFacesConvolutedRT, mTempSpecularCubemapDepthBuffers, specularProbesPath, aObjects, mQuadRenderer, skybox);
+#else
+					//TODO load empty
+#endif		
 			}
 			mSpecularProbesReady = true;
 		}
@@ -691,7 +712,7 @@ namespace Library
 			probeRenderingObject->UpdateInstanceBuffer(oldInstancedData);
 		}
 
-		auto context = game.Direct3DDeviceContext();
+		ER_RHI* rhi = game.GetRHI();
 		if (aType == SPECULAR_PROBE)
 		{
 			for (int i = 0; i < mSpecularProbesCountTotal; i++)
@@ -706,14 +727,14 @@ namespace Library
 					{
 						for (int mip = 0; mip < SPECULAR_PROBE_MIP_COUNT; mip++)
 						{
-							context->CopySubresourceRegion(mSpecularCubemapArrayRT->GetTexture2D(), D3D11CalcSubresource(mip, cubeI + CUBEMAP_FACES_COUNT * i, SPECULAR_PROBE_MIP_COUNT), 0, 0, 0,
-								probes[probeIndex]->GetCubemapTexture2D(), D3D11CalcSubresource(mip, cubeI, SPECULAR_PROBE_MIP_COUNT), NULL);
+							rhi->CopyGPUTextureSubresourceRegion(mSpecularCubemapArrayRT, mip + (cubeI + CUBEMAP_FACES_COUNT * i) * SPECULAR_PROBE_MIP_COUNT, 0, 0, 0,
+								probes[probeIndex], mip + cubeI * SPECULAR_PROBE_MIP_COUNT);
 						}
 					}
 					mSpecularProbesTexArrayIndicesCPUBuffer[probeIndex] = CUBEMAP_FACES_COUNT * i;
 				}
 			}
-			mSpecularProbesTexArrayIndicesGPUBuffer->Update(context, mSpecularProbesTexArrayIndicesCPUBuffer, sizeof(mSpecularProbesTexArrayIndicesCPUBuffer[0]) * mSpecularProbesCountTotal, D3D11_MAP_WRITE_DISCARD);
+			rhi->UpdateBuffer(mSpecularProbesTexArrayIndicesGPUBuffer, mSpecularProbesTexArrayIndicesCPUBuffer, sizeof(mSpecularProbesTexArrayIndicesCPUBuffer[0]) * mSpecularProbesCountTotal);
 		}
 	}
 

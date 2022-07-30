@@ -15,6 +15,7 @@
 #include "Common.h"
 #include "ER_RenderingObject.h"
 #include "ConstantBuffer.h"
+#include "RHI/ER_RHI.h"
 
 namespace Library
 {
@@ -26,7 +27,6 @@ namespace Library
 	class ER_QuadRenderer;
 	class ER_Scene;
 	class ER_RenderableAABB;
-	class ER_GPUBuffer;
 	class ER_LightProbe;
 
 	enum ER_ProbeType
@@ -58,25 +58,24 @@ namespace Library
 		void UpdateProbes(ER_Core& game);
 		int GetCellIndex(const XMFLOAT3& pos, ER_ProbeType aType);
 
-		ER_LightProbe* GetGlobalDiffuseProbe() { return mGlobalDiffuseProbe; }
+		ER_LightProbe* GetGlobalDiffuseProbe() const { return mGlobalDiffuseProbe; }
 		const ER_LightProbe* GetDiffuseLightProbe(int index) const { return mDiffuseProbes[index]; }
-		ER_GPUBuffer* GetDiffuseProbesCellsIndicesBuffer() const { return mDiffuseProbesCellsIndicesGPUBuffer; }
-		ER_GPUBuffer* GetDiffuseProbesPositionsBuffer() const { return mDiffuseProbesPositionsGPUBuffer; }
-		ER_GPUBuffer* GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer() const { return mDiffuseProbesSphericalHarmonicsGPUBuffer; }
+		ER_RHI_GPUBuffer* GetDiffuseProbesCellsIndicesBuffer() const { return mDiffuseProbesCellsIndicesGPUBuffer; }
+		ER_RHI_GPUBuffer* GetDiffuseProbesPositionsBuffer() const { return mDiffuseProbesPositionsGPUBuffer; }
+		ER_RHI_GPUBuffer* GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer() const { return mDiffuseProbesSphericalHarmonicsGPUBuffer; }
 		float GetDistanceBetweenDiffuseProbes() { return mDistanceBetweenDiffuseProbes; }
 
-		ER_LightProbe* GetGlobalSpecularProbe() { return mGlobalSpecularProbe; }
+		ER_LightProbe* GetGlobalSpecularProbe() const { return mGlobalSpecularProbe; }
 		const ER_LightProbe* GetSpecularLightProbe(int index) const { return mSpecularProbes[index]; }
-		ER_GPUTexture* GetCulledSpecularProbesTextureArray() const { return mSpecularCubemapArrayRT; }
-		ER_GPUBuffer* GetSpecularProbesCellsIndicesBuffer() const { return mSpecularProbesCellsIndicesGPUBuffer; }
-		ER_GPUBuffer* GetSpecularProbesTexArrayIndicesBuffer() const { return mSpecularProbesTexArrayIndicesGPUBuffer; }
-		ER_GPUBuffer* GetSpecularProbesPositionsBuffer() const { return mSpecularProbesPositionsGPUBuffer; }
+		ER_RHI_GPUTexture* GetCulledSpecularProbesTextureArray() const { return mSpecularCubemapArrayRT; }
+		ER_RHI_GPUBuffer* GetSpecularProbesCellsIndicesBuffer() const { return mSpecularProbesCellsIndicesGPUBuffer; }
+		ER_RHI_GPUBuffer* GetSpecularProbesTexArrayIndicesBuffer() const { return mSpecularProbesTexArrayIndicesGPUBuffer; }
+		ER_RHI_GPUBuffer* GetSpecularProbesPositionsBuffer() const { return mSpecularProbesPositionsGPUBuffer; }
 		float GetDistanceBetweenSpecularProbes() { return mDistanceBetweenSpecularProbes; }
 
+		ER_RHI_GPUTexture* GetIntegrationMap() { return mIntegrationMapTextureSRV; }
+		
 		const XMFLOAT4& GetProbesCellsCount(ER_ProbeType aType);
-
-		ID3D11ShaderResourceView* GetIntegrationMap() { return mIntegrationMapTextureSRV; }
-
 		const XMFLOAT3& GetSceneProbesVolumeMin() { return mSceneProbesMinBounds; }
 		const XMFLOAT3& GetSceneProbesVolumeMax() { return mSceneProbesMaxBounds; }
 
@@ -96,9 +95,9 @@ namespace Library
 		ER_QuadRenderer* mQuadRenderer = nullptr;
 		ER_Camera& mMainCamera;
 
-		ID3D11PixelShader* mConvolutionPS = nullptr;
+		ER_RHI_GPUShader* mConvolutionPS = nullptr;
 
-		ID3D11ShaderResourceView* mIntegrationMapTextureSRV = nullptr; //TODO generate custom ones
+		ER_RHI_GPUTexture* mIntegrationMapTextureSRV = nullptr; //TODO generate custom ones
 
 		XMFLOAT3 mSceneProbesMinBounds;
 		XMFLOAT3 mSceneProbesMaxBounds;
@@ -107,13 +106,12 @@ namespace Library
 		std::vector<ER_LightProbe*> mDiffuseProbes;
 		ER_RenderingObject* mDiffuseProbeRenderingObject = nullptr;
 		
-		ER_GPUBuffer* mDiffuseProbesCellsIndicesGPUBuffer = nullptr;
-		ER_GPUBuffer* mDiffuseProbesPositionsGPUBuffer = nullptr;
-		ER_GPUBuffer* mDiffuseProbesSphericalHarmonicsGPUBuffer = nullptr;
-
-		ER_GPUTexture* mTempDiffuseCubemapFacesRT = nullptr;
-		ER_GPUTexture* mTempDiffuseCubemapFacesConvolutedRT = nullptr;
-		ER_GPUTexture* mTempDiffuseCubemapDepthBuffers[CUBEMAP_FACES_COUNT] = { nullptr };
+		ER_RHI_GPUBuffer* mDiffuseProbesCellsIndicesGPUBuffer = nullptr;
+		ER_RHI_GPUBuffer* mDiffuseProbesPositionsGPUBuffer = nullptr;
+		ER_RHI_GPUBuffer* mDiffuseProbesSphericalHarmonicsGPUBuffer = nullptr;
+		ER_RHI_GPUTexture* mTempDiffuseCubemapFacesRT = nullptr;
+		ER_RHI_GPUTexture* mTempDiffuseCubemapFacesConvolutedRT = nullptr;
+		ER_RHI_GPUTexture* mTempDiffuseCubemapDepthBuffers[CUBEMAP_FACES_COUNT] = { nullptr };
 		std::vector<ER_LightProbeCell> mDiffuseProbesCells;
 		ER_AABB mDiffuseProbesCellBounds;
 		int mDiffuseProbesCountTotal = 0;
@@ -133,18 +131,16 @@ namespace Library
 		std::vector<ER_LightProbe*> mSpecularProbes;
 		ER_RenderingObject* mSpecularProbeRenderingObject = nullptr;
 		int* mSpecularProbesTexArrayIndicesCPUBuffer = nullptr;
-		ER_GPUBuffer* mSpecularProbesTexArrayIndicesGPUBuffer = nullptr;
-		ER_GPUBuffer* mSpecularProbesCellsIndicesGPUBuffer = nullptr;
-		ER_GPUBuffer* mSpecularProbesPositionsGPUBuffer = nullptr;
-
-		ER_GPUTexture* mTempSpecularCubemapFacesRT = nullptr;
-		ER_GPUTexture* mTempSpecularCubemapFacesConvolutedRT = nullptr;
-		ER_GPUTexture* mTempSpecularCubemapDepthBuffers[CUBEMAP_FACES_COUNT] = { nullptr };
-		ER_GPUTexture* mSpecularCubemapArrayRT = nullptr;
+		ER_RHI_GPUBuffer* mSpecularProbesTexArrayIndicesGPUBuffer = nullptr;
+		ER_RHI_GPUBuffer* mSpecularProbesCellsIndicesGPUBuffer = nullptr;
+		ER_RHI_GPUBuffer* mSpecularProbesPositionsGPUBuffer = nullptr;
+		ER_RHI_GPUTexture* mTempSpecularCubemapFacesRT = nullptr;
+		ER_RHI_GPUTexture* mTempSpecularCubemapFacesConvolutedRT = nullptr;
+		ER_RHI_GPUTexture* mTempSpecularCubemapDepthBuffers[CUBEMAP_FACES_COUNT] = { nullptr };
+		ER_RHI_GPUTexture* mSpecularCubemapArrayRT = nullptr;
 		std::vector<ER_LightProbeCell> mSpecularProbesCells;
 		ER_AABB mSpecularProbesCellBounds;
 		std::vector<int> mNonCulledSpecularProbesIndices;
-
 		int mSpecularProbesCountTotal = 0;
 		int mSpecularProbesCountX = 0;
 		int mSpecularProbesCountY = 0;
