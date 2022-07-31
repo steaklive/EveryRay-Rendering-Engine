@@ -73,7 +73,7 @@ namespace Library
 		ReleaseObject(mDirect3DDevice);
 	}
 
-	bool ER_RHI_DX11::Initialize(UINT width, UINT height, bool isFullscreen)
+	bool ER_RHI_DX11::Initialize(HWND windowHandle, UINT width, UINT height, bool isFullscreen)
 	{
 		mAPI = ER_GRAPHICS_API::DX11;
 		assert(width > 0 && height > 0);
@@ -150,7 +150,7 @@ namespace Library
 		fullScreenDesc.RefreshRate.Denominator = 1;
 		fullScreenDesc.Windowed = !isFullscreen;
 
-		if (FAILED(hr = dxgiFactory->CreateSwapChainForHwnd(dxgiDevice, mWindowHandle, &swapChainDesc, &fullScreenDesc, nullptr, &mSwapChain)))
+		if (FAILED(hr = dxgiFactory->CreateSwapChainForHwnd(dxgiDevice, windowHandle, &swapChainDesc, &fullScreenDesc, nullptr, &mSwapChain)))
 		{
 			ReleaseObject(dxgiDevice);
 			ReleaseObject(dxgiAdapter);
@@ -224,6 +224,7 @@ namespace Library
 		CreateSamplerStates();
 		CreateRasterizerStates();
 		CreateDepthStencilStates();
+		CreateBlendStates();
 
 		return true;
 	}
@@ -466,6 +467,11 @@ namespace Library
 		}
 	}
 
+	void ER_RHI_DX11::SetMainRenderTargets()
+	{
+		mDirect3DDeviceContext->OMSetRenderTargets(1, &mMainRenderTargetView, NULL);
+	}
+
 	void ER_RHI_DX11::SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget /*= nullptr*/, ER_RHI_GPUTexture* aUAV /*= nullptr*/, int rtvArrayIndex)
 	{
 		if (!aUAV)
@@ -487,7 +493,7 @@ namespace Library
 					RTVs[i] = static_cast<ID3D11RenderTargetView*>(aRenderTargets[i]->GetRTV());
 				assert(RTVs[i]);
 			}
-			if (!aDepthTarget)
+			if (aDepthTarget)
 			{
 				ID3D11DepthStencilView* DSV = static_cast<ID3D11DepthStencilView*>(aDepthTarget->GetDSV());
 				mDirect3DDeviceContext->OMSetRenderTargets(rtCount, RTVs, DSV);
@@ -540,6 +546,12 @@ namespace Library
 
 	void ER_RHI_DX11::SetBlendState(ER_RHI_BLEND_STATE aBS, const float BlendFactor[4], UINT SampleMask)
 	{
+		if (aBS == ER_RHI_BLEND_STATE::ER_NO_BLEND)
+		{
+			mDirect3DDeviceContext->OMSetBlendState(nullptr, NULL, 0xffffffff);
+			return;
+		}
+
 		auto it = mBlendStates.find(aBS);
 		if (it != mBlendStates.end())
 		{
@@ -592,9 +604,13 @@ namespace Library
 		UINT srCount = static_cast<UINT>(aSRVs.size());
 		for (UINT i = 0; i < srCount; i++)
 		{
-			assert(aSRVs[i]);
-			SRs[i] = static_cast<ID3D11ShaderResourceView*>(aSRVs[i]->GetSRV());
-			assert(SRs[i]);
+			if (!aSRVs[i])
+				SRs[i] = nullptr;
+			else
+			{
+				SRs[i] = static_cast<ID3D11ShaderResourceView*>(aSRVs[i]->GetSRV());
+				assert(SRs[i]);
+			}
 		}
 
 		switch (aShaderType)
@@ -805,7 +821,7 @@ namespace Library
 
 	void ER_RHI_DX11::SetVertexBuffers(const std::vector<ER_RHI_GPUBuffer*>& aVertexBuffers)
 	{
-		assert(aVertexBuffers.size() > 0 && aVertexBuffers.size() < ER_RHI_MAX_BOUND_VERTEX_BUFFERS);
+		assert(aVertexBuffers.size() > 0 && aVertexBuffers.size() <= ER_RHI_MAX_BOUND_VERTEX_BUFFERS);
 		if (aVertexBuffers.size() == 1)
 		{
 			UINT stride = aVertexBuffers[0]->GetStride();
@@ -1246,11 +1262,13 @@ namespace Library
 		blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
 		if (FAILED(mDirect3DDevice->CreateBlendState(&blendStateDescription, &mAlphaToCoverageState)))
 			throw ER_CoreException("ER_RHI_DX11: ID3D11Device::CreateBlendState() failed while create alpha-to-coverage blend state.");
+		mBlendStates.insert(std::make_pair(ER_RHI_BLEND_STATE::ER_ALPHA_TO_COVERAGE, mAlphaToCoverageState));
 
 		blendStateDescription.RenderTarget[0].BlendEnable = FALSE;
 		blendStateDescription.AlphaToCoverageEnable = FALSE;
 		if (FAILED(mDirect3DDevice->CreateBlendState(&blendStateDescription, &mNoBlendState)))
 			throw ER_CoreException("ER_RHI_DX11: ID3D11Device::CreateBlendState() failed while create no blend state.");
+		mBlendStates.insert(std::make_pair(ER_RHI_BLEND_STATE::ER_NO_BLEND, mNoBlendState));
 	}
 
 	void ER_RHI_DX11::CreateRasterizerStates()

@@ -72,7 +72,8 @@ namespace Library
 		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() });
 		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() });
 
-		rhi->SetShaderResources(ER_PIXEL, { aObj->GetTextureData(meshIndex).AlbedoMap });
+		if (aObj->GetTextureData(meshIndex).AlbedoMap)
+			rhi->SetShaderResources(ER_PIXEL, { aObj->GetTextureData(meshIndex).AlbedoMap });
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 	}
 

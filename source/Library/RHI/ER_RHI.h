@@ -218,7 +218,7 @@ namespace Library
 		ER_RHI() {}
 		virtual ~ER_RHI() {}
 
-		virtual bool Initialize(UINT width, UINT height, bool isFullscreen) = 0;
+		virtual bool Initialize(HWND windowHandle, UINT width, UINT height, bool isFullscreen) = 0;
 		
 		virtual void BeginGraphicsCommandList() = 0;
 		virtual void EndGraphicsCommandList() = 0;
@@ -268,6 +268,7 @@ namespace Library
 
 		virtual void SaveGPUTextureToFile(ER_RHI_GPUTexture* aTexture, const std::wstring& aPathName) = 0; //WARNING: only works on DX11 for now
 
+		virtual void SetMainRenderTargets() = 0;
 		virtual void SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr, ER_RHI_GPUTexture* aUAV = nullptr, int rtvArrayIndex = -1) = 0;
 		virtual void SetDepthTarget(ER_RHI_GPUTexture* aDepthTarget) = 0;
 

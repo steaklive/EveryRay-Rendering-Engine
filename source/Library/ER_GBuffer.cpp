@@ -73,7 +73,7 @@ namespace Library {
 		auto rhi = GetCore()->GetRHI();
 		rhi->UnbindResourcesFromShader(ER_VERTEX);
 		rhi->UnbindResourcesFromShader(ER_PIXEL);
-		rhi->SetRasterizerState(ER_BACK_CULLING);
+		rhi->UnbindRenderTargets();
 	}
 
 	void ER_GBuffer::Draw(const ER_Scene* scene)

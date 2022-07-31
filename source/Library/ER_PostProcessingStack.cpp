@@ -82,8 +82,8 @@ namespace Library {
 
 		//SSS
 		{
-			mSSRPS = rhi->CreateGPUShader();
-			mSSRPS->CompileShader(rhi, "content\\shaders\\SSS.hlsl", "BlurPS", ER_PIXEL);
+			mSSSPS = rhi->CreateGPUShader();
+			mSSSPS->CompileShader(rhi, "content\\shaders\\SSS.hlsl", "BlurPS", ER_PIXEL);
 
 			mSSSConstantBuffer.Initialize(rhi);
 
@@ -239,6 +239,8 @@ namespace Library {
 	{
 		auto rhi = mCore.GetRHI();
 		rhi->UnbindRenderTargets();
+
+		rhi->SetMainRenderTargets();
 
 		//final resolve to main RT (pre-UI)
 		{

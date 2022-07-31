@@ -83,14 +83,21 @@ namespace Library
 		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() });
 		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() });
 
-		rhi->SetShaderResources(ER_PIXEL, { 
-			aObj->GetTextureData(meshIndex).AlbedoMap,
-			aObj->GetTextureData(meshIndex).NormalMap,
-			aObj->GetTextureData(meshIndex).RoughnessMap,
-			aObj->GetTextureData(meshIndex).MetallicMap,
-			aObj->GetTextureData(meshIndex).HeightMap,
-			aObj->GetTextureData(meshIndex).ReflectionMaskMap
-		});
+		std::vector<ER_RHI_GPUResource*> resources;
+		if (aObj->GetTextureData(meshIndex).AlbedoMap)
+			resources.push_back(aObj->GetTextureData(meshIndex).AlbedoMap);	
+		if (aObj->GetTextureData(meshIndex).NormalMap)
+			resources.push_back(aObj->GetTextureData(meshIndex).NormalMap);
+		if (aObj->GetTextureData(meshIndex).RoughnessMap)
+			resources.push_back(aObj->GetTextureData(meshIndex).RoughnessMap);
+		if (aObj->GetTextureData(meshIndex).MetallicMap)
+			resources.push_back(aObj->GetTextureData(meshIndex).MetallicMap);
+		if (aObj->GetTextureData(meshIndex).HeightMap)
+			resources.push_back(aObj->GetTextureData(meshIndex).HeightMap);	
+		if (aObj->GetTextureData(meshIndex).ReflectionMaskMap)
+			resources.push_back(aObj->GetTextureData(meshIndex).ReflectionMaskMap);
+
+		rhi->SetShaderResources(ER_PIXEL, resources);
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 	}
 

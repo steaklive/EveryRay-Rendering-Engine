@@ -25,7 +25,7 @@ namespace Library
 		ER_RHI_DX11();
 		virtual ~ER_RHI_DX11();
 
-		virtual bool Initialize(UINT width, UINT height, bool isFullscreen) override;
+		virtual bool Initialize(HWND windowHandle, UINT width, UINT height, bool isFullscreen) override;
 		
 		virtual void BeginGraphicsCommandList() override {}; //not supported on DX11
 		virtual void EndGraphicsCommandList() override {}; //not supported on DX11
@@ -75,6 +75,7 @@ namespace Library
 		
 		virtual void SaveGPUTextureToFile(ER_RHI_GPUTexture* aTexture, const std::wstring& aPathName) override;
 
+		virtual void SetMainRenderTargets() override;
 		virtual void SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr, ER_RHI_GPUTexture* aUAV = nullptr, int rtvArrayIndex = -1) override;
 		virtual void SetDepthTarget(ER_RHI_GPUTexture* aDepthTarget) override;
 

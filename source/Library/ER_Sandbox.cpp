@@ -234,7 +234,7 @@ namespace Library {
 	{
 		ER_RHI* rhi = game.GetRHI();
 		rhi->SetTopologyType(ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		/*
+		
 		#pragma region DRAW_GBUFFER
 		mGBuffer->Start();
 		mGBuffer->Draw(mScene);
@@ -246,6 +246,7 @@ namespace Library {
 		#pragma region DRAW_SHADOWS
 		mShadowMapper->Draw(mScene, mTerrain);
 #pragma endregion
+		
 
 		#pragma region DRAW_GLOBAL_ILLUMINATION
 		{
@@ -314,7 +315,10 @@ namespace Library {
 		mPostProcessingStack->DrawEffects(gameTime, quad, mGBuffer, mVolumetricClouds, mVolumetricFog);
 		mPostProcessingStack->End();
 #pragma endregion
-		*/
+
+		//reset back to main rt in case we dont use Post Processing stack
+		rhi->SetMainRenderTargets();
+
 		#pragma region DRAW_IMGUI
 		ImGui::Render();
 		rhi->RenderDrawDataImGui();

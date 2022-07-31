@@ -233,6 +233,8 @@ namespace Library
 	
 	void ER_RenderingObject::LoadTexture(TextureType type, const std::wstring& path, int meshIndex)
 	{
+		ER_RHI* rhi = mCore->GetRHI();
+
 		const wchar_t* postfixDDS = L".dds";
 		const wchar_t* postfixDDS_Capital = L".DDS";
 		const wchar_t* postfixTGA = L".tga";
@@ -242,65 +244,50 @@ namespace Library
 		bool tgaLoader = (path.substr(path.length() - 4) == std::wstring(postfixTGA)) || (path.substr(path.length() - 4) == std::wstring(postfixTGA_Capital));
 		std::string errorMessage = mModel->GetFileName() + " of mesh index: " + std::to_string(meshIndex);
 
-		std::string texType;
-		ER_RHI_GPUTexture* resource;
-
 		switch (type)
 		{
 		case TextureType::TextureTypeDifffuse:
-			texType = "Albedo Texture";
-			resource = (mMeshesTextureBuffers[meshIndex].AlbedoMap);
-			break;
-		case TextureType::TextureTypeNormalMap:
-			texType = "Normal Texture";
-			resource = (mMeshesTextureBuffers[meshIndex].NormalMap);
-			break;
-		case TextureType::TextureTypeSpecularMap:
-			texType = "Specular Texture";
-			resource = (mMeshesTextureBuffers[meshIndex].SpecularMap);
-			break;
-		case TextureType::TextureTypeEmissive:
-			texType = "Metallic Texture";
-			resource = (mMeshesTextureBuffers[meshIndex].MetallicMap);
-			break;	
-		case TextureType::TextureTypeDisplacementMap:
-			texType = "Roughness Texture";
-			resource = (mMeshesTextureBuffers[meshIndex].RoughnessMap);
-			break;
-		case TextureType::TextureTypeHeightmap:
-			texType = "Height Texture";
-			resource = (mMeshesTextureBuffers[meshIndex].HeightMap);
-			break;	
-		case TextureType::TextureTypeLightMap:
-			texType = "Reflection Mask Texture";
-			resource = (mMeshesTextureBuffers[meshIndex].ReflectionMaskMap);
+		{
+			mMeshesTextureBuffers[meshIndex].AlbedoMap = rhi->CreateGPUTexture();
+			mMeshesTextureBuffers[meshIndex].AlbedoMap->CreateGPUTextureResource(rhi, path, true);
 			break;
 		}
-
-		ER_RHI* rhi = mCore->GetRHI();
-		resource = rhi->CreateGPUTexture();
-		resource->CreateGPUTextureResource(rhi, path, true);
-
-		//TODO fallback
-		//if (failed) {
-		//	switch (type)
-		//	{
-		//	case TextureType::TextureTypeDifffuse:
-		//		LoadTexture(type, ER_Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), meshIndex);
-		//		break;
-		//	case TextureType::TextureTypeNormalMap:
-		//		LoadTexture(type, ER_Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"), meshIndex);
-		//		break;
-		//	case TextureType::TextureTypeEmissive:
-		//		LoadTexture(type, ER_Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), meshIndex);
-		//		break;
-		//	case TextureType::TextureTypeDisplacementMap:
-		//		LoadTexture(type, ER_Utility::GetFilePath(L"content\\textures\\emptyRoughness.png"), meshIndex);
-		//	default:
-		//		LoadTexture(type, ER_Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), meshIndex);
-		//		break;
-		//	}
-		//}
+		case TextureType::TextureTypeNormalMap:
+		{
+			mMeshesTextureBuffers[meshIndex].NormalMap = rhi->CreateGPUTexture();
+			mMeshesTextureBuffers[meshIndex].NormalMap->CreateGPUTextureResource(rhi, path, true);
+			break;
+		}
+		case TextureType::TextureTypeSpecularMap:
+		{
+			mMeshesTextureBuffers[meshIndex].SpecularMap = rhi->CreateGPUTexture();
+			mMeshesTextureBuffers[meshIndex].SpecularMap->CreateGPUTextureResource(rhi, path, true);
+			break;
+		}
+		case TextureType::TextureTypeEmissive:
+		{
+			mMeshesTextureBuffers[meshIndex].MetallicMap = rhi->CreateGPUTexture();
+			mMeshesTextureBuffers[meshIndex].MetallicMap->CreateGPUTextureResource(rhi, path, true);
+			break;	
+		}
+		case TextureType::TextureTypeDisplacementMap:
+		{
+			mMeshesTextureBuffers[meshIndex].RoughnessMap = rhi->CreateGPUTexture();
+			mMeshesTextureBuffers[meshIndex].RoughnessMap->CreateGPUTextureResource(rhi, path, true);
+		}
+		case TextureType::TextureTypeHeightmap:
+		{
+			mMeshesTextureBuffers[meshIndex].HeightMap = rhi->CreateGPUTexture();
+			mMeshesTextureBuffers[meshIndex].HeightMap->CreateGPUTextureResource(rhi, path, true);
+			break;	
+		}
+		case TextureType::TextureTypeLightMap:
+		{
+			mMeshesTextureBuffers[meshIndex].ReflectionMaskMap = rhi->CreateGPUTexture();
+			mMeshesTextureBuffers[meshIndex].ReflectionMaskMap->CreateGPUTextureResource(rhi, path, true);
+			break;
+		}
+		}
 	}
 
 	//TODO refactor (remove duplicated code)
