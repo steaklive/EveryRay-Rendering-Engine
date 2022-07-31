@@ -43,6 +43,7 @@ namespace Library
 		virtual ER_RHI_GPUShader* CreateGPUShader() override;
 		virtual ER_RHI_GPUBuffer* CreateGPUBuffer() override;
 		virtual ER_RHI_GPUTexture* CreateGPUTexture() override;
+		virtual ER_RHI_InputLayout* CreateInputLayout(ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount) override;
 
 		virtual void CreateTexture(ER_RHI_GPUTexture* aOutTexture, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE,
 			int mip = 1, int depth = -1, int arraySize = 1, bool isCubemap = false, int cubemapArraySize = -1) override;

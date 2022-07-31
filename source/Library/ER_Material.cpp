@@ -55,7 +55,7 @@ namespace Library
 	{
 		ER_RHI* rhi = GetCore()->GetRHI();
 
-		mInputLayout = new ER_RHI_InputLayout(inputElementDescriptions, inputElementDescriptionCount);
+		mInputLayout = rhi->CreateInputLayout(inputElementDescriptions, inputElementDescriptionCount);
 		mVertexShader = rhi->CreateGPUShader();
 		mVertexShader->CompileShader(GetCore()->GetRHI(), path, mShaderEntries.vertexEntry, ER_VERTEX, mInputLayout);
 	}

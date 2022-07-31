@@ -325,7 +325,7 @@ namespace Library
 		mTexture2D = tex2D;
 		mTexture3D = tex3D;
 	}
-	void ER_RHI_DX11_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath /*= false*/)
+	void ER_RHI_DX11_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath /*= false*/, bool is3D)
 	{
 		assert(aRHI);
 		ER_RHI_DX11* aRHIDX11 = static_cast<ER_RHI_DX11*>(aRHI);
@@ -351,7 +351,7 @@ namespace Library
 				{
 					std::string msg = "ER_RHI_DX11: Failed to load DDS texture from disk: ";
 					msg += aPath;
-					throw Library::ER_CoreException(msg.c_str());
+					LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
 				}
 			}
 			else
@@ -360,7 +360,7 @@ namespace Library
 				{
 					std::string msg = "ER_RHI_DX11: Failed to load WIC texture from disk: ";
 					msg += aPath;
-					throw Library::ER_CoreException(msg.c_str());
+					LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
 				}
 			}
 		}
@@ -372,7 +372,7 @@ namespace Library
 				{
 					std::string msg = "ER_RHI_DX11: Failed to load DDS texture from disk: ";
 					msg += aPath;
-					throw Library::ER_CoreException(msg.c_str());
+					LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
 				}
 			}
 			else
@@ -381,18 +381,27 @@ namespace Library
 				{
 					std::string msg = "ER_RHI_DX11: Failed to load WIC texture from disk: ";
 					msg += aPath;
-					throw Library::ER_CoreException(msg.c_str());
+					LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
 				}
 			}
 		}
 
-		if (FAILED(resourceTex->QueryInterface(IID_ID3D11Texture2D, (void**)&mTexture2D))) {
-			throw Library::ER_CoreException("ER_RHI_DX11: Could not cast loaded texture resource to Texture2D. Maybe wrong dimension?");
+		if (!is3D)
+		{
+			if (FAILED(resourceTex->QueryInterface(IID_ID3D11Texture2D, (void**)&mTexture2D))) {
+				throw Library::ER_CoreException("ER_RHI_DX11: Could not cast loaded texture resource to Texture2D. Maybe wrong dimension?");
+			}
+		}
+		else
+		{
+			if (FAILED(resourceTex->QueryInterface(IID_ID3D11Texture3D, (void**)&mTexture3D))) {
+				throw Library::ER_CoreException("ER_RHI_DX11: Could not cast loaded texture resource to Texture3D. Maybe wrong dimension?");
+			}
 		}
 
 		resourceTex->Release();
 	}
-	void ER_RHI_DX11_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath /*= false*/)
+	void ER_RHI_DX11_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath /*= false*/, bool is3D)
 	{
 		assert(aRHI);
 		ER_RHI_DX11* aRHIDX11 = static_cast<ER_RHI_DX11*>(aRHI);
@@ -418,7 +427,7 @@ namespace Library
 				{
 					std::string msg = "ER_RHI_DX11: Failed to load DDS texture from disk: ";
 					//msg += aPath;
-					throw Library::ER_CoreException(msg.c_str());
+					LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
 				}
 			}
 			else
@@ -427,7 +436,7 @@ namespace Library
 				{
 					std::string msg = "ER_RHI_DX11: Failed to load WIC texture from disk: ";
 					//msg += aPath;
-					throw Library::ER_CoreException(msg.c_str());
+					LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
 				}
 			}
 		}
@@ -439,7 +448,7 @@ namespace Library
 				{
 					std::string msg = "ER_RHI_DX11: Failed to load DDS texture from disk: ";
 					//msg += aPath;
-					throw Library::ER_CoreException(msg.c_str());
+					LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
 				}
 			}
 			else
@@ -448,16 +457,37 @@ namespace Library
 				{
 					std::string msg = "ER_RHI_DX11: Failed to load WIC texture from disk: ";
 					//msg += aPath;
-					throw Library::ER_CoreException(msg.c_str());
+					LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
 				}
 			}
 		}
 
-		if (FAILED(resourceTex->QueryInterface(IID_ID3D11Texture2D, (void**)&mTexture2D))) {
-			throw Library::ER_CoreException("ER_RHI_DX11: Could not cast loaded texture resource to Texture2D. Maybe wrong dimension?");
+		if (!is3D)
+		{
+			if (FAILED(resourceTex->QueryInterface(IID_ID3D11Texture2D, (void**)&mTexture2D))) {
+				throw Library::ER_CoreException("ER_RHI_DX11: Could not cast loaded texture resource to Texture2D. Maybe wrong dimension?");
+			}
+		}
+		else
+		{
+			if (FAILED(resourceTex->QueryInterface(IID_ID3D11Texture3D, (void**)&mTexture3D))) {
+				throw Library::ER_CoreException("ER_RHI_DX11: Could not cast loaded texture resource to Texture3D. Maybe wrong dimension?");
+			}
 		}
 
 		resourceTex->Release();
+	}
+
+	void ER_RHI_DX11_GPUTexture::LoadFallbackTexture(ER_RHI* aRHI, ID3D11Resource** texture, ID3D11ShaderResourceView** textureView)
+	{
+		assert(aRHI);
+		ER_RHI_DX11* aRHIDX11 = static_cast<ER_RHI_DX11*>(aRHI);
+		ID3D11Device* device = aRHIDX11->GetDevice();
+		assert(device);
+		ID3D11DeviceContext1* context = aRHIDX11->GetContext();
+		assert(context);
+
+		DirectX::CreateWICTextureFromFile(device, context, Library::ER_Utility::GetFilePath(L"content\\textures\\uvChecker.jpg").c_str(), texture, textureView);
 	}
 }
 

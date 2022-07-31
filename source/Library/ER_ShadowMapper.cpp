@@ -36,7 +36,7 @@ namespace Library
 		{
 			mLightProjectorCenteredPositions.push_back(XMFLOAT3(0, 0, 0));
 			
-			mShadowMaps.push_back(new ER_RHI_GPUTexture());
+			mShadowMaps.push_back(rhi->CreateGPUTexture());
 			mShadowMaps[i]->CreateGPUTextureResource(rhi, pWidth, pHeight, 1u, ER_FORMAT_D24_UNORM_S8_UINT, ER_BIND_DEPTH_STENCIL | ER_BIND_SHADER_RESOURCE);
 
 			mCameraCascadesFrustums.push_back(XMMatrixIdentity());

@@ -35,7 +35,7 @@ namespace Library
 		buf_desc.ByteWidth = objectsCount * byteStride;
 		buf_desc.Usage = isDynamic ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
 		buf_desc.BindFlags = bindFlags;
-		buf_desc.CPUAccessFlags = cpuAccessFlags;
+		buf_desc.CPUAccessFlags = isDynamic ? D3D11_CPU_ACCESS_WRITE : cpuAccessFlags;
 		buf_desc.MiscFlags = miscFlags;
 		buf_desc.StructureByteStride = byteStride;
 		if (buf_desc.BindFlags & D3D11_BIND_CONSTANT_BUFFER)

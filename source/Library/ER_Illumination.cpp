@@ -112,7 +112,7 @@ namespace Library {
 				{ "NORMAL", 0, ER_FORMAT_R32G32B32_FLOAT, 0, 0xffffffff, true, 0 },
 				{ "TANGENT", 0, ER_FORMAT_R32G32B32_FLOAT, 0, 0xffffffff, true, 0 }
 			};
-			mForwardLightingRenderingObjectInputLayout = new ER_RHI_InputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
+			mForwardLightingRenderingObjectInputLayout = rhi->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
 			mForwardLightingVS = rhi->CreateGPUShader();
 			mForwardLightingVS->CompileShader(rhi, "content\\shaders\\ForwardLighting.hlsl", "VSMain", ER_VERTEX, mForwardLightingRenderingObjectInputLayout);
 
@@ -127,7 +127,7 @@ namespace Library {
 				{ "WORLD", 2, ER_FORMAT_R32G32B32A32_FLOAT, 1, 32,false, 1 },
 				{ "WORLD", 3, ER_FORMAT_R32G32B32A32_FLOAT, 1, 48,false, 1 }
 			};
-			mForwardLightingRenderingObjectInputLayout_Instancing = new ER_RHI_InputLayout(inputElementDescriptionsInstancing, ARRAYSIZE(inputElementDescriptionsInstancing));
+			mForwardLightingRenderingObjectInputLayout_Instancing = rhi->CreateInputLayout(inputElementDescriptionsInstancing, ARRAYSIZE(inputElementDescriptionsInstancing));
 			mForwardLightingVS_Instancing = rhi->CreateGPUShader();
 			mForwardLightingVS_Instancing->CompileShader(rhi, "content\\shaders\\ForwardLighting.hlsl", "VSMain_instancing", ER_VERTEX, mForwardLightingRenderingObjectInputLayout_Instancing);
 
@@ -156,7 +156,7 @@ namespace Library {
 		{
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 			{
-				mVCTVoxelCascades3DRTs.push_back(new ER_RHI_GPUTexture());
+				mVCTVoxelCascades3DRTs.push_back(rhi->CreateGPUTexture());
 				mVCTVoxelCascades3DRTs[i]->CreateGPUTextureResource(rhi, voxelCascadesSizes[i], voxelCascadesSizes[i], 1u,
 					ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET | ER_BIND_UNORDERED_ACCESS, 6, voxelCascadesSizes[i]);
 				

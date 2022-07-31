@@ -236,6 +236,7 @@ namespace Library
 		virtual ER_RHI_GPUShader* CreateGPUShader() = 0;
 		virtual ER_RHI_GPUBuffer* CreateGPUBuffer() = 0;
 		virtual ER_RHI_GPUTexture* CreateGPUTexture() = 0;
+		virtual ER_RHI_InputLayout* CreateInputLayout(ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount) = 0;
 
 		virtual void CreateTexture(ER_RHI_GPUTexture* aOutTexture, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags,
 			int mip = 1, int depth = -1, int arraySize = 1, bool isCubemap = false, int cubemapArraySize = -1) = 0;
@@ -342,8 +343,8 @@ namespace Library
 
 		virtual void CreateGPUTextureResource(ER_RHI* aRHI, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE,
 			int mip = 1, int depth = -1, int arraySize = 1, bool isCubemap = false, int cubemapArraySize = -1) { assert(0);	}
-		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath = false) { assert(0); }
-		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath = false) { assert(0); }
+		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath = false, bool is3D = false) { assert(0); }
+		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath = false, bool is3D = false) { assert(0); }
 
 		virtual void* GetRTV(void* aEmpty = nullptr) { assert(0); return nullptr; }
 		virtual void* GetRTV(int index) { assert(0); return nullptr; }

@@ -234,7 +234,7 @@ namespace Library {
 	{
 		ER_RHI* rhi = game.GetRHI();
 		rhi->SetTopologyType(ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
+		/*
 		#pragma region DRAW_GBUFFER
 		mGBuffer->Start();
 		mGBuffer->Draw(mScene);
@@ -314,7 +314,7 @@ namespace Library {
 		mPostProcessingStack->DrawEffects(gameTime, quad, mGBuffer, mVolumetricClouds, mVolumetricFog);
 		mPostProcessingStack->End();
 #pragma endregion
-
+		*/
 		#pragma region DRAW_IMGUI
 		ImGui::Render();
 		rhi->RenderDrawDataImGui();

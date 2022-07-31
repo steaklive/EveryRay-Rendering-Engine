@@ -54,7 +54,7 @@ namespace Library
 			{
 				{ "POSITION", 0, ER_FORMAT_R32G32B32A32_FLOAT, 0, 0, true, 0 }
 			};
-			mInputLayout = new ER_RHI_InputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
+			mInputLayout = rhi->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
 			
 			mSkyboxVS = rhi->CreateGPUShader();
 			mSkyboxVS->CompileShader(rhi, "content\\shaders\\Skybox.hlsl", "VSMain", ER_VERTEX, mInputLayout);

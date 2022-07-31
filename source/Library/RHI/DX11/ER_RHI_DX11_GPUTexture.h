@@ -11,8 +11,8 @@ namespace Library
 
 		virtual void CreateGPUTextureResource(ER_RHI* aRHI, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE,
 			int mip = 1, int depth = -1, int arraySize = 1, bool isCubemap = false, int cubemapArraySize = -1) override;
-		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath = false) override;
-		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath = false) override;
+		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath = false, bool is3D = false) override;
+		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath = false, bool is3D = false) override;
 
 		virtual void* GetRTV(void* aEmpty = nullptr) override { return mRTVs[0]; }
 		virtual void* GetRTV(int index) override { return mRTVs[index]; }
@@ -43,6 +43,8 @@ namespace Library
 		bool IsLoadedFromFile() { return mIsLoadedFromFile; }
 
 	private:
+		void LoadFallbackTexture(ER_RHI* aRHI, ID3D11Resource** texture, ID3D11ShaderResourceView** textureView);
+
 		ID3D11RenderTargetView** mRTVs = nullptr;
 		ID3D11UnorderedAccessView** mUAVs = nullptr;
 		ID3D11ShaderResourceView* mSRV = nullptr;

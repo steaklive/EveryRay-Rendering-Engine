@@ -36,7 +36,7 @@ namespace Library
 			{
 				{ "PATCH_INFO", 0, ER_FORMAT_R32G32B32A32_FLOAT, 0, 0, true, 0 }
 			};
-			mInputLayout = new ER_RHI_InputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
+			mInputLayout = rhi->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
 
 			mVS = rhi->CreateGPUShader();
 			mVS->CompileShader(rhi, "content\\shaders\\Terrain\\Terrain.hlsl", "VSMain", ER_VERTEX, mInputLayout);

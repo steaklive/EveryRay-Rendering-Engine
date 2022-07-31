@@ -156,7 +156,7 @@ namespace Library
 				{ "WORLD", 2, ER_FORMAT_R32G32B32A32_FLOAT, 1, 32, false, 1 },
 				{ "WORLD", 3, ER_FORMAT_R32G32B32A32_FLOAT, 1, 48, false, 1 }
 			};
-			mInputLayout = new ER_RHI_InputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
+			mInputLayout = rhi->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
 
 			mVS = rhi->CreateGPUShader();
 			mVS->CompileShader(rhi, "content\\shaders\\Foliage.hlsl", "VSMain", ER_VERTEX, mInputLayout);

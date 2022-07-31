@@ -61,7 +61,7 @@ namespace Library {
 		inputLayoutDesc[1].InstanceDataStepRate = 0;
 
 		int numElements = sizeof(inputLayoutDesc) / sizeof(inputLayoutDesc[0]);
-		mInputLayout = new ER_RHI_InputLayout(inputLayoutDesc, numElements);
+		mInputLayout = rhi->CreateInputLayout(inputLayoutDesc, numElements);
 
 		mVS = rhi->CreateGPUShader();
 		mVS->CompileShader(rhi, "content\\shaders\\Quad.hlsl", "VSMain", ER_VERTEX, mInputLayout);
