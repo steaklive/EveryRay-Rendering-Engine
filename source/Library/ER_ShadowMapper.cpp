@@ -238,7 +238,6 @@ namespace Library
 	void ER_ShadowMapper::Draw(const ER_Scene* scene, ER_Terrain* terrain)
 	{
 		auto rhi = GetCore()->GetRHI();
-		rhi->SetDepthStencilState(ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
 
 		ER_MaterialSystems materialSystems;
 		materialSystems.mShadowMapper = this;
@@ -272,7 +271,5 @@ namespace Library
 
 			StopRenderingToShadowMap(i);
 		}
-
-		rhi->SetDepthStencilState(ER_DISABLED);
 	}
 }

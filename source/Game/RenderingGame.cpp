@@ -303,7 +303,7 @@ namespace Rendering
 
 		mRHI->SetViewport(mMainViewport);
 
-		mRHI->SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE::ER_DISABLED);
+		mRHI->SetDepthStencilState(ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
 		mRHI->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING);
 		mRHI->SetBlendState(ER_RHI_BLEND_STATE::ER_NO_BLEND);
 

@@ -333,6 +333,7 @@ namespace Library {
 				rhi->UnbindResourcesFromShader(ER_VERTEX);
 				rhi->UnbindResourcesFromShader(ER_GEOMETRY);
 				rhi->UnbindResourcesFromShader(ER_PIXEL);
+				rhi->SetDepthStencilState(ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
 			}
 		}
 		else // main pass

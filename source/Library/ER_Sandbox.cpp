@@ -304,7 +304,7 @@ namespace Library {
 		mIllumination->CompositeTotalIllumination();
 
 		#pragma region DRAW_VOLUMETRIC_CLOUDS
-		//mVolumetricClouds->Draw(gameTime);
+		mVolumetricClouds->Draw(gameTime);
 #pragma endregion	
 
 		#pragma region DRAW_POSTPROCESSING
