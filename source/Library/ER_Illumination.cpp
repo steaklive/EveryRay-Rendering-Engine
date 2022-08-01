@@ -687,17 +687,19 @@ namespace Library {
 				rhi->SetConstantBuffers(ER_VERTEX, { mForwardLightingConstantBuffer.Buffer() });
 				rhi->SetConstantBuffers(ER_PIXEL, { mForwardLightingConstantBuffer.Buffer() });
 
-				std::vector<ER_RHI_GPUResource*> resources(8);
-				resources[0] = aObj->GetTextureData(meshIndex).AlbedoMap;
-				resources[1] = aObj->GetTextureData(meshIndex).NormalMap;
-				resources[2] = aObj->GetTextureData(meshIndex).MetallicMap;
-				resources[3] = aObj->GetTextureData(meshIndex).RoughnessMap;
-				resources[4] = aObj->GetTextureData(meshIndex).HeightMap;
-
-				for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
-					resources[5 + i] = mShadowMapper.GetShadowTexture(i);
-
+				std::vector<ER_RHI_GPUResource*> resources;
+				resources.push_back(aObj->GetTextureData(meshIndex).AlbedoMap);
+				resources.push_back(aObj->GetTextureData(meshIndex).NormalMap);
+				resources.push_back(aObj->GetTextureData(meshIndex).MetallicMap);
+				resources.push_back(aObj->GetTextureData(meshIndex).RoughnessMap);
+				resources.push_back(aObj->GetTextureData(meshIndex).HeightMap);
 				rhi->SetShaderResources(ER_PIXEL, resources);
+
+				std::vector<ER_RHI_GPUResource*> shadowResources;
+				for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
+					shadowResources.push_back(mShadowMapper.GetShadowTexture(i));
+				rhi->SetShaderResources(ER_PIXEL, shadowResources, 5);
+
 				rhi->SetShaderResources(ER_PIXEL, { mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture() }, 8);
 				rhi->SetShaderResources(ER_PIXEL, { mProbesManager->GetGlobalSpecularProbe()->GetCubemapTexture() }, 12);
 				rhi->SetShaderResources(ER_PIXEL, { mProbesManager->GetIntegrationMap() }, 17);

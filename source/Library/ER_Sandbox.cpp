@@ -247,7 +247,6 @@ namespace Library {
 		mShadowMapper->Draw(mScene, mTerrain);
 #pragma endregion
 		
-
 		#pragma region DRAW_GLOBAL_ILLUMINATION
 		{
 			if (mScene->HasLightProbesSupport() && !mLightProbesManager->AreProbesReady())
@@ -271,7 +270,6 @@ namespace Library {
 		#pragma region DRAW_LOCAL_ILLUMINATION
 		
 		mIllumination->DrawLocalIllumination(mGBuffer, mSkybox);
-
 		#pragma region DRAW_LAYERED_MATERIALS
 		for (auto& it = mScene->objects.begin(); it != mScene->objects.end(); it++)
 		{
@@ -306,7 +304,7 @@ namespace Library {
 		mIllumination->CompositeTotalIllumination();
 
 		#pragma region DRAW_VOLUMETRIC_CLOUDS
-		mVolumetricClouds->Draw(gameTime);
+		//mVolumetricClouds->Draw(gameTime);
 #pragma endregion	
 
 		#pragma region DRAW_POSTPROCESSING

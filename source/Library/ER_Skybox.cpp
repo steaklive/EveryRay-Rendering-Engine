@@ -152,9 +152,11 @@ namespace Library
 
 		if (mDrawSun) {
 			rhi->SetShader(mSunPS);
+			rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 			rhi->SetConstantBuffers(ER_PIXEL, { mSunConstantBuffer.Buffer() });
 			rhi->SetShaderResources(ER_PIXEL, { aSky, aSceneDepth });
 			quadRenderer->Draw(rhi);
+			rhi->UnbindResourcesFromShader(ER_PIXEL);
 		}
 	}
 

@@ -8,6 +8,7 @@
 namespace Library
 {
 	static const int DefaultFrameRate = 60;
+	static inline void AbstractRHIMethodAssert() { assert(("You called an abstract method from ER_RHI", 0)); }
 
 	enum ER_GRAPHICS_API
 	{
@@ -343,21 +344,21 @@ namespace Library
 		virtual ~ER_RHI_GPUTexture() {}
 
 		virtual void CreateGPUTextureResource(ER_RHI* aRHI, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE,
-			int mip = 1, int depth = -1, int arraySize = 1, bool isCubemap = false, int cubemapArraySize = -1) { assert(0);	}
-		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath = false, bool is3D = false) { assert(0); }
-		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath = false, bool is3D = false) { assert(0); }
+			int mip = 1, int depth = -1, int arraySize = 1, bool isCubemap = false, int cubemapArraySize = -1) { AbstractRHIMethodAssert();	}
+		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath = false, bool is3D = false) { AbstractRHIMethodAssert(); }
+		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath = false, bool is3D = false) { AbstractRHIMethodAssert(); }
 
-		virtual void* GetRTV(void* aEmpty = nullptr) { assert(0); return nullptr; }
-		virtual void* GetRTV(int index) { assert(0); return nullptr; }
-		virtual void* GetDSV() { assert(0); return nullptr; }
+		virtual void* GetRTV(void* aEmpty = nullptr) { AbstractRHIMethodAssert(); return nullptr; }
+		virtual void* GetRTV(int index) { AbstractRHIMethodAssert(); return nullptr; }
+		virtual void* GetDSV() { AbstractRHIMethodAssert(); return nullptr; }
 
-		virtual void* GetSRV() { assert(0); return nullptr; }
-		virtual void* GetUAV() { assert(0); return nullptr; }
+		virtual void* GetSRV() { AbstractRHIMethodAssert(); return nullptr; }
+		virtual void* GetUAV() { AbstractRHIMethodAssert(); return nullptr; }
 
-		virtual UINT GetMips() { assert(0); return 0; }
-		virtual UINT GetWidth() { assert(0); return 0; }
-		virtual UINT GetHeight() { assert(0); return 0; }
-		virtual UINT GetDepth() { assert(0); return 0; }
+		virtual UINT GetMips() { AbstractRHIMethodAssert(); return 0; }
+		virtual UINT GetWidth() { AbstractRHIMethodAssert(); return 0; }
+		virtual UINT GetHeight() { AbstractRHIMethodAssert(); return 0; }
+		virtual UINT GetDepth() { AbstractRHIMethodAssert(); return 0; }
 	};
 
 	class ER_RHI_GPUBuffer : public ER_RHI_GPUResource
@@ -368,13 +369,13 @@ namespace Library
 
 		virtual void CreateGPUBufferResource(ER_RHI* aRHI, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic = false, 
 			ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, ER_RHI_RESOURCE_MISC_FLAG miscFlags = ER_RESOURCE_MISC_NONE, ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN) { assert(0); }
-		virtual void* GetBuffer() { assert(0);  return nullptr; }
-		virtual int GetSize() { assert(0); return 0; }
-		virtual UINT GetStride() { assert(0); return 0; }
-		virtual ER_RHI_FORMAT GetFormatRhi() { assert(0); return ER_RHI_FORMAT::ER_FORMAT_UNKNOWN; }
+		virtual void* GetBuffer() { AbstractRHIMethodAssert();  return nullptr; }
+		virtual int GetSize() { AbstractRHIMethodAssert(); return 0; }
+		virtual UINT GetStride() { AbstractRHIMethodAssert(); return 0; }
+		virtual ER_RHI_FORMAT GetFormatRhi() { AbstractRHIMethodAssert(); return ER_RHI_FORMAT::ER_FORMAT_UNKNOWN; }
 
-		virtual void* GetSRV() { assert(0); return nullptr; }
-		virtual void* GetUAV() { assert(0); return nullptr; }
+		virtual void* GetSRV() { AbstractRHIMethodAssert(); return nullptr; }
+		virtual void* GetUAV() { AbstractRHIMethodAssert(); return nullptr; }
 	};
 
 	class ER_RHI_GPUShader
@@ -384,7 +385,7 @@ namespace Library
 		virtual ~ER_RHI_GPUShader() {}
 
 		virtual void CompileShader(ER_RHI* aRHI, const std::string& path, const std::string& shaderEntry, ER_RHI_SHADER_TYPE type, ER_RHI_InputLayout* aIL = nullptr) { assert(0); };
-		virtual void* GetShaderObject() { assert(0); return nullptr; }
+		virtual void* GetShaderObject() { AbstractRHIMethodAssert(); return nullptr; }
 
 		ER_RHI_SHADER_TYPE mShaderType;
 	};

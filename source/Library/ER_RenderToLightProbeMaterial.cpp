@@ -83,16 +83,19 @@ namespace Library
 		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() });
 		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() });
 
-		std::vector<ER_RHI_GPUResource*> srvs(8);
-		srvs[0] = aObj->GetTextureData(meshIndex).AlbedoMap;
-		srvs[1] = aObj->GetTextureData(meshIndex).NormalMap;
-		srvs[2] = aObj->GetTextureData(meshIndex).MetallicMap;
-		srvs[3] = aObj->GetTextureData(meshIndex).RoughnessMap;
-		srvs[4] = aObj->GetTextureData(meshIndex).HeightMap;
-		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
-			srvs[5 + i] = neededSystems.mShadowMapper->GetShadowTexture(i);
+		std::vector<ER_RHI_GPUResource*> resources;
+		resources.push_back(aObj->GetTextureData(meshIndex).AlbedoMap);
+		resources.push_back(aObj->GetTextureData(meshIndex).NormalMap);
+		resources.push_back(aObj->GetTextureData(meshIndex).MetallicMap);
+		resources.push_back(aObj->GetTextureData(meshIndex).RoughnessMap);
+		resources.push_back(aObj->GetTextureData(meshIndex).HeightMap);
+		rhi->SetShaderResources(ER_PIXEL, resources);
 
-		rhi->SetShaderResources(ER_PIXEL, srvs);
+		std::vector<ER_RHI_GPUResource*> shadowResources;
+		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
+			shadowResources.push_back(neededSystems.mShadowMapper->GetShadowTexture(i));
+		rhi->SetShaderResources(ER_PIXEL, shadowResources, 5);
+
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
 	}
 

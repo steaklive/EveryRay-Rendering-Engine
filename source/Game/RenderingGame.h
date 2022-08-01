@@ -25,9 +25,7 @@ namespace Rendering
 
 		virtual void Initialize() override;
 		virtual void Update(const ER_CoreTime& gameTime) override;
-		virtual void Draw(const ER_CoreTime& gameTime) override;
-
-		void CollectGPUTimestamps(ID3D11DeviceContext * pContext);	
+		virtual void Draw(const ER_CoreTime& gameTime) override;	
 	protected:
 		virtual void Shutdown() override;
 	
@@ -45,6 +43,8 @@ namespace Rendering
 		ER_CameraFPS* mCamera;
 		ER_Editor* mEditor;
 		ER_QuadRenderer* mQuadRenderer;
+
+		ER_RHI_Viewport mMainViewport;
 
 		std::chrono::duration<double> mElapsedTimeUpdateCPU;
 		std::chrono::duration<double> mElapsedTimeRenderCPU;

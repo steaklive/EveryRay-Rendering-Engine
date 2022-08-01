@@ -37,6 +37,12 @@ namespace Rendering
 		mEditor(nullptr),
 		mQuadRenderer(nullptr)
 	{
+		mMainViewport.TopLeftX = 0.0f;
+		mMainViewport.TopLeftY = 0.0f;
+		mMainViewport.Width = static_cast<float>(width);
+		mMainViewport.Height = static_cast<float>(height);
+		mMainViewport.MinDepth = 0.0f;
+		mMainViewport.MaxDepth = 1.0f;
 	}
 
 	RenderingGame::~RenderingGame()
@@ -295,6 +301,8 @@ namespace Rendering
 		mRHI->ClearMainRenderTarget(colorBlack);
 		mRHI->ClearMainDepthStencilTarget(1.0f, 0);
 
+		mRHI->SetViewport(mMainViewport);
+
 		mRHI->SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE::ER_DISABLED);
 		mRHI->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING);
 		mRHI->SetBlendState(ER_RHI_BLEND_STATE::ER_NO_BLEND);
@@ -306,11 +314,6 @@ namespace Rendering
 
 		auto endRenderTimer = std::chrono::high_resolution_clock::now();
 		mElapsedTimeRenderCPU = endRenderTimer - startRenderTimer;
-	}
-
-	void RenderingGame::CollectGPUTimestamps(ID3D11DeviceContext* pContext)
-	{
-		//TODO
 	}
 }
 

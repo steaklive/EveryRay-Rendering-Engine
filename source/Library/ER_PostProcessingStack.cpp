@@ -105,11 +105,11 @@ namespace Library {
 		//Color grading
 		{
 			mLUTs[0] = rhi->CreateGPUTexture();
-			mLUTs[0]->CreateGPUTextureResource(rhi, "content\\shaders\\LUT_1.png", true);
+			mLUTs[0]->CreateGPUTextureResource(rhi, "content\\shaders\\LUT_1.png");
 			mLUTs[1] = rhi->CreateGPUTexture();
-			mLUTs[1]->CreateGPUTextureResource(rhi, "content\\shaders\\LUT_2.png", true);
+			mLUTs[1]->CreateGPUTextureResource(rhi, "content\\shaders\\LUT_2.png");
 			mLUTs[2] = rhi->CreateGPUTexture();
-			mLUTs[2]->CreateGPUTextureResource(rhi, "content\\shaders\\LUT_3.png", true);
+			mLUTs[2]->CreateGPUTextureResource(rhi, "content\\shaders\\LUT_3.png");
 			
 			mColorGradingPS = rhi->CreateGPUShader();
 			mColorGradingPS->CompileShader(rhi, "content\\shaders\\ColorGrading.hlsl", "PSMain", ER_PIXEL);

@@ -274,6 +274,7 @@ namespace Library
 		{
 			mMeshesTextureBuffers[meshIndex].RoughnessMap = rhi->CreateGPUTexture();
 			mMeshesTextureBuffers[meshIndex].RoughnessMap->CreateGPUTextureResource(rhi, path, true);
+			break;
 		}
 		case TextureType::TextureTypeHeightmap:
 		{
@@ -399,6 +400,8 @@ namespace Library
 				}
 				else
 					rhi->DrawIndexed(mMeshesRenderBuffers[lod][materialName][i]->IndicesCount);
+
+				rhi->UnbindResourcesFromShader(ER_PIXEL);
 			}
 		}
 	}
@@ -483,7 +486,7 @@ namespace Library
 			mInstanceCountToRender[lod] = instanceData.size();
 
 			// dynamically update instance buffer
-			mCore->GetRHI()->UpdateBuffer(mMeshesInstanceBuffers[lod][i]->InstanceBuffer, &instanceData[0], InstanceSize() * mInstanceCountToRender[lod]);
+			mCore->GetRHI()->UpdateBuffer(mMeshesInstanceBuffers[lod][i]->InstanceBuffer, mInstanceCountToRender[lod] == 0 ? nullptr : &instanceData[0], InstanceSize() * mInstanceCountToRender[lod]);
 		}
 	}
 
