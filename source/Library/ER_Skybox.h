@@ -1,7 +1,6 @@
 #pragma once
 #include "Common.h"
 #include "ER_CoreComponent.h"
-#include "ConstantBuffer.h"
 #include "RHI/ER_RHI.h"
 
 namespace Library
@@ -77,11 +76,11 @@ namespace Library
 		bool mDrawSun = true;
 		ER_RHI_GPUShader* mSunPS = nullptr;
 		ER_RHI_GPUShader* mSunOcclusionPS = nullptr;
-		ConstantBuffer<SkyCBufferData::SunData> mSunConstantBuffer;	
+		ER_RHI_GPUConstantBuffer<SkyCBufferData::SunData> mSunConstantBuffer;	
 		
 		ER_RHI_GPUShader* mSkyboxVS = nullptr;
 		ER_RHI_GPUShader* mSkyboxPS = nullptr;
-		ConstantBuffer<SkyCBufferData::SkyboxData> mSkyboxConstantBuffer;
+		ER_RHI_GPUConstantBuffer<SkyCBufferData::SkyboxData> mSkyboxConstantBuffer;
 
 		XMFLOAT4 mSunDir;
 		XMFLOAT4 mSunColor;

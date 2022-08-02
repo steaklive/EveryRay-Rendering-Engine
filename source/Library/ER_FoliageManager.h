@@ -2,7 +2,6 @@
 #include "Common.h"
 #include "ER_CoreComponent.h"
 #include "GeneralEvent.h"
-#include "ConstantBuffer.h"
 #include "RHI/ER_RHI.h"
 
 #define MAX_FOLIAGE_ZONES 4096
@@ -145,7 +144,7 @@ namespace Library
 		ER_RHI_GPUShader* mPS = nullptr;
 		ER_RHI_GPUShader* mPS_GBuffer = nullptr;
 		ER_RHI_GPUShader* mPS_Voxelization = nullptr;
-		ConstantBuffer<FoliageCBufferData::FoliageData> mFoliageConstantBuffer;
+		ER_RHI_GPUConstantBuffer<FoliageCBufferData::FoliageData> mFoliageConstantBuffer;
 
 		ER_RHI_GPUBuffer* mVertexBuffer = nullptr;
 		ER_RHI_GPUBuffer* mIndexBuffer = nullptr;

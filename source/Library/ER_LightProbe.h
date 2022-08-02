@@ -60,7 +60,7 @@ namespace Library
 		ER_Camera* mCubemapCameras[CUBEMAP_FACES_COUNT];
 
 		ER_RHI_GPUTexture* mCubemapTexture = nullptr; // for regular diffuse probe it should be null (because we use SH)
-		ConstantBuffer<LightProbeCBufferData::ProbeConvolutionCB> mConvolutionCB;
+		ER_RHI_GPUConstantBuffer<LightProbeCBufferData::ProbeConvolutionCB> mConvolutionCB;
 
 		ER_RHI_GPUShader* mConvolutionPS = nullptr; //just a pointer (deleted in the mananager) TODO remove
 

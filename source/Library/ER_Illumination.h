@@ -1,7 +1,6 @@
 #pragma once
 #include "Common.h"
 #include "ER_CoreComponent.h"
-#include "ConstantBuffer.h"
 #include "ER_LightProbesManager.h"
 
 #include "RHI/ER_RHI.h"
@@ -150,13 +149,13 @@ namespace Library
 		using RenderingObjectInfo = std::map<std::string, ER_RenderingObject*>;
 		RenderingObjectInfo mVoxelizationObjects[NUM_VOXEL_GI_CASCADES];
 
-		ConstantBuffer<IlluminationCBufferData::VoxelizationDebugCB> mVoxelizationDebugConstantBuffer;
-		ConstantBuffer<IlluminationCBufferData::VoxelConeTracingMainCB> mVoxelConeTracingMainConstantBuffer;
-		ConstantBuffer<IlluminationCBufferData::UpsampleBlurCB> mUpsampleBlurConstantBuffer;
-		ConstantBuffer<IlluminationCBufferData::CompositeTotalIlluminationCB> mCompositeTotalIlluminationConstantBuffer;
-		ConstantBuffer<IlluminationCBufferData::DeferredLightingCB> mDeferredLightingConstantBuffer;
-		ConstantBuffer<IlluminationCBufferData::ForwardLightingCB> mForwardLightingConstantBuffer;
-		ConstantBuffer<IlluminationCBufferData::LightProbesCB> mLightProbesConstantBuffer;
+		ER_RHI_GPUConstantBuffer<IlluminationCBufferData::VoxelizationDebugCB> mVoxelizationDebugConstantBuffer;
+		ER_RHI_GPUConstantBuffer<IlluminationCBufferData::VoxelConeTracingMainCB> mVoxelConeTracingMainConstantBuffer;
+		ER_RHI_GPUConstantBuffer<IlluminationCBufferData::UpsampleBlurCB> mUpsampleBlurConstantBuffer;
+		ER_RHI_GPUConstantBuffer<IlluminationCBufferData::CompositeTotalIlluminationCB> mCompositeTotalIlluminationConstantBuffer;
+		ER_RHI_GPUConstantBuffer<IlluminationCBufferData::DeferredLightingCB> mDeferredLightingConstantBuffer;
+		ER_RHI_GPUConstantBuffer<IlluminationCBufferData::ForwardLightingCB> mForwardLightingConstantBuffer;
+		ER_RHI_GPUConstantBuffer<IlluminationCBufferData::LightProbesCB> mLightProbesConstantBuffer;
 
 		std::vector<ER_RHI_GPUTexture*> mVCTVoxelCascades3DRTs;
 		ER_RHI_GPUTexture* mVCTVoxelizationDebugRT = nullptr;

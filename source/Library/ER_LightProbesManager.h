@@ -14,7 +14,6 @@
 
 #include "Common.h"
 #include "ER_RenderingObject.h"
-#include "ConstantBuffer.h"
 #include "RHI/ER_RHI.h"
 
 namespace Library

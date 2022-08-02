@@ -187,7 +187,6 @@
     <ClInclude Include="ER_Camera.h" />
     <ClInclude Include="ER_ColorHelper.h" />
     <ClInclude Include="Common.h" />
-    <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="ER_BasicColorMaterial.h" />
     <ClInclude Include="ER_DebugLightProbeMaterial.h" />
     <ClInclude Include="ER_GBufferMaterial.h" />

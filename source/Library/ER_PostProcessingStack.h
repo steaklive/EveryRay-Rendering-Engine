@@ -2,7 +2,6 @@
 #include "Common.h"
 #include "ER_Core.h"
 #include "ER_CoreTime.h"
-#include "ConstantBuffer.h"
 
 namespace Library
 {
@@ -92,7 +91,7 @@ namespace Library
 
 		// SSR
 		ER_RHI_GPUTexture* mSSRRT = nullptr;
-		ConstantBuffer<PostEffectsCBuffers::SSRCB> mSSRConstantBuffer;
+		ER_RHI_GPUConstantBuffer<PostEffectsCBuffers::SSRCB> mSSRConstantBuffer;
 		ER_RHI_GPUShader* mSSRPS = nullptr;
 		bool mUseSSR = false;
 		int mSSRRayCount = 50;
@@ -103,11 +102,11 @@ namespace Library
 		ER_RHI_GPUTexture* mSSSRT = nullptr;
 		bool mUseSSS = true;
 		ER_RHI_GPUShader* mSSSPS = nullptr;
-		ConstantBuffer<PostEffectsCBuffers::SSSCB> mSSSConstantBuffer;
+		ER_RHI_GPUConstantBuffer<PostEffectsCBuffers::SSSCB> mSSSConstantBuffer;
 
 		// Linear Fog
 		ER_RHI_GPUTexture* mLinearFogRT = nullptr;
-		ConstantBuffer<PostEffectsCBuffers::LinearFogCB> mLinearFogConstantBuffer;
+		ER_RHI_GPUConstantBuffer<PostEffectsCBuffers::LinearFogCB> mLinearFogConstantBuffer;
 		ER_RHI_GPUShader* mLinearFogPS = nullptr;
 		bool mUseLinearFog = false;
 		float mLinearFogColor[3] = { 166.0f / 255.0f, 188.0f / 255.0f, 196.0f / 255.0f };
@@ -126,13 +125,13 @@ namespace Library
 
 		// FXAA
 		ER_RHI_GPUTexture* mFXAART = nullptr;
-		ConstantBuffer<PostEffectsCBuffers::FXAACB> mFXAAConstantBuffer;
+		ER_RHI_GPUConstantBuffer<PostEffectsCBuffers::FXAACB> mFXAAConstantBuffer;
 		ER_RHI_GPUShader* mFXAAPS = nullptr;
 		bool mUseFXAA = true;
 
 		// Vignette
 		ER_RHI_GPUTexture* mVignetteRT = nullptr;
-		ConstantBuffer<PostEffectsCBuffers::VignetteCB> mVignetteConstantBuffer;
+		ER_RHI_GPUConstantBuffer<PostEffectsCBuffers::VignetteCB> mVignetteConstantBuffer;
 		ER_RHI_GPUShader* mVignettePS = nullptr;
 		float mVignetteRadius = 0.75f;
 		float mVignetteSoftness = 0.5f;

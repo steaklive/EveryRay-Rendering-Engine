@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Common.h"
-#include "ConstantBuffer.h"
 #include "ER_CoreComponent.h"
 #include "ER_VertexDeclarations.h"
 

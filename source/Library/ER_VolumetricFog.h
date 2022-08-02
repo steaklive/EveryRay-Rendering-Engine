@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Common.h"
-#include "ConstantBuffer.h"
 #include "ER_CoreComponent.h"
 #include "RHI/ER_RHI.h"
 
@@ -65,8 +64,8 @@ namespace Library
 		ER_RHI_GPUTexture* mFinalVoxelAccumulationTexture3D = nullptr;
 		ER_RHI_GPUTexture* mBlueNoiseTexture = nullptr;
 
-		ConstantBuffer<VolumetricFogCBufferData::MainCB> mMainConstantBuffer;
-		ConstantBuffer<VolumetricFogCBufferData::CompositeCB> mCompositeConstantBuffer;
+		ER_RHI_GPUConstantBuffer<VolumetricFogCBufferData::MainCB> mMainConstantBuffer;
+		ER_RHI_GPUConstantBuffer<VolumetricFogCBufferData::CompositeCB> mCompositeConstantBuffer;
 
 		ER_RHI_GPUShader* mInjectionCS = nullptr;
 		ER_RHI_GPUShader* mAccumulationCS = nullptr;

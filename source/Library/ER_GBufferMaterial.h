@@ -25,6 +25,6 @@ namespace Library
 		virtual void CreateVertexBuffer(const ER_Mesh& mesh, ER_RHI_GPUBuffer* vertexBuffer) override;
 		virtual int VertexSize() override;
 
-		ConstantBuffer<GBufferMaterial_CBufferData::GBufferCB> mConstantBuffer;
+		ER_RHI_GPUConstantBuffer<GBufferMaterial_CBufferData::GBufferCB> mConstantBuffer;
 	};
 }

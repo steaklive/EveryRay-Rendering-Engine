@@ -1,6 +1,5 @@
 #pragma once
 #include "Common.h"
-#include "ConstantBuffer.h"
 #include "ER_CoreComponent.h"
 #include "RHI/ER_RHI.h"
 
@@ -64,9 +63,9 @@ namespace Library
 		DirectionalLight& mDirectionalLight;
 		ER_Skybox& mSkybox;
 		
-		ConstantBuffer<VolumetricCloudsCBufferData::FrameCB> mFrameConstantBuffer;
-		ConstantBuffer<VolumetricCloudsCBufferData::CloudsCB> mCloudsConstantBuffer;
-		ConstantBuffer<VolumetricCloudsCBufferData::UpsampleBlurCB> mUpsampleBlurConstantBuffer;
+		ER_RHI_GPUConstantBuffer<VolumetricCloudsCBufferData::FrameCB> mFrameConstantBuffer;
+		ER_RHI_GPUConstantBuffer<VolumetricCloudsCBufferData::CloudsCB> mCloudsConstantBuffer;
+		ER_RHI_GPUConstantBuffer<VolumetricCloudsCBufferData::UpsampleBlurCB> mUpsampleBlurConstantBuffer;
 
 		ER_RHI_GPUTexture* mIlluminationResultDepthTarget = nullptr; // not allocated here, just a pointer
 		ER_RHI_GPUTexture* mSkyRT = nullptr;

@@ -105,9 +105,6 @@
     <ClInclude Include="SpotLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ConstantBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="OceanSimulator.h">
       <Filter>Header Files</Filter>
     </ClInclude>

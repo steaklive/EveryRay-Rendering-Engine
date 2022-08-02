@@ -1,7 +1,6 @@
 #pragma once
 #include "Common.h"
 #include "ER_CoreComponent.h"
-#include "ConstantBuffer.h"
 #include "RHI/ER_RHI.h"
 
 #define NUM_THREADS_PER_TERRAIN_SIDE 4
@@ -161,8 +160,8 @@ namespace Library
 
 		DirectionalLight& mDirectionalLight;
 
-		ConstantBuffer<TerrainCBufferData::TerrainData> mTerrainConstantBuffer;
-		ConstantBuffer<TerrainCBufferData::PlaceOnTerrainData> mPlaceOnTerrainConstantBuffer;
+		ER_RHI_GPUConstantBuffer<TerrainCBufferData::TerrainData> mTerrainConstantBuffer;
+		ER_RHI_GPUConstantBuffer<TerrainCBufferData::PlaceOnTerrainData> mPlaceOnTerrainConstantBuffer;
 
 		ER_RHI_InputLayout* mInputLayout = nullptr;
 
