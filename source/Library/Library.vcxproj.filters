@@ -249,12 +249,6 @@
     <ClInclude Include="ER_Core.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RHI\ER_RHI.h">
-      <Filter>Source Files\Graphics\RHI</Filter>
-    </ClInclude>
-    <ClInclude Include="RHI\DX11\ER_RHI_DX11.h">
-      <Filter>Source Files\Graphics\RHI\DX11</Filter>
-    </ClInclude>
     <ClInclude Include="RHI\DX11\ER_RHI_DX11_GPUBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -268,6 +262,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ER_CoreServicesContainer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\DX11\ER_RHI_DX11.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\ER_RHI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

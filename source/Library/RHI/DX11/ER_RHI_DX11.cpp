@@ -345,7 +345,7 @@ namespace Library
 		mDirect3DDeviceContext->CopyResource(dstResource, srcResource);
 	}
 
-	void ER_RHI_DX11::BeginBufferRead(ER_RHI_GPUBuffer* aBuffer, void* output)
+	void ER_RHI_DX11::BeginBufferRead(ER_RHI_GPUBuffer* aBuffer, void** output)
 	{
 		assert(aBuffer);
 		assert(!mIsContextReadingBuffer);
@@ -355,7 +355,7 @@ namespace Library
 
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
 		buffer->Map(this, D3D11_MAP_READ, &mappedResource);
-		output = mappedResource.pData;
+		*output = mappedResource.pData;
 		mIsContextReadingBuffer = true;
 	}
 
@@ -378,12 +378,12 @@ namespace Library
 		ER_RHI_DX11_GPUTexture* srcbuffer = static_cast<ER_RHI_DX11_GPUTexture*>(aSrcBuffer);
 		assert(srcbuffer);
 
-		assert(dstbuffer->GetDepth() == srcbuffer->GetDepth());
-
-		if (dstbuffer->GetDepth() == 0)
+		if (dstbuffer->GetTexture2D() && srcbuffer->GetTexture2D())
 			mDirect3DDeviceContext->CopySubresourceRegion(dstbuffer->GetTexture2D(), DstSubresource, DstX, DstY, DstZ, srcbuffer->GetTexture2D(), SrcSubresource, NULL);
-		else
+		else if (dstbuffer->GetTexture3D() && srcbuffer->GetTexture3D())
 			mDirect3DDeviceContext->CopySubresourceRegion(dstbuffer->GetTexture3D(), DstSubresource, DstX, DstY, DstZ, srcbuffer->GetTexture3D(), SrcSubresource, NULL);
+		else
+			throw ER_CoreException("ER_RHI_DX11:: One of the resources is NULL during CopyGPUTextureSubresourceRegion()");
 	}
 
 	void ER_RHI_DX11::Draw(UINT VertexCount)

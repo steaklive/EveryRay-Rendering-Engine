@@ -878,18 +878,18 @@ namespace Library
 	// - placing ER_Foliage patches on terrain (batch placement)
 	void ER_Terrain::PlaceOnTerrain(XMFLOAT4* positions, int positionsCount, TerrainSplatChannels splatChannel, XMFLOAT4* terrainVertices, int terrainVertexCount)
 	{
-		assert(terrainVertices);
-
 		ER_RHI* rhi = GetCore()->GetRHI();
+		ER_RHI_GPUBuffer* terrainBuffer = nullptr;
 
-		ER_RHI_GPUBuffer* terrainBuffer = rhi->CreateGPUBuffer();
 #if USE_RAYCASTING_FOR_ON_TERRAIN_PLACEMENT
+		assert(terrainVertices);
+		terrainBuffer = rhi->CreateGPUBuffer();
 		terrainBuffer->CreateGPUBufferResource(rhi, terrainVertices, terrainVertexCount, sizeof(XMFLOAT4), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 #endif
 		ER_RHI_GPUBuffer* posBuffer = rhi->CreateGPUBuffer();
 		posBuffer->CreateGPUBufferResource(rhi, positions, positionsCount, sizeof(XMFLOAT4), false, ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 		ER_RHI_GPUBuffer* outputPosBuffer = rhi->CreateGPUBuffer();
-		outputPosBuffer->CreateGPUBufferResource(rhi, positions, positionsCount, sizeof(XMFLOAT4), true, ER_BIND_NONE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //TODO should be STAGING
+		outputPosBuffer->CreateGPUBufferResource(rhi, positions, positionsCount, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
 
 		rhi->SetShader(mPlaceOnTerrainCS);
 
@@ -908,7 +908,7 @@ namespace Library
 		rhi->CopyBuffer(outputPosBuffer, posBuffer);
 
 		void* outputData = nullptr;
-		rhi->BeginBufferRead(outputPosBuffer, outputData);
+		rhi->BeginBufferRead(outputPosBuffer, &outputData);
 		{
 			assert(outputData);
 			XMFLOAT4* newPositions = reinterpret_cast<XMFLOAT4*>(outputData);

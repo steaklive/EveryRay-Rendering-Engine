@@ -33,7 +33,15 @@ namespace Library
 
 		D3D11_BUFFER_DESC buf_desc;
 		buf_desc.ByteWidth = objectsCount * byteStride;
-		buf_desc.Usage = isDynamic ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
+		if (isDynamic)
+			buf_desc.Usage = D3D11_USAGE_DYNAMIC;
+		else
+		{
+			if (cpuAccessFlags & D3D11_CPU_ACCESS_WRITE && cpuAccessFlags & D3D11_CPU_ACCESS_READ)
+				buf_desc.Usage = D3D11_USAGE_STAGING;
+			else
+				buf_desc.Usage = D3D11_USAGE_DEFAULT;
+		}
 		buf_desc.BindFlags = bindFlags;
 		buf_desc.CPUAccessFlags = isDynamic ? D3D11_CPU_ACCESS_WRITE : cpuAccessFlags;
 		buf_desc.MiscFlags = miscFlags;
