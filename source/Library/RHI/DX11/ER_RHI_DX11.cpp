@@ -8,7 +8,7 @@
 
 #define DX11_MAX_BOUND_RENDER_TARGETS_VIEWS 8
 #define DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS 64 
-#define DX11_MAX_BOUND_UNORDERED_ACCESS_VIEWS 16 
+#define DX11_MAX_BOUND_UNORDERED_ACCESS_VIEWS 8 
 #define DX11_MAX_BOUND_CONSTANT_BUFFERS 8 
 #define DX11_MAX_BOUND_SAMPLERS 8 
 
@@ -867,10 +867,10 @@ namespace Library
 	{
 		auto context = GetContext();
 
-		ID3D11ShaderResourceView* nullSRV[] = { NULL };
-		ID3D11Buffer* nullCBs[] = { NULL };
-		ID3D11SamplerState* nullSSs[] = { NULL };
-		ID3D11UnorderedAccessView* nullUAV[] = { NULL };
+		ID3D11ShaderResourceView* nullSRV[DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS] = { NULL };
+		ID3D11Buffer* nullCBs[DX11_MAX_BOUND_CONSTANT_BUFFERS] = { NULL };
+		ID3D11SamplerState* nullSSs[DX11_MAX_BOUND_SAMPLERS] = { NULL };
+		ID3D11UnorderedAccessView* nullUAV[DX11_MAX_BOUND_UNORDERED_ACCESS_VIEWS] = { NULL };
 
 		switch (aShaderType)
 		{
@@ -878,54 +878,54 @@ namespace Library
 		{
 			if (unbindShader)
 				context->VSSetShader(NULL, NULL, NULL);
-			context->VSSetShaderResources(0, 1, nullSRV);
-			context->VSSetConstantBuffers(0, 1, nullCBs);
+			context->VSSetShaderResources(0, DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS, nullSRV);
+			context->VSSetConstantBuffers(0, DX11_MAX_BOUND_CONSTANT_BUFFERS, nullCBs);
 		}
 		break;
 		case ER_RHI_SHADER_TYPE::ER_GEOMETRY:
 		{
 			if (unbindShader)
 				context->GSSetShader(NULL, NULL, NULL);
-			context->GSSetShaderResources(0, 1, nullSRV);
-			context->GSSetConstantBuffers(0, 1, nullCBs);
-			context->GSSetSamplers(0, 1, nullSSs);
+			context->GSSetShaderResources(0, DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS, nullSRV);
+			context->GSSetConstantBuffers(0, DX11_MAX_BOUND_CONSTANT_BUFFERS, nullCBs);
+			context->GSSetSamplers(0, DX11_MAX_BOUND_SAMPLERS, nullSSs);
 		}
 		break;
 		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_HULL:
 		{
 			if (unbindShader)
 				context->HSSetShader(NULL, NULL, NULL);
-			context->HSSetShaderResources(0, 1, nullSRV);
-			context->HSSetConstantBuffers(0, 1, nullCBs);
-			context->HSSetSamplers(0, 1, nullSSs);
+			context->HSSetShaderResources(0, DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS, nullSRV);
+			context->HSSetConstantBuffers(0, DX11_MAX_BOUND_CONSTANT_BUFFERS, nullCBs);
+			context->HSSetSamplers(0, DX11_MAX_BOUND_SAMPLERS, nullSSs);
 		}
 		break;
 		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_DOMAIN:
 		{
 			if (unbindShader)
 				context->DSSetShader(NULL, NULL, NULL);
-			context->DSSetShaderResources(0, 1, nullSRV);
-			context->DSSetConstantBuffers(0, 1, nullCBs);
-			context->DSSetSamplers(0, 1, nullSSs);
+			context->DSSetShaderResources(0, DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS, nullSRV);
+			context->DSSetConstantBuffers(0, DX11_MAX_BOUND_CONSTANT_BUFFERS, nullCBs);
+			context->DSSetSamplers(0, DX11_MAX_BOUND_SAMPLERS, nullSSs);
 		}
 		break;
 		case ER_RHI_SHADER_TYPE::ER_PIXEL:
 		{
 			if (unbindShader)
 				context->PSSetShader(NULL, NULL, NULL);
-			context->PSSetShaderResources(0, 1, nullSRV);
-			context->PSSetConstantBuffers(0, 1, nullCBs);
-			context->PSSetSamplers(0, 1, nullSSs);
+			context->PSSetShaderResources(0, DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS, nullSRV);
+			context->PSSetConstantBuffers(0, DX11_MAX_BOUND_CONSTANT_BUFFERS, nullCBs);
+			context->PSSetSamplers(0, DX11_MAX_BOUND_SAMPLERS, nullSSs);
 		}
 		break;
 		case ER_RHI_SHADER_TYPE::ER_COMPUTE:
 		{
 			if (unbindShader)
 				context->CSSetShader(NULL, NULL, NULL);
-			context->CSSetShaderResources(0, 1, nullSRV);
-			context->CSSetConstantBuffers(0, 1, nullCBs);
-			context->CSSetSamplers(0, 1, nullSSs);
-			context->CSSetUnorderedAccessViews(0, 1, nullUAV, 0);
+			context->CSSetShaderResources(0, DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS, nullSRV);
+			context->CSSetConstantBuffers(0, DX11_MAX_BOUND_CONSTANT_BUFFERS, nullCBs);
+			context->CSSetSamplers(0, DX11_MAX_BOUND_SAMPLERS, nullSSs);
+			context->CSSetUnorderedAccessViews(0, DX11_MAX_BOUND_UNORDERED_ACCESS_VIEWS, nullUAV, 0);
 		}
 		break;
 		}
