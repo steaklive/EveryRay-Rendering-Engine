@@ -17,9 +17,7 @@
 #include "ER_QuadRenderer.h"
 #include "ER_RenderToLightProbeMaterial.h"
 #include "ER_MaterialsCallbacks.h"
-#include "SamplerStates.h"
 
-#include "DirectXSH.h"
 
 namespace Library
 {
@@ -47,11 +45,13 @@ namespace Library
 		, mShadowMapper(shadowMapper)
 		, mProbeType(aType)
 	{
+		ER_RHI* rhi = game.GetRHI();
+
 		for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
 			mSphericalHarmonicsRGB.push_back(XMFLOAT3(0.0, 0.0, 0.0));
 
-		mCubemapTexture = new ER_GPUTexture(game.Direct3DDevice(), size, size, 1, DXGI_FORMAT_R8G8B8A8_UNORM, 0,
-			(aType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
+		mCubemapTexture = rhi->CreateGPUTexture();
+		mCubemapTexture->CreateGPUTextureResource(rhi, size, size, 1, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_NONE, (aType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
 
 		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
 		{
@@ -63,7 +63,7 @@ namespace Library
 			mCubemapCameras[i]->UpdateProjectionMatrix(true); //fix for mirrored result due to right-hand coordinate system
 		}
 
-		mConvolutionCB.Initialize(game.Direct3DDevice());
+		mConvolutionCB.Initialize(rhi);
 	}
 
 	ER_LightProbe::~ER_LightProbe()
@@ -95,17 +95,19 @@ namespace Library
 			(mPosition.z > aMax.z || mPosition.z < aMin.z);
 	}
 
-	void ER_LightProbe::StoreSphericalHarmonicsFromCubemap(ER_Core& game, ER_GPUTexture* aTextureConvoluted)
+#ifdef ER_PLATFORM_WIN64_DX11
+	void ER_LightProbe::StoreSphericalHarmonicsFromCubemap(ER_Core& game, ER_RHI_GPUTexture* aTextureConvoluted)
 	{
 		assert(aTextureConvoluted);
 
-		auto context = game.Direct3DDeviceContext();
+		ER_RHI* rhi = game.GetRHI();
+
 		float rgbCoefficients[3][9] = { 
 			0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
 			0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
 			0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
 		};
-		if (FAILED(DirectX::SHProjectCubeMap(context, SPHERICAL_HARMONICS_ORDER + 1, aTextureConvoluted->GetTexture2D(), &rgbCoefficients[0][0], &rgbCoefficients[1][0], &rgbCoefficients[2][0])))
+		if (!rhi->ProjectCubemapToSH(aTextureConvoluted, SPHERICAL_HARMONICS_ORDER + 1, &rgbCoefficients[0][0], &rgbCoefficients[1][0], &rgbCoefficients[2][0]))
 		{
 			//TODO write to log
 			for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
@@ -118,37 +120,42 @@ namespace Library
 		}
 	}
 
-	void ER_LightProbe::Compute(ER_Core& game, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted,
-		ER_GPUTexture** aDepthBuffers, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, ER_QuadRenderer* quadRenderer, ER_Skybox* skybox)
+	void ER_LightProbe::Compute(ER_Core& game, ER_RHI_GPUTexture* aTextureNonConvoluted, ER_RHI_GPUTexture* aTextureConvoluted,
+		ER_RHI_GPUTexture** aDepthBuffers, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, ER_QuadRenderer* quadRenderer, ER_Skybox* skybox)
 	{
 		if (mIsProbeLoadedFromDisk)
 			return;
 
 		assert(quadRenderer);
-		auto context = game.Direct3DDeviceContext();
-		UINT viewportsCount = 1;
-		CD3D11_VIEWPORT oldViewPort;
-		context->RSGetViewports(&viewportsCount, &oldViewPort);
-		CD3D11_VIEWPORT newViewPort(0.0f, 0.0f, static_cast<float>(mSize), static_cast<float>(mSize));
-		context->RSSetViewports(1, &newViewPort);
+		ER_RHI* rhi = game.GetRHI();
+
+		ER_RHI_Viewport oldViewport = rhi->GetCurrentViewport();
+
+		ER_RHI_Viewport newViewPort;
+		newViewPort.TopLeftX = 0.0f;
+		newViewPort.TopLeftY = 0.0f;
+		newViewPort.Width = static_cast<float>(mSize);
+		newViewPort.Height = static_cast<float>(mSize);
+		rhi->SetViewport(newViewPort);
 
 		//sadly, we can't combine or multi-thread these two functions, because of the artifacts on edges of the convoluted faces of the cubemap...
 		DrawGeometryToProbe(game, aTextureNonConvoluted, aDepthBuffers, objectsToRender, skybox);
 		ConvoluteProbe(game, quadRenderer, aTextureNonConvoluted, aTextureConvoluted);
 
-		context->RSSetViewports(1, &oldViewPort);
+		rhi->SetViewport(oldViewport);
 
 		if (mProbeType == DIFFUSE_PROBE && mIndex != -1)
 			StoreSphericalHarmonicsFromCubemap(game, aTextureConvoluted);
 
 		SaveProbeOnDisk(game, levelPath, aTextureConvoluted);
+
 		mIsProbeLoadedFromDisk = true;
 	}
 
-	void ER_LightProbe::DrawGeometryToProbe(ER_Core& game, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture** aDepthBuffers,
+	void ER_LightProbe::DrawGeometryToProbe(ER_Core& game, ER_RHI_GPUTexture* aTextureNonConvoluted, ER_RHI_GPUTexture** aDepthBuffers,
 		const LightProbeRenderingObjectsInfo& objectsToRender, ER_Skybox* skybox)
 	{
-		auto context = game.Direct3DDeviceContext();
+		ER_RHI* rhi = game.GetRHI();
 		float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		bool isGlobal = (mIndex == -1);
 
@@ -163,9 +170,9 @@ namespace Library
 		{
 			// Set the render target and clear it.
 			int rtvShift = (mProbeType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT;
-			context->OMSetRenderTargets(1, &aTextureNonConvoluted->GetRTVs()[cubeMapFaceIndex * rtvShift], aDepthBuffers[cubeMapFaceIndex]->GetDSV());
-			context->ClearRenderTargetView(aTextureNonConvoluted->GetRTVs()[cubeMapFaceIndex], clearColor);
-			context->ClearDepthStencilView(aDepthBuffers[cubeMapFaceIndex]->GetDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+			rhi->SetRenderTargets({ aTextureNonConvoluted }, aDepthBuffers[cubeMapFaceIndex], nullptr, cubeMapFaceIndex * rtvShift);
+			rhi->ClearRenderTarget(aTextureNonConvoluted, clearColor, cubeMapFaceIndex);
+			rhi->ClearDepthStencilTarget(aDepthBuffers[cubeMapFaceIndex], 1.0f, 0);
 
 			//rendering objects and sky
 			{
@@ -206,23 +213,21 @@ namespace Library
 		}
 
 		if (mProbeType == SPECULAR_PROBE)
-			context->GenerateMips(aTextureNonConvoluted->GetSRV());
+			rhi->GenerateMips(aTextureNonConvoluted);
 	}
 
-	void ER_LightProbe::ConvoluteProbe(ER_Core& game, ER_QuadRenderer* quadRenderer, ER_GPUTexture* aTextureNonConvoluted, ER_GPUTexture* aTextureConvoluted)
+	void ER_LightProbe::ConvoluteProbe(ER_Core& game, ER_QuadRenderer* quadRenderer, ER_RHI_GPUTexture* aTextureNonConvoluted, ER_RHI_GPUTexture* aTextureConvoluted)
 	{
 		int mipCount = -1;
 		if (mProbeType == SPECULAR_PROBE)
 			mipCount = SPECULAR_PROBE_MIP_COUNT;
 
-		auto context = game.Direct3DDeviceContext();
+		ER_RHI* rhi = game.GetRHI();
+
 		float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 		int totalMips = (mipCount == -1) ? 1 : mipCount;
 		int rtvShift = (mProbeType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT;
-
-		ID3D11ShaderResourceView* SRVs[1] = { aTextureNonConvoluted->GetSRV() };
-		ID3D11SamplerState* SSs[1] = { SamplerStates::TrilinearWrap };
 
 		for (int cubeMapFace = 0; cubeMapFace < CUBEMAP_FACES_COUNT; cubeMapFace++)
 		{
@@ -232,125 +237,38 @@ namespace Library
 			{
 				mConvolutionCB.Data.FaceIndex = cubeMapFace;
 				mConvolutionCB.Data.MipIndex = (mProbeType == DIFFUSE_PROBE) ? -1 : mip;
-				mConvolutionCB.ApplyChanges(context);
+				mConvolutionCB.ApplyChanges(rhi);
 
-				CD3D11_VIEWPORT newViewPort(0.0f, 0.0f, static_cast<float>(currentSize), static_cast<float>(currentSize));
-				context->RSSetViewports(1, &newViewPort);
+				ER_RHI_Viewport newViewPort;
+				newViewPort.TopLeftX = 0.0f;
+				newViewPort.TopLeftY = 0.0f;
+				newViewPort.Width = static_cast<float>(currentSize);
+				newViewPort.Height = static_cast<float>(currentSize);
+				rhi->SetViewport(newViewPort);
 
-				context->OMSetRenderTargets(1, &aTextureConvoluted->GetRTVs()[cubeMapFace * rtvShift + mip], NULL);
-				context->ClearRenderTargetView(aTextureConvoluted->GetRTVs()[cubeMapFace * rtvShift + mip], clearColor);
+				rhi->SetRenderTargets({ aTextureConvoluted }, nullptr, nullptr, cubeMapFace * rtvShift + mip);
+				rhi->ClearRenderTarget(aTextureConvoluted, clearColor, cubeMapFace * rtvShift + mip);
 
-				ID3D11Buffer* CBs[1] = { mConvolutionCB.Buffer() };
+				rhi->SetConstantBuffers(ER_VERTEX, { mConvolutionCB.Buffer() });
 
-				context->VSSetConstantBuffers(0, 1, CBs);
-				context->PSSetShader(mConvolutionPS, NULL, NULL);
-				context->PSSetSamplers(0, 1, SSs);
-				context->PSSetShaderResources(0, 1, SRVs);
-				context->PSSetConstantBuffers(0, 1, CBs);
+				rhi->SetShader(mConvolutionPS);
+				rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
+				rhi->SetShaderResources(ER_PIXEL, { aTextureNonConvoluted });
+				rhi->SetConstantBuffers(ER_PIXEL, { mConvolutionCB.Buffer() });
 
 				if (quadRenderer)
-					quadRenderer->Draw(context);
+					quadRenderer->Draw(rhi);
 
 				currentSize >>= 1;
 			}
 		}
+
+		rhi->UnbindRenderTargets();
+		rhi->UnbindResourcesFromShader(ER_VERTEX);
+		rhi->UnbindResourcesFromShader(ER_PIXEL);
 	}
 
-	// TODO: should be PC exclusive method
-	// Method for loading probe from disk in 2 ways: spherical harmonics coefficients and light probe cubemap texture
-	bool ER_LightProbe::LoadProbeFromDisk(ER_Core& game, const std::wstring& levelPath)
-	{
-		bool loadAsSphericalHarmonics = mProbeType == DIFFUSE_PROBE && mIndex != -1;
-		std::wstring probeName = GetConstructedProbeName(levelPath, loadAsSphericalHarmonics);
-
-		if (loadAsSphericalHarmonics)
-		{
-			std::wifstream shFile(probeName.c_str());
-			if (shFile.is_open())
-			{
-				float coefficients[3][SPHERICAL_HARMONICS_COEF_COUNT];
-				int channel = 0;
-				for (std::wstring line; std::getline(shFile, line);)
-				{
-					std::wistringstream in(line);
-
-					std::wstring type;
-					in >> type;
-					if (type == L"r" || type == L"g" || type == L"b")
-					{
-						for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
-							in >> coefficients[channel][i];
-					}
-					else
-					{
-						//TODO output to LOG (not exception)
-						for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
-							mSphericalHarmonicsRGB[i] = XMFLOAT3(0, 0, 0);
-
-						break;
-					}
-					channel++;
-				}
-
-				for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
-					mSphericalHarmonicsRGB[i] = XMFLOAT3(coefficients[0][i], coefficients[1][i], coefficients[2][i]);
-
-				mIsProbeLoadedFromDisk = true;
-				shFile.close();
-			}
-			else
-			{
-				//std::wstring status = L"Failed to load spherical harmonics file for probe: " + probeName;
-				//TODO output to LOG (not exception)
-				mIsProbeLoadedFromDisk = false;
-			}
-		}
-		else
-		{
-			ID3D11Texture2D* tex2d = NULL;
-			ID3D11ShaderResourceView* srv = NULL;
-			ID3D11Resource* resourceTex = NULL;
-
-			if (FAILED(DirectX::CreateDDSTextureFromFile(game.Direct3DDevice(), probeName.c_str(), &resourceTex, &srv)))
-			{
-				//std::wstring status = L"Failed to load DDS probe texture: " + probeName;
-				//TODO output to LOG (not exception)
-				mIsProbeLoadedFromDisk = false;
-			}
-			else
-			{
-
-				if (FAILED(resourceTex->QueryInterface(IID_ID3D11Texture2D, (void**)&tex2d))) {
-					mIsProbeLoadedFromDisk = false;
-					return false;
-				}
-
-				// Copying loaded resource into the convoluted resource of the probe
-				//int mips = (mProbeType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT;
-				//const int srcDiffuseAutogeneratedMipCount = 6;
-				//for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
-				//{
-				//	for (int mip = 0; mip < mips; mip++)
-				//	{
-				//		game.Direct3DDeviceContext()->CopySubresourceRegion(mCubemapTexture->getTexture2D(),
-				//			D3D11CalcSubresource(mip, i, mips), 0, 0, 0, resourceTex,
-				//			D3D11CalcSubresource(mip, i, (mProbeType == DIFFUSE_PROBE) ? srcDiffuseAutogeneratedMipCount : mips), NULL);
-				//	}
-				//}
-
-				mCubemapTexture->SetSRV(srv);
-				mCubemapTexture->SetTexture2D(tex2d);
-
-				resourceTex->Release();
-
-				mIsProbeLoadedFromDisk = true;
-			}
-		}
-		return mIsProbeLoadedFromDisk;
-	}
-
-	// TODO: should be PC exclusive method
-	void ER_LightProbe::SaveProbeOnDisk(ER_Core& game, const std::wstring& levelPath, ER_GPUTexture* aTextureConvoluted)
+	void ER_LightProbe::SaveProbeOnDisk(ER_Core& game, const std::wstring& levelPath, ER_RHI_GPUTexture* aTextureConvoluted)
 	{
 		bool saveAsSphericalHarmonics = mProbeType == DIFFUSE_PROBE && mIndex != -1;
 		std::wstring probeName = GetConstructedProbeName(levelPath, saveAsSphericalHarmonics);
@@ -405,23 +323,72 @@ namespace Library
 		}
 		else
 		{
-			DirectX::ScratchImage tempImage;
-			HRESULT res = DirectX::CaptureTexture(game.Direct3DDevice(), game.Direct3DDeviceContext(), aTextureConvoluted->GetTexture2D(), tempImage);
-			if (FAILED(res))
-				throw ER_CoreException("Failed to capture a probe texture when saving!", res);
-
-			res = DirectX::SaveToDDSFile(tempImage.GetImages(), tempImage.GetImageCount(), tempImage.GetMetadata(), DDS_FLAGS_NONE, probeName.c_str());
-			if (FAILED(res))
-			{
-				std::string str(probeName.begin(), probeName.end());
-				std::string msg = "Failed to save a probe texture: " + str;
-				throw ER_CoreException(msg.c_str());
-			}
+			game.GetRHI()->SaveGPUTextureToFile(aTextureConvoluted, probeName);
 
 			//loading the same probe from disk, since aTextureConvoluted is a temp texture and otherwise we need a GPU resource copy to mCubemapTexture (better than this, but I am just too lazy...)
 			if (!LoadProbeFromDisk(game, levelPath))
 				throw ER_CoreException("Could not load probe that was already generated :(");
 		}
+	}
+#endif
+
+	// Method for loading probe from disk in 2 ways: spherical harmonics coefficients and light probe cubemap texture
+	bool ER_LightProbe::LoadProbeFromDisk(ER_Core& game, const std::wstring& levelPath)
+	{
+		ER_RHI* rhi = game.GetRHI();
+
+		bool loadAsSphericalHarmonics = mProbeType == DIFFUSE_PROBE && mIndex != -1;
+		std::wstring probeName = GetConstructedProbeName(levelPath, loadAsSphericalHarmonics);
+
+		if (loadAsSphericalHarmonics)
+		{
+			std::wifstream shFile(probeName.c_str());
+			if (shFile.is_open())
+			{
+				float coefficients[3][SPHERICAL_HARMONICS_COEF_COUNT];
+				int channel = 0;
+				for (std::wstring line; std::getline(shFile, line);)
+				{
+					std::wistringstream in(line);
+
+					std::wstring type;
+					in >> type;
+					if (type == L"r" || type == L"g" || type == L"b")
+					{
+						for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
+							in >> coefficients[channel][i];
+					}
+					else
+					{
+						//TODO output to LOG (not exception)
+						for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
+							mSphericalHarmonicsRGB[i] = XMFLOAT3(0, 0, 0);
+
+						break;
+					}
+					channel++;
+				}
+
+				for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
+					mSphericalHarmonicsRGB[i] = XMFLOAT3(coefficients[0][i], coefficients[1][i], coefficients[2][i]);
+
+				mIsProbeLoadedFromDisk = true;
+				shFile.close();
+			}
+			else
+			{
+				//std::wstring status = L"Failed to load spherical harmonics file for probe: " + probeName;
+				//TODO output to LOG (not exception)
+				mIsProbeLoadedFromDisk = false;
+			}
+		}
+		else
+		{
+			assert(mCubemapTexture);
+			mCubemapTexture->CreateGPUTextureResource(rhi, probeName, true);
+			mIsProbeLoadedFromDisk = true;
+		}
+		return mIsProbeLoadedFromDisk;
 	}
 
 	std::wstring ER_LightProbe::GetConstructedProbeName(const std::wstring& levelPath, bool inSphericalHarmonics)

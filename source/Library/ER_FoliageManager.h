@@ -1,8 +1,8 @@
 #pragma once
 #include "Common.h"
 #include "ER_CoreComponent.h"
-#include "GeneralEvent.h"
-#include "ConstantBuffer.h"
+#include "ER_GenericEvent.h"
+#include "RHI/ER_RHI.h"
 
 #define MAX_FOLIAGE_ZONES 4096
 
@@ -133,28 +133,24 @@ namespace Library
 		void InitializeBuffersCPU();
 		void LoadBillboardModel(FoliageBillboardType bType);
 		void CalculateDynamicLOD(float distanceToCam);
-		void CreateBlendStates();
 
 		ER_Core& mCore;
 		ER_Camera& mCamera;
 		DirectionalLight& mDirectionalLight;
 
-		ID3D11InputLayout* mInputLayout = nullptr;
-		ID3D11VertexShader* mVS = nullptr;
-		ID3D11GeometryShader* mGS = nullptr;
-		ID3D11PixelShader* mPS = nullptr;
-		ID3D11PixelShader* mPS_GBuffer = nullptr;
-		ID3D11PixelShader* mPS_Voxelization = nullptr;
-		ConstantBuffer<FoliageCBufferData::FoliageData> mFoliageConstantBuffer;
+		ER_RHI_InputLayout* mInputLayout = nullptr;
+		ER_RHI_GPUShader* mVS = nullptr;
+		ER_RHI_GPUShader* mGS = nullptr;
+		ER_RHI_GPUShader* mPS = nullptr;
+		ER_RHI_GPUShader* mPS_GBuffer = nullptr;
+		ER_RHI_GPUShader* mPS_Voxelization = nullptr;
+		ER_RHI_GPUConstantBuffer<FoliageCBufferData::FoliageData> mFoliageConstantBuffer;
 
-		ID3D11Buffer* mVertexBuffer = nullptr;
-		ID3D11Buffer* mIndexBuffer = nullptr;
-		ID3D11Buffer* mInstanceBuffer = nullptr;
-		ID3D11ShaderResourceView* mAlbedoTexture = nullptr;
-		ID3D11BlendState* mAlphaToCoverageState = nullptr;
-		ID3D11BlendState* mNoBlendState = nullptr;
-
-		ID3D11UnorderedAccessView* mVoxelizationTexture = nullptr;
+		ER_RHI_GPUBuffer* mVertexBuffer = nullptr;
+		ER_RHI_GPUBuffer* mIndexBuffer = nullptr;
+		ER_RHI_GPUBuffer* mInstanceBuffer = nullptr;
+		ER_RHI_GPUTexture* mAlbedoTexture = nullptr;
+		ER_RHI_GPUTexture* mVoxelizationTexture = nullptr;
 
 		GPUFoliageInstanceData* mPatchesBufferGPU = nullptr;
 		CPUFoliageData* mPatchesBufferCPU = nullptr;
@@ -229,7 +225,7 @@ namespace Library
 		void Config() { mShowDebug = !mShowDebug; }
 
 		using Delegate_FoliageSystemInitialized = std::function<void()>;
-		GeneralEvent<Delegate_FoliageSystemInitialized>* FoliageSystemInitializedEvent = new GeneralEvent<Delegate_FoliageSystemInitialized>();
+		ER_GenericEvent<Delegate_FoliageSystemInitialized>* FoliageSystemInitializedEvent = new ER_GenericEvent<Delegate_FoliageSystemInitialized>();
 	private:
 		void UpdateImGui();
 		std::vector<ER_Foliage*> mFoliageCollection;

@@ -1,8 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "ER_CoreComponent.h"
-#include "ConstantBuffer.h"
-#include "ER_GPUTexture.h"
+#include "RHI/ER_RHI.h"
 
 namespace Library
 {
@@ -38,7 +37,7 @@ namespace Library
 		void Draw(ER_Camera* aCustomCamera = nullptr);
 		void Update(ER_Camera* aCustomCamera = nullptr);
 		void UpdateSun(const ER_CoreTime& gameTime, ER_Camera* aCustomCamera = nullptr);
-		void DrawSun(ER_Camera* aCustomCamera = nullptr, ER_GPUTexture* aSky = nullptr, ER_GPUTexture* aSceneDepth = nullptr);
+		void DrawSun(ER_Camera* aCustomCamera = nullptr, ER_RHI_GPUTexture* aSky = nullptr, ER_RHI_GPUTexture* aSceneDepth = nullptr);
 
 		void SetMovable(bool value) { mIsMovable = value; };
 		void SetUseCustomSkyColor(bool value) { mUseCustomColor = value; }
@@ -53,7 +52,6 @@ namespace Library
 			mSunBrightness = brightness;
 			mSunExponent = exponent;
 		}
-		ID3D11ShaderResourceView* GetSunOcclusionOutputTexture() const;
 	private:
 
 		XMFLOAT4 CalculateSunPositionOnSkybox(XMFLOAT3 dir, ER_Camera* aCustomCamera = nullptr);
@@ -61,9 +59,9 @@ namespace Library
 		ER_Core& mCore;
 		ER_Camera& mCamera;
 
-		ID3D11Buffer* mVertexBuffer = nullptr;
-		ID3D11Buffer* mIndexBuffer = nullptr;
-		ID3D11InputLayout* mInputLayout = nullptr;
+		ER_RHI_GPUBuffer* mVertexBuffer = nullptr;
+		ER_RHI_GPUBuffer* mIndexBuffer = nullptr;
+		ER_RHI_InputLayout* mInputLayout = nullptr;
 		UINT mIndexCount;
 
 		XMFLOAT4X4 mWorldMatrix;
@@ -76,13 +74,13 @@ namespace Library
 		XMFLOAT4 mTopColor;
 
 		bool mDrawSun = true;
-		ID3D11PixelShader* mSunPS = nullptr;
-		ID3D11PixelShader* mSunOcclusionPS = nullptr;
-		ConstantBuffer<SkyCBufferData::SunData> mSunConstantBuffer;	
+		ER_RHI_GPUShader* mSunPS = nullptr;
+		ER_RHI_GPUShader* mSunOcclusionPS = nullptr;
+		ER_RHI_GPUConstantBuffer<SkyCBufferData::SunData> mSunConstantBuffer;	
 		
-		ID3D11VertexShader* mSkyboxVS = nullptr;
-		ID3D11PixelShader* mSkyboxPS = nullptr;
-		ConstantBuffer<SkyCBufferData::SkyboxData> mSkyboxConstantBuffer;
+		ER_RHI_GPUShader* mSkyboxVS = nullptr;
+		ER_RHI_GPUShader* mSkyboxPS = nullptr;
+		ER_RHI_GPUConstantBuffer<SkyCBufferData::SkyboxData> mSkyboxConstantBuffer;
 
 		XMFLOAT4 mSunDir;
 		XMFLOAT4 mSunColor;

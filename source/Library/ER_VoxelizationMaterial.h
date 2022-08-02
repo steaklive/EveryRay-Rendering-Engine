@@ -27,9 +27,9 @@ namespace Library
 		~ER_VoxelizationMaterial();
 
 		void PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, float voxelScale, float voxelTexSize, const XMFLOAT4& voxelCameraPos);
-		virtual void CreateVertexBuffer(const ER_Mesh& mesh, ID3D11Buffer** vertexBuffer) override;
+		virtual void CreateVertexBuffer(const ER_Mesh& mesh, ER_RHI_GPUBuffer* vertexBuffer) override;
 		virtual int VertexSize() override;
 
-		ConstantBuffer<VoxelizationMaterial_CBufferData::VoxelizationCB> mConstantBuffer;
+		ER_RHI_GPUConstantBuffer<VoxelizationMaterial_CBufferData::VoxelizationCB> mConstantBuffer;
 	};
 }

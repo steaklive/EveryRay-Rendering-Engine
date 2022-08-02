@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include <memory>
+
 #include "..\Library\ER_CoreException.h"
+#include "..\Library\RHI\ER_RHI.h"
+#include "..\Library\RHI\DX11\ER_RHI_DX11.h"
 #include "RenderingGame.h"
 
 #if defined(DEBUG) || defined(_DEBUG)
@@ -18,7 +21,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR command
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF|_CRTDBG_LEAK_CHECK_DF);
 	#endif
 
-	std::unique_ptr<RenderingGame> game(new RenderingGame(instance, L"Rendering Class", L"EveryRay - Rendering Engine DX11", showCommand));
+	std::unique_ptr<RenderingGame> game(new RenderingGame(new ER_RHI_DX11(), instance, L"Rendering Class", L"EveryRay - Rendering Engine DX11", showCommand, 1920, 1080, false));
 
 	try {
 		game->Run();

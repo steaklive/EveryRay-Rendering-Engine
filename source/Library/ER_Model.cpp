@@ -49,7 +49,7 @@ namespace Library
 	{
 	}
 
-	ER_Core& ER_Model::GetGame()
+	ER_Core& ER_Model::GetCore()
 	{
 		return mCore;
 	}

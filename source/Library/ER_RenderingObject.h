@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Common.h"
-#include "GeneralEvent.h"
+#include "ER_GenericEvent.h"
 #include "ER_ModelMaterial.h"
+
+#include "RHI\ER_RHI.h"
 
 const UINT MAX_INSTANCE_COUNT = 20000;
 
@@ -17,8 +19,8 @@ namespace Library
 
 	struct RenderBufferData
 	{
-		ID3D11Buffer*			VertexBuffer;
-		ID3D11Buffer*			IndexBuffer;
+		ER_RHI_GPUBuffer*		VertexBuffer;
+		ER_RHI_GPUBuffer*		IndexBuffer;
 		UINT					Stride;
 		UINT					Offset;
 		UINT					IndicesCount;
@@ -32,7 +34,7 @@ namespace Library
 			IndicesCount(0)
 		{}
 
-		RenderBufferData(ID3D11Buffer* vertexBuffer, ID3D11Buffer* indexBuffer, UINT stride, UINT offset, UINT indicesCount)
+		RenderBufferData(ER_RHI_GPUBuffer* vertexBuffer, ER_RHI_GPUBuffer* indexBuffer, UINT stride, UINT offset, UINT indicesCount)
 			:
 			VertexBuffer(vertexBuffer),
 			IndexBuffer(indexBuffer),
@@ -43,27 +45,27 @@ namespace Library
 
 		~RenderBufferData()
 		{
-			ReleaseObject(VertexBuffer);
-			ReleaseObject(IndexBuffer);
+			DeleteObject(VertexBuffer);
+			DeleteObject(IndexBuffer);
 		}
 	};
 
 	struct TextureData
 	{
-		ID3D11ShaderResourceView* AlbedoMap			= nullptr;
-		ID3D11ShaderResourceView* NormalMap			= nullptr;
-		ID3D11ShaderResourceView* SpecularMap		= nullptr;
-		ID3D11ShaderResourceView* MetallicMap		= nullptr;
-		ID3D11ShaderResourceView* RoughnessMap		= nullptr;
-		ID3D11ShaderResourceView* HeightMap			= nullptr;
-		ID3D11ShaderResourceView* ReflectionMaskMap	= nullptr;
-		ID3D11ShaderResourceView* ExtraMap2			= nullptr;  // can be used for extra textures (AO, opacity, displacement)
-		ID3D11ShaderResourceView* ExtraMap3			= nullptr;  // can be used for extra textures (AO, opacity, displacement)
+		ER_RHI_GPUTexture* AlbedoMap			= nullptr;
+		ER_RHI_GPUTexture* NormalMap			= nullptr;
+		ER_RHI_GPUTexture* SpecularMap			= nullptr;
+		ER_RHI_GPUTexture* MetallicMap			= nullptr;
+		ER_RHI_GPUTexture* RoughnessMap			= nullptr;
+		ER_RHI_GPUTexture* HeightMap			= nullptr;
+		ER_RHI_GPUTexture* ReflectionMaskMap	= nullptr;
+		ER_RHI_GPUTexture* ExtraMap2			= nullptr;  // can be used for extra textures (AO, opacity, displacement)
+		ER_RHI_GPUTexture* ExtraMap3			= nullptr;  // can be used for extra textures (AO, opacity, displacement)
 
 		TextureData(){}
 
-		TextureData(ID3D11ShaderResourceView* albedo, ID3D11ShaderResourceView* normal, ID3D11ShaderResourceView* specular, ID3D11ShaderResourceView* roughness, ID3D11ShaderResourceView* metallic, ID3D11ShaderResourceView* height,
-			ID3D11ShaderResourceView* extra1, ID3D11ShaderResourceView* extra2, ID3D11ShaderResourceView* extra3)
+		TextureData(ER_RHI_GPUTexture* albedo, ER_RHI_GPUTexture* normal, ER_RHI_GPUTexture* specular, ER_RHI_GPUTexture* roughness, ER_RHI_GPUTexture* metallic, ER_RHI_GPUTexture* height,
+			ER_RHI_GPUTexture* extra1, ER_RHI_GPUTexture* extra2, ER_RHI_GPUTexture* extra3)
 			:
 			AlbedoMap(albedo),
 			NormalMap(normal),
@@ -78,15 +80,15 @@ namespace Library
 
 		~TextureData()
 		{
-			ReleaseObject(AlbedoMap);
-			ReleaseObject(NormalMap);
-			ReleaseObject(SpecularMap);
-			ReleaseObject(RoughnessMap);
-			ReleaseObject(MetallicMap);
-			ReleaseObject(HeightMap);
-			ReleaseObject(ReflectionMaskMap);
-			ReleaseObject(ExtraMap2);
-			ReleaseObject(ExtraMap3);
+			DeleteObject(AlbedoMap);
+			DeleteObject(NormalMap);
+			DeleteObject(SpecularMap);
+			DeleteObject(RoughnessMap);
+			DeleteObject(MetallicMap);
+			DeleteObject(HeightMap);
+			DeleteObject(ReflectionMaskMap);
+			DeleteObject(ExtraMap2);
+			DeleteObject(ExtraMap3);
 		}
 	};
 
@@ -101,9 +103,9 @@ namespace Library
 
 	struct InstanceBufferData
 	{
-		UINT								Stride = 0; 
-		UINT								Offset = 0;
-		ID3D11Buffer*						InstanceBuffer = nullptr;
+		UINT				Stride = 0; 
+		UINT				Offset = 0;
+		ER_RHI_GPUBuffer*	InstanceBuffer = nullptr;
 
 		InstanceBufferData() : 
 			Stride(0),
@@ -114,7 +116,7 @@ namespace Library
 
 		~InstanceBufferData()
 		{
-			ReleaseObject(InstanceBuffer);
+			DeleteObject(InstanceBuffer);
 		}
 		
 	};
@@ -141,7 +143,7 @@ namespace Library
 		
 		const int GetMeshCount(int lod = 0) const { return mMeshesCount[lod]; }
 		const std::vector<XMFLOAT3>& GetVertices(int lod = 0) { return mMeshAllVertices[lod]; }
-		const UINT GetInstanceCount(int lod = 0) { return (mIsInstanced ? mInstanceData[lod].size() : 0); }
+		const UINT GetInstanceCount(int lod = 0) { return (mIsInstanced ? static_cast<UINT>(mInstanceData[lod].size()) : 0); }
 		std::vector<InstancedData>& GetInstancesData(int lod = 0) { return mInstanceData[lod]; }
 		
 		XMFLOAT4X4 GetTransformationMatrix4X4() const { return XMFLOAT4X4(mCurrentObjectTransformMatrix); }
@@ -168,7 +170,7 @@ namespace Library
 		const std::string& GetName() { return mName; }
 
 		int GetLODCount() {
-			return 1 + mModelLODs.size();
+			return 1 + static_cast<int>(mModelLODs.size());
 		}
 		void UpdateLODs();
 		void LoadLOD(std::unique_ptr<ER_Model> pModel);
@@ -245,19 +247,19 @@ namespace Library
 		int GetIndexInScene() { return mIndexInScene; }
 		void SetIndexInScene(int index) { mIndexInScene = index; }
 
-		GeneralEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new GeneralEvent<Delegate_MeshMaterialVariablesUpdate>();
+		ER_GenericEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new ER_GenericEvent<Delegate_MeshMaterialVariablesUpdate>();
 	
-		std::vector<std::string>								mCustomAlbedoTextures;
-		std::vector<std::string>								mCustomNormalTextures;
-		std::vector<std::string>								mCustomRoughnessTextures;
-		std::vector<std::string>								mCustomMetalnessTextures;
-		std::vector<std::string>								mCustomHeightTextures;
-		std::vector<std::string>								mCustomReflectionMaskTextures;
+		std::vector<std::string> mCustomAlbedoTextures;
+		std::vector<std::string> mCustomNormalTextures;
+		std::vector<std::string> mCustomRoughnessTextures;
+		std::vector<std::string> mCustomMetalnessTextures;
+		std::vector<std::string> mCustomHeightTextures;
+		std::vector<std::string> mCustomReflectionMaskTextures;
 	private:
 		void UpdateAABB(ER_AABB& aabb, const XMMATRIX& transformMatrix);
 		void LoadAssignedMeshTextures();
 		void LoadTexture(TextureType type, const std::wstring& path, int meshIndex);
-		void CreateInstanceBuffer(ID3D11Device* device, InstancedData* instanceData, UINT instanceCount, ID3D11Buffer** instanceBuffer);
+		void CreateInstanceBuffer(InstancedData* instanceData, UINT instanceCount, ER_RHI_GPUBuffer* instanceBuffer);
 		
 		void UpdateGizmos();
 		void ShowInstancesListWindow();
@@ -277,8 +279,8 @@ namespace Library
 		std::vector<std::vector<XMFLOAT3>>						mMeshAllVertices; // vertices of all meshes combined, per LOD group
 		std::vector<float>										mMeshesReflectionFactors; 
 		std::vector<int>										mMeshesCount;
-		std::unique_ptr<ER_Model>									mModel;
-		std::vector<std::unique_ptr<ER_Model>>						mModelLODs;
+		std::unique_ptr<ER_Model>								mModel;
+		std::vector<std::unique_ptr<ER_Model>>					mModelLODs;
 		// 
 		///****************************************************************************************************************************
 

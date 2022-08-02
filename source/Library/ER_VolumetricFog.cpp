@@ -1,20 +1,17 @@
 #include "ER_VolumetricFog.h"
 #include "ER_ShadowMapper.h"
-#include "ER_GPUTexture.h"
 #include "ER_Core.h"
 #include "ER_CoreException.h"
-#include "ShaderCompiler.h"
 #include "DirectionalLight.h"
 #include "ER_Utility.h"
 #include "ER_Camera.h"
-#include "SamplerStates.h"
 #include "ER_QuadRenderer.h"
 
 #define VOXEL_SIZE_X 160
 #define VOXEL_SIZE_Y 90
 #define VOXEL_SIZE_Z 128
 
-static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+static float clearColorBlack[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 namespace Library {
 	ER_VolumetricFog::ER_VolumetricFog(ER_Core& game, const DirectionalLight& aLight, const ER_ShadowMapper& aShadowMapper)
@@ -30,49 +27,43 @@ namespace Library {
 		DeleteObject(mFinalVoxelAccumulationTexture3D);
 		DeleteObject(mBlueNoiseTexture);
 	
-		ReleaseObject(mInjectionCS);
-		ReleaseObject(mAccumulationCS);
-		ReleaseObject(mCompositePS);
+		DeleteObject(mInjectionCS);
+		DeleteObject(mAccumulationCS);
+		DeleteObject(mCompositePS);
 
 		mMainConstantBuffer.Release();
 	}
     
 	void ER_VolumetricFog::Initialize()
 	{
-		auto device = GetCore()->Direct3DDevice();
-		assert(device);
+		auto rhi = GetCore()->GetRHI();
 		
-		mTempVoxelInjectionTexture3D[0] = new ER_GPUTexture(device, VOXEL_SIZE_X, VOXEL_SIZE_Y, 1, DXGI_FORMAT_R16G16B16A16_FLOAT,
-			D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1, VOXEL_SIZE_Z);
-		mTempVoxelInjectionTexture3D[1] = new ER_GPUTexture(device, VOXEL_SIZE_X, VOXEL_SIZE_Y, 1, DXGI_FORMAT_R16G16B16A16_FLOAT,
-				D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1, VOXEL_SIZE_Z);
-		mFinalVoxelAccumulationTexture3D = new ER_GPUTexture(device, VOXEL_SIZE_X, VOXEL_SIZE_Y, 1, DXGI_FORMAT_R16G16B16A16_FLOAT,
-			D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1, VOXEL_SIZE_Z);
-		mBlueNoiseTexture = new ER_GPUTexture(device, GetCore()->Direct3DDeviceContext(), "content\\textures\\blueNoise.dds");
+		mTempVoxelInjectionTexture3D[0] = rhi->CreateGPUTexture();
+		mTempVoxelInjectionTexture3D[0]->CreateGPUTextureResource(rhi, VOXEL_SIZE_X, VOXEL_SIZE_Y, 1, ER_FORMAT_R16G16B16A16_FLOAT,
+			ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1, VOXEL_SIZE_Z);
 
-		ID3DBlob* blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\VolumetricFog\\VolumetricFogMain.hlsl").c_str(), "CSInjection", "cs_5_0", &blob)))
-			throw ER_CoreException("Failed to load CSInjection from shader: VolumetricFogMain.hlsl!");
-		if (FAILED(mCore->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mInjectionCS)))
-			throw ER_CoreException("Failed to create shader from VolumetricFogMain.hlsl!");
-		blob->Release();
+		mTempVoxelInjectionTexture3D[1] = rhi->CreateGPUTexture();
+		mTempVoxelInjectionTexture3D[1]->CreateGPUTextureResource(rhi, VOXEL_SIZE_X, VOXEL_SIZE_Y, 1, ER_FORMAT_R16G16B16A16_FLOAT,
+			ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1, VOXEL_SIZE_Z);
+
+		mFinalVoxelAccumulationTexture3D = rhi->CreateGPUTexture();
+		mFinalVoxelAccumulationTexture3D->CreateGPUTextureResource(rhi, VOXEL_SIZE_X, VOXEL_SIZE_Y, 1, ER_FORMAT_R16G16B16A16_FLOAT,
+			ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1, VOXEL_SIZE_Z);
+
+		mBlueNoiseTexture = rhi->CreateGPUTexture();
+		mBlueNoiseTexture->CreateGPUTextureResource(rhi, "content\\textures\\blueNoise.dds");
+
+		mInjectionCS = rhi->CreateGPUShader();
+		mInjectionCS->CompileShader(rhi, "content\\shaders\\VolumetricFog\\VolumetricFogMain.hlsl", "CSInjection", ER_COMPUTE);
 		
-		blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\VolumetricFog\\VolumetricFogMain.hlsl").c_str(), "CSAccumulation", "cs_5_0", &blob)))
-			throw ER_CoreException("Failed to load CSAccumulation from shader: VolumetricFogMain.hlsl!");
-		if (FAILED(mCore->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mAccumulationCS)))
-			throw ER_CoreException("Failed to create shader from VolumetricFogMain.hlsl!");
-		blob->Release();
+		mAccumulationCS = rhi->CreateGPUShader();
+		mAccumulationCS->CompileShader(rhi, "content\\shaders\\VolumetricFog\\VolumetricFogMain.hlsl", "CSAccumulation", ER_COMPUTE);
 
-		blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\VolumetricFog\\VolumetricFogComposite.hlsl").c_str(), "PSComposite", "ps_5_0", &blob)))
-			throw ER_CoreException("Failed to load PSComposite from shader: VolumetricFogComposite.hlsl!");
-		if (FAILED(mCore->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mCompositePS)))
-			throw ER_CoreException("Failed to create shader from VolumetricFogComposite.hlsl!");
-		blob->Release();
+		mCompositePS = rhi->CreateGPUShader();
+		mCompositePS->CompileShader(rhi, "content\\shaders\\VolumetricFog\\VolumetricFogComposite.hlsl", "PSComposite", ER_PIXEL);
 
-		mMainConstantBuffer.Initialize(device);
-		mCompositeConstantBuffer.Initialize(device);
+		mMainConstantBuffer.Initialize(rhi);
+		mCompositeConstantBuffer.Initialize(rhi);
 	}
 
 	void ER_VolumetricFog::Draw()
@@ -86,11 +77,11 @@ namespace Library {
 
 	void ER_VolumetricFog::Update(const ER_CoreTime& gameTime)
 	{
-		ER_Camera* camera = (ER_Camera*)GetCore()->Services().GetService(ER_Camera::TypeIdClass());
+		ER_Camera* camera = (ER_Camera*)GetCore()->GetServices().FindService(ER_Camera::TypeIdClass());
 		assert(camera);
 
 		UpdateImGui();
-		auto context = GetCore()->Direct3DDeviceContext();
+		auto rhi = GetCore()->GetRHI();
 
 		if (!mEnabled)
 			return;
@@ -108,12 +99,12 @@ namespace Library {
 		mMainConstantBuffer.Data.ThicknessFactor = mThicknessFactor;
 		mMainConstantBuffer.Data.AmbientIntensity = mAmbientIntensity;
 		mMainConstantBuffer.Data.PreviousFrameBlend = mPreviousFrameBlendFactor;
-		mMainConstantBuffer.ApplyChanges(context);
+		mMainConstantBuffer.ApplyChanges(rhi);
 
 		mCompositeConstantBuffer.Data.ViewProj = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());
 		mCompositeConstantBuffer.Data.CameraNearFar = XMFLOAT4{ camera->NearPlaneDistance(), camera->FarPlaneDistance(), 0.0f, 0.0f };
 		mCompositeConstantBuffer.Data.BlendingWithSceneColorFactor = mBlendingWithSceneColorFactor;
-		mCompositeConstantBuffer.ApplyChanges(context);
+		mCompositeConstantBuffer.ApplyChanges(rhi);
 		
 		mPrevViewProj = mCompositeConstantBuffer.Data.ViewProj;
 	}
@@ -137,100 +128,54 @@ namespace Library {
 
 	void ER_VolumetricFog::ComputeInjection()
 	{
-		auto context = GetCore()->Direct3DDeviceContext();
+		auto rhi = GetCore()->GetRHI();
 
 		int readIndex = mCurrentTexture3DRead;
 		int writeIndex = !mCurrentTexture3DRead;
 
-		ID3D11UnorderedAccessView* UAV[1] = { mTempVoxelInjectionTexture3D[writeIndex]->GetUAV() };
-		context->CSSetUnorderedAccessViews(0, 1, UAV, NULL);
-		
-		ID3D11Buffer* CBs[1] = { mMainConstantBuffer.Buffer() };
-		context->CSSetConstantBuffers(0, 1, CBs);
-		
-		ID3D11ShaderResourceView* SR[3] = {
-			mShadowMapper.GetShadowTexture(0),
-			mBlueNoiseTexture->GetSRV(),
-			mTempVoxelInjectionTexture3D[readIndex]->GetSRV()
-		};
-		context->CSSetShaderResources(0, 3, SR);
-		
-		ID3D11SamplerState* SS[] = { SamplerStates::TrilinearWrap, SamplerStates::ShadowSamplerState };
-		context->CSSetSamplers(0, 2, SS);
+		rhi->SetShader(mInjectionCS);
+		rhi->SetUnorderedAccessResources(ER_COMPUTE, { mTempVoxelInjectionTexture3D[writeIndex] });
+		rhi->SetConstantBuffers(ER_COMPUTE, { mMainConstantBuffer.Buffer() });
+		rhi->SetShaderResources(ER_COMPUTE, { mShadowMapper.GetShadowTexture(0), mBlueNoiseTexture, mTempVoxelInjectionTexture3D[readIndex] });
+		rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
+		rhi->Dispatch(INT_CEIL(VOXEL_SIZE_X, 8), INT_CEIL(VOXEL_SIZE_Y, 8), INT_CEIL(VOXEL_SIZE_Z, 1));
 
-		context->CSSetShader(mInjectionCS, NULL, NULL);
-		context->Dispatch(INT_CEIL(VOXEL_SIZE_X, 8), INT_CEIL(VOXEL_SIZE_Y, 8), INT_CEIL(VOXEL_SIZE_Z, 1));
-
-		ID3D11ShaderResourceView* nullSRV[] = { NULL };
-		context->CSSetShaderResources(0, 1, nullSRV);
-		ID3D11UnorderedAccessView* nullUAV[] = { NULL };
-		context->CSSetUnorderedAccessViews(0, 1, nullUAV, 0);
-		ID3D11Buffer* nullCBs[] = { NULL };
-		context->CSSetConstantBuffers(0, 1, nullCBs);
-		ID3D11SamplerState* nullSSs[] = { NULL };
-		context->CSSetSamplers(0, 1, nullSSs);
+		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 
 		mCurrentTexture3DRead = !mCurrentTexture3DRead;
 	}
 
 	void ER_VolumetricFog::ComputeAccumulation()
 	{
-		auto context = GetCore()->Direct3DDeviceContext();
+		auto rhi = GetCore()->GetRHI();
 
 		int readIndex = mCurrentTexture3DRead;
 
-		ID3D11UnorderedAccessView* UAV[1] = { mFinalVoxelAccumulationTexture3D->GetUAV() };
-		context->CSSetUnorderedAccessViews(0, 1, UAV, NULL);
+		rhi->SetShader(mAccumulationCS);
+		rhi->SetUnorderedAccessResources(ER_COMPUTE, { mFinalVoxelAccumulationTexture3D });
+		rhi->SetConstantBuffers(ER_COMPUTE, { mMainConstantBuffer.Buffer() });
+		rhi->SetShaderResources(ER_COMPUTE, { mShadowMapper.GetShadowTexture(0), mBlueNoiseTexture, mTempVoxelInjectionTexture3D[readIndex] });
+		rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
+		rhi->Dispatch(INT_CEIL(VOXEL_SIZE_X, 8), INT_CEIL(VOXEL_SIZE_Y, 8), 1);
 
-		ID3D11Buffer* CBs[1] = { mMainConstantBuffer.Buffer() };
-		context->CSSetConstantBuffers(0, 1, CBs);
-
-		ID3D11ShaderResourceView* SR[3] = {
-			mShadowMapper.GetShadowTexture(0),
-			mBlueNoiseTexture->GetSRV(),
-			mTempVoxelInjectionTexture3D[readIndex]->GetSRV()
-		};
-		context->CSSetShaderResources(0, 3, SR);
-
-		ID3D11SamplerState* SS[] = { SamplerStates::TrilinearWrap, SamplerStates::ShadowSamplerState };
-		context->CSSetSamplers(0, 2, SS);
-
-		context->CSSetShader(mAccumulationCS, NULL, NULL);
-		context->Dispatch(INT_CEIL(VOXEL_SIZE_X, 8), INT_CEIL(VOXEL_SIZE_Y, 8), 1);
-
-		ID3D11ShaderResourceView* nullSRV[] = { NULL };
-		context->CSSetShaderResources(0, 1, nullSRV);
-		ID3D11UnorderedAccessView* nullUAV[] = { NULL };
-		context->CSSetUnorderedAccessViews(0, 1, nullUAV, 0);
-		ID3D11Buffer* nullCBs[] = { NULL };
-		context->CSSetConstantBuffers(0, 1, nullCBs);
-		ID3D11SamplerState* nullSSs[] = { NULL };
-		context->CSSetSamplers(0, 1, nullSSs);
+		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 	}
 
-	void ER_VolumetricFog::Composite(ER_GPUTexture* aInputColorTexture, ER_GPUTexture* aGbufferWorldPos)
+	void ER_VolumetricFog::Composite(ER_RHI_GPUTexture* aInputColorTexture, ER_RHI_GPUTexture* aGbufferWorldPos)
 	{
 		assert(aGbufferWorldPos && aInputColorTexture);
 
-		ID3D11DeviceContext* context = mCore->Direct3DDeviceContext();
+		auto rhi = GetCore()->GetRHI();
+
+		rhi->SetShader(mCompositePS);
+		rhi->SetConstantBuffers(ER_PIXEL, { mCompositeConstantBuffer.Buffer() });
+		rhi->SetShaderResources(ER_PIXEL, { aInputColorTexture, aGbufferWorldPos, mFinalVoxelAccumulationTexture3D });
+		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 		
-		ID3D11Buffer* CBs[1] = { mCompositeConstantBuffer.Buffer() };
-		context->PSSetConstantBuffers(0, 1, CBs);
-
-		ID3D11SamplerState* SS[] = { SamplerStates::TrilinearWrap };
-		context->PSSetSamplers(0, 1, SS);
-
-		ID3D11ShaderResourceView* SR[3] = { 
-			aInputColorTexture->GetSRV(),
-			aGbufferWorldPos->GetSRV(),
-			mFinalVoxelAccumulationTexture3D->GetSRV()
-		};
-		context->PSSetShaderResources(0, 3, SR);
-
-		context->PSSetShader(mCompositePS, NULL, NULL);
-
-		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mCore->Services().GetService(ER_QuadRenderer::TypeIdClass());
+		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mCore->GetServices().FindService(ER_QuadRenderer::TypeIdClass());
 		assert(quadRenderer);
-		quadRenderer->Draw(context);
+		quadRenderer->Draw(rhi);
+
+		rhi->UnbindResourcesFromShader(ER_PIXEL);
 	}
 }

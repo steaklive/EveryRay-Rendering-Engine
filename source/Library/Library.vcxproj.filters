@@ -43,9 +43,6 @@
     <Filter Include="Source Files\Graphics">
       <UniqueIdentifier>{f1520c41-25d2-47eb-b915-cc360648e8cc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Graphics\Graphics API">
-      <UniqueIdentifier>{99f23602-21b2-4c73-b8d7-5cb9369c4d4b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Graphics\Rendering systems">
       <UniqueIdentifier>{9d10d195-ac34-4ffc-a620-8bdacc58889a}</UniqueIdentifier>
     </Filter>
@@ -73,6 +70,12 @@
     <Filter Include="Source Files\Core">
       <UniqueIdentifier>{d1278e64-2155-4c2e-93c9-0c6227f488bc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Graphics\RHI">
+      <UniqueIdentifier>{99f23602-21b2-4c73-b8d7-5cb9369c4d4b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Graphics\RHI\DX11">
+      <UniqueIdentifier>{c68d4313-15d8-4b12-86ec-46fb1ef72312}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -87,22 +90,10 @@
     <ClInclude Include="RTTI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ServiceContainer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderStateHelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Light.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DirectionalLight.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RasterizerStates.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SamplerStates.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PointLight.h">
@@ -111,31 +102,13 @@
     <ClInclude Include="SpotLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ConstantBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderCompiler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ER_GPUTexture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="OceanSimulator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FastFourierTransform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GeneralEvent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TGATextureLoader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ER_CPUProfiler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ER_GPUBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ER_LightProbe.h">
@@ -276,13 +249,31 @@
     <ClInclude Include="ER_Core.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RHI\DX11\ER_RHI_DX11_GPUBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\DX11\ER_RHI_DX11_GPUTexture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\DX11\ER_RHI_DX11_GPUShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ER_GenericEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ER_CoreServicesContainer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\DX11\ER_RHI_DX11.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\ER_RHI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderStateHelper.cpp">
-      <Filter>Source Files\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="Light.cpp">
       <Filter>Source Files\Graphics\Lights</Filter>
@@ -290,29 +281,11 @@
     <ClCompile Include="DirectionalLight.cpp">
       <Filter>Source Files\Graphics\Lights</Filter>
     </ClCompile>
-    <ClCompile Include="RasterizerStates.cpp">
-      <Filter>Source Files\Helpers</Filter>
-    </ClCompile>
-    <ClCompile Include="ServiceContainer.cpp">
-      <Filter>Source Files\Helpers</Filter>
-    </ClCompile>
-    <ClCompile Include="SamplerStates.cpp">
-      <Filter>Source Files\Helpers</Filter>
-    </ClCompile>
     <ClCompile Include="PointLight.cpp">
       <Filter>Source Files\Graphics\Lights</Filter>
     </ClCompile>
     <ClCompile Include="SpotLight.cpp">
       <Filter>Source Files\Graphics\Lights</Filter>
-    </ClCompile>
-    <ClCompile Include="TGATextureLoader.cpp">
-      <Filter>Source Files\Helpers</Filter>
-    </ClCompile>
-    <ClCompile Include="ER_GPUBuffer.cpp">
-      <Filter>Source Files\Graphics\Graphics API</Filter>
-    </ClCompile>
-    <ClCompile Include="ER_GPUTexture.cpp">
-      <Filter>Source Files\Graphics\Graphics API</Filter>
     </ClCompile>
     <ClCompile Include="ER_LightProbe.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
@@ -456,6 +429,21 @@
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="ER_Core.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="RHI\DX11\ER_RHI_DX11.cpp">
+      <Filter>Source Files\Graphics\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="RHI\DX11\ER_RHI_DX11_GPUBuffer.cpp">
+      <Filter>Source Files\Graphics\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="RHI\DX11\ER_RHI_DX11_GPUTexture.cpp">
+      <Filter>Source Files\Graphics\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="RHI\DX11\ER_RHI_DX11_GPUShader.cpp">
+      <Filter>Source Files\Graphics\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_CoreServicesContainer.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
   </ItemGroup>

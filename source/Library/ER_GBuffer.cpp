@@ -23,28 +23,29 @@ namespace Library {
 		DeleteObject(mExtraBuffer);
 		DeleteObject(mExtra2Buffer);
 		DeleteObject(mDepthBuffer);
-		ReleaseObject(mRS);
 	}
 
 	void ER_GBuffer::Initialize()
 	{
-		mAlbedoBuffer = new ER_GPUTexture(mCore->Direct3DDevice(), mWidth, mHeight, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
-		mNormalBuffer = new ER_GPUTexture(mCore->Direct3DDevice(), mWidth, mHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
-		mPositionsBuffer = new ER_GPUTexture(mCore->Direct3DDevice(), mWidth, mHeight, 1, DXGI_FORMAT_R32G32B32A32_FLOAT);
-		mExtraBuffer = new ER_GPUTexture(mCore->Direct3DDevice(), mWidth, mHeight, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
-		mExtra2Buffer = new ER_GPUTexture(mCore->Direct3DDevice(), mWidth, mHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
-		mDepthBuffer = new ER_GPUTexture(mCore->Direct3DDevice(), mWidth, mHeight, 1, DXGI_FORMAT_D24_UNORM_S8_UINT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL);
+		auto rhi = GetCore()->GetRHI();
 
-		D3D11_RASTERIZER_DESC rasterizerStateDesc;
-		ZeroMemory(&rasterizerStateDesc, sizeof(rasterizerStateDesc));
-		rasterizerStateDesc.FillMode = D3D11_FILL_SOLID;
-		rasterizerStateDesc.CullMode = D3D11_CULL_NONE;
-		rasterizerStateDesc.DepthClipEnable = true;
-		HRESULT hr = mCore->Direct3DDevice()->CreateRasterizerState(&rasterizerStateDesc, &mRS);
-		if (FAILED(hr))
-		{
-			throw ER_CoreException("ID3D11Device::CreateRasterizerState() in GBuffer failed.", hr);
-		}
+		mAlbedoBuffer = rhi->CreateGPUTexture();
+		mAlbedoBuffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
+
+		mNormalBuffer = rhi->CreateGPUTexture();
+		mNormalBuffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_R16G16B16A16_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
+
+		mPositionsBuffer = rhi->CreateGPUTexture();
+		mPositionsBuffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_R32G32B32A32_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
+
+		mExtraBuffer = rhi->CreateGPUTexture();
+		mExtraBuffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
+
+		mExtra2Buffer = rhi->CreateGPUTexture();
+		mExtra2Buffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_R16G16B16A16_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
+
+		mDepthBuffer = rhi->CreateGPUTexture();
+		mDepthBuffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_D24_UNORM_S8_UINT, ER_BIND_SHADER_RESOURCE | ER_BIND_DEPTH_STENCIL);
 	}
 
 	void ER_GBuffer::Update(const ER_CoreTime& time)
@@ -53,29 +54,26 @@ namespace Library {
 
 	void ER_GBuffer::Start()
 	{
+		auto rhi = GetCore()->GetRHI();
+
 		float color[4] = { 0,0,0,0 };
 
-		ID3D11RenderTargetView* rtvs[] = { mAlbedoBuffer->GetRTV(), mNormalBuffer->GetRTV(), mPositionsBuffer->GetRTV(),
-			mExtraBuffer->GetRTV(), mExtra2Buffer->GetRTV() };
-		mCore->Direct3DDeviceContext()->OMSetRenderTargets(5, rtvs, mDepthBuffer->GetDSV());
-
-		mCore->Direct3DDeviceContext()->ClearRenderTargetView(rtvs[0], color);
-		mCore->Direct3DDeviceContext()->ClearRenderTargetView(rtvs[1], color);
-		mCore->Direct3DDeviceContext()->ClearRenderTargetView(rtvs[2], color);
-		mCore->Direct3DDeviceContext()->ClearRenderTargetView(rtvs[3], color);
-		mCore->Direct3DDeviceContext()->ClearRenderTargetView(rtvs[4], color);
-		mCore->Direct3DDeviceContext()->ClearDepthStencilView(mDepthBuffer->GetDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
-		mCore->Direct3DDeviceContext()->RSSetState(mRS);
-
-		// Set the viewport.
-		//mCore->Direct3DDeviceContext()->RSSetViewports(1, &m_viewport);
-
+		rhi->SetRenderTargets({ mAlbedoBuffer, mNormalBuffer, mPositionsBuffer,	mExtraBuffer, mExtra2Buffer }, mDepthBuffer);
+		rhi->ClearRenderTarget(mAlbedoBuffer, color);
+		rhi->ClearRenderTarget(mNormalBuffer, color);
+		rhi->ClearRenderTarget(mPositionsBuffer, color);
+		rhi->ClearRenderTarget(mExtraBuffer, color);
+		rhi->ClearRenderTarget(mExtra2Buffer, color);
+		rhi->ClearDepthStencilTarget(mDepthBuffer, 1.0f, 0);
+		rhi->SetRasterizerState(ER_NO_CULLING);
 	}
 
 	void ER_GBuffer::End()
 	{
-		mCore->ResetRenderTargets();
+		auto rhi = GetCore()->GetRHI();
+		rhi->UnbindResourcesFromShader(ER_VERTEX);
+		rhi->UnbindResourcesFromShader(ER_PIXEL);
+		rhi->UnbindRenderTargets();
 	}
 
 	void ER_GBuffer::Draw(const ER_Scene* scene)
@@ -95,5 +93,4 @@ namespace Library {
 			}
 		}
 	}
-
 }

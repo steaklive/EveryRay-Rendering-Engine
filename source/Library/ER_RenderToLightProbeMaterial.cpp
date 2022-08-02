@@ -1,6 +1,5 @@
 #include "ER_RenderToLightProbeMaterial.h"
 #include "ER_MaterialsCallbacks.h"
-#include "ShaderCompiler.h"
 #include "ER_Utility.h"
 #include "ER_CoreException.h"
 #include "ER_Core.h"
@@ -21,27 +20,27 @@ namespace Library
 		{
 			if (!instanced)
 			{
-				D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
+				ER_RHI_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 				{
-					{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-					{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-					{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-					{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+					{ "POSITION", 0, ER_FORMAT_R32G32B32A32_FLOAT, 0, 0, true, 0 },
+					{ "TEXCOORD", 0, ER_FORMAT_R32G32_FLOAT, 0, 0xffffffff, true, 0 },
+					{ "NORMAL", 0, ER_FORMAT_R32G32B32_FLOAT, 0, 0xffffffff, true, 0 },
+					{ "TANGENT", 0, ER_FORMAT_R32G32B32_FLOAT, 0, 0xffffffff, true, 0 }
 				};
 				ER_Material::CreateVertexShader("content\\shaders\\ForwardLighting.hlsl", inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
 			}
 			else
 			{
-				D3D11_INPUT_ELEMENT_DESC inputElementDescriptionsInstanced[] =
+				ER_RHI_INPUT_ELEMENT_DESC inputElementDescriptionsInstanced[] =
 				{
-					{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-					{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-					{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-					{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-					{ "WORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-					{ "WORLD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-					{ "WORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-					{ "WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+					{ "POSITION", 0, ER_FORMAT_R32G32B32A32_FLOAT, 0, 0, true, 0 },
+					{ "TEXCOORD", 0, ER_FORMAT_R32G32_FLOAT, 0, 0xffffffff, true, 0 },
+					{ "NORMAL", 0, ER_FORMAT_R32G32B32_FLOAT, 0, 0xffffffff, true, 0 },
+					{ "TANGENT", 0, ER_FORMAT_R32G32B32_FLOAT, 0, 0xffffffff, true, 0 },
+					{ "WORLD", 0, ER_FORMAT_R32G32B32A32_FLOAT, 1, 0, false, 1 },
+					{ "WORLD", 1, ER_FORMAT_R32G32B32A32_FLOAT, 1, 16,false, 1 },
+					{ "WORLD", 2, ER_FORMAT_R32G32B32A32_FLOAT, 1, 32,false, 1 },
+					{ "WORLD", 3, ER_FORMAT_R32G32B32A32_FLOAT, 1, 48,false, 1 }
 				};
 				ER_Material::CreateVertexShader("content\\shaders\\ForwardLighting.hlsl", inputElementDescriptionsInstanced, ARRAYSIZE(inputElementDescriptionsInstanced));
 			}
@@ -50,7 +49,7 @@ namespace Library
 		if (shaderFlags & HAS_PIXEL_SHADER)
 			ER_Material::CreatePixelShader("content\\shaders\\ForwardLighting.hlsl");
 
-		mConstantBuffer.Initialize(ER_Material::GetCore()->Direct3DDevice());
+		mConstantBuffer.Initialize(ER_Material::GetCore()->GetRHI());
 	}
 
 	ER_RenderToLightProbeMaterial::~ER_RenderToLightProbeMaterial()
@@ -61,7 +60,7 @@ namespace Library
 
 	void ER_RenderToLightProbeMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, ER_Camera* cubemapCamera)
 	{
-		auto context = ER_Material::GetCore()->Direct3DDeviceContext();
+		auto rhi = ER_Material::GetCore()->GetRHI();
 
 		assert(aObj);
 		assert(cubemapCamera);
@@ -70,7 +69,7 @@ namespace Library
 
 		ER_Material::PrepareForRendering(neededSystems, aObj, meshIndex);
 
-		for (size_t i = 0; i < NUM_SHADOW_CASCADES; i++)
+		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 			mConstantBuffer.Data.ShadowMatrices[i] = XMMatrixTranspose(neededSystems.mShadowMapper->GetViewMatrix(i) * neededSystems.mShadowMapper->GetProjectionMatrix(i) * XMLoadFloat4x4(&ER_MatrixHelper::GetProjectionShadowMatrix()));
 		mConstantBuffer.Data.ViewProjection = XMMatrixTranspose(cubemapCamera->ViewMatrix() * cubemapCamera->ProjectionMatrix());
 		mConstantBuffer.Data.World = XMMatrixTranspose(aObj->GetTransformationMatrix());
@@ -80,30 +79,27 @@ namespace Library
 		mConstantBuffer.Data.SunColor = XMFLOAT4{ neededSystems.mDirectionalLight->GetDirectionalLightColor().x, neededSystems.mDirectionalLight->GetDirectionalLightColor().y, neededSystems.mDirectionalLight->GetDirectionalLightColor().z, neededSystems.mDirectionalLight->GetDirectionalLightIntensity() };
 		mConstantBuffer.Data.CameraPosition = XMFLOAT4{ cubemapCamera->Position().x, cubemapCamera->Position().y, cubemapCamera->Position().z, 1.0f };
 		mConstantBuffer.Data.UseGlobalDiffuseProbe = false;
-		mConstantBuffer.ApplyChanges(context);
+		mConstantBuffer.ApplyChanges(rhi);
+		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() });
+		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() });
 
-		ID3D11Buffer* CBs[1] = { mConstantBuffer.Buffer() };
+		std::vector<ER_RHI_GPUResource*> resources;
+		resources.push_back(aObj->GetTextureData(meshIndex).AlbedoMap);
+		resources.push_back(aObj->GetTextureData(meshIndex).NormalMap);
+		resources.push_back(aObj->GetTextureData(meshIndex).MetallicMap);
+		resources.push_back(aObj->GetTextureData(meshIndex).RoughnessMap);
+		resources.push_back(aObj->GetTextureData(meshIndex).HeightMap);
+		rhi->SetShaderResources(ER_PIXEL, resources);
 
-		context->VSSetConstantBuffers(0, 1, CBs);
-		context->PSSetConstantBuffers(0, 1, CBs);
-
-		ID3D11ShaderResourceView* SRs[8] = {
-			aObj->GetTextureData(meshIndex).AlbedoMap,
-			aObj->GetTextureData(meshIndex).NormalMap,
-			aObj->GetTextureData(meshIndex).MetallicMap,
-			aObj->GetTextureData(meshIndex).RoughnessMap,
-			aObj->GetTextureData(meshIndex).HeightMap
-		};
+		std::vector<ER_RHI_GPUResource*> shadowResources;
 		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
-			SRs[5 + i] = neededSystems.mShadowMapper->GetShadowTexture(i);
+			shadowResources.push_back(neededSystems.mShadowMapper->GetShadowTexture(i));
+		rhi->SetShaderResources(ER_PIXEL, shadowResources, 5);
 
-		context->PSSetShaderResources(0, 8, SRs);
-
-		ID3D11SamplerState* SS[2] = { SamplerStates::TrilinearWrap, SamplerStates::ShadowSamplerState };
-		context->PSSetSamplers(0, 2, SS);
+		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
 	}
 
-	void ER_RenderToLightProbeMaterial::CreateVertexBuffer(const ER_Mesh& mesh, ID3D11Buffer** vertexBuffer)
+	void ER_RenderToLightProbeMaterial::CreateVertexBuffer(const ER_Mesh& mesh, ER_RHI_GPUBuffer* vertexBuffer)
 	{
 		mesh.CreateVertexBuffer_PositionUvNormalTangent(vertexBuffer);
 	}

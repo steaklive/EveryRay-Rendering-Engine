@@ -13,8 +13,6 @@
 #include "ER_MaterialHelper.h"
 #include "ER_Utility.h"
 #include "ER_VertexDeclarations.h"
-#include "RasterizerStates.h"
-#include "ShaderCompiler.h"
 #include "ER_VoxelizationMaterial.h"
 #include "ER_RenderToLightProbeMaterial.h"
 #include "ER_Scene.h"
@@ -22,12 +20,13 @@
 #include "ER_ShadowMapper.h"
 #include "ER_FoliageManager.h"
 #include "ER_RenderableAABB.h"
-#include "ER_GPUBuffer.h"
 #include "ER_LightProbe.h"
 #include "ER_MaterialsCallbacks.h"
 #include "ER_RenderingObject.h"
 #include "ER_Skybox.h"
 #include "ER_VolumetricFog.h"
+
+static float clearColorBlack[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 namespace Library {
 
@@ -45,24 +44,20 @@ namespace Library {
 
 	ER_Illumination::~ER_Illumination()
 	{
-		ReleaseObject(mVCTMainCS);
-		ReleaseObject(mUpsampleBlurCS);
-		ReleaseObject(mCompositeIlluminationCS);
-		ReleaseObject(mVCTVoxelizationDebugVS);
-		ReleaseObject(mVCTVoxelizationDebugGS);
-		ReleaseObject(mVCTVoxelizationDebugPS);
-		ReleaseObject(mDeferredLightingCS);
-		ReleaseObject(mForwardLightingVS);
-		ReleaseObject(mForwardLightingVS_Instancing);
-		ReleaseObject(mForwardLightingPS);
-		ReleaseObject(mForwardLightingDiffuseProbesPS);
-		ReleaseObject(mForwardLightingSpecularProbesPS);
-
-		ReleaseObject(mDepthStencilStateRW);
-
-		ReleaseObject(mForwardLightingRenderingObjectInputLayout);
-		ReleaseObject(mForwardLightingRenderingObjectInputLayout_Instancing);
-
+		DeleteObject(mVCTMainCS);
+		DeleteObject(mUpsampleBlurCS);
+		DeleteObject(mCompositeIlluminationCS);
+		DeleteObject(mVCTVoxelizationDebugVS);
+		DeleteObject(mVCTVoxelizationDebugGS);
+		DeleteObject(mVCTVoxelizationDebugPS);
+		DeleteObject(mDeferredLightingCS);
+		DeleteObject(mForwardLightingVS);
+		DeleteObject(mForwardLightingVS_Instancing);
+		DeleteObject(mForwardLightingPS);
+		DeleteObject(mForwardLightingDiffuseProbesPS);
+		DeleteObject(mForwardLightingSpecularProbesPS);
+		DeleteObject(mForwardLightingRenderingObjectInputLayout);
+		DeleteObject(mForwardLightingRenderingObjectInputLayout_Instancing);
 		DeletePointerCollection(mVCTVoxelCascades3DRTs);
 		DeletePointerCollection(mDebugVoxelZonesGizmos);
 		DeleteObject(mVCTVoxelizationDebugRT);
@@ -85,131 +80,85 @@ namespace Library {
 		if (!scene)
 			return;
 	
+		auto rhi = GetCore()->GetRHI();
+
 		//shaders
 		{
-			ID3DBlob* blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
-				throw ER_CoreException("Failed to load VSMain from shader: VoxelConeTracingVoxelization.hlsl!");
-			if (FAILED(mCore->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTVoxelizationDebugVS)))
-				throw ER_CoreException("Failed to create vertex shader from VoxelConeTracingVoxelization.hlsl!");
-			blob->Release();
+			mVCTVoxelizationDebugVS = rhi->CreateGPUShader();
+			mVCTVoxelizationDebugVS->CompileShader(rhi, "content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl", "VSMain", ER_VERTEX);
+
+			mVCTVoxelizationDebugGS = rhi->CreateGPUShader();
+			mVCTVoxelizationDebugGS->CompileShader(rhi, "content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl", "GSMain", ER_GEOMETRY);
 			
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl").c_str(), "GSMain", "gs_5_0", &blob)))
-				throw ER_CoreException("Failed to load GSMain from shader: VoxelConeTracingVoxelization.hlsl!");
-			if (FAILED(mCore->Direct3DDevice()->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTVoxelizationDebugGS)))
-				throw ER_CoreException("Failed to create geometry shader from VoxelConeTracingVoxelization.hlsl!");
-			blob->Release();
+			mVCTVoxelizationDebugPS = rhi->CreateGPUShader();
+			mVCTVoxelizationDebugPS->CompileShader(rhi, "content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl", "PSMain", ER_PIXEL);
 			
-			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
-				throw ER_CoreException("Failed to load PSMain from shader: VoxelConeTracingVoxelization.hlsl!");
-			if (FAILED(mCore->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTVoxelizationDebugPS)))
-				throw ER_CoreException("Failed to create pixel shader from VoxelConeTracingVoxelization.hlsl!");
-			blob->Release();
+			mVCTMainCS = rhi->CreateGPUShader();
+			mVCTMainCS->CompileShader(rhi, "content\\shaders\\GI\\VoxelConeTracingMain.hlsl", "CSMain", ER_COMPUTE);
 			
-			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\GI\\VoxelConeTracingMain.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
-				throw ER_CoreException("Failed to load CSMain from shader: VoxelConeTracingMain.hlsl!");
-			if (FAILED(mCore->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVCTMainCS)))
-				throw ER_CoreException("Failed to create shader from VoxelConeTracingMain.hlsl!");
-			blob->Release();
+			mUpsampleBlurCS = rhi->CreateGPUShader();
+			mUpsampleBlurCS->CompileShader(rhi, "content\\shaders\\UpsampleBlur.hlsl", "CSMain", ER_COMPUTE);	
+			
+			mCompositeIlluminationCS = rhi->CreateGPUShader();
+			mCompositeIlluminationCS->CompileShader(rhi, "content\\shaders\\CompositeIllumination.hlsl", "CSMain", ER_COMPUTE);
 
-			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\UpsampleBlur.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
-				throw ER_CoreException("Failed to load CSMain from shader: UpsampleBlur.hlsl!");
-			if (FAILED(mCore->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mUpsampleBlurCS)))
-				throw ER_CoreException("Failed to create shader from UpsampleBlur.hlsl!");
-			blob->Release();
+			mDeferredLightingCS = rhi->CreateGPUShader();
+			mDeferredLightingCS->CompileShader(rhi, "content\\shaders\\DeferredLighting.hlsl", "CSMain", ER_COMPUTE);
 
-			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\CompositeIllumination.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
-				throw ER_CoreException("Failed to load CSMain from shader: CompositeIllumination.hlsl!");
-			if (FAILED(mCore->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mCompositeIlluminationCS)))
-				throw ER_CoreException("Failed to create shader from CompositeIllumination.hlsl!");
-			blob->Release();
-
-			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\DeferredLighting.hlsl").c_str(), "CSMain", "cs_5_0", &blob)))
-				throw ER_CoreException("Failed to load CSMain from shader: DeferredLighting.hlsl!");
-			if (FAILED(mCore->Direct3DDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mDeferredLightingCS)))
-				throw ER_CoreException("Failed to create shader from DeferredLighting.hlsl!");
-			blob->Release();
-
-			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
-				throw ER_CoreException("Failed to load VSMain from shader: ForwardLighting.hlsl!");
-			if (FAILED(mCore->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingVS)))
-				throw ER_CoreException("Failed to create vertex shader from ForwardLighting.hlsl!");
-			D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
+			ER_RHI_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 			{
-				{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-				{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-				{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-				{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+				{ "POSITION", 0, ER_FORMAT_R32G32B32A32_FLOAT, 0, 0, true, 0 },
+				{ "TEXCOORD", 0, ER_FORMAT_R32G32_FLOAT, 0, 0xffffffff, true, 0 },
+				{ "NORMAL", 0, ER_FORMAT_R32G32B32_FLOAT, 0, 0xffffffff, true, 0 },
+				{ "TANGENT", 0, ER_FORMAT_R32G32B32_FLOAT, 0, 0xffffffff, true, 0 }
 			};
-			if (FAILED(GetCore()->Direct3DDevice()->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), blob->GetBufferPointer(), blob->GetBufferSize(), &mForwardLightingRenderingObjectInputLayout)))
-				throw ER_CoreException("ID3D11Device::CreateInputLayout() failed for Forward Lighting Input Layout.");
+			mForwardLightingRenderingObjectInputLayout = rhi->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
+			mForwardLightingVS = rhi->CreateGPUShader();
+			mForwardLightingVS->CompileShader(rhi, "content\\shaders\\ForwardLighting.hlsl", "VSMain", ER_VERTEX, mForwardLightingRenderingObjectInputLayout);
 
-			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "VSMain_instancing", "vs_5_0", &blob)))
-				throw ER_CoreException("Failed to load VSMain from shader: ForwardLighting.hlsl!");
-			if (FAILED(mCore->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingVS_Instancing)))
-				throw ER_CoreException("Failed to create vertex shader from ForwardLighting.hlsl!");
-			D3D11_INPUT_ELEMENT_DESC inputElementDescriptionsInstancing[] =
+			ER_RHI_INPUT_ELEMENT_DESC inputElementDescriptionsInstancing[] =
 			{
-				{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-				{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-				{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-				{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-				{ "WORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-				{ "WORLD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-				{ "WORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-				{ "WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+				{ "POSITION", 0, ER_FORMAT_R32G32B32A32_FLOAT, 0, 0, true, 0 },
+				{ "TEXCOORD", 0, ER_FORMAT_R32G32_FLOAT, 0, 0xffffffff, true, 0 },
+				{ "NORMAL", 0, ER_FORMAT_R32G32B32_FLOAT, 0, 0xffffffff, true, 0 },
+				{ "TANGENT", 0, ER_FORMAT_R32G32B32_FLOAT, 0, 0xffffffff, true, 0 },
+				{ "WORLD", 0, ER_FORMAT_R32G32B32A32_FLOAT, 1, 0, false, 1 },
+				{ "WORLD", 1, ER_FORMAT_R32G32B32A32_FLOAT, 1, 16,false, 1 },
+				{ "WORLD", 2, ER_FORMAT_R32G32B32A32_FLOAT, 1, 32,false, 1 },
+				{ "WORLD", 3, ER_FORMAT_R32G32B32A32_FLOAT, 1, 48,false, 1 }
 			};
-			if (FAILED(GetCore()->Direct3DDevice()->CreateInputLayout(inputElementDescriptionsInstancing, ARRAYSIZE(inputElementDescriptionsInstancing), blob->GetBufferPointer(), blob->GetBufferSize(), &mForwardLightingRenderingObjectInputLayout_Instancing)))
-				throw ER_CoreException("ID3D11Device::CreateInputLayout() failed for Forward Lighting Input Layout (Instancing).");
+			mForwardLightingRenderingObjectInputLayout_Instancing = rhi->CreateInputLayout(inputElementDescriptionsInstancing, ARRAYSIZE(inputElementDescriptionsInstancing));
+			mForwardLightingVS_Instancing = rhi->CreateGPUShader();
+			mForwardLightingVS_Instancing->CompileShader(rhi, "content\\shaders\\ForwardLighting.hlsl", "VSMain_instancing", ER_VERTEX, mForwardLightingRenderingObjectInputLayout_Instancing);
 
-			blob->Release();
+			mForwardLightingPS = rhi->CreateGPUShader();
+			mForwardLightingPS->CompileShader(rhi, "content\\shaders\\ForwardLighting.hlsl", "PSMain", ER_PIXEL);
 
-			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
-				throw ER_CoreException("Failed to load PSMain from shader: ForwardLighting.hlsl!");
-			if (FAILED(mCore->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingPS)))
-				throw ER_CoreException("Failed to create main pixel shader from ForwardLighting.hlsl!");
-			blob->Release();
+			mForwardLightingDiffuseProbesPS = rhi->CreateGPUShader();
+			mForwardLightingDiffuseProbesPS->CompileShader(rhi, "content\\shaders\\ForwardLighting.hlsl", "PSMain_DiffuseProbes", ER_PIXEL);
 
-			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "PSMain_DiffuseProbes", "ps_5_0", &blob)))
-				throw ER_CoreException("Failed to load PSMain_DiffuseProbes from shader: ForwardLighting.hlsl!");
-			if (FAILED(mCore->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingDiffuseProbesPS)))
-				throw ER_CoreException("Failed to create diffuse probes pixel shader from ForwardLighting.hlsl!");
-			blob->Release();	
-			
-			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\ForwardLighting.hlsl").c_str(), "PSMain_SpecularProbes", "ps_5_0", &blob)))
-				throw ER_CoreException("Failed to load PSMain_SpecularProbes from shader: ForwardLighting.hlsl!");
-			if (FAILED(mCore->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mForwardLightingSpecularProbesPS)))
-				throw ER_CoreException("Failed to create specular probes pixel shader from ForwardLighting.hlsl!");
-			blob->Release();
+			mForwardLightingSpecularProbesPS = rhi->CreateGPUShader();
+			mForwardLightingSpecularProbesPS->CompileShader(rhi, "content\\shaders\\ForwardLighting.hlsl", "PSMain_SpecularProbes", ER_PIXEL);
 		}
 		
 		//cbuffers
 		{
-			mVoxelizationDebugConstantBuffer.Initialize(mCore->Direct3DDevice());
-			mVoxelConeTracingMainConstantBuffer.Initialize(mCore->Direct3DDevice());
-			mCompositeTotalIlluminationConstantBuffer.Initialize(mCore->Direct3DDevice());
-			mUpsampleBlurConstantBuffer.Initialize(mCore->Direct3DDevice());
-			mDeferredLightingConstantBuffer.Initialize(mCore->Direct3DDevice());
-			mForwardLightingConstantBuffer.Initialize(mCore->Direct3DDevice());
-			mLightProbesConstantBuffer.Initialize(mCore->Direct3DDevice());
+			mVoxelizationDebugConstantBuffer.Initialize(rhi);
+			mVoxelConeTracingMainConstantBuffer.Initialize(rhi);
+			mCompositeTotalIlluminationConstantBuffer.Initialize(rhi);
+			mUpsampleBlurConstantBuffer.Initialize(rhi);
+			mDeferredLightingConstantBuffer.Initialize(rhi);
+			mForwardLightingConstantBuffer.Initialize(rhi);
+			mLightProbesConstantBuffer.Initialize(rhi);
 		}
 
 		//RTs and gizmos
 		{
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 			{
-				mVCTVoxelCascades3DRTs.push_back(new ER_GPUTexture(mCore->Direct3DDevice(), voxelCascadesSizes[i], voxelCascadesSizes[i], 1u, 
-					DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS, 6, voxelCascadesSizes[i]));
+				mVCTVoxelCascades3DRTs.push_back(rhi->CreateGPUTexture());
+				mVCTVoxelCascades3DRTs[i]->CreateGPUTextureResource(rhi, voxelCascadesSizes[i], voxelCascadesSizes[i], 1u,
+					ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET | ER_BIND_UNORDERED_ACCESS, 6, voxelCascadesSizes[i]);
 				
 				mVoxelCameraPositions[i] = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f);
 				
@@ -219,20 +168,28 @@ namespace Library {
 				mVoxelCascadesAABBs[i].second = XMFLOAT3(maxBB, maxBB, maxBB);
 				mDebugVoxelZonesGizmos[i]->InitializeGeometry({ mVoxelCascadesAABBs[i].first, mVoxelCascadesAABBs[i].second });
 			}
-			mVCTMainRT = new ER_GPUTexture(mCore->Direct3DDevice(), 
-				static_cast<UINT>(mCore->ScreenWidth()) * VCT_GI_MAIN_PASS_DOWNSCALE, static_cast<UINT>(mCore->ScreenHeight()) * VCT_GI_MAIN_PASS_DOWNSCALE, 1u, 
-				DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
-			mVCTUpsampleAndBlurRT = new ER_GPUTexture(mCore->Direct3DDevice(), static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
-				DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS, 1);
-			mVCTVoxelizationDebugRT = new ER_GPUTexture(mCore->Direct3DDevice(), static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
-				DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+			mVCTMainRT = rhi->CreateGPUTexture();
+			mVCTMainRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()) * VCT_GI_MAIN_PASS_DOWNSCALE, static_cast<UINT>(mCore->ScreenHeight()) * VCT_GI_MAIN_PASS_DOWNSCALE, 1u, 
+				ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1);
 			
-			mFinalIlluminationRT = new ER_GPUTexture(mCore->Direct3DDevice(), static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
-				DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS, 1);
-			mLocalIlluminationRT = new ER_GPUTexture(mCore->Direct3DDevice(), static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
-				DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS, 1);
+			mVCTUpsampleAndBlurRT = rhi->CreateGPUTexture();
+			mVCTUpsampleAndBlurRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
+				ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1);
 			
-			mDepthBuffer = new ER_GPUTexture(mCore->Direct3DDevice(), mCore->ScreenWidth(), mCore->ScreenHeight(), 1u, DXGI_FORMAT_D24_UNORM_S8_UINT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL);
+			mVCTVoxelizationDebugRT = rhi->CreateGPUTexture();
+			mVCTVoxelizationDebugRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
+				ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
+			
+			mFinalIlluminationRT = rhi->CreateGPUTexture();
+			mFinalIlluminationRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
+				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET | ER_BIND_UNORDERED_ACCESS, 1);
+			
+			mLocalIlluminationRT = rhi->CreateGPUTexture();
+			mLocalIlluminationRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
+				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET | ER_BIND_UNORDERED_ACCESS, 1);
+			
+			mDepthBuffer = rhi->CreateGPUTexture();
+			mDepthBuffer->CreateGPUTextureResource(rhi, mCore->ScreenWidth(), mCore->ScreenHeight(), 1u, ER_FORMAT_D24_UNORM_S8_UINT, ER_BIND_SHADER_RESOURCE | ER_BIND_DEPTH_STENCIL);
 		}
 
 		//callbacks for materials updates
@@ -251,11 +208,10 @@ namespace Library {
 
 	//deferred rendering approach
 	void ER_Illumination::DrawLocalIllumination(ER_GBuffer* gbuffer, ER_Skybox* skybox)
-	{
-		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-		auto context = GetCore()->Direct3DDeviceContext();
-		context->OMSetRenderTargets(1, mLocalIlluminationRT->GetRTVs(), gbuffer->GetDepth()->GetDSV());
-		context->ClearRenderTargetView(mLocalIlluminationRT->GetRTV(), clearColorBlack);
+	{	
+		ER_RHI* rhi = GetCore()->GetRHI();
+		rhi->SetRenderTargets({ mLocalIlluminationRT }, gbuffer->GetDepth());
+		rhi->ClearRenderTarget(mLocalIlluminationRT, clearColorBlack);
 
 		if (skybox)
 		{
@@ -271,25 +227,18 @@ namespace Library {
 	//https://research.nvidia.com/sites/default/files/pubs/2011-09_Interactive-Indirect-Illumination/GIVoxels-pg2011-authors.pdf
 	void ER_Illumination::DrawGlobalIllumination(ER_GBuffer* gbuffer, const ER_CoreTime& gameTime)
 	{
-		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-		ID3D11DeviceContext* context = mCore->Direct3DDeviceContext();
+		ER_RHI* rhi = GetCore()->GetRHI();
 
 		if (!mEnabled)
 		{
-			context->ClearUnorderedAccessViewFloat(mVCTMainRT->GetUAV(), clearColorBlack);
-			context->ClearUnorderedAccessViewFloat(mVCTUpsampleAndBlurRT->GetUAV(), clearColorBlack);
+			rhi->ClearUAV(mVCTMainRT, clearColorBlack);
+			rhi->ClearUAV(mVCTUpsampleAndBlurRT, clearColorBlack);
 			return;
 		}
 
-		D3D11_RECT rect = { 0.0f, 0.0f, mCore->ScreenWidth(), mCore->ScreenHeight() };
-		D3D11_VIEWPORT viewport;
-		UINT num_viewport = 1;
-		context->RSGetViewports(&num_viewport, &viewport);
-
-		ID3D11RasterizerState* oldRS;
-		context->RSGetState(&oldRS);
-
-		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
+		ER_RHI_Rect currentRect = { 0.0f, 0.0f, mCore->ScreenWidth(), mCore->ScreenHeight() };
+		ER_RHI_Viewport currentViewport = rhi->GetCurrentViewport();
+		ER_RHI_RASTERIZER_STATE currentRS = rhi->GetCurrentRasterizerState();
 		
 		ER_MaterialSystems materialSystems;
 		materialSystems.mCamera = &mCamera;
@@ -300,16 +249,16 @@ namespace Library {
 		{
 			for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
 			{
-				D3D11_VIEWPORT vctViewport = { 0.0f, 0.0f, voxelCascadesSizes[cascade], voxelCascadesSizes[cascade] };
-				D3D11_RECT vctRect = { 0.0f, 0.0f, voxelCascadesSizes[cascade], voxelCascadesSizes[cascade] };
-				ID3D11UnorderedAccessView* UAV[1] = { mVCTVoxelCascades3DRTs[cascade]->GetUAV() };
-				ID3D11UnorderedAccessView* nullUAV[1] = { nullptr };
+				rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING_NO_DEPTH_SCISSOR_ENABLED);
 
-				context->RSSetState(RasterizerStates::NoCullingNoDepthEnabledScissorRect);
-				context->RSSetViewports(1, &vctViewport);
-				context->RSSetScissorRects(1, &vctRect);
-				context->OMSetRenderTargetsAndUnorderedAccessViews(0, nullRTVs, NULL, 0, 1, UAV, NULL);
-				context->ClearUnorderedAccessViewFloat(UAV[0], clearColorBlack);
+				ER_RHI_Viewport vctViewport = { 0.0f, 0.0f, voxelCascadesSizes[cascade], voxelCascadesSizes[cascade] };
+				rhi->SetViewport(vctViewport);
+
+				ER_RHI_Rect vctRect = { 0.0f, 0.0f, voxelCascadesSizes[cascade], voxelCascadesSizes[cascade] };
+				rhi->SetRect(vctRect);
+
+				rhi->SetRenderTargets({}, nullptr, mVCTVoxelCascades3DRTs[cascade]);
+				rhi->ClearUAV(mVCTVoxelCascades3DRTs[cascade], clearColorBlack);
 
 				std::string materialName = ER_MaterialHelper::voxelizationMaterialName + "_" + std::to_string(cascade);
 				for (auto& obj : mVoxelizationObjects[cascade]) {
@@ -335,12 +284,13 @@ namespace Library {
 				}
 
 				//reset back
-				context->VSSetShader(NULL, NULL, NULL);
-				context->GSSetShader(NULL, NULL, NULL);
-				context->PSSetShader(NULL, NULL, NULL);
-				context->OMSetRenderTargetsAndUnorderedAccessViews(0, nullRTVs, NULL, 0, 1, nullUAV, NULL);
-				context->RSSetViewports(1, &viewport);
-				context->RSSetScissorRects(1, &rect);
+				rhi->UnbindResourcesFromShader(ER_VERTEX);
+				rhi->UnbindResourcesFromShader(ER_GEOMETRY);
+				rhi->UnbindResourcesFromShader(ER_PIXEL);
+				rhi->UnbindRenderTargets(); //TODO maybe unset UAV, too
+				rhi->SetViewport(currentViewport);
+				rhi->SetRect(currentRect);
+				rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_BACK_CULLING);
 			}
 		}
 		
@@ -356,47 +306,43 @@ namespace Library {
 						sizeTranslateShift - mVoxelCameraPositions[cascade].y,
 						sizeTranslateShift + mVoxelCameraPositions[cascade].z);
 				mVoxelizationDebugConstantBuffer.Data.ViewProjection = XMMatrixTranspose(mCamera.ViewMatrix() * mCamera.ProjectionMatrix());
-				mVoxelizationDebugConstantBuffer.ApplyChanges(context);
+				mVoxelizationDebugConstantBuffer.ApplyChanges(rhi);
 
-				ID3D11Buffer* CBs[1] = { mVoxelizationDebugConstantBuffer.Buffer() };
-				ID3D11ShaderResourceView* SRVs[1] = { mVCTVoxelCascades3DRTs[cascade]->GetSRV() };
-				ID3D11RenderTargetView* RTVs[1] = { mVCTVoxelizationDebugRT->GetRTV() };
+				rhi->SetRenderTargets({ mVCTVoxelizationDebugRT }, mDepthBuffer);
+				rhi->SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE::ER_DISABLED);
+				
+				rhi->ClearRenderTarget(mVCTVoxelizationDebugRT, clearColorBlack);
+				rhi->ClearDepthStencilTarget(mDepthBuffer, 1.0f, 0);
 
-				context->RSSetState(RasterizerStates::BackCulling);
-				context->OMSetRenderTargets(1, RTVs, mDepthBuffer->GetDSV());
-				context->OMSetDepthStencilState(mDepthStencilStateRW, 0);
-				context->ClearRenderTargetView(mVCTVoxelizationDebugRT->GetRTV(), clearColorBlack);
-				context->ClearDepthStencilView(mDepthBuffer->GetDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+				rhi->SetTopologyType(ER_PRIMITIVE_TOPOLOGY_POINTLIST);
+				rhi->SetEmptyInputLayout();
 
-				context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_POINTLIST);
-				context->IASetInputLayout(nullptr);
+				rhi->SetShader(mVCTVoxelizationDebugVS);
+				rhi->SetConstantBuffers(ER_VERTEX, { mVoxelizationDebugConstantBuffer.Buffer() });
+				rhi->SetShaderResources(ER_VERTEX, { mVCTVoxelCascades3DRTs[cascade] });
 
-				context->VSSetShader(mVCTVoxelizationDebugVS, NULL, NULL);
-				context->VSSetConstantBuffers(0, 1, CBs);
-				context->VSSetShaderResources(0, 1, SRVs);
+				rhi->SetShader(mVCTVoxelizationDebugGS);
+				rhi->SetConstantBuffers(ER_GEOMETRY, { mVoxelizationDebugConstantBuffer.Buffer() });
 
-				context->GSSetShader(mVCTVoxelizationDebugGS, NULL, NULL);
-				context->GSSetConstantBuffers(0, 1, CBs);
+				rhi->SetShader(mVCTVoxelizationDebugPS);
+				rhi->SetConstantBuffers(ER_PIXEL, { mVoxelizationDebugConstantBuffer.Buffer() });
 
-				context->PSSetShader(mVCTVoxelizationDebugPS, NULL, NULL);
-				context->PSSetConstantBuffers(0, 1, CBs);
+				rhi->DrawInstanced(voxelCascadesSizes[cascade] * voxelCascadesSizes[cascade] * voxelCascadesSizes[cascade], 1, 0, 0);
 
-				context->DrawInstanced(voxelCascadesSizes[cascade] * voxelCascadesSizes[cascade] * voxelCascadesSizes[cascade], 1, 0, 0);
-
-				context->RSSetState(oldRS);
-				context->OMSetRenderTargets(1, nullRTVs, NULL);
-
-				context->VSSetShader(NULL, NULL, NULL);
-				context->GSSetShader(NULL, NULL, NULL);
-				context->PSSetShader(NULL, NULL, NULL);
+				rhi->UnbindRenderTargets();
+				rhi->UnbindResourcesFromShader(ER_VERTEX);
+				rhi->UnbindResourcesFromShader(ER_GEOMETRY);
+				rhi->UnbindResourcesFromShader(ER_PIXEL);
+				rhi->SetDepthStencilState(ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
 			}
 		}
 		else // main pass
 		{
-			context->OMSetRenderTargets(1, nullRTVs, NULL);
+			rhi->UnbindRenderTargets();
+
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 			{
-				context->GenerateMips(mVCTVoxelCascades3DRTs[i]->GetSRV());
+				rhi->GenerateMips(mVCTVoxelCascades3DRTs[i]);
 				mVoxelConeTracingMainConstantBuffer.Data.VoxelCameraPositions[i] = mVoxelCameraPositions[i];
 				mVoxelConeTracingMainConstantBuffer.Data.WorldVoxelScales[i] = XMFLOAT4(mWorldVoxelScales[i], 0.0, 0.0, 0.0);
 			}
@@ -410,100 +356,58 @@ namespace Library {
 			mVoxelConeTracingMainConstantBuffer.Data.VoxelSampleOffset = mVCTVoxelSampleOffset;
 			mVoxelConeTracingMainConstantBuffer.Data.GIPower = mVCTGIPower;
 			mVoxelConeTracingMainConstantBuffer.Data.pad0 = XMFLOAT3(0, 0, 0);
-			mVoxelConeTracingMainConstantBuffer.ApplyChanges(context);
+			mVoxelConeTracingMainConstantBuffer.ApplyChanges(rhi);
 
-			ID3D11UnorderedAccessView* UAV[1] = { mVCTMainRT->GetUAV() };
-			ID3D11Buffer* CBs[1] = { mVoxelConeTracingMainConstantBuffer.Buffer() };
-			ID3D11ShaderResourceView* SRVs[4 + NUM_VOXEL_GI_CASCADES];
-			SRVs[0] = gbuffer->GetAlbedo()->GetSRV();
-			SRVs[1] = gbuffer->GetNormals()->GetSRV();
-			SRVs[2] = gbuffer->GetPositions()->GetSRV();
-			SRVs[3] = gbuffer->GetExtraBuffer()->GetSRV();
+			std::vector<ER_RHI_GPUResource*> resources(4 + NUM_VOXEL_GI_CASCADES);
+			resources[0] = gbuffer->GetAlbedo();
+			resources[1] = gbuffer->GetNormals();
+			resources[2] = gbuffer->GetPositions();
+			resources[3] = gbuffer->GetExtraBuffer();
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
-				SRVs[4 + i] = mVCTVoxelCascades3DRTs[i]->GetSRV();
+				resources[4 + i] = mVCTVoxelCascades3DRTs[i];
 
-			ID3D11SamplerState* SSs[] = { SamplerStates::TrilinearWrap };
-
-			context->CSSetSamplers(0, 1, SSs);
-			context->CSSetShaderResources(0, 4 + mVCTVoxelCascades3DRTs.size(), SRVs);
-			context->CSSetConstantBuffers(0, 1, CBs);
-			context->CSSetShader(mVCTMainCS, NULL, NULL);
-			context->CSSetUnorderedAccessViews(0, 1, UAV, NULL);
-			context->Dispatch(DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetHeight()), 8u), 1u);
-
-			ID3D11ShaderResourceView* nullSRV[] = { NULL };
-			context->CSSetShaderResources(0, 1, nullSRV);
-			ID3D11UnorderedAccessView* nullUAV[] = { NULL };
-			context->CSSetUnorderedAccessViews(0, 1, nullUAV, 0);
-			ID3D11Buffer* nullCBs[] = { NULL };
-			context->CSSetConstantBuffers(0, 1, nullCBs);
-			ID3D11SamplerState* nullSSs[] = { NULL };
-			context->CSSetSamplers(0, 1, nullSSs);
+			rhi->SetShader(mVCTMainCS);
+			rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
+			rhi->SetUnorderedAccessResources(ER_COMPUTE, { mVCTMainRT });
+			rhi->SetShaderResources(ER_COMPUTE, resources);
+			rhi->SetConstantBuffers(ER_COMPUTE, { mVoxelConeTracingMainConstantBuffer.Buffer() });
+			rhi->Dispatch(DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetHeight()), 8u), 1u);
+			rhi->UnbindResourcesFromShader(ER_COMPUTE);
 		}
 
 		//upsample & blur
 		{
 			mUpsampleBlurConstantBuffer.Data.Upsample = true;
-			mUpsampleBlurConstantBuffer.ApplyChanges(context);
+			mUpsampleBlurConstantBuffer.ApplyChanges(rhi);
 
-			ID3D11UnorderedAccessView* UAV[1] = { mVCTUpsampleAndBlurRT->GetUAV() };
-			ID3D11Buffer* CBs[1] = { mUpsampleBlurConstantBuffer.Buffer() };
-			ID3D11ShaderResourceView* SRVs[1] = { mVCTMainRT->GetSRV() };
-			ID3D11SamplerState* SSs[] = { SamplerStates::TrilinearWrap };
-
-			context->CSSetSamplers(0, 1, SSs);
-			context->CSSetShaderResources(0, 1, SRVs);
-			context->CSSetConstantBuffers(0, 1, CBs);
-			context->CSSetShader(mUpsampleBlurCS, NULL, NULL);
-			context->CSSetUnorderedAccessViews(0, 1, UAV, NULL);
-
-			context->Dispatch(DivideByMultiple(static_cast<UINT>(mVCTUpsampleAndBlurRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mVCTUpsampleAndBlurRT->GetHeight()), 8u), 1u);
-
-			ID3D11ShaderResourceView* nullSRV[] = { NULL };
-			context->CSSetShaderResources(0, 1, nullSRV);
-			ID3D11UnorderedAccessView* nullUAV[] = { NULL };
-			context->CSSetUnorderedAccessViews(0, 1, nullUAV, 0);
-			ID3D11Buffer* nullCBs[] = { NULL };
-			context->CSSetConstantBuffers(0, 1, nullCBs);
-			ID3D11SamplerState* nullSSs[] = { NULL };
-			context->CSSetSamplers(0, 1, nullSSs);
+			rhi->SetShader(mUpsampleBlurCS);
+			rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
+			rhi->SetUnorderedAccessResources(ER_COMPUTE, { mVCTUpsampleAndBlurRT });
+			rhi->SetShaderResources(ER_COMPUTE, { mVCTMainRT });
+			rhi->SetConstantBuffers(ER_COMPUTE, { mUpsampleBlurConstantBuffer.Buffer() });
+			rhi->Dispatch(DivideByMultiple(static_cast<UINT>(mVCTUpsampleAndBlurRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mVCTUpsampleAndBlurRT->GetHeight()), 8u), 1u);
+			rhi->UnbindResourcesFromShader(ER_COMPUTE);
 		}
 	}
 
 	// Combine GI output (Voxel Cone Tracing) with local illumination output
 	void ER_Illumination::CompositeTotalIllumination()
 	{
-		auto context = GetCore()->Direct3DDeviceContext();
+		auto rhi = GetCore()->GetRHI();
 
 		mCompositeTotalIlluminationConstantBuffer.Data.DebugVoxelAO = XMFLOAT4(mShowVCTVoxelizationOnly ? 1.0f : -1.0f, mShowVCTAmbientOcclusionOnly ? 1.0f : -1.0f, 0.0, 0.0);
-		mCompositeTotalIlluminationConstantBuffer.ApplyChanges(context);
-		ID3D11Buffer* CBs[1] = { mCompositeTotalIlluminationConstantBuffer.Buffer() };
-		context->CSSetConstantBuffers(0, 1, CBs);
-
-		ID3D11SamplerState* SSs[] = { SamplerStates::TrilinearWrap };
-		context->CSSetSamplers(0, 1, SSs);
-
-		ID3D11UnorderedAccessView* UAV[1] = { mFinalIlluminationRT->GetUAV() };
-		context->CSSetUnorderedAccessViews(0, 1, UAV, NULL);
+		mCompositeTotalIlluminationConstantBuffer.ApplyChanges(rhi);
 
 		// mLocalIllumination might be bound as RTV before this pass
-		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
-		context->OMSetRenderTargets(1, nullRTVs, nullptr);
-		ID3D11ShaderResourceView* SRs[2] = { mShowVCTVoxelizationOnly ? mVCTVoxelizationDebugRT->GetSRV() : mVCTUpsampleAndBlurRT->GetSRV(), mLocalIlluminationRT->GetSRV() };
-		context->CSSetShaderResources(0, 2, SRs);
-		
-		context->CSSetShader(mCompositeIlluminationCS, NULL, NULL);
+		rhi->UnbindRenderTargets();
 
-		context->Dispatch(DivideByMultiple(static_cast<UINT>(mFinalIlluminationRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mFinalIlluminationRT->GetHeight()), 8u), 1u);
-
-		ID3D11ShaderResourceView* nullSRV[] = { NULL };
-		context->CSSetShaderResources(0, 1, nullSRV);
-		ID3D11UnorderedAccessView* nullUAV[] = { NULL };
-		context->CSSetUnorderedAccessViews(0, 1, nullUAV, 0);
-		ID3D11Buffer* nullCBs[] = { NULL };
-		context->CSSetConstantBuffers(0, 1, nullCBs);
-		ID3D11SamplerState* nullSSs[] = { NULL };
-		context->CSSetSamplers(0, 1, nullSSs);
+		rhi->SetShader(mCompositeIlluminationCS);
+		rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
+		rhi->SetUnorderedAccessResources(ER_COMPUTE, { mFinalIlluminationRT });
+		rhi->SetShaderResources(ER_COMPUTE, { mShowVCTVoxelizationOnly ? mVCTVoxelizationDebugRT : mVCTUpsampleAndBlurRT, mLocalIlluminationRT });
+		rhi->SetConstantBuffers(ER_COMPUTE, { mCompositeTotalIlluminationConstantBuffer.Buffer() });
+		rhi->Dispatch(DivideByMultiple(static_cast<UINT>(mFinalIlluminationRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mFinalIlluminationRT->GetHeight()), 8u), 1u);
+		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 	}
 
 	void ER_Illumination::DrawDebugGizmos()
@@ -616,11 +520,11 @@ namespace Library {
 		}
 	}
 
-	void ER_Illumination::DrawDeferredLighting(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget)
+	void ER_Illumination::DrawDeferredLighting(ER_GBuffer* gbuffer, ER_RHI_GPUTexture* aRenderTarget)
 	{
-		static const float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+		static const float clearColorBlack[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-		ID3D11DeviceContext* context = mCore->Direct3DDeviceContext();
+		auto rhi = mCore->GetRHI();
 
 		//compute pass
 		if (aRenderTarget)
@@ -640,7 +544,7 @@ namespace Library {
 			mDeferredLightingConstantBuffer.Data.SSSWidth = mSSSWidth;
 			mDeferredLightingConstantBuffer.Data.SSSDirectionLightMaxPlane = mSSSDirectionalLightPlaneScale;
 			mDeferredLightingConstantBuffer.Data.SSSAvailable = (mIsSSS && !mIsSSSCulled) ? 1.0f : -1.0f;
-			mDeferredLightingConstantBuffer.ApplyChanges(context);
+			mDeferredLightingConstantBuffer.ApplyChanges(rhi);
 
 			if (mProbesManager->IsEnabled())
 			{
@@ -649,76 +553,79 @@ namespace Library {
 				mLightProbesConstantBuffer.Data.SceneLightProbesBounds = XMFLOAT4{ mProbesManager->GetSceneProbesVolumeMin().x, mProbesManager->GetSceneProbesVolumeMin().y, mProbesManager->GetSceneProbesVolumeMin().z, 1.0f };
 				mLightProbesConstantBuffer.Data.DistanceBetweenDiffuseProbes = mProbesManager->GetDistanceBetweenDiffuseProbes();
 				mLightProbesConstantBuffer.Data.DistanceBetweenSpecularProbes = mProbesManager->GetDistanceBetweenSpecularProbes();
-				mLightProbesConstantBuffer.ApplyChanges(context);
+				mLightProbesConstantBuffer.ApplyChanges(rhi);
 			}
 
-			ID3D11Buffer* CBs[2] = { mDeferredLightingConstantBuffer.Buffer(), mProbesManager->IsEnabled() ? mLightProbesConstantBuffer.Buffer() : nullptr };
-			context->CSSetConstantBuffers(0, 2, CBs);
+			rhi->UnbindRenderTargets();
+			rhi->SetShader(mDeferredLightingCS);
+			rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
+			rhi->SetUnorderedAccessResources(ER_COMPUTE, { aRenderTarget });
+			if (mProbesManager->IsEnabled() && mProbesManager->AreGlobalProbesReady())
+			{
+				rhi->SetConstantBuffers(ER_COMPUTE, { mDeferredLightingConstantBuffer.Buffer(), mLightProbesConstantBuffer.Buffer() });
+				std::vector<ER_RHI_GPUResource*> resources(18);
+				resources[0] = gbuffer->GetAlbedo();
+				resources[1] = gbuffer->GetNormals();
+				resources[2] = gbuffer->GetPositions();
+				resources[3] = gbuffer->GetExtraBuffer();
+				resources[4] = gbuffer->GetExtra2Buffer();
 
-			ID3D11ShaderResourceView* SRs[18] = {
-				gbuffer->GetAlbedo()->GetSRV(),
-				gbuffer->GetNormals()->GetSRV(),
-				gbuffer->GetPositions()->GetSRV(),
-				gbuffer->GetExtraBuffer()->GetSRV(),
-				gbuffer->GetExtra2Buffer()->GetSRV(),
-			};
+				for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
+					resources[5 + i] = mShadowMapper.GetShadowTexture(i);
 
-			for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
-				SRs[5 + i] = mShadowMapper.GetShadowTexture(i);
+				resources[8] =  mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture();
+				resources[9] =  mProbesManager->GetDiffuseProbesCellsIndicesBuffer();
+				resources[10] = mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer();
+				resources[11] = mProbesManager->GetDiffuseProbesPositionsBuffer();
 
-			SRs[8] = (mProbesManager->IsEnabled() || mProbesManager->AreGlobalProbesReady()) ? mProbesManager->GetGlobalDiffuseProbe()->GetCubemapSRV() : nullptr;
-			SRs[9] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer()->GetBufferSRV() : nullptr;
-			SRs[10] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer()->GetBufferSRV() : nullptr;
-			SRs[11] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesPositionsBuffer()->GetBufferSRV() : nullptr;
+				resources[12] = mProbesManager->GetGlobalSpecularProbe()->GetCubemapTexture();
+				resources[13] = mProbesManager->GetCulledSpecularProbesTextureArray();
+				resources[14] = mProbesManager->GetSpecularProbesCellsIndicesBuffer();
+				resources[15] = mProbesManager->GetSpecularProbesTexArrayIndicesBuffer();
+				resources[16] = mProbesManager->GetSpecularProbesPositionsBuffer();
 
-			SRs[12] = (mProbesManager->IsEnabled() || mProbesManager->AreGlobalProbesReady()) ? mProbesManager->GetGlobalSpecularProbe()->GetCubemapSRV() : nullptr;
-			SRs[13] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray()->GetSRV() : nullptr;
-			SRs[14] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesCellsIndicesBuffer()->GetBufferSRV() : nullptr;
-			SRs[15] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer()->GetBufferSRV() : nullptr;
-			SRs[16] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesPositionsBuffer()->GetBufferSRV() : nullptr;
+				resources[17] = mProbesManager->GetIntegrationMap();
+				rhi->SetShaderResources(ER_COMPUTE, resources);
+			}
+			else if (mProbesManager->AreGlobalProbesReady())
+			{
+				rhi->SetConstantBuffers(ER_COMPUTE, { mDeferredLightingConstantBuffer.Buffer() });
+				std::vector<ER_RHI_GPUResource*> resources(8);
+				resources[0] = gbuffer->GetAlbedo();
+				resources[1] = gbuffer->GetNormals();
+				resources[2] = gbuffer->GetPositions();
+				resources[3] = gbuffer->GetExtraBuffer();
+				resources[4] = gbuffer->GetExtra2Buffer();
 
-			SRs[17] = (mProbesManager->IsEnabled() || mProbesManager->AreGlobalProbesReady()) ? mProbesManager->GetIntegrationMap() : nullptr;
-			context->CSSetShaderResources(0, 18, SRs);
+				for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
+					resources[5 + i] = mShadowMapper.GetShadowTexture(i);
 
-			ID3D11SamplerState* SS[2] = { SamplerStates::TrilinearWrap, SamplerStates::ShadowSamplerState };
-			context->CSSetSamplers(0, 2, SS);
-			
-			ID3D11RenderTargetView* nullRTVs[1] = { NULL };
-			context->OMSetRenderTargets(1, nullRTVs, nullptr);
-			ID3D11UnorderedAccessView* UAV[1] = { aRenderTarget->GetUAV() };
-			context->CSSetUnorderedAccessViews(0, 1, UAV, NULL);
+				rhi->SetShaderResources(ER_COMPUTE, resources);
+				rhi->SetShaderResources(ER_COMPUTE, { mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture() }, 8);
+				rhi->SetShaderResources(ER_COMPUTE, { mProbesManager->GetGlobalSpecularProbe()->GetCubemapTexture() }, 12);
+				rhi->SetShaderResources(ER_COMPUTE, { mProbesManager->GetIntegrationMap() }, 17);
+			}
 
-			context->CSSetShader(mDeferredLightingCS, NULL, NULL);
-
-			context->Dispatch(DivideByMultiple(static_cast<UINT>(aRenderTarget->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(aRenderTarget->GetHeight()), 8u), 1u);
-
-			ID3D11ShaderResourceView* nullSRV[] = { NULL };
-			context->CSSetShaderResources(0, 1, nullSRV);
-			ID3D11UnorderedAccessView* nullUAV[] = { NULL };
-			context->CSSetUnorderedAccessViews(0, 1, nullUAV, 0);
-			ID3D11Buffer* nullCBs[] = { NULL };
-			context->CSSetConstantBuffers(0, 1, nullCBs);
-			ID3D11SamplerState* nullSSs[] = { NULL };
-			context->CSSetSamplers(0, 1, nullSSs);
+			rhi->Dispatch(DivideByMultiple(static_cast<UINT>(aRenderTarget->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(aRenderTarget->GetHeight()), 8u), 1u);
+			rhi->UnbindResourcesFromShader(ER_COMPUTE);
 		}
 	}
 
-	void ER_Illumination::DrawForwardLighting(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget)
+	void ER_Illumination::DrawForwardLighting(ER_GBuffer* gbuffer, ER_RHI_GPUTexture* aRenderTarget)
 	{
-		ID3D11DeviceContext* context = mCore->Direct3DDeviceContext();
-		context->OMSetRenderTargets(1, aRenderTarget->GetRTVs(), gbuffer->GetDepth()->GetDSV());
-
+		auto rhi = mCore->GetRHI();
+		rhi->SetRenderTargets({ aRenderTarget }, gbuffer->GetDepth());
 		for (auto& obj : mForwardPassObjects)
 			obj.second->Draw(ER_MaterialHelper::forwardLightingNonMaterialName);
 	}
 
 	void ER_Illumination::PrepareForForwardLighting(ER_RenderingObject* aObj, int meshIndex)
 	{
-		ID3D11DeviceContext* context = mCore->Direct3DDeviceContext();
+		auto rhi = mCore->GetRHI();
 
 		if (aObj && aObj->IsForwardShading())
 		{
-			context->IASetInputLayout(aObj->IsInstanced() ? mForwardLightingRenderingObjectInputLayout_Instancing : mForwardLightingRenderingObjectInputLayout);
+			rhi->SetInputLayout(aObj->IsInstanced() ? mForwardLightingRenderingObjectInputLayout_Instancing : mForwardLightingRenderingObjectInputLayout);
 
 			for (size_t i = 0; i < NUM_SHADOW_CASCADES; i++)
 				mForwardLightingConstantBuffer.Data.ShadowMatrices[i] = XMMatrixTranspose(mShadowMapper.GetViewMatrix(i) * mShadowMapper.GetProjectionMatrix(i) * XMLoadFloat4x4(&ER_MatrixHelper::GetProjectionShadowMatrix()));
@@ -731,7 +638,7 @@ namespace Library {
 			mForwardLightingConstantBuffer.Data.CameraPosition = XMFLOAT4{ mCamera.Position().x,mCamera.Position().y,mCamera.Position().z, 1.0f };
 			mForwardLightingConstantBuffer.Data.UseGlobalProbe = (!mProbesManager->IsEnabled() && mProbesManager->AreGlobalProbesReady()) || aObj->GetUseIndirectGlobalLightProbeMask();
 			mForwardLightingConstantBuffer.Data.SkipIndirectProbeLighting = mDebugSkipIndirectProbeLighting;
-			mForwardLightingConstantBuffer.ApplyChanges(context);
+			mForwardLightingConstantBuffer.ApplyChanges(rhi);
 
 			if (mProbesManager->IsEnabled())
 			{
@@ -740,42 +647,65 @@ namespace Library {
 				mLightProbesConstantBuffer.Data.SceneLightProbesBounds = XMFLOAT4{ mProbesManager->GetSceneProbesVolumeMin().x, mProbesManager->GetSceneProbesVolumeMin().y, mProbesManager->GetSceneProbesVolumeMin().z, 1.0f };
 				mLightProbesConstantBuffer.Data.DistanceBetweenDiffuseProbes = mProbesManager->GetDistanceBetweenDiffuseProbes();
 				mLightProbesConstantBuffer.Data.DistanceBetweenSpecularProbes = mProbesManager->GetDistanceBetweenSpecularProbes();
-				mLightProbesConstantBuffer.ApplyChanges(context);
+				mLightProbesConstantBuffer.ApplyChanges(rhi);
 			}
 
-			ID3D11Buffer* CBs[2] = { mForwardLightingConstantBuffer.Buffer(), mProbesManager->IsEnabled() ? mLightProbesConstantBuffer.Buffer() : nullptr };
-			context->VSSetShader(aObj->IsInstanced() ? mForwardLightingVS_Instancing : mForwardLightingVS, NULL, 0);
-			context->VSSetConstantBuffers(0, 2, CBs);
+			rhi->SetShader(aObj->IsInstanced() ? mForwardLightingVS_Instancing : mForwardLightingVS);
+			rhi->SetShader(mForwardLightingPS);
 
-			context->PSSetShader(mForwardLightingPS, NULL, NULL); //TODO add other passes
-			context->PSSetConstantBuffers(0, 2, CBs);
+			if (mProbesManager->IsEnabled() && mProbesManager->AreGlobalProbesReady())
+			{
+				rhi->SetConstantBuffers(ER_VERTEX, { mForwardLightingConstantBuffer.Buffer(), mLightProbesConstantBuffer.Buffer() });
+				rhi->SetConstantBuffers(ER_PIXEL, { mForwardLightingConstantBuffer.Buffer(), mLightProbesConstantBuffer.Buffer() });
 
-			ID3D11ShaderResourceView* SRs[18] = {
-				aObj->GetTextureData(meshIndex).AlbedoMap,
-				aObj->GetTextureData(meshIndex).NormalMap,
-				aObj->GetTextureData(meshIndex).MetallicMap,
-				aObj->GetTextureData(meshIndex).RoughnessMap,
-				aObj->GetTextureData(meshIndex).HeightMap
-			};
-			for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
-				SRs[5 + i] = mShadowMapper.GetShadowTexture(i);
+				std::vector<ER_RHI_GPUResource*> resources(18);
+				resources[0] = aObj->GetTextureData(meshIndex).AlbedoMap;
+				resources[1] = aObj->GetTextureData(meshIndex).NormalMap;
+				resources[2] = aObj->GetTextureData(meshIndex).MetallicMap;
+				resources[3] = aObj->GetTextureData(meshIndex).RoughnessMap;
+				resources[4] = aObj->GetTextureData(meshIndex).HeightMap;
 
-			SRs[8] = (mProbesManager->IsEnabled() || mProbesManager->AreGlobalProbesReady()) ? mProbesManager->GetGlobalDiffuseProbe()->GetCubemapSRV() : nullptr;
-			SRs[9] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer()->GetBufferSRV() : nullptr;
-			SRs[10] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer()->GetBufferSRV() : nullptr;
-			SRs[11] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesPositionsBuffer()->GetBufferSRV() : nullptr;
+				for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
+					resources[5 + i] = mShadowMapper.GetShadowTexture(i);
 
-			SRs[12] = (mProbesManager->IsEnabled() || mProbesManager->AreGlobalProbesReady()) ? mProbesManager->GetGlobalSpecularProbe()->GetCubemapSRV() : nullptr;
-			SRs[13] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray()->GetSRV() : nullptr;
-			SRs[14] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesCellsIndicesBuffer()->GetBufferSRV() : nullptr;
-			SRs[15] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer()->GetBufferSRV() : nullptr;
-			SRs[16] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesPositionsBuffer()->GetBufferSRV() : nullptr;
-			
-			SRs[17] = (mProbesManager->IsEnabled() || mProbesManager->AreGlobalProbesReady()) ? mProbesManager->GetIntegrationMap() : nullptr;
-			context->PSSetShaderResources(0, 18, SRs);
+				resources[8] = mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture();
+				resources[9] = mProbesManager->GetDiffuseProbesCellsIndicesBuffer();
+				resources[10] = mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer();
+				resources[11] = mProbesManager->GetDiffuseProbesPositionsBuffer();
 
-			ID3D11SamplerState* SS[2] = { SamplerStates::TrilinearWrap, SamplerStates::ShadowSamplerState };
-			context->PSSetSamplers(0, 2, SS);
+				resources[12] = mProbesManager->GetGlobalSpecularProbe()->GetCubemapTexture();
+				resources[13] = mProbesManager->GetCulledSpecularProbesTextureArray();
+				resources[14] = mProbesManager->GetSpecularProbesCellsIndicesBuffer();
+				resources[15] = mProbesManager->GetSpecularProbesTexArrayIndicesBuffer();
+				resources[16] = mProbesManager->GetSpecularProbesPositionsBuffer();
+
+				resources[17] = mProbesManager->GetIntegrationMap();
+				rhi->SetShaderResources(ER_PIXEL, resources);
+
+			}
+			else if (mProbesManager->AreGlobalProbesReady())
+			{
+				rhi->SetConstantBuffers(ER_VERTEX, { mForwardLightingConstantBuffer.Buffer() });
+				rhi->SetConstantBuffers(ER_PIXEL, { mForwardLightingConstantBuffer.Buffer() });
+
+				std::vector<ER_RHI_GPUResource*> resources;
+				resources.push_back(aObj->GetTextureData(meshIndex).AlbedoMap);
+				resources.push_back(aObj->GetTextureData(meshIndex).NormalMap);
+				resources.push_back(aObj->GetTextureData(meshIndex).MetallicMap);
+				resources.push_back(aObj->GetTextureData(meshIndex).RoughnessMap);
+				resources.push_back(aObj->GetTextureData(meshIndex).HeightMap);
+				rhi->SetShaderResources(ER_PIXEL, resources);
+
+				std::vector<ER_RHI_GPUResource*> shadowResources;
+				for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
+					shadowResources.push_back(mShadowMapper.GetShadowTexture(i));
+				rhi->SetShaderResources(ER_PIXEL, shadowResources, 5);
+
+				rhi->SetShaderResources(ER_PIXEL, { mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture() }, 8);
+				rhi->SetShaderResources(ER_PIXEL, { mProbesManager->GetGlobalSpecularProbe()->GetCubemapTexture() }, 12);
+				rhi->SetShaderResources(ER_PIXEL, { mProbesManager->GetIntegrationMap() }, 17);
+			}
+			rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
 		}
 	}
 

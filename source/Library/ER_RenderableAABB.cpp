@@ -10,7 +10,6 @@
 #include "ER_VectorHelper.h"
 #include "ER_Camera.h"
 #include "ER_Utility.h"
-#include "ER_GPUBuffer.h"
 
 namespace Library
 {
@@ -47,8 +46,9 @@ namespace Library
 	{
 		mMaterial = new ER_BasicColorMaterial(mCore, {}, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER);
 
-		auto device = mCore.Direct3DDevice();
-		mIndexBuffer = new ER_GPUBuffer(device, AABBIndices, AABBIndexCount, sizeof(USHORT), D3D11_USAGE_IMMUTABLE, D3D11_BIND_INDEX_BUFFER);
+		auto rhi = mCore.GetRHI();
+		mIndexBuffer = rhi->CreateGPUBuffer();
+		mIndexBuffer->CreateGPUBufferResource(rhi, AABBIndices, AABBIndexCount, sizeof(USHORT), false, ER_BIND_INDEX_BUFFER, 0, ER_RESOURCE_MISC_NONE, ER_FORMAT_R16_UINT);
 	}
 
 	ER_RenderableAABB::~ER_RenderableAABB()
@@ -76,8 +76,9 @@ namespace Library
 		mVertices[6] = XMFLOAT4(aabb[1].x, aabb[0].y, aabb[1].z, 1.0f);
 		mVertices[7] = XMFLOAT4(aabb[0].x, aabb[0].y, aabb[1].z, 1.0f);
 
-		auto device = mCore.Direct3DDevice();
-		mVertexBuffer = new ER_GPUBuffer(device, mVertices, AABBVertexCount, sizeof(VertexPosition), D3D11_USAGE_DYNAMIC, D3D11_BIND_VERTEX_BUFFER, D3D11_CPU_ACCESS_WRITE);
+		auto rhi = mCore.GetRHI();
+		mVertexBuffer = rhi->CreateGPUBuffer();
+		mVertexBuffer->CreateGPUBufferResource(rhi, mVertices, AABBVertexCount, sizeof(VertexPosition), true, ER_BIND_VERTEX_BUFFER);
 	}
 
 	void ER_RenderableAABB::Update(ER_AABB& aabb)
@@ -88,17 +89,12 @@ namespace Library
 
 	void ER_RenderableAABB::Draw()
 	{
-		ID3D11DeviceContext* context = mCore.Direct3DDeviceContext();
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-
-		UINT stride = mMaterial->VertexSize();
-		UINT offset = 0;
-		auto vertexBuffer = mVertexBuffer->GetBuffer();
-		context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-		context->IASetIndexBuffer(mIndexBuffer->GetBuffer(), DXGI_FORMAT_R16_UINT, 0);
-
+		ER_RHI* rhi = mCore.GetRHI();
+		rhi->SetTopologyType(ER_PRIMITIVE_TOPOLOGY_LINELIST);
+		rhi->SetVertexBuffers({ mVertexBuffer });
+		rhi->SetIndexBuffer(mIndexBuffer);
 		mMaterial->PrepareForRendering(XMMatrixIdentity(), mColor);
-		context->DrawIndexed(AABBIndexCount, 0, 0);
+		rhi->DrawIndexed(AABBIndexCount);
 	}
 
 	void ER_RenderableAABB::SetColor(const XMFLOAT4& color)
@@ -117,7 +113,7 @@ namespace Library
 		mVertices[6] = XMFLOAT4(mAABB.second.x, mAABB.first.y, mAABB.second.z, 1.0f);
 		mVertices[7] = XMFLOAT4(mAABB.first.x, mAABB.first.y, mAABB.second.z, 1.0f);
 
-		auto context = mCore.Direct3DDeviceContext();
-		mVertexBuffer->Update(context, mVertices, AABBVertexCount * sizeof(VertexPosition), D3D11_MAP_WRITE_DISCARD);
+		auto rhi = mCore.GetRHI();
+		rhi->UpdateBuffer(mVertexBuffer, mVertices, AABBVertexCount * sizeof(VertexPosition));
 	}
 }

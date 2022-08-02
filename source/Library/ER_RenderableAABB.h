@@ -1,11 +1,10 @@
 #pragma once
 #include "Common.h"
-
+#include "RHI/ER_RHI.h"
 namespace Library
 {
 	class ER_Core;
 	class ER_BasicColorMaterial;
-	class ER_GPUBuffer;
 
 	class ER_RenderableAABB
 	{
@@ -24,9 +23,9 @@ namespace Library
 
 		ER_Core& mCore;
 
-		ER_GPUBuffer* mVertexBuffer;
-		ER_GPUBuffer* mIndexBuffer;
-		ER_BasicColorMaterial* mMaterial;
+		ER_RHI_GPUBuffer* mVertexBuffer = nullptr;
+		ER_RHI_GPUBuffer* mIndexBuffer = nullptr;
+		ER_BasicColorMaterial* mMaterial = nullptr;
 		
 		XMFLOAT4 mColor;
 

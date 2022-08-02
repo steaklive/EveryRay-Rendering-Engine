@@ -9,7 +9,6 @@ namespace Library
     class ER_Scene;
     class ER_Editor;
     class ER_Keyboard;
-    class RenderStateHelper;
     class DirectionalLight;
     class ER_Skybox;
     class ER_GBuffer;
@@ -36,7 +35,6 @@ namespace Library
         ER_Scene* mScene = nullptr;
 		ER_Editor* mEditor = nullptr;
         ER_Keyboard* mKeyboard = nullptr;
-        RenderStateHelper* mRenderStateHelper = nullptr;
         ER_Skybox* mSkybox = nullptr;
         ER_ShadowMapper* mShadowMapper = nullptr;
         DirectionalLight* mDirectionalLight = nullptr;

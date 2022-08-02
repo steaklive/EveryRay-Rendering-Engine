@@ -1,7 +1,9 @@
 #include "ER_Sandbox.h"
 #include "ER_Utility.h"
-#include "Systems.inl"
 #include "ER_MaterialsCallbacks.h"
+#include "Systems.inl"
+
+#include "RHI/ER_RHI.h"
 
 namespace Library {
 
@@ -15,7 +17,6 @@ namespace Library {
 	void ER_Sandbox::Destroy(ER_Core& game)
 	{
 		game.CPUProfiler()->BeginCPUTime("Destroying scene: " + mName);
-		DeleteObject(mRenderStateHelper);
 		DeleteObject(mDirectionalLight);
 		DeleteObject(mSkybox);
 		DeleteObject(mPostProcessingStack);
@@ -33,7 +34,6 @@ namespace Library {
 
     void ER_Sandbox::Initialize(ER_Core& game, ER_Camera& camera, const std::string& sceneName, const std::string& sceneFolderPath)
     {
-        mRenderStateHelper = new RenderStateHelper(game);
 		mName = sceneName;
 
 		#pragma region INIT_SCENE
@@ -47,7 +47,7 @@ namespace Library {
 #pragma endregion
 
 		#pragma region INIT_EDITOR
-		mEditor = (ER_Editor*)game.Services().GetService(ER_Editor::TypeIdClass());
+		mEditor = (ER_Editor*)game.GetServices().FindService(ER_Editor::TypeIdClass());
 		assert(mEditor);
 		mEditor->LoadScene(mScene);
 #pragma endregion
@@ -60,7 +60,7 @@ namespace Library {
 #pragma endregion
 
 		#pragma region INIT_CONTROLS
-        mKeyboard = (ER_Keyboard*)game.Services().GetService(ER_Keyboard::TypeIdClass());
+        mKeyboard = (ER_Keyboard*)game.GetServices().FindService(ER_Keyboard::TypeIdClass());
         assert(mKeyboard);
 #pragma endregion
 
@@ -186,8 +186,8 @@ namespace Library {
 		mShadowMapper->Update(gameTime);
 		mFoliageSystem->Update(gameTime, mWindGustDistance, mWindStrength, mWindFrequency);
 		mDirectionalLight->UpdateProxyModel(gameTime, 
-			((ER_Camera*)game.Services().GetService(ER_Camera::TypeIdClass()))->ViewMatrix4X4(),
-			((ER_Camera*)game.Services().GetService(ER_Camera::TypeIdClass()))->ProjectionMatrix4X4()); //TODO refactor to DebugRenderer
+			((ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass()))->ViewMatrix4X4(),
+			((ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass()))->ProjectionMatrix4X4()); //TODO refactor to DebugRenderer
 
 		for (auto& object : mScene->objects)
 			object.second->Update(gameTime);
@@ -232,15 +232,9 @@ namespace Library {
 
 	void ER_Sandbox::Draw(ER_Core& game, const ER_CoreTime& gameTime)
 	{
-		//TODO set proper RS
-		//TODO set proper DS
-
-		if (mRenderStateHelper)
-			mRenderStateHelper->SaveRasterizerState();
-
-		ID3D11DeviceContext* context = game.Direct3DDeviceContext();
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
+		ER_RHI* rhi = game.GetRHI();
+		rhi->SetTopologyType(ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		
 		#pragma region DRAW_GBUFFER
 		mGBuffer->Start();
 		mGBuffer->Draw(mScene);
@@ -252,7 +246,7 @@ namespace Library {
 		#pragma region DRAW_SHADOWS
 		mShadowMapper->Draw(mScene, mTerrain);
 #pragma endregion
-
+		
 		#pragma region DRAW_GLOBAL_ILLUMINATION
 		{
 			if (mScene->HasLightProbesSupport() && !mLightProbesManager->AreProbesReady())
@@ -266,9 +260,7 @@ namespace Library {
 				mLightProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
 		}
 
-		mRenderStateHelper->SaveAll();
 		mIllumination->DrawGlobalIllumination(mGBuffer, gameTime);
-		mRenderStateHelper->RestoreAll();
 #pragma endregion
 
 		#pragma region DRAW_VOLUMETRIC_FOG
@@ -278,7 +270,6 @@ namespace Library {
 		#pragma region DRAW_LOCAL_ILLUMINATION
 		
 		mIllumination->DrawLocalIllumination(mGBuffer, mSkybox);
-
 		#pragma region DRAW_LAYERED_MATERIALS
 		for (auto& it = mScene->objects.begin(); it != mScene->objects.end(); it++)
 		{
@@ -317,18 +308,18 @@ namespace Library {
 #pragma endregion	
 
 		#pragma region DRAW_POSTPROCESSING
-		auto quad = (ER_QuadRenderer*)game.Services().GetService(ER_QuadRenderer::TypeIdClass());
+		auto quad = (ER_QuadRenderer*)game.GetServices().FindService(ER_QuadRenderer::TypeIdClass());
 		mPostProcessingStack->Begin(mIllumination->GetFinalIlluminationRT(), mGBuffer->GetDepth());
 		mPostProcessingStack->DrawEffects(gameTime, quad, mGBuffer, mVolumetricClouds, mVolumetricFog);
 		mPostProcessingStack->End();
 #pragma endregion
 
-		mRenderStateHelper->SaveAll();
+		//reset back to main rt in case we dont use Post Processing stack
+		rhi->SetMainRenderTargets();
 
 		#pragma region DRAW_IMGUI
 		ImGui::Render();
-		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-
+		rhi->RenderDrawDataImGui();
 #pragma endregion
 	}
 }

@@ -80,8 +80,8 @@ namespace Library
 
 	void ER_CameraFPS::Initialize()
 	{
-		mKeyboard = (ER_Keyboard*)mCore->Services().GetService(ER_Keyboard::TypeIdClass());
-		mMouse = (ER_Mouse*)mCore->Services().GetService(ER_Mouse::TypeIdClass());
+		mKeyboard = (ER_Keyboard*)mCore->GetServices().FindService(ER_Keyboard::TypeIdClass());
+		mMouse = (ER_Mouse*)mCore->GetServices().FindService(ER_Mouse::TypeIdClass());
 
 		ER_Camera::Initialize();
 	}

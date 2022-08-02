@@ -187,16 +187,13 @@
     <ClInclude Include="ER_Camera.h" />
     <ClInclude Include="ER_ColorHelper.h" />
     <ClInclude Include="Common.h" />
-    <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="ER_BasicColorMaterial.h" />
     <ClInclude Include="ER_DebugLightProbeMaterial.h" />
     <ClInclude Include="ER_GBufferMaterial.h" />
-    <ClInclude Include="ER_GPUTexture.h" />
     <ClInclude Include="ER_Sandbox.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="ER_Editor.h" />
     <ClInclude Include="ER_CPUProfiler.h" />
-    <ClInclude Include="ER_GPUBuffer.h" />
     <ClInclude Include="ER_LightProbesManager.h" />
     <ClInclude Include="ER_LightProbe.h" />
     <ClInclude Include="ER_Material.h" />
@@ -214,7 +211,7 @@
     <ClInclude Include="ER_CoreComponent.h" />
     <ClInclude Include="ER_CoreTime.h" />
     <ClInclude Include="ER_GBuffer.h" />
-    <ClInclude Include="GeneralEvent.h" />
+    <ClInclude Include="ER_GenericEvent.h" />
     <ClInclude Include="ER_Illumination.h" />
     <ClInclude Include="ER_Keyboard.h" />
     <ClInclude Include="Light.h" />
@@ -230,23 +227,23 @@
     <ClInclude Include="ER_Projector.h" />
     <ClInclude Include="ER_DebugProxyObject.h" />
     <ClInclude Include="ER_QuadRenderer.h" />
-    <ClInclude Include="RasterizerStates.h" />
     <ClInclude Include="ER_Ray.h" />
     <ClInclude Include="ER_RenderableAABB.h" />
     <ClInclude Include="ER_RenderingObject.h" />
-    <ClInclude Include="RenderStateHelper.h" />
+    <ClInclude Include="RHI\DX11\ER_RHI_DX11.h" />
+    <ClInclude Include="RHI\DX11\ER_RHI_DX11_GPUBuffer.h" />
+    <ClInclude Include="RHI\DX11\ER_RHI_DX11_GPUShader.h" />
+    <ClInclude Include="RHI\DX11\ER_RHI_DX11_GPUTexture.h" />
+    <ClInclude Include="RHI\ER_RHI.h" />
     <ClInclude Include="RTTI.h" />
-    <ClInclude Include="SamplerStates.h" />
     <ClInclude Include="ER_Scene.h" />
-    <ClInclude Include="ServiceContainer.h" />
-    <ClInclude Include="ShaderCompiler.h" />
+    <ClInclude Include="ER_CoreServicesContainer.h" />
     <ClInclude Include="ER_ShadowMapper.h" />
     <ClInclude Include="ER_Skybox.h" />
     <ClInclude Include="SpotLight.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="ER_Terrain.h" />
-    <ClInclude Include="TGATextureLoader.h" />
     <ClInclude Include="ER_Utility.h" />
     <ClInclude Include="ER_VectorHelper.h" />
     <ClInclude Include="ER_VertexDeclarations.h" />
@@ -261,11 +258,9 @@
     <ClCompile Include="ER_CameraFPS.cpp" />
     <ClCompile Include="ER_DebugLightProbeMaterial.cpp" />
     <ClCompile Include="ER_GBufferMaterial.cpp" />
-    <ClCompile Include="ER_GPUTexture.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="ER_Editor.cpp" />
     <ClCompile Include="ER_CPUProfiler.cpp" />
-    <ClCompile Include="ER_GPUBuffer.cpp" />
     <ClCompile Include="ER_Illumination.cpp" />
     <ClCompile Include="ER_LightProbe.cpp" />
     <ClCompile Include="ER_LightProbesManager.cpp" />
@@ -299,13 +294,14 @@
     <ClCompile Include="ER_Projector.cpp" />
     <ClCompile Include="ER_DebugProxyObject.cpp" />
     <ClCompile Include="ER_QuadRenderer.cpp" />
-    <ClCompile Include="RasterizerStates.cpp" />
     <ClCompile Include="ER_Ray.cpp" />
     <ClCompile Include="ER_RenderableAABB.cpp" />
-    <ClCompile Include="RenderStateHelper.cpp" />
-    <ClCompile Include="SamplerStates.cpp" />
+    <ClCompile Include="RHI\DX11\ER_RHI_DX11.cpp" />
+    <ClCompile Include="RHI\DX11\ER_RHI_DX11_GPUBuffer.cpp" />
+    <ClCompile Include="RHI\DX11\ER_RHI_DX11_GPUShader.cpp" />
+    <ClCompile Include="RHI\DX11\ER_RHI_DX11_GPUTexture.cpp" />
     <ClCompile Include="ER_Scene.cpp" />
-    <ClCompile Include="ServiceContainer.cpp" />
+    <ClCompile Include="ER_CoreServicesContainer.cpp" />
     <ClCompile Include="ER_ShadowMapper.cpp" />
     <ClCompile Include="SpotLight.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -315,7 +311,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ER_Terrain.cpp" />
-    <ClCompile Include="TGATextureLoader.cpp" />
     <ClCompile Include="ER_Utility.cpp" />
     <ClCompile Include="ER_VectorHelper.cpp" />
   </ItemGroup>

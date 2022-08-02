@@ -5,7 +5,6 @@
 #include "ER_CoreException.h"
 #include "ER_Model.h"
 #include "ER_RenderingObject.h"
-#include "ShaderCompiler.h"
 #include "ER_Utility.h"
 #include "ER_MaterialsCallbacks.h"
 
@@ -26,32 +25,25 @@ namespace Library
 
 	ER_Material::~ER_Material()
 	{
-		ReleaseObject(mInputLayout);
-		ReleaseObject(mVS);
-		ReleaseObject(mPS);
-		ReleaseObject(mGS);
-		ReleaseObject(mHS);
-		ReleaseObject(mDS);
+		DeleteObject(mInputLayout);
+		DeleteObject(mVertexShader);
+		DeleteObject(mGeometryShader);
+		DeleteObject(mPixelShader);
 	}
 
 	// Setting up the pipeline before the draw call
 	void ER_Material::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex)
 	{
-		ID3D11DeviceContext* context = GetCore()->Direct3DDeviceContext();
+		ER_RHI* rhi = GetCore()->GetRHI();
 
-		context->IASetInputLayout(mInputLayout);
+		rhi->SetInputLayout(mInputLayout);
 
 		if (mShaderFlags & HAS_VERTEX_SHADER)
-			context->VSSetShader(mVS, NULL, 0);
+			rhi->SetShader(mVertexShader);
 		if (mShaderFlags & HAS_GEOMETRY_SHADER)
-			context->GSSetShader(mGS, NULL, 0);
-		if (mShaderFlags & HAS_TESSELLATION_SHADER)
-		{
-			context->DSSetShader(mDS, NULL, 0);	
-			context->HSSetShader(mHS, NULL, 0);	
-		}
+			rhi->SetShader(mGeometryShader);
 		if (mShaderFlags & HAS_PIXEL_SHADER)
-			context->PSSetShader(mPS, NULL, 0);
+			rhi->SetShader(mPixelShader);
 
 		//override: apply constant buffers
 		//override: set constant buffers in context
@@ -59,63 +51,33 @@ namespace Library
 		//override: set resources in context
 	}
 
-	void ER_Material::CreateVertexShader(const std::string& path, D3D11_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount)
+	void ER_Material::CreateVertexShader(const std::string& path, ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount)
 	{
-		assert(!mShaderEntries.vertexEntry.empty());
+		ER_RHI* rhi = GetCore()->GetRHI();
 
-		std::string compilerErrorMessage = "Failed to compile VSMain from shader: " + path;
-		std::string createErrorMessage = "Failed to create vertex shader from shader: " + path;
-
-		ID3DBlob* blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(ER_Utility::ToWideString(path)).c_str(), mShaderEntries.vertexEntry.c_str(), vertexShaderModel.c_str(), &blob)))
-			throw ER_CoreException(compilerErrorMessage.c_str());
-		if (FAILED(GetCore()->Direct3DDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVS)))
-			throw ER_CoreException(createErrorMessage.c_str());
-
-		CreateInputLayout(inputElementDescriptions, inputElementDescriptionCount, blob->GetBufferPointer(), blob->GetBufferSize());
-
-		blob->Release();
+		mInputLayout = rhi->CreateInputLayout(inputElementDescriptions, inputElementDescriptionCount);
+		mVertexShader = rhi->CreateGPUShader();
+		mVertexShader->CompileShader(GetCore()->GetRHI(), path, mShaderEntries.vertexEntry, ER_VERTEX, mInputLayout);
 	}
 
 	void ER_Material::CreatePixelShader(const std::string& path)
 	{
-		assert(!mShaderEntries.pixelEntry.empty());
+		ER_RHI* rhi = GetCore()->GetRHI();
 
-		std::string compilerErrorMessage = "Failed to compile PSMain from shader: " + path;
-		std::string createErrorMessage = "Failed to create pixel shader from shader: " + path;
-
-		ID3DBlob* blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(ER_Utility::ToWideString(path)).c_str(), mShaderEntries.pixelEntry.c_str(), pixelShaderModel.c_str(), &blob)))
-			throw ER_CoreException(compilerErrorMessage.c_str());
-		if (FAILED(GetCore()->Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mPS)))
-			throw ER_CoreException(createErrorMessage.c_str());
-		blob->Release();
+		mPixelShader = rhi->CreateGPUShader();
+		mPixelShader->CompileShader(GetCore()->GetRHI(), path, mShaderEntries.pixelEntry, ER_PIXEL);
 	}
 
 	void ER_Material::CreateGeometryShader(const std::string& path)
 	{
-		assert(!mShaderEntries.geometryEntry.empty());
+		ER_RHI* rhi = GetCore()->GetRHI();
 
-		std::string compilerErrorMessage = "Failed to compile GSMain from shader: " + path;
-		std::string createErrorMessage = "Failed to create geometry shader from shader: " + path;
-
-		ID3DBlob* blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(ER_Utility::ToWideString(path)).c_str(), mShaderEntries.geometryEntry.c_str(), geometryShaderModel.c_str(), &blob)))
-			throw ER_CoreException(compilerErrorMessage.c_str());
-		if (FAILED(GetCore()->Direct3DDevice()->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mGS)))
-			throw ER_CoreException(createErrorMessage.c_str());
-		blob->Release();
+		mGeometryShader = rhi->CreateGPUShader();
+		mGeometryShader->CompileShader(GetCore()->GetRHI(), path, mShaderEntries.geometryEntry, ER_GEOMETRY);
 	}
 
 	void ER_Material::CreateTessellationShader(const std::string& path)
 	{
 		//TODO
-	}
-
-	void ER_Material::CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount, const void* shaderBytecodeWithInputSignature, UINT byteCodeLength)
-	{
-		HRESULT hr = GetCore()->Direct3DDevice()->CreateInputLayout(inputElementDescriptions, inputElementDescriptionCount, shaderBytecodeWithInputSignature, byteCodeLength, &mInputLayout);
-		if (FAILED(hr))
-			throw ER_CoreException("CreateInputLayout() failed when creating material's vertex shader.", hr);
 	}
 }

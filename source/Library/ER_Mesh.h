@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Common.h"
+#include "RHI/ER_RHI.h"
 
 struct aiMesh;
 
@@ -28,12 +29,12 @@ namespace Library
 		const std::vector<UINT>& Indices() const;
 		UINT FaceCount() const;
 
-		void CreateIndexBuffer(ID3D11Buffer** indexBuffer) const;
+		void CreateIndexBuffer(ER_RHI_GPUBuffer* indexBuffer) const;
 
-		void CreateVertexBuffer_Position(ID3D11Buffer** vertexBuffer) const;
-		void CreateVertexBuffer_PositionUv(ID3D11Buffer** vertexBuffer, int uvChannel = 0) const;
-		void CreateVertexBuffer_PositionUvNormal(ID3D11Buffer** vertexBuffer, int uvChannel = 0) const;
-		void CreateVertexBuffer_PositionUvNormalTangent(ID3D11Buffer** vertexBuffer, int uvChannel = 0) const;
+		void CreateVertexBuffer_Position(ER_RHI_GPUBuffer* vertexBuffer) const;
+		void CreateVertexBuffer_PositionUv(ER_RHI_GPUBuffer* vertexBuffer, int uvChannel = 0) const;
+		void CreateVertexBuffer_PositionUvNormal(ER_RHI_GPUBuffer* vertexBuffer, int uvChannel = 0) const;
+		void CreateVertexBuffer_PositionUvNormalTangent(ER_RHI_GPUBuffer* vertexBuffer, int uvChannel = 0) const;
 
 	private:
 		ER_Model& mModel;

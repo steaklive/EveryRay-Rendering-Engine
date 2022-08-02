@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "ER_CoreComponent.h"
+#include "RHI/ER_RHI.h"
 
 namespace Library {
 	struct QuadVertex
@@ -15,13 +16,13 @@ namespace Library {
 		ER_QuadRenderer(ER_Core& game);
 		~ER_QuadRenderer();
 
-		void Draw(ID3D11DeviceContext* context);
+		void Draw(ER_RHI* rhi);
 
 	private:
-		ID3D11VertexShader* mVS = nullptr;
-		ID3D11InputLayout* mInputLayout = nullptr;
-		ID3D11Buffer* mVertexBuffer;
-		ID3D11Buffer* mIndexBuffer;
+		ER_RHI_GPUShader* mVS = nullptr;
+		ER_RHI_InputLayout* mInputLayout = nullptr;
+		ER_RHI_GPUBuffer* mVertexBuffer = nullptr;
+		ER_RHI_GPUBuffer* mIndexBuffer = nullptr;
 	};
 }
 

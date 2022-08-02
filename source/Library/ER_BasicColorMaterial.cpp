@@ -1,5 +1,4 @@
 #include "ER_BasicColorMaterial.h"
-#include "ShaderCompiler.h"
 #include "ER_Utility.h"
 #include "ER_CoreException.h"
 #include "ER_Core.h"
@@ -15,9 +14,9 @@ namespace Library
 		//TODO instanced support
 		if (shaderFlags & HAS_VERTEX_SHADER)
 		{
-			D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
+			ER_RHI_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 			{
-				{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+				{ "POSITION", 0, ER_FORMAT_R32G32B32A32_FLOAT, 0, 0, true, 0 }
 			};
 			ER_Material::CreateVertexShader("content\\shaders\\BasicColor.hlsl", inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
 		}
@@ -25,7 +24,7 @@ namespace Library
 		if (shaderFlags & HAS_PIXEL_SHADER)
 			ER_Material::CreatePixelShader("content\\shaders\\BasicColor.hlsl");
 
-		mConstantBuffer.Initialize(ER_Material::GetCore()->Direct3DDevice());
+		mConstantBuffer.Initialize(ER_Material::GetCore()->GetRHI());
 	}
 
 	ER_BasicColorMaterial::~ER_BasicColorMaterial()
@@ -36,8 +35,8 @@ namespace Library
 
 	void ER_BasicColorMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex)
 	{
-		auto context = ER_Material::GetCore()->Direct3DDeviceContext();
-		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->Services().GetService(ER_Camera::TypeIdClass()));
+		auto rhi = ER_Material::GetCore()->GetRHI();
+		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->GetServices().FindService(ER_Camera::TypeIdClass()));
 		
 		assert(aObj);
 		assert(camera);
@@ -47,18 +46,17 @@ namespace Library
 		mConstantBuffer.Data.World = XMMatrixTranspose(aObj->GetTransformationMatrix());
 		mConstantBuffer.Data.ViewProjection = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());
 		mConstantBuffer.Data.Color = XMFLOAT4{0.0, 1.0, 0.0, 0.0};
-		mConstantBuffer.ApplyChanges(context);
-		ID3D11Buffer* CBs[1] = { mConstantBuffer.Buffer() };
+		mConstantBuffer.ApplyChanges(rhi);
 
-		context->VSSetConstantBuffers(0, 1, CBs);
-		context->PSSetConstantBuffers(0, 1, CBs);
+		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() });
+		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() });
 	}
 
 	// non-callback method for non-"RenderingObject" draws
 	void ER_BasicColorMaterial::PrepareForRendering(const XMMATRIX& worldTransform, const XMFLOAT4& color)
 	{
-		auto context = ER_Material::GetCore()->Direct3DDeviceContext();
-		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->Services().GetService(ER_Camera::TypeIdClass()));
+		auto rhi = ER_Material::GetCore()->GetRHI();
+		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->GetServices().FindService(ER_Camera::TypeIdClass()));
 
 		assert(camera);
 
@@ -67,14 +65,13 @@ namespace Library
 		mConstantBuffer.Data.World = XMMatrixTranspose(worldTransform);
 		mConstantBuffer.Data.ViewProjection = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());
 		mConstantBuffer.Data.Color = color;
-		mConstantBuffer.ApplyChanges(context);
-		ID3D11Buffer* CBs[1] = { mConstantBuffer.Buffer() };
+		mConstantBuffer.ApplyChanges(rhi);
 
-		context->VSSetConstantBuffers(0, 1, CBs);
-		context->PSSetConstantBuffers(0, 1, CBs);
+		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() });
+		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() });
 	}
 
-	void ER_BasicColorMaterial::CreateVertexBuffer(const ER_Mesh& mesh, ID3D11Buffer** vertexBuffer)
+	void ER_BasicColorMaterial::CreateVertexBuffer(const ER_Mesh& mesh, ER_RHI_GPUBuffer* vertexBuffer)
 	{
 		mesh.CreateVertexBuffer_Position(vertexBuffer);
 	}

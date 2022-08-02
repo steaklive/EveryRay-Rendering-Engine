@@ -1,7 +1,6 @@
 #include "ER_QuadRenderer.h"
-#include "ER_CoreException.h"
-#include "ShaderCompiler.h"
 #include "ER_Core.h"
+#include "ER_CoreException.h"
 #include "ER_Utility.h"
 
 namespace Library {
@@ -9,7 +8,7 @@ namespace Library {
 
 	ER_QuadRenderer::ER_QuadRenderer(ER_Core& game) : ER_CoreComponent(game)
 	{
-		auto device = game.Direct3DDevice();
+		auto rhi = game.GetRHI();
 		QuadVertex* vertices = new QuadVertex[4];
 
 		// Bottom left.
@@ -37,83 +36,45 @@ namespace Library {
 		indices[4] = 3;
 		indices[5] = 0;
 
-		D3D11_BUFFER_DESC vertexBufferDesc;
+		mVertexBuffer = rhi->CreateGPUBuffer();
+		mVertexBuffer->CreateGPUBufferResource(rhi, vertices, 6, sizeof(QuadVertex), false, ER_BIND_VERTEX_BUFFER);
 
-		vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-		vertexBufferDesc.ByteWidth = sizeof(QuadVertex) * 6;
-		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		vertexBufferDesc.MiscFlags = 0;
-		vertexBufferDesc.StructureByteStride = 0;
+		mIndexBuffer = rhi->CreateGPUBuffer();
+		mIndexBuffer->CreateGPUBufferResource(rhi, indices, 6, sizeof(unsigned long), false, ER_BIND_INDEX_BUFFER, 0, ER_RESOURCE_MISC_NONE, ER_FORMAT_R32_UINT);
 
-		D3D11_SUBRESOURCE_DATA vertexData;
 
-		vertexData.pSysMem = vertices;
-		vertexData.SysMemPitch = 0;
-		vertexData.SysMemSlicePitch = 0;
+		ER_RHI_INPUT_ELEMENT_DESC inputLayoutDesc[2];
+		inputLayoutDesc[0].SemanticName = "POSITION";
+		inputLayoutDesc[0].SemanticIndex = 0;
+		inputLayoutDesc[0].Format = ER_FORMAT_R32G32B32_FLOAT;
+		inputLayoutDesc[0].InputSlot = 0;
+		inputLayoutDesc[0].AlignedByteOffset = 0;
+		inputLayoutDesc[0].IsPerVertex = true;
+		inputLayoutDesc[0].InstanceDataStepRate = 0;
 
-		HRESULT hr = device->CreateBuffer(&vertexBufferDesc, &vertexData, &mVertexBuffer);
+		inputLayoutDesc[1].SemanticName = "TEXCOORD";
+		inputLayoutDesc[1].SemanticIndex = 0;
+		inputLayoutDesc[1].Format = ER_FORMAT_R32G32_FLOAT;
+		inputLayoutDesc[1].InputSlot = 0;
+		inputLayoutDesc[1].AlignedByteOffset = 0xffffffff;
+		inputLayoutDesc[1].IsPerVertex = true;
+		inputLayoutDesc[1].InstanceDataStepRate = 0;
 
-		if (FAILED(hr))
-			MessageBox(NULL, L"An error occurred while trying to create the vertex buffer for Quad.", L"Error", MB_OK);
+		int numElements = sizeof(inputLayoutDesc) / sizeof(inputLayoutDesc[0]);
+		mInputLayout = rhi->CreateInputLayout(inputLayoutDesc, numElements);
 
-		D3D11_BUFFER_DESC indexBufferDesc;
-
-		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		indexBufferDesc.ByteWidth = sizeof(unsigned long) * 6;
-		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-		indexBufferDesc.CPUAccessFlags = 0;
-		indexBufferDesc.MiscFlags = 0;
-		indexBufferDesc.StructureByteStride = 0;
-
-		D3D11_SUBRESOURCE_DATA indexData;
-
-		indexData.pSysMem = indices;
-		indexData.SysMemPitch = 0;
-		indexData.SysMemSlicePitch = 0;
-
-		hr = device->CreateBuffer(&indexBufferDesc, &indexData, &mIndexBuffer);
-
-		if (FAILED(hr))
-			MessageBox(NULL, L"An error occurred while trying to create the index buffer for Quad.", L"Error", MB_OK);
-
-		ID3DBlob* blob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Quad.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
-			throw ER_CoreException("Failed to load VSMain from shader: Quad.hlsl!");
-		if (FAILED(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mVS)))
-			throw ER_CoreException("Failed to create vertex shader from Quad.hlsl!");
-		{
-			D3D11_INPUT_ELEMENT_DESC inputLayoutDesc[2];
-			inputLayoutDesc[0].SemanticName = "POSITION";
-			inputLayoutDesc[0].SemanticIndex = 0;
-			inputLayoutDesc[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-			inputLayoutDesc[0].InputSlot = 0;
-			inputLayoutDesc[0].AlignedByteOffset = 0;
-			inputLayoutDesc[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-			inputLayoutDesc[0].InstanceDataStepRate = 0;
-
-			inputLayoutDesc[1].SemanticName = "TEXCOORD";
-			inputLayoutDesc[1].SemanticIndex = 0;
-			inputLayoutDesc[1].Format = DXGI_FORMAT_R32G32_FLOAT;
-			inputLayoutDesc[1].InputSlot = 0;
-			inputLayoutDesc[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
-			inputLayoutDesc[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-			inputLayoutDesc[1].InstanceDataStepRate = 0;
-
-			int numElements = sizeof(inputLayoutDesc) / sizeof(inputLayoutDesc[0]);
-			device->CreateInputLayout(inputLayoutDesc, numElements, blob->GetBufferPointer(), blob->GetBufferSize(), &mInputLayout);
-		}
-		blob->Release();
+		mVS = rhi->CreateGPUShader();
+		mVS->CompileShader(rhi, "content\\shaders\\Quad.hlsl", "VSMain", ER_VERTEX, mInputLayout);
 	}
 	ER_QuadRenderer::~ER_QuadRenderer()
 	{
-		ReleaseObject(mVS);
-		ReleaseObject(mInputLayout);
-		ReleaseObject(mVertexBuffer);
-		ReleaseObject(mIndexBuffer);
+		DeleteObject(mVS);
+		DeleteObject(mInputLayout);
+		DeleteObject(mVertexBuffer);
+		DeleteObject(mIndexBuffer);
 	}
 
-	void ER_QuadRenderer::Draw(ID3D11DeviceContext* context)
+	void ER_QuadRenderer::Draw(ER_RHI* rhi)
 	{
 		unsigned int stride;
 		unsigned int offset;
@@ -121,15 +82,12 @@ namespace Library {
 		stride = sizeof(QuadVertex);
 		offset = 0;
 
-		context->IASetInputLayout(mInputLayout);
-		context->VSSetShader(mVS, NULL, NULL);
-
-		context->IASetVertexBuffers(0, 1, &mVertexBuffer, &stride, &offset);
-		context->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-		context->DrawIndexed(6, 0, 0);
+		rhi->SetInputLayout(mInputLayout);
+		rhi->SetShader(mVS);
+		rhi->SetVertexBuffers({ mVertexBuffer });
+		rhi->SetIndexBuffer(mIndexBuffer);
+		rhi->SetTopologyType(ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		rhi->DrawIndexed(6);
+		rhi->UnbindResourcesFromShader(ER_VERTEX);
 	}
-
-
 }

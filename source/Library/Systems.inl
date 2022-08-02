@@ -19,4 +19,3 @@
 #include "..\Library\ER_VolumetricFog.h"
 #include "..\Library\ER_Illumination.h"
 #include "..\Library\ER_LightProbesManager.h"
-#include "..\Library\RenderStateHelper.h"

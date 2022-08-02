@@ -1,10 +1,9 @@
 #pragma once
 #include "Common.h"
 #include "ER_CoreComponent.h"
-#include "ConstantBuffer.h"
-#include "ER_GPUTexture.h"
-
 #include "ER_LightProbesManager.h"
+
+#include "RHI/ER_RHI.h"
 
 #define NUM_VOXEL_GI_CASCADES 2
 #define NUM_VOXEL_GI_TEX_MIPS 6
@@ -19,10 +18,8 @@ namespace Library
 	class ER_GBuffer;
 	class ER_ShadowMapper;
 	class ER_FoliageManager;
-	class IBLRadianceMap;
 	class ER_RenderableAABB;
 	class ER_RenderingObject;
-	class ER_GPUBuffer;
 	class ER_Skybox;
 	class ER_VolumetricFog;
 
@@ -112,14 +109,14 @@ namespace Library
 		void Update(const ER_CoreTime& gameTime, const ER_Scene* scene);
 		void Config() { mShowDebug = !mShowDebug; }
 
-		void SetShadowMapSRV(ID3D11ShaderResourceView* srv) { mShadowMapSRV = srv; }
+		void SetShadowMap(ER_RHI_GPUTexture* tex) { mShadowMap = tex; }
 		void SetFoliageSystemForGI(ER_FoliageManager* foliageSystem);
 		void SetProbesManager(ER_LightProbesManager* manager) { mProbesManager = manager; }
 
 		void PrepareForForwardLighting(ER_RenderingObject* aObj, int meshIndex);
 
-		ER_GPUTexture* GetLocalIlluminationRT() const { return mLocalIlluminationRT; }
-		ER_GPUTexture* GetFinalIlluminationRT() const { return mFinalIlluminationRT; }
+		ER_RHI_GPUTexture* GetLocalIlluminationRT() const { return mLocalIlluminationRT; }
+		ER_RHI_GPUTexture* GetFinalIlluminationRT() const { return mFinalIlluminationRT; }
 
 		void SetSSS(bool val) { mIsSSS = val; }
 		bool IsSSSBlurring() { return mIsSSS && !mIsSSSCulled; }
@@ -132,8 +129,8 @@ namespace Library
 		float GetSSSDirLightPlaneScale() { return mSSSDirectionalLightPlaneScale; }
 		void SetSSSDirLightPlaneScale(float val) { mSSSDirectionalLightPlaneScale = val; }
 	private:
-		void DrawDeferredLighting(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget);
-		void DrawForwardLighting(ER_GBuffer* gbuffer, ER_GPUTexture* aRenderTarget);
+		void DrawDeferredLighting(ER_GBuffer* gbuffer, ER_RHI_GPUTexture* aRenderTarget);
+		void DrawForwardLighting(ER_GBuffer* gbuffer, ER_RHI_GPUTexture* aRenderTarget);
 
 		void UpdateImGui();
 		void UpdateVoxelCameraPosition();
@@ -147,49 +144,45 @@ namespace Library
 		ER_LightProbesManager* mProbesManager = nullptr;
 		ER_FoliageManager* mFoliageSystem = nullptr;
 		ER_VolumetricFog* mVolumetricFog = nullptr;
+		ER_GBuffer* mGbuffer = nullptr;
 
 		using RenderingObjectInfo = std::map<std::string, ER_RenderingObject*>;
 		RenderingObjectInfo mVoxelizationObjects[NUM_VOXEL_GI_CASCADES];
 
-		ConstantBuffer<IlluminationCBufferData::VoxelizationDebugCB> mVoxelizationDebugConstantBuffer;
-		ConstantBuffer<IlluminationCBufferData::VoxelConeTracingMainCB> mVoxelConeTracingMainConstantBuffer;
-		ConstantBuffer<IlluminationCBufferData::UpsampleBlurCB> mUpsampleBlurConstantBuffer;
-		ConstantBuffer<IlluminationCBufferData::CompositeTotalIlluminationCB> mCompositeTotalIlluminationConstantBuffer;
-		ConstantBuffer<IlluminationCBufferData::DeferredLightingCB> mDeferredLightingConstantBuffer;
-		ConstantBuffer<IlluminationCBufferData::ForwardLightingCB> mForwardLightingConstantBuffer;
-		ConstantBuffer<IlluminationCBufferData::LightProbesCB> mLightProbesConstantBuffer;
+		ER_RHI_GPUConstantBuffer<IlluminationCBufferData::VoxelizationDebugCB> mVoxelizationDebugConstantBuffer;
+		ER_RHI_GPUConstantBuffer<IlluminationCBufferData::VoxelConeTracingMainCB> mVoxelConeTracingMainConstantBuffer;
+		ER_RHI_GPUConstantBuffer<IlluminationCBufferData::UpsampleBlurCB> mUpsampleBlurConstantBuffer;
+		ER_RHI_GPUConstantBuffer<IlluminationCBufferData::CompositeTotalIlluminationCB> mCompositeTotalIlluminationConstantBuffer;
+		ER_RHI_GPUConstantBuffer<IlluminationCBufferData::DeferredLightingCB> mDeferredLightingConstantBuffer;
+		ER_RHI_GPUConstantBuffer<IlluminationCBufferData::ForwardLightingCB> mForwardLightingConstantBuffer;
+		ER_RHI_GPUConstantBuffer<IlluminationCBufferData::LightProbesCB> mLightProbesConstantBuffer;
 
-		std::vector<ER_GPUTexture*> mVCTVoxelCascades3DRTs;
-		ER_GPUTexture* mVCTVoxelizationDebugRT = nullptr;
-		ER_GPUTexture* mVCTMainRT = nullptr;
-		ER_GPUTexture* mVCTUpsampleAndBlurRT = nullptr;
+		std::vector<ER_RHI_GPUTexture*> mVCTVoxelCascades3DRTs;
+		ER_RHI_GPUTexture* mVCTVoxelizationDebugRT = nullptr;
+		ER_RHI_GPUTexture* mVCTMainRT = nullptr;
+		ER_RHI_GPUTexture* mVCTUpsampleAndBlurRT = nullptr;
 
-		ER_GPUTexture* mLocalIlluminationRT = nullptr;
-		ER_GPUTexture* mFinalIlluminationRT = nullptr;
+		ER_RHI_GPUTexture* mLocalIlluminationRT = nullptr;
+		ER_RHI_GPUTexture* mFinalIlluminationRT = nullptr;
 
-		ER_GBuffer* mGbuffer = nullptr;
+		ER_RHI_GPUTexture* mDepthBuffer = nullptr;
+		ER_RHI_GPUTexture* mShadowMap = nullptr;
 
-		ER_GPUTexture* mDepthBuffer = nullptr;
-
-		ID3D11VertexShader* mVCTVoxelizationDebugVS = nullptr;
-		ID3D11GeometryShader* mVCTVoxelizationDebugGS = nullptr;
-		ID3D11PixelShader* mVCTVoxelizationDebugPS = nullptr;
-		ID3D11ComputeShader* mVCTMainCS = nullptr;
-		ID3D11ComputeShader* mUpsampleBlurCS = nullptr;
-		ID3D11ComputeShader* mCompositeIlluminationCS = nullptr;
-		ID3D11ComputeShader* mDeferredLightingCS = nullptr;
-		ID3D11VertexShader* mForwardLightingVS = nullptr;
-		ID3D11VertexShader* mForwardLightingVS_Instancing = nullptr;
-		ID3D11PixelShader* mForwardLightingPS = nullptr;
-		ID3D11PixelShader* mForwardLightingDiffuseProbesPS = nullptr;
-		ID3D11PixelShader* mForwardLightingSpecularProbesPS = nullptr;
-
-		ID3D11ShaderResourceView* mShadowMapSRV = nullptr;
-
-		ID3D11DepthStencilState* mDepthStencilStateRW = nullptr;
+		ER_RHI_GPUShader* mVCTVoxelizationDebugVS = nullptr;
+		ER_RHI_GPUShader* mVCTVoxelizationDebugGS = nullptr;
+		ER_RHI_GPUShader* mVCTVoxelizationDebugPS = nullptr;
+		ER_RHI_GPUShader* mVCTMainCS = nullptr;
+		ER_RHI_GPUShader* mUpsampleBlurCS = nullptr;
+		ER_RHI_GPUShader* mCompositeIlluminationCS = nullptr;
+		ER_RHI_GPUShader* mDeferredLightingCS = nullptr;
+		ER_RHI_GPUShader* mForwardLightingVS = nullptr;
+		ER_RHI_GPUShader* mForwardLightingVS_Instancing = nullptr;
+		ER_RHI_GPUShader* mForwardLightingPS = nullptr;
+		ER_RHI_GPUShader* mForwardLightingDiffuseProbesPS = nullptr;
+		ER_RHI_GPUShader* mForwardLightingSpecularProbesPS = nullptr;
 		
-		ID3D11InputLayout* mForwardLightingRenderingObjectInputLayout = nullptr;
-		ID3D11InputLayout* mForwardLightingRenderingObjectInputLayout_Instancing = nullptr;
+		ER_RHI_InputLayout* mForwardLightingRenderingObjectInputLayout = nullptr;
+		ER_RHI_InputLayout* mForwardLightingRenderingObjectInputLayout_Instancing = nullptr;
 
 		float mWorldVoxelScales[NUM_VOXEL_GI_CASCADES] = { 2.0f, 0.5f };
 		XMFLOAT4 mVoxelCameraPositions[NUM_VOXEL_GI_CASCADES];

@@ -1,12 +1,10 @@
 #include "ER_PostProcessingStack.h"
-#include "ShaderCompiler.h"
 #include "ER_CoreException.h"
 #include "ER_Utility.h"
 #include "ER_ColorHelper.h"
 #include "ER_MatrixHelper.h"
 #include "DirectionalLight.h"
 #include "ER_QuadRenderer.h"
-#include "SamplerStates.h"
 #include "ER_GBuffer.h"
 #include "ER_Camera.h"
 #include "ER_VolumetricClouds.h"
@@ -16,7 +14,7 @@
 namespace Library {
 
 	ER_PostProcessingStack::ER_PostProcessingStack(ER_Core& pCore, ER_Camera& pCamera)
-		: game(pCore), camera(pCamera)
+		: mCore(pCore), camera(pCamera)
 	{
 	}
 
@@ -31,14 +29,14 @@ namespace Library {
 		DeleteObject(mLinearFogRT);
 		DeleteObject(mVolumetricFogRT);
 
-		ReleaseObject(mTonemappingPS);
-		ReleaseObject(mSSRPS);
-		ReleaseObject(mSSSPS);
-		ReleaseObject(mColorGradingPS);
-		ReleaseObject(mVignettePS);
-		ReleaseObject(mFXAAPS);
-		ReleaseObject(mLinearFogPS);
-		ReleaseObject(mFinalResolvePS);
+		DeleteObject(mTonemappingPS);
+		DeleteObject(mSSRPS);
+		DeleteObject(mSSSPS);
+		DeleteObject(mColorGradingPS);
+		DeleteObject(mVignettePS);
+		DeleteObject(mFXAAPS);
+		DeleteObject(mLinearFogPS);
+		DeleteObject(mFinalResolvePS);
 
 		mSSRConstantBuffer.Release();
 		mSSSConstantBuffer.Release();
@@ -49,119 +47,101 @@ namespace Library {
 
 	void ER_PostProcessingStack::Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR, bool pFog, bool pLightShafts)
 	{
-		ID3DBlob* pShaderBlob = nullptr;
-		if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\EmptyColorResolve.hlsl").c_str(), "PSMain", "ps_5_0", &pShaderBlob)))
-			throw ER_CoreException("Failed to load PSMain pass from shader: EmptyColorResolve.hlsl!");
-		if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mFinalResolvePS)))
-			throw ER_CoreException("Failed to create PSMain shader from EmptyColorResolve.hlsl!");
-		pShaderBlob->Release();
+		auto rhi = mCore.GetRHI();
 
+		mFinalResolvePS = rhi->CreateGPUShader();
+		mFinalResolvePS->CompileShader(rhi, "content\\shaders\\EmptyColorResolve.hlsl", "PSMain", ER_PIXEL);
 
 		//Linear fog
 		{
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\LinearFog.hlsl").c_str(), "PSMain", "ps_5_0", &pShaderBlob)))
-				throw ER_CoreException("Failed to load PSMain pass from shader: LinearFog.hlsl!");
-			if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mLinearFogPS)))
-				throw ER_CoreException("Failed to create PSMain shader from LinearFog.hlsl!");
-			pShaderBlob->Release();
+			mLinearFogPS = rhi->CreateGPUShader();
+			mLinearFogPS->CompileShader(rhi, "content\\shaders\\LinearFog.hlsl", "PSMain", ER_PIXEL);
+			
+			mLinearFogConstantBuffer.Initialize(rhi);
 
-			mLinearFogConstantBuffer.Initialize(game.Direct3DDevice());
-			mLinearFogRT = new ER_GPUTexture(game.Direct3DDevice(), static_cast<UINT>(game.ScreenWidth()), static_cast<UINT>(game.ScreenHeight()), 1u,
-				DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+			mLinearFogRT = rhi->CreateGPUTexture();
+			mLinearFogRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
+				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 		}
 
-		mVolumetricFogRT = new ER_GPUTexture(game.Direct3DDevice(), static_cast<UINT>(game.ScreenWidth()), static_cast<UINT>(game.ScreenHeight()), 1u,
-			DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+		mVolumetricFogRT = rhi->CreateGPUTexture();
+		mVolumetricFogRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
+			ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 
 		//SSR
 		{
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\SSR.hlsl").c_str(), "PSMain", "ps_5_0", &pShaderBlob)))
-				throw ER_CoreException("Failed to load PSMain pass from shader: SSR.hlsl!");
-			if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mSSRPS)))
-				throw ER_CoreException("Failed to create PSMain shader from SSR.hlsl!");
-			pShaderBlob->Release();
+			mSSRPS = rhi->CreateGPUShader();
+			mSSRPS->CompileShader(rhi, "content\\shaders\\SSR.hlsl", "PSMain", ER_PIXEL);
 
-			mSSRConstantBuffer.Initialize(game.Direct3DDevice());
-			mSSRRT = new ER_GPUTexture(game.Direct3DDevice(), static_cast<UINT>(game.ScreenWidth()), static_cast<UINT>(game.ScreenHeight()), 1u,
-				DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+			mSSRConstantBuffer.Initialize(rhi);
+			
+			mSSRRT = rhi->CreateGPUTexture();
+			mSSRRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
+				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 		}
 
 		//SSS
 		{
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\SSS.hlsl").c_str(), "BlurPS", "ps_5_0", &pShaderBlob)))
-				throw ER_CoreException("Failed to load BlurPS pass from shader: SSS.hlsl!");
-			if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mSSSPS)))
-				throw ER_CoreException("Failed to create BlurPS shader from SSS.hlsl!");
-			pShaderBlob->Release();
+			mSSSPS = rhi->CreateGPUShader();
+			mSSSPS->CompileShader(rhi, "content\\shaders\\SSS.hlsl", "BlurPS", ER_PIXEL);
 
-			mSSSConstantBuffer.Initialize(game.Direct3DDevice());
-			mSSSRT = new ER_GPUTexture(game.Direct3DDevice(), static_cast<UINT>(game.ScreenWidth()), static_cast<UINT>(game.ScreenHeight()), 1u,
-				DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+			mSSSConstantBuffer.Initialize(rhi);
+
+			mSSSRT = rhi->CreateGPUTexture();
+			mSSSRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
+				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 		}
 
 		//Tonemap
-		{
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Tonemap.hlsl").c_str(), "PSMain", "ps_5_0", &pShaderBlob)))
-				throw ER_CoreException("Failed to load PSMain pass from shader: Tonemap.hlsl!");
-			if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mTonemappingPS)))
-				throw ER_CoreException("Failed to create PSMain shader from Tonemap.hlsl!");
-			pShaderBlob->Release();
+		{		
+			mTonemappingPS = rhi->CreateGPUShader();
+			mTonemappingPS->CompileShader(rhi, "content\\shaders\\Tonemap.hlsl", "PSMain", ER_PIXEL);
 
-			//mSSRConstantBuffer.Initialize(game.Direct3DDevice());
-			mTonemappingRT = new ER_GPUTexture(game.Direct3DDevice(), static_cast<UINT>(game.ScreenWidth()), static_cast<UINT>(game.ScreenHeight()), 1u,
-				DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+			mTonemappingRT = rhi->CreateGPUTexture();
+			mTonemappingRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
+				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 		}
 
 		//Color grading
 		{
-			std::wstring LUTtexture1 = ER_Utility::GetFilePath(L"content\\shaders\\LUT_1.png");
-			if (FAILED(DirectX::CreateWICTextureFromFile(game.Direct3DDevice(), game.Direct3DDeviceContext(), LUTtexture1.c_str(), nullptr, &mLUTs[0])))
-				throw ER_CoreException("Failed to load LUT1 texture.");
+			mLUTs[0] = rhi->CreateGPUTexture();
+			mLUTs[0]->CreateGPUTextureResource(rhi, "content\\shaders\\LUT_1.png");
+			mLUTs[1] = rhi->CreateGPUTexture();
+			mLUTs[1]->CreateGPUTextureResource(rhi, "content\\shaders\\LUT_2.png");
+			mLUTs[2] = rhi->CreateGPUTexture();
+			mLUTs[2]->CreateGPUTextureResource(rhi, "content\\shaders\\LUT_3.png");
+			
+			mColorGradingPS = rhi->CreateGPUShader();
+			mColorGradingPS->CompileShader(rhi, "content\\shaders\\ColorGrading.hlsl", "PSMain", ER_PIXEL);
 
-			std::wstring LUTtexture2 = ER_Utility::GetFilePath(L"content\\shaders\\LUT_2.png");
-			if (FAILED(DirectX::CreateWICTextureFromFile(game.Direct3DDevice(), game.Direct3DDeviceContext(), LUTtexture2.c_str(), nullptr, &mLUTs[1])))
-				throw ER_CoreException("Failed to load LUT2 texture.");
-
-			std::wstring LUTtexture3 = ER_Utility::GetFilePath(L"content\\shaders\\LUT_3.png");
-			if (FAILED(DirectX::CreateWICTextureFromFile(game.Direct3DDevice(), game.Direct3DDeviceContext(), LUTtexture3.c_str(), nullptr, &mLUTs[2])))
-				throw ER_CoreException("Failed to load LUT3 texture.");
-
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\ColorGrading.hlsl").c_str(), "PSMain", "ps_5_0", &pShaderBlob)))
-				throw ER_CoreException("Failed to load PSMain pass from shader: ColorGrading.hlsl!");
-			if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mColorGradingPS)))
-				throw ER_CoreException("Failed to create PSMain shader from ColorGrading.hlsl!");
-			pShaderBlob->Release();
-
-			mColorGradingRT = new ER_GPUTexture(game.Direct3DDevice(), static_cast<UINT>(game.ScreenWidth()), static_cast<UINT>(game.ScreenHeight()), 1u,
-				DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+			mColorGradingRT = rhi->CreateGPUTexture();
+			mColorGradingRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
+				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 		}
 
 		//Vignette
 		{
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Vignette.hlsl").c_str(), "PSMain", "ps_5_0", &pShaderBlob)))
-				throw ER_CoreException("Failed to load PSMain pass from shader: Vignette.hlsl!");
-			if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mVignettePS)))
-				throw ER_CoreException("Failed to create PSMain shader from Vignette.hlsl!");
-			pShaderBlob->Release();
+			mVignettePS = rhi->CreateGPUShader();
+			mVignettePS->CompileShader(rhi, "content\\shaders\\Vignette.hlsl", "PSMain", ER_PIXEL);
 
-			mVignetteConstantBuffer.Initialize(game.Direct3DDevice());
-			mVignetteRT = new ER_GPUTexture(game.Direct3DDevice(), static_cast<UINT>(game.ScreenWidth()), static_cast<UINT>(game.ScreenHeight()), 1u,
-				DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+			mVignetteConstantBuffer.Initialize(rhi);
+			
+			mVignetteRT = rhi->CreateGPUTexture();
+			mVignetteRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
+				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 		}	
 		
 		//FXAA
 		{
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\FXAA.hlsl").c_str(), "PSMain", "ps_5_0", &pShaderBlob)))
-				throw ER_CoreException("Failed to load PSMain pass from shader: FXAA.hlsl!");
-			if (FAILED(game.Direct3DDevice()->CreatePixelShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &mFXAAPS)))
-				throw ER_CoreException("Failed to create PSMain shader from FXAA.hlsl!");
-			pShaderBlob->Release();
+			mFXAAPS = rhi->CreateGPUShader();
+			mFXAAPS->CompileShader(rhi, "content\\shaders\\FXAA.hlsl", "PSMain", ER_PIXEL);
 
-			mFXAAConstantBuffer.Initialize(game.Direct3DDevice());
-			mFXAART = new ER_GPUTexture(game.Direct3DDevice(), static_cast<UINT>(game.ScreenWidth()), static_cast<UINT>(game.ScreenHeight()), 1u,
-				DXGI_FORMAT_R11G11B10_FLOAT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 1);
+			mFXAAConstantBuffer.Initialize(rhi);
+
+			mFXAART = rhi->CreateGPUTexture();
+			mFXAART->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
+				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 		}
-
 	}
 
 	void ER_PostProcessingStack::Update()
@@ -185,7 +165,7 @@ namespace Library {
 
 		if (ImGui::CollapsingHeader("Separable Subsurface Scattering"))
 		{
-			ER_Illumination* illumination = game.GetLevel()->mIllumination;
+			ER_Illumination* illumination = mCore.GetLevel()->mIllumination;
 
 			ImGui::Checkbox("SSS - On", &mUseSSS);
 			illumination->SetSSS(mUseSSS);
@@ -245,66 +225,52 @@ namespace Library {
 		ImGui::End();
 	}
 	
-	void ER_PostProcessingStack::Begin(ER_GPUTexture* aInitialRT, ER_GPUTexture* aDepthTarget)
+	void ER_PostProcessingStack::Begin(ER_RHI_GPUTexture* aInitialRT, ER_RHI_GPUTexture* aDepthTarget)
 	{
 		assert(aInitialRT && aDepthTarget);
 		mRenderTargetBeforePostProcessingPasses = aInitialRT;
 		mDepthTarget = aDepthTarget;
-		game.Direct3DDeviceContext()->OMSetRenderTargets(1, aInitialRT->GetRTVs(), aDepthTarget->GetDSV());
+
+		auto rhi = mCore.GetRHI();
+		rhi->SetRenderTargets({ aInitialRT }, aDepthTarget);
 	}
 
-	void ER_PostProcessingStack::End(ER_GPUTexture* aResolveRT)
+	void ER_PostProcessingStack::End(ER_RHI_GPUTexture* aResolveRT)
 	{
-		game.ResetRenderTargets();
+		auto rhi = mCore.GetRHI();
+		rhi->UnbindRenderTargets();
+
+		rhi->SetMainRenderTargets();
 
 		//final resolve to main RT (pre-UI)
 		{
-			ER_QuadRenderer* quad = (ER_QuadRenderer*)game.Services().GetService(ER_QuadRenderer::TypeIdClass());
+			ER_QuadRenderer* quad = (ER_QuadRenderer*)mCore.GetServices().FindService(ER_QuadRenderer::TypeIdClass());
 			assert(quad);
 			assert(mRenderTargetBeforeResolve);
 
-			auto context = game.Direct3DDeviceContext();
-
-			ID3D11ShaderResourceView* SR[1] = { aResolveRT ? aResolveRT->GetSRV() : mRenderTargetBeforeResolve->GetSRV() };
-			context->PSSetShaderResources(0, 1, SR);
-			ID3D11SamplerState* SS[1] = { SamplerStates::TrilinearWrap };
-			context->PSSetSamplers(0, 1, SS);
-			context->PSSetShader(mFinalResolvePS, NULL, NULL);
-			quad->Draw(context);
+			rhi->SetShader(mFinalResolvePS);
+			rhi->SetShaderResources(ER_PIXEL, { aResolveRT ? aResolveRT : mRenderTargetBeforeResolve });
+			rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
+			quad->Draw(rhi);
 		}
+
+		rhi->UnbindResourcesFromShader(ER_PIXEL);
 	}
 
-	void ER_PostProcessingStack::PrepareDrawingTonemapping(ER_GPUTexture* aInputTexture)
+	void ER_PostProcessingStack::PrepareDrawingTonemapping(ER_RHI_GPUTexture* aInputTexture)
 	{
 		assert(aInputTexture);
-		auto context = game.Direct3DDeviceContext();
+		auto rhi = mCore.GetRHI();
 
-		//mSSRConstantBuffer.Data.InvProjMatrix = XMMatrixTranspose(XMMatrixInverse(nullptr, camera.ProjectionMatrix()));
-		//mSSRConstantBuffer.Data.InvViewMatrix = XMMatrixTranspose(XMMatrixInverse(nullptr, camera.ViewMatrix()));
-		//mSSRConstantBuffer.Data.ViewMatrix = XMMatrixTranspose(camera.ViewMatrix());
-		//mSSRConstantBuffer.Data.ProjMatrix = XMMatrixTranspose(camera.ProjectionMatrix());
-		//mSSRConstantBuffer.Data.CameraPosition = XMFLOAT4(camera.Position().x, camera.Position().y, camera.Position().z, 1.0f);
-		//mSSRConstantBuffer.Data.StepSize = mSSRStepSize;
-		//mSSRConstantBuffer.Data.MaxThickness = mSSRMaxThickness;
-		//mSSRConstantBuffer.Data.Time = static_cast<float>(gameTime.TotalGameTime());
-		//mSSRConstantBuffer.Data.MaxRayCount = mSSRRayCount;
-		//mSSRConstantBuffer.ApplyChanges(context);
-		//ID3D11Buffer* CBs[1] = { mSSRConstantBuffer.Buffer() };
-		//context->PSSetConstantBuffers(0, 1, CBs);
-
-		context->PSSetShader(mTonemappingPS, NULL, NULL);
-
-		ID3D11SamplerState* SS[1] = { SamplerStates::TrilinearWrap };
-		context->PSSetSamplers(0, 1, SS);
-
-		ID3D11ShaderResourceView* SRs[1] = { aInputTexture->GetSRV() };
-		context->PSSetShaderResources(0, 1, SRs);
+		rhi->SetShader(mTonemappingPS);
+		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
+		rhi->SetShaderResources(ER_PIXEL, { aInputTexture });
 	}
 
-	void ER_PostProcessingStack::PrepareDrawingSSR(const ER_CoreTime& gameTime, ER_GPUTexture* aInputTexture, ER_GBuffer* gbuffer)
+	void ER_PostProcessingStack::PrepareDrawingSSR(const ER_CoreTime& gameTime, ER_RHI_GPUTexture* aInputTexture, ER_GBuffer* gbuffer)
 	{
 		assert(aInputTexture);
-		auto context = game.Direct3DDeviceContext();
+		auto rhi = mCore.GetRHI();
 
 		mSSRConstantBuffer.Data.InvProjMatrix = XMMatrixTranspose(XMMatrixInverse(nullptr, camera.ProjectionMatrix()));
 		mSSRConstantBuffer.Data.InvViewMatrix = XMMatrixTranspose(XMMatrixInverse(nullptr, camera.ViewMatrix()));
@@ -315,24 +281,19 @@ namespace Library {
 		mSSRConstantBuffer.Data.MaxThickness = mSSRMaxThickness;
 		mSSRConstantBuffer.Data.Time = static_cast<float>(gameTime.TotalGameTime());
 		mSSRConstantBuffer.Data.MaxRayCount = mSSRRayCount;
-		mSSRConstantBuffer.ApplyChanges(context);
-		ID3D11Buffer* CBs[1] = { mSSRConstantBuffer.Buffer() };
-		context->PSSetConstantBuffers(0, 1, CBs);
+		mSSRConstantBuffer.ApplyChanges(rhi);
 
-		context->PSSetShader(mSSRPS, NULL, NULL);
-
-		ID3D11SamplerState* SS[1] = { SamplerStates::TrilinearWrap };
-		context->PSSetSamplers(0, 1, SS);
-
-		ID3D11ShaderResourceView* SRs[4] = { aInputTexture->GetSRV(), gbuffer->GetNormals()->GetSRV(), gbuffer->GetExtraBuffer()->GetSRV(), mDepthTarget->GetSRV() };
-		context->PSSetShaderResources(0, 4, SRs);
+		rhi->SetShader(mSSRPS);
+		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
+		rhi->SetShaderResources(ER_PIXEL, { aInputTexture, gbuffer->GetNormals(), gbuffer->GetExtraBuffer(), mDepthTarget });
+		rhi->SetConstantBuffers(ER_PIXEL, { mSSRConstantBuffer.Buffer() });
 	}
 
-	void ER_PostProcessingStack::PrepareDrawingSSS(const ER_CoreTime& gameTime, ER_GPUTexture* aInputTexture, ER_GBuffer* gbuffer, bool verticalPass)
+	void ER_PostProcessingStack::PrepareDrawingSSS(const ER_CoreTime& gameTime, ER_RHI_GPUTexture* aInputTexture, ER_GBuffer* gbuffer, bool verticalPass)
 	{
-		auto context = game.Direct3DDeviceContext();
+		auto rhi = mCore.GetRHI();
 
-		ER_Illumination* illumination = game.GetLevel()->mIllumination;
+		ER_Illumination* illumination = mCore.GetLevel()->mIllumination;
 		assert(illumination);
 		assert(aInputTexture);
 
@@ -341,105 +302,83 @@ namespace Library {
 		else
 			mSSSConstantBuffer.Data.SSSStrengthWidthDir = XMFLOAT4(illumination->GetSSSStrength(), illumination->GetSSSWidth(), 0.0f, 1.0f);
 		mSSSConstantBuffer.Data.CameraFOV = camera.FieldOfView();
-		mSSSConstantBuffer.ApplyChanges(context);
-		ID3D11Buffer* CBs[1] = { mSSSConstantBuffer.Buffer() };
-		context->PSSetConstantBuffers(0, 1, CBs);
+		mSSSConstantBuffer.ApplyChanges(rhi);
 
-		context->PSSetShader(mSSSPS, NULL, NULL);
-
-		ID3D11SamplerState* SS[1] = { SamplerStates::TrilinearWrap };
-		context->PSSetSamplers(0, 1, SS);
-
-		ID3D11ShaderResourceView* SRs[3] = { aInputTexture->GetSRV(), mDepthTarget->GetSRV(), gbuffer->GetExtra2Buffer()->GetSRV() };
-		context->PSSetShaderResources(0, 3, SRs);
+		rhi->SetShader(mSSSPS);
+		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
+		rhi->SetShaderResources(ER_PIXEL, { aInputTexture, mDepthTarget, gbuffer->GetExtra2Buffer() });
+		rhi->SetConstantBuffers(ER_PIXEL, { mSSSConstantBuffer.Buffer() });
 	}
 
-	void ER_PostProcessingStack::PrepareDrawingLinearFog(ER_GPUTexture* aInputTexture)
+	void ER_PostProcessingStack::PrepareDrawingLinearFog(ER_RHI_GPUTexture* aInputTexture)
 	{
 		assert(aInputTexture);
-		auto context = game.Direct3DDeviceContext();
+		auto rhi = mCore.GetRHI();
 
 		mLinearFogConstantBuffer.Data.FogColor = XMFLOAT4{ mLinearFogColor[0], mLinearFogColor[1], mLinearFogColor[2], 1.0f };
 		mLinearFogConstantBuffer.Data.FogNear = camera.NearPlaneDistance();
 		mLinearFogConstantBuffer.Data.FogFar = camera.FarPlaneDistance();
 		mLinearFogConstantBuffer.Data.FogDensity = mLinearFogDensity;
-		mLinearFogConstantBuffer.ApplyChanges(context);
-		ID3D11Buffer* CBs[1] = { mLinearFogConstantBuffer.Buffer() };
-		context->PSSetConstantBuffers(0, 1, CBs);
+		mLinearFogConstantBuffer.ApplyChanges(rhi);
 
-		context->PSSetShader(mLinearFogPS, NULL, NULL);
-
-		ID3D11SamplerState* SS[1] = { SamplerStates::TrilinearWrap };
-		context->PSSetSamplers(0, 1, SS);
-
-		ID3D11ShaderResourceView* SRs[2] = { aInputTexture->GetSRV(), mDepthTarget->GetSRV() };
-		context->PSSetShaderResources(0, 2, SRs);
+		rhi->SetShader(mLinearFogPS);
+		rhi->SetConstantBuffers(ER_PIXEL, { mLinearFogConstantBuffer.Buffer() });
+		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
+		rhi->SetShaderResources(ER_PIXEL, { aInputTexture, mDepthTarget });
 	}
 
-	void ER_PostProcessingStack::PrepareDrawingColorGrading(ER_GPUTexture* aInputTexture)
+	void ER_PostProcessingStack::PrepareDrawingColorGrading(ER_RHI_GPUTexture* aInputTexture)
 	{
 		assert(aInputTexture);
-		auto context = game.Direct3DDeviceContext();
+		auto rhi = mCore.GetRHI();
 
-		context->PSSetShader(mColorGradingPS, NULL, NULL);
-
-		ID3D11ShaderResourceView* SRs[2] = { mLUTs[mColorGradingCurrentLUTIndex], aInputTexture->GetSRV() };
-		context->PSSetShaderResources(0, 2, SRs);
+		rhi->SetShader(mColorGradingPS);
+		rhi->SetShaderResources(ER_PIXEL, { mLUTs[mColorGradingCurrentLUTIndex], aInputTexture });
 	}
 
-	void ER_PostProcessingStack::PrepareDrawingVignette(ER_GPUTexture* aInputTexture)
+	void ER_PostProcessingStack::PrepareDrawingVignette(ER_RHI_GPUTexture* aInputTexture)
 	{
 		assert(aInputTexture);
-		auto context = game.Direct3DDeviceContext();
+		auto rhi = mCore.GetRHI();
 
 		mVignetteConstantBuffer.Data.RadiusSoftness = XMFLOAT2(mVignetteRadius, mVignetteSoftness);
-		mVignetteConstantBuffer.ApplyChanges(context);
-		ID3D11Buffer* CBs[1] = { mVignetteConstantBuffer.Buffer() };
-		context->PSSetConstantBuffers(0, 1, CBs);
+		mVignetteConstantBuffer.ApplyChanges(rhi);
 
-		context->PSSetShader(mVignettePS, NULL, NULL);
-
-		ID3D11SamplerState* SS[1] = { SamplerStates::TrilinearWrap };
-		context->PSSetSamplers(0, 1, SS);
-
-		ID3D11ShaderResourceView* SRs[1] = { aInputTexture->GetSRV() };
-		context->PSSetShaderResources(0, 1, SRs);
+		rhi->SetShader(mVignettePS);
+		rhi->SetConstantBuffers(ER_PIXEL, { mVignetteConstantBuffer.Buffer() });
+		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
+		rhi->SetShaderResources(ER_PIXEL, { aInputTexture });
 	}
 
-	void ER_PostProcessingStack::PrepareDrawingFXAA(ER_GPUTexture* aInputTexture)
+	void ER_PostProcessingStack::PrepareDrawingFXAA(ER_RHI_GPUTexture* aInputTexture)
 	{
 		assert(aInputTexture);
-		auto context = game.Direct3DDeviceContext();
+		auto rhi = mCore.GetRHI();
 
-		mFXAAConstantBuffer.Data.ScreenDimensions = XMFLOAT2(static_cast<float>(game.ScreenWidth()),static_cast<float>(game.ScreenHeight()));
-		mFXAAConstantBuffer.ApplyChanges(context);
-		ID3D11Buffer* CBs[1] = { mFXAAConstantBuffer.Buffer() };
-		context->PSSetConstantBuffers(0, 1, CBs);
+		mFXAAConstantBuffer.Data.ScreenDimensions = XMFLOAT2(static_cast<float>(mCore.ScreenWidth()),static_cast<float>(mCore.ScreenHeight()));
+		mFXAAConstantBuffer.ApplyChanges(rhi);
 
-		context->PSSetShader(mFXAAPS, NULL, NULL);
-
-		ID3D11SamplerState* SS[1] = { SamplerStates::TrilinearWrap };
-		context->PSSetSamplers(0, 1, SS);
-
-		ID3D11ShaderResourceView* SRs[1] = { aInputTexture->GetSRV() };
-		context->PSSetShaderResources(0, 1, SRs);
+		rhi->SetShader(mFXAAPS);
+		rhi->SetConstantBuffers(ER_PIXEL, { mFXAAConstantBuffer.Buffer() });
+		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
+		rhi->SetShaderResources(ER_PIXEL, { aInputTexture });
 	}
 
 	void ER_PostProcessingStack::DrawEffects(const ER_CoreTime& gameTime, ER_QuadRenderer* quad, ER_GBuffer* gbuffer, ER_VolumetricClouds* aVolumetricClouds, ER_VolumetricFog* aVolumetricFog)
 	{
 		assert(quad);
 		assert(gbuffer);
-		ID3D11DeviceContext* context = game.Direct3DDeviceContext();
+		auto rhi = mCore.GetRHI();
 
 		mRenderTargetBeforeResolve = mRenderTargetBeforePostProcessingPasses;
 
 		// Linear fog
 		if (mUseLinearFog)
 		{
-			game.SetCustomRenderTarget(mLinearFogRT, nullptr);
+			rhi->SetRenderTargets({ mLinearFogRT });
 			PrepareDrawingLinearFog(mRenderTargetBeforeResolve);
-			quad->Draw(context);
-			game.UnsetCustomRenderTarget();
+			quad->Draw(rhi);
+			rhi->UnbindRenderTargets();
 
 			//[WARNING] Set from last post processing effect
 			mRenderTargetBeforeResolve = mLinearFogRT;
@@ -448,22 +387,22 @@ namespace Library {
 		// SSS
 		if (mUseSSS)
 		{
-			ER_Illumination* illumination = game.GetLevel()->mIllumination;
+			ER_Illumination* illumination = mCore.GetLevel()->mIllumination;
 			if (illumination->IsSSSBlurring())
 			{
 				//vertical
 				{
-					game.SetCustomRenderTarget(mSSSRT, nullptr);
+					rhi->SetRenderTargets({ mSSSRT });
 					PrepareDrawingSSS(gameTime, mRenderTargetBeforeResolve, gbuffer, true);
-					quad->Draw(context);
-					game.UnsetCustomRenderTarget();
+					quad->Draw(rhi);
+					rhi->UnbindRenderTargets();
 				}
 				//horizontal
 				{
-					game.SetCustomRenderTarget(mSSSRT, nullptr);
+					rhi->SetRenderTargets({ mSSSRT });
 					PrepareDrawingSSS(gameTime, mRenderTargetBeforeResolve, gbuffer, false);
-					quad->Draw(context);
-					game.UnsetCustomRenderTarget();
+					quad->Draw(rhi);
+					rhi->UnbindRenderTargets();
 				}
 				//[WARNING] Set from last post processing effect
 				mRenderTargetBeforeResolve = mSSSRT;
@@ -473,10 +412,10 @@ namespace Library {
 		// SSR
 		if (mUseSSR)
 		{
-			game.SetCustomRenderTarget(mSSRRT, nullptr);
+			rhi->SetRenderTargets({ mSSRRT });
 			PrepareDrawingSSR(gameTime, mRenderTargetBeforeResolve, gbuffer);
-			quad->Draw(context);
-			game.UnsetCustomRenderTarget();
+			quad->Draw(rhi);
+			rhi->UnbindRenderTargets();
 
 			//[WARNING] Set from last post processing effect
 			mRenderTargetBeforeResolve = mSSRRT;
@@ -489,9 +428,9 @@ namespace Library {
 		// Composite with volumetric fog (if enabled)
 		if (aVolumetricFog && aVolumetricFog->IsEnabled())
 		{
-			game.SetCustomRenderTarget(mVolumetricFogRT, nullptr);
+			rhi->SetRenderTargets({ mVolumetricFogRT });
 			aVolumetricFog->Composite(mRenderTargetBeforeResolve, gbuffer->GetPositions());
-			game.UnsetCustomRenderTarget();
+			rhi->UnbindRenderTargets();
 
 			//[WARNING] Set from last post processing effect
 			mRenderTargetBeforeResolve = mVolumetricFogRT;
@@ -500,10 +439,10 @@ namespace Library {
 		// Tonemap
 		if (mUseTonemap)
 		{
-			game.SetCustomRenderTarget(mTonemappingRT, nullptr);
+			rhi->SetRenderTargets({ mTonemappingRT });
 			PrepareDrawingTonemapping(mRenderTargetBeforeResolve);
-			quad->Draw(context);
-			game.UnsetCustomRenderTarget();
+			quad->Draw(rhi);
+			rhi->UnbindRenderTargets();
 
 			//[WARNING] Set from last post processing effect
 			mRenderTargetBeforeResolve = mTonemappingRT;
@@ -512,10 +451,10 @@ namespace Library {
 		// Color grading
 		if (mUseColorGrading)
 		{
-			game.SetCustomRenderTarget(mColorGradingRT, nullptr);
+			rhi->SetRenderTargets({ mColorGradingRT });
 			PrepareDrawingColorGrading(mRenderTargetBeforeResolve);
-			quad->Draw(context);
-			game.UnsetCustomRenderTarget();
+			quad->Draw(rhi);
+			rhi->UnbindRenderTargets();
 
 			//[WARNING] Set from last post processing effect
 			mRenderTargetBeforeResolve = mColorGradingRT;
@@ -523,10 +462,10 @@ namespace Library {
 		// Vignette
 		if (mUseVignette)
 		{
-			game.SetCustomRenderTarget(mVignetteRT, nullptr);
+			rhi->SetRenderTargets({ mVignetteRT });
 			PrepareDrawingVignette(mRenderTargetBeforeResolve);
-			quad->Draw(context);
-			game.UnsetCustomRenderTarget();
+			quad->Draw(rhi);
+			rhi->UnbindRenderTargets();
 
 			//[WARNING] Set from last post processing effect
 			mRenderTargetBeforeResolve = mVignetteRT;
@@ -534,10 +473,10 @@ namespace Library {
 		// FXAA
 		if (mUseFXAA)
 		{
-			game.SetCustomRenderTarget(mFXAART, nullptr);
+			rhi->SetRenderTargets({ mFXAART });
 			PrepareDrawingFXAA(mRenderTargetBeforeResolve);
-			quad->Draw(context);
-			game.UnsetCustomRenderTarget();
+			quad->Draw(rhi);
+			rhi->UnbindRenderTargets();
 
 			//[WARNING] Set from last post processing effect 
 			mRenderTargetBeforeResolve = mFXAART;

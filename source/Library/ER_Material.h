@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Common.h"
-#include "ConstantBuffer.h"
 #include "ER_CoreComponent.h"
 #include "ER_VertexDeclarations.h"
-#include "SamplerStates.h"
+
+#include "RHI/ER_RHI.h"
 
 namespace Library
 {
@@ -38,27 +38,21 @@ namespace Library
 
 		virtual void PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex);
 
-		virtual void CreateVertexBuffer(const ER_Mesh& mesh, ID3D11Buffer** vertexBuffer) = 0;
+		virtual void CreateVertexBuffer(const ER_Mesh& mesh, ER_RHI_GPUBuffer* vertexBuffer) = 0;
 
-		/*virtual*/ void CreateVertexShader(const std::string& path, D3D11_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount);
-		/*virtual*/ void CreatePixelShader(const std::string& path);
-		/*virtual*/ void CreateGeometryShader(const std::string& path);
-		/*virtual*/ void CreateTessellationShader(const std::string& path);
+		void CreateVertexShader(const std::string& path, ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount);
+		void CreatePixelShader(const std::string& path);
+		void CreateGeometryShader(const std::string& path);
+		void CreateTessellationShader(const std::string& path);
 
 		virtual int VertexSize() = 0;
 
 		bool IsSpecial() { return mIsSpecial; };
-		//bool IsLayered() { return mIsSpecial; };
 	protected:
-		virtual void CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount, const void* shaderBytecodeWithInputSignature, UINT byteCodeLength);
-
-		ID3D11VertexShader* mVS = nullptr;
-		ID3D11GeometryShader* mGS = nullptr;
-		ID3D11HullShader* mHS = nullptr;
-		ID3D11DomainShader* mDS = nullptr;
-		ID3D11PixelShader* mPS = nullptr;
-
-		ID3D11InputLayout* mInputLayout = nullptr;
+		ER_RHI_InputLayout* mInputLayout = nullptr;
+		ER_RHI_GPUShader* mVertexShader = nullptr;
+		ER_RHI_GPUShader* mPixelShader = nullptr;
+		ER_RHI_GPUShader* mGeometryShader = nullptr;
 
 		unsigned int mShaderFlags;
 		MaterialShaderEntries mShaderEntries;

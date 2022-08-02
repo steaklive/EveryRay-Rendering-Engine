@@ -9,7 +9,6 @@
 #include "ER_Model.h"
 #include "ER_Mesh.h"
 #include "ER_Utility.h"
-#include "ShaderCompiler.h"
 #include "ER_QuadRenderer.h"
 #include "ER_VertexDeclarations.h"
 
@@ -25,81 +24,61 @@ namespace Library
 
 	ER_Skybox::~ER_Skybox()
 	{
-		ReleaseObject(mVertexBuffer);
-		ReleaseObject(mIndexBuffer);
-		ReleaseObject(mInputLayout);
-		ReleaseObject(mSkyboxVS);
-		ReleaseObject(mSkyboxPS);
-		ReleaseObject(mSunPS);
-		ReleaseObject(mSunOcclusionPS);
+		DeleteObject(mVertexBuffer);
+		DeleteObject(mIndexBuffer);
+		DeleteObject(mInputLayout);
+		DeleteObject(mSkyboxVS);
+		DeleteObject(mSkyboxPS);
+		DeleteObject(mSunPS);
+		DeleteObject(mSunOcclusionPS);
 		mSunConstantBuffer.Release();
 		mSkyboxConstantBuffer.Release();
 	}
 
 	void ER_Skybox::Initialize()
 	{
-		SetCurrentDirectory(ER_Utility::ExecutableDirectory().c_str());
-
-		auto device = mCore.Direct3DDevice();
-		auto context = mCore.Direct3DDeviceContext();
+		auto rhi = mCore.GetRHI();
 
 		std::unique_ptr<ER_Model> model(new ER_Model(mCore, ER_Utility::GetFilePath("content\\models\\sphere_lowpoly.obj"), true));
 
 		auto& meshes = model->Meshes();
-		meshes[0].CreateVertexBuffer_Position(&mVertexBuffer);
-		meshes[0].CreateIndexBuffer(&mIndexBuffer);
+		mVertexBuffer = rhi->CreateGPUBuffer();
+		meshes[0].CreateVertexBuffer_Position(mVertexBuffer);
+		mIndexBuffer = rhi->CreateGPUBuffer();
+		meshes[0].CreateIndexBuffer(mIndexBuffer);
 		mIndexCount = meshes[0].Indices().size();
 
 		//skybox
 		{
-			ID3DBlob* blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Skybox.hlsl").c_str(), "VSMain", "vs_5_0", &blob)))
-				throw ER_CoreException("Failed to load VSMain from shader: Skybox.hlsl!");
-			if (FAILED(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSkyboxVS)))
-				throw ER_CoreException("Failed to create vertex shader from Skybox.hlsl!");
-			
-			D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
+			ER_RHI_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 			{
-				{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+				{ "POSITION", 0, ER_FORMAT_R32G32B32A32_FLOAT, 0, 0, true, 0 }
 			};
-			HRESULT hr = device->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), blob->GetBufferPointer(), blob->GetBufferSize(), &mInputLayout);
-			if (FAILED(hr))
-				throw ER_CoreException("CreateInputLayout() failed when creating skybox's vertex shader.", hr);
-			blob->Release();
-
-			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Skybox.hlsl").c_str(), "PSMain", "ps_5_0", &blob)))
-				throw ER_CoreException("Failed to load PSMain from shader: Skybox.hlsl!");
-			if (FAILED(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSkyboxPS)))
-				throw ER_CoreException("Failed to create pixel shader from Skybox.hlsl!");
-			blob->Release();
+			mInputLayout = rhi->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
 			
-			mSkyboxConstantBuffer.Initialize(device);
+			mSkyboxVS = rhi->CreateGPUShader();
+			mSkyboxVS->CompileShader(rhi, "content\\shaders\\Skybox.hlsl", "VSMain", ER_VERTEX, mInputLayout);
+
+			mSkyboxPS = rhi->CreateGPUShader();
+			mSkyboxPS->CompileShader(rhi, "content\\shaders\\Skybox.hlsl", "PSMain", ER_PIXEL);		
+
+			mSkyboxConstantBuffer.Initialize(rhi);
 		}
 
 		//sun
 		{
-			ID3DBlob* blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Sun.hlsl").c_str(), "main", "ps_5_0", &blob)))
-				throw ER_CoreException("Failed to load main pass from shader: Sun.hlsl!");
-			if (FAILED(mCore.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSunPS)))
-				throw ER_CoreException("Failed to create shader from Sun.hlsl!");
-			blob->Release();
+			mSunPS = rhi->CreateGPUShader();
+			mSunPS->CompileShader(rhi, "content\\shaders\\Sun.hlsl", "main", ER_PIXEL);
 
-			blob = nullptr;
-			if (FAILED(ShaderCompiler::CompileShader(ER_Utility::GetFilePath(L"content\\shaders\\Sun.hlsl").c_str(), "occlusion", "ps_5_0", &blob)))
-				throw ER_CoreException("Failed to load occlusion pass from shader: Sun.hlsl!");
-			if (FAILED(mCore.Direct3DDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &mSunOcclusionPS)))
-				throw ER_CoreException("Failed to create shader from Sun.hlsl!");
-			blob->Release();
+			mSunOcclusionPS = rhi->CreateGPUShader();
+			mSunOcclusionPS->CompileShader(rhi, "content\\shaders\\Sun.hlsl", "occlusion", ER_PIXEL);
 
-			mSunConstantBuffer.Initialize(device);
+			mSunConstantBuffer.Initialize(rhi);
 		}
 	}
 
 	void ER_Skybox::Update(ER_Camera* aCustomCamera)
 	{
-		ID3D11DeviceContext* context = mCore.Direct3DDeviceContext();
 		XMFLOAT3 position;
 		if (aCustomCamera)
 			position = aCustomCamera->Position();
@@ -111,7 +90,7 @@ namespace Library
 
 	void ER_Skybox::UpdateSun(const ER_CoreTime& gameTime, ER_Camera* aCustomCamera)
 	{
-		ID3D11DeviceContext* context = mCore.Direct3DDeviceContext();
+		auto rhi = mCore.GetRHI();
 
 		if (aCustomCamera)
 		{
@@ -127,19 +106,17 @@ namespace Library
 		mSunConstantBuffer.Data.SunColor = mSunColor;
 		mSunConstantBuffer.Data.SunBrightness = mSunBrightness;
 		mSunConstantBuffer.Data.SunExponent = mSunExponent;
-		mSunConstantBuffer.ApplyChanges(context);
+		mSunConstantBuffer.ApplyChanges(rhi);
 	}
 
 	void ER_Skybox::Draw(ER_Camera* aCustomCamera)
 	{
-		auto context = mCore.Direct3DDeviceContext();
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		context->IASetInputLayout(mInputLayout);
+		auto rhi = mCore.GetRHI();
 
-		UINT stride = sizeof(VertexPosition);
-		UINT offset = 0;
-		context->IASetVertexBuffers(0, 1, &mVertexBuffer, &stride, &offset);
-		context->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		rhi->SetTopologyType(ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		rhi->SetInputLayout(mInputLayout);
+		rhi->SetVertexBuffers({ mVertexBuffer });
+		rhi->SetIndexBuffer(mIndexBuffer);
 
 		XMMATRIX wvp = XMMatrixIdentity();
 		if (aCustomCamera)
@@ -151,35 +128,35 @@ namespace Library
 		mSkyboxConstantBuffer.Data.SunColor = mSunColor;
 		mSkyboxConstantBuffer.Data.BottomColor = mBottomColor;
 		mSkyboxConstantBuffer.Data.TopColor = mTopColor;
-		mSkyboxConstantBuffer.ApplyChanges(context);
-		ID3D11Buffer* CBs[1] = { mSkyboxConstantBuffer.Buffer() };
+		mSkyboxConstantBuffer.ApplyChanges(rhi);
 
-		context->VSSetShader(mSkyboxVS, NULL, NULL);
-		context->VSSetConstantBuffers(0, 1, CBs);
+		rhi->SetShader(mSkyboxVS);
+		rhi->SetConstantBuffers(ER_VERTEX, { mSkyboxConstantBuffer.Buffer() });
 
-		context->PSSetShader(mSkyboxPS, NULL, NULL);
-		context->PSSetConstantBuffers(0, 1, CBs);
+		rhi->SetShader(mSkyboxPS);
+		rhi->SetConstantBuffers(ER_PIXEL, { mSkyboxConstantBuffer.Buffer() });
 
-		context->DrawIndexed(mIndexCount, 0, 0);
+		rhi->DrawIndexed(mIndexCount);
+
+		rhi->UnbindResourcesFromShader(ER_VERTEX);
+		rhi->UnbindResourcesFromShader(ER_PIXEL);
 	}
 
-	void ER_Skybox::DrawSun(ER_Camera* aCustomCamera, ER_GPUTexture* aSky, ER_GPUTexture* aSceneDepth)
+	void ER_Skybox::DrawSun(ER_Camera* aCustomCamera, ER_RHI_GPUTexture* aSky, ER_RHI_GPUTexture* aSceneDepth)
 	{
-		ID3D11DeviceContext* context = mCore.Direct3DDeviceContext();
+		auto rhi = mCore.GetRHI();
+
 		assert(aSceneDepth);
-		auto quadRenderer = (ER_QuadRenderer*)mCore.Services().GetService(ER_QuadRenderer::TypeIdClass());
+		auto quadRenderer = (ER_QuadRenderer*)mCore.GetServices().FindService(ER_QuadRenderer::TypeIdClass());
 		assert(quadRenderer);
 
 		if (mDrawSun) {
-			ID3D11Buffer* CBs[1] = { mSunConstantBuffer.Buffer() };
-			context->PSSetConstantBuffers(0, 1, CBs);
-
-			ID3D11ShaderResourceView* SR[2] = { aSky->GetSRV(), aSceneDepth->GetSRV() };
-			context->PSSetShaderResources(0, 2, SR);
-
-			context->PSSetShader(mSunPS, NULL, NULL);
-
-			quadRenderer->Draw(context);
+			rhi->SetShader(mSunPS);
+			rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
+			rhi->SetConstantBuffers(ER_PIXEL, { mSunConstantBuffer.Buffer() });
+			rhi->SetShaderResources(ER_PIXEL, { aSky, aSceneDepth });
+			quadRenderer->Draw(rhi);
+			rhi->UnbindResourcesFromShader(ER_PIXEL);
 		}
 	}
 
