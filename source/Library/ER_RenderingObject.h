@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Common.h"
-#include "GeneralEvent.h"
+#include "ER_GenericEvent.h"
 #include "ER_ModelMaterial.h"
 
 #include "RHI\ER_RHI.h"
@@ -247,7 +247,7 @@ namespace Library
 		int GetIndexInScene() { return mIndexInScene; }
 		void SetIndexInScene(int index) { mIndexInScene = index; }
 
-		GeneralEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new GeneralEvent<Delegate_MeshMaterialVariablesUpdate>();
+		ER_GenericEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new ER_GenericEvent<Delegate_MeshMaterialVariablesUpdate>();
 	
 		std::vector<std::string> mCustomAlbedoTextures;
 		std::vector<std::string> mCustomNormalTextures;

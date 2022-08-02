@@ -9,7 +9,7 @@
 #include "ER_CoreException.h"
 
 template<typename T>
-class GeneralEvent
+class ER_GenericEvent
 {
 public:
 	void AddListener(const std::string& pName, T pEventHandlerMethod)

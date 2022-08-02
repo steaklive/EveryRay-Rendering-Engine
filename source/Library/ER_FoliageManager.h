@@ -1,7 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "ER_CoreComponent.h"
-#include "GeneralEvent.h"
+#include "ER_GenericEvent.h"
 #include "RHI/ER_RHI.h"
 
 #define MAX_FOLIAGE_ZONES 4096
@@ -225,7 +225,7 @@ namespace Library
 		void Config() { mShowDebug = !mShowDebug; }
 
 		using Delegate_FoliageSystemInitialized = std::function<void()>;
-		GeneralEvent<Delegate_FoliageSystemInitialized>* FoliageSystemInitializedEvent = new GeneralEvent<Delegate_FoliageSystemInitialized>();
+		ER_GenericEvent<Delegate_FoliageSystemInitialized>* FoliageSystemInitializedEvent = new ER_GenericEvent<Delegate_FoliageSystemInitialized>();
 	private:
 		void UpdateImGui();
 		std::vector<ER_Foliage*> mFoliageCollection;

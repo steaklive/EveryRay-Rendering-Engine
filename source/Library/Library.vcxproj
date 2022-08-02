@@ -211,7 +211,7 @@
     <ClInclude Include="ER_CoreComponent.h" />
     <ClInclude Include="ER_CoreTime.h" />
     <ClInclude Include="ER_GBuffer.h" />
-    <ClInclude Include="GeneralEvent.h" />
+    <ClInclude Include="ER_GenericEvent.h" />
     <ClInclude Include="ER_Illumination.h" />
     <ClInclude Include="ER_Keyboard.h" />
     <ClInclude Include="Light.h" />

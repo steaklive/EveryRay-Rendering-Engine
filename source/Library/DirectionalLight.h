@@ -3,7 +3,7 @@
 #include "Common.h"
 #include "Light.h"
 #include "ER_DebugProxyObject.h"
-#include "GeneralEvent.h"
+#include "ER_GenericEvent.h"
 
 
 namespace Library
@@ -54,7 +54,7 @@ namespace Library
 
 		float GetDirectionalLightIntensity() const { return mDirectionalLightIntensity; }
 
-		GeneralEvent<Delegate_RotationUpdate>* RotationUpdateEvent = new GeneralEvent<Delegate_RotationUpdate>();
+		ER_GenericEvent<Delegate_RotationUpdate>* RotationUpdateEvent = new ER_GenericEvent<Delegate_RotationUpdate>();
 
 	protected:
 		XMFLOAT3 mDirection;

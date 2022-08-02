@@ -111,9 +111,6 @@
     <ClInclude Include="FastFourierTransform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GeneralEvent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ER_CPUProfiler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -268,6 +265,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RHI\DX11\ER_RHI_DX11_GPUShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ER_GenericEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
