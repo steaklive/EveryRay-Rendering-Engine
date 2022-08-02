@@ -77,7 +77,7 @@ namespace Library {
 
 	void ER_VolumetricFog::Update(const ER_CoreTime& gameTime)
 	{
-		ER_Camera* camera = (ER_Camera*)GetCore()->Services().GetService(ER_Camera::TypeIdClass());
+		ER_Camera* camera = (ER_Camera*)GetCore()->GetServices().FindService(ER_Camera::TypeIdClass());
 		assert(camera);
 
 		UpdateImGui();
@@ -172,7 +172,7 @@ namespace Library {
 		rhi->SetShaderResources(ER_PIXEL, { aInputColorTexture, aGbufferWorldPos, mFinalVoxelAccumulationTexture3D });
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 		
-		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mCore->Services().GetService(ER_QuadRenderer::TypeIdClass());
+		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mCore->GetServices().FindService(ER_QuadRenderer::TypeIdClass());
 		assert(quadRenderer);
 		quadRenderer->Draw(rhi);
 

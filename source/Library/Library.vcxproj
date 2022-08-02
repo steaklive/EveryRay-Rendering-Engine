@@ -237,7 +237,7 @@
     <ClInclude Include="RHI\ER_RHI.h" />
     <ClInclude Include="RTTI.h" />
     <ClInclude Include="ER_Scene.h" />
-    <ClInclude Include="ServiceContainer.h" />
+    <ClInclude Include="ER_CoreServicesContainer.h" />
     <ClInclude Include="ER_ShadowMapper.h" />
     <ClInclude Include="ER_Skybox.h" />
     <ClInclude Include="SpotLight.h" />
@@ -301,7 +301,7 @@
     <ClCompile Include="RHI\DX11\ER_RHI_DX11_GPUShader.cpp" />
     <ClCompile Include="RHI\DX11\ER_RHI_DX11_GPUTexture.cpp" />
     <ClCompile Include="ER_Scene.cpp" />
-    <ClCompile Include="ServiceContainer.cpp" />
+    <ClCompile Include="ER_CoreServicesContainer.cpp" />
     <ClCompile Include="ER_ShadowMapper.cpp" />
     <ClCompile Include="SpotLight.cpp" />
     <ClCompile Include="stdafx.cpp">

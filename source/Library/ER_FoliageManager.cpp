@@ -49,7 +49,7 @@ namespace Library
 
 	void ER_FoliageManager::Update(const ER_CoreTime& gameTime, float gustDistance, float strength, float frequency)
 	{
-		ER_Camera* camera = (ER_Camera*)(mCore->Services().GetService(ER_Camera::TypeIdClass()));
+		ER_Camera* camera = (ER_Camera*)(mCore->GetServices().FindService(ER_Camera::TypeIdClass()));
 
 		if (mEnabled)
 		{

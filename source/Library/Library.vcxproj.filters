@@ -90,9 +90,6 @@
     <ClInclude Include="RTTI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ServiceContainer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Light.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -270,6 +267,9 @@
     <ClInclude Include="ER_GenericEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_CoreServicesContainer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -280,9 +280,6 @@
     </ClCompile>
     <ClCompile Include="DirectionalLight.cpp">
       <Filter>Source Files\Graphics\Lights</Filter>
-    </ClCompile>
-    <ClCompile Include="ServiceContainer.cpp">
-      <Filter>Source Files\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="PointLight.cpp">
       <Filter>Source Files\Graphics\Lights</Filter>
@@ -445,6 +442,9 @@
     </ClCompile>
     <ClCompile Include="RHI\DX11\ER_RHI_DX11_GPUShader.cpp">
       <Filter>Source Files\Graphics\RHI\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_CoreServicesContainer.cpp">
+      <Filter>Source Files\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -51,7 +51,7 @@ namespace Library
 			mTempSpecularCubemapDepthBuffers[i]->CreateGPUTextureResource(rhi, SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1u, ER_FORMAT_D24_UNORM_S8_UINT, ER_BIND_SHADER_RESOURCE | ER_BIND_DEPTH_STENCIL);
 		}
 
-		mQuadRenderer = (ER_QuadRenderer*)game.Services().GetService(ER_QuadRenderer::TypeIdClass());
+		mQuadRenderer = (ER_QuadRenderer*)game.GetServices().FindService(ER_QuadRenderer::TypeIdClass());
 		assert(mQuadRenderer);
 		mConvolutionPS = rhi->CreateGPUShader();
 		mConvolutionPS->CompileShader(rhi, "content\\shaders\\IBL\\ProbeConvolution.hlsl", "PSMain", ER_PIXEL);

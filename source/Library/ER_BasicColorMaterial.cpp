@@ -36,7 +36,7 @@ namespace Library
 	void ER_BasicColorMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex)
 	{
 		auto rhi = ER_Material::GetCore()->GetRHI();
-		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->Services().GetService(ER_Camera::TypeIdClass()));
+		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->GetServices().FindService(ER_Camera::TypeIdClass()));
 		
 		assert(aObj);
 		assert(camera);
@@ -56,7 +56,7 @@ namespace Library
 	void ER_BasicColorMaterial::PrepareForRendering(const XMMATRIX& worldTransform, const XMFLOAT4& color)
 	{
 		auto rhi = ER_Material::GetCore()->GetRHI();
-		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->Services().GetService(ER_Camera::TypeIdClass()));
+		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->GetServices().FindService(ER_Camera::TypeIdClass()));
 
 		assert(camera);
 

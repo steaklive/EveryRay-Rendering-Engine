@@ -159,7 +159,7 @@ namespace Library {
 		mSkybox.DrawSun(nullptr, mSkyRT, mIlluminationResultDepthTarget);
 		rhi->UnbindRenderTargets();
 
-		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mCore->Services().GetService(ER_QuadRenderer::TypeIdClass());
+		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mCore->GetServices().FindService(ER_QuadRenderer::TypeIdClass());
 		assert(quadRenderer);
 
 		// main pass
@@ -199,7 +199,7 @@ namespace Library {
 		rhi->SetShader(mCompositePS);
 		rhi->SetShaderResources(ER_PIXEL, { mIlluminationResultDepthTarget, /*mBlurRT*/mUpsampleAndBlurRT });
 		
-		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mCore->Services().GetService(ER_QuadRenderer::TypeIdClass());
+		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mCore->GetServices().FindService(ER_QuadRenderer::TypeIdClass());
 		assert(quadRenderer);
 		quadRenderer->Draw(rhi);
 

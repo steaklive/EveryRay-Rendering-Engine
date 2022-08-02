@@ -244,7 +244,7 @@ namespace Library {
 
 		//final resolve to main RT (pre-UI)
 		{
-			ER_QuadRenderer* quad = (ER_QuadRenderer*)mCore.Services().GetService(ER_QuadRenderer::TypeIdClass());
+			ER_QuadRenderer* quad = (ER_QuadRenderer*)mCore.GetServices().FindService(ER_QuadRenderer::TypeIdClass());
 			assert(quad);
 			assert(mRenderTargetBeforeResolve);
 

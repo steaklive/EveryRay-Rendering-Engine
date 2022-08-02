@@ -47,7 +47,7 @@ namespace Library {
 #pragma endregion
 
 		#pragma region INIT_EDITOR
-		mEditor = (ER_Editor*)game.Services().GetService(ER_Editor::TypeIdClass());
+		mEditor = (ER_Editor*)game.GetServices().FindService(ER_Editor::TypeIdClass());
 		assert(mEditor);
 		mEditor->LoadScene(mScene);
 #pragma endregion
@@ -60,7 +60,7 @@ namespace Library {
 #pragma endregion
 
 		#pragma region INIT_CONTROLS
-        mKeyboard = (ER_Keyboard*)game.Services().GetService(ER_Keyboard::TypeIdClass());
+        mKeyboard = (ER_Keyboard*)game.GetServices().FindService(ER_Keyboard::TypeIdClass());
         assert(mKeyboard);
 #pragma endregion
 
@@ -186,8 +186,8 @@ namespace Library {
 		mShadowMapper->Update(gameTime);
 		mFoliageSystem->Update(gameTime, mWindGustDistance, mWindStrength, mWindFrequency);
 		mDirectionalLight->UpdateProxyModel(gameTime, 
-			((ER_Camera*)game.Services().GetService(ER_Camera::TypeIdClass()))->ViewMatrix4X4(),
-			((ER_Camera*)game.Services().GetService(ER_Camera::TypeIdClass()))->ProjectionMatrix4X4()); //TODO refactor to DebugRenderer
+			((ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass()))->ViewMatrix4X4(),
+			((ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass()))->ProjectionMatrix4X4()); //TODO refactor to DebugRenderer
 
 		for (auto& object : mScene->objects)
 			object.second->Update(gameTime);
@@ -308,7 +308,7 @@ namespace Library {
 #pragma endregion	
 
 		#pragma region DRAW_POSTPROCESSING
-		auto quad = (ER_QuadRenderer*)game.Services().GetService(ER_QuadRenderer::TypeIdClass());
+		auto quad = (ER_QuadRenderer*)game.GetServices().FindService(ER_QuadRenderer::TypeIdClass());
 		mPostProcessingStack->Begin(mIllumination->GetFinalIlluminationRT(), mGBuffer->GetDepth());
 		mPostProcessingStack->DrawEffects(gameTime, quad, mGBuffer, mVolumetricClouds, mVolumetricFog);
 		mPostProcessingStack->End();

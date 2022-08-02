@@ -65,7 +65,7 @@ namespace Library
 	void ER_VoxelizationMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, float voxelScale, float voxelTexSize, const XMFLOAT4& voxelCameraPos)
 	{
 		auto rhi = ER_Material::GetCore()->GetRHI();
-		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->Services().GetService(ER_Camera::TypeIdClass()));
+		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->GetServices().FindService(ER_Camera::TypeIdClass()));
 
 		assert(aObj);
 		assert(camera);

@@ -147,7 +147,7 @@ namespace Library
 		auto rhi = mCore.GetRHI();
 
 		assert(aSceneDepth);
-		auto quadRenderer = (ER_QuadRenderer*)mCore.Services().GetService(ER_QuadRenderer::TypeIdClass());
+		auto quadRenderer = (ER_QuadRenderer*)mCore.GetServices().FindService(ER_QuadRenderer::TypeIdClass());
 		assert(quadRenderer);
 
 		if (mDrawSun) {

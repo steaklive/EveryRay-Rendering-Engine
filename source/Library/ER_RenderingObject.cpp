@@ -618,7 +618,7 @@ namespace Library
 	}
 	void ER_RenderingObject::Update(const ER_CoreTime& time)
 	{
-		ER_Camera* camera = (ER_Camera*)(mCore->Services().GetService(ER_Camera::TypeIdClass()));
+		ER_Camera* camera = (ER_Camera*)(mCore->GetServices().FindService(ER_Camera::TypeIdClass()));
 		assert(camera);
 
 		bool editable = ER_Utility::IsEditorMode && mAvailableInEditorMode && mIsSelected;
@@ -799,7 +799,7 @@ namespace Library
 				XMFLOAT3 newCameraPos;
 				ER_MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), newCameraPos);
 
-				ER_Camera* camera = (ER_Camera*)(mCore->Services().GetService(ER_Camera::TypeIdClass()));
+				ER_Camera* camera = (ER_Camera*)(mCore->GetServices().FindService(ER_Camera::TypeIdClass()));
 				if (camera)
 					camera->SetPosition(newCameraPos);
 			}

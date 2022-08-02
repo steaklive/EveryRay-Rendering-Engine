@@ -442,7 +442,7 @@ namespace Library
 
 	void ER_Terrain::Update(const ER_CoreTime& gameTime)
 	{
-		ER_Camera* camera = (ER_Camera*)(mCore->Services().GetService(ER_Camera::TypeIdClass()));
+		ER_Camera* camera = (ER_Camera*)(mCore->GetServices().FindService(ER_Camera::TypeIdClass()));
 
 		int visibleTiles = 0;
 		for (int i = 0; i < mHeightMaps.size(); i++)
@@ -477,7 +477,7 @@ namespace Library
 
 		ER_RHI* rhi = mCore->GetRHI();
 
-		ER_Camera* camera = (ER_Camera*)(mCore->Services().GetService(ER_Camera::TypeIdClass()));
+		ER_Camera* camera = (ER_Camera*)(mCore->GetServices().FindService(ER_Camera::TypeIdClass()));
 		assert(camera);
 
 		ER_RHI_PRIMITIVE_TYPE originalPrimitiveTopology = rhi->GetCurrentTopologyType();
