@@ -27,6 +27,7 @@ https://youtu.be/_htQNxesr9U
 - Post Processing: Linear Fog, SSR, Tonemap, LUT color grading, Vignette, FXAA
 
 # Some of the engine concepts/features
+- Concept of an RHI (aka "Rendering Hardware Interface"): graphics API is abstracted from the general code (systems, etc.)
 - Concept of a simplified generic game object - "ER_RenderingObject":
 - - supports model loading (.obj, .fbx and etc.) with Assimp Library
 - - supports multiple meshes
@@ -44,7 +45,7 @@ https://youtu.be/_htQNxesr9U
  
 # Roadmap (big architectural engine tasks)
  * [X] <del>remove DX11 "Effects" library, all .fx shaders and refactor the material system (DONE)</del> (https://github.com/steaklive/EveryRay-Rendering-Engine/pull/51)
- * [ ] remove all low-level DX11 code and put it into the abstracted RHI (WIP)
+ * [X] <del>remove all low-level DX11 code and put it into the abstracted RHI (DONE)</del> (https://github.com/steaklive/EveryRay-Rendering-Engine/pull/56)
  * [ ] add support for DX12
  * [ ] remove DirectXMath and its usages (maybe come up with a custom math lib)
  * [ ] add cross-API shader compiler
