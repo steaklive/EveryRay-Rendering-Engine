@@ -17,11 +17,11 @@ namespace Library
 
 namespace Rendering
 {	
-	class RenderingGame : public ER_Core
+	class ER_RuntimeCore : public ER_Core
 	{
 	public:
-		RenderingGame(ER_RHI* aRHI, HINSTANCE instance, const std::wstring& windowClass, const std::wstring& windowTitle, int showCommand, UINT width, UINT height, bool isFullscreen);
-		~RenderingGame();
+		ER_RuntimeCore(ER_RHI* aRHI, HINSTANCE instance, const std::wstring& windowClass, const std::wstring& windowTitle, int showCommand, UINT width, UINT height, bool isFullscreen);
+		~ER_RuntimeCore();
 
 		virtual void Initialize() override;
 		virtual void Update(const ER_CoreTime& gameTime) override;

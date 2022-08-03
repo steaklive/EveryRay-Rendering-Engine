@@ -4,7 +4,7 @@
 #include "..\Library\ER_CoreException.h"
 #include "..\Library\RHI\ER_RHI.h"
 #include "..\Library\RHI\DX11\ER_RHI_DX11.h"
-#include "RenderingGame.h"
+#include "ER_RuntimeCore.h"
 
 #if defined(DEBUG) || defined(_DEBUG)
 #define _CRTDBG_MAP_ALLOC
@@ -22,9 +22,9 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR command
 	//#endif
 
 #if defined(DEBUG) || defined(_DEBUG)
-	std::unique_ptr<RenderingGame> game(new RenderingGame(new ER_RHI_DX11(), instance, L"EveryRay Main Window Class", L"EveryRay - Rendering Engine | Win64 DX11 (Debug)", showCommand, 1920, 1080, false));
+	std::unique_ptr<ER_RuntimeCore> game(new ER_RuntimeCore(new ER_RHI_DX11(), instance, L"EveryRay Main Window Class", L"EveryRay - Rendering Engine | Win64 DX11 (Debug)", showCommand, 1920, 1080, false));
 #else
-	std::unique_ptr<RenderingGame> game(new RenderingGame(new ER_RHI_DX11(), instance, L"EveryRay Main Window Class", L"EveryRay - Rendering Engine | Win64 DX11 (Release)", showCommand, 1920, 1080, false));
+	std::unique_ptr<ER_RuntimeCore> game(new ER_RuntimeCore(new ER_RHI_DX11(), instance, L"EveryRay Main Window Class", L"EveryRay - Rendering Engine | Win64 DX11 (Release)", showCommand, 1920, 1080, false));
 #endif
 	try {
 		game->Run();

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "RenderingGame.h"
+#include "ER_RuntimeCore.h"
 
 #include "..\JsonCpp\include\json\json.h"
 
@@ -28,7 +28,7 @@ namespace Rendering
 	static float nearPlaneDist = 0.5f;
 	static float farPlaneDist = 600.0f;
 
-	RenderingGame::RenderingGame(ER_RHI* aRHI, HINSTANCE instance, const std::wstring& windowClass, const std::wstring& windowTitle, int showCommand, UINT width, UINT height, bool isFullscreen)
+	ER_RuntimeCore::ER_RuntimeCore(ER_RHI* aRHI, HINSTANCE instance, const std::wstring& windowClass, const std::wstring& windowTitle, int showCommand, UINT width, UINT height, bool isFullscreen)
 		: ER_Core(aRHI, instance, windowClass, windowTitle, showCommand, width, height, isFullscreen),
 		mDirectInput(nullptr),
 		mKeyboard(nullptr),
@@ -45,11 +45,11 @@ namespace Rendering
 		mMainViewport.MaxDepth = 1.0f;
 	}
 
-	RenderingGame::~RenderingGame()
+	ER_RuntimeCore::~ER_RuntimeCore()
 	{
 	}
 
-	void RenderingGame::Initialize()
+	void ER_RuntimeCore::Initialize()
 	{
 		SetCurrentDirectory(ER_Utility::ExecutableDirectory().c_str());
 
@@ -105,7 +105,7 @@ namespace Rendering
 		SetLevel(mStartupSceneName);
 	}
 
-	void RenderingGame::LoadGlobalLevelsConfig()
+	void ER_RuntimeCore::LoadGlobalLevelsConfig()
 	{
 		Json::Reader reader;
 		std::string path = ER_Utility::GetFilePath("content\\levels\\global_scenes_config.json");
@@ -146,7 +146,7 @@ namespace Rendering
 		}
 	}
 
-	void RenderingGame::SetLevel(const std::string& aSceneName)
+	void ER_RuntimeCore::SetLevel(const std::string& aSceneName)
 	{
 		mCurrentSceneName = aSceneName;
 		mCamera->Reset();
@@ -167,7 +167,7 @@ namespace Rendering
 		}
 	}
 
-	void RenderingGame::Update(const ER_CoreTime& gameTime)
+	void ER_RuntimeCore::Update(const ER_CoreTime& gameTime)
 	{
 		assert(mCurrentSandbox);
 
@@ -188,7 +188,7 @@ namespace Rendering
 		nearPlaneDist = mCamera->NearPlaneDistance();
 	}
 	
-	void RenderingGame::UpdateImGui()
+	void ER_RuntimeCore::UpdateImGui()
 	{
 		#pragma region ENGINE_SPECIFIC_IMGUI
 
@@ -270,7 +270,7 @@ namespace Rendering
 		#pragma endregion
 	}
 	
-	void RenderingGame::Shutdown()
+	void ER_RuntimeCore::Shutdown()
 	{
 		DeleteObject(mKeyboard);
 		DeleteObject(mEditor);
@@ -289,7 +289,7 @@ namespace Rendering
 		ER_Core::Shutdown();
 	}
 	
-	void RenderingGame::Draw(const ER_CoreTime& gameTime)
+	void ER_RuntimeCore::Draw(const ER_CoreTime& gameTime)
 	{
 		assert(mCurrentSandbox);
 		assert(mRHI);
