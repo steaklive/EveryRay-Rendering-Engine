@@ -2,11 +2,19 @@
 
 ![picture](screenshots/EveryRay_testScene_simple.png)
 
-Rendering engine/framework written in C++/DirectX 11. 
-https://youtu.be/_htQNxesr9U
+# Overview
+"EveryRay" is a rendering engine which is written in C++ and which focuses on quick prototyping of graphical techniques and features. It is lightweight, easy to use and already contains many existing rendering solutions inside. The project is constantly improving when I have some free time for it:) 
+
+Publicly supported APIs/platforms:
+- Win64:
+- - DirectX 11
+- - DirectX 12 (WIP, not released yet)
+
+Video demonstrations (scroll down for screenshots):
+- https://youtu.be/_htQNxesr9U (to be updated)
 
 ***
-**Note (will be removed with v1.0)**: after years of development and increased popularity on Github in recent months, I decided to start preparing the release of the first proper version of this project (v1.0). I would like to: add a wiki page, license, refactored structure and, most importantly, clean all the previous functionalities and make them ready to be used by the public. In addition, since I started working on this project, I've learned a lot of concepts that are used in the industry and I would like to bring some of them to v1.0: i.e., graphics API abstraction which does not exist here at the moment.  Currently, if you pull master, things will work and you will be able to run the project and do whatever you want, however, a lot will change with v1.0 that should come out around summer 2022. The engine grew a lot with years and became a bit messy, although it still is (and will be) a rendering engine (not a game engine). 
+**Note (will be removed with v1.0)**: after years of development and increased popularity on Github in recent months, I decided to start preparing the release of the first proper version of this project (v1.0). I would like to: add a wiki page, license, refactored structure and, most importantly, clean all the previous functionalities and make them ready to be used by the public. 
 ***
 
 # Some of the rendering features
@@ -27,11 +35,11 @@ https://youtu.be/_htQNxesr9U
 - Post Processing: Linear Fog, SSR, Tonemap, LUT color grading, Vignette, FXAA
 
 # Some of the engine concepts/features
-- Concept of an RHI (aka "Rendering Hardware Interface"): graphics API is abstracted from the general code (systems, etc.)
+- Concept of an "ER_RHI" (aka "Rendering Hardware Interface"): graphics API is abstracted from the general code (systems, etc.)
 - Concept of a simplified generic game object - "ER_RenderingObject":
 - - supports model loading (.obj, .fbx and etc.) with Assimp Library
 - - supports multiple meshes
-- - supports texture loading (.png, .jpg, .dds, .tga)
+- - supports texture loading (.png, .jpg, .dds)
 - - supports materials
 - - supports GPU instancing
 - - supports LOD groups
@@ -73,8 +81,6 @@ https://youtu.be/_htQNxesr9U
 - R/T/Y - scale/translate/rotate object in the editor mode
 
 # Notes
-The framework is NOT API-agnostic and, thus, has been tighly bound to DX11 since the beginning of its development. Hopefully, I will be changing that in the future and adding DX12 support for it. It will undeniably improve the perfomance in many scenarios. 
-
 You might increase TDR time of your GPU driver (explained here https://docs.substance3d.com/spdoc/gpu-drivers-crash-with-long-computations-128745489.html).
 
 # External Dependencies
@@ -91,6 +97,6 @@ You might increase TDR time of your GPU driver (explained here https://docs.subs
 - numerous SIGGRAPH, GDC papers and blogposts by fellow graphics geeks and vendors :)
  
 # Requirements
-- Visual Studio 2017
+- Visual Studio 2019
 - Windows 10 + SDK
 - DirectX 11 supported hardware
