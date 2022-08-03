@@ -2,13 +2,13 @@
 .vs/
 
 # ignore unnecessary build files
-source/Library/Debug/
-source/Library/Release/
-source/Game/Debug/
-source/Game/Release
+source/EveryRay_Core/Debug/
+source/EveryRay_Core/Release/
+source/EveryRay_Runtime_Win64_DX11/Debug/
+source/EveryRay_Runtime_Win64_DX11/Release
 
-bin/x64/Debug/Library.lib
-bin/x64/Release/Library.lib
+bin/x64/Debug/EveryRay_Core.lib
+bin/x64/Release/EveryRay_Core.lib
 
 # ignore files debug files
 *.obj
@@ -24,18 +24,4 @@ content/levels/testScene/specular_probes/*
 !content/levels/testScene/diffuse_probes/diffuse_probe_global.dds
 !content/levels/testScene/specular_probes/specular_probe_global.dds
 # - other levels...
-
-# taken from NVIDIA GameWorks - VolumetricLight
-content/shaders/VolumetricLight
-source/Game/VolumetricLightingDemo.h
-source/Game/VolumetricLightingDemo.cpp
-
-# taken from NVIDIA GameWorks - WaterSimulation
-content/shaders/WaterSimulation
-source/Game/WaterSimulationDemo.cpp
-source/Game/WaterSimulationDemo.h
-source/Library/FastFourierTransform.cpp
-source/Library/FastFourierTransform.h
-source/Library/OceanSimulator.cpp
-source/Library/OceanSimulator.h
 
