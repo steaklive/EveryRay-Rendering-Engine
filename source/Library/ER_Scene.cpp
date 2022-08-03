@@ -8,7 +8,7 @@
 #include "ER_CoreException.h"
 #include "ER_Utility.h"
 #include "ER_Model.h"
-#include "Materials.inl"
+#include "ER_Materials.inl"
 #include "ER_RenderingObject.h"
 #include "ER_MaterialHelper.h"
 #include "ER_Illumination.h"

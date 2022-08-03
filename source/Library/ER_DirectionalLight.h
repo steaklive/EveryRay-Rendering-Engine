@@ -1,16 +1,16 @@
 #pragma once
 
 #include "Common.h"
-#include "Light.h"
+#include "ER_Light.h"
 #include "ER_DebugProxyObject.h"
 #include "ER_GenericEvent.h"
 
 
 namespace Library
 {
-	class ER_DirectionalLight : public Light
+	class ER_DirectionalLight : public ER_Light
 	{
-		RTTI_DECLARATIONS(ER_DirectionalLight, Light)
+		RTTI_DECLARATIONS(ER_DirectionalLight, ER_Light)
 		
 		using Delegate_RotationUpdate = std::function<void()>; 
 

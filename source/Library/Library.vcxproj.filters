@@ -90,18 +90,6 @@
     <ClInclude Include="RTTI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Light.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PointLight.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OceanSimulator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FastFourierTransform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ER_CPUProfiler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -267,16 +255,16 @@
     <ClInclude Include="ER_DirectionalLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_PointLight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ER_Light.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Light.cpp">
-      <Filter>Source Files\Graphics\Lights</Filter>
-    </ClCompile>
-    <ClCompile Include="PointLight.cpp">
-      <Filter>Source Files\Graphics\Lights</Filter>
     </ClCompile>
     <ClCompile Include="ER_LightProbe.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
@@ -440,6 +428,12 @@
     <ClCompile Include="ER_DirectionalLight.cpp">
       <Filter>Source Files\Graphics\Lights</Filter>
     </ClCompile>
+    <ClCompile Include="ER_PointLight.cpp">
+      <Filter>Source Files\Graphics\Lights</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_Light.cpp">
+      <Filter>Source Files\Graphics\Lights</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\content\shaders\VolumetricLight\Apply_PS.hlsl">
@@ -600,12 +594,6 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Systems.inl">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="Materials.inl">
-      <Filter>Header Files</Filter>
-    </None>
     <None Include="..\..\content\shaders\Lighting.hlsli">
       <Filter>Shaders</Filter>
     </None>
@@ -614,6 +602,9 @@
     </None>
     <None Include="..\..\content\shaders\VolumetricFog\VolumetricFog.hlsli">
       <Filter>Shaders\VolumetricFog</Filter>
+    </None>
+    <None Include="ER_Materials.inl">
+      <Filter>Source Files\Graphics\Materials</Filter>
     </None>
   </ItemGroup>
 </Project>

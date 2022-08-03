@@ -202,7 +202,6 @@
     <ClInclude Include="ER_ShadowMapMaterial.h" />
     <ClInclude Include="ER_VolumetricFog.h" />
     <ClInclude Include="ER_VoxelizationMaterial.h" />
-    <ClInclude Include="FastFourierTransform.h" />
     <ClInclude Include="ER_CameraFPS.h" />
     <ClInclude Include="ER_FoliageManager.h" />
     <ClInclude Include="ER_Frustum.h" />
@@ -214,15 +213,14 @@
     <ClInclude Include="ER_GenericEvent.h" />
     <ClInclude Include="ER_Illumination.h" />
     <ClInclude Include="ER_Keyboard.h" />
-    <ClInclude Include="Light.h" />
+    <ClInclude Include="ER_Light.h" />
     <ClInclude Include="ER_MaterialHelper.h" />
     <ClInclude Include="ER_MatrixHelper.h" />
     <ClInclude Include="ER_Mesh.h" />
     <ClInclude Include="ER_Model.h" />
     <ClInclude Include="ER_ModelMaterial.h" />
     <ClInclude Include="ER_Mouse.h" />
-    <ClInclude Include="OceanSimulator.h" />
-    <ClInclude Include="PointLight.h" />
+    <ClInclude Include="ER_PointLight.h" />
     <ClInclude Include="ER_PostProcessingStack.h" />
     <ClInclude Include="ER_Projector.h" />
     <ClInclude Include="ER_DebugProxyObject.h" />
@@ -282,14 +280,14 @@
     <ClCompile Include="ER_CoreTime.cpp" />
     <ClCompile Include="ER_GBuffer.cpp" />
     <ClCompile Include="ER_Keyboard.cpp" />
-    <ClCompile Include="Light.cpp" />
+    <ClCompile Include="ER_Light.cpp" />
     <ClCompile Include="ER_MaterialHelper.cpp" />
     <ClCompile Include="ER_MatrixHelper.cpp" />
     <ClCompile Include="ER_Mesh.cpp" />
     <ClCompile Include="ER_Model.cpp" />
     <ClCompile Include="ER_ModelMaterial.cpp" />
     <ClCompile Include="ER_Mouse.cpp" />
-    <ClCompile Include="PointLight.cpp" />
+    <ClCompile Include="ER_PointLight.cpp" />
     <ClCompile Include="ER_Projector.cpp" />
     <ClCompile Include="ER_DebugProxyObject.cpp" />
     <ClCompile Include="ER_QuadRenderer.cpp" />
@@ -589,8 +587,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
-    <None Include="Materials.inl" />
-    <None Include="Systems.inl" />
+    <None Include="ER_Materials.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

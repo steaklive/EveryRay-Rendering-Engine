@@ -11,13 +11,13 @@ namespace Library
 {
 	RTTI_DEFINITIONS(ER_DirectionalLight)
 
-	ER_DirectionalLight::ER_DirectionalLight(ER_Core& game) : Light(game),
+	ER_DirectionalLight::ER_DirectionalLight(ER_Core& game) : ER_Light(game),
 		mDirection(ER_Vector3Helper::Forward),
 		mUp(ER_Vector3Helper::Up), mRight(ER_Vector3Helper::Right), mProxyModel(nullptr)
 	{
 	}
 
-	ER_DirectionalLight::ER_DirectionalLight(ER_Core& game, ER_Camera& camera) : Light(game),
+	ER_DirectionalLight::ER_DirectionalLight(ER_Core& game, ER_Camera& camera) : ER_Light(game),
 		mDirection(ER_Vector3Helper::Forward),
 		mUp(ER_Vector3Helper::Up), mRight(ER_Vector3Helper::Right), mProxyModel(nullptr)
 	{
