@@ -86,7 +86,7 @@ namespace Library {
 		rhi->SetShader(mVS);
 		rhi->SetVertexBuffers({ mVertexBuffer });
 		rhi->SetIndexBuffer(mIndexBuffer);
-		rhi->SetTopologyType(ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		rhi->DrawIndexed(6);
 		rhi->UnbindResourcesFromShader(ER_VERTEX);
 	}

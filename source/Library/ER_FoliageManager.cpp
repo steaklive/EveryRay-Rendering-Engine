@@ -333,7 +333,7 @@ namespace Library
 
 		rhi->SetVertexBuffers({mVertexBuffer, mInstanceBuffer});
 		rhi->SetIndexBuffer(mIndexBuffer);
-		rhi->SetTopologyType(ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		if (worldShadowMapper)
 		{

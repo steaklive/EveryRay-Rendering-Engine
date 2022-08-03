@@ -233,7 +233,7 @@ namespace Library {
 	void ER_Sandbox::Draw(ER_Core& game, const ER_CoreTime& gameTime)
 	{
 		ER_RHI* rhi = game.GetRHI();
-		rhi->SetTopologyType(ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		
 		#pragma region DRAW_GBUFFER
 		mGBuffer->Start();

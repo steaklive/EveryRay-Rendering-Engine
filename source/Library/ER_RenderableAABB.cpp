@@ -90,7 +90,7 @@ namespace Library
 	void ER_RenderableAABB::Draw()
 	{
 		ER_RHI* rhi = mCore.GetRHI();
-		rhi->SetTopologyType(ER_PRIMITIVE_TOPOLOGY_LINELIST);
+		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST);
 		rhi->SetVertexBuffers({ mVertexBuffer });
 		rhi->SetIndexBuffer(mIndexBuffer);
 		mMaterial->PrepareForRendering(XMMatrixIdentity(), mColor);

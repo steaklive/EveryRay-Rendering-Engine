@@ -17,12 +17,15 @@ using namespace Rendering;
 
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR commandLine, int showCommand)
 {
-	#if defined(DEBUG) || defined(__DEBUG)
-	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF|_CRTDBG_LEAK_CHECK_DF);
-	#endif
+	//#if defined(DEBUG) || defined(_DEBUG)
+	//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF|_CRTDBG_LEAK_CHECK_DF);
+	//#endif
 
-	std::unique_ptr<RenderingGame> game(new RenderingGame(new ER_RHI_DX11(), instance, L"Rendering Class", L"EveryRay - Rendering Engine DX11", showCommand, 1920, 1080, false));
-
+#if defined(DEBUG) || defined(_DEBUG)
+	std::unique_ptr<RenderingGame> game(new RenderingGame(new ER_RHI_DX11(), instance, L"EveryRay Main Window Class", L"EveryRay - Rendering Engine | Win64 DX11 (Debug)", showCommand, 1920, 1080, false));
+#else
+	std::unique_ptr<RenderingGame> game(new RenderingGame(new ER_RHI_DX11(), instance, L"EveryRay Main Window Class", L"EveryRay - Rendering Engine | Win64 DX11 (Release)", showCommand, 1920, 1080, false));
+#endif
 	try {
 		game->Run();
 	}

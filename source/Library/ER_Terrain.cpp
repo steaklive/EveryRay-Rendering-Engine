@@ -472,7 +472,9 @@ namespace Library
 
 	void ER_Terrain::DrawTessellated(int tileIndex, ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade)
 	{
-		if (mHeightMaps[tileIndex]->IsCulled() && shadowMapCascade == -1) //for shadow mapping pass we dont want to cull with main camera frustum
+		bool isShadowMappingPass = shadowMapCascade != -1;
+
+		if (mHeightMaps[tileIndex]->IsCulled() && !isShadowMappingPass) //for shadow mapping pass we dont want to cull with main camera frustum
 			return;
 
 		ER_RHI* rhi = mCore->GetRHI();
@@ -482,7 +484,7 @@ namespace Library
 
 		ER_RHI_PRIMITIVE_TYPE originalPrimitiveTopology = rhi->GetCurrentTopologyType();
 
-		rhi->SetTopologyType(ER_PRIMITIVE_TOPOLOGY_CONTROL_POINT_PATCHLIST);
+		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_CONTROL_POINT_PATCHLIST);
 		rhi->SetInputLayout(mInputLayout);
 		rhi->SetVertexBuffers({ mHeightMaps[tileIndex]->mVertexBufferTS });
 
@@ -527,8 +529,12 @@ namespace Library
 			resources[2] = mSplatChannelTextures[1];
 			resources[3] = mSplatChannelTextures[2];
 			resources[4] = mSplatChannelTextures[3];
-			for (int c = 0; c < NUM_SHADOW_CASCADES; c++)
-				resources[5 + c] = worldShadowMapper->GetShadowTexture(c);
+
+			if (!isShadowMappingPass)
+			{
+				for (int c = 0; c < NUM_SHADOW_CASCADES; c++)
+					resources[5 + c] = worldShadowMapper->GetShadowTexture(c);
+			}
 
 			rhi->SetShaderResources(ER_TESSELLATION_DOMAIN, resources);
 			rhi->SetShaderResources(ER_PIXEL, resources);
@@ -548,8 +554,8 @@ namespace Library
 
 		if (probeManager && probeManager->AreGlobalProbesReady())
 		{
-			rhi->SetShaderResources(ER_TESSELLATION_DOMAIN, {probeManager->GetGlobalDiffuseProbe()->GetCubemapTexture()}, 8);
-			rhi->SetShaderResources(ER_TESSELLATION_DOMAIN, {probeManager->GetGlobalSpecularProbe()->GetCubemapTexture() }, 12);
+			rhi->SetShaderResources(ER_TESSELLATION_DOMAIN, { probeManager->GetGlobalDiffuseProbe()->GetCubemapTexture()}, 8);
+			rhi->SetShaderResources(ER_TESSELLATION_DOMAIN, { probeManager->GetGlobalSpecularProbe()->GetCubemapTexture() }, 12);
 			rhi->SetShaderResources(ER_TESSELLATION_DOMAIN, { probeManager->GetIntegrationMap() }, 17);
 
 			rhi->SetShaderResources(ER_PIXEL, { probeManager->GetGlobalDiffuseProbe()->GetCubemapTexture() }, 8);
@@ -565,8 +571,8 @@ namespace Library
 
 		rhi->SetShader(mVS);
 		rhi->SetShader(mHS);
-		rhi->SetShader((shadowMapCascade != -1) ? mDS_ShadowMap : mDS);
-		rhi->SetShader((shadowMapCascade != -1) ? mPS_ShadowMap : mPS);
+		rhi->SetShader(isShadowMappingPass ? mDS_ShadowMap : mDS);
+		rhi->SetShader(isShadowMappingPass ? mPS_ShadowMap : mPS);
 
 		if (mIsWireframe)
 		{

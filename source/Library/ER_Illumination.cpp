@@ -314,7 +314,7 @@ namespace Library {
 				rhi->ClearRenderTarget(mVCTVoxelizationDebugRT, clearColorBlack);
 				rhi->ClearDepthStencilTarget(mDepthBuffer, 1.0f, 0);
 
-				rhi->SetTopologyType(ER_PRIMITIVE_TOPOLOGY_POINTLIST);
+				rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_POINTLIST);
 				rhi->SetEmptyInputLayout();
 
 				rhi->SetShader(mVCTVoxelizationDebugVS);

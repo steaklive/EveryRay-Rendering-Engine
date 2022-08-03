@@ -362,7 +362,7 @@ namespace Library
 
 		ER_RHI* rhi = mCore->GetRHI();
 
-		rhi->SetTopologyType(mWireframeMode ? ER_PRIMITIVE_TOPOLOGY_LINELIST : ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		rhi->SetTopologyType(mWireframeMode ? ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST : ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		if (mMaterials.find(materialName) == mMaterials.end() && !isForwardPass)
 			return;
@@ -400,8 +400,6 @@ namespace Library
 				}
 				else
 					rhi->DrawIndexed(mMeshesRenderBuffers[lod][materialName][i]->IndicesCount);
-
-				rhi->UnbindResourcesFromShader(ER_PIXEL);
 			}
 		}
 	}
