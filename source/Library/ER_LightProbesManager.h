@@ -20,7 +20,7 @@ namespace Library
 {
 	class ER_Camera;
 	class ER_ShadowMapper;
-	class DirectionalLight;
+	class ER_DirectionalLight;
 	class ER_Skybox;
 	class ER_CoreTime;
 	class ER_QuadRenderer;
@@ -46,7 +46,7 @@ namespace Library
 	{
 	public:
 		using ProbesRenderingObjectsInfo = std::map<std::string, ER_RenderingObject*>;
-		ER_LightProbesManager(ER_Core& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
+		ER_LightProbesManager(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper);
 		~ER_LightProbesManager();
 
 		bool AreProbesReady() { return mDiffuseProbesReady && mSpecularProbesReady; }
@@ -83,10 +83,10 @@ namespace Library
 
 		bool mDebugDiscardCulledProbes = false;//used in DebugLightProbeMaterial
 	private:
-		void SetupGlobalDiffuseProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
-		void SetupGlobalSpecularProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
-		void SetupDiffuseProbes(ER_Core& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
-		void SetupSpecularProbes(ER_Core& game, ER_Camera& camera, ER_Scene* scene, DirectionalLight& light, ER_ShadowMapper& shadowMapper);
+		void SetupGlobalDiffuseProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper);
+		void SetupGlobalSpecularProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper);
+		void SetupDiffuseProbes(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper);
+		void SetupSpecularProbes(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper);
 		void AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds);
 		bool IsProbeInCell(ER_LightProbe* aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds);
 		void UpdateProbesByType(ER_Core& game, ER_ProbeType aType);

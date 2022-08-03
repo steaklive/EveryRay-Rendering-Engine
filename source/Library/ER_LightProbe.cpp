@@ -13,7 +13,7 @@
 #include "ER_MatrixHelper.h"
 #include "ER_MaterialHelper.h"
 #include "ER_VectorHelper.h"
-#include "DirectionalLight.h"
+#include "ER_DirectionalLight.h"
 #include "ER_QuadRenderer.h"
 #include "ER_RenderToLightProbeMaterial.h"
 #include "ER_MaterialsCallbacks.h"
@@ -39,7 +39,7 @@ namespace Library
 		ER_Vector3Helper::Up
 	};
 
-	ER_LightProbe::ER_LightProbe(ER_Core& game, DirectionalLight& light, ER_ShadowMapper& shadowMapper, int size, ER_ProbeType aType)
+	ER_LightProbe::ER_LightProbe(ER_Core& game, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper, int size, ER_ProbeType aType)
 		: mSize(size)
 		, mDirectionalLight(light)
 		, mShadowMapper(shadowMapper)

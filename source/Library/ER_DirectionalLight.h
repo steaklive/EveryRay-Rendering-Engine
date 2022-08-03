@@ -8,16 +8,16 @@
 
 namespace Library
 {
-	class DirectionalLight : public Light
+	class ER_DirectionalLight : public Light
 	{
-		RTTI_DECLARATIONS(DirectionalLight, Light)
+		RTTI_DECLARATIONS(ER_DirectionalLight, Light)
 		
 		using Delegate_RotationUpdate = std::function<void()>; 
 
 	public:
-		DirectionalLight(ER_Core& game);
-		DirectionalLight(ER_Core& game, ER_Camera& camera);
-		virtual ~DirectionalLight();
+		ER_DirectionalLight(ER_Core& game);
+		ER_DirectionalLight(ER_Core& game, ER_Camera& camera);
+		virtual ~ER_DirectionalLight();
 
 		const XMFLOAT3& Direction() const;
 		const XMFLOAT3& Up() const;

@@ -93,13 +93,7 @@
     <ClInclude Include="Light.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DirectionalLight.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="PointLight.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SpotLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="OceanSimulator.h">
@@ -270,6 +264,9 @@
     <ClInclude Include="RHI\ER_RHI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_DirectionalLight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -278,13 +275,7 @@
     <ClCompile Include="Light.cpp">
       <Filter>Source Files\Graphics\Lights</Filter>
     </ClCompile>
-    <ClCompile Include="DirectionalLight.cpp">
-      <Filter>Source Files\Graphics\Lights</Filter>
-    </ClCompile>
     <ClCompile Include="PointLight.cpp">
-      <Filter>Source Files\Graphics\Lights</Filter>
-    </ClCompile>
-    <ClCompile Include="SpotLight.cpp">
       <Filter>Source Files\Graphics\Lights</Filter>
     </ClCompile>
     <ClCompile Include="ER_LightProbe.cpp">
@@ -445,6 +436,9 @@
     </ClCompile>
     <ClCompile Include="ER_CoreServicesContainer.cpp">
       <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_DirectionalLight.cpp">
+      <Filter>Source Files\Graphics\Lights</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

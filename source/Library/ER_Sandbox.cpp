@@ -72,7 +72,7 @@ namespace Library {
 #pragma endregion
 
 		#pragma region INIT_DIRECTIONAL_LIGHT
-        mDirectionalLight = new DirectionalLight(game, camera);
+        mDirectionalLight = new ER_DirectionalLight(game, camera);
         mDirectionalLight->ApplyRotation(XMMatrixRotationAxis(mDirectionalLight->RightVector(), -XMConvertToRadians(70.0f)) * XMMatrixRotationAxis(mDirectionalLight->UpVector(), -XMConvertToRadians(25.0f)));
         mDirectionalLight->SetAmbientColor(mScene->ambientColor);
         mDirectionalLight->SetSunColor(mScene->sunColor);

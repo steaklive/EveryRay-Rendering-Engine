@@ -17,7 +17,7 @@ namespace Library
 	{
 		using LightProbeRenderingObjectsInfo = std::map<std::string, ER_RenderingObject*>;
 	public:
-		ER_LightProbe(ER_Core& game, DirectionalLight& light, ER_ShadowMapper& shadowMapper, int size, ER_ProbeType aType);
+		ER_LightProbe(ER_Core& game, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper, int size, ER_ProbeType aType);
 		~ER_LightProbe();
 
 #ifdef ER_PLATFORM_WIN64_DX11
@@ -53,7 +53,7 @@ namespace Library
 
 		ER_ProbeType mProbeType;
 
-		DirectionalLight& mDirectionalLight;
+		ER_DirectionalLight& mDirectionalLight;
 		ER_ShadowMapper& mShadowMapper;
 
 		LightProbeRenderingObjectsInfo mObjectsToRenderPerFace[CUBEMAP_FACES_COUNT];

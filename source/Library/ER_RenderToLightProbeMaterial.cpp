@@ -7,7 +7,7 @@
 #include "ER_RenderingObject.h"
 #include "ER_Mesh.h"
 #include "ER_ShadowMapper.h"
-#include "DirectionalLight.h"
+#include "ER_DirectionalLight.h"
 
 namespace Library
 {

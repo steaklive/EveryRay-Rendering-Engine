@@ -14,7 +14,7 @@
 #include "ER_Illumination.h"
 #include "ER_LightProbesManager.h"
 #include "ER_FoliageManager.h"
-#include "DirectionalLight.h"
+#include "ER_DirectionalLight.h"
 #include "ER_Terrain.h"
 
 #if defined(DEBUG) || defined(_DEBUG)  
@@ -606,7 +606,7 @@ namespace Library
 		return material;
 	}
 
-	void ER_Scene::LoadFoliageZones(std::vector<ER_Foliage*>& foliageZones, DirectionalLight& light)
+	void ER_Scene::LoadFoliageZones(std::vector<ER_Foliage*>& foliageZones, ER_DirectionalLight& light)
 	{
 		Json::Reader reader;
 		std::ifstream scene(mScenePath.c_str(), std::ifstream::binary);

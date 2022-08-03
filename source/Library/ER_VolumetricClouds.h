@@ -5,7 +5,7 @@
 
 namespace Library
 {
-	class DirectionalLight;
+	class ER_DirectionalLight;
 	class ER_CoreTime;
 	class ER_Camera;
 	class ER_Skybox;
@@ -45,7 +45,7 @@ namespace Library
 	class ER_VolumetricClouds : public ER_CoreComponent
 	{
 	public:
-		ER_VolumetricClouds(ER_Core& game, ER_Camera& camera, DirectionalLight& light, ER_Skybox& skybox);
+		ER_VolumetricClouds(ER_Core& game, ER_Camera& camera, ER_DirectionalLight& light, ER_Skybox& skybox);
 		~ER_VolumetricClouds();
 
 		void Initialize(ER_RHI_GPUTexture* aIlluminationDepth);
@@ -60,7 +60,7 @@ namespace Library
 		void UpdateImGui();
 
 		ER_Camera& mCamera;
-		DirectionalLight& mDirectionalLight;
+		ER_DirectionalLight& mDirectionalLight;
 		ER_Skybox& mSkybox;
 		
 		ER_RHI_GPUConstantBuffer<VolumetricCloudsCBufferData::FrameCB> mFrameConstantBuffer;

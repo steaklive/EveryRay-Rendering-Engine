@@ -20,7 +20,7 @@ namespace Library
 	class ER_ShadowMapper;
 	class ER_Scene;
 	class ER_CoreTime;
-	class DirectionalLight;
+	class ER_DirectionalLight;
 	class ER_LightProbesManager;
 	class ER_RenderableAABB;
 	class ER_Camera;
@@ -121,7 +121,7 @@ namespace Library
 	class ER_Terrain : public ER_CoreComponent
 	{
 	public:
-		ER_Terrain(ER_Core& game, DirectionalLight& light);
+		ER_Terrain(ER_Core& game, ER_DirectionalLight& light);
 		~ER_Terrain();
 
 		void LoadTerrainData(ER_Scene* aScene);
@@ -158,7 +158,7 @@ namespace Library
 		void LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path);
 		void DrawTessellated(int i, ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr, int shadowMapCascade = -1);
 
-		DirectionalLight& mDirectionalLight;
+		ER_DirectionalLight& mDirectionalLight;
 
 		ER_RHI_GPUConstantBuffer<TerrainCBufferData::TerrainData> mTerrainConstantBuffer;
 		ER_RHI_GPUConstantBuffer<TerrainCBufferData::PlaceOnTerrainData> mPlaceOnTerrainConstantBuffer;

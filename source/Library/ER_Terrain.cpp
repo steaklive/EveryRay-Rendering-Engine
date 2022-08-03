@@ -11,7 +11,7 @@
 #include "ER_VertexDeclarations.h"
 #include "ER_ShadowMapper.h"
 #include "ER_Scene.h"
-#include "DirectionalLight.h"
+#include "ER_DirectionalLight.h"
 #include "ER_LightProbesManager.h"
 #include "ER_LightProbe.h"
 #include "ER_RenderableAABB.h"
@@ -22,7 +22,7 @@
 
 namespace Library
 {
-	ER_Terrain::ER_Terrain(ER_Core& pCore, DirectionalLight& light) :
+	ER_Terrain::ER_Terrain(ER_Core& pCore, ER_DirectionalLight& light) :
 		ER_CoreComponent(pCore),
 		mIsWireframe(false),
 		mHeightMaps(0, nullptr),

@@ -4,7 +4,7 @@
 #include "ER_Illumination.h"
 #include "ER_CoreTime.h"
 #include "ER_Camera.h"
-#include "DirectionalLight.h"
+#include "ER_DirectionalLight.h"
 #include "ER_CoreException.h"
 #include "ER_Model.h"
 #include "ER_Mesh.h"
@@ -32,7 +32,7 @@ namespace Library {
 
 	const float voxelCascadesSizes[NUM_VOXEL_GI_CASCADES] = { 256.0f, 256.0f };
 
-	ER_Illumination::ER_Illumination(ER_Core& game, ER_Camera& camera, const DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const ER_Scene* scene)
+	ER_Illumination::ER_Illumination(ER_Core& game, ER_Camera& camera, const ER_DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const ER_Scene* scene)
 		: 
 		ER_CoreComponent(game),
 		mCamera(camera),

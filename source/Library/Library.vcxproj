@@ -191,7 +191,7 @@
     <ClInclude Include="ER_DebugLightProbeMaterial.h" />
     <ClInclude Include="ER_GBufferMaterial.h" />
     <ClInclude Include="ER_Sandbox.h" />
-    <ClInclude Include="DirectionalLight.h" />
+    <ClInclude Include="ER_DirectionalLight.h" />
     <ClInclude Include="ER_Editor.h" />
     <ClInclude Include="ER_CPUProfiler.h" />
     <ClInclude Include="ER_LightProbesManager.h" />
@@ -240,7 +240,6 @@
     <ClInclude Include="ER_CoreServicesContainer.h" />
     <ClInclude Include="ER_ShadowMapper.h" />
     <ClInclude Include="ER_Skybox.h" />
-    <ClInclude Include="SpotLight.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="ER_Terrain.h" />
@@ -258,7 +257,7 @@
     <ClCompile Include="ER_CameraFPS.cpp" />
     <ClCompile Include="ER_DebugLightProbeMaterial.cpp" />
     <ClCompile Include="ER_GBufferMaterial.cpp" />
-    <ClCompile Include="DirectionalLight.cpp" />
+    <ClCompile Include="ER_DirectionalLight.cpp" />
     <ClCompile Include="ER_Editor.cpp" />
     <ClCompile Include="ER_CPUProfiler.cpp" />
     <ClCompile Include="ER_Illumination.cpp" />
@@ -303,7 +302,6 @@
     <ClCompile Include="ER_Scene.cpp" />
     <ClCompile Include="ER_CoreServicesContainer.cpp" />
     <ClCompile Include="ER_ShadowMapper.cpp" />
-    <ClCompile Include="SpotLight.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

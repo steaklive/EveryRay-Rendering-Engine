@@ -10,7 +10,7 @@ namespace Library
 {
 	class ER_Scene;
 	class ER_Camera;
-	class DirectionalLight;
+	class ER_DirectionalLight;
 	class ER_ShadowMapper;
 	class ER_PostProcessingStack;
 	class ER_Illumination;
@@ -77,7 +77,7 @@ namespace Library
 	class ER_Foliage
 	{
 	public:
-		ER_Foliage(ER_Core& pCore, ER_Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, const std::string& textureName, float scale = 1.0f, float distributionRadius = 100, 
+		ER_Foliage(ER_Core& pCore, ER_Camera& pCamera, ER_DirectionalLight& pLight, int pPatchesCount, const std::string& textureName, float scale = 1.0f, float distributionRadius = 100, 
 			const XMFLOAT3& distributionCenter = XMFLOAT3(0.0f, 0.0f, 0.0f), FoliageBillboardType bType = FoliageBillboardType::SINGLE,
 			bool isPlacedOnTerrain = false, int terrainPlaceChannel = 4);
 		~ER_Foliage();
@@ -136,7 +136,7 @@ namespace Library
 
 		ER_Core& mCore;
 		ER_Camera& mCamera;
-		DirectionalLight& mDirectionalLight;
+		ER_DirectionalLight& mDirectionalLight;
 
 		ER_RHI_InputLayout* mInputLayout = nullptr;
 		ER_RHI_GPUShader* mVS = nullptr;
@@ -213,7 +213,7 @@ namespace Library
 	class ER_FoliageManager : public ER_CoreComponent
 	{
 	public:
-		ER_FoliageManager(ER_Core& pCore, ER_Scene* aScene, DirectionalLight& light);
+		ER_FoliageManager(ER_Core& pCore, ER_Scene* aScene, ER_DirectionalLight& light);
 		~ER_FoliageManager();
 
 		void Initialize();

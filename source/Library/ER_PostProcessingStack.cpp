@@ -3,7 +3,7 @@
 #include "ER_Utility.h"
 #include "ER_ColorHelper.h"
 #include "ER_MatrixHelper.h"
-#include "DirectionalLight.h"
+#include "ER_DirectionalLight.h"
 #include "ER_QuadRenderer.h"
 #include "ER_GBuffer.h"
 #include "ER_Camera.h"

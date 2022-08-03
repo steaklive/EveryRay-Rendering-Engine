@@ -4,7 +4,7 @@
 #include "ER_Frustum.h"
 #include "ER_Projector.h"
 #include "ER_Camera.h"
-#include "DirectionalLight.h"
+#include "ER_DirectionalLight.h"
 #include "ER_CoreTime.h"
 #include "ER_Core.h"
 #include "ER_CoreException.h"
@@ -22,7 +22,7 @@
 
 namespace Library
 {
-	ER_ShadowMapper::ER_ShadowMapper(ER_Core& pCore, ER_Camera& camera, DirectionalLight& dirLight,  UINT pWidth, UINT pHeight, bool isCascaded)
+	ER_ShadowMapper::ER_ShadowMapper(ER_Core& pCore, ER_Camera& camera, ER_DirectionalLight& dirLight,  UINT pWidth, UINT pHeight, bool isCascaded)
 		: ER_CoreComponent(pCore),
 		mShadowMaps(0, nullptr), 
 		mDirectionalLight(dirLight),
@@ -130,7 +130,7 @@ namespace Library
 			mLightProjectors[i]->ApplyTransform(mDirectionalLight.GetTransform());
 	}
 
-	XMMATRIX ER_ShadowMapper::GetLightProjectionMatrixInFrustum(int index, ER_Frustum& cameraFrustum, DirectionalLight& light)
+	XMMATRIX ER_ShadowMapper::GetLightProjectionMatrixInFrustum(int index, ER_Frustum& cameraFrustum, ER_DirectionalLight& light)
 	{
 		assert(index < NUM_SHADOW_CASCADES);
 

@@ -6,7 +6,7 @@
 
 namespace Library
 {
-	class DirectionalLight;
+	class ER_DirectionalLight;
 	class ER_CoreTime;
 	class ER_Camera;
 	class ER_Skybox;
@@ -40,7 +40,7 @@ namespace Library
 	class ER_VolumetricFog : public ER_CoreComponent
 	{
 	public:
-		ER_VolumetricFog(ER_Core& game, const DirectionalLight& aLight, const ER_ShadowMapper& aShadowMapper);
+		ER_VolumetricFog(ER_Core& game, const ER_DirectionalLight& aLight, const ER_ShadowMapper& aShadowMapper);
 		~ER_VolumetricFog();
 	
 		void Initialize();
@@ -58,7 +58,7 @@ namespace Library
 		void UpdateImGui();
 
 		const ER_ShadowMapper& mShadowMapper;
-		const DirectionalLight& mDirectionalLight;
+		const ER_DirectionalLight& mDirectionalLight;
 
 		ER_RHI_GPUTexture* mTempVoxelInjectionTexture3D[2] = { nullptr, nullptr }; //read-write
 		ER_RHI_GPUTexture* mFinalVoxelAccumulationTexture3D = nullptr;

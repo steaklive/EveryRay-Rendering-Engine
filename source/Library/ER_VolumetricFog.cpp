@@ -2,7 +2,7 @@
 #include "ER_ShadowMapper.h"
 #include "ER_Core.h"
 #include "ER_CoreException.h"
-#include "DirectionalLight.h"
+#include "ER_DirectionalLight.h"
 #include "ER_Utility.h"
 #include "ER_Camera.h"
 #include "ER_QuadRenderer.h"
@@ -14,7 +14,7 @@
 static float clearColorBlack[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 namespace Library {
-	ER_VolumetricFog::ER_VolumetricFog(ER_Core& game, const DirectionalLight& aLight, const ER_ShadowMapper& aShadowMapper)
+	ER_VolumetricFog::ER_VolumetricFog(ER_Core& game, const ER_DirectionalLight& aLight, const ER_ShadowMapper& aShadowMapper)
 	    : ER_CoreComponent(game), mShadowMapper(aShadowMapper), mDirectionalLight(aLight)
 	{	
 		mPrevViewProj = XMMatrixIdentity();

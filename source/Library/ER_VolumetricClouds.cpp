@@ -3,7 +3,7 @@
 #include "ER_VolumetricClouds.h"
 #include "ER_CoreTime.h"
 #include "ER_Camera.h"
-#include "DirectionalLight.h"
+#include "ER_DirectionalLight.h"
 #include "ER_CoreException.h"
 #include "ER_Model.h"
 #include "ER_Mesh.h"
@@ -15,7 +15,7 @@
 #include "ER_QuadRenderer.h"
 
 namespace Library {
-	ER_VolumetricClouds::ER_VolumetricClouds(ER_Core& game, ER_Camera& camera, DirectionalLight& light, ER_Skybox& skybox)
+	ER_VolumetricClouds::ER_VolumetricClouds(ER_Core& game, ER_Camera& camera, ER_DirectionalLight& light, ER_Skybox& skybox)
 		: ER_CoreComponent(game),
 		mCamera(camera), 
 		mDirectionalLight(light),

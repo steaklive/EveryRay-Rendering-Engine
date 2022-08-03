@@ -10,7 +10,7 @@
 namespace Library
 {
 	class ER_RenderingObject;
-	class DirectionalLight;
+	class ER_DirectionalLight;
 	class ER_Foliage;
 
 	class ER_Scene : public ER_CoreComponent
@@ -32,7 +32,7 @@ namespace Library
 		float GetLightProbesSpecularDistance() { return mLightProbesSpecularDistance; }
 		
 		bool HasFoliage() { return mHasFoliage; }
-		void LoadFoliageZones(std::vector<ER_Foliage*>& foliageZones, DirectionalLight& light);
+		void LoadFoliageZones(std::vector<ER_Foliage*>& foliageZones, ER_DirectionalLight& light);
 
 		bool HasTerrain() { return mHasTerrain; }
 		int GetTerrainTilesCount() { return mTerrainTilesCount; }

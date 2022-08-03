@@ -7,7 +7,7 @@
 #include "ER_Mesh.h"
 #include "ER_VertexDeclarations.h"
 #include "ER_Scene.h"
-#include "DirectionalLight.h"
+#include "ER_DirectionalLight.h"
 #include "ER_ShadowMapper.h"
 #include "ER_PostProcessingStack.h"
 #include "ER_Illumination.h"
@@ -19,7 +19,7 @@ namespace Library
 {
 	static int currentSplatChannnel = (int)TerrainSplatChannels::NONE;
 
-	ER_FoliageManager::ER_FoliageManager(ER_Core& pCore, ER_Scene* aScene, DirectionalLight& light) 
+	ER_FoliageManager::ER_FoliageManager(ER_Core& pCore, ER_Scene* aScene, ER_DirectionalLight& light) 
 		: ER_CoreComponent(pCore), mScene(aScene)
 	{
 		assert(aScene);
@@ -126,7 +126,7 @@ namespace Library
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	ER_Foliage::ER_Foliage(ER_Core& pCore, ER_Camera& pCamera, DirectionalLight& pLight, int pPatchesCount, const std::string& textureName, float scale, float distributionRadius,
+	ER_Foliage::ER_Foliage(ER_Core& pCore, ER_Camera& pCamera, ER_DirectionalLight& pLight, int pPatchesCount, const std::string& textureName, float scale, float distributionRadius,
 		const XMFLOAT3& distributionCenter, FoliageBillboardType bType, bool isPlacedOnTerrain, int placeChannel)
 		:
 		mCore(pCore),

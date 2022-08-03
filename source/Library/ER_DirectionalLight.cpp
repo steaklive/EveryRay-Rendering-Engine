@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "DirectionalLight.h"
+#include "ER_DirectionalLight.h"
 #include "ER_VectorHelper.h"
 #include "ER_Utility.h"
 #include "ER_MatrixHelper.h"
@@ -9,15 +9,15 @@
 #include "ImGuizmo.h"
 namespace Library
 {
-	RTTI_DEFINITIONS(DirectionalLight)
+	RTTI_DEFINITIONS(ER_DirectionalLight)
 
-	DirectionalLight::DirectionalLight(ER_Core& game) : Light(game),
+	ER_DirectionalLight::ER_DirectionalLight(ER_Core& game) : Light(game),
 		mDirection(ER_Vector3Helper::Forward),
 		mUp(ER_Vector3Helper::Up), mRight(ER_Vector3Helper::Right), mProxyModel(nullptr)
 	{
 	}
 
-	DirectionalLight::DirectionalLight(ER_Core& game, ER_Camera& camera) : Light(game),
+	ER_DirectionalLight::ER_DirectionalLight(ER_Core& game, ER_Camera& camera) : Light(game),
 		mDirection(ER_Vector3Helper::Forward),
 		mUp(ER_Vector3Helper::Up), mRight(ER_Vector3Helper::Right), mProxyModel(nullptr)
 	{
@@ -28,7 +28,7 @@ namespace Library
 		mPseudoTranslation = XMMatrixTranslation(mProxyModel->Position().x, mProxyModel->Position().y ,mProxyModel->Position().z);
 	}
 
-	DirectionalLight::~DirectionalLight()
+	ER_DirectionalLight::~ER_DirectionalLight()
 	{
 		DeleteObject(mProxyModel);
 
@@ -36,37 +36,37 @@ namespace Library
 		DeleteObject(RotationUpdateEvent);
 	}
 
-	const XMFLOAT3& DirectionalLight::Direction() const
+	const XMFLOAT3& ER_DirectionalLight::Direction() const
 	{
 		return mDirection;
 	}
 
-	const XMFLOAT3& DirectionalLight::Up() const
+	const XMFLOAT3& ER_DirectionalLight::Up() const
 	{
 		return mUp;
 	}
 
-	const XMFLOAT3& DirectionalLight::Right() const
+	const XMFLOAT3& ER_DirectionalLight::Right() const
 	{
 		return mRight;
 	}
 
-	XMVECTOR DirectionalLight::DirectionVector() const
+	XMVECTOR ER_DirectionalLight::DirectionVector() const
 	{
 		return XMLoadFloat3(&mDirection);
 	}
 
-	XMVECTOR DirectionalLight::UpVector() const
+	XMVECTOR ER_DirectionalLight::UpVector() const
 	{
 		return XMLoadFloat3(&mUp);
 	}
 
-	XMVECTOR DirectionalLight::RightVector() const
+	XMVECTOR ER_DirectionalLight::RightVector() const
 	{
 		return XMLoadFloat3(&mRight);
 	}
 
-	void DirectionalLight::ApplyRotation(CXMMATRIX transform)
+	void ER_DirectionalLight::ApplyRotation(CXMMATRIX transform)
 	{
 		mTransformMatrix = transform;
 
@@ -92,13 +92,13 @@ namespace Library
 		UpdateTransformArray(transform * mPseudoTranslation);
 	}
 
-	void DirectionalLight::ApplyRotation(const XMFLOAT4X4& transform)
+	void ER_DirectionalLight::ApplyRotation(const XMFLOAT4X4& transform)
 	{
 		XMMATRIX transformMatrix = XMLoadFloat4x4(&transform);
 		ApplyRotation(transformMatrix);
 	}
 
-	void DirectionalLight::ApplyTransform(const float* transform)
+	void ER_DirectionalLight::ApplyTransform(const float* transform)
 	{
 		XMFLOAT4X4 transformMatrixFloat = XMFLOAT4X4(transform);
 		XMMATRIX transformMatrix = XMLoadFloat4x4(&transformMatrixFloat);
@@ -128,13 +128,13 @@ namespace Library
 			listener();
 	}
 
-	void DirectionalLight::DrawProxyModel(const ER_CoreTime & time)
+	void ER_DirectionalLight::DrawProxyModel(const ER_CoreTime & time)
 	{
 		if (mProxyModel)
 			mProxyModel->Draw(time);
 	}
 
-	void DirectionalLight::UpdateProxyModel(const ER_CoreTime & time, XMFLOAT4X4 viewMatrix, XMFLOAT4X4 projectionMatrix)
+	void ER_DirectionalLight::UpdateProxyModel(const ER_CoreTime & time, XMFLOAT4X4 viewMatrix, XMFLOAT4X4 projectionMatrix)
 	{
 		if (mProxyModel)
 		{
@@ -147,7 +147,7 @@ namespace Library
 		}
 	}
 
-	void DirectionalLight::UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix)
+	void ER_DirectionalLight::UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix)
 	{
 		static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
 		static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
@@ -184,7 +184,7 @@ namespace Library
 		}
 	}
 
-	void DirectionalLight::UpdateTransformArray(CXMMATRIX transform)
+	void ER_DirectionalLight::UpdateTransformArray(CXMMATRIX transform)
 	{
 		XMFLOAT4X4 transformMatrix;
 		XMStoreFloat4x4(&transformMatrix, transform);
@@ -192,7 +192,7 @@ namespace Library
 		ER_MatrixHelper::GetFloatArray(transformMatrix, mObjectTransformMatrix);
 	}
 
-	const XMMATRIX& DirectionalLight::LightMatrix(const XMFLOAT3& mPosition) const
+	const XMMATRIX& ER_DirectionalLight::LightMatrix(const XMFLOAT3& mPosition) const
 	{
 		XMVECTOR eyePosition = XMLoadFloat3(&mPosition);
 		XMVECTOR direction = XMLoadFloat3(&mDirection);

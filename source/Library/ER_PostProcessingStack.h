@@ -6,7 +6,7 @@
 namespace Library
 {
 	class ER_Camera;
-	class DirectionalLight;
+	class ER_DirectionalLight;
 	class ER_QuadRenderer;
 	class ER_GBuffer;
 	class ER_VolumetricClouds;
@@ -64,7 +64,7 @@ namespace Library
 
 		void Update();
 
-		void SetDirectionalLight(const DirectionalLight* pLight) { light = pLight; }
+		void SetDirectionalLight(const ER_DirectionalLight* pLight) { light = pLight; }
 		void Config() { mShowDebug = !mShowDebug; }
 
 		bool isWindowOpened = false;
@@ -82,7 +82,7 @@ namespace Library
 
 		ER_Core& mCore;
 		ER_Camera& camera;
-		const DirectionalLight* light;
+		const ER_DirectionalLight* light;
 
 		// Tonemap
 		ER_RHI_GPUTexture* mTonemappingRT = nullptr;
