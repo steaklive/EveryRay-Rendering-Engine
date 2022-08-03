@@ -5,9 +5,10 @@
 # Overview
 "EveryRay" is a rendering engine which is written in C++ and which focuses on quick prototyping of graphical techniques and features. It is lightweight, easy to use and already contains many existing rendering solutions inside. The project is constantly improving when I have some free time for it:) 
 
-Publicly supported APIs:
-- DirectX 11
-- DirectX 12 (WIP, not released yet)
+Publicly supported APIs/platforms:
+- Win64:
+- - DirectX 11
+- - DirectX 12 (WIP, not released yet)
 
 Video demonstrations (scroll down for screenshots):
 - https://youtu.be/_htQNxesr9U (to be updated)
@@ -34,7 +35,7 @@ Video demonstrations (scroll down for screenshots):
 - Post Processing: Linear Fog, SSR, Tonemap, LUT color grading, Vignette, FXAA
 
 # Some of the engine concepts/features
-- Concept of an RHI (aka "Rendering Hardware Interface"): graphics API is abstracted from the general code (systems, etc.)
+- Concept of an "ER_RHI" (aka "Rendering Hardware Interface"): graphics API is abstracted from the general code (systems, etc.)
 - Concept of a simplified generic game object - "ER_RenderingObject":
 - - supports model loading (.obj, .fbx and etc.) with Assimp Library
 - - supports multiple meshes
@@ -96,6 +97,6 @@ You might increase TDR time of your GPU driver (explained here https://docs.subs
 - numerous SIGGRAPH, GDC papers and blogposts by fellow graphics geeks and vendors :)
  
 # Requirements
-- Visual Studio 2017
+- Visual Studio 2019
 - Windows 10 + SDK
 - DirectX 11 supported hardware
