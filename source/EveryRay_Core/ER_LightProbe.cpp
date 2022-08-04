@@ -109,7 +109,7 @@ namespace EveryRay_Core
 		};
 		if (!rhi->ProjectCubemapToSH(aTextureConvoluted, SPHERICAL_HARMONICS_ORDER + 1, &rgbCoefficients[0][0], &rgbCoefficients[1][0], &rgbCoefficients[2][0]))
 		{
-			//TODO write to log
+			ER_OUTPUT_LOG(L"[ER Logger][ER_LightProbe] Could not project a cubemap to spherical harmonics. Storing empty coefficients... \n");
 			for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
 				mSphericalHarmonicsRGB[i] = XMFLOAT3(0.0, 0.0, 0.0);
 		}
@@ -360,7 +360,8 @@ namespace EveryRay_Core
 					}
 					else
 					{
-						//TODO output to LOG (not exception)
+						std::wstring message = L"[ER Logger][ER_LightProbe] Could not load spherical harmonics file: " + probeName + L". Loading empty coefficients... \n";
+						ER_OUTPUT_LOG(message.c_str());
 						for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
 							mSphericalHarmonicsRGB[i] = XMFLOAT3(0, 0, 0);
 
@@ -377,8 +378,8 @@ namespace EveryRay_Core
 			}
 			else
 			{
-				//std::wstring status = L"Failed to load spherical harmonics file for probe: " + probeName;
-				//TODO output to LOG (not exception)
+				std::wstring message = L"[ER Logger][ER_LightProbe] Could not load spherical harmonics file: " + probeName + L". Loading empty coefficients... \n";
+				ER_OUTPUT_LOG(message.c_str());
 				mIsProbeLoadedFromDisk = false;
 			}
 		}

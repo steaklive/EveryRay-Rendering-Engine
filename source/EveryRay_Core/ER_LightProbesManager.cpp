@@ -570,8 +570,8 @@ namespace EveryRay_Core
 
 			for (auto& probe : mDiffuseProbes)
 			{
-				if (!probe->IsLoadedFromDisk())
 #ifdef ER_PLATFORM_WIN64_DX11
+				if (!probe->IsLoadedFromDisk())
 					probe->Compute(game, mTempDiffuseCubemapFacesRT, mTempDiffuseCubemapFacesConvolutedRT, mTempDiffuseCubemapDepthBuffers, diffuseProbesPath, aObjects, mQuadRenderer, skybox);
 #else
 					//TODO load empty
@@ -619,8 +619,8 @@ namespace EveryRay_Core
 
 			for (auto& probe : mSpecularProbes)
 			{
-				if (!probe->IsLoadedFromDisk())
 #ifdef ER_PLATFORM_WIN64_DX11
+				if (!probe->IsLoadedFromDisk())
 					probe->Compute(game, mTempSpecularCubemapFacesRT, mTempSpecularCubemapFacesConvolutedRT, mTempSpecularCubemapDepthBuffers, specularProbesPath, aObjects, mQuadRenderer, skybox);
 #else
 					//TODO load empty

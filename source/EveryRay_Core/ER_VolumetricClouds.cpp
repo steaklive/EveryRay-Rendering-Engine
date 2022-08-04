@@ -110,7 +110,7 @@ namespace EveryRay_Core {
 		mCloudsConstantBuffer.Data.AmbientColor = XMVECTOR{ mAmbientColor[0], mAmbientColor[1], mAmbientColor[2], 1.0f };
 		mCloudsConstantBuffer.Data.WindDir = XMVECTOR{ 1.0f, 0.0f, 0.0f, 1.0f };
 		mCloudsConstantBuffer.Data.WindSpeed = mWindSpeedMultiplier;
-		mCloudsConstantBuffer.Data.Time = static_cast<float>(gameTime.TotalGameTime());
+		mCloudsConstantBuffer.Data.Time = static_cast<float>(gameTime.TotalCoreTime());
 		mCloudsConstantBuffer.Data.Crispiness = mCrispiness;
 		mCloudsConstantBuffer.Data.Curliness = mCurliness;
 		mCloudsConstantBuffer.Data.Coverage = mCoverage;

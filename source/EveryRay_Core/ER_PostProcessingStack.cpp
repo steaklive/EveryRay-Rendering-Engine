@@ -279,7 +279,7 @@ namespace EveryRay_Core {
 		mSSRConstantBuffer.Data.CameraPosition = XMFLOAT4(camera.Position().x,camera.Position().y,camera.Position().z,1.0f);
 		mSSRConstantBuffer.Data.StepSize = mSSRStepSize;
 		mSSRConstantBuffer.Data.MaxThickness = mSSRMaxThickness;
-		mSSRConstantBuffer.Data.Time = static_cast<float>(gameTime.TotalGameTime());
+		mSSRConstantBuffer.Data.Time = static_cast<float>(gameTime.TotalCoreTime());
 		mSSRConstantBuffer.Data.MaxRayCount = mSSRRayCount;
 		mSSRConstantBuffer.ApplyChanges(rhi);
 

@@ -1,3 +1,5 @@
+#define ER_PLATFORM_WIN64_DX11 1
+
 #include "stdafx.h"
 #include <memory>
 

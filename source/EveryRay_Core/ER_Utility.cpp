@@ -39,6 +39,7 @@ namespace EveryRay_Core
 		exeDir = exeDir.substr(0, exeDir.rfind(key));
 		exeDir = exeDir.substr(0, exeDir.rfind(key));
 		exeDir = exeDir.substr(0, exeDir.rfind(key));
+		exeDir = exeDir.substr(0, exeDir.rfind(key));
 		exeDir.append(key);
 		exeDir.append(input);
 
@@ -50,6 +51,7 @@ namespace EveryRay_Core
 		std::string exeDir = std::string(exeDirL.begin(), exeDirL.end());
 
 		std::string key("\\");
+		exeDir = exeDir.substr(0, exeDir.rfind(key));
 		exeDir = exeDir.substr(0, exeDir.rfind(key));
 		exeDir = exeDir.substr(0, exeDir.rfind(key));
 		exeDir = exeDir.substr(0, exeDir.rfind(key));

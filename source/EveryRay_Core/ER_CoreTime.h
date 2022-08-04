@@ -8,14 +8,14 @@ namespace EveryRay_Core
 	public:
 		ER_CoreTime();
 
-		double TotalGameTime() const;
-		void SetTotalGameTime(double totalGameTime);
+		double TotalCoreTime() const;
+		void SetTotalCoreTime(double totalGameTime);
 
-		double ElapsedGameTime() const;
-		void SetElapsedGameTime(double elapsedGameTime);
+		double ElapsedCoreTime() const;
+		void SetElapsedCoreTime(double elapsedGameTime);
 
 	private:
-		double mTotalGameTime;
-		double mElapsedGameTime;
+		double mTotalCoreTime;
+		double mElapsedCoreTime;
 	};
 }

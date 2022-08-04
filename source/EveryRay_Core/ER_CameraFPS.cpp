@@ -132,7 +132,7 @@ namespace EveryRay_Core
 			rotationAmount.y = -mouseState->lY * mMouseSensitivity;
 		}
 
-		float elapsedTime = (float)gameTime.ElapsedGameTime();
+		float elapsedTime = (float)gameTime.ElapsedCoreTime();
 		XMVECTOR rotationVector = XMLoadFloat2(&rotationAmount) * mRotationRate * elapsedTime;
 		XMVECTOR right = XMLoadFloat3(&mRight);
 

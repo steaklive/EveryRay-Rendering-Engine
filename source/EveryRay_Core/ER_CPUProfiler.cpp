@@ -32,8 +32,8 @@ namespace EveryRay_Core {
 		else
 		{
 			std::chrono::duration<double> finalTime = endTimer - it->second;
-			std::string message = "[CPU Profiler] CPU time of <" + aEventName + "> is " + std::to_string(finalTime.count()) + "s\n";
-			OutputDebugString(ER_Utility::ToWideString(message).c_str());
+			std::string message = "[ER Logger][ER_CPUProfiler] CPU time of <" + aEventName + "> is " + std::to_string(finalTime.count()) + "s\n";
+			ER_OUTPUT_LOG(ER_Utility::ToWideString(message).c_str());
 		}
 	}
 

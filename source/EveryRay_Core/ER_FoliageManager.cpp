@@ -354,7 +354,7 @@ namespace EveryRay_Core
 		mFoliageConstantBuffer.Data.WindDirection = XMFLOAT4{ 0.0f, 0.0f, 1.0f , 1.0f };
 		mFoliageConstantBuffer.Data.VoxelCameraPos = XMFLOAT4{ mVoxelCameraPos->x, mVoxelCameraPos->y, mVoxelCameraPos->z, 1.0 };
 		mFoliageConstantBuffer.Data.RotateToCamera = (mIsRotating) ? 1.0f : 0.0f;;
-		mFoliageConstantBuffer.Data.Time = static_cast<float>(gameTime.TotalGameTime());
+		mFoliageConstantBuffer.Data.Time = static_cast<float>(gameTime.TotalCoreTime());
 		mFoliageConstantBuffer.Data.WindStrength = mWindStrength;
 		mFoliageConstantBuffer.Data.WindFrequency = mWindFrequency;
 		mFoliageConstantBuffer.Data.WindGustDistance = mWindGustDistance;

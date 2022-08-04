@@ -4,27 +4,27 @@
 namespace EveryRay_Core
 {
 	ER_CoreTime::ER_CoreTime()
-		: mTotalGameTime(0.0), mElapsedGameTime(0.0)
+		: mTotalCoreTime(0.0), mElapsedCoreTime(0.0)
 	{
 	}
 
-	double ER_CoreTime::TotalGameTime() const
+	double ER_CoreTime::TotalCoreTime() const
 	{
-		return mTotalGameTime;
+		return mTotalCoreTime;
 	}
 
-	void ER_CoreTime::SetTotalGameTime(double totalGameTime)
+	void ER_CoreTime::SetTotalCoreTime(double totalGameTime)
 	{
-		mTotalGameTime = totalGameTime;
+		mTotalCoreTime = totalGameTime;
 	}
 
-	double ER_CoreTime::ElapsedGameTime() const
+	double ER_CoreTime::ElapsedCoreTime() const
 	{
-		return mElapsedGameTime;
+		return mElapsedCoreTime;
 	}
 
-	void ER_CoreTime::SetElapsedGameTime(double elapsedGameTime)
+	void ER_CoreTime::SetElapsedCoreTime(double elapsedGameTime)
 	{
-		mElapsedGameTime = elapsedGameTime;
+		mElapsedCoreTime = elapsedGameTime;
 	}
 }

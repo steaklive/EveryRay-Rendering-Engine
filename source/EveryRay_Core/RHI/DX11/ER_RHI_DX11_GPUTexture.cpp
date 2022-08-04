@@ -327,79 +327,7 @@ namespace EveryRay_Core
 	}
 	void ER_RHI_DX11_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath /*= false*/, bool is3D)
 	{
-		assert(aRHI);
-		ER_RHI_DX11* aRHIDX11 = static_cast<ER_RHI_DX11*>(aRHI);
-		ID3D11Device* device = aRHIDX11->GetDevice();
-		assert(device);
-		ID3D11DeviceContext1* context = aRHIDX11->GetContext();
-		assert(context);
-
-		std::string originalPath = aPath;
-
-		mIsLoadedFromFile = true;
-		const char* postfixDDS = ".dds";
-		const char* postfixDDS_Capital = ".DDS";
-		bool isDDS = (originalPath.substr(originalPath.length() - 4) == std::string(postfixDDS)) || (originalPath.substr(originalPath.length() - 4) == std::string(postfixDDS_Capital));
-
-		ID3D11Resource* resourceTex = NULL;
-
-		if (isFullPath)
-		{
-			if (isDDS)
-			{
-				if (FAILED(DirectX::CreateDDSTextureFromFile(device, context, EveryRay_Core::ER_Utility::ToWideString(aPath).c_str(), &resourceTex, &mSRV)))
-				{
-					std::string msg = "ER_RHI_DX11: Failed to load DDS texture from disk: ";
-					msg += aPath;
-					LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
-				}
-			}
-			else
-			{
-				if (FAILED(DirectX::CreateWICTextureFromFile(device, context, EveryRay_Core::ER_Utility::ToWideString(aPath).c_str(), &resourceTex, &mSRV)))
-				{
-					std::string msg = "ER_RHI_DX11: Failed to load WIC texture from disk: ";
-					msg += aPath;
-					LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
-				}
-			}
-		}
-		else
-		{
-			if (isDDS)
-			{
-				if (FAILED(DirectX::CreateDDSTextureFromFile(device, context, EveryRay_Core::ER_Utility::GetFilePath(EveryRay_Core::ER_Utility::ToWideString(aPath)).c_str(), &resourceTex, &mSRV)))
-				{
-					std::string msg = "ER_RHI_DX11: Failed to load DDS texture from disk: ";
-					msg += aPath;
-					LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
-				}
-			}
-			else
-			{
-				if (FAILED(DirectX::CreateWICTextureFromFile(device, context, EveryRay_Core::ER_Utility::GetFilePath(EveryRay_Core::ER_Utility::ToWideString(aPath)).c_str(), &resourceTex, &mSRV)))
-				{
-					std::string msg = "ER_RHI_DX11: Failed to load WIC texture from disk: ";
-					msg += aPath;
-					LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
-				}
-			}
-		}
-
-		if (!is3D)
-		{
-			if (FAILED(resourceTex->QueryInterface(IID_ID3D11Texture2D, (void**)&mTexture2D))) {
-				throw EveryRay_Core::ER_CoreException("ER_RHI_DX11: Could not cast loaded texture resource to Texture2D. Maybe wrong dimension?");
-			}
-		}
-		else
-		{
-			if (FAILED(resourceTex->QueryInterface(IID_ID3D11Texture3D, (void**)&mTexture3D))) {
-				throw EveryRay_Core::ER_CoreException("ER_RHI_DX11: Could not cast loaded texture resource to Texture3D. Maybe wrong dimension?");
-			}
-		}
-
-		resourceTex->Release();
+		CreateGPUTextureResource(aRHI, EveryRay_Core::ER_Utility::ToWideString(aPath), isFullPath, is3D);
 	}
 	void ER_RHI_DX11_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath /*= false*/, bool is3D)
 	{
@@ -419,46 +347,25 @@ namespace EveryRay_Core
 
 		ID3D11Resource* resourceTex = NULL;
 
-		if (isFullPath)
+		auto outputLog = [](const std::wstring& pathT) {
+			std::wstring msg = L"[ER Logger][ER_RHI_DX11_GPUTexture] Failed to load texture from disk: " + pathT + L". Loading fallback texture instead. \n";
+			ER_OUTPUT_LOG(msg.c_str());
+		};
+
+		if (isDDS)
 		{
-			if (isDDS)
+			if (FAILED(DirectX::CreateDDSTextureFromFile(device, context, isFullPath ? aPath.c_str() : EveryRay_Core::ER_Utility::GetFilePath(aPath).c_str(), &resourceTex, &mSRV)))
 			{
-				if (FAILED(DirectX::CreateDDSTextureFromFile(device, context, aPath.c_str(), &resourceTex, &mSRV)))
-				{
-					std::string msg = "ER_RHI_DX11: Failed to load DDS texture from disk: ";
-					//msg += aPath;
-					LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
-				}
-			}
-			else
-			{
-				if (FAILED(DirectX::CreateWICTextureFromFile(device, context, aPath.c_str(), &resourceTex, &mSRV)))
-				{
-					std::string msg = "ER_RHI_DX11: Failed to load WIC texture from disk: ";
-					//msg += aPath;
-					LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
-				}
+				outputLog(isFullPath ? aPath.c_str() : EveryRay_Core::ER_Utility::GetFilePath(aPath).c_str());
+				LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
 			}
 		}
 		else
 		{
-			if (isDDS)
+			if (FAILED(DirectX::CreateWICTextureFromFile(device, context, isFullPath ? aPath.c_str() : EveryRay_Core::ER_Utility::GetFilePath(aPath).c_str(), &resourceTex, &mSRV)))
 			{
-				if (FAILED(DirectX::CreateDDSTextureFromFile(device, context, EveryRay_Core::ER_Utility::GetFilePath(aPath).c_str(), &resourceTex, &mSRV)))
-				{
-					std::string msg = "ER_RHI_DX11: Failed to load DDS texture from disk: ";
-					//msg += aPath;
-					LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
-				}
-			}
-			else
-			{
-				if (FAILED(DirectX::CreateWICTextureFromFile(device, context, EveryRay_Core::ER_Utility::GetFilePath(aPath).c_str(), &resourceTex, &mSRV)))
-				{
-					std::string msg = "ER_RHI_DX11: Failed to load WIC texture from disk: ";
-					//msg += aPath;
-					LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
-				}
+				outputLog(isFullPath ? aPath.c_str() : EveryRay_Core::ER_Utility::GetFilePath(aPath).c_str());
+				LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
 			}
 		}
 
@@ -490,4 +397,3 @@ namespace EveryRay_Core
 		DirectX::CreateWICTextureFromFile(device, context, EveryRay_Core::ER_Utility::GetFilePath(L"content\\textures\\uvChecker.jpg").c_str(), texture, textureView);
 	}
 }
-

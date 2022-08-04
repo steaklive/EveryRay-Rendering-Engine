@@ -53,8 +53,8 @@ namespace EveryRay_Core
 	void ER_CoreClock::UpdateGameTime(ER_CoreTime& gameTime)
 	{
 		GetTime(mCurrentTime);
-		gameTime.SetTotalGameTime((mCurrentTime.QuadPart - mStartTime.QuadPart) / mFrequency);
-		gameTime.SetElapsedGameTime((mCurrentTime.QuadPart - mLastTime.QuadPart) / mFrequency);
+		gameTime.SetTotalCoreTime((mCurrentTime.QuadPart - mStartTime.QuadPart) / mFrequency);
+		gameTime.SetElapsedCoreTime((mCurrentTime.QuadPart - mLastTime.QuadPart) / mFrequency);
 
 		mLastTime = mCurrentTime;
 	}

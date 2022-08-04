@@ -79,7 +79,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)\bin\x64\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)\bin\x64\dx11\$(Configuration)\</OutDir>
     <TargetName>EveryRay_RenderingEngine_Win64_DX11_Debug</TargetName>
     <IntDir>$(Configuration)\</IntDir>
   </PropertyGroup>
@@ -91,7 +91,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)\bin\x64\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)\bin\x64\dx11\$(Configuration)\</OutDir>
     <TargetName>EveryRay_RenderingEngine_Win64_DX11_Release</TargetName>
     <IntDir>$(Configuration)\</IntDir>
   </PropertyGroup>
@@ -130,8 +130,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>assimp-vc141-mtd.lib;Shlwapi.lib;d3d11.lib;DirectXTK.lib;DirectXTex.lib;d3dcompiler.lib;dinput8.lib;dxguid.lib;EveryRay_Core.lib;jsoncpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\external\JsonCpp\lib\Debug;$(SolutionDir)\external\Assimp\lib\x64;$(SolutionDir)\external\DirectXTex\Bin\Desktop_2019\x64\Debug;$(SolutionDir)\external\DirectXTK\Bin\Desktop_2019_Win10\x64\Debug;$(SolutionDir)\bin\x64\Debug;$(WindowsSDK_LibraryPath_x64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>assimp-vc141-mtd.lib;Shlwapi.lib;d3d11.lib;DirectXTK.lib;DirectXTex.lib;d3dcompiler.lib;dinput8.lib;dxguid.lib;EveryRay_Core_Win64_DX11.lib;jsoncpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\external\JsonCpp\lib\Debug;$(SolutionDir)\external\Assimp\lib\x64;$(SolutionDir)\external\DirectXTex\Bin\Desktop_2019\x64\Debug;$(SolutionDir)\external\DirectXTK\Bin\Desktop_2019_Win10\x64\Debug;$(SolutionDir)\bin\x64\dx11\Debug;$(WindowsSDK_LibraryPath_x64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -181,8 +181,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\external\DirectXTex\Bin\Desktop_2019\x64\Release;$(SolutionDir)\external\JsonCpp\lib\Release;$(SolutionDir)\external\Assimp\lib\x64;$(SolutionDir)\external\DirectXTK\Bin\Desktop_2019_Win10\x64\Release;$(SolutionDir)\bin\x64\Release;$(WindowsSDK_LibraryPath_x64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>jsoncpp.lib;assimp-vc141-mt.lib;Shlwapi.lib;d3d11.lib;DirectXTK.lib;DirectXTex.lib;d3dcompiler.lib;dinput8.lib;dxguid.lib;EveryRay_Core.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\external\DirectXTex\Bin\Desktop_2019\x64\Release;$(SolutionDir)\external\JsonCpp\lib\Release;$(SolutionDir)\external\Assimp\lib\x64;$(SolutionDir)\external\DirectXTK\Bin\Desktop_2019_Win10\x64\Release;$(SolutionDir)\bin\x64\dx11\Release;$(WindowsSDK_LibraryPath_x64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>jsoncpp.lib;assimp-vc141-mt.lib;Shlwapi.lib;d3d11.lib;DirectXTK.lib;DirectXTex.lib;d3dcompiler.lib;dinput8.lib;dxguid.lib;EveryRay_Core_Win64_DX11.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
