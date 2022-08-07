@@ -6,9 +6,13 @@ source/EveryRay_Core/Debug/
 source/EveryRay_Core/Release/
 source/EveryRay_Runtime_Win64_DX11/Debug/
 source/EveryRay_Runtime_Win64_DX11/Release
+source/EveryRay_Runtime_Win64_DX12/Debug/
+source/EveryRay_Runtime_Win64_DX12/Release
 
-bin/x64/dx11/Debug/EveryRay_Core.lib
-bin/x64/dx11/Release/EveryRay_Core.lib
+bin/x64/dx11/Debug/EveryRay_Core_Win64_DX11.lib
+bin/x64/dx11/Release/EveryRay_Core_Win64_DX11.lib
+bin/x64/dx12/Debug/EveryRay_Core_Win64_DX12.lib
+bin/x64/dx12/Release/EveryRay_Core_Win64_DX12.lib
 
 # ignore files debug files
 *.obj

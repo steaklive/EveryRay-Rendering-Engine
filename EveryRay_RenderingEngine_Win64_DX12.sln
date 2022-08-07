@@ -1,0 +1,47 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31025.194
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EveryRay_Runtime_Win64_DX12", "source\EveryRay_Runtime_Win64_DX12\EveryRay_Runtime_Win64_DX12.vcxproj", "{856D8D61-FF77-4FAD-97F3-78EAFC45452D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5BF38A7E-BA85-4EBE-A62C-CC62DC058A9C} = {5BF38A7E-BA85-4EBE-A62C-CC62DC058A9C}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EveryRay_Core_Win64_DX12", "source\EveryRay_Core\EveryRay_Core_Win64_DX12.vcxproj", "{5BF38A7E-BA85-4EBE-A62C-CC62DC058A9C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{856D8D61-FF77-4FAD-97F3-78EAFC45452D}.Debug|x64.ActiveCfg = Debug|x64
+		{856D8D61-FF77-4FAD-97F3-78EAFC45452D}.Debug|x64.Build.0 = Debug|x64
+		{856D8D61-FF77-4FAD-97F3-78EAFC45452D}.Debug|x86.ActiveCfg = Debug|Win32
+		{856D8D61-FF77-4FAD-97F3-78EAFC45452D}.Debug|x86.Build.0 = Debug|Win32
+		{856D8D61-FF77-4FAD-97F3-78EAFC45452D}.Release|x64.ActiveCfg = Release|x64
+		{856D8D61-FF77-4FAD-97F3-78EAFC45452D}.Release|x64.Build.0 = Release|x64
+		{856D8D61-FF77-4FAD-97F3-78EAFC45452D}.Release|x86.ActiveCfg = Release|Win32
+		{856D8D61-FF77-4FAD-97F3-78EAFC45452D}.Release|x86.Build.0 = Release|Win32
+		{5BF38A7E-BA85-4EBE-A62C-CC62DC058A9C}.Debug|x64.ActiveCfg = Debug|x64
+		{5BF38A7E-BA85-4EBE-A62C-CC62DC058A9C}.Debug|x64.Build.0 = Debug|x64
+		{5BF38A7E-BA85-4EBE-A62C-CC62DC058A9C}.Debug|x86.ActiveCfg = Debug|Win32
+		{5BF38A7E-BA85-4EBE-A62C-CC62DC058A9C}.Debug|x86.Build.0 = Debug|Win32
+		{5BF38A7E-BA85-4EBE-A62C-CC62DC058A9C}.Release|x64.ActiveCfg = Release|x64
+		{5BF38A7E-BA85-4EBE-A62C-CC62DC058A9C}.Release|x64.Build.0 = Release|x64
+		{5BF38A7E-BA85-4EBE-A62C-CC62DC058A9C}.Release|x86.ActiveCfg = Release|Win32
+		{5BF38A7E-BA85-4EBE-A62C-CC62DC058A9C}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6585CD01-C174-48D5-9939-9AE605299AC7}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
+EndGlobal
