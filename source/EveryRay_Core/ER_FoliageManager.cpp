@@ -188,9 +188,9 @@ namespace EveryRay_Core
 		DeleteObject(mInstanceBuffer);
 		DeleteObject(mIndexBuffer);
 		DeleteObject(mAlbedoTexture);
-		DeleteObject(mPatchesBufferCPU);
-		DeleteObject(mCurrentPositions);
-		DeleteObject(mPatchesBufferGPU);
+		DeleteObjects(mPatchesBufferCPU);
+		DeleteObjects(mCurrentPositions);
+		DeleteObjects(mPatchesBufferGPU);
 		DeleteObject(mDebugGizmoAABB);
 		DeleteObject(mInputLayout);
 		DeleteObject(mVS);

@@ -74,19 +74,18 @@ namespace EveryRay_Core {
 		DeleteObject(mIndexBuffer);
 	}
 
-	void ER_QuadRenderer::Draw(ER_RHI* rhi)
+	void ER_QuadRenderer::PrepareDraw(ER_RHI* rhi)
 	{
-		unsigned int stride;
-		unsigned int offset;
-
-		stride = sizeof(QuadVertex);
-		offset = 0;
-
 		rhi->SetInputLayout(mInputLayout);
 		rhi->SetShader(mVS);
+		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	}
+
+	void ER_QuadRenderer::Draw(ER_RHI* rhi)
+	{
 		rhi->SetVertexBuffers({ mVertexBuffer });
 		rhi->SetIndexBuffer(mIndexBuffer);
-		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
 		rhi->DrawIndexed(6);
 		rhi->UnbindResourcesFromShader(ER_VERTEX);
 	}

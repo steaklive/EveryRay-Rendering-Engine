@@ -133,13 +133,18 @@ namespace EveryRay_Core {
 		int readIndex = mCurrentTexture3DRead;
 		int writeIndex = !mCurrentTexture3DRead;
 
-		rhi->SetShader(mInjectionCS);
 		rhi->SetUnorderedAccessResources(ER_COMPUTE, { mTempVoxelInjectionTexture3D[writeIndex] });
 		rhi->SetConstantBuffers(ER_COMPUTE, { mMainConstantBuffer.Buffer() });
 		rhi->SetShaderResources(ER_COMPUTE, { mShadowMapper.GetShadowTexture(0), mBlueNoiseTexture, mTempVoxelInjectionTexture3D[readIndex] });
 		rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
+		if (rhi->IsPSOReady(mInjectionPassPSOName, true))
+		{
+			rhi->InitializePSO(mInjectionPassPSOName, true);
+			rhi->SetShader(mInjectionCS);
+			rhi->FinalizePSO(mInjectionPassPSOName, true);
+		}
+		rhi->SetPSO(mInjectionPassPSOName, true);
 		rhi->Dispatch(INT_CEIL(VOXEL_SIZE_X, 8), INT_CEIL(VOXEL_SIZE_Y, 8), INT_CEIL(VOXEL_SIZE_Z, 1));
-
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 
 		mCurrentTexture3DRead = !mCurrentTexture3DRead;
@@ -151,13 +156,18 @@ namespace EveryRay_Core {
 
 		int readIndex = mCurrentTexture3DRead;
 
-		rhi->SetShader(mAccumulationCS);
 		rhi->SetUnorderedAccessResources(ER_COMPUTE, { mFinalVoxelAccumulationTexture3D });
 		rhi->SetConstantBuffers(ER_COMPUTE, { mMainConstantBuffer.Buffer() });
 		rhi->SetShaderResources(ER_COMPUTE, { mShadowMapper.GetShadowTexture(0), mBlueNoiseTexture, mTempVoxelInjectionTexture3D[readIndex] });
 		rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
+		if (rhi->IsPSOReady(mAccumulationPassPSOName, true))
+		{
+			rhi->InitializePSO(mAccumulationPassPSOName, true);
+			rhi->SetShader(mAccumulationCS);
+			rhi->FinalizePSO(mAccumulationPassPSOName, true);
+		}
+		rhi->SetPSO(mAccumulationPassPSOName, true);
 		rhi->Dispatch(INT_CEIL(VOXEL_SIZE_X, 8), INT_CEIL(VOXEL_SIZE_Y, 8), 1);
-
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 	}
 
@@ -165,17 +175,24 @@ namespace EveryRay_Core {
 	{
 		assert(aGbufferWorldPos && aInputColorTexture);
 
+		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mCore->GetServices().FindService(ER_QuadRenderer::TypeIdClass());
+		assert(quadRenderer);
+
 		auto rhi = GetCore()->GetRHI();
 
-		rhi->SetShader(mCompositePS);
 		rhi->SetConstantBuffers(ER_PIXEL, { mCompositeConstantBuffer.Buffer() });
 		rhi->SetShaderResources(ER_PIXEL, { aInputColorTexture, aGbufferWorldPos, mFinalVoxelAccumulationTexture3D });
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
-		
-		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mCore->GetServices().FindService(ER_QuadRenderer::TypeIdClass());
-		assert(quadRenderer);
+		if (!rhi->IsPSOReady(mCompositePassPSOName))
+		{
+			rhi->InitializePSO(mCompositePassPSOName);
+			rhi->SetShader(mCompositePS);
+			rhi->SetRenderTargetFormats();
+			quadRenderer->PrepareDraw(rhi);
+			rhi->FinalizePSO(mCompositePassPSOName);
+		}
+		rhi->SetPSO(mCompositePassPSOName);
 		quadRenderer->Draw(rhi);
-
 		rhi->UnbindResourcesFromShader(ER_PIXEL);
 	}
 }

@@ -68,8 +68,13 @@ namespace EveryRay_Core
 		ER_RHI_GPUConstantBuffer<VolumetricFogCBufferData::CompositeCB> mCompositeConstantBuffer;
 
 		ER_RHI_GPUShader* mInjectionCS = nullptr;
+		std::string mInjectionPassPSOName = "Volumetric Fog - Injection PSO";
+
 		ER_RHI_GPUShader* mAccumulationCS = nullptr;
+		std::string mAccumulationPassPSOName = "Volumetric Fog - Accumulation PSO";
+
 		ER_RHI_GPUShader* mCompositePS = nullptr;
+		std::string mCompositePassPSOName = "Volumetric Fog - Composite PSO";
 
 		XMMATRIX mPrevViewProj;
 

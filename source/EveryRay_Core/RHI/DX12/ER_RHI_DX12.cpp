@@ -2,7 +2,9 @@
 #include "ER_RHI_DX12_GPUBuffer.h"
 #include "ER_RHI_DX12_GPUTexture.h"
 #include "ER_RHI_DX12_GPUShader.h"
+#include "ER_RHI_DX12_GPUPipelineStateObject.h"
 #include "..\..\ER_CoreException.h"
+#include "..\..\ER_Utility.h"
 
 #define DX12_MAX_BOUND_RENDER_TARGETS_VIEWS 8
 #define DX12_MAX_BOUND_SHADER_RESOURCE_VIEWS 64 
@@ -257,6 +259,24 @@ namespace EveryRay_Core
 		return true;
 	}
 
+	void ER_RHI_DX12::BeginGraphicsCommandList()
+	{
+		HRESULT hr;
+		if (FAILED(hr = mCommandAllocatorsGraphics->Reset()))
+			throw ER_CoreException("ER_RHI_DX12:: Could not Reset() command allocator (graphics)");
+
+		if (FAILED(hr = mCommandListGraphics[0]->Reset(mCommandAllocatorsGraphics, nullptr)))
+			throw ER_CoreException("ER_RHI_DX12:: Could not Reset() command list (graphics) #0");
+	}
+
+	void ER_RHI_DX12::EndGraphicsCommandList()
+	{
+		HRESULT hr;
+
+		if (FAILED(hr = mCommandListGraphics[0]->Close()))
+			throw ER_CoreException("ER_RHI_DX12:: Could not close command list (graphics) #0");
+	}
+
 	void ER_RHI_DX12::ClearMainRenderTarget(float colors[4])
 	{
 		mCommandListGraphics[0]->ClearRenderTargetView(mMainRenderTargetView, colors);
@@ -454,18 +474,10 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::PresentGraphics()
 	{
-		HRESULT hr;
-
-		D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(mMainRenderTarget, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-		mCommandListGraphics[0]->ResourceBarrier(1, &barrier);
-
-		if (FAILED(hr = mCommandListGraphics[0]->Close()))
-			throw ER_CoreException("ER_RHI_DX12:: Could not close command list (graphics) #0");
-
 		ID3D12CommandList* ppCommandLists[] = { mCommandListGraphics[0] };
 		mCommandQueueGraphics->ExecuteCommandLists(1, ppCommandLists);
 
-		hr = mSwapChain->Present(1, 0);
+		HRESULT hr = mSwapChain->Present(1, 0);
 
 		if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
 		{
@@ -502,24 +514,24 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::SaveGPUTextureToFile(ER_RHI_GPUTexture* aTexture, const std::wstring& aPathName)
 	{
-		assert(aTexture);
-
-		ER_RHI_DX11_GPUTexture* tex = static_cast<ER_RHI_DX11_GPUTexture*>(aTexture);
-		assert(tex);
-
-		DirectX::ScratchImage tempImage;
-		HRESULT res = DirectX::CaptureTexture(mDirect3DDevice, mDirect3DDeviceContext, tex->GetTexture2D(), tempImage);
-		if (FAILED(res))
-			throw ER_CoreException("Failed to capture a probe texture when saving!", res);
-
-		res = DirectX::SaveToDDSFile(tempImage.GetImages(), tempImage.GetImageCount(), tempImage.GetMetadata(), DDS_FLAGS_NONE, aPathName.c_str());
-		if (FAILED(res))
-		{
-			throw ER_CoreException("Failed to save a texture to a file: ");
-			//std::string str(aPathName.begin(), aPathName.end());
-			//std::string msg = "Failed to save a texture to a file: " + str;
-			//throw ER_CoreException(msg.c_str());
-		}
+		//assert(aTexture);
+		//
+		//ER_RHI_DX11_GPUTexture* tex = static_cast<ER_RHI_DX11_GPUTexture*>(aTexture);
+		//assert(tex);
+		//
+		//DirectX::ScratchImage tempImage;
+		//HRESULT res = DirectX::CaptureTexture(mDirect3DDevice, mDirect3DDeviceContext, tex->GetTexture2D(), tempImage);
+		//if (FAILED(res))
+		//	throw ER_CoreException("Failed to capture a probe texture when saving!", res);
+		//
+		//res = DirectX::SaveToDDSFile(tempImage.GetImages(), tempImage.GetImageCount(), tempImage.GetMetadata(), DDS_FLAGS_NONE, aPathName.c_str());
+		//if (FAILED(res))
+		//{
+		//	throw ER_CoreException("Failed to save a texture to a file: ");
+		//	//std::string str(aPathName.begin(), aPathName.end());
+		//	//std::string msg = "Failed to save a texture to a file: " + str;
+		//	//throw ER_CoreException(msg.c_str());
+		//}
 	}
 
 	void ER_RHI_DX12::SetMainRenderTargets()
@@ -641,21 +653,21 @@ namespace EveryRay_Core
 
 		mCurrentViewport = aViewport;
 
-		mDirect3DDeviceContext->RSSetViewports(1, &viewport);
+		mCommandListGraphics[0]->RSSetViewports(1, &viewport);
 	}
 
 	void ER_RHI_DX12::SetRect(const ER_RHI_Rect& rect)
 	{
 		D3D11_RECT currentRect = { rect.left, rect.top, rect.right, rect.bottom };
-		mDirect3DDeviceContext->RSSetScissorRects(1, &currentRect);
+		mCommandListGraphics[0]->RSSetScissorRects(1, &currentRect);
 	}
 
 	void ER_RHI_DX12::SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot /*= 0*/)
 	{
 		assert(aSRVs.size() > 0);
-		assert(aSRVs.size() <= DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS);
+		assert(aSRVs.size() <= DX12_MAX_BOUND_SHADER_RESOURCE_VIEWS);
 
-		ID3D11ShaderResourceView* SRs[DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS] = {};
+		ID3D11ShaderResourceView* SRs[DX12_MAX_BOUND_SHADER_RESOURCE_VIEWS] = {};
 		UINT srCount = static_cast<UINT>(aSRVs.size());
 		for (UINT i = 0; i < srCount; i++)
 		{
@@ -855,10 +867,13 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::SetInputLayout(ER_RHI_InputLayout* aIL)
 	{
-		ER_RHI_DX11_InputLayout* aDX11_IL = static_cast<ER_RHI_DX11_InputLayout*>(aIL);
-		assert(aDX11_IL);
-		assert(aDX11_IL->mInputLayout);
-		mDirect3DDeviceContext->IASetInputLayout(aDX11_IL->mInputLayout);
+		assert(mIsCurrentPSOGraphics);
+
+		ER_RHI_DX12_InputLayout* aDX12_IL = static_cast<ER_RHI_DX12_InputLayout*>(aIL);
+		assert(aDX12_IL);
+
+		ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSOs.at(mCurrentGraphicsPSO);
+		pso.SetInputLayout(aDX12_IL.mInputElementDescriptionCount, aDX12_IL.mInputElementDescriptions);
 	}
 
 	void ER_RHI_DX12::SetEmptyInputLayout()
@@ -902,88 +917,106 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::SetTopologyType(ER_RHI_PRIMITIVE_TYPE aType)
 	{
-		mDirect3DDeviceContext->IASetPrimitiveTopology(GetTopologyType(aType));
+		assert(mIsCurrentPSOGraphics);
+		ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSOs.at(mCurrentGraphicsPSO);
+		pso.SetPrimitiveTopologyType(GetTopologyType(aType));
 	}
 
 	ER_RHI_PRIMITIVE_TYPE ER_RHI_DX12::GetCurrentTopologyType()
 	{
-		D3D11_PRIMITIVE_TOPOLOGY currentTopology;
-		mDirect3DDeviceContext->IAGetPrimitiveTopology(&currentTopology);
-		return GetTopologyType(currentTopology);
+		//TODO
+	}
+
+	bool ER_RHI_DX12::IsPSOReady(const std::string& aName, bool isCompute)
+	{
+		if (!isCompute)
+		{
+			auto it = mGraphicsPSOs.find(aName);
+			if (it != mGraphicsPSOs.end())
+				return true;
+			else
+				return false;
+		}
+		else
+		{
+			auto it2 = mComputePSOs.find(aName);
+			if (it2 != mComputePSOs.end())
+				return true;
+			else
+				return false;
+		}
+	}
+
+	void ER_RHI_DX12::InitializePSO(const std::string& aName, bool isCompute)
+	{
+		if (isCompute)
+		{
+			mComputePSOs.insert(std::make_pair(aName, ER_RHI_DX12_ComputePSO(aName)));
+			mCurrentComputePSO = aName;
+			mIsCurrentPSOGraphics = false;
+		}
+		else
+		{
+			mGraphicsPSOs.insert(std::make_pair(aName, ER_RHI_DX12_GraphicsPSO(aName)));
+			mCurrentGraphicsPSO = aName;
+			mIsCurrentPSOGraphics = true;
+		}
+	}
+
+	void ER_RHI_DX12::FinalizePSO(const std::string& aName, bool isCompute /*= false*/)
+	{
+		if (!isCompute)
+		{
+			assert(mCurrentGraphicsPSO == aName);
+			mGraphicsPSOs.at(aName).Finalize(mDevice);
+		}
+		else
+		{
+			assert(mCurrentComputePSO == aName);
+			mComputePSOs.at(aName).Finalize(mDevice);
+		}
+	}
+
+	void ER_RHI_DX12::SetPSO(const std::string& aName, bool isCompute)
+	{
+		auto resetPSO = [](aName, isCompute)
+		{
+			std::wstring msg = L"ER_RHI_DX12: Could not find PSO to set, adding it now and trying to reset: " + ER_Utility::ToWideString(aName) + L'\n';
+			ER_OUTPUT_LOG(msg.c_str());
+			InitializePSO(aName, isCompute);
+			SetPSO(aName, isCompute);
+		};
+
+		if (!isCompute)
+		{
+			auto it = mGraphicsPSOs.find(aName);
+			if (it != mGraphicsPSOs.end())
+			{
+				mCommandListGraphics[0]->SetPipelineState(it.second.GetPipelineStateObject());
+				mCurrentGraphicsPSO = it.first;
+				mIsCurrentPSOGraphics = true;
+			}
+			else
+				resetPSO(aName, isCompute);
+		}
+		else
+		{
+			auto it = mComputePSOs.find(aName);
+			if (it != mComputePSOs.end())
+			{
+				mCommandListGraphics[0]->SetPipelineState(it.second.GetPipelineStateObject());
+				mCurrentComputePSO = it.first;
+				mIsCurrentPSOGraphics = false;
+			}
+			else
+				resetPSO(aName, isCompute);
+		}
 	}
 
 	void ER_RHI_DX12::UnbindRenderTargets()
 	{
 		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
 		mDirect3DDeviceContext->OMSetRenderTargets(1, nullRTVs, nullptr);
-	}
-
-	void ER_RHI_DX12::UnbindResourcesFromShader(ER_RHI_SHADER_TYPE aShaderType, bool unbindShader)
-	{
-		auto context = GetContext();
-
-		ID3D11ShaderResourceView* nullSRV[DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS] = { NULL };
-		ID3D11Buffer* nullCBs[DX11_MAX_BOUND_CONSTANT_BUFFERS] = { NULL };
-		ID3D11SamplerState* nullSSs[DX11_MAX_BOUND_SAMPLERS] = { NULL };
-		ID3D11UnorderedAccessView* nullUAV[DX11_MAX_BOUND_UNORDERED_ACCESS_VIEWS] = { NULL };
-
-		switch (aShaderType)
-		{
-		case ER_RHI_SHADER_TYPE::ER_VERTEX:
-		{
-			if (unbindShader)
-				context->VSSetShader(NULL, NULL, NULL);
-			context->VSSetShaderResources(0, DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS, nullSRV);
-			context->VSSetConstantBuffers(0, DX11_MAX_BOUND_CONSTANT_BUFFERS, nullCBs);
-		}
-		break;
-		case ER_RHI_SHADER_TYPE::ER_GEOMETRY:
-		{
-			if (unbindShader)
-				context->GSSetShader(NULL, NULL, NULL);
-			context->GSSetShaderResources(0, DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS, nullSRV);
-			context->GSSetConstantBuffers(0, DX11_MAX_BOUND_CONSTANT_BUFFERS, nullCBs);
-			context->GSSetSamplers(0, DX11_MAX_BOUND_SAMPLERS, nullSSs);
-		}
-		break;
-		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_HULL:
-		{
-			if (unbindShader)
-				context->HSSetShader(NULL, NULL, NULL);
-			context->HSSetShaderResources(0, DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS, nullSRV);
-			context->HSSetConstantBuffers(0, DX11_MAX_BOUND_CONSTANT_BUFFERS, nullCBs);
-			context->HSSetSamplers(0, DX11_MAX_BOUND_SAMPLERS, nullSSs);
-		}
-		break;
-		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_DOMAIN:
-		{
-			if (unbindShader)
-				context->DSSetShader(NULL, NULL, NULL);
-			context->DSSetShaderResources(0, DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS, nullSRV);
-			context->DSSetConstantBuffers(0, DX11_MAX_BOUND_CONSTANT_BUFFERS, nullCBs);
-			context->DSSetSamplers(0, DX11_MAX_BOUND_SAMPLERS, nullSSs);
-		}
-		break;
-		case ER_RHI_SHADER_TYPE::ER_PIXEL:
-		{
-			if (unbindShader)
-				context->PSSetShader(NULL, NULL, NULL);
-			context->PSSetShaderResources(0, DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS, nullSRV);
-			context->PSSetConstantBuffers(0, DX11_MAX_BOUND_CONSTANT_BUFFERS, nullCBs);
-			context->PSSetSamplers(0, DX11_MAX_BOUND_SAMPLERS, nullSSs);
-		}
-		break;
-		case ER_RHI_SHADER_TYPE::ER_COMPUTE:
-		{
-			if (unbindShader)
-				context->CSSetShader(NULL, NULL, NULL);
-			context->CSSetShaderResources(0, DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS, nullSRV);
-			context->CSSetConstantBuffers(0, DX11_MAX_BOUND_CONSTANT_BUFFERS, nullCBs);
-			context->CSSetSamplers(0, DX11_MAX_BOUND_SAMPLERS, nullSSs);
-			context->CSSetUnorderedAccessViews(0, DX11_MAX_BOUND_UNORDERED_ACCESS_VIEWS, nullUAV, 0);
-		}
-		break;
-		}
 	}
 
 	void ER_RHI_DX12::UpdateBuffer(ER_RHI_GPUBuffer* aBuffer, void* aData, int dataSize)
@@ -1002,22 +1035,22 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::InitImGui()
 	{
-		ImGui_ImplDX11_Init(mDirect3DDevice, mDirect3DDeviceContext);
+		ImGui_ImplDX12_Init(mDirect3DDevice, mDirect3DDeviceContext);
 	}
 
 	void ER_RHI_DX12::StartNewImGuiFrame()
 	{
-		ImGui_ImplDX11_NewFrame();
+		ImGui_ImplDX12_NewFrame();
 	}
 
 	void ER_RHI_DX12::RenderDrawDataImGui()
 	{
-		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData());
 	}
 
 	void ER_RHI_DX12::ShutdownImGui()
 	{
-		ImGui_ImplDX11_Shutdown();
+		ImGui_ImplDX12_Shutdown();
 	}
 
 	DXGI_FORMAT ER_RHI_DX12::GetFormat(ER_RHI_FORMAT aFormat)
@@ -1107,41 +1140,41 @@ namespace EveryRay_Core
 		}
 	}
 
-	D3D11_PRIMITIVE_TOPOLOGY ER_RHI_DX12::GetTopologyType(ER_RHI_PRIMITIVE_TYPE aType)
+	D3D12_PRIMITIVE_TOPOLOGY ER_RHI_DX12::GetTopologyType(ER_RHI_PRIMITIVE_TYPE aType)
 	{
 		switch (aType)
 		{
 		case ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_POINTLIST:
-			return D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
+			return D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
 		case ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST:
-			return D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+			return D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_LINELIST;
 		case ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST:
-			return D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+			return D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 		case ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP:
-			return D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+			return D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
 		case ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_CONTROL_POINT_PATCHLIST:
-			return D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST;
+			return D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST;
 		default:
 		{
 			assert(0);
-			return D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+			return D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_LINELIST;
 		}
 		}
 	}
 
-	ER_RHI_PRIMITIVE_TYPE ER_RHI_DX12::GetTopologyType(D3D11_PRIMITIVE_TOPOLOGY aType)
+	ER_RHI_PRIMITIVE_TYPE ER_RHI_DX12::GetTopologyType(D3D_PRIMITIVE_TOPOLOGY aType)
 	{
 		switch (aType)
 		{
-		case D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_POINTLIST:
+		case D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_POINTLIST:
 			return ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_POINTLIST;
-		case D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_LINELIST:
+		case D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_LINELIST:
 			return ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST;
-		case D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST:
+		case D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST:
 			return ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-		case D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP:
+		case D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP:
 			return ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
-		case D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST:
+		case D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST:
 			return ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_CONTROL_POINT_PATCHLIST;
 		default:
 		{

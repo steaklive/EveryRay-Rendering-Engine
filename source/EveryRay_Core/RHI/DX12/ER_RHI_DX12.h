@@ -5,7 +5,7 @@
 #include <dxgi1_6.h>
 #include <d3dx12.h>
 #include <dxc/dxcapi.h>
-#ifdef _DEBUG
+#if defined (_DEBUG) || (DEBUG)
 #include <dxgidebug.h>
 #endif
 #include <d3dcompiler.h>
@@ -14,16 +14,15 @@
 
 namespace EveryRay_Core
 {
-	class ER_RHI_DX11_InputLayout : public ER_RHI_InputLayout
+	class ER_RHI_DX12_InputLayout : public ER_RHI_InputLayout
 	{
 	public:
-		ER_RHI_DX11_InputLayout(ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount)
+		ER_RHI_DX12_InputLayout(ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount)
 			: ER_RHI_InputLayout(inputElementDescriptions, inputElementDescriptionCount) { }
-		virtual ~ER_RHI_DX11_InputLayout() {
-			ReleaseObject(mInputLayout);
-		};
-		ID3D11InputLayout* mInputLayout = nullptr;
 	};
+
+	class ER_RHI_DX12_GraphicsPSO;
+	class ER_RHI_DX12_ComputePSO;
 
 	class ER_RHI_DX12: public ER_RHI
 	{
@@ -33,11 +32,11 @@ namespace EveryRay_Core
 
 		virtual bool Initialize(HWND windowHandle, UINT width, UINT height, bool isFullscreen) override;
 		
-		virtual void BeginGraphicsCommandList() override {}; //not supported on DX11
-		virtual void EndGraphicsCommandList() override {}; //not supported on DX11
+		virtual void BeginGraphicsCommandList() override;
+		virtual void EndGraphicsCommandList() override;
 
-		virtual void BeginComputeCommandList() override {}; //not supported on DX11
-		virtual void EndComputeCommandList() override {}; //not supported on DX11
+		virtual void BeginComputeCommandList() override {}; //TODO
+		virtual void EndComputeCommandList() override {}; //TODO
 
 		virtual void ClearMainRenderTarget(float colors[4]) override;
 		virtual void ClearMainDepthStencilTarget(float depth, UINT stencil = 0) override;
@@ -108,8 +107,13 @@ namespace EveryRay_Core
 		virtual void SetTopologyType(ER_RHI_PRIMITIVE_TYPE aType) override;
 		virtual ER_RHI_PRIMITIVE_TYPE GetCurrentTopologyType() override;
 
+		virtual bool IsPSOReady(const std::string& aName, bool isCompute = false) override;
+		virtual void InitializePSO(const std::string& aName, bool isCompute = false) override;
+		virtual void FinalizePSO(const std::string& aName, bool isCompute = false) override;
+		virtual void SetPSO(const std::string& aName, bool isCompute = false) override;
+
 		virtual void UnbindRenderTargets() override;
-		virtual void UnbindResourcesFromShader(ER_RHI_SHADER_TYPE aShaderType, bool unbindShader = true) override;
+		virtual void UnbindResourcesFromShader(ER_RHI_SHADER_TYPE aShaderType, bool unbindShader = true) override {}; //Not needed on DX12
 
 		virtual void UpdateBuffer(ER_RHI_GPUBuffer* aBuffer, void* aData, int dataSize) override;
 		
@@ -118,8 +122,8 @@ namespace EveryRay_Core
 		virtual void RenderDrawDataImGui() override;
 		virtual void ShutdownImGui() override;
 
-		ID3D12Device* GetDevice() const { return mDevice.Get(); }
-		ID3D12Device5* GetDeviceRaytracing() const { return (ID3D12Device5*)(mDevice.Get()); }
+		ID3D12Device* GetDevice() const { return mDevice; }
+		ID3D12Device5* GetDeviceRaytracing() const { return (ID3D12Device5*)mDevice; }
 
 		DXGI_FORMAT GetFormat(ER_RHI_FORMAT aFormat);
 
@@ -148,7 +152,7 @@ namespace EveryRay_Core
 		ID3D12Resource* mMainDepthStencil = nullptr;
 
 		ID3D12CommandQueue* mCommandQueueGraphics = nullptr;
-		ID3D12GraphicsCommandList* mCommandListGraphics[2] = {nullptr};
+		ID3D12GraphicsCommandList* mCommandListGraphics[2] = { nullptr, nullptr };
 		ID3D12CommandAllocator* mCommandAllocatorsGraphics = nullptr;
 		ID3D12CommandQueue* mCommandQueueCompute = nullptr;
 		ID3D12GraphicsCommandList* mCommandListCompute = nullptr;
@@ -208,6 +212,13 @@ namespace EveryRay_Core
 		ID3D11DepthStencilState* DepthOnlyWriteComparisonGreaterEqualDS = nullptr;
 		ID3D11DepthStencilState* DepthOnlyWriteComparisonAlwaysDS = nullptr;
 		std::map<ER_RHI_DEPTH_STENCIL_STATE, ID3D11DepthStencilState*> mDepthStates;
+
+		std::map<std::string, ER_RHI_DX12_GraphicsPSO> mGraphicsPSOs;
+		std::map<std::string, ER_RHI_DX12_ComputePSO> mComputePSOs;
+
+		std::string mCurrentGraphicsPSO;
+		std::string mCurrentComputePSO;
+		bool mIsCurrentPSOGraphics = true;
 
 		ER_RHI_Viewport mMainViewport;
 

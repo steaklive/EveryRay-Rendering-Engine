@@ -16,6 +16,7 @@ namespace EveryRay_Core {
 		ER_QuadRenderer(ER_Core& game);
 		~ER_QuadRenderer();
 
+		void PrepareDraw(ER_RHI* rhi);
 		void Draw(ER_RHI* rhi);
 
 	private:

@@ -151,10 +151,18 @@ namespace EveryRay_Core
 		assert(quadRenderer);
 
 		if (mDrawSun) {
-			rhi->SetShader(mSunPS);
 			rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 			rhi->SetConstantBuffers(ER_PIXEL, { mSunConstantBuffer.Buffer() });
 			rhi->SetShaderResources(ER_PIXEL, { aSky, aSceneDepth });
+			if (rhi->IsPSOReady(mSunPassPSOName))
+			{
+				rhi->InitializePSO(mSunPassPSOName);
+				rhi->SetShader(mSunPS);
+				rhi->SetRenderTargetFormats();
+				quadRenderer->PrepareDraw(rhi);
+				rhi->FinalizePSO(mSunPassPSOName);
+			}
+			rhi->SetPSO(mSunPassPSOName);
 			quadRenderer->Draw(rhi);
 			rhi->UnbindResourcesFromShader(ER_PIXEL);
 		}

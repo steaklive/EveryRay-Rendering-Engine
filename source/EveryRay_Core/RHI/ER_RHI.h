@@ -317,6 +317,11 @@ namespace EveryRay_Core
 		virtual void SetTopologyType(ER_RHI_PRIMITIVE_TYPE aType) = 0;
 		virtual ER_RHI_PRIMITIVE_TYPE GetCurrentTopologyType() = 0;
 
+		virtual bool IsPSOReady(const std::string& aName, bool isCompute = false) = 0;
+		virtual void InitializePSO(const std::string& aName, bool isCompute = false) = 0;
+		virtual void FinalizePSO(const std::string& aName, bool isCompute = false) = 0;
+		virtual void SetPSO(const std::string& aName, bool isCompute = false) = 0;
+
 		virtual void UnbindRenderTargets() = 0;
 		virtual void UnbindResourcesFromShader(ER_RHI_SHADER_TYPE aShaderType, bool unbindShader = true) = 0;
 

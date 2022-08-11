@@ -192,17 +192,24 @@ namespace EveryRay_Core {
 
 	void ER_VolumetricClouds::Composite(ER_RHI_GPUTexture* aRenderTarget)
 	{
+		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mCore->GetServices().FindService(ER_QuadRenderer::TypeIdClass());
+		assert(quadRenderer);
+
 		auto rhi = mCore->GetRHI();
 
 		rhi->SetRenderTargets({ aRenderTarget });
-
-		rhi->SetShader(mCompositePS);
 		rhi->SetShaderResources(ER_PIXEL, { mIlluminationResultDepthTarget, /*mBlurRT*/mUpsampleAndBlurRT });
-		
-		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mCore->GetServices().FindService(ER_QuadRenderer::TypeIdClass());
-		assert(quadRenderer);
-		quadRenderer->Draw(rhi);
 
+		if (!rhi->IsPSOReady(mCompositePassPSOName))
+		{
+			rhi->InitializePSO(mCompositePassPSOName);
+			rhi->SetShader(mCompositePS);
+			rhi->SetRenderTargetFormats();
+			quadRenderer->PrepareDraw(rhi);
+			rhi->FinalizePSO(mCompositePassPSOName);
+		}
+		rhi->SetPSO(mCompositePassPSOName);
+		quadRenderer->Draw(rhi);
 		rhi->UnbindRenderTargets();
 		rhi->UnbindResourcesFromShader(ER_PIXEL);
 	}
