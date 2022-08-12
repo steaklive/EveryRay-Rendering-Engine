@@ -88,6 +88,7 @@ namespace EveryRay_Core
 		ER_RHI_GPUTexture* mTonemappingRT = nullptr;
 		ER_RHI_GPUShader* mTonemappingPS = nullptr;
 		bool mUseTonemap = true;
+		std::string mTonemapPassPSOName = "Post Processing - Tonemap PSO";
 
 		// SSR
 		ER_RHI_GPUTexture* mSSRRT = nullptr;
@@ -97,12 +98,14 @@ namespace EveryRay_Core
 		int mSSRRayCount = 50;
 		float mSSRStepSize = 0.741f;
 		float mSSRMaxThickness = 0.00021f;
+		std::string mSSRPassPSOName = "Post Processing - SSR PSO";
 
 		// SSS
 		ER_RHI_GPUTexture* mSSSRT = nullptr;
 		bool mUseSSS = true;
 		ER_RHI_GPUShader* mSSSPS = nullptr;
 		ER_RHI_GPUConstantBuffer<PostEffectsCBuffers::SSSCB> mSSSConstantBuffer;
+		std::string mSSSPassPSOName = "Post Processing - SSS PSO";
 
 		// Linear Fog
 		ER_RHI_GPUTexture* mLinearFogRT = nullptr;
@@ -113,6 +116,7 @@ namespace EveryRay_Core
 		float mLinearFogDensity = 730.0f;
 		float mLinearFogNearZ = 0.0f;
 		float mLinearFogFarZ = 0.0f;
+		std::string mLinearFogPassPSOName = "Post Processing - Linear Fog PSO";
 
 		ER_RHI_GPUTexture* mVolumetricFogRT = nullptr;
 
@@ -122,12 +126,14 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mColorGradingPS = nullptr;
 		int mColorGradingCurrentLUTIndex = 2;
 		bool mUseColorGrading = true;
+		std::string mColorGradingPassPSOName = "Post Processing - Color Grading PSO";
 
 		// FXAA
 		ER_RHI_GPUTexture* mFXAART = nullptr;
 		ER_RHI_GPUConstantBuffer<PostEffectsCBuffers::FXAACB> mFXAAConstantBuffer;
 		ER_RHI_GPUShader* mFXAAPS = nullptr;
 		bool mUseFXAA = true;
+		std::string mFXAAPassPSOName = "Post Processing - FXAA PSO";
 
 		// Vignette
 		ER_RHI_GPUTexture* mVignetteRT = nullptr;
@@ -136,8 +142,10 @@ namespace EveryRay_Core
 		float mVignetteRadius = 0.75f;
 		float mVignetteSoftness = 0.5f;
 		bool mUseVignette = true;
+		std::string mVignettePassPSOName = "Post Processing - Vignette PSO";
 
 		ER_RHI_GPUShader* mFinalResolvePS = nullptr;
+		std::string mFinalResolvePassPSOName = "Post Processing - Final Resolve PSO";
 
 		// just pointers to RTs (not allocated in this system)
 		ER_RHI_GPUTexture* mRenderTargetBeforeResolve = nullptr;

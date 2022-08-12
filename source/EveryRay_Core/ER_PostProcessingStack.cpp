@@ -248,9 +248,17 @@ namespace EveryRay_Core {
 			assert(quad);
 			assert(mRenderTargetBeforeResolve);
 
-			rhi->SetShader(mFinalResolvePS);
-			rhi->SetShaderResources(ER_PIXEL, { aResolveRT ? aResolveRT : mRenderTargetBeforeResolve });
 			rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
+			rhi->SetShaderResources(ER_PIXEL, { aResolveRT ? aResolveRT : mRenderTargetBeforeResolve });
+			if (!rhi->IsPSOReady(mFinalResolvePassPSOName))
+			{
+				rhi->InitializePSO(mFinalResolvePassPSOName);
+				rhi->SetShader(mFinalResolvePS);
+				rhi->SetRenderTargetFormats();
+				quad->PrepareDraw(rhi);
+				rhi->FinalizePSO(mFinalResolvePassPSOName);
+			}
+			rhi->SetPSO(mFinalResolvePassPSOName);
 			quad->Draw(rhi);
 		}
 
@@ -262,7 +270,6 @@ namespace EveryRay_Core {
 		assert(aInputTexture);
 		auto rhi = mCore.GetRHI();
 
-		rhi->SetShader(mTonemappingPS);
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 		rhi->SetShaderResources(ER_PIXEL, { aInputTexture });
 	}
@@ -283,7 +290,6 @@ namespace EveryRay_Core {
 		mSSRConstantBuffer.Data.MaxRayCount = mSSRRayCount;
 		mSSRConstantBuffer.ApplyChanges(rhi);
 
-		rhi->SetShader(mSSRPS);
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 		rhi->SetShaderResources(ER_PIXEL, { aInputTexture, gbuffer->GetNormals(), gbuffer->GetExtraBuffer(), mDepthTarget });
 		rhi->SetConstantBuffers(ER_PIXEL, { mSSRConstantBuffer.Buffer() });
@@ -304,7 +310,6 @@ namespace EveryRay_Core {
 		mSSSConstantBuffer.Data.CameraFOV = camera.FieldOfView();
 		mSSSConstantBuffer.ApplyChanges(rhi);
 
-		rhi->SetShader(mSSSPS);
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 		rhi->SetShaderResources(ER_PIXEL, { aInputTexture, mDepthTarget, gbuffer->GetExtra2Buffer() });
 		rhi->SetConstantBuffers(ER_PIXEL, { mSSSConstantBuffer.Buffer() });
@@ -321,7 +326,6 @@ namespace EveryRay_Core {
 		mLinearFogConstantBuffer.Data.FogDensity = mLinearFogDensity;
 		mLinearFogConstantBuffer.ApplyChanges(rhi);
 
-		rhi->SetShader(mLinearFogPS);
 		rhi->SetConstantBuffers(ER_PIXEL, { mLinearFogConstantBuffer.Buffer() });
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 		rhi->SetShaderResources(ER_PIXEL, { aInputTexture, mDepthTarget });
@@ -332,7 +336,6 @@ namespace EveryRay_Core {
 		assert(aInputTexture);
 		auto rhi = mCore.GetRHI();
 
-		rhi->SetShader(mColorGradingPS);
 		rhi->SetShaderResources(ER_PIXEL, { mLUTs[mColorGradingCurrentLUTIndex], aInputTexture });
 	}
 
@@ -344,7 +347,6 @@ namespace EveryRay_Core {
 		mVignetteConstantBuffer.Data.RadiusSoftness = XMFLOAT2(mVignetteRadius, mVignetteSoftness);
 		mVignetteConstantBuffer.ApplyChanges(rhi);
 
-		rhi->SetShader(mVignettePS);
 		rhi->SetConstantBuffers(ER_PIXEL, { mVignetteConstantBuffer.Buffer() });
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 		rhi->SetShaderResources(ER_PIXEL, { aInputTexture });
@@ -358,7 +360,6 @@ namespace EveryRay_Core {
 		mFXAAConstantBuffer.Data.ScreenDimensions = XMFLOAT2(static_cast<float>(mCore.ScreenWidth()),static_cast<float>(mCore.ScreenHeight()));
 		mFXAAConstantBuffer.ApplyChanges(rhi);
 
-		rhi->SetShader(mFXAAPS);
 		rhi->SetConstantBuffers(ER_PIXEL, { mFXAAConstantBuffer.Buffer() });
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 		rhi->SetShaderResources(ER_PIXEL, { aInputTexture });
@@ -377,7 +378,17 @@ namespace EveryRay_Core {
 		{
 			rhi->SetRenderTargets({ mLinearFogRT });
 			PrepareDrawingLinearFog(mRenderTargetBeforeResolve);
+			if (!rhi->IsPSOReady(mLinearFogPassPSOName))
+			{
+				rhi->InitializePSO(mLinearFogPassPSOName);
+				rhi->SetShader(mLinearFogPS);
+				rhi->SetRenderTargetFormats({ mLinearFogRT });
+				quad->PrepareDraw(rhi);
+				rhi->FinalizePSO(mLinearFogPassPSOName);
+			}
+			rhi->SetPSO(mLinearFogPassPSOName);
 			quad->Draw(rhi);
+			
 			rhi->UnbindRenderTargets();
 
 			//[WARNING] Set from last post processing effect
@@ -390,20 +401,29 @@ namespace EveryRay_Core {
 			ER_Illumination* illumination = mCore.GetLevel()->mIllumination;
 			if (illumination->IsSSSBlurring())
 			{
+				rhi->SetRenderTargets({ mSSSRT });
+				if (!rhi->IsPSOReady(mSSSPassPSOName))
+				{
+					rhi->InitializePSO(mSSSPassPSOName);
+					rhi->SetShader(mSSSPS);
+					rhi->SetRenderTargetFormats({ mSSSRT });
+					quad->PrepareDraw(rhi);
+					rhi->FinalizePSO(mSSSPassPSOName);
+				}
+				rhi->SetPSO(mSSSPassPSOName);
+
 				//vertical
 				{
-					rhi->SetRenderTargets({ mSSSRT });
 					PrepareDrawingSSS(gameTime, mRenderTargetBeforeResolve, gbuffer, true);
 					quad->Draw(rhi);
-					rhi->UnbindRenderTargets();
 				}
 				//horizontal
 				{
-					rhi->SetRenderTargets({ mSSSRT });
 					PrepareDrawingSSS(gameTime, mRenderTargetBeforeResolve, gbuffer, false);
 					quad->Draw(rhi);
-					rhi->UnbindRenderTargets();
 				}
+
+				rhi->UnbindRenderTargets();
 				//[WARNING] Set from last post processing effect
 				mRenderTargetBeforeResolve = mSSSRT;
 			}
@@ -414,7 +434,17 @@ namespace EveryRay_Core {
 		{
 			rhi->SetRenderTargets({ mSSRRT });
 			PrepareDrawingSSR(gameTime, mRenderTargetBeforeResolve, gbuffer);
+			if (!rhi->IsPSOReady(mSSRPassPSOName))
+			{
+				rhi->InitializePSO(mSSRPassPSOName);
+				rhi->SetShader(mSSRPS);
+				rhi->SetRenderTargetFormats({ mSSRRT });
+				quad->PrepareDraw(rhi);
+				rhi->FinalizePSO(mSSRPassPSOName);
+			}
+			rhi->SetPSO(mSSRPassPSOName);
 			quad->Draw(rhi);
+			
 			rhi->UnbindRenderTargets();
 
 			//[WARNING] Set from last post processing effect
@@ -441,7 +471,17 @@ namespace EveryRay_Core {
 		{
 			rhi->SetRenderTargets({ mTonemappingRT });
 			PrepareDrawingTonemapping(mRenderTargetBeforeResolve);
+			if (!rhi->IsPSOReady(mTonemapPassPSOName))
+			{
+				rhi->InitializePSO(mTonemapPassPSOName);
+				rhi->SetShader(mTonemappingPS);
+				rhi->SetRenderTargetFormats({ mTonemappingRT });
+				quad->PrepareDraw(rhi);
+				rhi->FinalizePSO(mTonemapPassPSOName);
+			}
+			rhi->SetPSO(mTonemapPassPSOName);
 			quad->Draw(rhi);
+
 			rhi->UnbindRenderTargets();
 
 			//[WARNING] Set from last post processing effect
@@ -453,29 +493,61 @@ namespace EveryRay_Core {
 		{
 			rhi->SetRenderTargets({ mColorGradingRT });
 			PrepareDrawingColorGrading(mRenderTargetBeforeResolve);
+			if (!rhi->IsPSOReady(mColorGradingPassPSOName))
+			{
+				rhi->InitializePSO(mColorGradingPassPSOName);
+				rhi->SetShader(mColorGradingPS);
+				rhi->SetRenderTargetFormats({ mColorGradingRT });
+				quad->PrepareDraw(rhi);
+				rhi->FinalizePSO(mColorGradingPassPSOName);
+			}
+			rhi->SetPSO(mColorGradingPassPSOName);
 			quad->Draw(rhi);
+
 			rhi->UnbindRenderTargets();
 
 			//[WARNING] Set from last post processing effect
 			mRenderTargetBeforeResolve = mColorGradingRT;
 		}
+
 		// Vignette
 		if (mUseVignette)
 		{
 			rhi->SetRenderTargets({ mVignetteRT });
 			PrepareDrawingVignette(mRenderTargetBeforeResolve);
+			if (!rhi->IsPSOReady(mVignettePassPSOName))
+			{
+				rhi->InitializePSO(mVignettePassPSOName);
+				rhi->SetShader(mVignettePS);
+				rhi->SetRenderTargetFormats({ mVignetteRT });
+				quad->PrepareDraw(rhi);
+				rhi->FinalizePSO(mVignettePassPSOName);
+			}
+			rhi->SetPSO(mVignettePassPSOName);
 			quad->Draw(rhi);
+
 			rhi->UnbindRenderTargets();
 
 			//[WARNING] Set from last post processing effect
 			mRenderTargetBeforeResolve = mVignetteRT;
 		}
+
 		// FXAA
 		if (mUseFXAA)
 		{
 			rhi->SetRenderTargets({ mFXAART });
 			PrepareDrawingFXAA(mRenderTargetBeforeResolve);
+			if (!rhi->IsPSOReady(mFXAAPassPSOName))
+			{
+				rhi->InitializePSO(mFXAAPassPSOName);
+				rhi->SetShader(mFXAAPS);
+				rhi->SetRenderTargetFormats({ mFXAART });
+				quad->PrepareDraw(rhi);
+				rhi->FinalizePSO(mFXAAPassPSOName);
+			}
+			rhi->SetPSO(mFXAAPassPSOName);
 			quad->Draw(rhi);
+
 			rhi->UnbindRenderTargets();
 
 			//[WARNING] Set from last post processing effect 
