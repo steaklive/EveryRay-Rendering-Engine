@@ -32,7 +32,7 @@ namespace EveryRay_Core
 	}
 
 	// Setting up the pipeline before the draw call
-	void ER_Material::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex)
+	void ER_Material::PrepareResources()
 	{
 		ER_RHI* rhi = GetCore()->GetRHI();
 

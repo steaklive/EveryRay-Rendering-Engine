@@ -53,7 +53,7 @@ namespace EveryRay_Core
 		void SetLevelPath(const std::wstring& aPath) { mLevelPath = aPath; };
 		void ComputeOrLoadLocalProbes(ER_Core& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox = nullptr);
 		void ComputeOrLoadGlobalProbes(ER_Core& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox);
-		void DrawDebugProbes(ER_ProbeType aType);
+		void DrawDebugProbes(ER_RHI_GPUTexture* aRenderTarget, ER_ProbeType aType);
 		void UpdateProbes(ER_Core& game);
 		int GetCellIndex(const XMFLOAT3& pos, ER_ProbeType aType);
 

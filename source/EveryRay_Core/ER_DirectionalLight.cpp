@@ -128,10 +128,10 @@ namespace EveryRay_Core
 			listener();
 	}
 
-	void ER_DirectionalLight::DrawProxyModel(const ER_CoreTime & time)
+	void ER_DirectionalLight::DrawProxyModel(ER_RHI_GPUTexture* aRenderTarget, const ER_CoreTime & time)
 	{
 		if (mProxyModel)
-			mProxyModel->Draw(time);
+			mProxyModel->Draw(aRenderTarget, time);
 	}
 
 	void ER_DirectionalLight::UpdateProxyModel(const ER_CoreTime & time, XMFLOAT4X4 viewMatrix, XMFLOAT4X4 projectionMatrix)

@@ -87,14 +87,27 @@ namespace EveryRay_Core
 		UpdateVertices();
 	}
 
-	void ER_RenderableAABB::Draw()
+	void ER_RenderableAABB::Draw(ER_RHI_GPUTexture* aRenderTarget)
 	{
+		assert(aRenderTarget);
+
 		ER_RHI* rhi = mCore.GetRHI();
-		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST);
 		rhi->SetVertexBuffers({ mVertexBuffer });
 		rhi->SetIndexBuffer(mIndexBuffer);
+		
+		std::string psoName = ER_MaterialHelper::basicColorMaterialName + " PSO";
+		if (!rhi->IsPSOReady(psoName))
+		{
+			rhi->InitializePSO(psoName);
+			static_cast<ER_Material*>(mMaterial)->PrepareResources();
+			rhi->SetRenderTargetFormats({ aRenderTarget });
+			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST);
+			rhi->FinalizePSO(psoName);
+		}
+		rhi->SetPSO(psoName);
 		mMaterial->PrepareForRendering(XMMatrixIdentity(), mColor);
 		rhi->DrawIndexed(AABBIndexCount);
+		rhi->UnsetPSO();
 	}
 
 	void ER_RenderableAABB::SetColor(const XMFLOAT4& color)

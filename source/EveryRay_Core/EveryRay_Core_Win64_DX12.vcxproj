@@ -231,6 +231,7 @@
     <ClInclude Include="ER_RenderingObject.h" />
     <ClInclude Include="RHI\DX12\ER_RHI_DX12.h" />
     <ClInclude Include="RHI\DX12\ER_RHI_DX12_GPUBuffer.h" />
+    <ClInclude Include="RHI\DX12\ER_RHI_DX12_GPUPipelineStateObject.h" />
     <ClInclude Include="RHI\DX12\ER_RHI_DX12_GPUShader.h" />
     <ClInclude Include="RHI\DX12\ER_RHI_DX12_GPUTexture.h" />
     <ClInclude Include="RHI\ER_RHI.h" />
@@ -299,6 +300,7 @@
     <ClCompile Include="ER_ShadowMapper.cpp" />
     <ClCompile Include="RHI\DX12\ER_RHI_DX12.cpp" />
     <ClCompile Include="RHI\DX12\ER_RHI_DX12_GPUBuffer.cpp" />
+    <ClCompile Include="RHI\DX12\ER_RHI_DX12_GPUPipelineStateObject.cpp" />
     <ClCompile Include="RHI\DX12\ER_RHI_DX12_GPUShader.cpp" />
     <ClCompile Include="RHI\DX12\ER_RHI_DX12_GPUTexture.cpp" />
     <ClCompile Include="stdafx.cpp">

@@ -170,14 +170,25 @@ namespace EveryRay_Core
 		XMStoreFloat4x4(&mWorldMatrix, XMLoadFloat4x4(&mScaleMatrix) * worldMatrix);
 	}
 
-	void ER_DebugProxyObject::Draw(const ER_CoreTime& gametime)
+	void ER_DebugProxyObject::Draw(ER_RHI_GPUTexture* aRenderTarget, const ER_CoreTime& gametime)
 	{
 		auto rhi = mCore.GetRHI();
 
 		rhi->SetVertexBuffers({ mVertexBuffer });
 		rhi->SetIndexBuffer({ mIndexBuffer });
 
+		std::string psoName = ER_MaterialHelper::basicColorMaterialName + " PSO";
+		if (!rhi->IsPSOReady(psoName))
+		{
+			rhi->InitializePSO(psoName);
+			static_cast<ER_Material*>(mMaterial)->PrepareResources();
+			rhi->SetRenderTargetFormats({ aRenderTarget });
+			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST);
+			rhi->FinalizePSO(psoName);
+		}
+		rhi->SetPSO(psoName);
 		mMaterial->PrepareForRendering(XMLoadFloat4x4(&mWorldMatrix), { 1.0f, 0.65f, 0.0f, 1.0f });
 		rhi->DrawIndexed(mIndexCount);
+		rhi->UnsetPSO();
 	}
 }

@@ -257,7 +257,10 @@ namespace EveryRay_Core {
 		mGBuffer->Start();
 		mGBuffer->Draw(mScene);
 		if (mFoliageSystem)
-			mFoliageSystem->Draw(gameTime, nullptr, FoliageRenderingPass::TO_GBUFFER);
+		{
+			mFoliageSystem->Draw(gameTime, nullptr, FoliageRenderingPass::TO_GBUFFER,
+				{ mGBuffer->GetAlbedo(), mGBuffer->GetNormals(), mGBuffer->GetPositions(), mGBuffer->GetExtraBuffer(), mGBuffer->GetExtra2Buffer() });
+		}
 		mGBuffer->End();
 #pragma endregion
 
@@ -288,6 +291,8 @@ namespace EveryRay_Core {
 		#pragma region DRAW_LOCAL_ILLUMINATION
 		
 		mIllumination->DrawLocalIllumination(mGBuffer, mSkybox);
+		ER_RHI_GPUTexture* localRT = mIllumination->GetLocalIlluminationRT();
+
 		#pragma region DRAW_LAYERED_MATERIALS
 		for (auto& it = mScene->objects.begin(); it != mScene->objects.end(); it++)
 		{
@@ -301,19 +306,19 @@ namespace EveryRay_Core {
 
 		#pragma region DRAW_TERRAIN
 		if (mTerrain)
-			mTerrain->Draw(mShadowMapper, mLightProbesManager);
+			mTerrain->Draw(localRT, mShadowMapper, mLightProbesManager);
 #pragma endregion
 
 		#pragma region DRAW_DEBUG_GIZMOS
 		// TODO: consider moving all debug gizmos to a separate debug renderer system
 		if (ER_Utility::IsEditorMode)
 		{
-			mDirectionalLight->DrawProxyModel(gameTime);
-			mIllumination->DrawDebugGizmos();
-			mTerrain->DrawDebugGizmos();
-			mFoliageSystem->DrawDebugGizmos();
+			mDirectionalLight->DrawProxyModel(localRT, gameTime);
+			mIllumination->DrawDebugGizmos(localRT);
+			mTerrain->DrawDebugGizmos(localRT);
+			mFoliageSystem->DrawDebugGizmos(localRT);
 			for (auto& it = mScene->objects.begin(); it != mScene->objects.end(); it++)
-				it->second->DrawAABB();
+				it->second->DrawAABB(localRT);
 		}
 #pragma endregion
 

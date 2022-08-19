@@ -67,8 +67,6 @@ namespace EveryRay_Core
 		assert(neededSystems.mShadowMapper);
 		assert(neededSystems.mDirectionalLight);
 
-		ER_Material::PrepareForRendering(neededSystems, aObj, meshIndex);
-
 		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 			mConstantBuffer.Data.ShadowMatrices[i] = XMMatrixTranspose(neededSystems.mShadowMapper->GetViewMatrix(i) * neededSystems.mShadowMapper->GetProjectionMatrix(i) * XMLoadFloat4x4(&ER_MatrixHelper::GetProjectionShadowMatrix()));
 		mConstantBuffer.Data.ViewProjection = XMMatrixTranspose(cubemapCamera->ViewMatrix() * cubemapCamera->ProjectionMatrix());

@@ -34,10 +34,10 @@ namespace EveryRay_Core
 		~ER_Skybox();
 
 		void Initialize();
-		void Draw(ER_Camera* aCustomCamera = nullptr);
+		void Draw(ER_RHI_GPUTexture* aRenderTarget, ER_Camera* aCustomCamera = nullptr);
+		void DrawSun(ER_RHI_GPUTexture* aRenderTarget, ER_Camera* aCustomCamera = nullptr, ER_RHI_GPUTexture* aSky = nullptr, ER_RHI_GPUTexture* aSceneDepth = nullptr);
 		void Update(ER_Camera* aCustomCamera = nullptr);
 		void UpdateSun(const ER_CoreTime& gameTime, ER_Camera* aCustomCamera = nullptr);
-		void DrawSun(ER_Camera* aCustomCamera = nullptr, ER_RHI_GPUTexture* aSky = nullptr, ER_RHI_GPUTexture* aSceneDepth = nullptr);
 
 		void SetMovable(bool value) { mIsMovable = value; };
 		void SetUseCustomSkyColor(bool value) { mUseCustomColor = value; }
@@ -82,6 +82,7 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mSkyboxVS = nullptr;
 		ER_RHI_GPUShader* mSkyboxPS = nullptr;
 		ER_RHI_GPUConstantBuffer<SkyCBufferData::SkyboxData> mSkyboxConstantBuffer;
+		std::string mSkyboxPassPSOName = "Skybox Pass PSO";
 
 		XMFLOAT4 mSunDir;
 		XMFLOAT4 mSunColor;

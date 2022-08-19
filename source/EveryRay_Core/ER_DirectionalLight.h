@@ -5,6 +5,7 @@
 #include "ER_DebugProxyObject.h"
 #include "ER_GenericEvent.h"
 
+#include "RHI/ER_RHI.h"
 
 namespace EveryRay_Core
 {
@@ -32,7 +33,7 @@ namespace EveryRay_Core
 		void ApplyRotation(CXMMATRIX transform);
 		void ApplyRotation(const XMFLOAT4X4& transform);
 		void ApplyTransform(const float* transform);
-		void DrawProxyModel(const ER_CoreTime& time);
+		void DrawProxyModel(ER_RHI_GPUTexture* aRenderTarget, const ER_CoreTime& time);
 		void UpdateProxyModel(const ER_CoreTime& time, XMFLOAT4X4 viewMatrix, XMFLOAT4X4 projectionMatrix);
 		void UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix);
 		XMFLOAT3 GetDirectionalLightColor() const { return XMFLOAT3(mSunColor); }

@@ -104,7 +104,7 @@ namespace EveryRay_Core
 		void DrawGlobalIllumination(ER_GBuffer* gbuffer, const ER_CoreTime& gameTime);
 		void CompositeTotalIllumination();
 
-		void DrawDebugGizmos();
+		void DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget);
 
 		void Update(const ER_CoreTime& gameTime, const ER_Scene* scene);
 		void Config() { mShowDebug = !mShowDebug; }
@@ -171,6 +171,8 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mVCTVoxelizationDebugVS = nullptr;
 		ER_RHI_GPUShader* mVCTVoxelizationDebugGS = nullptr;
 		ER_RHI_GPUShader* mVCTVoxelizationDebugPS = nullptr;
+		std::string mVoxelizationDebugPSOName = "VCT GI - Voxelization Pass Debug PSO";
+
 		ER_RHI_GPUShader* mVCTMainCS = nullptr;
 		ER_RHI_GPUShader* mUpsampleBlurCS = nullptr;
 		ER_RHI_GPUShader* mCompositeIlluminationCS = nullptr;

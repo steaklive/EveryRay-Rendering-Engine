@@ -404,10 +404,10 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_RenderingObject::DrawAABB()
+	void ER_RenderingObject::DrawAABB(ER_RHI_GPUTexture* aRenderTarget)
 	{
 		if (mIsSelected && mAvailableInEditorMode && mEnableAABBDebug && ER_Utility::IsEditorMode)
-			mDebugGizmoAABB->Draw();
+			mDebugGizmoAABB->Draw(aRenderTarget);
 	}
 
 	void ER_RenderingObject::SetTransformationMatrix(const XMMATRIX& mat)

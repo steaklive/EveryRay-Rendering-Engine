@@ -210,6 +210,8 @@ namespace EveryRay_Core {
 		}
 		rhi->SetPSO(mCompositePassPSOName);
 		quadRenderer->Draw(rhi);
+		rhi->UnsetPSO();
+
 		rhi->UnbindRenderTargets();
 		rhi->UnbindResourcesFromShader(ER_PIXEL);
 	}

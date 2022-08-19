@@ -204,6 +204,7 @@ namespace EveryRay_Core
 					{
 						for (int meshIndex = 0; meshIndex < object.second->GetMeshCount(); meshIndex++)
 						{
+							materialInfo->second->PrepareResources();
 							static_cast<ER_RenderToLightProbeMaterial*>(materialInfo->second)->PrepareForRendering(matSystems, object.second, meshIndex, mCubemapCameras[cubeMapFaceIndex]);
 							object.second->DrawLOD(materialInfo->first, false, meshIndex, lod);
 						}

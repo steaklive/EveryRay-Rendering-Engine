@@ -38,7 +38,7 @@ namespace EveryRay_Core
 
 		void Initialize();
 		void Update(const ER_CoreTime& gameTime);
-		void Draw(const ER_CoreTime& gameTime);
+		void Draw(ER_RHI_GPUTexture* aRenderTarget, const ER_CoreTime& gameTime);
 
 	private:
 		ER_DebugProxyObject();

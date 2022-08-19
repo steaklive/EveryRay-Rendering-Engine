@@ -78,17 +78,32 @@ namespace EveryRay_Core {
 
 	void ER_GBuffer::Draw(const ER_Scene* scene)
 	{
-		ER_MaterialSystems materialSystems;
+		auto rhi = GetCore()->GetRHI();
 
-		for (auto it = scene->objects.begin(); it != scene->objects.end(); it++)
+		ER_MaterialSystems materialSystems;
+		const std::string psoName = ER_MaterialHelper::gbufferMaterialName + " PSO";
+
+		for (auto renderingObjectInfo = scene->objects.begin(); renderingObjectInfo != scene->objects.end(); renderingObjectInfo++)
 		{
-			auto materialInfo = it->second->GetMaterials().find(ER_MaterialHelper::gbufferMaterialName);
-			if (materialInfo != it->second->GetMaterials().end())
+			ER_RenderingObject* renderingObject = renderingObjectInfo->second;
+			auto materialInfo = renderingObject->GetMaterials().find(ER_MaterialHelper::gbufferMaterialName);
+			if (materialInfo != renderingObject->GetMaterials().end())
 			{
-				for (int meshIndex = 0; meshIndex < it->second->GetMeshCount(); meshIndex++)
+				ER_Material* material = materialInfo->second;
+				for (int meshIndex = 0; meshIndex < renderingObject->GetMeshCount(); meshIndex++)
 				{
-					static_cast<ER_GBufferMaterial*>(materialInfo->second)->PrepareForRendering(materialSystems, it->second, meshIndex);
-					it->second->Draw(ER_MaterialHelper::gbufferMaterialName, true, meshIndex);
+					if (!rhi->IsPSOReady(psoName))
+					{
+						rhi->InitializePSO(psoName);
+						material->PrepareResources();
+						rhi->SetRasterizerState(ER_NO_CULLING);
+						rhi->SetRenderTargetFormats({ mAlbedoBuffer, mNormalBuffer, mPositionsBuffer,	mExtraBuffer, mExtra2Buffer }, mDepthBuffer);
+						rhi->FinalizePSO(psoName);
+					}
+					rhi->SetPSO(psoName);
+					static_cast<ER_GBufferMaterial*>(material)->PrepareForRendering(materialSystems, renderingObject, meshIndex);
+					renderingObject->Draw(ER_MaterialHelper::gbufferMaterialName, true, meshIndex);
+					rhi->UnsetPSO();
 				}
 			}
 		}

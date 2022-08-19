@@ -598,6 +598,9 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE aDS, UINT stencilRef)
 	{
+		if (mCurrentPSOState == ER_RHI_DX12_PSO_STATE::UNSET)
+			return;
+
 		if (aDS == ER_DISABLED)
 		{
 			mDirect3DDeviceContext->OMSetDepthStencilState(nullptr, 0xffffffff);
@@ -613,6 +616,9 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::SetBlendState(ER_RHI_BLEND_STATE aBS, const float BlendFactor[4], UINT SampleMask)
 	{
+		if (mCurrentPSOState == ER_RHI_DX12_PSO_STATE::UNSET)
+			return;
+
 		if (aBS == ER_RHI_BLEND_STATE::ER_NO_BLEND)
 		{
 			mDirect3DDeviceContext->OMSetBlendState(nullptr, NULL, 0xffffffff);
@@ -631,6 +637,9 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::SetRasterizerState(ER_RHI_RASTERIZER_STATE aRS)
 	{
+		if (mCurrentPSOState == ER_RHI_DX12_PSO_STATE::UNSET)
+			return;
+
 		auto it = mRasterizerStates.find(aRS);
 		if (it != mRasterizerStates.end())
 		{
@@ -917,7 +926,10 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::SetTopologyType(ER_RHI_PRIMITIVE_TYPE aType)
 	{
-		assert(mIsCurrentPSOGraphics);
+		if (mCurrentPSOState == ER_RHI_DX12_PSO_STATE::UNSET)
+			return;
+
+		assert(mCurrentPSOState == ER_RHI_DX12_PSO_STATE::GRAPHICS);
 		ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSOs.at(mCurrentGraphicsPSO);
 		pso.SetPrimitiveTopologyType(GetTopologyType(aType));
 	}
@@ -953,13 +965,13 @@ namespace EveryRay_Core
 		{
 			mComputePSOs.insert(std::make_pair(aName, ER_RHI_DX12_ComputePSO(aName)));
 			mCurrentComputePSO = aName;
-			mIsCurrentPSOGraphics = false;
+			mCurrentPSOState = ER_RHI_DX12_PSO_STATE::COMPUTE;
 		}
 		else
 		{
 			mGraphicsPSOs.insert(std::make_pair(aName, ER_RHI_DX12_GraphicsPSO(aName)));
 			mCurrentGraphicsPSO = aName;
-			mIsCurrentPSOGraphics = true;
+			mCurrentPSOState = ER_RHI_DX12_PSO_STATE::GRAPHICS;
 		}
 	}
 
@@ -994,7 +1006,7 @@ namespace EveryRay_Core
 			{
 				mCommandListGraphics[0]->SetPipelineState(it.second.GetPipelineStateObject());
 				mCurrentGraphicsPSO = it.first;
-				mIsCurrentPSOGraphics = true;
+				mCurrentPSOState = ER_RHI_DX12_PSO_STATE::GRAPHICS
 			}
 			else
 				resetPSO(aName, isCompute);
@@ -1006,17 +1018,23 @@ namespace EveryRay_Core
 			{
 				mCommandListGraphics[0]->SetPipelineState(it.second.GetPipelineStateObject());
 				mCurrentComputePSO = it.first;
-				mIsCurrentPSOGraphics = false;
+				mCurrentPSOState = ER_RHI_DX12_PSO_STATE::COMPUTE;
 			}
 			else
 				resetPSO(aName, isCompute);
 		}
 	}
 
+	void ER_RHI_DX12::UnsetPSO()
+	{
+		mCurrentPSOState = ER_RHI_DX12_PSO_STATE::UNSET;
+		//TODO maybe set null PSO?
+	}
+
 	void ER_RHI_DX12::UnbindRenderTargets()
 	{
 		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
-		mDirect3DDeviceContext->OMSetRenderTargets(1, nullRTVs, nullptr);
+		mCommandListGraphics[0]->OMSetRenderTargets(1, nullRTVs, nullptr);
 	}
 
 	void ER_RHI_DX12::UpdateBuffer(ER_RHI_GPUBuffer* aBuffer, void* aData, int dataSize)

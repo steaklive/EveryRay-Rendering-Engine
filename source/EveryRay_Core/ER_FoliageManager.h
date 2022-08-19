@@ -83,8 +83,8 @@ namespace EveryRay_Core
 		~ER_Foliage();
 
 		void Initialize();
-		void Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass);
-		void DrawDebugGizmos();
+		void Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass, const std::vector<ER_RHI_GPUTexture*>& aGbufferTextures);
+		void DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget);
 		void Update(const ER_CoreTime& gameTime);
 
 		bool IsSelected() { return mIsSelectedInEditor; }
@@ -142,8 +142,14 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mVS = nullptr;
 		ER_RHI_GPUShader* mGS = nullptr;
 		ER_RHI_GPUShader* mPS = nullptr;
+		std::string mFoliageMainPassPSOName = "Foliage - Main Pass PSO";
+
 		ER_RHI_GPUShader* mPS_GBuffer = nullptr;
+		std::string mFoliageGBufferPassPSOName = "Foliage - Gbuffer Pass PSO";
+
 		ER_RHI_GPUShader* mPS_Voxelization = nullptr;
+		std::string mFoliageVoxelizationPassPSOName = "Foliage - Voxelization Pass PSO";
+
 		ER_RHI_GPUConstantBuffer<FoliageCBufferData::FoliageData> mFoliageConstantBuffer;
 
 		ER_RHI_GPUBuffer* mVertexBuffer = nullptr;
@@ -218,8 +224,9 @@ namespace EveryRay_Core
 
 		void Initialize();
 		void Update(const ER_CoreTime& gameTime, float gustDistance, float strength, float frequency);
-		void Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass);
-		void DrawDebugGizmos();
+		void Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass,
+			const std::vector<ER_RHI_GPUTexture*>& aGbufferTextures);
+		void DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget);
 		void AddFoliage(ER_Foliage* foliage);
 		void SetVoxelizationParams(float* scale, const float* dimensions, XMFLOAT4* voxelCamera);
 		void Config() { mShowDebug = !mShowDebug; }

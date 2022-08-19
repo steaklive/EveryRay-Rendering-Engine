@@ -65,8 +65,6 @@ namespace EveryRay_Core
 		assert(aObj);
 		assert(camera);
 
-		ER_Material::PrepareForRendering(neededSystems, aObj, meshIndex);
-
 		mConstantBuffer.Data.ViewProjection = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());
 		mConstantBuffer.Data.World = XMMatrixTranspose(aObj->GetTransformationMatrix());
 		mConstantBuffer.Data.Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor = XMFLOAT4(

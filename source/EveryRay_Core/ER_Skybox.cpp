@@ -109,12 +109,12 @@ namespace EveryRay_Core
 		mSunConstantBuffer.ApplyChanges(rhi);
 	}
 
-	void ER_Skybox::Draw(ER_Camera* aCustomCamera)
+	void ER_Skybox::Draw(ER_RHI_GPUTexture* aRenderTarget, ER_Camera* aCustomCamera)
 	{
+		assert(aRenderTarget);
+
 		auto rhi = mCore.GetRHI();
 
-		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		rhi->SetInputLayout(mInputLayout);
 		rhi->SetVertexBuffers({ mVertexBuffer });
 		rhi->SetIndexBuffer(mIndexBuffer);
 
@@ -129,41 +129,53 @@ namespace EveryRay_Core
 		mSkyboxConstantBuffer.Data.BottomColor = mBottomColor;
 		mSkyboxConstantBuffer.Data.TopColor = mTopColor;
 		mSkyboxConstantBuffer.ApplyChanges(rhi);
-
-		rhi->SetShader(mSkyboxVS);
 		rhi->SetConstantBuffers(ER_VERTEX, { mSkyboxConstantBuffer.Buffer() });
-
-		rhi->SetShader(mSkyboxPS);
 		rhi->SetConstantBuffers(ER_PIXEL, { mSkyboxConstantBuffer.Buffer() });
 
+		if (!rhi->IsPSOReady(mSkyboxPassPSOName))
+		{
+			rhi->InitializePSO(mSkyboxPassPSOName);
+			rhi->SetShader(mSkyboxVS);
+			rhi->SetShader(mSkyboxPS);
+			rhi->SetRenderTargetFormats({ aRenderTarget });
+			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			rhi->SetInputLayout(mInputLayout);
+			rhi->FinalizePSO(mSkyboxPassPSOName);
+		}
+		rhi->SetPSO(mSkyboxPassPSOName);
 		rhi->DrawIndexed(mIndexCount);
+		rhi->UnsetPSO();
 
 		rhi->UnbindResourcesFromShader(ER_VERTEX);
 		rhi->UnbindResourcesFromShader(ER_PIXEL);
 	}
 
-	void ER_Skybox::DrawSun(ER_Camera* aCustomCamera, ER_RHI_GPUTexture* aSky, ER_RHI_GPUTexture* aSceneDepth)
+	void ER_Skybox::DrawSun(ER_RHI_GPUTexture* aRenderTarget, ER_Camera* aCustomCamera, ER_RHI_GPUTexture* aSky, ER_RHI_GPUTexture* aSceneDepth)
 	{
 		auto rhi = mCore.GetRHI();
 
+		assert(aRenderTarget);
 		assert(aSceneDepth);
 		auto quadRenderer = (ER_QuadRenderer*)mCore.GetServices().FindService(ER_QuadRenderer::TypeIdClass());
 		assert(quadRenderer);
 
-		if (mDrawSun) {
+		if (mDrawSun)
+		{
 			rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 			rhi->SetConstantBuffers(ER_PIXEL, { mSunConstantBuffer.Buffer() });
 			rhi->SetShaderResources(ER_PIXEL, { aSky, aSceneDepth });
-			if (rhi->IsPSOReady(mSunPassPSOName))
+			if (!rhi->IsPSOReady(mSunPassPSOName))
 			{
 				rhi->InitializePSO(mSunPassPSOName);
 				rhi->SetShader(mSunPS);
-				rhi->SetRenderTargetFormats();
+				rhi->SetRenderTargetFormats({ aRenderTarget });
 				quadRenderer->PrepareDraw(rhi);
 				rhi->FinalizePSO(mSunPassPSOName);
 			}
 			rhi->SetPSO(mSunPassPSOName);
 			quadRenderer->Draw(rhi);
+			rhi->UnsetPSO();
+
 			rhi->UnbindResourcesFromShader(ER_PIXEL);
 		}
 	}

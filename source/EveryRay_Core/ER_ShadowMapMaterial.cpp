@@ -62,8 +62,6 @@ namespace EveryRay_Core
 		assert(camera);
 		assert(neededSystems.mShadowMapper);
 
-		ER_Material::PrepareForRendering(neededSystems, aObj, meshIndex);
-
 		XMMATRIX lvp = neededSystems.mShadowMapper->GetViewMatrix(cascadeIndex) * neededSystems.mShadowMapper->GetProjectionMatrix(cascadeIndex);
 
 		mConstantBuffer.Data.WorldLightViewProjection = XMMatrixTranspose(aObj->GetTransformationMatrix() * lvp);

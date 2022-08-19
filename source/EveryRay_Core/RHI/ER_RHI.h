@@ -321,6 +321,7 @@ namespace EveryRay_Core
 		virtual void InitializePSO(const std::string& aName, bool isCompute = false) = 0;
 		virtual void FinalizePSO(const std::string& aName, bool isCompute = false) = 0;
 		virtual void SetPSO(const std::string& aName, bool isCompute = false) = 0;
+		virtual void UnsetPSO() = 0;
 
 		virtual void UnbindRenderTargets() = 0;
 		virtual void UnbindResourcesFromShader(ER_RHI_SHADER_TYPE aShaderType, bool unbindShader = true) = 0;

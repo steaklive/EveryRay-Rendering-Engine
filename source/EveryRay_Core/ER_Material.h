@@ -33,13 +33,12 @@ namespace EveryRay_Core
 	class ER_Material : public ER_CoreComponent
 	{
 	public:
-		ER_Material(ER_Core& game, const MaterialShaderEntries& shaderEntry, unsigned int shaderFlags, bool instanced = false);
+		ER_Material(ER_Core& game, const std::string& aPSOName, const MaterialShaderEntries& shaderEntry, unsigned int shaderFlags, bool instanced = false);
 		~ER_Material();
-
-		virtual void PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex);
 
 		virtual void CreateVertexBuffer(const ER_Mesh& mesh, ER_RHI_GPUBuffer* vertexBuffer) = 0;
 
+		void PrepareResources();
 		void CreateVertexShader(const std::string& path, ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount);
 		void CreatePixelShader(const std::string& path);
 		void CreateGeometryShader(const std::string& path);
@@ -53,6 +52,8 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mVertexShader = nullptr;
 		ER_RHI_GPUShader* mPixelShader = nullptr;
 		ER_RHI_GPUShader* mGeometryShader = nullptr;
+
+		std::string mPSOName;
 
 		unsigned int mShaderFlags;
 		MaterialShaderEntries mShaderEntries;

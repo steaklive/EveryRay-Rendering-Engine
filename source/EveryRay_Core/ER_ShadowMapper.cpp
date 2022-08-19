@@ -86,9 +86,8 @@ namespace EveryRay_Core
 		newViewport.MaxDepth = 1.0f;
 
 		rhi->SetDepthTarget(mShadowMaps[cascadeIndex]);
-		rhi->SetViewport(newViewport);
 		rhi->ClearDepthStencilTarget(mShadowMaps[cascadeIndex], 1.0f, 0);
-		rhi->SetRasterizerState(ER_SHADOW_RS);
+		rhi->SetViewport(newViewport);
 	}
 
 	void ER_ShadowMapper::StopRenderingToShadowMap(int cascadeIndex)
@@ -249,22 +248,34 @@ namespace EveryRay_Core
 			if (terrain)
 				terrain->Draw(this, nullptr, i);
 
-			const std::string name = ER_MaterialHelper::shadowMapMaterialName + " " + std::to_string(i);
+			const std::string materialName = ER_MaterialHelper::shadowMapMaterialName + " " + std::to_string(i);
+			const std::string psoName = materialName + " PSO";
 
 			int objectIndex = 0;
-			for (auto it = scene->objects.begin(); it != scene->objects.end(); it++, objectIndex++)
+			for (auto renderingObjectInfo = scene->objects.begin(); renderingObjectInfo != scene->objects.end(); renderingObjectInfo++, objectIndex++)
 			{
-				auto materialInfo = it->second->GetMaterials().find(name);
-				if (materialInfo != it->second->GetMaterials().end())
+				ER_RenderingObject* renderingObject = renderingObjectInfo->second;
+				auto materialInfo = renderingObject->GetMaterials().find(materialName);
+				if (materialInfo != renderingObject->GetMaterials().end())
 				{
-					for (int meshIndex = 0; meshIndex < it->second->GetMeshCount(); meshIndex++)
+					ER_Material* material = materialInfo->second;
+					for (int meshIndex = 0; meshIndex < renderingObject->GetMeshCount(); meshIndex++)
 					{
-						static_cast<ER_ShadowMapMaterial*>(materialInfo->second)->PrepareForRendering(materialSystems, it->second, meshIndex, i);
-						if (!it->second->IsInstanced())
-							it->second->DrawLOD(name, true, meshIndex, it->second->GetLODCount() - 1); //drawing highest LOD
+						if (!rhi->IsPSOReady(psoName))
+						{
+							rhi->InitializePSO(psoName);
+							rhi->SetRasterizerState(ER_SHADOW_RS);
+							material->PrepareResources();
+							rhi->SetRenderTargetFormats({}, mShadowMaps[cascadeIndex]);
+							rhi->FinalizePSO(psoName);
+						}
+						rhi->SetPSO(psoName);
+						static_cast<ER_ShadowMapMaterial*>(material)->PrepareForRendering(materialSystems, renderingObject, meshIndex, i);
+						if (!renderingObject->IsInstanced())
+							renderingObject->DrawLOD(materialName, true, meshIndex, renderingObject->GetLODCount() - 1); //drawing highest LOD
 						else
-							it->second->Draw(name, true, meshIndex);
-
+							renderingObject->Draw(materialName, true, meshIndex);
+						rhi->UnsetPSO();
 					}
 				}
 			}

@@ -422,22 +422,22 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_Terrain::Draw(ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade)
+	void ER_Terrain::Draw(ER_RHI_GPUTexture* aRenderTarget, ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade)
 	{
 		if (!mEnabled || !mLoaded)
 			return;
 
 		for (int i = 0; i < mHeightMaps.size(); i++)
-			DrawTessellated(i, worldShadowMapper, probeManager, shadowMapCascade);
+			DrawTessellated(aRenderTarget, i, worldShadowMapper, probeManager, shadowMapCascade);
 	}
 
-	void ER_Terrain::DrawDebugGizmos()
+	void ER_Terrain::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget)
 	{
 		if (!mEnabled || !mLoaded || !mDrawDebugAABBs)
 			return;
 
 		for (int i = 0; i < mHeightMaps.size(); i++)
-			mHeightMaps[i]->mDebugGizmoAABB->Draw();
+			mHeightMaps[i]->mDebugGizmoAABB->Draw(aRenderTarget);
 	}
 
 	void ER_Terrain::Update(const ER_CoreTime& gameTime)
@@ -470,9 +470,11 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_Terrain::DrawTessellated(int tileIndex, ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade)
+	void ER_Terrain::DrawTessellated(ER_RHI_GPUTexture* aRenderTarget, int tileIndex, ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade)
 	{
 		bool isShadowMappingPass = shadowMapCascade != -1;
+		if (!isShadowMappingPass)
+			assert(aRenderTarget);
 
 		if (mHeightMaps[tileIndex]->IsCulled() && !isShadowMappingPass) //for shadow mapping pass we dont want to cull with main camera frustum
 			return;
@@ -484,8 +486,6 @@ namespace EveryRay_Core
 
 		ER_RHI_PRIMITIVE_TYPE originalPrimitiveTopology = rhi->GetCurrentTopologyType();
 
-		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_CONTROL_POINT_PATCHLIST);
-		rhi->SetInputLayout(mInputLayout);
 		rhi->SetVertexBuffers({ mHeightMaps[tileIndex]->mVertexBufferTS });
 
 		if (worldShadowMapper)
@@ -569,19 +569,31 @@ namespace EveryRay_Core
 		rhi->SetSamplers(ER_TESSELLATION_DOMAIN, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
 
-		rhi->SetShader(mVS);
-		rhi->SetShader(mHS);
-		rhi->SetShader(isShadowMappingPass ? mDS_ShadowMap : mDS);
-		rhi->SetShader(isShadowMappingPass ? mPS_ShadowMap : mPS);
+		std::string& psoName = isShadowMappingPass ? mTerrainShadowPassPSOName : mTerrainShadowPassPSOName;
 
-		if (mIsWireframe)
+		if (!rhi->IsPSOReady(psoName))
 		{
-			rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_WIREFRAME);
-			rhi->Draw(NUM_TERRAIN_PATCHES_PER_TILE * NUM_TERRAIN_PATCHES_PER_TILE);
-			rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING);
+			rhi->InitializePSO(psoName);
+			rhi->SetShader(mVS);
+			rhi->SetShader(mHS);
+			rhi->SetShader(isShadowMappingPass ? mDS_ShadowMap : mDS);
+			rhi->SetShader(isShadowMappingPass ? mPS_ShadowMap : mPS);
+			rhi->SetRenderTargetFormats({ aRenderTarget });
+			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_CONTROL_POINT_PATCHLIST);
+			rhi->SetInputLayout(mInputLayout);
+			rhi->FinalizePSO(psoName);
 		}
-		else
+		rhi->SetPSO(psoName);
+		// TODO: bring back wireframe support (need a new PSO)
+		//if (mIsWireframe)
+		//{
+		//	rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_WIREFRAME);
+		//	rhi->Draw(NUM_TERRAIN_PATCHES_PER_TILE * NUM_TERRAIN_PATCHES_PER_TILE);
+		//	rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING);
+		//}
+		//else
 			rhi->Draw(NUM_TERRAIN_PATCHES_PER_TILE * NUM_TERRAIN_PATCHES_PER_TILE);
+		rhi->UnsetPSO();
 
 		//reset back
 		rhi->SetTopologyType(originalPrimitiveTopology);
@@ -897,7 +909,6 @@ namespace EveryRay_Core
 		ER_RHI_GPUBuffer* outputPosBuffer = rhi->CreateGPUBuffer();
 		outputPosBuffer->CreateGPUBufferResource(rhi, positions, positionsCount, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
 
-		rhi->SetShader(mPlaceOnTerrainCS);
 
 		mPlaceOnTerrainConstantBuffer.Data.HeightScale = mTerrainTessellatedHeightScale;
 		mPlaceOnTerrainConstantBuffer.Data.SplatChannel = splatChannel == TerrainSplatChannels::NONE ? -1.0f : static_cast<float>(splatChannel);
@@ -908,6 +919,14 @@ namespace EveryRay_Core
 		rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_BILINEAR_CLAMP, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 		rhi->SetShaderResources(ER_COMPUTE, { mTerrainTilesDataGPU, terrainBuffer, mTerrainTilesHeightmapsArrayTexture, mTerrainTilesSplatmapsArrayTexture });
 		rhi->SetUnorderedAccessResources(ER_COMPUTE, {posBuffer});
+		
+		if (!rhi->IsPSOReady(mTerrainPlacementPassPSOName, true))
+		{
+			rhi->InitializePSO(mTerrainPlacementPassPSOName, true);
+			rhi->SetShader(mPlaceOnTerrainCS);
+			rhi->FinalizePSO(mTerrainPlacementPassPSOName, true);
+		}
+		rhi->SetPSO(mTerrainPlacementPassPSOName, true);
 		rhi->Dispatch(512, 1, 1);
 
 		// read results

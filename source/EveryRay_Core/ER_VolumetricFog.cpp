@@ -145,6 +145,8 @@ namespace EveryRay_Core {
 		}
 		rhi->SetPSO(mInjectionPassPSOName, true);
 		rhi->Dispatch(INT_CEIL(VOXEL_SIZE_X, 8), INT_CEIL(VOXEL_SIZE_Y, 8), INT_CEIL(VOXEL_SIZE_Z, 1));
+		rhi->UnsetPSO();
+
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 
 		mCurrentTexture3DRead = !mCurrentTexture3DRead;
@@ -168,6 +170,8 @@ namespace EveryRay_Core {
 		}
 		rhi->SetPSO(mAccumulationPassPSOName, true);
 		rhi->Dispatch(INT_CEIL(VOXEL_SIZE_X, 8), INT_CEIL(VOXEL_SIZE_Y, 8), 1);
+		rhi->UnsetPSO();
+
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 	}
 
@@ -193,6 +197,8 @@ namespace EveryRay_Core {
 		}
 		rhi->SetPSO(mCompositePassPSOName);
 		quadRenderer->Draw(rhi);
+		rhi->UnsetPSO();
+
 		rhi->UnbindResourcesFromShader(ER_PIXEL);
 	}
 }

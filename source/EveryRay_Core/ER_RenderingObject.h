@@ -134,7 +134,7 @@ namespace EveryRay_Core
 		void LoadRenderBuffers(int lod = 0);
 		void Draw(const std::string& materialName, bool toDepth = false, int meshIndex = -1);
 		void DrawLOD(const std::string& materialName, bool toDepth, int meshIndex, int lod);
-		void DrawAABB();
+		void DrawAABB(ER_RHI_GPUTexture* aRenderTarget);
 		void Update(const ER_CoreTime& time);
 
 		std::map<std::string, ER_Material*>& GetMaterials() { return mMaterials; }

@@ -41,8 +41,6 @@ namespace EveryRay_Core
 		assert(aObj);
 		assert(camera);
 
-		ER_Material::PrepareForRendering(neededSystems, aObj, meshIndex);
-
 		mConstantBuffer.Data.World = XMMatrixTranspose(aObj->GetTransformationMatrix());
 		mConstantBuffer.Data.ViewProjection = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());
 		mConstantBuffer.Data.Color = XMFLOAT4{0.0, 1.0, 0.0, 0.0};
@@ -59,8 +57,6 @@ namespace EveryRay_Core
 		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->GetServices().FindService(ER_Camera::TypeIdClass()));
 
 		assert(camera);
-
-		ER_Material::PrepareForRendering({}, nullptr, 0);
 
 		mConstantBuffer.Data.World = XMMatrixTranspose(worldTransform);
 		mConstantBuffer.Data.ViewProjection = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());

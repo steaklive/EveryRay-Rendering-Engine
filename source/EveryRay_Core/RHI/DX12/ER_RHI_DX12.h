@@ -21,6 +21,13 @@ namespace EveryRay_Core
 			: ER_RHI_InputLayout(inputElementDescriptions, inputElementDescriptionCount) { }
 	};
 
+	enum ER_RHI_DX12_PSO_STATE
+	{
+		UNSET = 0,
+		GRAPHICS,
+		COMPUTE
+	};
+
 	class ER_RHI_DX12_GraphicsPSO;
 	class ER_RHI_DX12_ComputePSO;
 
@@ -111,6 +118,7 @@ namespace EveryRay_Core
 		virtual void InitializePSO(const std::string& aName, bool isCompute = false) override;
 		virtual void FinalizePSO(const std::string& aName, bool isCompute = false) override;
 		virtual void SetPSO(const std::string& aName, bool isCompute = false) override;
+		virtual void UnsetPSO() override;
 
 		virtual void UnbindRenderTargets() override;
 		virtual void UnbindResourcesFromShader(ER_RHI_SHADER_TYPE aShaderType, bool unbindShader = true) override {}; //Not needed on DX12
@@ -215,10 +223,9 @@ namespace EveryRay_Core
 
 		std::map<std::string, ER_RHI_DX12_GraphicsPSO> mGraphicsPSOs;
 		std::map<std::string, ER_RHI_DX12_ComputePSO> mComputePSOs;
-
 		std::string mCurrentGraphicsPSO;
 		std::string mCurrentComputePSO;
-		bool mIsCurrentPSOGraphics = true;
+		ER_RHI_DX12_PSO_STATE mCurrentPSOState = ER_RHI_DX12_PSO_STATE::UNSET;
 
 		ER_RHI_Viewport mMainViewport;
 

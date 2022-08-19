@@ -66,20 +66,20 @@ namespace EveryRay_Core
 		UpdateImGui();
 	}
 
-	void ER_FoliageManager::Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass)
+	void ER_FoliageManager::Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass, const std::vector<ER_RHI_GPUTexture*>& aGbufferTextures)
 	{
 		if (!mEnabled)
 			return;
 
 		for (auto& object : mFoliageCollection)
-			object->Draw(gameTime, worldShadowMapper, renderPass);
+			object->Draw(gameTime, worldShadowMapper, renderPass, aGbufferTextures);
 	}
 
-	void ER_FoliageManager::DrawDebugGizmos()
+	void ER_FoliageManager::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget)
 	{
 		if (ER_Utility::IsEditorMode && ER_Utility::IsFoliageEditor)
 			for (auto& object : mFoliageCollection)
-				object->DrawDebugGizmos();
+				object->DrawDebugGizmos(aRenderTarget);
 	}
 
 	void ER_FoliageManager::AddFoliage(ER_Foliage* foliage)
@@ -318,7 +318,7 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_Foliage::Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass)
+	void ER_Foliage::Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass, const std::vector<ER_RHI_GPUTexture*>& aGbufferTextures)
 	{
 		if(renderPass == TO_VOXELIZATION)
 			assert(worldShadowMapper);
@@ -328,13 +328,8 @@ namespace EveryRay_Core
 		if (mPatchesCountToRender == 0 || mIsCulled)
 			return;
 
-		float blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-		rhi->SetBlendState(ER_ALPHA_TO_COVERAGE, blendFactor, 0xffffffff);
-
 		rhi->SetVertexBuffers({mVertexBuffer, mInstanceBuffer});
 		rhi->SetIndexBuffer(mIndexBuffer);
-		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
 		if (worldShadowMapper)
 		{
 			for (int cascade = 0; cascade < NUM_SHADOW_CASCADES; cascade++)
@@ -361,20 +356,8 @@ namespace EveryRay_Core
 		mFoliageConstantBuffer.Data.WorldVoxelScale = *mWorldVoxelScale;
 		mFoliageConstantBuffer.Data.VoxelTextureDimension = *mVoxelTextureDimension;
 		mFoliageConstantBuffer.ApplyChanges(rhi);
-
-		rhi->SetInputLayout(mInputLayout);
-		rhi->SetShader(mVS);
 		rhi->SetConstantBuffers(ER_VERTEX, { mFoliageConstantBuffer.Buffer() });
-
-		if (renderPass == TO_VOXELIZATION)
-		{
-			rhi->SetShader(mGS);
-			rhi->SetConstantBuffers(ER_GEOMETRY, { mFoliageConstantBuffer.Buffer() });
-			rhi->SetShader(mPS_Voxelization);
-		}
-		else if (renderPass == TO_GBUFFER)
-			rhi->SetShader(mPS_GBuffer);
-
+		rhi->SetConstantBuffers(ER_GEOMETRY, { mFoliageConstantBuffer.Buffer() });
 		rhi->SetConstantBuffers(ER_PIXEL, { mFoliageConstantBuffer.Buffer() });
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
 		
@@ -389,18 +372,45 @@ namespace EveryRay_Core
 		else
 			rhi->SetShaderResources(ER_PIXEL, { mAlbedoTexture });
 
-		rhi->DrawIndexedInstanced(mVerticesCount, mPatchesCountToRender, 0, 0, 0);
-		rhi->SetBlendState(ER_NO_BLEND);
+		bool isVoxelizationRenderPass = renderPass == TO_VOXELIZATION;
+		std::string& psoName = isVoxelizationRenderPass ? mFoliageVoxelizationPassPSOName : mFoliageGBufferPassPSOName;
 
+		if (!rhi->IsPSOReady(psoName))
+		{
+			rhi->InitializePSO(psoName);
+			
+			float blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+			rhi->SetBlendState(ER_ALPHA_TO_COVERAGE, blendFactor, 0xffffffff);
+			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			rhi->SetInputLayout(mInputLayout);
+			rhi->SetShader(mVS);
+			if (isVoxelizationRenderPass)
+			{
+				rhi->SetShader(mGS);
+				rhi->SetShader(mPS_Voxelization);
+			}
+			else
+			{
+				assert(aGbufferTextures.size() > 0);
+				rhi->SetShader(mPS_GBuffer);
+				rhi->SetRenderTargetFormats(aGbufferTextures);
+			}
+			rhi->FinalizePSO(psoName);
+		}
+		rhi->SetPSO(psoName);
+		rhi->DrawIndexedInstanced(mVerticesCount, mPatchesCountToRender, 0, 0, 0);
+		rhi->UnsetPSO();
+
+		rhi->SetBlendState(ER_NO_BLEND);
 		rhi->UnbindResourcesFromShader(ER_VERTEX);
 		rhi->UnbindResourcesFromShader(ER_GEOMETRY);
 		rhi->UnbindResourcesFromShader(ER_PIXEL);
 	}
 
-	void ER_Foliage::DrawDebugGizmos()
+	void ER_Foliage::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget)
 	{
 		if (mDebugGizmoAABB && mIsSelectedInEditor)
-			mDebugGizmoAABB->Draw();
+			mDebugGizmoAABB->Draw(aRenderTarget);
 	}
 
 	void ER_Foliage::Update(const ER_CoreTime& gameTime)

@@ -18,6 +18,8 @@
 
 namespace EveryRay_Core
 {
+	static const std::string debugLightProbePassPSOName = ER_MaterialHelper::debugLightProbeMaterialName + " PSO";
+
 	ER_LightProbesManager::ER_LightProbesManager(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 		: mMainCamera(camera)
 	{
@@ -630,8 +632,10 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_LightProbesManager::DrawDebugProbes(ER_ProbeType aType)
+	void ER_LightProbesManager::DrawDebugProbes(ER_RHI_GPUTexture* aRenderTarget, ER_ProbeType aType)
 	{
+		assert(aRenderTarget);
+
 		ER_RenderingObject* probeObject = aType == DIFFUSE_PROBE ? mDiffuseProbeRenderingObject : mSpecularProbeRenderingObject;
 		bool ready = aType == DIFFUSE_PROBE ? mDiffuseProbesReady : mSpecularProbesReady;
 		
@@ -643,8 +647,18 @@ namespace EveryRay_Core
 			auto materialInfo = probeObject->GetMaterials().find(ER_MaterialHelper::debugLightProbeMaterialName);
 			if (materialInfo != probeObject->GetMaterials().end())
 			{
+				ER_Material* material = materialInfo->second;
+				if (!rhi->IsPSOReady(debugLightProbePassPSOName))
+				{
+					rhi->InitializePSO(debugLightProbePassPSOName);
+					material->PrepareResources();
+					rhi->SetRenderTargetFormats({ aRenderTarget });
+					rhi->FinalizePSO(debugLightProbePassPSOName);
+				}
+				rhi->SetPSO(debugLightProbePassPSOName);
 				static_cast<ER_DebugLightProbeMaterial*>(materialInfo->second)->PrepareForRendering(materialSystems, probeObject, 0, static_cast<int>(aType));
 				probeObject->Draw(ER_MaterialHelper::debugLightProbeMaterialName);
+				rhi->UnsetPSO();
 			}
 		}
 

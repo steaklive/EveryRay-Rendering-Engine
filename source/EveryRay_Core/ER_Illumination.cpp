@@ -215,8 +215,8 @@ namespace EveryRay_Core {
 
 		if (skybox)
 		{
-			skybox->Draw();
-			//skybox->DrawSun(nullptr, gbuffer->GetDepth());
+			skybox->Draw(mLocalIlluminationRT);
+			//skybox->DrawSun(mLocalIlluminationRT, nullptr, gbuffer->GetDepth());
 		}
 
 		DrawDeferredLighting(gbuffer, mLocalIlluminationRT);
@@ -249,8 +249,6 @@ namespace EveryRay_Core {
 		{
 			for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
 			{
-				rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING_NO_DEPTH_SCISSOR_ENABLED);
-
 				ER_RHI_Viewport vctViewport = { 0.0f, 0.0f, voxelCascadesSizes[cascade], voxelCascadesSizes[cascade] };
 				rhi->SetViewport(vctViewport);
 
@@ -261,18 +259,33 @@ namespace EveryRay_Core {
 				rhi->ClearUAV(mVCTVoxelCascades3DRTs[cascade], clearColorBlack);
 
 				std::string materialName = ER_MaterialHelper::voxelizationMaterialName + "_" + std::to_string(cascade);
-				for (auto& obj : mVoxelizationObjects[cascade]) {
+				std::string psoName = materialName + " PSO";
+
+				for (auto& obj : mVoxelizationObjects[cascade])
+				{
 					if (!obj.second->IsInVoxelization())
 						continue;
 
-					auto materialInfo = obj.second->GetMaterials().find(materialName);
-					if (materialInfo != obj.second->GetMaterials().end())
+					ER_RenderingObject* renderingObject = obj.second;
+					auto materialInfo = renderingObject->GetMaterials().find(materialName);
+					if (materialInfo != renderingObject->GetMaterials().end())
 					{
+						ER_Material* material = materialInfo->second;
 						for (int meshIndex = 0; meshIndex < obj.second->GetMeshCount(); meshIndex++)
 						{
-							static_cast<ER_VoxelizationMaterial*>(materialInfo->second)->PrepareForRendering(materialSystems, obj.second, meshIndex, 
+							if (!rhi->IsPSOReady(psoName))
+							{
+								rhi->InitializePSO(psoName);
+								rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING_NO_DEPTH_SCISSOR_ENABLED);
+								material->PrepareResources();
+								rhi->SetRenderTargetFormats({});
+								rhi->FinalizePSO(psoName);
+							}
+							rhi->SetPSO(psoName);
+							static_cast<ER_VoxelizationMaterial*>(material)->PrepareForRendering(materialSystems, renderingObject, meshIndex,
 								mWorldVoxelScales[cascade], voxelCascadesSizes[cascade], mVoxelCameraPositions[cascade]);
-							obj.second->Draw(materialName, true, meshIndex);
+							renderingObject->Draw(materialName, true, meshIndex);
+							rhi->UnsetPSO();
 						}
 					}
 				}
@@ -280,7 +293,7 @@ namespace EveryRay_Core {
 				//voxelize extra objects
 				{
 					if (cascade == 0 && mFoliageSystem)
-						mFoliageSystem->Draw(gameTime, &mShadowMapper, FoliageRenderingPass::TO_VOXELIZATION);
+						mFoliageSystem->Draw(gameTime, &mShadowMapper, FoliageRenderingPass::TO_VOXELIZATION, {});
 				}
 
 				//reset back
@@ -308,26 +321,34 @@ namespace EveryRay_Core {
 				mVoxelizationDebugConstantBuffer.Data.ViewProjection = XMMatrixTranspose(mCamera.ViewMatrix() * mCamera.ProjectionMatrix());
 				mVoxelizationDebugConstantBuffer.ApplyChanges(rhi);
 
-				rhi->SetRenderTargets({ mVCTVoxelizationDebugRT }, mDepthBuffer);
-				rhi->SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE::ER_DISABLED);
-				
 				rhi->ClearRenderTarget(mVCTVoxelizationDebugRT, clearColorBlack);
 				rhi->ClearDepthStencilTarget(mDepthBuffer, 1.0f, 0);
 
-				rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_POINTLIST);
-				rhi->SetEmptyInputLayout();
-
-				rhi->SetShader(mVCTVoxelizationDebugVS);
 				rhi->SetConstantBuffers(ER_VERTEX, { mVoxelizationDebugConstantBuffer.Buffer() });
+				rhi->SetConstantBuffers(ER_GEOMETRY, { mVoxelizationDebugConstantBuffer.Buffer() });
+				rhi->SetConstantBuffers(ER_PIXEL, { mVoxelizationDebugConstantBuffer.Buffer() });
+				
 				rhi->SetShaderResources(ER_VERTEX, { mVCTVoxelCascades3DRTs[cascade] });
 
-				rhi->SetShader(mVCTVoxelizationDebugGS);
-				rhi->SetConstantBuffers(ER_GEOMETRY, { mVoxelizationDebugConstantBuffer.Buffer() });
+				if (!rhi->IsPSOReady(mVoxelizationDebugPSOName))
+				{
+					rhi->InitializePSO(mVoxelizationDebugPSOName);
 
-				rhi->SetShader(mVCTVoxelizationDebugPS);
-				rhi->SetConstantBuffers(ER_PIXEL, { mVoxelizationDebugConstantBuffer.Buffer() });
+					rhi->SetShader(mVCTVoxelizationDebugVS);
+					rhi->SetShader(mVCTVoxelizationDebugGS);
+					rhi->SetShader(mVCTVoxelizationDebugPS);
 
+					rhi->SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE::ER_DISABLED);
+					rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_BACK_CULLING)
+					rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_POINTLIST);
+					rhi->SetEmptyInputLayout();
+
+					rhi->SetRenderTargetFormats({ mVCTVoxelizationDebugRT }, mDepthBuffer);
+					rhi->FinalizePSO(mVoxelizationDebugPSOName);
+				}
+				rhi->SetPSO(mVoxelizationDebugPSOName);
 				rhi->DrawInstanced(voxelCascadesSizes[cascade] * voxelCascadesSizes[cascade] * voxelCascadesSizes[cascade], 1, 0, 0);
+				rhi->UnsetPSO();
 
 				rhi->UnbindRenderTargets();
 				rhi->UnbindResourcesFromShader(ER_VERTEX);
@@ -410,23 +431,23 @@ namespace EveryRay_Core {
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 	}
 
-	void ER_Illumination::DrawDebugGizmos()
+	void ER_Illumination::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget)
 	{
 		//voxel GI
 		if (mDrawVCTVoxelZonesGizmos) 
 		{
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 			{
-				mDebugVoxelZonesGizmos[i]->Draw();
+				mDebugVoxelZonesGizmos[i]->Draw(aRenderTarget);
 			}
 		}
 
 		//light probe system
 		if (mProbesManager) {
 			if (mDrawDiffuseProbes)
-				mProbesManager->DrawDebugProbes(DIFFUSE_PROBE);
+				mProbesManager->DrawDebugProbes(aRenderTarget, DIFFUSE_PROBE);
 			if (mDrawSpecularProbes)
-				mProbesManager->DrawDebugProbes(SPECULAR_PROBE);
+				mProbesManager->DrawDebugProbes(aRenderTarget, SPECULAR_PROBE);
 		}
 	}
 

@@ -72,8 +72,6 @@ namespace EveryRay_Core
 		assert(neededSystems.mShadowMapper);
 		assert(neededSystems.mDirectionalLight);
 
-		ER_Material::PrepareForRendering(neededSystems, aObj, meshIndex);
-		
 		int shadowCascadeIndex = 1;
 		mConstantBuffer.Data.World = XMMatrixTranspose(aObj->GetTransformationMatrix());
 		mConstantBuffer.Data.ViewProjection = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());

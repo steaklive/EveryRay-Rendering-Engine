@@ -260,6 +260,7 @@ namespace EveryRay_Core {
 			}
 			rhi->SetPSO(mFinalResolvePassPSOName);
 			quad->Draw(rhi);
+			rhi->UnsetPSO();
 		}
 
 		rhi->UnbindResourcesFromShader(ER_PIXEL);
@@ -388,6 +389,7 @@ namespace EveryRay_Core {
 			}
 			rhi->SetPSO(mLinearFogPassPSOName);
 			quad->Draw(rhi);
+			rhi->UnsetPSO();
 			
 			rhi->UnbindRenderTargets();
 
@@ -422,6 +424,7 @@ namespace EveryRay_Core {
 					PrepareDrawingSSS(gameTime, mRenderTargetBeforeResolve, gbuffer, false);
 					quad->Draw(rhi);
 				}
+				rhi->UnsetPSO();
 
 				rhi->UnbindRenderTargets();
 				//[WARNING] Set from last post processing effect
@@ -444,7 +447,8 @@ namespace EveryRay_Core {
 			}
 			rhi->SetPSO(mSSRPassPSOName);
 			quad->Draw(rhi);
-			
+			rhi->UnsetPSO();
+
 			rhi->UnbindRenderTargets();
 
 			//[WARNING] Set from last post processing effect
@@ -481,6 +485,7 @@ namespace EveryRay_Core {
 			}
 			rhi->SetPSO(mTonemapPassPSOName);
 			quad->Draw(rhi);
+			rhi->UnsetPSO();
 
 			rhi->UnbindRenderTargets();
 
@@ -503,6 +508,7 @@ namespace EveryRay_Core {
 			}
 			rhi->SetPSO(mColorGradingPassPSOName);
 			quad->Draw(rhi);
+			rhi->UnsetPSO();
 
 			rhi->UnbindRenderTargets();
 
@@ -525,6 +531,7 @@ namespace EveryRay_Core {
 			}
 			rhi->SetPSO(mVignettePassPSOName);
 			quad->Draw(rhi);
+			rhi->UnsetPSO();
 
 			rhi->UnbindRenderTargets();
 
@@ -547,6 +554,7 @@ namespace EveryRay_Core {
 			}
 			rhi->SetPSO(mFXAAPassPSOName);
 			quad->Draw(rhi);
+			rhi->UnsetPSO();
 
 			rhi->UnbindRenderTargets();
 
