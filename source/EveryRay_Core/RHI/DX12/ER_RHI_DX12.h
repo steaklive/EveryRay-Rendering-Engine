@@ -90,6 +90,8 @@ namespace EveryRay_Core
 		virtual void SetMainRenderTargets() override;
 		virtual void SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr, ER_RHI_GPUTexture* aUAV = nullptr, int rtvArrayIndex = -1) override;
 		virtual void SetDepthTarget(ER_RHI_GPUTexture* aDepthTarget) override;
+		virtual void SetRenderTargetFormats(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr) override;
+		virtual void SetMainRenderTargetFormats() override;
 
 		virtual void SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE aDS, UINT stencilRef = 0xffffffff) override;
 		//virtual ER_RHI_DEPTH_STENCIL_STATE GetCurrentDepthStencilState() override; //TODO
@@ -154,8 +156,8 @@ namespace EveryRay_Core
 		IDXGISwapChain3* mSwapChain = nullptr;
 		ID3D12Device* mDevice = nullptr;
 
-		DXGI_FORMAT mMainBufferFormat;
-		DXGI_FORMAT mDepthBufferFormat;
+		DXGI_FORMAT mMainRTBufferFormat;
+		DXGI_FORMAT mMainDepthBufferFormat;
 		ID3D12Resource* mMainRenderTarget = nullptr;
 		ID3D12Resource* mMainDepthStencil = nullptr;
 
@@ -174,52 +176,10 @@ namespace EveryRay_Core
 		UINT64 mFenceValuesCompute;
 		Wrappers::Event mFenceEventCompute;
 
-
-		ID3D11SamplerState* BilinearWrapSS = nullptr;
-		ID3D11SamplerState* BilinearMirrorSS = nullptr;
-		ID3D11SamplerState* BilinearClampSS = nullptr;
-		ID3D11SamplerState* BilinearBorderSS = nullptr;
-		ID3D11SamplerState* TrilinearWrapSS = nullptr;
-		ID3D11SamplerState* TrilinearMirrorSS = nullptr;
-		ID3D11SamplerState* TrilinearClampSS = nullptr;
-		ID3D11SamplerState* TrilinearBorderSS = nullptr;
-		ID3D11SamplerState* AnisotropicWrapSS = nullptr;
-		ID3D11SamplerState* AnisotropicMirrorSS = nullptr;
-		ID3D11SamplerState* AnisotropicClampSS = nullptr;
-		ID3D11SamplerState* AnisotropicBorderSS = nullptr;
-		ID3D11SamplerState* ShadowSS = nullptr;
-		std::map<ER_RHI_SAMPLER_STATE, ID3D11SamplerState*> mSamplerStates;
-
-		ID3D11BlendState* mNoBlendState = nullptr;
-		ID3D11BlendState* mAlphaToCoverageState = nullptr;
-		std::map<ER_RHI_BLEND_STATE, ID3D11BlendState*> mBlendStates;
-
-		ID3D11RasterizerState* BackCullingRS = nullptr;
-		ID3D11RasterizerState* FrontCullingRS = nullptr;
-		ID3D11RasterizerState* NoCullingRS = nullptr;
-		ID3D11RasterizerState* WireframeRS = nullptr;
-		ID3D11RasterizerState* NoCullingNoDepthEnabledScissorRS = nullptr;
-		ID3D11RasterizerState* ShadowRS = nullptr;
-		std::map<ER_RHI_RASTERIZER_STATE, ID3D11RasterizerState*> mRasterizerStates;
-
-		ID3D11DepthStencilState* DisabledDS = nullptr;
-		ID3D11DepthStencilState* DepthOnlyReadComparisonNeverDS = nullptr;
-		ID3D11DepthStencilState* DepthOnlyReadComparisonLessDS = nullptr;
-		ID3D11DepthStencilState* DepthOnlyReadComparisonEqualDS = nullptr;
-		ID3D11DepthStencilState* DepthOnlyReadComparisonLessEqualDS = nullptr;
-		ID3D11DepthStencilState* DepthOnlyReadComparisonGreaterDS = nullptr;
-		ID3D11DepthStencilState* DepthOnlyReadComparisonNotEqualDS = nullptr;
-		ID3D11DepthStencilState* DepthOnlyReadComparisonGreaterEqualDS = nullptr;
-		ID3D11DepthStencilState* DepthOnlyReadComparisonAlwaysDS = nullptr;
-		ID3D11DepthStencilState* DepthOnlyWriteComparisonNeverDS = nullptr;
-		ID3D11DepthStencilState* DepthOnlyWriteComparisonLessDS = nullptr;
-		ID3D11DepthStencilState* DepthOnlyWriteComparisonEqualDS = nullptr;
-		ID3D11DepthStencilState* DepthOnlyWriteComparisonLessEqualDS = nullptr;
-		ID3D11DepthStencilState* DepthOnlyWriteComparisonGreaterDS = nullptr;
-		ID3D11DepthStencilState* DepthOnlyWriteComparisonNotEqualDS = nullptr;
-		ID3D11DepthStencilState* DepthOnlyWriteComparisonGreaterEqualDS = nullptr;
-		ID3D11DepthStencilState* DepthOnlyWriteComparisonAlwaysDS = nullptr;
-		std::map<ER_RHI_DEPTH_STENCIL_STATE, ID3D11DepthStencilState*> mDepthStates;
+		std::map<ER_RHI_SAMPLER_STATE, D3D12_SAMPLER_DESC> mSamplerStates;
+		std::map<ER_RHI_BLEND_STATE, D3D12_BLEND_DESC> mBlendStates;
+		std::map<ER_RHI_RASTERIZER_STATE, D3D12_RASTERIZER_DESC> mRasterizerStates;
+		std::map<ER_RHI_DEPTH_STENCIL_STATE, D3D12_DEPTH_STENCIL_DESC> mDepthStates;
 
 		std::map<std::string, ER_RHI_DX12_GraphicsPSO> mGraphicsPSOs;
 		std::map<std::string, ER_RHI_DX12_ComputePSO> mComputePSOs;

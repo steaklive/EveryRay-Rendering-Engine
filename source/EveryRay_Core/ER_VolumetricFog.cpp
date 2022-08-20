@@ -175,9 +175,9 @@ namespace EveryRay_Core {
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 	}
 
-	void ER_VolumetricFog::Composite(ER_RHI_GPUTexture* aInputColorTexture, ER_RHI_GPUTexture* aGbufferWorldPos)
+	void ER_VolumetricFog::Composite(ER_RHI_GPUTexture* aRT, ER_RHI_GPUTexture* aInputColorTexture, ER_RHI_GPUTexture* aGbufferWorldPos)
 	{
-		assert(aGbufferWorldPos && aInputColorTexture);
+		assert(aGbufferWorldPos && aInputColorTexture && aRT);
 
 		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mCore->GetServices().FindService(ER_QuadRenderer::TypeIdClass());
 		assert(quadRenderer);
@@ -191,7 +191,7 @@ namespace EveryRay_Core {
 		{
 			rhi->InitializePSO(mCompositePassPSOName);
 			rhi->SetShader(mCompositePS);
-			rhi->SetRenderTargetFormats();
+			rhi->SetRenderTargetFormats({ aRT });
 			quadRenderer->PrepareDraw(rhi);
 			rhi->FinalizePSO(mCompositePassPSOName);
 		}

@@ -14,7 +14,7 @@ namespace EveryRay_Core
 
 		void InitializeGeometry(const std::vector<XMFLOAT3>& aabb);
 		void Update(ER_AABB& aabb);
-		void Draw();
+		void Draw(ER_RHI_GPUTexture* aRenderTarget);
 		void SetColor(const XMFLOAT4& color);
 		void SetAABB(const std::vector<XMFLOAT3>& aabb);
 

@@ -53,7 +53,7 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12_GraphicsPSO::Finalize(ID3D12Device* device)
 	{
-		mPSODesc.pRootSignature = m_RootSignature->GetSignature();
+		mPSODesc.pRootSignature = mRootSignature->GetSignature();
 		assert(mPSODesc.pRootSignature != nullptr);
 
 		mPSODesc.InputLayout.pInputElementDescs = mInputLayouts;
@@ -87,7 +87,8 @@ namespace EveryRay_Core
 			mPSODesc.RTVFormats[i] = DXGI_FORMAT_UNKNOWN;
 		}
 		mPSODesc.NumRenderTargets = NumRTVs;
-		mPSODesc.DSVFormat = DSVFormat;
+		if (DSVFormat != DXGI_FORMAT_UNKNOWN)
+			mPSODesc.DSVFormat = DSVFormat;
 		mPSODesc.SampleDesc.Count = 1;
 		mPSODesc.SampleDesc.Quality = 0;
 	}
@@ -110,13 +111,13 @@ namespace EveryRay_Core
 	{
 		mName = aName;
 
-		ZeroMemory(&mPSODesc, sizeof(m_PSODesc));
+		ZeroMemory(&mPSODesc, sizeof(mPSODesc));
 		mPSODesc.NodeMask = 1;
 	}
 
 	void ER_RHI_DX12_ComputePSO::Finalize(ID3D12Device* device)
 	{
-		mPSODesc.pRootSignature = m_RootSignature->GetSignature();
+		mPSODesc.pRootSignature = mRootSignature->GetSignature();
 		assert(mPSODesc.pRootSignature != nullptr);
 		
 		HRESULT hr;

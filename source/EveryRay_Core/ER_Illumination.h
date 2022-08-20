@@ -174,15 +174,29 @@ namespace EveryRay_Core
 		std::string mVoxelizationDebugPSOName = "VCT GI - Voxelization Pass Debug PSO";
 
 		ER_RHI_GPUShader* mVCTMainCS = nullptr;
+		std::string mVCTMainPSOName = "VCT GI - Main Pass PSO";
+
 		ER_RHI_GPUShader* mUpsampleBlurCS = nullptr;
+		std::string mUpsampleBlurPSOName = "Upsample and Blur Pass PSO";
+
 		ER_RHI_GPUShader* mCompositeIlluminationCS = nullptr;
+		std::string mCompositeIlluminationPSOName = "Composite Illumination Pass PSO";
+
 		ER_RHI_GPUShader* mDeferredLightingCS = nullptr;
+		std::string mDeferredLightingPSOName = "Deferred Lighting Pass PSO";
+
 		ER_RHI_GPUShader* mForwardLightingVS = nullptr;
 		ER_RHI_GPUShader* mForwardLightingVS_Instancing = nullptr;
 		ER_RHI_GPUShader* mForwardLightingPS = nullptr;
+		std::string mForwardLightingPSOName = "Forward Lighting Pass PSO";
+		std::string mForwardLightingInstancingPSOName = "Forward Lighting (Instancing) Pass PSO";
+
 		ER_RHI_GPUShader* mForwardLightingDiffuseProbesPS = nullptr;
+		std::string mForwardLightingDiffuseProbesPSOName = "Forward Lighting Diffuse Probes Pass PSO";
+
 		ER_RHI_GPUShader* mForwardLightingSpecularProbesPS = nullptr;
-		
+		std::string mForwardLightingSpecularProbesPSOName = "Forward Lighting Specular Probes Pass PSO";
+
 		ER_RHI_InputLayout* mForwardLightingRenderingObjectInputLayout = nullptr;
 		ER_RHI_InputLayout* mForwardLightingRenderingObjectInputLayout_Instancing = nullptr;
 

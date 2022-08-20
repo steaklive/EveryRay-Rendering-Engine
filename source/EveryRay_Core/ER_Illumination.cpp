@@ -209,6 +209,9 @@ namespace EveryRay_Core {
 	//deferred rendering approach
 	void ER_Illumination::DrawLocalIllumination(ER_GBuffer* gbuffer, ER_Skybox* skybox)
 	{	
+		assert(gbuffer);
+		mGbuffer = gbuffer;
+
 		ER_RHI* rhi = GetCore()->GetRHI();
 		rhi->SetRenderTargets({ mLocalIlluminationRT }, gbuffer->GetDepth());
 		rhi->ClearRenderTarget(mLocalIlluminationRT, clearColorBlack);
@@ -323,26 +326,21 @@ namespace EveryRay_Core {
 
 				rhi->ClearRenderTarget(mVCTVoxelizationDebugRT, clearColorBlack);
 				rhi->ClearDepthStencilTarget(mDepthBuffer, 1.0f, 0);
-
 				rhi->SetConstantBuffers(ER_VERTEX, { mVoxelizationDebugConstantBuffer.Buffer() });
 				rhi->SetConstantBuffers(ER_GEOMETRY, { mVoxelizationDebugConstantBuffer.Buffer() });
 				rhi->SetConstantBuffers(ER_PIXEL, { mVoxelizationDebugConstantBuffer.Buffer() });
-				
 				rhi->SetShaderResources(ER_VERTEX, { mVCTVoxelCascades3DRTs[cascade] });
-
+				
 				if (!rhi->IsPSOReady(mVoxelizationDebugPSOName))
 				{
 					rhi->InitializePSO(mVoxelizationDebugPSOName);
-
 					rhi->SetShader(mVCTVoxelizationDebugVS);
 					rhi->SetShader(mVCTVoxelizationDebugGS);
 					rhi->SetShader(mVCTVoxelizationDebugPS);
-
 					rhi->SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE::ER_DISABLED);
 					rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_BACK_CULLING)
 					rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_POINTLIST);
 					rhi->SetEmptyInputLayout();
-
 					rhi->SetRenderTargetFormats({ mVCTVoxelizationDebugRT }, mDepthBuffer);
 					rhi->FinalizePSO(mVoxelizationDebugPSOName);
 				}
@@ -387,12 +385,22 @@ namespace EveryRay_Core {
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 				resources[4 + i] = mVCTVoxelCascades3DRTs[i];
 
-			rhi->SetShader(mVCTMainCS);
 			rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 			rhi->SetUnorderedAccessResources(ER_COMPUTE, { mVCTMainRT });
 			rhi->SetShaderResources(ER_COMPUTE, resources);
 			rhi->SetConstantBuffers(ER_COMPUTE, { mVoxelConeTracingMainConstantBuffer.Buffer() });
+			
+			if (!rhi->IsPSOReady(mVCTMainPSOName, true))
+			{
+				rhi->InitializePSO(mVCTMainPSOName, true);
+				rhi->SetShader(mVCTMainCS);
+				rhi->SetRenderTargetFormats({});
+				rhi->FinalizePSO(mVCTMainPSOName, true);
+			}
+			rhi->SetPSO(mVCTMainPSOName, true);
 			rhi->Dispatch(DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetHeight()), 8u), 1u);
+			rhi->UnsetPSO();
+			
 			rhi->UnbindResourcesFromShader(ER_COMPUTE);
 		}
 
@@ -401,12 +409,20 @@ namespace EveryRay_Core {
 			mUpsampleBlurConstantBuffer.Data.Upsample = true;
 			mUpsampleBlurConstantBuffer.ApplyChanges(rhi);
 
-			rhi->SetShader(mUpsampleBlurCS);
 			rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 			rhi->SetUnorderedAccessResources(ER_COMPUTE, { mVCTUpsampleAndBlurRT });
 			rhi->SetShaderResources(ER_COMPUTE, { mVCTMainRT });
 			rhi->SetConstantBuffers(ER_COMPUTE, { mUpsampleBlurConstantBuffer.Buffer() });
+			if (!rhi->IsPSOReady(mUpsampleBlurPSOName, true))
+			{
+				rhi->InitializePSO(mUpsampleBlurPSOName, true);
+				rhi->SetShader(mUpsampleBlurCS);
+				rhi->SetRenderTargetFormats({});
+				rhi->FinalizePSO(mUpsampleBlurPSOName, true);
+			}
+			rhi->SetPSO(mUpsampleBlurPSOName, true);
 			rhi->Dispatch(DivideByMultiple(static_cast<UINT>(mVCTUpsampleAndBlurRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mVCTUpsampleAndBlurRT->GetHeight()), 8u), 1u);
+			rhi->UnsetPSO();
 			rhi->UnbindResourcesFromShader(ER_COMPUTE);
 		}
 	}
@@ -421,13 +437,23 @@ namespace EveryRay_Core {
 
 		// mLocalIllumination might be bound as RTV before this pass
 		rhi->UnbindRenderTargets();
-
-		rhi->SetShader(mCompositeIlluminationCS);
+		
 		rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 		rhi->SetUnorderedAccessResources(ER_COMPUTE, { mFinalIlluminationRT });
 		rhi->SetShaderResources(ER_COMPUTE, { mShowVCTVoxelizationOnly ? mVCTVoxelizationDebugRT : mVCTUpsampleAndBlurRT, mLocalIlluminationRT });
 		rhi->SetConstantBuffers(ER_COMPUTE, { mCompositeTotalIlluminationConstantBuffer.Buffer() });
+		
+		if (!rhi->IsPSOReady(mCompositeIlluminationPSOName, true))
+		{
+			rhi->InitializePSO(mCompositeIlluminationPSOName, true);
+			rhi->SetShader(mCompositeIlluminationCS);
+			rhi->SetRenderTargetFormats({});
+			rhi->FinalizePSO(mCompositeIlluminationPSOName, true);
+		}
+		rhi->SetPSO(mCompositeIlluminationPSOName, true);
 		rhi->Dispatch(DivideByMultiple(static_cast<UINT>(mFinalIlluminationRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mFinalIlluminationRT->GetHeight()), 8u), 1u);
+		rhi->UnsetPSO();
+		
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 	}
 
@@ -578,7 +604,6 @@ namespace EveryRay_Core {
 			}
 
 			rhi->UnbindRenderTargets();
-			rhi->SetShader(mDeferredLightingCS);
 			rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
 			rhi->SetUnorderedAccessResources(ER_COMPUTE, { aRenderTarget });
 			if (mProbesManager->IsEnabled() && mProbesManager->AreGlobalProbesReady())
@@ -627,7 +652,17 @@ namespace EveryRay_Core {
 				rhi->SetShaderResources(ER_COMPUTE, { mProbesManager->GetIntegrationMap() }, 17);
 			}
 
+			if (!rhi->IsPSOReady(mDeferredLightingPSOName, true))
+			{
+				rhi->InitializePSO(mDeferredLightingPSOName, true);
+				rhi->SetShader(mDeferredLightingCS);
+				rhi->SetRenderTargetFormats({});
+				rhi->FinalizePSO(mDeferredLightingPSOName, true);
+			}
+			rhi->SetPSO(mDeferredLightingPSOName, true);
 			rhi->Dispatch(DivideByMultiple(static_cast<UINT>(aRenderTarget->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(aRenderTarget->GetHeight()), 8u), 1u);
+			rhi->UnsetPSO();
+
 			rhi->UnbindResourcesFromShader(ER_COMPUTE);
 		}
 	}
@@ -638,16 +673,18 @@ namespace EveryRay_Core {
 		rhi->SetRenderTargets({ aRenderTarget }, gbuffer->GetDepth());
 		for (auto& obj : mForwardPassObjects)
 			obj.second->Draw(ER_MaterialHelper::forwardLightingNonMaterialName);
+
+		rhi->UnsetPSO();
 	}
 
 	void ER_Illumination::PrepareForForwardLighting(ER_RenderingObject* aObj, int meshIndex)
 	{
+		assert(mGbuffer);
+
 		auto rhi = mCore->GetRHI();
 
 		if (aObj && aObj->IsForwardShading())
 		{
-			rhi->SetInputLayout(aObj->IsInstanced() ? mForwardLightingRenderingObjectInputLayout_Instancing : mForwardLightingRenderingObjectInputLayout);
-
 			for (size_t i = 0; i < NUM_SHADOW_CASCADES; i++)
 				mForwardLightingConstantBuffer.Data.ShadowMatrices[i] = XMMatrixTranspose(mShadowMapper.GetViewMatrix(i) * mShadowMapper.GetProjectionMatrix(i) * XMLoadFloat4x4(&ER_MatrixHelper::GetProjectionShadowMatrix()));
 			mForwardLightingConstantBuffer.Data.ViewProjection = XMMatrixTranspose(mCamera.ViewMatrix() * mCamera.ProjectionMatrix());
@@ -669,39 +706,36 @@ namespace EveryRay_Core {
 				mLightProbesConstantBuffer.Data.DistanceBetweenDiffuseProbes = mProbesManager->GetDistanceBetweenDiffuseProbes();
 				mLightProbesConstantBuffer.Data.DistanceBetweenSpecularProbes = mProbesManager->GetDistanceBetweenSpecularProbes();
 				mLightProbesConstantBuffer.ApplyChanges(rhi);
-			}
 
-			rhi->SetShader(aObj->IsInstanced() ? mForwardLightingVS_Instancing : mForwardLightingVS);
-			rhi->SetShader(mForwardLightingPS);
-
-			if (mProbesManager->IsEnabled() && mProbesManager->AreGlobalProbesReady())
-			{
 				rhi->SetConstantBuffers(ER_VERTEX, { mForwardLightingConstantBuffer.Buffer(), mLightProbesConstantBuffer.Buffer() });
 				rhi->SetConstantBuffers(ER_PIXEL, { mForwardLightingConstantBuffer.Buffer(), mLightProbesConstantBuffer.Buffer() });
 
-				std::vector<ER_RHI_GPUResource*> resources(18);
-				resources[0] = aObj->GetTextureData(meshIndex).AlbedoMap;
-				resources[1] = aObj->GetTextureData(meshIndex).NormalMap;
-				resources[2] = aObj->GetTextureData(meshIndex).MetallicMap;
-				resources[3] = aObj->GetTextureData(meshIndex).RoughnessMap;
-				resources[4] = aObj->GetTextureData(meshIndex).HeightMap;
+				if (mProbesManager->AreGlobalProbesReady())
+				{
+					std::vector<ER_RHI_GPUResource*> resources(18);
+					resources[0] = aObj->GetTextureData(meshIndex).AlbedoMap;
+					resources[1] = aObj->GetTextureData(meshIndex).NormalMap;
+					resources[2] = aObj->GetTextureData(meshIndex).MetallicMap;
+					resources[3] = aObj->GetTextureData(meshIndex).RoughnessMap;
+					resources[4] = aObj->GetTextureData(meshIndex).HeightMap;
 
-				for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
-					resources[5 + i] = mShadowMapper.GetShadowTexture(i);
+					for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
+						resources[5 + i] = mShadowMapper.GetShadowTexture(i);
 
-				resources[8] = mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture();
-				resources[9] = mProbesManager->GetDiffuseProbesCellsIndicesBuffer();
-				resources[10] = mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer();
-				resources[11] = mProbesManager->GetDiffuseProbesPositionsBuffer();
+					resources[8] = mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture();
+					resources[9] = mProbesManager->GetDiffuseProbesCellsIndicesBuffer();
+					resources[10] = mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer();
+					resources[11] = mProbesManager->GetDiffuseProbesPositionsBuffer();
 
-				resources[12] = mProbesManager->GetGlobalSpecularProbe()->GetCubemapTexture();
-				resources[13] = mProbesManager->GetCulledSpecularProbesTextureArray();
-				resources[14] = mProbesManager->GetSpecularProbesCellsIndicesBuffer();
-				resources[15] = mProbesManager->GetSpecularProbesTexArrayIndicesBuffer();
-				resources[16] = mProbesManager->GetSpecularProbesPositionsBuffer();
+					resources[12] = mProbesManager->GetGlobalSpecularProbe()->GetCubemapTexture();
+					resources[13] = mProbesManager->GetCulledSpecularProbesTextureArray();
+					resources[14] = mProbesManager->GetSpecularProbesCellsIndicesBuffer();
+					resources[15] = mProbesManager->GetSpecularProbesTexArrayIndicesBuffer();
+					resources[16] = mProbesManager->GetSpecularProbesPositionsBuffer();
 
-				resources[17] = mProbesManager->GetIntegrationMap();
-				rhi->SetShaderResources(ER_PIXEL, resources);
+					resources[17] = mProbesManager->GetIntegrationMap();
+					rhi->SetShaderResources(ER_PIXEL, resources);
+				}
 
 			}
 			else if (mProbesManager->AreGlobalProbesReady())
@@ -727,6 +761,19 @@ namespace EveryRay_Core {
 				rhi->SetShaderResources(ER_PIXEL, { mProbesManager->GetIntegrationMap() }, 17);
 			}
 			rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
+
+			std::string& psoName = aObj->IsInstanced() ? mForwardLightingInstancingPSOName ? mForwardLightingPSOName;
+			if (!rhi->IsPSOReady(psoName))
+			{
+				rhi->InitializePSO(psoName);
+				rhi->SetInputLayout(aObj->IsInstanced() ? mForwardLightingRenderingObjectInputLayout_Instancing : mForwardLightingRenderingObjectInputLayout);
+				rhi->SetShader(aObj->IsInstanced() ? mForwardLightingVS_Instancing : mForwardLightingVS);
+				rhi->SetShader(mForwardLightingPS);
+				rhi->SetRenderTargetFormats({ mLocalIlluminationRT }, mGbuffer->GetDepth());
+				rhi->FinalizePSO(psoName);
+			}
+			rhi->SetPSO(psoName);
+			// we unset PSO after all objects are rendered
 		}
 	}
 

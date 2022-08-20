@@ -45,7 +45,7 @@ namespace EveryRay_Core
 	
 		void Initialize();
 		void Draw();
-		void Composite(ER_RHI_GPUTexture* aInputColorTexture, ER_RHI_GPUTexture* aGbufferWorldPos);
+		void Composite(ER_RHI_GPUTexture* aRT, ER_RHI_GPUTexture* aInputColorTexture, ER_RHI_GPUTexture* aGbufferWorldPos);
 		void Update(const ER_CoreTime& gameTime);
 		void Config() { mShowDebug = !mShowDebug; }
 		bool IsEnabled() { return mEnabled; }

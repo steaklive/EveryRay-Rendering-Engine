@@ -7,24 +7,24 @@ namespace EveryRay_Core
 	class ER_RHI_DX12_PSO
 	{
 	public:
-		ER_RHI_DX12_PSO(const std::string& aName) : m_RootSignature(nullptr), mName(aName) {}
+		ER_RHI_DX12_PSO(const std::string& aName) : mRootSignature(nullptr), mName(aName) {}
 		~ER_RHI_DX12_PSO();
 
-		void SetRootSignature(const RootSignature& rootSignature)
+		void SetRootSignature(const ER_RHI_DX12_GPURootSignature& rootSignature)
 		{
-			m_RootSignature = &rootSignature;
+			mRootSignature = &rootSignature;
 		}
 
-		const RootSignature& GetRootSignature(void) const
+		const ER_RHI_DX12_GPURootSignature& GetRootSignature(void) const
 		{
-			assert(m_RootSignature != nullptr);
-			return *m_RootSignature;
+			assert(mRootSignature != nullptr);
+			return *mRootSignature;
 		}
 
 		ID3D12PipelineState* GetPipelineStateObject() const { return mPSO; }
 
 	protected:
-		const RootSignature* m_RootSignature;
+		const ER_RHI_DX12_GPURootSignature* mRootSignature;
 		ID3D12PipelineState* mPSO = nullptr;
 		std::string mName;
 	};
@@ -39,7 +39,7 @@ namespace EveryRay_Core
 		void SetDepthStencilState(const D3D12_DEPTH_STENCIL_DESC& DepthStencilDesc);
 		void SetSampleMask(UINT SampleMask);
 		void SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE TopologyType);
-		void SetRenderTargetFormats(UINT NumRTVs, const DXGI_FORMAT* RTVFormats, DXGI_FORMAT DSVFormat);
+		void SetRenderTargetFormats(UINT NumRTVs, const DXGI_FORMAT* RTVFormats, DXGI_FORMAT DSVFormat = DXGI_FORMAT_UNKNOWN);
 		void SetInputLayout(UINT NumElements, const D3D12_INPUT_ELEMENT_DESC* pInputElementDescs);
 		void SetPrimitiveRestart(D3D12_INDEX_BUFFER_STRIP_CUT_VALUE IBProps);
 

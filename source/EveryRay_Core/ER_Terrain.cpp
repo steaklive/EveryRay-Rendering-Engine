@@ -570,7 +570,6 @@ namespace EveryRay_Core
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
 
 		std::string& psoName = isShadowMappingPass ? mTerrainShadowPassPSOName : mTerrainShadowPassPSOName;
-
 		if (!rhi->IsPSOReady(psoName))
 		{
 			rhi->InitializePSO(psoName);
@@ -578,13 +577,16 @@ namespace EveryRay_Core
 			rhi->SetShader(mHS);
 			rhi->SetShader(isShadowMappingPass ? mDS_ShadowMap : mDS);
 			rhi->SetShader(isShadowMappingPass ? mPS_ShadowMap : mPS);
-			rhi->SetRenderTargetFormats({ aRenderTarget });
+			if (isShadowMappingPass)
+				rhi->SetRenderTargetFormats({}, worldShadowMapper->GetShadowTexture(shadowMapCascade));
+			else
+				rhi->SetRenderTargetFormats({ aRenderTarget });
 			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_CONTROL_POINT_PATCHLIST);
 			rhi->SetInputLayout(mInputLayout);
 			rhi->FinalizePSO(psoName);
 		}
 		rhi->SetPSO(psoName);
-		// TODO: bring back wireframe support (need a new PSO)
+		// TODO: bring back wireframe support (needs a new PSO)
 		//if (mIsWireframe)
 		//{
 		//	rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_WIREFRAME);

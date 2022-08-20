@@ -254,7 +254,7 @@ namespace EveryRay_Core {
 			{
 				rhi->InitializePSO(mFinalResolvePassPSOName);
 				rhi->SetShader(mFinalResolvePS);
-				rhi->SetRenderTargetFormats();
+				rhi->SetMainRenderTargetFormats();
 				quad->PrepareDraw(rhi);
 				rhi->FinalizePSO(mFinalResolvePassPSOName);
 			}
@@ -463,7 +463,7 @@ namespace EveryRay_Core {
 		if (aVolumetricFog && aVolumetricFog->IsEnabled())
 		{
 			rhi->SetRenderTargets({ mVolumetricFogRT });
-			aVolumetricFog->Composite(mRenderTargetBeforeResolve, gbuffer->GetPositions());
+			aVolumetricFog->Composite(mVolumetricFogRT, mRenderTargetBeforeResolve, gbuffer->GetPositions());
 			rhi->UnbindRenderTargets();
 
 			//[WARNING] Set from last post processing effect

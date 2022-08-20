@@ -290,9 +290,11 @@ namespace EveryRay_Core
 		virtual void SetMainRenderTargets() = 0;
 		virtual void SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr, ER_RHI_GPUTexture* aUAV = nullptr, int rtvArrayIndex = -1) = 0;
 		virtual void SetDepthTarget(ER_RHI_GPUTexture* aDepthTarget) = 0;
+		virtual void SetRenderTargetFormats(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr) = 0;
+		virtual void SetMainRenderTargetFormats() = 0;
 
 		virtual void SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE aDS, UINT stencilRef = 0xffffffff) = 0;
-		//virtual ER_RHI_DEPTH_STENCIL_STATE GetCurrentDepthStencilState() = 0;
+		virtual ER_RHI_DEPTH_STENCIL_STATE GetCurrentDepthStencilState() { return mCurrentDS; }
 
 		virtual void SetBlendState(ER_RHI_BLEND_STATE aBS, const float BlendFactor[4] = nullptr, UINT SampleMask = 0xffffffff) = 0;
 		virtual ER_RHI_BLEND_STATE GetCurrentBlendState() { return mCurrentBS; }
@@ -344,6 +346,7 @@ namespace EveryRay_Core
 
 		ER_RHI_RASTERIZER_STATE mCurrentRS;
 		ER_RHI_BLEND_STATE mCurrentBS;
+		ER_RHI_DEPTH_STENCIL_STATE mCurrentDS;
 
 		ER_RHI_Viewport mCurrentViewport;
 

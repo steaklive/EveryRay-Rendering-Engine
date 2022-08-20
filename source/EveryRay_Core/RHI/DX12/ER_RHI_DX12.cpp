@@ -25,47 +25,6 @@ namespace EveryRay_Core
 		ReleaseObject(mSwapChain);
 		ReleaseObject(mDepthStencilBuffer);
 
-		ReleaseObject(BilinearWrapSS);
-		ReleaseObject(BilinearMirrorSS);
-		ReleaseObject(BilinearClampSS);
-		ReleaseObject(BilinearBorderSS);
-		ReleaseObject(TrilinearWrapSS);
-		ReleaseObject(TrilinearMirrorSS);
-		ReleaseObject(TrilinearClampSS);
-		ReleaseObject(TrilinearBorderSS);
-		ReleaseObject(AnisotropicWrapSS);
-		ReleaseObject(AnisotropicMirrorSS);
-		ReleaseObject(AnisotropicClampSS);
-		ReleaseObject(AnisotropicBorderSS);
-		ReleaseObject(ShadowSS);
-
-		ReleaseObject(mNoBlendState);
-		ReleaseObject(mAlphaToCoverageState);
-
-		ReleaseObject(BackCullingRS);
-		ReleaseObject(FrontCullingRS);
-		ReleaseObject(NoCullingRS);
-		ReleaseObject(WireframeRS);
-		ReleaseObject(NoCullingNoDepthEnabledScissorRS);
-		ReleaseObject(ShadowRS);
-
-		ReleaseObject(DepthOnlyReadComparisonNeverDS);
-		ReleaseObject(DepthOnlyReadComparisonLessDS);
-		ReleaseObject(DepthOnlyReadComparisonEqualDS);
-		ReleaseObject(DepthOnlyReadComparisonLessEqualDS);
-		ReleaseObject(DepthOnlyReadComparisonGreaterDS);
-		ReleaseObject(DepthOnlyReadComparisonNotEqualDS);
-		ReleaseObject(DepthOnlyReadComparisonGreaterEqualDS);
-		ReleaseObject(DepthOnlyReadComparisonAlwaysDS);
-		ReleaseObject(DepthOnlyWriteComparisonNeverDS);
-		ReleaseObject(DepthOnlyWriteComparisonLessDS);
-		ReleaseObject(DepthOnlyWriteComparisonEqualDS);
-		ReleaseObject(DepthOnlyWriteComparisonLessEqualDS);
-		ReleaseObject(DepthOnlyWriteComparisonGreaterDS);
-		ReleaseObject(DepthOnlyWriteComparisonNotEqualDS);
-		ReleaseObject(DepthOnlyWriteComparisonGreaterEqualDS);
-		ReleaseObject(DepthOnlyWriteComparisonAlwaysDS);
-
 		if (mDirect3DDeviceContext)
 			mDirect3DDeviceContext->ClearState();
 
@@ -240,7 +199,7 @@ namespace EveryRay_Core
 		mMainViewport.MinDepth = 0.0f;
 		mMainViewport.MaxDepth = 1.0f;
 
-		D3D11_VIEWPORT viewport;
+		D3D12_VIEWPORT viewport;
 		viewport.TopLeftX = mMainViewport.TopLeftX;
 		viewport.TopLeftY = mMainViewport.TopLeftY;
 		viewport.Width = mMainViewport.Width;
@@ -248,8 +207,8 @@ namespace EveryRay_Core
 		viewport.MinDepth = 0.0f;
 		viewport.MaxDepth = 1.0f;
 
-		mDirect3DDeviceContext->OMSetRenderTargets(1, &mMainRenderTargetView, mMainDepthStencilView);
-		mDirect3DDeviceContext->RSSetViewports(1, &viewport);
+		mCommandListGraphics[0]->OMSetRenderTargets(1, &mMainRenderTargetView, mMainDepthStencilView);
+		mCommandListGraphics[0]->RSSetViewports(1, &viewport);
 
 		CreateSamplerStates();
 		CreateRasterizerStates();
@@ -504,12 +463,12 @@ namespace EveryRay_Core
 
 	bool ER_RHI_DX12::ProjectCubemapToSH(ER_RHI_GPUTexture* aTexture, UINT order, float* resultR, float* resultG, float* resultB)
 	{
-		assert(aTexture);
-
-		ER_RHI_DX11_GPUTexture* tex = static_cast<ER_RHI_DX11_GPUTexture*>(aTexture);
-		assert(tex);
-
-		return !(FAILED(DirectX::SHProjectCubeMap(mDirect3DDeviceContext, order, tex->GetTexture2D(), resultR, resultG, resultB)));
+		//assert(aTexture);
+		//
+		//ER_RHI_DX11_GPUTexture* tex = static_cast<ER_RHI_DX11_GPUTexture*>(aTexture);
+		//assert(tex);
+		//
+		//return !(FAILED(DirectX::SHProjectCubeMap(mDirect3DDeviceContext, order, tex->GetTexture2D(), resultR, resultG, resultB)));
 	}
 
 	void ER_RHI_DX12::SaveGPUTextureToFile(ER_RHI_GPUTexture* aTexture, const std::wstring& aPathName)
@@ -596,20 +555,48 @@ namespace EveryRay_Core
 		mDirect3DDeviceContext->OMSetRenderTargets(1, nullRTVs, dsv);
 	}
 
+	void ER_RHI_DX12::SetRenderTargetFormats(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget /*= nullptr*/)
+	{
+		if (mCurrentPSOState == ER_RHI_DX12_PSO_STATE::COMPUTE)
+			return;
+
+		assert(mCurrentPSOState == ER_RHI_DX12_PSO_STATE::GRAPHICS);
+
+		ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSOs.at(mCurrentGraphicsPSO);
+		int rtCount = aRenderTargets.size();
+		assert(rtCount <= 8);
+
+		DXGI_FORMAT formats[8] = { DXGI_FORMAT_UNKNOWN };
+		for (int i = 0; i < rtCount; i++)
+			formats[i] = aRenderTargets[i]->GetFormat();
+		pso.SetRenderTargetFormats(rtCount, rtCount > 0 ? formats : nullptr, aDepthTarget ? aDepthTarget->GetFormat() : DXGI_FORMAT_UNKNOWN);
+	}
+
+	void ER_RHI_DX12::SetMainRenderTargetFormats()
+	{
+		assert(mCurrentPSOState == ER_RHI_DX12_PSO_STATE::GRAPHICS);
+
+		DXGI_FORMAT formats[8] = { DXGI_FORMAT_UNKNOWN };
+		formats[0] = mMainRTBufferFormat;
+
+		ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSOs.at(mCurrentGraphicsPSO);
+		pso.SetRenderTargetFormats(1, formats, mMainDepthBufferFormat);
+	}
+
 	void ER_RHI_DX12::SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE aDS, UINT stencilRef)
 	{
 		if (mCurrentPSOState == ER_RHI_DX12_PSO_STATE::UNSET)
 			return;
 
-		if (aDS == ER_DISABLED)
-		{
-			mDirect3DDeviceContext->OMSetDepthStencilState(nullptr, 0xffffffff);
-			return;
-		}
+		assert(mCurrentPSOState == ER_RHI_DX12_PSO_STATE::GRAPHICS);
 
 		auto it = mDepthStates.find(aDS);
 		if (it != mDepthStates.end())
-			mDirect3DDeviceContext->OMSetDepthStencilState(it->second, stencilRef);
+		{
+			mCurrentDS = aDS;
+			ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSOs.at(mCurrentGraphicsPSO);
+			pso.SetDepthStencilState(it->second);
+		}
 		else
 			throw ER_CoreException("ER_RHI_DX11: DepthStencil state is not found.");
 	}
@@ -619,17 +606,14 @@ namespace EveryRay_Core
 		if (mCurrentPSOState == ER_RHI_DX12_PSO_STATE::UNSET)
 			return;
 
-		if (aBS == ER_RHI_BLEND_STATE::ER_NO_BLEND)
-		{
-			mDirect3DDeviceContext->OMSetBlendState(nullptr, NULL, 0xffffffff);
-			return;
-		}
+		assert(mCurrentPSOState == ER_RHI_DX12_PSO_STATE::GRAPHICS);
 
 		auto it = mBlendStates.find(aBS);
 		if (it != mBlendStates.end())
 		{
 			mCurrentBS = aBS;
-			mDirect3DDeviceContext->OMSetBlendState(it->second, BlendFactor, SampleMask);
+			ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSOs.at(mCurrentGraphicsPSO);
+			pso.SetBlendState(it->second);
 		}
 		else
 			throw ER_CoreException("ER_RHI_DX11: Blend state is not found.");
@@ -640,11 +624,14 @@ namespace EveryRay_Core
 		if (mCurrentPSOState == ER_RHI_DX12_PSO_STATE::UNSET)
 			return;
 
+		assert(mCurrentPSOState == ER_RHI_DX12_PSO_STATE::GRAPHICS);
+
 		auto it = mRasterizerStates.find(aRS);
 		if (it != mRasterizerStates.end())
 		{
 			mCurrentRS = aRS;
-			mDirect3DDeviceContext->RSSetState(it->second);
+			ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSOs.at(mCurrentGraphicsPSO);
+			pso.SetRasterizerState(it->second);
 		}
 		else
 			throw ER_CoreException("ER_RHI_DX11: Rasterizer state is not found.");
@@ -838,7 +825,7 @@ namespace EveryRay_Core
 	void ER_RHI_DX12::SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot /*= 0*/)
 	{
 		assert(aSamplers.size() > 0);
-		assert(aSamplers.size() <= DX11_MAX_BOUND_SAMPLERS);
+		assert(aSamplers.size() <= DX12_MAX_BOUND_SAMPLERS);
 
 		ID3D11SamplerState* SS[DX11_MAX_BOUND_SAMPLERS] = {};
 		UINT ssCount = static_cast<UINT>(aSamplers.size());
@@ -876,7 +863,7 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::SetInputLayout(ER_RHI_InputLayout* aIL)
 	{
-		assert(mIsCurrentPSOGraphics);
+		assert(mCurrentPSOState == ER_RHI_DX12_PSO_STATE::GRAPHICS);
 
 		ER_RHI_DX12_InputLayout* aDX12_IL = static_cast<ER_RHI_DX12_InputLayout*>(aIL);
 		assert(aDX12_IL);
@@ -887,7 +874,7 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::SetEmptyInputLayout()
 	{
-		mDirect3DDeviceContext->IASetInputLayout(nullptr);
+		//is it possible without PSO?
 	}
 
 	void ER_RHI_DX12::SetIndexBuffer(ER_RHI_GPUBuffer* aBuffer, UINT offset /*= 0*/)
@@ -1028,13 +1015,12 @@ namespace EveryRay_Core
 	void ER_RHI_DX12::UnsetPSO()
 	{
 		mCurrentPSOState = ER_RHI_DX12_PSO_STATE::UNSET;
-		//TODO maybe set null PSO?
+		//TODO maybe set null PSO? (not sure its needed/possible in DX12)
 	}
 
 	void ER_RHI_DX12::UnbindRenderTargets()
 	{
-		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
-		mCommandListGraphics[0]->OMSetRenderTargets(1, nullRTVs, nullptr);
+		mCommandListGraphics[0]->OMSetRenderTargets(0, nullptr, false, nullptr);
 	}
 
 	void ER_RHI_DX12::UpdateBuffer(ER_RHI_GPUBuffer* aBuffer, void* aData, int dataSize)

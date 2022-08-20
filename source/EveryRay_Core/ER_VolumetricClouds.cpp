@@ -152,11 +152,11 @@ namespace EveryRay_Core {
 		auto rhi = mCore->GetRHI();
 
 		rhi->SetRenderTargets({ mSkyRT });
-		mSkybox.Draw();
+		mSkybox.Draw(mSkyRT);
 		rhi->UnbindRenderTargets();
 
 		rhi->SetRenderTargets({ mSkyAndSunRT });
-		mSkybox.DrawSun(nullptr, mSkyRT, mIlluminationResultDepthTarget);
+		mSkybox.DrawSun(mSkyAndSunRT, nullptr, mSkyRT, mIlluminationResultDepthTarget);
 		rhi->UnbindRenderTargets();
 
 		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mCore->GetServices().FindService(ER_QuadRenderer::TypeIdClass());
@@ -164,12 +164,20 @@ namespace EveryRay_Core {
 
 		// main pass
 		{
-			rhi->SetShader(mMainCS);
 			rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_BILINEAR_WRAP });
 			rhi->SetUnorderedAccessResources(ER_COMPUTE, { mMainRT });
 			rhi->SetShaderResources(ER_COMPUTE, { mSkyAndSunRT,	mWeatherTextureSRV,	mCloudTextureSRV, mWorleyTextureSRV, mIlluminationResultDepthTarget });
 			rhi->SetConstantBuffers(ER_COMPUTE, { mFrameConstantBuffer.Buffer(), mCloudsConstantBuffer.Buffer() });
+			if (!rhi->IsPSOReady(mMainPassPSOName, true))
+			{
+				rhi->InitializePSO(mMainPassPSOName, true);
+				rhi->SetShader(mMainCS);
+				rhi->FinalizePSO(mMainPassPSOName, true);
+			}
+			rhi->SetPSO(mMainPassPSOName, true);
 			rhi->Dispatch(DivideByMultiple(static_cast<UINT>(mMainRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mMainRT->GetHeight()), 8u), 1u);
+			rhi->UnsetPSO();
+			
 			rhi->UnbindResourcesFromShader(ER_COMPUTE);
 		}
 
@@ -177,13 +185,21 @@ namespace EveryRay_Core {
 		{
 			mUpsampleBlurConstantBuffer.Data.Upsample = true;
 			mUpsampleBlurConstantBuffer.ApplyChanges(rhi);
-
-			rhi->SetShader(mUpsampleBlurCS);
 			rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 			rhi->SetUnorderedAccessResources(ER_COMPUTE, { mUpsampleAndBlurRT });
 			rhi->SetShaderResources(ER_COMPUTE, { mMainRT });
 			rhi->SetConstantBuffers(ER_COMPUTE, { mUpsampleBlurConstantBuffer.Buffer() });
+
+			if (!rhi->IsPSOReady(mUpsampleBlurPSOName, true))
+			{
+				rhi->InitializePSO(mUpsampleBlurPSOName, true);
+				rhi->SetShader(mUpsampleBlurCS);
+				rhi->FinalizePSO(mUpsampleBlurPSOName, true);
+			}
+			rhi->SetPSO(mUpsampleBlurPSOName, true);
 			rhi->Dispatch(DivideByMultiple(static_cast<UINT>(mUpsampleAndBlurRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mUpsampleAndBlurRT->GetHeight()), 8u), 1u);
+			rhi->UnsetPSO();
+			
 			rhi->UnbindResourcesFromShader(ER_COMPUTE);
 		}
 
@@ -204,7 +220,7 @@ namespace EveryRay_Core {
 		{
 			rhi->InitializePSO(mCompositePassPSOName);
 			rhi->SetShader(mCompositePS);
-			rhi->SetRenderTargetFormats();
+			rhi->SetRenderTargetFormats({ aRenderTarget });
 			quadRenderer->PrepareDraw(rhi);
 			rhi->FinalizePSO(mCompositePassPSOName);
 		}
