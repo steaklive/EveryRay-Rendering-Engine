@@ -99,96 +99,120 @@ namespace EveryRay_Core
 		else
 			mIsRaytracingTierAvailable = false;
 
-
-
-		DXGI_SWAP_CHAIN_DESC1 swapChainDesc;
-		ZeroMemory(&swapChainDesc, sizeof(swapChainDesc));
-		swapChainDesc.Width = width;
-		swapChainDesc.Height = height;
-		swapChainDesc.Format = DXGI_FORMAT_R10G10B10A2_UNORM;
-		swapChainDesc.SampleDesc.Count = 1;
-		swapChainDesc.SampleDesc.Quality = 0;
-		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapChainDesc.BufferCount = 1;
-		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-
-		IDXGIDevice* dxgiDevice = nullptr;
-		if (FAILED(hr = mDirect3DDevice->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void**>(&dxgiDevice))))
+		// Create graphics command queue data
 		{
-			throw ER_CoreException("ER_RHI_DX11: ID3D11Device::QueryInterface() failed", hr);
+			D3D12_COMMAND_QUEUE_DESC queueDesc = {};
+			queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+			queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+
+			if (FAILED(mDevice->CreateCommandQueue(&queueDesc, &mCommandQueueGraphics)))
+				throw ER_CoreException("ER_RHI_DX12: Could not create graphics command queue");
+
+			// Create descriptor heaps for render target views and depth stencil views.
+			//mDescriptorHeapManager = new DXRS::DescriptorHeapManager(mDevice.Get());
+
+			D3D12_DESCRIPTOR_HEAP_DESC rtvDescriptorHeapDesc = {};
+			rtvDescriptorHeapDesc.NumDescriptors = 1;
+			rtvDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+
+			if (FAILED(mDevice->CreateDescriptorHeap(&rtvDescriptorHeapDesc, &mRTVDescriptorHeap)))
+				throw ER_CoreException("ER_RHI_DX12: Could not create descriptor heap for main RTV");
+
+			mRTVDescriptorSize = mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
+			D3D12_DESCRIPTOR_HEAP_DESC dsvDescriptorHeapDesc = {};
+			dsvDescriptorHeapDesc.NumDescriptors = 1;
+			dsvDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+
+			if (FAILED(mDevice->CreateDescriptorHeap(&dsvDescriptorHeapDesc, &mDSVDescriptorHeap)))
+				throw ER_CoreException("ER_RHI_DX12: Could not create descriptor heap for main DSV");
+
+			// Create a command allocator for each back buffer that will be rendered to.
+			if (FAILED(mDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, &mCommandAllocatorsGraphics[0])))
+				throw ER_CoreException("ER_RHI_DX12: Could not create command allocator #0 (graphics)");
+			if (FAILED(mDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, &mCommandAllocatorsGraphics[1])))
+				throw ER_CoreException("ER_RHI_DX12: Could not create command allocator #1 (graphics)");
+
+			// Create a command list for recording graphics commands.
+			if (FAILED(mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mCommandAllocatorsGraphics[0], nullptr, &mCommandListGraphics[0])))
+				throw ER_CoreException("ER_RHI_DX12: Could not create command list #0 (graphics)");
+			if (FAILED(mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mCommandAllocatorsGraphics[1], nullptr, &mCommandListGraphics[1])))
+				throw ER_CoreException("ER_RHI_DX12: Could not create command list #1 (graphics)");
+			mCommandListGraphics[1]->Close();
 		}
 
-		IDXGIAdapter* dxgiAdapter = nullptr;
-		if (FAILED(hr = dxgiDevice->GetParent(__uuidof(IDXGIAdapter), reinterpret_cast<void**>(&dxgiAdapter))))
+		//TODO create compute queue data 
 		{
-			ReleaseObject(dxgiDevice);
-			throw ER_CoreException("ER_RHI_DX11: IDXGIDevice::GetParent() failed retrieving adapter.", hr);
+			//...
 		}
 
-		IDXGIFactory2* dxgiFactory = nullptr;
-		if (FAILED(hr = dxgiAdapter->GetParent(__uuidof(IDXGIFactory2), reinterpret_cast<void**>(&dxgiFactory))))
+		// Create swapchain, main rtv, main dsv
 		{
-			ReleaseObject(dxgiDevice);
-			ReleaseObject(dxgiAdapter);
-			throw ER_CoreException("ER_RHI_DX11: IDXGIAdapter::GetParent() failed retrieving factory.", hr);
-		}
-
-		DXGI_SWAP_CHAIN_FULLSCREEN_DESC fullScreenDesc;
-		ZeroMemory(&fullScreenDesc, sizeof(fullScreenDesc));
-		fullScreenDesc.RefreshRate.Numerator = DefaultFrameRate;
-		fullScreenDesc.RefreshRate.Denominator = 1;
-		fullScreenDesc.Windowed = !isFullscreen;
-
-		if (FAILED(hr = dxgiFactory->CreateSwapChainForHwnd(dxgiDevice, windowHandle, &swapChainDesc, &fullScreenDesc, nullptr, &mSwapChain)))
-		{
-			ReleaseObject(dxgiDevice);
-			ReleaseObject(dxgiAdapter);
-			ReleaseObject(dxgiFactory);
-			throw ER_CoreException("ER_RHI_DX11: IDXGIDevice::CreateSwapChainForHwnd() failed.", hr);
-		}
-
-		ReleaseObject(dxgiDevice);
-		ReleaseObject(dxgiAdapter);
-		ReleaseObject(dxgiFactory);
-
-		ID3D11Texture2D* backBuffer;
-		if (FAILED(hr = mSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer))))
-		{
-			throw ER_CoreException("ER_RHI_DX11: IDXGISwapChain::GetBuffer() failed.", hr);
-		}
-
-		backBuffer->GetDesc(&mBackBufferDesc);
-
-
-		if (FAILED(hr = mDirect3DDevice->CreateRenderTargetView(backBuffer, nullptr, &mMainRenderTargetView)))
-		{
-			ReleaseObject(backBuffer);
-			throw ER_CoreException("ER_RHI_DX11: Failed to create main RenderTargetView.", hr);
-		}
-
-		ReleaseObject(backBuffer);
-
-		{
-			D3D11_TEXTURE2D_DESC depthStencilDesc;
-			ZeroMemory(&depthStencilDesc, sizeof(depthStencilDesc));
-			depthStencilDesc.Width = width;
-			depthStencilDesc.Height = height;
-			depthStencilDesc.MipLevels = 1;
-			depthStencilDesc.ArraySize = 1;
-			depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-			depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-			depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
-			depthStencilDesc.SampleDesc.Count = 1;
-			depthStencilDesc.SampleDesc.Quality = 0;
-
-			if (FAILED(hr = mDirect3DDevice->CreateTexture2D(&depthStencilDesc, nullptr, &mDepthStencilBuffer)))
+			// swapchain
 			{
-				throw ER_CoreException("ER_RHI_DX11: Failed to create main DepthStencil Texture2D.", hr);
+				// Create a descriptor for the swap chain.
+				DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
+				swapChainDesc.Width = width;
+				swapChainDesc.Height = height;
+				swapChainDesc.Format = mMainRTBufferFormat;
+				swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+				swapChainDesc.BufferCount = 1;
+				swapChainDesc.SampleDesc.Count = 1;
+				swapChainDesc.SampleDesc.Quality = 0;
+				swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
+				swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+				swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+
+				DXGI_SWAP_CHAIN_FULLSCREEN_DESC fsSwapChainDesc = {};
+				fsSwapChainDesc.Windowed = TRUE;
+
+				// Create a swap chain for the window.
+				if (FAILED(mDXGIFactory->CreateSwapChainForHwnd(mCommandQueueGraphics, windowHandle, &swapChainDesc, &fsSwapChainDesc,	nullptr, &mSwapChain)))
+					throw ER_CoreException("ER_RHI_DX12: Could not create swapchain");
+
+				//ThrowIfFailed(mDXGIFactory->MakeWindowAssociation(mAppWindow, DXGI_MWA_NO_ALT_ENTER));
 			}
 
-			if (FAILED(hr = mDirect3DDevice->CreateDepthStencilView(mDepthStencilBuffer, nullptr, &mMainDepthStencilView)))
+			// main RTV
 			{
-				throw ER_CoreException("ER_RHI_DX11: Failed to create main DepthStencilView.", hr);
+				mSwapChain->GetBuffer(0, &mMainRenderTarget);
+				mMainRenderTarget->SetName(L"Main Render target");
+
+				D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+				rtvDesc.Format = mMainRTBufferFormat;
+				rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+
+				mMainRTVDescriptorHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), 0, mRTVDescriptorSize);
+				mDevice->CreateRenderTargetView(mMainRenderTarget, &rtvDesc, rtvDescriptor);
+
+				// Reset the index to the current back buffer.
+				//mBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
+			}
+
+			// main DSV
+			{
+				CD3DX12_HEAP_PROPERTIES depthHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
+
+				D3D12_RESOURCE_DESC depthStencilDesc = CD3DX12_RESOURCE_DESC::Tex2D(mMainDepthBufferFormat, width height, 1, 1);
+				depthStencilDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
+				D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
+				depthOptimizedClearValue.Format = mMainDepthBufferFormat;
+				depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
+				depthOptimizedClearValue.DepthStencil.Stencil = 0;
+
+				if (FAILED(mDevice->CreateCommittedResource(&depthHeapProperties, D3D12_HEAP_FLAG_NONE, &depthStencilDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &depthOptimizedClearValue, &mMainDepthStencilTarget)))
+					throw ER_CoreException("ER_RHI_DX12: Could not create comitted resource for main depth-stencil target");
+
+				mMainDepthStencilTarget->SetName(L"Main Depth-Stencil target");
+
+				mMainDSVDescriptorHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mDSVDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+
+				D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+				dsvDesc.Format = mMainDepthBufferFormat;
+				dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+
+				mDevice->CreateDepthStencilView(mMainDepthStencilTarget, &dsvDesc, mDSVDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 			}
 		}
 
@@ -206,9 +230,6 @@ namespace EveryRay_Core
 		viewport.Height = mMainViewport.Height;
 		viewport.MinDepth = 0.0f;
 		viewport.MaxDepth = 1.0f;
-
-		mCommandListGraphics[0]->OMSetRenderTargets(1, &mMainRenderTargetView, mMainDepthStencilView);
-		mCommandListGraphics[0]->RSSetViewports(1, &viewport);
 
 		CreateSamplerStates();
 		CreateRasterizerStates();

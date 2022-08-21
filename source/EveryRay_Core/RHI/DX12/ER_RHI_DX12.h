@@ -127,6 +127,8 @@ namespace EveryRay_Core
 
 		virtual void UpdateBuffer(ER_RHI_GPUBuffer* aBuffer, void* aData, int dataSize) override;
 		
+		virtual bool IsHardwareRaytracingSupported() override { return mIsRaytracingTierAvailable; }
+
 		virtual void InitImGui() override;
 		virtual void StartNewImGuiFrame() override;
 		virtual void RenderDrawDataImGui() override;
@@ -156,14 +158,19 @@ namespace EveryRay_Core
 		IDXGISwapChain3* mSwapChain = nullptr;
 		ID3D12Device* mDevice = nullptr;
 
-		DXGI_FORMAT mMainRTBufferFormat;
-		DXGI_FORMAT mMainDepthBufferFormat;
+		DXGI_FORMAT mMainRTBufferFormat = DXGI_FORMAT_R10G10B10A2_UNORM;
+		DXGI_FORMAT mMainDepthBufferFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 		ID3D12Resource* mMainRenderTarget = nullptr;
-		ID3D12Resource* mMainDepthStencil = nullptr;
+		ID3D12Resource* mMainDepthStencilTarget = nullptr;
+		ID3D12DescriptorHeap* mRTVDescriptorHeap = nullptr;
+		ID3D12DescriptorHeap* mDSVDescriptorHeap = nullptr;
+		UINT mRTVDescriptorSize;
+		CD3DX12_CPU_DESCRIPTOR_HANDLE mMainRTVDescriptorHandle;
+		CD3DX12_CPU_DESCRIPTOR_HANDLE mMainDSVDescriptorHandle;
 
 		ID3D12CommandQueue* mCommandQueueGraphics = nullptr;
 		ID3D12GraphicsCommandList* mCommandListGraphics[2] = { nullptr, nullptr };
-		ID3D12CommandAllocator* mCommandAllocatorsGraphics = nullptr;
+		ID3D12CommandAllocator* mCommandAllocatorsGraphics[2] = { nullptr, nullptr };
 		ID3D12CommandQueue* mCommandQueueCompute = nullptr;
 		ID3D12GraphicsCommandList* mCommandListCompute = nullptr;
 		ID3D12CommandAllocator* mCommandAllocatorsCompute = nullptr;

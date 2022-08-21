@@ -330,6 +330,8 @@ namespace EveryRay_Core
 
 		virtual void UpdateBuffer(ER_RHI_GPUBuffer* aBuffer, void* aData, int dataSize) = 0;
 
+		virtual bool IsHardwareRaytracingSupported() = 0;
+
 		virtual void InitImGui() = 0;
 		virtual void StartNewImGuiFrame() = 0;
 		virtual void RenderDrawDataImGui() = 0;
