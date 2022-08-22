@@ -297,6 +297,7 @@ namespace EveryRay_Runtime
 		auto startRenderTimer = std::chrono::high_resolution_clock::now();
 
 		mRHI->BeginGraphicsCommandList();
+		mRHI->SetGPUDescriptorHeap(ER_RHI_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
 
 		mRHI->ClearMainRenderTarget(colorBlack);
 		mRHI->ClearMainDepthStencilTarget(1.0f, 0);
@@ -311,6 +312,7 @@ namespace EveryRay_Runtime
 
 		// TODO transition main RT to ER_RESOURCE_STATE_PRESENT
 		mRHI->EndGraphicsCommandList();
+		mRHI->ExecuteCommandLists();
 		mRHI->PresentGraphics();
 
 		auto endRenderTimer = std::chrono::high_resolution_clock::now();

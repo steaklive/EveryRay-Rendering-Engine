@@ -12,6 +12,9 @@
 
 #include "imgui_impl_dx12.h"
 
+#define DX12_GRAPHICS_COMMAND_LISTS_COUNT 2
+#define DX12_COMPUTE_COMMAND_LISTS_COUNT 1
+
 namespace EveryRay_Core
 {
 	class ER_RHI_DX12_InputLayout : public ER_RHI_InputLayout
@@ -30,6 +33,7 @@ namespace EveryRay_Core
 
 	class ER_RHI_DX12_GraphicsPSO;
 	class ER_RHI_DX12_ComputePSO;
+	class ER_RHI_DX12_GPUDescriptorHeapManager;
 
 	class ER_RHI_DX12: public ER_RHI
 	{
@@ -78,6 +82,8 @@ namespace EveryRay_Core
 		virtual void Dispatch(UINT ThreadGroupCountX, UINT ThreadGroupCountY, UINT ThreadGroupCountZ) override;
 		//TODO DispatchIndirect
 
+		virtual void ExecuteCommandLists(int commandListIndex = 0, bool isCompute = false) override;
+		
 		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture) override;
 
 		virtual void PresentGraphics() override;
@@ -94,7 +100,6 @@ namespace EveryRay_Core
 		virtual void SetMainRenderTargetFormats() override;
 
 		virtual void SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE aDS, UINT stencilRef = 0xffffffff) override;
-		//virtual ER_RHI_DEPTH_STENCIL_STATE GetCurrentDepthStencilState() override; //TODO
 
 		virtual void SetBlendState(ER_RHI_BLEND_STATE aBS, const float BlendFactor[4] = nullptr, UINT SampleMask = 0xffffffff) override;
 		
@@ -115,6 +120,8 @@ namespace EveryRay_Core
 
 		virtual void SetTopologyType(ER_RHI_PRIMITIVE_TYPE aType) override;
 		virtual ER_RHI_PRIMITIVE_TYPE GetCurrentTopologyType() override;
+
+		virtual void SetGPUDescriptorHeap(ER_RHI_DESCRIPTOR_HEAP_TYPE aType, bool aReset) = 0;
 
 		virtual bool IsPSOReady(const std::string& aName, bool isCompute = false) override;
 		virtual void InitializePSO(const std::string& aName, bool isCompute = false) override;
@@ -140,11 +147,11 @@ namespace EveryRay_Core
 		DXGI_FORMAT GetFormat(ER_RHI_FORMAT aFormat);
 
 		ER_GRAPHICS_API GetAPI() { return mAPI; }
-	protected:
-		//virtual void ExecuteCommandLists() override;
 	private:
 		D3D12_PRIMITIVE_TOPOLOGY GetTopologyType(ER_RHI_PRIMITIVE_TYPE aType);
 		ER_RHI_PRIMITIVE_TYPE GetTopologyType(D3D11_PRIMITIVE_TOPOLOGY aType);
+
+		D3D12_DESCRIPTOR_HEAP_TYPE GetHeapType(ER_RHI_DESCRIPTOR_HEAP_TYPE aType);
 
 		void CreateSamplerStates();
 		void CreateBlendStates();
@@ -169,8 +176,8 @@ namespace EveryRay_Core
 		CD3DX12_CPU_DESCRIPTOR_HANDLE mMainDSVDescriptorHandle;
 
 		ID3D12CommandQueue* mCommandQueueGraphics = nullptr;
-		ID3D12GraphicsCommandList* mCommandListGraphics[2] = { nullptr, nullptr };
-		ID3D12CommandAllocator* mCommandAllocatorsGraphics[2] = { nullptr, nullptr };
+		ID3D12GraphicsCommandList* mCommandListGraphics[DX12_GRAPHICS_COMMAND_LISTS_COUNT] = { nullptr, nullptr };
+		ID3D12CommandAllocator* mCommandAllocatorsGraphics[DX12_GRAPHICS_COMMAND_LISTS_COUNT] = { nullptr, nullptr };
 		ID3D12CommandQueue* mCommandQueueCompute = nullptr;
 		ID3D12GraphicsCommandList* mCommandListCompute = nullptr;
 		ID3D12CommandAllocator* mCommandAllocatorsCompute = nullptr;
@@ -193,6 +200,8 @@ namespace EveryRay_Core
 		std::string mCurrentGraphicsPSO;
 		std::string mCurrentComputePSO;
 		ER_RHI_DX12_PSO_STATE mCurrentPSOState = ER_RHI_DX12_PSO_STATE::UNSET;
+
+		ER_RHI_DX12_GPUDescriptorHeapManager* mDescriptorHeapManager = nullptr;
 
 		ER_RHI_Viewport mMainViewport;
 

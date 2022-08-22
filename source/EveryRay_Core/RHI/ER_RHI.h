@@ -183,6 +183,14 @@ namespace EveryRay_Core
 		ER_RESOURCE_MISC_BUFFER_STRUCTURED = 0x40L,
 	};
 
+	enum ER_RHI_DESCRIPTOR_HEAP_TYPE
+	{
+		ER_RHI_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV = 0,
+		ER_RHI_DESCRIPTOR_HEAP_TYPE_SAMPLER = (ER_RHI_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV + 1),
+		ER_RHI_DESCRIPTOR_HEAP_TYPE_RTV = (ER_RHI_DESCRIPTOR_HEAP_TYPE_SAMPLER + 1),
+		ER_RHI_DESCRIPTOR_HEAP_TYPE_DSV = (ER_RHI_DESCRIPTOR_HEAP_TYPE_RTV + 1)
+	};
+
 	struct ER_RHI_INPUT_ELEMENT_DESC
 	{
 		LPCSTR SemanticName;
@@ -280,6 +288,8 @@ namespace EveryRay_Core
 
 		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture) = 0; // not every API supports that!
 
+		virtual void ExecuteCommandLists(int commandListIndex = 0, bool isCompute = false) = 0;
+
 		virtual void PresentGraphics() = 0;
 		//virtual void PresentCompute() = 0;
 
@@ -318,6 +328,8 @@ namespace EveryRay_Core
 
 		virtual void SetTopologyType(ER_RHI_PRIMITIVE_TYPE aType) = 0;
 		virtual ER_RHI_PRIMITIVE_TYPE GetCurrentTopologyType() = 0;
+
+		virtual void SetGPUDescriptorHeap(ER_RHI_DESCRIPTOR_HEAP_TYPE aType, bool aReset) = 0;
 
 		virtual bool IsPSOReady(const std::string& aName, bool isCompute = false) = 0;
 		virtual void InitializePSO(const std::string& aName, bool isCompute = false) = 0;

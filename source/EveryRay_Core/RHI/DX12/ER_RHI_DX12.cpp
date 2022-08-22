@@ -3,6 +3,7 @@
 #include "ER_RHI_DX12_GPUTexture.h"
 #include "ER_RHI_DX12_GPUShader.h"
 #include "ER_RHI_DX12_GPUPipelineStateObject.h"
+#include "ER_RHI_DX12_GPUDescriptorHeapManager.h"
 #include "..\..\ER_CoreException.h"
 #include "..\..\ER_Utility.h"
 
@@ -20,16 +21,30 @@ namespace EveryRay_Core
 
 	ER_RHI_DX12::~ER_RHI_DX12()
 	{
-		ReleaseObject(mMainRenderTargetView);
-		ReleaseObject(mMainDepthStencilView);
+		ReleaseObject(mDXGIFactory);
 		ReleaseObject(mSwapChain);
-		ReleaseObject(mDepthStencilBuffer);
+		ReleaseObject(mDevice);
 
-		if (mDirect3DDeviceContext)
-			mDirect3DDeviceContext->ClearState();
+		ReleaseObject(mMainRenderTarget);
+		ReleaseObject(mMainDepthStencilTarget);
+		ReleaseObject(mRTVDescriptorHeap);
+		ReleaseObject(mDSVDescriptorHeap);
 
-		ReleaseObject(mDirect3DDeviceContext);
-		ReleaseObject(mDirect3DDevice);
+		ReleaseObject(mCommandQueueGraphics);
+		for (int i = 0;i < DX12_GRAPHICS_COMMAND_LISTS_COUNT; i++)
+		{
+			ReleaseObject(mCommandListGraphics[i]);
+			ReleaseObject(mCommandAllocatorsGraphics[i]);
+		}
+
+		ReleaseObject(mCommandQueueCompute);
+		ReleaseObject(mCommandListCompute);
+		ReleaseObject(mCommandAllocatorsCompute);
+
+		ReleaseObject(mFenceGraphics);
+		ReleaseObject(mFenceCompute);
+
+		DeleteObject(mDescriptorHeapManager);
 	}
 
 	bool ER_RHI_DX12::Initialize(HWND windowHandle, UINT width, UINT height, bool isFullscreen)
@@ -236,6 +251,8 @@ namespace EveryRay_Core
 		CreateDepthStencilStates();
 		CreateBlendStates();
 
+		mDescriptorHeapManager = new ER_RHI_DX12_GPUDescriptorHeapManager(mDevice);
+
 		return true;
 	}
 
@@ -259,32 +276,31 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::ClearMainRenderTarget(float colors[4])
 	{
-		mCommandListGraphics[0]->ClearRenderTargetView(mMainRenderTargetView, colors);
+		mCommandListGraphics[0]->ClearRenderTargetView(mMainRTVDescriptorHandle, colors, 0, nullptr);
 	}
 
 	void ER_RHI_DX12::ClearMainDepthStencilTarget(float depth, UINT stencil /*= 0*/)
 	{
-		mCommandListGraphics[0]->ClearDepthStencilView(mMainDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+		mCommandListGraphics[0]->ClearDepthStencilView(mMainDSVDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, depth, stencil, 0, nullptr);
 	}
 
 	void ER_RHI_DX12::ClearRenderTarget(ER_RHI_GPUTexture* aRenderTarget, float colors[4], int rtvArrayIndex)
 	{
 		assert(aRenderTarget);
 
-		ID3D11RenderTargetView* rtv;
+		ER_RHI_DX12_DescriptorHandle* rtvHandle;
 		if (rtvArrayIndex > 0)
-			rtv = static_cast<ID3D11RenderTargetView*>(aRenderTarget->GetRTV(rtvArrayIndex));
+			rtvHandle = static_cast<ER_RHI_DX12_DescriptorHandle*>(aRenderTarget->GetRTV(rtvArrayIndex));
 		else
-			rtv = static_cast<ID3D11RenderTargetView*>(aRenderTarget->GetRTV());
-		mCommandListGraphics[0]->ClearRenderTargetView(rtv, colors);
+			rtvHandle = static_cast<ER_RHI_DX12_DescriptorHandle*>(aRenderTarget->GetRTV());
+		mCommandListGraphics[0]->ClearRenderTargetView(rtvHandle->GetCPUHandle(), colors, 0, nullptr);
 	}
 
 	void ER_RHI_DX12::ClearDepthStencilTarget(ER_RHI_GPUTexture* aDepthTarget, float depth, UINT stencil /*= 0*/)
 	{
 		assert(aDepthTarget);
-		ID3D11DepthStencilView* pDepthStencilView = static_cast<ID3D11DepthStencilView*>(aDepthTarget->GetDSV());
-		assert(pDepthStencilView);
-		mCommandListGraphics[0]->ClearDepthStencilView(pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, depth, stencil);
+		ER_RHI_DX12_DescriptorHandle* dsvHandle = static_cast<ER_RHI_DX12_DescriptorHandle*>(aDepthTarget->GetDSV());
+		mCommandListGraphics[0]->ClearDepthStencilView(dsvHandle->GetCPUHandle(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, depth, stencil);
 	}
 
 	void ER_RHI_DX12::ClearUAV(ER_RHI_GPUResource* aRenderTarget, float colors[4])
@@ -447,6 +463,15 @@ namespace EveryRay_Core
 		mCommandListGraphics[0]->Dispatch(ThreadGroupCountX, ThreadGroupCountY, ThreadGroupCountZ);
 	}
 
+	void ER_RHI_DX12::ExecuteCommandLists(int commandListIndex /*= 0*/, bool isCompute /*= false*/)
+	{
+		if (!isCompute)
+		{
+			ID3D12CommandList* ppCommandLists[] = { mCommandListGraphics[commandListIndex] };
+			mCommandQueueGraphics->ExecuteCommandLists(1, ppCommandLists);
+		}
+	}
+
 	void ER_RHI_DX12::GenerateMips(ER_RHI_GPUTexture* aTexture)
 	{
 		//TODO
@@ -454,9 +479,6 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::PresentGraphics()
 	{
-		ID3D12CommandList* ppCommandLists[] = { mCommandListGraphics[0] };
-		mCommandQueueGraphics->ExecuteCommandLists(1, ppCommandLists);
-
 		HRESULT hr = mSwapChain->Present(1, 0);
 
 		if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
@@ -516,7 +538,7 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::SetMainRenderTargets()
 	{
-		mDirect3DDeviceContext->OMSetRenderTargets(1, &mMainRenderTargetView, NULL);
+		mCommandListGraphics[0]->OMSetRenderTargets(1, &mMainRTVDescriptorHandle, false, &mMainDSVDescriptorHandle);
 	}
 
 	void ER_RHI_DX12::SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget /*= nullptr*/, ER_RHI_GPUTexture* aUAV /*= nullptr*/, int rtvArrayIndex)
@@ -567,13 +589,11 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::SetDepthTarget(ER_RHI_GPUTexture* aDepthTarget)
 	{
-		ID3D11RenderTargetView* nullRTVs[1] = { NULL };
-
 		assert(aDepthTarget);
-		ID3D11DepthStencilView* dsv = static_cast<ID3D11DepthStencilView*>(aDepthTarget->GetDSV());
-		assert(dsv);
+		ER_RHI_DX12_DescriptorHandle* dsvHandle = static_cast<ER_RHI_DX12_DescriptorHandle*>(aDepthTarget->GetDSV());
+		assert(dsvHandle);
 
-		mDirect3DDeviceContext->OMSetRenderTargets(1, nullRTVs, dsv);
+		mCommandListGraphics[0]->OMSetRenderTargets(1, nullptr, FALSE, dsvHandle->GetCPUHandle());
 	}
 
 	void ER_RHI_DX12::SetRenderTargetFormats(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget /*= nullptr*/)
@@ -947,6 +967,18 @@ namespace EveryRay_Core
 		//TODO
 	}
 
+	void ER_RHI_DX12::SetGPUDescriptorHeap(ER_RHI_DESCRIPTOR_HEAP_TYPE aType, bool aReset)
+	{
+		assert(mDescriptorHeapManager);
+
+		ER_RHI_DX12_GPUDescriptorHeap* gpuDescriptorHeap = mDescriptorHeapManager->GetGPUHeap(GetHeapType(aType));
+		if (aReset)
+			gpuDescriptorHeap->Reset();
+
+		ID3D12DescriptorHeap* ppHeaps[] = { gpuDescriptorHeap->GetHeap() };
+		mCommandAllocatorsGraphics[0]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+	}
+
 	bool ER_RHI_DX12::IsPSOReady(const std::string& aName, bool isCompute)
 	{
 		if (!isCompute)
@@ -1205,6 +1237,26 @@ namespace EveryRay_Core
 		{
 			assert(0);
 			return ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		}
+		}
+	}
+
+	D3D12_DESCRIPTOR_HEAP_TYPE ER_RHI_DX12::GetHeapType(ER_RHI_DESCRIPTOR_HEAP_TYPE aType)
+	{
+		switch (aType)
+		{
+		case ER_RHI_DESCRIPTOR_HEAP_TYPE::ER_RHI_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV:
+			return D3D12_DESCRIPTOR_HEAP_TYPE::D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+		case ER_RHI_DESCRIPTOR_HEAP_TYPE::ER_RHI_DESCRIPTOR_HEAP_TYPE_SAMPLER:
+			return D3D12_DESCRIPTOR_HEAP_TYPE::D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+		case ER_RHI_DESCRIPTOR_HEAP_TYPE::ER_RHI_DESCRIPTOR_HEAP_TYPE_RTV:
+			return D3D12_DESCRIPTOR_HEAP_TYPE::D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+		case ER_RHI_DESCRIPTOR_HEAP_TYPE::ER_RHI_DESCRIPTOR_HEAP_TYPE_DSV:
+			return D3D12_DESCRIPTOR_HEAP_TYPE::D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+		default:
+		{
+			assert(0);
+			return D3D12_DESCRIPTOR_HEAP_TYPE::D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 		}
 		}
 	}
