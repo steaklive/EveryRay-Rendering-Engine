@@ -13,6 +13,10 @@
 #define DX12_MAX_BOUND_CONSTANT_BUFFERS 8 
 #define DX12_MAX_BOUND_SAMPLERS 8 
 
+#define DX12_ROOT_PARAMETER_INDEX_CBV 0 
+#define DX12_ROOT_PARAMETER_INDEX_SRV 1 
+#define DX12_ROOT_PARAMETER_INDEX_UAV 2 
+
 namespace EveryRay_Core
 {
 	ER_RHI_DX12::ER_RHI_DX12()
@@ -31,16 +35,17 @@ namespace EveryRay_Core
 		ReleaseObject(mDSVDescriptorHeap);
 
 		ReleaseObject(mCommandQueueGraphics);
-		for (int i = 0;i < DX12_GRAPHICS_COMMAND_LISTS_COUNT; i++)
+		for (int i = 0;i < ER_RHI_MAX_GRAPHICS_COMMAND_LISTS; i++)
 		{
 			ReleaseObject(mCommandListGraphics[i]);
 			ReleaseObject(mCommandAllocatorsGraphics[i]);
 		}
-
 		ReleaseObject(mCommandQueueCompute);
-		ReleaseObject(mCommandListCompute);
-		ReleaseObject(mCommandAllocatorsCompute);
-
+		for (int i = 0; i < ER_RHI_MAX_COMPUTE_COMMAND_LISTS; i++)
+		{
+			ReleaseObject(mCommandListCompute[i]);
+			ReleaseObject(mCommandAllocatorsCompute[i]);
+		}
 		ReleaseObject(mFenceGraphics);
 		ReleaseObject(mFenceCompute);
 
@@ -142,18 +147,21 @@ namespace EveryRay_Core
 			if (FAILED(mDevice->CreateDescriptorHeap(&dsvDescriptorHeapDesc, &mDSVDescriptorHeap)))
 				throw ER_CoreException("ER_RHI_DX12: Could not create descriptor heap for main DSV");
 
-			// Create a command allocator for each back buffer that will be rendered to.
-			if (FAILED(mDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, &mCommandAllocatorsGraphics[0])))
-				throw ER_CoreException("ER_RHI_DX12: Could not create command allocator #0 (graphics)");
-			if (FAILED(mDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, &mCommandAllocatorsGraphics[1])))
-				throw ER_CoreException("ER_RHI_DX12: Could not create command allocator #1 (graphics)");
-
-			// Create a command list for recording graphics commands.
-			if (FAILED(mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mCommandAllocatorsGraphics[0], nullptr, &mCommandListGraphics[0])))
-				throw ER_CoreException("ER_RHI_DX12: Could not create command list #0 (graphics)");
-			if (FAILED(mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mCommandAllocatorsGraphics[1], nullptr, &mCommandListGraphics[1])))
-				throw ER_CoreException("ER_RHI_DX12: Could not create command list #1 (graphics)");
-			mCommandListGraphics[1]->Close();
+			for (int i = 0; i < ER_RHI_MAX_GRAPHICS_COMMAND_LISTS; i++)
+			{
+				// Create a command allocator for each back buffer that will be rendered to.
+				if (FAILED(mDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, &mCommandAllocatorsGraphics[i])))
+				{
+					std::string message = "ER_RHI_DX12: Could not create graphics command allocator " + std::to_string(i);
+					throw ER_CoreException(message.c_str());
+				}
+				// Create a command list for recording graphics commands.
+				if (FAILED(mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mCommandAllocatorsGraphics[i], nullptr, &mCommandListGraphics[i])))
+				{
+					std::string message = "ER_RHI_DX12: Could not create graphics command list " + std::to_string(i);
+					throw ER_CoreException(message.c_str());
+				}
+			}
 		}
 
 		//TODO create compute queue data 
@@ -198,7 +206,7 @@ namespace EveryRay_Core
 				rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 
 				mMainRTVDescriptorHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), 0, mRTVDescriptorSize);
-				mDevice->CreateRenderTargetView(mMainRenderTarget, &rtvDesc, rtvDescriptor);
+				mDevice->CreateRenderTargetView(mMainRenderTarget, &rtvDesc, mMainRTVDescriptorHandle);
 
 				// Reset the index to the current back buffer.
 				//mBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
@@ -288,27 +296,29 @@ namespace EveryRay_Core
 	{
 		assert(aRenderTarget);
 
-		ER_RHI_DX12_DescriptorHandle* rtvHandle;
+		ER_RHI_DX12_GPUTexture* rtvDX12;
 		if (rtvArrayIndex > 0)
-			rtvHandle = static_cast<ER_RHI_DX12_DescriptorHandle*>(aRenderTarget->GetRTV(rtvArrayIndex));
+			rtvDX12 = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTarget->GetRTV(rtvArrayIndex));
 		else
-			rtvHandle = static_cast<ER_RHI_DX12_DescriptorHandle*>(aRenderTarget->GetRTV());
-		mCommandListGraphics[0]->ClearRenderTargetView(rtvHandle->GetCPUHandle(), colors, 0, nullptr);
+			rtvDX12 = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTarget->GetRTV());
+		assert(rtvDX12);
+		mCommandListGraphics[0]->ClearRenderTargetView(rtvDX12->GetCPUHandle(), colors, 0, nullptr);
 	}
 
 	void ER_RHI_DX12::ClearDepthStencilTarget(ER_RHI_GPUTexture* aDepthTarget, float depth, UINT stencil /*= 0*/)
 	{
 		assert(aDepthTarget);
-		ER_RHI_DX12_DescriptorHandle* dsvHandle = static_cast<ER_RHI_DX12_DescriptorHandle*>(aDepthTarget->GetDSV());
-		mCommandListGraphics[0]->ClearDepthStencilView(dsvHandle->GetCPUHandle(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, depth, stencil);
+		ER_RHI_DX12_GPUTexture* dtDX12 = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTarget);
+		assert(dtDX12);
+		mCommandListGraphics[0]->ClearDepthStencilView(dtDX12->GetCPUHandle(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, depth, stencil, 0, nullptr);
 	}
 
 	void ER_RHI_DX12::ClearUAV(ER_RHI_GPUResource* aRenderTarget, float colors[4])
 	{
 		assert(aRenderTarget);
-		ID3D11UnorderedAccessView* pUnorderedAccessView = static_cast<ID3D11UnorderedAccessView*>(aRenderTarget->GetUAV());
-		assert(pUnorderedAccessView);
-		mCommandListGraphics[0]->ClearUnorderedAccessViewFloat(pUnorderedAccessView, colors);
+		ER_RHI_DX12_GPUTexture* uavDX12 = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTarget);
+		assert(uavDX12);
+		mCommandListGraphics[0]->ClearUnorderedAccessViewFloat(uavDX12->GetGPUHandle(), uavDX12->GetCPUHandle(), uavDX12->GetResource(), colors);
 	}
 
 	void ER_RHI_DX12::CreateInputLayout(ER_RHI_InputLayout* aOutInputLayout, ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount, const void* shaderBytecodeWithInputSignature, UINT byteCodeLength)
@@ -380,13 +390,13 @@ namespace EveryRay_Core
 		assert(aDestBuffer);
 		assert(aSrcBuffer);
 
-		ID3D12Resource* dstResource = static_cast<ID3D12Resource*>(aDestBuffer->GetBuffer());
-		ID3D12Resource* srcResource = static_cast<ID3D12Resource*>(aSrcBuffer->GetBuffer());
+		ER_RHI_DX12_GPUBuffer* dstResource = static_cast<ER_RHI_DX12_GPUBuffer*>(aDestBuffer);
+		ER_RHI_DX12_GPUBuffer* srcResource = static_cast<ER_RHI_DX12_GPUBuffer*>(aSrcBuffer);
 		
 		assert(dstResource);
 		assert(srcResource);
 
-		mCommandListGraphics[0]->CopyResource(dstResource, srcResource);
+		mCommandListGraphics[0]->CopyResource(dstResource->GetResource(), srcResource->GetResource());
 	}
 
 	void ER_RHI_DX12::BeginBufferRead(ER_RHI_GPUBuffer* aBuffer, void** output)
@@ -394,7 +404,7 @@ namespace EveryRay_Core
 		assert(aBuffer);
 		assert(!mIsContextReadingBuffer);
 
-		ER_RHI_DX11_GPUBuffer* buffer = static_cast<ER_RHI_DX11_GPUBuffer*>(aBuffer);
+		ER_RHI_DX12_GPUBuffer* buffer = static_cast<ER_RHI_DX12_GPUBuffer*>(aBuffer);
 		assert(buffer);
 
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -405,7 +415,7 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::EndBufferRead(ER_RHI_GPUBuffer* aBuffer)
 	{
-		ER_RHI_DX11_GPUBuffer* buffer = static_cast<ER_RHI_DX11_GPUBuffer*>(aBuffer);
+		ER_RHI_DX12_GPUBuffer* buffer = static_cast<ER_RHI_DX12_GPUBuffer*>(aBuffer);
 		assert(buffer);
 
 		buffer->Unmap(this);
@@ -417,15 +427,24 @@ namespace EveryRay_Core
 		assert(aDestBuffer);
 		assert(aSrcBuffer);
 
-		ER_RHI_DX11_GPUTexture* dstbuffer = static_cast<ER_RHI_DX11_GPUTexture*>(aDestBuffer);
+		ER_RHI_DX12_GPUTexture* dstbuffer = static_cast<ER_RHI_DX12_GPUTexture*>(aDestBuffer);
 		assert(dstbuffer);
-		ER_RHI_DX11_GPUTexture* srcbuffer = static_cast<ER_RHI_DX11_GPUTexture*>(aSrcBuffer);
+		ER_RHI_DX12_GPUTexture* srcbuffer = static_cast<ER_RHI_DX12_GPUTexture*>(aSrcBuffer);
 		assert(srcbuffer);
 
+		D3D12_TEXTURE_COPY_LOCATION dstLocation;
+		dstLocation.pResource = dstBuffer->GetResource();
+		dstLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+		dstLocation.SubresourceIndex = DstSubresource;
+
+		D3D12_TEXTURE_COPY_LOCATION srcocation;
+		srcLocation.pResource = srcBuffer->GetResource();
+		srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+		srcLocation.SubresourceIndex = SrcSubresource;
+
 		if (dstbuffer->GetTexture2D() && srcbuffer->GetTexture2D())
-			mDirect3DDeviceContext->CopySubresourceRegion(dstbuffer->GetTexture2D(), DstSubresource, DstX, DstY, DstZ, srcbuffer->GetTexture2D(), SrcSubresource, NULL);
-		else if (dstbuffer->GetTexture3D() && srcbuffer->GetTexture3D())
-			mDirect3DDeviceContext->CopySubresourceRegion(dstbuffer->GetTexture3D(), DstSubresource, DstX, DstY, DstZ, srcbuffer->GetTexture3D(), SrcSubresource, NULL);
+			mCommandListGraphics[0]->CopyTextureRegion(&dstLocation, DstX, DstY, DstZ, &srcocation, NULL);
+		//else if (dstbuffer->GetTexture3D() && srcbuffer->GetTexture3D())
 		else
 			throw ER_CoreException("ER_RHI_DX12:: One of the resources is NULL during CopyGPUTextureSubresourceRegion()");
 	}
@@ -549,41 +568,43 @@ namespace EveryRay_Core
 				assert(aRenderTargets.size() == 1);
 
 			assert(aRenderTargets.size() > 0);
-			assert(aRenderTargets.size() <= DX11_MAX_BOUND_RENDER_TARGETS_VIEWS);
+			assert(aRenderTargets.size() <= DX12_MAX_BOUND_RENDER_TARGETS_VIEWS);
 
-			ID3D11RenderTargetView* RTVs[DX11_MAX_BOUND_RENDER_TARGETS_VIEWS] = {};
+			D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[DX12_MAX_BOUND_RENDER_TARGETS_VIEWS] = {};
 			UINT rtCount = static_cast<UINT>(aRenderTargets.size());
 			for (UINT i = 0; i < rtCount; i++)
 			{
 				assert(aRenderTargets[i]);
 				if (rtvArrayIndex > 0)
-					RTVs[i] = static_cast<ID3D11RenderTargetView*>(aRenderTargets[i]->GetRTV(rtvArrayIndex));
+					rtvHandles[i] = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTargets[i])->GetRTVDescriptorHandle(rtvArrayIndex)->GetCPUHandle();
 				else
-					RTVs[i] = static_cast<ID3D11RenderTargetView*>(aRenderTargets[i]->GetRTV());
-				assert(RTVs[i]);
+					rtvHandles[i] = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTargets[i])->GetRTVDescriptorHandle()->GetCPUHandle();
 			}
 			if (aDepthTarget)
 			{
-				ID3D11DepthStencilView* DSV = static_cast<ID3D11DepthStencilView*>(aDepthTarget->GetDSV());
-				mDirect3DDeviceContext->OMSetRenderTargets(rtCount, RTVs, DSV);
+				D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = static_cast<ER_RHI_DX12_GPUTexture*>(aDepthTarget)->GetDSVDescriptorHandle()->GetCPUHandle();
+				mCommandListGraphics[0]->OMSetRenderTargets(rtCount, rtvHandles, FALSE, &dsvHandle);
 			}
 			else
-				mDirect3DDeviceContext->OMSetRenderTargets(rtCount, RTVs, NULL);
+				mCommandListGraphics[0]->OMSetRenderTargets(rtCount, rtvHandles, FALSE, NULL);
 
 		}
 		else
 		{
-			ID3D11RenderTargetView* nullRTVs[1] = { NULL };
-			ID3D11UnorderedAccessView* UAVs[1] = { static_cast<ID3D11UnorderedAccessView*>(aUAV->GetUAV()) };
-			assert(UAVs[0]);
-			if (aDepthTarget)
-			{
-				ID3D11DepthStencilView* dsv = static_cast<ID3D11DepthStencilView*>(aDepthTarget->GetDSV());
-				assert(dsv);
-				mDirect3DDeviceContext->OMSetRenderTargetsAndUnorderedAccessViews(0, nullRTVs, dsv, 0, 1, UAVs, NULL);
-			}
-			else
-				mDirect3DDeviceContext->OMSetRenderTargetsAndUnorderedAccessViews(0, nullRTVs, NULL, 0, 1, UAVs, NULL);
+			assert(0);
+			//TODO: OMSetRenderTargetsAndUnorderedAccessViews() is not available on DX12
+
+			//ID3D11RenderTargetView* nullRTVs[1] = { NULL };
+			//ID3D11UnorderedAccessView* UAVs[1] = { static_cast<ID3D11UnorderedAccessView*>(aUAV->GetUAV()) };
+			//assert(UAVs[0]);
+			//if (aDepthTarget)
+			//{
+			//	ID3D11DepthStencilView* dsv = static_cast<ID3D11DepthStencilView*>(aDepthTarget->GetDSV());
+			//	assert(dsv);
+			//	mCommandListGraphics[0]->OMSetRenderTargetsAndUnorderedAccessViews(0, nullRTVs, dsv, 0, 1, UAVs, NULL);
+			//}
+			//else
+			//	mCommandListGraphics[0]->OMSetRenderTargetsAndUnorderedAccessViews(0, nullRTVs, NULL, 0, 1, UAVs, NULL);
 		}
 	}
 
@@ -593,7 +614,7 @@ namespace EveryRay_Core
 		ER_RHI_DX12_DescriptorHandle* dsvHandle = static_cast<ER_RHI_DX12_DescriptorHandle*>(aDepthTarget->GetDSV());
 		assert(dsvHandle);
 
-		mCommandListGraphics[0]->OMSetRenderTargets(1, nullptr, FALSE, dsvHandle->GetCPUHandle());
+		mCommandListGraphics[0]->OMSetRenderTargets(1, nullptr, FALSE, dsvHandle->GetDSVDescriptorHandle()->GetCPUHandle());
 	}
 
 	void ER_RHI_DX12::SetRenderTargetFormats(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget /*= nullptr*/)
@@ -743,73 +764,40 @@ namespace EveryRay_Core
 	void ER_RHI_DX12::SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot /*= 0*/)
 	{
 		assert(aUAVs.size() > 0);
-		assert(aUAVs.size() <= DX11_MAX_BOUND_UNORDERED_ACCESS_VIEWS);
-
-		ID3D11UnorderedAccessView* UAVs[DX11_MAX_BOUND_UNORDERED_ACCESS_VIEWS] = {};
+		assert(aUAVs.size() <= DX12_MAX_BOUND_UNORDERED_ACCESS_VIEWS);
+		assert(mDescriptorHeapManager);
 		UINT uavCount = static_cast<UINT>(aUAVs.size());
-		for (UINT i = 0; i < uavCount; i++)
+
+		ER_RHI_DX12_GPUDescriptorHeap* gpuDescriptorHeap = mDescriptorHeapManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		ER_RHI_DX12_DescriptorHandle& uavHandle = gpuDescriptorHeap->GetHandleBlock(uavCount);
+		for (UINT i = 0; i < uavHandle; i++)
 		{
 			assert(aUAVs[i]);
-			UAVs[i] = static_cast<ID3D11UnorderedAccessView*>(aUAVs[i]->GetUAV());
-			assert(UAVs[i]);
+			if (aUAVs[i]->IsBuffer())
+				gpuDescriptorHeap->AddToHandle(mDevice, uavHandle, static_cast<ER_RHI_DX12_GPUBuffer*>(aUAVs[i])->GetUAVDescriptorHandle());
+			else
+				gpuDescriptorHeap->AddToHandle(mDevice, uavHandle, static_cast<ER_RHI_DX12_GPUTexture*>(aUAVs[i])->GetUAVDescriptorHandle());
 		}
 
-		switch (aShaderType)
-		{
-		case ER_RHI_SHADER_TYPE::ER_VERTEX:
-			throw ER_CoreException("ER_RHI_DX11: Binding UAV to this shader stage is not possible."); //TODO possible with 11_3 i think?
-			break;
-		case ER_RHI_SHADER_TYPE::ER_GEOMETRY:
-			throw ER_CoreException("ER_RHI_DX11: Binding UAV to this shader stage is not possible.");
-			break;
-		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_HULL:
-		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_DOMAIN:
-			throw ER_CoreException("ER_RHI_DX11: Binding UAV to this shader stage is not possible.");
-			break;
-		case ER_RHI_SHADER_TYPE::ER_PIXEL:
-			throw ER_CoreException("ER_RHI_DX11: Binding UAV to this shader stage is not possible.");
-			break;
-		case ER_RHI_SHADER_TYPE::ER_COMPUTE:
-			mDirect3DDeviceContext->CSSetUnorderedAccessViews(startSlot, uavCount, UAVs, NULL);
-			break;
-		}
+		mCommandListGraphics[0]->SetGraphicsRootDescriptorTable(DX12_ROOT_PARAMETER_INDEX_UAV, uavHandle.GetGPUHandle());
 	}
 
 	void ER_RHI_DX12::SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot /*= 0*/)
 	{
 		assert(aCBs.size() > 0);
-		assert(aCBs.size() <= DX11_MAX_BOUND_CONSTANT_BUFFERS);
-
-		ID3D11Buffer* CBs[DX11_MAX_BOUND_CONSTANT_BUFFERS] = {};
+		assert(aCBs.size() <= DX12_MAX_BOUND_CONSTANT_BUFFERS);
+		assert(mDescriptorHeapManager);
 		UINT cbsCount = static_cast<UINT>(aCBs.size());
+
+		ER_RHI_DX12_GPUDescriptorHeap* gpuDescriptorHeap = mDescriptorHeapManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		ER_RHI_DX12_DescriptorHandle& cbvHandle = gpuDescriptorHeap->GetHandleBlock(cbsCount);
 		for (UINT i = 0; i < cbsCount; i++)
 		{
 			assert(aCBs[i]);
-			CBs[i] = static_cast<ID3D11Buffer*>(aCBs[i]->GetBuffer());
-			assert(CBs[i]);
+			gpuDescriptorHeap->AddToHandle(mDevice, cbvHandle, static_cast<ER_RHI_DX12_GPUBuffer*>(aCBs[i])->GetCBVDescriptorHandle());
 		}
 
-		switch (aShaderType)
-		{
-		case ER_RHI_SHADER_TYPE::ER_VERTEX:
-			mDirect3DDeviceContext->VSSetConstantBuffers(startSlot, cbsCount, CBs);
-			break;
-		case ER_RHI_SHADER_TYPE::ER_GEOMETRY:
-			mDirect3DDeviceContext->GSSetConstantBuffers(startSlot, cbsCount, CBs);
-			break;
-		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_HULL:
-			mDirect3DDeviceContext->HSSetConstantBuffers(startSlot, cbsCount, CBs);
-			break;
-		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_DOMAIN:
-			mDirect3DDeviceContext->DSSetConstantBuffers(startSlot, cbsCount, CBs);
-			break;
-		case ER_RHI_SHADER_TYPE::ER_PIXEL:
-			mDirect3DDeviceContext->PSSetConstantBuffers(startSlot, cbsCount, CBs);
-			break;
-		case ER_RHI_SHADER_TYPE::ER_COMPUTE:
-			mDirect3DDeviceContext->CSSetConstantBuffers(startSlot, cbsCount, CBs);
-			break;
-		}
+		mCommandListGraphics[0]->SetGraphicsRootDescriptorTable(DX12_ROOT_PARAMETER_INDEX_CBV, cbvHandle.GetGPUHandle());
 	}
 
 	void ER_RHI_DX12::SetShader(ER_RHI_GPUShader* aShader)
@@ -865,41 +853,28 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot /*= 0*/)
 	{
+		TODO
+
 		assert(aSamplers.size() > 0);
 		assert(aSamplers.size() <= DX12_MAX_BOUND_SAMPLERS);
-
-		ID3D11SamplerState* SS[DX11_MAX_BOUND_SAMPLERS] = {};
+		assert(mDescriptorHeapManager);
 		UINT ssCount = static_cast<UINT>(aSamplers.size());
+
+		ER_RHI_DX12_GPUDescriptorHeap* gpuDescriptorHeap = mDescriptorHeapManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		ER_RHI_DX12_DescriptorHandle& ssHandle = gpuDescriptorHeap->GetHandleBlock(ssCount);
+
 		for (UINT i = 0; i < ssCount; i++)
 		{
 			auto it = mSamplerStates.find(aSamplers[i]);
 			if (it == mSamplerStates.end())
-				throw ER_CoreException("ER_RHI_DX11: Could not find a sampler state that you want to bind to the shader. It is probably not implemented in your graphics API");				
+				throw ER_CoreException("ER_RHI_DX12: Could not find a sampler state that you want to bind to the shader. It is probably not implemented in your graphics API");				
 			else
-				SS[i] = it->second;
+			{
+				gpuDescriptorHeap->AddToHandle(mDevice, cbvHandle, static_cast<ER_RHI_DX12_GPUBuffer*>(aCBs[i])->GetCBVDescriptorHandle());
+			}
 		}
 
-		switch (aShaderType)
-		{
-		case ER_RHI_SHADER_TYPE::ER_VERTEX:
-			mDirect3DDeviceContext->VSSetSamplers(startSlot, ssCount, SS);
-			break;
-		case ER_RHI_SHADER_TYPE::ER_GEOMETRY:
-			mDirect3DDeviceContext->GSSetSamplers(startSlot, ssCount, SS);
-			break;
-		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_HULL:
-			mDirect3DDeviceContext->HSSetSamplers(startSlot, ssCount, SS);
-			break;
-		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_DOMAIN:
-			mDirect3DDeviceContext->DSSetSamplers(startSlot, ssCount, SS);
-			break;
-		case ER_RHI_SHADER_TYPE::ER_PIXEL:
-			mDirect3DDeviceContext->PSSetSamplers(startSlot, ssCount, SS);
-			break;
-		case ER_RHI_SHADER_TYPE::ER_COMPUTE:
-			mDirect3DDeviceContext->CSSetSamplers(startSlot, ssCount, SS);
-			break;
-		}
+		mCommandListGraphics[0]->SetGraphicsRootDescriptorTable(DX12_ROOT_PARAMETER_INDEX_, cbvHandle.GetGPUHandle());
 	}
 
 	void ER_RHI_DX12::SetInputLayout(ER_RHI_InputLayout* aIL)
@@ -915,15 +890,21 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::SetEmptyInputLayout()
 	{
-		//is it possible without PSO?
+		//is it possible on DX12 without PSO?
 	}
 
 	void ER_RHI_DX12::SetIndexBuffer(ER_RHI_GPUBuffer* aBuffer, UINT offset /*= 0*/)
 	{
 		assert(aBuffer);
-		ID3D11Buffer* buf = static_cast<ID3D11Buffer*>(aBuffer->GetBuffer());
+		ER_RHI_DX12_GPUBuffer* buf = static_cast<ER_RHI_DX12_GPUBuffer*>(aBuffer);
 		assert(buf);
-		mDirect3DDeviceContext->IASetIndexBuffer(buf, GetFormat(aBuffer->GetFormatRhi()), offset);
+
+		D3D12_INDEX_BUFFER_VIEW view;
+		view.BufferLocation = buf->GetResource()->GetGPUVirtualAddress();
+		view.Format = GetFormat(aBuffer->GetFormatRhi());
+		view.SizeInBytes = aBuffer->GetSize();
+
+		mCommandListGraphics[0]->IASetIndexBuffer(buf, view);
 	}
 
 	void ER_RHI_DX12::SetVertexBuffers(const std::vector<ER_RHI_GPUBuffer*>& aVertexBuffers)
@@ -934,9 +915,15 @@ namespace EveryRay_Core
 			UINT stride = aVertexBuffers[0]->GetStride();
 			UINT offset = 0;
 			assert(aVertexBuffers[0]);
-			ID3D11Buffer* bufferPointers[1] = { static_cast<ID3D11Buffer*>(aVertexBuffers[0]->GetBuffer()) };
-			assert(bufferPointers[0]);
-			mDirect3DDeviceContext->IASetVertexBuffers(0, 1, bufferPointers, &stride, &offset);
+
+			ER_RHI_DX12_GPUBuffer* buffer = static_cast<ER_RHI_DX12_GPUBuffer*>(aVertexBuffers[0]);
+			assert(buffer);
+
+			D3D12_VERTEX_BUFFER_VIEW view;
+			view.BufferLocation = buffer->GetResource()->GetGPUVirtualAddress();
+			view.StrideInBytes = aVertexBuffers[0]->GetStride();
+			view.SizeInBytes = aVertexBuffers[0]->GetSize();
+			mCommandListGraphics[0]->IASetVertexBuffers(0, 1, &view);
 		}
 		else //+ instance buffer
 		{
@@ -945,10 +932,19 @@ namespace EveryRay_Core
 
 			assert(aVertexBuffers[0]);
 			assert(aVertexBuffers[1]);
-			ID3D11Buffer* bufferPointers[2] = { static_cast<ID3D11Buffer*>(aVertexBuffers[0]->GetBuffer()), static_cast<ID3D11Buffer*>(aVertexBuffers[1]->GetBuffer()) };
-			assert(bufferPointers[0]);
-			assert(bufferPointers[1]);
-			mDirect3DDeviceContext->IASetVertexBuffers(0, 2, bufferPointers, strides, offsets);
+			ER_RHI_DX12_GPUBuffer* vertexBuffer = static_cast<ER_RHI_DX12_GPUBuffer*>(aVertexBuffers[0]);
+			ER_RHI_DX12_GPUBuffer* instanceBuffer = static_cast<ER_RHI_DX12_GPUBuffer*>(aVertexBuffers[1]);
+			assert(vertexBuffer);
+			assert(instanceBuffer);
+
+			D3D12_VERTEX_BUFFER_VIEW views[2] = {};
+			views[0].BufferLocation = vertexBuffer->GetResource()->GetGPUVirtualAddress();
+			views[0].StrideInBytes = aVertexBuffers[0]->GetStride();
+			views[0].SizeInBytes = aVertexBuffers[0]->GetSize();
+			views[1].BufferLocation = instanceBuffer->GetResource()->GetGPUVirtualAddress();
+			views[1].StrideInBytes = aVertexBuffers[1]->GetStride();
+			views[1].SizeInBytes = aVertexBuffers[1]->GetSize();
+			mCommandListGraphics[0]->IASetVertexBuffers(0, 2, views);
 		}
 	}
 
@@ -1080,7 +1076,7 @@ namespace EveryRay_Core
 	{
 		assert(aBuffer->GetSize() >= dataSize);
 
-		ER_RHI_DX11_GPUBuffer* buffer = static_cast<ER_RHI_DX11_GPUBuffer*>(aBuffer);
+		ER_RHI_DX12_GPUBuffer* buffer = static_cast<ER_RHI_DX12_GPUBuffer*>(aBuffer);
 		assert(buffer);
 
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -1223,15 +1219,15 @@ namespace EveryRay_Core
 	{
 		switch (aType)
 		{
-		case D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_POINTLIST:
+		case D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_POINTLIST:
 			return ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_POINTLIST;
-		case D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_LINELIST:
+		case D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_LINELIST:
 			return ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST;
-		case D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST:
+		case D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST:
 			return ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-		case D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP:
+		case D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP:
 			return ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
-		case D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST:
+		case D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST:
 			return ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_CONTROL_POINT_PATCHLIST;
 		default:
 		{
@@ -1266,10 +1262,8 @@ namespace EveryRay_Core
 		float white[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 		float black[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-		auto direct3DDevice = mDirect3DDevice;
-
 		// trilinear samplers
-		D3D11_SAMPLER_DESC samplerStateDesc;
+		D3D12_SAMPLER_DESC samplerStateDesc;
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
 		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -1279,30 +1273,21 @@ namespace EveryRay_Core
 		samplerStateDesc.MaxAnisotropy = 1;
 		samplerStateDesc.MinLOD = -1000.0f;
 		samplerStateDesc.MaxLOD = 1000.0f;
-		HRESULT hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &TrilinearWrapSS);
-		if (FAILED(hr))
-			throw ER_CoreException("ER_RHI_DX11: Could not create TrilinearWrapSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, TrilinearWrapSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, samplerStateDesc));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
 		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR;
 		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR;
 		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR;
-		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &TrilinearMirrorSS);
-		if (FAILED(hr))
-			throw ER_CoreException("ER_RHI_DX11: Could not create TrilinearMirrorSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_TRILINEAR_MIRROR, TrilinearMirrorSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_TRILINEAR_MIRROR, samplerStateDesc));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
 		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
 		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
 		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &TrilinearClampSS);
-		if (FAILED(hr))
-			throw ER_CoreException("ER_RHI_DX11: Could not create TrilinearClampSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP, TrilinearClampSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP, samplerStateDesc));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
 		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -1310,10 +1295,7 @@ namespace EveryRay_Core
 		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
 		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
 		memcpy(samplerStateDesc.BorderColor, reinterpret_cast<FLOAT*>(&black), sizeof(FLOAT) * 4);
-		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &TrilinearBorderSS);
-		if (FAILED(hr))
-			throw ER_CoreException("ER_RHI_DX11: Could not create TrilinearBorderSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_TRILINEAR_BORDER, TrilinearBorderSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_TRILINEAR_BORDER, samplerStateDesc));
 
 		// bilinear samplers
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
@@ -1321,30 +1303,21 @@ namespace EveryRay_Core
 		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &BilinearWrapSS);
-		if (FAILED(hr))
-			throw ER_CoreException("ER_RHI_DX11: Could not create BilinearWrapSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_BILINEAR_WRAP, BilinearWrapSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_BILINEAR_WRAP, samplerStateDesc));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
 		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
 		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR;
 		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR;
 		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR;
-		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &BilinearMirrorSS);
-		if (FAILED(hr))
-			throw ER_CoreException("ER_RHI_DX11: Could not create BilinearMirrorSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_BILINEAR_MIRROR, BilinearMirrorSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_BILINEAR_MIRROR, samplerStateDesc));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
 		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
 		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
 		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
 		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &BilinearClampSS);
-		if (FAILED(hr))
-			throw ER_CoreException("ER_RHI_DX11: Could not create BilinearClampSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_BILINEAR_CLAMP, BilinearClampSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_BILINEAR_CLAMP, samplerStateDesc));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
 		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
@@ -1352,10 +1325,7 @@ namespace EveryRay_Core
 		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
 		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
 		memcpy(samplerStateDesc.BorderColor, reinterpret_cast<FLOAT*>(&black), sizeof(FLOAT) * 4);
-		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &BilinearBorderSS);
-		if (FAILED(hr))
-			throw ER_CoreException("ER_RHI_DX11: Could not create BilinerBorderSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_BILINEAR_BORDER, BilinearBorderSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_BILINEAR_BORDER, samplerStateDesc));
 
 		// anisotropic samplers
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
@@ -1363,30 +1333,21 @@ namespace EveryRay_Core
 		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &AnisotropicWrapSS);
-		if (FAILED(hr))
-			throw ER_CoreException("ER_RHI_DX11: Could not create AnisotropicWrapSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_ANISOTROPIC_WRAP, AnisotropicWrapSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_ANISOTROPIC_WRAP, samplerStateDesc));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
 		samplerStateDesc.Filter = D3D11_FILTER_ANISOTROPIC;
 		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR;
 		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR;
 		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR;
-		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &AnisotropicMirrorSS);
-		if (FAILED(hr))
-			throw ER_CoreException("ER_RHI_DX11: Could not create AnisotropicMirrorSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_ANISOTROPIC_MIRROR, AnisotropicMirrorSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_ANISOTROPIC_MIRROR, samplerStateDesc));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
 		samplerStateDesc.Filter = D3D11_FILTER_ANISOTROPIC;
 		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
 		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
 		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &AnisotropicClampSS);
-		if (FAILED(hr))
-			throw ER_CoreException("ER_RHI_DX11: Could not create AnisotropicClampSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_ANISOTROPIC_CLAMP, AnisotropicClampSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_ANISOTROPIC_CLAMP, samplerStateDesc));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
 		samplerStateDesc.Filter = D3D11_FILTER_ANISOTROPIC;
@@ -1394,10 +1355,7 @@ namespace EveryRay_Core
 		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
 		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
 		memcpy(samplerStateDesc.BorderColor, reinterpret_cast<FLOAT*>(&black), sizeof(FLOAT) * 4);
-		hr = direct3DDevice->CreateSamplerState(&samplerStateDesc, &AnisotropicBorderSS);
-		if (FAILED(hr))
-			throw ER_CoreException("ER_RHI_DX11: Could not create AnisotropicBorderSS", hr);
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_ANISOTROPIC_BORDER, AnisotropicBorderSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_ANISOTROPIC_BORDER, samplerStateDesc));
 
 		// shadow sampler state
 		samplerStateDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
@@ -1406,198 +1364,128 @@ namespace EveryRay_Core
 		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
 		memcpy(samplerStateDesc.BorderColor, reinterpret_cast<FLOAT*>(&white), sizeof(FLOAT) * 4);
 		samplerStateDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
-		if (FAILED(direct3DDevice->CreateSamplerState(&samplerStateDesc, &ShadowSS)))
-			throw ER_CoreException("ER_RHI_DX11: Could not create ShadowSS!");
-		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ShadowSS));
+		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, samplerStateDesc));
 	}
 
 	void ER_RHI_DX12::CreateBlendStates()
 	{
-		D3D11_BLEND_DESC blendStateDescription;
+		D3D12_BLEND_DESC blendStateDescription;
 		ZeroMemory(&blendStateDescription, sizeof(D3D11_BLEND_DESC));
 
 		blendStateDescription.AlphaToCoverageEnable = TRUE;
 		blendStateDescription.RenderTarget[0].BlendEnable = TRUE;
-		blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-		blendStateDescription.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-		blendStateDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-		blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-		blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-		blendStateDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+		blendStateDescription.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
+		blendStateDescription.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+		blendStateDescription.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+		blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+		blendStateDescription.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
 		blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
-		if (FAILED(mDirect3DDevice->CreateBlendState(&blendStateDescription, &mAlphaToCoverageState)))
-			throw ER_CoreException("ER_RHI_DX11: ID3D11Device::CreateBlendState() failed while create alpha-to-coverage blend state.");
-		mBlendStates.insert(std::make_pair(ER_RHI_BLEND_STATE::ER_ALPHA_TO_COVERAGE, mAlphaToCoverageState));
+		mBlendStates.insert(std::make_pair(ER_RHI_BLEND_STATE::ER_ALPHA_TO_COVERAGE, blendStateDescription));
 
 		blendStateDescription.RenderTarget[0].BlendEnable = FALSE;
 		blendStateDescription.AlphaToCoverageEnable = FALSE;
-		if (FAILED(mDirect3DDevice->CreateBlendState(&blendStateDescription, &mNoBlendState)))
-			throw ER_CoreException("ER_RHI_DX11: ID3D11Device::CreateBlendState() failed while create no blend state.");
-		mBlendStates.insert(std::make_pair(ER_RHI_BLEND_STATE::ER_NO_BLEND, mNoBlendState));
+		mBlendStates.insert(std::make_pair(ER_RHI_BLEND_STATE::ER_NO_BLEND, blendStateDescription));
 	}
 
 	void ER_RHI_DX12::CreateRasterizerStates()
 	{
-		D3D11_RASTERIZER_DESC rasterizerStateDesc;
+		D3D12_RASTERIZER_DESC rasterizerStateDesc;
 		ZeroMemory(&rasterizerStateDesc, sizeof(rasterizerStateDesc));
-		rasterizerStateDesc.FillMode = D3D11_FILL_SOLID;
-		rasterizerStateDesc.CullMode = D3D11_CULL_BACK;
+		rasterizerStateDesc.FillMode = D3D12_FILL_MODE_SOLID;
+		rasterizerStateDesc.CullMode = D3D12_CULL_MODE_BACK;
 		rasterizerStateDesc.DepthClipEnable = true;
-		HRESULT hr = mDirect3DDevice->CreateRasterizerState(&rasterizerStateDesc, &BackCullingRS);
-		if (FAILED(hr))
-			throw ER_CoreException("ER_RHI_DX11: CreateRasterizerStates() failed when creating BackCullingRS.", hr);
-		mRasterizerStates.insert(std::make_pair(ER_RHI_RASTERIZER_STATE::ER_BACK_CULLING, BackCullingRS));
+		mRasterizerStates.insert(std::make_pair(ER_RHI_RASTERIZER_STATE::ER_BACK_CULLING, rasterizerStateDesc));
 
 		ZeroMemory(&rasterizerStateDesc, sizeof(rasterizerStateDesc));
-		rasterizerStateDesc.FillMode = D3D11_FILL_SOLID;
-		rasterizerStateDesc.CullMode = D3D11_CULL_BACK;
+		rasterizerStateDesc.FillMode = D3D12_FILL_MODE_SOLID;
+		rasterizerStateDesc.CullMode = D3D12_CULL_MODE_BACK;
 		rasterizerStateDesc.FrontCounterClockwise = true;
 		rasterizerStateDesc.DepthClipEnable = true;
-		hr = mDirect3DDevice->CreateRasterizerState(&rasterizerStateDesc, &FrontCullingRS);
-		if (FAILED(hr))
-			throw ER_CoreException("ER_RHI_DX11: CreateRasterizerStates() failed when creating FrontCullingRS.", hr);
-		mRasterizerStates.insert(std::make_pair(ER_RHI_RASTERIZER_STATE::ER_FRONT_CULLING, FrontCullingRS));
+		mRasterizerStates.insert(std::make_pair(ER_RHI_RASTERIZER_STATE::ER_FRONT_CULLING, rasterizerStateDesc));
 
 		ZeroMemory(&rasterizerStateDesc, sizeof(rasterizerStateDesc));
-		rasterizerStateDesc.FillMode = D3D11_FILL_SOLID;
-		rasterizerStateDesc.CullMode = D3D11_CULL_NONE;
+		rasterizerStateDesc.FillMode = D3D12_FILL_MODE_SOLID;
+		rasterizerStateDesc.CullMode = D3D12_CULL_MODE_NONE;
 		rasterizerStateDesc.DepthClipEnable = true;
-		hr = mDirect3DDevice->CreateRasterizerState(&rasterizerStateDesc, &NoCullingRS);
-		if (FAILED(hr))
-			throw ER_CoreException("ER_RHI_DX11: CreateRasterizerStates() failed when creating NoCullingRS.", hr);
-		mRasterizerStates.insert(std::make_pair(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING, NoCullingRS));
+		mRasterizerStates.insert(std::make_pair(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING, rasterizerStateDesc));
 
 		ZeroMemory(&rasterizerStateDesc, sizeof(rasterizerStateDesc));
-		rasterizerStateDesc.FillMode = D3D11_FILL_WIREFRAME;
-		rasterizerStateDesc.CullMode = D3D11_CULL_NONE;
+		rasterizerStateDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
+		rasterizerStateDesc.CullMode = D3D12_CULL_MODE_NONE;
 		rasterizerStateDesc.DepthClipEnable = true;
-		hr = mDirect3DDevice->CreateRasterizerState(&rasterizerStateDesc, &WireframeRS);
-		if (FAILED(hr))
-			throw ER_CoreException("ER_RHI_DX11: CreateRasterizerStates() failed when creating WireframeRS.", hr);
-		mRasterizerStates.insert(std::make_pair(ER_RHI_RASTERIZER_STATE::ER_WIREFRAME, WireframeRS));
+		mRasterizerStates.insert(std::make_pair(ER_RHI_RASTERIZER_STATE::ER_WIREFRAME, rasterizerStateDesc));
 
 		ZeroMemory(&rasterizerStateDesc, sizeof(rasterizerStateDesc));
-		rasterizerStateDesc.FillMode = D3D11_FILL_SOLID;
-		rasterizerStateDesc.CullMode = D3D11_CULL_NONE;
+		rasterizerStateDesc.FillMode = D3D12_FILL_MODE_SOLID;
+		rasterizerStateDesc.CullMode = D3D12_CULL_MODE_NONE;
 		rasterizerStateDesc.DepthClipEnable = false;
 		rasterizerStateDesc.ScissorEnable = true;
-		hr = mDirect3DDevice->CreateRasterizerState(&rasterizerStateDesc, &NoCullingNoDepthEnabledScissorRS);
-		if (FAILED(hr))
-			throw ER_CoreException("ER_RHI_DX11: CreateRasterizerStates() failed when creating NoCullingNoDepthEnabledScissorRS.", hr);
-		mRasterizerStates.insert(std::make_pair(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING_NO_DEPTH_SCISSOR_ENABLED, NoCullingNoDepthEnabledScissorRS));
+		mRasterizerStates.insert(std::make_pair(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING_NO_DEPTH_SCISSOR_ENABLED, rasterizerStateDesc));
 
 		ZeroMemory(&rasterizerStateDesc, sizeof(rasterizerStateDesc));
-		rasterizerStateDesc.FillMode = D3D11_FILL_SOLID;
-		rasterizerStateDesc.CullMode = D3D11_CULL_BACK;
+		rasterizerStateDesc.FillMode = D3D12_FILL_MODE_SOLID;
+		rasterizerStateDesc.CullMode = D3D12_CULL_MODE_BACK;
 		rasterizerStateDesc.DepthClipEnable = false;
 		rasterizerStateDesc.DepthBias = 0; //0.05f
 		rasterizerStateDesc.SlopeScaledDepthBias = 3.0f;
 		rasterizerStateDesc.FrontCounterClockwise = false;
-		hr = mDirect3DDevice->CreateRasterizerState(&rasterizerStateDesc, &ShadowRS);
-		if (FAILED(hr))
-			throw ER_CoreException("ER_RHI_DX11: CreateRasterizerStates() failed when creating ShadowRS.", hr);
-		mRasterizerStates.insert(std::make_pair(ER_RHI_RASTERIZER_STATE::ER_SHADOW_RS, ShadowRS));
+		mRasterizerStates.insert(std::make_pair(ER_RHI_RASTERIZER_STATE::ER_SHADOW_RS, rasterizerStateDesc));
 	}
 
 	void ER_RHI_DX12::CreateDepthStencilStates()
 	{
-		//TODO
-		D3D11_DEPTH_STENCIL_DESC depthStencilStateDesc;
+		D3D12_DEPTH_STENCIL_DESC depthStencilStateDesc;
 		depthStencilStateDesc.DepthEnable = TRUE;
-		depthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_NEVER;
+		depthStencilStateDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+		depthStencilStateDesc.DepthFunc = D3D12_COMPARISON_FUNC_NEVER;
 		depthStencilStateDesc.StencilEnable = FALSE;
-		HRESULT hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyReadComparisonNeverDS);
-		if (FAILED(hr))
-			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyReadComparisonNeverDS.", hr);
-		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_NEVER, DepthOnlyReadComparisonNeverDS));
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_NEVER, depthStencilStateDesc));
 
 		// read only 
-		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS;
-		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyReadComparisonLessDS);
-		if (FAILED(hr))
-			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyReadComparisonLessDS.", hr);
-		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_LESS, DepthOnlyReadComparisonLessDS));
+		depthStencilStateDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_LESS, depthStencilStateDesc));
 
-		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_EQUAL;
-		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyReadComparisonEqualDS);
-		if (FAILED(hr))
-			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyReadComparisonEqualDS.", hr);
-		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_EQUAL, DepthOnlyReadComparisonEqualDS));
+		depthStencilStateDesc.DepthFunc = D3D12_COMPARISON_FUNC_EQUAL;
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_EQUAL, depthStencilStateDesc));
 
-		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyReadComparisonLessEqualDS);
-		if (FAILED(hr))
-			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyReadComparisonLessEqualDS.", hr);
-		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_LESS_EQUAL, DepthOnlyReadComparisonLessEqualDS));
+		depthStencilStateDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_LESS_EQUAL, depthStencilStateDesc));
 
-		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_GREATER;
-		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyReadComparisonGreaterDS);
-		if (FAILED(hr))
-			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyReadComparisonGreaterDS.", hr);
-		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_GREATER, DepthOnlyReadComparisonGreaterDS));
+		depthStencilStateDesc.DepthFunc = D3D12_COMPARISON_FUNC_GREATER;
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_GREATER, depthStencilStateDesc));
 
-		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_NOT_EQUAL;
-		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyReadComparisonNotEqualDS);
-		if (FAILED(hr))
-			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyReadComparisonNotEqualDS.", hr);
-		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_NOT_EQUAL, DepthOnlyReadComparisonNotEqualDS));
+		depthStencilStateDesc.DepthFunc = D3D12_COMPARISON_FUNC_NOT_EQUAL;
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_NOT_EQUAL, depthStencilStateDesc));
 
-		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL;
-		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyReadComparisonGreaterEqualDS);
-		if (FAILED(hr))
-			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyReadComparisonGreaterEqualDS.", hr);
-		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_GREATER_EQUAL, DepthOnlyReadComparisonGreaterEqualDS));
+		depthStencilStateDesc.DepthFunc = D3D12_COMPARISON_FUNC_GREATER_EQUAL;
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_GREATER_EQUAL, depthStencilStateDesc));
 
-		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_ALWAYS;
-		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyReadComparisonAlwaysDS);
-		if (FAILED(hr))
-			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyReadComparisonAlwaysDS.", hr);
-		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_ALWAYS, DepthOnlyReadComparisonAlwaysDS));
+		depthStencilStateDesc.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_READ_COMPARISON_ALWAYS, depthStencilStateDesc));
 
 		//write
-		depthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS;
-		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyWriteComparisonLessDS);
-		if (FAILED(hr))
-			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyWriteComparisonLessDS.", hr);
-		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_LESS, DepthOnlyWriteComparisonLessDS));
+		depthStencilStateDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+		depthStencilStateDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_LESS, depthStencilStateDesc));
 
-		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_EQUAL;
-		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyWriteComparisonEqualDS);
-		if (FAILED(hr))
-			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyWriteComparisonEqualDS.", hr);
-		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_EQUAL, DepthOnlyWriteComparisonEqualDS));
+		depthStencilStateDesc.DepthFunc = D3D12_COMPARISON_FUNC_EQUAL;
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_EQUAL, depthStencilStateDesc));
 
-		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyWriteComparisonLessEqualDS);
-		if (FAILED(hr))
-			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyWriteComparisonLessEqualDS.", hr);
-		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL, DepthOnlyWriteComparisonLessEqualDS));
+		depthStencilStateDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL, depthStencilStateDesc));
 
-		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_GREATER;
-		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyWriteComparisonGreaterDS);
-		if (FAILED(hr))
-			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyWriteComparisonGreaterDS.", hr);
-		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_GREATER, DepthOnlyWriteComparisonGreaterDS));
+		depthStencilStateDesc.DepthFunc = D3D12_COMPARISON_FUNC_GREATER;
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_GREATER, depthStencilStateDesc));
 
-		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_NOT_EQUAL;
-		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyWriteComparisonNotEqualDS);
-		if (FAILED(hr))
-			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyWriteComparisonNotEqualDS.", hr);
-		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_NOT_EQUAL, DepthOnlyWriteComparisonNotEqualDS));
+		depthStencilStateDesc.DepthFunc = D3D12_COMPARISON_FUNC_NOT_EQUAL;
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_NOT_EQUAL, depthStencilStateDesc));
 
-		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL;
-		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyWriteComparisonGreaterEqualDS);
-		if (FAILED(hr))
-			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyWriteComparisonGreaterEqualDS.", hr);
-		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_GREATER_EQUAL, DepthOnlyWriteComparisonGreaterEqualDS));
+		depthStencilStateDesc.DepthFunc = D3D12_COMPARISON_FUNC_GREATER_EQUAL;
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_GREATER_EQUAL, depthStencilStateDesc));
 
-		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_ALWAYS;
-		hr = mDirect3DDevice->CreateDepthStencilState(&depthStencilStateDesc, &DepthOnlyWriteComparisonAlwaysDS);
-		if (FAILED(hr))
-			throw ER_CoreException("CreateDepthStencilState() failed when creating DepthOnlyWriteComparisonAlwaysDS.", hr);
-		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_ALWAYS, DepthOnlyWriteComparisonAlwaysDS));
+		depthStencilStateDesc.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_ALWAYS, depthStencilStateDesc));
 	}
 
 }

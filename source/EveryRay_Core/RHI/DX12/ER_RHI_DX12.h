@@ -12,9 +12,6 @@
 
 #include "imgui_impl_dx12.h"
 
-#define DX12_GRAPHICS_COMMAND_LISTS_COUNT 2
-#define DX12_COMPUTE_COMMAND_LISTS_COUNT 1
-
 namespace EveryRay_Core
 {
 	class ER_RHI_DX12_InputLayout : public ER_RHI_InputLayout
@@ -176,11 +173,11 @@ namespace EveryRay_Core
 		CD3DX12_CPU_DESCRIPTOR_HANDLE mMainDSVDescriptorHandle;
 
 		ID3D12CommandQueue* mCommandQueueGraphics = nullptr;
-		ID3D12GraphicsCommandList* mCommandListGraphics[DX12_GRAPHICS_COMMAND_LISTS_COUNT] = { nullptr, nullptr };
-		ID3D12CommandAllocator* mCommandAllocatorsGraphics[DX12_GRAPHICS_COMMAND_LISTS_COUNT] = { nullptr, nullptr };
+		ID3D12GraphicsCommandList* mCommandListGraphics[ER_RHI_MAX_GRAPHICS_COMMAND_LISTS] = { nullptr };
+		ID3D12CommandAllocator* mCommandAllocatorsGraphics[ER_RHI_MAX_COMPUTE_COMMAND_LISTS] = { nullptr };
 		ID3D12CommandQueue* mCommandQueueCompute = nullptr;
-		ID3D12GraphicsCommandList* mCommandListCompute = nullptr;
-		ID3D12CommandAllocator* mCommandAllocatorsCompute = nullptr;
+		ID3D12GraphicsCommandList* mCommandListCompute[ER_RHI_MAX_COMPUTE_COMMAND_LISTS] = { nullptr };
+		ID3D12CommandAllocator* mCommandAllocatorsCompute[ER_RHI_MAX_COMPUTE_COMMAND_LISTS] = { nullptr };
 
 		ID3D12Fence* mFenceGraphics = nullptr;
 		UINT64 mFenceValuesGraphics;

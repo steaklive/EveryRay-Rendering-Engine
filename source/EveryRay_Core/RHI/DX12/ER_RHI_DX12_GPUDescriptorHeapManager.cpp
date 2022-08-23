@@ -127,12 +127,10 @@ namespace EveryRay_Core
 		mCPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_RTV] = new ER_RHI_DX12_CPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 128);
 		mCPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_DSV] = new ER_RHI_DX12_CPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 128);
 		mCPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER] = new ER_RHI_DX12_CPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 16);
-
-		{
-			ZeroMemory(mGPUDescriptorHeaps, sizeof(mGPUDescriptorHeaps));
-			mGPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV] = new ER_RHI_DX12_GPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, MaxNoofSRVDescriptors);
-			mGPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER] = new ER_RHI_DX12_GPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 16);
-		}
+		
+		ZeroMemory(mGPUDescriptorHeaps, sizeof(mGPUDescriptorHeaps));
+		mGPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV] = new ER_RHI_DX12_GPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, MaxNoofSRVDescriptors);
+		mGPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER] = new ER_RHI_DX12_GPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 16);
 	}
 
 	ER_RHI_DX12_GPUDescriptorHeapManager::~ER_RHI_DX12_GPUDescriptorHeapManager()
@@ -140,7 +138,8 @@ namespace EveryRay_Core
 		for (int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; i++)
 		{
 			DeleteObject(mCPUDescriptorHeaps[i]);
-			DeleteObject(mGPUDescriptorHeaps[i]);
+			if (i < 2)
+				DeleteObject(mGPUDescriptorHeaps[i]);
 		}
 	}
 
