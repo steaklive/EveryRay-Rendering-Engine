@@ -264,22 +264,34 @@ namespace EveryRay_Core
 		return true;
 	}
 
-	void ER_RHI_DX12::BeginGraphicsCommandList()
+	void ER_RHI_DX12::BeginGraphicsCommandList(int index)
 	{
-		HRESULT hr;
-		if (FAILED(hr = mCommandAllocatorsGraphics->Reset()))
-			throw ER_CoreException("ER_RHI_DX12:: Could not Reset() command allocator (graphics)");
+		assert(index < ER_RHI_MAX_GRAPHICS_COMMAND_LISTS);
 
-		if (FAILED(hr = mCommandListGraphics[0]->Reset(mCommandAllocatorsGraphics, nullptr)))
-			throw ER_CoreException("ER_RHI_DX12:: Could not Reset() command list (graphics) #0");
+		HRESULT hr;
+		if (FAILED(hr = mCommandAllocatorsGraphics[index]->Reset()))
+		{
+			std::string message = "ER_RHI_DX12:: Could not Reset() command allocator (graphics) " + std::to_string(index);
+			throw ER_CoreException(message.c_str());
+		}
+
+		if (FAILED(hr = mCommandListGraphics[index]->Reset(mCommandAllocatorsGraphics[index], nullptr)))
+		{
+			std::string message = "ER_RHI_DX12:: Could not Reset() command list (graphics) " + std::to_string(index);
+			throw ER_CoreException(message.c_str());
+		}
 	}
 
-	void ER_RHI_DX12::EndGraphicsCommandList()
+	void ER_RHI_DX12::EndGraphicsCommandList(int index)
 	{
-		HRESULT hr;
+		assert(index < ER_RHI_MAX_GRAPHICS_COMMAND_LISTS);
 
-		if (FAILED(hr = mCommandListGraphics[0]->Close()))
-			throw ER_CoreException("ER_RHI_DX12:: Could not close command list (graphics) #0");
+		HRESULT hr;
+		if (FAILED(hr = mCommandListGraphics[index]->Close()))
+		{
+			std::string message = "ER_RHI_DX12:: Could not close command list (graphics) " + std::to_string(index);
+			throw ER_CoreException(message.c_str());
+		}
 	}
 
 	void ER_RHI_DX12::ClearMainRenderTarget(float colors[4])
@@ -525,34 +537,12 @@ namespace EveryRay_Core
 
 	bool ER_RHI_DX12::ProjectCubemapToSH(ER_RHI_GPUTexture* aTexture, UINT order, float* resultR, float* resultG, float* resultB)
 	{
-		//assert(aTexture);
-		//
-		//ER_RHI_DX11_GPUTexture* tex = static_cast<ER_RHI_DX11_GPUTexture*>(aTexture);
-		//assert(tex);
-		//
-		//return !(FAILED(DirectX::SHProjectCubeMap(mDirect3DDeviceContext, order, tex->GetTexture2D(), resultR, resultG, resultB)));
+		//TODO
 	}
 
 	void ER_RHI_DX12::SaveGPUTextureToFile(ER_RHI_GPUTexture* aTexture, const std::wstring& aPathName)
 	{
-		//assert(aTexture);
-		//
-		//ER_RHI_DX11_GPUTexture* tex = static_cast<ER_RHI_DX11_GPUTexture*>(aTexture);
-		//assert(tex);
-		//
-		//DirectX::ScratchImage tempImage;
-		//HRESULT res = DirectX::CaptureTexture(mDirect3DDevice, mDirect3DDeviceContext, tex->GetTexture2D(), tempImage);
-		//if (FAILED(res))
-		//	throw ER_CoreException("Failed to capture a probe texture when saving!", res);
-		//
-		//res = DirectX::SaveToDDSFile(tempImage.GetImages(), tempImage.GetImageCount(), tempImage.GetMetadata(), DDS_FLAGS_NONE, aPathName.c_str());
-		//if (FAILED(res))
-		//{
-		//	throw ER_CoreException("Failed to save a texture to a file: ");
-		//	//std::string str(aPathName.begin(), aPathName.end());
-		//	//std::string msg = "Failed to save a texture to a file: " + str;
-		//	//throw ER_CoreException(msg.c_str());
-		//}
+		//TODO
 	}
 
 	void ER_RHI_DX12::SetMainRenderTargets()
@@ -593,18 +583,6 @@ namespace EveryRay_Core
 		{
 			assert(0);
 			//TODO: OMSetRenderTargetsAndUnorderedAccessViews() is not available on DX12
-
-			//ID3D11RenderTargetView* nullRTVs[1] = { NULL };
-			//ID3D11UnorderedAccessView* UAVs[1] = { static_cast<ID3D11UnorderedAccessView*>(aUAV->GetUAV()) };
-			//assert(UAVs[0]);
-			//if (aDepthTarget)
-			//{
-			//	ID3D11DepthStencilView* dsv = static_cast<ID3D11DepthStencilView*>(aDepthTarget->GetDSV());
-			//	assert(dsv);
-			//	mCommandListGraphics[0]->OMSetRenderTargetsAndUnorderedAccessViews(0, nullRTVs, dsv, 0, 1, UAVs, NULL);
-			//}
-			//else
-			//	mCommandListGraphics[0]->OMSetRenderTargetsAndUnorderedAccessViews(0, nullRTVs, NULL, 0, 1, UAVs, NULL);
 		}
 	}
 
@@ -624,7 +602,7 @@ namespace EveryRay_Core
 
 		assert(mCurrentPSOState == ER_RHI_DX12_PSO_STATE::GRAPHICS);
 
-		ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSOs.at(mCurrentGraphicsPSO);
+		ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSONames.at(mCurrentGraphicsPSOName);
 		int rtCount = aRenderTargets.size();
 		assert(rtCount <= 8);
 
@@ -641,7 +619,7 @@ namespace EveryRay_Core
 		DXGI_FORMAT formats[8] = { DXGI_FORMAT_UNKNOWN };
 		formats[0] = mMainRTBufferFormat;
 
-		ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSOs.at(mCurrentGraphicsPSO);
+		ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSONames.at(mCurrentGraphicsPSOName);
 		pso.SetRenderTargetFormats(1, formats, mMainDepthBufferFormat);
 	}
 
@@ -656,7 +634,7 @@ namespace EveryRay_Core
 		if (it != mDepthStates.end())
 		{
 			mCurrentDS = aDS;
-			ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSOs.at(mCurrentGraphicsPSO);
+			ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSONames.at(mCurrentGraphicsPSOName);
 			pso.SetDepthStencilState(it->second);
 		}
 		else
@@ -674,7 +652,7 @@ namespace EveryRay_Core
 		if (it != mBlendStates.end())
 		{
 			mCurrentBS = aBS;
-			ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSOs.at(mCurrentGraphicsPSO);
+			ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSONames.at(mCurrentGraphicsPSOName);
 			pso.SetBlendState(it->second);
 		}
 		else
@@ -692,7 +670,7 @@ namespace EveryRay_Core
 		if (it != mRasterizerStates.end())
 		{
 			mCurrentRS = aRS;
-			ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSOs.at(mCurrentGraphicsPSO);
+			ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSONames.at(mCurrentGraphicsPSOName);
 			pso.SetRasterizerState(it->second);
 		}
 		else
@@ -804,50 +782,41 @@ namespace EveryRay_Core
 	{
 		assert(aShader);
 
-		switch (aShader->mShaderType)
+		assert(mCurrentPSOState != ER_RHI_DX12_PSO_STATE::UNSET);
+
+		ER_RHI_DX12_GPUShader* aDX12_Shader = static_cast<ER_RHI_DX12_GPUShader*>(aShader);
+		assert(aDX12_Shader);
+
+		ID3DBlob* blob = static_cast<ID3DBlob*>(aDX12_Shader->GetShaderObject());
+		assert(blob);
+
+		if (mCurrentPSOState == ER_RHI_DX12_PSO_STATE::GRAPHICS)
 		{
-		case ER_RHI_SHADER_TYPE::ER_VERTEX:
-		{
-			ID3D11VertexShader* vs = static_cast<ID3D11VertexShader*>(aShader->GetShaderObject());
-			assert(vs);
-			mDirect3DDeviceContext->VSSetShader(vs, NULL, NULL);
+			ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSONames.at(mCurrentGraphicsPSOName);
+			
+			switch (aShader->mShaderType)
+			{
+			case ER_RHI_SHADER_TYPE::ER_VERTEX:
+				pso.SetVertexShader(blob->GetBufferPointer(), blob->GetBufferSize());
+				break;
+			case ER_RHI_SHADER_TYPE::ER_GEOMETRY:
+				pso.SetGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize());
+				break;
+			case ER_RHI_SHADER_TYPE::ER_TESSELLATION_HULL:
+				pso.SetHullShader(blob->GetBufferPointer(), blob->GetBufferSize());
+				break;
+			case ER_RHI_SHADER_TYPE::ER_TESSELLATION_DOMAIN:
+				pso.SetDomainShader(blob->GetBufferPointer(), blob->GetBufferSize());
+				break;
+			case ER_RHI_SHADER_TYPE::ER_PIXEL:
+				pso.SetPixelShader(blob->GetBufferPointer(), blob->GetBufferSize());
+				break;
+			}
 		}
-			break;
-		case ER_RHI_SHADER_TYPE::ER_GEOMETRY:
+		else
 		{
-			ID3D11GeometryShader* gs = static_cast<ID3D11GeometryShader*>(aShader->GetShaderObject());
-			assert(gs);
-			mDirect3DDeviceContext->GSSetShader(gs, NULL, NULL);
-		}
-			break;
-		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_HULL:
-		{
-			ID3D11HullShader* hs = static_cast<ID3D11HullShader*>(aShader->GetShaderObject());
-			assert(hs);
-			mDirect3DDeviceContext->HSSetShader(hs, NULL, NULL);
-		}
-			break;
-		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_DOMAIN:
-		{
-			ID3D11DomainShader* ds = static_cast<ID3D11DomainShader*>(aShader->GetShaderObject());
-			assert(ds);
-			mDirect3DDeviceContext->DSSetShader(ds, NULL, NULL);
-		}
-			break;
-		case ER_RHI_SHADER_TYPE::ER_PIXEL:
-		{
-			ID3D11PixelShader* ps = static_cast<ID3D11PixelShader*>(aShader->GetShaderObject());
-			assert(ps);
-			mDirect3DDeviceContext->PSSetShader(ps, NULL, NULL);
-		}
-			break;
-		case ER_RHI_SHADER_TYPE::ER_COMPUTE:
-		{
-			ID3D11ComputeShader* cs = static_cast<ID3D11ComputeShader*>(aShader->GetShaderObject());
-			assert(cs);
-			mDirect3DDeviceContext->CSSetShader(cs, NULL, NULL);
-		}
-			break;
+			ER_RHI_DX12_ComputePSO& pso = mComputePSONames.at(mCurrentComputePSOName);
+			pso.SetComputeShader(blob->GetBufferPointer(), blob->GetBufferSize());
 		}
 	}
 
@@ -884,7 +853,7 @@ namespace EveryRay_Core
 		ER_RHI_DX12_InputLayout* aDX12_IL = static_cast<ER_RHI_DX12_InputLayout*>(aIL);
 		assert(aDX12_IL);
 
-		ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSOs.at(mCurrentGraphicsPSO);
+		ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSONames.at(mCurrentGraphicsPSOName);
 		pso.SetInputLayout(aDX12_IL.mInputElementDescriptionCount, aDX12_IL.mInputElementDescriptions);
 	}
 
@@ -954,7 +923,7 @@ namespace EveryRay_Core
 			return;
 
 		assert(mCurrentPSOState == ER_RHI_DX12_PSO_STATE::GRAPHICS);
-		ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSOs.at(mCurrentGraphicsPSO);
+		ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSONames.at(mCurrentGraphicsPSOName);
 		pso.SetPrimitiveTopologyType(GetTopologyType(aType));
 	}
 
@@ -979,16 +948,16 @@ namespace EveryRay_Core
 	{
 		if (!isCompute)
 		{
-			auto it = mGraphicsPSOs.find(aName);
-			if (it != mGraphicsPSOs.end())
+			auto it = mGraphicsPSONames.find(aName);
+			if (it != mGraphicsPSONames.end())
 				return true;
 			else
 				return false;
 		}
 		else
 		{
-			auto it2 = mComputePSOs.find(aName);
-			if (it2 != mComputePSOs.end())
+			auto it2 = mComputePSONames.find(aName);
+			if (it2 != mComputePSONames.end())
 				return true;
 			else
 				return false;
@@ -999,14 +968,14 @@ namespace EveryRay_Core
 	{
 		if (isCompute)
 		{
-			mComputePSOs.insert(std::make_pair(aName, ER_RHI_DX12_ComputePSO(aName)));
-			mCurrentComputePSO = aName;
+			mComputePSONames.insert(std::make_pair(aName, ER_RHI_DX12_ComputePSO(aName)));
+			mCurrentComputePSOName = aName;
 			mCurrentPSOState = ER_RHI_DX12_PSO_STATE::COMPUTE;
 		}
 		else
 		{
-			mGraphicsPSOs.insert(std::make_pair(aName, ER_RHI_DX12_GraphicsPSO(aName)));
-			mCurrentGraphicsPSO = aName;
+			mGraphicsPSONames.insert(std::make_pair(aName, ER_RHI_DX12_GraphicsPSO(aName)));
+			mCurrentGraphicsPSOName = aName;
 			mCurrentPSOState = ER_RHI_DX12_PSO_STATE::GRAPHICS;
 		}
 	}
@@ -1015,13 +984,13 @@ namespace EveryRay_Core
 	{
 		if (!isCompute)
 		{
-			assert(mCurrentGraphicsPSO == aName);
-			mGraphicsPSOs.at(aName).Finalize(mDevice);
+			assert(mCurrentGraphicsPSOName == aName);
+			mGraphicsPSONames.at(aName).Finalize(mDevice);
 		}
 		else
 		{
-			assert(mCurrentComputePSO == aName);
-			mComputePSOs.at(aName).Finalize(mDevice);
+			assert(mCurrentComputePSOName == aName);
+			mComputePSONames.at(aName).Finalize(mDevice);
 		}
 	}
 
@@ -1037,11 +1006,11 @@ namespace EveryRay_Core
 
 		if (!isCompute)
 		{
-			auto it = mGraphicsPSOs.find(aName);
-			if (it != mGraphicsPSOs.end())
+			auto it = mGraphicsPSONames.find(aName);
+			if (it != mGraphicsPSONames.end())
 			{
 				mCommandListGraphics[0]->SetPipelineState(it.second.GetPipelineStateObject());
-				mCurrentGraphicsPSO = it.first;
+				mCurrentGraphicsPSOName = it.first;
 				mCurrentPSOState = ER_RHI_DX12_PSO_STATE::GRAPHICS
 			}
 			else
@@ -1049,11 +1018,11 @@ namespace EveryRay_Core
 		}
 		else
 		{
-			auto it = mComputePSOs.find(aName);
-			if (it != mComputePSOs.end())
+			auto it = mComputePSONames.find(aName);
+			if (it != mComputePSONames.end())
 			{
 				mCommandListGraphics[0]->SetPipelineState(it.second.GetPipelineStateObject());
-				mCurrentComputePSO = it.first;
+				mCurrentComputePSOName = it.first;
 				mCurrentPSOState = ER_RHI_DX12_PSO_STATE::COMPUTE;
 			}
 			else

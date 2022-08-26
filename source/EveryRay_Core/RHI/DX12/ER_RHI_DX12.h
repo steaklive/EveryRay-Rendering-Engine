@@ -40,11 +40,11 @@ namespace EveryRay_Core
 
 		virtual bool Initialize(HWND windowHandle, UINT width, UINT height, bool isFullscreen) override;
 		
-		virtual void BeginGraphicsCommandList() override;
-		virtual void EndGraphicsCommandList() override;
+		virtual void BeginGraphicsCommandList(int index = 0) override;
+		virtual void EndGraphicsCommandList(int index = 0) override;
 
-		virtual void BeginComputeCommandList() override {}; //TODO
-		virtual void EndComputeCommandList() override {}; //TODO
+		virtual void BeginComputeCommandList(int index = 0) override {}; //TODO
+		virtual void EndComputeCommandList(int index = 0) override {}; //TODO
 
 		virtual void ClearMainRenderTarget(float colors[4]) override;
 		virtual void ClearMainDepthStencilTarget(float depth, UINT stencil = 0) override;
@@ -192,10 +192,10 @@ namespace EveryRay_Core
 		std::map<ER_RHI_RASTERIZER_STATE, D3D12_RASTERIZER_DESC> mRasterizerStates;
 		std::map<ER_RHI_DEPTH_STENCIL_STATE, D3D12_DEPTH_STENCIL_DESC> mDepthStates;
 
-		std::map<std::string, ER_RHI_DX12_GraphicsPSO> mGraphicsPSOs;
-		std::map<std::string, ER_RHI_DX12_ComputePSO> mComputePSOs;
-		std::string mCurrentGraphicsPSO;
-		std::string mCurrentComputePSO;
+		std::map<std::string, ER_RHI_DX12_GraphicsPSO> mGraphicsPSONames;
+		std::map<std::string, ER_RHI_DX12_ComputePSO> mComputePSONames;
+		std::string mCurrentGraphicsPSOName;
+		std::string mCurrentComputePSOName;
 		ER_RHI_DX12_PSO_STATE mCurrentPSOState = ER_RHI_DX12_PSO_STATE::UNSET;
 
 		ER_RHI_DX12_GPUDescriptorHeapManager* mDescriptorHeapManager = nullptr;

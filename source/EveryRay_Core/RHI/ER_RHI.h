@@ -247,11 +247,11 @@ namespace EveryRay_Core
 
 		virtual bool Initialize(HWND windowHandle, UINT width, UINT height, bool isFullscreen) = 0;
 		
-		virtual void BeginGraphicsCommandList() = 0;
-		virtual void EndGraphicsCommandList() = 0;
+		virtual void BeginGraphicsCommandList(int index = 0) = 0;
+		virtual void EndGraphicsCommandList(int index = 0) = 0;
 
-		virtual void BeginComputeCommandList() = 0;
-		virtual void EndComputeCommandList() = 0;
+		virtual void BeginComputeCommandList(int index = 0) = 0;
+		virtual void EndComputeCommandList(int index = 0) = 0;
 
 		virtual void ClearMainRenderTarget(float colors[4]) = 0;
 		virtual void ClearMainDepthStencilTarget(float depth, UINT stencil = 0) = 0;
@@ -409,7 +409,7 @@ namespace EveryRay_Core
 		virtual ~ER_RHI_GPUBuffer() {}
 
 		virtual void CreateGPUBufferResource(ER_RHI* aRHI, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic = false, 
-			ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, ER_RHI_RESOURCE_MISC_FLAG miscFlags = ER_RESOURCE_MISC_NONE, ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN) { assert(0); }
+			ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, ER_RHI_RESOURCE_MISC_FLAG miscFlags = ER_RESOURCE_MISC_NONE, ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN) { AbstractRHIMethodAssert();	}
 		virtual void* GetBuffer() { AbstractRHIMethodAssert();  return nullptr; }
 		virtual int GetSize() { AbstractRHIMethodAssert(); return 0; }
 		virtual UINT GetStride() { AbstractRHIMethodAssert(); return 0; }
@@ -425,7 +425,7 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader() {}
 		virtual ~ER_RHI_GPUShader() {}
 
-		virtual void CompileShader(ER_RHI* aRHI, const std::string& path, const std::string& shaderEntry, ER_RHI_SHADER_TYPE type, ER_RHI_InputLayout* aIL = nullptr) { assert(0); };
+		virtual void CompileShader(ER_RHI* aRHI, const std::string& path, const std::string& shaderEntry, ER_RHI_SHADER_TYPE type, ER_RHI_InputLayout* aIL = nullptr) { AbstractRHIMethodAssert(); };
 		virtual void* GetShaderObject() { AbstractRHIMethodAssert(); return nullptr; }
 
 		ER_RHI_SHADER_TYPE mShaderType;
