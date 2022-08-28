@@ -520,7 +520,7 @@ namespace EveryRay_Core
 #ifdef ER_PLATFORM_WIN64_DX11
 				mGlobalDiffuseProbe->Compute(game, mTempDiffuseCubemapFacesRT, mTempDiffuseCubemapFacesConvolutedRT, mTempDiffuseCubemapDepthBuffers, diffuseProbesPath, aObjects, mQuadRenderer, skybox);
 #else
-				//TODO: load empty texture
+				throw ER_CoreException("ER_LightProbesManager: Computing & saving the probes is only possible on DX11 at the moment");
 #endif
 			mGlobalDiffuseProbeReady = true;
 		}
@@ -535,7 +535,7 @@ namespace EveryRay_Core
 #ifdef ER_PLATFORM_WIN64_DX11
 				mGlobalSpecularProbe->Compute(game, mTempSpecularCubemapFacesRT, mTempSpecularCubemapFacesConvolutedRT, mTempSpecularCubemapDepthBuffers, specularProbesPath, aObjects, mQuadRenderer, skybox);
 #else
-				//TODO: load empty texture
+				throw ER_CoreException("ER_LightProbesManager: Computing & saving the probes is only possible on DX11 at the moment");
 #endif
 			mGlobalSpecularProbeReady = true;
 		}

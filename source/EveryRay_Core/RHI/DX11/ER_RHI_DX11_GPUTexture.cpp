@@ -325,11 +325,11 @@ namespace EveryRay_Core
 		mTexture2D = tex2D;
 		mTexture3D = tex3D;
 	}
-	void ER_RHI_DX11_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath /*= false*/, bool is3D)
+	void ER_RHI_DX11_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath /*= false*/, bool is3D, bool skipFallback, bool* statusFlag)
 	{
-		CreateGPUTextureResource(aRHI, EveryRay_Core::ER_Utility::ToWideString(aPath), isFullPath, is3D);
+		CreateGPUTextureResource(aRHI, EveryRay_Core::ER_Utility::ToWideString(aPath), isFullPath, is3D, skipFallback, statusFlag);
 	}
-	void ER_RHI_DX11_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath /*= false*/, bool is3D)
+	void ER_RHI_DX11_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath /*= false*/, bool is3D, bool skipFallback, bool* statusFlag)
 	{
 		assert(aRHI);
 		ER_RHI_DX11* aRHIDX11 = static_cast<ER_RHI_DX11*>(aRHI);
@@ -348,7 +348,7 @@ namespace EveryRay_Core
 		ID3D11Resource* resourceTex = NULL;
 
 		auto outputLog = [](const std::wstring& pathT) {
-			std::wstring msg = L"[ER Logger][ER_RHI_DX11_GPUTexture] Failed to load texture from disk: " + pathT + L". Loading fallback texture instead. \n";
+			std::wstring msg = L"[ER Logger][ER_RHI_DX11_GPUTexture] Failed to load texture from disk: " + pathT + L". Loading fallback texture instead unless forced not to. \n";
 			ER_OUTPUT_LOG(msg.c_str());
 		};
 
@@ -357,7 +357,11 @@ namespace EveryRay_Core
 			if (FAILED(DirectX::CreateDDSTextureFromFile(device, context, isFullPath ? aPath.c_str() : EveryRay_Core::ER_Utility::GetFilePath(aPath).c_str(), &resourceTex, &mSRV)))
 			{
 				outputLog(isFullPath ? aPath.c_str() : EveryRay_Core::ER_Utility::GetFilePath(aPath).c_str());
-				LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
+				if (!skipFallback)
+					LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
+				if (statusFlag)
+					*statusFlag = false;
+
 			}
 		}
 		else
@@ -365,20 +369,40 @@ namespace EveryRay_Core
 			if (FAILED(DirectX::CreateWICTextureFromFile(device, context, isFullPath ? aPath.c_str() : EveryRay_Core::ER_Utility::GetFilePath(aPath).c_str(), &resourceTex, &mSRV)))
 			{
 				outputLog(isFullPath ? aPath.c_str() : EveryRay_Core::ER_Utility::GetFilePath(aPath).c_str());
-				LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
+				if (!skipFallback)
+					LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
+				if (statusFlag)
+					*statusFlag = false;
 			}
 		}
+
+		if (!resourceTex)
+			return;
 
 		if (!is3D)
 		{
 			if (FAILED(resourceTex->QueryInterface(IID_ID3D11Texture2D, (void**)&mTexture2D))) {
 				throw EveryRay_Core::ER_CoreException("ER_RHI_DX11: Could not cast loaded texture resource to Texture2D. Maybe wrong dimension?");
+				if (statusFlag)
+					*statusFlag = false;
+			}
+			else
+			{
+				if (statusFlag)
+					*statusFlag = true;
 			}
 		}
 		else
 		{
 			if (FAILED(resourceTex->QueryInterface(IID_ID3D11Texture3D, (void**)&mTexture3D))) {
 				throw EveryRay_Core::ER_CoreException("ER_RHI_DX11: Could not cast loaded texture resource to Texture3D. Maybe wrong dimension?");
+				if (statusFlag)
+					*statusFlag = false;
+			}
+			else
+			{
+				if (statusFlag)
+					*statusFlag = true;
 			}
 		}
 

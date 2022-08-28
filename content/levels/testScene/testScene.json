@@ -482,7 +482,7 @@
 			[
 				{
 					"albedo" : "content\\textures\\PBR\\Pavement\\PavingStones077_2K_Color.jpg",
-					"metalness" : "content\\textures\\PBR\\Pavement\\EmptyMetalMap.png",
+					"metalness" : "content\\textures\\emptyMetallicMap.png",
 					"normal" : "content\\textures\\PBR\\Pavement\\PavingStones077_2K_Normal.jpg",
 					"roughness" : "content\\textures\\PBR\\Pavement\\PavingStones077_2K_Roughness.jpg"
 				},
@@ -536,7 +536,7 @@
 			[
 				{
 					"albedo" : "content\\textures\\PBR\\RedBrick\\redbricks2b-albedo.png",
-					"normal" : "content\\textures\\PBR\\RedBrick\\redbricks2b-normal-dx.png",
+					"normal" : "content\\textures\\PBR\\RedBrick\\redbricks2b-normal.png",
 					"roughness" : "content\\textures\\PBR\\RedBrick\\redbricks2b-rough.png"
 				},
 				{

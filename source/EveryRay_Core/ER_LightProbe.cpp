@@ -386,8 +386,7 @@ namespace EveryRay_Core
 		else
 		{
 			assert(mCubemapTexture);
-			mCubemapTexture->CreateGPUTextureResource(rhi, probeName, true);
-			mIsProbeLoadedFromDisk = true;
+			mCubemapTexture->CreateGPUTextureResource(rhi, probeName, true, false, true, &mIsProbeLoadedFromDisk);
 		}
 		return mIsProbeLoadedFromDisk;
 	}
