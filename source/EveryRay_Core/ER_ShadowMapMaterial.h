@@ -7,7 +7,7 @@ namespace EveryRay_Core
 	class ER_Mesh;
 
 	namespace ShadowMapMaterial_CBufferData {
-		struct ShadowMapCB
+		struct ER_ALIGN16 ShadowMapCB
 		{
 			XMMATRIX WorldLightViewProjection;
 			XMMATRIX LightViewProjection;

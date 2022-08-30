@@ -138,7 +138,7 @@ namespace EveryRay_Core {
 		rhi->SetConstantBuffers(ER_COMPUTE, { mMainConstantBuffer.Buffer() });
 		rhi->SetShaderResources(ER_COMPUTE, { mShadowMapper.GetShadowTexture(0), mBlueNoiseTexture, mTempVoxelInjectionTexture3D[readIndex] });
 		rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
-		rhi->Dispatch(INT_CEIL(VOXEL_SIZE_X, 8), INT_CEIL(VOXEL_SIZE_Y, 8), INT_CEIL(VOXEL_SIZE_Z, 1));
+		rhi->Dispatch(ER_CEIL(VOXEL_SIZE_X, 8), ER_CEIL(VOXEL_SIZE_Y, 8), ER_CEIL(VOXEL_SIZE_Z, 1));
 
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 
@@ -156,7 +156,7 @@ namespace EveryRay_Core {
 		rhi->SetConstantBuffers(ER_COMPUTE, { mMainConstantBuffer.Buffer() });
 		rhi->SetShaderResources(ER_COMPUTE, { mShadowMapper.GetShadowTexture(0), mBlueNoiseTexture, mTempVoxelInjectionTexture3D[readIndex] });
 		rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
-		rhi->Dispatch(INT_CEIL(VOXEL_SIZE_X, 8), INT_CEIL(VOXEL_SIZE_Y, 8), 1);
+		rhi->Dispatch(ER_CEIL(VOXEL_SIZE_X, 8), ER_CEIL(VOXEL_SIZE_Y, 8), 1);
 
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 	}

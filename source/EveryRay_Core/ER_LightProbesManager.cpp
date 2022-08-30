@@ -570,11 +570,12 @@ namespace EveryRay_Core
 
 			for (auto& probe : mDiffuseProbes)
 			{
-#ifdef ER_PLATFORM_WIN64_DX11
 				if (!probe->IsLoadedFromDisk())
+#ifdef ER_PLATFORM_WIN64_DX11
 					probe->Compute(game, mTempDiffuseCubemapFacesRT, mTempDiffuseCubemapFacesConvolutedRT, mTempDiffuseCubemapDepthBuffers, diffuseProbesPath, aObjects, mQuadRenderer, skybox);
 #else
 					//TODO load empty
+					throw ER_CoreException("ER_LightProbesManager: Computing & saving the probes is only possible on DX11 at the moment");
 #endif
 			}
 			
@@ -619,11 +620,12 @@ namespace EveryRay_Core
 
 			for (auto& probe : mSpecularProbes)
 			{
-#ifdef ER_PLATFORM_WIN64_DX11
 				if (!probe->IsLoadedFromDisk())
+#ifdef ER_PLATFORM_WIN64_DX11
 					probe->Compute(game, mTempSpecularCubemapFacesRT, mTempSpecularCubemapFacesConvolutedRT, mTempSpecularCubemapDepthBuffers, specularProbesPath, aObjects, mQuadRenderer, skybox);
 #else
 					//TODO load empty
+					throw ER_CoreException("ER_LightProbesManager: Computing & saving the probes is only possible on DX11 at the moment");
 #endif		
 			}
 			mSpecularProbesReady = true;

@@ -18,7 +18,7 @@ namespace EveryRay_Core
 	class ER_Terrain;
 
 	namespace FoliageCBufferData {
-		struct FoliageData {
+		struct ER_ALIGN16 FoliageCB {
 			XMMATRIX ShadowMatrices[NUM_SHADOW_CASCADES];
 			XMMATRIX World;
 			XMMATRIX View;
@@ -55,14 +55,14 @@ namespace EveryRay_Core
 		MULTIPLE_QUADS_CROSSING = 3
 	};
 
-	struct GPUFoliagePatchData //for GPU vertex buffer
+	struct ER_ALIGN16 GPUFoliagePatchData //for GPU vertex buffer
 	{
 		XMFLOAT4 pos;
 		XMFLOAT2 uv;
 		XMFLOAT3 normals;
 	};
 
-	struct GPUFoliageInstanceData //for GPU instance buffer
+	struct ER_ALIGN16 GPUFoliageInstanceData //for GPU instance buffer
 	{
 		XMMATRIX worldMatrix = XMMatrixIdentity();
 	};
@@ -144,7 +144,7 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mPS = nullptr;
 		ER_RHI_GPUShader* mPS_GBuffer = nullptr;
 		ER_RHI_GPUShader* mPS_Voxelization = nullptr;
-		ER_RHI_GPUConstantBuffer<FoliageCBufferData::FoliageData> mFoliageConstantBuffer;
+		ER_RHI_GPUConstantBuffer<FoliageCBufferData::FoliageCB> mFoliageConstantBuffer;
 
 		ER_RHI_GPUBuffer* mVertexBuffer = nullptr;
 		ER_RHI_GPUBuffer* mIndexBuffer = nullptr;

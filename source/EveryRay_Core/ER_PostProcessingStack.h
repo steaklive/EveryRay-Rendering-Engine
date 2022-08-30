@@ -14,22 +14,22 @@ namespace EveryRay_Core
 
 	namespace PostEffectsCBuffers
 	{
-		struct FXAACB
+		struct ER_ALIGN16 FXAACB
 		{
 			XMFLOAT2 ScreenDimensions;
 		};	
-		struct VignetteCB
+		struct ER_ALIGN16 VignetteCB
 		{
 			XMFLOAT2 RadiusSoftness;
 		};
-		struct LinearFogCB
+		struct ER_ALIGN16 LinearFogCB
 		{
 			XMFLOAT4 FogColor;
 			float FogNear;
 			float FogFar;
 			float FogDensity;
 		};
-		struct SSRCB
+		struct ER_ALIGN16 SSRCB
 		{
 			XMMATRIX InvProjMatrix;
 			XMMATRIX InvViewMatrix;
@@ -41,7 +41,7 @@ namespace EveryRay_Core
 			float Time;
 			int MaxRayCount;
 		};
-		struct SSSCB
+		struct ER_ALIGN16 SSSCB
 		{
 			XMFLOAT4 SSSStrengthWidthDir;
 			float CameraFOV;

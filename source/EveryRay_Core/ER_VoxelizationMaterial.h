@@ -8,7 +8,7 @@ namespace EveryRay_Core
 	class ER_Camera;
 
 	namespace VoxelizationMaterial_CBufferData {
-		struct VoxelizationCB
+		struct ER_ALIGN16 VoxelizationCB
 		{
 			XMMATRIX World;
 			XMMATRIX ViewProjection;

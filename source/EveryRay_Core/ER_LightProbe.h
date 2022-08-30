@@ -5,7 +5,7 @@
 namespace EveryRay_Core
 {
 	namespace LightProbeCBufferData {
-		struct ProbeConvolutionCB
+		struct ER_ALIGN16 ProbeConvolutionCB
 		{
 			int FaceIndex;
 			int MipIndex;

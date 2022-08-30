@@ -371,7 +371,7 @@ namespace EveryRay_Core {
 			rhi->SetUnorderedAccessResources(ER_COMPUTE, { mVCTMainRT });
 			rhi->SetShaderResources(ER_COMPUTE, resources);
 			rhi->SetConstantBuffers(ER_COMPUTE, { mVoxelConeTracingMainConstantBuffer.Buffer() });
-			rhi->Dispatch(DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetHeight()), 8u), 1u);
+			rhi->Dispatch(ER_DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetWidth()), 8u), ER_DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetHeight()), 8u), 1u);
 			rhi->UnbindResourcesFromShader(ER_COMPUTE);
 		}
 
@@ -385,7 +385,7 @@ namespace EveryRay_Core {
 			rhi->SetUnorderedAccessResources(ER_COMPUTE, { mVCTUpsampleAndBlurRT });
 			rhi->SetShaderResources(ER_COMPUTE, { mVCTMainRT });
 			rhi->SetConstantBuffers(ER_COMPUTE, { mUpsampleBlurConstantBuffer.Buffer() });
-			rhi->Dispatch(DivideByMultiple(static_cast<UINT>(mVCTUpsampleAndBlurRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mVCTUpsampleAndBlurRT->GetHeight()), 8u), 1u);
+			rhi->Dispatch(ER_DivideByMultiple(static_cast<UINT>(mVCTUpsampleAndBlurRT->GetWidth()), 8u), ER_DivideByMultiple(static_cast<UINT>(mVCTUpsampleAndBlurRT->GetHeight()), 8u), 1u);
 			rhi->UnbindResourcesFromShader(ER_COMPUTE);
 		}
 	}
@@ -406,7 +406,7 @@ namespace EveryRay_Core {
 		rhi->SetUnorderedAccessResources(ER_COMPUTE, { mFinalIlluminationRT });
 		rhi->SetShaderResources(ER_COMPUTE, { mShowVCTVoxelizationOnly ? mVCTVoxelizationDebugRT : mVCTUpsampleAndBlurRT, mLocalIlluminationRT });
 		rhi->SetConstantBuffers(ER_COMPUTE, { mCompositeTotalIlluminationConstantBuffer.Buffer() });
-		rhi->Dispatch(DivideByMultiple(static_cast<UINT>(mFinalIlluminationRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mFinalIlluminationRT->GetHeight()), 8u), 1u);
+		rhi->Dispatch(ER_DivideByMultiple(static_cast<UINT>(mFinalIlluminationRT->GetWidth()), 8u), ER_DivideByMultiple(static_cast<UINT>(mFinalIlluminationRT->GetHeight()), 8u), 1u);
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 	}
 
@@ -606,7 +606,7 @@ namespace EveryRay_Core {
 				rhi->SetShaderResources(ER_COMPUTE, { mProbesManager->GetIntegrationMap() }, 17);
 			}
 
-			rhi->Dispatch(DivideByMultiple(static_cast<UINT>(aRenderTarget->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(aRenderTarget->GetHeight()), 8u), 1u);
+			rhi->Dispatch(ER_DivideByMultiple(static_cast<UINT>(aRenderTarget->GetWidth()), 8u), ER_DivideByMultiple(static_cast<UINT>(aRenderTarget->GetHeight()), 8u), 1u);
 			rhi->UnbindResourcesFromShader(ER_COMPUTE);
 		}
 	}

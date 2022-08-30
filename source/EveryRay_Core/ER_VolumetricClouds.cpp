@@ -169,7 +169,7 @@ namespace EveryRay_Core {
 			rhi->SetUnorderedAccessResources(ER_COMPUTE, { mMainRT });
 			rhi->SetShaderResources(ER_COMPUTE, { mSkyAndSunRT,	mWeatherTextureSRV,	mCloudTextureSRV, mWorleyTextureSRV, mIlluminationResultDepthTarget });
 			rhi->SetConstantBuffers(ER_COMPUTE, { mFrameConstantBuffer.Buffer(), mCloudsConstantBuffer.Buffer() });
-			rhi->Dispatch(DivideByMultiple(static_cast<UINT>(mMainRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mMainRT->GetHeight()), 8u), 1u);
+			rhi->Dispatch(ER_DivideByMultiple(static_cast<UINT>(mMainRT->GetWidth()), 8u), ER_DivideByMultiple(static_cast<UINT>(mMainRT->GetHeight()), 8u), 1u);
 			rhi->UnbindResourcesFromShader(ER_COMPUTE);
 		}
 
@@ -183,7 +183,7 @@ namespace EveryRay_Core {
 			rhi->SetUnorderedAccessResources(ER_COMPUTE, { mUpsampleAndBlurRT });
 			rhi->SetShaderResources(ER_COMPUTE, { mMainRT });
 			rhi->SetConstantBuffers(ER_COMPUTE, { mUpsampleBlurConstantBuffer.Buffer() });
-			rhi->Dispatch(DivideByMultiple(static_cast<UINT>(mUpsampleAndBlurRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mUpsampleAndBlurRT->GetHeight()), 8u), 1u);
+			rhi->Dispatch(ER_DivideByMultiple(static_cast<UINT>(mUpsampleAndBlurRT->GetWidth()), 8u), ER_DivideByMultiple(static_cast<UINT>(mUpsampleAndBlurRT->GetHeight()), 8u), 1u);
 			rhi->UnbindResourcesFromShader(ER_COMPUTE);
 		}
 

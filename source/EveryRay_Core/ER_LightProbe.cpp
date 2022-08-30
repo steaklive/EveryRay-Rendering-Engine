@@ -150,6 +150,12 @@ namespace EveryRay_Core
 		SaveProbeOnDisk(game, levelPath, aTextureConvoluted);
 
 		mIsProbeLoadedFromDisk = true;
+
+		{
+			std::wstring probeName = GetConstructedProbeName(levelPath, mProbeType == DIFFUSE_PROBE && mIndex != -1);
+			std::wstring msg = L"[ER Logger][ER_LightProbe] Finished computing and saving the probe: " + probeName + L'\n';
+			ER_OUTPUT_LOG(msg.c_str());
+		}
 	}
 
 	void ER_LightProbe::DrawGeometryToProbe(ER_Core& game, ER_RHI_GPUTexture* aTextureNonConvoluted, ER_RHI_GPUTexture** aDepthBuffers,
@@ -360,7 +366,7 @@ namespace EveryRay_Core
 					}
 					else
 					{
-						std::wstring message = L"[ER Logger][ER_LightProbe] Could not load spherical harmonics file: " + probeName + L". Loading empty coefficients... \n";
+						std::wstring message = L"[ER Logger][ER_LightProbe] Corrupt probe's spherical harmonics file: " + probeName + L". Loading empty coefficients... \n";
 						ER_OUTPUT_LOG(message.c_str());
 						for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
 							mSphericalHarmonicsRGB[i] = XMFLOAT3(0, 0, 0);
@@ -378,7 +384,7 @@ namespace EveryRay_Core
 			}
 			else
 			{
-				std::wstring message = L"[ER Logger][ER_LightProbe] Could not load spherical harmonics file: " + probeName + L". Loading empty coefficients... \n";
+				std::wstring message = L"[ER Logger][ER_LightProbe] Could not load probe's spherical harmonics file: " + probeName + L". This probe will be recomputed and saved to disk. \n";
 				ER_OUTPUT_LOG(message.c_str());
 				mIsProbeLoadedFromDisk = false;
 			}
@@ -387,6 +393,11 @@ namespace EveryRay_Core
 		{
 			assert(mCubemapTexture);
 			mCubemapTexture->CreateGPUTextureResource(rhi, probeName, true, false, true, &mIsProbeLoadedFromDisk);
+			if (!mIsProbeLoadedFromDisk)
+			{
+				std::wstring message = L"[ER Logger][ER_LightProbe] Could not load probe's texture file: " + probeName + L". This probe will be recomputed and saved to disk. \n";
+				ER_OUTPUT_LOG(message.c_str());
+			}
 		}
 		return mIsProbeLoadedFromDisk;
 	}

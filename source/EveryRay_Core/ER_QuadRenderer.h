@@ -3,8 +3,9 @@
 #include "ER_CoreComponent.h"
 #include "RHI/ER_RHI.h"
 
-namespace EveryRay_Core {
-	struct QuadVertex
+namespace EveryRay_Core 
+{
+	struct ER_ALIGN16 QuadVertex
 	{
 		XMFLOAT3 Position;
 		XMFLOAT2 TextureCoordinates;

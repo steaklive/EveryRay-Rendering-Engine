@@ -13,14 +13,9 @@ namespace EveryRay_Core
 		ER_Light(ER_Core& game);
 		~ER_Light();
 
-		const XMCOLOR& Color() const;
-		XMVECTOR ColorVector() const;
-
-		void SetColor(FLOAT r, FLOAT g, FLOAT b, FLOAT a);
-		void SetColor(XMCOLOR color);
-		void SetColor(FXMVECTOR color);
-
+		const XMFLOAT4& GetColor() const { return mColor; }
+		void SetColor(XMFLOAT4& color);
 	protected:
-		XMCOLOR mColor;
+		XMFLOAT4 mColor;
 	};
 }

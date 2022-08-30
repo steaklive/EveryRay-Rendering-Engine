@@ -92,7 +92,7 @@ namespace EveryRay_Core
 		}
 	};
 
-	struct InstancedData
+	struct ER_ALIGN16 InstancedData
 	{
 		XMFLOAT4X4 World;
 
@@ -146,8 +146,8 @@ namespace EveryRay_Core
 		const UINT GetInstanceCount(int lod = 0) { return (mIsInstanced ? static_cast<UINT>(mInstanceData[lod].size()) : 0); }
 		std::vector<InstancedData>& GetInstancesData(int lod = 0) { return mInstanceData[lod]; }
 		
-		XMFLOAT4X4 GetTransformationMatrix4X4() const { return XMFLOAT4X4(mCurrentObjectTransformMatrix); }
-		XMMATRIX GetTransformationMatrix() const { return mTransformationMatrix; }
+		const XMFLOAT4X4& GetTransformationMatrix4X4() const { return XMFLOAT4X4(mCurrentObjectTransformMatrix); }
+		const XMMATRIX& GetTransformationMatrix() const { return mTransformationMatrix; }
 
 		ER_AABB& GetLocalAABB() { return mLocalAABB; } //local space (no transforms)
 		ER_AABB& GetGlobalAABB() { return mGlobalAABB; } //world space (with transforms)

@@ -9,7 +9,7 @@ namespace EveryRay_Core
 	class ER_CoreTime;
 
 	namespace SkyCBufferData {
-		struct SunData {
+		struct ER_ALIGN16 SunData {
 			XMMATRIX InvProj;
 			XMMATRIX InvView;
 			XMFLOAT4 SunDir;
@@ -18,7 +18,7 @@ namespace EveryRay_Core
 			float SunBrightness;
 		};
 
-		struct SkyboxData
+		struct ER_ALIGN16 SkyboxData
 		{
 			XMMATRIX WorldViewProjection;
 			XMFLOAT4 SunColor;

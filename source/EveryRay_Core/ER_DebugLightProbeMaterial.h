@@ -7,7 +7,7 @@ namespace EveryRay_Core
 	class ER_Mesh;
 
 	namespace DebugLightProbeMaterial_CBufferData {
-		struct DebugLightProbeCB
+		struct ER_ALIGN16 DebugLightProbeCB
 		{
 			XMMATRIX ViewProjection;
 			XMMATRIX World;

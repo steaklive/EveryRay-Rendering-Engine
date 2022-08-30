@@ -25,7 +25,7 @@ namespace EveryRay_Core
 	class ER_RenderableAABB;
 	class ER_Camera;
 
-	struct TerrainTileDataGPU
+	struct ER_ALIGN16 TerrainTileDataGPU
 	{
 		XMFLOAT4 UVoffsetTileSize; // x,y - offsets, z,w - tile size
 		XMFLOAT4 AABBMinPoint;
@@ -41,7 +41,7 @@ namespace EveryRay_Core
 	};
 
 	namespace TerrainCBufferData {
-		struct TerrainData {
+		struct ER_ALIGN16 TerrainCB {
 			XMMATRIX ShadowMatrices[NUM_SHADOW_CASCADES];
 			XMMATRIX WorldLightViewProjection;
 			XMMATRIX World;
@@ -60,7 +60,7 @@ namespace EveryRay_Core
 			float TileSize;
 		};
 
-		struct PlaceOnTerrainData
+		struct ER_ALIGN16 PlaceOnTerrainData
 		{
 			float HeightScale;
 			float SplatChannel;
@@ -160,7 +160,7 @@ namespace EveryRay_Core
 
 		ER_DirectionalLight& mDirectionalLight;
 
-		ER_RHI_GPUConstantBuffer<TerrainCBufferData::TerrainData> mTerrainConstantBuffer;
+		ER_RHI_GPUConstantBuffer<TerrainCBufferData::TerrainCB> mTerrainConstantBuffer;
 		ER_RHI_GPUConstantBuffer<TerrainCBufferData::PlaceOnTerrainData> mPlaceOnTerrainConstantBuffer;
 
 		ER_RHI_InputLayout* mInputLayout = nullptr;
