@@ -15,9 +15,9 @@ namespace EveryRay_Core
 			mRootSignature = &rootSignature;
 		}
 
-		const ER_RHI_DX12_GPURootSignature& GetRootSignature(void) const
+		const ER_RHI_DX12_GPURootSignature& GetRootSignature() const
 		{
-			assert(mRootSignature != nullptr);
+			assert(mRootSignature);
 			return *mRootSignature;
 		}
 

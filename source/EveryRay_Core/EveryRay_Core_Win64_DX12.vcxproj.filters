@@ -264,6 +264,12 @@
     <ClInclude Include="RHI\DX12\ER_RHI_DX12_GPUPipelineStateObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RHI\DX12\ER_RHI_DX12_GPUDescriptorHeapManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\DX12\ER_RHI_DX12_GPURootSignature.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -438,6 +444,12 @@
       <Filter>Source Files\Graphics\RHI\DX12</Filter>
     </ClCompile>
     <ClCompile Include="RHI\DX12\ER_RHI_DX12_GPUPipelineStateObject.cpp">
+      <Filter>Source Files\Graphics\RHI\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="RHI\DX12\ER_RHI_DX12_GPUDescriptorHeapManager.cpp">
+      <Filter>Source Files\Graphics\RHI\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="RHI\DX12\ER_RHI_DX12_GPURootSignature.cpp">
       <Filter>Source Files\Graphics\RHI\DX12</Filter>
     </ClCompile>
   </ItemGroup>

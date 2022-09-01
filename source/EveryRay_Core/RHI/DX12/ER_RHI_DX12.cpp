@@ -7,16 +7,6 @@
 #include "..\..\ER_CoreException.h"
 #include "..\..\ER_Utility.h"
 
-#define DX12_MAX_BOUND_RENDER_TARGETS_VIEWS 8
-#define DX12_MAX_BOUND_SHADER_RESOURCE_VIEWS 64 
-#define DX12_MAX_BOUND_UNORDERED_ACCESS_VIEWS 8 
-#define DX12_MAX_BOUND_CONSTANT_BUFFERS 8 
-#define DX12_MAX_BOUND_SAMPLERS 8 
-
-#define DX12_ROOT_PARAMETER_INDEX_CBV 0 
-#define DX12_ROOT_PARAMETER_INDEX_SRV 1 
-#define DX12_ROOT_PARAMETER_INDEX_UAV 2 
-
 namespace EveryRay_Core
 {
 	ER_RHI_DX12::ER_RHI_DX12()
@@ -373,6 +363,11 @@ namespace EveryRay_Core
 		return new ER_RHI_DX12_GPUTexture();
 	}
 
+	ER_RHI_GPURootSignature* ER_RHI_DX12::CreateRootSignature(UINT NumRootParams /*= 0*/, UINT NumStaticSamplers /*= 0*/)
+	{
+		return new ER_RHI_DX12_GPURootSignature(NumRootParams, NumStaticSamplers);
+	}
+
 	void ER_RHI_DX12::CreateTexture(ER_RHI_GPUTexture* aOutTexture, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags /*= ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET*/, int mip /*= 1*/, int depth /*= -1*/, int arraySize /*= 1*/, bool isCubemap /*= false*/, int cubemapArraySize /*= -1*/)
 	{
 		assert(aOutTexture);
@@ -698,10 +693,54 @@ namespace EveryRay_Core
 		mCommandListGraphics[0]->RSSetScissorRects(1, &currentRect);
 	}
 
-	void ER_RHI_DX12::SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot /*= 0*/)
+	void ER_RHI_DX12::SetShader(ER_RHI_GPUShader* aShader)
 	{
+		assert(aShader);
+
+		assert(mCurrentPSOState != ER_RHI_DX12_PSO_STATE::UNSET);
+
+		ER_RHI_DX12_GPUShader* aDX12_Shader = static_cast<ER_RHI_DX12_GPUShader*>(aShader);
+		assert(aDX12_Shader);
+
+		ID3DBlob* blob = static_cast<ID3DBlob*>(aDX12_Shader->GetShaderObject());
+		assert(blob);
+
+		if (mCurrentPSOState == ER_RHI_DX12_PSO_STATE::GRAPHICS)
+		{
+			ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSONames.at(mCurrentGraphicsPSOName);
+
+			switch (aShader->mShaderType)
+			{
+			case ER_RHI_SHADER_TYPE::ER_VERTEX:
+				pso.SetVertexShader(blob->GetBufferPointer(), blob->GetBufferSize());
+				break;
+			case ER_RHI_SHADER_TYPE::ER_GEOMETRY:
+				pso.SetGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize());
+				break;
+			case ER_RHI_SHADER_TYPE::ER_TESSELLATION_HULL:
+				pso.SetHullShader(blob->GetBufferPointer(), blob->GetBufferSize());
+				break;
+			case ER_RHI_SHADER_TYPE::ER_TESSELLATION_DOMAIN:
+				pso.SetDomainShader(blob->GetBufferPointer(), blob->GetBufferSize());
+				break;
+			case ER_RHI_SHADER_TYPE::ER_PIXEL:
+				pso.SetPixelShader(blob->GetBufferPointer(), blob->GetBufferSize());
+				break;
+			}
+		}
+		else
+		{
+			ER_RHI_DX12_ComputePSO& pso = mComputePSONames.at(mCurrentComputePSOName);
+			pso.SetComputeShader(blob->GetBufferPointer(), blob->GetBufferSize());
+		}
+	}
+
+	void ER_RHI_DX12::SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot /*= 0*/, ER_RHI_GPURootSignature* rs)
+	{
+		assert(rs);
 		assert(aSRVs.size() > 0);
 		assert(aSRVs.size() <= DX12_MAX_BOUND_SHADER_RESOURCE_VIEWS);
+		assert(mDescriptorHeapManager);
 
 		ID3D11ShaderResourceView* SRs[DX12_MAX_BOUND_SHADER_RESOURCE_VIEWS] = {};
 		UINT srCount = static_cast<UINT>(aSRVs.size());
@@ -739,8 +778,9 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_RHI_DX12::SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot /*= 0*/)
+	void ER_RHI_DX12::SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot /*= 0*/, ER_RHI_GPURootSignature* rs)
 	{
+		assert(rs);
 		assert(aUAVs.size() > 0);
 		assert(aUAVs.size() <= DX12_MAX_BOUND_UNORDERED_ACCESS_VIEWS);
 		assert(mDescriptorHeapManager);
@@ -760,8 +800,9 @@ namespace EveryRay_Core
 		mCommandListGraphics[0]->SetGraphicsRootDescriptorTable(DX12_ROOT_PARAMETER_INDEX_UAV, uavHandle.GetGPUHandle());
 	}
 
-	void ER_RHI_DX12::SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot /*= 0*/)
+	void ER_RHI_DX12::SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot /*= 0*/, ER_RHI_GPURootSignature* rs)
 	{
+		assert(rs);
 		assert(aCBs.size() > 0);
 		assert(aCBs.size() <= DX12_MAX_BOUND_CONSTANT_BUFFERS);
 		assert(mDescriptorHeapManager);
@@ -778,52 +819,9 @@ namespace EveryRay_Core
 		mCommandListGraphics[0]->SetGraphicsRootDescriptorTable(DX12_ROOT_PARAMETER_INDEX_CBV, cbvHandle.GetGPUHandle());
 	}
 
-	void ER_RHI_DX12::SetShader(ER_RHI_GPUShader* aShader)
+	void ER_RHI_DX12::SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot /*= 0*/, ER_RHI_GPURootSignature* rs)
 	{
-		assert(aShader);
-
-		assert(mCurrentPSOState != ER_RHI_DX12_PSO_STATE::UNSET);
-
-		ER_RHI_DX12_GPUShader* aDX12_Shader = static_cast<ER_RHI_DX12_GPUShader*>(aShader);
-		assert(aDX12_Shader);
-
-		ID3DBlob* blob = static_cast<ID3DBlob*>(aDX12_Shader->GetShaderObject());
-		assert(blob);
-
-		if (mCurrentPSOState == ER_RHI_DX12_PSO_STATE::GRAPHICS)
-		{
-			ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSONames.at(mCurrentGraphicsPSOName);
-			
-			switch (aShader->mShaderType)
-			{
-			case ER_RHI_SHADER_TYPE::ER_VERTEX:
-				pso.SetVertexShader(blob->GetBufferPointer(), blob->GetBufferSize());
-				break;
-			case ER_RHI_SHADER_TYPE::ER_GEOMETRY:
-				pso.SetGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize());
-				break;
-			case ER_RHI_SHADER_TYPE::ER_TESSELLATION_HULL:
-				pso.SetHullShader(blob->GetBufferPointer(), blob->GetBufferSize());
-				break;
-			case ER_RHI_SHADER_TYPE::ER_TESSELLATION_DOMAIN:
-				pso.SetDomainShader(blob->GetBufferPointer(), blob->GetBufferSize());
-				break;
-			case ER_RHI_SHADER_TYPE::ER_PIXEL:
-				pso.SetPixelShader(blob->GetBufferPointer(), blob->GetBufferSize());
-				break;
-			}
-		}
-		else
-		{
-			ER_RHI_DX12_ComputePSO& pso = mComputePSONames.at(mCurrentComputePSOName);
-			pso.SetComputeShader(blob->GetBufferPointer(), blob->GetBufferSize());
-		}
-	}
-
-	void ER_RHI_DX12::SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot /*= 0*/)
-	{
-		TODO
-
+		assert(rs);
 		assert(aSamplers.size() > 0);
 		assert(aSamplers.size() <= DX12_MAX_BOUND_SAMPLERS);
 		assert(mDescriptorHeapManager);

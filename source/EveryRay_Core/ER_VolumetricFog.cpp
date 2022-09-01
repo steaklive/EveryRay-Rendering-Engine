@@ -133,6 +133,17 @@ namespace EveryRay_Core {
 		int readIndex = mCurrentTexture3DRead;
 		int writeIndex = !mCurrentTexture3DRead;
 
+
+		if (!mInjectionPassRootSignature)
+		{
+			mInjectionPassRootSignature = rhi->CreateRootSignature(1, 1);
+			mInjectionPassRootSignature->InitStaticSampler(0, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+
+				mRSMRS.
+			mRSMRS[0].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 0, 2, D3D12_SHADER_VISIBILITY_ALL);
+			mRSMRS[1].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 5, D3D12_SHADER_VISIBILITY_PIXEL);
+		}
+
 		rhi->SetUnorderedAccessResources(ER_COMPUTE, { mTempVoxelInjectionTexture3D[writeIndex] });
 		rhi->SetConstantBuffers(ER_COMPUTE, { mMainConstantBuffer.Buffer() });
 		rhi->SetShaderResources(ER_COMPUTE, { mShadowMapper.GetShadowTexture(0), mBlueNoiseTexture, mTempVoxelInjectionTexture3D[readIndex] });
@@ -144,7 +155,7 @@ namespace EveryRay_Core {
 			rhi->FinalizePSO(mInjectionPassPSOName, true);
 		}
 		rhi->SetPSO(mInjectionPassPSOName, true);
-		rhi->Dispatch(INT_CEIL(VOXEL_SIZE_X, 8), INT_CEIL(VOXEL_SIZE_Y, 8), INT_CEIL(VOXEL_SIZE_Z, 1));
+		rhi->Dispatch(ER_CEIL(VOXEL_SIZE_X, 8), ER_CEIL(VOXEL_SIZE_Y, 8), ER_CEIL(VOXEL_SIZE_Z, 1));
 		rhi->UnsetPSO();
 
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
@@ -169,7 +180,7 @@ namespace EveryRay_Core {
 			rhi->FinalizePSO(mAccumulationPassPSOName, true);
 		}
 		rhi->SetPSO(mAccumulationPassPSOName, true);
-		rhi->Dispatch(INT_CEIL(VOXEL_SIZE_X, 8), INT_CEIL(VOXEL_SIZE_Y, 8), 1);
+		rhi->Dispatch(ER_CEIL(VOXEL_SIZE_X, 8), ER_CEIL(VOXEL_SIZE_Y, 8), 1);
 		rhi->UnsetPSO();
 
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);

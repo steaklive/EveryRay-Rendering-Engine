@@ -191,6 +191,25 @@ namespace EveryRay_Core
 		ER_RHI_DESCRIPTOR_HEAP_TYPE_DSV = (ER_RHI_DESCRIPTOR_HEAP_TYPE_RTV + 1)
 	};
 
+	enum ER_RHI_SHADER_VISIBILITY
+	{
+		ER_RHI_SHADER_VISIBILITY_ALL = 0,
+		ER_RHI_SHADER_VISIBILITY_VERTEX = 1,
+		ER_RHI_SHADER_VISIBILITY_HULL = 2,
+		ER_RHI_SHADER_VISIBILITY_DOMAIN = 3,
+		ER_RHI_SHADER_VISIBILITY_GEOMETRY = 4,
+		ER_RHI_SHADER_VISIBILITY_PIXEL = 5,
+		ER_RHI_SHADER_VISIBILITY_AMPLIFICATION = 6,
+		ER_RHI_SHADER_VISIBILITY_MESH = 7
+	};
+
+	enum ER_RHI_DESCRIPTOR_RANGE_TYPE
+	{
+		ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV = 0,
+		ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV = 1,
+		ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV = 2
+	};
+
 	struct ER_RHI_INPUT_ELEMENT_DESC
 	{
 		LPCSTR SemanticName;
@@ -234,6 +253,7 @@ namespace EveryRay_Core
 		UINT mInputElementDescriptionCount;
 	};
 	
+	class ER_RHI_GPURootSignature;
 	class ER_RHI_GPUResource;
 	class ER_RHI_GPUTexture;
 	class ER_RHI_GPUBuffer;
@@ -263,6 +283,7 @@ namespace EveryRay_Core
 		virtual ER_RHI_GPUShader* CreateGPUShader() = 0;
 		virtual ER_RHI_GPUBuffer* CreateGPUBuffer() = 0;
 		virtual ER_RHI_GPUTexture* CreateGPUTexture() = 0;
+		virtual ER_RHI_GPURootSignature* CreateRootSignature(UINT NumRootParams = 0, UINT NumStaticSamplers = 0) = 0;
 		virtual ER_RHI_InputLayout* CreateInputLayout(ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount) = 0;
 
 		virtual void CreateTexture(ER_RHI_GPUTexture* aOutTexture, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags,
@@ -317,10 +338,10 @@ namespace EveryRay_Core
 
 		virtual void SetRect(const ER_RHI_Rect& rect) = 0;
 		virtual void SetShader(ER_RHI_GPUShader* aShader) = 0;
-		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot = 0) = 0;
-		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot = 0) = 0;
-		virtual void SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot = 0) = 0;
-		virtual void SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot = 0) = 0;
+		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot = 0, ER_RHI_GPURootSignature* rs = nullptr) = 0;
+		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot = 0, ER_RHI_GPURootSignature* rs = nullptr) = 0;
+		virtual void SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot = 0, ER_RHI_GPURootSignature* rs = nullptr) = 0;
+		virtual void SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot = 0, ER_RHI_GPURootSignature* rs = nullptr) = 0;
 		virtual void SetIndexBuffer(ER_RHI_GPUBuffer* aBuffer, UINT offset = 0) = 0;
 		virtual void SetVertexBuffers(const std::vector<ER_RHI_GPUBuffer*>& aVertexBuffers) = 0;
 		virtual void SetInputLayout(ER_RHI_InputLayout* aIL) = 0;
@@ -366,6 +387,16 @@ namespace EveryRay_Core
 
 		int mCurrentGraphicsCommandListIndex = 0;
 		int mCurrentComputeCommandListIndex = 0;
+	};
+
+	class ER_RHI_GPURootSignature
+	{
+	public:
+		ER_RHI_GPURootSignature(UINT NumRootParams = 0, UINT NumStaticSamplers = 0) {}
+		virtual ~ER_RHI_GPURootSignature() {}
+
+		virtual void InitStaticSamplers(UINT registers, const std::vector<ER_RHI_SAMPLER_STATE>& samplers, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) { AbstractRHIMethodAssert();	}
+		virtual void InitDescriptorTable(const std::vector<ER_RHI_DESCRIPTOR_RANGE_TYPE>& ranges, const std::vector<ER_RHI_SHADER_VISIBILITY>& visibilities) { AbstractRHIMethodAssert(); }
 	};
 
 	class ER_RHI_GPUResource

@@ -50,8 +50,8 @@
 #define NUM_SHADOW_CASCADES 3
 #define MAX_LOD 3
 
-#define INT_CEIL(n,d) (int)ceil((float)n/d)
-
+#define ER_CEIL(n,d) (int)ceil((float)n/d)
+#define ER_ALIGN(value, alignment) (((value + alignment - 1) / alignment) * alignment)
 #define ER_OUTPUT_LOG( s ) { OutputDebugString(s); }
 
 template <typename T>

@@ -12,6 +12,17 @@
 
 #include "imgui_impl_dx12.h"
 
+#define DX12_MAX_BOUND_RENDER_TARGETS_VIEWS 8
+#define DX12_MAX_BOUND_SHADER_RESOURCE_VIEWS 64 
+#define DX12_MAX_BOUND_UNORDERED_ACCESS_VIEWS 8 
+#define DX12_MAX_BOUND_CONSTANT_BUFFERS 8 
+#define DX12_MAX_BOUND_SAMPLERS 8 
+#define DX12_MAX_BOUND_ROOT_PARAMS 8 
+
+#define DX12_ROOT_PARAMETER_INDEX_CBV 0 
+#define DX12_ROOT_PARAMETER_INDEX_SRV 1 
+#define DX12_ROOT_PARAMETER_INDEX_UAV 2 
+
 namespace EveryRay_Core
 {
 	class ER_RHI_DX12_InputLayout : public ER_RHI_InputLayout
@@ -56,6 +67,7 @@ namespace EveryRay_Core
 		virtual ER_RHI_GPUShader* CreateGPUShader() override;
 		virtual ER_RHI_GPUBuffer* CreateGPUBuffer() override;
 		virtual ER_RHI_GPUTexture* CreateGPUTexture() override;
+		virtual ER_RHI_GPURootSignature* CreateRootSignature(UINT NumRootParams = 0, UINT NumStaticSamplers = 0) override;
 		virtual ER_RHI_InputLayout* CreateInputLayout(ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount) override;
 
 		virtual void CreateTexture(ER_RHI_GPUTexture* aOutTexture, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE,
@@ -105,11 +117,11 @@ namespace EveryRay_Core
 		virtual void SetViewport(const ER_RHI_Viewport& aViewport) override;
 		
 		virtual void SetRect(const ER_RHI_Rect& rect) override;
-		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot = 0) override;
-		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot = 0) override;
-		virtual void SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot = 0) override;
 		virtual void SetShader(ER_RHI_GPUShader* aShader) override;
-		virtual void SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot = 0) override;
+		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot = 0, ER_RHI_GPURootSignature* rs = nullptr) override;
+		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot = 0, ER_RHI_GPURootSignature* rs = nullptr) override;
+		virtual void SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot = 0, ER_RHI_GPURootSignature* rs = nullptr) override;
+		virtual void SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot = 0, ER_RHI_GPURootSignature* rs = nullptr) override;
 		virtual void SetInputLayout(ER_RHI_InputLayout* aIL) override;
 		virtual void SetEmptyInputLayout() override;
 		virtual void SetIndexBuffer(ER_RHI_GPUBuffer* aBuffer, UINT offset = 0) override;
