@@ -735,60 +735,47 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_RHI_DX12::SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot /*= 0*/, ER_RHI_GPURootSignature* rs)
+	void ER_RHI_DX12::SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot /*= 0*/,
+		ER_RHI_GPURootSignature* rs, int rootParamIndex, bool isComputeRS)
 	{
+		UINT srvCount = static_cast<UINT>(aSRVs.size());
 		assert(rs);
-		assert(aSRVs.size() > 0);
-		assert(aSRVs.size() <= DX12_MAX_BOUND_SHADER_RESOURCE_VIEWS);
+		assert(rootParamIndex >= 0 && rootParamIndex < rs->GetRootParameterCount());
+		assert(srvCount > 0 && srvCount <= DX12_MAX_BOUND_SHADER_RESOURCE_VIEWS);
+		assert(srvCount <= rs->GetRootParameterSRVCount(rootParamIndex));
 		assert(mDescriptorHeapManager);
 
-		ID3D11ShaderResourceView* SRs[DX12_MAX_BOUND_SHADER_RESOURCE_VIEWS] = {};
-		UINT srCount = static_cast<UINT>(aSRVs.size());
-		for (UINT i = 0; i < srCount; i++)
+		ER_RHI_DX12_GPUDescriptorHeap* gpuDescriptorHeap = mDescriptorHeapManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		ER_RHI_DX12_DescriptorHandle& srvHandle = gpuDescriptorHeap->GetHandleBlock(srvCount);
+		for (UINT i = 0; i < srvCount; i++)
 		{
-			if (!aSRVs[i])
-				SRs[i] = nullptr;
-			else
-			{
-				SRs[i] = static_cast<ID3D11ShaderResourceView*>(aSRVs[i]->GetSRV());
-				assert(SRs[i]);
-			}
+			if (aSRVs[i])
+				gpuDescriptorHeap->AddToHandle(mDevice, srvHandle, static_cast<ER_RHI_DX12_GPUTexture*>(aSRVs[i])->GetSRVDescriptorHandle());
+			//else
+			//	gpuDescriptorHeap->AddToHandle(mDevice, srvHandle, static_cast<ER_RHI_DX12_GPUTexture*>(aUAVs[i])->GetUAVDescriptorHandle());
+			//TODO add null SRV
 		}
+		if (!isComputeRS)
+			mCommandListGraphics[0]->SetGraphicsRootDescriptorTable(rootParamIndex, srvHandle.GetGPUHandle());
+		else
+			mCommandListGraphics[0]->SetComputeRootDescriptorTable(rootParamIndex, srvHandle.GetGPUHandle());
 
-		switch (aShaderType)
-		{
-		case ER_RHI_SHADER_TYPE::ER_VERTEX:
-			mDirect3DDeviceContext->VSSetShaderResources(startSlot, srCount, SRs);
-			break;
-		case ER_RHI_SHADER_TYPE::ER_GEOMETRY:
-			mDirect3DDeviceContext->GSSetShaderResources(startSlot, srCount, SRs);
-			break;
-		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_HULL:
-			mDirect3DDeviceContext->HSSetShaderResources(startSlot, srCount, SRs);
-			break;
-		case ER_RHI_SHADER_TYPE::ER_TESSELLATION_DOMAIN:
-			mDirect3DDeviceContext->DSSetShaderResources(startSlot, srCount, SRs);
-			break;
-		case ER_RHI_SHADER_TYPE::ER_PIXEL:
-			mDirect3DDeviceContext->PSSetShaderResources(startSlot, srCount, SRs);
-			break;
-		case ER_RHI_SHADER_TYPE::ER_COMPUTE:
-			mDirect3DDeviceContext->CSSetShaderResources(startSlot, srCount, SRs);
-			break;
-		}
+		//TODO compute queue
 	}
 
-	void ER_RHI_DX12::SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot /*= 0*/, ER_RHI_GPURootSignature* rs)
+	void ER_RHI_DX12::SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot /*= 0*/,
+		ER_RHI_GPURootSignature* rs, int rootParamIndex, bool isComputeRS)
 	{
-		assert(rs);
-		assert(aUAVs.size() > 0);
-		assert(aUAVs.size() <= DX12_MAX_BOUND_UNORDERED_ACCESS_VIEWS);
-		assert(mDescriptorHeapManager);
 		UINT uavCount = static_cast<UINT>(aUAVs.size());
+		assert(rs);
+		assert(rootParamIndex >= 0 && rootParamIndex < rs->GetRootParameterCount());
+		assert(uavCount > 0 && uavCount <= DX12_MAX_BOUND_UNORDERED_ACCESS_VIEWS);
+		assert(uavCount <= rs->GetRootParameterUAVCount(rootParamIndex));
+		assert(mDescriptorHeapManager);
 
 		ER_RHI_DX12_GPUDescriptorHeap* gpuDescriptorHeap = mDescriptorHeapManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 		ER_RHI_DX12_DescriptorHandle& uavHandle = gpuDescriptorHeap->GetHandleBlock(uavCount);
-		for (UINT i = 0; i < uavHandle; i++)
+		for (UINT i = 0; i < uavCount; i++)
 		{
 			assert(aUAVs[i]);
 			if (aUAVs[i]->IsBuffer())
@@ -797,51 +784,46 @@ namespace EveryRay_Core
 				gpuDescriptorHeap->AddToHandle(mDevice, uavHandle, static_cast<ER_RHI_DX12_GPUTexture*>(aUAVs[i])->GetUAVDescriptorHandle());
 		}
 
-		mCommandListGraphics[0]->SetGraphicsRootDescriptorTable(DX12_ROOT_PARAMETER_INDEX_UAV, uavHandle.GetGPUHandle());
+		if (!isComputeRS)
+			mCommandListGraphics[0]->SetGraphicsRootDescriptorTable(rootParamIndex, uavHandle.GetGPUHandle());
+		else
+			mCommandListGraphics[0]->SetComputeRootDescriptorTable(rootParamIndex, uavHandle.GetGPUHandle());
+
+		//TODO compute queue
 	}
 
-	void ER_RHI_DX12::SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot /*= 0*/, ER_RHI_GPURootSignature* rs)
+	void ER_RHI_DX12::SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot /*= 0*/,
+		ER_RHI_GPURootSignature* rs, int rootParamIndex, bool isComputeRS)
 	{
+		UINT cbvCount = static_cast<UINT>(aCBs.size());
 		assert(rs);
-		assert(aCBs.size() > 0);
-		assert(aCBs.size() <= DX12_MAX_BOUND_CONSTANT_BUFFERS);
+		assert(rootParamIndex >= 0 && rootParamIndex < rs->GetRootParameterCount());
+		assert(cbvCount > 0 && cbvCount <= DX12_MAX_BOUND_CONSTANT_BUFFERS);
+		assert(cbvCount <= rs->GetRootParameterCBVCount(rootParamIndex));
 		assert(mDescriptorHeapManager);
-		UINT cbsCount = static_cast<UINT>(aCBs.size());
 
 		ER_RHI_DX12_GPUDescriptorHeap* gpuDescriptorHeap = mDescriptorHeapManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-		ER_RHI_DX12_DescriptorHandle& cbvHandle = gpuDescriptorHeap->GetHandleBlock(cbsCount);
-		for (UINT i = 0; i < cbsCount; i++)
+		ER_RHI_DX12_DescriptorHandle& cbvHandle = gpuDescriptorHeap->GetHandleBlock(cbvCount);
+		for (UINT i = 0; i < cbvCount; i++)
 		{
 			assert(aCBs[i]);
 			gpuDescriptorHeap->AddToHandle(mDevice, cbvHandle, static_cast<ER_RHI_DX12_GPUBuffer*>(aCBs[i])->GetCBVDescriptorHandle());
 		}
 
-		mCommandListGraphics[0]->SetGraphicsRootDescriptorTable(DX12_ROOT_PARAMETER_INDEX_CBV, cbvHandle.GetGPUHandle());
+		if (!isComputeRS)
+			mCommandListGraphics[0]->SetGraphicsRootDescriptorTable(rootParamIndex, cbvHandle.GetGPUHandle());
+		else
+			mCommandListGraphics[0]->SetComputeRootDescriptorTable(rootParamIndex, cbvHandle.GetGPUHandle());
+
+		//TODO compute queue
 	}
 
 	void ER_RHI_DX12::SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot /*= 0*/, ER_RHI_GPURootSignature* rs)
 	{
 		assert(rs);
-		assert(aSamplers.size() > 0);
-		assert(aSamplers.size() <= DX12_MAX_BOUND_SAMPLERS);
-		assert(mDescriptorHeapManager);
-		UINT ssCount = static_cast<UINT>(aSamplers.size());
+		assert(rs->GetStaticSamplersCount() == aSamplers.size()); // we can do better checks (compare samplers), but thats ok for now
 
-		ER_RHI_DX12_GPUDescriptorHeap* gpuDescriptorHeap = mDescriptorHeapManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-		ER_RHI_DX12_DescriptorHandle& ssHandle = gpuDescriptorHeap->GetHandleBlock(ssCount);
-
-		for (UINT i = 0; i < ssCount; i++)
-		{
-			auto it = mSamplerStates.find(aSamplers[i]);
-			if (it == mSamplerStates.end())
-				throw ER_CoreException("ER_RHI_DX12: Could not find a sampler state that you want to bind to the shader. It is probably not implemented in your graphics API");				
-			else
-			{
-				gpuDescriptorHeap->AddToHandle(mDevice, cbvHandle, static_cast<ER_RHI_DX12_GPUBuffer*>(aCBs[i])->GetCBVDescriptorHandle());
-			}
-		}
-
-		mCommandListGraphics[0]->SetGraphicsRootDescriptorTable(DX12_ROOT_PARAMETER_INDEX_, cbvHandle.GetGPUHandle());
+		//nothing here, because we bind static samplers in root signatures
 	}
 
 	void ER_RHI_DX12::SetInputLayout(ER_RHI_InputLayout* aIL)
@@ -915,6 +897,17 @@ namespace EveryRay_Core
 		}
 	}
 
+	void ER_RHI_DX12::SetRootSignature(ER_RHI_GPURootSignature* rs, bool isCompute = false)
+	{
+		assert(rs);
+		if (!isCompute)
+			mCommandListGraphics[0]->SetGraphicsRootSignature(static_cast<ER_RHI_DX12_GPURootSignature*>(rs)->GetSignature());
+		else
+			mCommandListGraphics[0]->SetComputeRootSignature(static_cast<ER_RHI_DX12_GPURootSignature*>(rs)->GetSignature());
+
+		//TODO compute queue
+	}
+
 	void ER_RHI_DX12::SetTopologyType(ER_RHI_PRIMITIVE_TYPE aType)
 	{
 		if (mCurrentPSOState == ER_RHI_DX12_PSO_STATE::UNSET)
@@ -975,6 +968,21 @@ namespace EveryRay_Core
 			mGraphicsPSONames.insert(std::make_pair(aName, ER_RHI_DX12_GraphicsPSO(aName)));
 			mCurrentGraphicsPSOName = aName;
 			mCurrentPSOState = ER_RHI_DX12_PSO_STATE::GRAPHICS;
+		}
+	}
+
+	void ER_RHI_DX12::SetRootSignatureToPSO(const std::string& aName, const ER_RHI_GPURootSignature& rs, bool isCompute /*= false*/)
+	{
+		assert(&rs);
+		if (!isCompute)
+		{
+			assert(mCurrentGraphicsPSOName == aName);
+			mGraphicsPSONames.at(aName).SetRootSignature(rs);
+		}
+		else
+		{
+			assert(mCurrentComputePSOName == aName);
+			mComputePSONames.at(aName).SetRootSignature(rs);
 		}
 	}
 

@@ -93,11 +93,27 @@ namespace EveryRay_Core
 			range->BaseShaderRegister = Register;
 			range->RegisterSpace = Space;
 			range->OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+			if (Type == D3D12_DESCRIPTOR_RANGE_TYPE_SRV)
+				mSRVCount += Count;
+			else if (Type == D3D12_DESCRIPTOR_RANGE_TYPE_UAV)
+				mUAVCount += Count;
+			else if (Type == D3D12_DESCRIPTOR_RANGE_TYPE_CBV)
+				mCBVCount += Count;
 		}
 
+		void SetDescriptorHandle(ER_RHI_DX12_DescriptorHandle& handle) { mDescriptorHandle = handle; }
+		ER_RHI_DX12_DescriptorHandle& GetDescriptorHandle() const { return mDescriptorHandle; }
+
 		const D3D12_ROOT_PARAMETER& operator() (void) const { return mRootParameter; }
+
+		UINT mSRVCount = 0;
+		UINT mCBVCount = 0;
+		UINT mUAVCount = 0;
 	protected:
 		D3D12_ROOT_PARAMETER mRootParameter;
+	private:
+		ER_RHI_DX12_DescriptorHandle mDescriptorHandle;
 	};
 
 	// Maximum 64 DWORDS divied up amongst all root parameters.
@@ -111,12 +127,21 @@ namespace EveryRay_Core
 		ER_RHI_DX12_GPURootSignature(UINT NumRootParams = 0, UINT NumStaticSamplers = 0);
 		virtual ~ER_RHI_DX12_GPURootSignature();
 
+		virtual void InitStaticSampler(UINT regIndex, const ER_RHI_SAMPLER_STATE& samplers, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) override;
+		virtual void InitDescriptorTable(int index, const std::vector<ER_RHI_DESCRIPTOR_RANGE_TYPE>& ranges, const std::vector<UINT>& registerIndices,
+			const std::vector<UINT>& descriptorCounters, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) override;
+		virtual int GetStaticSamplersCount() override { return mNumInitializedStaticSamplers; }
+		virtual int GetRootParameterCount() override { return mNumParameters; }
+
+		virtual int GetRootParameterCBVCount(int paramIndex) override { return mRootParameters.get()[EntryIndex].mCBVCount; }
+		virtual int GetRootParameterSRVCount(int paramIndex) override { return mRootParameters.get()[EntryIndex].mSRVCount; }
+		virtual int GetRootParameterUAVCount(int paramIndex) override { return mRootParameters.get()[EntryIndex].mUAVCount; }
+
 		ER_RHI_DX12_GPURootParameter& operator[] (size_t EntryIndex)
 		{
 			assert(EntryIndex < mNumParameters);
 			return mRootParameters.get()[EntryIndex];
 		}
-
 		const ER_RHI_DX12_GPURootParameter& operator[] (size_t EntryIndex) const
 		{
 			assert(EntryIndex < mNumParameters);

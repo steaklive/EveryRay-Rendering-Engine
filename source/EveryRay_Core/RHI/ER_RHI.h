@@ -337,11 +337,19 @@ namespace EveryRay_Core
 		virtual const ER_RHI_Viewport& GetCurrentViewport() { return mCurrentViewport; }
 
 		virtual void SetRect(const ER_RHI_Rect& rect) = 0;
+		
 		virtual void SetShader(ER_RHI_GPUShader* aShader) = 0;
-		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot = 0, ER_RHI_GPURootSignature* rs = nullptr) = 0;
-		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot = 0, ER_RHI_GPURootSignature* rs = nullptr) = 0;
-		virtual void SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot = 0, ER_RHI_GPURootSignature* rs = nullptr) = 0;
+		
+		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot = 0,
+			ER_RHI_GPURootSignature* rs = nullptr, int rootParamIndex = -1, bool isComputeRS = false) = 0;
+		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot = 0,
+			ER_RHI_GPURootSignature* rs = nullptr, int rootParamIndex = -1, bool isComputeRS = false) = 0;
+		virtual void SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot = 0,
+			ER_RHI_GPURootSignature* rs = nullptr, int rootParamIndex = -1, bool isComputeRS = false) = 0;
 		virtual void SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot = 0, ER_RHI_GPURootSignature* rs = nullptr) = 0;
+		
+		virtual void SetRootSignature(ER_RHI_GPURootSignature* rs, bool isCompute = false) = 0;
+		
 		virtual void SetIndexBuffer(ER_RHI_GPUBuffer* aBuffer, UINT offset = 0) = 0;
 		virtual void SetVertexBuffers(const std::vector<ER_RHI_GPUBuffer*>& aVertexBuffers) = 0;
 		virtual void SetInputLayout(ER_RHI_InputLayout* aIL) = 0;
@@ -354,6 +362,7 @@ namespace EveryRay_Core
 
 		virtual bool IsPSOReady(const std::string& aName, bool isCompute = false) = 0;
 		virtual void InitializePSO(const std::string& aName, bool isCompute = false) = 0;
+		virtual void SetRootSignatureToPSO(const std::string& aName, cosnt ER_RHI_GPURootSignature& rs, bool isCompute = false) = 0;
 		virtual void FinalizePSO(const std::string& aName, bool isCompute = false) = 0;
 		virtual void SetPSO(const std::string& aName, bool isCompute = false) = 0;
 		virtual void UnsetPSO() = 0;
@@ -395,8 +404,16 @@ namespace EveryRay_Core
 		ER_RHI_GPURootSignature(UINT NumRootParams = 0, UINT NumStaticSamplers = 0) {}
 		virtual ~ER_RHI_GPURootSignature() {}
 
-		virtual void InitStaticSamplers(UINT registers, const std::vector<ER_RHI_SAMPLER_STATE>& samplers, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) { AbstractRHIMethodAssert();	}
-		virtual void InitDescriptorTable(const std::vector<ER_RHI_DESCRIPTOR_RANGE_TYPE>& ranges, const std::vector<ER_RHI_SHADER_VISIBILITY>& visibilities) { AbstractRHIMethodAssert(); }
+		virtual void InitStaticSampler(UINT regIndex, const std::vector<ER_RHI_SAMPLER_STATE>& samplers, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) { AbstractRHIMethodAssert();	}
+		virtual void InitDescriptorTable(int rootParamIndex, const std::vector<ER_RHI_DESCRIPTOR_RANGE_TYPE>& ranges, const std::vector<UINT>& registerIndices,
+			const std::vector<UINT>& descriptorCounters, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) {	AbstractRHIMethodAssert(); }
+
+		virtual int GetStaticSamplersCount() { AbstractRHIMethodAssert(); }
+		virtual int GetRootParameterCount() { AbstractRHIMethodAssert(); }
+
+		virtual int GetRootParameterCBVCount(int paramIndex) { AbstractRHIMethodAssert(); }
+		virtual int GetRootParameterSRVCount(int paramIndex) { AbstractRHIMethodAssert(); }
+		virtual int GetRootParameterUAVCount(int paramIndex) { AbstractRHIMethodAssert(); }
 	};
 
 	class ER_RHI_GPUResource

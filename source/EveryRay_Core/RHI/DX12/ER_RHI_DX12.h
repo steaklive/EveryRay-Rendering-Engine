@@ -19,10 +19,6 @@
 #define DX12_MAX_BOUND_SAMPLERS 8 
 #define DX12_MAX_BOUND_ROOT_PARAMS 8 
 
-#define DX12_ROOT_PARAMETER_INDEX_CBV 0 
-#define DX12_ROOT_PARAMETER_INDEX_SRV 1 
-#define DX12_ROOT_PARAMETER_INDEX_UAV 2 
-
 namespace EveryRay_Core
 {
 	class ER_RHI_DX12_InputLayout : public ER_RHI_InputLayout
@@ -117,11 +113,19 @@ namespace EveryRay_Core
 		virtual void SetViewport(const ER_RHI_Viewport& aViewport) override;
 		
 		virtual void SetRect(const ER_RHI_Rect& rect) override;
+		
 		virtual void SetShader(ER_RHI_GPUShader* aShader) override;
-		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot = 0, ER_RHI_GPURootSignature* rs = nullptr) override;
-		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot = 0, ER_RHI_GPURootSignature* rs = nullptr) override;
-		virtual void SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot = 0, ER_RHI_GPURootSignature* rs = nullptr) override;
+		
+		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot = 0, 
+			ER_RHI_GPURootSignature* rs = nullptr, int rootParamIndex = -1, bool isComputeRS = false) override;
+		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot = 0,
+			ER_RHI_GPURootSignature* rs = nullptr, int rootParamIndex = -1, bool isComputeRS = false) override;
+		virtual void SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot = 0,
+			ER_RHI_GPURootSignature* rs = nullptr, int rootParamIndex = -1, bool isComputeRS = false) override;
 		virtual void SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot = 0, ER_RHI_GPURootSignature* rs = nullptr) override;
+		
+		virtual void SetRootSignature(ER_RHI_GPURootSignature* rs, bool isCompute = false) override;
+		
 		virtual void SetInputLayout(ER_RHI_InputLayout* aIL) override;
 		virtual void SetEmptyInputLayout() override;
 		virtual void SetIndexBuffer(ER_RHI_GPUBuffer* aBuffer, UINT offset = 0) override;
@@ -134,6 +138,7 @@ namespace EveryRay_Core
 
 		virtual bool IsPSOReady(const std::string& aName, bool isCompute = false) override;
 		virtual void InitializePSO(const std::string& aName, bool isCompute = false) override;
+		virtual void SetRootSignatureToPSO(const std::string& aName, const ER_RHI_GPURootSignature& rs, bool isCompute = false) override;
 		virtual void FinalizePSO(const std::string& aName, bool isCompute = false) override;
 		virtual void SetPSO(const std::string& aName, bool isCompute = false) override;
 		virtual void UnsetPSO() override;

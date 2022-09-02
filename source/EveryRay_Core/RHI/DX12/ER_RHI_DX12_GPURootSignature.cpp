@@ -14,6 +14,26 @@ namespace EveryRay_Core
 		ReleaseObject(mSignature);
 	}
 
+	void ER_RHI_DX12_GPURootSignature::InitStaticSampler(UINT regIndex, const ER_RHI_SAMPLER_STATE& sampler, ER_RHI_SHADER_VISIBILITY visibility /*= ER_RHI_SHADER_VISIBILITY_ALL*/)
+	{
+		assert(regIndex < mNumInitializedStaticSamplers);
+		InitStaticSampler(regIndex, sampler, visibility)
+	}
+
+	void ER_RHI_DX12_GPURootSignature::InitDescriptorTable(int index, const std::vector<ER_RHI_DESCRIPTOR_RANGE_TYPE>& ranges, const std::vector<UINT>& registerIndices,
+		const std::vector<UINT>& descriptorCounters, ER_RHI_SHADER_VISIBILITY visibility)
+	{
+		assert(index < mNumParameters);
+
+		int rangesSize = static_cast<int>(ranges.size());
+		assert(rangesSize == descriptorCounters.size() && rangesSize == registerIndices.size());
+
+		ER_RHI_DX12_GPURootParameter& rootParam = mRootParameters.get()[index];
+		rootParam.InitAsDescriptorTable(rangesSize, visibility);
+		for (int i = 0; i < rangesSize; i++)
+			rootParam.SetTableRange(i, ranges[i], registerIndices[i], descriptorCounters[i]);
+	}
+
 	void ER_RHI_DX12_GPURootSignature::Reset(UINT NumRootParams, UINT NumStaticSamplers /*= 0*/)
 	{
 		if (NumRootParams > 0)

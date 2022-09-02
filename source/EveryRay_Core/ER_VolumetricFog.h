@@ -67,7 +67,9 @@ namespace EveryRay_Core
 		ER_RHI_GPUConstantBuffer<VolumetricFogCBufferData::MainCB> mMainConstantBuffer;
 		ER_RHI_GPUConstantBuffer<VolumetricFogCBufferData::CompositeCB> mCompositeConstantBuffer;
 
-		ER_RHI_GPURootSignature* mInjectionPassRootSignature = nullptr;
+		ER_RHI_GPURootSignature* mInjectionAccumulationPassesRootSignature = nullptr;
+		ER_RHI_GPURootSignature* mCompositePassRootSignature = nullptr;
+
 		ER_RHI_GPUShader* mInjectionCS = nullptr;
 		std::string mInjectionPassPSOName = "Volumetric Fog - Injection PSO";
 
