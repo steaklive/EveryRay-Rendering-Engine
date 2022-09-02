@@ -78,9 +78,9 @@ namespace EveryRay_Core {
 		mCompositePassRootSignature = rhi->CreateRootSignature(2, 1);
 		if (!mCompositePassRootSignature)
 		{
-			mCompositePassRootSignature->InitStaticSampler(0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, 0);
-			mCompositePassRootSignature->InitDescriptorTable(0, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV } { 0 }, { 3 });
-			mCompositePassRootSignature->InitDescriptorTable(2, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV } { 0 }, { 1 });
+			mCompositePassRootSignature->InitStaticSampler(0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, 0, ER_RHI_SHADER_VISIBILITY_PIXEL);
+			mCompositePassRootSignature->InitDescriptorTable(0, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV } { 0 }, { 3 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+			mCompositePassRootSignature->InitDescriptorTable(2, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV } { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
 			mCompositePassRootSignature->Finalize(rhi, "ER_VolumetricFog: Composite Pass Root Signature");
 		}
 
