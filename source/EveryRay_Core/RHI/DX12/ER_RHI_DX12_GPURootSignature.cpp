@@ -162,5 +162,11 @@ namespace EveryRay_Core
 		pErrorBlob->Release();
 	}
 
+	void ER_RHI_DX12_GPURootSignature::Finalize(ER_RHI* rhi, const std::wstring& name)
+	{
+		assert(rhi);
+		Finalize(static_cast<ER_RHI_DX12*>(rhi)->GetDevice(), name);
+	}
+
 }
 

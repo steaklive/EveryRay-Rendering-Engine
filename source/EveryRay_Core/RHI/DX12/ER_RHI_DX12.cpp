@@ -751,8 +751,8 @@ namespace EveryRay_Core
 		{
 			if (aSRVs[i])
 				gpuDescriptorHeap->AddToHandle(mDevice, srvHandle, static_cast<ER_RHI_DX12_GPUTexture*>(aSRVs[i])->GetSRVDescriptorHandle());
-			//else
-			//	gpuDescriptorHeap->AddToHandle(mDevice, srvHandle, static_cast<ER_RHI_DX12_GPUTexture*>(aUAVs[i])->GetUAVDescriptorHandle());
+			else
+				gpuDescriptorHeap->AddToHandle(mDevice, srvHandle, static_cast<ER_RHI_DX12_GPUTexture*>(aNullSRV)->GetUAVDescriptorHandle());
 			//TODO add null SRV
 		}
 		if (!isComputeRS)
@@ -1054,10 +1054,11 @@ namespace EveryRay_Core
 		ER_RHI_DX12_GPUBuffer* buffer = static_cast<ER_RHI_DX12_GPUBuffer*>(aBuffer);
 		assert(buffer);
 
-		D3D11_MAPPED_SUBRESOURCE mappedResource;
-		ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
-		buffer->Map(this, D3D11_MAP_WRITE_DISCARD, &mappedResource);
-		memcpy(mappedResource.pData, aData, dataSize);
+		void* aOutData = nullptr;
+		ZeroMemory(aOutData, mStride);
+
+		buffer->Map(this, aOutData);
+		memcpy(aOutData, aData, dataSize);
 		buffer->Unmap(this);
 	}
 

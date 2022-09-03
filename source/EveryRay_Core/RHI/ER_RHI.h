@@ -404,16 +404,16 @@ namespace EveryRay_Core
 		ER_RHI_GPURootSignature(UINT NumRootParams = 0, UINT NumStaticSamplers = 0) {}
 		virtual ~ER_RHI_GPURootSignature() {}
 
-		virtual void InitStaticSampler(UINT regIndex, const std::vector<ER_RHI_SAMPLER_STATE>& samplers, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) { AbstractRHIMethodAssert();	}
+		virtual void InitStaticSampler(UINT regIndex, const ER_RHI_SAMPLER_STATE& sampler, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) { AbstractRHIMethodAssert();	}
 		virtual void InitDescriptorTable(int rootParamIndex, const std::vector<ER_RHI_DESCRIPTOR_RANGE_TYPE>& ranges, const std::vector<UINT>& registerIndices,
 			const std::vector<UINT>& descriptorCounters, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) {	AbstractRHIMethodAssert(); }
+		virtual void Finalize(ER_RHI* rhi, const std::wstring& name) { AbstractRHIMethodAssert(); }
 
-		virtual int GetStaticSamplersCount() { AbstractRHIMethodAssert(); }
-		virtual int GetRootParameterCount() { AbstractRHIMethodAssert(); }
-
-		virtual int GetRootParameterCBVCount(int paramIndex) { AbstractRHIMethodAssert(); }
-		virtual int GetRootParameterSRVCount(int paramIndex) { AbstractRHIMethodAssert(); }
-		virtual int GetRootParameterUAVCount(int paramIndex) { AbstractRHIMethodAssert(); }
+		virtual int GetStaticSamplersCount() { AbstractRHIMethodAssert(); return 0; }
+		virtual int GetRootParameterCount() { AbstractRHIMethodAssert(); return 0; }
+		virtual int GetRootParameterCBVCount(int paramIndex) { AbstractRHIMethodAssert(); return 0; }
+		virtual int GetRootParameterSRVCount(int paramIndex) { AbstractRHIMethodAssert(); return 0; }
+		virtual int GetRootParameterUAVCount(int paramIndex) { AbstractRHIMethodAssert(); return 0; }
 	};
 
 	class ER_RHI_GPUResource

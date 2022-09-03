@@ -158,6 +158,8 @@ namespace EveryRay_Core
 		ID3D12Device* GetDevice() const { return mDevice; }
 		ID3D12Device5* GetDeviceRaytracing() const { return (ID3D12Device5*)mDevice; }
 
+		ER_RHI_DX12_GPUDescriptorHeapManager* GetDescriptorHeapManager() const { return mDescriptorHeapManager; }
+
 		DXGI_FORMAT GetFormat(ER_RHI_FORMAT aFormat);
 
 		ER_GRAPHICS_API GetAPI() { return mAPI; }

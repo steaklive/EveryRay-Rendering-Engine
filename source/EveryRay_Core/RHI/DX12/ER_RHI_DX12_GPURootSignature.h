@@ -130,12 +130,13 @@ namespace EveryRay_Core
 		virtual void InitStaticSampler(UINT regIndex, const ER_RHI_SAMPLER_STATE& samplers, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) override;
 		virtual void InitDescriptorTable(int index, const std::vector<ER_RHI_DESCRIPTOR_RANGE_TYPE>& ranges, const std::vector<UINT>& registerIndices,
 			const std::vector<UINT>& descriptorCounters, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) override;
+		virtual void Finalize(ER_RHI* rhi, const std::wstring& name) override;
+
 		virtual int GetStaticSamplersCount() override { return mNumInitializedStaticSamplers; }
 		virtual int GetRootParameterCount() override { return mNumParameters; }
-
-		virtual int GetRootParameterCBVCount(int paramIndex) override { return mRootParameters.get()[EntryIndex].mCBVCount; }
-		virtual int GetRootParameterSRVCount(int paramIndex) override { return mRootParameters.get()[EntryIndex].mSRVCount; }
-		virtual int GetRootParameterUAVCount(int paramIndex) override { return mRootParameters.get()[EntryIndex].mUAVCount; }
+		virtual int GetRootParameterCBVCount(int paramIndex) override { return mRootParameters.get()[paramIndex].mCBVCount; }
+		virtual int GetRootParameterSRVCount(int paramIndex) override { return mRootParameters.get()[paramIndex].mSRVCount; }
+		virtual int GetRootParameterUAVCount(int paramIndex) override { return mRootParameters.get()[paramIndex].mUAVCount; }
 
 		ER_RHI_DX12_GPURootParameter& operator[] (size_t EntryIndex)
 		{

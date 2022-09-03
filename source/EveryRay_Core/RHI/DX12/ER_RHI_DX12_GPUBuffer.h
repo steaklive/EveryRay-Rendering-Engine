@@ -24,7 +24,7 @@ namespace EveryRay_Core
 		
 		ID3D12Resource* GetResource() { return mBuffer; }
 
-		void Map(ER_RHI* aRHI, D3D11_MAP mapFlags, D3D11_MAPPED_SUBRESOURCE* outMappedResource);
+		void Map(ER_RHI* aRHI, void* aOutData);
 		void Unmap(ER_RHI* aRHI);
 		void Update(ER_RHI* aRHI, void* aData, int dataSize);
 		DXGI_FORMAT GetFormat() { return mFormat; }

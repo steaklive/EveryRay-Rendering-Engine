@@ -69,7 +69,7 @@ namespace EveryRay_Core {
 			mInjectionAccumulationPassesRootSignature->InitDescriptorTable(0, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV } { 0 }, { 3 });
 			mInjectionAccumulationPassesRootSignature->InitDescriptorTable(1, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV } { 0 }, { 1 });
 			mInjectionAccumulationPassesRootSignature->InitDescriptorTable(2, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV } { 0 }, { 1 });
-			mInjectionAccumulationPassesRootSignature->Finalize(rhi, "ER_VolumetricFog: Injection + Accumulation Passes Root Signature");
+			mInjectionAccumulationPassesRootSignature->Finalize(rhi, L"Volumetric Fog: Injection + Accumulation Passes Root Signature");
 		}
 		
 		mCompositePS = rhi->CreateGPUShader();
@@ -81,7 +81,7 @@ namespace EveryRay_Core {
 			mCompositePassRootSignature->InitStaticSampler(0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, 0, ER_RHI_SHADER_VISIBILITY_PIXEL);
 			mCompositePassRootSignature->InitDescriptorTable(0, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV } { 0 }, { 3 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
 			mCompositePassRootSignature->InitDescriptorTable(2, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV } { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
-			mCompositePassRootSignature->Finalize(rhi, "ER_VolumetricFog: Composite Pass Root Signature");
+			mCompositePassRootSignature->Finalize(rhi, L"Volumetric Fog: Composite Pass Root Signature");
 		}
 
 		mMainConstantBuffer.Initialize(rhi);
