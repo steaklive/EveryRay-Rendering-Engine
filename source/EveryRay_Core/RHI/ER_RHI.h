@@ -424,6 +424,8 @@ namespace EveryRay_Core
 
 		virtual void* GetSRV() = 0;
 		virtual void* GetUAV() = 0;
+
+		inline virtual bool IsBuffer() = 0;
 	};
 
 	class ER_RHI_GPUTexture : public ER_RHI_GPUResource
@@ -448,6 +450,8 @@ namespace EveryRay_Core
 		virtual UINT GetWidth() { AbstractRHIMethodAssert(); return 0; }
 		virtual UINT GetHeight() { AbstractRHIMethodAssert(); return 0; }
 		virtual UINT GetDepth() { AbstractRHIMethodAssert(); return 0; }
+
+		inline virtual bool IsBuffer() { AbstractRHIMethodAssert(); return false; }
 	};
 
 	class ER_RHI_GPUBuffer : public ER_RHI_GPUResource

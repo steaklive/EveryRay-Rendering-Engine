@@ -5,7 +5,6 @@
 
 namespace EveryRay_Core
 {
-
 	ER_RHI_DX12_GPUBuffer::ER_RHI_DX12_GPUBuffer()
 	{
 
@@ -25,6 +24,9 @@ namespace EveryRay_Core
 		ID3D12Device* device = aRHIDX12->GetDevice();
 		assert(device);
 
+		if (bindFlags & ER_RHI_BIND_FLAG::ER_BIND_CONSTANT_BUFFER)
+			assert(isDynamic);
+
 		ER_RHI_DX12_GPUDescriptorHeapManager* descriptorHeapManager = aRHIDX12->GetDescriptorHeapManager();
 		assert(descriptorHeapManager);
 
@@ -34,8 +36,6 @@ namespace EveryRay_Core
 		mSize = ER_ALIGN(objectsCount * byteStride, 256);
 		if (bindFlags & ER_RHI_BIND_FLAG::ER_BIND_UNORDERED_ACCESS)
 			mResourceFlags |= D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-		if (isDynamic && !(bindFlags & ER_RHI_BIND_FLAG::ER_BIND_CONSTANT_BUFFER))
-			mResourceState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST;
 
 		D3D12_RESOURCE_DESC desc = {};
 		desc.Alignment = 0;
@@ -60,12 +60,12 @@ namespace EveryRay_Core
 		if (FAILED(device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE, &desc, mResourceState, nullptr, &mBuffer)))
 			throw ER_CoreException("ER_RHI_DX12: Failed to create committed resource of GPU buffer.");
 		
+		if (FAILED(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(mSize),
+			D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, &mBufferUpload)))
+			throw ER_CoreException("ER_RHI_DX12: Failed to create committed resource of GPU buffer (upload).");
+
 		if (bindFlags & ER_RHI_BIND_FLAG::ER_BIND_CONSTANT_BUFFER)
 		{
-			if (FAILED(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(mSize),
-				D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, &mBufferUpload)))
-				throw ER_CoreException("ER_RHI_DX12: Failed to create committed resource of GPU buffer (upload).");
-
 			mBufferCBVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 			D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
@@ -77,28 +77,45 @@ namespace EveryRay_Core
 			return;
 		}
 
-		if (isDynamic)
+		aRHIDX12->UpdateBuffer(this, aData, mSize);
+
+		if (bindFlags & ER_BIND_VERTEX_BUFFER)
 		{
-			if (FAILED(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(mSize),
-				D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, &mBufferUpload)))
-				throw ER_CoreException("ER_RHI_DX12: Failed to create committed resource of GPU buffer (upload).");
-
-			// store buffer in upload heap
-			D3D12_SUBRESOURCE_DATA data = {};
-			data.pData = reinterpret_cast<BYTE*>(aData);
-			data.RowPitch = mSize;
-			data.SlicePitch = data.RowPitch;
-
-			// we are now creating a command with the command list to copy the data from
-			// the upload heap to the default heap
-			UpdateSubresources(commandList, mBuffer, mBufferUpload, 0, 0, 1, &data);
-			if (bindFlags & ER_BIND_VERTEX_BUFFER)
-				commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
-			else if (bindFlags & ER_BIND_INDEX_BUFFER)
-				commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER));
-			else
-				commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COMMON));
+			// Initialize the vertex buffer view.
+			mVertexBufferView.BufferLocation = mBufferUpload->GetGPUVirtualAddress();
+			mVertexBufferView.StrideInBytes = mStride;
+			mVertexBufferView.SizeInBytes = mSize;
 		}
+
+		if (bindFlags & ER_BIND_INDEX_BUFFER)
+		{
+			mIndexBufferView.BufferLocation = mBufferUpload->GetGPUVirtualAddress();
+			mIndexBufferView.Format = mFormat;
+			mIndexBufferView.SizeInBytes = mSize;
+		}
+
+		// WARNING: Below is a correct way of using a dynamic buffer (copy to default heap from upload), but I don't do it, because:
+		// 1) simplicity (otherwise i really need some kind of prepare command list available during EveryRay's systems initialization
+		// 2) EveryRay is single-buffered (no double/triple buffering is implemented yet)
+		//if (isDynamic)
+		//{
+		//	if (isDynamic && !(bindFlags & ER_RHI_BIND_FLAG::ER_BIND_CONSTANT_BUFFER))
+		//	 	mResourceState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST;
+		//	D3D12_SUBRESOURCE_DATA data = {};
+		//	data.pData = reinterpret_cast<BYTE*>(aData);
+		//	data.RowPitch = mSize;
+		//	data.SlicePitch = data.RowPitch;
+		//	
+		//	// we are now creating a command with the command list to copy the data from
+		//	// the upload heap to the default heap
+		//	UpdateSubresources(commandList, mBuffer, mBufferUpload, 0, 0, 1, &data);
+		//	if (bindFlags & ER_BIND_VERTEX_BUFFER)
+		//		commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
+		//	else if (bindFlags & ER_BIND_INDEX_BUFFER)
+		//		commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER));
+		//	else
+		//		commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COMMON));
+		//}
 
 		if (bindFlags & ER_RHI_BIND_FLAG::ER_BIND_SHADER_RESOURCE)
 		{

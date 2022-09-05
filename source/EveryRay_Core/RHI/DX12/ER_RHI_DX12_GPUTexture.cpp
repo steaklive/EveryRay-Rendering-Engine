@@ -1,61 +1,36 @@
-#include "ER_RHI_DX11_GPUTexture.h"
+#include "ER_RHI_DX12_GPUTexture.h"
 #include "..\..\ER_Utility.h"
 #include "..\..\ER_CoreException.h"
 
 namespace EveryRay_Core
 {
-	ER_RHI_DX11_GPUTexture::ER_RHI_DX11_GPUTexture()
+	ER_RHI_DX12_GPUTexture::ER_RHI_DX12_GPUTexture()
 	{
 
 	}
 
-	ER_RHI_DX11_GPUTexture::~ER_RHI_DX11_GPUTexture()
+	ER_RHI_DX12_GPUTexture::~ER_RHI_DX12_GPUTexture()
 	{
-		ReleaseObject(mSRV);
-		ReleaseObject(mTexture2D);
-		ReleaseObject(mTexture3D);
+		ReleaseObject(mResource);
 
 		if (mIsLoadedFromFile)
 			return;
-
-		if (mIsDepthStencil)
-		{
-			ReleaseObject(mDSV);
-			ReleaseObject(mDSV_ReadOnly);
-		}
-
-		if (mBindFlags & D3D11_BIND_RENDER_TARGET)
-		{
-			for (UINT i = 0; i < mArraySize * mMipLevels; i++)
-			{
-				ReleaseObject(mRTVs[i]);
-			}
-		}
-		if (mBindFlags & D3D11_BIND_UNORDERED_ACCESS)
-		{
-			for (UINT i = 0; i < mMipLevels; i++)
-			{
-				ReleaseObject(mUAVs[i]);
-			}
-		}
 
 		mMipLevels = 0;
 		mBindFlags = 0;
 		mArraySize = 0;
 	}
 
-	void ER_RHI_DX11_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags /*= ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET*/, int mip /*= 1*/, int depth /*= -1*/, int arraySize /*= 1*/, bool isCubemap /*= false*/, int cubemapArraySize /*= -1*/)
+	void ER_RHI_DX12_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags /*= ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET*/, int mip /*= 1*/, int depth /*= -1*/, int arraySize /*= 1*/, bool isCubemap /*= false*/, int cubemapArraySize /*= -1*/)
 	{
 		assert(aRHI);
-		ER_RHI_DX11* aRHIDX11 = static_cast<ER_RHI_DX11*>(aRHI);
-		ID3D11Device* device = aRHIDX11->GetDevice();
+		ER_RHI_DX12* aRHIDX12 = static_cast<ER_RHI_DX12*>(aRHI);
+		ID3D12Device* device = aRHIDX12->GetDevice();
 		assert(device);
 
-		ID3D11Texture2D* tex2D = nullptr;
-		ID3D11Texture3D* tex3D = nullptr;
-		ID3D11ShaderResourceView* srv = nullptr;
-		ID3D11RenderTargetView** rtv = nullptr;
-		ID3D11UnorderedAccessView** uav = nullptr;
+		ER_RHI_DX12_GPUDescriptorHeapManager* descriptorHeapManager = aRHIDX12->GetDescriptorHeapManager();
+		assert(descriptorHeapManager);
+
 		mIsLoadedFromFile = false;
 
 		//todo move to init list
@@ -93,85 +68,68 @@ namespace EveryRay_Core
 				break;
 			}
 		}
+		D3D12_RESOURCE_FLAGS flags;
+		if (bindFlags & ER_BIND_RENDER_TARGET)
+			flags |= D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+		if (bindFlags & ER_BIND_DEPTH_STENCIL)
+			flags |= D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+		if (bindFlags & ER_BIND_UNORDERED_ACCESS)
+			flags |= D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
-		if (depth > 0) {
-			CD3D11_TEXTURE3D_DESC texDesc;
-			texDesc.BindFlags = bindFlags;
-			texDesc.CPUAccessFlags = 0;
-			texDesc.Format = mIsDepthStencil ? depthstencil_tex_format : aRHIDX11->GetFormat(format);
-			texDesc.Width = width;
-			texDesc.Height = height;
-			texDesc.Depth = depth;
-			texDesc.MipLevels = mMipLevels;
-			if (mMipLevels > 1 && (ER_BIND_RENDER_TARGET & bindFlags) != 0 && !mIsDepthStencil)
-				texDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
-			else
-				texDesc.MiscFlags = 0;
-			texDesc.Usage = D3D11_USAGE_DEFAULT;
-			device->CreateTexture3D(&texDesc, NULL, &tex3D);
-		}
-		else {
-			CD3D11_TEXTURE2D_DESC texDesc;
-			texDesc.ArraySize = (mIsCubemap && cubemapArraySize > 0) ? 6 * cubemapArraySize : arraySize;
-			texDesc.BindFlags = bindFlags;
-			texDesc.MiscFlags = 0;
-			if (mIsCubemap)
-				texDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
-			if (mMipLevels > 1 && (ER_BIND_RENDER_TARGET & bindFlags) != 0 && !mIsDepthStencil)
-				texDesc.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
-			texDesc.CPUAccessFlags = 0;
-			texDesc.Format = mIsDepthStencil ? depthstencil_tex_format : aRHIDX11->GetFormat(format);
-			texDesc.Width = width;
-			texDesc.Height = height;
-			texDesc.MipLevels = mMipLevels;
+		XMFLOAT4 clearColor = { 0, 0, 0, 1 };
+		D3D12_CLEAR_VALUE optimizedClearValue = {};
+		optimizedClearValue.Format = mIsDepthStencil ? depthstencil_tex_format : aRHIDX12->GetFormat(format);
+		optimizedClearValue.Color[0] = clearColor.x;
+		optimizedClearValue.Color[1] = clearColor.y;
+		optimizedClearValue.Color[2] = clearColor.z;
+		optimizedClearValue.Color[3] = clearColor.w;
 
-			if (samples > 1)
-			{
-				texDesc.SampleDesc.Count = samples;
-				UINT qualityLevels = 0;
-				device->CheckMultisampleQualityLevels(aRHIDX11->GetFormat(format), samples, &qualityLevels);
-				texDesc.SampleDesc.Quality = qualityLevels - 1;
-			}
-			else
-			{
-				texDesc.SampleDesc.Count = 1;
-				texDesc.SampleDesc.Quality = 0;
-			}
-			texDesc.Usage = D3D11_USAGE_DEFAULT;
+		D3D12_RESOURCE_DESC textureDesc = {};
+		if (depth == 0)
+			textureDesc.DepthOrArraySize = (mIsCubemap && cubemapArraySize > 0) ? 6 * cubemapArraySize : arraySize;
+		else
+			textureDesc.DepthOrArraySize = depth;
+		textureDesc.MipLevels = mMipLevels;
+		textureDesc.Format = mIsDepthStencil ? depthstencil_tex_format : aRHIDX12->GetFormat(format);
+		textureDesc.Width = width;
+		textureDesc.Height = height;
+		textureDesc.Flags = flags;
+		textureDesc.SampleDesc.Count = 1;
+		textureDesc.SampleDesc.Quality = 0;
+		textureDesc.Dimension = depth > 0 ? D3D12_RESOURCE_DIMENSION_TEXTURE3D : D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 
-			device->CreateTexture2D(&texDesc, NULL, &tex2D);
-		}
+		if (FAILED(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE, &textureDesc, mCurrentResourceState, &optimizedClearValue, &mResource)))
+			throw ER_CoreException("ER_RHI_DX12: Could not create a committed resource for the GPU texture");
 
 		if (bindFlags & ER_BIND_RENDER_TARGET)
 		{
+			mRTVHandles.resize(mip * arraySize);
 			assert(!mIsDepthStencil);
 
-			D3D11_RENDER_TARGET_VIEW_DESC rDesc;
-			rDesc.Format = aRHIDX11->GetFormat(format);
+			D3D12_RENDER_TARGET_VIEW_DESC rDesc;
+			rDesc.Format = aRHIDX12->GetFormat(format);
 			if (arraySize == 1)
 			{
-				rDesc.ViewDimension = (depth > 0) ? D3D11_RTV_DIMENSION_TEXTURE3D : ((samples > 1) ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D);
-				rtv = (ID3D11RenderTargetView**)malloc(sizeof(ID3D11RenderTargetView*) * mip);
+				rDesc.ViewDimension = (depth > 0) ? D3D12_RTV_DIMENSION_TEXTURE3D : ((samples > 1) ? D3D12_RTV_DIMENSION_TEXTURE2DMS : D3D12_RTV_DIMENSION_TEXTURE2D);
 				int currentDepth = depth;
 				for (int i = 0; i < mip; i++)
 				{
+					mRTVHandles[i] = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 					if (depth > 0) {
 						rDesc.Texture3D.MipSlice = i;
 						rDesc.Texture3D.FirstWSlice = 0;
 						rDesc.Texture3D.WSize = currentDepth;
-						device->CreateRenderTargetView(tex3D, &rDesc, &rtv[i]);
 						currentDepth >>= 1;
 					}
 					else {
 						rDesc.Texture2D.MipSlice = i;
-						device->CreateRenderTargetView(tex2D, &rDesc, &rtv[i]);
 					}
+					device->CreateRenderTargetView(mResource, &rDesc, mRTVHandles[i].GetCPUHandle());
 				}
 			}
 			else
 			{
-				rDesc.ViewDimension = (samples > 1) ? D3D11_RTV_DIMENSION_TEXTURE2DMSARRAY : D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
-				rtv = (ID3D11RenderTargetView**)malloc(sizeof(ID3D11RenderTargetView*) * arraySize * mip);
+				rDesc.ViewDimension = (samples > 1) ? D3D12_RTV_DIMENSION_TEXTURE2DMSARRAY : D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
 				for (int i = 0; i < arraySize; i++)
 				{
 					for (int j = 0; j < mip; j++)
@@ -187,7 +145,8 @@ namespace EveryRay_Core
 							rDesc.Texture2DArray.FirstArraySlice = i;
 							rDesc.Texture2DArray.ArraySize = 1;
 						}
-						device->CreateRenderTargetView(tex2D, &rDesc, &rtv[i * mip + j]);
+						mRTVHandles[i * mip + j] = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+						device->CreateRenderTargetView(mResource, &rDesc, mRTVHandles[i * mip + j].GetCPUHandle());
 					}
 				}
 			}
@@ -195,18 +154,18 @@ namespace EveryRay_Core
 		}
 		if (bindFlags & ER_BIND_DEPTH_STENCIL)
 		{
-			D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+			D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
 			dsvDesc.Flags = 0;
 			dsvDesc.Format = depthstencil_dsv_format;
 			if (depth == 1)
 			{
 				if (samples > 1)
 				{
-					dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+					dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DMS;
 				}
 				else
 				{
-					dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+					dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 					dsvDesc.Texture2D.MipSlice = 0;
 				}
 			}
@@ -214,60 +173,65 @@ namespace EveryRay_Core
 			{
 				if (samples > 1)
 				{
-					dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMSARRAY;
+					dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DMSARRAY;
 					dsvDesc.Texture2DMSArray.FirstArraySlice = 0;
 					dsvDesc.Texture2DMSArray.ArraySize = depth;
 				}
 				else
 				{
-					dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+					dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DARRAY;
 					dsvDesc.Texture2DArray.MipSlice = 0;
 					dsvDesc.Texture2DArray.FirstArraySlice = 0;
 					dsvDesc.Texture2DArray.ArraySize = depth;
 				}
 			}
 
-			device->CreateDepthStencilView(tex2D, &dsvDesc, &mDSV);
-			dsvDesc.Flags |= D3D11_DSV_READ_ONLY_DEPTH;
+			mDSVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+			device->CreateDepthStencilView(mResource, &dsvDesc, mDSVHandle.GetCPUHandle());
+
+			dsvDesc.Flags |= D3D12_DSV_FLAG_READ_ONLY_DEPTH;
 			if (depthstencil_dsv_format == DXGI_FORMAT_D24_UNORM_S8_UINT)
-				dsvDesc.Flags |= D3D11_DSV_READ_ONLY_STENCIL;
-			device->CreateDepthStencilView(tex2D, &dsvDesc, &mDSV_ReadOnly);
+				dsvDesc.Flags |= D3D12_DSV_FLAG_READ_ONLY_STENCIL;
+			device->CreateDepthStencilView(mResource, &dsvDesc, mDSVReadOnlyHandle.GetCPUHandle());
 		}
 		if (bindFlags & ER_BIND_UNORDERED_ACCESS)
 		{
 			assert(!mIsDepthStencil);
 
-			D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
+			mUAVHandles.resize(mip);
+
+			D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc;
 			uavDesc.Buffer.FirstElement = 0;
 			uavDesc.Buffer.Flags = 0;
 			int depthElements = (depth > 0) ? depth : 1;
 			uavDesc.Buffer.NumElements = width * height * depthElements;
-			uavDesc.ViewDimension = depth > 0 ? D3D11_UAV_DIMENSION_TEXTURE3D : D3D11_UAV_DIMENSION_TEXTURE2D;
-			uavDesc.Format = aRHIDX11->GetFormat(format);
-			uav = (ID3D11UnorderedAccessView**)malloc(sizeof(ID3D11UnorderedAccessView*) * mip);
+			uavDesc.ViewDimension = depth > 0 ? D3D12_UAV_DIMENSION_TEXTURE3D : D3D12_UAV_DIMENSION_TEXTURE2D;
+			uavDesc.Format = aRHIDX12->GetFormat(format);
 
 			int currentDepth = depth;
 			for (int i = 0; i < mip; i++)
 			{
+				mUAVHandles[i] = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 				if (currentDepth > 0) {
 					uavDesc.Texture3D.MipSlice = i;
 					uavDesc.Texture3D.FirstWSlice = 0;
 					uavDesc.Texture3D.WSize = currentDepth; //TODO change for proper mip support
-					device->CreateUnorderedAccessView(tex3D, &uavDesc, &(uav[i]));
 					currentDepth >>= 1;
 				}
 				else {
 					uavDesc.Texture2D.MipSlice = i;
-					device->CreateUnorderedAccessView(tex2D, &uavDesc, &(uav[i]));
 				}
+				device->CreateUnorderedAccessView(mResource, nullptr, &uavDesc, mUAVHandles[i].GetCPUHandle());
 			}
 
 			//TODO add support for cubemap
 		}
 		if (bindFlags & ER_BIND_SHADER_RESOURCE)
 		{
-			D3D11_SHADER_RESOURCE_VIEW_DESC sDesc = CD3D11_SHADER_RESOURCE_VIEW_DESC();
-			sDesc.Format = mIsDepthStencil ? depthstencil_srv_format : aRHIDX11->GetFormat(format);
+			D3D12_SHADER_RESOURCE_VIEW_DESC sDesc = {};
+			sDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			sDesc.Format = mIsDepthStencil ? depthstencil_srv_format : aRHIDX12->GetFormat(format);
+			mSRVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 			if (arraySize > 1)
 			{
 				if (mIsCubemap)
@@ -278,58 +242,49 @@ namespace EveryRay_Core
 						sDesc.TextureCubeArray.MostDetailedMip = 0;
 						sDesc.TextureCubeArray.NumCubes = cubemapArraySize;
 						sDesc.TextureCubeArray.First2DArrayFace = 0;
-						sDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBEARRAY;
+						sDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
 					}
 					else
 					{
 						sDesc.TextureCube.MipLevels = mip;
-						sDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
+						sDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
 					}
-					device->CreateShaderResourceView(tex2D, &sDesc, &srv);
 				}
 				else {
 					if (samples > 1)
 					{
 						sDesc.Texture2DMSArray.FirstArraySlice = 0;
 						sDesc.Texture2DMSArray.ArraySize = arraySize;
-						sDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMSARRAY;
+						sDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DMSARRAY;
 					}
 					else
 					{
 						sDesc.Texture2DArray.MipLevels = mip;
 						sDesc.Texture2DArray.ArraySize = arraySize;
-						sDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+						sDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
 					}
-					device->CreateShaderResourceView(tex2D, &sDesc, &srv);
 				}
 			}
 			else {
 				if (depth > 0) {
 					sDesc.Texture3D.MipLevels = mip;
 					sDesc.Texture3D.MostDetailedMip = 0;
-					sDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE3D;
-					device->CreateShaderResourceView(tex3D, &sDesc, &srv);
+					sDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
 				}
 				else {
 					sDesc.Texture2D.MipLevels = mip;
 					sDesc.Texture2D.MostDetailedMip = 0;
-					sDesc.ViewDimension = (samples > 1) ? D3D11_SRV_DIMENSION_TEXTURE2DMS : D3D11_SRV_DIMENSION_TEXTURE2D;
-					device->CreateShaderResourceView(tex2D, &sDesc, &srv);
+					sDesc.ViewDimension = (samples > 1) ? D3D12_SRV_DIMENSION_TEXTURE2DMS : D3D12_SRV_DIMENSION_TEXTURE2D;
 				}
 			}
+			device->CreateShaderResourceView(mResource, &sDesc, mSRVHandle.GetCPUHandle());
 		}
-
-		mRTVs = rtv;
-		mSRV = srv;
-		mUAVs = uav;
-		mTexture2D = tex2D;
-		mTexture3D = tex3D;
 	}
-	void ER_RHI_DX11_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath /*= false*/, bool is3D)
+	void ER_RHI_DX12_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath /*= false*/, bool is3D)
 	{
 		CreateGPUTextureResource(aRHI, EveryRay_Core::ER_Utility::ToWideString(aPath), isFullPath, is3D);
 	}
-	void ER_RHI_DX11_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath /*= false*/, bool is3D)
+	void ER_RHI_DX12_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath /*= false*/, bool is3D)
 	{
 		assert(aRHI);
 		ER_RHI_DX11* aRHIDX11 = static_cast<ER_RHI_DX11*>(aRHI);
@@ -385,11 +340,11 @@ namespace EveryRay_Core
 		resourceTex->Release();
 	}
 
-	void ER_RHI_DX11_GPUTexture::LoadFallbackTexture(ER_RHI* aRHI, ID3D11Resource** texture, ID3D11ShaderResourceView** textureView)
+	void ER_RHI_DX12_GPUTexture::LoadFallbackTexture(ER_RHI* aRHI, ID3D11Resource** texture, ID3D11ShaderResourceView** textureView)
 	{
 		assert(aRHI);
-		ER_RHI_DX11* aRHIDX11 = static_cast<ER_RHI_DX11*>(aRHI);
-		ID3D11Device* device = aRHIDX11->GetDevice();
+		ER_RHI_DX12* aRHIDX12 = static_cast<ER_RHI_DX12*>(aRHI);
+		ID3D12Device* device = aRHIDX12->GetDevice();
 		assert(device);
 		ID3D11DeviceContext1* context = aRHIDX11->GetContext();
 		assert(context);

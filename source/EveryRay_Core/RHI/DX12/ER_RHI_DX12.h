@@ -219,6 +219,9 @@ namespace EveryRay_Core
 
 		ER_RHI_DX12_GPUDescriptorHeapManager* mDescriptorHeapManager = nullptr;
 
+		ER_RHI_DX12_DescriptorHandle mNullSRV2DHandle;
+		ER_RHI_DX12_DescriptorHandle mNullSRV3DHandle;
+
 		ER_RHI_Viewport mMainViewport;
 
 		bool mIsRaytracingTierAvailable = false;

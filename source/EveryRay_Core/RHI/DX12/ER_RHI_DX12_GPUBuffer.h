@@ -18,11 +18,16 @@ namespace EveryRay_Core
 		virtual UINT GetStride() override { return mStride; }
 		virtual ER_RHI_FORMAT GetFormatRhi() override { return mRHIFormat; }
 		
+		inline virtual bool IsBuffer() override { return true; }
+
 		ER_RHI_DX12_DescriptorHandle& GetUAVDescriptorHandle() { return mBufferUAVHandle; }
 		ER_RHI_DX12_DescriptorHandle& GetSRVDescriptorHandle() { return mBufferSRVHandle; }
 		ER_RHI_DX12_DescriptorHandle& GetCBVDescriptorHandle() { return mBufferCBVHandle; }
 		
 		ID3D12Resource* GetResource() { return mBuffer; }
+
+		D3D12_VERTEX_BUFFER_VIEW& GetVertexBufferView() { return mVertexBufferView; }
+		D3D12_INDEX_BUFFER_VIEW& GetIndexBufferView() { return mIndexBufferView; }
 
 		void Map(ER_RHI* aRHI, void* aOutData);
 		void Unmap(ER_RHI* aRHI);
@@ -40,6 +45,9 @@ namespace EveryRay_Core
 		ER_RHI_FORMAT mRHIFormat;
 		UINT mStride;
 		int mSize = 0;
+
+		D3D12_VERTEX_BUFFER_VIEW mVertexBufferView;
+		D3D12_INDEX_BUFFER_VIEW mIndexBufferView;
 
 		D3D12_RESOURCE_FLAGS mResourceFlags = D3D12_RESOURCE_FLAG_NONE;
 		D3D12_RESOURCE_STATES mResourceState = D3D12_RESOURCE_STATE_COMMON;

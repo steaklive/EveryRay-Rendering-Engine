@@ -251,6 +251,23 @@ namespace EveryRay_Core
 
 		mDescriptorHeapManager = new ER_RHI_DX12_GPUDescriptorHeapManager(mDevice);
 
+		// null SRVs descriptor handles
+		{
+			mNullSRV2DHandle = mDescriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			mNullSRV3DHandle = mDescriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			srvDesc.Texture2D.MipLevels = 1;
+			mDevice->CreateShaderResourceView(nullptr, &srvDesc, mNullSRV2DHandle.GetCPUHandle());
+
+			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
+			srvDesc.Texture3D.MipLevels = 1;
+			mDevice->CreateShaderResourceView(nullptr, &srvDesc, mNullSRV3DHandle.GetCPUHandle());
+		}
+
 		return true;
 	}
 
@@ -298,13 +315,12 @@ namespace EveryRay_Core
 	{
 		assert(aRenderTarget);
 
-		ER_RHI_DX12_GPUTexture* rtvDX12;
+		ER_RHI_DX12_DescriptorHandle& handle;
 		if (rtvArrayIndex > 0)
-			rtvDX12 = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTarget->GetRTV(rtvArrayIndex));
+			handle = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTarget)->GetRTVHandle(rtvArrayIndex);
 		else
-			rtvDX12 = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTarget->GetRTV());
-		assert(rtvDX12);
-		mCommandListGraphics[0]->ClearRenderTargetView(rtvDX12->GetCPUHandle(), colors, 0, nullptr);
+			handle = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTarget)->GetRTVHandle();
+		mCommandListGraphics[0]->ClearRenderTargetView(handle.GetCPUHandle(), colors, 0, nullptr);
 	}
 
 	void ER_RHI_DX12::ClearDepthStencilTarget(ER_RHI_GPUTexture* aDepthTarget, float depth, UINT stencil /*= 0*/)
@@ -312,7 +328,7 @@ namespace EveryRay_Core
 		assert(aDepthTarget);
 		ER_RHI_DX12_GPUTexture* dtDX12 = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTarget);
 		assert(dtDX12);
-		mCommandListGraphics[0]->ClearDepthStencilView(dtDX12->GetCPUHandle(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, depth, stencil, 0, nullptr);
+		mCommandListGraphics[0]->ClearDepthStencilView(dtDX12->GetDSVHandle().GetCPUHandle(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, depth, stencil, 0, nullptr);
 	}
 
 	void ER_RHI_DX12::ClearUAV(ER_RHI_GPUResource* aRenderTarget, float colors[4])
@@ -414,9 +430,7 @@ namespace EveryRay_Core
 		ER_RHI_DX12_GPUBuffer* buffer = static_cast<ER_RHI_DX12_GPUBuffer*>(aBuffer);
 		assert(buffer);
 
-		D3D11_MAPPED_SUBRESOURCE mappedResource;
-		buffer->Map(this, D3D11_MAP_READ, &mappedResource);
-		*output = mappedResource.pData;
+		buffer->Map(this, &output);
 		mIsContextReadingBuffer = true;
 	}
 
@@ -561,13 +575,16 @@ namespace EveryRay_Core
 			{
 				assert(aRenderTargets[i]);
 				if (rtvArrayIndex > 0)
-					rtvHandles[i] = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTargets[i])->GetRTVDescriptorHandle(rtvArrayIndex)->GetCPUHandle();
+					rtvHandles[i] = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTargets[i])->GetRTVHandle(rtvArrayIndex).GetCPUHandle();
 				else
-					rtvHandles[i] = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTargets[i])->GetRTVDescriptorHandle()->GetCPUHandle();
+					rtvHandles[i] = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTargets[i])->GetRTVHandle().GetCPUHandle();
 			}
+			TransitionResource(RT);
+
 			if (aDepthTarget)
 			{
-				D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = static_cast<ER_RHI_DX12_GPUTexture*>(aDepthTarget)->GetDSVDescriptorHandle()->GetCPUHandle();
+				D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = static_cast<ER_RHI_DX12_GPUTexture*>(aDepthTarget)->GetDSVHandle().GetCPUHandle();
+				TransitionResource(dsv);
 				mCommandListGraphics[0]->OMSetRenderTargets(rtCount, rtvHandles, FALSE, &dsvHandle);
 			}
 			else
@@ -584,10 +601,9 @@ namespace EveryRay_Core
 	void ER_RHI_DX12::SetDepthTarget(ER_RHI_GPUTexture* aDepthTarget)
 	{
 		assert(aDepthTarget);
-		ER_RHI_DX12_DescriptorHandle* dsvHandle = static_cast<ER_RHI_DX12_DescriptorHandle*>(aDepthTarget->GetDSV());
-		assert(dsvHandle);
-
-		mCommandListGraphics[0]->OMSetRenderTargets(1, nullptr, FALSE, dsvHandle->GetDSVDescriptorHandle()->GetCPUHandle());
+		D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = static_cast<ER_RHI_DX12_GPUTexture*>(aDepthTarget)->GetDSVHandle().GetCPUHandle();
+		TransitionResource(DSV);
+		mCommandListGraphics[0]->OMSetRenderTargets(1, nullptr, FALSE, dsvHandle);
 	}
 
 	void ER_RHI_DX12::SetRenderTargetFormats(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget /*= nullptr*/)
@@ -750,11 +766,13 @@ namespace EveryRay_Core
 		for (UINT i = 0; i < srvCount; i++)
 		{
 			if (aSRVs[i])
-				gpuDescriptorHeap->AddToHandle(mDevice, srvHandle, static_cast<ER_RHI_DX12_GPUTexture*>(aSRVs[i])->GetSRVDescriptorHandle());
+				gpuDescriptorHeap->AddToHandle(mDevice, srvHandle, static_cast<ER_RHI_DX12_GPUTexture*>(aSRVs[i])->GetSRVHandle());
 			else
-				gpuDescriptorHeap->AddToHandle(mDevice, srvHandle, static_cast<ER_RHI_DX12_GPUTexture*>(aNullSRV)->GetUAVDescriptorHandle());
-			//TODO add null SRV
+				gpuDescriptorHeap->AddToHandle(mDevice, srvHandle, mNullSRV2DHandle);
+
+			TransitionResource();
 		}
+
 		if (!isComputeRS)
 			mCommandListGraphics[0]->SetGraphicsRootDescriptorTable(rootParamIndex, srvHandle.GetGPUHandle());
 		else
@@ -781,7 +799,9 @@ namespace EveryRay_Core
 			if (aUAVs[i]->IsBuffer())
 				gpuDescriptorHeap->AddToHandle(mDevice, uavHandle, static_cast<ER_RHI_DX12_GPUBuffer*>(aUAVs[i])->GetUAVDescriptorHandle());
 			else
-				gpuDescriptorHeap->AddToHandle(mDevice, uavHandle, static_cast<ER_RHI_DX12_GPUTexture*>(aUAVs[i])->GetUAVDescriptorHandle());
+				gpuDescriptorHeap->AddToHandle(mDevice, uavHandle, static_cast<ER_RHI_DX12_GPUTexture*>(aUAVs[i])->GetUAVHandle());
+
+			TransitionResource();
 		}
 
 		if (!isComputeRS)
@@ -848,12 +868,8 @@ namespace EveryRay_Core
 		ER_RHI_DX12_GPUBuffer* buf = static_cast<ER_RHI_DX12_GPUBuffer*>(aBuffer);
 		assert(buf);
 
-		D3D12_INDEX_BUFFER_VIEW view;
-		view.BufferLocation = buf->GetResource()->GetGPUVirtualAddress();
-		view.Format = GetFormat(aBuffer->GetFormatRhi());
-		view.SizeInBytes = aBuffer->GetSize();
-
-		mCommandListGraphics[0]->IASetIndexBuffer(buf, view);
+		D3D12_INDEX_BUFFER_VIEW view = buf->GetIndexBufferView();
+		mCommandListGraphics[0]->IASetIndexBuffer(buf, &view);
 	}
 
 	void ER_RHI_DX12::SetVertexBuffers(const std::vector<ER_RHI_GPUBuffer*>& aVertexBuffers)
@@ -861,17 +877,12 @@ namespace EveryRay_Core
 		assert(aVertexBuffers.size() > 0 && aVertexBuffers.size() <= ER_RHI_MAX_BOUND_VERTEX_BUFFERS);
 		if (aVertexBuffers.size() == 1)
 		{
-			UINT stride = aVertexBuffers[0]->GetStride();
-			UINT offset = 0;
 			assert(aVertexBuffers[0]);
 
 			ER_RHI_DX12_GPUBuffer* buffer = static_cast<ER_RHI_DX12_GPUBuffer*>(aVertexBuffers[0]);
 			assert(buffer);
 
-			D3D12_VERTEX_BUFFER_VIEW view;
-			view.BufferLocation = buffer->GetResource()->GetGPUVirtualAddress();
-			view.StrideInBytes = aVertexBuffers[0]->GetStride();
-			view.SizeInBytes = aVertexBuffers[0]->GetSize();
+			D3D12_VERTEX_BUFFER_VIEW view = buffer->GetVertexBufferView();
 			mCommandListGraphics[0]->IASetVertexBuffers(0, 1, &view);
 		}
 		else //+ instance buffer
@@ -886,13 +897,7 @@ namespace EveryRay_Core
 			assert(vertexBuffer);
 			assert(instanceBuffer);
 
-			D3D12_VERTEX_BUFFER_VIEW views[2] = {};
-			views[0].BufferLocation = vertexBuffer->GetResource()->GetGPUVirtualAddress();
-			views[0].StrideInBytes = aVertexBuffers[0]->GetStride();
-			views[0].SizeInBytes = aVertexBuffers[0]->GetSize();
-			views[1].BufferLocation = instanceBuffer->GetResource()->GetGPUVirtualAddress();
-			views[1].StrideInBytes = aVertexBuffers[1]->GetStride();
-			views[1].SizeInBytes = aVertexBuffers[1]->GetSize();
+			D3D12_VERTEX_BUFFER_VIEW views[2] = { vertexBuffer->GetVertexBufferView(), instanceBuffer->GetVertexBufferView() };
 			mCommandListGraphics[0]->IASetVertexBuffers(0, 2, views);
 		}
 	}
@@ -1055,7 +1060,7 @@ namespace EveryRay_Core
 		assert(buffer);
 
 		void* aOutData = nullptr;
-		ZeroMemory(aOutData, mStride);
+		ZeroMemory(aOutData, buffer->GetStride());
 
 		buffer->Map(this, aOutData);
 		memcpy(aOutData, aData, dataSize);
