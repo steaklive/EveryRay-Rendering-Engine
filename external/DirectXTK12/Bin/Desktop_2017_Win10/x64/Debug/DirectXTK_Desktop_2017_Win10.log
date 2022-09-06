@@ -1,0 +1,54 @@
+﻿  pch.cpp
+  AudioEngine.cpp
+  DynamicSoundEffectInstance.cpp
+  SoundCommon.cpp
+  SoundEffect.cpp
+  SoundEffectInstance.cpp
+  WaveBank.cpp
+  WaveBankReader.cpp
+  WAVFileReader.cpp
+  AlphaTestEffect.cpp
+  BasicEffect.cpp
+  BasicPostProcess.cpp
+  CommonStates.cpp
+  DDSTextureLoader.cpp
+  DebugEffect.cpp
+  DescriptorHeap.cpp
+  DirectXHelpers.cpp
+  DualPostProcess.cpp
+  DualTextureEffect.cpp
+  BinaryReader.cpp
+  EffectCommon.cpp
+  Generating Code...
+  Compiling...
+  EffectFactory.cpp
+  EffectPipelineStateDescription.cpp
+  EffectTextureFactory.cpp
+  EnvironmentMapEffect.cpp
+  GamePad.cpp
+  GeometricPrimitive.cpp
+  Geometry.cpp
+  Keyboard.cpp
+  LinearAllocator.cpp
+  Model.cpp
+  ModelLoadSDKMESH.cpp
+  ModelLoadVBO.cpp
+  Mouse.cpp
+  GraphicsMemory.cpp
+  NormalMapEffect.cpp
+  PBREffect.cpp
+  PBREffectFactory.cpp
+  ResourceUploadBatch.cpp
+  ScreenGrab.cpp
+  SimpleMath.cpp
+  Generating Code...
+  Compiling...
+  SkinnedEffect.cpp
+  SpriteBatch.cpp
+  PrimitiveBatch.cpp
+  SpriteFont.cpp
+  ToneMapPostProcess.cpp
+  VertexTypes.cpp
+  WICTextureLoader.cpp
+  Generating Code...
+  DirectXTK_Desktop_2017_Win10.vcxproj -> C:\Users\Gen\Documents\Graphics Programming\XboxATG\Xbox-ATG-Samples\Kits\DirectXTK12\Bin\Desktop_2017_Win10\x64\Debug\DirectXTK12.lib

@@ -157,8 +157,11 @@ namespace EveryRay_Core
 
 		ID3D12Device* GetDevice() const { return mDevice; }
 		ID3D12Device5* GetDeviceRaytracing() const { return (ID3D12Device5*)mDevice; }
-
+		ID3D12GraphicsCommandList* GetGraphicsCommandList(int index) const { return mCommandListGraphics[index]; }
+		ID3D12GraphicsCommandList* GetComputeCommandList(int index) const { return mCommandListCompute[index]; }
 		ER_RHI_DX12_GPUDescriptorHeapManager* GetDescriptorHeapManager() const { return mDescriptorHeapManager; }
+
+		inline const int GetPrepareCommandListIndex() { return mPrepareCommandListIndex; }
 
 		DXGI_FORMAT GetFormat(ER_RHI_FORMAT aFormat);
 
@@ -197,6 +200,8 @@ namespace EveryRay_Core
 		ID3D12CommandQueue* mCommandQueueCompute = nullptr;
 		ID3D12GraphicsCommandList* mCommandListCompute[ER_RHI_MAX_COMPUTE_COMMAND_LISTS] = { nullptr };
 		ID3D12CommandAllocator* mCommandAllocatorsCompute[ER_RHI_MAX_COMPUTE_COMMAND_LISTS] = { nullptr };
+
+		const int mPrepareCommandListIndex = ER_RHI_MAX_GRAPHICS_COMMAND_LISTS - 1; // command list for prepare commands (on init)
 
 		ID3D12Fence* mFenceGraphics = nullptr;
 		UINT64 mFenceValuesGraphics;

@@ -44,6 +44,7 @@ namespace EveryRay_Core
 		D3D12_RESOURCE_STATES mCurrentResourceState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON;
 		
 		ID3D12Resource* mResource = nullptr;
+		ID3D12Resource* mResourceUpload = nullptr;
 
 		UINT mMipLevels = 0;
 		UINT mBindFlags = 0;

@@ -12,6 +12,7 @@ namespace EveryRay_Core
 	ER_RHI_DX12_GPUTexture::~ER_RHI_DX12_GPUTexture()
 	{
 		ReleaseObject(mResource);
+		ReleaseObject(mResourceUpload);
 
 		if (mIsLoadedFromFile)
 			return;
@@ -287,11 +288,9 @@ namespace EveryRay_Core
 	void ER_RHI_DX12_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath /*= false*/, bool is3D)
 	{
 		assert(aRHI);
-		ER_RHI_DX11* aRHIDX11 = static_cast<ER_RHI_DX11*>(aRHI);
-		ID3D11Device* device = aRHIDX11->GetDevice();
+		ER_RHI_DX12* aRHIDX12 = static_cast<ER_RHI_DX12*>(aRHI);
+		ID3D12Device* device = aRHIDX12->GetDevice();
 		assert(device);
-		ID3D11DeviceContext1* context = aRHIDX11->GetContext();
-		assert(context);
 
 		mIsLoadedFromFile = true;
 
@@ -300,55 +299,116 @@ namespace EveryRay_Core
 		const wchar_t* postfixDDS_Capital = L".DDS";
 		bool isDDS = (originalPath.substr(originalPath.length() - 4) == std::wstring(postfixDDS)) || (originalPath.substr(originalPath.length() - 4) == std::wstring(postfixDDS_Capital));
 
-		ID3D11Resource* resourceTex = NULL;
-
 		auto outputLog = [](const std::wstring& pathT) {
-			std::wstring msg = L"[ER Logger][ER_RHI_DX11_GPUTexture] Failed to load texture from disk: " + pathT + L". Loading fallback texture instead. \n";
+			std::wstring msg = L"[ER Logger][ER_RHI_DX12_GPUTexture] Failed to load texture from disk: " + pathT + L". Loading fallback texture instead. \n";
 			ER_OUTPUT_LOG(msg.c_str());
 		};
 
 		if (isDDS)
 		{
-			if (FAILED(DirectX::CreateDDSTextureFromFile(device, context, isFullPath ? aPath.c_str() : EveryRay_Core::ER_Utility::GetFilePath(aPath).c_str(), &resourceTex, &mSRV)))
+			std::unique_ptr<uint8_t[]> ddsData;
+			std::vector<D3D12_SUBRESOURCE_DATA> subresources;
+
+			if (FAILED(DirectX::LoadDDSTextureFromFile(device, isFullPath ? aPath.c_str() : EveryRay_Core::ER_Utility::GetFilePath(aPath).c_str(), &mResource, decodedData, subresource)))
 			{
 				outputLog(isFullPath ? aPath.c_str() : EveryRay_Core::ER_Utility::GetFilePath(aPath).c_str());
-				LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
+				LoadFallbackTexture(aRHI);
 			}
+
+			int cmdIndex = aRHIDX12->GetPrepareCommandListIndex();
+			aRHIDX12->BeginGraphicsCommandList(cmdIndex);
+			{
+				auto commandList = aRHIDX12->GetGraphicsCommandList(cmdIndex);
+				UpdateSubresources(commandList, mResource, mResourceUpload, 0, 0, static_cast<UINT>(subresources.size()), subresources.data());
+
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(mResource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+				commandList->ResourceBarrier(1, &barrier);
+			}
+			aRHIDX12->EndGraphicsCommandList(cmdIndex);
+			aRHIDX12->ExecuteCommandLists(cmdIndex);
+
+			mSRVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			srvDesc.Format = textureDesc.Format;
+			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			srvDesc.Texture2D.MipLevels = 1;
+			device->CreateShaderResourceView(mResource, &srvDesc, mSRVHandle.GetCPUHandle());
 		}
 		else
 		{
-			if (FAILED(DirectX::CreateWICTextureFromFile(device, context, isFullPath ? aPath.c_str() : EveryRay_Core::ER_Utility::GetFilePath(aPath).c_str(), &resourceTex, &mSRV)))
+			std::unique_ptr<uint8_t[]> decodedData;
+			D3D12_SUBRESOURCE_DATA subresource;
+
+			if (FAILED(DirectX::LoadWICTextureFromFile(device, context, isFullPath ? aPath.c_str() : EveryRay_Core::ER_Utility::GetFilePath(aPath).c_str(), &mResource, decodedData, subresource)))
 			{
 				outputLog(isFullPath ? aPath.c_str() : EveryRay_Core::ER_Utility::GetFilePath(aPath).c_str());
-				LoadFallbackTexture(aRHI, &resourceTex, &mSRV);
-			}
-		}
+				LoadFallbackTexture(aRHI);
 
-		if (!is3D)
-		{
-			if (FAILED(resourceTex->QueryInterface(IID_ID3D11Texture2D, (void**)&mTexture2D))) {
-				throw EveryRay_Core::ER_CoreException("ER_RHI_DX11: Could not cast loaded texture resource to Texture2D. Maybe wrong dimension?");
 			}
-		}
-		else
-		{
-			if (FAILED(resourceTex->QueryInterface(IID_ID3D11Texture3D, (void**)&mTexture3D))) {
-				throw EveryRay_Core::ER_CoreException("ER_RHI_DX11: Could not cast loaded texture resource to Texture3D. Maybe wrong dimension?");
-			}
-		}
+			// Create the GPU upload buffer and update subresources
+			const UINT64 uploadBufferSize = GetRequiredIntermediateSize(mResource, 0, 1);
+			if (FAILED(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize), D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, &mResourceUpload)))
+				throw ER_CoreException("ER_RHI_DX12: Could not create a committed resource for the GPU texture resource (upload)");
 
-		resourceTex->Release();
+			int cmdIndex = aRHIDX12->GetPrepareCommandListIndex();
+			aRHIDX12->BeginGraphicsCommandList(cmdIndex);
+			{
+				auto commandList = aRHIDX12->GetGraphicsCommandList(cmdIndex);
+				UpdateSubresources(commandList, mResource, mResourceUpload, 0, 0, 1, &subresource);
+
+				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(mResource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+				commandList->ResourceBarrier(1, &barrier);
+			}
+			aRHIDX12->EndGraphicsCommandList(cmdIndex);
+			aRHIDX12->ExecuteCommandLists(cmdIndex);
+
+			mSRVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			srvDesc.Format = textureDesc.Format;
+			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			srvDesc.Texture2D.MipLevels = 1;
+			device->CreateShaderResourceView(mResource, &srvDesc, mSRVHandle.GetCPUHandle());
+		}
 	}
 
-	void ER_RHI_DX12_GPUTexture::LoadFallbackTexture(ER_RHI* aRHI, ID3D11Resource** texture, ID3D11ShaderResourceView** textureView)
+	void ER_RHI_DX12_GPUTexture::LoadFallbackTexture(ER_RHI* aRHI)
 	{
 		assert(aRHI);
 		ER_RHI_DX12* aRHIDX12 = static_cast<ER_RHI_DX12*>(aRHI);
 		ID3D12Device* device = aRHIDX12->GetDevice();
 		assert(device);
-		ID3D11DeviceContext1* context = aRHIDX11->GetContext();
-		assert(context);
+		ER_RHI_DX12_GPUDescriptorHeapManager* descriptorHeapManager = aRHIDX12->GetDescriptorHeapManager();
+		assert(descriptorHeapManager);
 
-		DirectX::CreateWICTextureFromFile(device, context, EveryRay_Core::ER_Utility::GetFilePath(L"content\\textures\\uvChecker.jpg").c_str(), texture, textureView);
+		std::unique_ptr<uint8_t[]> decodedData;
+		D3D12_SUBRESOURCE_DATA subresource;
+		DirectX::LoadWICTextureFromFile(device, EveryRay_Core::ER_Utility::GetFilePath(L"content\\textures\\uvChecker.jpg").c_str(), &mResource, decodedData, subresource);
+
+		// Create the GPU upload buffer and update subresources
+		const UINT64 uploadBufferSize = GetRequiredIntermediateSize(mResource, 0, 1);
+		if (FAILED(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize), D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, &mResourceUpload)))
+			throw ER_CoreException("ER_RHI_DX12: Could not create a committed resource for the GPU texture resource (upload)");
+
+		int cmdIndex = aRHIDX12->GetPrepareCommandListIndex();
+		aRHIDX12->BeginGraphicsCommandList(cmdIndex);
+		{
+			auto commandList = aRHIDX12->GetGraphicsCommandList(cmdIndex);
+			UpdateSubresources(commandList, mResource, mResourceUpload, 0, 0, 1, &subresource);
+
+			auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(mResource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+			commandList->ResourceBarrier(1, &barrier);
+		}
+		aRHIDX12->EndGraphicsCommandList(cmdIndex);
+		aRHIDX12->ExecuteCommandLists(cmdIndex);
+
+		mSRVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		srvDesc.Format = textureDesc.Format;
+		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Texture2D.MipLevels = 1;
+		device->CreateShaderResourceView(mResource, &srvDesc, mSRVHandle.GetCPUHandle());
 	}
 }
