@@ -66,7 +66,7 @@ namespace EveryRay_Core
 		UpdateImGui();
 	}
 
-	void ER_FoliageManager::Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass)
+	void ER_FoliageManager::Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderPass renderPass)
 	{
 		if (!mEnabled)
 			return;
@@ -318,9 +318,9 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_Foliage::Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass)
+	void ER_Foliage::Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderPass renderPass)
 	{
-		if(renderPass == TO_VOXELIZATION)
+		if(renderPass == FOLIAGE_VOXELIZATION)
 			assert(worldShadowMapper);
 
 		auto rhi = mCore.GetRHI();
@@ -366,13 +366,13 @@ namespace EveryRay_Core
 		rhi->SetShader(mVS);
 		rhi->SetConstantBuffers(ER_VERTEX, { mFoliageConstantBuffer.Buffer() });
 
-		if (renderPass == TO_VOXELIZATION)
+		if (renderPass == FOLIAGE_VOXELIZATION)
 		{
 			rhi->SetShader(mGS);
 			rhi->SetConstantBuffers(ER_GEOMETRY, { mFoliageConstantBuffer.Buffer() });
 			rhi->SetShader(mPS_Voxelization);
 		}
-		else if (renderPass == TO_GBUFFER)
+		else if (renderPass == FOLIAGE_GBUFFER)
 			rhi->SetShader(mPS_GBuffer);
 
 		rhi->SetConstantBuffers(ER_PIXEL, { mFoliageConstantBuffer.Buffer() });

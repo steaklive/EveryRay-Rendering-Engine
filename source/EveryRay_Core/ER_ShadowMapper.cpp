@@ -247,7 +247,7 @@ namespace EveryRay_Core
 			BeginRenderingToShadowMap(i);
 
 			if (terrain)
-				terrain->Draw(this, nullptr, i);
+				terrain->Draw(TerrainRenderPass::TERRAIN_SHADOW, this, nullptr, i);
 
 			const std::string name = ER_MaterialHelper::shadowMapMaterialName + " " + std::to_string(i);
 

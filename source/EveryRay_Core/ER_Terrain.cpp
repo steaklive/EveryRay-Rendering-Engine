@@ -56,6 +56,9 @@ namespace EveryRay_Core
 			mPS_ShadowMap = rhi->CreateGPUShader();
 			mPS_ShadowMap->CompileShader(rhi, "content\\shaders\\Terrain\\Terrain.hlsl", "PSShadowMap", ER_PIXEL);
 
+			mPS_GBuffer = rhi->CreateGPUShader();
+			mPS_GBuffer->CompileShader(rhi, "content\\shaders\\Terrain\\Terrain.hlsl", "PSGBuffer", ER_PIXEL);
+
 			mPlaceOnTerrainCS = rhi->CreateGPUShader();
 			mPlaceOnTerrainCS->CompileShader(rhi, "content\\shaders\\Terrain\\PlaceObjectsOnTerrain.hlsl", "CSMain", ER_COMPUTE);
 		}
@@ -76,6 +79,7 @@ namespace EveryRay_Core
 		DeleteObject(mDS_ShadowMap);
 		DeleteObject(mPS);
 		DeleteObject(mPS_ShadowMap);
+		DeleteObject(mPS_GBuffer);
 		DeleteObject(mPlaceOnTerrainCS);
 		DeleteObject(mInputLayout);
 		DeleteObject(mTerrainTilesDataGPU);
@@ -422,13 +426,13 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_Terrain::Draw(ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade)
+	void ER_Terrain::Draw(TerrainRenderPass aPass, ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade)
 	{
 		if (!mEnabled || !mLoaded)
 			return;
 
 		for (int i = 0; i < mHeightMaps.size(); i++)
-			DrawTessellated(i, worldShadowMapper, probeManager, shadowMapCascade);
+			DrawTessellated(aPass, i, worldShadowMapper, probeManager, shadowMapCascade);
 	}
 
 	void ER_Terrain::DrawDebugGizmos()
@@ -470,11 +474,13 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_Terrain::DrawTessellated(int tileIndex, ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade)
+	void ER_Terrain::DrawTessellated(TerrainRenderPass aPass, int tileIndex, ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade)
 	{
-		bool isShadowMappingPass = shadowMapCascade != -1;
-
-		if (mHeightMaps[tileIndex]->IsCulled() && !isShadowMappingPass) //for shadow mapping pass we dont want to cull with main camera frustum
+		if (aPass == TerrainRenderPass::TERRAIN_SHADOW)
+			assert(shadowMapCascade != -1);
+		
+		//for shadow mapping pass we dont want to cull with main camera frustum
+		if (mHeightMaps[tileIndex]->IsCulled() && (aPass == TerrainRenderPass::TERRAIN_FORWARD || aPass == TerrainRenderPass::TERRAIN_GBUFFER))
 			return;
 
 		ER_RHI* rhi = mCore->GetRHI();
@@ -488,7 +494,7 @@ namespace EveryRay_Core
 		rhi->SetInputLayout(mInputLayout);
 		rhi->SetVertexBuffers({ mHeightMaps[tileIndex]->mVertexBufferTS });
 
-		if (worldShadowMapper)
+		if (worldShadowMapper && aPass != TerrainRenderPass::TERRAIN_GBUFFER)
 		{
 			for (int cascade = 0; cascade < NUM_SHADOW_CASCADES; cascade++)
 				mTerrainConstantBuffer.Data.ShadowMatrices[cascade] = XMMatrixTranspose(worldShadowMapper->GetViewMatrix(cascade) * worldShadowMapper->GetProjectionMatrix(cascade) * XMLoadFloat4x4(&ER_MatrixHelper::GetProjectionShadowMatrix()));
@@ -521,7 +527,7 @@ namespace EveryRay_Core
 		rhi->SetConstantBuffers(ER_TESSELLATION_DOMAIN, { mTerrainConstantBuffer.Buffer() });
 		rhi->SetConstantBuffers(ER_PIXEL, { mTerrainConstantBuffer.Buffer() });
 
-		if (worldShadowMapper)
+		if (worldShadowMapper && (aPass == TerrainRenderPass::TERRAIN_FORWARD || aPass == TerrainRenderPass::TERRAIN_GBUFFER))
 		{
 			std::vector<ER_RHI_GPUResource*> resources(5 + NUM_SHADOW_CASCADES);
 			resources[0] = mHeightMaps[tileIndex]->mSplatTexture;
@@ -530,7 +536,7 @@ namespace EveryRay_Core
 			resources[3] = mSplatChannelTextures[2];
 			resources[4] = mSplatChannelTextures[3];
 
-			if (!isShadowMappingPass)
+			if (aPass == TerrainRenderPass::TERRAIN_FORWARD)
 			{
 				for (int c = 0; c < NUM_SHADOW_CASCADES; c++)
 					resources[5 + c] = worldShadowMapper->GetShadowTexture(c);
@@ -571,8 +577,19 @@ namespace EveryRay_Core
 
 		rhi->SetShader(mVS);
 		rhi->SetShader(mHS);
-		rhi->SetShader(isShadowMappingPass ? mDS_ShadowMap : mDS);
-		rhi->SetShader(isShadowMappingPass ? mPS_ShadowMap : mPS);
+		if (aPass == TerrainRenderPass::TERRAIN_SHADOW)
+		{
+			rhi->SetShader(mDS_ShadowMap);
+			rhi->SetShader(mPS_ShadowMap);
+		}
+		else 
+		{
+			rhi->SetShader(mDS);
+			if (aPass == TerrainRenderPass::TERRAIN_FORWARD)
+				rhi->SetShader(mPS);
+			else if (aPass == TerrainRenderPass::TERRAIN_GBUFFER)
+				rhi->SetShader(mPS_GBuffer);
+		}
 
 		if (mIsWireframe)
 		{

@@ -42,10 +42,10 @@ namespace EveryRay_Core
 		};
 	}
 
-	enum FoliageRenderingPass
+	enum FoliageRenderPass
 	{
-		TO_GBUFFER,
-		TO_VOXELIZATION
+		FOLIAGE_GBUFFER,
+		FOLIAGE_VOXELIZATION
 	};
 	enum FoliageBillboardType
 	{
@@ -83,7 +83,7 @@ namespace EveryRay_Core
 		~ER_Foliage();
 
 		void Initialize();
-		void Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass);
+		void Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderPass renderPass);
 		void DrawDebugGizmos();
 		void Update(const ER_CoreTime& gameTime);
 
@@ -218,7 +218,7 @@ namespace EveryRay_Core
 
 		void Initialize();
 		void Update(const ER_CoreTime& gameTime, float gustDistance, float strength, float frequency);
-		void Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass);
+		void Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderPass renderPass);
 		void DrawDebugGizmos();
 		void AddFoliage(ER_Foliage* foliage);
 		void SetVoxelizationParams(float* scale, const float* dimensions, XMFLOAT4* voxelCamera);

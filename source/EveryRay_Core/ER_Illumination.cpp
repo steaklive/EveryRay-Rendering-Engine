@@ -280,7 +280,7 @@ namespace EveryRay_Core {
 				//voxelize extra objects
 				{
 					if (cascade == 0 && mFoliageSystem)
-						mFoliageSystem->Draw(gameTime, &mShadowMapper, FoliageRenderingPass::TO_VOXELIZATION);
+						mFoliageSystem->Draw(gameTime, &mShadowMapper, FoliageRenderPass::FOLIAGE_VOXELIZATION);
 				}
 
 				//reset back

@@ -40,6 +40,13 @@ namespace EveryRay_Core
 		NONE = 4
 	};
 
+	enum TerrainRenderPass
+	{
+		TERRAIN_GBUFFER,
+		TERRAIN_FORWARD,
+		TERRAIN_SHADOW
+	};
+
 	namespace TerrainCBufferData {
 		struct ER_ALIGN16 TerrainCB {
 			XMMATRIX ShadowMatrices[NUM_SHADOW_CASCADES];
@@ -129,7 +136,7 @@ namespace EveryRay_Core
 		UINT GetWidth() { return mWidth; }
 		UINT GetHeight() { return mHeight; }
 
-		void Draw(ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr, int shadowMapCascade = -1);
+		void Draw(TerrainRenderPass aPass, ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr, int shadowMapCascade = -1);
 		void DrawDebugGizmos();
 		void Update(const ER_CoreTime& gameTime);
 		void Config() { mShowDebug = !mShowDebug; }
@@ -156,7 +163,7 @@ namespace EveryRay_Core
 		void LoadTextures(const std::wstring& aTexturesPath, const std::wstring& splatLayer0Path, const std::wstring& splatLayer1Path,	const std::wstring& splatLayer2Path, const std::wstring& splatLayer3Path);
 		void LoadSplatmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path);
 		void LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path);
-		void DrawTessellated(int i, ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr, int shadowMapCascade = -1);
+		void DrawTessellated(TerrainRenderPass aPass, int i, ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr, int shadowMapCascade = -1);
 
 		ER_DirectionalLight& mDirectionalLight;
 
@@ -171,6 +178,7 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mDS_ShadowMap = nullptr;
 		ER_RHI_GPUShader* mPS = nullptr;
 		ER_RHI_GPUShader* mPS_ShadowMap = nullptr;
+		ER_RHI_GPUShader* mPS_GBuffer = nullptr;
 		ER_RHI_GPUShader* mPlaceOnTerrainCS = nullptr;
 		
 		ER_RHI_GPUBuffer* mTerrainTilesDataGPU = nullptr;

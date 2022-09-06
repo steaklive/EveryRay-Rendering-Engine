@@ -256,8 +256,10 @@ namespace EveryRay_Core {
 		#pragma region DRAW_GBUFFER
 		mGBuffer->Start();
 		mGBuffer->Draw(mScene);
+		if (mTerrain)
+			mTerrain->Draw(TerrainRenderPass::TERRAIN_GBUFFER);
 		if (mFoliageSystem)
-			mFoliageSystem->Draw(gameTime, nullptr, FoliageRenderingPass::TO_GBUFFER);
+			mFoliageSystem->Draw(gameTime, nullptr, FoliageRenderPass::FOLIAGE_GBUFFER);
 		mGBuffer->End();
 #pragma endregion
 
@@ -299,10 +301,11 @@ namespace EveryRay_Core {
 		}
 #pragma endregion
 
-		#pragma region DRAW_TERRAIN
-		if (mTerrain)
-			mTerrain->Draw(mShadowMapper, mLightProbesManager);
-#pragma endregion
+//		Terrain rendering is now in deferred; uncomment code below if you want to render in forward
+//		#pragma region DRAW_TERRAIN_FORWARD
+//		if (mTerrain)
+//			mTerrain->Draw(TerrainRenderPass::FORWARD, mShadowMapper, mLightProbesManager);
+//		#pragma endregion
 
 		#pragma region DRAW_DEBUG_GIZMOS
 		// TODO: consider moving all debug gizmos to a separate debug renderer system
