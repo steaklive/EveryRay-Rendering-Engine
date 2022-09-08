@@ -4,6 +4,7 @@
 
 namespace EveryRay_Core
 {
+	class ER_RHI_DX12_GPURootSignature;
 	class ER_RHI_DX12_PSO
 	{
 	public:
@@ -21,11 +22,11 @@ namespace EveryRay_Core
 			return *mRootSignature;
 		}
 
-		ID3D12PipelineState* GetPipelineStateObject() const { return mPSO; }
+		ID3D12PipelineState* GetPipelineStateObject() const { return mPSO.Get(); }
 
 	protected:
 		const ER_RHI_DX12_GPURootSignature* mRootSignature;
-		ID3D12PipelineState* mPSO = nullptr;
+		ComPtr<ID3D12PipelineState> mPSO;
 		std::string mName;
 	};
 
@@ -58,7 +59,7 @@ namespace EveryRay_Core
 		void Finalize(ID3D12Device* device);
 	private:
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC mPSODesc;
-		D3D12_INPUT_ELEMENT_DESC* mInputLayouts = nullptr;
+		std::shared_ptr<const D3D12_INPUT_ELEMENT_DESC> mInputLayouts;
 	};
 
 	class ER_RHI_DX12_ComputePSO : public ER_RHI_DX12_PSO

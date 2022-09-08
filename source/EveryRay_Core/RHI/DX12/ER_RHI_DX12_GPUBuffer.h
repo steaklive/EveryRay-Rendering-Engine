@@ -1,9 +1,9 @@
 #pragma once
 #include "ER_RHI_DX12.h"
+#include "ER_RHI_DX12_GPUDescriptorHeapManager.h"
 
 namespace EveryRay_Core
 {
-	class ER_RHI_DX12_DescriptorHandle;
 	class ER_RHI_DX12_GPUBuffer : public ER_RHI_GPUBuffer
 	{
 	public:
@@ -11,21 +11,22 @@ namespace EveryRay_Core
 		virtual ~ER_RHI_DX12_GPUBuffer();
 
 		virtual void CreateGPUBufferResource(ER_RHI* aRHI, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic = false, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, ER_RHI_RESOURCE_MISC_FLAG miscFlags = ER_RESOURCE_MISC_NONE, ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN) override;
-		virtual void* GetBuffer() override { return mBuffer; }
+		virtual void* GetBuffer() override { return mBuffer.Get(); }
 		virtual void* GetSRV() override { return nullptr; }
 		virtual void* GetUAV() override { return nullptr; }
 		virtual int GetSize() override { return mSize; }
 		virtual UINT GetStride() override { return mStride; }
 		virtual ER_RHI_FORMAT GetFormatRhi() override { return mRHIFormat; }
+		virtual void* GetResource() { return mBuffer.Get(); }
 		
+		virtual ER_RHI_RESOURCE_STATE GetCurrentState() { return mResourceState; }
+
 		inline virtual bool IsBuffer() override { return true; }
 
 		ER_RHI_DX12_DescriptorHandle& GetUAVDescriptorHandle() { return mBufferUAVHandle; }
 		ER_RHI_DX12_DescriptorHandle& GetSRVDescriptorHandle() { return mBufferSRVHandle; }
 		ER_RHI_DX12_DescriptorHandle& GetCBVDescriptorHandle() { return mBufferCBVHandle; }
 		
-		ID3D12Resource* GetResource() { return mBuffer; }
-
 		D3D12_VERTEX_BUFFER_VIEW& GetVertexBufferView() { return mVertexBufferView; }
 		D3D12_INDEX_BUFFER_VIEW& GetIndexBufferView() { return mIndexBufferView; }
 
@@ -34,8 +35,8 @@ namespace EveryRay_Core
 		void Update(ER_RHI* aRHI, void* aData, int dataSize);
 		DXGI_FORMAT GetFormat() { return mFormat; }
 	private:
-		ID3D12Resource* mBuffer = nullptr;
-		ID3D12Resource* mBufferUpload = nullptr;
+		ComPtr<ID3D12Resource> mBuffer;
+		ComPtr<ID3D12Resource> mBufferUpload;
 
 		ER_RHI_DX12_DescriptorHandle mBufferUAVHandle;
 		ER_RHI_DX12_DescriptorHandle mBufferSRVHandle;
@@ -43,6 +44,8 @@ namespace EveryRay_Core
 
 		DXGI_FORMAT mFormat;
 		ER_RHI_FORMAT mRHIFormat;
+		ER_RHI_RESOURCE_STATE mResourceState = ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COMMON;
+
 		UINT mStride;
 		int mSize = 0;
 
@@ -50,7 +53,6 @@ namespace EveryRay_Core
 		D3D12_INDEX_BUFFER_VIEW mIndexBufferView;
 
 		D3D12_RESOURCE_FLAGS mResourceFlags = D3D12_RESOURCE_FLAG_NONE;
-		D3D12_RESOURCE_STATES mResourceState = D3D12_RESOURCE_STATE_COMMON;
 		D3D12_HEAP_TYPE mHeapType = D3D12_HEAP_TYPE_DEFAULT;
 	};
 }

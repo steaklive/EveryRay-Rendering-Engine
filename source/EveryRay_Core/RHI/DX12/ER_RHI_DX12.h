@@ -4,7 +4,7 @@
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <d3dx12.h>
-#include <dxc/dxcapi.h>
+//#include <dxc/dxcapi.h>
 #if defined (_DEBUG) || (DEBUG)
 #include <dxgidebug.h>
 #endif
@@ -37,7 +37,9 @@ namespace EveryRay_Core
 
 	class ER_RHI_DX12_GraphicsPSO;
 	class ER_RHI_DX12_ComputePSO;
+	class ER_RHI_DX12_GPURootSignature;
 	class ER_RHI_DX12_GPUDescriptorHeapManager;
+	class ER_RHI_DX12_DescriptorHandle;
 
 	class ER_RHI_DX12: public ER_RHI
 	{
@@ -134,7 +136,10 @@ namespace EveryRay_Core
 		virtual void SetTopologyType(ER_RHI_PRIMITIVE_TYPE aType) override;
 		virtual ER_RHI_PRIMITIVE_TYPE GetCurrentTopologyType() override;
 
-		virtual void SetGPUDescriptorHeap(ER_RHI_DESCRIPTOR_HEAP_TYPE aType, bool aReset) = 0;
+		virtual void SetGPUDescriptorHeap(ER_RHI_DESCRIPTOR_HEAP_TYPE aType, bool aReset) override;
+		
+		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0) override;
+		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0) override;
 
 		virtual bool IsPSOReady(const std::string& aName, bool isCompute = false) override;
 		virtual void InitializePSO(const std::string& aName, bool isCompute = false) override;
@@ -155,20 +160,25 @@ namespace EveryRay_Core
 		virtual void RenderDrawDataImGui() override;
 		virtual void ShutdownImGui() override;
 
-		ID3D12Device* GetDevice() const { return mDevice; }
-		ID3D12Device5* GetDeviceRaytracing() const { return (ID3D12Device5*)mDevice; }
-		ID3D12GraphicsCommandList* GetGraphicsCommandList(int index) const { return mCommandListGraphics[index]; }
-		ID3D12GraphicsCommandList* GetComputeCommandList(int index) const { return mCommandListCompute[index]; }
+		ID3D12Device* GetDevice() const { return mDevice.Get(); }
+		ID3D12Device5* GetDeviceRaytracing() const { return (ID3D12Device5*)mDevice.Get(); }
+		ID3D12GraphicsCommandList* GetGraphicsCommandList(int index) const { return mCommandListGraphics[index].Get(); }
+		ID3D12GraphicsCommandList* GetComputeCommandList(int index) const { return mCommandListCompute[index].Get(); }
 		ER_RHI_DX12_GPUDescriptorHeapManager* GetDescriptorHeapManager() const { return mDescriptorHeapManager; }
 
 		inline const int GetPrepareCommandListIndex() { return mPrepareCommandListIndex; }
 
+		const D3D12_SAMPLER_DESC& FindSamplerState(ER_RHI_SAMPLER_STATE aState);
 		DXGI_FORMAT GetFormat(ER_RHI_FORMAT aFormat);
+		ER_RHI_RESOURCE_STATE GetState(D3D12_RESOURCE_STATES aState);
+		D3D12_RESOURCE_STATES GetState(ER_RHI_RESOURCE_STATE aState);
+		D3D12_SHADER_VISIBILITY GetShaderVisibility(ER_RHI_SHADER_VISIBILITY aVis);
+		D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeType(ER_RHI_DESCRIPTOR_RANGE_TYPE aDesc);
 
 		ER_GRAPHICS_API GetAPI() { return mAPI; }
 	private:
 		D3D12_PRIMITIVE_TOPOLOGY GetTopologyType(ER_RHI_PRIMITIVE_TYPE aType);
-		ER_RHI_PRIMITIVE_TYPE GetTopologyType(D3D11_PRIMITIVE_TOPOLOGY aType);
+		ER_RHI_PRIMITIVE_TYPE GetTopologyType(D3D12_PRIMITIVE_TOPOLOGY aType);
 
 		D3D12_DESCRIPTOR_HEAP_TYPE GetHeapType(ER_RHI_DESCRIPTOR_HEAP_TYPE aType);
 
@@ -179,35 +189,35 @@ namespace EveryRay_Core
 
 		D3D_FEATURE_LEVEL mFeatureLevel = D3D_FEATURE_LEVEL_12_1;
 		
-		IDXGIFactory4* mDXGIFactory = nullptr;
+		ComPtr<IDXGIFactory4> mDXGIFactory;
 		DWORD mDXGIFactoryFlags;
-		IDXGISwapChain3* mSwapChain = nullptr;
-		ID3D12Device* mDevice = nullptr;
+		ComPtr<IDXGISwapChain3> mSwapChain;
+		ComPtr<ID3D12Device> mDevice;
 
 		DXGI_FORMAT mMainRTBufferFormat = DXGI_FORMAT_R10G10B10A2_UNORM;
 		DXGI_FORMAT mMainDepthBufferFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-		ID3D12Resource* mMainRenderTarget = nullptr;
-		ID3D12Resource* mMainDepthStencilTarget = nullptr;
-		ID3D12DescriptorHeap* mRTVDescriptorHeap = nullptr;
-		ID3D12DescriptorHeap* mDSVDescriptorHeap = nullptr;
+		ComPtr<ID3D12Resource> mMainRenderTarget;
+		ComPtr<ID3D12Resource> mMainDepthStencilTarget;
+		ComPtr<ID3D12DescriptorHeap> mRTVDescriptorHeap;
+		ComPtr<ID3D12DescriptorHeap> mDSVDescriptorHeap;
 		UINT mRTVDescriptorSize;
 		CD3DX12_CPU_DESCRIPTOR_HANDLE mMainRTVDescriptorHandle;
 		CD3DX12_CPU_DESCRIPTOR_HANDLE mMainDSVDescriptorHandle;
 
-		ID3D12CommandQueue* mCommandQueueGraphics = nullptr;
-		ID3D12GraphicsCommandList* mCommandListGraphics[ER_RHI_MAX_GRAPHICS_COMMAND_LISTS] = { nullptr };
-		ID3D12CommandAllocator* mCommandAllocatorsGraphics[ER_RHI_MAX_COMPUTE_COMMAND_LISTS] = { nullptr };
-		ID3D12CommandQueue* mCommandQueueCompute = nullptr;
-		ID3D12GraphicsCommandList* mCommandListCompute[ER_RHI_MAX_COMPUTE_COMMAND_LISTS] = { nullptr };
-		ID3D12CommandAllocator* mCommandAllocatorsCompute[ER_RHI_MAX_COMPUTE_COMMAND_LISTS] = { nullptr };
+		ComPtr<ID3D12CommandQueue> mCommandQueueGraphics;
+		ComPtr<ID3D12GraphicsCommandList> mCommandListGraphics[ER_RHI_MAX_GRAPHICS_COMMAND_LISTS];
+		ComPtr<ID3D12CommandAllocator> mCommandAllocatorsGraphics[ER_RHI_MAX_COMPUTE_COMMAND_LISTS];
+		ComPtr<ID3D12CommandQueue> mCommandQueueCompute;
+		ComPtr<ID3D12GraphicsCommandList> mCommandListCompute[ER_RHI_MAX_COMPUTE_COMMAND_LISTS];
+		ComPtr<ID3D12CommandAllocator> mCommandAllocatorsCompute[ER_RHI_MAX_COMPUTE_COMMAND_LISTS];
 
 		const int mPrepareCommandListIndex = ER_RHI_MAX_GRAPHICS_COMMAND_LISTS - 1; // command list for prepare commands (on init)
 
-		ID3D12Fence* mFenceGraphics = nullptr;
+		ComPtr<ID3D12Fence> mFenceGraphics;
 		UINT64 mFenceValuesGraphics;
 		Wrappers::Event mFenceEventGraphics;
 
-		ID3D12Fence* mFenceCompute = nullptr;
+		ComPtr<ID3D12Fence> mFenceCompute;
 		UINT64 mFenceValuesCompute;
 		Wrappers::Event mFenceEventCompute;
 
@@ -224,8 +234,8 @@ namespace EveryRay_Core
 
 		ER_RHI_DX12_GPUDescriptorHeapManager* mDescriptorHeapManager = nullptr;
 
-		ER_RHI_DX12_DescriptorHandle mNullSRV2DHandle;
-		ER_RHI_DX12_DescriptorHandle mNullSRV3DHandle;
+		ER_RHI_DX12_DescriptorHandle& mNullSRV2DHandle;
+		ER_RHI_DX12_DescriptorHandle& mNullSRV3DHandle;
 
 		ER_RHI_Viewport mMainViewport;
 

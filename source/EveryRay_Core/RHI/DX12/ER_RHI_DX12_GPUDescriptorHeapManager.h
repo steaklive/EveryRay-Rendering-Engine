@@ -37,7 +37,7 @@ namespace EveryRay_Core
 		ER_RHI_DX12_DescriptorHeap(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool isReferencedByShader = false);
 		virtual ~ER_RHI_DX12_DescriptorHeap();
 
-		ID3D12DescriptorHeap* GetHeap() { return mDescriptorHeap; }
+		ID3D12DescriptorHeap* GetHeap() { return mDescriptorHeap.Get(); }
 		D3D12_DESCRIPTOR_HEAP_TYPE GetHeapType() { return mHeapType; }
 		D3D12_CPU_DESCRIPTOR_HANDLE GetHeapCPUStart() { return mDescriptorHeapCPUStart; }
 		D3D12_GPU_DESCRIPTOR_HANDLE GetHeapGPUStart() { return mDescriptorHeapGPUStart; }
@@ -57,7 +57,7 @@ namespace EveryRay_Core
 		}
 
 	protected:
-		ID3D12DescriptorHeap* mDescriptorHeap = nullptr;
+		ComPtr<ID3D12DescriptorHeap> mDescriptorHeap;
 		D3D12_DESCRIPTOR_HEAP_TYPE mHeapType;
 		D3D12_CPU_DESCRIPTOR_HANDLE mDescriptorHeapCPUStart;
 		D3D12_GPU_DESCRIPTOR_HANDLE mDescriptorHeapGPUStart;

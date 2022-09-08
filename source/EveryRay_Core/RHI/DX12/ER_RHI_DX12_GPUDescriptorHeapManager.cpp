@@ -14,7 +14,7 @@ namespace EveryRay_Core
 		heapDesc.Flags = mIsReferencedByShader ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 		heapDesc.NodeMask = 0;
 
-		if (FAILED(device->CreateDescriptorHeap(&heapDesc, &mDescriptorHeap)))
+		if (FAILED(device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS (&mDescriptorHeap))))
 			throw ER_CoreException("ER_RHI_DX12: Could not create descriptor heap");
 
 		mDescriptorHeapCPUStart = mDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
@@ -27,7 +27,6 @@ namespace EveryRay_Core
 
 	ER_RHI_DX12_DescriptorHeap::~ER_RHI_DX12_DescriptorHeap()
 	{
-		ReleaseObject(mDescriptorHeap);
 	}
 
 	ER_RHI_DX12_CPUDescriptorHeap::ER_RHI_DX12_CPUDescriptorHeap(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors)

@@ -7,6 +7,7 @@
 #define NOMINMAX
 #include <windows.h>
 #include <wrl/client.h>
+#include <wrl/wrappers/corewrappers.h>
 #include <exception>
 #include <cassert>
 #include <string>
@@ -18,6 +19,7 @@
 #include <thread>
 #include <mutex>
 #include <chrono>
+using namespace Microsoft::WRL;
 
 #if defined (ER_API_DX11)
 #define ER_PLATFORM_WIN64_DX11 1

@@ -1,15 +1,16 @@
 #include "ER_RHI_DX12_GPUPipelineStateObject.h"
+#include "ER_RHI_DX12_GPURootSignature.h"
 #include "..\..\ER_Utility.h"
+#include "..\..\ER_CoreException.h"
 
 namespace EveryRay_Core
 {
 
 	ER_RHI_DX12_PSO::~ER_RHI_DX12_PSO()
 	{
-		ReleaseObject(mPSO);
 	}
 
-	ER_RHI_DX12_GraphicsPSO::ER_RHI_DX12_GraphicsPSO(const std::string& aName)
+	ER_RHI_DX12_GraphicsPSO::ER_RHI_DX12_GraphicsPSO(const std::string& aName) : ER_RHI_DX12_PSO(aName)
 	{
 		mName = aName;
 
@@ -56,10 +57,10 @@ namespace EveryRay_Core
 		mPSODesc.pRootSignature = mRootSignature->GetSignature();
 		assert(mPSODesc.pRootSignature != nullptr);
 
-		mPSODesc.InputLayout.pInputElementDescs = mInputLayouts;
+		mPSODesc.InputLayout.pInputElementDescs = mInputLayouts.get();
 
 		HRESULT hr;
-		if (FAILED(hr = device->CreateGraphicsPipelineState(&mPSODesc, &mPSO)))
+		if (FAILED(hr = device->CreateGraphicsPipelineState(&mPSODesc, IID_PPV_ARGS(&mPSO))))
 		{
 			std::string message = "ER_RHI_DX12: Failed creating graphics PSO: ";
 			message += mName;
@@ -107,7 +108,7 @@ namespace EveryRay_Core
 			mInputLayouts = nullptr;
 	}
 
-	ER_RHI_DX12_ComputePSO::ER_RHI_DX12_ComputePSO(const std::string& aName)
+	ER_RHI_DX12_ComputePSO::ER_RHI_DX12_ComputePSO(const std::string& aName) : ER_RHI_DX12_PSO(aName)
 	{
 		mName = aName;
 
@@ -121,7 +122,7 @@ namespace EveryRay_Core
 		assert(mPSODesc.pRootSignature != nullptr);
 		
 		HRESULT hr;
-		if (FAILED(hr = device->CreateComputePipelineState(&mPSODesc, &mPSO)))
+		if (FAILED(hr = device->CreateComputePipelineState(&mPSODesc, IID_PPV_ARGS(&mPSO))))
 		{
 			std::string message = "ER_RHI_DX12: Failed creating compute PSO: ";
 			message += mName;

@@ -3,7 +3,9 @@
 #include "ER_RHI_DX12_GPUTexture.h"
 #include "ER_RHI_DX12_GPUShader.h"
 #include "ER_RHI_DX12_GPUPipelineStateObject.h"
+#include "ER_RHI_DX12_GPURootSignature.h"
 #include "ER_RHI_DX12_GPUDescriptorHeapManager.h"
+
 #include "..\..\ER_CoreException.h"
 #include "..\..\ER_Utility.h"
 
@@ -11,34 +13,11 @@ namespace EveryRay_Core
 {
 	ER_RHI_DX12::ER_RHI_DX12()
 	{
+
 	}
 
 	ER_RHI_DX12::~ER_RHI_DX12()
 	{
-		ReleaseObject(mDXGIFactory);
-		ReleaseObject(mSwapChain);
-		ReleaseObject(mDevice);
-
-		ReleaseObject(mMainRenderTarget);
-		ReleaseObject(mMainDepthStencilTarget);
-		ReleaseObject(mRTVDescriptorHeap);
-		ReleaseObject(mDSVDescriptorHeap);
-
-		ReleaseObject(mCommandQueueGraphics);
-		for (int i = 0;i < ER_RHI_MAX_GRAPHICS_COMMAND_LISTS; i++)
-		{
-			ReleaseObject(mCommandListGraphics[i]);
-			ReleaseObject(mCommandAllocatorsGraphics[i]);
-		}
-		ReleaseObject(mCommandQueueCompute);
-		for (int i = 0; i < ER_RHI_MAX_COMPUTE_COMMAND_LISTS; i++)
-		{
-			ReleaseObject(mCommandListCompute[i]);
-			ReleaseObject(mCommandAllocatorsCompute[i]);
-		}
-		ReleaseObject(mFenceGraphics);
-		ReleaseObject(mFenceCompute);
-
 		DeleteObject(mDescriptorHeapManager);
 	}
 
@@ -50,14 +29,14 @@ namespace EveryRay_Core
 
 #if defined(_DEBUG) || defined (DEBUG)
 		{
-			ID3D12Debug* debugController = nullptr;
-			if (SUCCEEDED(D3D12GetDebugInterface(*debugController)))
+			ComPtr<ID3D12Debug> debugController;
+			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(debugController.GetAddressOf()))))
 				debugController->EnableDebugLayer();
 			else
 				ER_OUTPUT_LOG(L"ER_RHI_DX12: Direct3D Debug Device is not available\n");
 
-			IDXGIInfoQueue* dxgiInfoQueue = nullptr;
-			if (SUCCEEDED(DXGIGetDebugInterface1(0, *dxgiInfoQueue)))
+			ComPtr<IDXGIInfoQueue> dxgiInfoQueue;
+			if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(dxgiInfoQueue.GetAddressOf()))))
 			{
 				mDXGIFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
 
@@ -73,14 +52,14 @@ namespace EveryRay_Core
 		}
 #endif
 
-		if (FAILED(CreateDXGIFactory2(mDXGIFactoryFlags, &mDXGIFactory)))
+		if (FAILED(CreateDXGIFactory2(mDXGIFactoryFlags, IID_PPV_ARGS(mDXGIFactory.ReleaseAndGetAddressOf()))))
 			throw ER_CoreException("ER_RHI_DX12: CreateDXGIFactory2() failed", hr);
 
-		IDXGIAdapter1* adapter = nullptr;
-		GetAdapter(*adapter);
+		ComPtr<IDXGIAdapter1> adapter;
+		mDXGIFactory->EnumAdapters1(0, adapter.ReleaseAndGetAddressOf());
 
 		// Create the DX12 API device object.
-		if (FAILED(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, &mDevice)))
+		if (FAILED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(mDevice.ReleaseAndGetAddressOf()))))
 			throw ER_CoreException("ER_RHI_DX12: D3D12CreateDevice() failed", hr);
 
 		static const D3D_FEATURE_LEVEL s_featureLevels[] =
@@ -115,7 +94,7 @@ namespace EveryRay_Core
 			queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 			queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
-			if (FAILED(mDevice->CreateCommandQueue(&queueDesc, &mCommandQueueGraphics)))
+			if (FAILED(mDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(mCommandQueueGraphics.ReleaseAndGetAddressOf()))))
 				throw ER_CoreException("ER_RHI_DX12: Could not create graphics command queue");
 
 			// Create descriptor heaps for render target views and depth stencil views.
@@ -125,7 +104,7 @@ namespace EveryRay_Core
 			rtvDescriptorHeapDesc.NumDescriptors = 1;
 			rtvDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 
-			if (FAILED(mDevice->CreateDescriptorHeap(&rtvDescriptorHeapDesc, &mRTVDescriptorHeap)))
+			if (FAILED(mDevice->CreateDescriptorHeap(&rtvDescriptorHeapDesc, IID_PPV_ARGS(mRTVDescriptorHeap.ReleaseAndGetAddressOf()))))
 				throw ER_CoreException("ER_RHI_DX12: Could not create descriptor heap for main RTV");
 
 			mRTVDescriptorSize = mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -134,19 +113,19 @@ namespace EveryRay_Core
 			dsvDescriptorHeapDesc.NumDescriptors = 1;
 			dsvDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 
-			if (FAILED(mDevice->CreateDescriptorHeap(&dsvDescriptorHeapDesc, &mDSVDescriptorHeap)))
+			if (FAILED(mDevice->CreateDescriptorHeap(&dsvDescriptorHeapDesc, IID_PPV_ARGS(mDSVDescriptorHeap.ReleaseAndGetAddressOf()))))
 				throw ER_CoreException("ER_RHI_DX12: Could not create descriptor heap for main DSV");
 
 			for (int i = 0; i < ER_RHI_MAX_GRAPHICS_COMMAND_LISTS; i++)
 			{
 				// Create a command allocator for each back buffer that will be rendered to.
-				if (FAILED(mDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, &mCommandAllocatorsGraphics[i])))
+				if (FAILED(mDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(mCommandAllocatorsGraphics[i].ReleaseAndGetAddressOf()))))
 				{
 					std::string message = "ER_RHI_DX12: Could not create graphics command allocator " + std::to_string(i);
 					throw ER_CoreException(message.c_str());
 				}
 				// Create a command list for recording graphics commands.
-				if (FAILED(mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mCommandAllocatorsGraphics[i], nullptr, &mCommandListGraphics[i])))
+				if (FAILED(mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mCommandAllocatorsGraphics[i].Get(), nullptr, IID_PPV_ARGS(mCommandListGraphics[i].ReleaseAndGetAddressOf()))))
 				{
 					std::string message = "ER_RHI_DX12: Could not create graphics command list " + std::to_string(i);
 					throw ER_CoreException(message.c_str());
@@ -180,7 +159,7 @@ namespace EveryRay_Core
 				fsSwapChainDesc.Windowed = TRUE;
 
 				// Create a swap chain for the window.
-				if (FAILED(mDXGIFactory->CreateSwapChainForHwnd(mCommandQueueGraphics, windowHandle, &swapChainDesc, &fsSwapChainDesc,	nullptr, &mSwapChain)))
+				if (FAILED(mDXGIFactory->CreateSwapChainForHwnd(mCommandQueueGraphics.Get(), windowHandle, &swapChainDesc, &fsSwapChainDesc, nullptr, mSwapChain.GetAddressOf())))
 					throw ER_CoreException("ER_RHI_DX12: Could not create swapchain");
 
 				//ThrowIfFailed(mDXGIFactory->MakeWindowAssociation(mAppWindow, DXGI_MWA_NO_ALT_ENTER));
@@ -196,7 +175,7 @@ namespace EveryRay_Core
 				rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 
 				mMainRTVDescriptorHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), 0, mRTVDescriptorSize);
-				mDevice->CreateRenderTargetView(mMainRenderTarget, &rtvDesc, mMainRTVDescriptorHandle);
+				mDevice->CreateRenderTargetView(mMainRenderTarget.Get(), &rtvDesc, mMainRTVDescriptorHandle);
 
 				// Reset the index to the current back buffer.
 				//mBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
@@ -206,7 +185,7 @@ namespace EveryRay_Core
 			{
 				CD3DX12_HEAP_PROPERTIES depthHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
 
-				D3D12_RESOURCE_DESC depthStencilDesc = CD3DX12_RESOURCE_DESC::Tex2D(mMainDepthBufferFormat, width height, 1, 1);
+				D3D12_RESOURCE_DESC depthStencilDesc = CD3DX12_RESOURCE_DESC::Tex2D(mMainDepthBufferFormat, width, height, 1, 1);
 				depthStencilDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
 				D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
@@ -214,7 +193,7 @@ namespace EveryRay_Core
 				depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
 				depthOptimizedClearValue.DepthStencil.Stencil = 0;
 
-				if (FAILED(mDevice->CreateCommittedResource(&depthHeapProperties, D3D12_HEAP_FLAG_NONE, &depthStencilDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &depthOptimizedClearValue, &mMainDepthStencilTarget)))
+				if (FAILED(mDevice->CreateCommittedResource(&depthHeapProperties, D3D12_HEAP_FLAG_NONE, &depthStencilDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &depthOptimizedClearValue, IID_PPV_ARGS(mMainDepthStencilTarget.ReleaseAndGetAddressOf()))))
 					throw ER_CoreException("ER_RHI_DX12: Could not create comitted resource for main depth-stencil target");
 
 				mMainDepthStencilTarget->SetName(L"Main Depth-Stencil target");
@@ -225,7 +204,7 @@ namespace EveryRay_Core
 				dsvDesc.Format = mMainDepthBufferFormat;
 				dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 
-				mDevice->CreateDepthStencilView(mMainDepthStencilTarget, &dsvDesc, mDSVDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+				mDevice->CreateDepthStencilView(mMainDepthStencilTarget.Get(), &dsvDesc, mDSVDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 			}
 		}
 
@@ -249,7 +228,7 @@ namespace EveryRay_Core
 		CreateDepthStencilStates();
 		CreateBlendStates();
 
-		mDescriptorHeapManager = new ER_RHI_DX12_GPUDescriptorHeapManager(mDevice);
+		mDescriptorHeapManager = new ER_RHI_DX12_GPUDescriptorHeapManager(mDevice.Get());
 
 		// null SRVs descriptor handles
 		{
@@ -282,7 +261,7 @@ namespace EveryRay_Core
 			throw ER_CoreException(message.c_str());
 		}
 
-		if (FAILED(hr = mCommandListGraphics[index]->Reset(mCommandAllocatorsGraphics[index], nullptr)))
+		if (FAILED(hr = mCommandListGraphics[index]->Reset(mCommandAllocatorsGraphics[index].Get(), nullptr)))
 		{
 			std::string message = "ER_RHI_DX12:: Could not Reset() command list (graphics) " + std::to_string(index);
 			throw ER_CoreException(message.c_str());
@@ -326,7 +305,7 @@ namespace EveryRay_Core
 	void ER_RHI_DX12::ClearDepthStencilTarget(ER_RHI_GPUTexture* aDepthTarget, float depth, UINT stencil /*= 0*/)
 	{
 		assert(aDepthTarget);
-		ER_RHI_DX12_GPUTexture* dtDX12 = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTarget);
+		ER_RHI_DX12_GPUTexture* dtDX12 = static_cast<ER_RHI_DX12_GPUTexture*>(aDepthTarget);
 		assert(dtDX12);
 		mCommandListGraphics[0]->ClearDepthStencilView(dtDX12->GetDSVHandle().GetCPUHandle(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, depth, stencil, 0, nullptr);
 	}
@@ -336,7 +315,7 @@ namespace EveryRay_Core
 		assert(aRenderTarget);
 		ER_RHI_DX12_GPUTexture* uavDX12 = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTarget);
 		assert(uavDX12);
-		mCommandListGraphics[0]->ClearUnorderedAccessViewFloat(uavDX12->GetGPUHandle(), uavDX12->GetCPUHandle(), uavDX12->GetResource(), colors);
+		mCommandListGraphics[0]->ClearUnorderedAccessViewFloat(uavDX12->GetUAVHandle().GetGPUHandle(), uavDX12->GetUAVHandle().GetCPUHandle(), uavDX12->GetResource(), colors);
 	}
 
 	void ER_RHI_DX12::CreateInputLayout(ER_RHI_InputLayout* aOutInputLayout, ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount, const void* shaderBytecodeWithInputSignature, UINT byteCodeLength)
@@ -419,7 +398,7 @@ namespace EveryRay_Core
 		assert(dstResource);
 		assert(srcResource);
 
-		mCommandListGraphics[0]->CopyResource(dstResource->GetResource(), srcResource->GetResource());
+		mCommandListGraphics[0]->CopyResource(static_cast<ID3D12Resource*>(dstResource->GetResource()), static_cast<ID3D12Resource*>(srcResource->GetResource()));
 	}
 
 	void ER_RHI_DX12::BeginBufferRead(ER_RHI_GPUBuffer* aBuffer, void** output)
@@ -462,12 +441,11 @@ namespace EveryRay_Core
 		srcLocation.pResource = srcBuffer->GetResource();
 		srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 		srcLocation.SubresourceIndex = SrcSubresource;
-
-		if (dstbuffer->GetTexture2D() && srcbuffer->GetTexture2D())
-			mCommandListGraphics[0]->CopyTextureRegion(&dstLocation, DstX, DstY, DstZ, &srcocation, NULL);
+		
+		mCommandListGraphics[0]->CopyTextureRegion(&dstLocation, DstX, DstY, DstZ, &srcocation, NULL);
 		//else if (dstbuffer->GetTexture3D() && srcbuffer->GetTexture3D())
-		else
-			throw ER_CoreException("ER_RHI_DX12:: One of the resources is NULL during CopyGPUTextureSubresourceRegion()");
+		//else
+		//	throw ER_CoreException("ER_RHI_DX12:: One of the resources is NULL during CopyGPUTextureSubresourceRegion()");
 	}
 
 	void ER_RHI_DX12::Draw(UINT VertexCount)
@@ -507,7 +485,7 @@ namespace EveryRay_Core
 	{
 		if (!isCompute)
 		{
-			ID3D12CommandList* ppCommandLists[] = { mCommandListGraphics[commandListIndex] };
+			ID3D12CommandList* ppCommandLists[] = { mCommandListGraphics[commandListIndex].Get() };
 			mCommandQueueGraphics->ExecuteCommandLists(1, ppCommandLists);
 		}
 	}
@@ -540,7 +518,7 @@ namespace EveryRay_Core
 		mCommandQueueCompute->ExecuteCommandLists(1, ppCommandLists);
 
 		UINT64 fenceValue = mFenceValuesCompute;
-		mCommandQueueCompute->Signal(mFenceCompute, fenceValue);
+		mCommandQueueCompute->Signal(mFenceCompute.Get(), fenceValue);
 		mFenceValuesCompute++;
 	}
 
@@ -579,12 +557,11 @@ namespace EveryRay_Core
 				else
 					rtvHandles[i] = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTargets[i])->GetRTVHandle().GetCPUHandle();
 			}
-			TransitionResource(RT);
-
+			TransitionResources(aRenderTargets, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_RENDER_TARGET);
 			if (aDepthTarget)
 			{
 				D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = static_cast<ER_RHI_DX12_GPUTexture*>(aDepthTarget)->GetDSVHandle().GetCPUHandle();
-				TransitionResource(dsv);
+				TransitionResources({ aDepthTarget }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_DEPTH_WRITE);
 				mCommandListGraphics[0]->OMSetRenderTargets(rtCount, rtvHandles, FALSE, &dsvHandle);
 			}
 			else
@@ -602,7 +579,8 @@ namespace EveryRay_Core
 	{
 		assert(aDepthTarget);
 		D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = static_cast<ER_RHI_DX12_GPUTexture*>(aDepthTarget)->GetDSVHandle().GetCPUHandle();
-		TransitionResource(DSV);
+		TransitionResources({ aDepthTarget }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_DEPTH_WRITE);
+
 		mCommandListGraphics[0]->OMSetRenderTargets(1, nullptr, FALSE, dsvHandle);
 	}
 
@@ -690,7 +668,7 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::SetViewport(const ER_RHI_Viewport& aViewport)
 	{
-		D3D11_VIEWPORT viewport;
+		D3D12_VIEWPORT viewport;
 		viewport.TopLeftX = aViewport.TopLeftX;
 		viewport.TopLeftY = aViewport.TopLeftY;
 		viewport.Width = aViewport.Width;
@@ -705,7 +683,7 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::SetRect(const ER_RHI_Rect& rect)
 	{
-		D3D11_RECT currentRect = { rect.left, rect.top, rect.right, rect.bottom };
+		D3D12_RECT currentRect = { rect.left, rect.top, rect.right, rect.bottom };
 		mCommandListGraphics[0]->RSSetScissorRects(1, &currentRect);
 	}
 
@@ -770,8 +748,9 @@ namespace EveryRay_Core
 			else
 				gpuDescriptorHeap->AddToHandle(mDevice, srvHandle, mNullSRV2DHandle);
 
-			TransitionResource();
 		}
+
+		TransitionResources(aSRVs, aShaderType == ER_RHI_SHADER_TYPE::ER_PIXEL ? ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE : ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 		if (!isComputeRS)
 			mCommandListGraphics[0]->SetGraphicsRootDescriptorTable(rootParamIndex, srvHandle.GetGPUHandle());
@@ -800,9 +779,9 @@ namespace EveryRay_Core
 				gpuDescriptorHeap->AddToHandle(mDevice, uavHandle, static_cast<ER_RHI_DX12_GPUBuffer*>(aUAVs[i])->GetUAVDescriptorHandle());
 			else
 				gpuDescriptorHeap->AddToHandle(mDevice, uavHandle, static_cast<ER_RHI_DX12_GPUTexture*>(aUAVs[i])->GetUAVHandle());
-
-			TransitionResource();
 		}
+
+		TransitionResources(aUAVs, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_UNORDERED_ACCESS);
 
 		if (!isComputeRS)
 			mCommandListGraphics[0]->SetGraphicsRootDescriptorTable(rootParamIndex, uavHandle.GetGPUHandle());
@@ -869,7 +848,7 @@ namespace EveryRay_Core
 		assert(buf);
 
 		D3D12_INDEX_BUFFER_VIEW view = buf->GetIndexBufferView();
-		mCommandListGraphics[0]->IASetIndexBuffer(buf, &view);
+		mCommandListGraphics[0]->IASetIndexBuffer(&view);
 	}
 
 	void ER_RHI_DX12::SetVertexBuffers(const std::vector<ER_RHI_GPUBuffer*>& aVertexBuffers)
@@ -902,7 +881,7 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_RHI_DX12::SetRootSignature(ER_RHI_GPURootSignature* rs, bool isCompute = false)
+	void ER_RHI_DX12::SetRootSignature(ER_RHI_GPURootSignature* rs, bool isCompute)
 	{
 		assert(rs);
 		if (!isCompute)
@@ -1007,12 +986,12 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::SetPSO(const std::string& aName, bool isCompute)
 	{
-		auto resetPSO = [](aName, isCompute)
+		auto resetPSO = [&](const std::string& name, bool comp)
 		{
 			std::wstring msg = L"ER_RHI_DX12: Could not find PSO to set, adding it now and trying to reset: " + ER_Utility::ToWideString(aName) + L'\n';
 			ER_OUTPUT_LOG(msg.c_str());
-			InitializePSO(aName, isCompute);
-			SetPSO(aName, isCompute);
+			InitializePSO(name, comp);
+			SetPSO(name, comp);
 		};
 
 		if (!isCompute)
@@ -1022,7 +1001,7 @@ namespace EveryRay_Core
 			{
 				mCommandListGraphics[0]->SetPipelineState(it.second.GetPipelineStateObject());
 				mCurrentGraphicsPSOName = it.first;
-				mCurrentPSOState = ER_RHI_DX12_PSO_STATE::GRAPHICS
+				mCurrentPSOState = ER_RHI_DX12_PSO_STATE::GRAPHICS;
 			}
 			else
 				resetPSO(aName, isCompute);
@@ -1045,6 +1024,33 @@ namespace EveryRay_Core
 	{
 		mCurrentPSOState = ER_RHI_DX12_PSO_STATE::UNSET;
 		//TODO maybe set null PSO? (not sure its needed/possible in DX12)
+	}
+
+	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex)
+	{
+		int size = static_cast<int>(aResources.size());
+		assert(size > 0 && size == aStates.size());
+
+		std::vector<CD3DX12_RESOURCE_BARRIER> barriers;
+		barriers.resize(size);
+
+		for (int i = 0; i < size; i++)
+			barriers[i] = CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aStates[i]));
+		
+		mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
+	}
+
+	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex /*= 0*/)
+	{
+		int size = static_cast<int>(aResources.size());
+
+		std::vector<CD3DX12_RESOURCE_BARRIER> barriers;
+		barriers.resize(size);
+
+		for (int i = 0; i < size; i++)
+			barriers[i] = CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aState));
+
+		mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
 	}
 
 	void ER_RHI_DX12::UnbindRenderTargets()
@@ -1085,6 +1091,20 @@ namespace EveryRay_Core
 	void ER_RHI_DX12::ShutdownImGui()
 	{
 		ImGui_ImplDX12_Shutdown();
+	}
+
+	const D3D12_SAMPLER_DESC& ER_RHI_DX12::FindSamplerState(ER_RHI_SAMPLER_STATE aState)
+	{
+		auto it = mSamplerStates.find(aState);
+		if (it != mSamplerStates.end())
+		{
+			return it->second;
+		}
+		else
+		{
+			return D3D12_SAMPLER_DESC();
+			throw ER_CoreException("ER_RHI_DX12: Sampler state is not found.");
+		}
 	}
 
 	DXGI_FORMAT ER_RHI_DX12::GetFormat(ER_RHI_FORMAT aFormat)
@@ -1171,6 +1191,124 @@ namespace EveryRay_Core
 			return DXGI_FORMAT_R8_UINT;
 		default:
 			return DXGI_FORMAT_UNKNOWN;
+		}
+	}
+
+	ER_RHI_RESOURCE_STATE ER_RHI_DX12::GetState(D3D12_RESOURCE_STATES aState)
+	{
+		switch (aState)
+		{
+		case D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON:
+			return ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COMMON;
+		case D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER:
+			return ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+		case D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_INDEX_BUFFER:
+			return ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_INDEX_BUFFER;
+		case D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_RENDER_TARGET:
+			return ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_RENDER_TARGET;
+		case D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_UNORDERED_ACCESS:
+			return ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_UNORDERED_ACCESS;
+		case D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_DEPTH_WRITE:
+			return ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_DEPTH_WRITE;
+		case D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_DEPTH_READ:
+			return ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_DEPTH_READ;
+		case D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE:
+			return ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+		case D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE:
+			return ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+		case D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT:
+			return ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_INDIRECT_ARGUMENT;
+		case D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST:
+			return ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COPY_DEST;
+		case D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE:
+			return ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COPY_SOURCE;
+		case D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_GENERIC_READ:
+			return ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_GENERIC_READ;
+		case D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_PRESENT:
+			return ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PRESENT;
+		default:
+			throw ER_CoreException("ER_RHI_DX12: Could not convert the resource state!");
+			return ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COMMON;
+		}
+	}
+
+	D3D12_RESOURCE_STATES ER_RHI_DX12::GetState(ER_RHI_RESOURCE_STATE aState)
+	{
+		switch (aState)
+		{
+		case ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COMMON:
+			return D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON;
+		case ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER:
+			return D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+		case ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_INDEX_BUFFER:
+			return D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_INDEX_BUFFER;
+		case ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_RENDER_TARGET:
+			return D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_RENDER_TARGET;
+		case ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_UNORDERED_ACCESS:
+			return D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+		case ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_DEPTH_WRITE:
+			return D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_DEPTH_WRITE;
+		case ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_DEPTH_READ:
+			return D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_DEPTH_READ;
+		case ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE:
+			return D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+		case ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE:
+			return D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+		case ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_INDIRECT_ARGUMENT:
+			return D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+		case ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COPY_DEST:
+			return D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST;
+		case ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COPY_SOURCE:
+			return D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE;
+		case ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_GENERIC_READ:
+			return D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_GENERIC_READ;
+		case ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PRESENT:
+			return D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_PRESENT;
+		default:
+			throw ER_CoreException("ER_RHI_DX12: Could not convert the resource state!");
+			return D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON;
+		}
+	}
+
+	D3D12_SHADER_VISIBILITY ER_RHI_DX12::GetShaderVisibility(ER_RHI_SHADER_VISIBILITY aVis)
+	{
+		switch (aType)
+		{
+		case ER_RHI_SHADER_VISIBILITY::ER_RHI_SHADER_VISIBILITY_ALL:
+			return D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL;
+		case ER_RHI_SHADER_VISIBILITY::ER_RHI_SHADER_VISIBILITY_VERTEX:
+			return D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_VERTEX;
+		case ER_RHI_SHADER_VISIBILITY::ER_RHI_SHADER_VISIBILITY_HULL:
+			return D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_HULL;
+		case ER_RHI_SHADER_VISIBILITY::ER_RHI_SHADER_VISIBILITY_DOMAIN:
+			return D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_DOMAIN;
+		case ER_RHI_SHADER_VISIBILITY::ER_RHI_SHADER_VISIBILITY_GEOMETRY:
+			return D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_GEOMETRY;
+		case ER_RHI_SHADER_VISIBILITY::ER_RHI_SHADER_VISIBILITY_PIXEL:
+			return D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_PIXEL;
+		default:
+		{
+			assert(0);
+			return D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL;
+		}
+		}
+	}
+
+	D3D12_DESCRIPTOR_RANGE_TYPE ER_RHI_DX12::GetDescriptorRangeType(ER_RHI_DESCRIPTOR_RANGE_TYPE aDesc)
+	{
+		switch (aType)
+		{
+		case ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV:
+			return D3D12_DESCRIPTOR_RANGE_TYPE::D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+		case ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV:
+			return D3D12_DESCRIPTOR_RANGE_TYPE::D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+		case ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV:
+			return D3D12_DESCRIPTOR_RANGE_TYPE::D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+		default:
+		{
+			assert(0);
+			return D3D12_DESCRIPTOR_RANGE_TYPE::D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+		}
 		}
 	}
 

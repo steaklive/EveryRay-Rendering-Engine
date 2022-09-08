@@ -1,5 +1,4 @@
 #include "ER_RHI_DX12_GPUBuffer.h"
-#include "ER_RHI_DX12_GPUDescriptorHeapManager.h"
 #include "..\..\ER_Utility.h"
 #include "..\..\ER_CoreException.h"
 
@@ -7,13 +6,10 @@ namespace EveryRay_Core
 {
 	ER_RHI_DX12_GPUBuffer::ER_RHI_DX12_GPUBuffer()
 	{
-
 	}
 
 	ER_RHI_DX12_GPUBuffer::~ER_RHI_DX12_GPUBuffer()
 	{
-		ReleaseObject(mBuffer);
-		ReleaseObject(mBufferUpload);
 	}
 
 	void ER_RHI_DX12_GPUBuffer::CreateGPUBufferResource(ER_RHI* aRHI, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic /*= false*/, ER_RHI_BIND_FLAG bindFlags /*= 0*/, UINT cpuAccessFlags /*= 0*/, ER_RHI_RESOURCE_MISC_FLAG miscFlags /*= 0*/, ER_RHI_FORMAT format /*= ER_FORMAT_UNKNOWN*/)
@@ -57,11 +53,11 @@ namespace EveryRay_Core
 		heapProperties.CreationNodeMask = 1;
 		heapProperties.VisibleNodeMask = 1;
 
-		if (FAILED(device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE, &desc, mResourceState, nullptr, &mBuffer)))
+		if (FAILED(device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE, &desc, aRHIDX12->GetState(mResourceState), nullptr, IID_PPV_ARGS(&mBuffer))))
 			throw ER_CoreException("ER_RHI_DX12: Failed to create committed resource of GPU buffer.");
 		
 		if (FAILED(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(mSize),
-			D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, &mBufferUpload)))
+			D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&mBufferUpload))))
 			throw ER_CoreException("ER_RHI_DX12: Failed to create committed resource of GPU buffer (upload).");
 
 		if (bindFlags & ER_RHI_BIND_FLAG::ER_BIND_CONSTANT_BUFFER)
@@ -71,8 +67,7 @@ namespace EveryRay_Core
 			D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
 			cbvDesc.BufferLocation = mBufferUpload->GetGPUVirtualAddress();
 			cbvDesc.SizeInBytes = mSize;
-			if (FAILED(device->CreateConstantBufferView(&cbvDesc, mBufferCBVHandle.GetCPUHandle())))
-				throw ER_CoreException("ER_RHI_DX12: Failed to create constant buffer view of GPU buffer.");
+			device->CreateConstantBufferView(&cbvDesc, mBufferCBVHandle.GetCPUHandle());
 
 			return;
 		}
@@ -128,8 +123,8 @@ namespace EveryRay_Core
 			srvDesc.Buffer.NumElements = objectsCount;
 			srvDesc.Buffer.StructureByteStride = byteStride;
 			srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-			if (FAILED(device->CreateShaderResourceView(mBuffer, &srvDesc, mBufferSRVHandle.GetCPUHandle())))
-				throw ER_CoreException("ER_RHI_DX12: Failed to create shader resource view of GPU buffer.");
+			device->CreateShaderResourceView(mBuffer.Get(), &srvDesc, mBufferSRVHandle.GetCPUHandle());
+
 		}
 
 		if (bindFlags & ER_RHI_BIND_FLAG::ER_BIND_UNORDERED_ACCESS)
@@ -142,10 +137,8 @@ namespace EveryRay_Core
 			uavDesc.Buffer.NumElements = objectsCount;
 			uavDesc.Buffer.StructureByteStride = byteStride;
 			uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
-			if (FAILED(device->CreateUnorderedAccessView(mBuffer, nullptr, &uavDesc, mBufferUAVHandle.GetCPUHandle())))
-				throw ER_CoreException("ER_RHI_DX12: Failed to create unordered access view of GPU buffer.");
+			device->CreateUnorderedAccessView(mBuffer.Get(), nullptr, &uavDesc, mBufferUAVHandle.GetCPUHandle());
 		}
-
 	}
 
 	void ER_RHI_DX12_GPUBuffer::Map(ER_RHI* aRHI, void* aOutData)
@@ -155,8 +148,8 @@ namespace EveryRay_Core
 
 		assert(mBufferUpload);
 
-		D3D12_RANGE range(0, 0);
-		if (FAILED(mBufferUpload->Map(0, &range, &aOutData))
+		CD3DX12_RANGE range(0, 0);
+		if (FAILED(mBufferUpload->Map(0, &range, &aOutData)))
 			throw ER_CoreException("ER_RHI_DX12: Failed to map GPU buffer.");
 	}
 

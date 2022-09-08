@@ -102,8 +102,8 @@ namespace EveryRay_Core
 				mCBVCount += Count;
 		}
 
-		void SetDescriptorHandle(ER_RHI_DX12_DescriptorHandle& handle) { mDescriptorHandle = handle; }
-		ER_RHI_DX12_DescriptorHandle& GetDescriptorHandle() const { return mDescriptorHandle; }
+		//void SetDescriptorHandle(ER_RHI_DX12_DescriptorHandle& handle) { mDescriptorHandle = handle; }
+		//ER_RHI_DX12_DescriptorHandle& GetDescriptorHandle() const { return mDescriptorHandle; }
 
 		const D3D12_ROOT_PARAMETER& operator() (void) const { return mRootParameter; }
 
@@ -113,7 +113,7 @@ namespace EveryRay_Core
 	protected:
 		D3D12_ROOT_PARAMETER mRootParameter;
 	private:
-		ER_RHI_DX12_DescriptorHandle mDescriptorHandle;
+		//ER_RHI_DX12_DescriptorHandle& mDescriptorHandle;
 	};
 
 	// Maximum 64 DWORDS divied up amongst all root parameters.
@@ -127,10 +127,10 @@ namespace EveryRay_Core
 		ER_RHI_DX12_GPURootSignature(UINT NumRootParams = 0, UINT NumStaticSamplers = 0);
 		virtual ~ER_RHI_DX12_GPURootSignature();
 
-		virtual void InitStaticSampler(UINT regIndex, const ER_RHI_SAMPLER_STATE& samplers, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) override;
-		virtual void InitDescriptorTable(int index, const std::vector<ER_RHI_DESCRIPTOR_RANGE_TYPE>& ranges, const std::vector<UINT>& registerIndices,
+		virtual void InitStaticSampler(ER_RHI* rhi, UINT regIndex, const ER_RHI_SAMPLER_STATE& samplers, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) override;
+		virtual void InitDescriptorTable(ER_RHI* rhi, int index, const std::vector<ER_RHI_DESCRIPTOR_RANGE_TYPE>& ranges, const std::vector<UINT>& registerIndices,
 			const std::vector<UINT>& descriptorCounters, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) override;
-		virtual void Finalize(ER_RHI* rhi, const std::wstring& name) override;
+		virtual void Finalize(ER_RHI* rhi, const std::string& name) override;
 
 		virtual int GetStaticSamplersCount() override { return mNumInitializedStaticSamplers; }
 		virtual int GetRootParameterCount() override { return mNumParameters; }
@@ -150,14 +150,14 @@ namespace EveryRay_Core
 		}
 
 		void Reset(UINT NumRootParams, UINT NumStaticSamplers = 0);
-		void InitStaticSampler(UINT Register, const D3D12_SAMPLER_DESC& NonStaticSamplerDesc, D3D12_SHADER_VISIBILITY Visibility = D3D12_SHADER_VISIBILITY_ALL);
-		void Finalize(ID3D12Device* device, const std::wstring& name, D3D12_ROOT_SIGNATURE_FLAGS Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE);
+		void InitializeStaticSampler(UINT Register, const D3D12_SAMPLER_DESC& NonStaticSamplerDesc, D3D12_SHADER_VISIBILITY Visibility = D3D12_SHADER_VISIBILITY_ALL);
+		void Finalize(ID3D12Device* device, const std::string& name, D3D12_ROOT_SIGNATURE_FLAGS Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE);
 
 		ID3D12RootSignature* GetSignature() const { return mSignature.Get(); }
 	protected:
 		std::unique_ptr<ER_RHI_DX12_GPURootParameter[]> mRootParameters;
 		std::unique_ptr<D3D12_STATIC_SAMPLER_DESC[]> mStaticSamplers;
-		ID3D12RootSignature* mSignature = nullptr;
+		ComPtr<ID3D12RootSignature> mSignature;
 
 		bool mIsFinalized;
 		UINT mNumParameters;

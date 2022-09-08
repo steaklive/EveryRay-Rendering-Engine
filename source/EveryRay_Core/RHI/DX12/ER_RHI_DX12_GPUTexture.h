@@ -1,5 +1,6 @@
 #pragma once
 #include "ER_RHI_DX12.h"
+#include "ER_RHI_DX12_GPUDescriptorHeapManager.h"
 
 namespace EveryRay_Core
 {
@@ -19,7 +20,12 @@ namespace EveryRay_Core
 		virtual void* GetDSV() override { return nullptr; /* Not needed on DX12 */ }
 		virtual void* GetSRV() override { return nullptr; /* Not needed on DX12 */ }
 		virtual void* GetUAV() override { return nullptr; /* Not needed on DX12 */ }
+		virtual void* GetResource() { return mResource.Get(); }
+		
+		inline virtual bool IsBuffer() override { return false; }
 
+		virtual ER_RHI_RESOURCE_STATE GetCurrentState() { return mCurrentResourceState; }
+		
 		ER_RHI_DX12_DescriptorHandle& GetRTVHandle(int index = 0) { return mRTVHandles[index]; }
 		ER_RHI_DX12_DescriptorHandle& GetUAVHandle(int index = 0) { return mUAVHandles[index]; }
 		ER_RHI_DX12_DescriptorHandle& GetSRVHandle() { return mSRVHandle; }
@@ -33,7 +39,7 @@ namespace EveryRay_Core
 		bool IsLoadedFromFile() { return mIsLoadedFromFile; }
 
 	private:
-		void LoadFallbackTexture(ER_RHI* aRHI, ID3D11Resource** texture, ID3D11ShaderResourceView** textureView);
+		void LoadFallbackTexture(ER_RHI* aRHI);
 
 		ER_RHI_DX12_DescriptorHandle mSRVHandle;
 		ER_RHI_DX12_DescriptorHandle mDSVHandle;
@@ -41,10 +47,10 @@ namespace EveryRay_Core
 		std::vector<ER_RHI_DX12_DescriptorHandle> mRTVHandles;
 		std::vector<ER_RHI_DX12_DescriptorHandle> mUAVHandles;
 
-		D3D12_RESOURCE_STATES mCurrentResourceState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON;
+		ER_RHI_RESOURCE_STATE mCurrentResourceState = ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COMMON;
 		
-		ID3D12Resource* mResource = nullptr;
-		ID3D12Resource* mResourceUpload = nullptr;
+		ComPtr<ID3D12Resource> mResource;
+		ComPtr<ID3D12Resource> mResourceUpload;
 
 		UINT mMipLevels = 0;
 		UINT mBindFlags = 0;

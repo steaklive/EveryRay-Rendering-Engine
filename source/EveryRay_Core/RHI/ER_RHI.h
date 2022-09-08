@@ -83,25 +83,21 @@ namespace EveryRay_Core
 
 	enum ER_RHI_RESOURCE_STATE
 	{
-		ER_RESOURCE_STATE_COMMON = 0,
-		ER_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER = 0x1,
-		ER_RESOURCE_STATE_INDEX_BUFFER = 0x2,
-		ER_RESOURCE_STATE_RENDER_TARGET = 0x4,
-		ER_RESOURCE_STATE_UNORDERED_ACCESS = 0x8,
-		ER_RESOURCE_STATE_DEPTH_WRITE = 0x10,
-		ER_RESOURCE_STATE_DEPTH_READ = 0x20,
-		ER_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE = 0x40,
-		ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE = 0x80,
-		ER_RESOURCE_STATE_STREAM_OUT = 0x100,
-		ER_RESOURCE_STATE_INDIRECT_ARGUMENT = 0x200,
-		ER_RESOURCE_STATE_COPY_DEST = 0x400,
-		ER_RESOURCE_STATE_COPY_SOURCE = 0x800,
-		ER_RESOURCE_STATE_RESOLVE_DEST = 0x1000,
-		ER_RESOURCE_STATE_RESOLVE_SOURCE = 0x2000,
-		ER_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE = 0x400000,
-		ER_RESOURCE_STATE_SHADING_RATE_SOURCE = 0x1000000,
-		ER_RESOURCE_STATE_GENERIC_READ = (((((0x1 | 0x2) | 0x40) | 0x80) | 0x200) | 0x800),
-		ER_RESOURCE_STATE_PRESENT = 0
+		ER_RESOURCE_STATE_COMMON,
+		ER_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
+		ER_RESOURCE_STATE_INDEX_BUFFER,
+		ER_RESOURCE_STATE_RENDER_TARGET,
+		ER_RESOURCE_STATE_UNORDERED_ACCESS,
+		ER_RESOURCE_STATE_DEPTH_WRITE,
+		ER_RESOURCE_STATE_DEPTH_READ,
+		ER_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+		ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE ,
+		ER_RESOURCE_STATE_INDIRECT_ARGUMENT,
+		ER_RESOURCE_STATE_COPY_DEST,
+		ER_RESOURCE_STATE_COPY_SOURCE,
+		ER_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
+		ER_RESOURCE_STATE_GENERIC_READ,
+		ER_RESOURCE_STATE_PRESENT
 	};
 
 	enum ER_RHI_FORMAT
@@ -312,7 +308,7 @@ namespace EveryRay_Core
 		virtual void ExecuteCommandLists(int commandListIndex = 0, bool isCompute = false) = 0;
 
 		virtual void PresentGraphics() = 0;
-		//virtual void PresentCompute() = 0;
+		virtual void PresentCompute() = 0;
 
 		virtual bool ProjectCubemapToSH(ER_RHI_GPUTexture* aTexture, UINT order, float* resultR, float* resultG, float* resultB) = 0; //WARNING: only works on DX11 for now
 
@@ -360,9 +356,12 @@ namespace EveryRay_Core
 
 		virtual void SetGPUDescriptorHeap(ER_RHI_DESCRIPTOR_HEAP_TYPE aType, bool aReset) = 0;
 
+		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0) = 0;
+		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0) = 0;
+
 		virtual bool IsPSOReady(const std::string& aName, bool isCompute = false) = 0;
 		virtual void InitializePSO(const std::string& aName, bool isCompute = false) = 0;
-		virtual void SetRootSignatureToPSO(const std::string& aName, cosnt ER_RHI_GPURootSignature& rs, bool isCompute = false) = 0;
+		virtual void SetRootSignatureToPSO(const std::string& aName, const ER_RHI_GPURootSignature& rs, bool isCompute = false) = 0;
 		virtual void FinalizePSO(const std::string& aName, bool isCompute = false) = 0;
 		virtual void SetPSO(const std::string& aName, bool isCompute = false) = 0;
 		virtual void UnsetPSO() = 0;
@@ -404,10 +403,10 @@ namespace EveryRay_Core
 		ER_RHI_GPURootSignature(UINT NumRootParams = 0, UINT NumStaticSamplers = 0) {}
 		virtual ~ER_RHI_GPURootSignature() {}
 
-		virtual void InitStaticSampler(UINT regIndex, const ER_RHI_SAMPLER_STATE& sampler, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) { AbstractRHIMethodAssert();	}
-		virtual void InitDescriptorTable(int rootParamIndex, const std::vector<ER_RHI_DESCRIPTOR_RANGE_TYPE>& ranges, const std::vector<UINT>& registerIndices,
+		virtual void InitStaticSampler(ER_RHI* rhi, UINT regIndex, const ER_RHI_SAMPLER_STATE& sampler, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) { AbstractRHIMethodAssert();	}
+		virtual void InitDescriptorTable(ER_RHI* rhi, int rootParamIndex, const std::vector<ER_RHI_DESCRIPTOR_RANGE_TYPE>& ranges, const std::vector<UINT>& registerIndices,
 			const std::vector<UINT>& descriptorCounters, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) {	AbstractRHIMethodAssert(); }
-		virtual void Finalize(ER_RHI* rhi, const std::wstring& name) { AbstractRHIMethodAssert(); }
+		virtual void Finalize(ER_RHI* rhi, const std::string& name) { AbstractRHIMethodAssert(); }
 
 		virtual int GetStaticSamplersCount() { AbstractRHIMethodAssert(); return 0; }
 		virtual int GetRootParameterCount() { AbstractRHIMethodAssert(); return 0; }
@@ -424,6 +423,9 @@ namespace EveryRay_Core
 
 		virtual void* GetSRV() = 0;
 		virtual void* GetUAV() = 0;
+		virtual void* GetResource() = 0;
+
+		virtual ER_RHI_RESOURCE_STATE GetCurrentState() = 0;
 
 		inline virtual bool IsBuffer() = 0;
 	};
@@ -442,14 +444,16 @@ namespace EveryRay_Core
 		virtual void* GetRTV(void* aEmpty = nullptr) { AbstractRHIMethodAssert(); return nullptr; }
 		virtual void* GetRTV(int index) { AbstractRHIMethodAssert(); return nullptr; }
 		virtual void* GetDSV() { AbstractRHIMethodAssert(); return nullptr; }
-
 		virtual void* GetSRV() { AbstractRHIMethodAssert(); return nullptr; }
 		virtual void* GetUAV() { AbstractRHIMethodAssert(); return nullptr; }
+		virtual void* GetResource() { AbstractRHIMethodAssert(); return nullptr; }
 
 		virtual UINT GetMips() { AbstractRHIMethodAssert(); return 0; }
 		virtual UINT GetWidth() { AbstractRHIMethodAssert(); return 0; }
 		virtual UINT GetHeight() { AbstractRHIMethodAssert(); return 0; }
 		virtual UINT GetDepth() { AbstractRHIMethodAssert(); return 0; }
+
+		virtual ER_RHI_RESOURCE_STATE GetCurrentState() { AbstractRHIMethodAssert(); return ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COMMON; }
 
 		inline virtual bool IsBuffer() { AbstractRHIMethodAssert(); return false; }
 	};
