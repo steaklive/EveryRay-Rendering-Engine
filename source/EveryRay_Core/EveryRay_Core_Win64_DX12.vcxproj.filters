@@ -329,9 +329,6 @@
     <ClCompile Include="..\..\external\DirectXMath\SHMath\DirectXSH.cpp">
       <Filter>Source Files\Helpers\DirectXSH</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\external\DirectXMath\SHMath\DirectXSHD3D11.cpp">
-      <Filter>Source Files\Helpers\DirectXSH</Filter>
-    </ClCompile>
     <ClCompile Include="ER_Terrain.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
     </ClCompile>

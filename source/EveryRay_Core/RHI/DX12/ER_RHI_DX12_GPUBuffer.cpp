@@ -14,8 +14,6 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12_GPUBuffer::CreateGPUBufferResource(ER_RHI* aRHI, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic /*= false*/, ER_RHI_BIND_FLAG bindFlags /*= 0*/, UINT cpuAccessFlags /*= 0*/, ER_RHI_RESOURCE_MISC_FLAG miscFlags /*= 0*/, ER_RHI_FORMAT format /*= ER_FORMAT_UNKNOWN*/)
 	{
-		assert(aData && objectsCount > 0);
-		assert(aRHI);
 		ER_RHI_DX12* aRHIDX12 = static_cast<ER_RHI_DX12*>(aRHI);
 		ID3D12Device* device = aRHIDX12->GetDevice();
 		assert(device);
@@ -38,7 +36,7 @@ namespace EveryRay_Core
 		desc.DepthOrArraySize = 1;
 		desc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
 		desc.Flags = mResourceFlags;
-		desc.Format = mFormat;
+		desc.Format = DXGI_FORMAT_UNKNOWN;
 		desc.Height = 1;
 		desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 		desc.MipLevels = 1;
@@ -141,7 +139,7 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_RHI_DX12_GPUBuffer::Map(ER_RHI* aRHI, void* aOutData)
+	void ER_RHI_DX12_GPUBuffer::Map(ER_RHI* aRHI, void** aOutData)
 	{
 		assert(aRHI);
 		ER_RHI_DX12* aRHIDX12 = static_cast<ER_RHI_DX12*>(aRHI);
@@ -149,7 +147,7 @@ namespace EveryRay_Core
 		assert(mBufferUpload);
 
 		CD3DX12_RANGE range(0, 0);
-		if (FAILED(mBufferUpload->Map(0, &range, &aOutData)))
+		if (FAILED(mBufferUpload->Map(0, &range, aOutData)))
 			throw ER_CoreException("ER_RHI_DX12: Failed to map GPU buffer.");
 	}
 

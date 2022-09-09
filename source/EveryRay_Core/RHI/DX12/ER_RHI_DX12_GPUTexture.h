@@ -26,6 +26,8 @@ namespace EveryRay_Core
 
 		virtual ER_RHI_RESOURCE_STATE GetCurrentState() { return mCurrentResourceState; }
 		
+		DXGI_FORMAT GetFormat() { return mFormat; }
+
 		ER_RHI_DX12_DescriptorHandle& GetRTVHandle(int index = 0) { return mRTVHandles[index]; }
 		ER_RHI_DX12_DescriptorHandle& GetUAVHandle(int index = 0) { return mUAVHandles[index]; }
 		ER_RHI_DX12_DescriptorHandle& GetSRVHandle() { return mSRVHandle; }
@@ -51,7 +53,7 @@ namespace EveryRay_Core
 		
 		ComPtr<ID3D12Resource> mResource;
 		ComPtr<ID3D12Resource> mResourceUpload;
-
+		DXGI_FORMAT mFormat;
 		UINT mMipLevels = 0;
 		UINT mBindFlags = 0;
 		UINT mWidth = 0;

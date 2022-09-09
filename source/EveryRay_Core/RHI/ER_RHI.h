@@ -274,7 +274,6 @@ namespace EveryRay_Core
 		virtual void ClearRenderTarget(ER_RHI_GPUTexture* aRenderTarget, float colors[4], int rtvArrayIndex = -1) = 0;
 		virtual void ClearDepthStencilTarget(ER_RHI_GPUTexture* aDepthTarget, float depth, UINT stencil = 0) = 0;
 		virtual void ClearUAV(ER_RHI_GPUResource* aRenderTarget, float colors[4]) = 0;
-		virtual void CreateInputLayout(ER_RHI_InputLayout* aOutInputLayout, ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount, const void* shaderBytecodeWithInputSignature, UINT byteCodeLength) = 0;
 		
 		virtual ER_RHI_GPUShader* CreateGPUShader() = 0;
 		virtual ER_RHI_GPUBuffer* CreateGPUBuffer() = 0;
@@ -355,13 +354,18 @@ namespace EveryRay_Core
 		virtual ER_RHI_PRIMITIVE_TYPE GetCurrentTopologyType() = 0;
 
 		virtual void SetGPUDescriptorHeap(ER_RHI_DESCRIPTOR_HEAP_TYPE aType, bool aReset) = 0;
+		virtual void SetGPUDescriptorHeapImGui() = 0;
 
 		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0) = 0;
 		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0) = 0;
+		virtual void TransitionResources(const std::vector<ER_RHI_GPUTexture*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0) = 0;
+		virtual void TransitionResources(const std::vector<ER_RHI_GPUTexture*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0) = 0;
+		virtual void TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0) = 0;
+		virtual void TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0) = 0;
 
 		virtual bool IsPSOReady(const std::string& aName, bool isCompute = false) = 0;
 		virtual void InitializePSO(const std::string& aName, bool isCompute = false) = 0;
-		virtual void SetRootSignatureToPSO(const std::string& aName, const ER_RHI_GPURootSignature& rs, bool isCompute = false) = 0;
+		virtual void SetRootSignatureToPSO(const std::string& aName, ER_RHI_GPURootSignature* rs, bool isCompute = false) = 0;
 		virtual void FinalizePSO(const std::string& aName, bool isCompute = false) = 0;
 		virtual void SetPSO(const std::string& aName, bool isCompute = false) = 0;
 		virtual void UnsetPSO() = 0;

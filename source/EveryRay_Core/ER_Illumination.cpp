@@ -338,7 +338,7 @@ namespace EveryRay_Core {
 					rhi->SetShader(mVCTVoxelizationDebugGS);
 					rhi->SetShader(mVCTVoxelizationDebugPS);
 					rhi->SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE::ER_DISABLED);
-					rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_BACK_CULLING)
+					rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_BACK_CULLING);
 					rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_POINTLIST);
 					rhi->SetEmptyInputLayout();
 					rhi->SetRenderTargetFormats({ mVCTVoxelizationDebugRT }, mDepthBuffer);
@@ -470,10 +470,11 @@ namespace EveryRay_Core {
 
 		//light probe system
 		if (mProbesManager) {
+			auto rhi = GetCore()->GetRHI();
 			if (mDrawDiffuseProbes)
-				mProbesManager->DrawDebugProbes(aRenderTarget, DIFFUSE_PROBE);
+				mProbesManager->DrawDebugProbes(rhi, aRenderTarget, DIFFUSE_PROBE);
 			if (mDrawSpecularProbes)
-				mProbesManager->DrawDebugProbes(aRenderTarget, SPECULAR_PROBE);
+				mProbesManager->DrawDebugProbes(rhi, aRenderTarget, SPECULAR_PROBE);
 		}
 	}
 
@@ -762,7 +763,7 @@ namespace EveryRay_Core {
 			}
 			rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
 
-			std::string& psoName = aObj->IsInstanced() ? mForwardLightingInstancingPSOName ? mForwardLightingPSOName;
+			std::string& psoName = aObj->IsInstanced() ? mForwardLightingInstancingPSOName : mForwardLightingPSOName;
 			if (!rhi->IsPSOReady(psoName))
 			{
 				rhi->InitializePSO(psoName);

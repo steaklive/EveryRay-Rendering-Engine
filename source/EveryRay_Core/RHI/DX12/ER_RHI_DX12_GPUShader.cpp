@@ -80,7 +80,8 @@ namespace EveryRay_Core
 
 		const D3D_SHADER_MACRO defines[] =
 		{
-			"ER_PLATFORM_DX12"
+			"ER_PLATFORM_DX12", "1",
+			NULL, NULL
 		};
 
 		ID3DBlob* shaderBlob = nullptr;

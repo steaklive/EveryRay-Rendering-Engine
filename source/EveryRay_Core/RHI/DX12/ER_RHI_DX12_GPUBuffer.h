@@ -30,7 +30,7 @@ namespace EveryRay_Core
 		D3D12_VERTEX_BUFFER_VIEW& GetVertexBufferView() { return mVertexBufferView; }
 		D3D12_INDEX_BUFFER_VIEW& GetIndexBufferView() { return mIndexBufferView; }
 
-		void Map(ER_RHI* aRHI, void* aOutData);
+		void Map(ER_RHI* aRHI, void** aOutData);
 		void Unmap(ER_RHI* aRHI);
 		void Update(ER_RHI* aRHI, void* aData, int dataSize);
 		DXGI_FORMAT GetFormat() { return mFormat; }

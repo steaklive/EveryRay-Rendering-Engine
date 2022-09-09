@@ -53,7 +53,7 @@ namespace EveryRay_Core
 		void SetLevelPath(const std::wstring& aPath) { mLevelPath = aPath; };
 		void ComputeOrLoadLocalProbes(ER_Core& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox = nullptr);
 		void ComputeOrLoadGlobalProbes(ER_Core& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox);
-		void DrawDebugProbes(ER_RHI_GPUTexture* aRenderTarget, ER_ProbeType aType);
+		void DrawDebugProbes(ER_RHI* rhi, ER_RHI_GPUTexture* aRenderTarget, ER_ProbeType aType);
 		void UpdateProbes(ER_Core& game);
 		int GetCellIndex(const XMFLOAT3& pos, ER_ProbeType aType);
 
@@ -104,7 +104,7 @@ namespace EveryRay_Core
 		// Diffuse probes members
 		std::vector<ER_LightProbe*> mDiffuseProbes;
 		ER_RenderingObject* mDiffuseProbeRenderingObject = nullptr;
-		
+		std::string mDiffuseDebugLightProbePassPSOName = "Light Probes Manager - Diffuse Debug Probe Pass PSO";
 		ER_RHI_GPUBuffer* mDiffuseProbesCellsIndicesGPUBuffer = nullptr;
 		ER_RHI_GPUBuffer* mDiffuseProbesPositionsGPUBuffer = nullptr;
 		ER_RHI_GPUBuffer* mDiffuseProbesSphericalHarmonicsGPUBuffer = nullptr;
@@ -129,6 +129,7 @@ namespace EveryRay_Core
 		// Specular probes members
 		std::vector<ER_LightProbe*> mSpecularProbes;
 		ER_RenderingObject* mSpecularProbeRenderingObject = nullptr;
+		std::string mSpecularDebugLightProbePassPSOName = "Light Probes Manager - Specular Debug Probe Pass PSO";
 		int* mSpecularProbesTexArrayIndicesCPUBuffer = nullptr;
 		ER_RHI_GPUBuffer* mSpecularProbesTexArrayIndicesGPUBuffer = nullptr;
 		ER_RHI_GPUBuffer* mSpecularProbesCellsIndicesGPUBuffer = nullptr;

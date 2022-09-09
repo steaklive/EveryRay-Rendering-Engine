@@ -11,9 +11,11 @@
 
 namespace EveryRay_Core
 {
+	static ER_RHI_DX12_DescriptorHandle sNullSRV2DHandle;
+	static ER_RHI_DX12_DescriptorHandle sNullSRV3DHandle;
+
 	ER_RHI_DX12::ER_RHI_DX12()
 	{
-
 	}
 
 	ER_RHI_DX12::~ER_RHI_DX12()
@@ -52,14 +54,14 @@ namespace EveryRay_Core
 		}
 #endif
 
-		if (FAILED(CreateDXGIFactory2(mDXGIFactoryFlags, IID_PPV_ARGS(mDXGIFactory.ReleaseAndGetAddressOf()))))
+		if (FAILED(hr = CreateDXGIFactory2(mDXGIFactoryFlags, IID_PPV_ARGS(mDXGIFactory.ReleaseAndGetAddressOf()))))
 			throw ER_CoreException("ER_RHI_DX12: CreateDXGIFactory2() failed", hr);
 
 		ComPtr<IDXGIAdapter1> adapter;
 		mDXGIFactory->EnumAdapters1(0, adapter.ReleaseAndGetAddressOf());
 
 		// Create the DX12 API device object.
-		if (FAILED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(mDevice.ReleaseAndGetAddressOf()))))
+		if (FAILED(hr = D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(mDevice.ReleaseAndGetAddressOf()))))
 			throw ER_CoreException("ER_RHI_DX12: D3D12CreateDevice() failed", hr);
 
 		static const D3D_FEATURE_LEVEL s_featureLevels[] =
@@ -130,6 +132,7 @@ namespace EveryRay_Core
 					std::string message = "ER_RHI_DX12: Could not create graphics command list " + std::to_string(i);
 					throw ER_CoreException(message.c_str());
 				}
+				mCommandListGraphics[i]->Close();
 			}
 		}
 
@@ -148,7 +151,7 @@ namespace EveryRay_Core
 				swapChainDesc.Height = height;
 				swapChainDesc.Format = mMainRTBufferFormat;
 				swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-				swapChainDesc.BufferCount = 1;
+				swapChainDesc.BufferCount = 2;
 				swapChainDesc.SampleDesc.Count = 1;
 				swapChainDesc.SampleDesc.Quality = 0;
 				swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
@@ -158,16 +161,17 @@ namespace EveryRay_Core
 				DXGI_SWAP_CHAIN_FULLSCREEN_DESC fsSwapChainDesc = {};
 				fsSwapChainDesc.Windowed = TRUE;
 
+				ComPtr<IDXGISwapChain1> swapChain;
 				// Create a swap chain for the window.
-				if (FAILED(mDXGIFactory->CreateSwapChainForHwnd(mCommandQueueGraphics.Get(), windowHandle, &swapChainDesc, &fsSwapChainDesc, nullptr, mSwapChain.GetAddressOf())))
+				if (FAILED(mDXGIFactory->CreateSwapChainForHwnd(mCommandQueueGraphics.Get(), windowHandle, &swapChainDesc, &fsSwapChainDesc, nullptr, swapChain.GetAddressOf())))
 					throw ER_CoreException("ER_RHI_DX12: Could not create swapchain");
-
+				swapChain.As(&mSwapChain);
 				//ThrowIfFailed(mDXGIFactory->MakeWindowAssociation(mAppWindow, DXGI_MWA_NO_ALT_ENTER));
 			}
 
 			// main RTV
 			{
-				mSwapChain->GetBuffer(0, &mMainRenderTarget);
+				mSwapChain->GetBuffer(0, IID_PPV_ARGS(mMainRenderTarget.GetAddressOf()));
 				mMainRenderTarget->SetName(L"Main Render target");
 
 				D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
@@ -232,19 +236,19 @@ namespace EveryRay_Core
 
 		// null SRVs descriptor handles
 		{
-			mNullSRV2DHandle = mDescriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-			mNullSRV3DHandle = mDescriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			sNullSRV2DHandle = mDescriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			sNullSRV3DHandle = mDescriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 			srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 			srvDesc.Texture2D.MipLevels = 1;
-			mDevice->CreateShaderResourceView(nullptr, &srvDesc, mNullSRV2DHandle.GetCPUHandle());
+			mDevice->CreateShaderResourceView(nullptr, &srvDesc, sNullSRV2DHandle.GetCPUHandle());
 
 			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
 			srvDesc.Texture3D.MipLevels = 1;
-			mDevice->CreateShaderResourceView(nullptr, &srvDesc, mNullSRV3DHandle.GetCPUHandle());
+			mDevice->CreateShaderResourceView(nullptr, &srvDesc, sNullSRV3DHandle.GetCPUHandle());
 		}
 
 		return true;
@@ -294,12 +298,16 @@ namespace EveryRay_Core
 	{
 		assert(aRenderTarget);
 
-		ER_RHI_DX12_DescriptorHandle& handle;
 		if (rtvArrayIndex > 0)
-			handle = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTarget)->GetRTVHandle(rtvArrayIndex);
+		{
+			ER_RHI_DX12_DescriptorHandle& handle = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTarget)->GetRTVHandle(rtvArrayIndex);
+			mCommandListGraphics[0]->ClearRenderTargetView(handle.GetCPUHandle(), colors, 0, nullptr);
+		}
 		else
-			handle = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTarget)->GetRTVHandle();
-		mCommandListGraphics[0]->ClearRenderTargetView(handle.GetCPUHandle(), colors, 0, nullptr);
+		{
+			ER_RHI_DX12_DescriptorHandle& handle = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTarget)->GetRTVHandle();
+			mCommandListGraphics[0]->ClearRenderTargetView(handle.GetCPUHandle(), colors, 0, nullptr);
+		}
 	}
 
 	void ER_RHI_DX12::ClearDepthStencilTarget(ER_RHI_GPUTexture* aDepthTarget, float depth, UINT stencil /*= 0*/)
@@ -315,32 +323,13 @@ namespace EveryRay_Core
 		assert(aRenderTarget);
 		ER_RHI_DX12_GPUTexture* uavDX12 = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTarget);
 		assert(uavDX12);
-		mCommandListGraphics[0]->ClearUnorderedAccessViewFloat(uavDX12->GetUAVHandle().GetGPUHandle(), uavDX12->GetUAVHandle().GetCPUHandle(), uavDX12->GetResource(), colors);
-	}
-
-	void ER_RHI_DX12::CreateInputLayout(ER_RHI_InputLayout* aOutInputLayout, ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount, const void* shaderBytecodeWithInputSignature, UINT byteCodeLength)
-	{
-		assert(inputElementDescriptions);
-		assert(aOutInputLayout);
-
-		D3D11_INPUT_ELEMENT_DESC* descriptions = new D3D11_INPUT_ELEMENT_DESC[inputElementDescriptionCount];
-		for (UINT i = 0; i < inputElementDescriptionCount; i++)
-		{
-			descriptions[i].SemanticName = inputElementDescriptions[i].SemanticName;
-			descriptions[i].SemanticIndex = inputElementDescriptions[i].SemanticIndex;
-			descriptions[i].Format = GetFormat(inputElementDescriptions[i].Format);
-			descriptions[i].InputSlot = inputElementDescriptions[i].InputSlot;
-			descriptions[i].AlignedByteOffset = inputElementDescriptions[i].AlignedByteOffset;
-			descriptions[i].InputSlotClass = inputElementDescriptions[i].IsPerVertex ? D3D11_INPUT_PER_VERTEX_DATA : D3D11_INPUT_PER_INSTANCE_DATA;
-			descriptions[i].InstanceDataStepRate = inputElementDescriptions[i].InstanceDataStepRate;
-		}
-		mDirect3DDevice->CreateInputLayout(descriptions, inputElementDescriptionCount, shaderBytecodeWithInputSignature, byteCodeLength, &(static_cast<ER_RHI_DX11_InputLayout*>(aOutInputLayout)->mInputLayout));
-		DeleteObject(descriptions);
+		mCommandListGraphics[0]->ClearUnorderedAccessViewFloat(uavDX12->GetUAVHandle().GetGPUHandle(), uavDX12->GetUAVHandle().GetCPUHandle(), 
+			static_cast<ID3D12Resource*>(uavDX12->GetResource()), colors, 0, nullptr);
 	}
 
 	ER_RHI_InputLayout* ER_RHI_DX12::CreateInputLayout(ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount)
 	{
-		return new ER_RHI_DX11_InputLayout(inputElementDescriptions, inputElementDescriptionCount);
+		return new ER_RHI_DX12_InputLayout(inputElementDescriptions, inputElementDescriptionCount);
 	}
 
 	ER_RHI_GPUShader* ER_RHI_DX12::CreateGPUShader()
@@ -409,7 +398,7 @@ namespace EveryRay_Core
 		ER_RHI_DX12_GPUBuffer* buffer = static_cast<ER_RHI_DX12_GPUBuffer*>(aBuffer);
 		assert(buffer);
 
-		buffer->Map(this, &output);
+		buffer->Map(this, output);
 		mIsContextReadingBuffer = true;
 	}
 
@@ -433,16 +422,16 @@ namespace EveryRay_Core
 		assert(srcbuffer);
 
 		D3D12_TEXTURE_COPY_LOCATION dstLocation;
-		dstLocation.pResource = dstBuffer->GetResource();
+		dstLocation.pResource = static_cast<ID3D12Resource*>(dstbuffer->GetResource());
 		dstLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 		dstLocation.SubresourceIndex = DstSubresource;
 
-		D3D12_TEXTURE_COPY_LOCATION srcocation;
-		srcLocation.pResource = srcBuffer->GetResource();
+		D3D12_TEXTURE_COPY_LOCATION srcLocation;
+		srcLocation.pResource = static_cast<ID3D12Resource*>(srcbuffer->GetResource());
 		srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 		srcLocation.SubresourceIndex = SrcSubresource;
 		
-		mCommandListGraphics[0]->CopyTextureRegion(&dstLocation, DstX, DstY, DstZ, &srcocation, NULL);
+		mCommandListGraphics[0]->CopyTextureRegion(&dstLocation, DstX, DstY, DstZ, &srcLocation, NULL);
 		//else if (dstbuffer->GetTexture3D() && srcbuffer->GetTexture3D())
 		//else
 		//	throw ER_CoreException("ER_RHI_DX12:: One of the resources is NULL during CopyGPUTextureSubresourceRegion()");
@@ -512,19 +501,20 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::PresentCompute()
 	{
-		mCommandListCompute->Close();
+		//mCommandListCompute->Close();
+		//
+		//ID3D12CommandList* ppCommandLists[] = { mCommandListCompute };
+		//mCommandQueueCompute->ExecuteCommandLists(1, ppCommandLists);
 
-		ID3D12CommandList* ppCommandLists[] = { mCommandListCompute };
-		mCommandQueueCompute->ExecuteCommandLists(1, ppCommandLists);
-
-		UINT64 fenceValue = mFenceValuesCompute;
-		mCommandQueueCompute->Signal(mFenceCompute.Get(), fenceValue);
-		mFenceValuesCompute++;
+		//UINT64 fenceValue = mFenceValuesCompute;
+		//mCommandQueueCompute->Signal(mFenceCompute.Get(), fenceValue);
+		//mFenceValuesCompute++;
 	}
 
 	bool ER_RHI_DX12::ProjectCubemapToSH(ER_RHI_GPUTexture* aTexture, UINT order, float* resultR, float* resultG, float* resultB)
 	{
 		//TODO
+		return false;
 	}
 
 	void ER_RHI_DX12::SaveGPUTextureToFile(ER_RHI_GPUTexture* aTexture, const std::wstring& aPathName)
@@ -561,7 +551,7 @@ namespace EveryRay_Core
 			if (aDepthTarget)
 			{
 				D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = static_cast<ER_RHI_DX12_GPUTexture*>(aDepthTarget)->GetDSVHandle().GetCPUHandle();
-				TransitionResources({ aDepthTarget }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_DEPTH_WRITE);
+				TransitionResources({ static_cast<ER_RHI_GPUResource*>(aDepthTarget) }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_DEPTH_WRITE);
 				mCommandListGraphics[0]->OMSetRenderTargets(rtCount, rtvHandles, FALSE, &dsvHandle);
 			}
 			else
@@ -579,9 +569,9 @@ namespace EveryRay_Core
 	{
 		assert(aDepthTarget);
 		D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = static_cast<ER_RHI_DX12_GPUTexture*>(aDepthTarget)->GetDSVHandle().GetCPUHandle();
-		TransitionResources({ aDepthTarget }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_DEPTH_WRITE);
+		TransitionResources({ static_cast<ER_RHI_GPUResource*>(aDepthTarget) }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_DEPTH_WRITE);
 
-		mCommandListGraphics[0]->OMSetRenderTargets(1, nullptr, FALSE, dsvHandle);
+		mCommandListGraphics[0]->OMSetRenderTargets(1, nullptr, FALSE, &dsvHandle);
 	}
 
 	void ER_RHI_DX12::SetRenderTargetFormats(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget /*= nullptr*/)
@@ -592,13 +582,13 @@ namespace EveryRay_Core
 		assert(mCurrentPSOState == ER_RHI_DX12_PSO_STATE::GRAPHICS);
 
 		ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSONames.at(mCurrentGraphicsPSOName);
-		int rtCount = aRenderTargets.size();
+		int rtCount = static_cast<int>(aRenderTargets.size());
 		assert(rtCount <= 8);
 
 		DXGI_FORMAT formats[8] = { DXGI_FORMAT_UNKNOWN };
 		for (int i = 0; i < rtCount; i++)
-			formats[i] = aRenderTargets[i]->GetFormat();
-		pso.SetRenderTargetFormats(rtCount, rtCount > 0 ? formats : nullptr, aDepthTarget ? aDepthTarget->GetFormat() : DXGI_FORMAT_UNKNOWN);
+			formats[i] = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTargets[i])->GetFormat();
+		pso.SetRenderTargetFormats(rtCount, rtCount > 0 ? formats : nullptr, aDepthTarget ? static_cast<ER_RHI_DX12_GPUTexture*>(aDepthTarget)->GetFormat() : DXGI_FORMAT_UNKNOWN);
 	}
 
 	void ER_RHI_DX12::SetMainRenderTargetFormats()
@@ -732,7 +722,7 @@ namespace EveryRay_Core
 	void ER_RHI_DX12::SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot /*= 0*/,
 		ER_RHI_GPURootSignature* rs, int rootParamIndex, bool isComputeRS)
 	{
-		UINT srvCount = static_cast<UINT>(aSRVs.size());
+		int srvCount = static_cast<int>(aSRVs.size());
 		assert(rs);
 		assert(rootParamIndex >= 0 && rootParamIndex < rs->GetRootParameterCount());
 		assert(srvCount > 0 && srvCount <= DX12_MAX_BOUND_SHADER_RESOURCE_VIEWS);
@@ -741,12 +731,12 @@ namespace EveryRay_Core
 
 		ER_RHI_DX12_GPUDescriptorHeap* gpuDescriptorHeap = mDescriptorHeapManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 		ER_RHI_DX12_DescriptorHandle& srvHandle = gpuDescriptorHeap->GetHandleBlock(srvCount);
-		for (UINT i = 0; i < srvCount; i++)
+		for (int i = 0; i < srvCount; i++)
 		{
 			if (aSRVs[i])
-				gpuDescriptorHeap->AddToHandle(mDevice, srvHandle, static_cast<ER_RHI_DX12_GPUTexture*>(aSRVs[i])->GetSRVHandle());
+				gpuDescriptorHeap->AddToHandle(mDevice.Get(), srvHandle, static_cast<ER_RHI_DX12_GPUTexture*>(aSRVs[i])->GetSRVHandle());
 			else
-				gpuDescriptorHeap->AddToHandle(mDevice, srvHandle, mNullSRV2DHandle);
+				gpuDescriptorHeap->AddToHandle(mDevice.Get(), srvHandle, sNullSRV2DHandle);
 
 		}
 
@@ -763,7 +753,7 @@ namespace EveryRay_Core
 	void ER_RHI_DX12::SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot /*= 0*/,
 		ER_RHI_GPURootSignature* rs, int rootParamIndex, bool isComputeRS)
 	{
-		UINT uavCount = static_cast<UINT>(aUAVs.size());
+		int uavCount = static_cast<int>(aUAVs.size());
 		assert(rs);
 		assert(rootParamIndex >= 0 && rootParamIndex < rs->GetRootParameterCount());
 		assert(uavCount > 0 && uavCount <= DX12_MAX_BOUND_UNORDERED_ACCESS_VIEWS);
@@ -772,13 +762,13 @@ namespace EveryRay_Core
 
 		ER_RHI_DX12_GPUDescriptorHeap* gpuDescriptorHeap = mDescriptorHeapManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 		ER_RHI_DX12_DescriptorHandle& uavHandle = gpuDescriptorHeap->GetHandleBlock(uavCount);
-		for (UINT i = 0; i < uavCount; i++)
+		for (int i = 0; i < uavCount; i++)
 		{
 			assert(aUAVs[i]);
 			if (aUAVs[i]->IsBuffer())
-				gpuDescriptorHeap->AddToHandle(mDevice, uavHandle, static_cast<ER_RHI_DX12_GPUBuffer*>(aUAVs[i])->GetUAVDescriptorHandle());
+				gpuDescriptorHeap->AddToHandle(mDevice.Get(), uavHandle, static_cast<ER_RHI_DX12_GPUBuffer*>(aUAVs[i])->GetUAVDescriptorHandle());
 			else
-				gpuDescriptorHeap->AddToHandle(mDevice, uavHandle, static_cast<ER_RHI_DX12_GPUTexture*>(aUAVs[i])->GetUAVHandle());
+				gpuDescriptorHeap->AddToHandle(mDevice.Get(), uavHandle, static_cast<ER_RHI_DX12_GPUTexture*>(aUAVs[i])->GetUAVHandle());
 		}
 
 		TransitionResources(aUAVs, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_UNORDERED_ACCESS);
@@ -794,7 +784,7 @@ namespace EveryRay_Core
 	void ER_RHI_DX12::SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot /*= 0*/,
 		ER_RHI_GPURootSignature* rs, int rootParamIndex, bool isComputeRS)
 	{
-		UINT cbvCount = static_cast<UINT>(aCBs.size());
+		int cbvCount = static_cast<int>(aCBs.size());
 		assert(rs);
 		assert(rootParamIndex >= 0 && rootParamIndex < rs->GetRootParameterCount());
 		assert(cbvCount > 0 && cbvCount <= DX12_MAX_BOUND_CONSTANT_BUFFERS);
@@ -803,10 +793,10 @@ namespace EveryRay_Core
 
 		ER_RHI_DX12_GPUDescriptorHeap* gpuDescriptorHeap = mDescriptorHeapManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 		ER_RHI_DX12_DescriptorHandle& cbvHandle = gpuDescriptorHeap->GetHandleBlock(cbvCount);
-		for (UINT i = 0; i < cbvCount; i++)
+		for (int i = 0; i < cbvCount; i++)
 		{
 			assert(aCBs[i]);
-			gpuDescriptorHeap->AddToHandle(mDevice, cbvHandle, static_cast<ER_RHI_DX12_GPUBuffer*>(aCBs[i])->GetCBVDescriptorHandle());
+			gpuDescriptorHeap->AddToHandle(mDevice.Get(), cbvHandle, static_cast<ER_RHI_DX12_GPUBuffer*>(aCBs[i])->GetCBVDescriptorHandle());
 		}
 
 		if (!isComputeRS)
@@ -833,7 +823,7 @@ namespace EveryRay_Core
 		assert(aDX12_IL);
 
 		ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSONames.at(mCurrentGraphicsPSOName);
-		pso.SetInputLayout(aDX12_IL.mInputElementDescriptionCount, aDX12_IL.mInputElementDescriptions);
+		pso.SetInputLayout(this, aDX12_IL->mInputElementDescriptionCount, aDX12_IL->mInputElementDescriptions);
 	}
 
 	void ER_RHI_DX12::SetEmptyInputLayout()
@@ -905,6 +895,7 @@ namespace EveryRay_Core
 	ER_RHI_PRIMITIVE_TYPE ER_RHI_DX12::GetCurrentTopologyType()
 	{
 		//TODO
+		return ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST;
 	}
 
 	void ER_RHI_DX12::SetGPUDescriptorHeap(ER_RHI_DESCRIPTOR_HEAP_TYPE aType, bool aReset)
@@ -916,7 +907,13 @@ namespace EveryRay_Core
 			gpuDescriptorHeap->Reset();
 
 		ID3D12DescriptorHeap* ppHeaps[] = { gpuDescriptorHeap->GetHeap() };
-		mCommandAllocatorsGraphics[0]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+		mCommandListGraphics[0]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+	}
+
+	void ER_RHI_DX12::SetGPUDescriptorHeapImGui()
+	{
+		ID3D12DescriptorHeap* ppHeaps[] = { mImGuiDescriptorHeap.Get() };
+		mCommandListGraphics[0]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 	}
 
 	bool ER_RHI_DX12::IsPSOReady(const std::string& aName, bool isCompute)
@@ -955,18 +952,21 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_RHI_DX12::SetRootSignatureToPSO(const std::string& aName, const ER_RHI_GPURootSignature& rs, bool isCompute /*= false*/)
+	void ER_RHI_DX12::SetRootSignatureToPSO(const std::string& aName, ER_RHI_GPURootSignature* rs, bool isCompute /*= false*/)
 	{
-		assert(&rs);
+		assert(rs);
+		ER_RHI_DX12_GPURootSignature* rsDX12 = static_cast<ER_RHI_DX12_GPURootSignature*>(rs);
+		assert(rsDX12);
+
 		if (!isCompute)
 		{
 			assert(mCurrentGraphicsPSOName == aName);
-			mGraphicsPSONames.at(aName).SetRootSignature(rs);
+			mGraphicsPSONames.at(aName).SetRootSignature(*rsDX12);
 		}
 		else
 		{
 			assert(mCurrentComputePSOName == aName);
-			mComputePSONames.at(aName).SetRootSignature(rs);
+			mComputePSONames.at(aName).SetRootSignature(*rsDX12);
 		}
 	}
 
@@ -975,12 +975,12 @@ namespace EveryRay_Core
 		if (!isCompute)
 		{
 			assert(mCurrentGraphicsPSOName == aName);
-			mGraphicsPSONames.at(aName).Finalize(mDevice);
+			mGraphicsPSONames.at(aName).Finalize(mDevice.Get());
 		}
 		else
 		{
 			assert(mCurrentComputePSOName == aName);
-			mComputePSONames.at(aName).Finalize(mDevice);
+			mComputePSONames.at(aName).Finalize(mDevice.Get());
 		}
 	}
 
@@ -999,8 +999,8 @@ namespace EveryRay_Core
 			auto it = mGraphicsPSONames.find(aName);
 			if (it != mGraphicsPSONames.end())
 			{
-				mCommandListGraphics[0]->SetPipelineState(it.second.GetPipelineStateObject());
-				mCurrentGraphicsPSOName = it.first;
+				mCommandListGraphics[0]->SetPipelineState(it->second.GetPipelineStateObject());
+				mCurrentGraphicsPSOName = it->first;
 				mCurrentPSOState = ER_RHI_DX12_PSO_STATE::GRAPHICS;
 			}
 			else
@@ -1011,8 +1011,8 @@ namespace EveryRay_Core
 			auto it = mComputePSONames.find(aName);
 			if (it != mComputePSONames.end())
 			{
-				mCommandListGraphics[0]->SetPipelineState(it.second.GetPipelineStateObject());
-				mCurrentComputePSOName = it.first;
+				mCommandListGraphics[0]->SetPipelineState(it->second.GetPipelineStateObject());
+				mCurrentComputePSOName = it->first;
 				mCurrentPSOState = ER_RHI_DX12_PSO_STATE::COMPUTE;
 			}
 			else
@@ -1053,6 +1053,60 @@ namespace EveryRay_Core
 		mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
 	}
 
+	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUTexture*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex /*= 0*/)
+	{
+		int size = static_cast<int>(aResources.size());
+		assert(size > 0 && size == aStates.size());
+
+		std::vector<CD3DX12_RESOURCE_BARRIER> barriers;
+		barriers.resize(size);
+
+		for (int i = 0; i < size; i++)
+			barriers[i] = CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aStates[i]));
+
+		mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
+	}
+
+	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUTexture*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex /*= 0*/)
+	{
+		int size = static_cast<int>(aResources.size());
+
+		std::vector<CD3DX12_RESOURCE_BARRIER> barriers;
+		barriers.resize(size);
+
+		for (int i = 0; i < size; i++)
+			barriers[i] = CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aState));
+
+		mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
+	}
+
+	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex /*= 0*/)
+	{
+		int size = static_cast<int>(aResources.size());
+		assert(size > 0 && size == aStates.size());
+
+		std::vector<CD3DX12_RESOURCE_BARRIER> barriers;
+		barriers.resize(size);
+
+		for (int i = 0; i < size; i++)
+			barriers[i] = CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aStates[i]));
+
+		mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
+	}
+
+	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex /*= 0*/)
+	{
+		int size = static_cast<int>(aResources.size());
+
+		std::vector<CD3DX12_RESOURCE_BARRIER> barriers;
+		barriers.resize(size);
+
+		for (int i = 0; i < size; i++)
+			barriers[i] = CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aState));
+
+		mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
+	}
+
 	void ER_RHI_DX12::UnbindRenderTargets()
 	{
 		mCommandListGraphics[0]->OMSetRenderTargets(0, nullptr, false, nullptr);
@@ -1066,16 +1120,22 @@ namespace EveryRay_Core
 		assert(buffer);
 
 		void* aOutData = nullptr;
-		ZeroMemory(aOutData, buffer->GetStride());
-
-		buffer->Map(this, aOutData);
+		buffer->Map(this, &aOutData);
 		memcpy(aOutData, aData, dataSize);
 		buffer->Unmap(this);
 	}
 
 	void ER_RHI_DX12::InitImGui()
 	{
-		ImGui_ImplDX12_Init(mDirect3DDevice, mDirect3DDeviceContext);
+		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+		desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+		desc.NumDescriptors = 1;
+		desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+
+		if (FAILED(mDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&mImGuiDescriptorHeap))))
+			throw ER_CoreException("ER_RHI_DX12: Could not create a descriptor heap for ImGui");
+
+		ImGui_ImplDX12_Init(mDevice.Get(), 1, mMainRTBufferFormat, mImGuiDescriptorHeap.Get(), mImGuiDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), mImGuiDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 	}
 
 	void ER_RHI_DX12::StartNewImGuiFrame()
@@ -1085,7 +1145,7 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::RenderDrawDataImGui()
 	{
-		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData());
+		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), mCommandListGraphics[0].Get());
 	}
 
 	void ER_RHI_DX12::ShutdownImGui()
@@ -1102,7 +1162,7 @@ namespace EveryRay_Core
 		}
 		else
 		{
-			return D3D12_SAMPLER_DESC();
+			return mEmptySampler;
 			throw ER_CoreException("ER_RHI_DX12: Sampler state is not found.");
 		}
 	}
@@ -1198,8 +1258,8 @@ namespace EveryRay_Core
 	{
 		switch (aState)
 		{
-		case D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON:
-			return ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COMMON;
+		//case D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON:
+		//	return ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COMMON;
 		case D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER:
 			return ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
 		case D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_INDEX_BUFFER:
@@ -1227,7 +1287,7 @@ namespace EveryRay_Core
 		case D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_PRESENT:
 			return ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PRESENT;
 		default:
-			throw ER_CoreException("ER_RHI_DX12: Could not convert the resource state!");
+			//throw ER_CoreException("ER_RHI_DX12: Could not convert the resource state!");
 			return ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COMMON;
 		}
 	}
@@ -1272,7 +1332,7 @@ namespace EveryRay_Core
 
 	D3D12_SHADER_VISIBILITY ER_RHI_DX12::GetShaderVisibility(ER_RHI_SHADER_VISIBILITY aVis)
 	{
-		switch (aType)
+		switch (aVis)
 		{
 		case ER_RHI_SHADER_VISIBILITY::ER_RHI_SHADER_VISIBILITY_ALL:
 			return D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL;
@@ -1296,7 +1356,7 @@ namespace EveryRay_Core
 
 	D3D12_DESCRIPTOR_RANGE_TYPE ER_RHI_DX12::GetDescriptorRangeType(ER_RHI_DESCRIPTOR_RANGE_TYPE aDesc)
 	{
-		switch (aType)
+		switch (aDesc)
 		{
 		case ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV:
 			return D3D12_DESCRIPTOR_RANGE_TYPE::D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
@@ -1312,24 +1372,24 @@ namespace EveryRay_Core
 		}
 	}
 
-	D3D12_PRIMITIVE_TOPOLOGY ER_RHI_DX12::GetTopologyType(ER_RHI_PRIMITIVE_TYPE aType)
+	D3D12_PRIMITIVE_TOPOLOGY_TYPE ER_RHI_DX12::GetTopologyType(ER_RHI_PRIMITIVE_TYPE aType)
 	{
 		switch (aType)
 		{
 		case ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_POINTLIST:
-			return D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
+			return D3D12_PRIMITIVE_TOPOLOGY_TYPE::D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
 		case ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST:
-			return D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+			return D3D12_PRIMITIVE_TOPOLOGY_TYPE::D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
 		case ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST:
-			return D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+			return D3D12_PRIMITIVE_TOPOLOGY_TYPE::D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 		case ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP:
-			return D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+			return D3D12_PRIMITIVE_TOPOLOGY_TYPE::D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 		case ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_CONTROL_POINT_PATCHLIST:
-			return D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST;
+			return D3D12_PRIMITIVE_TOPOLOGY_TYPE::D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH;
 		default:
 		{
 			assert(0);
-			return D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+			return D3D12_PRIMITIVE_TOPOLOGY_TYPE::D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED;
 		}
 		}
 	}
@@ -1384,10 +1444,10 @@ namespace EveryRay_Core
 		// trilinear samplers
 		D3D12_SAMPLER_DESC samplerStateDesc;
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
-		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerStateDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+		samplerStateDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		samplerStateDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		samplerStateDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 		samplerStateDesc.MipLODBias = 0;
 		samplerStateDesc.MaxAnisotropy = 1;
 		samplerStateDesc.MinLOD = -1000.0f;
@@ -1395,101 +1455,101 @@ namespace EveryRay_Core
 		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, samplerStateDesc));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
-		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR;
-		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR;
-		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR;
+		samplerStateDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+		samplerStateDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_MIRROR;
+		samplerStateDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_MIRROR;
+		samplerStateDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_MIRROR;
 		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_TRILINEAR_MIRROR, samplerStateDesc));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
-		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerStateDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+		samplerStateDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+		samplerStateDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+		samplerStateDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP, samplerStateDesc));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
-		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+		samplerStateDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+		samplerStateDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+		samplerStateDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+		samplerStateDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
 		memcpy(samplerStateDesc.BorderColor, reinterpret_cast<FLOAT*>(&black), sizeof(FLOAT) * 4);
 		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_TRILINEAR_BORDER, samplerStateDesc));
 
 		// bilinear samplers
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
-		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerStateDesc.Filter = D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+		samplerStateDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		samplerStateDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		samplerStateDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_BILINEAR_WRAP, samplerStateDesc));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
-		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR;
-		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR;
-		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR;
+		samplerStateDesc.Filter = D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+		samplerStateDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_MIRROR;
+		samplerStateDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_MIRROR;
+		samplerStateDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_MIRROR;
 		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_BILINEAR_MIRROR, samplerStateDesc));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
-		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerStateDesc.Filter = D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+		samplerStateDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+		samplerStateDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+		samplerStateDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_BILINEAR_CLAMP, samplerStateDesc));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
-		samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+		samplerStateDesc.Filter = D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+		samplerStateDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+		samplerStateDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+		samplerStateDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
 		memcpy(samplerStateDesc.BorderColor, reinterpret_cast<FLOAT*>(&black), sizeof(FLOAT) * 4);
 		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_BILINEAR_BORDER, samplerStateDesc));
 
 		// anisotropic samplers
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
-		samplerStateDesc.Filter = D3D11_FILTER_ANISOTROPIC;
-		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerStateDesc.Filter = D3D12_FILTER_ANISOTROPIC;
+		samplerStateDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		samplerStateDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		samplerStateDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_ANISOTROPIC_WRAP, samplerStateDesc));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
-		samplerStateDesc.Filter = D3D11_FILTER_ANISOTROPIC;
-		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR;
-		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR;
-		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR;
+		samplerStateDesc.Filter = D3D12_FILTER_ANISOTROPIC;
+		samplerStateDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_MIRROR;
+		samplerStateDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_MIRROR;
+		samplerStateDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_MIRROR;
 		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_ANISOTROPIC_MIRROR, samplerStateDesc));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
-		samplerStateDesc.Filter = D3D11_FILTER_ANISOTROPIC;
-		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerStateDesc.Filter = D3D12_FILTER_ANISOTROPIC;
+		samplerStateDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+		samplerStateDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+		samplerStateDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_ANISOTROPIC_CLAMP, samplerStateDesc));
 
 		ZeroMemory(&samplerStateDesc, sizeof(samplerStateDesc));
-		samplerStateDesc.Filter = D3D11_FILTER_ANISOTROPIC;
-		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+		samplerStateDesc.Filter = D3D12_FILTER_ANISOTROPIC;
+		samplerStateDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+		samplerStateDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+		samplerStateDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
 		memcpy(samplerStateDesc.BorderColor, reinterpret_cast<FLOAT*>(&black), sizeof(FLOAT) * 4);
 		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_ANISOTROPIC_BORDER, samplerStateDesc));
 
 		// shadow sampler state
-		samplerStateDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
-		samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-		samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-		samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+		samplerStateDesc.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+		samplerStateDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+		samplerStateDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+		samplerStateDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
 		memcpy(samplerStateDesc.BorderColor, reinterpret_cast<FLOAT*>(&white), sizeof(FLOAT) * 4);
-		samplerStateDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
+		samplerStateDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 		mSamplerStates.insert(std::make_pair(ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, samplerStateDesc));
 	}
 
 	void ER_RHI_DX12::CreateBlendStates()
 	{
 		D3D12_BLEND_DESC blendStateDescription;
-		ZeroMemory(&blendStateDescription, sizeof(D3D11_BLEND_DESC));
+		ZeroMemory(&blendStateDescription, sizeof(D3D12_BLEND_DESC));
 
 		blendStateDescription.AlphaToCoverageEnable = TRUE;
 		blendStateDescription.RenderTarget[0].BlendEnable = TRUE;
@@ -1539,7 +1599,7 @@ namespace EveryRay_Core
 		rasterizerStateDesc.FillMode = D3D12_FILL_MODE_SOLID;
 		rasterizerStateDesc.CullMode = D3D12_CULL_MODE_NONE;
 		rasterizerStateDesc.DepthClipEnable = false;
-		rasterizerStateDesc.ScissorEnable = true;
+		//rasterizerStateDesc.ScissorEnable = true; TODO!
 		mRasterizerStates.insert(std::make_pair(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING_NO_DEPTH_SCISSOR_ENABLED, rasterizerStateDesc));
 
 		ZeroMemory(&rasterizerStateDesc, sizeof(rasterizerStateDesc));

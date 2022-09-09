@@ -164,18 +164,19 @@ namespace EveryRay_Core {
 		materialSystems.mShadowMapper = mShadowMapper;
 		materialSystems.mProbesManager = mLightProbesManager;
 
-		for (auto& object : mScene->objects) {
-			for (auto& layeredMaterial : object.second->GetMaterials())
-			{
-				// assign prepare callbacks to non-special materials (special ones are processed and rendered from their own systems, i.e., ShadowMapper)
-				if (!layeredMaterial.second->IsSpecial())
-					object.second->MeshMaterialVariablesUpdateEvent->AddListener(layeredMaterial.first, [&, matSystems = materialSystems](int meshIndex) { layeredMaterial.second->PrepareForRendering(matSystems, object.second, meshIndex); });
-
-				// gbuffer material (special, but since its draws are not processed in 
-				if (layeredMaterial.first == ER_MaterialHelper::gbufferMaterialName)
-					object.second->MeshMaterialVariablesUpdateEvent->AddListener(layeredMaterial.first, [&, matSystems = materialSystems](int meshIndex) { layeredMaterial.second->PrepareForRendering(matSystems, object.second, meshIndex); });
-			}
-		}
+		//TODO
+		//for (auto& object : mScene->objects) {
+		//	for (auto& layeredMaterial : object.second->GetMaterials())
+		//	{
+		//		// assign prepare callbacks to non-special materials (special ones are processed and rendered from their own systems, i.e., ShadowMapper)
+		//		if (!layeredMaterial.second->IsSpecial())
+		//			object.second->MeshMaterialVariablesUpdateEvent->AddListener(layeredMaterial.first, [&, matSystems = materialSystems](int meshIndex) { layeredMaterial.second->PrepareForRendering(matSystems, object.second, meshIndex); });
+		//
+		//		// gbuffer material (special, but since its draws are not processed in 
+		//		if (layeredMaterial.first == ER_MaterialHelper::gbufferMaterialName)
+		//			object.second->MeshMaterialVariablesUpdateEvent->AddListener(layeredMaterial.first, [&, matSystems = materialSystems](int meshIndex) { layeredMaterial.second->PrepareForRendering(matSystems, object.second, meshIndex); });
+		//	}
+		//}
 		game.CPUProfiler()->EndCPUTime("Material callbacks init");
 #pragma endregion
 
@@ -341,6 +342,8 @@ namespace EveryRay_Core {
 		rhi->SetMainRenderTargets();
 
 		#pragma region DRAW_IMGUI
+		rhi->SetGPUDescriptorHeapImGui();
+
 		ImGui::Render();
 		rhi->RenderDrawDataImGui();
 #pragma endregion

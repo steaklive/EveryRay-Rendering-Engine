@@ -41,7 +41,7 @@ namespace EveryRay_Core
 		void SetSampleMask(UINT SampleMask);
 		void SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE TopologyType);
 		void SetRenderTargetFormats(UINT NumRTVs, const DXGI_FORMAT* RTVFormats, DXGI_FORMAT DSVFormat = DXGI_FORMAT_UNKNOWN);
-		void SetInputLayout(UINT NumElements, const D3D12_INPUT_ELEMENT_DESC* pInputElementDescs);
+		void SetInputLayout(ER_RHI* aRHI, UINT NumElements, const ER_RHI_INPUT_ELEMENT_DESC* pInputElementDescs);
 		void SetPrimitiveRestart(D3D12_INDEX_BUFFER_STRIP_CUT_VALUE IBProps);
 
 		void SetVertexShader(const void* Binary, size_t Size) { mPSODesc.VS = CD3DX12_SHADER_BYTECODE(const_cast<void*>(Binary), Size); }

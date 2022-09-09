@@ -33,6 +33,7 @@ namespace EveryRay_Core
 		mHeight = height;
 		mIsCubemap = isCubemap;
 		mIsDepthStencil = bindFlags & ER_BIND_DEPTH_STENCIL;
+		mFormat = aRHIDX12->GetFormat(format);
 
 		DXGI_FORMAT depthstencil_tex_format;
 		DXGI_FORMAT depthstencil_srv_format;

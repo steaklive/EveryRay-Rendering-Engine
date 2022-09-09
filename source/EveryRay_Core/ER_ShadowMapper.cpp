@@ -246,7 +246,7 @@ namespace EveryRay_Core
 			BeginRenderingToShadowMap(i);
 
 			if (terrain)
-				terrain->Draw(this, nullptr, i);
+				terrain->Draw(nullptr, this, nullptr, i);
 
 			const std::string materialName = ER_MaterialHelper::shadowMapMaterialName + " " + std::to_string(i);
 			const std::string psoName = materialName + " PSO";
@@ -266,7 +266,7 @@ namespace EveryRay_Core
 							rhi->InitializePSO(psoName);
 							rhi->SetRasterizerState(ER_SHADOW_RS);
 							material->PrepareResources();
-							rhi->SetRenderTargetFormats({}, mShadowMaps[cascadeIndex]);
+							rhi->SetRenderTargetFormats({}, mShadowMaps[i]);
 							rhi->FinalizePSO(psoName);
 						}
 						rhi->SetPSO(psoName);

@@ -252,7 +252,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\external\DirectXMath\SHMath\DirectXSH.cpp" />
-    <ClCompile Include="..\..\external\DirectXMath\SHMath\DirectXSHD3D11.cpp" />
     <ClCompile Include="ER_ColorHelper.cpp" />
     <ClCompile Include="ER_BasicColorMaterial.cpp" />
     <ClCompile Include="ER_Camera.cpp" />

@@ -27,6 +27,9 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_RuntimeCore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\external\ImGUI\imconfig.h">
       <Filter>Source Files\ImGui</Filter>
     </ClInclude>
@@ -36,10 +39,25 @@
     <ClInclude Include="..\..\external\ImGUI\imgui_impl_dx11.h">
       <Filter>Source Files\ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\external\ImGUI\imgui_impl_dx12.h">
+      <Filter>Source Files\ImGui</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\external\ImGUI\imgui_impl_win32.h">
       <Filter>Source Files\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="..\..\external\ImGUI\imgui_internal.h">
+      <Filter>Source Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external\ImGUI\ImGuizmo.h">
+      <Filter>Source Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external\ImGUI\imstb_rectpack.h">
+      <Filter>Source Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external\ImGUI\imstb_textedit.h">
+      <Filter>Source Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external\ImGUI\imstb_truetype.h">
       <Filter>Source Files\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="..\..\external\ImGUI\stb_rect_pack.h">
@@ -51,18 +69,15 @@
     <ClInclude Include="..\..\external\ImGUI\stb_truetype.h">
       <Filter>Source Files\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\external\ImGUI\ImGuizmo.h">
-      <Filter>Source Files\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ER_RuntimeCore.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Program.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_RuntimeCore.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\external\ImGUI\imgui.cpp">
@@ -77,24 +92,27 @@
     <ClCompile Include="..\..\external\ImGUI\imgui_impl_dx11.cpp">
       <Filter>Source Files\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\external\ImGUI\imgui_impl_dx12.cpp">
+      <Filter>Source Files\ImGui</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\external\ImGUI\imgui_impl_win32.cpp">
+      <Filter>Source Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external\ImGUI\imgui_widgets.cpp">
       <Filter>Source Files\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="..\..\external\ImGUI\ImGuizmo.cpp">
       <Filter>Source Files\ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="ER_RuntimeCore.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="EveryRay_Runtime_Win64_DX11.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="bunny.ico">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="EveryRay_Runtime_Win64_DX12.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

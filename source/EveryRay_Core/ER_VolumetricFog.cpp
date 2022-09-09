@@ -64,12 +64,12 @@ namespace EveryRay_Core {
 		mInjectionAccumulationPassesRootSignature = rhi->CreateRootSignature(3, 2);
 		if (!mInjectionAccumulationPassesRootSignature)
 		{
-			mInjectionAccumulationPassesRootSignature->InitStaticSampler(0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, 0);
-			mInjectionAccumulationPassesRootSignature->InitStaticSampler(1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, 0);
-			mInjectionAccumulationPassesRootSignature->InitDescriptorTable(0, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV } { 0 }, { 3 });
-			mInjectionAccumulationPassesRootSignature->InitDescriptorTable(1, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV } { 0 }, { 1 });
-			mInjectionAccumulationPassesRootSignature->InitDescriptorTable(2, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV } { 0 }, { 1 });
-			mInjectionAccumulationPassesRootSignature->Finalize(rhi, L"Volumetric Fog: Injection + Accumulation Passes Root Signature");
+			mInjectionAccumulationPassesRootSignature->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP);
+			mInjectionAccumulationPassesRootSignature->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS);
+			mInjectionAccumulationPassesRootSignature->InitDescriptorTable(rhi, 0, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 3 });
+			mInjectionAccumulationPassesRootSignature->InitDescriptorTable(rhi, 1, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 });
+			mInjectionAccumulationPassesRootSignature->InitDescriptorTable(rhi, 2, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 });
+			mInjectionAccumulationPassesRootSignature->Finalize(rhi, "Volumetric Fog: Injection + Accumulation Passes Root Signature");
 		}
 		
 		mCompositePS = rhi->CreateGPUShader();
@@ -78,10 +78,10 @@ namespace EveryRay_Core {
 		mCompositePassRootSignature = rhi->CreateRootSignature(2, 1);
 		if (!mCompositePassRootSignature)
 		{
-			mCompositePassRootSignature->InitStaticSampler(0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, 0, ER_RHI_SHADER_VISIBILITY_PIXEL);
-			mCompositePassRootSignature->InitDescriptorTable(0, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV } { 0 }, { 3 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
-			mCompositePassRootSignature->InitDescriptorTable(2, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV } { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
-			mCompositePassRootSignature->Finalize(rhi, L"Volumetric Fog: Composite Pass Root Signature");
+			mCompositePassRootSignature->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
+			mCompositePassRootSignature->InitDescriptorTable(rhi, 0, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 3 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+			mCompositePassRootSignature->InitDescriptorTable(rhi, 2, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+			mCompositePassRootSignature->Finalize(rhi, "Volumetric Fog: Composite Pass Root Signature");
 		}
 
 		mMainConstantBuffer.Initialize(rhi);
@@ -161,7 +161,7 @@ namespace EveryRay_Core {
 		if (rhi->IsPSOReady(mInjectionPassPSOName, true))
 		{
 			rhi->InitializePSO(mInjectionPassPSOName, true);
-			rhi->SetRootSignatureToPSO(mInjectionPassPSOName, *mInjectionAccumulationPassesRootSignature, true);
+			rhi->SetRootSignatureToPSO(mInjectionPassPSOName, mInjectionAccumulationPassesRootSignature, true);
 			rhi->SetShader(mInjectionCS);
 			rhi->FinalizePSO(mInjectionPassPSOName, true);
 		}
@@ -188,7 +188,7 @@ namespace EveryRay_Core {
 		if (rhi->IsPSOReady(mAccumulationPassPSOName, true))
 		{
 			rhi->InitializePSO(mAccumulationPassPSOName, true);
-			rhi->SetRootSignatureToPSO(mAccumulationPassPSOName, *mInjectionAccumulationPassesRootSignature, true);
+			rhi->SetRootSignatureToPSO(mAccumulationPassPSOName, mInjectionAccumulationPassesRootSignature, true);
 			rhi->SetShader(mAccumulationCS);
 			rhi->FinalizePSO(mAccumulationPassPSOName, true);
 		}
@@ -218,7 +218,7 @@ namespace EveryRay_Core {
 			rhi->InitializePSO(mCompositePassPSOName);
 			rhi->SetShader(mCompositePS);
 			rhi->SetRenderTargetFormats({ aRT });
-			rhi->SetRootSignatureToPSO(mCompositePassPSOName, *mCompositePassRootSignature);
+			rhi->SetRootSignatureToPSO(mCompositePassPSOName, mCompositePassRootSignature);
 			quadRenderer->PrepareDraw(rhi);
 			rhi->FinalizePSO(mCompositePassPSOName);
 		}

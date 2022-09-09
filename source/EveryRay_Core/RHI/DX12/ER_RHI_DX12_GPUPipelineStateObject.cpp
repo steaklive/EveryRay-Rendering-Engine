@@ -94,13 +94,26 @@ namespace EveryRay_Core
 		mPSODesc.SampleDesc.Quality = 0;
 	}
 
-	void ER_RHI_DX12_GraphicsPSO::SetInputLayout(UINT NumElements, const D3D12_INPUT_ELEMENT_DESC* pInputElementDescs)
+	void ER_RHI_DX12_GraphicsPSO::SetInputLayout(ER_RHI* aRHI, UINT NumElements, const ER_RHI_INPUT_ELEMENT_DESC* pInputElementDescs)
 	{
+		ER_RHI_DX12* dx12 = static_cast<ER_RHI_DX12*>(aRHI);
+		assert(dx12);
+
 		mPSODesc.InputLayout.NumElements = NumElements;
 
 		if (NumElements > 0)
 		{
 			D3D12_INPUT_ELEMENT_DESC* NewElements = (D3D12_INPUT_ELEMENT_DESC*)malloc(sizeof(D3D12_INPUT_ELEMENT_DESC) * NumElements);
+			for (int i =0; i < static_cast<int>(NumElements); i++)
+			{
+				NewElements[i].SemanticName = pInputElementDescs[i].SemanticName;
+				NewElements[i].SemanticIndex = pInputElementDescs[i].SemanticIndex;
+				NewElements[i].Format = dx12->GetFormat(pInputElementDescs[i].Format);
+				NewElements[i].InputSlot = pInputElementDescs[i].InputSlot;
+				NewElements[i].AlignedByteOffset = pInputElementDescs[i].AlignedByteOffset;
+				NewElements[i].InputSlotClass = pInputElementDescs[i].IsPerVertex ? D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA : D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
+				NewElements[i].InstanceDataStepRate = pInputElementDescs[i].InstanceDataStepRate;
+			}
 			memcpy(NewElements, pInputElementDescs, NumElements * sizeof(D3D12_INPUT_ELEMENT_DESC));
 			mInputLayouts.reset((const D3D12_INPUT_ELEMENT_DESC*)NewElements);
 		}

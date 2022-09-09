@@ -79,8 +79,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)\bin\x64\dx11\$(Configuration)\</OutDir>
-    <TargetName>EveryRay_RenderingEngine_Win64_DX11_Debug</TargetName>
+    <OutDir>$(SolutionDir)\bin\x64\dx12\$(Configuration)\</OutDir>
+    <TargetName>EveryRay_RenderingEngine_Win64_DX12_Debug</TargetName>
     <IntDir>$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -91,8 +91,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)\bin\x64\dx11\$(Configuration)\</OutDir>
-    <TargetName>EveryRay_RenderingEngine_Win64_DX11_Release</TargetName>
+    <OutDir>$(SolutionDir)\bin\x64\dx12\$(Configuration)\</OutDir>
+    <TargetName>EveryRay_RenderingEngine_Win64_DX12_Release</TargetName>
     <IntDir>$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -130,7 +130,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>assimp-vc141-mtd.lib;dxcompiler.lib;assimp-vc140-mt.lib;d3d12.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;DirectXTK12.lib;Shlwapi.lib;DirectXTex.lib;dinput8.lib;EveryRay_Core_Win64_DX12.lib;jsoncpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp-vc141-mtd.lib;dxcompiler.lib;d3d12.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;DirectXTK12.lib;Shlwapi.lib;DirectXTex.lib;dinput8.lib;EveryRay_Core_Win64_DX12.lib;jsoncpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\external\JsonCpp\lib\Debug;$(SolutionDir)\external\Assimp\lib\x64;$(SolutionDir)\external\DirectXTex\Bin\Desktop_2019\x64\Debug;$(SolutionDir)\external\DirectXTK12\Bin\Desktop_2017_Win10\x64\Debug;$(SolutionDir)\bin\x64\dx12\Debug;$(WindowsSDK_LibraryPath_x64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <DelayLoadDLLs>d3d12.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
@@ -183,7 +183,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)\external\DirectXTex\Bin\Desktop_2019\x64\Release;$(SolutionDir)\external\JsonCpp\lib\Release;$(SolutionDir)\external\Assimp\lib\x64;$(SolutionDir)\external\DirectXTK12\Bin\Desktop_2017_Win10\x64\Release;$(SolutionDir)\bin\x64\dx12\Release;$(WindowsSDK_LibraryPath_x64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>jsoncpp.lib;assimp-vc141-mt.lib;dxcompiler.lib;assimp-vc140-mt.lib;d3d12.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;DirectXTK12.lib;Shlwapi.lib;DirectXTex.lib;dinput8.lib;EveryRay_Core_Win64_DX12.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>jsoncpp.lib;assimp-vc141-mt.lib;dxcompiler.lib;d3d12.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;DirectXTK12.lib;Shlwapi.lib;DirectXTex.lib;dinput8.lib;EveryRay_Core_Win64_DX12.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>d3d12.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
@@ -192,8 +192,12 @@
     <ClInclude Include="..\..\external\ImGUI\imgui.h" />
     <ClInclude Include="..\..\external\ImGUI\ImGuizmo.h" />
     <ClInclude Include="..\..\external\ImGUI\imgui_impl_dx11.h" />
+    <ClInclude Include="..\..\external\ImGUI\imgui_impl_dx12.h" />
     <ClInclude Include="..\..\external\ImGUI\imgui_impl_win32.h" />
     <ClInclude Include="..\..\external\ImGUI\imgui_internal.h" />
+    <ClInclude Include="..\..\external\ImGUI\imstb_rectpack.h" />
+    <ClInclude Include="..\..\external\ImGUI\imstb_textedit.h" />
+    <ClInclude Include="..\..\external\ImGUI\imstb_truetype.h" />
     <ClInclude Include="..\..\external\ImGUI\stb_rect_pack.h" />
     <ClInclude Include="..\..\external\ImGUI\stb_textedit.h" />
     <ClInclude Include="..\..\external\ImGUI\stb_truetype.h" />
@@ -208,7 +212,9 @@
     <ClCompile Include="..\..\external\ImGUI\imgui_demo.cpp" />
     <ClCompile Include="..\..\external\ImGUI\imgui_draw.cpp" />
     <ClCompile Include="..\..\external\ImGUI\imgui_impl_dx11.cpp" />
+    <ClCompile Include="..\..\external\ImGUI\imgui_impl_dx12.cpp" />
     <ClCompile Include="..\..\external\ImGUI\imgui_impl_win32.cpp" />
+    <ClCompile Include="..\..\external\ImGUI\imgui_widgets.cpp" />
     <ClCompile Include="Program.cpp" />
     <ClCompile Include="ER_RuntimeCore.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -219,10 +225,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="EveryRay_Runtime_Win64_DX11.rc" />
+    <Image Include="bunny.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="bunny.ico" />
+    <ResourceCompile Include="EveryRay_Runtime_Win64_DX12.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

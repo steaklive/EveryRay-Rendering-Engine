@@ -65,9 +65,7 @@ namespace EveryRay_Core
 		assert(aObj);
 		assert(camera);
 		assert(neededSystems.mProbesManager);
-		
-		ER_Material::PrepareForRendering(neededSystems, aObj, meshIndex);
-		
+				
 		mConstantBuffer.Data.ViewProjection = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());
 		mConstantBuffer.Data.World = XMMatrixTranspose(aObj->GetTransformationMatrix());
 		mConstantBuffer.Data.CameraPosition = XMFLOAT4{ camera->Position().x, camera->Position().y, camera->Position().z, 1.0f };
