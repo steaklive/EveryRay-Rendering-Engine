@@ -362,8 +362,6 @@ namespace EveryRay_Core
 
 		ER_RHI* rhi = mCore->GetRHI();
 
-		rhi->SetTopologyType(mWireframeMode ? ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST : ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
 		if (mMaterials.find(materialName) == mMaterials.end() && !isForwardPass)
 			return;
 		

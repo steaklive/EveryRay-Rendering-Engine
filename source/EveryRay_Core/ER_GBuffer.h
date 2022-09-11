@@ -30,6 +30,8 @@ namespace EveryRay_Core
 		ER_RHI_GPUTexture* GetDepth() { return mDepthBuffer; }
 
 	private:
+		ER_RHI_GPURootSignature* mRootSignature = nullptr;
+
 		ER_RHI_GPUTexture* mDepthBuffer = nullptr;
 		ER_RHI_GPUTexture* mAlbedoBuffer= nullptr;
 		ER_RHI_GPUTexture* mNormalBuffer= nullptr;

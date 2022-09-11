@@ -258,6 +258,8 @@ namespace EveryRay_Core
 	{
 		assert(index < ER_RHI_MAX_GRAPHICS_COMMAND_LISTS);
 
+		mCurrentGraphicsCommandListIndex = index;
+
 		HRESULT hr;
 		if (FAILED(hr = mCommandAllocatorsGraphics[index]->Reset()))
 		{
@@ -275,6 +277,7 @@ namespace EveryRay_Core
 	void ER_RHI_DX12::EndGraphicsCommandList(int index)
 	{
 		assert(index < ER_RHI_MAX_GRAPHICS_COMMAND_LISTS);
+		mCurrentGraphicsCommandListIndex = -1;
 
 		HRESULT hr;
 		if (FAILED(hr = mCommandListGraphics[index]->Close()))
@@ -329,7 +332,7 @@ namespace EveryRay_Core
 
 	ER_RHI_InputLayout* ER_RHI_DX12::CreateInputLayout(ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount)
 	{
-		return new ER_RHI_DX12_InputLayout(inputElementDescriptions, inputElementDescriptionCount);
+		return new ER_RHI_InputLayout(inputElementDescriptions, inputElementDescriptionCount);
 	}
 
 	ER_RHI_GPUShader* ER_RHI_DX12::CreateGPUShader()
@@ -726,7 +729,7 @@ namespace EveryRay_Core
 		assert(rs);
 		assert(rootParamIndex >= 0 && rootParamIndex < rs->GetRootParameterCount());
 		assert(srvCount > 0 && srvCount <= DX12_MAX_BOUND_SHADER_RESOURCE_VIEWS);
-		assert(srvCount <= rs->GetRootParameterSRVCount(rootParamIndex));
+		//assert(srvCount <= rs->GetRootParameterSRVCount(rootParamIndex));
 		assert(mDescriptorHeapManager);
 
 		ER_RHI_DX12_GPUDescriptorHeap* gpuDescriptorHeap = mDescriptorHeapManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -757,7 +760,7 @@ namespace EveryRay_Core
 		assert(rs);
 		assert(rootParamIndex >= 0 && rootParamIndex < rs->GetRootParameterCount());
 		assert(uavCount > 0 && uavCount <= DX12_MAX_BOUND_UNORDERED_ACCESS_VIEWS);
-		assert(uavCount <= rs->GetRootParameterUAVCount(rootParamIndex));
+		//assert(uavCount <= rs->GetRootParameterUAVCount(rootParamIndex));
 		assert(mDescriptorHeapManager);
 
 		ER_RHI_DX12_GPUDescriptorHeap* gpuDescriptorHeap = mDescriptorHeapManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -788,7 +791,7 @@ namespace EveryRay_Core
 		assert(rs);
 		assert(rootParamIndex >= 0 && rootParamIndex < rs->GetRootParameterCount());
 		assert(cbvCount > 0 && cbvCount <= DX12_MAX_BOUND_CONSTANT_BUFFERS);
-		assert(cbvCount <= rs->GetRootParameterCBVCount(rootParamIndex));
+		//assert(cbvCount <= rs->GetRootParameterCBVCount(rootParamIndex));
 		assert(mDescriptorHeapManager);
 
 		ER_RHI_DX12_GPUDescriptorHeap* gpuDescriptorHeap = mDescriptorHeapManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -818,12 +821,10 @@ namespace EveryRay_Core
 	void ER_RHI_DX12::SetInputLayout(ER_RHI_InputLayout* aIL)
 	{
 		assert(mCurrentPSOState == ER_RHI_DX12_PSO_STATE::GRAPHICS);
-
-		ER_RHI_DX12_InputLayout* aDX12_IL = static_cast<ER_RHI_DX12_InputLayout*>(aIL);
-		assert(aDX12_IL);
+		assert(aIL);
 
 		ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSONames.at(mCurrentGraphicsPSOName);
-		pso.SetInputLayout(this, aDX12_IL->mInputElementDescriptionCount, aDX12_IL->mInputElementDescriptions);
+		pso.SetInputLayout(this, aIL->mInputElementDescriptionCount, aIL->mInputElementDescriptions);
 	}
 
 	void ER_RHI_DX12::SetEmptyInputLayout()
@@ -1119,10 +1120,10 @@ namespace EveryRay_Core
 		ER_RHI_DX12_GPUBuffer* buffer = static_cast<ER_RHI_DX12_GPUBuffer*>(aBuffer);
 		assert(buffer);
 
-		void* aOutData = nullptr;
-		buffer->Map(this, &aOutData);
-		memcpy(aOutData, aData, dataSize);
-		buffer->Unmap(this);
+		//unsigned int* aOutData;
+		//buffer->Map(this, reinterpret_cast<void**>(&aOutData));
+		//memcpy(aOutData, aData, dataSize);
+		//buffer->Unmap(this);
 	}
 
 	void ER_RHI_DX12::InitImGui()

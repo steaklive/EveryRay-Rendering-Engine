@@ -240,10 +240,13 @@ namespace EveryRay_Core
 	public:
 		ER_RHI_InputLayout(ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount)
 		{
-			mInputElementDescriptions = inputElementDescriptions;
+			mInputElementDescriptions = new ER_RHI_INPUT_ELEMENT_DESC[inputElementDescriptionCount];
+			memcpy(mInputElementDescriptions, inputElementDescriptions, inputElementDescriptionCount * sizeof(ER_RHI_INPUT_ELEMENT_DESC));
 			mInputElementDescriptionCount = inputElementDescriptionCount;
 		};
-		virtual ~ER_RHI_InputLayout() {}
+		virtual ~ER_RHI_InputLayout() {
+			DeleteObjects(mInputElementDescriptions);
+		}
 
 		ER_RHI_INPUT_ELEMENT_DESC* mInputElementDescriptions;
 		UINT mInputElementDescriptionCount;
@@ -384,6 +387,10 @@ namespace EveryRay_Core
 
 		virtual void SetWindowHandle(void* handle) { (HWND)mWindowHandle; }
 
+		inline const int GetPrepareGraphicsCommandListIndex() { return mPrepareGraphicsCommandListIndex; }
+		inline const int GetCurrentGraphicsCommandListIndex() { return mCurrentGraphicsCommandListIndex; }
+		inline const int GetCurrentComputeCommandListIndex() { return mCurrentComputeCommandListIndex; }
+
 		ER_GRAPHICS_API GetAPI() { return mAPI; }
 	protected:
 		HWND mWindowHandle;
@@ -397,8 +404,9 @@ namespace EveryRay_Core
 
 		ER_RHI_Viewport mCurrentViewport;
 
-		int mCurrentGraphicsCommandListIndex = 0;
-		int mCurrentComputeCommandListIndex = 0;
+		const int mPrepareGraphicsCommandListIndex = ER_RHI_MAX_GRAPHICS_COMMAND_LISTS - 1; // command list for prepare commands (on init)
+		int mCurrentGraphicsCommandListIndex = -1;
+		int mCurrentComputeCommandListIndex = -1;
 	};
 
 	class ER_RHI_GPURootSignature
@@ -410,7 +418,7 @@ namespace EveryRay_Core
 		virtual void InitStaticSampler(ER_RHI* rhi, UINT regIndex, const ER_RHI_SAMPLER_STATE& sampler, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) { AbstractRHIMethodAssert();	}
 		virtual void InitDescriptorTable(ER_RHI* rhi, int rootParamIndex, const std::vector<ER_RHI_DESCRIPTOR_RANGE_TYPE>& ranges, const std::vector<UINT>& registerIndices,
 			const std::vector<UINT>& descriptorCounters, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) {	AbstractRHIMethodAssert(); }
-		virtual void Finalize(ER_RHI* rhi, const std::string& name) { AbstractRHIMethodAssert(); }
+		virtual void Finalize(ER_RHI* rhi, const std::string& name, bool needsInputAssembler = false) { AbstractRHIMethodAssert(); }
 
 		virtual int GetStaticSamplersCount() { AbstractRHIMethodAssert(); return 0; }
 		virtual int GetRootParameterCount() { AbstractRHIMethodAssert(); return 0; }

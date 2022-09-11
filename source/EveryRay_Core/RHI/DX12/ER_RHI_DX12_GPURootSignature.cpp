@@ -19,7 +19,7 @@ namespace EveryRay_Core
 		ER_RHI_DX12* dx12 = static_cast<ER_RHI_DX12*>(rhi);
 		assert(dx12);
 
-		assert(regIndex < mNumInitializedStaticSamplers);
+		assert(regIndex < mNumSamplers);
 		InitializeStaticSampler(regIndex, dx12->FindSamplerState(sampler), dx12->GetShaderVisibility(visibility));
 	}
 
@@ -149,7 +149,7 @@ namespace EveryRay_Core
 		ID3DBlob* pOutBlob = nullptr;
 		ID3DBlob* pErrorBlob = nullptr;
 
-		if (FAILED(D3D12SerializeRootSignature(&RootDesc, D3D_ROOT_SIGNATURE_VERSION_1_1, &pOutBlob, &pErrorBlob)))
+		if (FAILED(D3D12SerializeRootSignature(&RootDesc, D3D_ROOT_SIGNATURE_VERSION_1_0, &pOutBlob, &pErrorBlob)))
 		{
 			std::string msg = "ER_RHI_DX12: Could not serialize a root signature: " + name;
 			throw ER_CoreException(msg.c_str());
@@ -164,14 +164,20 @@ namespace EveryRay_Core
 		mSignature->SetName(ER_Utility::ToWideString(name).c_str());
 		mIsFinalized = true;
 
-		pOutBlob->Release();
-		pErrorBlob->Release();
+		if (pOutBlob)
+			pOutBlob->Release();
+		if (pErrorBlob)
+			pErrorBlob->Release();
 	}
 
-	void ER_RHI_DX12_GPURootSignature::Finalize(ER_RHI* rhi, const std::string& name)
+	void ER_RHI_DX12_GPURootSignature::Finalize(ER_RHI* rhi, const std::string& name, bool needsInputAssembler)
 	{
 		assert(rhi);
-		Finalize(static_cast<ER_RHI_DX12*>(rhi)->GetDevice(), name);
+		D3D12_ROOT_SIGNATURE_FLAGS Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
+		if (needsInputAssembler)
+			Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+		Finalize(static_cast<ER_RHI_DX12*>(rhi)->GetDevice(), name, Flags);
 	}
 
 }

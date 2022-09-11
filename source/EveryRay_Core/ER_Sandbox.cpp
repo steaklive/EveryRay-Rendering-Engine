@@ -54,6 +54,11 @@ namespace EveryRay_Core {
     {
 		mName = sceneName;
 
+		ER_RHI* rhi = game.GetRHI();
+		assert(rhi);
+
+		rhi->BeginGraphicsCommandList(rhi->GetPrepareGraphicsCommandListIndex()); // for texture loading etc. (everything before the first frame starts)
+
 		#pragma region INIT_SCENE
 		game.CPUProfiler()->BeginCPUTime("Scene init: " + sceneName);
         mScene = new ER_Scene(game, camera, sceneFolderPath + sceneName + ".json");
@@ -180,6 +185,8 @@ namespace EveryRay_Core {
 		game.CPUProfiler()->EndCPUTime("Material callbacks init");
 #pragma endregion
 
+		rhi->EndGraphicsCommandList(rhi->GetPrepareGraphicsCommandListIndex());
+		rhi->ExecuteCommandLists(rhi->GetPrepareGraphicsCommandListIndex());
     }
 
 	void ER_Sandbox::Update(ER_Core& game, const ER_CoreTime& gameTime)

@@ -57,7 +57,7 @@ namespace EveryRay_Core
 		ER_Material::~ER_Material();
 	}
 
-	void ER_GBufferMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex)
+	void ER_GBufferMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, ER_RHI_GPURootSignature* rs)
 	{
 		auto rhi = ER_Material::GetCore()->GetRHI();
 		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->GetServices().FindService(ER_Camera::TypeIdClass()));
@@ -78,8 +78,8 @@ namespace EveryRay_Core
 			aObj->GetCustomAlphaDiscard(),
 			0.0);
 		mConstantBuffer.ApplyChanges(rhi);
-		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() });
-		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() });
+		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() }, 0, rs, 1);
+		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() }, 0, rs, 1);
 
 		std::vector<ER_RHI_GPUResource*> resources;
 		resources.push_back(aObj->GetTextureData(meshIndex).AlbedoMap);	
@@ -89,7 +89,7 @@ namespace EveryRay_Core
 		resources.push_back(aObj->GetTextureData(meshIndex).HeightMap);	
 		resources.push_back(aObj->GetTextureData(meshIndex).ReflectionMaskMap);
 
-		rhi->SetShaderResources(ER_PIXEL, resources);
+		rhi->SetShaderResources(ER_PIXEL, resources, 0, rs, 0);
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 	}
 

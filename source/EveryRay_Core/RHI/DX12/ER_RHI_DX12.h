@@ -21,13 +21,6 @@
 
 namespace EveryRay_Core
 {
-	class ER_RHI_DX12_InputLayout : public ER_RHI_InputLayout
-	{
-	public:
-		ER_RHI_DX12_InputLayout(ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount)
-			: ER_RHI_InputLayout(inputElementDescriptions, inputElementDescriptionCount) { }
-	};
-
 	enum ER_RHI_DX12_PSO_STATE
 	{
 		UNSET = 0,
@@ -170,8 +163,6 @@ namespace EveryRay_Core
 		ID3D12GraphicsCommandList* GetComputeCommandList(int index) const { return mCommandListCompute[index].Get(); }
 		ER_RHI_DX12_GPUDescriptorHeapManager* GetDescriptorHeapManager() const { return mDescriptorHeapManager; }
 
-		inline const int GetPrepareCommandListIndex() { return mPrepareCommandListIndex; }
-
 		const D3D12_SAMPLER_DESC& FindSamplerState(ER_RHI_SAMPLER_STATE aState);
 		DXGI_FORMAT GetFormat(ER_RHI_FORMAT aFormat);
 		ER_RHI_RESOURCE_STATE GetState(D3D12_RESOURCE_STATES aState);
@@ -216,8 +207,6 @@ namespace EveryRay_Core
 		ComPtr<ID3D12CommandQueue> mCommandQueueCompute;
 		ComPtr<ID3D12GraphicsCommandList> mCommandListCompute[ER_RHI_MAX_COMPUTE_COMMAND_LISTS];
 		ComPtr<ID3D12CommandAllocator> mCommandAllocatorsCompute[ER_RHI_MAX_COMPUTE_COMMAND_LISTS];
-
-		const int mPrepareCommandListIndex = ER_RHI_MAX_GRAPHICS_COMMAND_LISTS - 1; // command list for prepare commands (on init)
 
 		ComPtr<ID3D12Fence> mFenceGraphics;
 		UINT64 mFenceValuesGraphics;

@@ -114,7 +114,6 @@ namespace EveryRay_Core
 				NewElements[i].InputSlotClass = pInputElementDescs[i].IsPerVertex ? D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA : D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
 				NewElements[i].InstanceDataStepRate = pInputElementDescs[i].InstanceDataStepRate;
 			}
-			memcpy(NewElements, pInputElementDescs, NumElements * sizeof(D3D12_INPUT_ELEMENT_DESC));
 			mInputLayouts.reset((const D3D12_INPUT_ELEMENT_DESC*)NewElements);
 		}
 		else

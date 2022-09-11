@@ -10,6 +10,9 @@
 
 namespace EveryRay_Core {
 
+	static const std::string psoNameNonInstanced = "GBufferMaterial PSO";
+	static const std::string psoNameInstanced = "GBufferMaterial w/ Instancing PSO";
+
 	ER_GBuffer::ER_GBuffer(ER_Core& game, ER_Camera& camera, int width, int height):
 		ER_CoreComponent(game), mWidth(width), mHeight(height)
 	{
@@ -23,6 +26,7 @@ namespace EveryRay_Core {
 		DeleteObject(mExtraBuffer);
 		DeleteObject(mExtra2Buffer);
 		DeleteObject(mDepthBuffer);
+		DeleteObject(mRootSignature);
 	}
 
 	void ER_GBuffer::Initialize()
@@ -46,6 +50,15 @@ namespace EveryRay_Core {
 
 		mDepthBuffer = rhi->CreateGPUTexture();
 		mDepthBuffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_D24_UNORM_S8_UINT, ER_BIND_SHADER_RESOURCE | ER_BIND_DEPTH_STENCIL);
+
+		mRootSignature = rhi->CreateRootSignature(2, 1);
+		if (mRootSignature)
+		{
+			mRootSignature->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
+			mRootSignature->InitDescriptorTable(rhi, 0, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 6 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+			mRootSignature->InitDescriptorTable(rhi, 1, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+			mRootSignature->Finalize(rhi, "GBuffer Material Pass Root Signature", true);
+		}
 	}
 
 	void ER_GBuffer::Update(const ER_CoreTime& time)
@@ -80,16 +93,17 @@ namespace EveryRay_Core {
 	{
 		auto rhi = GetCore()->GetRHI();
 
-		ER_MaterialSystems materialSystems;
-		const std::string psoName = ER_MaterialHelper::gbufferMaterialName + " PSO";
+		rhi->SetRootSignature(mRootSignature);
 
+		ER_MaterialSystems materialSystems;
 		for (auto renderingObjectInfo = scene->objects.begin(); renderingObjectInfo != scene->objects.end(); renderingObjectInfo++)
 		{
 			ER_RenderingObject* renderingObject = renderingObjectInfo->second;
+			const std::string& psoName = renderingObject->IsInstanced() ? psoNameInstanced : psoNameNonInstanced;
 			auto materialInfo = renderingObject->GetMaterials().find(ER_MaterialHelper::gbufferMaterialName);
 			if (materialInfo != renderingObject->GetMaterials().end())
 			{
-				ER_Material* material = materialInfo->second;
+				ER_GBufferMaterial* material = static_cast<ER_GBufferMaterial*>(materialInfo->second);
 				for (int meshIndex = 0; meshIndex < renderingObject->GetMeshCount(); meshIndex++)
 				{
 					if (!rhi->IsPSOReady(psoName))
@@ -97,11 +111,13 @@ namespace EveryRay_Core {
 						rhi->InitializePSO(psoName);
 						material->PrepareResources();
 						rhi->SetRasterizerState(ER_NO_CULLING);
-						rhi->SetRenderTargetFormats({ mAlbedoBuffer, mNormalBuffer, mPositionsBuffer,	mExtraBuffer, mExtra2Buffer }, mDepthBuffer);
+						rhi->SetRenderTargetFormats({ mAlbedoBuffer, mNormalBuffer, mPositionsBuffer, mExtraBuffer, mExtra2Buffer }, mDepthBuffer);
+						rhi->SetRootSignatureToPSO(psoName, mRootSignature);
+						rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 						rhi->FinalizePSO(psoName);
 					}
 					rhi->SetPSO(psoName);
-					static_cast<ER_GBufferMaterial*>(material)->PrepareForRendering(materialSystems, renderingObject, meshIndex);
+					material->PrepareForRendering(materialSystems, renderingObject, meshIndex, mRootSignature);
 					renderingObject->Draw(ER_MaterialHelper::gbufferMaterialName, true, meshIndex);
 					rhi->UnsetPSO();
 				}

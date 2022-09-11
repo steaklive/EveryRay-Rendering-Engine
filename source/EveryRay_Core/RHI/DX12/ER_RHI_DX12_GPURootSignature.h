@@ -94,12 +94,12 @@ namespace EveryRay_Core
 			range->RegisterSpace = Space;
 			range->OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-			if (Type == D3D12_DESCRIPTOR_RANGE_TYPE_SRV)
-				mSRVCount += Count;
-			else if (Type == D3D12_DESCRIPTOR_RANGE_TYPE_UAV)
-				mUAVCount += Count;
-			else if (Type == D3D12_DESCRIPTOR_RANGE_TYPE_CBV)
-				mCBVCount += Count;
+			//if (Type == D3D12_DESCRIPTOR_RANGE_TYPE_SRV)
+			//	mSRVCount += Count;
+			//else if (Type == D3D12_DESCRIPTOR_RANGE_TYPE_UAV)
+			//	mUAVCount += Count;
+			//else if (Type == D3D12_DESCRIPTOR_RANGE_TYPE_CBV)
+			//	mCBVCount += Count;
 		}
 
 		//void SetDescriptorHandle(ER_RHI_DX12_DescriptorHandle& handle) { mDescriptorHandle = handle; }
@@ -107,9 +107,9 @@ namespace EveryRay_Core
 
 		const D3D12_ROOT_PARAMETER& operator() (void) const { return mRootParameter; }
 
-		UINT mSRVCount = 0;
-		UINT mCBVCount = 0;
-		UINT mUAVCount = 0;
+		//UINT mSRVCount = 0;
+		//UINT mCBVCount = 0;
+		//UINT mUAVCount = 0;
 	protected:
 		D3D12_ROOT_PARAMETER mRootParameter;
 	private:
@@ -130,13 +130,13 @@ namespace EveryRay_Core
 		virtual void InitStaticSampler(ER_RHI* rhi, UINT regIndex, const ER_RHI_SAMPLER_STATE& samplers, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) override;
 		virtual void InitDescriptorTable(ER_RHI* rhi, int index, const std::vector<ER_RHI_DESCRIPTOR_RANGE_TYPE>& ranges, const std::vector<UINT>& registerIndices,
 			const std::vector<UINT>& descriptorCounters, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) override;
-		virtual void Finalize(ER_RHI* rhi, const std::string& name) override;
+		virtual void Finalize(ER_RHI* rhi, const std::string& name, bool needsInputAssembler = false) override;
 
-		virtual int GetStaticSamplersCount() override { return mNumInitializedStaticSamplers; }
+		virtual int GetStaticSamplersCount() override { return mNumSamplers; }
 		virtual int GetRootParameterCount() override { return mNumParameters; }
-		virtual int GetRootParameterCBVCount(int paramIndex) override { return mRootParameters.get()[paramIndex].mCBVCount; }
-		virtual int GetRootParameterSRVCount(int paramIndex) override { return mRootParameters.get()[paramIndex].mSRVCount; }
-		virtual int GetRootParameterUAVCount(int paramIndex) override { return mRootParameters.get()[paramIndex].mUAVCount; }
+		//virtual int GetRootParameterCBVCount(int paramIndex) override { return mRootParameters.get()[paramIndex].mCBVCount; }
+		//virtual int GetRootParameterSRVCount(int paramIndex) override { return mRootParameters.get()[paramIndex].mSRVCount; }
+		//virtual int GetRootParameterUAVCount(int paramIndex) override { return mRootParameters.get()[paramIndex].mUAVCount; }
 
 		ER_RHI_DX12_GPURootParameter& operator[] (size_t EntryIndex)
 		{

@@ -60,7 +60,7 @@ namespace EveryRay_Core
 				break;
 			}
 		}
-		D3D12_RESOURCE_FLAGS flags;
+		D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE;
 		if (bindFlags & ER_BIND_RENDER_TARGET)
 			flags |= D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 		if (bindFlags & ER_BIND_DEPTH_STENCIL)
@@ -70,17 +70,17 @@ namespace EveryRay_Core
 
 		XMFLOAT4 clearColor = { 0, 0, 0, 1 };
 		D3D12_CLEAR_VALUE optimizedClearValue = {};
-		optimizedClearValue.Format = mIsDepthStencil ? depthstencil_tex_format : aRHIDX12->GetFormat(format);
+		optimizedClearValue.Format = mIsDepthStencil ? depthstencil_dsv_format : aRHIDX12->GetFormat(format);
 		optimizedClearValue.Color[0] = clearColor.x;
 		optimizedClearValue.Color[1] = clearColor.y;
 		optimizedClearValue.Color[2] = clearColor.z;
 		optimizedClearValue.Color[3] = clearColor.w;
 
 		D3D12_RESOURCE_DESC textureDesc = {};
-		if (depth == 0)
-			textureDesc.DepthOrArraySize = (mIsCubemap && cubemapArraySize > 0) ? 6 * cubemapArraySize : arraySize;
-		else
+		if (depth > 0)
 			textureDesc.DepthOrArraySize = depth;
+		else
+			textureDesc.DepthOrArraySize = (mIsCubemap && cubemapArraySize > 0) ? 6 * cubemapArraySize : arraySize;
 		textureDesc.MipLevels = mMipLevels;
 		textureDesc.Format = mIsDepthStencil ? depthstencil_tex_format : aRHIDX12->GetFormat(format);
 		textureDesc.Width = width;
@@ -90,7 +90,9 @@ namespace EveryRay_Core
 		textureDesc.SampleDesc.Quality = 0;
 		textureDesc.Dimension = depth > 0 ? D3D12_RESOURCE_DIMENSION_TEXTURE3D : D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 
-		if (FAILED(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE, &textureDesc, aRHIDX12->GetState(mCurrentResourceState), &optimizedClearValue, IID_PPV_ARGS(&mResource))))
+		bool isRTorDT = (bindFlags & ER_RHI_BIND_FLAG::ER_BIND_DEPTH_STENCIL || bindFlags & ER_RHI_BIND_FLAG::ER_BIND_RENDER_TARGET);
+
+		if (FAILED(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE, &textureDesc, aRHIDX12->GetState(mCurrentResourceState), isRTorDT ? &optimizedClearValue : nullptr, IID_PPV_ARGS(&mResource))))
 			throw ER_CoreException("ER_RHI_DX12: Could not create a committed resource for the GPU texture");
 
 		if (bindFlags & ER_BIND_RENDER_TARGET)
@@ -115,6 +117,7 @@ namespace EveryRay_Core
 					}
 					else {
 						rDesc.Texture2D.MipSlice = i;
+						rDesc.Texture2D.PlaneSlice = 0;
 					}
 					device->CreateRenderTargetView(mResource.Get(), &rDesc, mRTVHandles[i].GetCPUHandle());
 				}
@@ -136,6 +139,7 @@ namespace EveryRay_Core
 							rDesc.Texture2DArray.MipSlice = j;
 							rDesc.Texture2DArray.FirstArraySlice = i;
 							rDesc.Texture2DArray.ArraySize = 1;
+							rDesc.Texture2DArray.PlaneSlice = 0;
 						}
 						mRTVHandles[i * mip + j] = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 						device->CreateRenderTargetView(mResource.Get(), &rDesc, mRTVHandles[i * mip + j].GetCPUHandle());
@@ -175,6 +179,7 @@ namespace EveryRay_Core
 					dsvDesc.Texture2DArray.MipSlice = 0;
 					dsvDesc.Texture2DArray.FirstArraySlice = 0;
 					dsvDesc.Texture2DArray.ArraySize = depth;
+
 				}
 			}
 
@@ -184,6 +189,7 @@ namespace EveryRay_Core
 			dsvDesc.Flags |= D3D12_DSV_FLAG_READ_ONLY_DEPTH;
 			if (depthstencil_dsv_format == DXGI_FORMAT_D24_UNORM_S8_UINT)
 				dsvDesc.Flags |= D3D12_DSV_FLAG_READ_ONLY_STENCIL;
+			mDSVReadOnlyHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 			device->CreateDepthStencilView(mResource.Get(), &dsvDesc, mDSVReadOnlyHandle.GetCPUHandle());
 		}
 		if (bindFlags & ER_BIND_UNORDERED_ACCESS)
@@ -253,6 +259,7 @@ namespace EveryRay_Core
 					{
 						sDesc.Texture2DArray.MipLevels = mip;
 						sDesc.Texture2DArray.ArraySize = arraySize;
+						sDesc.Texture2DArray.PlaneSlice = 0;
 						sDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
 					}
 				}
@@ -266,6 +273,7 @@ namespace EveryRay_Core
 				else {
 					sDesc.Texture2D.MipLevels = mip;
 					sDesc.Texture2D.MostDetailedMip = 0;
+					sDesc.Texture2D.PlaneSlice = 0;
 					sDesc.ViewDimension = (samples > 1) ? D3D12_SRV_DIMENSION_TEXTURE2DMS : D3D12_SRV_DIMENSION_TEXTURE2D;
 				}
 			}
@@ -308,11 +316,17 @@ namespace EveryRay_Core
 			{
 				outputLog(isFullPath ? aPath.c_str() : EveryRay_Core::ER_Utility::GetFilePath(aPath).c_str());
 				LoadFallbackTexture(aRHI);
+
+				return;
 			}
 
-			int cmdIndex = aRHIDX12->GetPrepareCommandListIndex();
-			aRHIDX12->BeginGraphicsCommandList(cmdIndex);
+			// Create the GPU upload buffer and update subresources
+			const UINT64 uploadBufferSize = GetRequiredIntermediateSize(mResource.Get(), 0, 1);
+			if (FAILED(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize), D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&mResourceUpload))))
+				throw ER_CoreException("ER_RHI_DX12: Could not create a committed resource for the GPU texture resource (upload)");
+
 			{
+				int cmdIndex = aRHIDX12->GetCurrentGraphicsCommandListIndex();
 				auto commandList = aRHIDX12->GetGraphicsCommandList(cmdIndex);
 				UpdateSubresources(commandList, mResource.Get(), mResourceUpload.Get(), 0, 0, static_cast<UINT>(subresources.size()), subresources.data());
 
@@ -321,8 +335,6 @@ namespace EveryRay_Core
 
 				mCurrentResourceState = ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 			}
-			aRHIDX12->EndGraphicsCommandList(cmdIndex);
-			aRHIDX12->ExecuteCommandLists(cmdIndex);
 
 			mSRVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 			D3D12_RESOURCE_DESC desc = mResource->GetDesc();
@@ -365,15 +377,15 @@ namespace EveryRay_Core
 				outputLog(isFullPath ? aPath.c_str() : EveryRay_Core::ER_Utility::GetFilePath(aPath).c_str());
 				LoadFallbackTexture(aRHI);
 
+				return;
 			}
 			// Create the GPU upload buffer and update subresources
 			const UINT64 uploadBufferSize = GetRequiredIntermediateSize(mResource.Get(), 0, 1);
 			if (FAILED(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize), D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&mResourceUpload))))
 				throw ER_CoreException("ER_RHI_DX12: Could not create a committed resource for the GPU texture resource (upload)");
 
-			int cmdIndex = aRHIDX12->GetPrepareCommandListIndex();
-			aRHIDX12->BeginGraphicsCommandList(cmdIndex);
 			{
+				int cmdIndex = aRHIDX12->GetCurrentGraphicsCommandListIndex();
 				auto commandList = aRHIDX12->GetGraphicsCommandList(cmdIndex);
 				UpdateSubresources(commandList, mResource.Get(), mResourceUpload.Get(), 0, 0, 1, &subresource);
 
@@ -382,8 +394,6 @@ namespace EveryRay_Core
 
 				mCurrentResourceState = ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 			}
-			aRHIDX12->EndGraphicsCommandList(cmdIndex);
-			aRHIDX12->ExecuteCommandLists(cmdIndex);
 
 			mSRVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 			D3D12_RESOURCE_DESC desc = mResource->GetDesc();
@@ -414,9 +424,8 @@ namespace EveryRay_Core
 		if (FAILED(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize), D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&mResourceUpload))))
 			throw ER_CoreException("ER_RHI_DX12: Could not create a committed resource for the GPU texture resource (upload)");
 
-		int cmdIndex = aRHIDX12->GetPrepareCommandListIndex();
-		aRHIDX12->BeginGraphicsCommandList(cmdIndex);
 		{
+			int cmdIndex = aRHIDX12->GetCurrentGraphicsCommandListIndex();
 			auto commandList = aRHIDX12->GetGraphicsCommandList(cmdIndex);
 			UpdateSubresources(commandList, mResource.Get(), mResourceUpload.Get(), 0, 0, 1, &subresource);
 
@@ -425,8 +434,6 @@ namespace EveryRay_Core
 
 			mCurrentResourceState = ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 		}
-		aRHIDX12->EndGraphicsCommandList(cmdIndex);
-		aRHIDX12->ExecuteCommandLists(cmdIndex);
 
 		mSRVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 		D3D12_RESOURCE_DESC desc = mResource->GetDesc();
