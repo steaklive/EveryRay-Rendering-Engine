@@ -83,7 +83,8 @@ namespace EveryRay_Core
 		~ER_Foliage();
 
 		void Initialize();
-		void Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass, const std::vector<ER_RHI_GPUTexture*>& aGbufferTextures);
+		void Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass, 
+			const std::vector<ER_RHI_GPUTexture*>& aGbufferTextures, ER_RHI_GPURootSignature* rs);
 		void DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget);
 		void Update(const ER_CoreTime& gameTime);
 
@@ -129,6 +130,7 @@ namespace EveryRay_Core
 
 		bool IsSelectedInEditor() { return mIsSelectedInEditor; }
 	private:
+		void PrepareRendering(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, ER_RHI_GPURootSignature* rs);
 		void InitializeBuffersGPU(int count);
 		void InitializeBuffersCPU();
 		void LoadBillboardModel(FoliageBillboardType bType);
@@ -237,6 +239,9 @@ namespace EveryRay_Core
 		void UpdateImGui();
 		std::vector<ER_Foliage*> mFoliageCollection;
 		ER_Scene* mScene;
+
+		ER_RHI_GPURootSignature* mGBufferPassRS = nullptr;
+		ER_RHI_GPURootSignature* mVoxelizationPassRS = nullptr;
 
 		const char* mFoliageZonesNamesUI[MAX_FOLIAGE_ZONES];
 

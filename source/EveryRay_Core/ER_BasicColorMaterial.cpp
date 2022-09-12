@@ -33,7 +33,7 @@ namespace EveryRay_Core
 		ER_Material::~ER_Material();
 	}
 
-	void ER_BasicColorMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex)
+	void ER_BasicColorMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, ER_RHI_GPURootSignature* rs)
 	{
 		auto rhi = ER_Material::GetCore()->GetRHI();
 		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->GetServices().FindService(ER_Camera::TypeIdClass()));
@@ -46,12 +46,12 @@ namespace EveryRay_Core
 		mConstantBuffer.Data.Color = XMFLOAT4{0.0, 1.0, 0.0, 0.0};
 		mConstantBuffer.ApplyChanges(rhi);
 
-		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() });
-		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() });
+		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() }, 0, rs, BASICCOLOR_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() }, 0, rs, BASICCOLOR_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 	}
 
 	// non-callback method for non-"RenderingObject" draws
-	void ER_BasicColorMaterial::PrepareForRendering(const XMMATRIX& worldTransform, const XMFLOAT4& color)
+	void ER_BasicColorMaterial::PrepareForRendering(const XMMATRIX& worldTransform, const XMFLOAT4& color, ER_RHI_GPURootSignature* rs)
 	{
 		auto rhi = ER_Material::GetCore()->GetRHI();
 		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->GetServices().FindService(ER_Camera::TypeIdClass()));
@@ -63,8 +63,8 @@ namespace EveryRay_Core
 		mConstantBuffer.Data.Color = color;
 		mConstantBuffer.ApplyChanges(rhi);
 
-		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() });
-		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() });
+		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() }, 0, rs, BASICCOLOR_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() }, 0, rs, BASICCOLOR_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 	}
 
 	void ER_BasicColorMaterial::CreateVertexBuffer(const ER_Mesh& mesh, ER_RHI_GPUBuffer* vertexBuffer)

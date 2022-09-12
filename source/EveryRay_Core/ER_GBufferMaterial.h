@@ -1,6 +1,9 @@
 #pragma once
 #include "ER_Material.h"
 
+#define GBUFFER_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
+#define GBUFFER_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 1
+
 namespace EveryRay_Core
 {
 	class ER_Mesh;

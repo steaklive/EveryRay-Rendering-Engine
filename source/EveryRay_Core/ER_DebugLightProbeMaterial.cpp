@@ -57,7 +57,7 @@ namespace EveryRay_Core
 		ER_Material::~ER_Material();
 	}
 
-	void ER_DebugLightProbeMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, int aProbeType)
+	void ER_DebugLightProbeMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, int aProbeType, ER_RHI_GPURootSignature* rs)
 	{
 		auto rhi = ER_Material::GetCore()->GetRHI();
 		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->GetServices().FindService(ER_Camera::TypeIdClass()));
@@ -74,14 +74,19 @@ namespace EveryRay_Core
 			static_cast<ER_ProbeType>(aProbeType) == DIFFUSE_PROBE ? 1.0f : -1.0f
 		);
 		mConstantBuffer.ApplyChanges(rhi);
-		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() });
-		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() });
+		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() }, 0, rs, DEBUGLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() }, 0, rs, DEBUGLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 		
 		if (static_cast<ER_ProbeType>(aProbeType) == DIFFUSE_PROBE)
-			rhi->SetShaderResources(ER_PIXEL, { neededSystems.mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer() });
+		{
+			rhi->SetShaderResources(ER_PIXEL, { neededSystems.mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer() }, 0,
+				rs, DEBUGLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
+		}
 		else
-			rhi->SetShaderResources(ER_PIXEL, { neededSystems.mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer(),
-												neededSystems.mProbesManager->GetCulledSpecularProbesTextureArray() });
+		{
+			rhi->SetShaderResources(ER_PIXEL, { neededSystems.mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer(), neededSystems.mProbesManager->GetCulledSpecularProbesTextureArray() }, 0,
+				rs, DEBUGLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
+		}
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 	}
 

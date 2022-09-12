@@ -62,7 +62,8 @@ namespace EveryRay_Core
 		ER_Material::~ER_Material();
 	}
 
-	void ER_VoxelizationMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, float voxelScale, float voxelTexSize, const XMFLOAT4& voxelCameraPos)
+	void ER_VoxelizationMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, 
+		float voxelScale, float voxelTexSize, const XMFLOAT4& voxelCameraPos, ER_RHI_GPURootSignature* rs)
 	{
 		auto rhi = ER_Material::GetCore()->GetRHI();
 		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->GetServices().FindService(ER_Camera::TypeIdClass()));
@@ -82,11 +83,11 @@ namespace EveryRay_Core
 		mConstantBuffer.Data.VoxelTextureDimension = voxelTexSize;
 		mConstantBuffer.Data.WorldVoxelScale = voxelScale;
 		mConstantBuffer.ApplyChanges(rhi);
-		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() });
-		rhi->SetConstantBuffers(ER_GEOMETRY, { mConstantBuffer.Buffer() });
-		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() });
+		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() }, 0, rs, VOXELIZATION_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+		rhi->SetConstantBuffers(ER_GEOMETRY, { mConstantBuffer.Buffer() }, 0, rs, VOXELIZATION_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() }, 0, rs, VOXELIZATION_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 
-		rhi->SetShaderResources(ER_PIXEL, { aObj->GetTextureData(meshIndex).AlbedoMap, neededSystems.mShadowMapper->GetShadowTexture(1) });
+		rhi->SetShaderResources(ER_PIXEL, { aObj->GetTextureData(meshIndex).AlbedoMap, neededSystems.mShadowMapper->GetShadowTexture(1) }, 0, rs, VOXELIZATION_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
 	}
 

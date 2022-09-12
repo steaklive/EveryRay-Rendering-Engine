@@ -43,6 +43,8 @@ namespace EveryRay_Runtime
 		mMainViewport.Height = static_cast<float>(height);
 		mMainViewport.MinDepth = 0.0f;
 		mMainViewport.MaxDepth = 1.0f;
+
+		mMainRect = {  0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
 	}
 
 	ER_RuntimeCore::~ER_RuntimeCore()
@@ -303,6 +305,7 @@ namespace EveryRay_Runtime
 		mRHI->ClearMainDepthStencilTarget(1.0f, 0);
 
 		mRHI->SetViewport(mMainViewport);
+		mRHI->SetRect(mMainRect);
 
 		mRHI->SetDepthStencilState(ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
 		mRHI->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING);

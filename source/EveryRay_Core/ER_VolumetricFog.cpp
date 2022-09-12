@@ -11,6 +11,13 @@
 #define VOXEL_SIZE_Y 90
 #define VOXEL_SIZE_Z 128
 
+#define INJECTION_ACCUMULATION_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
+#define INJECTION_ACCUMULATION_ROOT_DESCRIPTOR_TABLE_UAV_INDEX 1
+#define INJECTION_ACCUMULATION_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 2
+
+#define COMPOSITE_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
+#define COMPOSITE_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 1
+
 static float clearColorBlack[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 namespace EveryRay_Core {
@@ -66,9 +73,9 @@ namespace EveryRay_Core {
 		{
 			mInjectionAccumulationPassesRootSignature->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP);
 			mInjectionAccumulationPassesRootSignature->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS);
-			mInjectionAccumulationPassesRootSignature->InitDescriptorTable(rhi, 0, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 3 });
-			mInjectionAccumulationPassesRootSignature->InitDescriptorTable(rhi, 1, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 });
-			mInjectionAccumulationPassesRootSignature->InitDescriptorTable(rhi, 2, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 });
+			mInjectionAccumulationPassesRootSignature->InitDescriptorTable(rhi, INJECTION_ACCUMULATION_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 3 });
+			mInjectionAccumulationPassesRootSignature->InitDescriptorTable(rhi, INJECTION_ACCUMULATION_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 });
+			mInjectionAccumulationPassesRootSignature->InitDescriptorTable(rhi, INJECTION_ACCUMULATION_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 });
 			mInjectionAccumulationPassesRootSignature->Finalize(rhi, "Volumetric Fog: Injection + Accumulation Passes Root Signature");
 		}
 		
@@ -79,8 +86,8 @@ namespace EveryRay_Core {
 		if (mCompositePassRootSignature)
 		{
 			mCompositePassRootSignature->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
-			mCompositePassRootSignature->InitDescriptorTable(rhi, 0, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 3 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
-			mCompositePassRootSignature->InitDescriptorTable(rhi, 1, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+			mCompositePassRootSignature->InitDescriptorTable(rhi, COMPOSITE_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 3 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+			mCompositePassRootSignature->InitDescriptorTable(rhi, COMPOSITE_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
 			mCompositePassRootSignature->Finalize(rhi, "Volumetric Fog: Composite Pass Root Signature", true);
 		}
 
@@ -167,9 +174,12 @@ namespace EveryRay_Core {
 		}
 		rhi->SetPSO(mInjectionPassPSOName, true);
 		// we set common injection/accumulation root signature in ER_VolumetricFog::Draw()
-		rhi->SetShaderResources(ER_COMPUTE, { mShadowMapper.GetShadowTexture(0), mBlueNoiseTexture, mTempVoxelInjectionTexture3D[readIndex] }, 0, mInjectionAccumulationPassesRootSignature, 0, true);
-		rhi->SetUnorderedAccessResources(ER_COMPUTE, { mTempVoxelInjectionTexture3D[writeIndex] }, 0, mInjectionAccumulationPassesRootSignature, 1, true);
-		rhi->SetConstantBuffers(ER_COMPUTE, { mMainConstantBuffer.Buffer() }, 0, mInjectionAccumulationPassesRootSignature, 2, true);
+		rhi->SetShaderResources(ER_COMPUTE, { mShadowMapper.GetShadowTexture(0), mBlueNoiseTexture, mTempVoxelInjectionTexture3D[readIndex] }, 0, 
+			mInjectionAccumulationPassesRootSignature, INJECTION_ACCUMULATION_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
+		rhi->SetUnorderedAccessResources(ER_COMPUTE, { mTempVoxelInjectionTexture3D[writeIndex] }, 0, 
+			mInjectionAccumulationPassesRootSignature, INJECTION_ACCUMULATION_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
+		rhi->SetConstantBuffers(ER_COMPUTE, { mMainConstantBuffer.Buffer() }, 0, 
+			mInjectionAccumulationPassesRootSignature, INJECTION_ACCUMULATION_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
 		rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
 		rhi->Dispatch(ER_CEIL(VOXEL_SIZE_X, 8), ER_CEIL(VOXEL_SIZE_Y, 8), ER_CEIL(VOXEL_SIZE_Z, 1));
 		rhi->UnsetPSO();
@@ -194,9 +204,12 @@ namespace EveryRay_Core {
 		}
 		rhi->SetPSO(mAccumulationPassPSOName, true);
 		// we set common injection/accumulation root signature in ER_VolumetricFog::Draw()
-		rhi->SetShaderResources(ER_COMPUTE, { mShadowMapper.GetShadowTexture(0), mBlueNoiseTexture, mTempVoxelInjectionTexture3D[readIndex] }, 0, mInjectionAccumulationPassesRootSignature, 0, true);
-		rhi->SetUnorderedAccessResources(ER_COMPUTE, { mFinalVoxelAccumulationTexture3D }, 0, mInjectionAccumulationPassesRootSignature, 1, true);
-		rhi->SetConstantBuffers(ER_COMPUTE, { mMainConstantBuffer.Buffer() }, 0, mInjectionAccumulationPassesRootSignature, 2, true);
+		rhi->SetShaderResources(ER_COMPUTE, { mShadowMapper.GetShadowTexture(0), mBlueNoiseTexture, mTempVoxelInjectionTexture3D[readIndex] }, 0, 
+			mInjectionAccumulationPassesRootSignature, INJECTION_ACCUMULATION_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
+		rhi->SetUnorderedAccessResources(ER_COMPUTE, { mFinalVoxelAccumulationTexture3D }, 0, 
+			mInjectionAccumulationPassesRootSignature, INJECTION_ACCUMULATION_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
+		rhi->SetConstantBuffers(ER_COMPUTE, { mMainConstantBuffer.Buffer() }, 0,
+			mInjectionAccumulationPassesRootSignature, INJECTION_ACCUMULATION_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
 		rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
 		rhi->Dispatch(ER_CEIL(VOXEL_SIZE_X, 8), ER_CEIL(VOXEL_SIZE_Y, 8), 1);
 		rhi->UnsetPSO();
@@ -224,8 +237,10 @@ namespace EveryRay_Core {
 		}
 		rhi->SetPSO(mCompositePassPSOName);
 		rhi->SetRootSignature(mCompositePassRootSignature);
-		rhi->SetShaderResources(ER_PIXEL, { aInputColorTexture, aGbufferWorldPos, mFinalVoxelAccumulationTexture3D }, 0, mCompositePassRootSignature, 0);
-		rhi->SetConstantBuffers(ER_PIXEL, { mCompositeConstantBuffer.Buffer() }, 0, mCompositePassRootSignature, 1);
+		rhi->SetShaderResources(ER_PIXEL, { aInputColorTexture, aGbufferWorldPos, mFinalVoxelAccumulationTexture3D }, 0, 
+			mCompositePassRootSignature, COMPOSITE_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
+		rhi->SetConstantBuffers(ER_PIXEL, { mCompositeConstantBuffer.Buffer() }, 0,
+			mCompositePassRootSignature, COMPOSITE_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 		quadRenderer->Draw(rhi);
 		rhi->UnsetPSO();

@@ -141,6 +141,7 @@ namespace EveryRay_Core
 		virtual bool IsPSOReady(const std::string& aName, bool isCompute = false) override;
 		virtual void InitializePSO(const std::string& aName, bool isCompute = false) override;
 		virtual void SetRootSignatureToPSO(const std::string& aName, ER_RHI_GPURootSignature* rs, bool isCompute = false) override;
+		virtual void SetTopologyTypeToPSO(ER_RHI_PRIMITIVE_TYPE aType) override;
 		virtual void FinalizePSO(const std::string& aName, bool isCompute = false) override;
 		virtual void SetPSO(const std::string& aName, bool isCompute = false) override;
 		virtual void UnsetPSO() override;
@@ -174,6 +175,7 @@ namespace EveryRay_Core
 	private:
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE GetTopologyType(ER_RHI_PRIMITIVE_TYPE aType);
 		ER_RHI_PRIMITIVE_TYPE GetTopologyType(D3D12_PRIMITIVE_TOPOLOGY aType);
+		D3D12_PRIMITIVE_TOPOLOGY GetTopology(ER_RHI_PRIMITIVE_TYPE aType);
 
 		D3D12_DESCRIPTOR_HEAP_TYPE GetHeapType(ER_RHI_DESCRIPTOR_HEAP_TYPE aType);
 

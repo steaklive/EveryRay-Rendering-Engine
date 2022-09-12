@@ -58,7 +58,7 @@ namespace EveryRay_Core
 		ER_Material::~ER_Material();
 	}
 
-	void ER_RenderToLightProbeMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, ER_Camera* cubemapCamera)
+	void ER_RenderToLightProbeMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, ER_Camera* cubemapCamera, ER_RHI_GPURootSignature* rs)
 	{
 		auto rhi = ER_Material::GetCore()->GetRHI();
 
@@ -78,8 +78,8 @@ namespace EveryRay_Core
 		mConstantBuffer.Data.CameraPosition = XMFLOAT4{ cubemapCamera->Position().x, cubemapCamera->Position().y, cubemapCamera->Position().z, 1.0f };
 		mConstantBuffer.Data.UseGlobalDiffuseProbe = false;
 		mConstantBuffer.ApplyChanges(rhi);
-		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() });
-		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() });
+		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() }, 0, rs, RENDERTOLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() }, 0, rs, RENDERTOLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 
 		std::vector<ER_RHI_GPUResource*> resources;
 		resources.push_back(aObj->GetTextureData(meshIndex).AlbedoMap);
@@ -87,12 +87,9 @@ namespace EveryRay_Core
 		resources.push_back(aObj->GetTextureData(meshIndex).MetallicMap);
 		resources.push_back(aObj->GetTextureData(meshIndex).RoughnessMap);
 		resources.push_back(aObj->GetTextureData(meshIndex).HeightMap);
-		rhi->SetShaderResources(ER_PIXEL, resources);
-
-		std::vector<ER_RHI_GPUResource*> shadowResources;
 		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
-			shadowResources.push_back(neededSystems.mShadowMapper->GetShadowTexture(i));
-		rhi->SetShaderResources(ER_PIXEL, shadowResources, 5);
+			resources.push_back(neededSystems.mShadowMapper->GetShadowTexture(i));
+		rhi->SetShaderResources(ER_PIXEL, resources, 0, rs, RENDERTOLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
 	}

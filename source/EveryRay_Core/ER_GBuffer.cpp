@@ -55,8 +55,8 @@ namespace EveryRay_Core {
 		if (mRootSignature)
 		{
 			mRootSignature->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
-			mRootSignature->InitDescriptorTable(rhi, 0, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 6 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
-			mRootSignature->InitDescriptorTable(rhi, 1, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+			mRootSignature->InitDescriptorTable(rhi, GBUFFER_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 6 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+			mRootSignature->InitDescriptorTable(rhi, GBUFFER_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
 			mRootSignature->Finalize(rhi, "GBuffer Material Pass Root Signature", true);
 		}
 	}
@@ -94,6 +94,7 @@ namespace EveryRay_Core {
 		auto rhi = GetCore()->GetRHI();
 
 		rhi->SetRootSignature(mRootSignature);
+		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		ER_MaterialSystems materialSystems;
 		for (auto renderingObjectInfo = scene->objects.begin(); renderingObjectInfo != scene->objects.end(); renderingObjectInfo++)
@@ -113,7 +114,7 @@ namespace EveryRay_Core {
 						rhi->SetRasterizerState(ER_NO_CULLING);
 						rhi->SetRenderTargetFormats({ mAlbedoBuffer, mNormalBuffer, mPositionsBuffer, mExtraBuffer, mExtra2Buffer }, mDepthBuffer);
 						rhi->SetRootSignatureToPSO(psoName, mRootSignature);
-						rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+						rhi->SetTopologyTypeToPSO(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 						rhi->FinalizePSO(psoName);
 					}
 					rhi->SetPSO(psoName);

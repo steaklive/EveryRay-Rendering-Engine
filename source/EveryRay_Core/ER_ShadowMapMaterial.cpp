@@ -53,7 +53,7 @@ namespace EveryRay_Core
 		ER_Material::~ER_Material();
 	}
 
-	void ER_ShadowMapMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, int cascadeIndex)
+	void ER_ShadowMapMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, int cascadeIndex, ER_RHI_GPURootSignature* rs)
 	{
 		auto rhi = ER_Material::GetCore()->GetRHI();
 		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->GetServices().FindService(ER_Camera::TypeIdClass()));
@@ -67,11 +67,11 @@ namespace EveryRay_Core
 		mConstantBuffer.Data.WorldLightViewProjection = XMMatrixTranspose(aObj->GetTransformationMatrix() * lvp);
 		mConstantBuffer.Data.LightViewProjection = XMMatrixTranspose(lvp);
 		mConstantBuffer.ApplyChanges(rhi);
-		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() });
-		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() });
+		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() }, 0, rs, SHADOWMAP_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() }, 0, rs, SHADOWMAP_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 
 		if (aObj->GetTextureData(meshIndex).AlbedoMap)
-			rhi->SetShaderResources(ER_PIXEL, { aObj->GetTextureData(meshIndex).AlbedoMap });
+			rhi->SetShaderResources(ER_PIXEL, { aObj->GetTextureData(meshIndex).AlbedoMap }, 0, rs, SHADOWMAP_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 	}
 

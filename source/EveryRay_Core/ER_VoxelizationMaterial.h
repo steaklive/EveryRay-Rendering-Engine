@@ -1,6 +1,9 @@
 #pragma once
 #include "ER_Material.h"
 
+#define VOXELIZATION_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
+#define VOXELIZATION_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 1
+
 namespace EveryRay_Core
 {
 	class ER_RenderingObject;
@@ -26,7 +29,8 @@ namespace EveryRay_Core
 		ER_VoxelizationMaterial(ER_Core& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced = false);
 		~ER_VoxelizationMaterial();
 
-		void PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, float voxelScale, float voxelTexSize, const XMFLOAT4& voxelCameraPos);
+		void PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, 
+			float voxelScale, float voxelTexSize, const XMFLOAT4& voxelCameraPos, ER_RHI_GPURootSignature* rs);
 		virtual void CreateVertexBuffer(const ER_Mesh& mesh, ER_RHI_GPUBuffer* vertexBuffer) override;
 		virtual int VertexSize() override;
 

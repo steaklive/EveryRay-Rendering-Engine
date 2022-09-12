@@ -35,7 +35,7 @@ namespace EveryRay_Core
 			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(debugController.GetAddressOf()))))
 				debugController->EnableDebugLayer();
 			else
-				ER_OUTPUT_LOG(L"ER_RHI_DX12: Direct3D Debug Device is not available\n");
+				ER_OUTPUT_LOG(L"[ER Logger] ER_RHI_DX12: Direct3D Debug Device is not available\n");
 
 			ComPtr<IDXGIInfoQueue> dxgiInfoQueue;
 			if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(dxgiInfoQueue.GetAddressOf()))))
@@ -872,6 +872,11 @@ namespace EveryRay_Core
 		}
 	}
 
+	void ER_RHI_DX12::SetTopologyType(ER_RHI_PRIMITIVE_TYPE aType)
+	{
+		mCommandListGraphics[0]->IASetPrimitiveTopology(GetTopology(aType));
+	}
+
 	void ER_RHI_DX12::SetRootSignature(ER_RHI_GPURootSignature* rs, bool isCompute)
 	{
 		assert(rs);
@@ -883,7 +888,7 @@ namespace EveryRay_Core
 		//TODO compute queue
 	}
 
-	void ER_RHI_DX12::SetTopologyType(ER_RHI_PRIMITIVE_TYPE aType)
+	void ER_RHI_DX12::SetTopologyTypeToPSO(ER_RHI_PRIMITIVE_TYPE aType)
 	{
 		if (mCurrentPSOState == ER_RHI_DX12_PSO_STATE::UNSET)
 			return;
@@ -989,7 +994,7 @@ namespace EveryRay_Core
 	{
 		auto resetPSO = [&](const std::string& name, bool comp)
 		{
-			std::wstring msg = L"ER_RHI_DX12: Could not find PSO to set, adding it now and trying to reset: " + ER_Utility::ToWideString(aName) + L'\n';
+			std::wstring msg = L"[ER Logger] ER_RHI_DX12: Could not find PSO to set, adding it now and trying to reset: " + ER_Utility::ToWideString(aName) + L'\n';
 			ER_OUTPUT_LOG(msg.c_str());
 			InitializePSO(name, comp);
 			SetPSO(name, comp);
@@ -1031,27 +1036,31 @@ namespace EveryRay_Core
 	{
 		int size = static_cast<int>(aResources.size());
 		assert(size > 0 && size == aStates.size());
-
 		std::vector<CD3DX12_RESOURCE_BARRIER> barriers;
-		barriers.resize(size);
 
 		for (int i = 0; i < size; i++)
-			barriers[i] = CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aStates[i]));
-		
-		mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
+		{
+			if (aResources[i] && aResources[i]->GetCurrentState() != aStates[i])
+				barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aStates[i])));
+		}
+
+		if (barriers.size() > 0)
+			mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
 	}
 
 	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex /*= 0*/)
 	{
 		int size = static_cast<int>(aResources.size());
-
 		std::vector<CD3DX12_RESOURCE_BARRIER> barriers;
-		barriers.resize(size);
 
 		for (int i = 0; i < size; i++)
-			barriers[i] = CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aState));
+		{
+			if (aResources[i] && aResources[i]->GetCurrentState() != aState)
+				barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aState)));
+		}
 
-		mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
+		if (barriers.size() > 0)
+			mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
 	}
 
 	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUTexture*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex /*= 0*/)
@@ -1060,25 +1069,28 @@ namespace EveryRay_Core
 		assert(size > 0 && size == aStates.size());
 
 		std::vector<CD3DX12_RESOURCE_BARRIER> barriers;
-		barriers.resize(size);
 
 		for (int i = 0; i < size; i++)
-			barriers[i] = CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aStates[i]));
-
-		mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
+		{
+			if (aResources[i] && aResources[i]->GetCurrentState() != aStates[i])
+				barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aStates[i])));
+		}
+		if (barriers.size() > 0)
+			mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
 	}
 
 	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUTexture*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex /*= 0*/)
 	{
 		int size = static_cast<int>(aResources.size());
-
 		std::vector<CD3DX12_RESOURCE_BARRIER> barriers;
-		barriers.resize(size);
 
 		for (int i = 0; i < size; i++)
-			barriers[i] = CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aState));
-
-		mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
+		{
+			if (aResources[i] && aResources[i]->GetCurrentState() != aState)
+				barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aState)));
+		}
+		if (barriers.size() > 0)
+			mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
 	}
 
 	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex /*= 0*/)
@@ -1087,25 +1099,28 @@ namespace EveryRay_Core
 		assert(size > 0 && size == aStates.size());
 
 		std::vector<CD3DX12_RESOURCE_BARRIER> barriers;
-		barriers.resize(size);
 
 		for (int i = 0; i < size; i++)
-			barriers[i] = CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aStates[i]));
-
-		mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
+		{
+			if (aResources[i] && aResources[i]->GetCurrentState() != aStates[i])
+				barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aStates[i])));
+		}
+		if (barriers.size() > 0)
+			mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
 	}
 
 	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex /*= 0*/)
 	{
 		int size = static_cast<int>(aResources.size());
-
 		std::vector<CD3DX12_RESOURCE_BARRIER> barriers;
-		barriers.resize(size);
-
+	
 		for (int i = 0; i < size; i++)
-			barriers[i] = CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aState));
-
-		mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
+		{
+			if (aResources[i] && aResources[i]->GetCurrentState() != aState)
+				barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aState)));
+		}
+		if (barriers.size() > 0)
+			mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
 	}
 
 	void ER_RHI_DX12::UnbindRenderTargets()
@@ -1413,6 +1428,28 @@ namespace EveryRay_Core
 		{
 			assert(0);
 			return ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		}
+		}
+	}
+
+	D3D12_PRIMITIVE_TOPOLOGY ER_RHI_DX12::GetTopology(ER_RHI_PRIMITIVE_TYPE aType)
+	{
+		switch (aType)
+		{
+		case ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_POINTLIST:
+			return D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
+		case ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST:
+			return D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+		case ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST:
+			return D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		case ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP:
+			return D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+		case ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_CONTROL_POINT_PATCHLIST:
+			return D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST;
+		default:
+		{
+			assert(0);
+			return D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
 		}
 		}
 	}

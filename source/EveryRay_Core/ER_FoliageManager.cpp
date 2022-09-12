@@ -15,9 +15,13 @@
 #include "ER_RenderableAABB.h"
 #include "ER_Terrain.h"
 
+#define FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
+#define FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 1
+
 namespace EveryRay_Core
 {
 	static int currentSplatChannnel = (int)TerrainSplatChannels::NONE;
+	static const float blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 	ER_FoliageManager::ER_FoliageManager(ER_Core& pCore, ER_Scene* aScene, ER_DirectionalLight& light) 
 		: ER_CoreComponent(pCore), mScene(aScene)
@@ -25,12 +29,36 @@ namespace EveryRay_Core
 		assert(aScene);
 		if (aScene->HasFoliage())
 			aScene->LoadFoliageZones(mFoliageCollection, light);
+
+		ER_RHI* rhi = pCore.GetRHI();
+		mGBufferPassRS = rhi->CreateRootSignature(2, 2);
+		if (mGBufferPassRS)
+		{
+			mGBufferPassRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP);
+			mGBufferPassRS->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS);
+			mGBufferPassRS->InitDescriptorTable(rhi, FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 4 }, ER_RHI_SHADER_VISIBILITY_ALL);
+			mGBufferPassRS->InitDescriptorTable(rhi, FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+			mGBufferPassRS->Finalize(rhi, "Foliage Gbuffer Pass Root Signature", true);
+		}
+
+		mVoxelizationPassRS = pCore.GetRHI()->CreateRootSignature(2, 2);
+		if (mGBufferPassRS)
+		{
+			mVoxelizationPassRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP);
+			mVoxelizationPassRS->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS);
+			mVoxelizationPassRS->InitDescriptorTable(rhi, FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 4 }, ER_RHI_SHADER_VISIBILITY_ALL);
+			mVoxelizationPassRS->InitDescriptorTable(rhi, FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+			mVoxelizationPassRS->Finalize(rhi, "Foliage Voxelization Pass Root Signature", true);
+		}
 	}
 
 	ER_FoliageManager::~ER_FoliageManager()
 	{
 		DeletePointerCollection(mFoliageCollection);
 		DeleteObject(FoliageSystemInitializedEvent);
+
+		DeleteObject(mVoxelizationPassRS);
+		DeleteObject(mGBufferPassRS);
 	}
 
 	void ER_FoliageManager::Initialize()
@@ -71,8 +99,20 @@ namespace EveryRay_Core
 		if (!mEnabled)
 			return;
 
-		for (auto& object : mFoliageCollection)
-			object->Draw(gameTime, worldShadowMapper, renderPass, aGbufferTextures);
+		ER_RHI* rhi = GetCore()->GetRHI();
+		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		if (renderPass == FoliageRenderingPass::TO_GBUFFER)
+		{
+			rhi->SetRootSignature(mGBufferPassRS);
+			for (auto& object : mFoliageCollection)
+				object->Draw(gameTime, worldShadowMapper, renderPass, aGbufferTextures, mGBufferPassRS);
+		}
+		else if (renderPass == FoliageRenderingPass::TO_VOXELIZATION)
+		{
+			rhi->SetRootSignature(mVoxelizationPassRS);
+			for (auto& object : mFoliageCollection)
+				object->Draw(gameTime, worldShadowMapper, renderPass, aGbufferTextures, mVoxelizationPassRS);
+		}
 	}
 
 	void ER_FoliageManager::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget)
@@ -318,18 +358,10 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_Foliage::Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass, const std::vector<ER_RHI_GPUTexture*>& aGbufferTextures)
+	void ER_Foliage::PrepareRendering(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, ER_RHI_GPURootSignature* rs)
 	{
-		if(renderPass == TO_VOXELIZATION)
-			assert(worldShadowMapper);
-
 		auto rhi = mCore.GetRHI();
 
-		if (mPatchesCountToRender == 0 || mIsCulled)
-			return;
-
-		rhi->SetVertexBuffers({mVertexBuffer, mInstanceBuffer});
-		rhi->SetIndexBuffer(mIndexBuffer);
 		if (worldShadowMapper)
 		{
 			for (int cascade = 0; cascade < NUM_SHADOW_CASCADES; cascade++)
@@ -337,7 +369,7 @@ namespace EveryRay_Core
 			mFoliageConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / worldShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
 			mFoliageConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ mCamera.GetCameraFarShadowCascadeDistance(0), mCamera.GetCameraFarShadowCascadeDistance(1), mCamera.GetCameraFarShadowCascadeDistance(2), 1.0f };
 		}
-		
+
 		mFoliageConstantBuffer.Data.World = XMMatrixIdentity();
 		mFoliageConstantBuffer.Data.View = XMMatrixTranspose(mCamera.ViewMatrix());
 		mFoliageConstantBuffer.Data.Projection = XMMatrixTranspose(mCamera.ProjectionMatrix());
@@ -356,21 +388,34 @@ namespace EveryRay_Core
 		mFoliageConstantBuffer.Data.WorldVoxelScale = *mWorldVoxelScale;
 		mFoliageConstantBuffer.Data.VoxelTextureDimension = *mVoxelTextureDimension;
 		mFoliageConstantBuffer.ApplyChanges(rhi);
-		rhi->SetConstantBuffers(ER_VERTEX, { mFoliageConstantBuffer.Buffer() });
-		rhi->SetConstantBuffers(ER_GEOMETRY, { mFoliageConstantBuffer.Buffer() });
-		rhi->SetConstantBuffers(ER_PIXEL, { mFoliageConstantBuffer.Buffer() });
+		rhi->SetConstantBuffers(ER_VERTEX, { mFoliageConstantBuffer.Buffer() }, 0, rs, FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+		rhi->SetConstantBuffers(ER_GEOMETRY, { mFoliageConstantBuffer.Buffer() }, 0, rs, FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+		rhi->SetConstantBuffers(ER_PIXEL, { mFoliageConstantBuffer.Buffer() }, 0, rs, FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
-		
+
 		std::vector<ER_RHI_GPUResource*> resources(1 + NUM_SHADOW_CASCADES);
 		resources[0] = mAlbedoTexture;
 		if (worldShadowMapper)
 		{
 			for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 				resources[1 + i] = worldShadowMapper->GetShadowTexture(i);
-			rhi->SetShaderResources(ER_PIXEL, resources);
 		}
-		else
-			rhi->SetShaderResources(ER_PIXEL, { mAlbedoTexture });
+		rhi->SetShaderResources(ER_PIXEL, resources, 0, rs, FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
+	}
+
+	void ER_Foliage::Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass, 
+		const std::vector<ER_RHI_GPUTexture*>& aGbufferTextures, ER_RHI_GPURootSignature* rs)
+	{
+		if(renderPass == TO_VOXELIZATION)
+			assert(worldShadowMapper);
+
+		auto rhi = mCore.GetRHI();
+
+		if (mPatchesCountToRender == 0 || mIsCulled)
+			return;
+
+		rhi->SetVertexBuffers({mVertexBuffer, mInstanceBuffer});
+		rhi->SetIndexBuffer(mIndexBuffer);
 
 		bool isVoxelizationRenderPass = renderPass == TO_VOXELIZATION;
 		std::string& psoName = isVoxelizationRenderPass ? mFoliageVoxelizationPassPSOName : mFoliageGBufferPassPSOName;
@@ -378,10 +423,9 @@ namespace EveryRay_Core
 		if (!rhi->IsPSOReady(psoName))
 		{
 			rhi->InitializePSO(psoName);
-			
-			float blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 			rhi->SetBlendState(ER_ALPHA_TO_COVERAGE, blendFactor, 0xffffffff);
-			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			rhi->SetTopologyTypeToPSO(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			rhi->SetRootSignatureToPSO(psoName, rs);
 			rhi->SetInputLayout(mInputLayout);
 			rhi->SetShader(mVS);
 			if (isVoxelizationRenderPass)
@@ -398,6 +442,7 @@ namespace EveryRay_Core
 			rhi->FinalizePSO(psoName);
 		}
 		rhi->SetPSO(psoName);
+		PrepareRendering(gameTime, worldShadowMapper, rs);
 		rhi->DrawIndexedInstanced(mVerticesCount, mPatchesCountToRender, 0, 0, 0);
 		rhi->UnsetPSO();
 
