@@ -888,14 +888,14 @@ namespace EveryRay_Core
 		//TODO compute queue
 	}
 
-	void ER_RHI_DX12::SetTopologyTypeToPSO(ER_RHI_PRIMITIVE_TYPE aType)
+	void ER_RHI_DX12::SetTopologyTypeToPSO(const std::string& aName, ER_RHI_PRIMITIVE_TYPE aType)
 	{
 		if (mCurrentPSOState == ER_RHI_DX12_PSO_STATE::UNSET)
 			return;
 
 		assert(mCurrentPSOState == ER_RHI_DX12_PSO_STATE::GRAPHICS);
-		ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSONames.at(mCurrentGraphicsPSOName);
-		pso.SetPrimitiveTopologyType(GetTopologyType(aType));
+		assert(mCurrentGraphicsPSOName == aName);
+		mGraphicsPSONames.at(aName).SetPrimitiveTopologyType(GetTopologyType(aType));
 	}
 
 	ER_RHI_PRIMITIVE_TYPE ER_RHI_DX12::GetCurrentTopologyType()

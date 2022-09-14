@@ -36,6 +36,8 @@ namespace EveryRay_Core
 		ER_Camera& mCamera;
 		ER_DirectionalLight& mDirectionalLight;
 
+		ER_RHI_GPURootSignature* mRootSignature = nullptr;
+
 		std::vector<ER_RHI_GPUTexture*> mShadowMaps;
 		std::vector<ER_Projector*> mLightProjectors;
 		std::vector<ER_Frustum> mCameraCascadesFrustums;

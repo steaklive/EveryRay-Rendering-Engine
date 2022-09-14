@@ -20,6 +20,12 @@
 #include <algorithm>
 #include <limits>
 
+static const std::string psoNames[NUM_SHADOW_CASCADES] =
+{
+	"ShadowMapMaterial Pass (cascade 0) PSO",
+	"ShadowMapMaterial Pass (cascade 1) PSO",
+	"ShadowMapMaterial Pass (cascade 2) PSO"
+};
 namespace EveryRay_Core
 {
 	ER_ShadowMapper::ER_ShadowMapper(ER_Core& pCore, ER_Camera& camera, ER_DirectionalLight& dirLight,  UINT pWidth, UINT pHeight, bool isCascaded)
@@ -47,12 +53,23 @@ namespace EveryRay_Core
 			mLightProjectors[i]->SetProjectionMatrix(GetProjectionBoundingSphere(i));
 			//mLightProjectors[i]->ApplyRotation(mDirectionalLight.GetTransform());
 		}
+
+		mRootSignature = rhi->CreateRootSignature(2, 1);
+		if (mRootSignature)
+		{
+			mRootSignature->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
+			mRootSignature->InitDescriptorTable(rhi, SHADOWMAP_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+			mRootSignature->InitDescriptorTable(rhi, SHADOWMAP_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+			mRootSignature->Finalize(rhi, "ShadowMapMaterial Pass Root Signature", true);
+		}
 	}
 
 	ER_ShadowMapper::~ER_ShadowMapper()
 	{
 		DeletePointerCollection(mShadowMaps);
 		DeletePointerCollection(mLightProjectors);
+
+		DeleteObject(mRootSignature);
 	}
 
 	void ER_ShadowMapper::Update(const ER_CoreTime& gameTime)
@@ -248,14 +265,15 @@ namespace EveryRay_Core
 			if (terrain)
 				terrain->Draw(nullptr, this, nullptr, i);
 
-			const std::string materialName = ER_MaterialHelper::shadowMapMaterialName + " " + std::to_string(i);
-			const std::string psoName = materialName + " PSO";
+			rhi->SetRootSignature(mRootSignature);
+			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			const std::string& psoName = psoNames[i];
 
 			int objectIndex = 0;
 			for (auto renderingObjectInfo = scene->objects.begin(); renderingObjectInfo != scene->objects.end(); renderingObjectInfo++, objectIndex++)
 			{
 				ER_RenderingObject* renderingObject = renderingObjectInfo->second;
-				auto materialInfo = renderingObject->GetMaterials().find(materialName);
+				auto materialInfo = renderingObject->GetMaterials().find(ER_MaterialHelper::shadowMapMaterialName);
 				if (materialInfo != renderingObject->GetMaterials().end())
 				{
 					ER_Material* material = materialInfo->second;
@@ -267,14 +285,16 @@ namespace EveryRay_Core
 							rhi->SetRasterizerState(ER_SHADOW_RS);
 							material->PrepareResources();
 							rhi->SetRenderTargetFormats({}, mShadowMaps[i]);
+							rhi->SetRootSignatureToPSO(psoName, mRootSignature);
+							rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 							rhi->FinalizePSO(psoName);
 						}
 						rhi->SetPSO(psoName);
-						static_cast<ER_ShadowMapMaterial*>(material)->PrepareForRendering(materialSystems, renderingObject, meshIndex, i);
+						static_cast<ER_ShadowMapMaterial*>(material)->PrepareForRendering(materialSystems, renderingObject, meshIndex, i, mRootSignature);
 						if (!renderingObject->IsInstanced())
-							renderingObject->DrawLOD(materialName, true, meshIndex, renderingObject->GetLODCount() - 1); //drawing highest LOD
+							renderingObject->DrawLOD(ER_MaterialHelper::shadowMapMaterialName, true, meshIndex, renderingObject->GetLODCount() - 1); //drawing highest LOD
 						else
-							renderingObject->Draw(materialName, true, meshIndex);
+							renderingObject->Draw(ER_MaterialHelper::shadowMapMaterialName, true, meshIndex);
 						rhi->UnsetPSO();
 					}
 				}

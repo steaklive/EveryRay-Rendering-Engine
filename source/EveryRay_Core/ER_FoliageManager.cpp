@@ -388,9 +388,9 @@ namespace EveryRay_Core
 		mFoliageConstantBuffer.Data.WorldVoxelScale = *mWorldVoxelScale;
 		mFoliageConstantBuffer.Data.VoxelTextureDimension = *mVoxelTextureDimension;
 		mFoliageConstantBuffer.ApplyChanges(rhi);
-		rhi->SetConstantBuffers(ER_VERTEX, { mFoliageConstantBuffer.Buffer() }, 0, rs, FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+		rhi->SetConstantBuffers(ER_VERTEX,   { mFoliageConstantBuffer.Buffer() }, 0, rs, FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 		rhi->SetConstantBuffers(ER_GEOMETRY, { mFoliageConstantBuffer.Buffer() }, 0, rs, FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
-		rhi->SetConstantBuffers(ER_PIXEL, { mFoliageConstantBuffer.Buffer() }, 0, rs, FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+		rhi->SetConstantBuffers(ER_PIXEL,    { mFoliageConstantBuffer.Buffer() }, 0, rs, FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
 
 		std::vector<ER_RHI_GPUResource*> resources(1 + NUM_SHADOW_CASCADES);
