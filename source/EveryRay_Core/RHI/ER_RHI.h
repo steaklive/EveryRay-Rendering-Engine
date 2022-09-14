@@ -369,7 +369,7 @@ namespace EveryRay_Core
 		virtual bool IsPSOReady(const std::string& aName, bool isCompute = false) = 0;
 		virtual void InitializePSO(const std::string& aName, bool isCompute = false) = 0;
 		virtual void SetRootSignatureToPSO(const std::string& aName, ER_RHI_GPURootSignature* rs, bool isCompute = false) = 0;
-		virtual void SetTopologyTypeToPSO(ER_RHI_PRIMITIVE_TYPE aType) = 0;
+		virtual void SetTopologyTypeToPSO(const std::string& aName, ER_RHI_PRIMITIVE_TYPE aType) = 0;
 		virtual void FinalizePSO(const std::string& aName, bool isCompute = false) = 0;
 		virtual void SetPSO(const std::string& aName, bool isCompute = false) = 0;
 		virtual void UnsetPSO() = 0;

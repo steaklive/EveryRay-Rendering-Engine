@@ -172,24 +172,32 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mVCTVoxelizationDebugGS = nullptr;
 		ER_RHI_GPUShader* mVCTVoxelizationDebugPS = nullptr;
 		std::string mVoxelizationDebugPSOName = "VCT GI - Voxelization Pass Debug PSO";
+		ER_RHI_GPURootSignature* mVoxelizationRS = nullptr;
+		ER_RHI_GPURootSignature* mVoxelizationDebugRS = nullptr;
 
 		ER_RHI_GPUShader* mVCTMainCS = nullptr;
 		std::string mVCTMainPSOName = "VCT GI - Main Pass PSO";
+		ER_RHI_GPURootSignature* mVCTRS = nullptr;
 
 		ER_RHI_GPUShader* mUpsampleBlurCS = nullptr;
 		std::string mUpsampleBlurPSOName = "Upsample and Blur Pass PSO";
+		ER_RHI_GPURootSignature* mUpsampleAndBlurRS = nullptr;
 
 		ER_RHI_GPUShader* mCompositeIlluminationCS = nullptr;
 		std::string mCompositeIlluminationPSOName = "Composite Illumination Pass PSO";
+		ER_RHI_GPURootSignature* mCompositeIlluminationRS = nullptr;
 
 		ER_RHI_GPUShader* mDeferredLightingCS = nullptr;
 		std::string mDeferredLightingPSOName = "Deferred Lighting Pass PSO";
+		ER_RHI_GPURootSignature* mDeferredLightingRS = nullptr;
 
 		ER_RHI_GPUShader* mForwardLightingVS = nullptr;
 		ER_RHI_GPUShader* mForwardLightingVS_Instancing = nullptr;
 		ER_RHI_GPUShader* mForwardLightingPS = nullptr;
 		std::string mForwardLightingPSOName = "Forward Lighting Pass PSO";
 		std::string mForwardLightingInstancingPSOName = "Forward Lighting (Instancing) Pass PSO";
+		ER_RHI_GPURootSignature* mForwardLightingRS = nullptr;
+		ER_RHI_GPURootSignature* mForwardLightingInstancingRS = nullptr;
 
 		ER_RHI_GPUShader* mForwardLightingDiffuseProbesPS = nullptr;
 		std::string mForwardLightingDiffuseProbesPSOName = "Forward Lighting Diffuse Probes Pass PSO";

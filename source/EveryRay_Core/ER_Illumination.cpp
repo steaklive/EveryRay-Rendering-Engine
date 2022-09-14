@@ -28,6 +28,23 @@
 
 static float clearColorBlack[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
+static const std::string voxelizationPSONames[NUM_VOXEL_GI_CASCADES] =
+{
+	"VoxelizationMaterial Pass (cascade 0) PSO",
+	"VoxelizationMaterial Pass (cascade 1) PSO",
+};
+
+#define VCT_MAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
+#define VCT_MAIN_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX 1
+#define VCT_MAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 2
+
+#define VCT_DEBUG_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
+#define VCT_DEBUG_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 1
+
+#define UPSAMPLE_BLUR_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
+#define UPSAMPLE_BLUR_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX 1
+#define UPSAMPLE_BLUR_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 2
+
 namespace EveryRay_Core {
 
 	const float voxelCascadesSizes[NUM_VOXEL_GI_CASCADES] = { 256.0f, 256.0f };
@@ -66,6 +83,14 @@ namespace EveryRay_Core {
 		DeleteObject(mLocalIlluminationRT);
 		DeleteObject(mFinalIlluminationRT);
 		DeleteObject(mDepthBuffer);
+		DeleteObject(mVCTRS);
+		DeleteObject(mUpsampleAndBlurRS);
+		DeleteObject(mCompositeIlluminationRS);
+		DeleteObject(mDeferredLightingRS);
+		DeleteObject(mVoxelizationRS);
+		DeleteObject(mVoxelizationDebugRS);
+		DeleteObject(mForwardLightingRS);
+		DeleteObject(mForwardLightingInstancingRS);
 
 		mVoxelizationDebugConstantBuffer.Release();
 		mVoxelConeTracingMainConstantBuffer.Release();
@@ -192,6 +217,47 @@ namespace EveryRay_Core {
 			mDepthBuffer->CreateGPUTextureResource(rhi, mCore->ScreenWidth(), mCore->ScreenHeight(), 1u, ER_FORMAT_D24_UNORM_S8_UINT, ER_BIND_SHADER_RESOURCE | ER_BIND_DEPTH_STENCIL);
 		}
 
+		// Root-signatures
+		{
+			mVoxelizationRS = rhi->CreateRootSignature(2, 2);
+			if (mVoxelizationRS)
+			{
+				mVoxelizationRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_ALL);
+				mVoxelizationRS->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SHADER_VISIBILITY_ALL);
+				mVoxelizationRS->InitDescriptorTable(rhi, VOXELIZATION_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				mVoxelizationRS->InitDescriptorTable(rhi, VOXELIZATION_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				mVoxelizationRS->Finalize(rhi, "VoxelizationMaterial Pass Root Signature", true);
+			}
+
+			mVoxelizationDebugRS = rhi->CreateRootSignature(2, 0);
+			if (mVoxelizationDebugRS)
+			{
+				mVoxelizationDebugRS->InitDescriptorTable(rhi, VCT_DEBUG_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				mVoxelizationDebugRS->InitDescriptorTable(rhi, VCT_DEBUG_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				mVoxelizationDebugRS->Finalize(rhi, "Voxelization Debug Pass Root Signature", true);
+			}
+
+			mVCTRS = rhi->CreateRootSignature(2, 1);
+			if (mVCTRS)
+			{
+				mVCTRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_ALL);
+				mVCTRS->InitDescriptorTable(rhi, VCT_MAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 4 + NUM_VOXEL_GI_CASCADES }, ER_RHI_SHADER_VISIBILITY_ALL);
+				mVCTRS->InitDescriptorTable(rhi, VCT_MAIN_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				mVCTRS->InitDescriptorTable(rhi, VCT_MAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				mVCTRS->Finalize(rhi, "Voxel Cone Tracing Main Pass Root Signature");
+			}
+
+			mUpsampleAndBlurRS = rhi->CreateRootSignature(2, 1);
+			if (mUpsampleAndBlurRS)
+			{
+				mUpsampleAndBlurRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_ALL);
+				mUpsampleAndBlurRS->InitDescriptorTable(rhi, UPSAMPLE_BLUR_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				mUpsampleAndBlurRS->InitDescriptorTable(rhi, UPSAMPLE_BLUR_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				mUpsampleAndBlurRS->InitDescriptorTable(rhi, UPSAMPLE_BLUR_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				mUpsampleAndBlurRS->Finalize(rhi, "Upsample & Blur Pass Root Signature");
+			}
+		}
+
 		//callbacks for materials updates
 		ER_MaterialSystems materialSystems;
 		materialSystems.mCamera = &mCamera;
@@ -248,8 +314,11 @@ namespace EveryRay_Core {
 		materialSystems.mDirectionalLight = &mDirectionalLight;
 		materialSystems.mShadowMapper = &mShadowMapper;
 
+		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
 		//voxelization
 		{
+			rhi->SetRootSignature(mVoxelizationRS);
 			for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
 			{
 				ER_RHI_Viewport vctViewport = { 0.0f, 0.0f, voxelCascadesSizes[cascade], voxelCascadesSizes[cascade] };
@@ -262,7 +331,7 @@ namespace EveryRay_Core {
 				rhi->ClearUAV(mVCTVoxelCascades3DRTs[cascade], clearColorBlack);
 
 				std::string materialName = ER_MaterialHelper::voxelizationMaterialName + "_" + std::to_string(cascade);
-				std::string psoName = materialName + " PSO";
+				std::string& psoName = voxelizationPSONames[cascade];
 
 				for (auto& obj : mVoxelizationObjects[cascade])
 				{
@@ -279,14 +348,16 @@ namespace EveryRay_Core {
 							if (!rhi->IsPSOReady(psoName))
 							{
 								rhi->InitializePSO(psoName);
-								rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING_NO_DEPTH_SCISSOR_ENABLED);
 								material->PrepareResources();
+								rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING_NO_DEPTH_SCISSOR_ENABLED);
+								rhi->SetRootSignatureToPSO(psoName, mVoxelizationRS);
+								rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 								rhi->SetRenderTargetFormats({});
 								rhi->FinalizePSO(psoName);
 							}
 							rhi->SetPSO(psoName);
 							static_cast<ER_VoxelizationMaterial*>(material)->PrepareForRendering(materialSystems, renderingObject, meshIndex,
-								mWorldVoxelScales[cascade], voxelCascadesSizes[cascade], mVoxelCameraPositions[cascade]);
+								mWorldVoxelScales[cascade], voxelCascadesSizes[cascade], mVoxelCameraPositions[cascade], mVoxelizationRS);
 							renderingObject->Draw(materialName, true, meshIndex);
 							rhi->UnsetPSO();
 						}
@@ -313,6 +384,9 @@ namespace EveryRay_Core {
 		//voxelization debug
 		if (mShowVCTVoxelizationOnly) 
 		{
+			rhi->SetRootSignature(mVoxelizationDebugRS);
+			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_POINTLIST);
+
 			int cascade = 0; //TODO fix for multiple cascades
 			{
 				float sizeTranslateShift = -voxelCascadesSizes[cascade] / mWorldVoxelScales[cascade] * 0.5f;
@@ -326,11 +400,7 @@ namespace EveryRay_Core {
 
 				rhi->ClearRenderTarget(mVCTVoxelizationDebugRT, clearColorBlack);
 				rhi->ClearDepthStencilTarget(mDepthBuffer, 1.0f, 0);
-				rhi->SetConstantBuffers(ER_VERTEX, { mVoxelizationDebugConstantBuffer.Buffer() });
-				rhi->SetConstantBuffers(ER_GEOMETRY, { mVoxelizationDebugConstantBuffer.Buffer() });
-				rhi->SetConstantBuffers(ER_PIXEL, { mVoxelizationDebugConstantBuffer.Buffer() });
-				rhi->SetShaderResources(ER_VERTEX, { mVCTVoxelCascades3DRTs[cascade] });
-				
+
 				if (!rhi->IsPSOReady(mVoxelizationDebugPSOName))
 				{
 					rhi->InitializePSO(mVoxelizationDebugPSOName);
@@ -342,9 +412,14 @@ namespace EveryRay_Core {
 					rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_POINTLIST);
 					rhi->SetEmptyInputLayout();
 					rhi->SetRenderTargetFormats({ mVCTVoxelizationDebugRT }, mDepthBuffer);
+					rhi->SetRootSignatureToPSO(mVoxelizationDebugPSOName, mVoxelizationDebugRS);
 					rhi->FinalizePSO(mVoxelizationDebugPSOName);
 				}
 				rhi->SetPSO(mVoxelizationDebugPSOName);
+				rhi->SetShaderResources(ER_VERTEX, { mVCTVoxelCascades3DRTs[cascade] }, 0, mVoxelizationDebugRS, VCT_DEBUG_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
+				rhi->SetConstantBuffers(ER_VERTEX,   { mVoxelizationDebugConstantBuffer.Buffer() }, 0, mVoxelizationDebugRS, VCT_DEBUG_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+				rhi->SetConstantBuffers(ER_GEOMETRY, { mVoxelizationDebugConstantBuffer.Buffer() }, 0, mVoxelizationDebugRS, VCT_DEBUG_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+				rhi->SetConstantBuffers(ER_PIXEL,    { mVoxelizationDebugConstantBuffer.Buffer() }, 0, mVoxelizationDebugRS, VCT_DEBUG_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 				rhi->DrawInstanced(voxelCascadesSizes[cascade] * voxelCascadesSizes[cascade] * voxelCascadesSizes[cascade], 1, 0, 0);
 				rhi->UnsetPSO();
 
@@ -365,6 +440,9 @@ namespace EveryRay_Core {
 				mVoxelConeTracingMainConstantBuffer.Data.VoxelCameraPositions[i] = mVoxelCameraPositions[i];
 				mVoxelConeTracingMainConstantBuffer.Data.WorldVoxelScales[i] = XMFLOAT4(mWorldVoxelScales[i], 0.0, 0.0, 0.0);
 			}
+
+			rhi->SetRootSignature(mVCTRS, true);
+
 			mVoxelConeTracingMainConstantBuffer.Data.CameraPos = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1);
 			mVoxelConeTracingMainConstantBuffer.Data.UpsampleRatio = XMFLOAT2(1.0f / VCT_GI_MAIN_PASS_DOWNSCALE, 1.0f / VCT_GI_MAIN_PASS_DOWNSCALE);
 			mVoxelConeTracingMainConstantBuffer.Data.IndirectDiffuseStrength = mVCTIndirectDiffuseStrength;
@@ -377,6 +455,16 @@ namespace EveryRay_Core {
 			mVoxelConeTracingMainConstantBuffer.Data.pad0 = XMFLOAT3(0, 0, 0);
 			mVoxelConeTracingMainConstantBuffer.ApplyChanges(rhi);
 
+			if (!rhi->IsPSOReady(mVCTMainPSOName, true))
+			{
+				rhi->InitializePSO(mVCTMainPSOName, true);
+				rhi->SetShader(mVCTMainCS);
+				rhi->SetRenderTargetFormats({});
+				rhi->SetRootSignatureToPSO(mVCTMainPSOName, mVCTRS, true);
+				rhi->FinalizePSO(mVCTMainPSOName, true);
+			}
+			rhi->SetPSO(mVCTMainPSOName, true);
+			rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 			std::vector<ER_RHI_GPUResource*> resources(4 + NUM_VOXEL_GI_CASCADES);
 			resources[0] = gbuffer->GetAlbedo();
 			resources[1] = gbuffer->GetNormals();
@@ -384,23 +472,11 @@ namespace EveryRay_Core {
 			resources[3] = gbuffer->GetExtraBuffer();
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 				resources[4 + i] = mVCTVoxelCascades3DRTs[i];
-
-			rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
-			rhi->SetUnorderedAccessResources(ER_COMPUTE, { mVCTMainRT });
-			rhi->SetShaderResources(ER_COMPUTE, resources);
-			rhi->SetConstantBuffers(ER_COMPUTE, { mVoxelConeTracingMainConstantBuffer.Buffer() });
-			
-			if (!rhi->IsPSOReady(mVCTMainPSOName, true))
-			{
-				rhi->InitializePSO(mVCTMainPSOName, true);
-				rhi->SetShader(mVCTMainCS);
-				rhi->SetRenderTargetFormats({});
-				rhi->FinalizePSO(mVCTMainPSOName, true);
-			}
-			rhi->SetPSO(mVCTMainPSOName, true);
+			rhi->SetShaderResources(ER_COMPUTE, resources, 0, mVCTRS, VCT_MAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
+			rhi->SetUnorderedAccessResources(ER_COMPUTE, { mVCTMainRT }, 0, mVCTRS, VCT_MAIN_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
+			rhi->SetConstantBuffers(ER_COMPUTE, { mVoxelConeTracingMainConstantBuffer.Buffer() }, 0, mVCTRS, VCT_MAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
 			rhi->Dispatch(DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetHeight()), 8u), 1u);
 			rhi->UnsetPSO();
-			
 			rhi->UnbindResourcesFromShader(ER_COMPUTE);
 		}
 
@@ -409,18 +485,21 @@ namespace EveryRay_Core {
 			mUpsampleBlurConstantBuffer.Data.Upsample = true;
 			mUpsampleBlurConstantBuffer.ApplyChanges(rhi);
 
-			rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
-			rhi->SetUnorderedAccessResources(ER_COMPUTE, { mVCTUpsampleAndBlurRT });
-			rhi->SetShaderResources(ER_COMPUTE, { mVCTMainRT });
-			rhi->SetConstantBuffers(ER_COMPUTE, { mUpsampleBlurConstantBuffer.Buffer() });
+			rhi->SetRootSignature(mUpsampleAndBlurRS, true);
+
 			if (!rhi->IsPSOReady(mUpsampleBlurPSOName, true))
 			{
 				rhi->InitializePSO(mUpsampleBlurPSOName, true);
 				rhi->SetShader(mUpsampleBlurCS);
 				rhi->SetRenderTargetFormats({});
+				rhi->SetRootSignatureToPSO(mUpsampleBlurPSOName, mUpsampleAndBlurRS, true);
 				rhi->FinalizePSO(mUpsampleBlurPSOName, true);
 			}
 			rhi->SetPSO(mUpsampleBlurPSOName, true);
+			rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
+			rhi->SetShaderResources(ER_COMPUTE, { mVCTMainRT }, 0, mUpsampleAndBlurRS, UPSAMPLE_BLUR_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
+			rhi->SetUnorderedAccessResources(ER_COMPUTE, { mVCTUpsampleAndBlurRT }, 0, mUpsampleAndBlurRS, UPSAMPLE_BLUR_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
+			rhi->SetConstantBuffers(ER_COMPUTE, { mUpsampleBlurConstantBuffer.Buffer() }, 0, mUpsampleAndBlurRS, UPSAMPLE_BLUR_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
 			rhi->Dispatch(DivideByMultiple(static_cast<UINT>(mVCTUpsampleAndBlurRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mVCTUpsampleAndBlurRT->GetHeight()), 8u), 1u);
 			rhi->UnsetPSO();
 			rhi->UnbindResourcesFromShader(ER_COMPUTE);
