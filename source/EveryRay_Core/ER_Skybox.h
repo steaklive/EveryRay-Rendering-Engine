@@ -77,11 +77,13 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mSunPS = nullptr;
 		ER_RHI_GPUShader* mSunOcclusionPS = nullptr;
 		ER_RHI_GPUConstantBuffer<SkyCBufferData::SunData> mSunConstantBuffer;	
+		ER_RHI_GPURootSignature* mSunRS = nullptr;
 		std::string mSunPassPSOName = "Sun Pass PSO";
 
 		ER_RHI_GPUShader* mSkyboxVS = nullptr;
 		ER_RHI_GPUShader* mSkyboxPS = nullptr;
 		ER_RHI_GPUConstantBuffer<SkyCBufferData::SkyboxData> mSkyboxConstantBuffer;
+		ER_RHI_GPURootSignature* mSkyRS = nullptr;
 		std::string mSkyboxPassPSOName = "Skybox Pass PSO";
 
 		XMFLOAT4 mSunDir;

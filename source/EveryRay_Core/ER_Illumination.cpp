@@ -45,6 +45,13 @@ static const std::string voxelizationPSONames[NUM_VOXEL_GI_CASCADES] =
 #define UPSAMPLE_BLUR_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX 1
 #define UPSAMPLE_BLUR_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 2
 
+#define DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
+#define DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX 1
+#define DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 2
+
+#define FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
+#define FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 1
+
 namespace EveryRay_Core {
 
 	const float voxelCascadesSizes[NUM_VOXEL_GI_CASCADES] = { 256.0f, 256.0f };
@@ -90,7 +97,6 @@ namespace EveryRay_Core {
 		DeleteObject(mVoxelizationRS);
 		DeleteObject(mVoxelizationDebugRS);
 		DeleteObject(mForwardLightingRS);
-		DeleteObject(mForwardLightingInstancingRS);
 
 		mVoxelizationDebugConstantBuffer.Release();
 		mVoxelConeTracingMainConstantBuffer.Release();
@@ -237,7 +243,7 @@ namespace EveryRay_Core {
 				mVoxelizationDebugRS->Finalize(rhi, "Voxelization Debug Pass Root Signature", true);
 			}
 
-			mVCTRS = rhi->CreateRootSignature(2, 1);
+			mVCTRS = rhi->CreateRootSignature(3, 1);
 			if (mVCTRS)
 			{
 				mVCTRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_ALL);
@@ -247,7 +253,7 @@ namespace EveryRay_Core {
 				mVCTRS->Finalize(rhi, "Voxel Cone Tracing Main Pass Root Signature");
 			}
 
-			mUpsampleAndBlurRS = rhi->CreateRootSignature(2, 1);
+			mUpsampleAndBlurRS = rhi->CreateRootSignature(3, 1);
 			if (mUpsampleAndBlurRS)
 			{
 				mUpsampleAndBlurRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_ALL);
@@ -255,6 +261,25 @@ namespace EveryRay_Core {
 				mUpsampleAndBlurRS->InitDescriptorTable(rhi, UPSAMPLE_BLUR_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mUpsampleAndBlurRS->InitDescriptorTable(rhi, UPSAMPLE_BLUR_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mUpsampleAndBlurRS->Finalize(rhi, "Upsample & Blur Pass Root Signature");
+			}
+
+			mDeferredLightingRS = rhi->CreateRootSignature(3, 1);
+			if (mDeferredLightingRS)
+			{
+				mDeferredLightingRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_ALL);
+				mDeferredLightingRS->InitDescriptorTable(rhi, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 18 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				mDeferredLightingRS->InitDescriptorTable(rhi, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				mDeferredLightingRS->InitDescriptorTable(rhi, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				mDeferredLightingRS->Finalize(rhi, "Deferred Lighting Pass Root Signature");
+			}
+
+			mForwardLightingRS = rhi->CreateRootSignature(2, 1);
+			if (mForwardLightingRS)
+			{
+				mForwardLightingRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_ALL);
+				mForwardLightingRS->InitDescriptorTable(rhi, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 18 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mForwardLightingRS->InitDescriptorTable(rhi, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				mForwardLightingRS->Finalize(rhi, "Forward Lighting Pass Root Signature", true);
 			}
 		}
 
@@ -684,62 +709,45 @@ namespace EveryRay_Core {
 			}
 
 			rhi->UnbindRenderTargets();
-			rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
-			rhi->SetUnorderedAccessResources(ER_COMPUTE, { aRenderTarget });
-			if (mProbesManager->IsEnabled() && mProbesManager->AreGlobalProbesReady())
+			
+			rhi->SetRootSignature(mDeferredLightingRS, true);
+			if (!rhi->IsPSOReady(mDeferredLightingPSOName, true))
 			{
-				rhi->SetConstantBuffers(ER_COMPUTE, { mDeferredLightingConstantBuffer.Buffer(), mLightProbesConstantBuffer.Buffer() });
+				rhi->InitializePSO(mDeferredLightingPSOName, true);
+				rhi->SetShader(mDeferredLightingCS);
+				rhi->SetRootSignatureToPSO(mDeferredLightingPSOName, mDeferredLightingRS, true);
+				rhi->FinalizePSO(mDeferredLightingPSOName, true);
+			}
+			rhi->SetPSO(mDeferredLightingPSOName, true);
+			rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
+			rhi->SetUnorderedAccessResources(ER_COMPUTE, { aRenderTarget }, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
+			if (mProbesManager->AreGlobalProbesReady())
+			{
+				if (mProbesManager->IsEnabled())
+					rhi->SetConstantBuffers(ER_COMPUTE, { mDeferredLightingConstantBuffer.Buffer(), mLightProbesConstantBuffer.Buffer() }, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
+				else
+					rhi->SetConstantBuffers(ER_COMPUTE, { mDeferredLightingConstantBuffer.Buffer() }, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
+
 				std::vector<ER_RHI_GPUResource*> resources(18);
 				resources[0] = gbuffer->GetAlbedo();
 				resources[1] = gbuffer->GetNormals();
 				resources[2] = gbuffer->GetPositions();
 				resources[3] = gbuffer->GetExtraBuffer();
 				resources[4] = gbuffer->GetExtra2Buffer();
-
 				for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 					resources[5 + i] = mShadowMapper.GetShadowTexture(i);
-
-				resources[8] =  mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture();
-				resources[9] =  mProbesManager->GetDiffuseProbesCellsIndicesBuffer();
-				resources[10] = mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer();
-				resources[11] = mProbesManager->GetDiffuseProbesPositionsBuffer();
-
+				resources[8] = mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture();
+				resources[9] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer() : nullptr;
+				resources[10] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer() : nullptr;
+				resources[11] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesPositionsBuffer() : nullptr;
 				resources[12] = mProbesManager->GetGlobalSpecularProbe()->GetCubemapTexture();
-				resources[13] = mProbesManager->GetCulledSpecularProbesTextureArray();
-				resources[14] = mProbesManager->GetSpecularProbesCellsIndicesBuffer();
-				resources[15] = mProbesManager->GetSpecularProbesTexArrayIndicesBuffer();
-				resources[16] = mProbesManager->GetSpecularProbesPositionsBuffer();
-
+				resources[13] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray() : nullptr;
+				resources[14] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesCellsIndicesBuffer() : nullptr;
+				resources[15] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer() : nullptr;
+				resources[16] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesPositionsBuffer() : nullptr;
 				resources[17] = mProbesManager->GetIntegrationMap();
-				rhi->SetShaderResources(ER_COMPUTE, resources);
+				rhi->SetShaderResources(ER_COMPUTE, resources, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
 			}
-			else if (mProbesManager->AreGlobalProbesReady())
-			{
-				rhi->SetConstantBuffers(ER_COMPUTE, { mDeferredLightingConstantBuffer.Buffer() });
-				std::vector<ER_RHI_GPUResource*> resources(8);
-				resources[0] = gbuffer->GetAlbedo();
-				resources[1] = gbuffer->GetNormals();
-				resources[2] = gbuffer->GetPositions();
-				resources[3] = gbuffer->GetExtraBuffer();
-				resources[4] = gbuffer->GetExtra2Buffer();
-
-				for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
-					resources[5 + i] = mShadowMapper.GetShadowTexture(i);
-
-				rhi->SetShaderResources(ER_COMPUTE, resources);
-				rhi->SetShaderResources(ER_COMPUTE, { mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture() }, 8);
-				rhi->SetShaderResources(ER_COMPUTE, { mProbesManager->GetGlobalSpecularProbe()->GetCubemapTexture() }, 12);
-				rhi->SetShaderResources(ER_COMPUTE, { mProbesManager->GetIntegrationMap() }, 17);
-			}
-
-			if (!rhi->IsPSOReady(mDeferredLightingPSOName, true))
-			{
-				rhi->InitializePSO(mDeferredLightingPSOName, true);
-				rhi->SetShader(mDeferredLightingCS);
-				rhi->SetRenderTargetFormats({});
-				rhi->FinalizePSO(mDeferredLightingPSOName, true);
-			}
-			rhi->SetPSO(mDeferredLightingPSOName, true);
 			rhi->Dispatch(DivideByMultiple(static_cast<UINT>(aRenderTarget->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(aRenderTarget->GetHeight()), 8u), 1u);
 			rhi->UnsetPSO();
 
@@ -751,6 +759,8 @@ namespace EveryRay_Core {
 	{
 		auto rhi = mCore->GetRHI();
 		rhi->SetRenderTargets({ aRenderTarget }, gbuffer->GetDepth());
+		rhi->SetRootSignature(mForwardLightingRS);
+		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		for (auto& obj : mForwardPassObjects)
 			obj.second->Draw(ER_MaterialHelper::forwardLightingNonMaterialName);
 
@@ -786,61 +796,7 @@ namespace EveryRay_Core {
 				mLightProbesConstantBuffer.Data.DistanceBetweenDiffuseProbes = mProbesManager->GetDistanceBetweenDiffuseProbes();
 				mLightProbesConstantBuffer.Data.DistanceBetweenSpecularProbes = mProbesManager->GetDistanceBetweenSpecularProbes();
 				mLightProbesConstantBuffer.ApplyChanges(rhi);
-
-				rhi->SetConstantBuffers(ER_VERTEX, { mForwardLightingConstantBuffer.Buffer(), mLightProbesConstantBuffer.Buffer() });
-				rhi->SetConstantBuffers(ER_PIXEL, { mForwardLightingConstantBuffer.Buffer(), mLightProbesConstantBuffer.Buffer() });
-
-				if (mProbesManager->AreGlobalProbesReady())
-				{
-					std::vector<ER_RHI_GPUResource*> resources(18);
-					resources[0] = aObj->GetTextureData(meshIndex).AlbedoMap;
-					resources[1] = aObj->GetTextureData(meshIndex).NormalMap;
-					resources[2] = aObj->GetTextureData(meshIndex).MetallicMap;
-					resources[3] = aObj->GetTextureData(meshIndex).RoughnessMap;
-					resources[4] = aObj->GetTextureData(meshIndex).HeightMap;
-
-					for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
-						resources[5 + i] = mShadowMapper.GetShadowTexture(i);
-
-					resources[8] = mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture();
-					resources[9] = mProbesManager->GetDiffuseProbesCellsIndicesBuffer();
-					resources[10] = mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer();
-					resources[11] = mProbesManager->GetDiffuseProbesPositionsBuffer();
-
-					resources[12] = mProbesManager->GetGlobalSpecularProbe()->GetCubemapTexture();
-					resources[13] = mProbesManager->GetCulledSpecularProbesTextureArray();
-					resources[14] = mProbesManager->GetSpecularProbesCellsIndicesBuffer();
-					resources[15] = mProbesManager->GetSpecularProbesTexArrayIndicesBuffer();
-					resources[16] = mProbesManager->GetSpecularProbesPositionsBuffer();
-
-					resources[17] = mProbesManager->GetIntegrationMap();
-					rhi->SetShaderResources(ER_PIXEL, resources);
-				}
-
 			}
-			else if (mProbesManager->AreGlobalProbesReady())
-			{
-				rhi->SetConstantBuffers(ER_VERTEX, { mForwardLightingConstantBuffer.Buffer() });
-				rhi->SetConstantBuffers(ER_PIXEL, { mForwardLightingConstantBuffer.Buffer() });
-
-				std::vector<ER_RHI_GPUResource*> resources;
-				resources.push_back(aObj->GetTextureData(meshIndex).AlbedoMap);
-				resources.push_back(aObj->GetTextureData(meshIndex).NormalMap);
-				resources.push_back(aObj->GetTextureData(meshIndex).MetallicMap);
-				resources.push_back(aObj->GetTextureData(meshIndex).RoughnessMap);
-				resources.push_back(aObj->GetTextureData(meshIndex).HeightMap);
-				rhi->SetShaderResources(ER_PIXEL, resources);
-
-				std::vector<ER_RHI_GPUResource*> shadowResources;
-				for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
-					shadowResources.push_back(mShadowMapper.GetShadowTexture(i));
-				rhi->SetShaderResources(ER_PIXEL, shadowResources, 5);
-
-				rhi->SetShaderResources(ER_PIXEL, { mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture() }, 8);
-				rhi->SetShaderResources(ER_PIXEL, { mProbesManager->GetGlobalSpecularProbe()->GetCubemapTexture() }, 12);
-				rhi->SetShaderResources(ER_PIXEL, { mProbesManager->GetIntegrationMap() }, 17);
-			}
-			rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
 
 			std::string& psoName = aObj->IsInstanced() ? mForwardLightingInstancingPSOName : mForwardLightingPSOName;
 			if (!rhi->IsPSOReady(psoName))
@@ -850,9 +806,47 @@ namespace EveryRay_Core {
 				rhi->SetShader(aObj->IsInstanced() ? mForwardLightingVS_Instancing : mForwardLightingVS);
 				rhi->SetShader(mForwardLightingPS);
 				rhi->SetRenderTargetFormats({ mLocalIlluminationRT }, mGbuffer->GetDepth());
+				rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+				rhi->SetRootSignatureToPSO(psoName, mForwardLightingRS);
 				rhi->FinalizePSO(psoName);
 			}
 			rhi->SetPSO(psoName);
+			rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
+
+			if (mProbesManager->AreGlobalProbesReady())
+			{
+				std::vector<ER_RHI_GPUResource*> resources(18);
+				resources[0] = aObj->GetTextureData(meshIndex).AlbedoMap;
+				resources[1] = aObj->GetTextureData(meshIndex).NormalMap;
+				resources[2] = aObj->GetTextureData(meshIndex).MetallicMap;
+				resources[3] = aObj->GetTextureData(meshIndex).RoughnessMap;
+				resources[4] = aObj->GetTextureData(meshIndex).HeightMap;
+				for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
+					resources[5 + i] = mShadowMapper.GetShadowTexture(i);
+				resources[8] = mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture();
+				resources[9] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer() : nullptr;
+				resources[10] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer() : nullptr;
+				resources[11] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesPositionsBuffer() : nullptr;
+				resources[12] = mProbesManager->GetGlobalSpecularProbe()->GetCubemapTexture();
+				resources[13] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray() : nullptr;
+				resources[14] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesCellsIndicesBuffer() : nullptr;
+				resources[15] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer() : nullptr;
+				resources[16] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesPositionsBuffer() : nullptr;
+				resources[17] = mProbesManager->GetIntegrationMap();
+				rhi->SetShaderResources(ER_PIXEL, resources, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
+			}
+
+			if (mProbesManager->IsEnabled())
+			{
+				rhi->SetConstantBuffers(ER_VERTEX, { mForwardLightingConstantBuffer.Buffer(), mLightProbesConstantBuffer.Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+				rhi->SetConstantBuffers(ER_PIXEL,  { mForwardLightingConstantBuffer.Buffer(), mLightProbesConstantBuffer.Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+			}
+			else
+			{
+				rhi->SetConstantBuffers(ER_VERTEX, { mForwardLightingConstantBuffer.Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+				rhi->SetConstantBuffers(ER_PIXEL,  { mForwardLightingConstantBuffer.Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+
+			}
 			// we unset PSO after all objects are rendered
 		}
 	}

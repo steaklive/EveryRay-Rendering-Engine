@@ -197,7 +197,6 @@ namespace EveryRay_Core
 		std::string mForwardLightingPSOName = "Forward Lighting Pass PSO";
 		std::string mForwardLightingInstancingPSOName = "Forward Lighting (Instancing) Pass PSO";
 		ER_RHI_GPURootSignature* mForwardLightingRS = nullptr;
-		ER_RHI_GPURootSignature* mForwardLightingInstancingRS = nullptr;
 
 		ER_RHI_GPUShader* mForwardLightingDiffuseProbesPS = nullptr;
 		std::string mForwardLightingDiffuseProbesPSOName = "Forward Lighting Diffuse Probes Pass PSO";

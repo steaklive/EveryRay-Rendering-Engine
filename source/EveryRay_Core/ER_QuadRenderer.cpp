@@ -78,7 +78,7 @@ namespace EveryRay_Core {
 	{
 		rhi->SetInputLayout(mInputLayout);
 		rhi->SetShader(mVS);
-		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		//rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	}
 
 	void ER_QuadRenderer::Draw(ER_RHI* rhi)
