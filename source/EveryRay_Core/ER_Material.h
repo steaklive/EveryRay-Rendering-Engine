@@ -36,17 +36,19 @@ namespace EveryRay_Core
 		ER_Material(ER_Core& game, const MaterialShaderEntries& shaderEntry, unsigned int shaderFlags, bool instanced = false);
 		~ER_Material();
 
+		// This method has to be overriden in standard material classes (not special like shadow map material, etc.) and can be used as a callback if bound to ER_RenderingObject
+		virtual void PrepareResourcesForStandardMaterial(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, ER_RHI_GPURootSignature* rs) = 0;
 		virtual void CreateVertexBuffer(const ER_Mesh& mesh, ER_RHI_GPUBuffer* vertexBuffer) = 0;
+		virtual int VertexSize() = 0;
 
-		void PrepareResources();
 		void CreateVertexShader(const std::string& path, ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount);
 		void CreatePixelShader(const std::string& path);
 		void CreateGeometryShader(const std::string& path);
 		void CreateTessellationShader(const std::string& path);
 
-		virtual int VertexSize() = 0;
+		void PrepareShaders();
 
-		bool IsSpecial() { return mIsSpecial; };
+		bool IsStandard() { return mIsStandard; };
 	protected:
 		ER_RHI_InputLayout* mInputLayout = nullptr;
 		ER_RHI_GPUShader* mVertexShader = nullptr;
@@ -56,6 +58,6 @@ namespace EveryRay_Core
 		unsigned int mShaderFlags;
 		MaterialShaderEntries mShaderEntries;
 
-		bool mIsSpecial = false; //special materials (like shadow map, voxelization, etc.) do not use callbacks in RenderingObjects
+		bool mIsStandard = true; // non-standard materials (like shadow map, voxelization, gbuffer, etc.) are processed in their systems (ER_ShadowMapper, ER_Illumination, etc.)
 	};
 }

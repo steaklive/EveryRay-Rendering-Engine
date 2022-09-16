@@ -115,11 +115,11 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_FoliageManager::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget)
+	void ER_FoliageManager::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPURootSignature* rs)
 	{
 		if (ER_Utility::IsEditorMode && ER_Utility::IsFoliageEditor)
 			for (auto& object : mFoliageCollection)
-				object->DrawDebugGizmos(aRenderTarget);
+				object->DrawDebugGizmos(aRenderTarget, rs);
 	}
 
 	void ER_FoliageManager::AddFoliage(ER_Foliage* foliage)
@@ -424,7 +424,7 @@ namespace EveryRay_Core
 		{
 			rhi->InitializePSO(psoName);
 			rhi->SetBlendState(ER_ALPHA_TO_COVERAGE, blendFactor, 0xffffffff);
-			rhi->SetTopologyTypeToPSO(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			rhi->SetRootSignatureToPSO(psoName, rs);
 			rhi->SetInputLayout(mInputLayout);
 			rhi->SetShader(mVS);
@@ -452,10 +452,10 @@ namespace EveryRay_Core
 		rhi->UnbindResourcesFromShader(ER_PIXEL);
 	}
 
-	void ER_Foliage::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget)
+	void ER_Foliage::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPURootSignature* rs)
 	{
 		if (mDebugGizmoAABB && mIsSelectedInEditor)
-			mDebugGizmoAABB->Draw(aRenderTarget);
+			mDebugGizmoAABB->Draw(aRenderTarget, rs);
 	}
 
 	void ER_Foliage::Update(const ER_CoreTime& gameTime)

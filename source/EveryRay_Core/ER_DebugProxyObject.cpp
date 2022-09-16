@@ -15,6 +15,8 @@
 
 namespace EveryRay_Core
 {
+	static const std::string psoName = "BasicColorMaterial PSO";
+
 	ER_DebugProxyObject::ER_DebugProxyObject(ER_Core& game, ER_Camera& camera, const std::string& modelFileName, float scale)
 		:
 		mCore(game),
@@ -170,24 +172,24 @@ namespace EveryRay_Core
 		XMStoreFloat4x4(&mWorldMatrix, XMLoadFloat4x4(&mScaleMatrix) * worldMatrix);
 	}
 
-	void ER_DebugProxyObject::Draw(ER_RHI_GPUTexture* aRenderTarget, const ER_CoreTime& gametime)
+	void ER_DebugProxyObject::Draw(ER_RHI_GPUTexture* aRenderTarget, const ER_CoreTime& gametime, ER_RHI_GPURootSignature* rs)
 	{
 		auto rhi = mCore.GetRHI();
 
 		rhi->SetVertexBuffers({ mVertexBuffer });
 		rhi->SetIndexBuffer({ mIndexBuffer });
 
-		std::string psoName = ER_MaterialHelper::basicColorMaterialName + " PSO";
 		if (!rhi->IsPSOReady(psoName))
 		{
 			rhi->InitializePSO(psoName);
-			static_cast<ER_Material*>(mMaterial)->PrepareResources();
+			mMaterial->PrepareShaders();
 			rhi->SetRenderTargetFormats({ aRenderTarget });
-			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST);
+			rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST);
+			rhi->SetRootSignatureToPSO(psoName, rs);
 			rhi->FinalizePSO(psoName);
 		}
 		rhi->SetPSO(psoName);
-		mMaterial->PrepareForRendering(XMLoadFloat4x4(&mWorldMatrix), { 1.0f, 0.65f, 0.0f, 1.0f });
+		mMaterial->PrepareForRendering(XMLoadFloat4x4(&mWorldMatrix), { 1.0f, 0.65f, 0.0f, 1.0f }, rs);
 		rhi->DrawIndexed(mIndexCount);
 		rhi->UnsetPSO();
 	}

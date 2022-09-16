@@ -431,13 +431,13 @@ namespace EveryRay_Core
 			DrawTessellated(aRenderTarget, i, worldShadowMapper, probeManager, shadowMapCascade);
 	}
 
-	void ER_Terrain::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget)
+	void ER_Terrain::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPURootSignature* rs)
 	{
 		if (!mEnabled || !mLoaded || !mDrawDebugAABBs)
 			return;
 
 		for (int i = 0; i < mHeightMaps.size(); i++)
-			mHeightMaps[i]->mDebugGizmoAABB->Draw(aRenderTarget);
+			mHeightMaps[i]->mDebugGizmoAABB->Draw(aRenderTarget, rs);
 	}
 
 	void ER_Terrain::Update(const ER_CoreTime& gameTime)

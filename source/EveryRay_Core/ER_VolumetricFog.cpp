@@ -225,18 +225,19 @@ namespace EveryRay_Core {
 		assert(quadRenderer);
 
 		auto rhi = GetCore()->GetRHI();
-
+		rhi->SetRootSignature(mCompositePassRootSignature);
+		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		if (!rhi->IsPSOReady(mCompositePassPSOName))
 		{
 			rhi->InitializePSO(mCompositePassPSOName);
 			rhi->SetShader(mCompositePS);
 			rhi->SetRenderTargetFormats({ aRT });
 			rhi->SetRootSignatureToPSO(mCompositePassPSOName, mCompositePassRootSignature);
+			rhi->SetTopologyTypeToPSO(mCompositePassPSOName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			quadRenderer->PrepareDraw(rhi);
 			rhi->FinalizePSO(mCompositePassPSOName);
 		}
 		rhi->SetPSO(mCompositePassPSOName);
-		rhi->SetRootSignature(mCompositePassRootSignature);
 		rhi->SetShaderResources(ER_PIXEL, { aInputColorTexture, aGbufferWorldPos, mFinalVoxelAccumulationTexture3D }, 0, 
 			mCompositePassRootSignature, COMPOSITE_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 		rhi->SetConstantBuffers(ER_PIXEL, { mCompositeConstantBuffer.Buffer() }, 0,

@@ -130,7 +130,7 @@ namespace EveryRay_Core
 		UINT GetHeight() { return mHeight; }
 
 		void Draw(ER_RHI_GPUTexture* aRenderTarget, ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr, int shadowMapCascade = -1);
-		void DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget);
+		void DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPURootSignature* rs);
 		void Update(const ER_CoreTime& gameTime);
 		void Config() { mShowDebug = !mShowDebug; }
 		

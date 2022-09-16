@@ -8,6 +8,7 @@ namespace EveryRay_Core
 	class ER_Camera;
 	class ER_DirectionalLight;
 	class ER_ShadowMapper;
+	class ER_Illumination;
 
 	struct ER_MaterialSystems
 	{
@@ -15,5 +16,6 @@ namespace EveryRay_Core
 		const ER_DirectionalLight* mDirectionalLight = nullptr;
 		const ER_ShadowMapper* mShadowMapper = nullptr;
 		const ER_LightProbesManager* mProbesManager = nullptr;
+		const ER_Illumination* mIllumination = nullptr;
 	};
 }

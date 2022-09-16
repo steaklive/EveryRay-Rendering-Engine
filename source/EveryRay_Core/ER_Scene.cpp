@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "ER_Scene.h"
+#include "ER_Core.h"
 #include "ER_CoreException.h"
 #include "ER_Utility.h"
 #include "ER_Model.h"
@@ -199,6 +200,12 @@ namespace EveryRay_Core
 			DeleteObject(object.second);
 		}
 		objects.clear();
+
+		for (auto& rs : mStandardMaterialsRootSignatures)
+		{
+			DeleteObject(rs.second);
+		}
+		mStandardMaterialsRootSignatures.clear();
 	}
 
 	void ER_Scene::LoadRenderingObjectData(ER_RenderingObject* aObject)
@@ -582,16 +589,27 @@ namespace EveryRay_Core
 		writer->write(root, &file_id);
 	}
 
+	// We cant do reflection in C++, that is why we check every materials name and create a material out of it (and root-signature if needed)
 	ER_Material* ER_Scene::GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries, bool instanced)
 	{
-		auto core = GetCore();
+		ER_Core* core = GetCore();
 		assert(core);
+		ER_RHI* rhi = core->GetRHI();
 
 		ER_Material* material = nullptr;
 
-		// cant do reflection in C++
 		if (matName == "BasicColorMaterial")
+		{
 			material = new ER_BasicColorMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER /*TODO instanced support*/);
+			// This material is standard, that is why we create a root-signature here and send it to callbacks later
+			ER_RHI_GPURootSignature* rs = rhi->CreateRootSignature(1, 0);
+			if (rs)
+			{
+				rs->InitDescriptorTable(rhi, BASICCOLOR_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				rs->Finalize(rhi, "BasicColorMaterial Pass Root Signature", true);
+			}
+			mStandardMaterialsRootSignatures.emplace(matName, rs);
+		}
 		else if (matName == "ShadowMapMaterial")
 			material = new ER_ShadowMapMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
 		else if (matName == "GBufferMaterial")
@@ -646,4 +664,14 @@ namespace EveryRay_Core
 		}
 	}
 
-}
+	ER_RHI_GPURootSignature* ER_Scene::GetStandardMaterialRootSignature(const std::string& materialName)
+	{
+		auto it = mStandardMaterialsRootSignatures.find(materialName);
+		if (it != mStandardMaterialsRootSignatures.end())
+		{
+			return it->second;
+		}
+		else
+			return nullptr;
+	}
+	}

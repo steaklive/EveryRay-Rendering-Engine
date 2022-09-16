@@ -42,6 +42,8 @@ namespace EveryRay_Core
 
 		bool HasVolumetricFog() { return mHasVolumetricFog; }
 
+		ER_RHI_GPURootSignature* GetStandardMaterialRootSignature(const std::string& materialName);
+
 		std::map<std::string, ER_RenderingObject*> objects;
 
 		//TODO remove to private and make public methods
@@ -55,6 +57,8 @@ namespace EveryRay_Core
 	private:
 		void LoadRenderingObjectData(ER_RenderingObject* aObject);
 		void LoadRenderingObjectInstancedData(ER_RenderingObject* aObject);
+
+		std::map<std::string, ER_RHI_GPURootSignature*> mStandardMaterialsRootSignatures;
 
 		Json::Value root;
 		ER_Camera& mCamera;

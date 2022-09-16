@@ -631,7 +631,7 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_LightProbesManager::DrawDebugProbes(ER_RHI* rhi, ER_RHI_GPUTexture* aRenderTarget, ER_ProbeType aType)
+	void ER_LightProbesManager::DrawDebugProbes(ER_RHI* rhi, ER_RHI_GPUTexture* aRenderTarget, ER_ProbeType aType, ER_RHI_GPURootSignature* rs)
 	{
 		assert(aRenderTarget);
 		assert(rhi);
@@ -648,16 +648,18 @@ namespace EveryRay_Core
 			auto materialInfo = probeObject->GetMaterials().find(ER_MaterialHelper::debugLightProbeMaterialName);
 			if (materialInfo != probeObject->GetMaterials().end())
 			{
-				ER_Material* material = materialInfo->second;
+				ER_DebugLightProbeMaterial* material = static_cast<ER_DebugLightProbeMaterial*>(materialInfo->second);
 				if (!rhi->IsPSOReady(psoName))
 				{
 					rhi->InitializePSO(psoName);
-					material->PrepareResources();
+					material->PrepareShaders();
 					rhi->SetRenderTargetFormats({ aRenderTarget });
+					rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+					rhi->SetRootSignatureToPSO(psoName, rs);
 					rhi->FinalizePSO(psoName);
 				}
 				rhi->SetPSO(psoName);
-				static_cast<ER_DebugLightProbeMaterial*>(materialInfo->second)->PrepareForRendering(materialSystems, probeObject, 0, static_cast<int>(aType));
+				material->PrepareForRendering(materialSystems, probeObject, 0, static_cast<int>(aType), rs);
 				probeObject->Draw(ER_MaterialHelper::debugLightProbeMaterialName);
 				rhi->UnsetPSO();
 			}

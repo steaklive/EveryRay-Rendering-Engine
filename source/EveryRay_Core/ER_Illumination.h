@@ -104,7 +104,8 @@ namespace EveryRay_Core
 		void DrawGlobalIllumination(ER_GBuffer* gbuffer, const ER_CoreTime& gameTime);
 		void CompositeTotalIllumination();
 
-		void DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget);
+		void DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPURootSignature* rs);
+		void DrawDebugProbes(ER_RHI_GPUTexture* aRenderTarget);
 
 		void Update(const ER_CoreTime& gameTime, const ER_Scene* scene);
 		void Config() { mShowDebug = !mShowDebug; }
@@ -206,6 +207,8 @@ namespace EveryRay_Core
 
 		ER_RHI_InputLayout* mForwardLightingRenderingObjectInputLayout = nullptr;
 		ER_RHI_InputLayout* mForwardLightingRenderingObjectInputLayout_Instancing = nullptr;
+
+		ER_RHI_GPURootSignature* mDebugProbesRenderRS = nullptr;
 
 		float mWorldVoxelScales[NUM_VOXEL_GI_CASCADES] = { 2.0f, 0.5f };
 		XMFLOAT4 mVoxelCameraPositions[NUM_VOXEL_GI_CASCADES];

@@ -13,6 +13,8 @@
 
 namespace EveryRay_Core
 {
+	static const std::string psoName = "BasicColorMaterial PSO";
+
 	const XMVECTORF32 DefaultColor = ER_ColorHelper::Blue;
 	const UINT AABBVertexCount = 8;
 	const UINT AABBPrimitiveCount = 12;
@@ -87,7 +89,7 @@ namespace EveryRay_Core
 		UpdateVertices();
 	}
 
-	void ER_RenderableAABB::Draw(ER_RHI_GPUTexture* aRenderTarget)
+	void ER_RenderableAABB::Draw(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPURootSignature* rs)
 	{
 		assert(aRenderTarget);
 
@@ -95,17 +97,17 @@ namespace EveryRay_Core
 		rhi->SetVertexBuffers({ mVertexBuffer });
 		rhi->SetIndexBuffer(mIndexBuffer);
 		
-		std::string psoName = ER_MaterialHelper::basicColorMaterialName + " PSO";
 		if (!rhi->IsPSOReady(psoName))
 		{
 			rhi->InitializePSO(psoName);
-			static_cast<ER_Material*>(mMaterial)->PrepareResources();
+			static_cast<ER_Material*>(mMaterial)->PrepareShaders();
 			rhi->SetRenderTargetFormats({ aRenderTarget });
-			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST);
+			rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST);
+			rhi->SetRootSignatureToPSO(psoName, rs);
 			rhi->FinalizePSO(psoName);
 		}
 		rhi->SetPSO(psoName);
-		mMaterial->PrepareForRendering(XMMatrixIdentity(), mColor);
+		mMaterial->PrepareForRendering(XMMatrixIdentity(), mColor, rs);
 		rhi->DrawIndexed(AABBIndexCount);
 		rhi->UnsetPSO();
 	}

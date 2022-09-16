@@ -168,20 +168,23 @@ namespace EveryRay_Core {
 		materialSystems.mDirectionalLight = mDirectionalLight;
 		materialSystems.mShadowMapper = mShadowMapper;
 		materialSystems.mProbesManager = mLightProbesManager;
+		materialSystems.mIllumination = mIllumination;
 
-		//TODO
-		//for (auto& object : mScene->objects) {
-		//	for (auto& layeredMaterial : object.second->GetMaterials())
-		//	{
-		//		// assign prepare callbacks to non-special materials (special ones are processed and rendered from their own systems, i.e., ShadowMapper)
-		//		if (!layeredMaterial.second->IsSpecial())
-		//			object.second->MeshMaterialVariablesUpdateEvent->AddListener(layeredMaterial.first, [&, matSystems = materialSystems](int meshIndex) { layeredMaterial.second->PrepareForRendering(matSystems, object.second, meshIndex); });
-		//
-		//		// gbuffer material (special, but since its draws are not processed in 
-		//		if (layeredMaterial.first == ER_MaterialHelper::gbufferMaterialName)
-		//			object.second->MeshMaterialVariablesUpdateEvent->AddListener(layeredMaterial.first, [&, matSystems = materialSystems](int meshIndex) { layeredMaterial.second->PrepareForRendering(matSystems, object.second, meshIndex); });
-		//	}
-		//}
+		for (auto& object : mScene->objects) 
+		{
+			for (auto& layeredMaterial : object.second->GetMaterials())
+			{
+				// assign prepare callbacks to standard materials (non-standard ones are processed from their own systems)
+				if (layeredMaterial.second->IsStandard())
+				{
+					object.second->MeshMaterialVariablesUpdateEvent->AddListener(layeredMaterial.first,
+						[&, matSystems = materialSystems](int meshIndex) { 
+							layeredMaterial.second->PrepareResourcesForStandardMaterial(matSystems, object.second, meshIndex, mScene->GetStandardMaterialRootSignature(layeredMaterial.first));
+						}
+					);
+				}
+			}
+		}
 		game.CPUProfiler()->EndCPUTime("Material callbacks init");
 #pragma endregion
 
@@ -301,32 +304,46 @@ namespace EveryRay_Core {
 		mIllumination->DrawLocalIllumination(mGBuffer, mSkybox);
 		ER_RHI_GPUTexture* localRT = mIllumination->GetLocalIlluminationRT();
 
-		#pragma region DRAW_LAYERED_MATERIALS
+		#pragma region DRAW_STANDARD_MATERIALS
+		// Passes for all other materials (which are called "standard") that are rendered in "Forward" way into localRT.
+		// Can be used for all kinds of materials that can be layered onto each other (transparent ones can also be rendered here).
+		// TODO: We'd rather render objects in batches per material in order to reduce SetRootSignature() calls etc.
 		for (auto& it = mScene->objects.begin(); it != mScene->objects.end(); it++)
 		{
 			for (auto& mat : it->second->GetMaterials())
 			{
-				if (!mat.second->IsSpecial())
+				if (mat.second->IsStandard())
+				{
 					it->second->Draw(mat.first);
+					rhi->UnsetPSO();
+				}
 			}
 		}
 #pragma endregion
 
 		#pragma region DRAW_TERRAIN
-		if (mTerrain)
-			mTerrain->Draw(localRT, mShadowMapper, mLightProbesManager);
+		//if (mTerrain)
+		//	mTerrain->Draw(localRT, mShadowMapper, mLightProbesManager);
 #pragma endregion
 
 		#pragma region DRAW_DEBUG_GIZMOS
 		// TODO: consider moving all debug gizmos to a separate debug renderer system
 		if (ER_Utility::IsEditorMode)
 		{
-			mDirectionalLight->DrawProxyModel(localRT, gameTime);
-			mIllumination->DrawDebugGizmos(localRT);
-			mTerrain->DrawDebugGizmos(localRT);
-			mFoliageSystem->DrawDebugGizmos(localRT);
-			for (auto& it = mScene->objects.begin(); it != mScene->objects.end(); it++)
-				it->second->DrawAABB(localRT);
+			mIllumination->DrawDebugProbes(localRT);
+
+			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST);
+			ER_RHI_GPURootSignature* debugGizmoRootSignature = mScene->GetStandardMaterialRootSignature(ER_MaterialHelper::basicColorMaterialName);
+			rhi->SetRootSignature(debugGizmoRootSignature);
+			{
+				mIllumination->DrawDebugGizmos(localRT, debugGizmoRootSignature);
+				mDirectionalLight->DrawProxyModel(localRT, gameTime, debugGizmoRootSignature);
+				mTerrain->DrawDebugGizmos(localRT, debugGizmoRootSignature);
+				mFoliageSystem->DrawDebugGizmos(localRT, debugGizmoRootSignature);
+				for (auto& it = mScene->objects.begin(); it != mScene->objects.end(); it++)
+					it->second->DrawAABB(localRT, debugGizmoRootSignature);
+			}
+			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		}
 #pragma endregion
 

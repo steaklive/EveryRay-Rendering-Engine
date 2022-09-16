@@ -85,7 +85,7 @@ namespace EveryRay_Core
 		void Initialize();
 		void Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass, 
 			const std::vector<ER_RHI_GPUTexture*>& aGbufferTextures, ER_RHI_GPURootSignature* rs);
-		void DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget);
+		void DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPURootSignature* rs);
 		void Update(const ER_CoreTime& gameTime);
 
 		bool IsSelected() { return mIsSelectedInEditor; }
@@ -228,7 +228,7 @@ namespace EveryRay_Core
 		void Update(const ER_CoreTime& gameTime, float gustDistance, float strength, float frequency);
 		void Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass,
 			const std::vector<ER_RHI_GPUTexture*>& aGbufferTextures);
-		void DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget);
+		void DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPURootSignature* rs);
 		void AddFoliage(ER_Foliage* foliage);
 		void SetVoxelizationParams(float* scale, const float* dimensions, XMFLOAT4* voxelCamera);
 		void Config() { mShowDebug = !mShowDebug; }

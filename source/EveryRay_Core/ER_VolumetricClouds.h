@@ -82,6 +82,10 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mBlurPS = nullptr;
 		ER_RHI_GPUShader* mUpsampleBlurCS = nullptr;
 
+		ER_RHI_GPURootSignature* mMainPassRS = nullptr;
+		ER_RHI_GPURootSignature* mUpsampleBlurPassRS = nullptr;
+		ER_RHI_GPURootSignature* mCompositePassRS = nullptr;
+
 		std::string mMainPassPSOName = "Volumetric Clouds - Main PSO";
 		std::string mCompositePassPSOName = "Volumetric Clouds - Composite PSO";
 		std::string mBlurPassPSOName = "Volumetric Clouds - Blur PSO";

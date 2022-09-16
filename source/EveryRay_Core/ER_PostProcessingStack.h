@@ -89,6 +89,7 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mTonemappingPS = nullptr;
 		bool mUseTonemap = true;
 		std::string mTonemapPassPSOName = "Post Processing - Tonemap PSO";
+		ER_RHI_GPURootSignature* mTonemapRS = nullptr;
 
 		// SSR
 		ER_RHI_GPUTexture* mSSRRT = nullptr;
@@ -99,6 +100,7 @@ namespace EveryRay_Core
 		float mSSRStepSize = 0.741f;
 		float mSSRMaxThickness = 0.00021f;
 		std::string mSSRPassPSOName = "Post Processing - SSR PSO";
+		ER_RHI_GPURootSignature* mSSRRS = nullptr;
 
 		// SSS
 		ER_RHI_GPUTexture* mSSSRT = nullptr;
@@ -106,6 +108,7 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mSSSPS = nullptr;
 		ER_RHI_GPUConstantBuffer<PostEffectsCBuffers::SSSCB> mSSSConstantBuffer;
 		std::string mSSSPassPSOName = "Post Processing - SSS PSO";
+		ER_RHI_GPURootSignature* mSSSRS = nullptr;
 
 		// Linear Fog
 		ER_RHI_GPUTexture* mLinearFogRT = nullptr;
@@ -117,6 +120,7 @@ namespace EveryRay_Core
 		float mLinearFogNearZ = 0.0f;
 		float mLinearFogFarZ = 0.0f;
 		std::string mLinearFogPassPSOName = "Post Processing - Linear Fog PSO";
+		ER_RHI_GPURootSignature* mLinearFogRS = nullptr;
 
 		ER_RHI_GPUTexture* mVolumetricFogRT = nullptr;
 
@@ -127,6 +131,7 @@ namespace EveryRay_Core
 		int mColorGradingCurrentLUTIndex = 2;
 		bool mUseColorGrading = true;
 		std::string mColorGradingPassPSOName = "Post Processing - Color Grading PSO";
+		ER_RHI_GPURootSignature* mColorGradingRS = nullptr;
 
 		// FXAA
 		ER_RHI_GPUTexture* mFXAART = nullptr;
@@ -134,6 +139,7 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mFXAAPS = nullptr;
 		bool mUseFXAA = true;
 		std::string mFXAAPassPSOName = "Post Processing - FXAA PSO";
+		ER_RHI_GPURootSignature* mFXAARS = nullptr;
 
 		// Vignette
 		ER_RHI_GPUTexture* mVignetteRT = nullptr;
@@ -143,9 +149,11 @@ namespace EveryRay_Core
 		float mVignetteSoftness = 0.5f;
 		bool mUseVignette = true;
 		std::string mVignettePassPSOName = "Post Processing - Vignette PSO";
+		ER_RHI_GPURootSignature* mVignetteRS = nullptr;
 
 		ER_RHI_GPUShader* mFinalResolvePS = nullptr;
 		std::string mFinalResolvePassPSOName = "Post Processing - Final Resolve PSO";
+		ER_RHI_GPURootSignature* mFinalResolveRS = nullptr;
 
 		// just pointers to RTs (not allocated in this system)
 		ER_RHI_GPUTexture* mRenderTargetBeforeResolve = nullptr;

@@ -14,6 +14,16 @@
 #include "ER_Skybox.h"
 #include "ER_QuadRenderer.h"
 
+#define MAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
+#define MAIN_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX 1
+#define MAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 2
+
+#define UPSAMPLEBLUR_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
+#define UPSAMPLEBLUR_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX 1
+#define UPSAMPLEBLUR_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 2
+
+#define COMPOSITE_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
+
 namespace EveryRay_Core {
 	ER_VolumetricClouds::ER_VolumetricClouds(ER_Core& game, ER_Camera& camera, ER_DirectionalLight& light, ER_Skybox& skybox)
 		: ER_CoreComponent(game),
@@ -35,6 +45,9 @@ namespace EveryRay_Core {
 		DeleteObject(mSkyAndSunRT);
 		DeleteObject(mUpsampleAndBlurRT);
 		DeleteObject(mBlurRT);
+		DeleteObject(mMainPassRS);
+		DeleteObject(mUpsampleBlurPassRS);
+		DeleteObject(mCompositePassRS);
 		mFrameConstantBuffer.Release();
 		mCloudsConstantBuffer.Release();
 		mUpsampleBlurConstantBuffer.Release();
@@ -57,6 +70,35 @@ namespace EveryRay_Core {
 		mUpsampleBlurCS = rhi->CreateGPUShader();
 		mUpsampleBlurCS->CompileShader(rhi, "content\\shaders\\UpsampleBlur.hlsl", "CSMain", ER_COMPUTE);
 
+		// root-signatures
+		mMainPassRS = rhi->CreateRootSignature(3, 2);
+		if (mMainPassRS)
+		{
+			mMainPassRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP);
+			mMainPassRS->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_BILINEAR_WRAP);
+			mMainPassRS->InitDescriptorTable(rhi, MAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 5 });
+			mMainPassRS->InitDescriptorTable(rhi, MAIN_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 });
+			mMainPassRS->InitDescriptorTable(rhi, MAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 });
+			mMainPassRS->Finalize(rhi, "Volumetric Clouds Main Pass Root Signature");
+		}
+
+		mUpsampleBlurPassRS = rhi->CreateRootSignature(3, 2);
+		if (mUpsampleBlurPassRS)
+		{
+			mUpsampleBlurPassRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP);
+			mUpsampleBlurPassRS->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_BILINEAR_WRAP);
+			mUpsampleBlurPassRS->InitDescriptorTable(rhi, MAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 5 });
+			mUpsampleBlurPassRS->InitDescriptorTable(rhi, MAIN_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 });
+			mUpsampleBlurPassRS->InitDescriptorTable(rhi, MAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 });
+			mUpsampleBlurPassRS->Finalize(rhi, "Volumetric Clouds Upsample & Blur Pass Root Signature");
+		}
+
+		mCompositePassRS = rhi->CreateRootSignature(1, 0);
+		if (mCompositePassRS)
+		{
+			mCompositePassRS->InitDescriptorTable(rhi, COMPOSITE_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 2 });
+			mCompositePassRS->Finalize(rhi, "Volumetric Clouds Composite Pass Root Signature", true);
+		}
 
 		//cbuffers
 		mFrameConstantBuffer.Initialize(rhi);
@@ -164,17 +206,20 @@ namespace EveryRay_Core {
 
 		// main pass
 		{
-			rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_BILINEAR_WRAP });
-			rhi->SetUnorderedAccessResources(ER_COMPUTE, { mMainRT });
-			rhi->SetShaderResources(ER_COMPUTE, { mSkyAndSunRT,	mWeatherTextureSRV,	mCloudTextureSRV, mWorleyTextureSRV, mIlluminationResultDepthTarget });
-			rhi->SetConstantBuffers(ER_COMPUTE, { mFrameConstantBuffer.Buffer(), mCloudsConstantBuffer.Buffer() });
+			rhi->SetRootSignature(mMainPassRS, true);
 			if (!rhi->IsPSOReady(mMainPassPSOName, true))
 			{
 				rhi->InitializePSO(mMainPassPSOName, true);
 				rhi->SetShader(mMainCS);
+				rhi->SetRootSignatureToPSO(mMainPassPSOName, mMainPassRS, true);
 				rhi->FinalizePSO(mMainPassPSOName, true);
 			}
 			rhi->SetPSO(mMainPassPSOName, true);
+			rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_BILINEAR_WRAP });
+			rhi->SetShaderResources(ER_COMPUTE, { mSkyAndSunRT,	mWeatherTextureSRV,	mCloudTextureSRV, mWorleyTextureSRV, mIlluminationResultDepthTarget }, 0,
+				mMainPassRS, MAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
+			rhi->SetUnorderedAccessResources(ER_COMPUTE, { mMainRT }, 0, mMainPassRS, MAIN_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
+			rhi->SetConstantBuffers(ER_COMPUTE, { mFrameConstantBuffer.Buffer(), mCloudsConstantBuffer.Buffer() }, 0, mMainPassRS, MAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
 			rhi->Dispatch(DivideByMultiple(static_cast<UINT>(mMainRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mMainRT->GetHeight()), 8u), 1u);
 			rhi->UnsetPSO();
 			
@@ -185,18 +230,20 @@ namespace EveryRay_Core {
 		{
 			mUpsampleBlurConstantBuffer.Data.Upsample = true;
 			mUpsampleBlurConstantBuffer.ApplyChanges(rhi);
-			rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
-			rhi->SetUnorderedAccessResources(ER_COMPUTE, { mUpsampleAndBlurRT });
-			rhi->SetShaderResources(ER_COMPUTE, { mMainRT });
-			rhi->SetConstantBuffers(ER_COMPUTE, { mUpsampleBlurConstantBuffer.Buffer() });
 
+			rhi->SetRootSignature(mUpsampleBlurPassRS, true);
 			if (!rhi->IsPSOReady(mUpsampleBlurPSOName, true))
 			{
 				rhi->InitializePSO(mUpsampleBlurPSOName, true);
 				rhi->SetShader(mUpsampleBlurCS);
+				rhi->SetRootSignatureToPSO(mUpsampleBlurPSOName, mUpsampleBlurPassRS, true);
 				rhi->FinalizePSO(mUpsampleBlurPSOName, true);
 			}
 			rhi->SetPSO(mUpsampleBlurPSOName, true);
+			rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
+			rhi->SetShaderResources(ER_COMPUTE, { mMainRT }, 0, mUpsampleBlurPassRS, UPSAMPLEBLUR_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
+			rhi->SetUnorderedAccessResources(ER_COMPUTE, { mUpsampleAndBlurRT }, 0, mUpsampleBlurPassRS, UPSAMPLEBLUR_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
+			rhi->SetConstantBuffers(ER_COMPUTE, { mUpsampleBlurConstantBuffer.Buffer() }, 0, mUpsampleBlurPassRS, UPSAMPLEBLUR_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
 			rhi->Dispatch(DivideByMultiple(static_cast<UINT>(mUpsampleAndBlurRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mUpsampleAndBlurRT->GetHeight()), 8u), 1u);
 			rhi->UnsetPSO();
 			
@@ -214,17 +261,19 @@ namespace EveryRay_Core {
 		auto rhi = mCore->GetRHI();
 
 		rhi->SetRenderTargets({ aRenderTarget });
-		rhi->SetShaderResources(ER_PIXEL, { mIlluminationResultDepthTarget, /*mBlurRT*/mUpsampleAndBlurRT });
-
+		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		if (!rhi->IsPSOReady(mCompositePassPSOName))
 		{
 			rhi->InitializePSO(mCompositePassPSOName);
 			rhi->SetShader(mCompositePS);
 			rhi->SetRenderTargetFormats({ aRenderTarget });
+			rhi->SetTopologyTypeToPSO(mCompositePassPSOName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			rhi->SetRootSignatureToPSO(mCompositePassPSOName, mCompositePassRS);
 			quadRenderer->PrepareDraw(rhi);
 			rhi->FinalizePSO(mCompositePassPSOName);
 		}
 		rhi->SetPSO(mCompositePassPSOName);
+		rhi->SetShaderResources(ER_PIXEL, { mIlluminationResultDepthTarget, /*mBlurRT*/mUpsampleAndBlurRT }, 0, COMPOSITE_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 		quadRenderer->Draw(rhi);
 		rhi->UnsetPSO();
 

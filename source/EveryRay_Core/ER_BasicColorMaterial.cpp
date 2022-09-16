@@ -6,6 +6,11 @@
 #include "ER_RenderingObject.h"
 #include "ER_Mesh.h"
 #include "ER_MaterialsCallbacks.h"
+#include "ER_Illumination.h"
+
+static const std::string psoNameNonInstanced = "BasicColorMaterial PSO";
+static const std::string psoNameInstanced = "BasicColorMaterial w/ Instancing PSO";
+
 namespace EveryRay_Core
 {
 	ER_BasicColorMaterial::ER_BasicColorMaterial(ER_Core& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced)
@@ -33,21 +38,37 @@ namespace EveryRay_Core
 		ER_Material::~ER_Material();
 	}
 
-	void ER_BasicColorMaterial::PrepareForRendering(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, ER_RHI_GPURootSignature* rs)
+	// callback method for "ER_RenderingObject" that has this material
+	void ER_BasicColorMaterial::PrepareResourcesForStandardMaterial(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, ER_RHI_GPURootSignature* rs)
 	{
 		auto rhi = ER_Material::GetCore()->GetRHI();
 		ER_Camera* camera = (ER_Camera*)(ER_Material::GetCore()->GetServices().FindService(ER_Camera::TypeIdClass()));
 		
 		assert(aObj);
 		assert(camera);
+		assert(neededSystems.mIllumination);
 
 		mConstantBuffer.Data.World = XMMatrixTranspose(aObj->GetTransformationMatrix());
 		mConstantBuffer.Data.ViewProjection = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());
 		mConstantBuffer.Data.Color = XMFLOAT4{0.0, 1.0, 0.0, 0.0};
 		mConstantBuffer.ApplyChanges(rhi);
 
+		rhi->SetRootSignature(rs);
+		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		const std::string& psoName = psoNameNonInstanced; //TODO add instancing support
+		if (!rhi->IsPSOReady(psoName))
+		{
+			rhi->InitializePSO(psoName);
+			PrepareShaders();
+			rhi->SetRenderTargetFormats({ neededSystems.mIllumination->GetLocalIlluminationRT() }); // we assume that we render in local RT (don't like it but idk how to properly pass RT atm)
+			rhi->SetRootSignatureToPSO(psoName, rs);
+			rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			rhi->FinalizePSO(psoName);
+		}
+		rhi->SetPSO(psoName);
 		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() }, 0, rs, BASICCOLOR_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
-		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() }, 0, rs, BASICCOLOR_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+		rhi->SetConstantBuffers(ER_PIXEL,  { mConstantBuffer.Buffer() }, 0, rs, BASICCOLOR_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 	}
 
 	// non-callback method for non-"RenderingObject" draws
@@ -64,7 +85,7 @@ namespace EveryRay_Core
 		mConstantBuffer.ApplyChanges(rhi);
 
 		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() }, 0, rs, BASICCOLOR_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
-		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() }, 0, rs, BASICCOLOR_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+		rhi->SetConstantBuffers(ER_PIXEL,  { mConstantBuffer.Buffer() }, 0, rs, BASICCOLOR_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 	}
 
 	void ER_BasicColorMaterial::CreateVertexBuffer(const ER_Mesh& mesh, ER_RHI_GPUBuffer* vertexBuffer)

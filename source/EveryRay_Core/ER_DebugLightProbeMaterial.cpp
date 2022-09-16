@@ -13,7 +13,7 @@ namespace EveryRay_Core
 	ER_DebugLightProbeMaterial::ER_DebugLightProbeMaterial(ER_Core& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced)
 		: ER_Material(game, entries, shaderFlags)
 	{
-		mIsSpecial = true;
+		mIsStandard = false;
 
 		if (shaderFlags & HAS_VERTEX_SHADER)
 		{
@@ -75,7 +75,7 @@ namespace EveryRay_Core
 		);
 		mConstantBuffer.ApplyChanges(rhi);
 		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() }, 0, rs, DEBUGLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
-		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() }, 0, rs, DEBUGLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+		rhi->SetConstantBuffers(ER_PIXEL,  { mConstantBuffer.Buffer() }, 0, rs, DEBUGLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 		
 		if (static_cast<ER_ProbeType>(aProbeType) == DIFFUSE_PROBE)
 		{
@@ -88,6 +88,11 @@ namespace EveryRay_Core
 				rs, DEBUGLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 		}
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
+	}
+
+	void ER_DebugLightProbeMaterial::PrepareResourcesForStandardMaterial(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, ER_RHI_GPURootSignature* rs)
+	{
+		//not used because this material is not standard
 	}
 
 	void ER_DebugLightProbeMaterial::CreateVertexBuffer(const ER_Mesh& mesh, ER_RHI_GPUBuffer* vertexBuffer)

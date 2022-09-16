@@ -15,6 +15,7 @@
 #include "ER_VertexDeclarations.h"
 #include "ER_VoxelizationMaterial.h"
 #include "ER_RenderToLightProbeMaterial.h"
+#include "ER_DebugLightProbeMaterial.h"
 #include "ER_Scene.h"
 #include "ER_GBuffer.h"
 #include "ER_ShadowMapper.h"
@@ -51,6 +52,10 @@ static const std::string voxelizationPSONames[NUM_VOXEL_GI_CASCADES] =
 
 #define FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
 #define FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 1
+
+#define COMPOSITE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
+#define COMPOSITE_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX 1
+#define COMPOSITE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 2
 
 namespace EveryRay_Core {
 
@@ -97,6 +102,7 @@ namespace EveryRay_Core {
 		DeleteObject(mVoxelizationRS);
 		DeleteObject(mVoxelizationDebugRS);
 		DeleteObject(mForwardLightingRS);
+		DeleteObject(mDebugProbesRenderRS);
 
 		mVoxelizationDebugConstantBuffer.Release();
 		mVoxelConeTracingMainConstantBuffer.Release();
@@ -281,6 +287,24 @@ namespace EveryRay_Core {
 				mForwardLightingRS->InitDescriptorTable(rhi, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mForwardLightingRS->Finalize(rhi, "Forward Lighting Pass Root Signature", true);
 			}
+
+			mCompositeIlluminationRS = rhi->CreateRootSignature(3, 1);
+			if (mCompositeIlluminationRS)
+			{
+				mCompositeIlluminationRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_ALL);
+				mCompositeIlluminationRS->InitDescriptorTable(rhi, COMPOSITE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				mCompositeIlluminationRS->InitDescriptorTable(rhi, COMPOSITE_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				mCompositeIlluminationRS->InitDescriptorTable(rhi, COMPOSITE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				mCompositeIlluminationRS->Finalize(rhi, "Composite Pass Root Signature");
+			}
+
+			mDebugProbesRenderRS = rhi->CreateRootSignature(2, 0);
+			if (mDebugProbesRenderRS)
+			{
+				mDebugProbesRenderRS->InitDescriptorTable(rhi, DEBUGLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mDebugProbesRenderRS->InitDescriptorTable(rhi, DEBUGLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				mDebugProbesRenderRS->Finalize(rhi, "Debug light probes Pass Root Signature", true);
+			}
 		}
 
 		//callbacks for materials updates
@@ -356,7 +380,7 @@ namespace EveryRay_Core {
 				rhi->ClearUAV(mVCTVoxelCascades3DRTs[cascade], clearColorBlack);
 
 				std::string materialName = ER_MaterialHelper::voxelizationMaterialName + "_" + std::to_string(cascade);
-				std::string& psoName = voxelizationPSONames[cascade];
+				const std::string& psoName = voxelizationPSONames[cascade];
 
 				for (auto& obj : mVoxelizationObjects[cascade])
 				{
@@ -373,7 +397,7 @@ namespace EveryRay_Core {
 							if (!rhi->IsPSOReady(psoName))
 							{
 								rhi->InitializePSO(psoName);
-								material->PrepareResources();
+								material->PrepareShaders();
 								rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING_NO_DEPTH_SCISSOR_ENABLED);
 								rhi->SetRootSignatureToPSO(psoName, mVoxelizationRS);
 								rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -541,44 +565,51 @@ namespace EveryRay_Core {
 
 		// mLocalIllumination might be bound as RTV before this pass
 		rhi->UnbindRenderTargets();
-		
-		rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
-		rhi->SetUnorderedAccessResources(ER_COMPUTE, { mFinalIlluminationRT });
-		rhi->SetShaderResources(ER_COMPUTE, { mShowVCTVoxelizationOnly ? mVCTVoxelizationDebugRT : mVCTUpsampleAndBlurRT, mLocalIlluminationRT });
-		rhi->SetConstantBuffers(ER_COMPUTE, { mCompositeTotalIlluminationConstantBuffer.Buffer() });
-		
+		rhi->SetRootSignature(mCompositeIlluminationRS);
 		if (!rhi->IsPSOReady(mCompositeIlluminationPSOName, true))
 		{
 			rhi->InitializePSO(mCompositeIlluminationPSOName, true);
 			rhi->SetShader(mCompositeIlluminationCS);
-			rhi->SetRenderTargetFormats({});
+			rhi->SetRootSignatureToPSO(mCompositeIlluminationPSOName, mCompositeIlluminationRS, true);
 			rhi->FinalizePSO(mCompositeIlluminationPSOName, true);
 		}
 		rhi->SetPSO(mCompositeIlluminationPSOName, true);
+		rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
+		rhi->SetShaderResources(ER_COMPUTE, { mShowVCTVoxelizationOnly ? mVCTVoxelizationDebugRT : mVCTUpsampleAndBlurRT, mLocalIlluminationRT }, 0, 
+			mCompositeIlluminationRS, COMPOSITE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
+		rhi->SetUnorderedAccessResources(ER_COMPUTE, { mFinalIlluminationRT }, 0, mCompositeIlluminationRS, COMPOSITE_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
+		rhi->SetConstantBuffers(ER_COMPUTE, { mCompositeTotalIlluminationConstantBuffer.Buffer() }, 0, mCompositeIlluminationRS, COMPOSITE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
 		rhi->Dispatch(DivideByMultiple(static_cast<UINT>(mFinalIlluminationRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mFinalIlluminationRT->GetHeight()), 8u), 1u);
 		rhi->UnsetPSO();
 		
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 	}
 
-	void ER_Illumination::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget)
+	void ER_Illumination::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPURootSignature* rs)
 	{
 		//voxel GI
 		if (mDrawVCTVoxelZonesGizmos) 
 		{
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 			{
-				mDebugVoxelZonesGizmos[i]->Draw(aRenderTarget);
+				mDebugVoxelZonesGizmos[i]->Draw(aRenderTarget, rs);
 			}
 		}
 
+	}
+
+	void ER_Illumination::DrawDebugProbes(ER_RHI_GPUTexture* aRenderTarget)
+	{
 		//light probe system
 		if (mProbesManager) {
 			auto rhi = GetCore()->GetRHI();
+			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			rhi->SetRootSignature(mDebugProbesRenderRS);
+
 			if (mDrawDiffuseProbes)
-				mProbesManager->DrawDebugProbes(rhi, aRenderTarget, DIFFUSE_PROBE);
+				mProbesManager->DrawDebugProbes(rhi, aRenderTarget, DIFFUSE_PROBE, mDebugProbesRenderRS);
 			if (mDrawSpecularProbes)
-				mProbesManager->DrawDebugProbes(rhi, aRenderTarget, SPECULAR_PROBE);
+				mProbesManager->DrawDebugProbes(rhi, aRenderTarget, SPECULAR_PROBE, mDebugProbesRenderRS);
 		}
 	}
 

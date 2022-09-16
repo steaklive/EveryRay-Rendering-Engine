@@ -110,11 +110,11 @@ namespace EveryRay_Core {
 					if (!rhi->IsPSOReady(psoName))
 					{
 						rhi->InitializePSO(psoName);
-						material->PrepareResources();
+						material->PrepareShaders();
 						rhi->SetRasterizerState(ER_NO_CULLING);
 						rhi->SetRenderTargetFormats({ mAlbedoBuffer, mNormalBuffer, mPositionsBuffer, mExtraBuffer, mExtra2Buffer }, mDepthBuffer);
 						rhi->SetRootSignatureToPSO(psoName, mRootSignature);
-						rhi->SetTopologyTypeToPSO(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+						rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 						rhi->FinalizePSO(psoName);
 					}
 					rhi->SetPSO(psoName);

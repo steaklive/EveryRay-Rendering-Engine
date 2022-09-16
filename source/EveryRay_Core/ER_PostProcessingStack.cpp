@@ -11,6 +11,27 @@
 #include "ER_VolumetricFog.h"
 #include "ER_Illumination.h"
 
+#define LINEARFOG_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
+#define LINEARFOG_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 1
+
+#define SSS_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
+#define SSS_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 1
+
+#define SSR_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
+#define SSR_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 1
+
+#define TONEMAP_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
+
+#define COLORGRADING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
+
+#define VIGNETTE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
+#define VIGNETTE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 1
+
+#define FXAA_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
+#define FXAA_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 1
+
+#define FINALRESOLVE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
+
 namespace EveryRay_Core {
 
 	ER_PostProcessingStack::ER_PostProcessingStack(ER_Core& pCore, ER_Camera& pCamera)
@@ -38,6 +59,15 @@ namespace EveryRay_Core {
 		DeleteObject(mLinearFogPS);
 		DeleteObject(mFinalResolvePS);
 
+		DeleteObject(mTonemapRS);
+		DeleteObject(mSSRRS);
+		DeleteObject(mSSSRS);
+		DeleteObject(mColorGradingRS);
+		DeleteObject(mVignetteRS);
+		DeleteObject(mFXAARS);
+		DeleteObject(mLinearFogRS);
+		DeleteObject(mFinalResolveRS);
+
 		mSSRConstantBuffer.Release();
 		mSSSConstantBuffer.Release();
 		mFXAAConstantBuffer.Release();
@@ -51,6 +81,12 @@ namespace EveryRay_Core {
 
 		mFinalResolvePS = rhi->CreateGPUShader();
 		mFinalResolvePS->CompileShader(rhi, "content\\shaders\\EmptyColorResolve.hlsl", "PSMain", ER_PIXEL);
+		mFinalResolveRS = rhi->CreateRootSignature(1, 0);
+		if (mFinalResolveRS)
+		{
+			mFinalResolveRS->InitDescriptorTable(rhi, FINALRESOLVE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+			mFinalResolveRS->Finalize(rhi, "Final Resolve Pass Root Signature", true);
+		}
 
 		//Linear fog
 		{
@@ -62,6 +98,15 @@ namespace EveryRay_Core {
 			mLinearFogRT = rhi->CreateGPUTexture();
 			mLinearFogRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
+
+			mLinearFogRS = rhi->CreateRootSignature(2, 1);
+			if (mLinearFogRS)
+			{
+				mLinearFogRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mLinearFogRS->InitDescriptorTable(rhi, LINEARFOG_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mLinearFogRS->InitDescriptorTable(rhi, LINEARFOG_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mLinearFogRS->Finalize(rhi, "Linear Fog Pass Root Signature", true);
+			}
 		}
 
 		mVolumetricFogRT = rhi->CreateGPUTexture();
@@ -78,6 +123,15 @@ namespace EveryRay_Core {
 			mSSRRT = rhi->CreateGPUTexture();
 			mSSRRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
+
+			mSSRRS = rhi->CreateRootSignature(2, 1);
+			if (mSSRRS)
+			{
+				mSSRRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mSSRRS->InitDescriptorTable(rhi, SSR_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 4 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mSSRRS->InitDescriptorTable(rhi, SSR_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mSSRRS->Finalize(rhi, "SSR Pass Root Signature", true);
+			}
 		}
 
 		//SSS
@@ -90,6 +144,15 @@ namespace EveryRay_Core {
 			mSSSRT = rhi->CreateGPUTexture();
 			mSSSRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
+
+			mSSSRS = rhi->CreateRootSignature(2, 1);
+			if (mSSSRS)
+			{
+				mSSSRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mSSSRS->InitDescriptorTable(rhi, SSS_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 3 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mSSSRS->InitDescriptorTable(rhi, SSS_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mSSSRS->Finalize(rhi, "SSS Pass Root Signature", true);
+			}
 		}
 
 		//Tonemap
@@ -100,6 +163,14 @@ namespace EveryRay_Core {
 			mTonemappingRT = rhi->CreateGPUTexture();
 			mTonemappingRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
+
+			mTonemapRS = rhi->CreateRootSignature(1, 1);
+			if (mTonemapRS)
+			{
+				mTonemapRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mTonemapRS->InitDescriptorTable(rhi, TONEMAP_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mTonemapRS->Finalize(rhi, "Tonemap Pass Root Signature", true);
+			}
 		}
 
 		//Color grading
@@ -117,6 +188,13 @@ namespace EveryRay_Core {
 			mColorGradingRT = rhi->CreateGPUTexture();
 			mColorGradingRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
+
+			mColorGradingRS = rhi->CreateRootSignature(1, 0);
+			if (mColorGradingRS)
+			{
+				mColorGradingRS->InitDescriptorTable(rhi, COLORGRADING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mColorGradingRS->Finalize(rhi, "Color Grading Pass Root Signature", true);
+			}
 		}
 
 		//Vignette
@@ -129,6 +207,15 @@ namespace EveryRay_Core {
 			mVignetteRT = rhi->CreateGPUTexture();
 			mVignetteRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
+
+			mVignetteRS = rhi->CreateRootSignature(2, 1);
+			if (mVignetteRS)
+			{
+				mVignetteRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mVignetteRS->InitDescriptorTable(rhi, VIGNETTE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mVignetteRS->InitDescriptorTable(rhi, VIGNETTE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mVignetteRS->Finalize(rhi, "Vignette Pass Root Signature", true);
+			}
 		}	
 		
 		//FXAA
@@ -141,6 +228,15 @@ namespace EveryRay_Core {
 			mFXAART = rhi->CreateGPUTexture();
 			mFXAART->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
+
+			mFXAARS = rhi->CreateRootSignature(2, 1);
+			if (mFXAARS)
+			{
+				mFXAARS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mFXAARS->InitDescriptorTable(rhi, FXAA_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mFXAARS->InitDescriptorTable(rhi, FXAA_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mFXAARS->Finalize(rhi, "FXAA Pass Root Signature", true);
+			}
 		}
 	}
 
@@ -242,23 +338,28 @@ namespace EveryRay_Core {
 
 		rhi->SetMainRenderTargets();
 
+		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		rhi->SetRootSignature(mFinalResolveRS);
+
 		//final resolve to main RT (pre-UI)
 		{
 			ER_QuadRenderer* quad = (ER_QuadRenderer*)mCore.GetServices().FindService(ER_QuadRenderer::TypeIdClass());
 			assert(quad);
 			assert(mRenderTargetBeforeResolve);
 
-			rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
-			rhi->SetShaderResources(ER_PIXEL, { aResolveRT ? aResolveRT : mRenderTargetBeforeResolve });
 			if (!rhi->IsPSOReady(mFinalResolvePassPSOName))
 			{
 				rhi->InitializePSO(mFinalResolvePassPSOName);
 				rhi->SetShader(mFinalResolvePS);
 				rhi->SetMainRenderTargetFormats();
+				rhi->SetTopologyTypeToPSO(mFinalResolvePassPSOName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+				rhi->SetRootSignatureToPSO(mFinalResolvePassPSOName, mFinalResolveRS);
 				quad->PrepareDraw(rhi);
 				rhi->FinalizePSO(mFinalResolvePassPSOName);
 			}
 			rhi->SetPSO(mFinalResolvePassPSOName);
+			rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
+			rhi->SetShaderResources(ER_PIXEL, { aResolveRT ? aResolveRT : mRenderTargetBeforeResolve }, 0, mFinalResolveRS, FINALRESOLVE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 			quad->Draw(rhi);
 			rhi->UnsetPSO();
 		}
@@ -272,7 +373,7 @@ namespace EveryRay_Core {
 		auto rhi = mCore.GetRHI();
 
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
-		rhi->SetShaderResources(ER_PIXEL, { aInputTexture });
+		rhi->SetShaderResources(ER_PIXEL, { aInputTexture }, 0, mTonemapRS, TONEMAP_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 	}
 
 	void ER_PostProcessingStack::PrepareDrawingSSR(const ER_CoreTime& gameTime, ER_RHI_GPUTexture* aInputTexture, ER_GBuffer* gbuffer)
@@ -292,8 +393,9 @@ namespace EveryRay_Core {
 		mSSRConstantBuffer.ApplyChanges(rhi);
 
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
-		rhi->SetShaderResources(ER_PIXEL, { aInputTexture, gbuffer->GetNormals(), gbuffer->GetExtraBuffer(), mDepthTarget });
-		rhi->SetConstantBuffers(ER_PIXEL, { mSSRConstantBuffer.Buffer() });
+		rhi->SetShaderResources(ER_PIXEL, { aInputTexture, gbuffer->GetNormals(), gbuffer->GetExtraBuffer(), mDepthTarget }, 0,
+			mSSSRS, SSR_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
+		rhi->SetConstantBuffers(ER_PIXEL, { mSSRConstantBuffer.Buffer() }, 0, mSSRRS, SSR_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 	}
 
 	void ER_PostProcessingStack::PrepareDrawingSSS(const ER_CoreTime& gameTime, ER_RHI_GPUTexture* aInputTexture, ER_GBuffer* gbuffer, bool verticalPass)
@@ -312,8 +414,8 @@ namespace EveryRay_Core {
 		mSSSConstantBuffer.ApplyChanges(rhi);
 
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
-		rhi->SetShaderResources(ER_PIXEL, { aInputTexture, mDepthTarget, gbuffer->GetExtra2Buffer() });
-		rhi->SetConstantBuffers(ER_PIXEL, { mSSSConstantBuffer.Buffer() });
+		rhi->SetShaderResources(ER_PIXEL, { aInputTexture, mDepthTarget, gbuffer->GetExtra2Buffer() }, 0, mSSSRS, SSS_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
+		rhi->SetConstantBuffers(ER_PIXEL, { mSSSConstantBuffer.Buffer() }, 0, mSSSRS, SSS_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 	}
 
 	void ER_PostProcessingStack::PrepareDrawingLinearFog(ER_RHI_GPUTexture* aInputTexture)
@@ -327,9 +429,9 @@ namespace EveryRay_Core {
 		mLinearFogConstantBuffer.Data.FogDensity = mLinearFogDensity;
 		mLinearFogConstantBuffer.ApplyChanges(rhi);
 
-		rhi->SetConstantBuffers(ER_PIXEL, { mLinearFogConstantBuffer.Buffer() });
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
-		rhi->SetShaderResources(ER_PIXEL, { aInputTexture, mDepthTarget });
+		rhi->SetShaderResources(ER_PIXEL, { aInputTexture, mDepthTarget }, 0, mLinearFogRS, LINEARFOG_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
+		rhi->SetConstantBuffers(ER_PIXEL, { mLinearFogConstantBuffer.Buffer() }, 0, mLinearFogRS, LINEARFOG_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 	}
 
 	void ER_PostProcessingStack::PrepareDrawingColorGrading(ER_RHI_GPUTexture* aInputTexture)
@@ -337,7 +439,7 @@ namespace EveryRay_Core {
 		assert(aInputTexture);
 		auto rhi = mCore.GetRHI();
 
-		rhi->SetShaderResources(ER_PIXEL, { mLUTs[mColorGradingCurrentLUTIndex], aInputTexture });
+		rhi->SetShaderResources(ER_PIXEL, { mLUTs[mColorGradingCurrentLUTIndex], aInputTexture }, 0, mColorGradingRS, COLORGRADING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 	}
 
 	void ER_PostProcessingStack::PrepareDrawingVignette(ER_RHI_GPUTexture* aInputTexture)
@@ -348,9 +450,9 @@ namespace EveryRay_Core {
 		mVignetteConstantBuffer.Data.RadiusSoftness = XMFLOAT2(mVignetteRadius, mVignetteSoftness);
 		mVignetteConstantBuffer.ApplyChanges(rhi);
 
-		rhi->SetConstantBuffers(ER_PIXEL, { mVignetteConstantBuffer.Buffer() });
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
-		rhi->SetShaderResources(ER_PIXEL, { aInputTexture });
+		rhi->SetConstantBuffers(ER_PIXEL, { mVignetteConstantBuffer.Buffer() }, 0, mVignetteRS, VIGNETTE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+		rhi->SetShaderResources(ER_PIXEL, { aInputTexture }, 0, mVignetteRS, VIGNETTE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 	}
 
 	void ER_PostProcessingStack::PrepareDrawingFXAA(ER_RHI_GPUTexture* aInputTexture)
@@ -361,9 +463,9 @@ namespace EveryRay_Core {
 		mFXAAConstantBuffer.Data.ScreenDimensions = XMFLOAT2(static_cast<float>(mCore.ScreenWidth()),static_cast<float>(mCore.ScreenHeight()));
 		mFXAAConstantBuffer.ApplyChanges(rhi);
 
-		rhi->SetConstantBuffers(ER_PIXEL, { mFXAAConstantBuffer.Buffer() });
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
-		rhi->SetShaderResources(ER_PIXEL, { aInputTexture });
+		rhi->SetShaderResources(ER_PIXEL, { aInputTexture }, 0, mFXAARS, FXAA_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
+		rhi->SetConstantBuffers(ER_PIXEL, { mFXAAConstantBuffer.Buffer() }, 0, mFXAARS, FXAA_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 	}
 
 	void ER_PostProcessingStack::DrawEffects(const ER_CoreTime& gameTime, ER_QuadRenderer* quad, ER_GBuffer* gbuffer, ER_VolumetricClouds* aVolumetricClouds, ER_VolumetricFog* aVolumetricFog)
@@ -373,21 +475,25 @@ namespace EveryRay_Core {
 		auto rhi = mCore.GetRHI();
 
 		mRenderTargetBeforeResolve = mRenderTargetBeforePostProcessingPasses;
+		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		// Linear fog
 		if (mUseLinearFog)
 		{
 			rhi->SetRenderTargets({ mLinearFogRT });
-			PrepareDrawingLinearFog(mRenderTargetBeforeResolve);
+			rhi->SetRootSignature(mLinearFogRS);
 			if (!rhi->IsPSOReady(mLinearFogPassPSOName))
 			{
 				rhi->InitializePSO(mLinearFogPassPSOName);
 				rhi->SetShader(mLinearFogPS);
 				rhi->SetRenderTargetFormats({ mLinearFogRT });
+				rhi->SetRootSignatureToPSO(mLinearFogPassPSOName, mLinearFogRS);
+				rhi->SetTopologyTypeToPSO(mLinearFogPassPSOName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 				quad->PrepareDraw(rhi);
 				rhi->FinalizePSO(mLinearFogPassPSOName);
 			}
 			rhi->SetPSO(mLinearFogPassPSOName);
+			PrepareDrawingLinearFog(mRenderTargetBeforeResolve);
 			quad->Draw(rhi);
 			rhi->UnsetPSO();
 			
@@ -404,11 +510,14 @@ namespace EveryRay_Core {
 			if (illumination->IsSSSBlurring())
 			{
 				rhi->SetRenderTargets({ mSSSRT });
+				rhi->SetRootSignature(mSSSRS);
 				if (!rhi->IsPSOReady(mSSSPassPSOName))
 				{
 					rhi->InitializePSO(mSSSPassPSOName);
 					rhi->SetShader(mSSSPS);
 					rhi->SetRenderTargetFormats({ mSSSRT });
+					rhi->SetRootSignatureToPSO(mSSSPassPSOName, mSSSRS);
+					rhi->SetTopologyTypeToPSO(mSSSPassPSOName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 					quad->PrepareDraw(rhi);
 					rhi->FinalizePSO(mSSSPassPSOName);
 				}
@@ -436,16 +545,19 @@ namespace EveryRay_Core {
 		if (mUseSSR)
 		{
 			rhi->SetRenderTargets({ mSSRRT });
-			PrepareDrawingSSR(gameTime, mRenderTargetBeforeResolve, gbuffer);
+			rhi->SetRootSignature(mSSRRS);
 			if (!rhi->IsPSOReady(mSSRPassPSOName))
 			{
 				rhi->InitializePSO(mSSRPassPSOName);
 				rhi->SetShader(mSSRPS);
 				rhi->SetRenderTargetFormats({ mSSRRT });
+				rhi->SetRootSignatureToPSO(mSSRPassPSOName, mSSRRS);
+				rhi->SetTopologyTypeToPSO(mSSRPassPSOName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 				quad->PrepareDraw(rhi);
 				rhi->FinalizePSO(mSSRPassPSOName);
 			}
 			rhi->SetPSO(mSSRPassPSOName);
+			PrepareDrawingSSR(gameTime, mRenderTargetBeforeResolve, gbuffer);
 			quad->Draw(rhi);
 			rhi->UnsetPSO();
 
@@ -474,16 +586,19 @@ namespace EveryRay_Core {
 		if (mUseTonemap)
 		{
 			rhi->SetRenderTargets({ mTonemappingRT });
-			PrepareDrawingTonemapping(mRenderTargetBeforeResolve);
+			rhi->SetRootSignature(mTonemapRS);
 			if (!rhi->IsPSOReady(mTonemapPassPSOName))
 			{
 				rhi->InitializePSO(mTonemapPassPSOName);
 				rhi->SetShader(mTonemappingPS);
 				rhi->SetRenderTargetFormats({ mTonemappingRT });
+				rhi->SetRootSignatureToPSO(mTonemapPassPSOName, mTonemapRS);
+				rhi->SetTopologyTypeToPSO(mTonemapPassPSOName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 				quad->PrepareDraw(rhi);
 				rhi->FinalizePSO(mTonemapPassPSOName);
 			}
 			rhi->SetPSO(mTonemapPassPSOName);
+			PrepareDrawingTonemapping(mRenderTargetBeforeResolve);
 			quad->Draw(rhi);
 			rhi->UnsetPSO();
 
@@ -497,16 +612,19 @@ namespace EveryRay_Core {
 		if (mUseColorGrading)
 		{
 			rhi->SetRenderTargets({ mColorGradingRT });
-			PrepareDrawingColorGrading(mRenderTargetBeforeResolve);
+			rhi->SetRootSignature(mColorGradingRS);
 			if (!rhi->IsPSOReady(mColorGradingPassPSOName))
 			{
 				rhi->InitializePSO(mColorGradingPassPSOName);
 				rhi->SetShader(mColorGradingPS);
 				rhi->SetRenderTargetFormats({ mColorGradingRT });
+				rhi->SetRootSignatureToPSO(mColorGradingPassPSOName, mColorGradingRS);
+				rhi->SetTopologyTypeToPSO(mColorGradingPassPSOName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 				quad->PrepareDraw(rhi);
 				rhi->FinalizePSO(mColorGradingPassPSOName);
 			}
 			rhi->SetPSO(mColorGradingPassPSOName);
+			PrepareDrawingColorGrading(mRenderTargetBeforeResolve);
 			quad->Draw(rhi);
 			rhi->UnsetPSO();
 
@@ -520,16 +638,19 @@ namespace EveryRay_Core {
 		if (mUseVignette)
 		{
 			rhi->SetRenderTargets({ mVignetteRT });
-			PrepareDrawingVignette(mRenderTargetBeforeResolve);
+			rhi->SetRootSignature(mVignetteRS);
 			if (!rhi->IsPSOReady(mVignettePassPSOName))
 			{
 				rhi->InitializePSO(mVignettePassPSOName);
 				rhi->SetShader(mVignettePS);
 				rhi->SetRenderTargetFormats({ mVignetteRT });
+				rhi->SetRootSignatureToPSO(mVignettePassPSOName, mVignetteRS);
+				rhi->SetTopologyTypeToPSO(mVignettePassPSOName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 				quad->PrepareDraw(rhi);
 				rhi->FinalizePSO(mVignettePassPSOName);
 			}
 			rhi->SetPSO(mVignettePassPSOName);
+			PrepareDrawingVignette(mRenderTargetBeforeResolve);
 			quad->Draw(rhi);
 			rhi->UnsetPSO();
 
@@ -543,16 +664,19 @@ namespace EveryRay_Core {
 		if (mUseFXAA)
 		{
 			rhi->SetRenderTargets({ mFXAART });
-			PrepareDrawingFXAA(mRenderTargetBeforeResolve);
+			rhi->SetRootSignature(mFXAARS);
 			if (!rhi->IsPSOReady(mFXAAPassPSOName))
 			{
 				rhi->InitializePSO(mFXAAPassPSOName);
 				rhi->SetShader(mFXAAPS);
 				rhi->SetRenderTargetFormats({ mFXAART });
+				rhi->SetRootSignatureToPSO(mFXAAPassPSOName, mFXAARS);
+				rhi->SetTopologyTypeToPSO(mFXAAPassPSOName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 				quad->PrepareDraw(rhi);
 				rhi->FinalizePSO(mFXAAPassPSOName);
 			}
 			rhi->SetPSO(mFXAAPassPSOName);
+			PrepareDrawingFXAA(mRenderTargetBeforeResolve);
 			quad->Draw(rhi);
 			rhi->UnsetPSO();
 

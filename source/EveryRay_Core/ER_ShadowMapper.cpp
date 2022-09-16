@@ -283,7 +283,7 @@ namespace EveryRay_Core
 						{
 							rhi->InitializePSO(psoName);
 							rhi->SetRasterizerState(ER_SHADOW_RS);
-							material->PrepareResources();
+							material->PrepareShaders();
 							rhi->SetRenderTargetFormats({}, mShadowMaps[i]);
 							rhi->SetRootSignatureToPSO(psoName, mRootSignature);
 							rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

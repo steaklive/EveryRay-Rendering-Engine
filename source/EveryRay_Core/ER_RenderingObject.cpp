@@ -379,8 +379,8 @@ namespace EveryRay_Core
 					rhi->SetVertexBuffers({ mMeshesRenderBuffers[lod][materialName][i]->VertexBuffer });
 				rhi->SetIndexBuffer(mMeshesRenderBuffers[lod][materialName][i]->IndexBuffer);
 
-				// run prepare callbacks for non-special materials (specials are, i.e., shadow mapping, which are processed in their own systems)
-				if (!isForwardPass && !mMaterials[materialName]->IsSpecial())
+				// run prepare callbacks for standard materials (specials are, i.e., shadow mapping, which are processed in their own systems)
+				if (!isForwardPass && mMaterials[materialName]->IsStandard())
 				{
 					auto prepareMaterialBeforeRendering = MeshMaterialVariablesUpdateEvent->GetListener(materialName);
 					if (prepareMaterialBeforeRendering)
@@ -402,10 +402,10 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_RenderingObject::DrawAABB(ER_RHI_GPUTexture* aRenderTarget)
+	void ER_RenderingObject::DrawAABB(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPURootSignature* rs)
 	{
 		if (mIsSelected && mAvailableInEditorMode && mEnableAABBDebug && ER_Utility::IsEditorMode)
-			mDebugGizmoAABB->Draw(aRenderTarget);
+			mDebugGizmoAABB->Draw(aRenderTarget, rs);
 	}
 
 	void ER_RenderingObject::SetTransformationMatrix(const XMMATRIX& mat)

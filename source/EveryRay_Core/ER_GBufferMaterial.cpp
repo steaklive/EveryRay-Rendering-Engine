@@ -13,7 +13,7 @@ namespace EveryRay_Core
 	ER_GBufferMaterial::ER_GBufferMaterial(ER_Core& game, const MaterialShaderEntries& entries, unsigned int shaderFlags, bool instanced)
 		: ER_Material(game, entries, shaderFlags)
 	{
-		mIsSpecial = true;
+		mIsStandard = false;
 
 		if (shaderFlags & HAS_VERTEX_SHADER)
 		{
@@ -91,6 +91,11 @@ namespace EveryRay_Core
 
 		rhi->SetShaderResources(ER_PIXEL, resources, 0, rs, GBUFFER_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP }, 0, rs);
+	}
+
+	void ER_GBufferMaterial::PrepareResourcesForStandardMaterial(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, ER_RHI_GPURootSignature* rs)
+	{
+		//not used because this material is not standard
 	}
 
 	void ER_GBufferMaterial::CreateVertexBuffer(const ER_Mesh& mesh, ER_RHI_GPUBuffer* vertexBuffer)
