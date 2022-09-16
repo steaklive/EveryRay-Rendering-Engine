@@ -273,7 +273,7 @@ namespace EveryRay_Core
 			for (auto renderingObjectInfo = scene->objects.begin(); renderingObjectInfo != scene->objects.end(); renderingObjectInfo++, objectIndex++)
 			{
 				ER_RenderingObject* renderingObject = renderingObjectInfo->second;
-				auto materialInfo = renderingObject->GetMaterials().find(ER_MaterialHelper::shadowMapMaterialName);
+				auto materialInfo = renderingObject->GetMaterials().find(ER_MaterialHelper::shadowMapMaterialName + " " + std::to_string(i));
 				if (materialInfo != renderingObject->GetMaterials().end())
 				{
 					ER_Material* material = materialInfo->second;

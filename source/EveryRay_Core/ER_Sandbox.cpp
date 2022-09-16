@@ -292,7 +292,7 @@ namespace EveryRay_Core {
 				mLightProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
 		}
 
-		mIllumination->DrawGlobalIllumination(mGBuffer, gameTime);
+		//mIllumination->DrawGlobalIllumination(mGBuffer, gameTime);
 #pragma endregion
 
 		#pragma region DRAW_VOLUMETRIC_FOG

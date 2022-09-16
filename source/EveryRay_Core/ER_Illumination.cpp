@@ -269,20 +269,22 @@ namespace EveryRay_Core {
 				mUpsampleAndBlurRS->Finalize(rhi, "Upsample & Blur Pass Root Signature");
 			}
 
-			mDeferredLightingRS = rhi->CreateRootSignature(3, 1);
+			mDeferredLightingRS = rhi->CreateRootSignature(3, 2);
 			if (mDeferredLightingRS)
 			{
 				mDeferredLightingRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_ALL);
+				mDeferredLightingRS->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SHADER_VISIBILITY_ALL);
 				mDeferredLightingRS->InitDescriptorTable(rhi, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 18 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mDeferredLightingRS->InitDescriptorTable(rhi, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mDeferredLightingRS->InitDescriptorTable(rhi, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mDeferredLightingRS->Finalize(rhi, "Deferred Lighting Pass Root Signature");
 			}
 
-			mForwardLightingRS = rhi->CreateRootSignature(2, 1);
+			mForwardLightingRS = rhi->CreateRootSignature(2, 2);
 			if (mForwardLightingRS)
 			{
-				mForwardLightingRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_ALL);
+				mForwardLightingRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mForwardLightingRS->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mForwardLightingRS->InitDescriptorTable(rhi, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 18 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mForwardLightingRS->InitDescriptorTable(rhi, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mForwardLightingRS->Finalize(rhi, "Forward Lighting Pass Root Signature", true);

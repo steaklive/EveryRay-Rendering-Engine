@@ -81,9 +81,10 @@ namespace EveryRay_Core {
 
 		mFinalResolvePS = rhi->CreateGPUShader();
 		mFinalResolvePS->CompileShader(rhi, "content\\shaders\\EmptyColorResolve.hlsl", "PSMain", ER_PIXEL);
-		mFinalResolveRS = rhi->CreateRootSignature(1, 0);
+		mFinalResolveRS = rhi->CreateRootSignature(1, 1);
 		if (mFinalResolveRS)
 		{
+			mFinalResolveRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
 			mFinalResolveRS->InitDescriptorTable(rhi, FINALRESOLVE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
 			mFinalResolveRS->Finalize(rhi, "Final Resolve Pass Root Signature", true);
 		}
@@ -192,7 +193,7 @@ namespace EveryRay_Core {
 			mColorGradingRS = rhi->CreateRootSignature(1, 0);
 			if (mColorGradingRS)
 			{
-				mColorGradingRS->InitDescriptorTable(rhi, COLORGRADING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mColorGradingRS->InitDescriptorTable(rhi, COLORGRADING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mColorGradingRS->Finalize(rhi, "Color Grading Pass Root Signature", true);
 			}
 		}

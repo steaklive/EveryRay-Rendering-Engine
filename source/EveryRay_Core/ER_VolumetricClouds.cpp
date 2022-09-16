@@ -87,15 +87,16 @@ namespace EveryRay_Core {
 		{
 			mUpsampleBlurPassRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP);
 			mUpsampleBlurPassRS->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_BILINEAR_WRAP);
-			mUpsampleBlurPassRS->InitDescriptorTable(rhi, MAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 5 });
+			mUpsampleBlurPassRS->InitDescriptorTable(rhi, MAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 });
 			mUpsampleBlurPassRS->InitDescriptorTable(rhi, MAIN_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 });
-			mUpsampleBlurPassRS->InitDescriptorTable(rhi, MAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 });
+			mUpsampleBlurPassRS->InitDescriptorTable(rhi, MAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 });
 			mUpsampleBlurPassRS->Finalize(rhi, "Volumetric Clouds Upsample & Blur Pass Root Signature");
 		}
 
-		mCompositePassRS = rhi->CreateRootSignature(1, 0);
+		mCompositePassRS = rhi->CreateRootSignature(1, 1);
 		if (mCompositePassRS)
 		{
+			mCompositePassRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP);
 			mCompositePassRS->InitDescriptorTable(rhi, COMPOSITE_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 2 });
 			mCompositePassRS->Finalize(rhi, "Volumetric Clouds Composite Pass Root Signature", true);
 		}
@@ -261,6 +262,7 @@ namespace EveryRay_Core {
 		auto rhi = mCore->GetRHI();
 
 		rhi->SetRenderTargets({ aRenderTarget });
+		rhi->SetRootSignature(mCompositePassRS);
 		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		if (!rhi->IsPSOReady(mCompositePassPSOName))
 		{
@@ -273,7 +275,7 @@ namespace EveryRay_Core {
 			rhi->FinalizePSO(mCompositePassPSOName);
 		}
 		rhi->SetPSO(mCompositePassPSOName);
-		rhi->SetShaderResources(ER_PIXEL, { mIlluminationResultDepthTarget, /*mBlurRT*/mUpsampleAndBlurRT }, 0, COMPOSITE_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
+		rhi->SetShaderResources(ER_PIXEL, { mIlluminationResultDepthTarget, /*mBlurRT*/mUpsampleAndBlurRT }, 0, mCompositePassRS, COMPOSITE_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 		quadRenderer->Draw(rhi);
 		rhi->UnsetPSO();
 

@@ -574,7 +574,7 @@ namespace EveryRay_Core
 		D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = static_cast<ER_RHI_DX12_GPUTexture*>(aDepthTarget)->GetDSVHandle().GetCPUHandle();
 		TransitionResources({ static_cast<ER_RHI_GPUResource*>(aDepthTarget) }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_DEPTH_WRITE);
 
-		mCommandListGraphics[0]->OMSetRenderTargets(1, nullptr, FALSE, &dsvHandle);
+		mCommandListGraphics[0]->OMSetRenderTargets(0, nullptr, FALSE, &dsvHandle);
 	}
 
 	void ER_RHI_DX12::SetRenderTargetFormats(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget /*= nullptr*/)
@@ -812,8 +812,8 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot /*= 0*/, ER_RHI_GPURootSignature* rs)
 	{
-		assert(rs);
-		assert(rs->GetStaticSamplersCount() == aSamplers.size()); // we can do better checks (compare samplers), but thats ok for now
+		//assert(rs);
+		//assert(rs->GetStaticSamplersCount() == aSamplers.size()); // we can do better checks (compare samplers), but thats ok for now
 
 		//nothing here, because we bind static samplers in root signatures
 	}
@@ -955,6 +955,7 @@ namespace EveryRay_Core
 			mGraphicsPSONames.insert(std::make_pair(aName, ER_RHI_DX12_GraphicsPSO(aName)));
 			mCurrentGraphicsPSOName = aName;
 			mCurrentPSOState = ER_RHI_DX12_PSO_STATE::GRAPHICS;
+			SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_BACK_CULLING); // set default RS to all gfx PSO on init
 		}
 	}
 

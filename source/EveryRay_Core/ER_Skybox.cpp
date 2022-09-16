@@ -92,8 +92,8 @@ namespace EveryRay_Core
 			mSunRS = rhi->CreateRootSignature(2, 1);
 			if (mSunRS)
 			{
-				mSunRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_ALL);
-				mSunRS->InitDescriptorTable(rhi, SUN_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				mSunRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mSunRS->InitDescriptorTable(rhi, SUN_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mSunRS->InitDescriptorTable(rhi, SUN_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mSunRS->Finalize(rhi, "Sun Pass Root Signature", true);
 			}
@@ -153,7 +153,7 @@ namespace EveryRay_Core
 		mSkyboxConstantBuffer.Data.TopColor = mTopColor;
 		mSkyboxConstantBuffer.ApplyChanges(rhi);
 
-		rhi->SetRootSignature(mSunRS);
+		rhi->SetRootSignature(mSkyRS);
 		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		if (!rhi->IsPSOReady(mSkyboxPassPSOName))
@@ -188,7 +188,7 @@ namespace EveryRay_Core
 
 		if (mDrawSun)
 		{
-			rhi->SetRootSignature(mSkyRS);
+			rhi->SetRootSignature(mSunRS);
 			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 			if (!rhi->IsPSOReady(mSunPassPSOName))
