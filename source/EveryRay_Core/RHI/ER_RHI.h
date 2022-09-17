@@ -365,6 +365,7 @@ namespace EveryRay_Core
 		virtual void TransitionResources(const std::vector<ER_RHI_GPUTexture*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0) = 0;
 		virtual void TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0) = 0;
 		virtual void TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0) = 0;
+		virtual void TransitionMainRenderTargetToPresent() = 0;
 
 		virtual bool IsPSOReady(const std::string& aName, bool isCompute = false) = 0;
 		virtual void InitializePSO(const std::string& aName, bool isCompute = false) = 0;
@@ -439,6 +440,7 @@ namespace EveryRay_Core
 		virtual void* GetResource() = 0;
 
 		virtual ER_RHI_RESOURCE_STATE GetCurrentState() = 0;
+		virtual void SetCurrentState(ER_RHI_RESOURCE_STATE aState) = 0;
 
 		inline virtual bool IsBuffer() = 0;
 	};
@@ -467,6 +469,7 @@ namespace EveryRay_Core
 		virtual UINT GetDepth() { AbstractRHIMethodAssert(); return 0; }
 
 		virtual ER_RHI_RESOURCE_STATE GetCurrentState() { AbstractRHIMethodAssert(); return ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COMMON; }
+		virtual void SetCurrentState(ER_RHI_RESOURCE_STATE aState) { AbstractRHIMethodAssert(); }
 
 		inline virtual bool IsBuffer() { AbstractRHIMethodAssert(); return false; }
 	};

@@ -103,7 +103,7 @@ namespace EveryRay_Core
 			//mDescriptorHeapManager = new DXRS::DescriptorHeapManager(mDevice.Get());
 
 			D3D12_DESCRIPTOR_HEAP_DESC rtvDescriptorHeapDesc = {};
-			rtvDescriptorHeapDesc.NumDescriptors = 1;
+			rtvDescriptorHeapDesc.NumDescriptors = DX12_MAX_BACK_BUFFER_COUNT;
 			rtvDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 
 			if (FAILED(mDevice->CreateDescriptorHeap(&rtvDescriptorHeapDesc, IID_PPV_ARGS(mRTVDescriptorHeap.ReleaseAndGetAddressOf()))))
@@ -120,14 +120,18 @@ namespace EveryRay_Core
 
 			for (int i = 0; i < ER_RHI_MAX_GRAPHICS_COMMAND_LISTS; i++)
 			{
-				// Create a command allocator for each back buffer that will be rendered to.
-				if (FAILED(mDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(mCommandAllocatorsGraphics[i].ReleaseAndGetAddressOf()))))
+				for (int j = 0; j < DX12_MAX_BACK_BUFFER_COUNT; j++)
 				{
-					std::string message = "ER_RHI_DX12: Could not create graphics command allocator " + std::to_string(i);
-					throw ER_CoreException(message.c_str());
+					// Create a command allocator for each back buffer that will be rendered to.
+					if (FAILED(mDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(mCommandAllocatorsGraphics[j][i].ReleaseAndGetAddressOf()))))
+					{
+						std::string message = "ER_RHI_DX12: Could not create graphics command allocator " + std::to_string(i);
+						throw ER_CoreException(message.c_str());
+					}
 				}
+
 				// Create a command list for recording graphics commands.
-				if (FAILED(mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mCommandAllocatorsGraphics[i].Get(), nullptr, IID_PPV_ARGS(mCommandListGraphics[i].ReleaseAndGetAddressOf()))))
+				if (FAILED(mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mCommandAllocatorsGraphics[0][i].Get(), nullptr, IID_PPV_ARGS(mCommandListGraphics[i].ReleaseAndGetAddressOf()))))
 				{
 					std::string message = "ER_RHI_DX12: Could not create graphics command list " + std::to_string(i);
 					throw ER_CoreException(message.c_str());
@@ -141,6 +145,25 @@ namespace EveryRay_Core
 			//...
 		}
 
+		// fences
+		{
+			// Create a fence for tracking GPU execution progress.
+			if (FAILED(mDevice->CreateFence(mFenceValuesGraphics[mBackBufferIndex], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(mFenceGraphics.ReleaseAndGetAddressOf()))))
+				throw ER_CoreException("ER_RHI_DX12: Could not create main graphics fence");
+
+			mFenceValuesGraphics[mBackBufferIndex]++;
+			mFenceEventGraphics.Attach(CreateEventEx(nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE));
+			if (!mFenceEventGraphics.IsValid())
+				throw ER_CoreException("ER_RHI_DX12: Could not create event for main graphics fence");
+			mFenceGraphics->SetName(L"ER_RHI_DX12: Graphics fence (main)");
+
+			for (UINT n = 0; n < DX12_MAX_BACK_BUFFER_COUNT; n++)
+			{
+				mMainRenderTarget[n].Reset();
+				mFenceValuesGraphics[n] = mFenceValuesGraphics[mBackBufferIndex];
+			}
+		}
+
 		// Create swapchain, main rtv, main dsv
 		{
 			// swapchain
@@ -151,7 +174,7 @@ namespace EveryRay_Core
 				swapChainDesc.Height = height;
 				swapChainDesc.Format = mMainRTBufferFormat;
 				swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-				swapChainDesc.BufferCount = 2;
+				swapChainDesc.BufferCount = DX12_MAX_BACK_BUFFER_COUNT;
 				swapChainDesc.SampleDesc.Count = 1;
 				swapChainDesc.SampleDesc.Quality = 0;
 				swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
@@ -170,20 +193,22 @@ namespace EveryRay_Core
 			}
 
 			// main RTV
+			for (int i = 0; i < DX12_MAX_BACK_BUFFER_COUNT; i++)
 			{
-				mSwapChain->GetBuffer(0, IID_PPV_ARGS(mMainRenderTarget.GetAddressOf()));
-				mMainRenderTarget->SetName(L"Main Render target");
+				mSwapChain->GetBuffer(i, IID_PPV_ARGS(mMainRenderTarget[i].GetAddressOf()));
+				wchar_t name[25] = {};
+				swprintf_s(name, L"Main Render target %u", i);
+				mMainRenderTarget[i]->SetName(name);
 
 				D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
 				rtvDesc.Format = mMainRTBufferFormat;
 				rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 
-				mMainRTVDescriptorHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), 0, mRTVDescriptorSize);
-				mDevice->CreateRenderTargetView(mMainRenderTarget.Get(), &rtvDesc, mMainRTVDescriptorHandle);
-
-				// Reset the index to the current back buffer.
-				//mBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
+				CD3DX12_CPU_DESCRIPTOR_HANDLE mainRTVDescriptorHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), i, mRTVDescriptorSize);
+				mDevice->CreateRenderTargetView(mMainRenderTarget[i].Get(), &rtvDesc, mainRTVDescriptorHandle);
 			}
+			// Reset the index to the current back buffer.
+			mBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
 
 			// main DSV
 			{
@@ -201,8 +226,6 @@ namespace EveryRay_Core
 					throw ER_CoreException("ER_RHI_DX12: Could not create comitted resource for main depth-stencil target");
 
 				mMainDepthStencilTarget->SetName(L"Main Depth-Stencil target");
-
-				mMainDSVDescriptorHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mDSVDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
 				D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
 				dsvDesc.Format = mMainDepthBufferFormat;
@@ -261,13 +284,13 @@ namespace EveryRay_Core
 		mCurrentGraphicsCommandListIndex = index;
 
 		HRESULT hr;
-		if (FAILED(hr = mCommandAllocatorsGraphics[index]->Reset()))
+		if (FAILED(hr = mCommandAllocatorsGraphics[mBackBufferIndex][index]->Reset()))
 		{
 			std::string message = "ER_RHI_DX12:: Could not Reset() command allocator (graphics) " + std::to_string(index);
 			throw ER_CoreException(message.c_str());
 		}
 
-		if (FAILED(hr = mCommandListGraphics[index]->Reset(mCommandAllocatorsGraphics[index].Get(), nullptr)))
+		if (FAILED(hr = mCommandListGraphics[index]->Reset(mCommandAllocatorsGraphics[mBackBufferIndex][index].Get(), nullptr)))
 		{
 			std::string message = "ER_RHI_DX12:: Could not Reset() command list (graphics) " + std::to_string(index);
 			throw ER_CoreException(message.c_str());
@@ -289,18 +312,20 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::ClearMainRenderTarget(float colors[4])
 	{
-		mCommandListGraphics[0]->ClearRenderTargetView(mMainRTVDescriptorHandle, colors, 0, nullptr);
+		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(mMainRenderTarget[mBackBufferIndex].Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		mCommandListGraphics[0]->ResourceBarrier(1, &barrier);
+		mCommandListGraphics[0]->ClearRenderTargetView(GetMainRenderTargetView(), colors, 0, nullptr);
 	}
 
 	void ER_RHI_DX12::ClearMainDepthStencilTarget(float depth, UINT stencil /*= 0*/)
 	{
-		mCommandListGraphics[0]->ClearDepthStencilView(mMainDSVDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, depth, stencil, 0, nullptr);
+		mCommandListGraphics[0]->ClearDepthStencilView(GetMainDepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, depth, stencil, 0, nullptr);
 	}
 
 	void ER_RHI_DX12::ClearRenderTarget(ER_RHI_GPUTexture* aRenderTarget, float colors[4], int rtvArrayIndex)
 	{
 		assert(aRenderTarget);
-
+		TransitionResources({ static_cast<ER_RHI_GPUResource*>(aRenderTarget) }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_RENDER_TARGET);
 		if (rtvArrayIndex > 0)
 		{
 			ER_RHI_DX12_DescriptorHandle& handle = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTarget)->GetRTVHandle(rtvArrayIndex);
@@ -500,6 +525,25 @@ namespace EveryRay_Core
 #endif
 			throw ER_CoreException("ER_RHI_DX12: Could not call Present() in the swapchain...", hr);
 		}
+		else
+		{
+			// Schedule a Signal command in the queue.
+			const UINT64 currentFenceValue = mFenceValuesGraphics[mBackBufferIndex];
+			mCommandQueueGraphics->Signal(mFenceGraphics.Get(), currentFenceValue);
+
+			// Update the back buffer index.
+			mBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
+
+			// If the next frame is not ready to be rendered yet, wait until it is ready.
+			if (mFenceGraphics->GetCompletedValue() < mFenceValuesGraphics[mBackBufferIndex])
+			{
+				mFenceGraphics->SetEventOnCompletion(mFenceValuesGraphics[mBackBufferIndex], mFenceEventGraphics.Get());
+				WaitForSingleObjectEx(mFenceEventGraphics.Get(), INFINITE, FALSE);
+			}
+
+			// Set the fence value for the next frame.
+			mFenceValuesGraphics[mBackBufferIndex] = currentFenceValue + 1;
+		}
 	}
 
 	void ER_RHI_DX12::PresentCompute()
@@ -527,7 +571,7 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::SetMainRenderTargets()
 	{
-		mCommandListGraphics[0]->OMSetRenderTargets(1, &mMainRTVDescriptorHandle, false, &mMainDSVDescriptorHandle);
+		mCommandListGraphics[0]->OMSetRenderTargets(1, &GetMainRenderTargetView(), false, &GetMainDepthStencilView());
 	}
 
 	void ER_RHI_DX12::SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget /*= nullptr*/, ER_RHI_GPUTexture* aUAV /*= nullptr*/, int rtvArrayIndex)
@@ -743,7 +787,7 @@ namespace EveryRay_Core
 
 		}
 
-		TransitionResources(aSRVs, aShaderType == ER_RHI_SHADER_TYPE::ER_PIXEL ? ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE : ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		//TransitionResources(aSRVs, aShaderType == ER_RHI_SHADER_TYPE::ER_PIXEL ? ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE : ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 		if (!isComputeRS)
 			mCommandListGraphics[0]->SetGraphicsRootDescriptorTable(rootParamIndex, srvHandle.GetGPUHandle());
@@ -1042,7 +1086,10 @@ namespace EveryRay_Core
 		for (int i = 0; i < size; i++)
 		{
 			if (aResources[i] && aResources[i]->GetCurrentState() != aStates[i])
+			{
 				barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aStates[i])));
+				aResources[i]->SetCurrentState(aStates[i]);
+			}
 		}
 
 		if (barriers.size() > 0)
@@ -1057,7 +1104,10 @@ namespace EveryRay_Core
 		for (int i = 0; i < size; i++)
 		{
 			if (aResources[i] && aResources[i]->GetCurrentState() != aState)
+			{
 				barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aState)));
+				aResources[i]->SetCurrentState(aState);
+			}
 		}
 
 		if (barriers.size() > 0)
@@ -1074,7 +1124,10 @@ namespace EveryRay_Core
 		for (int i = 0; i < size; i++)
 		{
 			if (aResources[i] && aResources[i]->GetCurrentState() != aStates[i])
+			{
 				barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aStates[i])));
+				aResources[i]->SetCurrentState(aStates[i]);
+			}
 		}
 		if (barriers.size() > 0)
 			mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
@@ -1088,7 +1141,10 @@ namespace EveryRay_Core
 		for (int i = 0; i < size; i++)
 		{
 			if (aResources[i] && aResources[i]->GetCurrentState() != aState)
+			{
 				barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aState)));
+				aResources[i]->SetCurrentState(aState);
+			}
 		}
 		if (barriers.size() > 0)
 			mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
@@ -1104,7 +1160,10 @@ namespace EveryRay_Core
 		for (int i = 0; i < size; i++)
 		{
 			if (aResources[i] && aResources[i]->GetCurrentState() != aStates[i])
+			{
 				barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aStates[i])));
+				aResources[i]->SetCurrentState(aStates[i]);
+			}
 		}
 		if (barriers.size() > 0)
 			mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
@@ -1118,10 +1177,19 @@ namespace EveryRay_Core
 		for (int i = 0; i < size; i++)
 		{
 			if (aResources[i] && aResources[i]->GetCurrentState() != aState)
+			{
 				barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aState)));
+				aResources[i]->SetCurrentState(aState);
+			}
 		}
 		if (barriers.size() > 0)
 			mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
+	}
+
+	void ER_RHI_DX12::TransitionMainRenderTargetToPresent()
+	{
+		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(mMainRenderTarget[mBackBufferIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+		mCommandListGraphics[0]->ResourceBarrier(1, &barrier);
 	}
 
 	void ER_RHI_DX12::UnbindRenderTargets()

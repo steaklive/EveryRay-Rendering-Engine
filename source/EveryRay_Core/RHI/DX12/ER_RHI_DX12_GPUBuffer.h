@@ -20,6 +20,7 @@ namespace EveryRay_Core
 		virtual void* GetResource() { return mBuffer.Get(); }
 		
 		virtual ER_RHI_RESOURCE_STATE GetCurrentState() { return mResourceState; }
+		virtual void SetCurrentState(ER_RHI_RESOURCE_STATE aState) { mResourceState = aState; }
 
 		inline virtual bool IsBuffer() override { return true; }
 

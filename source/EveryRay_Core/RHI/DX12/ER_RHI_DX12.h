@@ -18,6 +18,7 @@
 #define DX12_MAX_BOUND_CONSTANT_BUFFERS 8 
 #define DX12_MAX_BOUND_SAMPLERS 8 
 #define DX12_MAX_BOUND_ROOT_PARAMS 8 
+#define DX12_MAX_BACK_BUFFER_COUNT 2
 
 namespace EveryRay_Core
 {
@@ -137,6 +138,7 @@ namespace EveryRay_Core
 		virtual void TransitionResources(const std::vector<ER_RHI_GPUTexture*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0) override;
 		virtual void TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0) override;
 		virtual void TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0) override;
+		virtual void TransitionMainRenderTargetToPresent() override;
 
 		virtual bool IsPSOReady(const std::string& aName, bool isCompute = false) override;
 		virtual void InitializePSO(const std::string& aName, bool isCompute = false) override;
@@ -173,6 +175,9 @@ namespace EveryRay_Core
 
 		ER_GRAPHICS_API GetAPI() { return mAPI; }
 	private:
+		inline CD3DX12_CPU_DESCRIPTOR_HANDLE GetMainRenderTargetView() const { return CD3DX12_CPU_DESCRIPTOR_HANDLE(mRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(mBackBufferIndex), mRTVDescriptorSize); }
+		inline CD3DX12_CPU_DESCRIPTOR_HANDLE GetMainDepthStencilView() const { return CD3DX12_CPU_DESCRIPTOR_HANDLE(mDSVDescriptorHeap->GetCPUDescriptorHandleForHeapStart()); }
+
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE GetTopologyType(ER_RHI_PRIMITIVE_TYPE aType);
 		ER_RHI_PRIMITIVE_TYPE GetTopologyType(D3D12_PRIMITIVE_TOPOLOGY aType);
 		D3D12_PRIMITIVE_TOPOLOGY GetTopology(ER_RHI_PRIMITIVE_TYPE aType);
@@ -193,25 +198,23 @@ namespace EveryRay_Core
 
 		DXGI_FORMAT mMainRTBufferFormat = DXGI_FORMAT_R10G10B10A2_UNORM;
 		DXGI_FORMAT mMainDepthBufferFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-		ComPtr<ID3D12Resource> mMainRenderTarget;
+		ComPtr<ID3D12Resource> mMainRenderTarget[DX12_MAX_BACK_BUFFER_COUNT];
 		ComPtr<ID3D12Resource> mMainDepthStencilTarget;
 		ComPtr<ID3D12DescriptorHeap> mRTVDescriptorHeap;
 		ComPtr<ID3D12DescriptorHeap> mDSVDescriptorHeap;
 		UINT mRTVDescriptorSize;
-		CD3DX12_CPU_DESCRIPTOR_HANDLE mMainRTVDescriptorHandle;
-		CD3DX12_CPU_DESCRIPTOR_HANDLE mMainDSVDescriptorHandle;
 
 		ComPtr<ID3D12DescriptorHeap> mImGuiDescriptorHeap;
 
 		ComPtr<ID3D12CommandQueue> mCommandQueueGraphics;
 		ComPtr<ID3D12GraphicsCommandList> mCommandListGraphics[ER_RHI_MAX_GRAPHICS_COMMAND_LISTS];
-		ComPtr<ID3D12CommandAllocator> mCommandAllocatorsGraphics[ER_RHI_MAX_COMPUTE_COMMAND_LISTS];
+		ComPtr<ID3D12CommandAllocator> mCommandAllocatorsGraphics[DX12_MAX_BACK_BUFFER_COUNT][ER_RHI_MAX_COMPUTE_COMMAND_LISTS];
 		ComPtr<ID3D12CommandQueue> mCommandQueueCompute;
 		ComPtr<ID3D12GraphicsCommandList> mCommandListCompute[ER_RHI_MAX_COMPUTE_COMMAND_LISTS];
-		ComPtr<ID3D12CommandAllocator> mCommandAllocatorsCompute[ER_RHI_MAX_COMPUTE_COMMAND_LISTS];
+		ComPtr<ID3D12CommandAllocator> mCommandAllocatorsCompute[DX12_MAX_BACK_BUFFER_COUNT][ER_RHI_MAX_COMPUTE_COMMAND_LISTS];
 
 		ComPtr<ID3D12Fence> mFenceGraphics;
-		UINT64 mFenceValuesGraphics;
+		UINT64 mFenceValuesGraphics[DX12_MAX_BACK_BUFFER_COUNT] = {};
 		Wrappers::Event mFenceEventGraphics;
 
 		ComPtr<ID3D12Fence> mFenceCompute;
@@ -237,5 +240,7 @@ namespace EveryRay_Core
 
 		bool mIsRaytracingTierAvailable = false;
 		bool mIsContextReadingBuffer = false;
+
+		int mBackBufferIndex = 0;
 	};
 }

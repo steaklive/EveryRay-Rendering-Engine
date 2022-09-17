@@ -313,7 +313,7 @@ namespace EveryRay_Runtime
 
 		mCurrentSandbox->Draw(*this, gameTime);
 
-		// TODO transition main RT to ER_RESOURCE_STATE_PRESENT
+		mRHI->TransitionMainRenderTargetToPresent();
 		mRHI->EndGraphicsCommandList();
 		mRHI->ExecuteCommandLists();
 		mRHI->PresentGraphics();

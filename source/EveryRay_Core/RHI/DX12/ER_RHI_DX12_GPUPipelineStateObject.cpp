@@ -62,7 +62,7 @@ namespace EveryRay_Core
 		HRESULT hr;
 		if (FAILED(hr = device->CreateGraphicsPipelineState(&mPSODesc, IID_PPV_ARGS(&mPSO))))
 		{
-			std::string message = "[ER_Logger] ER_RHI_DX12: Failed creating graphics PSO: ";
+			std::string message = "ER_RHI_DX12: Failed creating graphics PSO: ";
 			message += mName;
 			throw ER_CoreException(message.c_str());
 		}
@@ -142,7 +142,7 @@ namespace EveryRay_Core
 		}
 		else
 		{
-			std::string message = "ER_RHI_DX12: Finished creating compute PSO: ";
+			std::string message = "[ER_Logger] ER_RHI_DX12: Finished creating compute PSO: ";
 			message += mName;
 			message += '\n';
 			ER_OUTPUT_LOG(ER_Utility::ToWideString(message).c_str());

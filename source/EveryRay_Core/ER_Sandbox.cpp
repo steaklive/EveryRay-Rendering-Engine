@@ -280,17 +280,17 @@ namespace EveryRay_Core {
 #pragma endregion
 		
 		#pragma region DRAW_GLOBAL_ILLUMINATION
-		{
-			if (mScene->HasLightProbesSupport() && !mLightProbesManager->AreProbesReady())
-			{
-				game.CPUProfiler()->BeginCPUTime("Compute or load light probes");
-				mLightProbesManager->ComputeOrLoadLocalProbes(game, mScene->objects, mSkybox);
-				mLightProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
-				game.CPUProfiler()->EndCPUTime("Compute or load light probes");
-			}
-			else if (!mLightProbesManager->IsEnabled() && !mLightProbesManager->AreGlobalProbesReady())
-				mLightProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
-		}
+		//{
+		//	if (mScene->HasLightProbesSupport() && !mLightProbesManager->AreProbesReady())
+		//	{
+		//		game.CPUProfiler()->BeginCPUTime("Compute or load light probes");
+		//		mLightProbesManager->ComputeOrLoadLocalProbes(game, mScene->objects, mSkybox);
+		//		mLightProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
+		//		game.CPUProfiler()->EndCPUTime("Compute or load light probes");
+		//	}
+		//	else if (!mLightProbesManager->IsEnabled() && !mLightProbesManager->AreGlobalProbesReady())
+		//		mLightProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
+		//}
 
 		//mIllumination->DrawGlobalIllumination(mGBuffer, gameTime);
 #pragma endregion

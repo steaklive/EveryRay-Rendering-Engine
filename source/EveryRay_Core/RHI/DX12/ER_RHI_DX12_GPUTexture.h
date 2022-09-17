@@ -25,6 +25,7 @@ namespace EveryRay_Core
 		inline virtual bool IsBuffer() override { return false; }
 
 		virtual ER_RHI_RESOURCE_STATE GetCurrentState() { return mCurrentResourceState; }
+		virtual void SetCurrentState(ER_RHI_RESOURCE_STATE aState) { mCurrentResourceState = aState; }
 		
 		DXGI_FORMAT GetFormat() { return mFormat; }
 

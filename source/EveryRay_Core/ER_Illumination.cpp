@@ -567,7 +567,7 @@ namespace EveryRay_Core {
 
 		// mLocalIllumination might be bound as RTV before this pass
 		rhi->UnbindRenderTargets();
-		rhi->SetRootSignature(mCompositeIlluminationRS);
+		rhi->SetRootSignature(mCompositeIlluminationRS, true);
 		if (!rhi->IsPSOReady(mCompositeIlluminationPSOName, true))
 		{
 			rhi->InitializePSO(mCompositeIlluminationPSOName, true);
