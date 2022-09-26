@@ -105,12 +105,12 @@ namespace EveryRay_Core
 
 		ER_RHI_DX12_GPUDescriptorHeap* GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType)
 		{
-			return mGPUDescriptorHeaps[heapType];
+			return mGPUDescriptorHeaps[ER_RHI_DX12::mBackBufferIndex][heapType];
 		}
 
 	private:
 		ER_RHI_DX12_CPUDescriptorHeap* mCPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
-		ER_RHI_DX12_GPUDescriptorHeap* mGPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
+		ER_RHI_DX12_GPUDescriptorHeap* mGPUDescriptorHeaps[DX12_MAX_BACK_BUFFER_COUNT][D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
 
 	};
 }

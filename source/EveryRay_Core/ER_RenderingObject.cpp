@@ -482,7 +482,7 @@ namespace EveryRay_Core
 			mInstanceCountToRender[lod] = instanceData.size();
 
 			// dynamically update instance buffer
-			mCore->GetRHI()->UpdateBuffer(mMeshesInstanceBuffers[lod][i]->InstanceBuffer, mInstanceCountToRender[lod] == 0 ? nullptr : &instanceData[0], InstanceSize() * mInstanceCountToRender[lod]);
+			//TODO mCore->GetRHI()->UpdateBuffer(mMeshesInstanceBuffers[lod][i]->InstanceBuffer, mInstanceCountToRender[lod] == 0 ? nullptr : &instanceData[0], InstanceSize() * mInstanceCountToRender[lod], mCore->GetRHI()->GetCurrentGraphicsCommandListIndex());
 		}
 	}
 

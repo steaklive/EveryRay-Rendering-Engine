@@ -36,6 +36,7 @@ namespace EveryRay_Core
 		void Update(ER_RHI* aRHI, void* aData, int dataSize);
 		DXGI_FORMAT GetFormat() { return mFormat; }
 	private:
+		void UpdateSubresource(ER_RHI* aRHI, void* aData, int aSize, int cmdListIndex);
 		ComPtr<ID3D12Resource> mBuffer;
 		ComPtr<ID3D12Resource> mBufferUpload;
 
@@ -55,5 +56,7 @@ namespace EveryRay_Core
 
 		D3D12_RESOURCE_FLAGS mResourceFlags = D3D12_RESOURCE_FLAG_NONE;
 		D3D12_HEAP_TYPE mHeapType = D3D12_HEAP_TYPE_DEFAULT;
+
+		ER_RHI_BIND_FLAG mBindFlags;
 	};
 }

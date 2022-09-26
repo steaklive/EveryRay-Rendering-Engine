@@ -8,7 +8,18 @@ namespace EveryRay_Core {
 
 	ER_QuadRenderer::ER_QuadRenderer(ER_Core& game) : ER_CoreComponent(game)
 	{
-		auto rhi = game.GetRHI();
+	}
+	ER_QuadRenderer::~ER_QuadRenderer()
+	{
+		DeleteObject(mVS);
+		DeleteObject(mInputLayout);
+		DeleteObject(mVertexBuffer);
+		DeleteObject(mIndexBuffer);
+	}
+
+	void ER_QuadRenderer::Setup()
+	{
+		auto rhi = GetCore()->GetRHI();
 		QuadVertex* vertices = new QuadVertex[4];
 
 		// Bottom left.
@@ -42,7 +53,6 @@ namespace EveryRay_Core {
 		mIndexBuffer = rhi->CreateGPUBuffer();
 		mIndexBuffer->CreateGPUBufferResource(rhi, indices, 6, sizeof(unsigned long), false, ER_BIND_INDEX_BUFFER, 0, ER_RESOURCE_MISC_NONE, ER_FORMAT_R32_UINT);
 
-
 		ER_RHI_INPUT_ELEMENT_DESC inputLayoutDesc[2];
 		inputLayoutDesc[0].SemanticName = "POSITION";
 		inputLayoutDesc[0].SemanticIndex = 0;
@@ -65,13 +75,6 @@ namespace EveryRay_Core {
 
 		mVS = rhi->CreateGPUShader();
 		mVS->CompileShader(rhi, "content\\shaders\\Quad.hlsl", "VSMain", ER_VERTEX, mInputLayout);
-	}
-	ER_QuadRenderer::~ER_QuadRenderer()
-	{
-		DeleteObject(mVS);
-		DeleteObject(mInputLayout);
-		DeleteObject(mVertexBuffer);
-		DeleteObject(mIndexBuffer);
 	}
 
 	void ER_QuadRenderer::PrepareDraw(ER_RHI* rhi)

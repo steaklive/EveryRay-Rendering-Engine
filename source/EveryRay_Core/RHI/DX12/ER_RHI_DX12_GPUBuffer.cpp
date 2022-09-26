@@ -18,6 +18,7 @@ namespace EveryRay_Core
 		ID3D12Device* device = aRHIDX12->GetDevice();
 		assert(device);
 
+		mBindFlags = bindFlags;
 		if (bindFlags & ER_RHI_BIND_FLAG::ER_BIND_CONSTANT_BUFFER)
 			assert(isDynamic);
 
@@ -54,9 +55,11 @@ namespace EveryRay_Core
 		if (FAILED(device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE, &desc, aRHIDX12->GetState(mResourceState), nullptr, IID_PPV_ARGS(&mBuffer))))
 			throw ER_CoreException("ER_RHI_DX12: Failed to create committed resource of GPU buffer.");
 		
-		if (FAILED(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(mSize),
+		if (FAILED(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &desc /*&CD3DX12_RESOURCE_DESC::Buffer(mSize)*/,
 			D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&mBufferUpload))))
 			throw ER_CoreException("ER_RHI_DX12: Failed to create committed resource of GPU buffer (upload).");
+
+		UpdateSubresource(aRHI, aData, mSize, aRHIDX12->GetPrepareGraphicsCommandListIndex());
 
 		if (bindFlags & ER_RHI_BIND_FLAG::ER_BIND_CONSTANT_BUFFER)
 		{
@@ -69,8 +72,6 @@ namespace EveryRay_Core
 
 			return;
 		}
-
-		aRHIDX12->UpdateBuffer(this, aData, mSize);
 
 		if (bindFlags & ER_BIND_VERTEX_BUFFER)
 		{
@@ -87,28 +88,6 @@ namespace EveryRay_Core
 			mIndexBufferView.SizeInBytes = mSize;
 		}
 
-		// WARNING: Below is a correct way of using a dynamic buffer (copy to default heap from upload), but I don't do it, because:
-		// 1) simplicity (otherwise i really need some kind of prepare command list available during EveryRay's systems initialization
-		// 2) EveryRay is single-buffered (no double/triple buffering is implemented yet)
-		//if (isDynamic)
-		//{
-		//	if (isDynamic && !(bindFlags & ER_RHI_BIND_FLAG::ER_BIND_CONSTANT_BUFFER))
-		//	 	mResourceState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST;
-		//	D3D12_SUBRESOURCE_DATA data = {};
-		//	data.pData = reinterpret_cast<BYTE*>(aData);
-		//	data.RowPitch = mSize;
-		//	data.SlicePitch = data.RowPitch;
-		//	
-		//	// we are now creating a command with the command list to copy the data from
-		//	// the upload heap to the default heap
-		//	UpdateSubresources(commandList, mBuffer, mBufferUpload, 0, 0, 1, &data);
-		//	if (bindFlags & ER_BIND_VERTEX_BUFFER)
-		//		commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
-		//	else if (bindFlags & ER_BIND_INDEX_BUFFER)
-		//		commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER));
-		//	else
-		//		commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COMMON));
-		//}
 
 		if (bindFlags & ER_RHI_BIND_FLAG::ER_BIND_SHADER_RESOURCE)
 		{
@@ -160,10 +139,36 @@ namespace EveryRay_Core
 		mBufferUpload->Unmap(0, nullptr);
 	}
 
+	void ER_RHI_DX12_GPUBuffer::UpdateSubresource(ER_RHI* aRHI, void* aData, int dataSize, int cmdListIndex)
+	{
+		assert(aRHI);
+		ER_RHI_DX12* aRHIDX12 = static_cast<ER_RHI_DX12*>(aRHI);
+
+		D3D12_SUBRESOURCE_DATA data = {};
+		data.pData = aData;
+		data.RowPitch = dataSize;
+		data.SlicePitch = 0;
+
+		aRHIDX12->TransitionResources({ static_cast<ER_RHI_GPUResource*>(this) }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COPY_DEST, cmdListIndex);
+		UpdateSubresources(aRHIDX12->GetGraphicsCommandList(cmdListIndex), mBuffer.Get(), mBufferUpload.Get(), 0, 0, 1, &data);
+
+		if (mBindFlags & ER_BIND_CONSTANT_BUFFER || mBindFlags & ER_BIND_VERTEX_BUFFER)
+			aRHIDX12->TransitionResources({ static_cast<ER_RHI_GPUResource*>(this) }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, cmdListIndex);
+		else if (mBindFlags & ER_BIND_INDEX_BUFFER)
+			aRHIDX12->TransitionResources({ static_cast<ER_RHI_GPUResource*>(this) }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_INDEX_BUFFER, cmdListIndex);
+		else
+			aRHIDX12->TransitionResources({ static_cast<ER_RHI_GPUResource*>(this) }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_GENERIC_READ, cmdListIndex);
+	}
+
 	void ER_RHI_DX12_GPUBuffer::Update(ER_RHI* aRHI, void* aData, int dataSize)
 	{
 		assert(aRHI);
-		aRHI->UpdateBuffer(this, aData, dataSize);
+		ER_RHI_DX12* aRHIDX12 = static_cast<ER_RHI_DX12*>(aRHI);
+
+		void* outData = nullptr;
+		Map(aRHI, reinterpret_cast<void**>(&outData));
+		memcpy(outData, aData, dataSize);
+		Unmap(aRHI);
 	}
 
 }

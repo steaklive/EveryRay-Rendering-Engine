@@ -13,6 +13,7 @@ namespace EveryRay_Core
 {
 	static ER_RHI_DX12_DescriptorHandle sNullSRV2DHandle;
 	static ER_RHI_DX12_DescriptorHandle sNullSRV3DHandle;
+	int ER_RHI_DX12::mBackBufferIndex = 0;
 
 	ER_RHI_DX12::ER_RHI_DX12()
 	{
@@ -529,7 +530,8 @@ namespace EveryRay_Core
 		{
 			// Schedule a Signal command in the queue.
 			const UINT64 currentFenceValue = mFenceValuesGraphics[mBackBufferIndex];
-			mCommandQueueGraphics->Signal(mFenceGraphics.Get(), currentFenceValue);
+			if (FAILED(mCommandQueueGraphics->Signal(mFenceGraphics.Get(), currentFenceValue)))
+				throw ER_CoreException("ER_RHI_DX12: Could not signal main graphics command queue during Present()");
 
 			// Update the back buffer index.
 			mBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
@@ -543,6 +545,12 @@ namespace EveryRay_Core
 
 			// Set the fence value for the next frame.
 			mFenceValuesGraphics[mBackBufferIndex] = currentFenceValue + 1;
+
+			if (!mDXGIFactory->IsCurrent())
+			{
+				if (FAILED(CreateDXGIFactory2(mDXGIFactoryFlags, IID_PPV_ARGS(mDXGIFactory.ReleaseAndGetAddressOf()))))
+					throw ER_CoreException("ER_RHI_DX12: Could not create DXGI factory during Present()");
+			}
 		}
 	}
 
@@ -1204,10 +1212,7 @@ namespace EveryRay_Core
 		ER_RHI_DX12_GPUBuffer* buffer = static_cast<ER_RHI_DX12_GPUBuffer*>(aBuffer);
 		assert(buffer);
 
-		//unsigned int* aOutData;
-		//buffer->Map(this, reinterpret_cast<void**>(&aOutData));
-		//memcpy(aOutData, aData, dataSize);
-		//buffer->Unmap(this);
+		buffer->Update(this, aData, dataSize);
 	}
 
 	void ER_RHI_DX12::InitImGui()

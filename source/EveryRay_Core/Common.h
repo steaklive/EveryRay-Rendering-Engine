@@ -23,8 +23,10 @@ using namespace Microsoft::WRL;
 
 #if defined (ER_API_DX11)
 #define ER_PLATFORM_WIN64_DX11 1
+#define ER_GPU_BUFFER_ALIGNMENT 16
 #elif defined (ER_API_DX12)
 #define ER_PLATFORM_WIN64_DX12 1
+#define ER_GPU_BUFFER_ALIGNMENT 256
 #endif
 
 #include "RTTI.h"

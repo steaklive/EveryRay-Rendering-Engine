@@ -174,6 +174,7 @@ namespace EveryRay_Core
 		D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeType(ER_RHI_DESCRIPTOR_RANGE_TYPE aDesc);
 
 		ER_GRAPHICS_API GetAPI() { return mAPI; }
+		static int mBackBufferIndex;
 	private:
 		inline CD3DX12_CPU_DESCRIPTOR_HANDLE GetMainRenderTargetView() const { return CD3DX12_CPU_DESCRIPTOR_HANDLE(mRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(mBackBufferIndex), mRTVDescriptorSize); }
 		inline CD3DX12_CPU_DESCRIPTOR_HANDLE GetMainDepthStencilView() const { return CD3DX12_CPU_DESCRIPTOR_HANDLE(mDSVDescriptorHeap->GetCPUDescriptorHandleForHeapStart()); }
@@ -241,6 +242,5 @@ namespace EveryRay_Core
 		bool mIsRaytracingTierAvailable = false;
 		bool mIsContextReadingBuffer = false;
 
-		int mBackBufferIndex = 0;
 	};
 }

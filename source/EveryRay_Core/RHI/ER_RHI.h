@@ -529,7 +529,7 @@ namespace EveryRay_Core
 		void Initialize(ER_RHI* rhi)
 		{
 			buffer = rhi->CreateGPUBuffer();
-			buffer->CreateGPUBufferResource(rhi, nullptr, 1, static_cast<UINT32>(sizeof(T) + (16 - (sizeof(T) % 16))), true, ER_BIND_CONSTANT_BUFFER);
+			buffer->CreateGPUBufferResource(rhi, &Data, 1, static_cast<UINT32>(sizeof(T) + (16 - (sizeof(T) % 16))), true, ER_BIND_CONSTANT_BUFFER);
 			initialized = true;
 		}
 

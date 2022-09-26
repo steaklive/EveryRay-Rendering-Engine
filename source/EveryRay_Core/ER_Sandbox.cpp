@@ -75,6 +75,12 @@ namespace EveryRay_Core {
 		mEditor->LoadScene(mScene);
 #pragma endregion
 
+		#pragma region INIT_QUAD_RENDERER
+		mQuadRenderer = (ER_QuadRenderer*)game.GetServices().FindService(ER_QuadRenderer::TypeIdClass());
+		assert(mQuadRenderer);
+		mQuadRenderer->Setup();
+#pragma endregion
+
 		#pragma region INIT_GBUFFER
         game.CPUProfiler()->BeginCPUTime("Gbuffer init");
         mGBuffer = new ER_GBuffer(game, camera, game.ScreenWidth(), game.ScreenHeight());
@@ -263,7 +269,7 @@ namespace EveryRay_Core {
 	{
 		ER_RHI* rhi = game.GetRHI();
 		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		
+		/*
 		#pragma region DRAW_GBUFFER
 		mGBuffer->Start();
 		mGBuffer->Draw(mScene);
@@ -361,7 +367,7 @@ namespace EveryRay_Core {
 		mPostProcessingStack->DrawEffects(gameTime, quad, mGBuffer, mVolumetricClouds, mVolumetricFog);
 		mPostProcessingStack->End();
 #pragma endregion
-
+		*/
 		//reset back to main rt in case we dont use Post Processing stack
 		rhi->SetMainRenderTargets();
 
