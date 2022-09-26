@@ -9,7 +9,7 @@ namespace EveryRay_Core
 	class ER_Mesh;
 
 	namespace BasicMaterial_CBufferData {
-		struct BasicMaterialCB
+		struct ER_ALIGN_GPU_BUFFER BasicMaterialCB
 		{
 			XMMATRIX World;
 			XMMATRIX ViewProjection;

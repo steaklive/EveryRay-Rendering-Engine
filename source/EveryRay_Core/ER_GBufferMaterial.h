@@ -10,7 +10,7 @@ namespace EveryRay_Core
 	class ER_RenderingObject;
 
 	namespace GBufferMaterial_CBufferData {
-		struct GBufferCB
+		struct ER_ALIGN_GPU_BUFFER GBufferCB
 		{
 			XMMATRIX ViewProjection;
 			XMMATRIX World;

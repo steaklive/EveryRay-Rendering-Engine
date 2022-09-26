@@ -418,7 +418,7 @@ namespace EveryRay_Core {
 				//voxelize extra objects
 				{
 					if (cascade == 0 && mFoliageSystem)
-						mFoliageSystem->Draw(gameTime, &mShadowMapper, FoliageRenderingPass::TO_VOXELIZATION, {});
+						mFoliageSystem->Draw(gameTime, &mShadowMapper, FoliageRenderingPass::FOLIAGE_VOXELIZATION, {});
 				}
 
 				//reset back
@@ -526,7 +526,7 @@ namespace EveryRay_Core {
 			rhi->SetShaderResources(ER_COMPUTE, resources, 0, mVCTRS, VCT_MAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
 			rhi->SetUnorderedAccessResources(ER_COMPUTE, { mVCTMainRT }, 0, mVCTRS, VCT_MAIN_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
 			rhi->SetConstantBuffers(ER_COMPUTE, { mVoxelConeTracingMainConstantBuffer.Buffer() }, 0, mVCTRS, VCT_MAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
-			rhi->Dispatch(DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetHeight()), 8u), 1u);
+			rhi->Dispatch(ER_DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetWidth()), 8u), ER_DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetHeight()), 8u), 1u);
 			rhi->UnsetPSO();
 			rhi->UnbindResourcesFromShader(ER_COMPUTE);
 		}
@@ -551,7 +551,7 @@ namespace EveryRay_Core {
 			rhi->SetShaderResources(ER_COMPUTE, { mVCTMainRT }, 0, mUpsampleAndBlurRS, UPSAMPLE_BLUR_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
 			rhi->SetUnorderedAccessResources(ER_COMPUTE, { mVCTUpsampleAndBlurRT }, 0, mUpsampleAndBlurRS, UPSAMPLE_BLUR_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
 			rhi->SetConstantBuffers(ER_COMPUTE, { mUpsampleBlurConstantBuffer.Buffer() }, 0, mUpsampleAndBlurRS, UPSAMPLE_BLUR_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
-			rhi->Dispatch(DivideByMultiple(static_cast<UINT>(mVCTUpsampleAndBlurRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mVCTUpsampleAndBlurRT->GetHeight()), 8u), 1u);
+			rhi->Dispatch(ER_DivideByMultiple(static_cast<UINT>(mVCTUpsampleAndBlurRT->GetWidth()), 8u), ER_DivideByMultiple(static_cast<UINT>(mVCTUpsampleAndBlurRT->GetHeight()), 8u), 1u);
 			rhi->UnsetPSO();
 			rhi->UnbindResourcesFromShader(ER_COMPUTE);
 		}
@@ -581,7 +581,7 @@ namespace EveryRay_Core {
 			mCompositeIlluminationRS, COMPOSITE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
 		rhi->SetUnorderedAccessResources(ER_COMPUTE, { mFinalIlluminationRT }, 0, mCompositeIlluminationRS, COMPOSITE_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
 		rhi->SetConstantBuffers(ER_COMPUTE, { mCompositeTotalIlluminationConstantBuffer.Buffer() }, 0, mCompositeIlluminationRS, COMPOSITE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
-		rhi->Dispatch(DivideByMultiple(static_cast<UINT>(mFinalIlluminationRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mFinalIlluminationRT->GetHeight()), 8u), 1u);
+		rhi->Dispatch(ER_DivideByMultiple(static_cast<UINT>(mFinalIlluminationRT->GetWidth()), 8u), ER_DivideByMultiple(static_cast<UINT>(mFinalIlluminationRT->GetHeight()), 8u), 1u);
 		rhi->UnsetPSO();
 		
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
@@ -781,9 +781,8 @@ namespace EveryRay_Core {
 				resources[17] = mProbesManager->GetIntegrationMap();
 				rhi->SetShaderResources(ER_COMPUTE, resources, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
 			}
-			rhi->Dispatch(DivideByMultiple(static_cast<UINT>(aRenderTarget->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(aRenderTarget->GetHeight()), 8u), 1u);
-			rhi->UnsetPSO();
 
+			rhi->Dispatch(ER_DivideByMultiple(static_cast<UINT>(aRenderTarget->GetWidth()), 8u), ER_DivideByMultiple(static_cast<UINT>(aRenderTarget->GetHeight()), 8u), 1u);
 			rhi->UnbindResourcesFromShader(ER_COMPUTE);
 		}
 	}

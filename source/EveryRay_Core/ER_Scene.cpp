@@ -29,6 +29,11 @@ namespace EveryRay_Core
 	ER_Scene::ER_Scene(ER_Core& pCore, ER_Camera& pCamera, const std::string& path) :
 		ER_CoreComponent(pCore), mCamera(pCamera), mScenePath(path)
 	{
+		{
+			std::wstring msg = L"[ER Logger][ER_Scene] Started loading scene: " + ER_Utility::ToWideString(path) + L". This might take several minutes... \n";
+			ER_OUTPUT_LOG(msg.c_str());
+		}
+
 		Json::Reader reader;
 		std::ifstream scene(path.c_str(), std::ifstream::binary);
 
@@ -189,6 +194,11 @@ namespace EveryRay_Core
 			
 			for (auto& obj : objects)
 				LoadRenderingObjectInstancedData(obj.second);
+		}
+
+		{
+			std::wstring msg = L"[ER Logger][ER_Scene] Finished loading scene: " + ER_Utility::ToWideString(path) + L" Enjoy! \n";
+			ER_OUTPUT_LOG(msg.c_str());
 		}
 	}
 
@@ -420,6 +430,9 @@ namespace EveryRay_Core
 				}
 			}
 		}
+
+		std::wstring msg = L"[ER Logger][ER_Scene] Loaded rendering object into scene: " + ER_Utility::ToWideString(aObject->GetName()) + L'\n';
+		ER_OUTPUT_LOG(msg.c_str());
 	}
 
 	// [WARNING] NOT THREAD-SAFE!

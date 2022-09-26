@@ -13,7 +13,7 @@ namespace EveryRay_Core
 	class ER_ShadowMapper;
 
 	namespace VolumetricFogCBufferData {
-		struct MainCB
+		struct ER_ALIGN_GPU_BUFFER MainCB
 		{
 			XMMATRIX InvViewProj;
 			XMMATRIX PrevViewProj;
@@ -29,7 +29,7 @@ namespace EveryRay_Core
 			float AmbientIntensity;
 			float PreviousFrameBlend;
 		};	
-		struct CompositeCB
+		struct ER_ALIGN_GPU_BUFFER CompositeCB
 		{
 			XMMATRIX ViewProj;
 			XMFLOAT4 CameraNearFar;

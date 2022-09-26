@@ -24,12 +24,12 @@ namespace EveryRay_Core
 	class ER_VolumetricFog;
 
 	namespace IlluminationCBufferData {
-		struct VoxelizationDebugCB
+		struct ER_ALIGN_GPU_BUFFER VoxelizationDebugCB
 		{
 			XMMATRIX WorldVoxelCube;
 			XMMATRIX ViewProjection;
 		};
-		struct VoxelConeTracingMainCB
+		struct ER_ALIGN_GPU_BUFFER VoxelConeTracingMainCB
 		{
 			XMFLOAT4 VoxelCameraPositions[NUM_VOXEL_GI_CASCADES];
 			XMFLOAT4 WorldVoxelScales[NUM_VOXEL_GI_CASCADES];
@@ -44,15 +44,15 @@ namespace EveryRay_Core
 			float GIPower;
 			XMFLOAT3 pad0;
 		};
-		struct CompositeTotalIlluminationCB
+		struct ER_ALIGN_GPU_BUFFER CompositeTotalIlluminationCB
 		{
 			XMFLOAT4 DebugVoxelAO;
 		};
-		struct UpsampleBlurCB
+		struct ER_ALIGN_GPU_BUFFER UpsampleBlurCB
 		{
 			bool Upsample;
 		};
-		struct DeferredLightingCB
+		struct ER_ALIGN_GPU_BUFFER DeferredLightingCB
 		{
 			XMMATRIX ShadowMatrices[NUM_SHADOW_CASCADES];
 			XMMATRIX ViewProj;
@@ -69,7 +69,7 @@ namespace EveryRay_Core
 			float SSSDirectionLightMaxPlane;
 			float SSSAvailable;
 		};
-		struct ForwardLightingCB
+		struct ER_ALIGN_GPU_BUFFER ForwardLightingCB
 		{
 			XMMATRIX ShadowMatrices[NUM_SHADOW_CASCADES];
 			XMMATRIX ViewProjection;
@@ -82,7 +82,7 @@ namespace EveryRay_Core
 			float UseGlobalProbe;
 			float SkipIndirectProbeLighting;
 		};
-		struct LightProbesCB
+		struct ER_ALIGN_GPU_BUFFER LightProbesCB
 		{
 			XMFLOAT4 DiffuseProbesCellsCount; //x,y,z,total
 			XMFLOAT4 SpecularProbesCellsCount; //x,y,z,total

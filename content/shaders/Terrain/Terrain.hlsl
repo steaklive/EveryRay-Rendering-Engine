@@ -262,6 +262,45 @@ float4 PSMain(DS_OUTPUT IN) : SV_Target
     return float4(directLighting * shadow + indirectLighting, 1.0f);
 }
 
+struct PS_GBUFFER_OUTPUT
+{
+    float4 Color : SV_Target0;
+    float4 Normal : SV_Target1;
+    float4 WorldPos : SV_Target2;
+    float4 Extra : SV_Target3;
+    float4 Extra2 : SV_Target4;
+};
+
+PS_GBUFFER_OUTPUT PSGBuffer(DS_OUTPUT IN) : SV_Target
+{
+    PS_GBUFFER_OUTPUT OUT;
+    
+    float2 uvTile = IN.texcoord;
+    
+    //float4 height = HeightTexture.Sample(LinearSamplerClamp, uvTile + 1.0f / TileSize);
+    //return height;
+    float3 normal = GetNormalFromHeightmap(uvTile, 1.0f / TileSize, TerrainHeightScale);
+    uvTile.y = 1.0f - uvTile.y;
+    
+    float4 splat = SplatTexture.Sample(LinearSamplerClamp, uvTile + 1.0f / TileSize);
+    float3 channel0 = Channel0Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
+    float3 channel1 = Channel1Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
+    float3 channel2 = Channel2Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
+    float3 channel3 = Channel3Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
+    float3 diffuseAlbedo = saturate(splat.r * channel0 + splat.g * channel1 + splat.b * channel2 + splat.a * channel3);
+    
+    OUT.Color = float4(diffuseAlbedo, 1.0f);
+    OUT.Normal = float4(normal, 1.0);
+    OUT.WorldPos = IN.worldPos;
+    
+    float roughness = 1.0f;
+    float metalness = 0.0f;
+    float reflectionMask = 0.0f;
+    OUT.Extra = float4(reflectionMask, roughness, metalness, 0.0f);
+    OUT.Extra2 = float4(1.0f, -1.0f, 0.0f, 0.0f);
+    return OUT;
+}
+
 float4 PSShadowMap(DS_OUTPUT IN) : SV_Target
 {
     IN.Depth.x /= IN.Depth.y;

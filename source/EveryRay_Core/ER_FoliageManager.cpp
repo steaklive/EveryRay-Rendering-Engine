@@ -101,13 +101,13 @@ namespace EveryRay_Core
 
 		ER_RHI* rhi = GetCore()->GetRHI();
 		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		if (renderPass == FoliageRenderingPass::TO_GBUFFER)
+		if (renderPass == FoliageRenderingPass::FOLIAGE_GBUFFER)
 		{
 			rhi->SetRootSignature(mGBufferPassRS);
 			for (auto& object : mFoliageCollection)
 				object->Draw(gameTime, worldShadowMapper, renderPass, aGbufferTextures, mGBufferPassRS);
 		}
-		else if (renderPass == FoliageRenderingPass::TO_VOXELIZATION)
+		else if (renderPass == FoliageRenderingPass::FOLIAGE_VOXELIZATION)
 		{
 			rhi->SetRootSignature(mVoxelizationPassRS);
 			for (auto& object : mFoliageCollection)
@@ -406,7 +406,7 @@ namespace EveryRay_Core
 	void ER_Foliage::Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass, 
 		const std::vector<ER_RHI_GPUTexture*>& aGbufferTextures, ER_RHI_GPURootSignature* rs)
 	{
-		if(renderPass == TO_VOXELIZATION)
+		if(renderPass == FOLIAGE_VOXELIZATION)
 			assert(worldShadowMapper);
 
 		auto rhi = mCore.GetRHI();
@@ -417,7 +417,7 @@ namespace EveryRay_Core
 		rhi->SetVertexBuffers({mVertexBuffer, mInstanceBuffer});
 		rhi->SetIndexBuffer(mIndexBuffer);
 
-		bool isVoxelizationRenderPass = renderPass == TO_VOXELIZATION;
+		bool isVoxelizationRenderPass = renderPass == FOLIAGE_VOXELIZATION;
 		std::string& psoName = isVoxelizationRenderPass ? mFoliageVoxelizationPassPSOName : mFoliageGBufferPassPSOName;
 
 		if (!rhi->IsPSOReady(psoName))

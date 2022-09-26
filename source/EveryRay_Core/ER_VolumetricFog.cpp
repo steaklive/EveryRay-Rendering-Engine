@@ -181,9 +181,7 @@ namespace EveryRay_Core {
 		rhi->SetConstantBuffers(ER_COMPUTE, { mMainConstantBuffer.Buffer() }, 0, 
 			mInjectionAccumulationPassesRootSignature, INJECTION_ACCUMULATION_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
 		rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
-		rhi->Dispatch(ER_CEIL(VOXEL_SIZE_X, 8), ER_CEIL(VOXEL_SIZE_Y, 8), ER_CEIL(VOXEL_SIZE_Z, 1));
 		rhi->UnsetPSO();
-
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 
 		mCurrentTexture3DRead = !mCurrentTexture3DRead;
@@ -211,9 +209,7 @@ namespace EveryRay_Core {
 		rhi->SetConstantBuffers(ER_COMPUTE, { mMainConstantBuffer.Buffer() }, 0,
 			mInjectionAccumulationPassesRootSignature, INJECTION_ACCUMULATION_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
 		rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
-		rhi->Dispatch(ER_CEIL(VOXEL_SIZE_X, 8), ER_CEIL(VOXEL_SIZE_Y, 8), 1);
 		rhi->UnsetPSO();
-
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 	}
 

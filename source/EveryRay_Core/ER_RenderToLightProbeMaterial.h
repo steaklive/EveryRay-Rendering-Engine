@@ -11,7 +11,7 @@ namespace EveryRay_Core
 	class ER_Camera;
 
 	namespace RenderToLightProbeMaterial_CBufferData {
-		struct RenderToLightProbeCB
+		struct ER_ALIGN_GPU_BUFFER RenderToLightProbeCB
 		{
 			XMMATRIX ShadowMatrices[NUM_SHADOW_CASCADES];
 			XMMATRIX ViewProjection;

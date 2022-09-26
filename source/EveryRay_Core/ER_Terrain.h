@@ -25,7 +25,7 @@ namespace EveryRay_Core
 	class ER_RenderableAABB;
 	class ER_Camera;
 
-	struct TerrainTileDataGPU
+	struct ER_ALIGN_GPU_BUFFER TerrainTileDataGPU
 	{
 		XMFLOAT4 UVoffsetTileSize; // x,y - offsets, z,w - tile size
 		XMFLOAT4 AABBMinPoint;
@@ -40,8 +40,15 @@ namespace EveryRay_Core
 		NONE = 4
 	};
 
+	enum TerrainRenderPass
+	{
+		TERRAIN_GBUFFER,
+		TERRAIN_FORWARD,
+		TERRAIN_SHADOW
+	};
+
 	namespace TerrainCBufferData {
-		struct TerrainData {
+		struct ER_ALIGN_GPU_BUFFER TerrainCB {
 			XMMATRIX ShadowMatrices[NUM_SHADOW_CASCADES];
 			XMMATRIX WorldLightViewProjection;
 			XMMATRIX World;
@@ -60,7 +67,7 @@ namespace EveryRay_Core
 			float TileSize;
 		};
 
-		struct PlaceOnTerrainData
+		struct ER_ALIGN_GPU_BUFFER PlaceOnTerrainData
 		{
 			float HeightScale;
 			float SplatChannel;
@@ -129,7 +136,7 @@ namespace EveryRay_Core
 		UINT GetWidth() { return mWidth; }
 		UINT GetHeight() { return mHeight; }
 
-		void Draw(ER_RHI_GPUTexture* aRenderTarget, ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr, int shadowMapCascade = -1);
+		void Draw(TerrainRenderPass aPass, const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr, int shadowMapCascade = -1);
 		void DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPURootSignature* rs);
 		void Update(const ER_CoreTime& gameTime);
 		void Config() { mShowDebug = !mShowDebug; }
@@ -156,11 +163,11 @@ namespace EveryRay_Core
 		void LoadTextures(const std::wstring& aTexturesPath, const std::wstring& splatLayer0Path, const std::wstring& splatLayer1Path,	const std::wstring& splatLayer2Path, const std::wstring& splatLayer3Path);
 		void LoadSplatmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path);
 		void LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path);
-		void DrawTessellated(ER_RHI_GPUTexture* aRenderTarget, int i, ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr, int shadowMapCascade = -1);
+		void DrawTessellated(TerrainRenderPass aPass, const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, int i, ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr, int shadowMapCascade = -1);
 
 		ER_DirectionalLight& mDirectionalLight;
 
-		ER_RHI_GPUConstantBuffer<TerrainCBufferData::TerrainData> mTerrainConstantBuffer;
+		ER_RHI_GPUConstantBuffer<TerrainCBufferData::TerrainCB> mTerrainConstantBuffer;
 		ER_RHI_GPUConstantBuffer<TerrainCBufferData::PlaceOnTerrainData> mPlaceOnTerrainConstantBuffer;
 
 		ER_RHI_InputLayout* mInputLayout = nullptr;
@@ -174,6 +181,8 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mDS_ShadowMap = nullptr;
 		ER_RHI_GPUShader* mPS_ShadowMap = nullptr;
 		std::string mTerrainShadowPassPSOName = "Terrain - Shadow Pass PSO";
+		ER_RHI_GPUShader* mPS_GBuffer = nullptr;
+		std::string mTerrainGBufferPassPSOName = "Terrain - GBuffer Pass PSO";
 
 		ER_RHI_GPUShader* mPlaceOnTerrainCS = nullptr;
 		std::string mTerrainPlacementPassPSOName = "Terrain - Placement Pass PSO";

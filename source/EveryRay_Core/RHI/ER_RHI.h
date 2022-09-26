@@ -453,8 +453,8 @@ namespace EveryRay_Core
 
 		virtual void CreateGPUTextureResource(ER_RHI* aRHI, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE,
 			int mip = 1, int depth = -1, int arraySize = 1, bool isCubemap = false, int cubemapArraySize = -1) { AbstractRHIMethodAssert();	}
-		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath = false, bool is3D = false) { AbstractRHIMethodAssert(); }
-		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath = false, bool is3D = false) { AbstractRHIMethodAssert(); }
+		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath = false, bool is3D = false, bool skipFallback = false, bool* statusFlag = nullptr) { AbstractRHIMethodAssert(); }
+		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath = false, bool is3D = false, bool skipFallback = false, bool* statusFlag = nullptr) { AbstractRHIMethodAssert(); }
 
 		virtual void* GetRTV(void* aEmpty = nullptr) { AbstractRHIMethodAssert(); return nullptr; }
 		virtual void* GetRTV(int index) { AbstractRHIMethodAssert(); return nullptr; }
@@ -529,7 +529,7 @@ namespace EveryRay_Core
 		void Initialize(ER_RHI* rhi)
 		{
 			buffer = rhi->CreateGPUBuffer();
-			buffer->CreateGPUBufferResource(rhi, &Data, 1, static_cast<UINT32>(sizeof(T) + (16 - (sizeof(T) % 16))), true, ER_BIND_CONSTANT_BUFFER);
+			buffer->CreateGPUBufferResource(rhi, &Data, 1, ER_BitmaskAlign(static_cast<UINT>(sizeof(T)), ER_GPU_BUFFER_ALIGNMENT), true, ER_BIND_CONSTANT_BUFFER);
 			initialized = true;
 		}
 

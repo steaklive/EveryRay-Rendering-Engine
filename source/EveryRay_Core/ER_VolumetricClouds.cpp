@@ -221,7 +221,7 @@ namespace EveryRay_Core {
 				mMainPassRS, MAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
 			rhi->SetUnorderedAccessResources(ER_COMPUTE, { mMainRT }, 0, mMainPassRS, MAIN_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
 			rhi->SetConstantBuffers(ER_COMPUTE, { mFrameConstantBuffer.Buffer(), mCloudsConstantBuffer.Buffer() }, 0, mMainPassRS, MAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
-			rhi->Dispatch(DivideByMultiple(static_cast<UINT>(mMainRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mMainRT->GetHeight()), 8u), 1u);
+			rhi->Dispatch(ER_DivideByMultiple(static_cast<UINT>(mMainRT->GetWidth()), 8u), ER_DivideByMultiple(static_cast<UINT>(mMainRT->GetHeight()), 8u), 1u);
 			rhi->UnsetPSO();
 			
 			rhi->UnbindResourcesFromShader(ER_COMPUTE);
@@ -245,7 +245,7 @@ namespace EveryRay_Core {
 			rhi->SetShaderResources(ER_COMPUTE, { mMainRT }, 0, mUpsampleBlurPassRS, UPSAMPLEBLUR_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
 			rhi->SetUnorderedAccessResources(ER_COMPUTE, { mUpsampleAndBlurRT }, 0, mUpsampleBlurPassRS, UPSAMPLEBLUR_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
 			rhi->SetConstantBuffers(ER_COMPUTE, { mUpsampleBlurConstantBuffer.Buffer() }, 0, mUpsampleBlurPassRS, UPSAMPLEBLUR_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
-			rhi->Dispatch(DivideByMultiple(static_cast<UINT>(mUpsampleAndBlurRT->GetWidth()), 8u), DivideByMultiple(static_cast<UINT>(mUpsampleAndBlurRT->GetHeight()), 8u), 1u);
+			rhi->Dispatch(ER_DivideByMultiple(static_cast<UINT>(mUpsampleAndBlurRT->GetWidth()), 8u), ER_DivideByMultiple(static_cast<UINT>(mUpsampleAndBlurRT->GetHeight()), 8u), 1u);
 			rhi->UnsetPSO();
 			
 			rhi->UnbindResourcesFromShader(ER_COMPUTE);

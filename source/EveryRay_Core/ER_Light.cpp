@@ -12,29 +12,8 @@ namespace EveryRay_Core
 
 	ER_Light::~ER_Light() {}
 
-	const XMCOLOR& ER_Light::Color() const
-	{
-		return mColor;
-	}
-
-	XMVECTOR ER_Light::ColorVector() const
-	{
-		return XMLoadColor(&mColor);
-	}
-
-	void ER_Light::SetColor(FLOAT r, FLOAT g, FLOAT b, FLOAT a)
-	{
-		XMCOLOR color(r,g,b,a);
-		SetColor(color);
-	}
-
-	void ER_Light::SetColor(XMCOLOR color)
+	void ER_Light::SetColor(XMFLOAT4& color)
 	{
 		mColor = color;
-	}
-
-	void ER_Light::SetColor(FXMVECTOR color)
-	{
-		XMStoreColor(&mColor, color);
 	}
 }

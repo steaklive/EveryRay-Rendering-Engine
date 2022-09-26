@@ -3,7 +3,8 @@
 #include "ER_CoreComponent.h"
 #include "RHI/ER_RHI.h"
 
-namespace EveryRay_Core {
+namespace EveryRay_Core 
+{
 	struct QuadVertex
 	{
 		XMFLOAT3 Position;

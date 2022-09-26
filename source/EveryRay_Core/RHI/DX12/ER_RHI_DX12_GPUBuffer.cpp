@@ -28,7 +28,9 @@ namespace EveryRay_Core
 		mRHIFormat = format;
 		mFormat = aRHIDX12->GetFormat(format);
 		mStride = byteStride;
-		mSize = ER_ALIGN(objectsCount * byteStride, 256);
+		mSize = objectsCount * byteStride;
+		if (bindFlags & ER_RHI_BIND_FLAG::ER_BIND_CONSTANT_BUFFER)
+			mSize = ER_BitmaskAlign(objectsCount * byteStride, ER_GPU_BUFFER_ALIGNMENT);
 		if (bindFlags & ER_RHI_BIND_FLAG::ER_BIND_UNORDERED_ACCESS)
 			mResourceFlags |= D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
@@ -124,10 +126,10 @@ namespace EveryRay_Core
 		ER_RHI_DX12* aRHIDX12 = static_cast<ER_RHI_DX12*>(aRHI);
 
 		assert(mBufferUpload);
-
+		HRESULT hr;
 		CD3DX12_RANGE range(0, 0);
-		if (FAILED(mBufferUpload->Map(0, &range, aOutData)))
-			throw ER_CoreException("ER_RHI_DX12: Failed to map GPU buffer.");
+		if (FAILED(hr = mBufferUpload->Map(0, &range, aOutData)))
+			throw ER_CoreException("ER_RHI_DX12: Failed to map GPU buffer.", hr);
 	}
 
 	void ER_RHI_DX12_GPUBuffer::Unmap(ER_RHI* aRHI)
@@ -141,6 +143,8 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12_GPUBuffer::UpdateSubresource(ER_RHI* aRHI, void* aData, int dataSize, int cmdListIndex)
 	{
+		assert(mSize >= dataSize);
+
 		assert(aRHI);
 		ER_RHI_DX12* aRHIDX12 = static_cast<ER_RHI_DX12*>(aRHI);
 
@@ -162,6 +166,8 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12_GPUBuffer::Update(ER_RHI* aRHI, void* aData, int dataSize)
 	{
+		assert(mSize >= dataSize);
+
 		assert(aRHI);
 		ER_RHI_DX12* aRHIDX12 = static_cast<ER_RHI_DX12*>(aRHI);
 

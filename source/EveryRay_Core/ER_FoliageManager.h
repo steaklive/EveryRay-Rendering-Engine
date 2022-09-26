@@ -18,7 +18,7 @@ namespace EveryRay_Core
 	class ER_Terrain;
 
 	namespace FoliageCBufferData {
-		struct FoliageData {
+		struct ER_ALIGN_GPU_BUFFER FoliageCB {
 			XMMATRIX ShadowMatrices[NUM_SHADOW_CASCADES];
 			XMMATRIX World;
 			XMMATRIX View;
@@ -44,8 +44,8 @@ namespace EveryRay_Core
 
 	enum FoliageRenderingPass
 	{
-		TO_GBUFFER,
-		TO_VOXELIZATION
+		FOLIAGE_GBUFFER,
+		FOLIAGE_VOXELIZATION
 	};
 	enum FoliageBillboardType
 	{
@@ -55,14 +55,14 @@ namespace EveryRay_Core
 		MULTIPLE_QUADS_CROSSING = 3
 	};
 
-	struct GPUFoliagePatchData //for GPU vertex buffer
+	struct ER_ALIGN_GPU_BUFFER GPUFoliagePatchData //for GPU vertex buffer
 	{
 		XMFLOAT4 pos;
 		XMFLOAT2 uv;
 		XMFLOAT3 normals;
 	};
 
-	struct GPUFoliageInstanceData //for GPU instance buffer
+	struct ER_ALIGN_GPU_BUFFER GPUFoliageInstanceData //for GPU instance buffer
 	{
 		XMMATRIX worldMatrix = XMMatrixIdentity();
 	};
@@ -152,7 +152,7 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mPS_Voxelization = nullptr;
 		std::string mFoliageVoxelizationPassPSOName = "Foliage - Voxelization Pass PSO";
 
-		ER_RHI_GPUConstantBuffer<FoliageCBufferData::FoliageData> mFoliageConstantBuffer;
+		ER_RHI_GPUConstantBuffer<FoliageCBufferData::FoliageCB> mFoliageConstantBuffer;
 
 		ER_RHI_GPUBuffer* mVertexBuffer = nullptr;
 		ER_RHI_GPUBuffer* mIndexBuffer = nullptr;

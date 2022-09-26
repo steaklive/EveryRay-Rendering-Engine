@@ -269,13 +269,18 @@ namespace EveryRay_Core {
 	{
 		ER_RHI* rhi = game.GetRHI();
 		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		/*
+		
 		#pragma region DRAW_GBUFFER
 		mGBuffer->Start();
 		mGBuffer->Draw(mScene);
+		if (mTerrain)
+		{
+			mTerrain->Draw(TerrainRenderPass::TERRAIN_GBUFFER, 
+				{ mGBuffer->GetAlbedo(), mGBuffer->GetNormals(), mGBuffer->GetPositions(), mGBuffer->GetExtraBuffer(), mGBuffer->GetExtra2Buffer() });
+		}
 		if (mFoliageSystem)
 		{
-			mFoliageSystem->Draw(gameTime, nullptr, FoliageRenderingPass::TO_GBUFFER,
+			mFoliageSystem->Draw(gameTime, nullptr, FoliageRenderingPass::FOLIAGE_GBUFFER,
 				{ mGBuffer->GetAlbedo(), mGBuffer->GetNormals(), mGBuffer->GetPositions(), mGBuffer->GetExtraBuffer(), mGBuffer->GetExtra2Buffer() });
 		}
 		mGBuffer->End();
@@ -327,10 +332,11 @@ namespace EveryRay_Core {
 		}
 #pragma endregion
 
-		#pragma region DRAW_TERRAIN
-		//if (mTerrain)
-		//	mTerrain->Draw(localRT, mShadowMapper, mLightProbesManager);
-#pragma endregion
+//		Terrain rendering is now in deferred; uncomment code below if you want to render in forward
+//		#pragma region DRAW_TERRAIN_FORWARD
+//		if (mTerrain)
+//			mTerrain->Draw(TerrainRenderPass::FORWARD, localRT, mShadowMapper, mLightProbesManager);
+//		#pragma endregion
 
 		#pragma region DRAW_DEBUG_GIZMOS
 		// TODO: consider moving all debug gizmos to a separate debug renderer system
@@ -367,7 +373,7 @@ namespace EveryRay_Core {
 		mPostProcessingStack->DrawEffects(gameTime, quad, mGBuffer, mVolumetricClouds, mVolumetricFog);
 		mPostProcessingStack->End();
 #pragma endregion
-		*/
+		
 		//reset back to main rt in case we dont use Post Processing stack
 		rhi->SetMainRenderTargets();
 

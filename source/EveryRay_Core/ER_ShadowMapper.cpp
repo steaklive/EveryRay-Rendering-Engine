@@ -263,7 +263,7 @@ namespace EveryRay_Core
 			BeginRenderingToShadowMap(i);
 
 			if (terrain)
-				terrain->Draw(nullptr, this, nullptr, i);
+				terrain->Draw(TerrainRenderPass::TERRAIN_SHADOW, { mShadowMaps[i] }, this, nullptr, i);
 
 			rhi->SetRootSignature(mRootSignature);
 			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

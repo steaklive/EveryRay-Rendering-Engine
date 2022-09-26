@@ -11,7 +11,7 @@ namespace EveryRay_Core
 	class ER_Skybox;
 
 	namespace VolumetricCloudsCBufferData {
-		struct FrameCB
+		struct ER_ALIGN_GPU_BUFFER FrameCB
 		{
 			XMMATRIX	InvProj;
 			XMMATRIX	InvView;
@@ -21,7 +21,7 @@ namespace EveryRay_Core
 			XMFLOAT2	UpsampleRatio;
 		};
 
-		struct CloudsCB
+		struct ER_ALIGN_GPU_BUFFER CloudsCB
 		{
 			XMVECTOR AmbientColor;
 			XMVECTOR WindDir;
@@ -36,7 +36,7 @@ namespace EveryRay_Core
 			float DensityFactor;
 		};
 
-		struct UpsampleBlurCB
+		struct ER_ALIGN_GPU_BUFFER UpsampleBlurCB
 		{
 			bool Upsample;
 		};
