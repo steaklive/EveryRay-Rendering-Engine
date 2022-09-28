@@ -353,6 +353,9 @@ namespace EveryRay_Core {
 				rhi->InitializePSO(mFinalResolvePassPSOName);
 				rhi->SetShader(mFinalResolvePS);
 				rhi->SetMainRenderTargetFormats();
+				rhi->SetBlendState(ER_NO_BLEND);
+				rhi->SetDepthStencilState(ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
+				rhi->SetRasterizerState(ER_NO_CULLING);
 				rhi->SetTopologyTypeToPSO(mFinalResolvePassPSOName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 				rhi->SetRootSignatureToPSO(mFinalResolvePassPSOName, mFinalResolveRS);
 				quad->PrepareDraw(rhi);
@@ -488,6 +491,8 @@ namespace EveryRay_Core {
 				rhi->InitializePSO(mLinearFogPassPSOName);
 				rhi->SetShader(mLinearFogPS);
 				rhi->SetRenderTargetFormats({ mLinearFogRT });
+				rhi->SetBlendState(ER_NO_BLEND);
+				rhi->SetRasterizerState(ER_NO_CULLING);
 				rhi->SetRootSignatureToPSO(mLinearFogPassPSOName, mLinearFogRS);
 				rhi->SetTopologyTypeToPSO(mLinearFogPassPSOName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 				quad->PrepareDraw(rhi);
@@ -517,6 +522,8 @@ namespace EveryRay_Core {
 					rhi->InitializePSO(mSSSPassPSOName);
 					rhi->SetShader(mSSSPS);
 					rhi->SetRenderTargetFormats({ mSSSRT });
+					rhi->SetBlendState(ER_NO_BLEND);
+					rhi->SetRasterizerState(ER_NO_CULLING);
 					rhi->SetRootSignatureToPSO(mSSSPassPSOName, mSSSRS);
 					rhi->SetTopologyTypeToPSO(mSSSPassPSOName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 					quad->PrepareDraw(rhi);
@@ -552,6 +559,8 @@ namespace EveryRay_Core {
 				rhi->InitializePSO(mSSRPassPSOName);
 				rhi->SetShader(mSSRPS);
 				rhi->SetRenderTargetFormats({ mSSRRT });
+				rhi->SetBlendState(ER_NO_BLEND);
+				rhi->SetRasterizerState(ER_NO_CULLING);
 				rhi->SetRootSignatureToPSO(mSSRPassPSOName, mSSRRS);
 				rhi->SetTopologyTypeToPSO(mSSRPassPSOName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 				quad->PrepareDraw(rhi);
@@ -592,6 +601,8 @@ namespace EveryRay_Core {
 			{
 				rhi->InitializePSO(mTonemapPassPSOName);
 				rhi->SetShader(mTonemappingPS);
+				rhi->SetBlendState(ER_NO_BLEND);
+				rhi->SetRasterizerState(ER_NO_CULLING);
 				rhi->SetRenderTargetFormats({ mTonemappingRT });
 				rhi->SetRootSignatureToPSO(mTonemapPassPSOName, mTonemapRS);
 				rhi->SetTopologyTypeToPSO(mTonemapPassPSOName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -619,6 +630,8 @@ namespace EveryRay_Core {
 				rhi->InitializePSO(mColorGradingPassPSOName);
 				rhi->SetShader(mColorGradingPS);
 				rhi->SetRenderTargetFormats({ mColorGradingRT });
+				rhi->SetBlendState(ER_NO_BLEND);
+				rhi->SetRasterizerState(ER_NO_CULLING);
 				rhi->SetRootSignatureToPSO(mColorGradingPassPSOName, mColorGradingRS);
 				rhi->SetTopologyTypeToPSO(mColorGradingPassPSOName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 				quad->PrepareDraw(rhi);
@@ -644,6 +657,8 @@ namespace EveryRay_Core {
 			{
 				rhi->InitializePSO(mVignettePassPSOName);
 				rhi->SetShader(mVignettePS);
+				rhi->SetBlendState(ER_NO_BLEND);
+				rhi->SetRasterizerState(ER_NO_CULLING);
 				rhi->SetRenderTargetFormats({ mVignetteRT });
 				rhi->SetRootSignatureToPSO(mVignettePassPSOName, mVignetteRS);
 				rhi->SetTopologyTypeToPSO(mVignettePassPSOName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -670,6 +685,8 @@ namespace EveryRay_Core {
 			{
 				rhi->InitializePSO(mFXAAPassPSOName);
 				rhi->SetShader(mFXAAPS);
+				rhi->SetBlendState(ER_NO_BLEND);
+				rhi->SetRasterizerState(ER_NO_CULLING);
 				rhi->SetRenderTargetFormats({ mFXAART });
 				rhi->SetRootSignatureToPSO(mFXAAPassPSOName, mFXAARS);
 				rhi->SetTopologyTypeToPSO(mFXAAPassPSOName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

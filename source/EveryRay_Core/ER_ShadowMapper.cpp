@@ -20,12 +20,9 @@
 #include <algorithm>
 #include <limits>
 
-static const std::string psoNames[NUM_SHADOW_CASCADES] =
-{
-	"ShadowMapMaterial Pass (cascade 0) PSO",
-	"ShadowMapMaterial Pass (cascade 1) PSO",
-	"ShadowMapMaterial Pass (cascade 2) PSO"
-};
+static const std::string psoNameNonInstanced = "ShadowMapMaterial PSO";
+static const std::string psoNameInstanced = "ShadowMapMaterial w/ Instancing PSO";
+
 namespace EveryRay_Core
 {
 	ER_ShadowMapper::ER_ShadowMapper(ER_Core& pCore, ER_Camera& camera, ER_DirectionalLight& dirLight,  UINT pWidth, UINT pHeight, bool isCascaded)
@@ -93,6 +90,7 @@ namespace EveryRay_Core
 
 		mOriginalRS = rhi->GetCurrentRasterizerState();
 		mOriginalViewport = rhi->GetCurrentViewport();
+		mOriginalRect = rhi->GetCurrentRect();
 
 		ER_RHI_Viewport newViewport;
 		newViewport.TopLeftX = 0.0f;
@@ -102,9 +100,12 @@ namespace EveryRay_Core
 		newViewport.MinDepth = 0.0f;
 		newViewport.MaxDepth = 1.0f;
 
+		ER_RHI_Rect newRect = { 0, 0, static_cast<LONG>(mShadowMaps[cascadeIndex]->GetWidth()), static_cast<LONG>(mShadowMaps[cascadeIndex]->GetHeight()) };
+
 		rhi->SetDepthTarget(mShadowMaps[cascadeIndex]);
 		rhi->ClearDepthStencilTarget(mShadowMaps[cascadeIndex], 1.0f, 0);
 		rhi->SetViewport(newViewport);
+		rhi->SetRect(newRect);
 	}
 
 	void ER_ShadowMapper::StopRenderingToShadowMap(int cascadeIndex)
@@ -115,6 +116,7 @@ namespace EveryRay_Core
 
 		rhi->UnbindRenderTargets();
 		rhi->SetViewport(mOriginalViewport);
+		rhi->SetRect(mOriginalRect);
 		rhi->SetRasterizerState(mOriginalRS);
 	}
 
@@ -260,6 +262,7 @@ namespace EveryRay_Core
 
 		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 		{
+			std::string materialName = ER_MaterialHelper::shadowMapMaterialName + " " + std::to_string(i);
 			BeginRenderingToShadowMap(i);
 
 			if (terrain)
@@ -267,13 +270,13 @@ namespace EveryRay_Core
 
 			rhi->SetRootSignature(mRootSignature);
 			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-			const std::string& psoName = psoNames[i];
 
 			int objectIndex = 0;
 			for (auto renderingObjectInfo = scene->objects.begin(); renderingObjectInfo != scene->objects.end(); renderingObjectInfo++, objectIndex++)
 			{
 				ER_RenderingObject* renderingObject = renderingObjectInfo->second;
-				auto materialInfo = renderingObject->GetMaterials().find(ER_MaterialHelper::shadowMapMaterialName + " " + std::to_string(i));
+				const std::string& psoName = renderingObject->IsInstanced() ? psoNameInstanced : psoNameNonInstanced;
+				auto materialInfo = renderingObject->GetMaterials().find(materialName);
 				if (materialInfo != renderingObject->GetMaterials().end())
 				{
 					ER_Material* material = materialInfo->second;
@@ -283,6 +286,8 @@ namespace EveryRay_Core
 						{
 							rhi->InitializePSO(psoName);
 							rhi->SetRasterizerState(ER_SHADOW_RS);
+							rhi->SetBlendState(ER_NO_BLEND);
+							rhi->SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
 							material->PrepareShaders();
 							rhi->SetRenderTargetFormats({}, mShadowMaps[i]);
 							rhi->SetRootSignatureToPSO(psoName, mRootSignature);
@@ -292,9 +297,9 @@ namespace EveryRay_Core
 						rhi->SetPSO(psoName);
 						static_cast<ER_ShadowMapMaterial*>(material)->PrepareForRendering(materialSystems, renderingObject, meshIndex, i, mRootSignature);
 						if (!renderingObject->IsInstanced())
-							renderingObject->DrawLOD(ER_MaterialHelper::shadowMapMaterialName, true, meshIndex, renderingObject->GetLODCount() - 1); //drawing highest LOD
+							renderingObject->DrawLOD(materialName, true, meshIndex, renderingObject->GetLODCount() - 1); //drawing highest LOD
 						else
-							renderingObject->Draw(ER_MaterialHelper::shadowMapMaterialName, true, meshIndex);
+							renderingObject->Draw(materialName, true, meshIndex);
 						rhi->UnsetPSO();
 					}
 				}

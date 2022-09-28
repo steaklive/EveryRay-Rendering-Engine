@@ -300,17 +300,17 @@ namespace EveryRay_Runtime
 
 		mRHI->BeginGraphicsCommandList();
 		mRHI->SetGPUDescriptorHeap(ER_RHI_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
-
+		
 		mRHI->ClearMainRenderTarget(colorBlack);
 		mRHI->ClearMainDepthStencilTarget(1.0f, 0);
-
+		
 		mRHI->SetViewport(mMainViewport);
 		mRHI->SetRect(mMainRect);
-
+		
 		mRHI->SetDepthStencilState(ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
 		mRHI->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING);
 		mRHI->SetBlendState(ER_RHI_BLEND_STATE::ER_NO_BLEND);
-
+		
 		mCurrentSandbox->Draw(*this, gameTime);
 
 		mRHI->TransitionMainRenderTargetToPresent();

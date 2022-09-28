@@ -34,8 +34,8 @@ namespace EveryRay_Core
 		~ER_Skybox();
 
 		void Initialize();
-		void Draw(ER_RHI_GPUTexture* aRenderTarget, ER_Camera* aCustomCamera = nullptr);
-		void DrawSun(ER_RHI_GPUTexture* aRenderTarget, ER_Camera* aCustomCamera = nullptr, ER_RHI_GPUTexture* aSky = nullptr, ER_RHI_GPUTexture* aSceneDepth = nullptr);
+		void Draw(ER_RHI_GPUTexture* aRenderTarget, ER_Camera* aCustomCamera = nullptr, ER_RHI_GPUTexture* aSceneDepth = nullptr, bool isVolumetricCloudsPass = false);
+		void DrawSun(ER_RHI_GPUTexture* aRenderTarget, ER_Camera* aCustomCamera = nullptr, ER_RHI_GPUTexture* aSky = nullptr, ER_RHI_GPUTexture* aSceneDepth = nullptr, bool isVolumetricCloudsPass = false);
 		void Update(ER_Camera* aCustomCamera = nullptr);
 		void UpdateSun(const ER_CoreTime& gameTime, ER_Camera* aCustomCamera = nullptr);
 
@@ -78,13 +78,15 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mSunOcclusionPS = nullptr;
 		ER_RHI_GPUConstantBuffer<SkyCBufferData::SunData> mSunConstantBuffer;	
 		ER_RHI_GPURootSignature* mSunRS = nullptr;
-		std::string mSunPassPSOName = "Sun Pass PSO";
+		const std::string mSunPassPSOName = "Sun Pass PSO";
+		const std::string mSunPassVolumetricCloudsPSOName = "Sun Pass (Volumetric Clouds) PSO"; // due to RT format mismatch
 
 		ER_RHI_GPUShader* mSkyboxVS = nullptr;
 		ER_RHI_GPUShader* mSkyboxPS = nullptr;
 		ER_RHI_GPUConstantBuffer<SkyCBufferData::SkyboxData> mSkyboxConstantBuffer;
 		ER_RHI_GPURootSignature* mSkyRS = nullptr;
-		std::string mSkyboxPassPSOName = "Skybox Pass PSO";
+		const std::string mSkyboxPassPSOName = "Skybox Pass PSO";
+		const std::string mSkyboxPassVolumetricCloudsPSOName = "Skybox Pass (Volumetric Clouds) PSO"; // due to RT format mismatch
 
 		XMFLOAT4 mSunDir;
 		XMFLOAT4 mSunColor;

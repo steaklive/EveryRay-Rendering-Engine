@@ -132,11 +132,15 @@ namespace EveryRay_Core
 		mSunConstantBuffer.ApplyChanges(rhi);
 	}
 
-	void ER_Skybox::Draw(ER_RHI_GPUTexture* aRenderTarget, ER_Camera* aCustomCamera)
+	void ER_Skybox::Draw(ER_RHI_GPUTexture* aRenderTarget, ER_Camera* aCustomCamera, ER_RHI_GPUTexture* aSceneDepth, bool isVolumetricCloudsPass)
 	{
 		assert(aRenderTarget);
+		const std::string& psoName = isVolumetricCloudsPass ? mSkyboxPassVolumetricCloudsPSOName : mSkyboxPassPSOName;
 
 		auto rhi = mCore.GetRHI();
+
+		rhi->SetRootSignature(mSkyRS);
+		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		rhi->SetVertexBuffers({ mVertexBuffer });
 		rhi->SetIndexBuffer(mIndexBuffer);
@@ -153,21 +157,21 @@ namespace EveryRay_Core
 		mSkyboxConstantBuffer.Data.TopColor = mTopColor;
 		mSkyboxConstantBuffer.ApplyChanges(rhi);
 
-		rhi->SetRootSignature(mSkyRS);
-		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-		if (!rhi->IsPSOReady(mSkyboxPassPSOName))
+		if (!rhi->IsPSOReady(psoName))
 		{
-			rhi->InitializePSO(mSkyboxPassPSOName);
+			rhi->InitializePSO(psoName);
 			rhi->SetShader(mSkyboxVS);
 			rhi->SetShader(mSkyboxPS);
-			rhi->SetRenderTargetFormats({ aRenderTarget });
-			rhi->SetTopologyTypeToPSO(mSkyboxPassPSOName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-			rhi->SetRootSignatureToPSO(mSkyboxPassPSOName, mSkyRS);
+			rhi->SetRenderTargetFormats({ aRenderTarget }, aSceneDepth);
+			rhi->SetRasterizerState(ER_NO_CULLING);
+			rhi->SetBlendState(ER_NO_BLEND);
+			rhi->SetDepthStencilState(ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
+			rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			rhi->SetRootSignatureToPSO(psoName, mSkyRS);
 			rhi->SetInputLayout(mInputLayout);
-			rhi->FinalizePSO(mSkyboxPassPSOName);
+			rhi->FinalizePSO(psoName);
 		}
-		rhi->SetPSO(mSkyboxPassPSOName);
+		rhi->SetPSO(psoName);
 		rhi->SetConstantBuffers(ER_VERTEX, { mSkyboxConstantBuffer.Buffer() }, 0, mSkyRS, SKYBOX_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 		rhi->SetConstantBuffers(ER_PIXEL,  { mSkyboxConstantBuffer.Buffer() }, 0, mSkyRS, SKYBOX_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 		rhi->DrawIndexed(mIndexCount);
@@ -177,7 +181,7 @@ namespace EveryRay_Core
 		rhi->UnbindResourcesFromShader(ER_PIXEL);
 	}
 
-	void ER_Skybox::DrawSun(ER_RHI_GPUTexture* aRenderTarget, ER_Camera* aCustomCamera, ER_RHI_GPUTexture* aSky, ER_RHI_GPUTexture* aSceneDepth)
+	void ER_Skybox::DrawSun(ER_RHI_GPUTexture* aRenderTarget, ER_Camera* aCustomCamera, ER_RHI_GPUTexture* aSky, ER_RHI_GPUTexture* aSceneDepth, bool isVolumetricCloudsPass)
 	{
 		auto rhi = mCore.GetRHI();
 
@@ -186,22 +190,26 @@ namespace EveryRay_Core
 		auto quadRenderer = (ER_QuadRenderer*)mCore.GetServices().FindService(ER_QuadRenderer::TypeIdClass());
 		assert(quadRenderer);
 
+		const std::string& psoName = isVolumetricCloudsPass ? mSunPassVolumetricCloudsPSOName : mSunPassPSOName;
 		if (mDrawSun)
 		{
 			rhi->SetRootSignature(mSunRS);
 			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-			if (!rhi->IsPSOReady(mSunPassPSOName))
+			if (!rhi->IsPSOReady(psoName))
 			{
-				rhi->InitializePSO(mSunPassPSOName);
+				rhi->InitializePSO(psoName);
 				rhi->SetShader(mSunPS);
 				rhi->SetRenderTargetFormats({ aRenderTarget });
-				rhi->SetTopologyTypeToPSO(mSunPassPSOName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-				rhi->SetRootSignatureToPSO(mSunPassPSOName, mSunRS);
+				rhi->SetRasterizerState(ER_NO_CULLING);
+				rhi->SetBlendState(ER_NO_BLEND);
+				rhi->SetDepthStencilState(ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
+				rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+				rhi->SetRootSignatureToPSO(psoName, mSunRS);
 				quadRenderer->PrepareDraw(rhi);
-				rhi->FinalizePSO(mSunPassPSOName);
+				rhi->FinalizePSO(psoName);
 			}
-			rhi->SetPSO(mSunPassPSOName);
+			rhi->SetPSO(psoName);
 			rhi->SetShaderResources(ER_PIXEL, { aSky, aSceneDepth }, 0, mSunRS, SUN_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 			rhi->SetConstantBuffers(ER_PIXEL, { mSunConstantBuffer.Buffer() }, 0, mSunRS, SUN_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 			rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });

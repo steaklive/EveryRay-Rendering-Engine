@@ -31,24 +31,14 @@ namespace EveryRay_Core
 			aScene->LoadFoliageZones(mFoliageCollection, light);
 
 		ER_RHI* rhi = pCore.GetRHI();
-		mGBufferPassRS = rhi->CreateRootSignature(2, 2);
-		if (mGBufferPassRS)
+		mRootSignature = rhi->CreateRootSignature(2, 2);
+		if (mRootSignature)
 		{
-			mGBufferPassRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP);
-			mGBufferPassRS->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS);
-			mGBufferPassRS->InitDescriptorTable(rhi, FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 4 }, ER_RHI_SHADER_VISIBILITY_ALL);
-			mGBufferPassRS->InitDescriptorTable(rhi, FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
-			mGBufferPassRS->Finalize(rhi, "Foliage Gbuffer Pass Root Signature", true);
-		}
-
-		mVoxelizationPassRS = pCore.GetRHI()->CreateRootSignature(2, 2);
-		if (mGBufferPassRS)
-		{
-			mVoxelizationPassRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP);
-			mVoxelizationPassRS->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS);
-			mVoxelizationPassRS->InitDescriptorTable(rhi, FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 4 }, ER_RHI_SHADER_VISIBILITY_ALL);
-			mVoxelizationPassRS->InitDescriptorTable(rhi, FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
-			mVoxelizationPassRS->Finalize(rhi, "Foliage Voxelization Pass Root Signature", true);
+			mRootSignature->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP);
+			mRootSignature->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS);
+			mRootSignature->InitDescriptorTable(rhi, FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 4 }, ER_RHI_SHADER_VISIBILITY_ALL);
+			mRootSignature->InitDescriptorTable(rhi, FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+			mRootSignature->Finalize(rhi, "Foliage Root Signature", true);
 		}
 	}
 
@@ -56,9 +46,7 @@ namespace EveryRay_Core
 	{
 		DeletePointerCollection(mFoliageCollection);
 		DeleteObject(FoliageSystemInitializedEvent);
-
-		DeleteObject(mVoxelizationPassRS);
-		DeleteObject(mGBufferPassRS);
+		DeleteObject(mRootSignature);
 	}
 
 	void ER_FoliageManager::Initialize()
@@ -101,18 +89,9 @@ namespace EveryRay_Core
 
 		ER_RHI* rhi = GetCore()->GetRHI();
 		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		if (renderPass == FoliageRenderingPass::FOLIAGE_GBUFFER)
-		{
-			rhi->SetRootSignature(mGBufferPassRS);
-			for (auto& object : mFoliageCollection)
-				object->Draw(gameTime, worldShadowMapper, renderPass, aGbufferTextures, mGBufferPassRS);
-		}
-		else if (renderPass == FoliageRenderingPass::FOLIAGE_VOXELIZATION)
-		{
-			rhi->SetRootSignature(mVoxelizationPassRS);
-			for (auto& object : mFoliageCollection)
-				object->Draw(gameTime, worldShadowMapper, renderPass, aGbufferTextures, mVoxelizationPassRS);
-		}
+		rhi->SetRootSignature(mRootSignature);
+		for (auto& object : mFoliageCollection)
+			object->Draw(gameTime, worldShadowMapper, renderPass, aGbufferTextures, mRootSignature);
 	}
 
 	void ER_FoliageManager::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPURootSignature* rs)

@@ -68,13 +68,18 @@ namespace EveryRay_Core
 		if (bindFlags & ER_BIND_UNORDERED_ACCESS)
 			flags |= D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
-		XMFLOAT4 clearColor = { 0, 0, 0, 1 };
+		XMFLOAT4 clearColor = { 0, 0, 0, 0 };
 		D3D12_CLEAR_VALUE optimizedClearValue = {};
 		optimizedClearValue.Format = mIsDepthStencil ? depthstencil_dsv_format : aRHIDX12->GetFormat(format);
 		optimizedClearValue.Color[0] = clearColor.x;
 		optimizedClearValue.Color[1] = clearColor.y;
 		optimizedClearValue.Color[2] = clearColor.z;
 		optimizedClearValue.Color[3] = clearColor.w;
+		if (mIsDepthStencil)
+		{
+			optimizedClearValue.DepthStencil.Depth = 1.0f;
+			optimizedClearValue.DepthStencil.Stencil = 0;
+		}
 
 		D3D12_RESOURCE_DESC textureDesc = {};
 		if (depth > 0)
@@ -303,7 +308,7 @@ namespace EveryRay_Core
 		bool isDDS = (originalPath.substr(originalPath.length() - 4) == std::wstring(postfixDDS)) || (originalPath.substr(originalPath.length() - 4) == std::wstring(postfixDDS_Capital));
 
 		auto outputLog = [](const std::wstring& pathT) {
-			std::wstring msg = L"[ER Logger][ER_RHI_DX12_GPUTexture] Failed to load texture from disk: " + pathT + L". Loading fallback texture instead. \n";
+			std::wstring msg = L"[ER Logger][ER_RHI_DX12_GPUTexture] Failed to load texture from disk: " + pathT + L". Loading fallback texture instead unless forced not to. \n";
 			ER_OUTPUT_LOG(msg.c_str());
 		};
 
@@ -315,13 +320,14 @@ namespace EveryRay_Core
 			if (FAILED(DirectX::LoadDDSTextureFromFile(device, isFullPath ? aPath.c_str() : EveryRay_Core::ER_Utility::GetFilePath(aPath).c_str(), &mResource, ddsData, subresources, 0, nullptr, &isCubemap)))
 			{
 				outputLog(isFullPath ? aPath.c_str() : EveryRay_Core::ER_Utility::GetFilePath(aPath).c_str());
-				LoadFallbackTexture(aRHI);
+				if (!skipFallback)
+					LoadFallbackTexture(aRHI);
 
 				return;
 			}
 
 			// Create the GPU upload buffer and update subresources
-			const UINT64 uploadBufferSize = GetRequiredIntermediateSize(mResource.Get(), 0, 1);
+			const UINT64 uploadBufferSize = GetRequiredIntermediateSize(mResource.Get(), 0, static_cast<UINT>(subresources.size()));
 			if (FAILED(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize), D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&mResourceUpload))))
 				throw ER_CoreException("ER_RHI_DX12: Could not create a committed resource for the GPU texture resource (upload)");
 
@@ -341,7 +347,12 @@ namespace EveryRay_Core
 			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 			srvDesc.Format = desc.Format;
-			if (desc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE2D)
+			if (isCubemap)
+			{
+				srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+				srvDesc.TextureCube.MipLevels = desc.MipLevels;
+			}
+			else if (desc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE2D)
 			{
 				if (desc.DepthOrArraySize > 1)
 				{
@@ -355,17 +366,15 @@ namespace EveryRay_Core
 					srvDesc.Texture2D.MipLevels = desc.MipLevels;
 				}
 			}
-			else if (isCubemap)
-			{
-				srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
-				srvDesc.TextureCube.MipLevels = desc.MipLevels;
-			}
 			else if (desc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE3D)
 			{
 				srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
 				srvDesc.Texture3D.MipLevels = desc.MipLevels;
 			}
 			device->CreateShaderResourceView(mResource.Get(), &srvDesc, mSRVHandle.GetCPUHandle());
+
+			if (statusFlag)
+				*statusFlag = true;
 		}
 		else
 		{
@@ -375,7 +384,8 @@ namespace EveryRay_Core
 			if (FAILED(DirectX::LoadWICTextureFromFile(device, isFullPath ? aPath.c_str() : EveryRay_Core::ER_Utility::GetFilePath(aPath).c_str(), &mResource, decodedData, subresource)))
 			{
 				outputLog(isFullPath ? aPath.c_str() : EveryRay_Core::ER_Utility::GetFilePath(aPath).c_str());
-				LoadFallbackTexture(aRHI);
+				if (!skipFallback)
+					LoadFallbackTexture(aRHI);
 
 				return;
 			}
@@ -403,6 +413,9 @@ namespace EveryRay_Core
 			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 			srvDesc.Texture2D.MipLevels = 1;
 			device->CreateShaderResourceView(mResource.Get(), &srvDesc, mSRVHandle.GetCPUHandle());
+
+			if (statusFlag)
+				*statusFlag = true;
 		}
 	}
 

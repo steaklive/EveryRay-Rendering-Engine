@@ -129,6 +129,6 @@ namespace EveryRay_Core
 		mVertices[7] = XMFLOAT4(mAABB.first.x, mAABB.first.y, mAABB.second.z, 1.0f);
 
 		auto rhi = mCore.GetRHI();
-		rhi->UpdateBuffer(mVertexBuffer, mVertices, AABBVertexCount * sizeof(VertexPosition));
+		//rhi->UpdateBuffer(mVertexBuffer, mVertices, AABBVertexCount * sizeof(VertexPosition));
 	}
 }

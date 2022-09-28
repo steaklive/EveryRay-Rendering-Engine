@@ -335,7 +335,8 @@ namespace EveryRay_Core
 		virtual const ER_RHI_Viewport& GetCurrentViewport() { return mCurrentViewport; }
 
 		virtual void SetRect(const ER_RHI_Rect& rect) = 0;
-		
+		virtual const ER_RHI_Rect& GetCurrentRect() { return mCurrentRect; }
+
 		virtual void SetShader(ER_RHI_GPUShader* aShader) = 0;
 		
 		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot = 0,
@@ -405,6 +406,7 @@ namespace EveryRay_Core
 		ER_RHI_DEPTH_STENCIL_STATE mCurrentDS;
 
 		ER_RHI_Viewport mCurrentViewport;
+		ER_RHI_Rect mCurrentRect;
 
 		const int mPrepareGraphicsCommandListIndex = ER_RHI_MAX_GRAPHICS_COMMAND_LISTS - 1; // command list for prepare commands (on init)
 		int mCurrentGraphicsCommandListIndex = -1;

@@ -45,6 +45,7 @@ namespace EveryRay_Core
 
 		ER_RHI_RASTERIZER_STATE mOriginalRS;
 		ER_RHI_Viewport mOriginalViewport;
+		ER_RHI_Rect mOriginalRect;
 		XMMATRIX mShadowMapViewMatrix;
 		XMMATRIX mShadowMapProjectionMatrix;
 		UINT mResolution = 0;

@@ -323,7 +323,6 @@ namespace EveryRay_Core {
 		}
 	}
 
-	//deferred rendering approach
 	void ER_Illumination::DrawLocalIllumination(ER_GBuffer* gbuffer, ER_Skybox* skybox)
 	{	
 		assert(gbuffer);
@@ -335,7 +334,7 @@ namespace EveryRay_Core {
 
 		if (skybox)
 		{
-			skybox->Draw(mLocalIlluminationRT);
+			skybox->Draw(mLocalIlluminationRT, nullptr, gbuffer->GetDepth());
 			//skybox->DrawSun(mLocalIlluminationRT, nullptr, gbuffer->GetDepth());
 		}
 
@@ -784,6 +783,7 @@ namespace EveryRay_Core {
 
 			rhi->Dispatch(ER_DivideByMultiple(static_cast<UINT>(aRenderTarget->GetWidth()), 8u), ER_DivideByMultiple(static_cast<UINT>(aRenderTarget->GetHeight()), 8u), 1u);
 			rhi->UnbindResourcesFromShader(ER_COMPUTE);
+			rhi->UnsetPSO();
 		}
 	}
 
@@ -837,6 +837,8 @@ namespace EveryRay_Core {
 				rhi->SetInputLayout(aObj->IsInstanced() ? mForwardLightingRenderingObjectInputLayout_Instancing : mForwardLightingRenderingObjectInputLayout);
 				rhi->SetShader(aObj->IsInstanced() ? mForwardLightingVS_Instancing : mForwardLightingVS);
 				rhi->SetShader(mForwardLightingPS);
+				rhi->SetRasterizerState(ER_NO_CULLING);
+				rhi->SetBlendState(ER_NO_BLEND);
 				rhi->SetRenderTargetFormats({ mLocalIlluminationRT }, mGbuffer->GetDepth());
 				rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 				rhi->SetRootSignatureToPSO(psoName, mForwardLightingRS);

@@ -228,6 +228,8 @@ namespace EveryRay_Core {
 			rhi->InitializePSO(mCompositePassPSOName);
 			rhi->SetShader(mCompositePS);
 			rhi->SetRenderTargetFormats({ aRT });
+			rhi->SetBlendState(ER_NO_BLEND);
+			rhi->SetRasterizerState(ER_NO_CULLING);
 			rhi->SetRootSignatureToPSO(mCompositePassPSOName, mCompositePassRootSignature);
 			rhi->SetTopologyTypeToPSO(mCompositePassPSOName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			quadRenderer->PrepareDraw(rhi);

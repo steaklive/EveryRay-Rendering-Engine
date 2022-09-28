@@ -58,5 +58,6 @@ namespace EveryRay_Core
 		D3D12_HEAP_TYPE mHeapType = D3D12_HEAP_TYPE_DEFAULT;
 
 		ER_RHI_BIND_FLAG mBindFlags;
+		unsigned char* mMappedData;
 	};
 }

@@ -190,6 +190,8 @@ namespace EveryRay_Core
 		void CreateRasterizerStates();
 		void CreateDepthStencilStates();
 
+		void WaitForGpu();
+
 		D3D_FEATURE_LEVEL mFeatureLevel = D3D_FEATURE_LEVEL_12_1;
 		
 		ComPtr<IDXGIFactory4> mDXGIFactory;

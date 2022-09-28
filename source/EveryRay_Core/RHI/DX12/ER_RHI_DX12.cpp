@@ -21,6 +21,7 @@ namespace EveryRay_Core
 
 	ER_RHI_DX12::~ER_RHI_DX12()
 	{
+		WaitForGpu();
 		DeleteObject(mDescriptorHeapManager);
 	}
 
@@ -119,25 +120,28 @@ namespace EveryRay_Core
 			if (FAILED(mDevice->CreateDescriptorHeap(&dsvDescriptorHeapDesc, IID_PPV_ARGS(mDSVDescriptorHeap.ReleaseAndGetAddressOf()))))
 				throw ER_CoreException("ER_RHI_DX12: Could not create descriptor heap for main DSV");
 
-			for (int i = 0; i < ER_RHI_MAX_GRAPHICS_COMMAND_LISTS; i++)
+			for (int j = 0; j < DX12_MAX_BACK_BUFFER_COUNT; j++)
 			{
-				for (int j = 0; j < DX12_MAX_BACK_BUFFER_COUNT; j++)
+				for (int i = 0; i < ER_RHI_MAX_GRAPHICS_COMMAND_LISTS; i++)
 				{
 					// Create a command allocator for each back buffer that will be rendered to.
 					if (FAILED(mDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(mCommandAllocatorsGraphics[j][i].ReleaseAndGetAddressOf()))))
 					{
-						std::string message = "ER_RHI_DX12: Could not create graphics command allocator " + std::to_string(i);
+						std::string message = "ER_RHI_DX12: Could not create graphics command allocator " + std::to_string(j) + " " + std::to_string(i);
 						throw ER_CoreException(message.c_str());
 					}
-				}
 
-				// Create a command list for recording graphics commands.
-				if (FAILED(mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mCommandAllocatorsGraphics[0][i].Get(), nullptr, IID_PPV_ARGS(mCommandListGraphics[i].ReleaseAndGetAddressOf()))))
-				{
-					std::string message = "ER_RHI_DX12: Could not create graphics command list " + std::to_string(i);
-					throw ER_CoreException(message.c_str());
+					if (j == 0)
+					{
+						// Create a command list for recording graphics commands.
+						if (FAILED(mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mCommandAllocatorsGraphics[0][i].Get(), nullptr, IID_PPV_ARGS(mCommandListGraphics[i].ReleaseAndGetAddressOf()))))
+						{
+							std::string message = "ER_RHI_DX12: Could not create graphics command list " + std::to_string(i);
+							throw ER_CoreException(message.c_str());
+						}
+						mCommandListGraphics[i]->Close();
+					}
 				}
-				mCommandListGraphics[i]->Close();
 			}
 		}
 
@@ -158,15 +162,18 @@ namespace EveryRay_Core
 				throw ER_CoreException("ER_RHI_DX12: Could not create event for main graphics fence");
 			mFenceGraphics->SetName(L"ER_RHI_DX12: Graphics fence (main)");
 
+		}
+
+		WaitForGpu();
+
+		// Create swapchain, main rtv, main dsv
+		{
 			for (UINT n = 0; n < DX12_MAX_BACK_BUFFER_COUNT; n++)
 			{
 				mMainRenderTarget[n].Reset();
 				mFenceValuesGraphics[n] = mFenceValuesGraphics[mBackBufferIndex];
 			}
-		}
 
-		// Create swapchain, main rtv, main dsv
-		{
 			// swapchain
 			{
 				// Create a descriptor for the swap chain.
@@ -183,6 +190,8 @@ namespace EveryRay_Core
 				swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
 
 				DXGI_SWAP_CHAIN_FULLSCREEN_DESC fsSwapChainDesc = {};
+				fsSwapChainDesc.RefreshRate.Denominator = DefaultFrameRate;
+				fsSwapChainDesc.RefreshRate.Numerator = 1;
 				fsSwapChainDesc.Windowed = TRUE;
 
 				ComPtr<IDXGISwapChain1> swapChain;
@@ -234,22 +243,22 @@ namespace EveryRay_Core
 
 				mDevice->CreateDepthStencilView(mMainDepthStencilTarget.Get(), &dsvDesc, mDSVDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 			}
+
+			mMainViewport.TopLeftX = 0.0f;
+			mMainViewport.TopLeftY = 0.0f;
+			mMainViewport.Width = static_cast<float>(width);
+			mMainViewport.Height = static_cast<float>(height);
+			mMainViewport.MinDepth = 0.0f;
+			mMainViewport.MaxDepth = 1.0f;
+
+			D3D12_VIEWPORT viewport;
+			viewport.TopLeftX = mMainViewport.TopLeftX;
+			viewport.TopLeftY = mMainViewport.TopLeftY;
+			viewport.Width = mMainViewport.Width;
+			viewport.Height = mMainViewport.Height;
+			viewport.MinDepth = 0.0f;
+			viewport.MaxDepth = 1.0f;
 		}
-
-		mMainViewport.TopLeftX = 0.0f;
-		mMainViewport.TopLeftY = 0.0f;
-		mMainViewport.Width = static_cast<float>(width);
-		mMainViewport.Height = static_cast<float>(height);
-		mMainViewport.MinDepth = 0.0f;
-		mMainViewport.MaxDepth = 1.0f;
-
-		D3D12_VIEWPORT viewport;
-		viewport.TopLeftX = mMainViewport.TopLeftX;
-		viewport.TopLeftY = mMainViewport.TopLeftY;
-		viewport.Width = mMainViewport.Width;
-		viewport.Height = mMainViewport.Height;
-		viewport.MinDepth = 0.0f;
-		viewport.MaxDepth = 1.0f;
 
 		CreateSamplerStates();
 		CreateRasterizerStates();
@@ -276,6 +285,26 @@ namespace EveryRay_Core
 		}
 
 		return true;
+	}
+
+	void ER_RHI_DX12::WaitForGpu()
+	{
+		if (mCommandQueueGraphics && mFenceGraphics && mFenceEventGraphics.IsValid())
+		{
+			// Schedule a Signal command in the GPU queue.
+			UINT64 fenceValue = mFenceValuesGraphics[mBackBufferIndex];
+			if (SUCCEEDED(mCommandQueueGraphics->Signal(mFenceGraphics.Get(), fenceValue)))
+			{
+				// Wait until the Signal has been processed.
+				if (SUCCEEDED(mFenceGraphics->SetEventOnCompletion(fenceValue, mFenceEventGraphics.Get())))
+				{
+					WaitForSingleObjectEx(mFenceEventGraphics.Get(), INFINITE, FALSE);
+
+					// Increment the fence value for the current frame.
+					mFenceValuesGraphics[mBackBufferIndex]++;
+				}
+			}
+		}
 	}
 
 	void ER_RHI_DX12::BeginGraphicsCommandList(int index)
@@ -640,21 +669,18 @@ namespace EveryRay_Core
 		int rtCount = static_cast<int>(aRenderTargets.size());
 		assert(rtCount <= 8);
 
-		DXGI_FORMAT formats[8] = { DXGI_FORMAT_UNKNOWN };
+		std::vector<DXGI_FORMAT> formats;
 		for (int i = 0; i < rtCount; i++)
-			formats[i] = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTargets[i])->GetFormat();
-		pso.SetRenderTargetFormats(rtCount, rtCount > 0 ? formats : nullptr, aDepthTarget ? static_cast<ER_RHI_DX12_GPUTexture*>(aDepthTarget)->GetFormat() : DXGI_FORMAT_UNKNOWN);
+			formats.push_back(static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTargets[i])->GetFormat());
+		pso.SetRenderTargetFormats(rtCount, rtCount > 0 ? &formats[0] : nullptr, aDepthTarget ? static_cast<ER_RHI_DX12_GPUTexture*>(aDepthTarget)->GetFormat() : DXGI_FORMAT_UNKNOWN);
 	}
 
 	void ER_RHI_DX12::SetMainRenderTargetFormats()
 	{
 		assert(mCurrentPSOState == ER_RHI_DX12_PSO_STATE::GRAPHICS);
 
-		DXGI_FORMAT formats[8] = { DXGI_FORMAT_UNKNOWN };
-		formats[0] = mMainRTBufferFormat;
-
 		ER_RHI_DX12_GraphicsPSO& pso = mGraphicsPSONames.at(mCurrentGraphicsPSOName);
-		pso.SetRenderTargetFormats(1, formats, mMainDepthBufferFormat);
+		pso.SetRenderTargetFormats(1, &mMainRTBufferFormat, mMainDepthBufferFormat);
 	}
 
 	void ER_RHI_DX12::SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE aDS, UINT stencilRef)
@@ -728,6 +754,8 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::SetRect(const ER_RHI_Rect& rect)
 	{
+		mCurrentRect = rect;
+
 		D3D12_RECT currentRect = { rect.left, rect.top, rect.right, rect.bottom };
 		mCommandListGraphics[0]->RSSetScissorRects(1, &currentRect);
 	}
@@ -1671,7 +1699,7 @@ namespace EveryRay_Core
 		blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
 		blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
 		blendStateDescription.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-		blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
+		blendStateDescription.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 		mBlendStates.insert(std::make_pair(ER_RHI_BLEND_STATE::ER_ALPHA_TO_COVERAGE, blendStateDescription));
 
 		blendStateDescription.RenderTarget[0].BlendEnable = FALSE;

@@ -100,6 +100,9 @@ namespace EveryRay_Core {
 		for (auto renderingObjectInfo = scene->objects.begin(); renderingObjectInfo != scene->objects.end(); renderingObjectInfo++)
 		{
 			ER_RenderingObject* renderingObject = renderingObjectInfo->second;
+			if (renderingObject->IsCulled())
+				continue;
+
 			const std::string& psoName = renderingObject->IsInstanced() ? psoNameInstanced : psoNameNonInstanced;
 			auto materialInfo = renderingObject->GetMaterials().find(ER_MaterialHelper::gbufferMaterialName);
 			if (materialInfo != renderingObject->GetMaterials().end())
@@ -112,6 +115,8 @@ namespace EveryRay_Core {
 						rhi->InitializePSO(psoName);
 						material->PrepareShaders();
 						rhi->SetRasterizerState(ER_NO_CULLING);
+						rhi->SetBlendState(ER_NO_BLEND);
+						rhi->SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
 						rhi->SetRenderTargetFormats({ mAlbedoBuffer, mNormalBuffer, mPositionsBuffer, mExtraBuffer, mExtra2Buffer }, mDepthBuffer);
 						rhi->SetRootSignatureToPSO(psoName, mRootSignature);
 						rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

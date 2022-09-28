@@ -285,23 +285,22 @@ namespace EveryRay_Core {
 		}
 		mGBuffer->End();
 #pragma endregion
-
+		
 		#pragma region DRAW_SHADOWS
 		mShadowMapper->Draw(mScene, mTerrain);
 #pragma endregion
-		
 		#pragma region DRAW_GLOBAL_ILLUMINATION
-		//{
-		//	if (mScene->HasLightProbesSupport() && !mLightProbesManager->AreProbesReady())
-		//	{
-		//		game.CPUProfiler()->BeginCPUTime("Compute or load light probes");
-		//		mLightProbesManager->ComputeOrLoadLocalProbes(game, mScene->objects, mSkybox);
-		//		mLightProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
-		//		game.CPUProfiler()->EndCPUTime("Compute or load light probes");
-		//	}
-		//	else if (!mLightProbesManager->IsEnabled() && !mLightProbesManager->AreGlobalProbesReady())
-		//		mLightProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
-		//}
+		{
+			if (mScene->HasLightProbesSupport() && !mLightProbesManager->AreProbesReady())
+			{
+				game.CPUProfiler()->BeginCPUTime("Compute or load light probes");
+				mLightProbesManager->ComputeOrLoadLocalProbes(game, mScene->objects, mSkybox);
+				mLightProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
+				game.CPUProfiler()->EndCPUTime("Compute or load light probes");
+			}
+			else if (!mLightProbesManager->IsEnabled() && !mLightProbesManager->AreGlobalProbesReady())
+				mLightProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
+		}
 
 		//mIllumination->DrawGlobalIllumination(mGBuffer, gameTime);
 #pragma endregion
@@ -360,7 +359,6 @@ namespace EveryRay_Core {
 #pragma endregion
 
 #pragma endregion
-		
 		mIllumination->CompositeTotalIllumination();
 
 		#pragma region DRAW_VOLUMETRIC_CLOUDS
@@ -373,7 +371,6 @@ namespace EveryRay_Core {
 		mPostProcessingStack->DrawEffects(gameTime, quad, mGBuffer, mVolumetricClouds, mVolumetricFog);
 		mPostProcessingStack->End();
 #pragma endregion
-		
 		//reset back to main rt in case we dont use Post Processing stack
 		rhi->SetMainRenderTargets();
 

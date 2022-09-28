@@ -10,6 +10,8 @@ namespace EveryRay_Core
 
 	ER_RHI_DX12_GPUBuffer::~ER_RHI_DX12_GPUBuffer()
 	{
+		if (mBufferUpload && (mBindFlags & ER_RHI_BIND_FLAG::ER_BIND_CONSTANT_BUFFER))
+			mBufferUpload->Unmap(0, nullptr);
 	}
 
 	void ER_RHI_DX12_GPUBuffer::CreateGPUBufferResource(ER_RHI* aRHI, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic /*= false*/, ER_RHI_BIND_FLAG bindFlags /*= 0*/, UINT cpuAccessFlags /*= 0*/, ER_RHI_RESOURCE_MISC_FLAG miscFlags /*= 0*/, ER_RHI_FORMAT format /*= ER_FORMAT_UNKNOWN*/)
@@ -57,11 +59,8 @@ namespace EveryRay_Core
 		if (FAILED(device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE, &desc, aRHIDX12->GetState(mResourceState), nullptr, IID_PPV_ARGS(&mBuffer))))
 			throw ER_CoreException("ER_RHI_DX12: Failed to create committed resource of GPU buffer.");
 		
-		if (FAILED(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &desc /*&CD3DX12_RESOURCE_DESC::Buffer(mSize)*/,
-			D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&mBufferUpload))))
+		if (FAILED(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&mBufferUpload))))
 			throw ER_CoreException("ER_RHI_DX12: Failed to create committed resource of GPU buffer (upload).");
-
-		UpdateSubresource(aRHI, aData, mSize, aRHIDX12->GetPrepareGraphicsCommandListIndex());
 
 		if (bindFlags & ER_RHI_BIND_FLAG::ER_BIND_CONSTANT_BUFFER)
 		{
@@ -72,8 +71,15 @@ namespace EveryRay_Core
 			cbvDesc.SizeInBytes = mSize;
 			device->CreateConstantBufferView(&cbvDesc, mBufferCBVHandle.GetCPUHandle());
 
+			CD3DX12_RANGE readRange(0, 0);
+			if (FAILED(mBufferUpload->Map(0, &readRange, reinterpret_cast<void**>(&mMappedData))))
+				throw ER_CoreException("ER_RHI_DX12: Failed to map GPU buffer.");
+			memcpy(mMappedData, aData, mSize);
+
 			return;
 		}
+
+		UpdateSubresource(aRHI, aData, mSize, aRHIDX12->GetPrepareGraphicsCommandListIndex());
 
 		if (bindFlags & ER_BIND_VERTEX_BUFFER)
 		{
@@ -90,8 +96,7 @@ namespace EveryRay_Core
 			mIndexBufferView.SizeInBytes = mSize;
 		}
 
-
-		if (bindFlags & ER_RHI_BIND_FLAG::ER_BIND_SHADER_RESOURCE)
+		if (bindFlags & ER_BIND_SHADER_RESOURCE)
 		{
 			mBufferSRVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
@@ -106,7 +111,7 @@ namespace EveryRay_Core
 
 		}
 
-		if (bindFlags & ER_RHI_BIND_FLAG::ER_BIND_UNORDERED_ACCESS)
+		if (bindFlags & ER_BIND_UNORDERED_ACCESS)
 		{
 			mBufferUAVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
@@ -170,11 +175,12 @@ namespace EveryRay_Core
 
 		assert(aRHI);
 		ER_RHI_DX12* aRHIDX12 = static_cast<ER_RHI_DX12*>(aRHI);
+		ID3D12Device* device = aRHIDX12->GetDevice();
 
-		void* outData = nullptr;
-		Map(aRHI, reinterpret_cast<void**>(&outData));
-		memcpy(outData, aData, dataSize);
-		Unmap(aRHI);
+		if (mBindFlags & ER_RHI_BIND_FLAG::ER_BIND_CONSTANT_BUFFER)
+			memcpy(mMappedData, aData, dataSize);
+		else
+			UpdateSubresource(aRHI, aData, dataSize, aRHIDX12->GetCurrentGraphicsCommandListIndex());
 	}
 
 }

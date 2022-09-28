@@ -240,8 +240,7 @@ namespace EveryRay_Core
 		std::vector<ER_Foliage*> mFoliageCollection;
 		ER_Scene* mScene;
 
-		ER_RHI_GPURootSignature* mGBufferPassRS = nullptr;
-		ER_RHI_GPURootSignature* mVoxelizationPassRS = nullptr;
+		ER_RHI_GPURootSignature* mRootSignature = nullptr;
 
 		const char* mFoliageZonesNamesUI[MAX_FOLIAGE_ZONES];
 

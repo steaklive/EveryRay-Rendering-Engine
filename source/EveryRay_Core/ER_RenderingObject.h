@@ -92,7 +92,7 @@ namespace EveryRay_Core
 		}
 	};
 
-	struct ER_ALIGN_GPU_BUFFER InstancedData
+	struct InstancedData
 	{
 		XMFLOAT4X4 World;
 

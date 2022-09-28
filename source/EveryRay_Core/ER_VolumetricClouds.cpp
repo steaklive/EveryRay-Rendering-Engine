@@ -195,11 +195,11 @@ namespace EveryRay_Core {
 		auto rhi = mCore->GetRHI();
 
 		rhi->SetRenderTargets({ mSkyRT });
-		mSkybox.Draw(mSkyRT);
+		mSkybox.Draw(mSkyRT, nullptr, nullptr, true);
 		rhi->UnbindRenderTargets();
 
 		rhi->SetRenderTargets({ mSkyAndSunRT });
-		mSkybox.DrawSun(mSkyAndSunRT, nullptr, mSkyRT, mIlluminationResultDepthTarget);
+		mSkybox.DrawSun(mSkyAndSunRT, nullptr, mSkyRT, mIlluminationResultDepthTarget, true);
 		rhi->UnbindRenderTargets();
 
 		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mCore->GetServices().FindService(ER_QuadRenderer::TypeIdClass());
@@ -269,6 +269,8 @@ namespace EveryRay_Core {
 			rhi->InitializePSO(mCompositePassPSOName);
 			rhi->SetShader(mCompositePS);
 			rhi->SetRenderTargetFormats({ aRenderTarget });
+			rhi->SetBlendState(ER_NO_BLEND);
+			rhi->SetRasterizerState(ER_NO_CULLING);
 			rhi->SetTopologyTypeToPSO(mCompositePassPSOName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			rhi->SetRootSignatureToPSO(mCompositePassPSOName, mCompositePassRS);
 			quadRenderer->PrepareDraw(rhi);
