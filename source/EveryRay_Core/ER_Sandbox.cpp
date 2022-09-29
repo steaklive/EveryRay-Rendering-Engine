@@ -359,6 +359,7 @@ namespace EveryRay_Core {
 #pragma endregion
 
 #pragma endregion
+		
 		mIllumination->CompositeTotalIllumination();
 
 		#pragma region DRAW_VOLUMETRIC_CLOUDS
@@ -371,6 +372,7 @@ namespace EveryRay_Core {
 		mPostProcessingStack->DrawEffects(gameTime, quad, mGBuffer, mVolumetricClouds, mVolumetricFog);
 		mPostProcessingStack->End();
 #pragma endregion
+
 		//reset back to main rt in case we dont use Post Processing stack
 		rhi->SetMainRenderTargets();
 

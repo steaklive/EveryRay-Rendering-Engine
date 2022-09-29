@@ -102,6 +102,9 @@ namespace EveryRay_Core
 			rhi->InitializePSO(psoName);
 			static_cast<ER_Material*>(mMaterial)->PrepareShaders();
 			rhi->SetRenderTargetFormats({ aRenderTarget });
+			rhi->SetRasterizerState(ER_NO_CULLING);
+			rhi->SetBlendState(ER_NO_BLEND);
+			rhi->SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
 			rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST);
 			rhi->SetRootSignatureToPSO(psoName, rs);
 			rhi->FinalizePSO(psoName);

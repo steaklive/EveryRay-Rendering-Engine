@@ -74,6 +74,7 @@ namespace EveryRay_Core
 		*blob = nullptr;
 
 		UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
+		flags |= D3DCOMPILE_ALL_RESOURCES_BOUND;
 #if defined( DEBUG ) || defined( _DEBUG )
 		flags |= D3DCOMPILE_DEBUG;
 #endif

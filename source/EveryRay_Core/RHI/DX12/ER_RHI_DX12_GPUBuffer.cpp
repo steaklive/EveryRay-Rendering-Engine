@@ -31,7 +31,7 @@ namespace EveryRay_Core
 		mFormat = aRHIDX12->GetFormat(format);
 		mStride = byteStride;
 		mSize = objectsCount * byteStride;
-		if (bindFlags & ER_RHI_BIND_FLAG::ER_BIND_CONSTANT_BUFFER)
+		if ((bindFlags & ER_RHI_BIND_FLAG::ER_BIND_CONSTANT_BUFFER) || (miscFlags == ER_RHI_RESOURCE_MISC_FLAG::ER_RESOURCE_MISC_BUFFER_STRUCTURED))
 			mSize = ER_BitmaskAlign(objectsCount * byteStride, ER_GPU_BUFFER_ALIGNMENT);
 		if (bindFlags & ER_RHI_BIND_FLAG::ER_BIND_UNORDERED_ACCESS)
 			mResourceFlags |= D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;

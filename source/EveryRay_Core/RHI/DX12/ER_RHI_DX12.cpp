@@ -226,6 +226,7 @@ namespace EveryRay_Core
 
 				D3D12_RESOURCE_DESC depthStencilDesc = CD3DX12_RESOURCE_DESC::Tex2D(mMainDepthBufferFormat, width, height, 1, 1);
 				depthStencilDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+				depthStencilDesc.Flags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
 
 				D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
 				depthOptimizedClearValue.Format = mMainDepthBufferFormat;
@@ -823,7 +824,7 @@ namespace EveryRay_Core
 
 		}
 
-		//TransitionResources(aSRVs, aShaderType == ER_RHI_SHADER_TYPE::ER_PIXEL ? ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE : ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		TransitionResources(aSRVs, aShaderType == ER_RHI_SHADER_TYPE::ER_PIXEL ? ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE : ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 		if (!isComputeRS)
 			mCommandListGraphics[0]->SetGraphicsRootDescriptorTable(rootParamIndex, srvHandle.GetGPUHandle());
@@ -1129,7 +1130,7 @@ namespace EveryRay_Core
 		}
 
 		if (barriers.size() > 0)
-			mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
+			mCommandListGraphics[cmdListIndex]->ResourceBarrier(barriers.size(), barriers.data());
 	}
 
 	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex /*= 0*/)
@@ -1147,7 +1148,7 @@ namespace EveryRay_Core
 		}
 
 		if (barriers.size() > 0)
-			mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
+			mCommandListGraphics[cmdListIndex]->ResourceBarrier(barriers.size(), barriers.data());
 	}
 
 	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUTexture*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex /*= 0*/)
@@ -1166,7 +1167,7 @@ namespace EveryRay_Core
 			}
 		}
 		if (barriers.size() > 0)
-			mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
+			mCommandListGraphics[cmdListIndex]->ResourceBarrier(barriers.size(), barriers.data());
 	}
 
 	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUTexture*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex /*= 0*/)
@@ -1183,7 +1184,7 @@ namespace EveryRay_Core
 			}
 		}
 		if (barriers.size() > 0)
-			mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
+			mCommandListGraphics[cmdListIndex]->ResourceBarrier(barriers.size(), barriers.data());
 	}
 
 	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex /*= 0*/)
@@ -1202,7 +1203,7 @@ namespace EveryRay_Core
 			}
 		}
 		if (barriers.size() > 0)
-			mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
+			mCommandListGraphics[cmdListIndex]->ResourceBarrier(barriers.size(), barriers.data());
 	}
 
 	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex /*= 0*/)
@@ -1219,7 +1220,7 @@ namespace EveryRay_Core
 			}
 		}
 		if (barriers.size() > 0)
-			mCommandListGraphics[cmdListIndex]->ResourceBarrier(size, barriers.data());
+			mCommandListGraphics[cmdListIndex]->ResourceBarrier(barriers.size(), barriers.data());
 	}
 
 	void ER_RHI_DX12::TransitionMainRenderTargetToPresent()

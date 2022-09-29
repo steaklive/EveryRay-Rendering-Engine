@@ -97,48 +97,48 @@ namespace EveryRay_Core
 						mTerrainTileResolution = root["terrain_tile_resolution"].asInt();
 					std::string fieldName = "terrain_texture_splat_layer";
 					std::wstring result = L"";
-					for (int i = 0; i < 4; i ++)
-					{
-						fieldName += std::to_string(i);
-						if (root.isMember(fieldName.c_str()))
-							result = ER_Utility::ToWideString(root[fieldName.c_str()].asString());
-						else
-							result = L"";
+for (int i = 0; i < 4; i++)
+{
+	fieldName += std::to_string(i);
+	if (root.isMember(fieldName.c_str()))
+		result = ER_Utility::ToWideString(root[fieldName.c_str()].asString());
+	else
+		result = L"";
 
-						fieldName = "terrain_texture_splat_layer";
-						mTerrainSplatLayersTextureNames[i] = result;
-					}
+	fieldName = "terrain_texture_splat_layer";
+	mTerrainSplatLayersTextureNames[i] = result;
+}
 				}
 				else
-					mHasTerrain = false;
+				mHasTerrain = false;
 			}
 
 			// light probes config
 			{
-				if (root.isMember("light_probes_volume_bounds_min")) {
-					float vec3[3];
-					for (Json::Value::ArrayIndex i = 0; i != root["light_probes_volume_bounds_min"].size(); i++)
-						vec3[i] = root["light_probes_volume_bounds_min"][i].asFloat();
+			if (root.isMember("light_probes_volume_bounds_min")) {
+				float vec3[3];
+				for (Json::Value::ArrayIndex i = 0; i != root["light_probes_volume_bounds_min"].size(); i++)
+					vec3[i] = root["light_probes_volume_bounds_min"][i].asFloat();
 
-					mLightProbesVolumeMinBounds = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
-				}
-				else
-					mHasLightProbes = false;
+				mLightProbesVolumeMinBounds = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+			}
+			else
+				mHasLightProbes = false;
 
-				if (root.isMember("light_probes_volume_bounds_max")) {
-					float vec3[3];
-					for (Json::Value::ArrayIndex i = 0; i != root["light_probes_volume_bounds_max"].size(); i++)
-						vec3[i] = root["light_probes_volume_bounds_max"][i].asFloat();
+			if (root.isMember("light_probes_volume_bounds_max")) {
+				float vec3[3];
+				for (Json::Value::ArrayIndex i = 0; i != root["light_probes_volume_bounds_max"].size(); i++)
+					vec3[i] = root["light_probes_volume_bounds_max"][i].asFloat();
 
-					mLightProbesVolumeMaxBounds = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
-				}
-				else
-					mHasLightProbes = false;
+				mLightProbesVolumeMaxBounds = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+			}
+			else
+				mHasLightProbes = false;
 
-				if (root.isMember("light_probes_diffuse_distance"))
-					mLightProbesDiffuseDistance = root["light_probes_diffuse_distance"].asFloat();
-				if (root.isMember("light_probes_specular_distance"))
-					mLightProbesSpecularDistance = root["light_probes_specular_distance"].asFloat();
+			if (root.isMember("light_probes_diffuse_distance"))
+				mLightProbesDiffuseDistance = root["light_probes_diffuse_distance"].asFloat();
+			if (root.isMember("light_probes_specular_distance"))
+				mLightProbesSpecularDistance = root["light_probes_specular_distance"].asFloat();
 			}
 
 			if (root.isMember("foliage_zones"))
@@ -175,13 +175,13 @@ namespace EveryRay_Core
 
 			std::vector<std::thread> threads;
 			threads.reserve(numThreads);
-			
+
 			for (int i = 0; i < numThreads; i++)
 			{
 				threads.push_back(std::thread([&, numThreads, numRenderingObjects, objectsPerThread, i]
 				{
 					int endRange = (i < numThreads - 1) ? (i + 1) * objectsPerThread : numRenderingObjects;
-					
+
 					for (int j = i * objectsPerThread; j < endRange; j++)
 					{
 						auto objectI = objects.begin();
@@ -191,9 +191,23 @@ namespace EveryRay_Core
 				}));
 			}
 			for (auto& t : threads) t.join();
-			
+
 			for (auto& obj : objects)
 				LoadRenderingObjectInstancedData(obj.second);
+		}
+
+		{
+			ER_Core* core = GetCore();
+			assert(core);
+			ER_RHI* rhi = core->GetRHI();
+
+			ER_RHI_GPURootSignature* rs = rhi->CreateRootSignature(1, 0);
+			if (rs)
+			{
+				rs->InitDescriptorTable(rhi, BASICCOLOR_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				rs->Finalize(rhi, "BasicColorMaterial Pass Root Signature", true);
+			}
+			mStandardMaterialsRootSignatures.emplace(ER_MaterialHelper::basicColorMaterialName, rs);
 		}
 
 		{
@@ -612,17 +626,7 @@ namespace EveryRay_Core
 		ER_Material* material = nullptr;
 
 		if (matName == "BasicColorMaterial")
-		{
 			material = new ER_BasicColorMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER /*TODO instanced support*/);
-			// This material is standard, that is why we create a root-signature here and send it to callbacks later
-			ER_RHI_GPURootSignature* rs = rhi->CreateRootSignature(1, 0);
-			if (rs)
-			{
-				rs->InitDescriptorTable(rhi, BASICCOLOR_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
-				rs->Finalize(rhi, "BasicColorMaterial Pass Root Signature", true);
-			}
-			mStandardMaterialsRootSignatures.emplace(matName, rs);
-		}
 		else if (matName == "ShadowMapMaterial")
 			material = new ER_ShadowMapMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
 		else if (matName == "GBufferMaterial")

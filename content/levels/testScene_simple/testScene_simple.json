@@ -394,53 +394,6 @@
 		},
 		{
 			"instanced" : false,
-			"model_path" : "content\\models\\vegetation\\trees\\acer\\tree_acer_middle2.fbx",
-			"name" : "Acer Tree",
-			"new_materials" : 
-			[
-				{
-					"name" : "ShadowMapMaterial"
-				},
-				{
-					"name" : "GBufferMaterial"
-				},
-				{
-					"name" : "RenderToLightProbeMaterial"
-				}
-			],
-			"textures" : 
-			[
-				{
-					"albedo" : "content\\models\\vegetation\\trees\\acer\\leaves0018_41_m_przod.png",
-					"normal" : "content\\models\\vegetation\\trees\\acer\\leaves0018_41_m_przod_n.png"
-				},
-				{
-					"albedo" : "content\\models\\vegetation\\trees\\acer\\BarkDecidious0164_5_M_TILED_dark.jpg",
-					"normal" : "content\\models\\vegetation\\trees\\acer\\BarkDecidious0164_5_M_TILED_dark_normal-min.png"
-				}
-			],
-			"transform" : 
-			[
-				0.82977449893951416,
-				0.0,
-				0.0,
-				30.0,
-				0.0,
-				0.8297722339630127,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				0.82977449893951416,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"instanced" : false,
 			"model_lods" : 
 			[
 				{
