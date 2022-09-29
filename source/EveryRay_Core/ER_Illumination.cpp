@@ -839,6 +839,7 @@ namespace EveryRay_Core {
 				rhi->SetShader(mForwardLightingPS);
 				rhi->SetRasterizerState(ER_NO_CULLING);
 				rhi->SetBlendState(ER_NO_BLEND);
+				rhi->SetDepthStencilState(ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
 				rhi->SetRenderTargetFormats({ mLocalIlluminationRT }, mGbuffer->GetDepth());
 				rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 				rhi->SetRootSignatureToPSO(psoName, mForwardLightingRS);
