@@ -1087,9 +1087,18 @@ namespace EveryRay_Core
 			auto it = mGraphicsPSONames.find(aName);
 			if (it != mGraphicsPSONames.end())
 			{
-				mCommandListGraphics[0]->SetPipelineState(it->second.GetPipelineStateObject());
-				mCurrentGraphicsPSOName = it->first;
-				mCurrentPSOState = ER_RHI_DX12_PSO_STATE::GRAPHICS;
+				if (mCurrentGraphicsPSOName == aName && mIsPSOSetInCommandList)
+				{
+					mCurrentPSOState = ER_RHI_DX12_PSO_STATE::GRAPHICS;
+					return;
+				}
+				else
+				{
+					mCommandListGraphics[0]->SetPipelineState(it->second.GetPipelineStateObject());
+					mIsPSOSetInCommandList = true;
+					mCurrentGraphicsPSOName = it->first;
+					mCurrentPSOState = ER_RHI_DX12_PSO_STATE::GRAPHICS;
+				}
 			}
 			else
 				resetPSO(aName, isCompute);
@@ -1099,9 +1108,17 @@ namespace EveryRay_Core
 			auto it = mComputePSONames.find(aName);
 			if (it != mComputePSONames.end())
 			{
-				mCommandListGraphics[0]->SetPipelineState(it->second.GetPipelineStateObject());
-				mCurrentComputePSOName = it->first;
-				mCurrentPSOState = ER_RHI_DX12_PSO_STATE::COMPUTE;
+				if (mCurrentComputePSOName == aName && mIsPSOSetInCommandList)
+				{
+					mCurrentPSOState = ER_RHI_DX12_PSO_STATE::COMPUTE;
+					return;
+				}
+				{
+					mCommandListGraphics[0]->SetPipelineState(it->second.GetPipelineStateObject());
+					mIsPSOSetInCommandList = true;
+					mCurrentComputePSOName = it->first;
+					mCurrentPSOState = ER_RHI_DX12_PSO_STATE::COMPUTE;
+				}
 			}
 			else
 				resetPSO(aName, isCompute);
@@ -1111,7 +1128,7 @@ namespace EveryRay_Core
 	void ER_RHI_DX12::UnsetPSO()
 	{
 		mCurrentPSOState = ER_RHI_DX12_PSO_STATE::UNSET;
-		//TODO maybe set null PSO? (not sure its needed/possible in DX12)
+		mIsPSOSetInCommandList = false;
 	}
 
 	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex)

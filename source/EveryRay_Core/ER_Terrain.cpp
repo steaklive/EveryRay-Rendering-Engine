@@ -426,13 +426,13 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_Terrain::Draw(TerrainRenderPass aPass, const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade)
+	void ER_Terrain::Draw(TerrainRenderPass aPass, const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget, ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade)
 	{
 		if (!mEnabled || !mLoaded)
 			return;
 
 		for (int i = 0; i < mHeightMaps.size(); i++)
-			DrawTessellated(aPass, aRenderTargets, i, worldShadowMapper, probeManager, shadowMapCascade);
+			DrawTessellated(aPass, aRenderTargets, aDepthTarget, i, worldShadowMapper, probeManager, shadowMapCascade);
 	}
 
 	void ER_Terrain::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPURootSignature* rs)
@@ -474,7 +474,7 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_Terrain::DrawTessellated(TerrainRenderPass aPass, const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, int tileIndex, ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade)
+	void ER_Terrain::DrawTessellated(TerrainRenderPass aPass, const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget, int tileIndex, ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade)
 	{
 		if (aPass == TerrainRenderPass::TERRAIN_SHADOW)
 			assert(shadowMapCascade != -1);
@@ -596,7 +596,7 @@ namespace EveryRay_Core
 			if (aPass == TerrainRenderPass::TERRAIN_SHADOW)
 				rhi->SetRenderTargetFormats({}, worldShadowMapper->GetShadowTexture(shadowMapCascade));
 			else
-				rhi->SetRenderTargetFormats(aRenderTargets);
+				rhi->SetRenderTargetFormats(aRenderTargets, aDepthTarget);
 			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_CONTROL_POINT_PATCHLIST);
 			rhi->SetInputLayout(mInputLayout);
 			rhi->FinalizePSO(psoName);

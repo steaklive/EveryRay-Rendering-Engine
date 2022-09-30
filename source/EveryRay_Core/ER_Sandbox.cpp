@@ -276,12 +276,12 @@ namespace EveryRay_Core {
 		if (mTerrain)
 		{
 			mTerrain->Draw(TerrainRenderPass::TERRAIN_GBUFFER, 
-				{ mGBuffer->GetAlbedo(), mGBuffer->GetNormals(), mGBuffer->GetPositions(), mGBuffer->GetExtraBuffer(), mGBuffer->GetExtra2Buffer() });
+				{ mGBuffer->GetAlbedo(), mGBuffer->GetNormals(), mGBuffer->GetPositions(), mGBuffer->GetExtraBuffer(), mGBuffer->GetExtra2Buffer() }, mGBuffer->GetDepth());
 		}
 		if (mFoliageSystem)
 		{
 			mFoliageSystem->Draw(gameTime, nullptr, FoliageRenderingPass::FOLIAGE_GBUFFER,
-				{ mGBuffer->GetAlbedo(), mGBuffer->GetNormals(), mGBuffer->GetPositions(), mGBuffer->GetExtraBuffer(), mGBuffer->GetExtra2Buffer() });
+				{ mGBuffer->GetAlbedo(), mGBuffer->GetNormals(), mGBuffer->GetPositions(), mGBuffer->GetExtraBuffer(), mGBuffer->GetExtra2Buffer() }, mGBuffer->GetDepth());
 		}
 		mGBuffer->End();
 #pragma endregion
@@ -289,7 +289,10 @@ namespace EveryRay_Core {
 		#pragma region DRAW_SHADOWS
 		mShadowMapper->Draw(mScene, mTerrain);
 #pragma endregion
+		
 		#pragma region DRAW_GLOBAL_ILLUMINATION
+		
+		// compute static GI (load probes if they exist on disk, otherwise - compute them)
 		{
 			if (mScene->HasLightProbesSupport() && !mLightProbesManager->AreProbesReady())
 			{
@@ -302,7 +305,10 @@ namespace EveryRay_Core {
 				mLightProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
 		}
 
-		//mIllumination->DrawGlobalIllumination(mGBuffer, gameTime);
+		// compute dynamic GI
+		{
+			//mIllumination->DrawDynamicGlobalIllumination(mGBuffer, gameTime);
+		}
 #pragma endregion
 
 		#pragma region DRAW_VOLUMETRIC_FOG
@@ -315,9 +321,9 @@ namespace EveryRay_Core {
 		ER_RHI_GPUTexture* localRT = mIllumination->GetLocalIlluminationRT();
 
 		#pragma region DRAW_STANDARD_MATERIALS
-		// Passes for all other materials (which are called "standard") that are rendered in "Forward" way into localRT.
-		// Can be used for all kinds of materials that can be layered onto each other (transparent ones can also be rendered here).
-		// TODO: We'd rather render objects in batches per material in order to reduce SetRootSignature() calls etc.
+		// Passes for all other materials (which are called "standard") that are rendered in "Forward" way into local illumination RT.
+		// This can be used for all kinds of materials that are layered onto each other (transparent ones can also be rendered here).
+		// TODO: We'd better render objects in batches per material in order to reduce SetRootSignature()/SetPSO() calls etc. Code below is not optimal
 		for (auto& it = mScene->objects.begin(); it != mScene->objects.end(); it++)
 		{
 			for (auto& mat : it->second->GetMaterials())
@@ -360,6 +366,7 @@ namespace EveryRay_Core {
 
 #pragma endregion
 		
+		// combine the results of local and global illumination
 		mIllumination->CompositeTotalIllumination();
 
 		#pragma region DRAW_VOLUMETRIC_CLOUDS
@@ -373,7 +380,7 @@ namespace EveryRay_Core {
 		mPostProcessingStack->End();
 #pragma endregion
 
-		//reset back to main rt in case we dont use Post Processing stack
+		// reset back to main RT before UI rendering
 		rhi->SetMainRenderTargets();
 
 		#pragma region DRAW_IMGUI

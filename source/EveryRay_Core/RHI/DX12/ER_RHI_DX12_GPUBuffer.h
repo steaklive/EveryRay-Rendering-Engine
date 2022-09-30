@@ -59,5 +59,6 @@ namespace EveryRay_Core
 
 		ER_RHI_BIND_FLAG mBindFlags;
 		unsigned char* mMappedData;
+		bool mIsDynamic = false;
 	};
 }

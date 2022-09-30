@@ -234,6 +234,7 @@ namespace EveryRay_Core
 		std::string mCurrentGraphicsPSOName;
 		std::string mCurrentComputePSOName;
 		ER_RHI_DX12_PSO_STATE mCurrentPSOState = ER_RHI_DX12_PSO_STATE::UNSET;
+		bool mIsPSOSetInCommandList = false;
 
 		ER_RHI_DX12_GPUDescriptorHeapManager* mDescriptorHeapManager = nullptr;
 

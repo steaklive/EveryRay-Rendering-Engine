@@ -266,7 +266,7 @@ namespace EveryRay_Core
 			BeginRenderingToShadowMap(i);
 
 			if (terrain)
-				terrain->Draw(TerrainRenderPass::TERRAIN_SHADOW, { mShadowMaps[i] }, this, nullptr, i);
+				terrain->Draw(TerrainRenderPass::TERRAIN_SHADOW, { mShadowMaps[i] }, nullptr, this, nullptr, i);
 
 			rhi->SetRootSignature(mRootSignature);
 			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -280,28 +280,28 @@ namespace EveryRay_Core
 				if (materialInfo != renderingObject->GetMaterials().end())
 				{
 					ER_Material* material = materialInfo->second;
+					if (!rhi->IsPSOReady(psoName))
+					{
+						rhi->InitializePSO(psoName);
+						rhi->SetRasterizerState(ER_SHADOW_RS);
+						rhi->SetBlendState(ER_NO_BLEND);
+						rhi->SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
+						material->PrepareShaders();
+						rhi->SetRenderTargetFormats({}, mShadowMaps[i]);
+						rhi->SetRootSignatureToPSO(psoName, mRootSignature);
+						rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+						rhi->FinalizePSO(psoName);
+					}
+					rhi->SetPSO(psoName);
 					for (int meshIndex = 0; meshIndex < renderingObject->GetMeshCount(); meshIndex++)
 					{
-						if (!rhi->IsPSOReady(psoName))
-						{
-							rhi->InitializePSO(psoName);
-							rhi->SetRasterizerState(ER_SHADOW_RS);
-							rhi->SetBlendState(ER_NO_BLEND);
-							rhi->SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
-							material->PrepareShaders();
-							rhi->SetRenderTargetFormats({}, mShadowMaps[i]);
-							rhi->SetRootSignatureToPSO(psoName, mRootSignature);
-							rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-							rhi->FinalizePSO(psoName);
-						}
-						rhi->SetPSO(psoName);
 						static_cast<ER_ShadowMapMaterial*>(material)->PrepareForRendering(materialSystems, renderingObject, meshIndex, i, mRootSignature);
 						if (!renderingObject->IsInstanced())
 							renderingObject->DrawLOD(materialName, true, meshIndex, renderingObject->GetLODCount() - 1); //drawing highest LOD
 						else
 							renderingObject->Draw(materialName, true, meshIndex);
-						rhi->UnsetPSO();
 					}
+					rhi->UnsetPSO();
 				}
 			}
 

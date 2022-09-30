@@ -370,6 +370,9 @@ namespace EveryRay_Core
 			if (!isForwardPass && (!mMaterials.size() || mMeshesRenderBuffers[lod].size() == 0))
 				return;
 			
+			if (isForwardPass && mCore->GetLevel()->mIllumination)
+				mCore->GetLevel()->mIllumination->PreparePipelineForForwardLighting(this);
+
 			bool isSpecificMesh = (meshIndex != -1);
 			for (int i = (isSpecificMesh) ? meshIndex : 0; i < ((isSpecificMesh) ? meshIndex + 1 : mMeshesCount[lod]); i++)
 			{
@@ -387,7 +390,7 @@ namespace EveryRay_Core
 						prepareMaterialBeforeRendering(i);
 				}
 				else if (isForwardPass && mCore->GetLevel()->mIllumination)
-					mCore->GetLevel()->mIllumination->PrepareForForwardLighting(this, i);
+					mCore->GetLevel()->mIllumination->PrepareResourcesForForwardLighting(this, i);
 
 				if (mIsInstanced)
 				{
@@ -482,7 +485,7 @@ namespace EveryRay_Core
 			mInstanceCountToRender[lod] = instanceData.size();
 
 			// dynamically update instance buffer
-			//mCore->GetRHI()->UpdateBuffer(mMeshesInstanceBuffers[lod][i]->InstanceBuffer, mInstanceCountToRender[lod] == 0 ? nullptr : &instanceData[0], InstanceSize() * mInstanceCountToRender[lod]);
+			mCore->GetRHI()->UpdateBuffer(mMeshesInstanceBuffers[lod][i]->InstanceBuffer, mInstanceCountToRender[lod] == 0 ? nullptr : &instanceData[0], InstanceSize() * mInstanceCountToRender[lod]);
 		}
 	}
 

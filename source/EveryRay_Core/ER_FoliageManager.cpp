@@ -82,7 +82,8 @@ namespace EveryRay_Core
 		UpdateImGui();
 	}
 
-	void ER_FoliageManager::Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass, const std::vector<ER_RHI_GPUTexture*>& aGbufferTextures)
+	void ER_FoliageManager::Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass,
+		const std::vector<ER_RHI_GPUTexture*>& aGbufferTextures, ER_RHI_GPUTexture* aDepthTarget)
 	{
 		if (!mEnabled)
 			return;
@@ -91,7 +92,7 @@ namespace EveryRay_Core
 		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		rhi->SetRootSignature(mRootSignature);
 		for (auto& object : mFoliageCollection)
-			object->Draw(gameTime, worldShadowMapper, renderPass, aGbufferTextures, mRootSignature);
+			object->Draw(gameTime, worldShadowMapper, renderPass, aGbufferTextures, aDepthTarget, mRootSignature);
 	}
 
 	void ER_FoliageManager::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPURootSignature* rs)
@@ -383,7 +384,7 @@ namespace EveryRay_Core
 	}
 
 	void ER_Foliage::Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass, 
-		const std::vector<ER_RHI_GPUTexture*>& aGbufferTextures, ER_RHI_GPURootSignature* rs)
+		const std::vector<ER_RHI_GPUTexture*>& aGbufferTextures, ER_RHI_GPUTexture* aDepthTarget, ER_RHI_GPURootSignature* rs)
 	{
 		if(renderPass == FOLIAGE_VOXELIZATION)
 			assert(worldShadowMapper);
@@ -418,7 +419,7 @@ namespace EveryRay_Core
 			{
 				assert(aGbufferTextures.size() > 0);
 				rhi->SetShader(mPS_GBuffer);
-				rhi->SetRenderTargetFormats(aGbufferTextures);
+				rhi->SetRenderTargetFormats(aGbufferTextures, aDepthTarget);
 			}
 			rhi->FinalizePSO(psoName);
 		}

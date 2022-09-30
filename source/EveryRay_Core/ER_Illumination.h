@@ -101,7 +101,7 @@ namespace EveryRay_Core
 		void Initialize(const ER_Scene* scene);
 
 		void DrawLocalIllumination(ER_GBuffer* gbuffer, ER_Skybox* skybox);
-		void DrawGlobalIllumination(ER_GBuffer* gbuffer, const ER_CoreTime& gameTime);
+		void DrawDynamicGlobalIllumination(ER_GBuffer* gbuffer, const ER_CoreTime& gameTime);
 		void CompositeTotalIllumination();
 
 		void DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPURootSignature* rs);
@@ -114,7 +114,8 @@ namespace EveryRay_Core
 		void SetFoliageSystemForGI(ER_FoliageManager* foliageSystem);
 		void SetProbesManager(ER_LightProbesManager* manager) { mProbesManager = manager; }
 
-		void PrepareForForwardLighting(ER_RenderingObject* aObj, int meshIndex);
+		void PreparePipelineForForwardLighting(ER_RenderingObject* aObj);
+		void PrepareResourcesForForwardLighting(ER_RenderingObject* aObj, int meshIndex);
 
 		ER_RHI_GPUTexture* GetLocalIlluminationRT() const { return mLocalIlluminationRT; }
 		ER_RHI_GPUTexture* GetFinalIlluminationRT() const { return mFinalIlluminationRT; }

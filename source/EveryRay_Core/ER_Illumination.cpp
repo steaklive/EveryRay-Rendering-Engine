@@ -342,9 +342,10 @@ namespace EveryRay_Core {
 		DrawForwardLighting(gbuffer, mLocalIlluminationRT);
 	}
 
-	//voxel GI based on "Interactive Indirect Illumination Using Voxel Cone Tracing" by C.Crassin et al.
-	//https://research.nvidia.com/sites/default/files/pubs/2011-09_Interactive-Indirect-Illumination/GIVoxels-pg2011-authors.pdf
-	void ER_Illumination::DrawGlobalIllumination(ER_GBuffer* gbuffer, const ER_CoreTime& gameTime)
+	// Dynamic GI based on "Interactive Indirect Illumination Using Voxel Cone Tracing" by C.Crassin et al.
+	// https://research.nvidia.com/sites/default/files/pubs/2011-09_Interactive-Indirect-Illumination/GIVoxels-pg2011-authors.pdf
+	// Note: static GI uses light probes (if the scene has them) and that is already built in Deferred/Forward lighting
+	void ER_Illumination::DrawDynamicGlobalIllumination(ER_GBuffer* gbuffer, const ER_CoreTime& gameTime)
 	{
 		ER_RHI* rhi = GetCore()->GetRHI();
 
@@ -799,7 +800,30 @@ namespace EveryRay_Core {
 		rhi->UnsetPSO();
 	}
 
-	void ER_Illumination::PrepareForForwardLighting(ER_RenderingObject* aObj, int meshIndex)
+	void ER_Illumination::PreparePipelineForForwardLighting(ER_RenderingObject* aObj)
+	{
+		auto rhi = mCore->GetRHI();
+
+		std::string& psoName = aObj->IsInstanced() ? mForwardLightingInstancingPSOName : mForwardLightingPSOName;
+		if (!rhi->IsPSOReady(psoName))
+		{
+			rhi->InitializePSO(psoName);
+			rhi->SetInputLayout(aObj->IsInstanced() ? mForwardLightingRenderingObjectInputLayout_Instancing : mForwardLightingRenderingObjectInputLayout);
+			rhi->SetShader(aObj->IsInstanced() ? mForwardLightingVS_Instancing : mForwardLightingVS);
+			rhi->SetShader(mForwardLightingPS);
+			rhi->SetRasterizerState(ER_NO_CULLING);
+			rhi->SetBlendState(ER_NO_BLEND);
+			rhi->SetDepthStencilState(ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
+			rhi->SetRenderTargetFormats({ mLocalIlluminationRT }, mGbuffer->GetDepth());
+			rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			rhi->SetRootSignatureToPSO(psoName, mForwardLightingRS);
+			rhi->FinalizePSO(psoName);
+		}
+		rhi->SetPSO(psoName);
+		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
+	}
+
+	void ER_Illumination::PrepareResourcesForForwardLighting(ER_RenderingObject* aObj, int meshIndex)
 	{
 		assert(mGbuffer);
 
@@ -828,25 +852,15 @@ namespace EveryRay_Core {
 				mLightProbesConstantBuffer.Data.DistanceBetweenDiffuseProbes = mProbesManager->GetDistanceBetweenDiffuseProbes();
 				mLightProbesConstantBuffer.Data.DistanceBetweenSpecularProbes = mProbesManager->GetDistanceBetweenSpecularProbes();
 				mLightProbesConstantBuffer.ApplyChanges(rhi);
-			}
 
-			std::string& psoName = aObj->IsInstanced() ? mForwardLightingInstancingPSOName : mForwardLightingPSOName;
-			if (!rhi->IsPSOReady(psoName))
-			{
-				rhi->InitializePSO(psoName);
-				rhi->SetInputLayout(aObj->IsInstanced() ? mForwardLightingRenderingObjectInputLayout_Instancing : mForwardLightingRenderingObjectInputLayout);
-				rhi->SetShader(aObj->IsInstanced() ? mForwardLightingVS_Instancing : mForwardLightingVS);
-				rhi->SetShader(mForwardLightingPS);
-				rhi->SetRasterizerState(ER_NO_CULLING);
-				rhi->SetBlendState(ER_NO_BLEND);
-				rhi->SetDepthStencilState(ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
-				rhi->SetRenderTargetFormats({ mLocalIlluminationRT }, mGbuffer->GetDepth());
-				rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-				rhi->SetRootSignatureToPSO(psoName, mForwardLightingRS);
-				rhi->FinalizePSO(psoName);
+				rhi->SetConstantBuffers(ER_VERTEX, { mForwardLightingConstantBuffer.Buffer(), mLightProbesConstantBuffer.Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+				rhi->SetConstantBuffers(ER_PIXEL, { mForwardLightingConstantBuffer.Buffer(), mLightProbesConstantBuffer.Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 			}
-			rhi->SetPSO(psoName);
-			rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
+			else
+			{
+				rhi->SetConstantBuffers(ER_VERTEX, { mForwardLightingConstantBuffer.Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+				rhi->SetConstantBuffers(ER_PIXEL, { mForwardLightingConstantBuffer.Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+			}
 
 			if (mProbesManager->AreGlobalProbesReady())
 			{
@@ -871,17 +885,6 @@ namespace EveryRay_Core {
 				rhi->SetShaderResources(ER_PIXEL, resources, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 			}
 
-			if (mProbesManager->IsEnabled())
-			{
-				rhi->SetConstantBuffers(ER_VERTEX, { mForwardLightingConstantBuffer.Buffer(), mLightProbesConstantBuffer.Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
-				rhi->SetConstantBuffers(ER_PIXEL,  { mForwardLightingConstantBuffer.Buffer(), mLightProbesConstantBuffer.Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
-			}
-			else
-			{
-				rhi->SetConstantBuffers(ER_VERTEX, { mForwardLightingConstantBuffer.Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
-				rhi->SetConstantBuffers(ER_PIXEL,  { mForwardLightingConstantBuffer.Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
-
-			}
 			// we unset PSO after all objects are rendered
 		}
 	}
