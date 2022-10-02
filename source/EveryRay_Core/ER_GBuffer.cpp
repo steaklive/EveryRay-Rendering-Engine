@@ -126,8 +126,8 @@ namespace EveryRay_Core {
 					material->PrepareForRendering(materialSystems, renderingObject, meshIndex, mRootSignature);
 					renderingObject->Draw(ER_MaterialHelper::gbufferMaterialName, true, meshIndex);
 				}
-				rhi->UnsetPSO();
 			}
 		}
+		rhi->UnsetPSO();
 	}
 }

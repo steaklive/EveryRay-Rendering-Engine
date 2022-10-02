@@ -81,9 +81,17 @@ namespace EveryRay_Core
 			for (size_t i = 0; i < objectsSize; i++)
 			{
 				if (i == selectedObjectIndex)
-					mScene->objects[editorObjectsNames[selectedObjectIndex]]->SetSelected(true);
+				{
+					auto renderingObject = mScene->FindRenderingObjectByName(editorObjectsNames[selectedObjectIndex]);
+					if (renderingObject)
+						renderingObject->SetSelected(true);
+				}
 				else
-					mScene->objects[editorObjectsNames[i]]->SetSelected(false);
+				{
+					auto renderingObject = mScene->FindRenderingObjectByName(editorObjectsNames[i]);
+					if (renderingObject)
+						renderingObject->SetSelected(false);
+				}
 			}
 
 			ImGui::End();

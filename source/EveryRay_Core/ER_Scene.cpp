@@ -97,17 +97,18 @@ namespace EveryRay_Core
 						mTerrainTileResolution = root["terrain_tile_resolution"].asInt();
 					std::string fieldName = "terrain_texture_splat_layer";
 					std::wstring result = L"";
-for (int i = 0; i < 4; i++)
-{
-	fieldName += std::to_string(i);
-	if (root.isMember(fieldName.c_str()))
-		result = ER_Utility::ToWideString(root[fieldName.c_str()].asString());
-	else
-		result = L"";
 
-	fieldName = "terrain_texture_splat_layer";
-	mTerrainSplatLayersTextureNames[i] = result;
-}
+					for (int i = 0; i < 4; i++)
+					{
+						fieldName += std::to_string(i);
+						if (root.isMember(fieldName.c_str()))
+							result = ER_Utility::ToWideString(root[fieldName.c_str()].asString());
+						else
+							result = L"";
+					
+						fieldName = "terrain_texture_splat_layer";
+						mTerrainSplatLayersTextureNames[i] = result;
+					}
 				}
 				else
 				mHasTerrain = false;
@@ -156,9 +157,9 @@ for (int i = 0; i < 4; i++)
 				std::string name = root["rendering_objects"][i]["name"].asString();
 				std::string modelPath = root["rendering_objects"][i]["model_path"].asString();
 				bool isInstanced = root["rendering_objects"][i]["instanced"].asBool();
-				objects.emplace(name, new ER_RenderingObject(name, i, *mCore, mCamera, std::unique_ptr<ER_Model>(new ER_Model(*mCore, ER_Utility::GetFilePath(modelPath), true)), true, isInstanced));
+				objects.emplace_back(name, new ER_RenderingObject(name, i, *mCore, mCamera, std::unique_ptr<ER_Model>(new ER_Model(*mCore, ER_Utility::GetFilePath(modelPath), true)), true, isInstanced));
 			}
-
+			std::sort(objects.begin(), objects.end(), [](const ER_SceneObject& obj1, const ER_SceneObject& obj2) {	return obj1.second->IsInstanced();	});
 			assert(numRenderingObjects == objects.size());
 
 #if MULTITHREADED_SCENE_LOAD
@@ -559,14 +560,18 @@ for (int i = 0; i < 4; i++)
 		for (Json::Value::ArrayIndex i = 0; i != root["rendering_objects"].size(); i++) {
 			Json::Value content(Json::arrayValue);
 			if (root["rendering_objects"][i].isMember("transform")) {
-				XMFLOAT4X4 mat = objects[root["rendering_objects"][i]["name"].asString()]->GetTransformationMatrix4X4();
-				XMMATRIX matXM  = XMMatrixTranspose(XMLoadFloat4x4(&mat));
-				XMStoreFloat4x4(&mat, matXM);
-				float matF[16];
-				ER_MatrixHelper::GetFloatArray(mat, matF);
-				for (int i = 0; i < 16; i++)
-					content.append(matF[i]);
-				root["rendering_objects"][i]["transform"] = content;
+				ER_RenderingObject* rObj = FindRenderingObjectByName(root["rendering_objects"][i]["name"].asString());
+				if (rObj)
+				{
+					XMFLOAT4X4 mat = rObj->GetTransformationMatrix4X4();
+					XMMATRIX matXM = XMMatrixTranspose(XMLoadFloat4x4(&mat));
+					XMStoreFloat4x4(&mat, matXM);
+					float matF[16];
+					ER_MatrixHelper::GetFloatArray(mat, matF);
+					for (int i = 0; i < 16; i++)
+						content.append(matF[i]);
+					root["rendering_objects"][i]["transform"] = content;
+				}
 			}
 			else
 			{
@@ -587,13 +592,14 @@ for (int i = 0; i < 4; i++)
 				{
 					if (root["rendering_objects"][i].isMember("instances_transforms")) {
 
-						if (root["rendering_objects"][i]["instances_transforms"].size() != objects[root["rendering_objects"][i]["name"].asString()]->GetInstanceCount())
+						ER_RenderingObject* rObj = FindRenderingObjectByName(root["rendering_objects"][i]["name"].asString());
+						if (!rObj || root["rendering_objects"][i]["instances_transforms"].size() != rObj->GetInstanceCount())
 							throw ER_CoreException("Can't save instances transforms to scene json file! RenderObject's instance count is not equal to the number of instance transforms in scene file.");
 
 						for (Json::Value::ArrayIndex instance = 0; instance != root["rendering_objects"][i]["instances_transforms"].size(); instance++) {
 							Json::Value contentInstanceTransform(Json::arrayValue);
 
-							XMFLOAT4X4 mat = objects[root["rendering_objects"][i]["name"].asString()]->GetInstancesData()[instance].World;
+							XMFLOAT4X4 mat = rObj->GetInstancesData()[instance].World;
 							XMMATRIX matXM = XMMatrixTranspose(XMLoadFloat4x4(&mat));
 							XMStoreFloat4x4(&mat, matXM);
 							float matF[16];
@@ -691,4 +697,18 @@ for (int i = 0; i < 4; i++)
 		else
 			return nullptr;
 	}
+
+	ER_RenderingObject* ER_Scene::FindRenderingObjectByName(const std::string& aName)
+	{
+		for (auto& sceneObj : objects)
+		{
+			if (sceneObj.first == aName)
+				return sceneObj.second;
+			else
+				continue;
+		}
+
+		return nullptr;
 	}
+
+}

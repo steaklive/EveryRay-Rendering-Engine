@@ -233,8 +233,9 @@ namespace EveryRay_Core
 		std::map<std::string, ER_RHI_DX12_ComputePSO> mComputePSONames;
 		std::string mCurrentGraphicsPSOName;
 		std::string mCurrentComputePSOName;
+		std::string mCurrentSetGraphicsPSOName; //which was set to command list already
+		std::string mCurrentSetComputePSOName; //which was set to command list already
 		ER_RHI_DX12_PSO_STATE mCurrentPSOState = ER_RHI_DX12_PSO_STATE::UNSET;
-		bool mIsPSOSetInCommandList = false;
 
 		ER_RHI_DX12_GPUDescriptorHeapManager* mDescriptorHeapManager = nullptr;
 

@@ -235,18 +235,13 @@ namespace EveryRay_Core
 		DeleteObjects(diffuseProbeCellsIndicesCPUBuffer);
 		
 		std::string name = "Debug diffuse lightprobes ";
-		auto result = scene->objects.insert(
-			std::pair<std::string, ER_RenderingObject*>(name, new ER_RenderingObject(name, scene->objects.size(), core, camera,
-				std::unique_ptr<ER_Model>(new ER_Model(core, ER_Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true))
-		);
-
-		if (!result.second)
-			throw ER_CoreException("Could not add a diffuse probe global object into scene");
+		scene->objects.emplace_back(name, new ER_RenderingObject(name, scene->objects.size(), core, camera,
+				std::unique_ptr<ER_Model>(new ER_Model(core, ER_Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true));
 
 		MaterialShaderEntries shaderEntries;
 		shaderEntries.vertexEntry += "_instancing";
 
-		mDiffuseProbeRenderingObject = result.first->second;
+		mDiffuseProbeRenderingObject = scene->objects[static_cast<int>(scene->objects.size()) - 1].second;
 		mDiffuseProbeRenderingObject->LoadMaterial(new ER_DebugLightProbeMaterial(core, shaderEntries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, true), ER_MaterialHelper::debugLightProbeMaterialName);
 		mDiffuseProbeRenderingObject->LoadRenderBuffers();
 		mDiffuseProbeRenderingObject->LoadInstanceBuffers();
@@ -256,6 +251,7 @@ namespace EveryRay_Core
 			mDiffuseProbeRenderingObject->AddInstanceData(worldT);
 		}
 		mDiffuseProbeRenderingObject->UpdateInstanceBuffer(mDiffuseProbeRenderingObject->GetInstancesData());
+		std::sort(scene->objects.begin(), scene->objects.end(), [](const ER_SceneObject& obj1, const ER_SceneObject& obj2) { return obj1.second->IsInstanced();	});
 	}
 
 	void ER_LightProbesManager::SetupSpecularProbes(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper)
@@ -362,18 +358,13 @@ namespace EveryRay_Core
 		mSpecularProbesTexArrayIndicesGPUBuffer->CreateGPUBufferResource(rhi, mSpecularProbesTexArrayIndicesCPUBuffer, mSpecularProbesCountTotal, sizeof(int), true, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 
 		std::string name = "Debug specular lightprobes ";
-		auto result = scene->objects.insert(
-			std::pair<std::string, ER_RenderingObject*>(name, new ER_RenderingObject(name, scene->objects.size(), game, camera,
-				std::unique_ptr<ER_Model>(new ER_Model(game, ER_Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true))
-		);
-
-		if (!result.second)
-			throw ER_CoreException("Could not add a specular probe global object into scene");
+		scene->objects.emplace_back(name, new ER_RenderingObject(name, scene->objects.size(), game, camera,
+				std::unique_ptr<ER_Model>(new ER_Model(game, ER_Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true));
 		
 		MaterialShaderEntries shaderEntries;
 		shaderEntries.vertexEntry += "_instancing";
 
-		mSpecularProbeRenderingObject = result.first->second;
+		mSpecularProbeRenderingObject = scene->objects[static_cast<int>(scene->objects.size()) - 1].second;
 		mSpecularProbeRenderingObject->LoadMaterial(new ER_DebugLightProbeMaterial(game, shaderEntries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, true), ER_MaterialHelper::debugLightProbeMaterialName);
 		mSpecularProbeRenderingObject->LoadRenderBuffers();
 		mSpecularProbeRenderingObject->LoadInstanceBuffers();
@@ -383,6 +374,7 @@ namespace EveryRay_Core
 			mSpecularProbeRenderingObject->AddInstanceData(worldT);
 		}
 		mSpecularProbeRenderingObject->UpdateInstanceBuffer(mSpecularProbeRenderingObject->GetInstancesData());
+		std::sort(scene->objects.begin(), scene->objects.end(), [](const ER_SceneObject& obj1, const ER_SceneObject& obj2) { return obj1.second->IsInstanced();	});
 
 		mSpecularCubemapArrayRT = rhi->CreateGPUTexture();
 		mSpecularCubemapArrayRT->CreateGPUTextureResource(rhi, SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true, mMaxSpecularProbesInVolumeCount);

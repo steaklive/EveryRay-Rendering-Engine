@@ -301,10 +301,9 @@ namespace EveryRay_Core
 						else
 							renderingObject->Draw(materialName, true, meshIndex);
 					}
-					rhi->UnsetPSO();
 				}
 			}
-
+			rhi->UnsetPSO();
 			StopRenderingToShadowMap(i);
 		}
 	}

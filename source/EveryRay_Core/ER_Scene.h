@@ -12,6 +12,7 @@ namespace EveryRay_Core
 	class ER_RenderingObject;
 	class ER_DirectionalLight;
 	class ER_Foliage;
+	using ER_SceneObject = std::pair<std::string, ER_RenderingObject*>;
 
 	class ER_Scene : public ER_CoreComponent
 	{
@@ -43,8 +44,10 @@ namespace EveryRay_Core
 		bool HasVolumetricFog() { return mHasVolumetricFog; }
 
 		ER_RHI_GPURootSignature* GetStandardMaterialRootSignature(const std::string& materialName);
+		
+		ER_RenderingObject* FindRenderingObjectByName(const std::string& aName);
 
-		std::map<std::string, ER_RenderingObject*> objects;
+		std::vector<ER_SceneObject> objects;
 
 		//TODO remove to private and make public methods
 		std::string skyboxPath;
