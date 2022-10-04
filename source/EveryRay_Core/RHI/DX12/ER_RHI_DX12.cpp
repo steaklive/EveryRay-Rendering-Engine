@@ -489,7 +489,7 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::PresentGraphics()
 	{
-		HRESULT hr = mSwapChain->Present(1, 0);
+		HRESULT hr = mSwapChain->Present(0, 0);
 
 		if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
 		{
@@ -1223,7 +1223,7 @@ namespace EveryRay_Core
 		if (FAILED(mDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&mImGuiDescriptorHeap))))
 			throw ER_CoreException("ER_RHI_DX12: Could not create a descriptor heap for ImGui");
 
-		ImGui_ImplDX12_Init(mDevice.Get(), 1, mMainRTBufferFormat, mImGuiDescriptorHeap.Get(), mImGuiDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), mImGuiDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+		ImGui_ImplDX12_Init(mDevice.Get(), DX12_MAX_BACK_BUFFER_COUNT, mMainRTBufferFormat, mImGuiDescriptorHeap.Get(), mImGuiDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), mImGuiDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 	}
 
 	void ER_RHI_DX12::StartNewImGuiFrame()
