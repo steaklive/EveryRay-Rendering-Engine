@@ -202,63 +202,7 @@ namespace EveryRay_Core
 				//ThrowIfFailed(mDXGIFactory->MakeWindowAssociation(mAppWindow, DXGI_MWA_NO_ALT_ENTER));
 			}
 
-			// main RTV
-			for (int i = 0; i < DX12_MAX_BACK_BUFFER_COUNT; i++)
-			{
-				mSwapChain->GetBuffer(i, IID_PPV_ARGS(mMainRenderTarget[i].GetAddressOf()));
-				wchar_t name[25] = {};
-				swprintf_s(name, L"Main Render target %u", i);
-				mMainRenderTarget[i]->SetName(name);
-
-				D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-				rtvDesc.Format = mMainRTBufferFormat;
-				rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-
-				CD3DX12_CPU_DESCRIPTOR_HANDLE mainRTVDescriptorHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), i, mRTVDescriptorSize);
-				mDevice->CreateRenderTargetView(mMainRenderTarget[i].Get(), &rtvDesc, mainRTVDescriptorHandle);
-			}
-			// Reset the index to the current back buffer.
-			mBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
-
-			// main DSV
-			{
-				CD3DX12_HEAP_PROPERTIES depthHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
-
-				D3D12_RESOURCE_DESC depthStencilDesc = CD3DX12_RESOURCE_DESC::Tex2D(mMainDepthBufferFormat, width, height, 1, 1);
-				depthStencilDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-				depthStencilDesc.Flags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
-
-				D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
-				depthOptimizedClearValue.Format = mMainDepthBufferFormat;
-				depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
-				depthOptimizedClearValue.DepthStencil.Stencil = 0;
-
-				if (FAILED(mDevice->CreateCommittedResource(&depthHeapProperties, D3D12_HEAP_FLAG_NONE, &depthStencilDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &depthOptimizedClearValue, IID_PPV_ARGS(mMainDepthStencilTarget.ReleaseAndGetAddressOf()))))
-					throw ER_CoreException("ER_RHI_DX12: Could not create comitted resource for main depth-stencil target");
-
-				mMainDepthStencilTarget->SetName(L"Main Depth-Stencil target");
-
-				D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
-				dsvDesc.Format = mMainDepthBufferFormat;
-				dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-
-				mDevice->CreateDepthStencilView(mMainDepthStencilTarget.Get(), &dsvDesc, mDSVDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-			}
-
-			mMainViewport.TopLeftX = 0.0f;
-			mMainViewport.TopLeftY = 0.0f;
-			mMainViewport.Width = static_cast<float>(width);
-			mMainViewport.Height = static_cast<float>(height);
-			mMainViewport.MinDepth = 0.0f;
-			mMainViewport.MaxDepth = 1.0f;
-
-			D3D12_VIEWPORT viewport;
-			viewport.TopLeftX = mMainViewport.TopLeftX;
-			viewport.TopLeftY = mMainViewport.TopLeftY;
-			viewport.Width = mMainViewport.Width;
-			viewport.Height = mMainViewport.Height;
-			viewport.MinDepth = 0.0f;
-			viewport.MaxDepth = 1.0f;
+			CreateMainRenderTargetAndDepth(width, height);
 		}
 
 		CreateSamplerStates();
@@ -607,9 +551,9 @@ namespace EveryRay_Core
 		//TODO
 	}
 
-	void ER_RHI_DX12::SetMainRenderTargets()
+	void ER_RHI_DX12::SetMainRenderTargets(int cmdListIndex)
 	{
-		mCommandListGraphics[0]->OMSetRenderTargets(1, &GetMainRenderTargetView(), false, &GetMainDepthStencilView());
+		mCommandListGraphics[cmdListIndex]->OMSetRenderTargets(1, &GetMainRenderTargetView(), false, &GetMainDepthStencilView());
 	}
 
 	void ER_RHI_DX12::SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget /*= nullptr*/, ER_RHI_GPUTexture* aUAV /*= nullptr*/, int rtvArrayIndex)
@@ -997,10 +941,10 @@ namespace EveryRay_Core
 		mCommandListGraphics[0]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 	}
 
-	void ER_RHI_DX12::SetGPUDescriptorHeapImGui()
+	void ER_RHI_DX12::SetGPUDescriptorHeapImGui(int cmdListIndex)
 	{
 		ID3D12DescriptorHeap* ppHeaps[] = { mImGuiDescriptorHeap.Get() };
-		mCommandListGraphics[0]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+		mCommandListGraphics[cmdListIndex]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 	}
 
 	bool ER_RHI_DX12::IsPSOReady(const std::string& aName, bool isCompute)
@@ -1148,7 +1092,7 @@ namespace EveryRay_Core
 		}
 
 		if (barriers.size() > 0)
-			mCommandListGraphics[cmdListIndex]->ResourceBarrier(barriers.size(), barriers.data());
+			mCommandListGraphics[cmdListIndex]->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
 	}
 
 	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex /*= 0*/)
@@ -1173,7 +1117,7 @@ namespace EveryRay_Core
 		}
 
 		if (barriers.size() > 0)
-			mCommandListGraphics[cmdListIndex]->ResourceBarrier(barriers.size(), barriers.data());
+			mCommandListGraphics[cmdListIndex]->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
 	}
 
 	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUTexture*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex /*= 0*/)
@@ -1192,7 +1136,7 @@ namespace EveryRay_Core
 			}
 		}
 		if (barriers.size() > 0)
-			mCommandListGraphics[cmdListIndex]->ResourceBarrier(barriers.size(), barriers.data());
+			mCommandListGraphics[cmdListIndex]->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
 	}
 
 	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUTexture*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex /*= 0*/)
@@ -1209,7 +1153,7 @@ namespace EveryRay_Core
 			}
 		}
 		if (barriers.size() > 0)
-			mCommandListGraphics[cmdListIndex]->ResourceBarrier(barriers.size(), barriers.data());
+			mCommandListGraphics[cmdListIndex]->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
 	}
 
 	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex /*= 0*/)
@@ -1228,7 +1172,7 @@ namespace EveryRay_Core
 			}
 		}
 		if (barriers.size() > 0)
-			mCommandListGraphics[cmdListIndex]->ResourceBarrier(barriers.size(), barriers.data());
+			mCommandListGraphics[cmdListIndex]->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
 	}
 
 	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex /*= 0*/)
@@ -1245,13 +1189,13 @@ namespace EveryRay_Core
 			}
 		}
 		if (barriers.size() > 0)
-			mCommandListGraphics[cmdListIndex]->ResourceBarrier(barriers.size(), barriers.data());
+			mCommandListGraphics[cmdListIndex]->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
 	}
 
-	void ER_RHI_DX12::TransitionMainRenderTargetToPresent()
+	void ER_RHI_DX12::TransitionMainRenderTargetToPresent(int cmdListIndex)
 	{
 		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(mMainRenderTarget[mBackBufferIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-		mCommandListGraphics[0]->ResourceBarrier(1, &barrier);
+		mCommandListGraphics[cmdListIndex]->ResourceBarrier(1, &barrier);
 	}
 
 	void ER_RHI_DX12::UnbindRenderTargets()
@@ -1287,9 +1231,9 @@ namespace EveryRay_Core
 		ImGui_ImplDX12_NewFrame();
 	}
 
-	void ER_RHI_DX12::RenderDrawDataImGui()
+	void ER_RHI_DX12::RenderDrawDataImGui(int cmdListIndex)
 	{
-		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), mCommandListGraphics[0].Get());
+		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), mCommandListGraphics[cmdListIndex].Get());
 	}
 
 	void ER_RHI_DX12::ShutdownImGui()
@@ -1516,6 +1460,23 @@ namespace EveryRay_Core
 		}
 	}
 
+	void ER_RHI_DX12::OnWindowSizeChanged(int width, int height)
+	{
+		WaitForGpu();
+
+		// Release resources that are tied to the swap chain and update fence values.
+		for (UINT n = 0; n < DX12_MAX_BACK_BUFFER_COUNT; n++)
+		{
+			mMainRenderTarget[n].Reset();
+			mFenceValuesGraphics[n] = mFenceValuesGraphics[mBackBufferIndex];
+		}
+
+		if (FAILED(mSwapChain->ResizeBuffers(DX12_MAX_BACK_BUFFER_COUNT, width, height, mMainRTBufferFormat, 0u)))
+			throw ER_CoreException("ER_RHI_DX12: Could not resize swapchain!");
+
+		CreateMainRenderTargetAndDepth(width, height);
+	}
+
 	D3D12_PRIMITIVE_TOPOLOGY_TYPE ER_RHI_DX12::GetTopologyType(ER_RHI_PRIMITIVE_TYPE aType)
 	{
 		switch (aType)
@@ -1599,6 +1560,52 @@ namespace EveryRay_Core
 			assert(0);
 			return D3D12_DESCRIPTOR_HEAP_TYPE::D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 		}
+		}
+	}
+
+	void ER_RHI_DX12::CreateMainRenderTargetAndDepth(int width, int height)
+	{
+		// main RTV
+		for (int i = 0; i < DX12_MAX_BACK_BUFFER_COUNT; i++)
+		{
+			mSwapChain->GetBuffer(i, IID_PPV_ARGS(mMainRenderTarget[i].GetAddressOf()));
+			wchar_t name[25] = {};
+			swprintf_s(name, L"Main Render target %u", i);
+			mMainRenderTarget[i]->SetName(name);
+
+			D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+			rtvDesc.Format = mMainRTBufferFormat;
+			rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+
+			CD3DX12_CPU_DESCRIPTOR_HANDLE mainRTVDescriptorHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), i, mRTVDescriptorSize);
+			mDevice->CreateRenderTargetView(mMainRenderTarget[i].Get(), &rtvDesc, mainRTVDescriptorHandle);
+		}
+		// Reset the index to the current back buffer.
+		mBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
+
+		// main DSV
+		{
+			CD3DX12_HEAP_PROPERTIES depthHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
+
+			D3D12_RESOURCE_DESC depthStencilDesc = CD3DX12_RESOURCE_DESC::Tex2D(mMainDepthBufferFormat, width, height, 1, 1);
+			depthStencilDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+			depthStencilDesc.Flags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
+
+			D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
+			depthOptimizedClearValue.Format = mMainDepthBufferFormat;
+			depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
+			depthOptimizedClearValue.DepthStencil.Stencil = 0;
+
+			if (FAILED(mDevice->CreateCommittedResource(&depthHeapProperties, D3D12_HEAP_FLAG_NONE, &depthStencilDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &depthOptimizedClearValue, IID_PPV_ARGS(mMainDepthStencilTarget.ReleaseAndGetAddressOf()))))
+				throw ER_CoreException("ER_RHI_DX12: Could not create comitted resource for main depth-stencil target");
+
+			mMainDepthStencilTarget->SetName(L"Main Depth-Stencil target");
+
+			D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+			dsvDesc.Format = mMainDepthBufferFormat;
+			dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+
+			mDevice->CreateDepthStencilView(mMainDepthStencilTarget.Get(), &dsvDesc, mDSVDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 		}
 	}
 

@@ -316,7 +316,7 @@ namespace EveryRay_Core
 
 		virtual void SaveGPUTextureToFile(ER_RHI_GPUTexture* aTexture, const std::wstring& aPathName) = 0; //WARNING: only works on DX11 for now
 
-		virtual void SetMainRenderTargets() = 0;
+		virtual void SetMainRenderTargets(int cmdListIndex = 0) = 0;
 		virtual void SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr, ER_RHI_GPUTexture* aUAV = nullptr, int rtvArrayIndex = -1) = 0;
 		virtual void SetDepthTarget(ER_RHI_GPUTexture* aDepthTarget) = 0;
 		virtual void SetRenderTargetFormats(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr) = 0;
@@ -358,7 +358,7 @@ namespace EveryRay_Core
 		virtual ER_RHI_PRIMITIVE_TYPE GetCurrentTopologyType() = 0;
 
 		virtual void SetGPUDescriptorHeap(ER_RHI_DESCRIPTOR_HEAP_TYPE aType, bool aReset) = 0;
-		virtual void SetGPUDescriptorHeapImGui() = 0;
+		virtual void SetGPUDescriptorHeapImGui(int cmdListIndex) = 0;
 
 		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0) = 0;
 		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0) = 0;
@@ -366,7 +366,7 @@ namespace EveryRay_Core
 		virtual void TransitionResources(const std::vector<ER_RHI_GPUTexture*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0) = 0;
 		virtual void TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0) = 0;
 		virtual void TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0) = 0;
-		virtual void TransitionMainRenderTargetToPresent() = 0;
+		virtual void TransitionMainRenderTargetToPresent(int cmdListIndex = 0) = 0;
 
 		virtual bool IsPSOReady(const std::string& aName, bool isCompute = false) = 0;
 		virtual void InitializePSO(const std::string& aName, bool isCompute = false) = 0;
@@ -385,10 +385,11 @@ namespace EveryRay_Core
 
 		virtual void InitImGui() = 0;
 		virtual void StartNewImGuiFrame() = 0;
-		virtual void RenderDrawDataImGui() = 0;
+		virtual void RenderDrawDataImGui(int cmdListIndex = 0) = 0;
 		virtual void ShutdownImGui() = 0;
 
 		virtual void SetWindowHandle(void* handle) { (HWND)mWindowHandle; }
+		virtual void OnWindowSizeChanged(int width, int height) = 0;
 
 		inline const int GetPrepareGraphicsCommandListIndex() { return mPrepareGraphicsCommandListIndex; }
 		inline const int GetCurrentGraphicsCommandListIndex() { return mCurrentGraphicsCommandListIndex; }

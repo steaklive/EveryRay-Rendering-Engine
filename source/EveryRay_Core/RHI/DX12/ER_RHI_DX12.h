@@ -93,7 +93,7 @@ namespace EveryRay_Core
 		
 		virtual void SaveGPUTextureToFile(ER_RHI_GPUTexture* aTexture, const std::wstring& aPathName) override;
 
-		virtual void SetMainRenderTargets() override;
+		virtual void SetMainRenderTargets(int cmdListIndex = 0) override;
 		virtual void SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr, ER_RHI_GPUTexture* aUAV = nullptr, int rtvArrayIndex = -1) override;
 		virtual void SetDepthTarget(ER_RHI_GPUTexture* aDepthTarget) override;
 		virtual void SetRenderTargetFormats(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr) override;
@@ -130,7 +130,7 @@ namespace EveryRay_Core
 		virtual ER_RHI_PRIMITIVE_TYPE GetCurrentTopologyType() override;
 
 		virtual void SetGPUDescriptorHeap(ER_RHI_DESCRIPTOR_HEAP_TYPE aType, bool aReset) override;
-		virtual void SetGPUDescriptorHeapImGui() override;
+		virtual void SetGPUDescriptorHeapImGui(int cmdListIndex = 0) override;
 
 		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0) override;
 		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0) override;
@@ -138,7 +138,7 @@ namespace EveryRay_Core
 		virtual void TransitionResources(const std::vector<ER_RHI_GPUTexture*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0) override;
 		virtual void TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0) override;
 		virtual void TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0) override;
-		virtual void TransitionMainRenderTargetToPresent() override;
+		virtual void TransitionMainRenderTargetToPresent(int cmdListIndex = 0) override;
 
 		virtual bool IsPSOReady(const std::string& aName, bool isCompute = false) override;
 		virtual void InitializePSO(const std::string& aName, bool isCompute = false) override;
@@ -157,8 +157,10 @@ namespace EveryRay_Core
 
 		virtual void InitImGui() override;
 		virtual void StartNewImGuiFrame() override;
-		virtual void RenderDrawDataImGui() override;
+		virtual void RenderDrawDataImGui(int cmdListIndex = 0) override;
 		virtual void ShutdownImGui() override;
+
+		virtual void OnWindowSizeChanged(int width, int height) override;
 
 		ID3D12Device* GetDevice() const { return mDevice.Get(); }
 		ID3D12Device5* GetDeviceRaytracing() const { return (ID3D12Device5*)mDevice.Get(); }
@@ -185,6 +187,7 @@ namespace EveryRay_Core
 
 		D3D12_DESCRIPTOR_HEAP_TYPE GetHeapType(ER_RHI_DESCRIPTOR_HEAP_TYPE aType);
 
+		void CreateMainRenderTargetAndDepth(int width, int height);
 		void CreateSamplerStates();
 		void CreateBlendStates();
 		void CreateRasterizerStates();
@@ -238,8 +241,6 @@ namespace EveryRay_Core
 		ER_RHI_DX12_PSO_STATE mCurrentPSOState = ER_RHI_DX12_PSO_STATE::UNSET;
 
 		ER_RHI_DX12_GPUDescriptorHeapManager* mDescriptorHeapManager = nullptr;
-
-		ER_RHI_Viewport mMainViewport;
 
 		D3D12_SAMPLER_DESC mEmptySampler;
 

@@ -44,9 +44,6 @@ namespace EveryRay_Runtime
 		ER_Editor* mEditor;
 		ER_QuadRenderer* mQuadRenderer;
 
-		ER_RHI_Viewport mMainViewport;
-		ER_RHI_Rect mMainRect;
-
 		std::chrono::duration<double> mElapsedTimeUpdateCPU;
 		std::chrono::duration<double> mElapsedTimeRenderCPU;
 

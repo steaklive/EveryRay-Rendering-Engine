@@ -384,7 +384,7 @@ namespace EveryRay_Core {
 		rhi->SetMainRenderTargets();
 
 		#pragma region DRAW_IMGUI
-		rhi->SetGPUDescriptorHeapImGui();
+		rhi->SetGPUDescriptorHeapImGui(rhi->GetCurrentGraphicsCommandListIndex());
 
 		ImGui::Render();
 		rhi->RenderDrawDataImGui();
