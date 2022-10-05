@@ -118,17 +118,16 @@ namespace EveryRay_Core
 
 	ER_RHI_DX12_GPUDescriptorHeapManager::ER_RHI_DX12_GPUDescriptorHeapManager(ID3D12Device* device)
 	{
-		ZeroMemory(mCPUDescriptorHeaps, sizeof(mCPUDescriptorHeaps));
-
 		static const int MaxNoofSRVDescriptors = 4 * 4096;
-
-		mCPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV] = new ER_RHI_DX12_CPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, MaxNoofSRVDescriptors);
-		mCPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_RTV] = new ER_RHI_DX12_CPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 128);
-		mCPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_DSV] = new ER_RHI_DX12_CPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 128);
-		mCPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER] = new ER_RHI_DX12_CPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 16);
 		
 		for (int i = 0; i < DX12_MAX_BACK_BUFFER_COUNT; i++)
 		{
+			ZeroMemory(mCPUDescriptorHeaps[i], sizeof(mCPUDescriptorHeaps[i]));
+			mCPUDescriptorHeaps[i][D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV] = new ER_RHI_DX12_CPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, MaxNoofSRVDescriptors);
+			mCPUDescriptorHeaps[i][D3D12_DESCRIPTOR_HEAP_TYPE_RTV] = new ER_RHI_DX12_CPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 128);
+			mCPUDescriptorHeaps[i][D3D12_DESCRIPTOR_HEAP_TYPE_DSV] = new ER_RHI_DX12_CPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 128);
+			mCPUDescriptorHeaps[i][D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER] = new ER_RHI_DX12_CPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 16);
+			
 			ZeroMemory(mGPUDescriptorHeaps[i], sizeof(mGPUDescriptorHeaps[i]));
 			mGPUDescriptorHeaps[i][D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV] = new ER_RHI_DX12_GPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, MaxNoofSRVDescriptors);
 			mGPUDescriptorHeaps[i][D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER] = new ER_RHI_DX12_GPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 16);
@@ -137,17 +136,19 @@ namespace EveryRay_Core
 
 	ER_RHI_DX12_GPUDescriptorHeapManager::~ER_RHI_DX12_GPUDescriptorHeapManager()
 	{
-		for (int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; i++)
+		for (int j = 0; j < DX12_MAX_BACK_BUFFER_COUNT; j++)
 		{
-			DeleteObject(mCPUDescriptorHeaps[i]);
-			for (int j = 0; j < DX12_MAX_BACK_BUFFER_COUNT; j++)
+			for (int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; i++)
+			{
+				DeleteObject(mCPUDescriptorHeaps[j][i]);
 				DeleteObject(mGPUDescriptorHeaps[j][i]);
+			}
 		}
 	}
 
-	ER_RHI_DX12_DescriptorHandle ER_RHI_DX12_GPUDescriptorHeapManager::CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE heapType)
+	ER_RHI_DX12_DescriptorHandle ER_RHI_DX12_GPUDescriptorHeapManager::CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE heapType, int frameIndex)
 	{
-		return mCPUDescriptorHeaps[heapType]->GetNewHandle();
+		return mCPUDescriptorHeaps[frameIndex >= 0 ? frameIndex : ER_RHI_DX12::mBackBufferIndex][heapType]->GetNewHandle();
 	}
 
 	ER_RHI_DX12_DescriptorHandle ER_RHI_DX12_GPUDescriptorHeapManager::CreateGPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT count)

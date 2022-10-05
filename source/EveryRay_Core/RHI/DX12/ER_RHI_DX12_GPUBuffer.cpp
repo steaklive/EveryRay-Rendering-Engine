@@ -10,8 +10,11 @@ namespace EveryRay_Core
 
 	ER_RHI_DX12_GPUBuffer::~ER_RHI_DX12_GPUBuffer()
 	{
-		if (mBufferUpload && mIsDynamic)
-			mBufferUpload->Unmap(0, nullptr);
+		for (int frameIndex = 0; frameIndex < DX12_MAX_BACK_BUFFER_COUNT; frameIndex++)
+		{
+			if (mBufferUpload[frameIndex] && mIsDynamic)
+				mBufferUpload[frameIndex]->Unmap(0, nullptr);
+		}
 	}
 
 	void ER_RHI_DX12_GPUBuffer::CreateGPUBufferResource(ER_RHI* aRHI, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic /*= false*/, ER_RHI_BIND_FLAG bindFlags /*= 0*/, UINT cpuAccessFlags /*= 0*/, ER_RHI_RESOURCE_MISC_FLAG miscFlags /*= 0*/, ER_RHI_FORMAT format /*= ER_FORMAT_UNKNOWN*/)
@@ -59,26 +62,28 @@ namespace EveryRay_Core
 		if (FAILED(device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE, &desc, aRHIDX12->GetState(mResourceState), nullptr, IID_PPV_ARGS(&mBuffer))))
 			throw ER_CoreException("ER_RHI_DX12: Failed to create committed resource of GPU buffer.");
 		
-		if (FAILED(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&mBufferUpload))))
-			throw ER_CoreException("ER_RHI_DX12: Failed to create committed resource of GPU buffer (upload).");
-
-		if (mIsDynamic)
+		for (int frameIndex = 0; frameIndex < DX12_MAX_BACK_BUFFER_COUNT; frameIndex++)
 		{
-			CD3DX12_RANGE readRange(0, 0);
-			if (FAILED(mBufferUpload->Map(0, &readRange, reinterpret_cast<void**>(&mMappedData))))
-				throw ER_CoreException("ER_RHI_DX12: Failed to map GPU buffer.");
-			memcpy(mMappedData, aData, mSize);
-		}
+			if (FAILED(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&mBufferUpload[frameIndex]))))
+				throw ER_CoreException("ER_RHI_DX12: Failed to create committed resource of GPU buffer (upload).");
 
-		if (bindFlags & ER_RHI_BIND_FLAG::ER_BIND_CONSTANT_BUFFER)
-		{
-			mBufferCBVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			if (mIsDynamic)
+			{
+				CD3DX12_RANGE readRange(0, 0);
+				if (FAILED(mBufferUpload[frameIndex]->Map(0, &readRange, reinterpret_cast<void**>(&mMappedData[frameIndex]))))
+					throw ER_CoreException("ER_RHI_DX12: Failed to map GPU buffer.");
+				memcpy(mMappedData[frameIndex], aData, mSize);
+			}
 
-			D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
-			cbvDesc.BufferLocation = mBufferUpload->GetGPUVirtualAddress();
-			cbvDesc.SizeInBytes = mSize;
-			device->CreateConstantBufferView(&cbvDesc, mBufferCBVHandle.GetCPUHandle());
-			return;
+			if (bindFlags & ER_RHI_BIND_FLAG::ER_BIND_CONSTANT_BUFFER)
+			{
+				mBufferCBVHandle[frameIndex] = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, frameIndex);
+
+				D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
+				cbvDesc.BufferLocation = mBufferUpload[frameIndex]->GetGPUVirtualAddress();
+				cbvDesc.SizeInBytes = mSize;
+				device->CreateConstantBufferView(&cbvDesc, mBufferCBVHandle[frameIndex].GetCPUHandle());
+			}
 		}
 
 		if (!mIsDynamic)
@@ -87,14 +92,14 @@ namespace EveryRay_Core
 		if (bindFlags & ER_BIND_VERTEX_BUFFER)
 		{
 			// Initialize the vertex buffer view.
-			mVertexBufferView.BufferLocation = mBufferUpload->GetGPUVirtualAddress();
+			mVertexBufferView.BufferLocation = mBufferUpload[0]->GetGPUVirtualAddress();
 			mVertexBufferView.StrideInBytes = mStride;
 			mVertexBufferView.SizeInBytes = mSize;
 		}
 
 		if (bindFlags & ER_BIND_INDEX_BUFFER)
 		{
-			mIndexBufferView.BufferLocation = mBufferUpload->GetGPUVirtualAddress();
+			mIndexBufferView.BufferLocation = mBufferUpload[0]->GetGPUVirtualAddress();
 			mIndexBufferView.Format = mFormat;
 			mIndexBufferView.SizeInBytes = mSize;
 		}
@@ -133,10 +138,10 @@ namespace EveryRay_Core
 		assert(aRHI);
 		ER_RHI_DX12* aRHIDX12 = static_cast<ER_RHI_DX12*>(aRHI);
 
-		assert(mBufferUpload);
+		assert(mBufferUpload[ER_RHI_DX12::mBackBufferIndex]);
 		HRESULT hr;
 		CD3DX12_RANGE range(0, 0);
-		if (FAILED(hr = mBufferUpload->Map(0, &range, aOutData)))
+		if (FAILED(hr = mBufferUpload[ER_RHI_DX12::mBackBufferIndex]->Map(0, &range, aOutData)))
 			throw ER_CoreException("ER_RHI_DX12: Failed to map GPU buffer.", hr);
 	}
 
@@ -144,9 +149,9 @@ namespace EveryRay_Core
 	{
 		assert(aRHI);
 		ER_RHI_DX12* aRHIDX12 = static_cast<ER_RHI_DX12*>(aRHI);
-		assert(mBufferUpload);
+		assert(mBufferUpload[ER_RHI_DX12::mBackBufferIndex]);
 
-		mBufferUpload->Unmap(0, nullptr);
+		mBufferUpload[ER_RHI_DX12::mBackBufferIndex]->Unmap(0, nullptr);
 	}
 
 	void ER_RHI_DX12_GPUBuffer::UpdateSubresource(ER_RHI* aRHI, void* aData, int dataSize, int cmdListIndex)
@@ -162,7 +167,7 @@ namespace EveryRay_Core
 		data.SlicePitch = 0;
 
 		aRHIDX12->TransitionResources({ static_cast<ER_RHI_GPUResource*>(this) }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COPY_DEST, cmdListIndex);
-		UpdateSubresources(aRHIDX12->GetGraphicsCommandList(cmdListIndex), mBuffer.Get(), mBufferUpload.Get(), 0, 0, 1, &data);
+		UpdateSubresources(aRHIDX12->GetGraphicsCommandList(cmdListIndex), mBuffer.Get(), mBufferUpload[ER_RHI_DX12::mBackBufferIndex].Get(), 0, 0, 1, &data);
 
 		if (mBindFlags & ER_BIND_CONSTANT_BUFFER || mBindFlags & ER_BIND_VERTEX_BUFFER)
 			aRHIDX12->TransitionResources({ static_cast<ER_RHI_GPUResource*>(this) }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, cmdListIndex);
@@ -181,7 +186,7 @@ namespace EveryRay_Core
 		ID3D12Device* device = aRHIDX12->GetDevice();
 
 		if (mIsDynamic)
-			memcpy(mMappedData, aData, dataSize);
+			memcpy(mMappedData[ER_RHI_DX12::mBackBufferIndex], aData, dataSize);
 		//else
 		//	UpdateSubresource(aRHI, aData, dataSize, aRHIDX12->GetCurrentGraphicsCommandListIndex());
 	}

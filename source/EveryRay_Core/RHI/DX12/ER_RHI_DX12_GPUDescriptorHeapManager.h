@@ -100,7 +100,7 @@ namespace EveryRay_Core
 		ER_RHI_DX12_GPUDescriptorHeapManager(ID3D12Device* device);
 		~ER_RHI_DX12_GPUDescriptorHeapManager();
 
-		ER_RHI_DX12_DescriptorHandle CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE heapType);
+		ER_RHI_DX12_DescriptorHandle CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE heapType, int frameIndex = -1);
 		ER_RHI_DX12_DescriptorHandle CreateGPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT count);
 
 		ER_RHI_DX12_GPUDescriptorHeap* GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType)
@@ -109,7 +109,7 @@ namespace EveryRay_Core
 		}
 
 	private:
-		ER_RHI_DX12_CPUDescriptorHeap* mCPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
+		ER_RHI_DX12_CPUDescriptorHeap* mCPUDescriptorHeaps[DX12_MAX_BACK_BUFFER_COUNT][D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
 		ER_RHI_DX12_GPUDescriptorHeap* mGPUDescriptorHeaps[DX12_MAX_BACK_BUFFER_COUNT][D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
 
 	};

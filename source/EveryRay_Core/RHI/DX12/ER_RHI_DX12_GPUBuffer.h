@@ -26,7 +26,7 @@ namespace EveryRay_Core
 
 		ER_RHI_DX12_DescriptorHandle& GetUAVDescriptorHandle() { return mBufferUAVHandle; }
 		ER_RHI_DX12_DescriptorHandle& GetSRVDescriptorHandle() { return mBufferSRVHandle; }
-		ER_RHI_DX12_DescriptorHandle& GetCBVDescriptorHandle() { return mBufferCBVHandle; }
+		ER_RHI_DX12_DescriptorHandle& GetCBVDescriptorHandle() { return mBufferCBVHandle[ER_RHI_DX12::mBackBufferIndex]; }
 		
 		D3D12_VERTEX_BUFFER_VIEW& GetVertexBufferView() { return mVertexBufferView; }
 		D3D12_INDEX_BUFFER_VIEW& GetIndexBufferView() { return mIndexBufferView; }
@@ -38,11 +38,11 @@ namespace EveryRay_Core
 	private:
 		void UpdateSubresource(ER_RHI* aRHI, void* aData, int aSize, int cmdListIndex);
 		ComPtr<ID3D12Resource> mBuffer;
-		ComPtr<ID3D12Resource> mBufferUpload;
+		ComPtr<ID3D12Resource> mBufferUpload[DX12_MAX_BACK_BUFFER_COUNT];
 
 		ER_RHI_DX12_DescriptorHandle mBufferUAVHandle;
 		ER_RHI_DX12_DescriptorHandle mBufferSRVHandle;
-		ER_RHI_DX12_DescriptorHandle mBufferCBVHandle;
+		ER_RHI_DX12_DescriptorHandle mBufferCBVHandle[DX12_MAX_BACK_BUFFER_COUNT];
 
 		DXGI_FORMAT mFormat;
 		ER_RHI_FORMAT mRHIFormat;
@@ -58,7 +58,7 @@ namespace EveryRay_Core
 		D3D12_HEAP_TYPE mHeapType = D3D12_HEAP_TYPE_DEFAULT;
 
 		ER_RHI_BIND_FLAG mBindFlags;
-		unsigned char* mMappedData;
+		unsigned char* mMappedData[DX12_MAX_BACK_BUFFER_COUNT];
 		bool mIsDynamic = false;
 	};
 }
