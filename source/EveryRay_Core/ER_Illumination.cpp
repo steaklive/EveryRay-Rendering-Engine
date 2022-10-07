@@ -798,6 +798,23 @@ namespace EveryRay_Core {
 			obj.second->Draw(ER_MaterialHelper::forwardLightingNonMaterialName);
 
 		rhi->UnsetPSO();
+
+		auto scene = mCore->GetLevel()->mScene;
+		assert(scene);
+		// Passes for all other materials (which are called "standard") that are rendered in "Forward" way into local illumination RT.
+		// This can be used for all kinds of materials that are layered onto each other (transparent ones can also be rendered here).
+		// TODO: We'd better render objects in batches per material in order to reduce SetRootSignature()/SetPSO() calls etc. Code below is not optimal
+		for (auto& it = scene->objects.begin(); it != scene->objects.end(); it++)
+		{
+			for (auto& mat : it->second->GetMaterials())
+			{
+				if (mat.second->IsStandard())
+				{
+					it->second->Draw(mat.first);
+					rhi->UnsetPSO();
+				}
+			}
+		}
 	}
 
 	void ER_Illumination::PreparePipelineForForwardLighting(ER_RenderingObject* aObj)

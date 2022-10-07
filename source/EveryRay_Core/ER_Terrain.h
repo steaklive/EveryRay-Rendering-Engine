@@ -181,11 +181,14 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mDS_ShadowMap = nullptr;
 		ER_RHI_GPUShader* mPS_ShadowMap = nullptr;
 		std::string mTerrainShadowPassPSOName = "Terrain - Shadow Pass PSO";
+
 		ER_RHI_GPUShader* mPS_GBuffer = nullptr;
 		std::string mTerrainGBufferPassPSOName = "Terrain - GBuffer Pass PSO";
 
 		ER_RHI_GPUShader* mPlaceOnTerrainCS = nullptr;
 		std::string mTerrainPlacementPassPSOName = "Terrain - Placement Pass PSO";
+		ER_RHI_GPURootSignature* mTerrainPlacementPassRS = nullptr;
+		ER_RHI_GPURootSignature* mTerrainCommonPassRS = nullptr;
 
 		ER_RHI_GPUBuffer* mTerrainTilesDataGPU = nullptr;
 		ER_RHI_GPUTexture* mTerrainTilesHeightmapsArrayTexture = nullptr;

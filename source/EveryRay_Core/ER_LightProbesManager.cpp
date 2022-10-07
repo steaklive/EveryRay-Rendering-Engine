@@ -251,7 +251,8 @@ namespace EveryRay_Core
 			mDiffuseProbeRenderingObject->AddInstanceData(worldT);
 		}
 		mDiffuseProbeRenderingObject->UpdateInstanceBuffer(mDiffuseProbeRenderingObject->GetInstancesData());
-		std::sort(scene->objects.begin(), scene->objects.end(), [](const ER_SceneObject& obj1, const ER_SceneObject& obj2) { return obj1.second->IsInstanced();	});
+		std::partition(scene->objects.begin(), scene->objects.end(), [](const ER_SceneObject& obj) {	return obj.second->IsInstanced(); });
+
 	}
 
 	void ER_LightProbesManager::SetupSpecularProbes(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper)
@@ -374,7 +375,7 @@ namespace EveryRay_Core
 			mSpecularProbeRenderingObject->AddInstanceData(worldT);
 		}
 		mSpecularProbeRenderingObject->UpdateInstanceBuffer(mSpecularProbeRenderingObject->GetInstancesData());
-		std::sort(scene->objects.begin(), scene->objects.end(), [](const ER_SceneObject& obj1, const ER_SceneObject& obj2) { return obj1.second->IsInstanced();	});
+		std::partition(scene->objects.begin(), scene->objects.end(), [](const ER_SceneObject& obj) {	return obj.second->IsInstanced(); });
 
 		mSpecularCubemapArrayRT = rhi->CreateGPUTexture();
 		mSpecularCubemapArrayRT->CreateGPUTextureResource(rhi, SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true, mMaxSpecularProbesInVolumeCount);

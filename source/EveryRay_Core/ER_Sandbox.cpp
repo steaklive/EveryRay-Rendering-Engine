@@ -58,6 +58,7 @@ namespace EveryRay_Core {
 		assert(rhi);
 
 		rhi->BeginGraphicsCommandList(rhi->GetPrepareGraphicsCommandListIndex()); // for texture loading etc. (everything before the first frame starts)
+		rhi->SetGPUDescriptorHeap(ER_RHI_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
 
 		#pragma region INIT_SCENE
 		game.CPUProfiler()->BeginCPUTime("Scene init: " + sceneName);
@@ -311,37 +312,18 @@ namespace EveryRay_Core {
 		}
 #pragma endregion
 
-		#pragma region DRAW_VOLUMETRIC_FOG
-		mVolumetricFog->Draw();
-#pragma endregion
-
 		#pragma region DRAW_LOCAL_ILLUMINATION
 		
 		mIllumination->DrawLocalIllumination(mGBuffer, mSkybox);
 		ER_RHI_GPUTexture* localRT = mIllumination->GetLocalIlluminationRT();
-
-		#pragma region DRAW_STANDARD_MATERIALS
-		// Passes for all other materials (which are called "standard") that are rendered in "Forward" way into local illumination RT.
-		// This can be used for all kinds of materials that are layered onto each other (transparent ones can also be rendered here).
-		// TODO: We'd better render objects in batches per material in order to reduce SetRootSignature()/SetPSO() calls etc. Code below is not optimal
-		for (auto& it = mScene->objects.begin(); it != mScene->objects.end(); it++)
-		{
-			for (auto& mat : it->second->GetMaterials())
-			{
-				if (mat.second->IsStandard())
-				{
-					it->second->Draw(mat.first);
-					rhi->UnsetPSO();
-				}
-			}
-		}
-#pragma endregion
 
 //		Terrain rendering is now in deferred; uncomment code below if you want to render in forward
 //		#pragma region DRAW_TERRAIN_FORWARD
 //		if (mTerrain)
 //			mTerrain->Draw(TerrainRenderPass::FORWARD, localRT, mShadowMapper, mLightProbesManager);
 //		#pragma endregion
+
+#pragma endregion
 
 		#pragma region DRAW_DEBUG_GIZMOS
 		// TODO: consider moving all debug gizmos to a separate debug renderer system
@@ -363,11 +345,13 @@ namespace EveryRay_Core {
 			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		}
 #pragma endregion
-
-#pragma endregion
 		
 		// combine the results of local and global illumination
 		mIllumination->CompositeTotalIllumination();
+
+		#pragma region DRAW_VOLUMETRIC_FOG
+		mVolumetricFog->Draw();
+#pragma endregion
 
 		#pragma region DRAW_VOLUMETRIC_CLOUDS
 		mVolumetricClouds->Draw(gameTime);

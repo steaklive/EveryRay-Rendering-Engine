@@ -20,6 +20,14 @@
 #define USE_RAYCASTING_FOR_ON_TERRAIN_PLACEMENT 0
 #define MAX_TERRAIN_TILE_COUNT 256
 
+#define PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
+#define PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX 1
+#define PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 2
+
+//used for gbuffer, shadows, forward
+#define TERRAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0 
+#define TERRAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 1
+
 namespace EveryRay_Core
 {
 	ER_Terrain::ER_Terrain(ER_Core& pCore, ER_DirectionalLight& light) :
@@ -63,6 +71,30 @@ namespace EveryRay_Core
 			mPlaceOnTerrainCS->CompileShader(rhi, "content\\shaders\\Terrain\\PlaceObjectsOnTerrain.hlsl", "CSMain", ER_COMPUTE);
 		}
 
+		// root signatures
+		{ 
+			mTerrainCommonPassRS = rhi->CreateRootSignature(2, 3);
+			if (mTerrainCommonPassRS)
+			{
+				mTerrainCommonPassRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP);
+				mTerrainCommonPassRS->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP);
+				mTerrainCommonPassRS->InitStaticSampler(rhi, 2, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS);
+				mTerrainCommonPassRS->InitDescriptorTable(rhi, TERRAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 19 });
+				mTerrainCommonPassRS->InitDescriptorTable(rhi, TERRAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 });
+				mTerrainCommonPassRS->Finalize(rhi, "Terrain Common Pass Root Signature", true);
+			}
+
+			mTerrainPlacementPassRS = rhi->CreateRootSignature(3, 2);
+			if (mTerrainPlacementPassRS)
+			{
+				mTerrainPlacementPassRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_BILINEAR_CLAMP);
+				mTerrainPlacementPassRS->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP);
+				mTerrainPlacementPassRS->InitDescriptorTable(rhi, PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 3 });
+				mTerrainPlacementPassRS->InitDescriptorTable(rhi, PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 });
+				mTerrainPlacementPassRS->InitDescriptorTable(rhi, PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 });
+				mTerrainPlacementPassRS->Finalize(rhi, "Terrain Placement Pass Root Signature");
+			}
+		}
 		mTerrainConstantBuffer.Initialize(rhi);
 		mPlaceOnTerrainConstantBuffer.Initialize(rhi);
 	}
@@ -85,6 +117,8 @@ namespace EveryRay_Core
 		DeleteObject(mTerrainTilesDataGPU);
 		DeleteObject(mTerrainTilesHeightmapsArrayTexture);
 		DeleteObject(mTerrainTilesSplatmapsArrayTexture);
+		DeleteObject(mTerrainCommonPassRS);
+		DeleteObject(mTerrainPlacementPassRS);
 		mTerrainConstantBuffer.Release();
 		mPlaceOnTerrainConstantBuffer.Release();
 	}
@@ -490,95 +524,22 @@ namespace EveryRay_Core
 
 		ER_RHI_PRIMITIVE_TYPE originalPrimitiveTopology = rhi->GetCurrentTopologyType();
 
+		ER_RHI_GPURootSignature* rootSig = mTerrainCommonPassRS;
+		std::string& psoName = mTerrainMainPassPSOName;
+		if (aPass == TERRAIN_SHADOW)
+			psoName = mTerrainShadowPassPSOName;
+		else if (aPass == TERRAIN_GBUFFER)
+			psoName = mTerrainGBufferPassPSOName;
+
+		rhi->SetRootSignature(rootSig);
 		rhi->SetVertexBuffers({ mHeightMaps[tileIndex]->mVertexBufferTS });
 
-		if (worldShadowMapper && aPass != TerrainRenderPass::TERRAIN_GBUFFER)
-		{
-			for (int cascade = 0; cascade < NUM_SHADOW_CASCADES; cascade++)
-				mTerrainConstantBuffer.Data.ShadowMatrices[cascade] = XMMatrixTranspose(worldShadowMapper->GetViewMatrix(cascade) * worldShadowMapper->GetProjectionMatrix(cascade) * XMLoadFloat4x4(&ER_MatrixHelper::GetProjectionShadowMatrix()));
-			mTerrainConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / worldShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
-			mTerrainConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ camera->GetCameraFarShadowCascadeDistance(0), camera->GetCameraFarShadowCascadeDistance(1), camera->GetCameraFarShadowCascadeDistance(2), 1.0f };
-			
-			if (shadowMapCascade != -1)
-			{
-				XMMATRIX lvp = worldShadowMapper->GetViewMatrix(shadowMapCascade) * worldShadowMapper->GetProjectionMatrix(shadowMapCascade);
-				mTerrainConstantBuffer.Data.WorldLightViewProjection = XMMatrixTranspose(mHeightMaps[tileIndex]->mWorldMatrixTS * lvp);
-			}
-		}
-
-		mTerrainConstantBuffer.Data.World = XMMatrixTranspose(mHeightMaps[tileIndex]->mWorldMatrixTS);
-		mTerrainConstantBuffer.Data.View = XMMatrixTranspose(camera->ViewMatrix());
-		mTerrainConstantBuffer.Data.Projection = XMMatrixTranspose(camera->ProjectionMatrix());
-		mTerrainConstantBuffer.Data.SunDirection = XMFLOAT4(-mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f);
-		mTerrainConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLight.GetDirectionalLightIntensity() };
-		mTerrainConstantBuffer.Data.CameraPosition = XMFLOAT4(camera->Position().x, camera->Position().y, camera->Position().z, 1.0f);
-		mTerrainConstantBuffer.Data.TessellationFactor = static_cast<float>(mTessellationFactor);
-		mTerrainConstantBuffer.Data.TerrainHeightScale = mTerrainTessellatedHeightScale;
-		mTerrainConstantBuffer.Data.TessellationFactorDynamic = static_cast<float>(mTessellationFactorDynamic);
-		mTerrainConstantBuffer.Data.UseDynamicTessellation = mUseDynamicTessellation ? 1.0f : 0.0f;
-		mTerrainConstantBuffer.Data.DistanceFactor = mTessellationDistanceFactor;
-		mTerrainConstantBuffer.Data.TileSize = mTileResolution * mTileScale;
-		mTerrainConstantBuffer.ApplyChanges(rhi);
-
-		rhi->SetConstantBuffers(ER_VERTEX, { mTerrainConstantBuffer.Buffer() });
-		rhi->SetConstantBuffers(ER_TESSELLATION_HULL, { mTerrainConstantBuffer.Buffer() });
-		rhi->SetConstantBuffers(ER_TESSELLATION_DOMAIN, { mTerrainConstantBuffer.Buffer() });
-		rhi->SetConstantBuffers(ER_PIXEL, { mTerrainConstantBuffer.Buffer() });
-
-		if (worldShadowMapper && (aPass == TerrainRenderPass::TERRAIN_FORWARD || aPass == TerrainRenderPass::TERRAIN_GBUFFER))
-		{
-			std::vector<ER_RHI_GPUResource*> resources(5 + NUM_SHADOW_CASCADES);
-			resources[0] = mHeightMaps[tileIndex]->mSplatTexture;
-			resources[1] = mSplatChannelTextures[0];
-			resources[2] = mSplatChannelTextures[1];
-			resources[3] = mSplatChannelTextures[2];
-			resources[4] = mSplatChannelTextures[3];
-
-			if (aPass == TerrainRenderPass::TERRAIN_FORWARD)
-			{
-				for (int c = 0; c < NUM_SHADOW_CASCADES; c++)
-					resources[5 + c] = worldShadowMapper->GetShadowTexture(c);
-			}
-
-			rhi->SetShaderResources(ER_TESSELLATION_DOMAIN, resources);
-			rhi->SetShaderResources(ER_PIXEL, resources);
-		}
-		else
-		{
-			std::vector<ER_RHI_GPUResource*> resources(5);
-			resources[0] = mHeightMaps[tileIndex]->mSplatTexture;
-			resources[1] = mSplatChannelTextures[0];
-			resources[2] = mSplatChannelTextures[1];
-			resources[3] = mSplatChannelTextures[2];
-			resources[4] = mSplatChannelTextures[3];
-
-			rhi->SetShaderResources(ER_TESSELLATION_DOMAIN, resources);
-			rhi->SetShaderResources(ER_PIXEL, resources);
-		}
-
-		if (probeManager && probeManager->AreGlobalProbesReady())
-		{
-			rhi->SetShaderResources(ER_TESSELLATION_DOMAIN, { probeManager->GetGlobalDiffuseProbe()->GetCubemapTexture()}, 8);
-			rhi->SetShaderResources(ER_TESSELLATION_DOMAIN, { probeManager->GetGlobalSpecularProbe()->GetCubemapTexture() }, 12);
-			rhi->SetShaderResources(ER_TESSELLATION_DOMAIN, { probeManager->GetIntegrationMap() }, 17);
-
-			rhi->SetShaderResources(ER_PIXEL, { probeManager->GetGlobalDiffuseProbe()->GetCubemapTexture() }, 8);
-			rhi->SetShaderResources(ER_PIXEL, { probeManager->GetGlobalSpecularProbe()->GetCubemapTexture() }, 12);
-			rhi->SetShaderResources(ER_PIXEL, { probeManager->GetIntegrationMap() }, 17);
-		}
-
-		rhi->SetShaderResources(ER_TESSELLATION_DOMAIN, { mHeightMaps[tileIndex]->mHeightTexture }, 18);
-		rhi->SetShaderResources(ER_PIXEL, { mHeightMaps[tileIndex]->mHeightTexture }, 18);
-
-		rhi->SetSamplers(ER_TESSELLATION_DOMAIN, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
-		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
-
-		std::string& psoName = aPass == TerrainRenderPass::TERRAIN_SHADOW ? mTerrainShadowPassPSOName : mTerrainShadowPassPSOName;
 		if (!rhi->IsPSOReady(psoName))
 		{
 			rhi->InitializePSO(psoName);
 			rhi->SetShader(mVS);
 			rhi->SetShader(mHS);
+			rhi->SetRootSignatureToPSO(psoName, rootSig);
 			if (aPass == TerrainRenderPass::TERRAIN_SHADOW)
 			{
 				rhi->SetShader(mDS_ShadowMap);
@@ -602,6 +563,72 @@ namespace EveryRay_Core
 			rhi->FinalizePSO(psoName);
 		}
 		rhi->SetPSO(psoName);
+		
+		//set shader resources
+		{
+			if (worldShadowMapper && aPass != TerrainRenderPass::TERRAIN_GBUFFER)
+			{
+				for (int cascade = 0; cascade < NUM_SHADOW_CASCADES; cascade++)
+					mTerrainConstantBuffer.Data.ShadowMatrices[cascade] = XMMatrixTranspose(worldShadowMapper->GetViewMatrix(cascade) * worldShadowMapper->GetProjectionMatrix(cascade) * XMLoadFloat4x4(&ER_MatrixHelper::GetProjectionShadowMatrix()));
+				mTerrainConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / worldShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
+				mTerrainConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ camera->GetCameraFarShadowCascadeDistance(0), camera->GetCameraFarShadowCascadeDistance(1), camera->GetCameraFarShadowCascadeDistance(2), 1.0f };
+
+				if (shadowMapCascade != -1)
+				{
+					XMMATRIX lvp = worldShadowMapper->GetViewMatrix(shadowMapCascade) * worldShadowMapper->GetProjectionMatrix(shadowMapCascade);
+					mTerrainConstantBuffer.Data.WorldLightViewProjection = XMMatrixTranspose(mHeightMaps[tileIndex]->mWorldMatrixTS * lvp);
+				}
+			}
+
+			mTerrainConstantBuffer.Data.World = XMMatrixTranspose(mHeightMaps[tileIndex]->mWorldMatrixTS);
+			mTerrainConstantBuffer.Data.View = XMMatrixTranspose(camera->ViewMatrix());
+			mTerrainConstantBuffer.Data.Projection = XMMatrixTranspose(camera->ProjectionMatrix());
+			mTerrainConstantBuffer.Data.SunDirection = XMFLOAT4(-mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f);
+			mTerrainConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLight.GetDirectionalLightIntensity() };
+			mTerrainConstantBuffer.Data.CameraPosition = XMFLOAT4(camera->Position().x, camera->Position().y, camera->Position().z, 1.0f);
+			mTerrainConstantBuffer.Data.TessellationFactor = static_cast<float>(mTessellationFactor);
+			mTerrainConstantBuffer.Data.TerrainHeightScale = mTerrainTessellatedHeightScale;
+			mTerrainConstantBuffer.Data.TessellationFactorDynamic = static_cast<float>(mTessellationFactorDynamic);
+			mTerrainConstantBuffer.Data.UseDynamicTessellation = mUseDynamicTessellation ? 1.0f : 0.0f;
+			mTerrainConstantBuffer.Data.DistanceFactor = mTessellationDistanceFactor;
+			mTerrainConstantBuffer.Data.TileSize = mTileResolution * mTileScale;
+			mTerrainConstantBuffer.ApplyChanges(rhi);
+
+			rhi->SetConstantBuffers(ER_VERTEX, { mTerrainConstantBuffer.Buffer() }, 0, rootSig, TERRAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+			rhi->SetConstantBuffers(ER_TESSELLATION_HULL, { mTerrainConstantBuffer.Buffer() }, 0, rootSig, TERRAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+			rhi->SetConstantBuffers(ER_TESSELLATION_DOMAIN, { mTerrainConstantBuffer.Buffer() }, 0, rootSig, TERRAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+			rhi->SetConstantBuffers(ER_PIXEL, { mTerrainConstantBuffer.Buffer() }, 0, rootSig, TERRAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+
+			std::vector<ER_RHI_GPUResource*> resources(19);
+			resources[0] = mHeightMaps[tileIndex]->mSplatTexture;
+			resources[1] = mSplatChannelTextures[0];
+			resources[2] = mSplatChannelTextures[1];
+			resources[3] = mSplatChannelTextures[2];
+			resources[4] = mSplatChannelTextures[3];
+			if (aPass == TerrainRenderPass::TERRAIN_FORWARD)
+			{
+				if (worldShadowMapper)
+				{
+					for (int c = 0; c < NUM_SHADOW_CASCADES; c++)
+						resources[5 + c] = worldShadowMapper->GetShadowTexture(c);
+				}
+
+				if (probeManager && probeManager->AreGlobalProbesReady())
+				{
+					resources[8] = probeManager->GetGlobalDiffuseProbe()->GetCubemapTexture();
+					resources[12] = probeManager->GetGlobalSpecularProbe()->GetCubemapTexture();
+					resources[17] = probeManager->GetIntegrationMap();
+				}
+			}
+			resources[18] = mHeightMaps[tileIndex]->mHeightTexture;
+
+			rhi->SetShaderResources(ER_RHI_SHADER_TYPE::ER_TESSELLATION_DOMAIN, resources, 0, rootSig, TERRAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
+			rhi->SetShaderResources(ER_RHI_SHADER_TYPE::ER_PIXEL, resources, 0, rootSig, TERRAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
+
+			rhi->SetSamplers(ER_TESSELLATION_DOMAIN, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
+			rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
+		}
+		
 		// TODO: bring back wireframe support (needs a new PSO)
 		//if (mIsWireframe)
 		//{
@@ -611,6 +638,7 @@ namespace EveryRay_Core
 		//}
 		//else
 			rhi->Draw(NUM_TERRAIN_PATCHES_PER_TILE * NUM_TERRAIN_PATCHES_PER_TILE);
+		
 		rhi->UnsetPSO();
 
 		//reset back
@@ -923,32 +951,41 @@ namespace EveryRay_Core
 		terrainBuffer->CreateGPUBufferResource(rhi, terrainVertices, terrainVertexCount, sizeof(XMFLOAT4), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 #endif
 		ER_RHI_GPUBuffer* posBuffer = rhi->CreateGPUBuffer();
-		posBuffer->CreateGPUBufferResource(rhi, positions, positionsCount, sizeof(XMFLOAT4), false, ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
+		posBuffer->CreateGPUBufferResource(rhi, positions, positionsCount, sizeof(XMFLOAT4), false, ER_BIND_UNORDERED_ACCESS, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 		ER_RHI_GPUBuffer* outputPosBuffer = rhi->CreateGPUBuffer();
-		outputPosBuffer->CreateGPUBufferResource(rhi, positions, positionsCount, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
+		outputPosBuffer->CreateGPUBufferResource(rhi, positions, positionsCount, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L /*legacy from DX11*/, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
 
-
+		rhi->SetRootSignature(mTerrainPlacementPassRS, true);		
+		if (!rhi->IsPSOReady(mTerrainPlacementPassPSOName, true))
+		{
+			rhi->InitializePSO(mTerrainPlacementPassPSOName, true);
+			rhi->SetRootSignatureToPSO(mTerrainPlacementPassPSOName, mTerrainPlacementPassRS, true);
+			rhi->SetShader(mPlaceOnTerrainCS);
+			rhi->FinalizePSO(mTerrainPlacementPassPSOName, true);
+		}
+		rhi->SetPSO(mTerrainPlacementPassPSOName, true);
 		mPlaceOnTerrainConstantBuffer.Data.HeightScale = mTerrainTessellatedHeightScale;
 		mPlaceOnTerrainConstantBuffer.Data.SplatChannel = splatChannel == TerrainSplatChannels::NONE ? -1.0f : static_cast<float>(splatChannel);
 		mPlaceOnTerrainConstantBuffer.Data.TerrainTileCount = static_cast<int>(mNumTiles);
 		mPlaceOnTerrainConstantBuffer.Data.PlacementHeightDelta = mPlacementHeightDelta;
 		mPlaceOnTerrainConstantBuffer.ApplyChanges(rhi);
-		rhi->SetConstantBuffers(ER_COMPUTE, { mPlaceOnTerrainConstantBuffer.Buffer() });
+		rhi->SetConstantBuffers(ER_COMPUTE, { mPlaceOnTerrainConstantBuffer.Buffer() }, 0,
+			mTerrainPlacementPassRS, PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
+		rhi->SetShaderResources(ER_COMPUTE, { mTerrainTilesDataGPU, mTerrainTilesHeightmapsArrayTexture, mTerrainTilesSplatmapsArrayTexture }, 0,
+			mTerrainPlacementPassRS, PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
+		rhi->SetUnorderedAccessResources(ER_COMPUTE, { posBuffer }, 0,
+			mTerrainPlacementPassRS, PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
 		rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_BILINEAR_CLAMP, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
-		rhi->SetShaderResources(ER_COMPUTE, { mTerrainTilesDataGPU, terrainBuffer, mTerrainTilesHeightmapsArrayTexture, mTerrainTilesSplatmapsArrayTexture });
-		rhi->SetUnorderedAccessResources(ER_COMPUTE, {posBuffer});
-		
-		if (!rhi->IsPSOReady(mTerrainPlacementPassPSOName, true))
-		{
-			rhi->InitializePSO(mTerrainPlacementPassPSOName, true);
-			rhi->SetShader(mPlaceOnTerrainCS);
-			rhi->FinalizePSO(mTerrainPlacementPassPSOName, true);
-		}
-		rhi->SetPSO(mTerrainPlacementPassPSOName, true);
-		rhi->Dispatch(512, 1, 1);
+		rhi->Dispatch(1024, 1, 1);
+		rhi->UnsetPSO();
 
-		// read results
-		rhi->CopyBuffer(outputPosBuffer, posBuffer);
+		// Read-back (GPU to CPU) new positions from placement compute pass
+		// WARNING: we are doing that in a current frame and waiting when GPU is finished => this produces a stall
+		// Ideally we should do that in async (on modern APIs) or read back on CPU in the next frame
+		rhi->BeginCopyCommandList();
+		rhi->CopyBuffer(outputPosBuffer, posBuffer, 0, true);
+		rhi->EndCopyCommandList();
+		rhi->ExecuteCopyCommandList(); // it will wait for GPU on a copy fence in this method, too
 
 		void* outputData = nullptr;
 		rhi->BeginBufferRead(outputPosBuffer, &outputData);

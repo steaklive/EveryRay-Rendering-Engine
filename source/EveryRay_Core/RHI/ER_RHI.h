@@ -272,6 +272,9 @@ namespace EveryRay_Core
 		virtual void BeginComputeCommandList(int index = 0) = 0;
 		virtual void EndComputeCommandList(int index = 0) = 0;
 
+		virtual void BeginCopyCommandList(int index = 0) = 0;
+		virtual void EndCopyCommandList(int index = 0) = 0;
+
 		virtual void ClearMainRenderTarget(float colors[4]) = 0;
 		virtual void ClearMainDepthStencilTarget(float depth, UINT stencil = 0) = 0;
 		virtual void ClearRenderTarget(ER_RHI_GPUTexture* aRenderTarget, float colors[4], int rtvArrayIndex = -1) = 0;
@@ -290,7 +293,7 @@ namespace EveryRay_Core
 		virtual void CreateTexture(ER_RHI_GPUTexture* aOutTexture, const std::wstring& aPath, bool isFullPath = false) = 0;
 
 		virtual void CreateBuffer(ER_RHI_GPUBuffer* aOutBuffer, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic = false, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, ER_RHI_RESOURCE_MISC_FLAG miscFlags = ER_RESOURCE_MISC_NONE, ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN) = 0;
-		virtual void CopyBuffer(ER_RHI_GPUBuffer* aDestBuffer, ER_RHI_GPUBuffer* aSrcBuffer) = 0;
+		virtual void CopyBuffer(ER_RHI_GPUBuffer* aDestBuffer, ER_RHI_GPUBuffer* aSrcBuffer, int cmdListIndex, bool isInCopyQueue = false) = 0;
 		virtual void BeginBufferRead(ER_RHI_GPUBuffer* aBuffer, void** output) = 0;
 		virtual void EndBufferRead(ER_RHI_GPUBuffer* aBuffer) = 0;
 
@@ -308,6 +311,7 @@ namespace EveryRay_Core
 		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture) = 0; // not every API supports that!
 
 		virtual void ExecuteCommandLists(int commandListIndex = 0, bool isCompute = false) = 0;
+		virtual void ExecuteCopyCommandList() = 0;
 
 		virtual void PresentGraphics() = 0;
 		virtual void PresentCompute() = 0;
@@ -360,12 +364,8 @@ namespace EveryRay_Core
 		virtual void SetGPUDescriptorHeap(ER_RHI_DESCRIPTOR_HEAP_TYPE aType, bool aReset) = 0;
 		virtual void SetGPUDescriptorHeapImGui(int cmdListIndex) = 0;
 
-		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0) = 0;
-		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0) = 0;
-		virtual void TransitionResources(const std::vector<ER_RHI_GPUTexture*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0) = 0;
-		virtual void TransitionResources(const std::vector<ER_RHI_GPUTexture*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0) = 0;
-		virtual void TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0) = 0;
-		virtual void TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0) = 0;
+		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0, bool isCopyQueue = false) = 0;
+		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0, bool isCopyQueue = false) = 0;
 		virtual void TransitionMainRenderTargetToPresent(int cmdListIndex = 0) = 0;
 
 		virtual bool IsPSOReady(const std::string& aName, bool isCompute = false) = 0;

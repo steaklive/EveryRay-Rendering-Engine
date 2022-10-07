@@ -21,7 +21,7 @@ namespace EveryRay_Core
 
 	ER_RHI_DX12::~ER_RHI_DX12()
 	{
-		WaitForGpu();
+		WaitForGpuOnGraphicsFence();
 		DeleteObject(mDescriptorHeapManager);
 	}
 
@@ -92,6 +92,38 @@ namespace EveryRay_Core
 		else
 			mIsRaytracingTierAvailable = false;
 
+
+		// Create copy command queue data
+		{
+			D3D12_COMMAND_QUEUE_DESC queueDesc = {};
+			queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE; //maybe use D3D12_COMMAND_QUEUE_FLAG_DISABLE_GPU_TIMEOUT
+			queueDesc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
+
+			if (FAILED(mDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(mCommandQueueCopy.ReleaseAndGetAddressOf()))))
+				throw ER_CoreException("ER_RHI_DX12: Could not create copy command queue");
+
+			// Create a command allocator
+			if (FAILED(mDevice->CreateCommandAllocator(queueDesc.Type, IID_PPV_ARGS(mCommandAllocatorCopy.ReleaseAndGetAddressOf()))))
+				throw ER_CoreException("ER_RHI_DX12: Could not create copy command allocator");
+			
+			if (FAILED(mDevice->CreateCommandList(0, queueDesc.Type, mCommandAllocatorCopy.Get(), nullptr, IID_PPV_ARGS(mCommandListCopy.ReleaseAndGetAddressOf()))))
+				throw ER_CoreException("ER_RHI_DX12: Could not create copy command list");
+
+			mCommandListCopy->Close();
+
+			// fences
+			{
+				// Create a fence for tracking GPU execution progress.
+				if (FAILED(mDevice->CreateFence(mFenceValuesCopy, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(mFenceCopy.ReleaseAndGetAddressOf()))))
+					throw ER_CoreException("ER_RHI_DX12: Could not create copy fence");
+
+				mFenceValuesCopy++;
+				mFenceEventCopy.Attach(CreateEventEx(nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE));
+				if (!mFenceEventCopy.IsValid())
+					throw ER_CoreException("ER_RHI_DX12: Could not create event for copy fence");
+				mFenceCopy->SetName(L"ER_RHI_DX12: Copy fence");
+			}
+		}
 		// Create graphics command queue data
 		{
 			D3D12_COMMAND_QUEUE_DESC queueDesc = {};
@@ -143,6 +175,20 @@ namespace EveryRay_Core
 					}
 				}
 			}
+
+			// fences
+			{
+				// Create a fence for tracking GPU execution progress.
+				if (FAILED(mDevice->CreateFence(mFenceValuesGraphics[mBackBufferIndex], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(mFenceGraphics.ReleaseAndGetAddressOf()))))
+					throw ER_CoreException("ER_RHI_DX12: Could not create main graphics fence");
+
+				mFenceValuesGraphics[mBackBufferIndex]++;
+				mFenceEventGraphics.Attach(CreateEventEx(nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE));
+				if (!mFenceEventGraphics.IsValid())
+					throw ER_CoreException("ER_RHI_DX12: Could not create event for main graphics fence");
+				mFenceGraphics->SetName(L"ER_RHI_DX12: Graphics fence (main)");
+
+			}
 		}
 
 		//TODO create compute queue data 
@@ -150,21 +196,7 @@ namespace EveryRay_Core
 			//...
 		}
 
-		// fences
-		{
-			// Create a fence for tracking GPU execution progress.
-			if (FAILED(mDevice->CreateFence(mFenceValuesGraphics[mBackBufferIndex], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(mFenceGraphics.ReleaseAndGetAddressOf()))))
-				throw ER_CoreException("ER_RHI_DX12: Could not create main graphics fence");
-
-			mFenceValuesGraphics[mBackBufferIndex]++;
-			mFenceEventGraphics.Attach(CreateEventEx(nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE));
-			if (!mFenceEventGraphics.IsValid())
-				throw ER_CoreException("ER_RHI_DX12: Could not create event for main graphics fence");
-			mFenceGraphics->SetName(L"ER_RHI_DX12: Graphics fence (main)");
-
-		}
-
-		WaitForGpu();
+		WaitForGpuOnGraphicsFence();
 
 		// Create swapchain, main rtv, main dsv
 		{
@@ -232,7 +264,7 @@ namespace EveryRay_Core
 		return true;
 	}
 
-	void ER_RHI_DX12::WaitForGpu()
+	void ER_RHI_DX12::WaitForGpuOnGraphicsFence()
 	{
 		if (mCommandQueueGraphics && mFenceGraphics && mFenceEventGraphics.IsValid())
 		{
@@ -247,6 +279,26 @@ namespace EveryRay_Core
 
 					// Increment the fence value for the current frame.
 					mFenceValuesGraphics[mBackBufferIndex]++;
+				}
+			}
+		}
+	}
+
+	void ER_RHI_DX12::WaitForGpuOnCopyFence()
+	{
+		if (mCommandQueueCopy && mFenceCopy && mFenceEventCopy.IsValid())
+		{
+			// Schedule a Signal command in the GPU queue.
+			UINT64 fenceValue = mFenceValuesCopy;
+			if (SUCCEEDED(mCommandQueueCopy->Signal(mFenceCopy.Get(), fenceValue)))
+			{
+				// Wait until the Signal has been processed.
+				if (SUCCEEDED(mFenceCopy->SetEventOnCompletion(fenceValue, mFenceEventCopy.Get())))
+				{
+					WaitForSingleObjectEx(mFenceEventCopy.Get(), INFINITE, FALSE);
+
+					// Increment the fence value for the current frame.
+					mFenceValuesCopy++;
 				}
 			}
 		}
@@ -285,48 +337,70 @@ namespace EveryRay_Core
 		}
 	}
 
+	void ER_RHI_DX12::BeginCopyCommandList(int index /*= 0*/)
+	{
+		HRESULT hr;
+		if (FAILED(hr = mCommandAllocatorCopy->Reset()))
+			throw ER_CoreException("ER_RHI_DX12:: Could not Reset() command allocator (copy) ");
+
+		if (FAILED(hr = mCommandListCopy->Reset(mCommandAllocatorCopy.Get(), nullptr)))
+			throw ER_CoreException("ER_RHI_DX12:: Could not Reset() command list (copy)");
+	}
+
+	void ER_RHI_DX12::EndCopyCommandList(int index /*= 0*/)
+	{
+		HRESULT hr;
+		if (FAILED(hr = mCommandListCopy->Close()))
+			throw ER_CoreException("ER_RHI_DX12:: Could not close command list (copy)");
+	}
+
 	void ER_RHI_DX12::ClearMainRenderTarget(float colors[4])
 	{
+		assert(mCurrentGraphicsCommandListIndex > -1);
 		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(mMainRenderTarget[mBackBufferIndex].Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_RENDER_TARGET);
-		mCommandListGraphics[0]->ResourceBarrier(1, &barrier);
-		mCommandListGraphics[0]->ClearRenderTargetView(GetMainRenderTargetView(), colors, 0, nullptr);
+		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->ResourceBarrier(1, &barrier);
+		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->ClearRenderTargetView(GetMainRenderTargetView(), colors, 0, nullptr);
 	}
 
 	void ER_RHI_DX12::ClearMainDepthStencilTarget(float depth, UINT stencil /*= 0*/)
 	{
-		mCommandListGraphics[0]->ClearDepthStencilView(GetMainDepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, depth, stencil, 0, nullptr);
+		assert(mCurrentGraphicsCommandListIndex > -1);
+		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->ClearDepthStencilView(GetMainDepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, depth, stencil, 0, nullptr);
 	}
 
 	void ER_RHI_DX12::ClearRenderTarget(ER_RHI_GPUTexture* aRenderTarget, float colors[4], int rtvArrayIndex)
 	{
+		assert(mCurrentGraphicsCommandListIndex > -1);
 		assert(aRenderTarget);
 		TransitionResources({ static_cast<ER_RHI_GPUResource*>(aRenderTarget) }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_RENDER_TARGET);
 		if (rtvArrayIndex > 0)
 		{
 			ER_RHI_DX12_DescriptorHandle& handle = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTarget)->GetRTVHandle(rtvArrayIndex);
-			mCommandListGraphics[0]->ClearRenderTargetView(handle.GetCPUHandle(), colors, 0, nullptr);
+			mCommandListGraphics[mCurrentGraphicsCommandListIndex]->ClearRenderTargetView(handle.GetCPUHandle(), colors, 0, nullptr);
 		}
 		else
 		{
 			ER_RHI_DX12_DescriptorHandle& handle = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTarget)->GetRTVHandle();
-			mCommandListGraphics[0]->ClearRenderTargetView(handle.GetCPUHandle(), colors, 0, nullptr);
+			mCommandListGraphics[mCurrentGraphicsCommandListIndex]->ClearRenderTargetView(handle.GetCPUHandle(), colors, 0, nullptr);
 		}
 	}
 
 	void ER_RHI_DX12::ClearDepthStencilTarget(ER_RHI_GPUTexture* aDepthTarget, float depth, UINT stencil /*= 0*/)
 	{
+		assert(mCurrentGraphicsCommandListIndex > -1);
 		assert(aDepthTarget);
 		ER_RHI_DX12_GPUTexture* dtDX12 = static_cast<ER_RHI_DX12_GPUTexture*>(aDepthTarget);
 		assert(dtDX12);
-		mCommandListGraphics[0]->ClearDepthStencilView(dtDX12->GetDSVHandle().GetCPUHandle(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, depth, stencil, 0, nullptr);
+		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->ClearDepthStencilView(dtDX12->GetDSVHandle().GetCPUHandle(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, depth, stencil, 0, nullptr);
 	}
 
 	void ER_RHI_DX12::ClearUAV(ER_RHI_GPUResource* aRenderTarget, float colors[4])
 	{
+		assert(mCurrentGraphicsCommandListIndex > -1);
 		assert(aRenderTarget);
 		ER_RHI_DX12_GPUTexture* uavDX12 = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTarget);
 		assert(uavDX12);
-		mCommandListGraphics[0]->ClearUnorderedAccessViewFloat(uavDX12->GetUAVHandle().GetGPUHandle(), uavDX12->GetUAVHandle().GetCPUHandle(), 
+		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->ClearUnorderedAccessViewFloat(uavDX12->GetUAVHandle().GetGPUHandle(), uavDX12->GetUAVHandle().GetCPUHandle(),
 			static_cast<ID3D12Resource*>(uavDX12->GetResource()), colors, 0, nullptr);
 	}
 
@@ -379,8 +453,10 @@ namespace EveryRay_Core
 		aOutBuffer->CreateGPUBufferResource(this, aData, objectsCount, byteStride, isDynamic, bindFlags, cpuAccessFlags, miscFlags, format);
 	}
 
-	void ER_RHI_DX12::CopyBuffer(ER_RHI_GPUBuffer* aDestBuffer, ER_RHI_GPUBuffer* aSrcBuffer)
+	void ER_RHI_DX12::CopyBuffer(ER_RHI_GPUBuffer* aDestBuffer, ER_RHI_GPUBuffer* aSrcBuffer, int cmdListIndex, bool isInCopyQueue)
 	{
+		if (!isInCopyQueue)
+			assert(cmdListIndex > -1);
 		assert(aDestBuffer);
 		assert(aSrcBuffer);
 
@@ -390,7 +466,18 @@ namespace EveryRay_Core
 		assert(dstResource);
 		assert(srcResource);
 
-		mCommandListGraphics[0]->CopyResource(static_cast<ID3D12Resource*>(dstResource->GetResource()), static_cast<ID3D12Resource*>(srcResource->GetResource()));
+		if (!isInCopyQueue)
+			TransitionResources({ static_cast<ER_RHI_GPUResource*>(aDestBuffer), static_cast<ER_RHI_GPUResource*>(aSrcBuffer) },
+			{ ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COPY_DEST, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COPY_SOURCE }, isInCopyQueue ? 0 : cmdListIndex, isInCopyQueue);
+
+		if (!isInCopyQueue)
+			mCommandListGraphics[cmdListIndex]->CopyResource(static_cast<ID3D12Resource*>(dstResource->GetResource()), static_cast<ID3D12Resource*>(srcResource->GetResource()));
+		else
+			mCommandListCopy->CopyResource(static_cast<ID3D12Resource*>(dstResource->GetResource()), static_cast<ID3D12Resource*>(srcResource->GetResource()));
+		
+		if (!isInCopyQueue)
+			TransitionResources({ static_cast<ER_RHI_GPUResource*>(aDestBuffer), static_cast<ER_RHI_GPUResource*>(aSrcBuffer) },
+			{ ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COMMON }, isInCopyQueue ? 0 : cmdListIndex, isInCopyQueue);
 	}
 
 	void ER_RHI_DX12::BeginBufferRead(ER_RHI_GPUBuffer* aBuffer, void** output)
@@ -416,6 +503,7 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::CopyGPUTextureSubresourceRegion(ER_RHI_GPUResource* aDestBuffer, UINT DstSubresource, UINT DstX, UINT DstY, UINT DstZ, ER_RHI_GPUResource* aSrcBuffer, UINT SrcSubresource)
 	{
+		assert(mCurrentGraphicsCommandListIndex > -1);
 		assert(aDestBuffer);
 		assert(aSrcBuffer);
 
@@ -423,6 +511,9 @@ namespace EveryRay_Core
 		assert(dstbuffer);
 		ER_RHI_DX12_GPUTexture* srcbuffer = static_cast<ER_RHI_DX12_GPUTexture*>(aSrcBuffer);
 		assert(srcbuffer);
+
+		TransitionResources({ static_cast<ER_RHI_GPUResource*>(dstbuffer), static_cast<ER_RHI_GPUResource*>(srcbuffer) },
+			{ ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COPY_DEST, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COPY_SOURCE }, mCurrentGraphicsCommandListIndex);
 
 		D3D12_TEXTURE_COPY_LOCATION dstLocation;
 		dstLocation.pResource = static_cast<ID3D12Resource*>(dstbuffer->GetResource());
@@ -434,43 +525,51 @@ namespace EveryRay_Core
 		srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 		srcLocation.SubresourceIndex = SrcSubresource;
 		
-		mCommandListGraphics[0]->CopyTextureRegion(&dstLocation, DstX, DstY, DstZ, &srcLocation, NULL);
+		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->CopyTextureRegion(&dstLocation, DstX, DstY, DstZ, &srcLocation, NULL);
 		//else if (dstbuffer->GetTexture3D() && srcbuffer->GetTexture3D())
 		//else
 		//	throw ER_CoreException("ER_RHI_DX12:: One of the resources is NULL during CopyGPUTextureSubresourceRegion()");
+
+		TransitionResources({ static_cast<ER_RHI_GPUResource*>(dstbuffer), static_cast<ER_RHI_GPUResource*>(srcbuffer) },
+			{ ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE }, mCurrentGraphicsCommandListIndex);
 	}
 
 	void ER_RHI_DX12::Draw(UINT VertexCount)
 	{
+		assert(mCurrentGraphicsCommandListIndex > -1);
 		assert(VertexCount > 0);
-		mCommandListGraphics[0]->DrawInstanced(VertexCount, 1, 0, 0);
+		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->DrawInstanced(VertexCount, 1, 0, 0);
 	}
 
 	void ER_RHI_DX12::DrawIndexed(UINT IndexCount)
 	{
+		assert(mCurrentGraphicsCommandListIndex > -1);
 		assert(IndexCount > 0);
-		mCommandListGraphics[0]->DrawIndexedInstanced(IndexCount, 1, 0, 0, 0);
+		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->DrawIndexedInstanced(IndexCount, 1, 0, 0, 0);
 	}
 
 	void ER_RHI_DX12::DrawInstanced(UINT VertexCountPerInstance, UINT InstanceCount, UINT StartVertexLocation, UINT StartInstanceLocation)
 	{
 		assert(VertexCountPerInstance > 0);
 		assert(InstanceCount > 0);
+		assert(mCurrentGraphicsCommandListIndex > -1);
 
-		mCommandListGraphics[0]->DrawInstanced(VertexCountPerInstance, InstanceCount, StartVertexLocation, StartInstanceLocation);
+		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->DrawInstanced(VertexCountPerInstance, InstanceCount, StartVertexLocation, StartInstanceLocation);
 	}
 
 	void ER_RHI_DX12::DrawIndexedInstanced(UINT IndexCountPerInstance, UINT InstanceCount, UINT StartIndexLocation, INT BaseVertexLocation, UINT StartInstanceLocation)
 	{
+		assert(mCurrentGraphicsCommandListIndex > -1);
 		assert(IndexCountPerInstance > 0);
 		assert(InstanceCount > 0);
 
-		mCommandListGraphics[0]->DrawIndexedInstanced(IndexCountPerInstance, InstanceCount, StartIndexLocation, BaseVertexLocation, StartInstanceLocation);
+		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->DrawIndexedInstanced(IndexCountPerInstance, InstanceCount, StartIndexLocation, BaseVertexLocation, StartInstanceLocation);
 	}
 
 	void ER_RHI_DX12::Dispatch(UINT ThreadGroupCountX, UINT ThreadGroupCountY, UINT ThreadGroupCountZ)
 	{
-		mCommandListGraphics[0]->Dispatch(ThreadGroupCountX, ThreadGroupCountY, ThreadGroupCountZ);
+		assert(mCurrentGraphicsCommandListIndex > -1);
+		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->Dispatch(ThreadGroupCountX, ThreadGroupCountY, ThreadGroupCountZ);
 	}
 
 	void ER_RHI_DX12::ExecuteCommandLists(int commandListIndex /*= 0*/, bool isCompute /*= false*/)
@@ -480,6 +579,15 @@ namespace EveryRay_Core
 			ID3D12CommandList* ppCommandLists[] = { mCommandListGraphics[commandListIndex].Get() };
 			mCommandQueueGraphics->ExecuteCommandLists(1, ppCommandLists);
 		}
+		//else TODO
+	}
+
+	void ER_RHI_DX12::ExecuteCopyCommandList()
+	{
+		ID3D12CommandList* ppCommandLists[] = { mCommandListCopy.Get() };
+		mCommandQueueCopy->ExecuteCommandLists(1, ppCommandLists);
+
+		WaitForGpuOnCopyFence();
 	}
 
 	void ER_RHI_DX12::GenerateMips(ER_RHI_GPUTexture* aTexture)
@@ -558,6 +666,7 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget /*= nullptr*/, ER_RHI_GPUTexture* aUAV /*= nullptr*/, int rtvArrayIndex)
 	{
+		assert(mCurrentGraphicsCommandListIndex > -1);
 		if (!aUAV)
 		{
 			if (rtvArrayIndex > 0)
@@ -568,6 +677,7 @@ namespace EveryRay_Core
 
 			D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[DX12_MAX_BOUND_RENDER_TARGETS_VIEWS] = {};
 			UINT rtCount = static_cast<UINT>(aRenderTargets.size());
+			std::vector<ER_RHI_GPUResource*> resources(rtCount);
 			for (UINT i = 0; i < rtCount; i++)
 			{
 				assert(aRenderTargets[i]);
@@ -575,16 +685,28 @@ namespace EveryRay_Core
 					rtvHandles[i] = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTargets[i])->GetRTVHandle(rtvArrayIndex).GetCPUHandle();
 				else
 					rtvHandles[i] = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTargets[i])->GetRTVHandle().GetCPUHandle();
+
+				resources[i] = static_cast<ER_RHI_GPUResource*>(aRenderTargets[i]);
 			}
-			TransitionResources(aRenderTargets, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_RENDER_TARGET);
+
 			if (aDepthTarget)
 			{
 				D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = static_cast<ER_RHI_DX12_GPUTexture*>(aDepthTarget)->GetDSVHandle().GetCPUHandle();
-				TransitionResources({ static_cast<ER_RHI_GPUResource*>(aDepthTarget) }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_DEPTH_WRITE);
-				mCommandListGraphics[0]->OMSetRenderTargets(rtCount, rtvHandles, FALSE, &dsvHandle);
+
+				std::vector<ER_RHI_RESOURCE_STATE> transitions(rtCount);
+				for (UINT i = 0; i < rtCount; i++)
+					transitions[i] = ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_RENDER_TARGET;
+
+				resources.push_back(static_cast<ER_RHI_GPUResource*>(aDepthTarget));
+				transitions.push_back(ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_DEPTH_WRITE);
+				TransitionResources(resources, transitions);
+				mCommandListGraphics[mCurrentGraphicsCommandListIndex]->OMSetRenderTargets(rtCount, rtvHandles, FALSE, &dsvHandle);
 			}
 			else
-				mCommandListGraphics[0]->OMSetRenderTargets(rtCount, rtvHandles, FALSE, NULL);
+			{
+				TransitionResources(resources, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_RENDER_TARGET);
+				mCommandListGraphics[mCurrentGraphicsCommandListIndex]->OMSetRenderTargets(rtCount, rtvHandles, FALSE, NULL);
+			}
 
 		}
 		else
@@ -596,11 +718,13 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::SetDepthTarget(ER_RHI_GPUTexture* aDepthTarget)
 	{
+		assert(mCurrentGraphicsCommandListIndex > -1);
+
 		assert(aDepthTarget);
 		D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = static_cast<ER_RHI_DX12_GPUTexture*>(aDepthTarget)->GetDSVHandle().GetCPUHandle();
 		TransitionResources({ static_cast<ER_RHI_GPUResource*>(aDepthTarget) }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_DEPTH_WRITE);
 
-		mCommandListGraphics[0]->OMSetRenderTargets(0, nullptr, FALSE, &dsvHandle);
+		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->OMSetRenderTargets(0, nullptr, FALSE, &dsvHandle);
 	}
 
 	void ER_RHI_DX12::SetRenderTargetFormats(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget /*= nullptr*/)
@@ -693,16 +817,18 @@ namespace EveryRay_Core
 		viewport.MaxDepth = aViewport.MaxDepth;
 
 		mCurrentViewport = aViewport;
+		assert(mCurrentGraphicsCommandListIndex > -1);
 
-		mCommandListGraphics[0]->RSSetViewports(1, &viewport);
+		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->RSSetViewports(1, &viewport);
 	}
 
 	void ER_RHI_DX12::SetRect(const ER_RHI_Rect& rect)
 	{
 		mCurrentRect = rect;
+		assert(mCurrentGraphicsCommandListIndex > -1);
 
 		D3D12_RECT currentRect = { rect.left, rect.top, rect.right, rect.bottom };
-		mCommandListGraphics[0]->RSSetScissorRects(1, &currentRect);
+		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->RSSetScissorRects(1, &currentRect);
 	}
 
 	void ER_RHI_DX12::SetShader(ER_RHI_GPUShader* aShader)
@@ -756,24 +882,30 @@ namespace EveryRay_Core
 		assert(srvCount > 0 && srvCount <= DX12_MAX_BOUND_SHADER_RESOURCE_VIEWS);
 		//assert(srvCount <= rs->GetRootParameterSRVCount(rootParamIndex));
 		assert(mDescriptorHeapManager);
+		assert(mCurrentGraphicsCommandListIndex > -1);
 
 		ER_RHI_DX12_GPUDescriptorHeap* gpuDescriptorHeap = mDescriptorHeapManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 		ER_RHI_DX12_DescriptorHandle& srvHandle = gpuDescriptorHeap->GetHandleBlock(srvCount);
 		for (int i = 0; i < srvCount; i++)
 		{
 			if (aSRVs[i])
-				gpuDescriptorHeap->AddToHandle(mDevice.Get(), srvHandle, static_cast<ER_RHI_DX12_GPUTexture*>(aSRVs[i])->GetSRVHandle());
+			{
+				if (aSRVs[i]->IsBuffer())
+					gpuDescriptorHeap->AddToHandle(mDevice.Get(), srvHandle, static_cast<ER_RHI_DX12_GPUBuffer*>(aSRVs[i])->GetSRVDescriptorHandle());
+				else
+					gpuDescriptorHeap->AddToHandle(mDevice.Get(), srvHandle, static_cast<ER_RHI_DX12_GPUTexture*>(aSRVs[i])->GetSRVHandle());
+			}
 			else
 				gpuDescriptorHeap->AddToHandle(mDevice.Get(), srvHandle, sNullSRV2DHandle);
 
 		}
 
-		TransitionResources(aSRVs, aShaderType == ER_RHI_SHADER_TYPE::ER_PIXEL ? ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE : ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		TransitionResources(aSRVs, aShaderType == ER_RHI_SHADER_TYPE::ER_PIXEL ? ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE : ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, mCurrentGraphicsCommandListIndex);
 
 		if (!isComputeRS)
-			mCommandListGraphics[0]->SetGraphicsRootDescriptorTable(rootParamIndex, srvHandle.GetGPUHandle());
+			mCommandListGraphics[mCurrentGraphicsCommandListIndex]->SetGraphicsRootDescriptorTable(rootParamIndex, srvHandle.GetGPUHandle());
 		else
-			mCommandListGraphics[0]->SetComputeRootDescriptorTable(rootParamIndex, srvHandle.GetGPUHandle());
+			mCommandListGraphics[mCurrentGraphicsCommandListIndex]->SetComputeRootDescriptorTable(rootParamIndex, srvHandle.GetGPUHandle());
 
 		//TODO compute queue
 	}
@@ -787,6 +919,7 @@ namespace EveryRay_Core
 		assert(uavCount > 0 && uavCount <= DX12_MAX_BOUND_UNORDERED_ACCESS_VIEWS);
 		//assert(uavCount <= rs->GetRootParameterUAVCount(rootParamIndex));
 		assert(mDescriptorHeapManager);
+		assert(mCurrentGraphicsCommandListIndex > -1);
 
 		ER_RHI_DX12_GPUDescriptorHeap* gpuDescriptorHeap = mDescriptorHeapManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 		ER_RHI_DX12_DescriptorHandle& uavHandle = gpuDescriptorHeap->GetHandleBlock(uavCount);
@@ -799,12 +932,12 @@ namespace EveryRay_Core
 				gpuDescriptorHeap->AddToHandle(mDevice.Get(), uavHandle, static_cast<ER_RHI_DX12_GPUTexture*>(aUAVs[i])->GetUAVHandle());
 		}
 
-		TransitionResources(aUAVs, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_UNORDERED_ACCESS);
+		TransitionResources(aUAVs, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_UNORDERED_ACCESS, mCurrentGraphicsCommandListIndex);
 
 		if (!isComputeRS)
-			mCommandListGraphics[0]->SetGraphicsRootDescriptorTable(rootParamIndex, uavHandle.GetGPUHandle());
+			mCommandListGraphics[mCurrentGraphicsCommandListIndex]->SetGraphicsRootDescriptorTable(rootParamIndex, uavHandle.GetGPUHandle());
 		else
-			mCommandListGraphics[0]->SetComputeRootDescriptorTable(rootParamIndex, uavHandle.GetGPUHandle());
+			mCommandListGraphics[mCurrentGraphicsCommandListIndex]->SetComputeRootDescriptorTable(rootParamIndex, uavHandle.GetGPUHandle());
 
 		//TODO compute queue
 	}
@@ -818,6 +951,7 @@ namespace EveryRay_Core
 		assert(cbvCount > 0 && cbvCount <= DX12_MAX_BOUND_CONSTANT_BUFFERS);
 		//assert(cbvCount <= rs->GetRootParameterCBVCount(rootParamIndex));
 		assert(mDescriptorHeapManager);
+		assert(mCurrentGraphicsCommandListIndex > -1);
 
 		ER_RHI_DX12_GPUDescriptorHeap* gpuDescriptorHeap = mDescriptorHeapManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 		ER_RHI_DX12_DescriptorHandle& cbvHandle = gpuDescriptorHeap->GetHandleBlock(cbvCount);
@@ -828,9 +962,9 @@ namespace EveryRay_Core
 		}
 
 		if (!isComputeRS)
-			mCommandListGraphics[0]->SetGraphicsRootDescriptorTable(rootParamIndex, cbvHandle.GetGPUHandle());
+			mCommandListGraphics[mCurrentGraphicsCommandListIndex]->SetGraphicsRootDescriptorTable(rootParamIndex, cbvHandle.GetGPUHandle());
 		else
-			mCommandListGraphics[0]->SetComputeRootDescriptorTable(rootParamIndex, cbvHandle.GetGPUHandle());
+			mCommandListGraphics[mCurrentGraphicsCommandListIndex]->SetComputeRootDescriptorTable(rootParamIndex, cbvHandle.GetGPUHandle());
 
 		//TODO compute queue
 	}
@@ -859,16 +993,20 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::SetIndexBuffer(ER_RHI_GPUBuffer* aBuffer, UINT offset /*= 0*/)
 	{
+		assert(mCurrentGraphicsCommandListIndex > -1);
+
 		assert(aBuffer);
 		ER_RHI_DX12_GPUBuffer* buf = static_cast<ER_RHI_DX12_GPUBuffer*>(aBuffer);
 		assert(buf);
 
 		D3D12_INDEX_BUFFER_VIEW view = buf->GetIndexBufferView();
-		mCommandListGraphics[0]->IASetIndexBuffer(&view);
+		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->IASetIndexBuffer(&view);
 	}
 
 	void ER_RHI_DX12::SetVertexBuffers(const std::vector<ER_RHI_GPUBuffer*>& aVertexBuffers)
 	{
+		assert(mCurrentGraphicsCommandListIndex > -1);
+
 		assert(aVertexBuffers.size() > 0 && aVertexBuffers.size() <= ER_RHI_MAX_BOUND_VERTEX_BUFFERS);
 		if (aVertexBuffers.size() == 1)
 		{
@@ -878,7 +1016,7 @@ namespace EveryRay_Core
 			assert(buffer);
 
 			D3D12_VERTEX_BUFFER_VIEW view = buffer->GetVertexBufferView();
-			mCommandListGraphics[0]->IASetVertexBuffers(0, 1, &view);
+			mCommandListGraphics[mCurrentGraphicsCommandListIndex]->IASetVertexBuffers(0, 1, &view);
 		}
 		else //+ instance buffer
 		{
@@ -893,22 +1031,24 @@ namespace EveryRay_Core
 			assert(instanceBuffer);
 
 			D3D12_VERTEX_BUFFER_VIEW views[2] = { vertexBuffer->GetVertexBufferView(), instanceBuffer->GetVertexBufferView() };
-			mCommandListGraphics[0]->IASetVertexBuffers(0, 2, views);
+			mCommandListGraphics[mCurrentGraphicsCommandListIndex]->IASetVertexBuffers(0, 2, views);
 		}
 	}
 
 	void ER_RHI_DX12::SetTopologyType(ER_RHI_PRIMITIVE_TYPE aType)
 	{
-		mCommandListGraphics[0]->IASetPrimitiveTopology(GetTopology(aType));
+		assert(mCurrentGraphicsCommandListIndex > -1);
+		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->IASetPrimitiveTopology(GetTopology(aType));
 	}
 
 	void ER_RHI_DX12::SetRootSignature(ER_RHI_GPURootSignature* rs, bool isCompute)
 	{
 		assert(rs);
+		assert(mCurrentGraphicsCommandListIndex > -1);
 		if (!isCompute)
-			mCommandListGraphics[0]->SetGraphicsRootSignature(static_cast<ER_RHI_DX12_GPURootSignature*>(rs)->GetSignature());
+			mCommandListGraphics[mCurrentGraphicsCommandListIndex]->SetGraphicsRootSignature(static_cast<ER_RHI_DX12_GPURootSignature*>(rs)->GetSignature());
 		else
-			mCommandListGraphics[0]->SetComputeRootSignature(static_cast<ER_RHI_DX12_GPURootSignature*>(rs)->GetSignature());
+			mCommandListGraphics[mCurrentGraphicsCommandListIndex]->SetComputeRootSignature(static_cast<ER_RHI_DX12_GPURootSignature*>(rs)->GetSignature());
 
 		//TODO compute queue
 	}
@@ -932,13 +1072,14 @@ namespace EveryRay_Core
 	void ER_RHI_DX12::SetGPUDescriptorHeap(ER_RHI_DESCRIPTOR_HEAP_TYPE aType, bool aReset)
 	{
 		assert(mDescriptorHeapManager);
+		assert(mCurrentGraphicsCommandListIndex > -1);
 
 		ER_RHI_DX12_GPUDescriptorHeap* gpuDescriptorHeap = mDescriptorHeapManager->GetGPUHeap(GetHeapType(aType));
 		if (aReset)
 			gpuDescriptorHeap->Reset();
 
 		ID3D12DescriptorHeap* ppHeaps[] = { gpuDescriptorHeap->GetHeap() };
-		mCommandListGraphics[0]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 	}
 
 	void ER_RHI_DX12::SetGPUDescriptorHeapImGui(int cmdListIndex)
@@ -1018,6 +1159,7 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::SetPSO(const std::string& aName, bool isCompute)
 	{
+		assert(mCurrentGraphicsCommandListIndex > -1);
 		auto resetPSO = [&](const std::string& name, bool comp)
 		{
 			std::wstring msg = L"[ER Logger] ER_RHI_DX12: Could not find PSO to set, adding it now and trying to reset: " + ER_Utility::ToWideString(aName) + L'\n';
@@ -1038,7 +1180,7 @@ namespace EveryRay_Core
 				}
 				else
 				{
-					mCommandListGraphics[0]->SetPipelineState(it->second.GetPipelineStateObject());
+					mCommandListGraphics[mCurrentGraphicsCommandListIndex]->SetPipelineState(it->second.GetPipelineStateObject());
 					mCurrentGraphicsPSOName = it->first;
 					mCurrentSetGraphicsPSOName = mCurrentGraphicsPSOName;
 					mCurrentPSOState = ER_RHI_DX12_PSO_STATE::GRAPHICS;
@@ -1058,7 +1200,7 @@ namespace EveryRay_Core
 					return;
 				}
 				{
-					mCommandListGraphics[0]->SetPipelineState(it->second.GetPipelineStateObject());
+					mCommandListGraphics[mCurrentGraphicsCommandListIndex]->SetPipelineState(it->second.GetPipelineStateObject());
 					mCurrentComputePSOName = it->first;
 					mCurrentSetComputePSOName = mCurrentComputePSOName;
 					mCurrentPSOState = ER_RHI_DX12_PSO_STATE::COMPUTE;
@@ -1076,7 +1218,7 @@ namespace EveryRay_Core
 		mCurrentSetComputePSOName = "";
 	}
 
-	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex)
+	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex, bool isCopyQueue)
 	{
 		int size = static_cast<int>(aResources.size());
 		assert(size > 0 && size == aStates.size());
@@ -1084,6 +1226,10 @@ namespace EveryRay_Core
 
 		for (int i = 0; i < size; i++)
 		{
+			if (aStates[i] == ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE &&
+				aResources[i]->GetCurrentState() == ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)
+				continue;
+
 			if (aResources[i] && aResources[i]->GetCurrentState() != aStates[i])
 			{
 				barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aStates[i])));
@@ -1092,10 +1238,15 @@ namespace EveryRay_Core
 		}
 
 		if (barriers.size() > 0)
-			mCommandListGraphics[cmdListIndex]->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
+		{
+			if (!isCopyQueue)
+				mCommandListGraphics[cmdListIndex]->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
+			else
+				mCommandListCopy->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
+		}
 	}
 
-	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex /*= 0*/)
+	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex /*= 0*/, bool isCopyQueue)
 	{
 		int size = static_cast<int>(aResources.size());
 		std::vector<CD3DX12_RESOURCE_BARRIER> barriers;
@@ -1117,80 +1268,85 @@ namespace EveryRay_Core
 		}
 
 		if (barriers.size() > 0)
-			mCommandListGraphics[cmdListIndex]->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
-	}
-
-	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUTexture*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex /*= 0*/)
-	{
-		int size = static_cast<int>(aResources.size());
-		assert(size > 0 && size == aStates.size());
-
-		std::vector<CD3DX12_RESOURCE_BARRIER> barriers;
-
-		for (int i = 0; i < size; i++)
 		{
-			if (aResources[i] && aResources[i]->GetCurrentState() != aStates[i])
-			{
-				barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aStates[i])));
-				aResources[i]->SetCurrentState(aStates[i]);
-			}
+			if (!isCopyQueue)
+				mCommandListGraphics[cmdListIndex]->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
+			else
+				mCommandListCopy->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
 		}
-		if (barriers.size() > 0)
-			mCommandListGraphics[cmdListIndex]->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
 	}
 
-	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUTexture*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex /*= 0*/)
-	{
-		int size = static_cast<int>(aResources.size());
-		std::vector<CD3DX12_RESOURCE_BARRIER> barriers;
-
-		for (int i = 0; i < size; i++)
-		{
-			if (aResources[i] && aResources[i]->GetCurrentState() != aState)
-			{
-				barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aState)));
-				aResources[i]->SetCurrentState(aState);
-			}
-		}
-		if (barriers.size() > 0)
-			mCommandListGraphics[cmdListIndex]->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
-	}
-
-	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex /*= 0*/)
-	{
-		int size = static_cast<int>(aResources.size());
-		assert(size > 0 && size == aStates.size());
-
-		std::vector<CD3DX12_RESOURCE_BARRIER> barriers;
-
-		for (int i = 0; i < size; i++)
-		{
-			if (aResources[i] && aResources[i]->GetCurrentState() != aStates[i])
-			{
-				barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aStates[i])));
-				aResources[i]->SetCurrentState(aStates[i]);
-			}
-		}
-		if (barriers.size() > 0)
-			mCommandListGraphics[cmdListIndex]->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
-	}
-
-	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex /*= 0*/)
-	{
-		int size = static_cast<int>(aResources.size());
-		std::vector<CD3DX12_RESOURCE_BARRIER> barriers;
-	
-		for (int i = 0; i < size; i++)
-		{
-			if (aResources[i] && aResources[i]->GetCurrentState() != aState)
-			{
-				barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aState)));
-				aResources[i]->SetCurrentState(aState);
-			}
-		}
-		if (barriers.size() > 0)
-			mCommandListGraphics[cmdListIndex]->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
-	}
+	//void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUTexture*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex /*= 0*/)
+	//{
+	//	int size = static_cast<int>(aResources.size());
+	//	assert(size > 0 && size == aStates.size());
+	//
+	//	std::vector<CD3DX12_RESOURCE_BARRIER> barriers;
+	//
+	//	for (int i = 0; i < size; i++)
+	//	{
+	//		if (aResources[i] && aResources[i]->GetCurrentState() != aStates[i])
+	//		{
+	//			barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aStates[i])));
+	//			aResources[i]->SetCurrentState(aStates[i]);
+	//		}
+	//	}
+	//	if (barriers.size() > 0)
+	//		mCommandListGraphics[cmdListIndex]->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
+	//}
+	//
+	//void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUTexture*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex /*= 0*/)
+	//{
+	//	int size = static_cast<int>(aResources.size());
+	//	std::vector<CD3DX12_RESOURCE_BARRIER> barriers;
+	//
+	//	for (int i = 0; i < size; i++)
+	//	{
+	//		if (aResources[i] && aResources[i]->GetCurrentState() != aState)
+	//		{
+	//			barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aState)));
+	//			aResources[i]->SetCurrentState(aState);
+	//		}
+	//	}
+	//	if (barriers.size() > 0)
+	//		mCommandListGraphics[cmdListIndex]->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
+	//}
+	//
+	//void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex /*= 0*/)
+	//{
+	//	int size = static_cast<int>(aResources.size());
+	//	assert(size > 0 && size == aStates.size());
+	//
+	//	std::vector<CD3DX12_RESOURCE_BARRIER> barriers;
+	//
+	//	for (int i = 0; i < size; i++)
+	//	{
+	//		if (aResources[i] && aResources[i]->GetCurrentState() != aStates[i])
+	//		{
+	//			barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aStates[i])));
+	//			aResources[i]->SetCurrentState(aStates[i]);
+	//		}
+	//	}
+	//	if (barriers.size() > 0)
+	//		mCommandListGraphics[cmdListIndex]->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
+	//}
+	//
+	//void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex /*= 0*/)
+	//{
+	//	int size = static_cast<int>(aResources.size());
+	//	std::vector<CD3DX12_RESOURCE_BARRIER> barriers;
+	//
+	//	for (int i = 0; i < size; i++)
+	//	{
+	//		if (aResources[i] && aResources[i]->GetCurrentState() != aState)
+	//		{
+	//			barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aState)));
+	//			aResources[i]->SetCurrentState(aState);
+	//		}
+	//	}
+	//	if (barriers.size() > 0)
+	//		mCommandListGraphics[cmdListIndex]->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
+	//}
 
 	void ER_RHI_DX12::TransitionMainRenderTargetToPresent(int cmdListIndex)
 	{
@@ -1200,7 +1356,8 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::UnbindRenderTargets()
 	{
-		mCommandListGraphics[0]->OMSetRenderTargets(0, nullptr, false, nullptr);
+		assert(mCurrentGraphicsCommandListIndex > -1);
+		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->OMSetRenderTargets(0, nullptr, false, nullptr);
 	}
 
 	void ER_RHI_DX12::UpdateBuffer(ER_RHI_GPUBuffer* aBuffer, void* aData, int dataSize)
@@ -1462,7 +1619,7 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::OnWindowSizeChanged(int width, int height)
 	{
-		WaitForGpu();
+		WaitForGpuOnGraphicsFence();
 
 		// Release resources that are tied to the swap chain and update fence values.
 		for (UINT n = 0; n < DX12_MAX_BACK_BUFFER_COUNT; n++)

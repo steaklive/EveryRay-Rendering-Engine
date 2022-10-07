@@ -32,12 +32,11 @@ struct TerrainTileData
 };
 
 StructuredBuffer<TerrainTileData> TerrainTilesData : register(t0);
+Texture2DArray<float> TerrainTilesHeightTextures : register(t1);
+Texture2DArray<float4> TerrainTilesSplatTextures : register(t2);
 #if USE_RAYCASTING
-StructuredBuffer<float4> terrainVertices : register(t1);
+StructuredBuffer<float4> terrainVertices : register(t3);
 #endif
-Texture2DArray<float> TerrainTilesHeightTextures : register(t2);
-Texture2DArray<float4> TerrainTilesSplatTextures : register(t3);
-
 RWStructuredBuffer<float4> InputOutputPositions : register(u0);
 
 SamplerState BilinearSampler : register(s0);

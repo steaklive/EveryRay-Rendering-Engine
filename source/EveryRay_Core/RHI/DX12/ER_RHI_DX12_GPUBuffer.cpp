@@ -53,15 +53,20 @@ namespace EveryRay_Core
 		desc.Width = (UINT64)mSize;
 
 		D3D12_HEAP_PROPERTIES heapProperties;
-		heapProperties.Type = mHeapType;
+		heapProperties.Type = ((cpuAccessFlags & 0x10000L) && (cpuAccessFlags & 0x20000L)) ? D3D12_HEAP_TYPE_READBACK : mHeapType; // 0x10000L | 0x20000L is legacy from D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ
 		heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
 		heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
 		heapProperties.CreationNodeMask = 1;
 		heapProperties.VisibleNodeMask = 1;
 
-		if (FAILED(device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE, &desc, aRHIDX12->GetState(mResourceState), nullptr, IID_PPV_ARGS(&mBuffer))))
+		if (FAILED(device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE, &desc, heapProperties.Type == D3D12_HEAP_TYPE_READBACK ? D3D12_RESOURCE_STATE_COPY_DEST : aRHIDX12->GetState(mResourceState), nullptr, IID_PPV_ARGS(&mBuffer))))
 			throw ER_CoreException("ER_RHI_DX12: Failed to create committed resource of GPU buffer.");
 		
+		if (heapProperties.Type == D3D12_HEAP_TYPE_READBACK)
+			return;
+
+		desc.Flags &= ~D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+
 		for (int frameIndex = 0; frameIndex < DX12_MAX_BACK_BUFFER_COUNT; frameIndex++)
 		{
 			if (FAILED(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&mBufferUpload[frameIndex]))))
@@ -138,20 +143,31 @@ namespace EveryRay_Core
 		assert(aRHI);
 		ER_RHI_DX12* aRHIDX12 = static_cast<ER_RHI_DX12*>(aRHI);
 
-		assert(mBufferUpload[ER_RHI_DX12::mBackBufferIndex]);
+		assert(mBufferUpload[ER_RHI_DX12::mBackBufferIndex] || mBuffer);
 		HRESULT hr;
 		CD3DX12_RANGE range(0, 0);
-		if (FAILED(hr = mBufferUpload[ER_RHI_DX12::mBackBufferIndex]->Map(0, &range, aOutData)))
-			throw ER_CoreException("ER_RHI_DX12: Failed to map GPU buffer.", hr);
+		if (mBufferUpload[ER_RHI_DX12::mBackBufferIndex])
+		{
+			if (FAILED(hr = mBufferUpload[ER_RHI_DX12::mBackBufferIndex]->Map(0, &range, aOutData)))
+				throw ER_CoreException("ER_RHI_DX12: Failed to map GPU buffer.", hr);
+		}
+		else
+		{
+			if (FAILED(hr = mBuffer->Map(0, &range, aOutData)))
+				throw ER_CoreException("ER_RHI_DX12: Failed to map GPU buffer.", hr);
+		}
 	}
 
 	void ER_RHI_DX12_GPUBuffer::Unmap(ER_RHI* aRHI)
 	{
 		assert(aRHI);
 		ER_RHI_DX12* aRHIDX12 = static_cast<ER_RHI_DX12*>(aRHI);
-		assert(mBufferUpload[ER_RHI_DX12::mBackBufferIndex]);
+		assert(mBufferUpload[ER_RHI_DX12::mBackBufferIndex] || mBuffer);
 
-		mBufferUpload[ER_RHI_DX12::mBackBufferIndex]->Unmap(0, nullptr);
+		if (mBufferUpload[ER_RHI_DX12::mBackBufferIndex])
+			mBufferUpload[ER_RHI_DX12::mBackBufferIndex]->Unmap(0, nullptr);
+		else
+			mBuffer->Unmap(0, nullptr);
 	}
 
 	void ER_RHI_DX12_GPUBuffer::UpdateSubresource(ER_RHI* aRHI, void* aData, int dataSize, int cmdListIndex)

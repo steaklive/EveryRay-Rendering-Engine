@@ -154,12 +154,14 @@ namespace EveryRay_Core
 			// add rendering objects to scene
 			unsigned int numRenderingObjects = root["rendering_objects"].size();
 			for (Json::Value::ArrayIndex i = 0; i != numRenderingObjects; i++) {
-				std::string name = root["rendering_objects"][i]["name"].asString();
-				std::string modelPath = root["rendering_objects"][i]["model_path"].asString();
-				bool isInstanced = root["rendering_objects"][i]["instanced"].asBool();
-				objects.emplace_back(name, new ER_RenderingObject(name, i, *mCore, mCamera, std::unique_ptr<ER_Model>(new ER_Model(*mCore, ER_Utility::GetFilePath(modelPath), true)), true, isInstanced));
+				objects.emplace_back(
+					root["rendering_objects"][i]["name"].asString(), 
+					new ER_RenderingObject(root["rendering_objects"][i]["name"].asString(), i, *mCore, mCamera, 
+						std::unique_ptr<ER_Model>(new ER_Model(*mCore, ER_Utility::GetFilePath(root["rendering_objects"][i]["model_path"].asString()), true)),
+						true, root["rendering_objects"][i]["instanced"].asBool())
+				);
 			}
-			std::sort(objects.begin(), objects.end(), [](const ER_SceneObject& obj1, const ER_SceneObject& obj2) {	return obj1.second->IsInstanced();	});
+			std::partition(objects.begin(), objects.end(), [](const ER_SceneObject& obj) {	return obj.second->IsInstanced(); });
 			assert(numRenderingObjects == objects.size());
 
 #if MULTITHREADED_SCENE_LOAD

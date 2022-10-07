@@ -49,6 +49,9 @@ namespace EveryRay_Core
 		virtual void BeginComputeCommandList(int index = 0) override {}; //TODO
 		virtual void EndComputeCommandList(int index = 0) override {}; //TODO
 
+		virtual void BeginCopyCommandList(int index = 0) override;
+		virtual void EndCopyCommandList(int index = 0) override;
+
 		virtual void ClearMainRenderTarget(float colors[4]) override;
 		virtual void ClearMainDepthStencilTarget(float depth, UINT stencil = 0) override;
 		virtual void ClearRenderTarget(ER_RHI_GPUTexture* aRenderTarget, float colors[4], int rtvArrayIndex = -1) override;
@@ -67,7 +70,7 @@ namespace EveryRay_Core
 		virtual void CreateTexture(ER_RHI_GPUTexture* aOutTexture, const std::wstring& aPath, bool isFullPath = false) override;
 
 		virtual void CreateBuffer(ER_RHI_GPUBuffer* aOutBuffer, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic = false, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, ER_RHI_RESOURCE_MISC_FLAG miscFlags = ER_RESOURCE_MISC_NONE, ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN) override;
-		virtual void CopyBuffer(ER_RHI_GPUBuffer* aDestBuffer, ER_RHI_GPUBuffer* aSrcBuffer) override;
+		virtual void CopyBuffer(ER_RHI_GPUBuffer* aDestBuffer, ER_RHI_GPUBuffer* aSrcBuffer, int cmdListIndex, bool isInCopyQueue = false) override;
 		virtual void BeginBufferRead(ER_RHI_GPUBuffer* aBuffer, void** output) override;
 		virtual void EndBufferRead(ER_RHI_GPUBuffer* aBuffer) override;
 
@@ -83,7 +86,8 @@ namespace EveryRay_Core
 		//TODO DispatchIndirect
 
 		virtual void ExecuteCommandLists(int commandListIndex = 0, bool isCompute = false) override;
-		
+		virtual void ExecuteCopyCommandList() override;
+
 		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture) override;
 
 		virtual void PresentGraphics() override;
@@ -132,12 +136,8 @@ namespace EveryRay_Core
 		virtual void SetGPUDescriptorHeap(ER_RHI_DESCRIPTOR_HEAP_TYPE aType, bool aReset) override;
 		virtual void SetGPUDescriptorHeapImGui(int cmdListIndex = 0) override;
 
-		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0) override;
-		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0) override;
-		virtual void TransitionResources(const std::vector<ER_RHI_GPUTexture*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0) override;
-		virtual void TransitionResources(const std::vector<ER_RHI_GPUTexture*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0) override;
-		virtual void TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0) override;
-		virtual void TransitionResources(const std::vector<ER_RHI_GPUBuffer*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0) override;
+		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0, bool isCopyQueue = false) override;
+		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0, bool isCopyQueue = false) override;
 		virtual void TransitionMainRenderTargetToPresent(int cmdListIndex = 0) override;
 
 		virtual bool IsPSOReady(const std::string& aName, bool isCompute = false) override;
@@ -193,7 +193,9 @@ namespace EveryRay_Core
 		void CreateRasterizerStates();
 		void CreateDepthStencilStates();
 
-		void WaitForGpu();
+		void WaitForGpuOnGraphicsFence();
+		void WaitForGpuOnComputeFence();
+		void WaitForGpuOnCopyFence();
 
 		D3D_FEATURE_LEVEL mFeatureLevel = D3D_FEATURE_LEVEL_12_1;
 		
@@ -212,20 +214,32 @@ namespace EveryRay_Core
 
 		ComPtr<ID3D12DescriptorHeap> mImGuiDescriptorHeap;
 
+		// graphics
 		ComPtr<ID3D12CommandQueue> mCommandQueueGraphics;
 		ComPtr<ID3D12GraphicsCommandList> mCommandListGraphics[ER_RHI_MAX_GRAPHICS_COMMAND_LISTS];
 		ComPtr<ID3D12CommandAllocator> mCommandAllocatorsGraphics[DX12_MAX_BACK_BUFFER_COUNT][ER_RHI_MAX_COMPUTE_COMMAND_LISTS];
+		
+		ComPtr<ID3D12Fence> mFenceGraphics;
+		UINT64 mFenceValuesGraphics[DX12_MAX_BACK_BUFFER_COUNT] = {};
+		Wrappers::Event mFenceEventGraphics;
+		
+		// compute
 		ComPtr<ID3D12CommandQueue> mCommandQueueCompute;
 		ComPtr<ID3D12GraphicsCommandList> mCommandListCompute[ER_RHI_MAX_COMPUTE_COMMAND_LISTS];
 		ComPtr<ID3D12CommandAllocator> mCommandAllocatorsCompute[DX12_MAX_BACK_BUFFER_COUNT][ER_RHI_MAX_COMPUTE_COMMAND_LISTS];
 
-		ComPtr<ID3D12Fence> mFenceGraphics;
-		UINT64 mFenceValuesGraphics[DX12_MAX_BACK_BUFFER_COUNT] = {};
-		Wrappers::Event mFenceEventGraphics;
-
 		ComPtr<ID3D12Fence> mFenceCompute;
 		UINT64 mFenceValuesCompute;
 		Wrappers::Event mFenceEventCompute;
+		
+		// copy
+		ComPtr<ID3D12CommandQueue> mCommandQueueCopy;
+		ComPtr<ID3D12GraphicsCommandList> mCommandListCopy;
+		ComPtr<ID3D12CommandAllocator> mCommandAllocatorCopy;
+
+		ComPtr<ID3D12Fence> mFenceCopy;
+		UINT64 mFenceValuesCopy;
+		Wrappers::Event mFenceEventCopy;
 
 		std::map<ER_RHI_SAMPLER_STATE, D3D12_SAMPLER_DESC> mSamplerStates;
 		std::map<ER_RHI_BLEND_STATE, D3D12_BLEND_DESC> mBlendStates;
