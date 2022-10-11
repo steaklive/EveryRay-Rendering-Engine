@@ -218,6 +218,8 @@ namespace EveryRay_Core
 		DeleteObject(mPS);
 		DeleteObject(mPS_GBuffer);
 		DeleteObject(mPS_Voxelization);
+		DeleteObject(mInputPositionsOnTerrainBuffer);
+		DeleteObject(mOutputPositionsOnTerrainBuffer);
 		mFoliageConstantBuffer.Release();
 	}
 
@@ -258,7 +260,9 @@ namespace EveryRay_Core
 	}
 	void ER_Foliage::Initialize()
 	{
-		mFoliageConstantBuffer.Initialize(mCore.GetRHI());
+		ER_RHI* rhi = mCore.GetRHI();
+
+		mFoliageConstantBuffer.Initialize(rhi);
 		InitializeBuffersCPU();
 		InitializeBuffersGPU(mPatchesCount);
 
@@ -275,20 +279,31 @@ namespace EveryRay_Core
 			ER_Terrain* terrain = mCore.GetLevel()->mTerrain;
 			if (terrain && terrain->IsLoaded())
 			{
-				terrain->PlaceOnTerrain(mCurrentPositions, mPatchesCount, (TerrainSplatChannels)mTerrainSplatChannel);
-				for (int i = 0; i < mPatchesCount; i++)
-				{
-					mPatchesBufferCPU[i].xPos = mCurrentPositions[i].x;
-					mPatchesBufferCPU[i].yPos = mCurrentPositions[i].y;
-					mPatchesBufferCPU[i].zPos = mCurrentPositions[i].z;
-				}
-				UpdateBuffersGPU();
+				DeleteObject(mInputPositionsOnTerrainBuffer);
+				DeleteObject(mOutputPositionsOnTerrainBuffer);
 
-				//update AABB based on the first patch Y position (not accurate, but fast)
-				float radius = mDistributionRadius * 0.5f + mAABBExtentXZ;
-				XMFLOAT3 minP = XMFLOAT3(mDistributionCenter.x - radius, mPatchesBufferCPU[0].yPos - mAABBExtentY, mDistributionCenter.z - radius);
-				XMFLOAT3 maxP = XMFLOAT3(mDistributionCenter.x + radius, mPatchesBufferCPU[0].yPos + mAABBExtentY, mDistributionCenter.z + radius);
-				mAABB = ER_AABB(minP, maxP);
+				mInputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer();
+				mInputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, mCurrentPositions, mPatchesCount, sizeof(XMFLOAT4), false, ER_BIND_UNORDERED_ACCESS, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
+				mOutputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer();
+				mOutputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, mCurrentPositions, mPatchesCount, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L /*legacy from DX11*/, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
+
+				terrain->PlaceOnTerrain(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mCurrentPositions, mPatchesCount, (TerrainSplatChannels)mTerrainSplatChannel);
+#ifndef ER_PLATFORM_WIN64_DX11
+				std::string eventName = "On-terrain placement callback - initialization of foliage: " + mName;
+				terrain->ReadbackPlacedPositionsOnInitEvent->AddListener(eventName, [&]()
+					{ 
+						terrain->ReadbackPlacedPositions(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mCurrentPositions, mPatchesCount);
+						UpdateBuffersCPU();
+						UpdateBuffersGPU();
+						UpdateAABB();
+					}
+				);
+#else
+				UpdateBuffersCPU();
+				UpdateBuffersGPU();
+				UpdateAABB();
+#endif
+
 			}
 		}
 
@@ -442,6 +457,7 @@ namespace EveryRay_Core
 
 	void ER_Foliage::Update(const ER_CoreTime& gameTime)
 	{
+		auto rhi = mCore.GetRHI();
 		bool editable = mIsSelectedInEditor && ER_Utility::IsEditorMode && ER_Utility::IsFoliageEditor;
 
 		if (editable)
@@ -449,17 +465,14 @@ namespace EveryRay_Core
 			mDistributionCenter = XMFLOAT3(mMatrixTranslation[0], mMatrixTranslation[1], mMatrixTranslation[2]);
 			for (int i = 0; i < mPatchesCount; i++)
 			{
-				mPatchesBufferCPU[i].xPos = mDistributionCenter.x + ((float)rand() / (float)(RAND_MAX)) * mDistributionRadius - mDistributionRadius / 2;
-				mPatchesBufferCPU[i].yPos = mDistributionCenter.y;
-				mPatchesBufferCPU[i].zPos = mDistributionCenter.z + ((float)rand() / (float)(RAND_MAX)) * mDistributionRadius - mDistributionRadius / 2;
-				mCurrentPositions[i] = XMFLOAT4(mPatchesBufferCPU[i].xPos, mPatchesBufferCPU[i].yPos, mPatchesBufferCPU[i].zPos, 1.0f);
+				mCurrentPositions[i] = XMFLOAT4(
+					mDistributionCenter.x + ((float)rand() / (float)(RAND_MAX)) * mDistributionRadius - mDistributionRadius / 2,
+					mDistributionCenter.y,
+					mDistributionCenter.z + ((float)rand() / (float)(RAND_MAX)) * mDistributionRadius - mDistributionRadius / 2, 1.0f);
 			}
+			UpdateBuffersCPU();
 			UpdateBuffersGPU();
-
-			float radius = mDistributionRadius * 0.5f + mAABBExtentXZ;
-			XMFLOAT3 minP = XMFLOAT3(mDistributionCenter.x - radius, mDistributionCenter.y - mAABBExtentY, mDistributionCenter.z - radius);
-			XMFLOAT3 maxP = XMFLOAT3(mDistributionCenter.x + radius, mDistributionCenter.y + mAABBExtentY, mDistributionCenter.z + radius);
-			mAABB = ER_AABB(minP, maxP);
+			UpdateAABB();
 		}
 
 		XMFLOAT3 toCam = { mDistributionCenter.x - mCamera.Position().x, mDistributionCenter.y - mCamera.Position().y, mDistributionCenter.z - mCamera.Position().z };
@@ -514,21 +527,32 @@ namespace EveryRay_Core
 					ER_Terrain* terrain = mCore.GetLevel()->mTerrain;
 					if (ImGui::Button("Place patch on terrain") && terrain && terrain->IsLoaded())
 					{
-						terrain->PlaceOnTerrain(mCurrentPositions, mPatchesCount, currentChannel);
-						for (int i = 0; i < mPatchesCount; i++)
-						{
-							mPatchesBufferCPU[i].xPos = mCurrentPositions[i].x;
-							mPatchesBufferCPU[i].yPos = mCurrentPositions[i].y;
-							mPatchesBufferCPU[i].zPos = mCurrentPositions[i].z;
-						}
-						UpdateBuffersGPU();
-						ER_Utility::IsFoliageEditor = false;
+						DeleteObject(mInputPositionsOnTerrainBuffer);
+						DeleteObject(mOutputPositionsOnTerrainBuffer);
 
-						//update AABB based on the first patch Y position (not accurate, but fast)
-						float radius = mDistributionRadius * 0.5f + mAABBExtentXZ;
-						XMFLOAT3 minP = XMFLOAT3(mDistributionCenter.x - radius, mPatchesBufferCPU[0].yPos - mAABBExtentY, mDistributionCenter.z - radius);
-						XMFLOAT3 maxP = XMFLOAT3(mDistributionCenter.x + radius, mPatchesBufferCPU[0].yPos + mAABBExtentY, mDistributionCenter.z + radius);
-						mAABB = ER_AABB(minP, maxP);
+						mInputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer();
+						mInputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, mCurrentPositions, mPatchesCount, sizeof(XMFLOAT4), false, ER_BIND_UNORDERED_ACCESS, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
+						mOutputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer();
+						mOutputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, mCurrentPositions, mPatchesCount, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L /*legacy from DX11*/, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
+
+						terrain->PlaceOnTerrain(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mCurrentPositions, mPatchesCount, currentChannel);
+#ifndef ER_PLATFORM_WIN64_DX11
+						std::string eventName = "On-terrain placement callback - update of foliage: " + mName;
+						terrain->ReadbackPlacedPositionsOnUpdateEvent->AddListener(eventName, [&]()
+							{ 
+								terrain->ReadbackPlacedPositions(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mCurrentPositions, mPatchesCount); 
+								UpdateBuffersCPU();
+								UpdateBuffersGPU();
+								UpdateAABB();
+							}
+						);
+#else
+						UpdateBuffersCPU();
+						UpdateBuffersGPU();
+						UpdateAABB();
+#endif
+						
+						ER_Utility::IsFoliageEditor = false;
 					}
 				}
 
@@ -566,6 +590,25 @@ namespace EveryRay_Core
 		}
 
 		rhi->UpdateBuffer(mInstanceBuffer, (void*)mPatchesBufferGPU, (sizeof(GPUFoliageInstanceData) * mPatchesCount));
+	}
+
+	void ER_Foliage::UpdateBuffersCPU()
+	{
+		for (int i = 0; i < mPatchesCount; i++)
+		{
+			mPatchesBufferCPU[i].xPos = mCurrentPositions[i].x;
+			mPatchesBufferCPU[i].yPos = mCurrentPositions[i].y;
+			mPatchesBufferCPU[i].zPos = mCurrentPositions[i].z;
+		}
+	}
+
+	void ER_Foliage::UpdateAABB()
+	{
+		//update AABB based on the first patch Y position (not accurate, but fast)
+		float radius = mDistributionRadius * 0.5f + mAABBExtentXZ;
+		XMFLOAT3 minP = XMFLOAT3(mDistributionCenter.x - radius, mPatchesBufferCPU[0].yPos - mAABBExtentY, mDistributionCenter.z - radius);
+		XMFLOAT3 maxP = XMFLOAT3(mDistributionCenter.x + radius, mPatchesBufferCPU[0].yPos + mAABBExtentY, mDistributionCenter.z + radius);
+		mAABB = ER_AABB(minP, maxP);
 	}
 
 	bool ER_Foliage::PerformCPUFrustumCulling(ER_Camera* camera)

@@ -115,6 +115,8 @@ namespace EveryRay_Core
 		const XMFLOAT3& GetDistributionCenter() { return mDistributionCenter; }
 
 		void UpdateBuffersGPU();
+		void UpdateBuffersCPU();
+		void UpdateAABB();
 
 		void SetVoxelizationParams(float* worldVoxelScale, const float* voxelTexDimension, XMFLOAT4* voxelCameraPos)
 		{
@@ -163,6 +165,9 @@ namespace EveryRay_Core
 		GPUFoliageInstanceData* mPatchesBufferGPU = nullptr;
 		CPUFoliageData* mPatchesBufferCPU = nullptr;
 		XMFLOAT4* mCurrentPositions = nullptr;
+
+		ER_RHI_GPUBuffer* mInputPositionsOnTerrainBuffer = nullptr; //input positions for on-terrain placement pass
+		ER_RHI_GPUBuffer* mOutputPositionsOnTerrainBuffer = nullptr; //output positions for on-terrain placement pass
 
 		FoliageBillboardType mType;
 

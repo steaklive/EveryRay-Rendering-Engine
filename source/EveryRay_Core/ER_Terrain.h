@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "ER_CoreComponent.h"
+#include "ER_GenericEvent.h"
 #include "RHI/ER_RHI.h"
 
 #define NUM_THREADS_PER_TERRAIN_SIDE 4
@@ -150,12 +151,18 @@ namespace EveryRay_Core
 		void SetTessellationFactorDynamic(float factor) { mTessellationFactorDynamic = factor; }
 		void SetTerrainHeightScale(float scale) { mTerrainTessellatedHeightScale = scale; }
 		HeightMap* GetHeightmap(int index) { return mHeightMaps.at(index); }
-		void PlaceOnTerrain(XMFLOAT4* positions, int positionsCount, TerrainSplatChannels splatChannel = TerrainSplatChannels::NONE, XMFLOAT4* terrainVertices = nullptr, int terrainVertexCount = 0);
+		void PlaceOnTerrain(ER_RHI_GPUBuffer* outputBuffer, ER_RHI_GPUBuffer* inputBuffer, XMFLOAT4* positions, int positionsCount,
+			TerrainSplatChannels splatChannel = TerrainSplatChannels::NONE,	XMFLOAT4* terrainVertices = nullptr, int terrainVertexCount = 0);
+		void ReadbackPlacedPositions(ER_RHI_GPUBuffer* outputBuffer, ER_RHI_GPUBuffer* inputBuffer, XMFLOAT4* positions, int positionsCount);
 		//float GetHeightScale(bool tessellated) { if (tessellated) return mTerrainTessellatedHeightScale; else return mTerrainNonTessellatedHeightScale; }
 
 		void SetEnabled(bool val) { mEnabled = val; }
 		bool IsEnabled() { return mEnabled; }
 		bool IsLoaded() { return mLoaded; }
+
+		using Delegate_ReadbackPlacedPositions = std::function<void()>;
+		ER_GenericEvent<Delegate_ReadbackPlacedPositions>* ReadbackPlacedPositionsOnInitEvent = new ER_GenericEvent<Delegate_ReadbackPlacedPositions>();
+		ER_GenericEvent<Delegate_ReadbackPlacedPositions>* ReadbackPlacedPositionsOnUpdateEvent = new ER_GenericEvent<Delegate_ReadbackPlacedPositions>();
 	private:
 		void LoadTile(int threadIndex, const std::wstring& path);
 		void CreateTerrainTileDataCPU(int tileIndexX, int tileIndexY, const std::wstring& aPath);
@@ -196,6 +203,9 @@ namespace EveryRay_Core
 
 		std::vector<HeightMap*> mHeightMaps;
 		ER_RHI_GPUTexture* mSplatChannelTextures[NUM_TEXTURE_SPLAT_CHANNELS] = { nullptr };
+
+		ER_RHI_GPUBuffer* mReadbackPositionsBuffer = nullptr;
+		ER_RHI_GPUBuffer* mTempPositionsBuffer = nullptr;
 
 		std::wstring mLevelPath;
 

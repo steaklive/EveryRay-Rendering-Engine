@@ -121,6 +121,11 @@ namespace EveryRay_Core
 		DeleteObject(mTerrainPlacementPassRS);
 		mTerrainConstantBuffer.Release();
 		mPlaceOnTerrainConstantBuffer.Release();
+
+		ReadbackPlacedPositionsOnInitEvent->RemoveAllListeners();
+		DeleteObject(ReadbackPlacedPositionsOnInitEvent);
+		ReadbackPlacedPositionsOnUpdateEvent->RemoveAllListeners();
+		DeleteObject(ReadbackPlacedPositionsOnUpdateEvent);
 	}
 
 	void ER_Terrain::LoadTerrainData(ER_Scene* aScene)
@@ -935,26 +940,22 @@ namespace EveryRay_Core
 	// Method for displacing points on terrain (send some points to the GPU, get transformed points from the GPU).
 	// GPU does everything in a compute shader (it finds a proper terrain tile, checks for the splat channel and transforms the provided points).
 	// There is also some older functionality (USE_RAYCASTING_FOR_ON_TERRAIN_PLACEMENT) if you do not want to check heightmap collisions (fast) but use raycasts to geometry instead (slow).
-	// Warning: ideally you should not be reading back from the GPU in the same frame (-> stalling), but this method is not supposed to be called every frame
 	// 
 	// Use cases: 
 	// - placing ER_RenderingObject(s) on terrain (even their instances individually)
 	// - placing ER_Foliage patches on terrain (batch placement)
-	void ER_Terrain::PlaceOnTerrain(XMFLOAT4* positions, int positionsCount, TerrainSplatChannels splatChannel, XMFLOAT4* terrainVertices, int terrainVertexCount)
+	void ER_Terrain::PlaceOnTerrain(ER_RHI_GPUBuffer* outputBuffer, ER_RHI_GPUBuffer* inputBuffer, XMFLOAT4* positions, int positionsCount,
+		TerrainSplatChannels splatChannel, XMFLOAT4* terrainVertices, int terrainVertexCount)
 	{
+		assert(inputBuffer && outputBuffer);
 		ER_RHI* rhi = GetCore()->GetRHI();
-		ER_RHI_GPUBuffer* terrainBuffer = nullptr;
 
 #if USE_RAYCASTING_FOR_ON_TERRAIN_PLACEMENT
-		assert(terrainVertices);
-		terrainBuffer = rhi->CreateGPUBuffer();
+		ER_RHI_GPUBuffer* terrainBuffer = rhi->CreateGPUBuffer();
 		terrainBuffer->CreateGPUBufferResource(rhi, terrainVertices, terrainVertexCount, sizeof(XMFLOAT4), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
+		//...
+		//DeleteObject(terrainBuffer);
 #endif
-		ER_RHI_GPUBuffer* posBuffer = rhi->CreateGPUBuffer();
-		posBuffer->CreateGPUBufferResource(rhi, positions, positionsCount, sizeof(XMFLOAT4), false, ER_BIND_UNORDERED_ACCESS, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
-		ER_RHI_GPUBuffer* outputPosBuffer = rhi->CreateGPUBuffer();
-		outputPosBuffer->CreateGPUBufferResource(rhi, positions, positionsCount, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L /*legacy from DX11*/, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
-
 		rhi->SetRootSignature(mTerrainPlacementPassRS, true);		
 		if (!rhi->IsPSOReady(mTerrainPlacementPassPSOName, true))
 		{
@@ -973,36 +974,39 @@ namespace EveryRay_Core
 			mTerrainPlacementPassRS, PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
 		rhi->SetShaderResources(ER_COMPUTE, { mTerrainTilesDataGPU, mTerrainTilesHeightmapsArrayTexture, mTerrainTilesSplatmapsArrayTexture }, 0,
 			mTerrainPlacementPassRS, PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
-		rhi->SetUnorderedAccessResources(ER_COMPUTE, { posBuffer }, 0,
+		rhi->SetUnorderedAccessResources(ER_COMPUTE, { inputBuffer }, 0,
 			mTerrainPlacementPassRS, PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
 		rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_BILINEAR_CLAMP, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
-		rhi->Dispatch(1024, 1, 1);
+		rhi->Dispatch(512, 1, 1);
 		rhi->UnsetPSO();
+		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 
-		// Read-back (GPU to CPU) new positions from placement compute pass
-		// WARNING: we are doing that in a current frame and waiting when GPU is finished => this produces a stall
-		// Ideally we should do that in async (on modern APIs) or read back on CPU in the next frame
+#ifdef ER_PLATFORM_WIN64_DX11
+		ReadbackPlacedPositions(outputBuffer, inputBuffer, positions, positionsCount); //direct readback in the dx11 immediate context
+#endif
+	}
+
+	// Read-back (GPU to CPU) new positions from placement compute pass
+	// WARNING: we are doing that in a current frame and waiting when GPU is finished => this produces a stall
+	// Ideally we should do that in async (on modern APIs) or read back on CPU in the next frame
+	void ER_Terrain::ReadbackPlacedPositions(ER_RHI_GPUBuffer* outputBuffer, ER_RHI_GPUBuffer* inputBuffer, XMFLOAT4* positions, int positionsCount)
+	{
+		ER_RHI* rhi = GetCore()->GetRHI();
+
 		rhi->BeginCopyCommandList();
-		rhi->CopyBuffer(outputPosBuffer, posBuffer, 0, true);
+		rhi->CopyBuffer(outputBuffer, inputBuffer, 0, true);
 		rhi->EndCopyCommandList();
 		rhi->ExecuteCopyCommandList(); // it will wait for GPU on a copy fence in this method, too
 
 		void* outputData = nullptr;
-		rhi->BeginBufferRead(outputPosBuffer, &outputData);
+		rhi->BeginBufferRead(outputBuffer, &outputData);
 		{
 			assert(outputData);
 			XMFLOAT4* newPositions = reinterpret_cast<XMFLOAT4*>(outputData);
 			for (size_t i = 0; i < positionsCount; i++)
 				positions[i] = newPositions[i];
 		}
-		rhi->EndBufferRead(outputPosBuffer);
-
-		// Unbind resources for CS
-		rhi->UnbindResourcesFromShader(ER_COMPUTE);
-
-		DeleteObject(posBuffer);
-		DeleteObject(outputPosBuffer);
-		DeleteObject(terrainBuffer);
+		rhi->EndBufferRead(outputBuffer);
 	}
 
 	HeightMap::HeightMap(int width, int height)

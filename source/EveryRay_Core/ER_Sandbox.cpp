@@ -197,6 +197,12 @@ namespace EveryRay_Core {
 
 		rhi->EndGraphicsCommandList(rhi->GetPrepareGraphicsCommandListIndex());
 		rhi->ExecuteCommandLists(rhi->GetPrepareGraphicsCommandListIndex());
+
+		if (mTerrain)
+		{
+			for (auto listener : mTerrain->ReadbackPlacedPositionsOnInitEvent->GetListeners())
+				listener();
+		}
     }
 
 	void ER_Sandbox::Update(ER_Core& game, const ER_CoreTime& gameTime)
