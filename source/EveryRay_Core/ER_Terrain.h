@@ -49,9 +49,12 @@ namespace EveryRay_Core
 	};
 
 	namespace TerrainCBufferData {
+		struct ER_ALIGN_GPU_BUFFER TerrainShadowCB {
+			XMMATRIX LightViewProjection;
+		};
+
 		struct ER_ALIGN_GPU_BUFFER TerrainCB {
 			XMMATRIX ShadowMatrices[NUM_SHADOW_CASCADES];
-			XMMATRIX WorldLightViewProjection;
 			XMMATRIX World;
 			XMMATRIX View;
 			XMMATRIX Projection;
@@ -174,6 +177,7 @@ namespace EveryRay_Core
 
 		ER_DirectionalLight& mDirectionalLight;
 
+		ER_RHI_GPUConstantBuffer<TerrainCBufferData::TerrainShadowCB> mTerrainShadowBuffers[NUM_SHADOW_CASCADES];
 		std::vector<ER_RHI_GPUConstantBuffer<TerrainCBufferData::TerrainCB>> mTerrainConstantBuffers; //ugly way for dx12 (I'd better have arrays in cbuffer)
 		ER_RHI_GPUConstantBuffer<TerrainCBufferData::PlaceOnTerrainData> mPlaceOnTerrainConstantBuffer;
 

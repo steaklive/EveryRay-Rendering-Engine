@@ -23,7 +23,6 @@ static const int DETAIL_TEXTURE_REPEAT = 32;
 cbuffer TerrainDataCBuffer : register(b0)
 {
     float4x4 ShadowMatrices[NUM_OF_SHADOW_CASCADES];
-    float4x4 WorldLightViewProjection; //for shadow map generation pass
     float4x4 World;
     float4x4 View;
     float4x4 Projection;
@@ -38,6 +37,11 @@ cbuffer TerrainDataCBuffer : register(b0)
     float TessellationFactorDynamic;
     float DistanceFactor;
     float TileSize;
+};
+
+cbuffer TerrainShadowDataCBuffer : register(b1)
+{
+    float4x4 LightViewProjection;
 };
 
 struct VS_INPUT_TS
@@ -223,7 +227,8 @@ DS_OUTPUT DSShadowMap(PatchData input, float2 uv : SV_DomainLocation, OutputPatc
     vertexPosition.y = TerrainHeightScale * height;
     
 	// writing output params
-    output.position = mul(float4(vertexPosition, 1.0), WorldLightViewProjection);
+    float4x4 wlvp = mul(World, LightViewProjection);
+    output.position = mul(float4(vertexPosition, 1.0), wlvp);
     output.Depth = output.position.zw;
  
     return output;
