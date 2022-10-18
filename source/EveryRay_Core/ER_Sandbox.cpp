@@ -201,7 +201,8 @@ namespace EveryRay_Core {
 		if (mTerrain)
 		{
 			for (auto listener : mTerrain->ReadbackPlacedPositionsOnInitEvent->GetListeners())
-				listener();
+				listener(mTerrain);
+			mTerrain->ReadbackPlacedPositionsOnInitEvent->RemoveAllListeners();
 		}
     }
 

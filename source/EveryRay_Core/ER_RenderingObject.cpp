@@ -568,7 +568,7 @@ namespace EveryRay_Core
 	// This method is not supposed to run every frame, but during initialization or on request
 	void ER_RenderingObject::PlaceProcedurallyOnTerrain()
 	{
-		ER_Terrain* terrain = mCore->GetLevel()->mTerrain;
+		/*ER_Terrain* terrain = mCore->GetLevel()->mTerrain;
 		if (!terrain || !terrain->IsLoaded())
 			return;
 
@@ -613,7 +613,7 @@ namespace EveryRay_Core
 			DeleteObjects(instancesPositions);
 		}
 		mIsTerrainPlacementFinished = true;
-		
+		*/
 	}
 	void ER_RenderingObject::Update(const ER_CoreTime& time)
 	{
@@ -629,8 +629,8 @@ namespace EveryRay_Core
 		}
 
 		// place procedurally on terrain (only executed once, on load)
-		if (mIsTerrainPlacement && !mIsTerrainPlacementFinished)
-			PlaceProcedurallyOnTerrain();
+		//if (mIsTerrainPlacement && !mIsTerrainPlacementFinished)
+		//	PlaceProcedurallyOnTerrain();
 
 		//update AABBs (global and instanced)
 		{
@@ -804,23 +804,23 @@ namespace EveryRay_Core
 			}
 
 			//terrain
-			{
-				ImGui::Combo("Terrain splat channel", &currentSplatChannnel, DisplayedSplatChannnelNames, 5);
-				TerrainSplatChannels currentChannel = (TerrainSplatChannels)currentSplatChannnel;
-				ER_Terrain* terrain = mCore->GetLevel()->mTerrain;
-
-				if (ImGui::Button("Place on terrain") && terrain && terrain->IsLoaded())
-				{
-					XMFLOAT4 currentPos;
-					ER_MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), currentPos);
-					terrain->PlaceOnTerrain(&currentPos, 1, currentChannel);
-
-					mMatrixTranslation[0] = currentPos.x;
-					mMatrixTranslation[1] = currentPos.y;
-					mMatrixTranslation[2] = currentPos.z;
-					ImGuizmo::RecomposeMatrixFromComponents(mMatrixTranslation, mMatrixRotation, mMatrixScale, matrix);
-				}
-			}
+			//{
+			//	ImGui::Combo("Terrain splat channel", &currentSplatChannnel, DisplayedSplatChannnelNames, 5);
+			//	TerrainSplatChannels currentChannel = (TerrainSplatChannels)currentSplatChannnel;
+			//	ER_Terrain* terrain = mCore->GetLevel()->mTerrain;
+			//
+			//	if (ImGui::Button("Place on terrain") && terrain && terrain->IsLoaded())
+			//	{
+			//		XMFLOAT4 currentPos;
+			//		ER_MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), currentPos);
+			//		terrain->PlaceOnTerrain(&currentPos, 1, currentChannel);
+			//
+			//		mMatrixTranslation[0] = currentPos.x;
+			//		mMatrixTranslation[1] = currentPos.y;
+			//		mMatrixTranslation[2] = currentPos.z;
+			//		ImGuizmo::RecomposeMatrixFromComponents(mMatrixTranslation, mMatrixRotation, mMatrixScale, matrix);
+			//	}
+			//}
 
 			//Transforms
 			if (ImGui::IsKeyPressed(84))

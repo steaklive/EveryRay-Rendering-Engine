@@ -160,7 +160,7 @@ namespace EveryRay_Core
 		bool IsEnabled() { return mEnabled; }
 		bool IsLoaded() { return mLoaded; }
 
-		using Delegate_ReadbackPlacedPositions = std::function<void()>;
+		using Delegate_ReadbackPlacedPositions = std::function<void(ER_Terrain* aTerrain)>;
 		ER_GenericEvent<Delegate_ReadbackPlacedPositions>* ReadbackPlacedPositionsOnInitEvent = new ER_GenericEvent<Delegate_ReadbackPlacedPositions>();
 		ER_GenericEvent<Delegate_ReadbackPlacedPositions>* ReadbackPlacedPositionsOnUpdateEvent = new ER_GenericEvent<Delegate_ReadbackPlacedPositions>();
 	private:
@@ -174,7 +174,7 @@ namespace EveryRay_Core
 
 		ER_DirectionalLight& mDirectionalLight;
 
-		ER_RHI_GPUConstantBuffer<TerrainCBufferData::TerrainCB> mTerrainConstantBuffer;
+		std::vector<ER_RHI_GPUConstantBuffer<TerrainCBufferData::TerrainCB>> mTerrainConstantBuffers; //ugly way for dx12 (I'd better have arrays in cbuffer)
 		ER_RHI_GPUConstantBuffer<TerrainCBufferData::PlaceOnTerrainData> mPlaceOnTerrainConstantBuffer;
 
 		ER_RHI_InputLayout* mInputLayout = nullptr;

@@ -95,7 +95,6 @@ namespace EveryRay_Core
 				mTerrainPlacementPassRS->Finalize(rhi, "Terrain Placement Pass Root Signature");
 			}
 		}
-		mTerrainConstantBuffer.Initialize(rhi);
 		mPlaceOnTerrainConstantBuffer.Initialize(rhi);
 	}
 
@@ -119,7 +118,8 @@ namespace EveryRay_Core
 		DeleteObject(mTerrainTilesSplatmapsArrayTexture);
 		DeleteObject(mTerrainCommonPassRS);
 		DeleteObject(mTerrainPlacementPassRS);
-		mTerrainConstantBuffer.Release();
+		for (auto& buffer: mTerrainConstantBuffers)
+			buffer.Release();
 		mPlaceOnTerrainConstantBuffer.Release();
 
 		ReadbackPlacedPositionsOnInitEvent->RemoveAllListeners();
@@ -168,7 +168,11 @@ namespace EveryRay_Core
 		); //not thread-safe
 
 		for (int i = 0; i < mNumTiles; i++)
+		{
 			LoadTile(i, path); //not thread-safe
+			mTerrainConstantBuffers.push_back(ER_RHI_GPUConstantBuffer<TerrainCBufferData::TerrainCB>());
+			mTerrainConstantBuffers.back().Initialize(rhi);
+		}
 
 		int tileSize = mTileScale * mTileResolution;
 		TerrainTileDataGPU* terrainTilesDataCPUBuffer = new TerrainTileDataGPU[mNumTiles];
@@ -518,6 +522,8 @@ namespace EveryRay_Core
 		if (aPass == TerrainRenderPass::TERRAIN_SHADOW)
 			assert(shadowMapCascade != -1);
 		
+		assert(mTerrainConstantBuffers.size() > tileIndex);
+
 		//for shadow mapping pass we dont want to cull with main camera frustum
 		if (mHeightMaps[tileIndex]->IsCulled() && (aPass == TerrainRenderPass::TERRAIN_FORWARD || aPass == TerrainRenderPass::TERRAIN_GBUFFER))
 			return;
@@ -538,17 +544,24 @@ namespace EveryRay_Core
 
 		rhi->SetRootSignature(rootSig);
 		rhi->SetVertexBuffers({ mHeightMaps[tileIndex]->mVertexBufferTS });
+		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_CONTROL_POINT_PATCHLIST);
 
 		if (!rhi->IsPSOReady(psoName))
 		{
 			rhi->InitializePSO(psoName);
+			rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_CONTROL_POINT_PATCHLIST);
+			rhi->SetInputLayout(mInputLayout);
 			rhi->SetShader(mVS);
 			rhi->SetShader(mHS);
 			rhi->SetRootSignatureToPSO(psoName, rootSig);
+			rhi->SetBlendState(ER_RHI_BLEND_STATE::ER_NO_BLEND);
+			rhi->SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
 			if (aPass == TerrainRenderPass::TERRAIN_SHADOW)
 			{
 				rhi->SetShader(mDS_ShadowMap);
 				rhi->SetShader(mPS_ShadowMap);
+				rhi->SetRenderTargetFormats({}, worldShadowMapper->GetShadowTexture(shadowMapCascade));
+				rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_SHADOW_RS);
 			}
 			else 
 			{
@@ -557,14 +570,11 @@ namespace EveryRay_Core
 					rhi->SetShader(mPS);
 				else if (aPass == TerrainRenderPass::TERRAIN_GBUFFER)
 					rhi->SetShader(mPS_GBuffer);
-			}
 
-			if (aPass == TerrainRenderPass::TERRAIN_SHADOW)
-				rhi->SetRenderTargetFormats({}, worldShadowMapper->GetShadowTexture(shadowMapCascade));
-			else
+				rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING);
 				rhi->SetRenderTargetFormats(aRenderTargets, aDepthTarget);
-			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_CONTROL_POINT_PATCHLIST);
-			rhi->SetInputLayout(mInputLayout);
+			}
+				
 			rhi->FinalizePSO(psoName);
 		}
 		rhi->SetPSO(psoName);
@@ -574,35 +584,35 @@ namespace EveryRay_Core
 			if (worldShadowMapper && aPass != TerrainRenderPass::TERRAIN_GBUFFER)
 			{
 				for (int cascade = 0; cascade < NUM_SHADOW_CASCADES; cascade++)
-					mTerrainConstantBuffer.Data.ShadowMatrices[cascade] = XMMatrixTranspose(worldShadowMapper->GetViewMatrix(cascade) * worldShadowMapper->GetProjectionMatrix(cascade) * XMLoadFloat4x4(&ER_MatrixHelper::GetProjectionShadowMatrix()));
-				mTerrainConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / worldShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
-				mTerrainConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ camera->GetCameraFarShadowCascadeDistance(0), camera->GetCameraFarShadowCascadeDistance(1), camera->GetCameraFarShadowCascadeDistance(2), 1.0f };
+					mTerrainConstantBuffers[tileIndex].Data.ShadowMatrices[cascade] = XMMatrixTranspose(worldShadowMapper->GetViewMatrix(cascade) * worldShadowMapper->GetProjectionMatrix(cascade) * XMLoadFloat4x4(&ER_MatrixHelper::GetProjectionShadowMatrix()));
+				mTerrainConstantBuffers[tileIndex].Data.ShadowTexelSize = XMFLOAT4{ 1.0f / worldShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
+				mTerrainConstantBuffers[tileIndex].Data.ShadowCascadeDistances = XMFLOAT4{ camera->GetCameraFarShadowCascadeDistance(0), camera->GetCameraFarShadowCascadeDistance(1), camera->GetCameraFarShadowCascadeDistance(2), 1.0f };
 
 				if (shadowMapCascade != -1)
 				{
 					XMMATRIX lvp = worldShadowMapper->GetViewMatrix(shadowMapCascade) * worldShadowMapper->GetProjectionMatrix(shadowMapCascade);
-					mTerrainConstantBuffer.Data.WorldLightViewProjection = XMMatrixTranspose(mHeightMaps[tileIndex]->mWorldMatrixTS * lvp);
+					mTerrainConstantBuffers[tileIndex].Data.WorldLightViewProjection = XMMatrixTranspose(mHeightMaps[tileIndex]->mWorldMatrixTS * lvp);
 				}
 			}
 
-			mTerrainConstantBuffer.Data.World = XMMatrixTranspose(mHeightMaps[tileIndex]->mWorldMatrixTS);
-			mTerrainConstantBuffer.Data.View = XMMatrixTranspose(camera->ViewMatrix());
-			mTerrainConstantBuffer.Data.Projection = XMMatrixTranspose(camera->ProjectionMatrix());
-			mTerrainConstantBuffer.Data.SunDirection = XMFLOAT4(-mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f);
-			mTerrainConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLight.GetDirectionalLightIntensity() };
-			mTerrainConstantBuffer.Data.CameraPosition = XMFLOAT4(camera->Position().x, camera->Position().y, camera->Position().z, 1.0f);
-			mTerrainConstantBuffer.Data.TessellationFactor = static_cast<float>(mTessellationFactor);
-			mTerrainConstantBuffer.Data.TerrainHeightScale = mTerrainTessellatedHeightScale;
-			mTerrainConstantBuffer.Data.TessellationFactorDynamic = static_cast<float>(mTessellationFactorDynamic);
-			mTerrainConstantBuffer.Data.UseDynamicTessellation = mUseDynamicTessellation ? 1.0f : 0.0f;
-			mTerrainConstantBuffer.Data.DistanceFactor = mTessellationDistanceFactor;
-			mTerrainConstantBuffer.Data.TileSize = mTileResolution * mTileScale;
-			mTerrainConstantBuffer.ApplyChanges(rhi);
+			mTerrainConstantBuffers[tileIndex].Data.World = XMMatrixTranspose(mHeightMaps[tileIndex]->mWorldMatrixTS);
+			mTerrainConstantBuffers[tileIndex].Data.View = XMMatrixTranspose(camera->ViewMatrix());
+			mTerrainConstantBuffers[tileIndex].Data.Projection = XMMatrixTranspose(camera->ProjectionMatrix());
+			mTerrainConstantBuffers[tileIndex].Data.SunDirection = XMFLOAT4(-mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f);
+			mTerrainConstantBuffers[tileIndex].Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLight.GetDirectionalLightIntensity() };
+			mTerrainConstantBuffers[tileIndex].Data.CameraPosition = XMFLOAT4(camera->Position().x, camera->Position().y, camera->Position().z, 1.0f);
+			mTerrainConstantBuffers[tileIndex].Data.TessellationFactor = static_cast<float>(mTessellationFactor);
+			mTerrainConstantBuffers[tileIndex].Data.TerrainHeightScale = mTerrainTessellatedHeightScale;
+			mTerrainConstantBuffers[tileIndex].Data.TessellationFactorDynamic = static_cast<float>(mTessellationFactorDynamic);
+			mTerrainConstantBuffers[tileIndex].Data.UseDynamicTessellation = mUseDynamicTessellation ? 1.0f : 0.0f;
+			mTerrainConstantBuffers[tileIndex].Data.DistanceFactor = mTessellationDistanceFactor;
+			mTerrainConstantBuffers[tileIndex].Data.TileSize = mTileResolution * mTileScale;
+			mTerrainConstantBuffers[tileIndex].ApplyChanges(rhi);
 
-			rhi->SetConstantBuffers(ER_VERTEX, { mTerrainConstantBuffer.Buffer() }, 0, rootSig, TERRAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
-			rhi->SetConstantBuffers(ER_TESSELLATION_HULL, { mTerrainConstantBuffer.Buffer() }, 0, rootSig, TERRAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
-			rhi->SetConstantBuffers(ER_TESSELLATION_DOMAIN, { mTerrainConstantBuffer.Buffer() }, 0, rootSig, TERRAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
-			rhi->SetConstantBuffers(ER_PIXEL, { mTerrainConstantBuffer.Buffer() }, 0, rootSig, TERRAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+			rhi->SetConstantBuffers(ER_VERTEX, { mTerrainConstantBuffers[tileIndex].Buffer() }, 0, rootSig, TERRAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+			rhi->SetConstantBuffers(ER_TESSELLATION_HULL, { mTerrainConstantBuffers[tileIndex].Buffer() }, 0, rootSig, TERRAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+			rhi->SetConstantBuffers(ER_TESSELLATION_DOMAIN, { mTerrainConstantBuffers[tileIndex].Buffer() }, 0, rootSig, TERRAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+			rhi->SetConstantBuffers(ER_PIXEL, { mTerrainConstantBuffers[tileIndex].Buffer() }, 0, rootSig, TERRAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 
 			std::vector<ER_RHI_GPUResource*> resources(19);
 			resources[0] = mHeightMaps[tileIndex]->mSplatTexture;

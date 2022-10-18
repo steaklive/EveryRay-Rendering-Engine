@@ -56,6 +56,7 @@ namespace EveryRay_Core
 		for (auto& foliage : mFoliageCollection) {
 			name = "Foliage zone #" + std::to_string(zoneIndex);
 			foliage->SetName(name);
+			foliage->Initialize();
 			zoneIndex++;
 		}
 
@@ -198,8 +199,6 @@ namespace EveryRay_Core
 
 		mAlbedoTexture = rhi->CreateGPUTexture();
 		mAlbedoTexture->CreateGPUTextureResource(rhi, textureName, true);
-
-		Initialize();
 	}
 
 	ER_Foliage::~ER_Foliage()
@@ -290,9 +289,10 @@ namespace EveryRay_Core
 				terrain->PlaceOnTerrain(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mCurrentPositions, mPatchesCount, (TerrainSplatChannels)mTerrainSplatChannel);
 #ifndef ER_PLATFORM_WIN64_DX11
 				std::string eventName = "On-terrain placement callback - initialization of foliage: " + mName;
-				terrain->ReadbackPlacedPositionsOnInitEvent->AddListener(eventName, [&]()
+				terrain->ReadbackPlacedPositionsOnInitEvent->AddListener(eventName, [&](ER_Terrain* aTerrain)
 					{ 
-						terrain->ReadbackPlacedPositions(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mCurrentPositions, mPatchesCount);
+						assert(aTerrain);
+						aTerrain->ReadbackPlacedPositions(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mCurrentPositions, mPatchesCount);
 						UpdateBuffersCPU();
 						UpdateBuffersGPU();
 						UpdateAABB();
@@ -538,9 +538,10 @@ namespace EveryRay_Core
 						terrain->PlaceOnTerrain(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mCurrentPositions, mPatchesCount, currentChannel);
 #ifndef ER_PLATFORM_WIN64_DX11
 						std::string eventName = "On-terrain placement callback - update of foliage: " + mName;
-						terrain->ReadbackPlacedPositionsOnUpdateEvent->AddListener(eventName, [&]()
-							{ 
-								terrain->ReadbackPlacedPositions(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mCurrentPositions, mPatchesCount); 
+						terrain->ReadbackPlacedPositionsOnUpdateEvent->AddListener(eventName, [&](ER_Terrain* aTerrain)
+							{
+								assert(aTerrain);
+								aTerrain->ReadbackPlacedPositions(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mCurrentPositions, mPatchesCount); 
 								UpdateBuffersCPU();
 								UpdateBuffersGPU();
 								UpdateAABB();
