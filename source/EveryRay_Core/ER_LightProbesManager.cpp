@@ -214,7 +214,7 @@ namespace EveryRay_Core
 		XMFLOAT3* diffuseProbesPositionsCPUBuffer = new XMFLOAT3[mDiffuseProbesCountTotal];
 		for (int probeIndex = 0; probeIndex < mDiffuseProbesCountTotal; probeIndex++)
 			diffuseProbesPositionsCPUBuffer[probeIndex] = mDiffuseProbes[probeIndex]->GetPosition();
-		mDiffuseProbesPositionsGPUBuffer = rhi->CreateGPUBuffer();
+		mDiffuseProbesPositionsGPUBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: diffuse probes positions buffer");
 		mDiffuseProbesPositionsGPUBuffer->CreateGPUBufferResource(rhi, diffuseProbesPositionsCPUBuffer, mDiffuseProbesCountTotal, sizeof(XMFLOAT3), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 		DeleteObjects(diffuseProbesPositionsCPUBuffer);
 
@@ -230,7 +230,7 @@ namespace EveryRay_Core
 					diffuseProbeCellsIndicesCPUBuffer[probeIndex * PROBE_COUNT_PER_CELL + indices] = mDiffuseProbesCells[probeIndex].lightProbeIndices[indices];
 			}
 		}
-		mDiffuseProbesCellsIndicesGPUBuffer = rhi->CreateGPUBuffer();
+		mDiffuseProbesCellsIndicesGPUBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: diffuse probes cells indices buffer");
 		mDiffuseProbesCellsIndicesGPUBuffer->CreateGPUBufferResource(rhi, diffuseProbeCellsIndicesCPUBuffer, mDiffuseProbesCellsCountTotal * PROBE_COUNT_PER_CELL, sizeof(int), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 		DeleteObjects(diffuseProbeCellsIndicesCPUBuffer);
 		
@@ -334,7 +334,7 @@ namespace EveryRay_Core
 		XMFLOAT3* specularProbesPositionsCPUBuffer = new XMFLOAT3[mSpecularProbesCountTotal];
 		for (int probeIndex = 0; probeIndex < mSpecularProbesCountTotal; probeIndex++)
 			specularProbesPositionsCPUBuffer[probeIndex] = mSpecularProbes[probeIndex]->GetPosition();
-		mSpecularProbesPositionsGPUBuffer = rhi->CreateGPUBuffer();
+		mSpecularProbesPositionsGPUBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: specular probes positions buffer");
 		mSpecularProbesPositionsGPUBuffer->CreateGPUBufferResource(rhi, specularProbesPositionsCPUBuffer, mSpecularProbesCountTotal, sizeof(XMFLOAT3), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 		DeleteObjects(specularProbesPositionsCPUBuffer);
 
@@ -350,12 +350,12 @@ namespace EveryRay_Core
 					specularProbeCellsIndicesCPUBuffer[probeIndex * PROBE_COUNT_PER_CELL + indices] = mSpecularProbesCells[probeIndex].lightProbeIndices[indices];
 			}
 		}
-		mSpecularProbesCellsIndicesGPUBuffer = rhi->CreateGPUBuffer();
+		mSpecularProbesCellsIndicesGPUBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: specular probes cells indices buffer");
 		mSpecularProbesCellsIndicesGPUBuffer->CreateGPUBufferResource(rhi, specularProbeCellsIndicesCPUBuffer,	mSpecularProbesCellsCountTotal * PROBE_COUNT_PER_CELL, sizeof(int), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 		DeleteObjects(specularProbeCellsIndicesCPUBuffer);
 
 		mSpecularProbesTexArrayIndicesCPUBuffer = new int[mSpecularProbesCountTotal];
-		mSpecularProbesTexArrayIndicesGPUBuffer = rhi->CreateGPUBuffer();
+		mSpecularProbesTexArrayIndicesGPUBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: specular probes texture array indices buffer");
 		mSpecularProbesTexArrayIndicesGPUBuffer->CreateGPUBufferResource(rhi, mSpecularProbesTexArrayIndicesCPUBuffer, mSpecularProbesCountTotal, sizeof(int), true, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 
 		std::string name = "Debug specular lightprobes ";
@@ -585,7 +585,7 @@ namespace EveryRay_Core
 				for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
 					shCPUBuffer[probeIndex * SPHERICAL_HARMONICS_COEF_COUNT + i] = sh[i];
 			}
-			mDiffuseProbesSphericalHarmonicsGPUBuffer = rhi->CreateGPUBuffer();
+			mDiffuseProbesSphericalHarmonicsGPUBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: diffuse probes SH buffer");
 			mDiffuseProbesSphericalHarmonicsGPUBuffer->CreateGPUBufferResource(rhi, shCPUBuffer, mDiffuseProbesCountTotal* SPHERICAL_HARMONICS_COEF_COUNT, sizeof(XMFLOAT3),
 				false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 			DeleteObjects(shCPUBuffer);

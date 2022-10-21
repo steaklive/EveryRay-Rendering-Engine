@@ -4,7 +4,8 @@
 
 namespace EveryRay_Core
 {
-	ER_RHI_DX12_GPUBuffer::ER_RHI_DX12_GPUBuffer()
+	ER_RHI_DX12_GPUBuffer::ER_RHI_DX12_GPUBuffer(const std::string& aDebugName)
+		: mDebugName(aDebugName)
 	{
 	}
 
@@ -136,6 +137,16 @@ namespace EveryRay_Core
 			uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 			device->CreateUnorderedAccessView(mBuffer.Get(), nullptr, &uavDesc, mBufferUAVHandle.GetCPUHandle());
 		}
+
+		if (mBuffer)
+			mBuffer->SetName(ER_Utility::ToWideString(mDebugName).c_str());
+
+		for (int i = 0; i < DX12_MAX_BACK_BUFFER_COUNT; i++)
+		{
+			if (mBufferUpload[i])
+				mBufferUpload[i]->SetName(ER_Utility::ToWideString(mDebugName + " Upload frame #" + std::to_string(i)).c_str());
+		}
+
 	}
 
 	void ER_RHI_DX12_GPUBuffer::Map(ER_RHI* aRHI, void** aOutData)

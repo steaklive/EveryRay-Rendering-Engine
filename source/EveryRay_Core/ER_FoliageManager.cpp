@@ -226,8 +226,8 @@ namespace EveryRay_Core
 	{
 		auto rhi = mCore.GetRHI();
 
-		mVertexBuffer = rhi->CreateGPUBuffer();
-		mIndexBuffer = rhi->CreateGPUBuffer();
+		mVertexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Foliage - Vertex Buffer");
+		mIndexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Foliage - Index Buffer");
 		if (bType == FoliageBillboardType::SINGLE) {
 			mIsRotating = true;
 			std::unique_ptr<ER_Model> quadSingleModel(new ER_Model(mCore, ER_Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_single.obj"), true));
@@ -282,9 +282,9 @@ namespace EveryRay_Core
 				DeleteObject(mInputPositionsOnTerrainBuffer);
 				DeleteObject(mOutputPositionsOnTerrainBuffer);
 
-				mInputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer();
+				mInputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: On-terrain placement input positions buffer");
 				mInputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, mCurrentPositions, mPatchesCount, sizeof(XMFLOAT4), false, ER_BIND_UNORDERED_ACCESS, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
-				mOutputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer();
+				mOutputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: On-terrain placement output positions buffer");
 				mOutputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, mCurrentPositions, mPatchesCount, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L /*legacy from DX11*/, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
 
 				terrain->PlaceOnTerrain(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mCurrentPositions, mPatchesCount, (TerrainSplatChannels)mTerrainSplatChannel);
@@ -331,7 +331,7 @@ namespace EveryRay_Core
 			mCurrentPositions[i] = XMFLOAT4(mPatchesBufferCPU[i].xPos, mPatchesBufferCPU[i].yPos, mPatchesBufferCPU[i].zPos, 1.0f);
 		}
 
-		mInstanceBuffer = rhi->CreateGPUBuffer();
+		mInstanceBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Foliage instance buffer");
 		mInstanceBuffer->CreateGPUBufferResource(mCore.GetRHI(), mPatchesBufferGPU, instanceCount, sizeof(GPUFoliageInstanceData), true, ER_BIND_VERTEX_BUFFER);
 	}
 
@@ -531,9 +531,9 @@ namespace EveryRay_Core
 						DeleteObject(mInputPositionsOnTerrainBuffer);
 						DeleteObject(mOutputPositionsOnTerrainBuffer);
 
-						mInputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer();
+						mInputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: foliage on-terrain placement input positions buffer");
 						mInputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, mCurrentPositions, mPatchesCount, sizeof(XMFLOAT4), false, ER_BIND_UNORDERED_ACCESS, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
-						mOutputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer();
+						mOutputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: foliage on-terrain placement output positions buffer");
 						mOutputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, mCurrentPositions, mPatchesCount, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L /*legacy from DX11*/, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
 
 						terrain->PlaceOnTerrain(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mCurrentPositions, mPatchesCount, currentChannel);

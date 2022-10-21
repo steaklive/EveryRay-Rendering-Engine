@@ -7,7 +7,7 @@ namespace EveryRay_Core
 	class ER_RHI_DX12_GPUTexture : public ER_RHI_GPUTexture
 	{
 	public:
-		ER_RHI_DX12_GPUTexture();
+		ER_RHI_DX12_GPUTexture(const std::string& aDebugName);
 		virtual ~ER_RHI_DX12_GPUTexture();
 
 		virtual void CreateGPUTextureResource(ER_RHI* aRHI, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE,
@@ -64,5 +64,7 @@ namespace EveryRay_Core
 		bool mIsCubemap = false;
 		bool mIsDepthStencil = false;
 		bool mIsLoadedFromFile = false;
+
+		std::string mDebugName;
 	};
 }

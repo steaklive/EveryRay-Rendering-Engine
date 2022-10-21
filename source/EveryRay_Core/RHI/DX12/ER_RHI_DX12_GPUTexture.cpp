@@ -4,7 +4,8 @@
 
 namespace EveryRay_Core
 {
-	ER_RHI_DX12_GPUTexture::ER_RHI_DX12_GPUTexture()
+	ER_RHI_DX12_GPUTexture::ER_RHI_DX12_GPUTexture(const std::string& aDebugName)
+		: mDebugName(aDebugName)
 	{
 	}
 
@@ -284,6 +285,11 @@ namespace EveryRay_Core
 			}
 			device->CreateShaderResourceView(mResource.Get(), &sDesc, mSRVHandle.GetCPUHandle());
 		}
+
+		if (mResource)
+			mResource->SetName(ER_Utility::ToWideString(mDebugName).c_str());
+		if (mResourceUpload)
+			mResourceUpload->SetName(ER_Utility::ToWideString(mDebugName + " Upload").c_str());
 	}
 	void ER_RHI_DX12_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath /*= false*/, bool is3D, bool skipFallback, bool* statusFlag)
 	{

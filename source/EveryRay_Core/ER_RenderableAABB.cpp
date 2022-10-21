@@ -49,7 +49,7 @@ namespace EveryRay_Core
 		mMaterial = new ER_BasicColorMaterial(mCore, {}, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER);
 
 		auto rhi = mCore.GetRHI();
-		mIndexBuffer = rhi->CreateGPUBuffer();
+		mIndexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Renderable AABB - Index Buffer");
 		mIndexBuffer->CreateGPUBufferResource(rhi, AABBIndices, AABBIndexCount, sizeof(USHORT), false, ER_BIND_INDEX_BUFFER, 0, ER_RESOURCE_MISC_NONE, ER_FORMAT_R16_UINT);
 	}
 
@@ -79,7 +79,7 @@ namespace EveryRay_Core
 		mVertices[7] = XMFLOAT4(aabb[0].x, aabb[0].y, aabb[1].z, 1.0f);
 
 		auto rhi = mCore.GetRHI();
-		mVertexBuffer = rhi->CreateGPUBuffer();
+		mVertexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Renderable AABB - Vertex Buffer");
 		mVertexBuffer->CreateGPUBufferResource(rhi, mVertices, AABBVertexCount, sizeof(VertexPosition), true, ER_BIND_VERTEX_BUFFER);
 	}
 

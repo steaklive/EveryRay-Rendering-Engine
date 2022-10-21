@@ -49,9 +49,9 @@ namespace EveryRay_Core
 		std::unique_ptr<ER_Model> model(new ER_Model(mCore, ER_Utility::GetFilePath("content\\models\\sphere_lowpoly.obj"), true));
 
 		auto& meshes = model->Meshes();
-		mVertexBuffer = rhi->CreateGPUBuffer();
+		mVertexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Skybox - Vertex Buffer");
 		meshes[0].CreateVertexBuffer_Position(mVertexBuffer);
-		mIndexBuffer = rhi->CreateGPUBuffer();
+		mIndexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Skybox - Index Buffer");
 		meshes[0].CreateIndexBuffer(mIndexBuffer);
 		mIndexCount = meshes[0].Indices().size();
 

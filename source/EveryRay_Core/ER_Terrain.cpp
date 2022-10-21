@@ -185,7 +185,7 @@ namespace EveryRay_Core
 			terrainTilesDataCPUBuffer[tileIndex].AABBMinPoint = XMFLOAT4(mHeightMaps[tileIndex]->mAABB.first.x, mHeightMaps[tileIndex]->mAABB.first.y, mHeightMaps[tileIndex]->mAABB.first.z, 1.0);
 			terrainTilesDataCPUBuffer[tileIndex].AABBMaxPoint = XMFLOAT4(mHeightMaps[tileIndex]->mAABB.second.x, mHeightMaps[tileIndex]->mAABB.second.y, mHeightMaps[tileIndex]->mAABB.second.z, 1.0);
 		}
-		mTerrainTilesDataGPU = rhi->CreateGPUBuffer();
+		mTerrainTilesDataGPU = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Terrain Tiles Data Buffer");
 		mTerrainTilesDataGPU->CreateGPUBufferResource(rhi, terrainTilesDataCPUBuffer, mNumTiles, sizeof(TerrainTileDataGPU), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 		DeleteObjects(terrainTilesDataCPUBuffer);
 
@@ -314,7 +314,7 @@ namespace EveryRay_Core
 			}
 		}
 
-		mHeightMaps[tileIndex]->mVertexBufferTS = rhi->CreateGPUBuffer();
+		mHeightMaps[tileIndex]->mVertexBufferTS = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Terrain Tile (TS) - Vertex Buffer, tile index: " + std::to_string(tileIndex));
 		mHeightMaps[tileIndex]->mVertexBufferTS->CreateGPUBufferResource(rhi, patches_rawdata, NUM_TERRAIN_PATCHES_PER_TILE * NUM_TERRAIN_PATCHES_PER_TILE, numOfFloats * sizeof(float), false, ER_BIND_VERTEX_BUFFER);
 
 		DeleteObjects(patches_rawdata);
@@ -439,7 +439,7 @@ namespace EveryRay_Core
 				}
 			}
 
-			mHeightMaps[tileIndex]->mVertexBufferNonTS = rhi->CreateGPUBuffer();
+			mHeightMaps[tileIndex]->mVertexBufferNonTS = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Terrain Tile (non-TS) - Vertex Buffer, tile index: " + std::to_string(tileIndex));
 			mHeightMaps[tileIndex]->mVertexBufferNonTS->CreateGPUBufferResource(rhi, vertices, mHeightMaps[tileIndex]->mVertexCountNonTS, sizeof(DebugTerrainVertexInput), false, ER_BIND_VERTEX_BUFFER);
 
 			XMFLOAT3 minVertex = XMFLOAT3(FLT_MAX, FLT_MAX, FLT_MAX);
@@ -466,7 +466,7 @@ namespace EveryRay_Core
 
 			DeleteObjects(vertices);
 
-			mHeightMaps[tileIndex]->mIndexBufferNonTS = rhi->CreateGPUBuffer();
+			mHeightMaps[tileIndex]->mIndexBufferNonTS = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Terrain Tile (non-TS) - Index Buffer, tile index: " + std::to_string(tileIndex));
 			mHeightMaps[tileIndex]->mIndexBufferNonTS->CreateGPUBufferResource(rhi, indices, mHeightMaps[tileIndex]->mIndexCountNonTS, sizeof(unsigned long), false, ER_BIND_INDEX_BUFFER);
 
 			DeleteObjects(indices);
@@ -987,7 +987,7 @@ namespace EveryRay_Core
 		ER_RHI* rhi = GetCore()->GetRHI();
 
 #if USE_RAYCASTING_FOR_ON_TERRAIN_PLACEMENT
-		ER_RHI_GPUBuffer* terrainBuffer = rhi->CreateGPUBuffer();
+		ER_RHI_GPUBuffer* terrainBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Terrain raycasting placement data");
 		terrainBuffer->CreateGPUBufferResource(rhi, terrainVertices, terrainVertexCount, sizeof(XMFLOAT4), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 		//...
 		//DeleteObject(terrainBuffer);

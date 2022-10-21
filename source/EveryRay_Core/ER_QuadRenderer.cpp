@@ -47,10 +47,10 @@ namespace EveryRay_Core {
 		indices[4] = 3;
 		indices[5] = 0;
 
-		mVertexBuffer = rhi->CreateGPUBuffer();
+		mVertexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: QuadRenderer - Vertex Buffer");
 		mVertexBuffer->CreateGPUBufferResource(rhi, vertices, 6, sizeof(QuadVertex), false, ER_BIND_VERTEX_BUFFER);
 
-		mIndexBuffer = rhi->CreateGPUBuffer();
+		mIndexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: QuadRenderer - Index Buffer");
 		mIndexBuffer->CreateGPUBufferResource(rhi, indices, 6, sizeof(unsigned long), false, ER_BIND_INDEX_BUFFER, 0, ER_RESOURCE_MISC_NONE, ER_FORMAT_R32_UINT);
 
 		ER_RHI_INPUT_ELEMENT_DESC inputLayoutDesc[2];

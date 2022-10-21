@@ -7,7 +7,7 @@ namespace EveryRay_Core
 	class ER_RHI_DX12_GPUBuffer : public ER_RHI_GPUBuffer
 	{
 	public:
-		ER_RHI_DX12_GPUBuffer();
+		ER_RHI_DX12_GPUBuffer(const std::string& aDebugName);
 		virtual ~ER_RHI_DX12_GPUBuffer();
 
 		virtual void CreateGPUBufferResource(ER_RHI* aRHI, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic = false, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, ER_RHI_RESOURCE_MISC_FLAG miscFlags = ER_RESOURCE_MISC_NONE, ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN) override;
@@ -60,5 +60,7 @@ namespace EveryRay_Core
 		ER_RHI_BIND_FLAG mBindFlags;
 		unsigned char* mMappedData[DX12_MAX_BACK_BUFFER_COUNT];
 		bool mIsDynamic = false;
+
+		std::string mDebugName;
 	};
 }

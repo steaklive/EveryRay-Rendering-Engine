@@ -305,7 +305,7 @@ namespace EveryRay_Core
 		assert(mMeshesRenderBuffers.size() - 1 == lod);
 
 		auto createIndexBuffer = [this, rhi](const ER_Mesh& aMesh, int meshIndex, int lod, const std::string& materialName) {
-			mMeshesRenderBuffers[lod][materialName][meshIndex]->IndexBuffer = rhi->CreateGPUBuffer();
+			mMeshesRenderBuffers[lod][materialName][meshIndex]->IndexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject - Index Buffer: " + mName + ", mat: " + materialName + ", lod: " + std::to_string(lod) + ", mesh: " + std::to_string(meshIndex));
 			aMesh.CreateIndexBuffer(mMeshesRenderBuffers[lod][materialName][meshIndex]->IndexBuffer);
 			mMeshesRenderBuffers[lod][materialName][meshIndex]->IndicesCount = aMesh.Indices().size();
 		};
@@ -316,7 +316,7 @@ namespace EveryRay_Core
 			for (size_t i = 0; i < mMeshesCount[lod]; i++)
 			{
 				mMeshesRenderBuffers[lod][material.first].push_back(new RenderBufferData());
-				mMeshesRenderBuffers[lod][material.first][i]->VertexBuffer = rhi->CreateGPUBuffer();
+				mMeshesRenderBuffers[lod][material.first][i]->VertexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject - Vertex Buffer: " + mName + ", mat: " + material.first + ", lod: " + std::to_string(lod) + ", mesh: " + std::to_string(i));
 				material.second->CreateVertexBuffer((lod == 0) ? mModel->GetMesh(i) : mModelLODs[lod - 1]->GetMesh(i), mMeshesRenderBuffers[lod][material.first][i]->VertexBuffer);
 				createIndexBuffer((lod == 0) ? mModel->GetMesh(i) : mModelLODs[lod - 1]->GetMesh(i), i, lod, material.first);
 
@@ -332,7 +332,7 @@ namespace EveryRay_Core
 			for (size_t i = 0; i < mMeshesCount[lod]; i++)
 			{
 				mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName].push_back(new RenderBufferData());
-				mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer = rhi->CreateGPUBuffer();
+				mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject - Vertex Buffer: " + mName + ", mat: " + ER_MaterialHelper::forwardLightingNonMaterialName + ", lod: " + std::to_string(lod) + ", mesh: " + std::to_string(i));
 
 				if (lod == 0)
 					mModel->GetMesh(i).CreateVertexBuffer_PositionUvNormalTangent(mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer);
@@ -462,7 +462,7 @@ namespace EveryRay_Core
 		for (size_t i = 0; i < mMeshesCount[lod]; i++)
 		{
 			mMeshesInstanceBuffers[lod].push_back(new InstanceBufferData());
-			mMeshesInstanceBuffers[lod][i]->InstanceBuffer = rhi->CreateGPUBuffer();
+			mMeshesInstanceBuffers[lod][i]->InstanceBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject - Instance Buffer: " + mName + ", lod: " + std::to_string(lod) + ", mesh: " + std::to_string(i));
 			CreateInstanceBuffer(&mInstanceData[lod][0], MAX_INSTANCE_COUNT, mMeshesInstanceBuffers[lod][i]->InstanceBuffer);
 			mMeshesInstanceBuffers[lod][i]->Stride = sizeof(InstancedData);
 		}
@@ -609,9 +609,9 @@ namespace EveryRay_Core
 				DeleteObject(mInputPositionsOnTerrainBuffer);
 				DeleteObject(mOutputPositionsOnTerrainBuffer);
 
-				mInputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer();
+				mInputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject on-terrain placement input positions buffer: " + mName);
 				mInputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, &currentPos, 1, sizeof(XMFLOAT4), false, ER_BIND_UNORDERED_ACCESS, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
-				mOutputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer();
+				mOutputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject on-terrain placement output positions buffer: " + mName);
 				mOutputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, &currentPos, 1, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L /*legacy from DX11*/, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
 
 				terrain->PlaceOnTerrain(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, &currentPos, 1, (TerrainSplatChannels)mTerrainProceduralPlacementSplatChannel);
@@ -655,9 +655,9 @@ namespace EveryRay_Core
 				DeleteObject(mInputPositionsOnTerrainBuffer);
 				DeleteObject(mOutputPositionsOnTerrainBuffer);
 
-				mInputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer();
+				mInputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject on-terrain placement input positions buffer: " + mName);
 				mInputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, mTempInstancesPositions, mInstanceCount, sizeof(XMFLOAT4), false, ER_BIND_UNORDERED_ACCESS, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
-				mOutputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer();
+				mOutputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject on-terrain placement input positions buffer: " + mName);
 				mOutputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, mTempInstancesPositions, mInstanceCount, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L /*legacy from DX11*/, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
 				terrain->PlaceOnTerrain(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mTempInstancesPositions, mInstanceCount, (TerrainSplatChannels)mTerrainProceduralPlacementSplatChannel);
 				

@@ -282,8 +282,8 @@ namespace EveryRay_Core
 		virtual void ClearUAV(ER_RHI_GPUResource* aRenderTarget, float colors[4]) = 0;
 		
 		virtual ER_RHI_GPUShader* CreateGPUShader() = 0;
-		virtual ER_RHI_GPUBuffer* CreateGPUBuffer() = 0;
-		virtual ER_RHI_GPUTexture* CreateGPUTexture() = 0;
+		virtual ER_RHI_GPUBuffer* CreateGPUBuffer(const std::string& aDebugName) = 0;
+		virtual ER_RHI_GPUTexture* CreateGPUTexture(/*const std::string& aDebugName*/) = 0;
 		virtual ER_RHI_GPURootSignature* CreateRootSignature(UINT NumRootParams = 0, UINT NumStaticSamplers = 0) = 0;
 		virtual ER_RHI_InputLayout* CreateInputLayout(ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount) = 0;
 
@@ -535,7 +535,7 @@ namespace EveryRay_Core
 
 		void Initialize(ER_RHI* rhi)
 		{
-			buffer = rhi->CreateGPUBuffer();
+			buffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Constant Buffer"); //TODO pass the proper name
 			buffer->CreateGPUBufferResource(rhi, &Data, 1, ER_BitmaskAlign(static_cast<UINT>(sizeof(T)), ER_GPU_BUFFER_ALIGNMENT), true, ER_BIND_CONSTANT_BUFFER);
 			initialized = true;
 		}

@@ -155,9 +155,9 @@ namespace EveryRay_Core
 
 		auto rhi = mCore.GetRHI();
 		auto& meshes = model->Meshes();
-		mVertexBuffer = rhi->CreateGPUBuffer();
+		mVertexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Debug Proxy Object - Vertex Buffer");
 		mMaterial->CreateVertexBuffer(meshes[0], mVertexBuffer);
-		mIndexBuffer = rhi->CreateGPUBuffer();
+		mIndexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Debug Proxy Object - Index Buffer");
 		meshes[0].CreateIndexBuffer(mIndexBuffer);
 		mIndexCount = meshes[0].Indices().size();
 	}

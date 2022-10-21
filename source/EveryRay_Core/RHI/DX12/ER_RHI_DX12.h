@@ -59,8 +59,8 @@ namespace EveryRay_Core
 		virtual void ClearUAV(ER_RHI_GPUResource* aRenderTarget, float colors[4]) override;
 		
 		virtual ER_RHI_GPUShader* CreateGPUShader() override;
-		virtual ER_RHI_GPUBuffer* CreateGPUBuffer() override;
-		virtual ER_RHI_GPUTexture* CreateGPUTexture() override;
+		virtual ER_RHI_GPUBuffer* CreateGPUBuffer(const std::string& aDebugName) override;
+		virtual ER_RHI_GPUTexture* CreateGPUTexture(/*const std::string& aDebugName*/) override;
 		virtual ER_RHI_GPURootSignature* CreateRootSignature(UINT NumRootParams = 0, UINT NumStaticSamplers = 0) override;
 		virtual ER_RHI_InputLayout* CreateInputLayout(ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount) override;
 
