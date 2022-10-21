@@ -390,6 +390,10 @@ namespace EveryRay_Core
 
 		virtual void SetWindowHandle(void* handle) { (HWND)mWindowHandle; }
 		virtual void OnWindowSizeChanged(int width, int height) = 0;
+		
+		virtual void WaitForGpuOnGraphicsFence() = 0;
+		virtual void WaitForGpuOnComputeFence() = 0;
+		virtual void WaitForGpuOnCopyFence() = 0;
 
 		inline const int GetPrepareGraphicsCommandListIndex() { return mPrepareGraphicsCommandListIndex; }
 		inline const int GetCurrentGraphicsCommandListIndex() { return mCurrentGraphicsCommandListIndex; }

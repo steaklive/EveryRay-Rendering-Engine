@@ -162,6 +162,10 @@ namespace EveryRay_Core
 
 		virtual void OnWindowSizeChanged(int width, int height) override;
 
+		virtual void WaitForGpuOnGraphicsFence() override;
+		virtual void WaitForGpuOnComputeFence() override;
+		virtual void WaitForGpuOnCopyFence() override;
+
 		ID3D12Device* GetDevice() const { return mDevice.Get(); }
 		ID3D12Device5* GetDeviceRaytracing() const { return (ID3D12Device5*)mDevice.Get(); }
 		ID3D12GraphicsCommandList* GetGraphicsCommandList(int index) const { return mCommandListGraphics[index].Get(); }
@@ -192,10 +196,6 @@ namespace EveryRay_Core
 		void CreateBlendStates();
 		void CreateRasterizerStates();
 		void CreateDepthStencilStates();
-
-		void WaitForGpuOnGraphicsFence();
-		void WaitForGpuOnComputeFence();
-		void WaitForGpuOnCopyFence();
 
 		D3D_FEATURE_LEVEL mFeatureLevel = D3D_FEATURE_LEVEL_12_1;
 		

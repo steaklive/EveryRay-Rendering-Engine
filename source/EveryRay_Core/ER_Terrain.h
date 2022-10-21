@@ -27,7 +27,7 @@ namespace EveryRay_Core
 	class ER_RenderableAABB;
 	class ER_Camera;
 
-	struct ER_ALIGN_GPU_BUFFER TerrainTileDataGPU
+	struct /*ER_ALIGN_GPU_BUFFER*/ TerrainTileDataGPU
 	{
 		XMFLOAT4 UVoffsetTileSize; // x,y - offsets, z,w - tile size
 		XMFLOAT4 AABBMinPoint;

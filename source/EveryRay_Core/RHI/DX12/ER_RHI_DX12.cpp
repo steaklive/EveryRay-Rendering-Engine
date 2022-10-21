@@ -284,6 +284,11 @@ namespace EveryRay_Core
 		}
 	}
 
+	void ER_RHI_DX12::WaitForGpuOnComputeFence()
+	{
+		//TODO
+	}
+
 	void ER_RHI_DX12::WaitForGpuOnCopyFence()
 	{
 		if (mCommandQueueCopy && mFenceCopy && mFenceEventCopy.IsValid())

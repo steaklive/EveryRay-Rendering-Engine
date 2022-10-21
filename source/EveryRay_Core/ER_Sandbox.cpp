@@ -200,6 +200,7 @@ namespace EveryRay_Core {
 
 		if (mTerrain)
 		{
+			rhi->WaitForGpuOnGraphicsFence();
 			for (auto listener : mTerrain->ReadbackPlacedPositionsOnInitEvent->GetListeners())
 				listener(mTerrain);
 			mTerrain->ReadbackPlacedPositionsOnInitEvent->RemoveAllListeners();
