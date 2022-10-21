@@ -197,7 +197,8 @@ namespace EveryRay_Core
 		float GetCustomAlphaDiscard() { return mCustomAlphaDiscard; }
 		void SetCustomAlphaDiscard(float val) { mCustomAlphaDiscard = val; }
 
-		void PlaceProcedurallyOnTerrain();
+		void PlaceProcedurallyOnTerrain(bool isOnInit);
+		void StoreInstanceDataAfterTerrainPlacement();
 		void SetTerrainPlacement(bool flag) { mIsTerrainPlacement = flag; }
 		bool GetTerrainPlacement() { return mIsTerrainPlacement; }
 		void SetTerrainProceduralPlacementSplatChannel(int channel) { mTerrainProceduralPlacementSplatChannel = channel; }
@@ -294,11 +295,14 @@ namespace EveryRay_Core
 		std::vector<std::vector<InstancedData>>					mTempPostLoddingInstanceData; // temp instance data after lodding (per LOD group)
 		std::vector<UINT>										mInstanceCountToRender; //instance render count  (per LOD group)
 		std::vector<std::vector<InstancedData>>					mInstanceData; //original instance data  (per LOD group)
+		XMFLOAT4*												mTempInstancesPositions = nullptr;
 		// 
 		///****************************************************************************************************************************
 
 		///****************************************************************************************************************************
 		// *** terrain placement & procedural fields ***
+		ER_RHI_GPUBuffer*										mInputPositionsOnTerrainBuffer = nullptr; //input positions for on-terrain placement pass
+		ER_RHI_GPUBuffer*										mOutputPositionsOnTerrainBuffer = nullptr; //output positions for on-terrain placement pass
 		int														mTerrainProceduralPlacementSplatChannel = 4; //TerrainSplatChannel::NONE // on which terrain splat to place
 		int														mTerrainProceduralInstanceCount = 0;
 		XMFLOAT3												mTerrainProceduralZoneCenterPos; // center of procedural placement
@@ -312,7 +316,7 @@ namespace EveryRay_Core
 		float													mTerrainProceduralObjectMinYaw = 0.0f;
 		float													mTerrainProceduralObjectMaxYaw = 0.0f;
 		bool													mIsTerrainPlacementFinished = false;
-		bool													mIsTerrainPlacement = false;
+		bool													mIsTerrainPlacement = false; //possible/wanted or not
 		///****************************************************************************************************************************
 
 		ER_AABB													mLocalAABB; //mesh space AABB

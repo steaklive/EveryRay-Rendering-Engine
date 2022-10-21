@@ -158,6 +158,12 @@ namespace EveryRay_Core {
 		mTerrain->SetLevelPath(ER_Utility::ToWideString(sceneFolderPath));
 		mTerrain->LoadTerrainData(mScene);
 		game.CPUProfiler()->EndCPUTime("Terrain init");
+
+		//place ER_RenderingObjects on terrain (if needed)
+		for (auto& object : mScene->objects)
+		{
+			object.second->PlaceProcedurallyOnTerrain(true);
+		}
 #pragma endregion
 
 		#pragma region INIT_FOLIAGE_MANAGER
@@ -200,7 +206,7 @@ namespace EveryRay_Core {
 
 		if (mTerrain)
 		{
-			rhi->WaitForGpuOnGraphicsFence();
+			rhi->WaitForGpuOnGraphicsFence(); // we need to wait for the GPU to finish procedurally placing the data on terrain in the prepare command list/graphics queue
 			for (auto listener : mTerrain->ReadbackPlacedPositionsOnInitEvent->GetListeners())
 				listener(mTerrain);
 			mTerrain->ReadbackPlacedPositionsOnInitEvent->RemoveAllListeners();

@@ -276,6 +276,7 @@ namespace EveryRay_Core
 		if (mIsPlacedOnTerrain)
 		{
 			ER_Terrain* terrain = mCore.GetLevel()->mTerrain;
+			assert(terrain);
 			if (terrain && terrain->IsLoaded())
 			{
 				DeleteObject(mInputPositionsOnTerrainBuffer);

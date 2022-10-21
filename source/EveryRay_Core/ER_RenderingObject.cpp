@@ -100,6 +100,9 @@ namespace EveryRay_Core
 		mMeshesTextureBuffers.clear();
 
 		DeleteObject(mDebugGizmoAABB);
+		DeleteObject(mInputPositionsOnTerrainBuffer);
+		DeleteObject(mOutputPositionsOnTerrainBuffer);
+		DeleteObjects(mTempInstancesPositions);
 	}
 
 	void ER_RenderingObject::LoadMaterial(ER_Material* pMaterial, const std::string& materialName)
@@ -564,56 +567,119 @@ namespace EveryRay_Core
 			mIsCulled = cullFunction(mGlobalAABB);
 	}
 
+	void ER_RenderingObject::StoreInstanceDataAfterTerrainPlacement()
+	{
+		assert(mTempInstancesPositions);
+		XMMATRIX worldMatrix = XMMatrixIdentity();
+		for (int lod = 0; lod < GetLODCount(); lod++)
+		{
+			for (int instanceI = 0; instanceI < mInstanceCount; instanceI++)
+			{
+				float scale = ER_Utility::RandomFloat(mTerrainProceduralObjectMinScale, mTerrainProceduralObjectMaxScale);
+				float roll = ER_Utility::RandomFloat(mTerrainProceduralObjectMinRoll, mTerrainProceduralObjectMaxRoll);
+				float pitch = ER_Utility::RandomFloat(mTerrainProceduralObjectMinPitch, mTerrainProceduralObjectMaxPitch);
+				float yaw = ER_Utility::RandomFloat(mTerrainProceduralObjectMinYaw, mTerrainProceduralObjectMaxYaw);
+
+				worldMatrix = XMMatrixScaling(scale, scale, scale) * XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
+				ER_MatrixHelper::SetTranslation(worldMatrix, XMFLOAT3(mTempInstancesPositions[instanceI].x, mTempInstancesPositions[instanceI].y, mTempInstancesPositions[instanceI].z));
+				XMStoreFloat4x4(&(mInstanceData[lod][instanceI].World), worldMatrix);
+				worldMatrix = XMMatrixIdentity();
+			}
+			UpdateInstanceBuffer(mInstanceData[lod], lod);
+		}
+	}
+
 	// Placement on terrain based on object's properties defined in level file (instance count, terrain splat, object scale variation, etc.)
 	// This method is not supposed to run every frame, but during initialization or on request
-	void ER_RenderingObject::PlaceProcedurallyOnTerrain()
+	void ER_RenderingObject::PlaceProcedurallyOnTerrain(bool isOnInit)
 	{
-		/*ER_Terrain* terrain = mCore->GetLevel()->mTerrain;
-		if (!terrain || !terrain->IsLoaded())
+		auto rhi = mCore->GetRHI();
+
+		ER_Terrain* terrain = mCore->GetLevel()->mTerrain;
+		if (!terrain || !terrain->IsLoaded() || !mIsTerrainPlacement)
 			return;
 
 		if (!mIsInstanced)
 		{
 			XMFLOAT4 currentPos;
 			ER_MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), currentPos);
-			terrain->PlaceOnTerrain(&currentPos, 1, (TerrainSplatChannels)mTerrainProceduralPlacementSplatChannel);
 
-			ER_MatrixHelper::SetTranslation(mTransformationMatrix, XMFLOAT3(currentPos.x, currentPos.y, currentPos.z));
-			SetTransformationMatrix(mTransformationMatrix);
+			if (isOnInit)
+			{
+				DeleteObject(mInputPositionsOnTerrainBuffer);
+				DeleteObject(mOutputPositionsOnTerrainBuffer);
+
+				mInputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer();
+				mInputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, &currentPos, 1, sizeof(XMFLOAT4), false, ER_BIND_UNORDERED_ACCESS, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
+				mOutputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer();
+				mOutputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, &currentPos, 1, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L /*legacy from DX11*/, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
+
+				terrain->PlaceOnTerrain(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, &currentPos, 1, (TerrainSplatChannels)mTerrainProceduralPlacementSplatChannel);
+			
+#ifndef ER_PLATFORM_WIN64_DX11
+				std::string eventName = "On-terrain placement callback - initialization of ER_RenderingObject: " + mName;
+				terrain->ReadbackPlacedPositionsOnInitEvent->AddListener(eventName, [&](ER_Terrain* aTerrain)
+					{
+						assert(aTerrain);
+						XMFLOAT4 currentPos;
+						aTerrain->ReadbackPlacedPositions(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, &currentPos, 1);
+						ER_MatrixHelper::SetTranslation(mTransformationMatrix, XMFLOAT3(currentPos.x, currentPos.y, currentPos.z));
+						SetTransformationMatrix(mTransformationMatrix);
+					}
+				);
+#else
+				ER_MatrixHelper::SetTranslation(mTransformationMatrix, XMFLOAT3(currentPos.x, currentPos.y, currentPos.z));
+				SetTransformationMatrix(mTransformationMatrix);
+#endif
+			}
+			else
+			{
+				//TODO add support for non-init placement (during any time via editor)
+			}
 		}
 		else
 		{
-			XMFLOAT4* instancesPositions = new XMFLOAT4[mInstanceCount];
-			for (int instanceI = 0; instanceI < mInstanceCount; instanceI++)
+			if (isOnInit)
 			{
-				instancesPositions[instanceI] = XMFLOAT4(
-					mTerrainProceduralZoneCenterPos.x + ER_Utility::RandomFloat(-mTerrainProceduralZoneRadius, mTerrainProceduralZoneRadius),
-					mTerrainProceduralZoneCenterPos.y,
-					mTerrainProceduralZoneCenterPos.z + ER_Utility::RandomFloat(-mTerrainProceduralZoneRadius, mTerrainProceduralZoneRadius), 1.0f);
-			}
-			terrain->PlaceOnTerrain(instancesPositions, mInstanceCount, (TerrainSplatChannels)mTerrainProceduralPlacementSplatChannel);
-			XMMATRIX worldMatrix = XMMatrixIdentity();
+				DeleteObjects(mTempInstancesPositions);
+				mTempInstancesPositions = new XMFLOAT4[mInstanceCount];
 
-			for (int lod = 0; lod < GetLODCount(); lod++)
-			{
 				for (int instanceI = 0; instanceI < mInstanceCount; instanceI++)
 				{
-					float scale = ER_Utility::RandomFloat(mTerrainProceduralObjectMinScale, mTerrainProceduralObjectMaxScale);
-					float roll = ER_Utility::RandomFloat(mTerrainProceduralObjectMinRoll, mTerrainProceduralObjectMaxRoll);
-					float pitch = ER_Utility::RandomFloat(mTerrainProceduralObjectMinPitch, mTerrainProceduralObjectMaxPitch);
-					float yaw = ER_Utility::RandomFloat(mTerrainProceduralObjectMinYaw, mTerrainProceduralObjectMaxYaw);
-
-					worldMatrix = XMMatrixScaling(scale, scale, scale) * XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
-					ER_MatrixHelper::SetTranslation(worldMatrix, XMFLOAT3(instancesPositions[instanceI].x, instancesPositions[instanceI].y, instancesPositions[instanceI].z));
-					XMStoreFloat4x4(&(mInstanceData[lod][instanceI].World), worldMatrix);
-					worldMatrix = XMMatrixIdentity();
+					mTempInstancesPositions[instanceI] = XMFLOAT4(
+						mTerrainProceduralZoneCenterPos.x + ER_Utility::RandomFloat(-mTerrainProceduralZoneRadius, mTerrainProceduralZoneRadius),
+						mTerrainProceduralZoneCenterPos.y,
+						mTerrainProceduralZoneCenterPos.z + ER_Utility::RandomFloat(-mTerrainProceduralZoneRadius, mTerrainProceduralZoneRadius), 1.0f);
 				}
-				UpdateInstanceBuffer(mInstanceData[lod], lod);
+
+				DeleteObject(mInputPositionsOnTerrainBuffer);
+				DeleteObject(mOutputPositionsOnTerrainBuffer);
+
+				mInputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer();
+				mInputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, mTempInstancesPositions, mInstanceCount, sizeof(XMFLOAT4), false, ER_BIND_UNORDERED_ACCESS, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
+				mOutputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer();
+				mOutputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, mTempInstancesPositions, mInstanceCount, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L /*legacy from DX11*/, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
+				terrain->PlaceOnTerrain(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mTempInstancesPositions, mInstanceCount, (TerrainSplatChannels)mTerrainProceduralPlacementSplatChannel);
+				
+#ifndef ER_PLATFORM_WIN64_DX11
+				std::string eventName = "On-terrain placement callback - initialization of ER_RenderingObject: " + mName;
+				terrain->ReadbackPlacedPositionsOnInitEvent->AddListener(eventName, [&](ER_Terrain* aTerrain)
+					{
+						assert(aTerrain);
+						aTerrain->ReadbackPlacedPositions(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mTempInstancesPositions, mInstanceCount);
+						StoreInstanceDataAfterTerrainPlacement();
+					}
+				);
+#else
+				StoreInstanceDataAfterTerrainPlacement();
+#endif
 			}
-			DeleteObjects(instancesPositions);
+			else
+			{
+				//TODO add support for non-init placement (during any time via editor)
+			}
 		}
 		mIsTerrainPlacementFinished = true;
-		*/
 	}
 	void ER_RenderingObject::Update(const ER_CoreTime& time)
 	{
