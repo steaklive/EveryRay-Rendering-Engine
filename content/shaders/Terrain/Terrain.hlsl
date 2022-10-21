@@ -19,11 +19,12 @@
 #include "..\Lighting.hlsli"
 
 static const int DETAIL_TEXTURE_REPEAT = 32;
+#define MAX_TERRAIN_TILE_COUNT 64 // dont forget to change in ER_Terrain.h
 
 cbuffer TerrainDataCBuffer : register(b0)
 {
+    float4x4 World[MAX_TERRAIN_TILE_COUNT];
     float4x4 ShadowMatrices[NUM_OF_SHADOW_CASCADES];
-    float4x4 World;
     float4x4 View;
     float4x4 Projection;
     float4 SunDirection;
@@ -47,12 +48,13 @@ cbuffer TerrainShadowDataCBuffer : register(b1)
 struct VS_INPUT_TS
 {
     float4 PatchInfo : PATCH_INFO;
+    float TileIndex : TILE_INDEX;
 };
 
 struct HS_INPUT
 {
-    float2 origin : ORIGIN;
-    float2 size : SIZE;
+    float4 PatchInfo : PATCH_INFO;
+    float4 TileIndex : TILE_INDEX; //this fixes a dx compiler bug (error X8000)
 };
 
 struct HS_OUTPUT
@@ -78,6 +80,7 @@ struct PatchData
     float Inside[2] : SV_InsideTessFactor;
     float2 origin : ORIGIN;
     float2 size : SIZE;
+    float TileIndex : TILE_INDEX;
 };
 
 SamplerState LinearSampler : register(s0);
@@ -99,8 +102,8 @@ HS_INPUT VSMain(VS_INPUT_TS IN)
 {
     HS_INPUT OUT = (HS_INPUT) 0;
 	
-    OUT.origin = IN.PatchInfo.xy;
-    OUT.size = IN.PatchInfo.zw;
+    OUT.PatchInfo = IN.PatchInfo;
+    OUT.TileIndex = float4(IN.TileIndex, 0.0f, 0.0f, 0.0f);
     return OUT;
 }
 
@@ -136,34 +139,37 @@ PatchData hull_constant_function(InputPatch<HS_INPUT, 1> inputPatch)
     float inside_tessellation_factor = 0.0f;
     //float in_frustum = 0;
 
-    output.origin = inputPatch[0].origin;
-    output.size = inputPatch[0].size;
+    float2 origin = inputPatch[0].PatchInfo.xy;
+    float2 size = inputPatch[0].PatchInfo.zw;
     
-    float4 pos = float4(inputPatch[0].origin.x, 0.0f, inputPatch[0].origin.y, 1.0f);
-    pos = mul(pos, World);
+    output.origin = origin;
+    output.size = size;
+    output.TileIndex = inputPatch[0].TileIndex;
+    
+    float4 pos = float4(origin.x, 0.0f, origin.y, 1.0f);
+    pos = mul(pos, World[(int)(output.TileIndex)]);
 
-    distance_to_camera = length(CameraPosition.xz - pos.xz - float2(0, inputPatch[0].size.y * 0.5));
+    distance_to_camera = length(CameraPosition.xz - pos.xz - float2(0, size.y * 0.5));
     tesselation_factor = GetTessellationFactorFromCamera(distance_to_camera);
     output.Edges[0] = tesselation_factor;
     inside_tessellation_factor += tesselation_factor;
 
-    distance_to_camera = length(CameraPosition.xz - pos.xz - float2(inputPatch[0].size.x * 0.5, 0));
+    distance_to_camera = length(CameraPosition.xz - pos.xz - float2(size.x * 0.5, 0));
     tesselation_factor = GetTessellationFactorFromCamera(distance_to_camera);
     output.Edges[1] = tesselation_factor;
     inside_tessellation_factor += tesselation_factor;
 
-    distance_to_camera = length(CameraPosition.xz - pos.xz - float2(inputPatch[0].size.x, inputPatch[0].size.y * 0.5));
+    distance_to_camera = length(CameraPosition.xz - pos.xz - float2(size.x, size.y * 0.5));
     tesselation_factor = GetTessellationFactorFromCamera(distance_to_camera);
     output.Edges[2] = tesselation_factor;
     inside_tessellation_factor += tesselation_factor;
 
-    distance_to_camera = length(CameraPosition.xz - pos.xz - float2(inputPatch[0].size.x * 0.5, inputPatch[0].size.y));
+    distance_to_camera = length(CameraPosition.xz - pos.xz - float2(size.x * 0.5, size.y));
     tesselation_factor = GetTessellationFactorFromCamera(distance_to_camera);
     output.Edges[3] = tesselation_factor;
     inside_tessellation_factor += tesselation_factor;
 
     output.Inside[0] = output.Inside[1] = inside_tessellation_factor * 0.25;
-
 
     return output;
 }
@@ -202,15 +208,16 @@ DS_OUTPUT DSMain(PatchData input, float2 uv : SV_DomainLocation, OutputPatch<HS_
     //float3 normalRot = mul(normal, normal_rotation_matrix);
     
 	// writing output params
-    output.position = mul(float4(vertexPosition, 1.0), World);
+    float4x4 worldMat = World[(int)input.TileIndex];
+    output.position = mul(float4(vertexPosition, 1.0), worldMat);
     output.worldPos = output.position;
     output.position = mul(output.position, View);
     output.position = mul(output.position, Projection);
     output.texcoord = texcoord01;
     output.normal = float3(0, 0, 0);
-    output.shadowCoord0 = mul(float4(vertexPosition, 1.0), mul(World, ShadowMatrices[0])).xyz;
-    output.shadowCoord1 = mul(float4(vertexPosition, 1.0), mul(World, ShadowMatrices[1])).xyz;
-    output.shadowCoord2 = mul(float4(vertexPosition, 1.0), mul(World, ShadowMatrices[2])).xyz;
+    output.shadowCoord0 = mul(float4(vertexPosition, 1.0), mul(worldMat, ShadowMatrices[0])).xyz;
+    output.shadowCoord1 = mul(float4(vertexPosition, 1.0), mul(worldMat, ShadowMatrices[1])).xyz;
+    output.shadowCoord2 = mul(float4(vertexPosition, 1.0), mul(worldMat, ShadowMatrices[2])).xyz;
     return output;
 }
 
@@ -227,8 +234,7 @@ DS_OUTPUT DSShadowMap(PatchData input, float2 uv : SV_DomainLocation, OutputPatc
     vertexPosition.y = TerrainHeightScale * height;
     
 	// writing output params
-    float4x4 wlvp = mul(World, LightViewProjection);
-    output.position = mul(float4(vertexPosition, 1.0), wlvp);
+    output.position = mul(float4(vertexPosition, 1.0), mul(World[(int)input.TileIndex], LightViewProjection));
     output.Depth = output.position.zw;
  
     return output;

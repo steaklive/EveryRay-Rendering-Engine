@@ -7,6 +7,7 @@
 #define NUM_THREADS_PER_TERRAIN_SIDE 4
 #define NUM_TERRAIN_PATCHES_PER_TILE 8
 #define NUM_TEXTURE_SPLAT_CHANNELS 4
+#define MAX_TERRAIN_TILE_COUNT 64
 
 namespace EveryRay_Core 
 {
@@ -54,8 +55,8 @@ namespace EveryRay_Core
 		};
 
 		struct ER_ALIGN_GPU_BUFFER TerrainCB {
+			XMMATRIX World[MAX_TERRAIN_TILE_COUNT];
 			XMMATRIX ShadowMatrices[NUM_SHADOW_CASCADES];
-			XMMATRIX World;
 			XMMATRIX View;
 			XMMATRIX Projection;
 			XMFLOAT4 SunDirection;
@@ -178,7 +179,7 @@ namespace EveryRay_Core
 		ER_DirectionalLight& mDirectionalLight;
 
 		ER_RHI_GPUConstantBuffer<TerrainCBufferData::TerrainShadowCB> mTerrainShadowBuffers[NUM_SHADOW_CASCADES];
-		std::vector<ER_RHI_GPUConstantBuffer<TerrainCBufferData::TerrainCB>> mTerrainConstantBuffers; //ugly way for dx12 (I'd better have arrays in cbuffer)
+		ER_RHI_GPUConstantBuffer<TerrainCBufferData::TerrainCB> mTerrainConstantBuffer;
 		ER_RHI_GPUConstantBuffer<TerrainCBufferData::PlaceOnTerrainData> mPlaceOnTerrainConstantBuffer;
 
 		ER_RHI_InputLayout* mInputLayout = nullptr;
