@@ -208,7 +208,7 @@ namespace EveryRay_Core
 			if (rs)
 			{
 				rs->InitDescriptorTable(rhi, BASICCOLOR_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
-				rs->Finalize(rhi, "BasicColorMaterial Pass Root Signature", true);
+				rs->Finalize(rhi, "ER_RHI_GPURootSignature: BasicColorMaterial Pass", true);
 			}
 			mStandardMaterialsRootSignatures.emplace(ER_MaterialHelper::basicColorMaterialName, rs);
 		}

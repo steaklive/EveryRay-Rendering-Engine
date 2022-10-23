@@ -81,7 +81,7 @@ namespace EveryRay_Core
 				mTerrainCommonPassRS->InitStaticSampler(rhi, 2, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS);
 				mTerrainCommonPassRS->InitDescriptorTable(rhi, TERRAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 19 });
 				mTerrainCommonPassRS->InitDescriptorTable(rhi, TERRAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 });
-				mTerrainCommonPassRS->Finalize(rhi, "Terrain Common Pass Root Signature", true);
+				mTerrainCommonPassRS->Finalize(rhi, "ER_RHI_GPURootSignature: Terrain Common Pass", true);
 			}
 
 			mTerrainPlacementPassRS = rhi->CreateRootSignature(3, 2);
@@ -92,7 +92,7 @@ namespace EveryRay_Core
 				mTerrainPlacementPassRS->InitDescriptorTable(rhi, PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 3 });
 				mTerrainPlacementPassRS->InitDescriptorTable(rhi, PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 });
 				mTerrainPlacementPassRS->InitDescriptorTable(rhi, PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 });
-				mTerrainPlacementPassRS->Finalize(rhi, "Terrain Placement Pass Root Signature");
+				mTerrainPlacementPassRS->Finalize(rhi, "ER_RHI_GPURootSignature: Terrain Placement Pass");
 			}
 		}
 		mTerrainConstantBuffer.Initialize(rhi);

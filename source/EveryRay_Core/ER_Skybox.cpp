@@ -75,7 +75,7 @@ namespace EveryRay_Core
 			if (mSkyRS)
 			{
 				mSkyRS->InitDescriptorTable(rhi, SKYBOX_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
-				mSkyRS->Finalize(rhi, "Skybox Pass Root Signature", true);
+				mSkyRS->Finalize(rhi, "ER_RHI_GPURootSignature: Skybox Pass", true);
 			}
 		}
 
@@ -95,7 +95,7 @@ namespace EveryRay_Core
 				mSunRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mSunRS->InitDescriptorTable(rhi, SUN_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mSunRS->InitDescriptorTable(rhi, SUN_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
-				mSunRS->Finalize(rhi, "Sun Pass Root Signature", true);
+				mSunRS->Finalize(rhi, "ER_RHI_GPURootSignature: Sun Pass", true);
 			}
 		}
 	}

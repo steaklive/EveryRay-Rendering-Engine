@@ -38,7 +38,7 @@ namespace EveryRay_Core
 			mRootSignature->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS);
 			mRootSignature->InitDescriptorTable(rhi, FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 4 }, ER_RHI_SHADER_VISIBILITY_ALL);
 			mRootSignature->InitDescriptorTable(rhi, FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
-			mRootSignature->Finalize(rhi, "Foliage Root Signature", true);
+			mRootSignature->Finalize(rhi, "ER_RHI_GPURootSignature: Foliage", true);
 		}
 	}
 

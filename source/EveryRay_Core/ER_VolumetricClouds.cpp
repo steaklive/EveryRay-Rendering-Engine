@@ -79,7 +79,7 @@ namespace EveryRay_Core {
 			mMainPassRS->InitDescriptorTable(rhi, MAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 5 });
 			mMainPassRS->InitDescriptorTable(rhi, MAIN_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 });
 			mMainPassRS->InitDescriptorTable(rhi, MAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 });
-			mMainPassRS->Finalize(rhi, "Volumetric Clouds Main Pass Root Signature");
+			mMainPassRS->Finalize(rhi, "ER_RHI_GPURootSignature: Volumetric Clouds Main Pass");
 		}
 
 		mUpsampleBlurPassRS = rhi->CreateRootSignature(3, 2);
@@ -90,7 +90,7 @@ namespace EveryRay_Core {
 			mUpsampleBlurPassRS->InitDescriptorTable(rhi, MAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 });
 			mUpsampleBlurPassRS->InitDescriptorTable(rhi, MAIN_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 });
 			mUpsampleBlurPassRS->InitDescriptorTable(rhi, MAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 });
-			mUpsampleBlurPassRS->Finalize(rhi, "Volumetric Clouds Upsample & Blur Pass Root Signature");
+			mUpsampleBlurPassRS->Finalize(rhi, "ER_RHI_GPURootSignature: Volumetric Clouds Upsample & Blur Pass");
 		}
 
 		mCompositePassRS = rhi->CreateRootSignature(1, 1);
@@ -98,7 +98,7 @@ namespace EveryRay_Core {
 		{
 			mCompositePassRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP);
 			mCompositePassRS->InitDescriptorTable(rhi, COMPOSITE_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 2 });
-			mCompositePassRS->Finalize(rhi, "Volumetric Clouds Composite Pass Root Signature", true);
+			mCompositePassRS->Finalize(rhi, "ER_RHI_GPURootSignature: Volumetric Clouds Composite Pass", true);
 		}
 
 		//cbuffers

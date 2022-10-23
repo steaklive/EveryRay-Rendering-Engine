@@ -57,7 +57,7 @@ namespace EveryRay_Core
 			mRootSignature->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
 			mRootSignature->InitDescriptorTable(rhi, SHADOWMAP_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
 			mRootSignature->InitDescriptorTable(rhi, SHADOWMAP_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
-			mRootSignature->Finalize(rhi, "ShadowMapMaterial Pass Root Signature", true);
+			mRootSignature->Finalize(rhi, "ER_RHI_GPURootSignature: ShadowMapMaterial Pass", true);
 		}
 	}
 

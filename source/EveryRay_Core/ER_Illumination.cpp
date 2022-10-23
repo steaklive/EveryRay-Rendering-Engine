@@ -238,7 +238,7 @@ namespace EveryRay_Core {
 				mVoxelizationRS->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SHADER_VISIBILITY_ALL);
 				mVoxelizationRS->InitDescriptorTable(rhi, VOXELIZATION_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mVoxelizationRS->InitDescriptorTable(rhi, VOXELIZATION_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
-				mVoxelizationRS->Finalize(rhi, "VoxelizationMaterial Pass Root Signature", true);
+				mVoxelizationRS->Finalize(rhi, "ER_RHI_GPURootSignature: VoxelizationMaterial Pass", true);
 			}
 
 			mVoxelizationDebugRS = rhi->CreateRootSignature(2, 0);
@@ -246,7 +246,7 @@ namespace EveryRay_Core {
 			{
 				mVoxelizationDebugRS->InitDescriptorTable(rhi, VCT_DEBUG_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mVoxelizationDebugRS->InitDescriptorTable(rhi, VCT_DEBUG_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
-				mVoxelizationDebugRS->Finalize(rhi, "Voxelization Debug Pass Root Signature", true);
+				mVoxelizationDebugRS->Finalize(rhi, "ER_RHI_GPURootSignature: Voxelization Debug Pass", true);
 			}
 
 			mVCTRS = rhi->CreateRootSignature(3, 1);
@@ -256,7 +256,7 @@ namespace EveryRay_Core {
 				mVCTRS->InitDescriptorTable(rhi, VCT_MAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 4 + NUM_VOXEL_GI_CASCADES }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mVCTRS->InitDescriptorTable(rhi, VCT_MAIN_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mVCTRS->InitDescriptorTable(rhi, VCT_MAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
-				mVCTRS->Finalize(rhi, "Voxel Cone Tracing Main Pass Root Signature");
+				mVCTRS->Finalize(rhi, "ER_RHI_GPURootSignature: Voxel Cone Tracing Main Pass");
 			}
 
 			mUpsampleAndBlurRS = rhi->CreateRootSignature(3, 1);
@@ -266,7 +266,7 @@ namespace EveryRay_Core {
 				mUpsampleAndBlurRS->InitDescriptorTable(rhi, UPSAMPLE_BLUR_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mUpsampleAndBlurRS->InitDescriptorTable(rhi, UPSAMPLE_BLUR_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mUpsampleAndBlurRS->InitDescriptorTable(rhi, UPSAMPLE_BLUR_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
-				mUpsampleAndBlurRS->Finalize(rhi, "Upsample & Blur Pass Root Signature");
+				mUpsampleAndBlurRS->Finalize(rhi, "ER_RHI_GPURootSignature: Upsample & Blur Pass");
 			}
 
 			mDeferredLightingRS = rhi->CreateRootSignature(3, 2);
@@ -277,7 +277,7 @@ namespace EveryRay_Core {
 				mDeferredLightingRS->InitDescriptorTable(rhi, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 18 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mDeferredLightingRS->InitDescriptorTable(rhi, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mDeferredLightingRS->InitDescriptorTable(rhi, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
-				mDeferredLightingRS->Finalize(rhi, "Deferred Lighting Pass Root Signature");
+				mDeferredLightingRS->Finalize(rhi, "ER_RHI_GPURootSignature: Deferred Lighting Pass");
 			}
 
 			mForwardLightingRS = rhi->CreateRootSignature(2, 2);
@@ -287,7 +287,7 @@ namespace EveryRay_Core {
 				mForwardLightingRS->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mForwardLightingRS->InitDescriptorTable(rhi, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 18 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mForwardLightingRS->InitDescriptorTable(rhi, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
-				mForwardLightingRS->Finalize(rhi, "Forward Lighting Pass Root Signature", true);
+				mForwardLightingRS->Finalize(rhi, "ER_RHI_GPURootSignature: Forward Lighting Pass", true);
 			}
 
 			mCompositeIlluminationRS = rhi->CreateRootSignature(3, 1);
@@ -297,7 +297,7 @@ namespace EveryRay_Core {
 				mCompositeIlluminationRS->InitDescriptorTable(rhi, COMPOSITE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mCompositeIlluminationRS->InitDescriptorTable(rhi, COMPOSITE_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mCompositeIlluminationRS->InitDescriptorTable(rhi, COMPOSITE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
-				mCompositeIlluminationRS->Finalize(rhi, "Composite Pass Root Signature");
+				mCompositeIlluminationRS->Finalize(rhi, "ER_RHI_GPURootSignature: Composite Pass");
 			}
 
 			mDebugProbesRenderRS = rhi->CreateRootSignature(2, 0);
@@ -305,7 +305,7 @@ namespace EveryRay_Core {
 			{
 				mDebugProbesRenderRS->InitDescriptorTable(rhi, DEBUGLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mDebugProbesRenderRS->InitDescriptorTable(rhi, DEBUGLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
-				mDebugProbesRenderRS->Finalize(rhi, "Debug light probes Pass Root Signature", true);
+				mDebugProbesRenderRS->Finalize(rhi, "ER_RHI_GPURootSignature: Debug light probes Pass", true);
 			}
 		}
 

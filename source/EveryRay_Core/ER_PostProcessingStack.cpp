@@ -86,7 +86,7 @@ namespace EveryRay_Core {
 		{
 			mFinalResolveRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
 			mFinalResolveRS->InitDescriptorTable(rhi, FINALRESOLVE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
-			mFinalResolveRS->Finalize(rhi, "Final Resolve Pass Root Signature", true);
+			mFinalResolveRS->Finalize(rhi, "ER_RHI_GPURootSignature: Final Resolve Pass", true);
 		}
 
 		//Linear fog
@@ -106,7 +106,7 @@ namespace EveryRay_Core {
 				mLinearFogRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mLinearFogRS->InitDescriptorTable(rhi, LINEARFOG_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mLinearFogRS->InitDescriptorTable(rhi, LINEARFOG_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
-				mLinearFogRS->Finalize(rhi, "Linear Fog Pass Root Signature", true);
+				mLinearFogRS->Finalize(rhi, "ER_RHI_GPURootSignature: Linear Fog Pass", true);
 			}
 		}
 
@@ -131,7 +131,7 @@ namespace EveryRay_Core {
 				mSSRRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mSSRRS->InitDescriptorTable(rhi, SSR_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 4 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mSSRRS->InitDescriptorTable(rhi, SSR_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
-				mSSRRS->Finalize(rhi, "SSR Pass Root Signature", true);
+				mSSRRS->Finalize(rhi, "ER_RHI_GPURootSignature: SSR Pass", true);
 			}
 		}
 
@@ -152,7 +152,7 @@ namespace EveryRay_Core {
 				mSSSRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mSSSRS->InitDescriptorTable(rhi, SSS_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 3 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mSSSRS->InitDescriptorTable(rhi, SSS_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
-				mSSSRS->Finalize(rhi, "SSS Pass Root Signature", true);
+				mSSSRS->Finalize(rhi, "ER_RHI_GPURootSignature: SSS Pass", true);
 			}
 		}
 
@@ -170,7 +170,7 @@ namespace EveryRay_Core {
 			{
 				mTonemapRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mTonemapRS->InitDescriptorTable(rhi, TONEMAP_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
-				mTonemapRS->Finalize(rhi, "Tonemap Pass Root Signature", true);
+				mTonemapRS->Finalize(rhi, "ER_RHI_GPURootSignature: Tonemap Pass", true);
 			}
 		}
 
@@ -194,7 +194,7 @@ namespace EveryRay_Core {
 			if (mColorGradingRS)
 			{
 				mColorGradingRS->InitDescriptorTable(rhi, COLORGRADING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
-				mColorGradingRS->Finalize(rhi, "Color Grading Pass Root Signature", true);
+				mColorGradingRS->Finalize(rhi, "ER_RHI_GPURootSignature: Color Grading Pass", true);
 			}
 		}
 
@@ -215,7 +215,7 @@ namespace EveryRay_Core {
 				mVignetteRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mVignetteRS->InitDescriptorTable(rhi, VIGNETTE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mVignetteRS->InitDescriptorTable(rhi, VIGNETTE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
-				mVignetteRS->Finalize(rhi, "Vignette Pass Root Signature", true);
+				mVignetteRS->Finalize(rhi, "ER_RHI_GPURootSignature: Vignette Pass", true);
 			}
 		}	
 		
@@ -236,7 +236,7 @@ namespace EveryRay_Core {
 				mFXAARS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mFXAARS->InitDescriptorTable(rhi, FXAA_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mFXAARS->InitDescriptorTable(rhi, FXAA_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
-				mFXAARS->Finalize(rhi, "FXAA Pass Root Signature", true);
+				mFXAARS->Finalize(rhi, "ER_RHI_GPURootSignature: FXAA Pass", true);
 			}
 		}
 	}
