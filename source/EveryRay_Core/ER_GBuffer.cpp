@@ -10,8 +10,8 @@
 
 namespace EveryRay_Core {
 
-	static const std::string psoNameNonInstanced = "GBufferMaterial PSO";
-	static const std::string psoNameInstanced = "GBufferMaterial w/ Instancing PSO";
+	static const std::string psoNameNonInstanced = "ER_RHI_GPUPipelineStateObject: GBufferMaterial";
+	static const std::string psoNameInstanced = "ER_RHI_GPUPipelineStateObject: GBufferMaterial w/ Instancing";
 
 	ER_GBuffer::ER_GBuffer(ER_Core& game, ER_Camera& camera, int width, int height):
 		ER_CoreComponent(game), mWidth(width), mHeight(height)
@@ -33,22 +33,22 @@ namespace EveryRay_Core {
 	{
 		auto rhi = GetCore()->GetRHI();
 
-		mAlbedoBuffer = rhi->CreateGPUTexture();
+		mAlbedoBuffer = rhi->CreateGPUTexture("ER_RHI_GPUTexture: GBuffer Albedo RT");
 		mAlbedoBuffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
 
-		mNormalBuffer = rhi->CreateGPUTexture();
+		mNormalBuffer = rhi->CreateGPUTexture("ER_RHI_GPUTexture: GBuffer Normals RT");
 		mNormalBuffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_R16G16B16A16_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
 
-		mPositionsBuffer = rhi->CreateGPUTexture();
+		mPositionsBuffer = rhi->CreateGPUTexture("ER_RHI_GPUTexture: GBuffer Positions RT");
 		mPositionsBuffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_R32G32B32A32_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
 
-		mExtraBuffer = rhi->CreateGPUTexture();
+		mExtraBuffer = rhi->CreateGPUTexture("ER_RHI_GPUTexture: GBuffer Extra RT");
 		mExtraBuffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
 
-		mExtra2Buffer = rhi->CreateGPUTexture();
+		mExtra2Buffer = rhi->CreateGPUTexture("ER_RHI_GPUTexture: GBuffer Extra2 RT");
 		mExtra2Buffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_R16G16B16A16_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
 
-		mDepthBuffer = rhi->CreateGPUTexture();
+		mDepthBuffer = rhi->CreateGPUTexture("ER_RHI_GPUTexture: GBuffer Depth");
 		mDepthBuffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_D24_UNORM_S8_UINT, ER_BIND_SHADER_RESOURCE | ER_BIND_DEPTH_STENCIL);
 
 		mRootSignature = rhi->CreateRootSignature(2, 1);

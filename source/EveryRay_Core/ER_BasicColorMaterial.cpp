@@ -8,8 +8,8 @@
 #include "ER_MaterialsCallbacks.h"
 #include "ER_Illumination.h"
 
-static const std::string psoNameNonInstanced = "BasicColorMaterial PSO";
-static const std::string psoNameInstanced = "BasicColorMaterial w/ Instancing PSO";
+static const std::string psoNameNonInstanced = "ER_RHI_GPUPipelineStateObject: BasicColorMaterial";
+static const std::string psoNameInstanced = "ER_RHI_GPUPipelineStateObject: BasicColorMaterial w/ Instancing";
 
 namespace EveryRay_Core
 {
@@ -29,7 +29,7 @@ namespace EveryRay_Core
 		if (shaderFlags & HAS_PIXEL_SHADER)
 			ER_Material::CreatePixelShader("content\\shaders\\BasicColor.hlsl");
 
-		mConstantBuffer.Initialize(ER_Material::GetCore()->GetRHI());
+		mConstantBuffer.Initialize(ER_Material::GetCore()->GetRHI(), "ER_RHI_GPUBuffer: BasicColorMaterial CB");
 	}
 
 	ER_BasicColorMaterial::~ER_BasicColorMaterial()

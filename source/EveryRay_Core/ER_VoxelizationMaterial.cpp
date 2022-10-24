@@ -53,7 +53,7 @@ namespace EveryRay_Core
 		if (shaderFlags & HAS_PIXEL_SHADER)
 			ER_Material::CreatePixelShader("content\\shaders\\Voxelization.hlsl");
 
-		mConstantBuffer.Initialize(ER_Material::GetCore()->GetRHI());
+		mConstantBuffer.Initialize(ER_Material::GetCore()->GetRHI(), "ER_RHI_GPUBuffer: VoxelizationMaterial CB");
 	}
 
 	ER_VoxelizationMaterial::~ER_VoxelizationMaterial()

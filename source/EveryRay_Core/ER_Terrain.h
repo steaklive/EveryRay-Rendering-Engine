@@ -188,17 +188,17 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mHS = nullptr;
 		ER_RHI_GPUShader* mDS = nullptr;
 		ER_RHI_GPUShader* mPS = nullptr;
-		std::string mTerrainMainPassPSOName = "Terrain - Main Pass PSO";
+		std::string mTerrainMainPassPSOName = "ER_RHI_GPUPipelineStateObject: Terrain - Main Pass";
 
 		ER_RHI_GPUShader* mDS_ShadowMap = nullptr;
 		ER_RHI_GPUShader* mPS_ShadowMap = nullptr;
-		std::string mTerrainShadowPassPSOName = "Terrain - Shadow Pass PSO";
+		std::string mTerrainShadowPassPSOName = "ER_RHI_GPUPipelineStateObject: Terrain - Shadow Pass";
 
 		ER_RHI_GPUShader* mPS_GBuffer = nullptr;
-		std::string mTerrainGBufferPassPSOName = "Terrain - GBuffer Pass PSO";
+		std::string mTerrainGBufferPassPSOName = "ER_RHI_GPUPipelineStateObject: Terrain - GBuffer Pass";
 
 		ER_RHI_GPUShader* mPlaceOnTerrainCS = nullptr;
-		std::string mTerrainPlacementPassPSOName = "Terrain - Placement Pass PSO";
+		std::string mTerrainPlacementPassPSOName = "ER_RHI_GPUPipelineStateObject: Terrain - Placement Pass";
 		ER_RHI_GPURootSignature* mTerrainPlacementPassRS = nullptr;
 		ER_RHI_GPURootSignature* mTerrainCommonPassRS = nullptr;
 

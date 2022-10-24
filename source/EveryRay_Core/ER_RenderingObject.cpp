@@ -251,43 +251,43 @@ namespace EveryRay_Core
 		{
 		case TextureType::TextureTypeDifffuse:
 		{
-			mMeshesTextureBuffers[meshIndex].AlbedoMap = rhi->CreateGPUTexture();
+			mMeshesTextureBuffers[meshIndex].AlbedoMap = rhi->CreateGPUTexture("");
 			mMeshesTextureBuffers[meshIndex].AlbedoMap->CreateGPUTextureResource(rhi, path, true);
 			break;
 		}
 		case TextureType::TextureTypeNormalMap:
 		{
-			mMeshesTextureBuffers[meshIndex].NormalMap = rhi->CreateGPUTexture();
+			mMeshesTextureBuffers[meshIndex].NormalMap = rhi->CreateGPUTexture("");
 			mMeshesTextureBuffers[meshIndex].NormalMap->CreateGPUTextureResource(rhi, path, true);
 			break;
 		}
 		case TextureType::TextureTypeSpecularMap:
 		{
-			mMeshesTextureBuffers[meshIndex].SpecularMap = rhi->CreateGPUTexture();
+			mMeshesTextureBuffers[meshIndex].SpecularMap = rhi->CreateGPUTexture("");
 			mMeshesTextureBuffers[meshIndex].SpecularMap->CreateGPUTextureResource(rhi, path, true);
 			break;
 		}
 		case TextureType::TextureTypeEmissive:
 		{
-			mMeshesTextureBuffers[meshIndex].MetallicMap = rhi->CreateGPUTexture();
+			mMeshesTextureBuffers[meshIndex].MetallicMap = rhi->CreateGPUTexture("");
 			mMeshesTextureBuffers[meshIndex].MetallicMap->CreateGPUTextureResource(rhi, path, true);
 			break;	
 		}
 		case TextureType::TextureTypeDisplacementMap:
 		{
-			mMeshesTextureBuffers[meshIndex].RoughnessMap = rhi->CreateGPUTexture();
+			mMeshesTextureBuffers[meshIndex].RoughnessMap = rhi->CreateGPUTexture("");
 			mMeshesTextureBuffers[meshIndex].RoughnessMap->CreateGPUTextureResource(rhi, path, true);
 			break;
 		}
 		case TextureType::TextureTypeHeightmap:
 		{
-			mMeshesTextureBuffers[meshIndex].HeightMap = rhi->CreateGPUTexture();
+			mMeshesTextureBuffers[meshIndex].HeightMap = rhi->CreateGPUTexture("");
 			mMeshesTextureBuffers[meshIndex].HeightMap->CreateGPUTextureResource(rhi, path, true);
 			break;	
 		}
 		case TextureType::TextureTypeLightMap:
 		{
-			mMeshesTextureBuffers[meshIndex].ReflectionMaskMap = rhi->CreateGPUTexture();
+			mMeshesTextureBuffers[meshIndex].ReflectionMaskMap = rhi->CreateGPUTexture("");
 			mMeshesTextureBuffers[meshIndex].ReflectionMaskMap->CreateGPUTextureResource(rhi, path, true);
 			break;
 		}

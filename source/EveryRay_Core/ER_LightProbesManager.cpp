@@ -27,28 +27,28 @@ namespace EveryRay_Core
 
 		ER_RHI* rhi = game.GetRHI();
 
-		mTempDiffuseCubemapFacesRT = rhi->CreateGPUTexture();
+		mTempDiffuseCubemapFacesRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Temp Diffuse Cubemap RT");
 		mTempDiffuseCubemapFacesRT->CreateGPUTextureResource(rhi, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, ER_FORMAT_R16G16B16A16_FLOAT,
 			ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1, -1, CUBEMAP_FACES_COUNT, true);
 
-		mTempDiffuseCubemapFacesConvolutedRT = rhi->CreateGPUTexture();
+		mTempDiffuseCubemapFacesConvolutedRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Temp Diffuse Cubemap Convoluted RT");
 		mTempDiffuseCubemapFacesConvolutedRT->CreateGPUTextureResource(rhi, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, ER_FORMAT_R16G16B16A16_FLOAT,
 			ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1, -1, CUBEMAP_FACES_COUNT, true);
 		
-		mTempSpecularCubemapFacesRT = rhi->CreateGPUTexture();
+		mTempSpecularCubemapFacesRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Temp Specular Cubemap RT");
 		mTempSpecularCubemapFacesRT->CreateGPUTextureResource(rhi, SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, ER_FORMAT_R8G8B8A8_UNORM,
 			ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
 
-		mTempSpecularCubemapFacesConvolutedRT = rhi->CreateGPUTexture(); 
+		mTempSpecularCubemapFacesConvolutedRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Temp Specular Cubemap Convoluted RT");
 		mTempSpecularCubemapFacesConvolutedRT->CreateGPUTextureResource(rhi, SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, ER_FORMAT_R8G8B8A8_UNORM,
 			ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
 
 		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
 		{
-			mTempDiffuseCubemapDepthBuffers[i] = rhi->CreateGPUTexture();
+			mTempDiffuseCubemapDepthBuffers[i] = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Temp Cubemap Diffuse Depth Buffers");
 			mTempDiffuseCubemapDepthBuffers[i]->CreateGPUTextureResource(rhi, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1u, ER_FORMAT_D24_UNORM_S8_UINT,ER_BIND_SHADER_RESOURCE | ER_BIND_DEPTH_STENCIL);
 			
-			mTempSpecularCubemapDepthBuffers[i] = rhi->CreateGPUTexture();
+			mTempSpecularCubemapDepthBuffers[i] = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Temp Cubemap Specular Depth Buffers");
 			mTempSpecularCubemapDepthBuffers[i]->CreateGPUTextureResource(rhi, SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1u, ER_FORMAT_D24_UNORM_S8_UINT, ER_BIND_SHADER_RESOURCE | ER_BIND_DEPTH_STENCIL);
 		}
 
@@ -57,7 +57,7 @@ namespace EveryRay_Core
 		mConvolutionPS = rhi->CreateGPUShader();
 		mConvolutionPS->CompileShader(rhi, "content\\shaders\\IBL\\ProbeConvolution.hlsl", "PSMain", ER_PIXEL);
 
-		mIntegrationMapTextureSRV = rhi->CreateGPUTexture();
+		mIntegrationMapTextureSRV = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Integration Map BRDF");
 		mIntegrationMapTextureSRV->CreateGPUTextureResource(rhi, ER_Utility::GetFilePath(L"content\\textures\\IntegrationMapBrdf.dds"), true);
 
 		if (!scene->HasLightProbesSupport())
@@ -120,15 +120,13 @@ namespace EveryRay_Core
 
 	void ER_LightProbesManager::SetupGlobalDiffuseProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 	{
-		mGlobalDiffuseProbe = new ER_LightProbe(game, light, shadowMapper, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE);
-		mGlobalDiffuseProbe->SetIndex(-1);
+		mGlobalDiffuseProbe = new ER_LightProbe(game, light, shadowMapper, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE, -1);
 		mGlobalDiffuseProbe->SetPosition(XMFLOAT3(0.0f, 2.0f, 0.0f)); //just a bit above the ground
 		mGlobalDiffuseProbe->SetShaderInfoForConvolution(mConvolutionPS);
 	}
 	void ER_LightProbesManager::SetupGlobalSpecularProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper)
 	{
-		mGlobalSpecularProbe = new ER_LightProbe(game, light, shadowMapper, SPECULAR_PROBE_SIZE, SPECULAR_PROBE);
-		mGlobalSpecularProbe->SetIndex(-1);
+		mGlobalSpecularProbe = new ER_LightProbe(game, light, shadowMapper, SPECULAR_PROBE_SIZE, SPECULAR_PROBE, -1);
 		mGlobalSpecularProbe->SetPosition(XMFLOAT3(0.0f, 2.0f, 0.0f)); //just a bit above the ground
 		mGlobalSpecularProbe->SetShaderInfoForConvolution(mConvolutionPS);
 	}
@@ -190,7 +188,7 @@ namespace EveryRay_Core
 
 		// simple 3D grid distribution of probes
 		for (size_t i = 0; i < mDiffuseProbesCountTotal; i++)
-			mDiffuseProbes.emplace_back(new ER_LightProbe(core, light, shadowMapper, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE));
+			mDiffuseProbes.emplace_back(new ER_LightProbe(core, light, shadowMapper, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE, i));
 		for (int probesY = 0; probesY < mDiffuseProbesCountY; probesY++)
 		{
 			for (int probesX = 0; probesX < mDiffuseProbesCountX; probesX++)
@@ -202,7 +200,6 @@ namespace EveryRay_Core
 						minBounds.y + probesY * mDistanceBetweenDiffuseProbes,
 						minBounds.z + probesZ * mDistanceBetweenDiffuseProbes);
 					int index = probesY * (mDiffuseProbesCountX * mDiffuseProbesCountZ) + probesX * mDiffuseProbesCountZ + probesZ;
-					mDiffuseProbes[index]->SetIndex(index);
 					mDiffuseProbes[index]->SetPosition(pos);
 					mDiffuseProbes[index]->SetShaderInfoForConvolution(mConvolutionPS);
 					AddProbeToCells(mDiffuseProbes[index], DIFFUSE_PROBE, minBounds, maxBounds);
@@ -310,7 +307,7 @@ namespace EveryRay_Core
 
 		// simple 3D grid distribution of probes
 		for (size_t i = 0; i < mSpecularProbesCountTotal; i++)
-			mSpecularProbes.emplace_back(new ER_LightProbe(game, light, shadowMapper, SPECULAR_PROBE_SIZE, SPECULAR_PROBE));
+			mSpecularProbes.emplace_back(new ER_LightProbe(game, light, shadowMapper, SPECULAR_PROBE_SIZE, SPECULAR_PROBE, i));
 		for (int probesY = 0; probesY < mSpecularProbesCountY; probesY++)
 		{
 			for (int probesX = 0; probesX < mSpecularProbesCountX; probesX++)
@@ -322,7 +319,7 @@ namespace EveryRay_Core
 						minBounds.y + probesY * mDistanceBetweenSpecularProbes,
 						minBounds.z + probesZ * mDistanceBetweenSpecularProbes);
 					int index = probesY * (mSpecularProbesCountX * mSpecularProbesCountZ) + probesX * mSpecularProbesCountZ + probesZ;
-					mSpecularProbes[index]->SetIndex(index);
+					//mSpecularProbes[index]->SetIndex(index);
 					mSpecularProbes[index]->SetPosition(pos);
 					mSpecularProbes[index]->SetShaderInfoForConvolution(mConvolutionPS);
 					AddProbeToCells(mSpecularProbes[index], SPECULAR_PROBE, minBounds, maxBounds);
@@ -377,7 +374,7 @@ namespace EveryRay_Core
 		mSpecularProbeRenderingObject->UpdateInstanceBuffer(mSpecularProbeRenderingObject->GetInstancesData());
 		std::partition(scene->objects.begin(), scene->objects.end(), [](const ER_SceneObject& obj) {	return obj.second->IsInstanced(); });
 
-		mSpecularCubemapArrayRT = rhi->CreateGPUTexture();
+		mSpecularCubemapArrayRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Specular Cubemap Array RT");
 		mSpecularCubemapArrayRT->CreateGPUTextureResource(rhi, SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true, mMaxSpecularProbesInVolumeCount);
 	}
 

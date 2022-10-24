@@ -95,10 +95,10 @@ namespace EveryRay_Core
 				mTerrainPlacementPassRS->Finalize(rhi, "ER_RHI_GPURootSignature: Terrain Placement Pass");
 			}
 		}
-		mTerrainConstantBuffer.Initialize(rhi);
-		mPlaceOnTerrainConstantBuffer.Initialize(rhi);
+		mTerrainConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Terrain CB");
+		mPlaceOnTerrainConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Place On Terrain CB");
 		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
-			mTerrainShadowBuffers[i].Initialize(rhi);
+			mTerrainShadowBuffers[i].Initialize(rhi, "ER_RHI_GPUBuffer: Terrain Shadow CB #" + std::to_string(i));
 	}
 
 	ER_Terrain::~ER_Terrain()
@@ -189,10 +189,10 @@ namespace EveryRay_Core
 		mTerrainTilesDataGPU->CreateGPUBufferResource(rhi, terrainTilesDataCPUBuffer, mNumTiles, sizeof(TerrainTileDataGPU), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 		DeleteObjects(terrainTilesDataCPUBuffer);
 
-		mTerrainTilesHeightmapsArrayTexture = rhi->CreateGPUTexture();
+		mTerrainTilesHeightmapsArrayTexture = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Terrain Tiles Heightmaps Array");
 		mTerrainTilesHeightmapsArrayTexture->CreateGPUTextureResource(rhi, mTileResolution, mTileResolution, 1, ER_FORMAT_R16_UNORM, ER_BIND_SHADER_RESOURCE, 1, -1, mNumTiles);
 		
-		mTerrainTilesSplatmapsArrayTexture = rhi->CreateGPUTexture();
+		mTerrainTilesSplatmapsArrayTexture = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Terraub Tiles Splatmaps Array");
 		mTerrainTilesSplatmapsArrayTexture->CreateGPUTextureResource(rhi, mTileResolution, mTileResolution, 1, ER_FORMAT_R16G16B16A16_UNORM, ER_BIND_SHADER_RESOURCE, 1, -1, mNumTiles);
 		
 		for (int tileIndex = 0; tileIndex < mNumTiles; tileIndex++)
@@ -209,23 +209,23 @@ namespace EveryRay_Core
 
 		if (!splatLayer0Path.empty())
 		{
-			mSplatChannelTextures[0] = rhi->CreateGPUTexture();
+			mSplatChannelTextures[0] = rhi->CreateGPUTexture("");
 			mSplatChannelTextures[0]->CreateGPUTextureResource(rhi, splatLayer0Path, true);
 
 		}
 		if (!splatLayer1Path.empty())
 		{
-			mSplatChannelTextures[1] = rhi->CreateGPUTexture();
+			mSplatChannelTextures[1] = rhi->CreateGPUTexture("");
 			mSplatChannelTextures[1]->CreateGPUTextureResource(rhi, splatLayer1Path, true);
 		}
 		if (!splatLayer2Path.empty())
 		{
-			mSplatChannelTextures[2] = rhi->CreateGPUTexture();
+			mSplatChannelTextures[2] = rhi->CreateGPUTexture("");
 			mSplatChannelTextures[2]->CreateGPUTextureResource(rhi, splatLayer2Path, true);
 		}
 		if (!splatLayer3Path.empty())
 		{
-			mSplatChannelTextures[3] = rhi->CreateGPUTexture();
+			mSplatChannelTextures[3] = rhi->CreateGPUTexture("");
 			mSplatChannelTextures[3]->CreateGPUTextureResource(rhi, splatLayer3Path, true);
 		}
 
@@ -271,7 +271,7 @@ namespace EveryRay_Core
 		if (tileIndex >= mHeightMaps.size())
 			return;
 
-		mHeightMaps[tileIndex]->mSplatTexture = rhi->CreateGPUTexture();
+		mHeightMaps[tileIndex]->mSplatTexture = rhi->CreateGPUTexture("");
 		mHeightMaps[tileIndex]->mSplatTexture->CreateGPUTextureResource(rhi, path, true);
 	}
 
@@ -283,7 +283,7 @@ namespace EveryRay_Core
 		if (tileIndex >= mHeightMaps.size())
 			return;
 		
-		mHeightMaps[tileIndex]->mHeightTexture = rhi->CreateGPUTexture();
+		mHeightMaps[tileIndex]->mHeightTexture = rhi->CreateGPUTexture("");
 		mHeightMaps[tileIndex]->mHeightTexture->CreateGPUTextureResource(rhi, path, true);
 	}
 

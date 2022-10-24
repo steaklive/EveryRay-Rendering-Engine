@@ -20,8 +20,8 @@
 #include <algorithm>
 #include <limits>
 
-static const std::string psoNameNonInstanced = "ShadowMapMaterial PSO";
-static const std::string psoNameInstanced = "ShadowMapMaterial w/ Instancing PSO";
+static const std::string psoNameNonInstanced = "ER_RHI_GPUPipelineStateObject: ShadowMapMaterial";
+static const std::string psoNameInstanced = "ER_RHI_GPUPipelineStateObject: ShadowMapMaterial w/ Instancing";
 
 namespace EveryRay_Core
 {
@@ -39,7 +39,7 @@ namespace EveryRay_Core
 		{
 			mLightProjectorCenteredPositions.push_back(XMFLOAT3(0, 0, 0));
 			
-			mShadowMaps.push_back(rhi->CreateGPUTexture());
+			mShadowMaps.push_back(rhi->CreateGPUTexture("ER_RHI_GPUTexture: Shadow Map #" + std::to_string(i)));
 			mShadowMaps[i]->CreateGPUTextureResource(rhi, pWidth, pHeight, 1u, ER_FORMAT_D24_UNORM_S8_UINT, ER_BIND_DEPTH_STENCIL | ER_BIND_SHADER_RESOURCE);
 
 			mCameraCascadesFrustums.push_back(XMMatrixIdentity());

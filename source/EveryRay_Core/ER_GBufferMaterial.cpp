@@ -48,7 +48,7 @@ namespace EveryRay_Core
 		if (shaderFlags & HAS_PIXEL_SHADER)
 			ER_Material::CreatePixelShader("content\\shaders\\GBuffer.hlsl");
 
-		mConstantBuffer.Initialize(ER_Material::GetCore()->GetRHI());
+		mConstantBuffer.Initialize(ER_Material::GetCore()->GetRHI(), "ER_RHI_GPUBuffer: GBufferMaterial CB");
 	}
 
 	ER_GBufferMaterial::~ER_GBufferMaterial()

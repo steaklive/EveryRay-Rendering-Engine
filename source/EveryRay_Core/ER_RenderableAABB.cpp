@@ -13,7 +13,7 @@
 
 namespace EveryRay_Core
 {
-	static const std::string psoName = "BasicColorMaterial PSO";
+	static const std::string psoName = "ER_RHI_GPUPipelineStateObject: BasicColorMaterial";
 
 	const XMVECTORF32 DefaultColor = ER_ColorHelper::Blue;
 	const UINT AABBVertexCount = 8;

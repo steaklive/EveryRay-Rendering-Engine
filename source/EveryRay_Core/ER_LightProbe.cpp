@@ -39,18 +39,20 @@ namespace EveryRay_Core
 		ER_Vector3Helper::Up
 	};
 
-	ER_LightProbe::ER_LightProbe(ER_Core& game, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper, int size, ER_ProbeType aType)
+	ER_LightProbe::ER_LightProbe(ER_Core& game, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper, int size, ER_ProbeType aType, int index)
 		: mSize(size)
 		, mDirectionalLight(light)
 		, mShadowMapper(shadowMapper)
 		, mProbeType(aType)
+		, mIndex(index)
 	{
 		ER_RHI* rhi = game.GetRHI();
 
 		for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
 			mSphericalHarmonicsRGB.push_back(XMFLOAT3(0.0, 0.0, 0.0));
 
-		mCubemapTexture = rhi->CreateGPUTexture();
+		std::string probeType = (aType == DIFFUSE_PROBE) ? "diffuse" : "specular";
+		mCubemapTexture = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Light Probe Cubemap " + probeType + " #" + std::to_string(mIndex));
 		mCubemapTexture->CreateGPUTextureResource(rhi, size, size, 1, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_NONE, (aType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
 
 		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
@@ -63,7 +65,7 @@ namespace EveryRay_Core
 			mCubemapCameras[i]->UpdateProjectionMatrix(true); //fix for mirrored result due to right-hand coordinate system
 		}
 
-		mConvolutionCB.Initialize(rhi);
+		mConvolutionCB.Initialize(rhi, "ER_RHI_GPUBuffer: Light Probe Convolution CB");
 	}
 
 	ER_LightProbe::~ER_LightProbe()

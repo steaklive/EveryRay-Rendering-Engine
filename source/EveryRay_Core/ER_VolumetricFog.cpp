@@ -48,19 +48,19 @@ namespace EveryRay_Core {
 	{
 		auto rhi = GetCore()->GetRHI();
 		
-		mTempVoxelInjectionTexture3D[0] = rhi->CreateGPUTexture();
+		mTempVoxelInjectionTexture3D[0] = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Volumetric Fog Temp Voxel Injection 3D #0");
 		mTempVoxelInjectionTexture3D[0]->CreateGPUTextureResource(rhi, VOXEL_SIZE_X, VOXEL_SIZE_Y, 1, ER_FORMAT_R16G16B16A16_FLOAT,
 			ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1, VOXEL_SIZE_Z);
 
-		mTempVoxelInjectionTexture3D[1] = rhi->CreateGPUTexture();
+		mTempVoxelInjectionTexture3D[1] = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Volumetric Fog Temp Voxel Injection 3D #1");
 		mTempVoxelInjectionTexture3D[1]->CreateGPUTextureResource(rhi, VOXEL_SIZE_X, VOXEL_SIZE_Y, 1, ER_FORMAT_R16G16B16A16_FLOAT,
 			ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1, VOXEL_SIZE_Z);
 
-		mFinalVoxelAccumulationTexture3D = rhi->CreateGPUTexture();
+		mFinalVoxelAccumulationTexture3D = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Volumetric Fog Final Voxel Accumulation 3D");
 		mFinalVoxelAccumulationTexture3D->CreateGPUTextureResource(rhi, VOXEL_SIZE_X, VOXEL_SIZE_Y, 1, ER_FORMAT_R16G16B16A16_FLOAT,
 			ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1, VOXEL_SIZE_Z);
 
-		mBlueNoiseTexture = rhi->CreateGPUTexture();
+		mBlueNoiseTexture = rhi->CreateGPUTexture("");
 		mBlueNoiseTexture->CreateGPUTextureResource(rhi, "content\\textures\\blueNoise.dds");
 
 		mInjectionCS = rhi->CreateGPUShader();
@@ -91,8 +91,8 @@ namespace EveryRay_Core {
 			mCompositePassRootSignature->Finalize(rhi, "ER_RHI_GPURootSignature: Volumetric Fog: Composite Pass", true);
 		}
 
-		mMainConstantBuffer.Initialize(rhi);
-		mCompositeConstantBuffer.Initialize(rhi);
+		mMainConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Volumetric Fog Main CB");
+		mCompositeConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Volumetric Fog Composite CB");
 	}
 
 	void ER_VolumetricFog::Draw()

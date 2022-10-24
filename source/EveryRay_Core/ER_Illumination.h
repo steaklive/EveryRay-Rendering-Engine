@@ -173,38 +173,38 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mVCTVoxelizationDebugVS = nullptr;
 		ER_RHI_GPUShader* mVCTVoxelizationDebugGS = nullptr;
 		ER_RHI_GPUShader* mVCTVoxelizationDebugPS = nullptr;
-		std::string mVoxelizationDebugPSOName = "VCT GI - Voxelization Pass Debug PSO";
+		std::string mVoxelizationDebugPSOName = "ER_RHI_GPUPipelineStateObject: VCT GI - Voxelization Pass Debug";
 		ER_RHI_GPURootSignature* mVoxelizationRS = nullptr;
 		ER_RHI_GPURootSignature* mVoxelizationDebugRS = nullptr;
 
 		ER_RHI_GPUShader* mVCTMainCS = nullptr;
-		std::string mVCTMainPSOName = "VCT GI - Main Pass PSO";
+		std::string mVCTMainPSOName = "ER_RHI_GPUPipelineStateObject: VCT GI - Main Pass";
 		ER_RHI_GPURootSignature* mVCTRS = nullptr;
 
 		ER_RHI_GPUShader* mUpsampleBlurCS = nullptr;
-		std::string mUpsampleBlurPSOName = "Upsample and Blur Pass PSO";
+		std::string mUpsampleBlurPSOName = "ER_RHI_GPUPipelineStateObject: Upsample and Blur Pass";
 		ER_RHI_GPURootSignature* mUpsampleAndBlurRS = nullptr;
 
 		ER_RHI_GPUShader* mCompositeIlluminationCS = nullptr;
-		std::string mCompositeIlluminationPSOName = "Composite Illumination Pass PSO";
+		std::string mCompositeIlluminationPSOName = "ER_RHI_GPUPipelineStateObject: Composite Illumination Pass";
 		ER_RHI_GPURootSignature* mCompositeIlluminationRS = nullptr;
 
 		ER_RHI_GPUShader* mDeferredLightingCS = nullptr;
-		std::string mDeferredLightingPSOName = "Deferred Lighting Pass PSO";
+		std::string mDeferredLightingPSOName = "ER_RHI_GPUPipelineStateObject: Deferred Lighting Pass";
 		ER_RHI_GPURootSignature* mDeferredLightingRS = nullptr;
 
 		ER_RHI_GPUShader* mForwardLightingVS = nullptr;
 		ER_RHI_GPUShader* mForwardLightingVS_Instancing = nullptr;
 		ER_RHI_GPUShader* mForwardLightingPS = nullptr;
-		std::string mForwardLightingPSOName = "Forward Lighting Pass PSO";
-		std::string mForwardLightingInstancingPSOName = "Forward Lighting (Instancing) Pass PSO";
+		std::string mForwardLightingPSOName = "ER_RHI_GPUPipelineStateObject: Forward Lighting Pass";
+		std::string mForwardLightingInstancingPSOName = "ER_RHI_GPUPipelineStateObject: Forward Lighting (Instancing) Pass";
 		ER_RHI_GPURootSignature* mForwardLightingRS = nullptr;
 
 		ER_RHI_GPUShader* mForwardLightingDiffuseProbesPS = nullptr;
-		std::string mForwardLightingDiffuseProbesPSOName = "Forward Lighting Diffuse Probes Pass PSO";
+		std::string mForwardLightingDiffuseProbesPSOName = "ER_RHI_GPUPipelineStateObject: Forward Lighting Diffuse Probes Pass";
 
 		ER_RHI_GPUShader* mForwardLightingSpecularProbesPS = nullptr;
-		std::string mForwardLightingSpecularProbesPSOName = "Forward Lighting Specular Probes Pass PSO";
+		std::string mForwardLightingSpecularProbesPSOName = "ER_RHI_GPUPipelineStateObject: Forward Lighting Specular Probes Pass";
 
 		ER_RHI_InputLayout* mForwardLightingRenderingObjectInputLayout = nullptr;
 		ER_RHI_InputLayout* mForwardLightingRenderingObjectInputLayout_Instancing = nullptr;

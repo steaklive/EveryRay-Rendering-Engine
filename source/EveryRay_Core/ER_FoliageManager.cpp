@@ -197,7 +197,7 @@ namespace EveryRay_Core
 
 		LoadBillboardModel(mType);
 
-		mAlbedoTexture = rhi->CreateGPUTexture();
+		mAlbedoTexture = rhi->CreateGPUTexture("");
 		mAlbedoTexture->CreateGPUTextureResource(rhi, textureName, true);
 	}
 
@@ -261,7 +261,7 @@ namespace EveryRay_Core
 	{
 		ER_RHI* rhi = mCore.GetRHI();
 
-		mFoliageConstantBuffer.Initialize(rhi);
+		mFoliageConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Foliage CB");
 		InitializeBuffersCPU();
 		InitializeBuffersGPU(mPatchesCount);
 

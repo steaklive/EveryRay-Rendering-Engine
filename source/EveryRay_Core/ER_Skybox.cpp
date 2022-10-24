@@ -69,7 +69,7 @@ namespace EveryRay_Core
 			mSkyboxPS = rhi->CreateGPUShader();
 			mSkyboxPS->CompileShader(rhi, "content\\shaders\\Skybox.hlsl", "PSMain", ER_PIXEL);		
 
-			mSkyboxConstantBuffer.Initialize(rhi);
+			mSkyboxConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Skybox CB");
 
 			mSkyRS = rhi->CreateRootSignature(1, 0);
 			if (mSkyRS)
@@ -87,7 +87,7 @@ namespace EveryRay_Core
 			mSunOcclusionPS = rhi->CreateGPUShader();
 			mSunOcclusionPS->CompileShader(rhi, "content\\shaders\\Sun.hlsl", "occlusion", ER_PIXEL);
 
-			mSunConstantBuffer.Initialize(rhi);
+			mSunConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Sun CB");
 
 			mSunRS = rhi->CreateRootSignature(2, 1);
 			if (mSunRS)

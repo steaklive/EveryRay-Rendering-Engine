@@ -15,7 +15,7 @@
 
 namespace EveryRay_Core
 {
-	static const std::string psoName = "BasicColorMaterial PSO";
+	static const std::string psoName = "ER_RHI_GPUPipelineStateObject: BasicColorMaterial";
 
 	ER_DebugProxyObject::ER_DebugProxyObject(ER_Core& game, ER_Camera& camera, const std::string& modelFileName, float scale)
 		:

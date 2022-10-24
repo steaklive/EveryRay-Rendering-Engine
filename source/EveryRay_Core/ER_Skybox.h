@@ -78,15 +78,15 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mSunOcclusionPS = nullptr;
 		ER_RHI_GPUConstantBuffer<SkyCBufferData::SunData> mSunConstantBuffer;	
 		ER_RHI_GPURootSignature* mSunRS = nullptr;
-		const std::string mSunPassPSOName = "Sun Pass PSO";
-		const std::string mSunPassVolumetricCloudsPSOName = "Sun Pass (Volumetric Clouds) PSO"; // due to RT format mismatch
+		const std::string mSunPassPSOName = "ER_RHI_GPUPipelineStateObject: Sun Pass";
+		const std::string mSunPassVolumetricCloudsPSOName = "ER_RHI_GPUPipelineStateObject: Sun Pass (Volumetric Clouds)"; // due to RT format mismatch
 
 		ER_RHI_GPUShader* mSkyboxVS = nullptr;
 		ER_RHI_GPUShader* mSkyboxPS = nullptr;
 		ER_RHI_GPUConstantBuffer<SkyCBufferData::SkyboxData> mSkyboxConstantBuffer;
 		ER_RHI_GPURootSignature* mSkyRS = nullptr;
-		const std::string mSkyboxPassPSOName = "Skybox Pass PSO";
-		const std::string mSkyboxPassVolumetricCloudsPSOName = "Skybox Pass (Volumetric Clouds) PSO"; // due to RT format mismatch
+		const std::string mSkyboxPassPSOName = "ER_RHI_GPUPipelineStateObject: Skybox Pass";
+		const std::string mSkyboxPassVolumetricCloudsPSOName = "ER_RHI_GPUPipelineStateObject: Skybox Pass (Volumetric Clouds)"; // due to RT format mismatch
 
 		XMFLOAT4 mSunDir;
 		XMFLOAT4 mSunColor;

@@ -424,9 +424,9 @@ namespace EveryRay_Core
 		return new ER_RHI_DX12_GPUBuffer(aDebugName);
 	}
 
-	ER_RHI_GPUTexture* ER_RHI_DX12::CreateGPUTexture(/*const std::string& aDebugName*/)
+	ER_RHI_GPUTexture* ER_RHI_DX12::CreateGPUTexture(const std::string& aDebugName)
 	{
-		return new ER_RHI_DX12_GPUTexture(/*aDebugName*/"ER_RHI_GPUTexture: TEST"); //TODO
+		return new ER_RHI_DX12_GPUTexture(aDebugName);
 	}
 
 	ER_RHI_GPURootSignature* ER_RHI_DX12::CreateRootSignature(UINT NumRootParams /*= 0*/, UINT NumStaticSamplers /*= 0*/)

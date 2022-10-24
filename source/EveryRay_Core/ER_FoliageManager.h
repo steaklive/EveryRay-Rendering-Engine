@@ -146,13 +146,13 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mVS = nullptr;
 		ER_RHI_GPUShader* mGS = nullptr;
 		ER_RHI_GPUShader* mPS = nullptr;
-		std::string mFoliageMainPassPSOName = "Foliage - Main Pass PSO";
+		std::string mFoliageMainPassPSOName = "ER_RHI_GPUPipelineStateObject: Foliage - Main Pass";
 
 		ER_RHI_GPUShader* mPS_GBuffer = nullptr;
-		std::string mFoliageGBufferPassPSOName = "Foliage - Gbuffer Pass PSO";
+		std::string mFoliageGBufferPassPSOName = "ER_RHI_GPUPipelineStateObject: Foliage - Gbuffer Pass";
 
 		ER_RHI_GPUShader* mPS_Voxelization = nullptr;
-		std::string mFoliageVoxelizationPassPSOName = "Foliage - Voxelization Pass PSO";
+		std::string mFoliageVoxelizationPassPSOName = "ER_RHI_GPUPipelineStateObject: Foliage - Voxelization Pass";
 
 		ER_RHI_GPUConstantBuffer<FoliageCBufferData::FoliageCB> mFoliageConstantBuffer;
 

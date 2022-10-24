@@ -86,10 +86,10 @@ namespace EveryRay_Core
 		ER_RHI_GPURootSignature* mUpsampleBlurPassRS = nullptr;
 		ER_RHI_GPURootSignature* mCompositePassRS = nullptr;
 
-		const std::string mMainPassPSOName = "Volumetric Clouds - Main PSO";
-		const std::string mCompositePassPSOName = "Volumetric Clouds - Composite PSO";
-		const std::string mBlurPassPSOName = "Volumetric Clouds - Blur PSO";
-		const std::string mUpsampleBlurPSOName = "Volumetric Clouds - Upsample & blur PSO";
+		const std::string mMainPassPSOName = "ER_RHI_GPUPipelineStateObject: Volumetric Clouds - Main";
+		const std::string mCompositePassPSOName = "ER_RHI_GPUPipelineStateObject: Volumetric Clouds - Composite";
+		const std::string mBlurPassPSOName = "ER_RHI_GPUPipelineStateObject: Volumetric Clouds - Blur";
+		const std::string mUpsampleBlurPSOName = "ER_RHI_GPUPipelineStateObject: Volumetric Clouds - Upsample & blur";
 
 		float mCrispiness = 43.0f;
 		float mCurliness = 1.1f;

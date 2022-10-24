@@ -71,13 +71,13 @@ namespace EveryRay_Core
 		ER_RHI_GPURootSignature* mCompositePassRootSignature = nullptr;
 
 		ER_RHI_GPUShader* mInjectionCS = nullptr;
-		std::string mInjectionPassPSOName = "Volumetric Fog - Injection PSO";
+		std::string mInjectionPassPSOName = "ER_RHI_GPUPipelineStateObject: Volumetric Fog - Injection";
 
 		ER_RHI_GPUShader* mAccumulationCS = nullptr;
-		std::string mAccumulationPassPSOName = "Volumetric Fog - Accumulation PSO";
+		std::string mAccumulationPassPSOName = "ER_RHI_GPUPipelineStateObject: Volumetric Fog - Accumulation";
 
 		ER_RHI_GPUShader* mCompositePS = nullptr;
-		std::string mCompositePassPSOName = "Volumetric Fog - Composite PSO";
+		std::string mCompositePassPSOName = "ER_RHI_GPUPipelineStateObject: Volumetric Fog - Composite";
 
 		XMMATRIX mPrevViewProj;
 

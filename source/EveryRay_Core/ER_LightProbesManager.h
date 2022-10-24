@@ -104,7 +104,7 @@ namespace EveryRay_Core
 		// Diffuse probes members
 		std::vector<ER_LightProbe*> mDiffuseProbes;
 		ER_RenderingObject* mDiffuseProbeRenderingObject = nullptr;
-		std::string mDiffuseDebugLightProbePassPSOName = "Light Probes Manager - Diffuse Debug Probe Pass PSO";
+		std::string mDiffuseDebugLightProbePassPSOName = "ER_RHI_GPUPipelineStateObject: Light Probes Manager - Diffuse Debug Probe Pass";
 		ER_RHI_GPUBuffer* mDiffuseProbesCellsIndicesGPUBuffer = nullptr;
 		ER_RHI_GPUBuffer* mDiffuseProbesPositionsGPUBuffer = nullptr;
 		ER_RHI_GPUBuffer* mDiffuseProbesSphericalHarmonicsGPUBuffer = nullptr;
@@ -129,7 +129,7 @@ namespace EveryRay_Core
 		// Specular probes members
 		std::vector<ER_LightProbe*> mSpecularProbes;
 		ER_RenderingObject* mSpecularProbeRenderingObject = nullptr;
-		std::string mSpecularDebugLightProbePassPSOName = "Light Probes Manager - Specular Debug Probe Pass PSO";
+		std::string mSpecularDebugLightProbePassPSOName = "ER_RHI_GPUPipelineStateObject: Light Probes Manager - Specular Debug Probe Pass";
 		int* mSpecularProbesTexArrayIndicesCPUBuffer = nullptr;
 		ER_RHI_GPUBuffer* mSpecularProbesTexArrayIndicesGPUBuffer = nullptr;
 		ER_RHI_GPUBuffer* mSpecularProbesCellsIndicesGPUBuffer = nullptr;

@@ -88,7 +88,7 @@ namespace EveryRay_Core
 		ER_RHI_GPUTexture* mTonemappingRT = nullptr;
 		ER_RHI_GPUShader* mTonemappingPS = nullptr;
 		bool mUseTonemap = true;
-		std::string mTonemapPassPSOName = "Post Processing - Tonemap PSO";
+		std::string mTonemapPassPSOName = "ER_RHI_GPUPipelineStateObject: Post Processing - Tonemap";
 		ER_RHI_GPURootSignature* mTonemapRS = nullptr;
 
 		// SSR
@@ -99,7 +99,7 @@ namespace EveryRay_Core
 		int mSSRRayCount = 50;
 		float mSSRStepSize = 0.741f;
 		float mSSRMaxThickness = 0.00021f;
-		std::string mSSRPassPSOName = "Post Processing - SSR PSO";
+		std::string mSSRPassPSOName = "ER_RHI_GPUPipelineStateObject: Post Processing - SSR";
 		ER_RHI_GPURootSignature* mSSRRS = nullptr;
 
 		// SSS
@@ -107,7 +107,7 @@ namespace EveryRay_Core
 		bool mUseSSS = true;
 		ER_RHI_GPUShader* mSSSPS = nullptr;
 		ER_RHI_GPUConstantBuffer<PostEffectsCBuffers::SSSCB> mSSSConstantBuffer;
-		std::string mSSSPassPSOName = "Post Processing - SSS PSO";
+		std::string mSSSPassPSOName = "ER_RHI_GPUPipelineStateObject: Post Processing - SSS";
 		ER_RHI_GPURootSignature* mSSSRS = nullptr;
 
 		// Linear Fog
@@ -119,7 +119,7 @@ namespace EveryRay_Core
 		float mLinearFogDensity = 730.0f;
 		float mLinearFogNearZ = 0.0f;
 		float mLinearFogFarZ = 0.0f;
-		std::string mLinearFogPassPSOName = "Post Processing - Linear Fog PSO";
+		std::string mLinearFogPassPSOName = "ER_RHI_GPUPipelineStateObject: Post Processing - Linear Fog";
 		ER_RHI_GPURootSignature* mLinearFogRS = nullptr;
 
 		ER_RHI_GPUTexture* mVolumetricFogRT = nullptr;
@@ -130,7 +130,7 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mColorGradingPS = nullptr;
 		int mColorGradingCurrentLUTIndex = 2;
 		bool mUseColorGrading = true;
-		std::string mColorGradingPassPSOName = "Post Processing - Color Grading PSO";
+		std::string mColorGradingPassPSOName = "ER_RHI_GPUPipelineStateObject: Post Processing - Color Grading";
 		ER_RHI_GPURootSignature* mColorGradingRS = nullptr;
 
 		// FXAA
@@ -138,7 +138,7 @@ namespace EveryRay_Core
 		ER_RHI_GPUConstantBuffer<PostEffectsCBuffers::FXAACB> mFXAAConstantBuffer;
 		ER_RHI_GPUShader* mFXAAPS = nullptr;
 		bool mUseFXAA = true;
-		std::string mFXAAPassPSOName = "Post Processing - FXAA PSO";
+		std::string mFXAAPassPSOName = "ER_RHI_GPUPipelineStateObject: Post Processing - FXAA";
 		ER_RHI_GPURootSignature* mFXAARS = nullptr;
 
 		// Vignette
@@ -148,11 +148,11 @@ namespace EveryRay_Core
 		float mVignetteRadius = 0.75f;
 		float mVignetteSoftness = 0.5f;
 		bool mUseVignette = true;
-		std::string mVignettePassPSOName = "Post Processing - Vignette PSO";
+		std::string mVignettePassPSOName = "ER_RHI_GPUPipelineStateObject: Post Processing - Vignette";
 		ER_RHI_GPURootSignature* mVignetteRS = nullptr;
 
 		ER_RHI_GPUShader* mFinalResolvePS = nullptr;
-		std::string mFinalResolvePassPSOName = "Post Processing - Final Resolve PSO";
+		std::string mFinalResolvePassPSOName = "ER_RHI_GPUPipelineStateObject: Post Processing - Final Resolve";
 		ER_RHI_GPURootSignature* mFinalResolveRS = nullptr;
 
 		// just pointers to RTs (not allocated in this system)

@@ -31,8 +31,8 @@ static float clearColorBlack[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 static const std::string voxelizationPSONames[NUM_VOXEL_GI_CASCADES] =
 {
-	"VoxelizationMaterial Pass (cascade 0) PSO",
-	"VoxelizationMaterial Pass (cascade 1) PSO",
+	"ER_RHI_GPUPipelineStateObject: VoxelizationMaterial Pass (cascade 0)",
+	"ER_RHI_GPUPipelineStateObject: VoxelizationMaterial Pass (cascade 1)",
 };
 
 #define VCT_MAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
@@ -180,20 +180,20 @@ namespace EveryRay_Core {
 		
 		//cbuffers
 		{
-			mVoxelizationDebugConstantBuffer.Initialize(rhi);
-			mVoxelConeTracingMainConstantBuffer.Initialize(rhi);
-			mCompositeTotalIlluminationConstantBuffer.Initialize(rhi);
-			mUpsampleBlurConstantBuffer.Initialize(rhi);
-			mDeferredLightingConstantBuffer.Initialize(rhi);
-			mForwardLightingConstantBuffer.Initialize(rhi);
-			mLightProbesConstantBuffer.Initialize(rhi);
+			mVoxelizationDebugConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Voxelization Debug CB");
+			mVoxelConeTracingMainConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Voxel Cone Tracing Main CB");
+			mCompositeTotalIlluminationConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Composite Total Illumination CB");
+			mUpsampleBlurConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Upsample+Blur CB");
+			mDeferredLightingConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Deferred Lighting CB");
+			mForwardLightingConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Forward Lighting CB");
+			mLightProbesConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Light Probes CB");
 		}
 
 		//RTs and gizmos
 		{
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 			{
-				mVCTVoxelCascades3DRTs.push_back(rhi->CreateGPUTexture());
+				mVCTVoxelCascades3DRTs.push_back(rhi->CreateGPUTexture("ER_RHI_GPUTexture: Voxel Cone Tracing 3D Cascade #" + std::to_string(i)));
 				mVCTVoxelCascades3DRTs[i]->CreateGPUTextureResource(rhi, voxelCascadesSizes[i], voxelCascadesSizes[i], 1u,
 					ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET | ER_BIND_UNORDERED_ACCESS, 6, voxelCascadesSizes[i]);
 				
@@ -205,27 +205,27 @@ namespace EveryRay_Core {
 				mVoxelCascadesAABBs[i].second = XMFLOAT3(maxBB, maxBB, maxBB);
 				mDebugVoxelZonesGizmos[i]->InitializeGeometry({ mVoxelCascadesAABBs[i].first, mVoxelCascadesAABBs[i].second });
 			}
-			mVCTMainRT = rhi->CreateGPUTexture();
+			mVCTMainRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Voxel Cone Tracing Main RT");
 			mVCTMainRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()) * VCT_GI_MAIN_PASS_DOWNSCALE, static_cast<UINT>(mCore->ScreenHeight()) * VCT_GI_MAIN_PASS_DOWNSCALE, 1u, 
 				ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1);
 			
-			mVCTUpsampleAndBlurRT = rhi->CreateGPUTexture();
+			mVCTUpsampleAndBlurRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Voxel Cone Tracing Upsample+Blur RT");
 			mVCTUpsampleAndBlurRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
 				ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1);
 			
-			mVCTVoxelizationDebugRT = rhi->CreateGPUTexture();
+			mVCTVoxelizationDebugRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Voxel Cone Tracing Voxelization Debug RT");
 			mVCTVoxelizationDebugRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
 				ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 			
-			mFinalIlluminationRT = rhi->CreateGPUTexture();
+			mFinalIlluminationRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Final Illumination RT");
 			mFinalIlluminationRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET | ER_BIND_UNORDERED_ACCESS, 1);
 			
-			mLocalIlluminationRT = rhi->CreateGPUTexture();
+			mLocalIlluminationRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Local Illumination RT");
 			mLocalIlluminationRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET | ER_BIND_UNORDERED_ACCESS, 1);
 			
-			mDepthBuffer = rhi->CreateGPUTexture();
+			mDepthBuffer = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Depth Buffer (ER_Illumination)");
 			mDepthBuffer->CreateGPUTextureResource(rhi, mCore->ScreenWidth(), mCore->ScreenHeight(), 1u, ER_FORMAT_D24_UNORM_S8_UINT, ER_BIND_SHADER_RESOURCE | ER_BIND_DEPTH_STENCIL);
 		}
 

@@ -72,6 +72,8 @@ namespace EveryRay_Core
 			message += mName;
 			message += '\n';
 			ER_OUTPUT_LOG(ER_Utility::ToWideString(message).c_str());
+
+			mPSO->SetName(ER_Utility::ToWideString(mName).c_str());
 		}
 	}
 
@@ -146,6 +148,8 @@ namespace EveryRay_Core
 			message += mName;
 			message += '\n';
 			ER_OUTPUT_LOG(ER_Utility::ToWideString(message).c_str());
+			
+			mPSO->SetName(ER_Utility::ToWideString(mName).c_str());
 		}
 	}
 

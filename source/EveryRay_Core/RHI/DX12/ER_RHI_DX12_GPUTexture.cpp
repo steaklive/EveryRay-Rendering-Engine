@@ -286,9 +286,9 @@ namespace EveryRay_Core
 			device->CreateShaderResourceView(mResource.Get(), &sDesc, mSRVHandle.GetCPUHandle());
 		}
 
-		if (mResource)
+		if (mResource && !mDebugName.empty())
 			mResource->SetName(ER_Utility::ToWideString(mDebugName).c_str());
-		if (mResourceUpload)
+		if (mResourceUpload && !mDebugName.empty())
 			mResourceUpload->SetName(ER_Utility::ToWideString(mDebugName + " Upload").c_str());
 	}
 	void ER_RHI_DX12_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath /*= false*/, bool is3D, bool skipFallback, bool* statusFlag)
@@ -423,6 +423,9 @@ namespace EveryRay_Core
 			if (statusFlag)
 				*statusFlag = true;
 		}
+
+		if (mResource)
+			mResource->SetName(aPath.c_str());
 	}
 
 	void ER_RHI_DX12_GPUTexture::LoadFallbackTexture(ER_RHI* aRHI)
@@ -462,5 +465,8 @@ namespace EveryRay_Core
 		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MipLevels = 1;
 		device->CreateShaderResourceView(mResource.Get(), &srvDesc, mSRVHandle.GetCPUHandle());
+
+		if (mResource)
+			mResource->SetName(L"content\\textures\\uvChecker.jpg");
 	}
 }

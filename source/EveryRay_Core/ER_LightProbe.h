@@ -17,7 +17,7 @@ namespace EveryRay_Core
 	{
 		using LightProbeRenderingObjectsInfo = std::map<std::string, ER_RenderingObject*>;
 	public:
-		ER_LightProbe(ER_Core& game, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper, int size, ER_ProbeType aType);
+		ER_LightProbe(ER_Core& game, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper, int size, ER_ProbeType aType, int index);
 		~ER_LightProbe();
 
 #ifdef ER_PLATFORM_WIN64_DX11
