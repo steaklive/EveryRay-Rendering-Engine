@@ -41,7 +41,7 @@ namespace EveryRay_Core
 		ER_RHI_DX12();
 		virtual ~ER_RHI_DX12();
 
-		virtual bool Initialize(HWND windowHandle, UINT width, UINT height, bool isFullscreen) override;
+		virtual bool Initialize(HWND windowHandle, UINT width, UINT height, bool isFullscreen, bool isReset) override;
 		
 		virtual void BeginGraphicsCommandList(int index = 0) override;
 		virtual void EndGraphicsCommandList(int index = 0) override;
@@ -166,6 +166,9 @@ namespace EveryRay_Core
 		virtual void WaitForGpuOnComputeFence() override;
 		virtual void WaitForGpuOnCopyFence() override;
 
+		virtual void ResetDescriptorManager() override;
+		virtual void ResetRHI(int width, int height, bool isFullscreen) override;
+
 		ID3D12Device* GetDevice() const { return mDevice.Get(); }
 		ID3D12Device5* GetDeviceRaytracing() const { return (ID3D12Device5*)mDevice.Get(); }
 		ID3D12GraphicsCommandList* GetGraphicsCommandList(int index) const { return mCommandListGraphics[index].Get(); }
@@ -217,7 +220,7 @@ namespace EveryRay_Core
 		// graphics
 		ComPtr<ID3D12CommandQueue> mCommandQueueGraphics;
 		ComPtr<ID3D12GraphicsCommandList> mCommandListGraphics[ER_RHI_MAX_GRAPHICS_COMMAND_LISTS];
-		ComPtr<ID3D12CommandAllocator> mCommandAllocatorsGraphics[DX12_MAX_BACK_BUFFER_COUNT][ER_RHI_MAX_COMPUTE_COMMAND_LISTS];
+		ComPtr<ID3D12CommandAllocator> mCommandAllocatorsGraphics[DX12_MAX_BACK_BUFFER_COUNT][ER_RHI_MAX_GRAPHICS_COMMAND_LISTS];
 		
 		ComPtr<ID3D12Fence> mFenceGraphics;
 		UINT64 mFenceValuesGraphics[DX12_MAX_BACK_BUFFER_COUNT] = {};

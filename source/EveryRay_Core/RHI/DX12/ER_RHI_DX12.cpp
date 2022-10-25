@@ -25,8 +25,9 @@ namespace EveryRay_Core
 		DeleteObject(mDescriptorHeapManager);
 	}
 
-	bool ER_RHI_DX12::Initialize(HWND windowHandle, UINT width, UINT height, bool isFullscreen)
+	bool ER_RHI_DX12::Initialize(HWND windowHandle, UINT width, UINT height, bool isFullscreen, bool isReset)
 	{
+		mWindowHandle = windowHandle;
 		mAPI = ER_GRAPHICS_API::DX12;
 		assert(width > 0 && height > 0);
 		HRESULT hr;
@@ -134,8 +135,6 @@ namespace EveryRay_Core
 				throw ER_CoreException("ER_RHI_DX12: Could not create graphics command queue");
 
 			// Create descriptor heaps for render target views and depth stencil views.
-			//mDescriptorHeapManager = new DXRS::DescriptorHeapManager(mDevice.Get());
-
 			D3D12_DESCRIPTOR_HEAP_DESC rtvDescriptorHeapDesc = {};
 			rtvDescriptorHeapDesc.NumDescriptors = DX12_MAX_BACK_BUFFER_COUNT;
 			rtvDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
@@ -226,6 +225,9 @@ namespace EveryRay_Core
 				fsSwapChainDesc.RefreshRate.Numerator = 1;
 				fsSwapChainDesc.Windowed = TRUE;
 
+				if (isReset)
+					mSwapChain.Reset();
+
 				ComPtr<IDXGISwapChain1> swapChain;
 				// Create a swap chain for the window.
 				if (FAILED(mDXGIFactory->CreateSwapChainForHwnd(mCommandQueueGraphics.Get(), windowHandle, &swapChainDesc, &fsSwapChainDesc, nullptr, swapChain.GetAddressOf())))
@@ -242,24 +244,7 @@ namespace EveryRay_Core
 		CreateDepthStencilStates();
 		CreateBlendStates();
 
-		mDescriptorHeapManager = new ER_RHI_DX12_GPUDescriptorHeapManager(mDevice.Get());
-
-		// null SRVs descriptor handles
-		{
-			sNullSRV2DHandle = mDescriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-			sNullSRV3DHandle = mDescriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-			srvDesc.Texture2D.MipLevels = 1;
-			mDevice->CreateShaderResourceView(nullptr, &srvDesc, sNullSRV2DHandle.GetCPUHandle());
-
-			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
-			srvDesc.Texture3D.MipLevels = 1;
-			mDevice->CreateShaderResourceView(nullptr, &srvDesc, sNullSRV3DHandle.GetCPUHandle());
-		}
+		ResetDescriptorManager();
 
 		return true;
 	}
@@ -307,6 +292,34 @@ namespace EveryRay_Core
 				}
 			}
 		}
+	}
+
+	void ER_RHI_DX12::ResetDescriptorManager()
+	{
+		DeleteObject(mDescriptorHeapManager);
+		mDescriptorHeapManager = new ER_RHI_DX12_GPUDescriptorHeapManager(mDevice.Get());
+
+		// null SRVs descriptor handles
+		{
+			sNullSRV2DHandle = mDescriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			sNullSRV3DHandle = mDescriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			srvDesc.Texture2D.MipLevels = 1;
+			mDevice->CreateShaderResourceView(nullptr, &srvDesc, sNullSRV2DHandle.GetCPUHandle());
+
+			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
+			srvDesc.Texture3D.MipLevels = 1;
+			mDevice->CreateShaderResourceView(nullptr, &srvDesc, sNullSRV3DHandle.GetCPUHandle());
+		}
+	}
+
+	void ER_RHI_DX12::ResetRHI(int width, int height, bool isFullscreen)
+	{
+		Initialize(mWindowHandle, width, height, isFullscreen, true);
 	}
 
 	void ER_RHI_DX12::BeginGraphicsCommandList(int index)
@@ -2001,5 +2014,4 @@ namespace EveryRay_Core
 		depthStencilStateDesc.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
 		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_ALWAYS, depthStencilStateDesc));
 	}
-
 }

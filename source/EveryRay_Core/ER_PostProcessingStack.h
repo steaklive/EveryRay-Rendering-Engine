@@ -63,8 +63,6 @@ namespace EveryRay_Core
 			ER_VolumetricClouds* aVolumetricClouds = nullptr, ER_VolumetricFog* aVolumetricFog = nullptr);
 
 		void Update();
-
-		void SetDirectionalLight(const ER_DirectionalLight* pLight) { light = pLight; }
 		void Config() { mShowDebug = !mShowDebug; }
 
 		bool isWindowOpened = false;
@@ -82,7 +80,6 @@ namespace EveryRay_Core
 
 		ER_Core& mCore;
 		ER_Camera& camera;
-		const ER_DirectionalLight* light;
 
 		// Tonemap
 		ER_RHI_GPUTexture* mTonemappingRT = nullptr;

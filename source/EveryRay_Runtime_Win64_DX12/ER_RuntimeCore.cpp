@@ -157,6 +157,9 @@ namespace EveryRay_Runtime
 		{
 			mCurrentSandbox->Destroy(*this);
 			DeleteObject(mCurrentSandbox);
+
+			if (mRHI)
+				mRHI->ResetRHI(mScreenWidth, mScreenHeight, false);
 		}
 
 		mCurrentSandbox = new ER_Sandbox();

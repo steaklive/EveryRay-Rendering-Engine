@@ -35,6 +35,10 @@ namespace EveryRay_Core {
 	void ER_Sandbox::Destroy(ER_Core& game)
 	{
 		game.CPUProfiler()->BeginCPUTime("Destroying scene: " + mName);
+
+		ER_RHI* rhi = game.GetRHI();
+		rhi->WaitForGpuOnGraphicsFence();
+
 		DeleteObject(mDirectionalLight);
 		DeleteObject(mSkybox);
 		DeleteObject(mPostProcessingStack);
@@ -119,7 +123,6 @@ namespace EveryRay_Core {
 		game.CPUProfiler()->BeginCPUTime("Post processing stack init");
         mPostProcessingStack = new ER_PostProcessingStack(game, camera);
         mPostProcessingStack->Initialize(false, false, true, true, true, false, false, false);
-        mPostProcessingStack->SetDirectionalLight(mDirectionalLight);
 		game.CPUProfiler()->EndCPUTime("Post processing stack init");
 #pragma endregion
 

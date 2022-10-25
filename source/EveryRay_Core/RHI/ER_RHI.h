@@ -264,7 +264,7 @@ namespace EveryRay_Core
 		ER_RHI() {}
 		virtual ~ER_RHI() {}
 
-		virtual bool Initialize(HWND windowHandle, UINT width, UINT height, bool isFullscreen) = 0;
+		virtual bool Initialize(HWND windowHandle, UINT width, UINT height, bool isFullscreen, bool isReset = false) = 0;
 		
 		virtual void BeginGraphicsCommandList(int index = 0) = 0;
 		virtual void EndGraphicsCommandList(int index = 0) = 0;
@@ -394,6 +394,9 @@ namespace EveryRay_Core
 		virtual void WaitForGpuOnGraphicsFence() = 0;
 		virtual void WaitForGpuOnComputeFence() = 0;
 		virtual void WaitForGpuOnCopyFence() = 0;
+
+		virtual void ResetDescriptorManager() = 0;
+		virtual void ResetRHI(int width, int height, bool isFullscreen) = 0;
 
 		inline const int GetPrepareGraphicsCommandListIndex() { return mPrepareGraphicsCommandListIndex; }
 		inline const int GetCurrentGraphicsCommandListIndex() { return mCurrentGraphicsCommandListIndex; }
