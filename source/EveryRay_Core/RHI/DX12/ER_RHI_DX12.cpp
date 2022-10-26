@@ -403,13 +403,13 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_RHI_DX12::ClearDepthStencilTarget(ER_RHI_GPUTexture* aDepthTarget, float depth, UINT stencil /*= 0*/)
+	void ER_RHI_DX12::ClearDepthStencilTarget(ER_RHI_GPUTexture* aDepthTarget, float depth, UINT stencil)
 	{
 		assert(mCurrentGraphicsCommandListIndex > -1);
 		assert(aDepthTarget);
 		ER_RHI_DX12_GPUTexture* dtDX12 = static_cast<ER_RHI_DX12_GPUTexture*>(aDepthTarget);
 		assert(dtDX12);
-		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->ClearDepthStencilView(dtDX12->GetDSVHandle().GetCPUHandle(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, depth, stencil, 0, nullptr);
+		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->ClearDepthStencilView(dtDX12->GetDSVHandle().GetCPUHandle(), (stencil == -1) ? D3D12_CLEAR_FLAG_DEPTH : D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, depth, stencil, 0, nullptr);
 	}
 
 	void ER_RHI_DX12::ClearUAV(ER_RHI_GPUResource* aRenderTarget, float colors[4])
@@ -1492,6 +1492,8 @@ namespace EveryRay_Core
 			return DXGI_FORMAT_R32_UINT;
 		case ER_RHI_FORMAT::ER_FORMAT_D24_UNORM_S8_UINT:
 			return DXGI_FORMAT_D24_UNORM_S8_UINT;
+		case ER_RHI_FORMAT::ER_FORMAT_D16_UNORM:
+			return DXGI_FORMAT_D16_UNORM;
 		case ER_RHI_FORMAT::ER_FORMAT_R8G8_TYPELESS:
 			return DXGI_FORMAT_R8G8_TYPELESS;
 		case ER_RHI_FORMAT::ER_FORMAT_R8G8_UNORM:

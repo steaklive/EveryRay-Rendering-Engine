@@ -40,7 +40,7 @@ namespace EveryRay_Core
 			mLightProjectorCenteredPositions.push_back(XMFLOAT3(0, 0, 0));
 			
 			mShadowMaps.push_back(rhi->CreateGPUTexture("ER_RHI_GPUTexture: Shadow Map #" + std::to_string(i)));
-			mShadowMaps[i]->CreateGPUTextureResource(rhi, pWidth, pHeight, 1u, ER_FORMAT_D24_UNORM_S8_UINT, ER_BIND_DEPTH_STENCIL | ER_BIND_SHADER_RESOURCE);
+			mShadowMaps[i]->CreateGPUTextureResource(rhi, pWidth, pHeight, 1u, ER_FORMAT_D16_UNORM, ER_BIND_DEPTH_STENCIL | ER_BIND_SHADER_RESOURCE);
 
 			mCameraCascadesFrustums.push_back(XMMatrixIdentity());
 			(isCascaded) ? mCameraCascadesFrustums[i].SetMatrix(mCamera.GetCustomViewProjectionMatrixForCascade(i)) : mCameraCascadesFrustums[i].SetMatrix(mCamera.ProjectionMatrix());
@@ -103,7 +103,7 @@ namespace EveryRay_Core
 		ER_RHI_Rect newRect = { 0, 0, static_cast<LONG>(mShadowMaps[cascadeIndex]->GetWidth()), static_cast<LONG>(mShadowMaps[cascadeIndex]->GetHeight()) };
 
 		rhi->SetDepthTarget(mShadowMaps[cascadeIndex]);
-		rhi->ClearDepthStencilTarget(mShadowMaps[cascadeIndex], 1.0f, 0);
+		rhi->ClearDepthStencilTarget(mShadowMaps[cascadeIndex], 1.0f);
 		rhi->SetViewport(newViewport);
 		rhi->SetRect(newRect);
 	}

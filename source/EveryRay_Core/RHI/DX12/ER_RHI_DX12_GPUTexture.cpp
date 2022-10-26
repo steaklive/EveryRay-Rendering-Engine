@@ -41,7 +41,7 @@ namespace EveryRay_Core
 		DXGI_FORMAT depthstencil_dsv_format;
 		if (mIsDepthStencil)
 		{
-			switch (format)
+			switch (mFormat)
 			{
 			case DXGI_FORMAT_D32_FLOAT:
 				depthstencil_tex_format = DXGI_FORMAT_R32_TYPELESS;
