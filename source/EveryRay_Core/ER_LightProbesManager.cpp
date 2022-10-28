@@ -537,6 +537,9 @@ namespace EveryRay_Core
 		ER_RHI* rhi = game.GetRHI();
 
 		int numThreads = std::thread::hardware_concurrency();
+#ifdef ER_PLATFORM_WIN64_DX12
+		numThreads = 1; //TODO fix this on DX12 (need to support multiple command lists)
+#endif
 		assert(numThreads > 0);
 
 		if (!mDiffuseProbesReady)
