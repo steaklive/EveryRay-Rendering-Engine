@@ -6,7 +6,7 @@ namespace EveryRay_Core
 	class ER_RHI_DX11_GPUTexture : public ER_RHI_GPUTexture
 	{
 	public:
-		ER_RHI_DX11_GPUTexture();
+		ER_RHI_DX11_GPUTexture(const std::string& aDebugName);
 		virtual ~ER_RHI_DX11_GPUTexture();
 
 		virtual void CreateGPUTextureResource(ER_RHI* aRHI, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE,
@@ -53,6 +53,7 @@ namespace EveryRay_Core
 		ID3D11Texture2D* mTexture2D = nullptr;
 		ID3D11Texture3D* mTexture3D = nullptr;
 
+		DXGI_FORMAT mFormat;
 		UINT mMipLevels = 0;
 		UINT mBindFlags = 0;
 		UINT mWidth = 0;

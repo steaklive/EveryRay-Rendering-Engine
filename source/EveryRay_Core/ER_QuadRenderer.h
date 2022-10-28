@@ -19,7 +19,7 @@ namespace EveryRay_Core
 
 		void Setup();
 		void PrepareDraw(ER_RHI* rhi);
-		void Draw(ER_RHI* rhi);
+		void Draw(ER_RHI* rhi, bool unbindShader = true);
 
 	private:
 		ER_RHI_GPUShader* mVS = nullptr;

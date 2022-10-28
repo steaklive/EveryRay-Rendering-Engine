@@ -25,25 +25,29 @@ namespace EveryRay_Core
 		ER_RHI_DX11();
 		virtual ~ER_RHI_DX11();
 
-		virtual bool Initialize(HWND windowHandle, UINT width, UINT height, bool isFullscreen) override;
+		virtual bool Initialize(HWND windowHandle, UINT width, UINT height, bool isFullscreen, bool isReset = false) override;
 		
-		virtual void BeginGraphicsCommandList() override {}; //not supported on DX11
-		virtual void EndGraphicsCommandList() override {}; //not supported on DX11
+		virtual void BeginGraphicsCommandList(int index = 0) override {}; //not supported on DX11
+		virtual void EndGraphicsCommandList(int index = 0) override {}; //not supported on DX11
 
-		virtual void BeginComputeCommandList() override {}; //not supported on DX11
-		virtual void EndComputeCommandList() override {}; //not supported on DX11
+		virtual void BeginComputeCommandList(int index = 0) override {}; //not supported on DX11
+		virtual void EndComputeCommandList(int index = 0) override {}; //not supported on DX11
+		
+		virtual void BeginCopyCommandList(int index = 0) override {}; //not supported on DX11
+		virtual void EndCopyCommandList(int index = 0) override {}; //not supported on DX11
 
 		virtual void ClearMainRenderTarget(float colors[4]) override;
 		virtual void ClearMainDepthStencilTarget(float depth, UINT stencil = 0) override;
 		virtual void ClearRenderTarget(ER_RHI_GPUTexture* aRenderTarget, float colors[4], int rtvArrayIndex = -1) override;
 		virtual void ClearDepthStencilTarget(ER_RHI_GPUTexture* aDepthTarget, float depth, UINT stencil = 0) override;
 		virtual void ClearUAV(ER_RHI_GPUResource* aRenderTarget, float colors[4]) override;
-		virtual void CreateInputLayout(ER_RHI_InputLayout* aOutInputLayout, ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount, const void* shaderBytecodeWithInputSignature, UINT byteCodeLength) override;
-		
+
 		virtual ER_RHI_GPUShader* CreateGPUShader() override;
-		virtual ER_RHI_GPUBuffer* CreateGPUBuffer() override;
-		virtual ER_RHI_GPUTexture* CreateGPUTexture() override;
+		virtual ER_RHI_GPUBuffer* CreateGPUBuffer(const std::string& aDebugName) override;
+		virtual ER_RHI_GPUTexture* CreateGPUTexture(const std::string& aDebugName) override;
+		virtual ER_RHI_GPURootSignature* CreateRootSignature(UINT NumRootParams = 0, UINT NumStaticSamplers = 0) override { return nullptr; } //not supported on DX11
 		virtual ER_RHI_InputLayout* CreateInputLayout(ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount) override;
+		void CreateInputLayout(ER_RHI_InputLayout* aOutInputLayout, ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount, const void* shaderBytecodeWithInputSignature, UINT byteCodeLength);
 
 		virtual void CreateTexture(ER_RHI_GPUTexture* aOutTexture, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE,
 			int mip = 1, int depth = -1, int arraySize = 1, bool isCubemap = false, int cubemapArraySize = -1) override;
@@ -51,7 +55,7 @@ namespace EveryRay_Core
 		virtual void CreateTexture(ER_RHI_GPUTexture* aOutTexture, const std::wstring& aPath, bool isFullPath = false) override;
 
 		virtual void CreateBuffer(ER_RHI_GPUBuffer* aOutBuffer, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic = false, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, ER_RHI_RESOURCE_MISC_FLAG miscFlags = ER_RESOURCE_MISC_NONE, ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN) override;
-		virtual void CopyBuffer(ER_RHI_GPUBuffer* aDestBuffer, ER_RHI_GPUBuffer* aSrcBuffer) override;
+		virtual void CopyBuffer(ER_RHI_GPUBuffer* aDestBuffer, ER_RHI_GPUBuffer* aSrcBuffer, int cmdListIndex, bool isInCopyQueue = false) override;
 		virtual void BeginBufferRead(ER_RHI_GPUBuffer* aBuffer, void** output) override;
 		virtual void EndBufferRead(ER_RHI_GPUBuffer* aBuffer) override;
 
@@ -66,34 +70,42 @@ namespace EveryRay_Core
 		virtual void Dispatch(UINT ThreadGroupCountX, UINT ThreadGroupCountY, UINT ThreadGroupCountZ) override;
 		//TODO DispatchIndirect
 
+		virtual void ExecuteCommandLists(int commandListIndex = 0, bool isCompute = false) override {}; //not supported on DX11
+		virtual void ExecuteCopyCommandList() override {}; //not supported on DX11
+
 		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture) override;
 
 		virtual void PresentGraphics() override;
-		//virtual void PresentCompute() override; //not supported on DX11
+		virtual void PresentCompute() override {}; //not supported on DX11
 		
 		virtual bool ProjectCubemapToSH(ER_RHI_GPUTexture* aTexture, UINT order, float* resultR, float* resultG, float* resultB) override;
 		
 		virtual void SaveGPUTextureToFile(ER_RHI_GPUTexture* aTexture, const std::wstring& aPathName) override;
 
-		virtual void SetMainRenderTargets() override;
+		virtual void SetMainRenderTargets(int cmdListIndex = 0) override;
 		virtual void SetRenderTargets(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr, ER_RHI_GPUTexture* aUAV = nullptr, int rtvArrayIndex = -1) override;
 		virtual void SetDepthTarget(ER_RHI_GPUTexture* aDepthTarget) override;
+		virtual void SetRenderTargetFormats(const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr) override {}; //not supported on DX11
+		virtual void SetMainRenderTargetFormats() override {}; //not supported on DX11
 
 		virtual void SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE aDS, UINT stencilRef = 0xffffffff) override;
-		//virtual ER_RHI_DEPTH_STENCIL_STATE GetCurrentDepthStencilState() override; //TODO
-
 		virtual void SetBlendState(ER_RHI_BLEND_STATE aBS, const float BlendFactor[4] = nullptr, UINT SampleMask = 0xffffffff) override;
-		
 		virtual void SetRasterizerState(ER_RHI_RASTERIZER_STATE aRS) override;
 		
 		virtual void SetViewport(const ER_RHI_Viewport& aViewport) override;
-		
 		virtual void SetRect(const ER_RHI_Rect& rect) override;
-		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot = 0) override;
-		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot = 0) override;
-		virtual void SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot = 0) override;
+
+		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot = 0,
+			ER_RHI_GPURootSignature* rs = nullptr, int rootParamIndex = -1, bool isComputeRS = false) override;
+		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot = 0,
+			ER_RHI_GPURootSignature* rs = nullptr, int rootParamIndex = -1, bool isComputeRS = false) override;
+		virtual void SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot = 0,
+			ER_RHI_GPURootSignature* rs = nullptr, int rootParamIndex = -1, bool isComputeRS = false) override;
+		virtual void SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot = 0, ER_RHI_GPURootSignature* rs = nullptr) override;
+		
+		virtual void SetRootSignature(ER_RHI_GPURootSignature* rs, bool isCompute = false) override {}; //not supported on DX11
+
 		virtual void SetShader(ER_RHI_GPUShader* aShader) override;
-		virtual void SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot = 0) override;
 		virtual void SetInputLayout(ER_RHI_InputLayout* aIL) override;
 		virtual void SetEmptyInputLayout() override;
 		virtual void SetIndexBuffer(ER_RHI_GPUBuffer* aBuffer, UINT offset = 0) override;
@@ -102,23 +114,47 @@ namespace EveryRay_Core
 		virtual void SetTopologyType(ER_RHI_PRIMITIVE_TYPE aType) override;
 		virtual ER_RHI_PRIMITIVE_TYPE GetCurrentTopologyType() override;
 
+		virtual void SetGPUDescriptorHeap(ER_RHI_DESCRIPTOR_HEAP_TYPE aType, bool aReset) override {}; //not supported on DX11
+		virtual void SetGPUDescriptorHeapImGui(int cmdListIndex) override {}; //not supported on DX11
+
+		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0, bool isCopyQueue = false) override {}; //not supported on DX11
+		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0, bool isCopyQueue = false) override {}; //not supported on DX11
+		virtual void TransitionMainRenderTargetToPresent(int cmdListIndex = 0) override {}; //not supported on DX11
+
+		virtual bool IsPSOReady(const std::string& aName, bool isCompute = false) override { return false; } //not supported on DX11
+		virtual void InitializePSO(const std::string& aName, bool isCompute = false) override {}; //not supported on DX11
+		virtual void SetRootSignatureToPSO(const std::string& aName, ER_RHI_GPURootSignature* rs, bool isCompute = false) override {}; //not supported on DX11
+		virtual void SetTopologyTypeToPSO(const std::string& aName, ER_RHI_PRIMITIVE_TYPE aType) override {}; //not supported on DX11
+		virtual void FinalizePSO(const std::string& aName, bool isCompute = false) override {}; //not supported on DX11
+		virtual void SetPSO(const std::string& aName, bool isCompute = false) override {}; //not supported on DX11
+		virtual void UnsetPSO()override {}; //not supported on DX11
+
 		virtual void UnbindRenderTargets() override;
 		virtual void UnbindResourcesFromShader(ER_RHI_SHADER_TYPE aShaderType, bool unbindShader = true) override;
 
 		virtual void UpdateBuffer(ER_RHI_GPUBuffer* aBuffer, void* aData, int dataSize) override;
 		
+		virtual bool IsHardwareRaytracingSupported() override { return false; }
+		
 		virtual void InitImGui() override;
 		virtual void StartNewImGuiFrame() override;
-		virtual void RenderDrawDataImGui() override;
+		virtual void RenderDrawDataImGui(int cmdListIndex = 0) override;
 		virtual void ShutdownImGui() override;
+
+		virtual void OnWindowSizeChanged(int width, int height) override {}; //TODO
+
+		virtual void WaitForGpuOnGraphicsFence() override {}; //not supported on DX11
+		virtual void WaitForGpuOnComputeFence() override {}; //not supported on DX11
+		virtual void WaitForGpuOnCopyFence() override {}; //not supported on DX11
+
+		virtual void ResetDescriptorManager() override {}; //not supported on DX11
+		virtual void ResetRHI(int width, int height, bool isFullscreen) override {}; //TODO
 
 		ID3D11Device1* GetDevice() { return mDirect3DDevice; }
 		ID3D11DeviceContext1* GetContext() { return mDirect3DDeviceContext; }
 		DXGI_FORMAT GetFormat(ER_RHI_FORMAT aFormat);
 
 		ER_GRAPHICS_API GetAPI() { return mAPI; }
-	protected:
-		//virtual void ExecuteCommandLists() override;
 	private:
 		D3D11_PRIMITIVE_TOPOLOGY GetTopologyType(ER_RHI_PRIMITIVE_TYPE aType);
 		ER_RHI_PRIMITIVE_TYPE GetTopologyType(D3D11_PRIMITIVE_TOPOLOGY aType);

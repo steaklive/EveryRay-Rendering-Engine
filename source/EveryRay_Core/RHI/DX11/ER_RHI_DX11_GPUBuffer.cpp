@@ -5,7 +5,7 @@
 namespace EveryRay_Core
 {
 
-	ER_RHI_DX11_GPUBuffer::ER_RHI_DX11_GPUBuffer()
+	ER_RHI_DX11_GPUBuffer::ER_RHI_DX11_GPUBuffer(const std::string& aDebugName)
 	{
 
 	}

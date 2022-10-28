@@ -95,8 +95,7 @@ namespace EveryRay_Runtime
 		ImGui_ImplWin32_Init(mWindowHandle);
 		if (mRHI)
 			mRHI->InitImGui();
-		ImGui::StyleEveryRayColor();
-
+		//ImGui::StyleEveryRayColor();
 
 #pragma endregion
 

@@ -123,7 +123,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>ER_COMPILER_VS;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\external\ImGUI;$(SolutionDir)\external\Assimp\lib\x64;$(SolutionDir)\external\Assimp\include;$(SolutionDir)\external\Effects11\inc;$(SolutionDir)\external\DirectXTex;$(SolutionDir)\external\DirectXTK12\Inc;$(SolutionDir)..\source\EveryRay_Core;$(WindowsSDK_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\external\ImGUI;$(SolutionDir)\external\Assimp\lib\x64;$(SolutionDir)\external\Assimp\include;$(SolutionDir)\external\DirectXTex;$(SolutionDir)\external\DirectXTK12\Inc;$(SolutionDir)..\source\EveryRay_Core;$(WindowsSDK_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OmitFramePointers>false</OmitFramePointers>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>

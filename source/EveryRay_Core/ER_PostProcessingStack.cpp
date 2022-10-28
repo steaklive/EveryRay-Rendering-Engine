@@ -533,7 +533,7 @@ namespace EveryRay_Core {
 				//vertical
 				{
 					PrepareDrawingSSS(gameTime, mRenderTargetBeforeResolve, gbuffer, true);
-					quad->Draw(rhi);
+					quad->Draw(rhi, false);
 				}
 				//horizontal
 				{

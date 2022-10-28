@@ -187,7 +187,7 @@ namespace EveryRay_Core
 				if (skybox)
 				{
 					skybox->Update(mCubemapCameras[cubeMapFaceIndex]);
-					skybox->Draw(mCubemapCameras[cubeMapFaceIndex]);
+					skybox->Draw(aTextureNonConvoluted, mCubemapCameras[cubeMapFaceIndex], aDepthBuffers[cubeMapFaceIndex]);
 					//TODO draw sun
 					//...
 					//skybox->UpdateSun(gameTime, mCubemapCameras[cubeMapFace]);
@@ -213,7 +213,7 @@ namespace EveryRay_Core
 						for (int meshIndex = 0; meshIndex < object.second->GetMeshCount(); meshIndex++)
 						{
 							materialInfo->second->PrepareShaders();
-							static_cast<ER_RenderToLightProbeMaterial*>(materialInfo->second)->PrepareForRendering(matSystems, object.second, meshIndex, mCubemapCameras[cubeMapFaceIndex]);
+							static_cast<ER_RenderToLightProbeMaterial*>(materialInfo->second)->PrepareForRendering(matSystems, object.second, meshIndex, mCubemapCameras[cubeMapFaceIndex], nullptr);
 							object.second->DrawLOD(materialInfo->first, false, meshIndex, lod);
 						}
 					}

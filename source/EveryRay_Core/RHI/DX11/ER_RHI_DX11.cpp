@@ -73,7 +73,7 @@ namespace EveryRay_Core
 		ReleaseObject(mDirect3DDevice);
 	}
 
-	bool ER_RHI_DX11::Initialize(HWND windowHandle, UINT width, UINT height, bool isFullscreen)
+	bool ER_RHI_DX11::Initialize(HWND windowHandle, UINT width, UINT height, bool isFullscreen, bool isReset)
 	{
 		mAPI = ER_GRAPHICS_API::DX11;
 		assert(width > 0 && height > 0);
@@ -297,14 +297,14 @@ namespace EveryRay_Core
 		return new ER_RHI_DX11_GPUShader();
 	}
 
-	ER_RHI_GPUBuffer* ER_RHI_DX11::CreateGPUBuffer()
+	ER_RHI_GPUBuffer* ER_RHI_DX11::CreateGPUBuffer(const std::string& aDebugName)
 	{
-		return new ER_RHI_DX11_GPUBuffer();
+		return new ER_RHI_DX11_GPUBuffer(aDebugName);
 	}
 
-	ER_RHI_GPUTexture* ER_RHI_DX11::CreateGPUTexture()
+	ER_RHI_GPUTexture* ER_RHI_DX11::CreateGPUTexture(const std::string& aDebugName)
 	{
-		return new ER_RHI_DX11_GPUTexture();
+		return new ER_RHI_DX11_GPUTexture(aDebugName);
 	}
 
 	void ER_RHI_DX11::CreateTexture(ER_RHI_GPUTexture* aOutTexture, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags /*= ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET*/, int mip /*= 1*/, int depth /*= -1*/, int arraySize /*= 1*/, bool isCubemap /*= false*/, int cubemapArraySize /*= -1*/)
@@ -331,7 +331,7 @@ namespace EveryRay_Core
 		aOutBuffer->CreateGPUBufferResource(this, aData, objectsCount, byteStride, isDynamic, bindFlags, cpuAccessFlags, miscFlags, format);
 	}
 
-	void ER_RHI_DX11::CopyBuffer(ER_RHI_GPUBuffer* aDestBuffer, ER_RHI_GPUBuffer* aSrcBuffer)
+	void ER_RHI_DX11::CopyBuffer(ER_RHI_GPUBuffer* aDestBuffer, ER_RHI_GPUBuffer* aSrcBuffer, int cmdListIndex, bool isInCopyQueue)
 	{
 		assert(aDestBuffer);
 		assert(aSrcBuffer);
@@ -467,7 +467,7 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_RHI_DX11::SetMainRenderTargets()
+	void ER_RHI_DX11::SetMainRenderTargets(int cmdListIndex)
 	{
 		mDirect3DDeviceContext->OMSetRenderTargets(1, &mMainRenderTargetView, NULL);
 	}
@@ -595,7 +595,8 @@ namespace EveryRay_Core
 		mDirect3DDeviceContext->RSSetScissorRects(1, &currentRect);
 	}
 
-	void ER_RHI_DX11::SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot /*= 0*/)
+	void ER_RHI_DX11::SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot,
+		ER_RHI_GPURootSignature* rs, int rootParamIndex, bool isComputeRS)
 	{
 		assert(aSRVs.size() > 0);
 		assert(aSRVs.size() <= DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS);
@@ -636,7 +637,8 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_RHI_DX11::SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot /*= 0*/)
+	void ER_RHI_DX11::SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot,
+		ER_RHI_GPURootSignature* rs, int rootParamIndex, bool isComputeRS)
 	{
 		assert(aUAVs.size() > 0);
 		assert(aUAVs.size() <= DX11_MAX_BOUND_UNORDERED_ACCESS_VIEWS);
@@ -671,7 +673,8 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_RHI_DX11::SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot /*= 0*/)
+	void ER_RHI_DX11::SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot,
+		ER_RHI_GPURootSignature* rs, int rootParamIndex, bool isComputeRS)
 	{
 		assert(aCBs.size() > 0);
 		assert(aCBs.size() <= DX11_MAX_BOUND_CONSTANT_BUFFERS);
@@ -759,7 +762,7 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_RHI_DX11::SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot /*= 0*/)
+	void ER_RHI_DX11::SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot, ER_RHI_GPURootSignature* rs)
 	{
 		assert(aSamplers.size() > 0);
 		assert(aSamplers.size() <= DX11_MAX_BOUND_SAMPLERS);
@@ -955,7 +958,7 @@ namespace EveryRay_Core
 		ImGui_ImplDX11_NewFrame();
 	}
 
-	void ER_RHI_DX11::RenderDrawDataImGui()
+	void ER_RHI_DX11::RenderDrawDataImGui(int cmdListIndex)
 	{
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	}

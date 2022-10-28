@@ -4,7 +4,7 @@
 
 namespace EveryRay_Core
 {
-	ER_RHI_DX11_GPUTexture::ER_RHI_DX11_GPUTexture()
+	ER_RHI_DX11_GPUTexture::ER_RHI_DX11_GPUTexture(const std::string& aDebugName)
 	{
 
 	}
@@ -67,13 +67,14 @@ namespace EveryRay_Core
 		mHeight = height;
 		mIsCubemap = isCubemap;
 		mIsDepthStencil = bindFlags & ER_BIND_DEPTH_STENCIL;
+		mFormat = aRHIDX11->GetFormat(format);
 
 		DXGI_FORMAT depthstencil_tex_format;
 		DXGI_FORMAT depthstencil_srv_format;
 		DXGI_FORMAT depthstencil_dsv_format;
 		if (mIsDepthStencil)
 		{
-			switch (format)
+			switch (mFormat)
 			{
 			case DXGI_FORMAT_D32_FLOAT:
 				depthstencil_tex_format = DXGI_FORMAT_R32_TYPELESS;
@@ -120,7 +121,7 @@ namespace EveryRay_Core
 			if (mMipLevels > 1 && (ER_BIND_RENDER_TARGET & bindFlags) != 0 && !mIsDepthStencil)
 				texDesc.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
 			texDesc.CPUAccessFlags = 0;
-			texDesc.Format = mIsDepthStencil ? depthstencil_tex_format : aRHIDX11->GetFormat(format);
+			texDesc.Format = mIsDepthStencil ? depthstencil_tex_format : mFormat;
 			texDesc.Width = width;
 			texDesc.Height = height;
 			texDesc.MipLevels = mMipLevels;
@@ -243,7 +244,7 @@ namespace EveryRay_Core
 			int depthElements = (depth > 0) ? depth : 1;
 			uavDesc.Buffer.NumElements = width * height * depthElements;
 			uavDesc.ViewDimension = depth > 0 ? D3D11_UAV_DIMENSION_TEXTURE3D : D3D11_UAV_DIMENSION_TEXTURE2D;
-			uavDesc.Format = aRHIDX11->GetFormat(format);
+			uavDesc.Format = mFormat;
 			uav = (ID3D11UnorderedAccessView**)malloc(sizeof(ID3D11UnorderedAccessView*) * mip);
 
 			int currentDepth = depth;

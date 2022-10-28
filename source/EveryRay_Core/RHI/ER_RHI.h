@@ -388,7 +388,6 @@ namespace EveryRay_Core
 		virtual void RenderDrawDataImGui(int cmdListIndex = 0) = 0;
 		virtual void ShutdownImGui() = 0;
 
-		virtual void SetWindowHandle(void* handle) { (HWND)mWindowHandle; }
 		virtual void OnWindowSizeChanged(int width, int height) = 0;
 		
 		virtual void WaitForGpuOnGraphicsFence() = 0;

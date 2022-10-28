@@ -123,7 +123,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>ER_COMPILER_VS;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\external\ImGUI;$(SolutionDir)\external\Assimp\lib\x64;$(SolutionDir)\external\Assimp\include;$(SolutionDir)\external\Effects11\inc;$(SolutionDir)\external\DirectXTex;$(SolutionDir)\external\DirectXTK\Inc;$(SolutionDir)..\source\EveryRay_Core;$(WindowsSDK_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\external\ImGUI;$(SolutionDir)\external\Assimp\lib\x64;$(SolutionDir)\external\Assimp\include;$(SolutionDir)\external\DirectXTex;$(SolutionDir)\external\DirectXTK\Inc;$(SolutionDir)..\source\EveryRay_Core;$(WindowsSDK_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OmitFramePointers>false</OmitFramePointers>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
@@ -192,6 +192,9 @@
     <ClInclude Include="..\..\external\ImGUI\imgui_impl_dx11.h" />
     <ClInclude Include="..\..\external\ImGUI\imgui_impl_win32.h" />
     <ClInclude Include="..\..\external\ImGUI\imgui_internal.h" />
+    <ClInclude Include="..\..\external\ImGUI\imstb_rectpack.h" />
+    <ClInclude Include="..\..\external\ImGUI\imstb_textedit.h" />
+    <ClInclude Include="..\..\external\ImGUI\imstb_truetype.h" />
     <ClInclude Include="..\..\external\ImGUI\stb_rect_pack.h" />
     <ClInclude Include="..\..\external\ImGUI\stb_textedit.h" />
     <ClInclude Include="..\..\external\ImGUI\stb_truetype.h" />
@@ -207,6 +210,7 @@
     <ClCompile Include="..\..\external\ImGUI\imgui_draw.cpp" />
     <ClCompile Include="..\..\external\ImGUI\imgui_impl_dx11.cpp" />
     <ClCompile Include="..\..\external\ImGUI\imgui_impl_win32.cpp" />
+    <ClCompile Include="..\..\external\ImGUI\imgui_widgets.cpp" />
     <ClCompile Include="Program.cpp" />
     <ClCompile Include="ER_RuntimeCore.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -221,6 +225,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="bunny.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\external\ImGUI\LICENSE.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

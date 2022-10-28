@@ -57,6 +57,15 @@
     <ClInclude Include="ER_RuntimeCore.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\external\ImGUI\imstb_rectpack.h">
+      <Filter>Source Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external\ImGUI\imstb_textedit.h">
+      <Filter>Source Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external\ImGUI\imstb_truetype.h">
+      <Filter>Source Files\ImGui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -86,6 +95,9 @@
     <ClCompile Include="ER_RuntimeCore.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\external\ImGUI\imgui_widgets.cpp">
+      <Filter>Source Files\ImGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="EveryRay_Runtime_Win64_DX11.rc">
@@ -96,5 +108,10 @@
     <Image Include="bunny.ico">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\external\ImGUI\LICENSE.txt">
+      <Filter>Source Files\ImGui</Filter>
+    </Text>
   </ItemGroup>
 </Project>

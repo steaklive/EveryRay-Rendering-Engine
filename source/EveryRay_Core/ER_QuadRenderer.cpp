@@ -84,12 +84,13 @@ namespace EveryRay_Core {
 		//rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	}
 
-	void ER_QuadRenderer::Draw(ER_RHI* rhi)
+	void ER_QuadRenderer::Draw(ER_RHI* rhi, bool unbindShader)
 	{
 		rhi->SetVertexBuffers({ mVertexBuffer });
 		rhi->SetIndexBuffer(mIndexBuffer);
 
 		rhi->DrawIndexed(6);
-		rhi->UnbindResourcesFromShader(ER_VERTEX);
+		if (unbindShader)
+			rhi->UnbindResourcesFromShader(ER_VERTEX);
 	}
 }

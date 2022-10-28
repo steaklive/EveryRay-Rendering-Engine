@@ -277,6 +277,8 @@ namespace EveryRay_Runtime
 	
 	void ER_RuntimeCore::Shutdown()
 	{
+		mRHI->WaitForGpuOnGraphicsFence();
+
 		DeleteObject(mKeyboard);
 		DeleteObject(mEditor);
 		DeleteObject(mQuadRenderer);
