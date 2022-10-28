@@ -201,7 +201,6 @@
     <ClInclude Include="..\..\external\ImGUI\stb_rect_pack.h" />
     <ClInclude Include="..\..\external\ImGUI\stb_textedit.h" />
     <ClInclude Include="..\..\external\ImGUI\stb_truetype.h" />
-    <ClInclude Include="ER_RuntimeCore.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -216,7 +215,6 @@
     <ClCompile Include="..\..\external\ImGUI\imgui_impl_win32.cpp" />
     <ClCompile Include="..\..\external\ImGUI\imgui_widgets.cpp" />
     <ClCompile Include="Program.cpp" />
-    <ClCompile Include="ER_RuntimeCore.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

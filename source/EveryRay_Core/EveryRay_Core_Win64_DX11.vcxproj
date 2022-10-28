@@ -191,6 +191,7 @@
     <ClInclude Include="ER_BasicColorMaterial.h" />
     <ClInclude Include="ER_DebugLightProbeMaterial.h" />
     <ClInclude Include="ER_GBufferMaterial.h" />
+    <ClInclude Include="ER_RuntimeCore.h" />
     <ClInclude Include="ER_Sandbox.h" />
     <ClInclude Include="ER_DirectionalLight.h" />
     <ClInclude Include="ER_Editor.h" />
@@ -266,6 +267,7 @@
     <ClCompile Include="ER_PostProcessingStack.cpp" />
     <ClCompile Include="ER_RenderingObject.cpp" />
     <ClCompile Include="ER_RenderToLightProbeMaterial.cpp" />
+    <ClCompile Include="ER_RuntimeCore.cpp" />
     <ClCompile Include="ER_Sandbox.cpp" />
     <ClCompile Include="ER_ShadowMapMaterial.cpp" />
     <ClCompile Include="ER_Skybox.cpp" />

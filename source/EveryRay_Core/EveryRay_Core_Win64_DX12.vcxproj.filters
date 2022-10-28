@@ -270,6 +270,9 @@
     <ClInclude Include="RHI\DX12\ER_RHI_DX12_GPURootSignature.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_RuntimeCore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -448,6 +451,9 @@
     </ClCompile>
     <ClCompile Include="RHI\DX12\ER_RHI_DX12_GPURootSignature.cpp">
       <Filter>Source Files\Graphics\RHI\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_RuntimeCore.cpp">
+      <Filter>Source Files\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

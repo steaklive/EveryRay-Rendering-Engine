@@ -1,10 +1,9 @@
 #pragma once
 #define MAX_SCENES_COUNT 25
 
-#include "..\EveryRay_Core\ER_Core.h"
-#include "..\EveryRay_Core\Common.h"
+#include "ER_Core.h"
+#include "Common.h"
 
-using namespace EveryRay_Core;
 namespace EveryRay_Core
 {
 	class ER_Mouse;
@@ -13,10 +12,7 @@ namespace EveryRay_Core
 	class RenderStateHelper;
 	class ER_Editor;
 	class ER_QuadRenderer;
-}
-
-namespace EveryRay_Runtime
-{	
+	
 	class ER_RuntimeCore : public ER_Core
 	{
 	public:
@@ -43,6 +39,8 @@ namespace EveryRay_Runtime
 		ER_CameraFPS* mCamera;
 		ER_Editor* mEditor;
 		ER_QuadRenderer* mQuadRenderer;
+
+		ER_RHI_Viewport mMainViewport;
 
 		std::chrono::duration<double> mElapsedTimeUpdateCPU;
 		std::chrono::duration<double> mElapsedTimeRenderCPU;

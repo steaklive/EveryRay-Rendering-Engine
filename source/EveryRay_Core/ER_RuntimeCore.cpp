@@ -1,25 +1,20 @@
 #include "stdafx.h"
 
 #include "ER_RuntimeCore.h"
+#include "ER_CoreException.h"
+#include "ER_Keyboard.h"
+#include "ER_Mouse.h"
+#include "ER_Utility.h"
+#include "ER_CameraFPS.h"
+#include "ER_ColorHelper.h"
+#include "ER_MatrixHelper.h"
+#include "ER_Sandbox.h"
+#include "ER_Editor.h"
+#include "ER_QuadRenderer.h"
 
 #include "..\JsonCpp\include\json\json.h"
 
-#include <sstream>
-#include <fstream>
-#include <iostream>
-
-#include "..\EveryRay_Core\ER_CoreException.h"
-#include "..\EveryRay_Core\ER_Keyboard.h"
-#include "..\EveryRay_Core\ER_Mouse.h"
-#include "..\EveryRay_Core\ER_Utility.h"
-#include "..\EveryRay_Core\ER_CameraFPS.h"
-#include "..\EveryRay_Core\ER_ColorHelper.h"
-#include "..\EveryRay_Core\ER_MatrixHelper.h"
-#include "..\EveryRay_Core\ER_Sandbox.h"
-#include "..\EveryRay_Core\ER_Editor.h"
-#include "..\EveryRay_Core\ER_QuadRenderer.h"
-
-namespace EveryRay_Runtime
+namespace EveryRay_Core
 {
 	static float colorBlack[4] = { 0.0, 0.0, 0.0, 0.0 };
 	static int currentLevel = 0;
@@ -44,7 +39,7 @@ namespace EveryRay_Runtime
 		mMainViewport.MinDepth = 0.0f;
 		mMainViewport.MaxDepth = 1.0f;
 
-		mMainRect = {  0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
+		mMainRect = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
 	}
 
 	ER_RuntimeCore::~ER_RuntimeCore()
@@ -53,7 +48,7 @@ namespace EveryRay_Runtime
 
 	void ER_RuntimeCore::Initialize()
 	{
-		SetCurrentDirectory(ER_Utility::ExecutableDirectory().c_str());
+		//SetCurrentDirectory(ER_Utility::ExecutableDirectory().c_str());
 
 		{
 			if (FAILED(DirectInput8Create(mInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (LPVOID*)&mDirectInput, nullptr)))
@@ -97,9 +92,6 @@ namespace EveryRay_Runtime
 		ImGui_ImplWin32_Init(mWindowHandle);
 		if (mRHI)
 			mRHI->InitImGui();
-		//ImGui::StyleEveryRayColor();
-
-
 #pragma endregion
 
 		ER_Core::Initialize();
@@ -157,9 +149,6 @@ namespace EveryRay_Runtime
 		{
 			mCurrentSandbox->Destroy(*this);
 			DeleteObject(mCurrentSandbox);
-
-			if (mRHI)
-				mRHI->ResetRHI(mScreenWidth, mScreenHeight, false);
 		}
 
 		mCurrentSandbox = new ER_Sandbox();
@@ -305,17 +294,17 @@ namespace EveryRay_Runtime
 
 		mRHI->BeginGraphicsCommandList();
 		mRHI->SetGPUDescriptorHeap(ER_RHI_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
-		
+
 		mRHI->ClearMainRenderTarget(colorBlack);
 		mRHI->ClearMainDepthStencilTarget(1.0f, 0);
-		
+
 		mRHI->SetViewport(mMainViewport);
 		mRHI->SetRect(mMainRect);
-		
+
 		mRHI->SetDepthStencilState(ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
 		mRHI->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING);
 		mRHI->SetBlendState(ER_RHI_BLEND_STATE::ER_NO_BLEND);
-		
+
 		mCurrentSandbox->Draw(*this, gameTime);
 
 		mRHI->TransitionMainRenderTargetToPresent();

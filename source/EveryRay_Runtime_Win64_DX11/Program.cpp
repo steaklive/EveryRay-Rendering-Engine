@@ -3,10 +3,10 @@
 #include "stdafx.h"
 #include <memory>
 
+#include "..\EveryRay_Core\ER_RuntimeCore.h"
 #include "..\EveryRay_Core\ER_CoreException.h"
 #include "..\EveryRay_Core\RHI\ER_RHI.h"
 #include "..\EveryRay_Core\RHI\DX11\ER_RHI_DX11.h"
-#include "ER_RuntimeCore.h"
 
 #if defined(DEBUG) || defined(_DEBUG)
 #define _CRTDBG_MAP_ALLOC
@@ -15,7 +15,6 @@
 #endif
 
 using namespace EveryRay_Core;
-using namespace EveryRay_Runtime;
 
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR commandLine, int showCommand)
 {

@@ -54,9 +54,6 @@
     <ClInclude Include="..\..\external\ImGUI\ImGuizmo.h">
       <Filter>Source Files\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="ER_RuntimeCore.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\external\ImGUI\imstb_rectpack.h">
       <Filter>Source Files\ImGui</Filter>
     </ClInclude>
@@ -91,9 +88,6 @@
     </ClCompile>
     <ClCompile Include="..\..\external\ImGUI\ImGuizmo.cpp">
       <Filter>Source Files\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ER_RuntimeCore.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\external\ImGUI\imgui_widgets.cpp">
       <Filter>Source Files\ImGui</Filter>
