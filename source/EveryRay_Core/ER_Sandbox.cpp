@@ -354,7 +354,7 @@ namespace EveryRay_Core {
 		// TODO: consider moving all debug gizmos to a separate debug renderer system
 		if (ER_Utility::IsEditorMode)
 		{
-			mIllumination->DrawDebugProbes(localRT);
+			mIllumination->DrawDebugProbes(localRT, mGBuffer->GetDepth());
 
 			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST);
 			ER_RHI_GPURootSignature* debugGizmoRootSignature = mScene->GetStandardMaterialRootSignature(ER_MaterialHelper::basicColorMaterialName);

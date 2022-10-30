@@ -105,7 +105,7 @@ namespace EveryRay_Core
 		void CompositeTotalIllumination();
 
 		void DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPURootSignature* rs);
-		void DrawDebugProbes(ER_RHI_GPUTexture* aRenderTarget);
+		void DrawDebugProbes(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth);
 
 		void Update(const ER_CoreTime& gameTime, const ER_Scene* scene);
 		void Config() { mShowDebug = !mShowDebug; }

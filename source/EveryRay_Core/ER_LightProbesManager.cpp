@@ -631,7 +631,7 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_LightProbesManager::DrawDebugProbes(ER_RHI* rhi, ER_RHI_GPUTexture* aRenderTarget, ER_ProbeType aType, ER_RHI_GPURootSignature* rs)
+	void ER_LightProbesManager::DrawDebugProbes(ER_RHI* rhi, ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, ER_ProbeType aType, ER_RHI_GPURootSignature* rs)
 	{
 		assert(aRenderTarget);
 		assert(rhi);
@@ -643,6 +643,7 @@ namespace EveryRay_Core
 		ER_MaterialSystems materialSystems;
 		materialSystems.mProbesManager = this;
 
+		rhi->SetRootSignature(rs);
 		if (probeObject && ready)
 		{
 			auto materialInfo = probeObject->GetMaterials().find(ER_MaterialHelper::debugLightProbeMaterialName);
@@ -653,7 +654,10 @@ namespace EveryRay_Core
 				{
 					rhi->InitializePSO(psoName);
 					material->PrepareShaders();
-					rhi->SetRenderTargetFormats({ aRenderTarget });
+					rhi->SetRenderTargetFormats({ aRenderTarget }, aDepth);
+					rhi->SetRasterizerState(ER_NO_CULLING);
+					rhi->SetBlendState(ER_NO_BLEND);
+					rhi->SetDepthStencilState(ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
 					rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 					rhi->SetRootSignatureToPSO(psoName, rs);
 					rhi->FinalizePSO(psoName);

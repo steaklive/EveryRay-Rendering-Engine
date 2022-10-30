@@ -300,9 +300,10 @@ namespace EveryRay_Core {
 				mCompositeIlluminationRS->Finalize(rhi, "ER_RHI_GPURootSignature: Composite Pass");
 			}
 
-			mDebugProbesRenderRS = rhi->CreateRootSignature(2, 0);
+			mDebugProbesRenderRS = rhi->CreateRootSignature(2, 1);
 			if (mDebugProbesRenderRS)
 			{
+				mDebugProbesRenderRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mDebugProbesRenderRS->InitDescriptorTable(rhi, DEBUGLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mDebugProbesRenderRS->InitDescriptorTable(rhi, DEBUGLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mDebugProbesRenderRS->Finalize(rhi, "ER_RHI_GPURootSignature: Debug light probes Pass", true);
@@ -600,7 +601,7 @@ namespace EveryRay_Core {
 
 	}
 
-	void ER_Illumination::DrawDebugProbes(ER_RHI_GPUTexture* aRenderTarget)
+	void ER_Illumination::DrawDebugProbes(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth)
 	{
 		//light probe system
 		if (mProbesManager) {
@@ -609,9 +610,9 @@ namespace EveryRay_Core {
 			rhi->SetRootSignature(mDebugProbesRenderRS);
 
 			if (mDrawDiffuseProbes)
-				mProbesManager->DrawDebugProbes(rhi, aRenderTarget, DIFFUSE_PROBE, mDebugProbesRenderRS);
+				mProbesManager->DrawDebugProbes(rhi, aRenderTarget, aDepth, DIFFUSE_PROBE, mDebugProbesRenderRS);
 			if (mDrawSpecularProbes)
-				mProbesManager->DrawDebugProbes(rhi, aRenderTarget, SPECULAR_PROBE, mDebugProbesRenderRS);
+				mProbesManager->DrawDebugProbes(rhi, aRenderTarget, aDepth, SPECULAR_PROBE, mDebugProbesRenderRS);
 		}
 	}
 
