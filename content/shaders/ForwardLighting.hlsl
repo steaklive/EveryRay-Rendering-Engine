@@ -35,17 +35,21 @@ cbuffer ForwardLightingCBuffer : register(b0)
 {
     float4x4 ShadowMatrices[NUM_OF_SHADOW_CASCADES];
     float4x4 ViewProjection;
-    float4x4 World;
     float4 ShadowTexelSize;
     float4 ShadowCascadeDistances;
     float4 SunDirection;
     float4 SunColor;
     float4 CameraPosition;
+}
+
+cbuffer ObjectCBuffer : register(b1)
+{
+    float4x4 World;
     float UseGlobalProbe;
     float SkipIndirectProbeLighting;
 }
 
-cbuffer LightProbesCBuffer : register(b1)
+cbuffer LightProbesCBuffer : register(b2)
 {
     float4 DiffuseProbesCellsCount; //x,y,z,total
     float4 SpecularProbesCellsCount; //x,y,z,total

@@ -50,6 +50,13 @@ namespace EveryRay_Core
 		}
 	};
 
+	struct ER_ALIGN_GPU_BUFFER ObjectCB
+	{
+		XMMATRIX World;
+		float UseGlobalProbe;
+		float SkipIndirectProbeLighting;
+	};
+
 	struct TextureData
 	{
 		ER_RHI_GPUTexture* AlbedoMap			= nullptr;
@@ -248,6 +255,8 @@ namespace EveryRay_Core
 		int GetIndexInScene() { return mIndexInScene; }
 		void SetIndexInScene(int index) { mIndexInScene = index; }
 
+		ER_RHI_GPUConstantBuffer<ObjectCB>& GetObjectsConstantBuffer() { return mObjectConstantBuffer; }
+
 		ER_GenericEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new ER_GenericEvent<Delegate_MeshMaterialVariablesUpdate>();
 	
 		std::vector<std::string> mCustomAlbedoTextures;
@@ -270,6 +279,8 @@ namespace EveryRay_Core
 		ER_Camera& mCamera;
 
 		std::map<std::string, ER_Material*>						mMaterials;
+
+		ER_RHI_GPUConstantBuffer<ObjectCB>						mObjectConstantBuffer;
 
 		///****************************************************************************************************************************
 		// *** mesh/model data (buffers, textures, etc.) ***

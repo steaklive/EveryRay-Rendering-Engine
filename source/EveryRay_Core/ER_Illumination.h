@@ -73,14 +73,11 @@ namespace EveryRay_Core
 		{
 			XMMATRIX ShadowMatrices[NUM_SHADOW_CASCADES];
 			XMMATRIX ViewProjection;
-			XMMATRIX World;
 			XMFLOAT4 ShadowTexelSize;
 			XMFLOAT4 ShadowCascadeDistances;
 			XMFLOAT4 SunDirection;
 			XMFLOAT4 SunColor;
 			XMFLOAT4 CameraPosition;
-			float UseGlobalProbe;
-			float SkipIndirectProbeLighting;
 		};
 		struct ER_ALIGN_GPU_BUFFER LightProbesCB
 		{
@@ -131,6 +128,8 @@ namespace EveryRay_Core
 		void SetSSSTranslucency(float val) { mSSSTranslucency = val; }
 		float GetSSSDirLightPlaneScale() { return mSSSDirectionalLightPlaneScale; }
 		void SetSSSDirLightPlaneScale(float val) { mSSSDirectionalLightPlaneScale = val; }
+
+		bool IsSkippingIndirectRendering() { return mDebugSkipIndirectProbeLighting; }
 	private:
 		void DrawDeferredLighting(ER_GBuffer* gbuffer, ER_RHI_GPUTexture* aRenderTarget);
 		void DrawForwardLighting(ER_GBuffer* gbuffer, ER_RHI_GPUTexture* aRenderTarget);

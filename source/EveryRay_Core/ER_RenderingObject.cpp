@@ -78,6 +78,8 @@ namespace EveryRay_Core
 
 		XMFLOAT4X4 transform = XMFLOAT4X4( mCurrentObjectTransformMatrix );
 		mTransformationMatrix = XMLoadFloat4x4(&transform);
+
+		mObjectConstantBuffer.Initialize(pCore.GetRHI(), "ER_RHI_GPUBuffer: Object's CB: " + mName);
 	}
 
 	ER_RenderingObject::~ER_RenderingObject()
@@ -103,6 +105,8 @@ namespace EveryRay_Core
 		DeleteObject(mInputPositionsOnTerrainBuffer);
 		DeleteObject(mOutputPositionsOnTerrainBuffer);
 		DeleteObjects(mTempInstancesPositions);
+
+		mObjectConstantBuffer.Release();
 	}
 
 	void ER_RenderingObject::LoadMaterial(ER_Material* pMaterial, const std::string& materialName)
@@ -373,6 +377,23 @@ namespace EveryRay_Core
 			if (!isForwardPass && (!mMaterials.size() || mMeshesRenderBuffers[lod].size() == 0))
 				return;
 			
+			{
+				mObjectConstantBuffer.Data.World = XMMatrixTranspose(mTransformationMatrix);
+				
+				if (mCore->GetLevel()->mIllumination)
+				{
+					mObjectConstantBuffer.Data.UseGlobalProbe = mUseIndirectGlobalLightProbe || (!mCore->GetLevel()->mLightProbesManager->IsEnabled() && mCore->GetLevel()->mLightProbesManager->AreGlobalProbesReady());
+					mObjectConstantBuffer.Data.SkipIndirectProbeLighting = mCore->GetLevel()->mIllumination->IsSkippingIndirectRendering();
+				}
+				else
+				{
+					mObjectConstantBuffer.Data.UseGlobalProbe = true;
+					mObjectConstantBuffer.Data.SkipIndirectProbeLighting = false;
+				}
+				mObjectConstantBuffer.ApplyChanges(rhi);
+
+			}
+
 			if (isForwardPass && mCore->GetLevel()->mIllumination)
 				mCore->GetLevel()->mIllumination->PreparePipelineForForwardLighting(this);
 
