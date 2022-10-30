@@ -360,14 +360,14 @@ namespace EveryRay_Core {
 			ER_RHI_GPURootSignature* debugGizmoRootSignature = mScene->GetStandardMaterialRootSignature(ER_MaterialHelper::basicColorMaterialName);
 			rhi->SetRootSignature(debugGizmoRootSignature);
 			{
-				mIllumination->DrawDebugGizmos(localRT, debugGizmoRootSignature);
-				mDirectionalLight->DrawProxyModel(localRT, gameTime, debugGizmoRootSignature);
+				mIllumination->DrawDebugGizmos(localRT, mGBuffer->GetDepth(), debugGizmoRootSignature);
+				mDirectionalLight->DrawProxyModel(localRT, mGBuffer->GetDepth(), gameTime, debugGizmoRootSignature);
 				if (mTerrain)
-					mTerrain->DrawDebugGizmos(localRT, debugGizmoRootSignature);
+					mTerrain->DrawDebugGizmos(localRT, mGBuffer->GetDepth(), debugGizmoRootSignature);
 				if (mFoliageSystem)
-					mFoliageSystem->DrawDebugGizmos(localRT, debugGizmoRootSignature);
+					mFoliageSystem->DrawDebugGizmos(localRT, mGBuffer->GetDepth(), debugGizmoRootSignature);
 				for (auto& it = mScene->objects.begin(); it != mScene->objects.end(); it++)
-					it->second->DrawAABB(localRT, debugGizmoRootSignature);
+					it->second->DrawAABB(localRT, mGBuffer->GetDepth(), debugGizmoRootSignature);
 			}
 			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		}

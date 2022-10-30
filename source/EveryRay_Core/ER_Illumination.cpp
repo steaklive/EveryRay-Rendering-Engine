@@ -588,14 +588,14 @@ namespace EveryRay_Core {
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 	}
 
-	void ER_Illumination::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPURootSignature* rs)
+	void ER_Illumination::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, ER_RHI_GPURootSignature* rs)
 	{
 		//voxel GI
 		if (mDrawVCTVoxelZonesGizmos) 
 		{
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 			{
-				mDebugVoxelZonesGizmos[i]->Draw(aRenderTarget, rs);
+				mDebugVoxelZonesGizmos[i]->Draw(aRenderTarget, aDepth, rs);
 			}
 		}
 
@@ -905,6 +905,11 @@ namespace EveryRay_Core {
 
 			// we unset PSO after all objects are rendered
 		}
+	}
+
+	ER_RHI_GPUTexture* ER_Illumination::GetGBufferDepth() const
+	{
+		return mGbuffer->GetDepth();
 	}
 
 	void ER_Illumination::CPUCullObjectsAgainstVoxelCascades(const ER_Scene* scene)

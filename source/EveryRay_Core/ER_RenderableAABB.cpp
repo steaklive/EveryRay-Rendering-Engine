@@ -89,7 +89,7 @@ namespace EveryRay_Core
 		UpdateVertices();
 	}
 
-	void ER_RenderableAABB::Draw(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPURootSignature* rs)
+	void ER_RenderableAABB::Draw(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, ER_RHI_GPURootSignature* rs)
 	{
 		assert(aRenderTarget);
 
@@ -101,10 +101,10 @@ namespace EveryRay_Core
 		{
 			rhi->InitializePSO(psoName);
 			static_cast<ER_Material*>(mMaterial)->PrepareShaders();
-			rhi->SetRenderTargetFormats({ aRenderTarget });
+			rhi->SetRenderTargetFormats({ aRenderTarget }, aDepth);
 			rhi->SetRasterizerState(ER_NO_CULLING);
 			rhi->SetBlendState(ER_NO_BLEND);
-			rhi->SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
+			rhi->SetDepthStencilState(ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
 			rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST);
 			rhi->SetRootSignatureToPSO(psoName, rs);
 			rhi->FinalizePSO(psoName);
@@ -132,6 +132,6 @@ namespace EveryRay_Core
 		mVertices[7] = XMFLOAT4(mAABB.first.x, mAABB.first.y, mAABB.second.z, 1.0f);
 
 		auto rhi = mCore.GetRHI();
-		//rhi->UpdateBuffer(mVertexBuffer, mVertices, AABBVertexCount * sizeof(VertexPosition));
+		rhi->UpdateBuffer(mVertexBuffer, mVertices, AABBVertexCount * sizeof(VertexPosition));
 	}
 }

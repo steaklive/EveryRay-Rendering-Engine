@@ -104,7 +104,7 @@ namespace EveryRay_Core
 		void DrawDynamicGlobalIllumination(ER_GBuffer* gbuffer, const ER_CoreTime& gameTime);
 		void CompositeTotalIllumination();
 
-		void DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPURootSignature* rs);
+		void DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, ER_RHI_GPURootSignature* rs);
 		void DrawDebugProbes(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth);
 
 		void Update(const ER_CoreTime& gameTime, const ER_Scene* scene);
@@ -119,6 +119,7 @@ namespace EveryRay_Core
 
 		ER_RHI_GPUTexture* GetLocalIlluminationRT() const { return mLocalIlluminationRT; }
 		ER_RHI_GPUTexture* GetFinalIlluminationRT() const { return mFinalIlluminationRT; }
+		ER_RHI_GPUTexture* GetGBufferDepth() const;
 
 		void SetSSS(bool val) { mIsSSS = val; }
 		bool IsSSSBlurring() { return mIsSSS && !mIsSSSCulled; }

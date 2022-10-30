@@ -172,7 +172,7 @@ namespace EveryRay_Core
 		XMStoreFloat4x4(&mWorldMatrix, XMLoadFloat4x4(&mScaleMatrix) * worldMatrix);
 	}
 
-	void ER_DebugProxyObject::Draw(ER_RHI_GPUTexture* aRenderTarget, const ER_CoreTime& gametime, ER_RHI_GPURootSignature* rs)
+	void ER_DebugProxyObject::Draw(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, const ER_CoreTime& gametime, ER_RHI_GPURootSignature* rs)
 	{
 		auto rhi = mCore.GetRHI();
 
@@ -183,7 +183,10 @@ namespace EveryRay_Core
 		{
 			rhi->InitializePSO(psoName);
 			mMaterial->PrepareShaders();
-			rhi->SetRenderTargetFormats({ aRenderTarget });
+			rhi->SetRenderTargetFormats({ aRenderTarget }, aDepth);
+			rhi->SetRasterizerState(ER_NO_CULLING);
+			rhi->SetBlendState(ER_NO_BLEND);
+			rhi->SetDepthStencilState(ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
 			rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST);
 			rhi->SetRootSignatureToPSO(psoName, rs);
 			rhi->FinalizePSO(psoName);

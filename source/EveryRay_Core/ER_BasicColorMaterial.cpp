@@ -61,7 +61,10 @@ namespace EveryRay_Core
 		{
 			rhi->InitializePSO(psoName);
 			PrepareShaders();
-			rhi->SetRenderTargetFormats({ neededSystems.mIllumination->GetLocalIlluminationRT() }); // we assume that we render in local RT (don't like it but idk how to properly pass RT atm)
+			rhi->SetRenderTargetFormats({ neededSystems.mIllumination->GetLocalIlluminationRT() }, neededSystems.mIllumination->GetGBufferDepth()); // we assume that we render in local RT (don't like it but idk how to properly pass RT atm)
+			rhi->SetRasterizerState(ER_NO_CULLING);
+			rhi->SetBlendState(ER_NO_BLEND);
+			rhi->SetDepthStencilState(ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
 			rhi->SetRootSignatureToPSO(psoName, rs);
 			rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			rhi->FinalizePSO(psoName);

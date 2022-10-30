@@ -96,11 +96,11 @@ namespace EveryRay_Core
 			object->Draw(gameTime, worldShadowMapper, renderPass, aGbufferTextures, aDepthTarget, mRootSignature);
 	}
 
-	void ER_FoliageManager::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPURootSignature* rs)
+	void ER_FoliageManager::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, ER_RHI_GPURootSignature* rs)
 	{
 		if (ER_Utility::IsEditorMode && ER_Utility::IsFoliageEditor)
 			for (auto& object : mFoliageCollection)
-				object->DrawDebugGizmos(aRenderTarget, rs);
+				object->DrawDebugGizmos(aRenderTarget, aDepth, rs);
 	}
 
 	void ER_FoliageManager::AddFoliage(ER_Foliage* foliage)
@@ -450,10 +450,10 @@ namespace EveryRay_Core
 		rhi->UnbindResourcesFromShader(ER_PIXEL);
 	}
 
-	void ER_Foliage::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPURootSignature* rs)
+	void ER_Foliage::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, ER_RHI_GPURootSignature* rs)
 	{
 		if (mDebugGizmoAABB && mIsSelectedInEditor)
-			mDebugGizmoAABB->Draw(aRenderTarget, rs);
+			mDebugGizmoAABB->Draw(aRenderTarget, aDepth, rs);
 	}
 
 	void ER_Foliage::Update(const ER_CoreTime& gameTime)

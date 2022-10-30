@@ -33,7 +33,7 @@ namespace EveryRay_Core
 		void ApplyRotation(CXMMATRIX transform);
 		void ApplyRotation(const XMFLOAT4X4& transform);
 		void ApplyTransform(const float* transform);
-		void DrawProxyModel(ER_RHI_GPUTexture* aRenderTarget, const ER_CoreTime& time, ER_RHI_GPURootSignature* rs);
+		void DrawProxyModel(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, const ER_CoreTime& time, ER_RHI_GPURootSignature* rs);
 		void UpdateProxyModel(const ER_CoreTime& time, XMFLOAT4X4 viewMatrix, XMFLOAT4X4 projectionMatrix);
 		void UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix);
 		XMFLOAT3 GetDirectionalLightColor() const { return XMFLOAT3(mSunColor); }

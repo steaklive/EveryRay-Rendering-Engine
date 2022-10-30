@@ -408,10 +408,10 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_RenderingObject::DrawAABB(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPURootSignature* rs)
+	void ER_RenderingObject::DrawAABB(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, ER_RHI_GPURootSignature* rs)
 	{
 		if (mIsSelected && mAvailableInEditorMode && mEnableAABBDebug && ER_Utility::IsEditorMode)
-			mDebugGizmoAABB->Draw(aRenderTarget, rs);
+			mDebugGizmoAABB->Draw(aRenderTarget, aDepth, rs);
 	}
 
 	void ER_RenderingObject::SetTransformationMatrix(const XMMATRIX& mat)

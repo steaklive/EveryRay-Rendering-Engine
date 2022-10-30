@@ -142,7 +142,7 @@ namespace EveryRay_Core
 		UINT GetHeight() { return mHeight; }
 
 		void Draw(TerrainRenderPass aPass, const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr, ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr, int shadowMapCascade = -1);
-		void DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPURootSignature* rs);
+		void DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, ER_RHI_GPURootSignature* rs);
 		void Update(const ER_CoreTime& gameTime);
 		void Config() { mShowDebug = !mShowDebug; }
 		
