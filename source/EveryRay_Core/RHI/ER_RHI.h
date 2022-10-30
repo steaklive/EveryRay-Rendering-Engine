@@ -1,7 +1,7 @@
 #pragma once
 #include "..\Common.h"
 
-#define ER_RHI_MAX_GRAPHICS_COMMAND_LISTS 4
+#define ER_RHI_MAX_GRAPHICS_COMMAND_LISTS 8
 #define ER_RHI_MAX_COMPUTE_COMMAND_LISTS 2
 #define ER_RHI_MAX_BOUND_VERTEX_BUFFERS 2 //we only support 1 vertex buffer + 1 instance buffer
 
@@ -298,7 +298,7 @@ namespace EveryRay_Core
 		virtual void BeginBufferRead(ER_RHI_GPUBuffer* aBuffer, void** output) = 0;
 		virtual void EndBufferRead(ER_RHI_GPUBuffer* aBuffer) = 0;
 
-		virtual void CopyGPUTextureSubresourceRegion(ER_RHI_GPUResource* aDestBuffer, UINT DstSubresource, UINT DstX, UINT DstY, UINT DstZ, ER_RHI_GPUResource* aSrcBuffer, UINT SrcSubresource) = 0;
+		virtual void CopyGPUTextureSubresourceRegion(ER_RHI_GPUResource* aDestBuffer, UINT DstSubresource, UINT DstX, UINT DstY, UINT DstZ, ER_RHI_GPUResource* aSrcBuffer, UINT SrcSubresource, bool isInCopyQueueOrSkipTransitions = false) = 0;
 
 		virtual void Draw(UINT VertexCount) = 0;
 		virtual void DrawIndexed(UINT IndexCount) = 0;

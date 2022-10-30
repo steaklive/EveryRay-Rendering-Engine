@@ -11,7 +11,6 @@
 #include "ER_Model.h"
 #include "ER_Scene.h"
 #include "ER_RenderableAABB.h"
-#include "ER_LightProbe.h"
 #include "ER_QuadRenderer.h"
 #include "ER_DebugLightProbeMaterial.h"
 #include "ER_MaterialsCallbacks.h"
@@ -19,7 +18,7 @@
 namespace EveryRay_Core
 {
 
-	ER_LightProbesManager::ER_LightProbesManager(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper)
+	ER_LightProbesManager::ER_LightProbesManager(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight* light, ER_ShadowMapper* shadowMapper)
 		: mMainCamera(camera)
 	{
 		if (!scene)
@@ -89,8 +88,8 @@ namespace EveryRay_Core
 	{
 		DeleteObject(mGlobalDiffuseProbe);
 		DeleteObject(mGlobalSpecularProbe);
-		DeletePointerCollection(mDiffuseProbes);
-		DeletePointerCollection(mSpecularProbes);
+		//DeletePointerCollection(mDiffuseProbes);
+		//DeletePointerCollection(mSpecularProbes);
 
 		DeleteObject(mConvolutionPS);
 
@@ -118,27 +117,27 @@ namespace EveryRay_Core
 		DeleteObject(mSpecularProbesTexArrayIndicesGPUBuffer);
 	}
 
-	void ER_LightProbesManager::SetupGlobalDiffuseProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper)
+	void ER_LightProbesManager::SetupGlobalDiffuseProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight* light, ER_ShadowMapper* shadowMapper)
 	{
 		mGlobalDiffuseProbe = new ER_LightProbe(game, light, shadowMapper, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE, -1);
 		mGlobalDiffuseProbe->SetPosition(XMFLOAT3(0.0f, 2.0f, 0.0f)); //just a bit above the ground
 		mGlobalDiffuseProbe->SetShaderInfoForConvolution(mConvolutionPS);
 	}
-	void ER_LightProbesManager::SetupGlobalSpecularProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper)
+	void ER_LightProbesManager::SetupGlobalSpecularProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight* light, ER_ShadowMapper*shadowMapper)
 	{
 		mGlobalSpecularProbe = new ER_LightProbe(game, light, shadowMapper, SPECULAR_PROBE_SIZE, SPECULAR_PROBE, -1);
 		mGlobalSpecularProbe->SetPosition(XMFLOAT3(0.0f, 2.0f, 0.0f)); //just a bit above the ground
 		mGlobalSpecularProbe->SetShaderInfoForConvolution(mConvolutionPS);
 	}
 
-	void ER_LightProbesManager::SetupDiffuseProbes(ER_Core& core, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper)
+	void ER_LightProbesManager::SetupDiffuseProbes(ER_Core& core, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight* light, ER_ShadowMapper* shadowMapper)
 	{
 		ER_RHI* rhi = core.GetRHI();
 
 		ER_MaterialSystems materialSystems;
 		materialSystems.mCamera = &camera;
-		materialSystems.mDirectionalLight = &light;
-		materialSystems.mShadowMapper = &shadowMapper;
+		materialSystems.mDirectionalLight = light;
+		materialSystems.mShadowMapper = shadowMapper;
 		materialSystems.mProbesManager = this;
 
 		XMFLOAT3& minBounds = mSceneProbesMinBounds;
@@ -188,7 +187,8 @@ namespace EveryRay_Core
 
 		// simple 3D grid distribution of probes
 		for (size_t i = 0; i < mDiffuseProbesCountTotal; i++)
-			mDiffuseProbes.emplace_back(new ER_LightProbe(core, light, shadowMapper, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE, i));
+			mDiffuseProbes.emplace_back(core, light, shadowMapper, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE, i);
+
 		for (int probesY = 0; probesY < mDiffuseProbesCountY; probesY++)
 		{
 			for (int probesX = 0; probesX < mDiffuseProbesCountX; probesX++)
@@ -200,8 +200,8 @@ namespace EveryRay_Core
 						minBounds.y + probesY * mDistanceBetweenDiffuseProbes,
 						minBounds.z + probesZ * mDistanceBetweenDiffuseProbes);
 					int index = probesY * (mDiffuseProbesCountX * mDiffuseProbesCountZ) + probesX * mDiffuseProbesCountZ + probesZ;
-					mDiffuseProbes[index]->SetPosition(pos);
-					mDiffuseProbes[index]->SetShaderInfoForConvolution(mConvolutionPS);
+					mDiffuseProbes[index].SetPosition(pos);
+					mDiffuseProbes[index].SetShaderInfoForConvolution(mConvolutionPS);
 					AddProbeToCells(mDiffuseProbes[index], DIFFUSE_PROBE, minBounds, maxBounds);
 				}
 			}
@@ -210,7 +210,7 @@ namespace EveryRay_Core
 		// all probes positions GPU buffer
 		XMFLOAT3* diffuseProbesPositionsCPUBuffer = new XMFLOAT3[mDiffuseProbesCountTotal];
 		for (int probeIndex = 0; probeIndex < mDiffuseProbesCountTotal; probeIndex++)
-			diffuseProbesPositionsCPUBuffer[probeIndex] = mDiffuseProbes[probeIndex]->GetPosition();
+			diffuseProbesPositionsCPUBuffer[probeIndex] = mDiffuseProbes[probeIndex].GetPosition();
 		mDiffuseProbesPositionsGPUBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: diffuse probes positions buffer");
 		mDiffuseProbesPositionsGPUBuffer->CreateGPUBufferResource(rhi, diffuseProbesPositionsCPUBuffer, mDiffuseProbesCountTotal, sizeof(XMFLOAT3), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 		DeleteObjects(diffuseProbesPositionsCPUBuffer);
@@ -244,22 +244,22 @@ namespace EveryRay_Core
 		mDiffuseProbeRenderingObject->LoadInstanceBuffers();
 		mDiffuseProbeRenderingObject->ResetInstanceData(mDiffuseProbesCountTotal, true);
 		for (int i = 0; i < mDiffuseProbesCountTotal; i++) {
-			XMMATRIX worldT = XMMatrixTranslation(mDiffuseProbes[i]->GetPosition().x, mDiffuseProbes[i]->GetPosition().y, mDiffuseProbes[i]->GetPosition().z);
+			const XMFLOAT3& pos = mDiffuseProbes[i].GetPosition();
+			XMMATRIX worldT = XMMatrixTranslation(pos.x, pos.y, pos.z);
 			mDiffuseProbeRenderingObject->AddInstanceData(worldT);
 		}
 		mDiffuseProbeRenderingObject->UpdateInstanceBuffer(mDiffuseProbeRenderingObject->GetInstancesData());
 		std::partition(scene->objects.begin(), scene->objects.end(), [](const ER_SceneObject& obj) {	return obj.second->IsInstanced(); });
-
 	}
 
-	void ER_LightProbesManager::SetupSpecularProbes(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper)
+	void ER_LightProbesManager::SetupSpecularProbes(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight* light, ER_ShadowMapper* shadowMapper)
 	{
 		ER_RHI* rhi = game.GetRHI();
 
 		ER_MaterialSystems materialSystems;
 		materialSystems.mCamera = &camera;
-		materialSystems.mDirectionalLight = &light;
-		materialSystems.mShadowMapper = &shadowMapper;
+		materialSystems.mDirectionalLight = light;
+		materialSystems.mShadowMapper = shadowMapper;
 		materialSystems.mProbesManager = this;
 
 		XMFLOAT3& minBounds = mSceneProbesMinBounds;
@@ -307,7 +307,8 @@ namespace EveryRay_Core
 
 		// simple 3D grid distribution of probes
 		for (size_t i = 0; i < mSpecularProbesCountTotal; i++)
-			mSpecularProbes.emplace_back(new ER_LightProbe(game, light, shadowMapper, SPECULAR_PROBE_SIZE, SPECULAR_PROBE, i));
+			mSpecularProbes.emplace_back(game, light, shadowMapper, SPECULAR_PROBE_SIZE, SPECULAR_PROBE, i);
+
 		for (int probesY = 0; probesY < mSpecularProbesCountY; probesY++)
 		{
 			for (int probesX = 0; probesX < mSpecularProbesCountX; probesX++)
@@ -320,8 +321,8 @@ namespace EveryRay_Core
 						minBounds.z + probesZ * mDistanceBetweenSpecularProbes);
 					int index = probesY * (mSpecularProbesCountX * mSpecularProbesCountZ) + probesX * mSpecularProbesCountZ + probesZ;
 					//mSpecularProbes[index]->SetIndex(index);
-					mSpecularProbes[index]->SetPosition(pos);
-					mSpecularProbes[index]->SetShaderInfoForConvolution(mConvolutionPS);
+					mSpecularProbes[index].SetPosition(pos);
+					mSpecularProbes[index].SetShaderInfoForConvolution(mConvolutionPS);
 					AddProbeToCells(mSpecularProbes[index], SPECULAR_PROBE, minBounds, maxBounds);
 				}
 			}
@@ -330,7 +331,7 @@ namespace EveryRay_Core
 		// all probes positions GPU buffer
 		XMFLOAT3* specularProbesPositionsCPUBuffer = new XMFLOAT3[mSpecularProbesCountTotal];
 		for (int probeIndex = 0; probeIndex < mSpecularProbesCountTotal; probeIndex++)
-			specularProbesPositionsCPUBuffer[probeIndex] = mSpecularProbes[probeIndex]->GetPosition();
+			specularProbesPositionsCPUBuffer[probeIndex] = mSpecularProbes[probeIndex].GetPosition();
 		mSpecularProbesPositionsGPUBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: specular probes positions buffer");
 		mSpecularProbesPositionsGPUBuffer->CreateGPUBufferResource(rhi, specularProbesPositionsCPUBuffer, mSpecularProbesCountTotal, sizeof(XMFLOAT3), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 		DeleteObjects(specularProbesPositionsCPUBuffer);
@@ -368,7 +369,8 @@ namespace EveryRay_Core
 		mSpecularProbeRenderingObject->LoadInstanceBuffers();
 		mSpecularProbeRenderingObject->ResetInstanceData(mSpecularProbesCountTotal, true);
 		for (int i = 0; i < mSpecularProbesCountTotal; i++) {
-			XMMATRIX worldT = XMMatrixTranslation(mSpecularProbes[i]->GetPosition().x, mSpecularProbes[i]->GetPosition().y, mSpecularProbes[i]->GetPosition().z);
+			const XMFLOAT3& pos = mSpecularProbes[i].GetPosition();
+			XMMATRIX worldT = XMMatrixTranslation(pos.x, pos.y, pos.z);
 			mSpecularProbeRenderingObject->AddInstanceData(worldT);
 		}
 		mSpecularProbeRenderingObject->UpdateInstanceBuffer(mSpecularProbeRenderingObject->GetInstancesData());
@@ -378,9 +380,9 @@ namespace EveryRay_Core
 		mSpecularCubemapArrayRT->CreateGPUTextureResource(rhi, SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true, mMaxSpecularProbesInVolumeCount);
 	}
 
-	void ER_LightProbesManager::AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds)
+	void ER_LightProbesManager::AddProbeToCells(ER_LightProbe& aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds)
 	{
-		int index = aProbe->GetIndex();
+		int index = aProbe.GetIndex();
 		if (aType == DIFFUSE_PROBE)
 		{
 			// brute force O(cells * probes)
@@ -477,9 +479,9 @@ namespace EveryRay_Core
 			return XMFLOAT4(mSpecularProbesCellsCountX, mSpecularProbesCellsCountY, mSpecularProbesCellsCountZ, mSpecularProbesCellsCountTotal);
 	}
 
-	bool ER_LightProbesManager::IsProbeInCell(ER_LightProbe* aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds)
+	bool ER_LightProbesManager::IsProbeInCell(ER_LightProbe& aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds)
 	{
-		XMFLOAT3 pos = aProbe->GetPosition();
+		XMFLOAT3 pos = aProbe.GetPosition();
 		float epsilon = 0.00001f;
 
 		XMFLOAT3 maxBounds = XMFLOAT3(
@@ -557,16 +559,16 @@ namespace EveryRay_Core
 				{ 
 					int endRange = (i < numThreads - 1) ? (i + 1) * probesPerThread : mDiffuseProbes.size();
 					for (int j = i * probesPerThread; j < endRange; j++)
-						mDiffuseProbes[j]->LoadProbeFromDisk(game, diffuseProbesPath);
+						mDiffuseProbes[j].LoadProbeFromDisk(game, diffuseProbesPath);
 				}));
 			}
 			for (auto& t : threads) t.join();
 
 			for (auto& probe : mDiffuseProbes)
 			{
-				if (!probe->IsLoadedFromDisk())
+				if (!probe.IsLoadedFromDisk())
 #ifdef ER_PLATFORM_WIN64_DX11
-					probe->Compute(game, mTempDiffuseCubemapFacesRT, mTempDiffuseCubemapFacesConvolutedRT, mTempDiffuseCubemapDepthBuffers, diffuseProbesPath, aObjects, mQuadRenderer, skybox);
+					probe.Compute(game, mTempDiffuseCubemapFacesRT, mTempDiffuseCubemapFacesConvolutedRT, mTempDiffuseCubemapDepthBuffers, diffuseProbesPath, aObjects, mQuadRenderer, skybox);
 #else
 					//TODO load empty
 					throw ER_CoreException("ER_LightProbesManager: Computing & saving the probes is only possible on DX11 at the moment");
@@ -581,7 +583,7 @@ namespace EveryRay_Core
 			XMFLOAT3* shCPUBuffer = new XMFLOAT3[mDiffuseProbesCountTotal * SPHERICAL_HARMONICS_COEF_COUNT];
 			for (int probeIndex = 0; probeIndex < mDiffuseProbesCountTotal; probeIndex++)
 			{
-				const std::vector<XMFLOAT3> sh = mDiffuseProbes[probeIndex]->GetSphericalHarmonics();
+				const std::vector<XMFLOAT3>& sh = mDiffuseProbes[probeIndex].GetSphericalHarmonics();
 				for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
 					shCPUBuffer[probeIndex * SPHERICAL_HARMONICS_COEF_COUNT + i] = sh[i];
 			}
@@ -597,6 +599,9 @@ namespace EveryRay_Core
 
 			std::vector<std::thread> threads;
 			int numThreads = std::thread::hardware_concurrency();
+#ifdef ER_PLATFORM_WIN64_DX12
+			numThreads = 1; //TODO fix this on DX12 (need to support multiple command lists)
+#endif
 			threads.reserve(numThreads);
 
 			int probesPerThread = mSpecularProbes.size() / numThreads;
@@ -607,16 +612,16 @@ namespace EveryRay_Core
 				{
 					int endRange = (i < numThreads - 1) ? (i + 1) * probesPerThread : mSpecularProbes.size();
 					for (int j = i * probesPerThread; j < endRange; j++)
-						mSpecularProbes[j]->LoadProbeFromDisk(game, specularProbesPath);
+						mSpecularProbes[j].LoadProbeFromDisk(game, specularProbesPath);
 				}));
 			}
 			for (auto& t : threads) t.join();
 
 			for (auto& probe : mSpecularProbes)
 			{
-				if (!probe->IsLoadedFromDisk())
+				if (!probe.IsLoadedFromDisk())
 #ifdef ER_PLATFORM_WIN64_DX11
-					probe->Compute(game, mTempSpecularCubemapFacesRT, mTempSpecularCubemapFacesConvolutedRT, mTempSpecularCubemapDepthBuffers, specularProbesPath, aObjects, mQuadRenderer, skybox);
+					probe.Compute(game, mTempSpecularCubemapFacesRT, mTempSpecularCubemapFacesConvolutedRT, mTempSpecularCubemapDepthBuffers, specularProbesPath, aObjects, mQuadRenderer, skybox);
 #else
 					//TODO load empty
 					throw ER_CoreException("ER_LightProbesManager: Computing & saving the probes is only possible on DX11 at the moment");
@@ -664,7 +669,7 @@ namespace EveryRay_Core
 
 	void ER_LightProbesManager::UpdateProbesByType(ER_Core& game, ER_ProbeType aType)
 	{
-		std::vector<ER_LightProbe*>& probes = (aType == DIFFUSE_PROBE) ? mDiffuseProbes : mSpecularProbes;
+		std::vector<ER_LightProbe>& probes = (aType == DIFFUSE_PROBE) ? mDiffuseProbes : mSpecularProbes;
 
 		ER_RenderingObject* probeRenderingObject = (aType == DIFFUSE_PROBE) ? mDiffuseProbeRenderingObject : mSpecularProbeRenderingObject;
 		if (aType == DIFFUSE_PROBE)
@@ -693,7 +698,7 @@ namespace EveryRay_Core
 				mSpecularProbesVolumeSize + mMainCamera.Position().z);
 
 			for (auto& lightProbe : probes)
-				lightProbe->CPUCullAgainstProbeBoundingVolume(minBounds, maxBounds);
+				lightProbe.CPUCullAgainstProbeBoundingVolume(minBounds, maxBounds);
 		}
 
 		if (probeRenderingObject)
@@ -703,7 +708,7 @@ namespace EveryRay_Core
 
 			for (int i = 0; i < oldInstancedData.size(); i++)
 			{
-				bool isCulled = probes[i]->IsCulled();
+				bool isCulled = probes[i].IsCulled();
 				//writing culling flag to [4][4] of world instanced matrix
 				oldInstancedData[i].World._44 = isCulled ? 1.0f : 0.0f;
 				//writing cubemap index to [0][0] of world instanced matrix (since we don't need scale)
@@ -735,15 +740,22 @@ namespace EveryRay_Core
 				if (i < mNonCulledSpecularProbesIndices.size() && i < probes.size())
 				{
 					int probeIndex = mNonCulledSpecularProbesIndices[i];
+
+					rhi->TransitionResources({ static_cast<ER_RHI_GPUResource*>(mSpecularCubemapArrayRT), static_cast<ER_RHI_GPUResource*>(mSpecularProbes[probeIndex].GetCubemapTexture()) },
+						{ ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COPY_DEST, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COPY_SOURCE }, rhi->GetCurrentGraphicsCommandListIndex());
+
 					for (int cubeI = 0; cubeI < CUBEMAP_FACES_COUNT; cubeI++)
 					{
 						for (int mip = 0; mip < SPECULAR_PROBE_MIP_COUNT; mip++)
 						{
 							rhi->CopyGPUTextureSubresourceRegion(mSpecularCubemapArrayRT, mip + (cubeI + CUBEMAP_FACES_COUNT * i) * SPECULAR_PROBE_MIP_COUNT, 0, 0, 0,
-								probes[probeIndex]->GetCubemapTexture(), mip + cubeI * SPECULAR_PROBE_MIP_COUNT);
+								mSpecularProbes[probeIndex].GetCubemapTexture(), mip + cubeI * SPECULAR_PROBE_MIP_COUNT, true);
 						}
 					}
 					mSpecularProbesTexArrayIndicesCPUBuffer[probeIndex] = CUBEMAP_FACES_COUNT * i;
+
+					rhi->TransitionResources({ static_cast<ER_RHI_GPUResource*>(mSpecularCubemapArrayRT), static_cast<ER_RHI_GPUResource*>(mSpecularProbes[probeIndex].GetCubemapTexture()) },
+						{ ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE }, rhi->GetCurrentGraphicsCommandListIndex());
 				}
 			}
 			rhi->UpdateBuffer(mSpecularProbesTexArrayIndicesGPUBuffer, mSpecularProbesTexArrayIndicesCPUBuffer, sizeof(mSpecularProbesTexArrayIndicesCPUBuffer[0]) * mSpecularProbesCountTotal);

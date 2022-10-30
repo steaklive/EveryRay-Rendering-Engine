@@ -170,10 +170,16 @@ namespace EveryRay_Core
 		if (mKeyboard->WasKeyPressedThisFrame(DIK_ESCAPE))
 			Exit();
 
+		int updateCommandList = mRHI->GetPrepareGraphicsCommandListIndex() - 1;
+		mRHI->BeginGraphicsCommandList(updateCommandList);
+
 		UpdateImGui();
 
 		ER_Core::Update(gameTime); //engine components (input, camera, etc.);
 		mCurrentSandbox->Update(*this, gameTime); //level components (rendering systems, culling, etc.)
+
+		mRHI->EndGraphicsCommandList(updateCommandList);
+		mRHI->ExecuteCommandLists(updateCommandList); // it will wait for GPU on a copy fence in this method, too
 
 		auto endUpdateTimer = std::chrono::high_resolution_clock::now();
 		mElapsedTimeUpdateCPU = endUpdateTimer - startUpdateTimer;

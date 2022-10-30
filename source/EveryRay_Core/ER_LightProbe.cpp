@@ -2,6 +2,7 @@
 #include <fstream>
 
 #include "ER_LightProbe.h"
+#include "ER_LightProbesManager.h"
 #include "ER_Skybox.h"
 #include "ER_Camera.h"
 #include "ER_Core.h"
@@ -18,6 +19,8 @@
 #include "ER_RenderToLightProbeMaterial.h"
 #include "ER_MaterialsCallbacks.h"
 
+#define DIFFUSE_PROBE 0
+#define SPECULAR_PROBE 1
 
 namespace EveryRay_Core
 {
@@ -39,21 +42,37 @@ namespace EveryRay_Core
 		ER_Vector3Helper::Up
 	};
 
-	ER_LightProbe::ER_LightProbe(ER_Core& game, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper, int size, ER_ProbeType aType, int index)
-		: mSize(size)
-		, mDirectionalLight(light)
-		, mShadowMapper(shadowMapper)
-		, mProbeType(aType)
-		, mIndex(index)
+	ER_LightProbe::ER_LightProbe(ER_Core& game, ER_DirectionalLight* light, ER_ShadowMapper* shadowMapper, int size, int aProbeType, int index)
+		: 
+		mSize(size),
+		mProbeType(aProbeType),
+		mIndex(index),
+		mDirectionalLight(light),
+		mShadowMapper(shadowMapper)
+	{
+		Initialize(game, light, shadowMapper, size, aProbeType, index);
+	}
+
+	ER_LightProbe::~ER_LightProbe()
+	{
+		DeleteObject(mCubemapTexture);
+		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
+		{
+			DeleteObject(mCubemapCameras[i]);
+		}
+		mConvolutionCB.Release();
+	}
+
+	void ER_LightProbe::Initialize(ER_Core& game, ER_DirectionalLight* light, ER_ShadowMapper* shadowMapper, int size, int aProbeType, int index)
 	{
 		ER_RHI* rhi = game.GetRHI();
 
 		for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
 			mSphericalHarmonicsRGB.push_back(XMFLOAT3(0.0, 0.0, 0.0));
 
-		std::string probeType = (aType == DIFFUSE_PROBE) ? "diffuse" : "specular";
+		std::string probeType = (aProbeType == DIFFUSE_PROBE) ? "diffuse" : "specular";
 		mCubemapTexture = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Light Probe Cubemap " + probeType + " #" + std::to_string(mIndex));
-		mCubemapTexture->CreateGPUTextureResource(rhi, size, size, 1, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_NONE, (aType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
+		mCubemapTexture->CreateGPUTextureResource(rhi, size, size, 1, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_NONE, (aProbeType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
 
 		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
 		{
@@ -66,16 +85,6 @@ namespace EveryRay_Core
 		}
 
 		mConvolutionCB.Initialize(rhi, "ER_RHI_GPUBuffer: Light Probe Convolution CB");
-	}
-
-	ER_LightProbe::~ER_LightProbe()
-	{
-		DeleteObject(mCubemapTexture);
-		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
-		{
-			DeleteObject(mCubemapCameras[i]);
-		}
-		mConvolutionCB.Release();
 	}
 
 	void ER_LightProbe::SetPosition(const XMFLOAT3& pos)
@@ -170,8 +179,8 @@ namespace EveryRay_Core
 		std::string materialListenerName = ((mProbeType == DIFFUSE_PROBE) ? "diffuse_" : "specular_") + ER_MaterialHelper::renderToLightProbeMaterialName;
 		
 		ER_MaterialSystems matSystems;
-		matSystems.mDirectionalLight = &mDirectionalLight;
-		matSystems.mShadowMapper = &mShadowMapper;
+		matSystems.mDirectionalLight = mDirectionalLight;
+		matSystems.mShadowMapper = mShadowMapper;
 
 		//draw world to probe
 		for (int cubeMapFaceIndex = 0; cubeMapFaceIndex < CUBEMAP_FACES_COUNT; cubeMapFaceIndex++)

@@ -149,32 +149,38 @@ namespace EveryRay_Core {
 
 		#pragma region INIT_LIGHTPROBES_MANAGER
 		game.CPUProfiler()->BeginCPUTime("Light probes manager init");
-		mLightProbesManager = new ER_LightProbesManager(game, camera, mScene, *mDirectionalLight, *mShadowMapper);
+		mLightProbesManager = new ER_LightProbesManager(game, camera, mScene, mDirectionalLight, mShadowMapper);
 		mLightProbesManager->SetLevelPath(ER_Utility::ToWideString(sceneFolderPath));
 		mIllumination->SetProbesManager(mLightProbesManager);
 		game.CPUProfiler()->EndCPUTime("Light probes manager init");
 #pragma endregion
 
 		#pragma region INIT_TERRAIN
-		game.CPUProfiler()->BeginCPUTime("Terrain init");
-		mTerrain = new ER_Terrain(game, *mDirectionalLight);
-		mTerrain->SetLevelPath(ER_Utility::ToWideString(sceneFolderPath));
-		mTerrain->LoadTerrainData(mScene);
-		game.CPUProfiler()->EndCPUTime("Terrain init");
-
-		//place ER_RenderingObjects on terrain (if needed)
-		for (auto& object : mScene->objects)
+		if (mScene->HasTerrain())
 		{
-			object.second->PlaceProcedurallyOnTerrain(true);
+			game.CPUProfiler()->BeginCPUTime("Terrain init");
+			mTerrain = new ER_Terrain(game, *mDirectionalLight);
+			mTerrain->SetLevelPath(ER_Utility::ToWideString(sceneFolderPath));
+			mTerrain->LoadTerrainData(mScene);
+			game.CPUProfiler()->EndCPUTime("Terrain init");
+
+			//place ER_RenderingObjects on terrain (if needed)
+			for (auto& object : mScene->objects)
+			{
+				object.second->PlaceProcedurallyOnTerrain(true);
+			}
 		}
 #pragma endregion
 
 		#pragma region INIT_FOLIAGE_MANAGER
-		game.CPUProfiler()->BeginCPUTime("Foliage init");
-		mFoliageSystem = new ER_FoliageManager(game, mScene, *mDirectionalLight);
-		mFoliageSystem->FoliageSystemInitializedEvent->AddListener("foliage initialized for GI",  [&]() { mIllumination->SetFoliageSystemForGI(mFoliageSystem); });
-		mFoliageSystem->Initialize();
-		game.CPUProfiler()->EndCPUTime("Foliage init");
+		if (mScene->HasFoliage())
+		{
+			game.CPUProfiler()->BeginCPUTime("Foliage init");
+			mFoliageSystem = new ER_FoliageManager(game, mScene, *mDirectionalLight);
+			mFoliageSystem->FoliageSystemInitializedEvent->AddListener("foliage initialized for GI", [&]() { mIllumination->SetFoliageSystemForGI(mFoliageSystem); });
+			mFoliageSystem->Initialize();
+			game.CPUProfiler()->EndCPUTime("Foliage init");
+		}
 #pragma endregion
 
 		#pragma region INIT_MATERIAL_CALLBACKS
@@ -232,12 +238,14 @@ namespace EveryRay_Core {
 		mPostProcessingStack->Update();
 		mVolumetricClouds->Update(gameTime);
 		mVolumetricFog->Update(gameTime);
-		mTerrain->Update(gameTime);
+		if (mTerrain && mScene->HasTerrain())
+			mTerrain->Update(gameTime);
 		mIllumination->Update(gameTime, mScene);
 		if (mScene->HasLightProbesSupport() && mLightProbesManager->IsEnabled())
 			mLightProbesManager->UpdateProbes(game);
 		mShadowMapper->Update(gameTime);
-		mFoliageSystem->Update(gameTime, mWindGustDistance, mWindStrength, mWindFrequency);
+		if (mFoliageSystem && mScene->HasFoliage())
+			mFoliageSystem->Update(gameTime, mWindGustDistance, mWindStrength, mWindFrequency);
 		mDirectionalLight->UpdateProxyModel(gameTime, 
 			((ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass()))->ViewMatrix4X4(),
 			((ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass()))->ProjectionMatrix4X4()); //TODO refactor to DebugRenderer
@@ -354,8 +362,10 @@ namespace EveryRay_Core {
 			{
 				mIllumination->DrawDebugGizmos(localRT, debugGizmoRootSignature);
 				mDirectionalLight->DrawProxyModel(localRT, gameTime, debugGizmoRootSignature);
-				mTerrain->DrawDebugGizmos(localRT, debugGizmoRootSignature);
-				mFoliageSystem->DrawDebugGizmos(localRT, debugGizmoRootSignature);
+				if (mTerrain)
+					mTerrain->DrawDebugGizmos(localRT, debugGizmoRootSignature);
+				if (mFoliageSystem)
+					mFoliageSystem->DrawDebugGizmos(localRT, debugGizmoRootSignature);
 				for (auto& it = mScene->objects.begin(); it != mScene->objects.end(); it++)
 					it->second->DrawAABB(localRT, debugGizmoRootSignature);
 			}

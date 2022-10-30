@@ -1,5 +1,4 @@
 #pragma once
-#include "ER_LightProbesManager.h"
 #include "RHI/ER_RHI.h"
 
 namespace EveryRay_Core
@@ -12,13 +11,22 @@ namespace EveryRay_Core
 		};
 	}
 	class ER_Camera;
+	class ER_DirectionalLight;
+	class ER_ShadowMapper;
+	class ER_Skybox;
+	class ER_CoreTime;
+	class ER_QuadRenderer;
+	class ER_RenderingObject;
+	class ER_Core;
 
 	class ER_LightProbe
 	{
 		using LightProbeRenderingObjectsInfo = std::vector<std::pair<std::string, ER_RenderingObject*>>;
 	public:
-		ER_LightProbe(ER_Core& game, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper, int size, ER_ProbeType aType, int index);
+		ER_LightProbe(ER_Core& game, ER_DirectionalLight* light, ER_ShadowMapper* shadowMapper, int size, int aProbeType, int index);
 		~ER_LightProbe();
+
+		void Initialize(ER_Core& game, ER_DirectionalLight* light, ER_ShadowMapper* shadowMapper, int size, int aProbeType, int index);
 
 #ifdef ER_PLATFORM_WIN64_DX11
 		void Compute(ER_Core& game, ER_RHI_GPUTexture* aTextureNonConvoluted, ER_RHI_GPUTexture* aTextureConvoluted, ER_RHI_GPUTexture** aDepthBuffers,
@@ -51,13 +59,13 @@ namespace EveryRay_Core
 #endif
 		std::wstring GetConstructedProbeName(const std::wstring& levelPath, bool inSphericalHarmonics = false);
 
-		ER_ProbeType mProbeType;
+		int mProbeType;
 
-		ER_DirectionalLight& mDirectionalLight;
-		ER_ShadowMapper& mShadowMapper;
+		ER_DirectionalLight* mDirectionalLight = nullptr;
+		ER_ShadowMapper* mShadowMapper = nullptr;
 
-		LightProbeRenderingObjectsInfo mObjectsToRenderPerFace[CUBEMAP_FACES_COUNT];
-		ER_Camera* mCubemapCameras[CUBEMAP_FACES_COUNT];
+		LightProbeRenderingObjectsInfo mObjectsToRenderPerFace[6];
+		ER_Camera* mCubemapCameras[6];
 
 		ER_RHI_GPUTexture* mCubemapTexture = nullptr; // for regular diffuse probe it should be null (because we use SH)
 		ER_RHI_GPUConstantBuffer<LightProbeCBufferData::ProbeConvolutionCB> mConvolutionCB;

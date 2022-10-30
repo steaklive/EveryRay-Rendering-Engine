@@ -93,7 +93,7 @@ namespace EveryRay_Core
 		}
 
 		if (!mIsDynamic)
-			UpdateSubresource(aRHI, aData, mSize, aRHIDX12->GetPrepareGraphicsCommandListIndex());
+			UpdateSubresource(aRHI, aData, mSize, aRHIDX12->GetCurrentGraphicsCommandListIndex());
 
 		if (bindFlags & ER_BIND_VERTEX_BUFFER)
 		{

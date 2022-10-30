@@ -14,6 +14,7 @@
 
 #include "Common.h"
 #include "ER_RenderingObject.h"
+#include "ER_LightProbe.h"
 #include "RHI/ER_RHI.h"
 
 namespace EveryRay_Core
@@ -26,7 +27,6 @@ namespace EveryRay_Core
 	class ER_QuadRenderer;
 	class ER_Scene;
 	class ER_RenderableAABB;
-	class ER_LightProbe;
 
 	enum ER_ProbeType
 	{
@@ -46,7 +46,7 @@ namespace EveryRay_Core
 	{
 	public:
 		using ProbesRenderingObjectsInfo = std::vector<std::pair<std::string, ER_RenderingObject*>>;
-		ER_LightProbesManager(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper);
+		ER_LightProbesManager(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight* light, ER_ShadowMapper* shadowMapper);
 		~ER_LightProbesManager();
 
 		bool AreProbesReady() { return mDiffuseProbesReady && mSpecularProbesReady; }
@@ -58,14 +58,14 @@ namespace EveryRay_Core
 		int GetCellIndex(const XMFLOAT3& pos, ER_ProbeType aType);
 
 		ER_LightProbe* GetGlobalDiffuseProbe() const { return mGlobalDiffuseProbe; }
-		const ER_LightProbe* GetDiffuseLightProbe(int index) const { return mDiffuseProbes[index]; }
+		const ER_LightProbe& GetDiffuseLightProbe(int index) const { return mDiffuseProbes[index]; }
 		ER_RHI_GPUBuffer* GetDiffuseProbesCellsIndicesBuffer() const { return mDiffuseProbesCellsIndicesGPUBuffer; }
 		ER_RHI_GPUBuffer* GetDiffuseProbesPositionsBuffer() const { return mDiffuseProbesPositionsGPUBuffer; }
 		ER_RHI_GPUBuffer* GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer() const { return mDiffuseProbesSphericalHarmonicsGPUBuffer; }
 		float GetDistanceBetweenDiffuseProbes() { return mDistanceBetweenDiffuseProbes; }
 
 		ER_LightProbe* GetGlobalSpecularProbe() const { return mGlobalSpecularProbe; }
-		const ER_LightProbe* GetSpecularLightProbe(int index) const { return mSpecularProbes[index]; }
+		const ER_LightProbe& GetSpecularLightProbe(int index) const { return mSpecularProbes[index]; }
 		ER_RHI_GPUTexture* GetCulledSpecularProbesTextureArray() const { return mSpecularCubemapArrayRT; }
 		ER_RHI_GPUBuffer* GetSpecularProbesCellsIndicesBuffer() const { return mSpecularProbesCellsIndicesGPUBuffer; }
 		ER_RHI_GPUBuffer* GetSpecularProbesTexArrayIndicesBuffer() const { return mSpecularProbesTexArrayIndicesGPUBuffer; }
@@ -83,12 +83,12 @@ namespace EveryRay_Core
 
 		bool mDebugDiscardCulledProbes = false;//used in DebugLightProbeMaterial
 	private:
-		void SetupGlobalDiffuseProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper);
-		void SetupGlobalSpecularProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper);
-		void SetupDiffuseProbes(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper);
-		void SetupSpecularProbes(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight& light, ER_ShadowMapper& shadowMapper);
-		void AddProbeToCells(ER_LightProbe* aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds);
-		bool IsProbeInCell(ER_LightProbe* aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds);
+		void SetupGlobalDiffuseProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight* light, ER_ShadowMapper* shadowMapper);
+		void SetupGlobalSpecularProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight* light, ER_ShadowMapper* shadowMapper);
+		void SetupDiffuseProbes(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight* light, ER_ShadowMapper* shadowMapper);
+		void SetupSpecularProbes(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight* light, ER_ShadowMapper* shadowMapper);
+		void AddProbeToCells(ER_LightProbe& aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds);
+		bool IsProbeInCell(ER_LightProbe& aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds);
 		void UpdateProbesByType(ER_Core& game, ER_ProbeType aType);
 		
 		ER_QuadRenderer* mQuadRenderer = nullptr;
@@ -102,7 +102,7 @@ namespace EveryRay_Core
 		XMFLOAT3 mSceneProbesMaxBounds;
 
 		// Diffuse probes members
-		std::vector<ER_LightProbe*> mDiffuseProbes;
+		std::vector<ER_LightProbe> mDiffuseProbes;
 		ER_RenderingObject* mDiffuseProbeRenderingObject = nullptr;
 		std::string mDiffuseDebugLightProbePassPSOName = "ER_RHI_GPUPipelineStateObject: Light Probes Manager - Diffuse Debug Probe Pass";
 		ER_RHI_GPUBuffer* mDiffuseProbesCellsIndicesGPUBuffer = nullptr;
@@ -127,7 +127,7 @@ namespace EveryRay_Core
 		float mDistanceBetweenDiffuseProbes = 0.0f;
 
 		// Specular probes members
-		std::vector<ER_LightProbe*> mSpecularProbes;
+		std::vector<ER_LightProbe> mSpecularProbes;
 		ER_RenderingObject* mSpecularProbeRenderingObject = nullptr;
 		std::string mSpecularDebugLightProbePassPSOName = "ER_RHI_GPUPipelineStateObject: Light Probes Manager - Specular Debug Probe Pass";
 		int* mSpecularProbesTexArrayIndicesCPUBuffer = nullptr;

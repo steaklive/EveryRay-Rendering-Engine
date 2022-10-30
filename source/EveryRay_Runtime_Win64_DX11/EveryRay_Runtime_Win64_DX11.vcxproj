@@ -23,7 +23,7 @@
     <ProjectGuid>{B57D40B3-3009-446A-BC1E-AF89DD09701F}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>EveryRay_Runtime_Win64_DX11</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
     <ProjectName>EveryRay_Runtime_Win64_DX11</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

@@ -67,6 +67,14 @@ namespace EveryRay_Core
 		if (FAILED(hr = D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(mDevice.ReleaseAndGetAddressOf()))))
 			throw ER_CoreException("ER_RHI_DX12: D3D12CreateDevice() failed", hr);
 
+		ComPtr<ID3D12InfoQueue> pInfoQueue;
+		if (SUCCEEDED(mDevice.As(&pInfoQueue)))
+		{
+			pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
+			pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
+			//pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, TRUE);
+		}
+
 		static const D3D_FEATURE_LEVEL s_featureLevels[] =
 		{
 			D3D_FEATURE_LEVEL_12_1,
@@ -519,9 +527,10 @@ namespace EveryRay_Core
 		mIsContextReadingBuffer = false;
 	}
 
-	void ER_RHI_DX12::CopyGPUTextureSubresourceRegion(ER_RHI_GPUResource* aDestBuffer, UINT DstSubresource, UINT DstX, UINT DstY, UINT DstZ, ER_RHI_GPUResource* aSrcBuffer, UINT SrcSubresource)
+	void ER_RHI_DX12::CopyGPUTextureSubresourceRegion(ER_RHI_GPUResource* aDestBuffer, UINT DstSubresource, UINT DstX, UINT DstY, UINT DstZ, ER_RHI_GPUResource* aSrcBuffer, UINT SrcSubresource, bool isInCopyQueueOrSkipTransitions)
 	{
-		assert(mCurrentGraphicsCommandListIndex > -1);
+		if (!isInCopyQueueOrSkipTransitions)
+			assert(mCurrentGraphicsCommandListIndex > -1);
 		assert(aDestBuffer);
 		assert(aSrcBuffer);
 
@@ -530,8 +539,11 @@ namespace EveryRay_Core
 		ER_RHI_DX12_GPUTexture* srcbuffer = static_cast<ER_RHI_DX12_GPUTexture*>(aSrcBuffer);
 		assert(srcbuffer);
 
-		TransitionResources({ static_cast<ER_RHI_GPUResource*>(dstbuffer), static_cast<ER_RHI_GPUResource*>(srcbuffer) },
-			{ ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COPY_DEST, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COPY_SOURCE }, mCurrentGraphicsCommandListIndex);
+		if (!isInCopyQueueOrSkipTransitions)
+		{
+			TransitionResources({ static_cast<ER_RHI_GPUResource*>(dstbuffer), static_cast<ER_RHI_GPUResource*>(srcbuffer) },
+				{ ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COPY_DEST, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COPY_SOURCE }, mCurrentGraphicsCommandListIndex);
+		}
 
 		D3D12_TEXTURE_COPY_LOCATION dstLocation;
 		dstLocation.pResource = static_cast<ID3D12Resource*>(dstbuffer->GetResource());
@@ -548,8 +560,11 @@ namespace EveryRay_Core
 		//else
 		//	throw ER_CoreException("ER_RHI_DX12:: One of the resources is NULL during CopyGPUTextureSubresourceRegion()");
 
-		TransitionResources({ static_cast<ER_RHI_GPUResource*>(dstbuffer), static_cast<ER_RHI_GPUResource*>(srcbuffer) },
-			{ ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE }, mCurrentGraphicsCommandListIndex);
+		if (!isInCopyQueueOrSkipTransitions)
+		{
+			TransitionResources({ static_cast<ER_RHI_GPUResource*>(dstbuffer), static_cast<ER_RHI_GPUResource*>(srcbuffer) },
+				{ ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE }, mCurrentGraphicsCommandListIndex);
+		}
 	}
 
 	void ER_RHI_DX12::Draw(UINT VertexCount)

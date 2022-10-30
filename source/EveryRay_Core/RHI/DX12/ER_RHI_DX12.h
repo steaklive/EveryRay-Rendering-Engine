@@ -74,7 +74,7 @@ namespace EveryRay_Core
 		virtual void BeginBufferRead(ER_RHI_GPUBuffer* aBuffer, void** output) override;
 		virtual void EndBufferRead(ER_RHI_GPUBuffer* aBuffer) override;
 
-		virtual void CopyGPUTextureSubresourceRegion(ER_RHI_GPUResource* aDestBuffer, UINT DstSubresource, UINT DstX, UINT DstY, UINT DstZ, ER_RHI_GPUResource* aSrcBuffer, UINT SrcSubresource) override;
+		virtual void CopyGPUTextureSubresourceRegion(ER_RHI_GPUResource* aDestBuffer, UINT DstSubresource, UINT DstX, UINT DstY, UINT DstZ, ER_RHI_GPUResource* aSrcBuffer, UINT SrcSubresource, bool isInCopyQueueOrSkipTransitions = false) override;
 
 		virtual void Draw(UINT VertexCount) override;
 		virtual void DrawIndexed(UINT IndexCount) override;

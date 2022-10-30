@@ -368,7 +368,7 @@ namespace EveryRay_Core
 		mIsContextReadingBuffer = false;
 	}
 
-	void ER_RHI_DX11::CopyGPUTextureSubresourceRegion(ER_RHI_GPUResource* aDestBuffer, UINT DstSubresource, UINT DstX, UINT DstY, UINT DstZ, ER_RHI_GPUResource* aSrcBuffer, UINT SrcSubresource)
+	void ER_RHI_DX11::CopyGPUTextureSubresourceRegion(ER_RHI_GPUResource* aDestBuffer, UINT DstSubresource, UINT DstX, UINT DstY, UINT DstZ, ER_RHI_GPUResource* aSrcBuffer, UINT SrcSubresource, bool isInCopyQueueOrSkipTransitions)
 	{
 		assert(aDestBuffer);
 		assert(aSrcBuffer);
