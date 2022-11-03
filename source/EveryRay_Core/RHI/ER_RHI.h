@@ -122,6 +122,7 @@ namespace EveryRay_Core
 		ER_FORMAT_R11G11B10_FLOAT,
 		ER_FORMAT_R8G8B8A8_TYPELESS,
 		ER_FORMAT_R8G8B8A8_UNORM,
+		ER_FORMAT_R8G8B8A8_UNORM_sRGB,
 		ER_FORMAT_R8G8B8A8_UINT,
 		ER_FORMAT_R16G16_TYPELESS,
 		ER_FORMAT_R16G16_FLOAT,
@@ -284,7 +285,7 @@ namespace EveryRay_Core
 		
 		virtual ER_RHI_GPUShader* CreateGPUShader() = 0;
 		virtual ER_RHI_GPUBuffer* CreateGPUBuffer(const std::string& aDebugName) = 0;
-		virtual ER_RHI_GPUTexture* CreateGPUTexture(const std::string& aDebugName) = 0;
+		virtual ER_RHI_GPUTexture* CreateGPUTexture(const std::wstring& aDebugName) = 0;
 		virtual ER_RHI_GPURootSignature* CreateRootSignature(UINT NumRootParams = 0, UINT NumStaticSamplers = 0) = 0;
 		virtual ER_RHI_InputLayout* CreateInputLayout(ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount) = 0;
 
@@ -309,7 +310,9 @@ namespace EveryRay_Core
 		virtual void Dispatch(UINT ThreadGroupCountX, UINT ThreadGroupCountY, UINT ThreadGroupCountZ) = 0;
 		//TODO DispatchIndirect
 
-		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture) = 0; // not every API supports that!
+		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture, bool isSRGB = false, ER_RHI_GPUTexture* aSRGBTexture = nullptr) = 0;
+		virtual void GenerateMipsWithTextureReplacement(ER_RHI_GPUTexture** aTexture, std::function<void(ER_RHI_GPUTexture*)> aReplacementCallback) = 0;
+		virtual void ReplaceOriginalTexturesWithMipped() = 0;
 
 		virtual void ExecuteCommandLists(int commandListIndex = 0, bool isCompute = false) = 0;
 		virtual void ExecuteCopyCommandList() = 0;
@@ -427,6 +430,7 @@ namespace EveryRay_Core
 		ER_RHI_GPURootSignature(UINT NumRootParams = 0, UINT NumStaticSamplers = 0) {}
 		virtual ~ER_RHI_GPURootSignature() {}
 
+		virtual void InitConstant(ER_RHI* rhi, UINT index, UINT regIndex, UINT numDWORDs, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) { AbstractRHIMethodAssert(); };
 		virtual void InitStaticSampler(ER_RHI* rhi, UINT regIndex, const ER_RHI_SAMPLER_STATE& sampler, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) { AbstractRHIMethodAssert();	}
 		virtual void InitDescriptorTable(ER_RHI* rhi, int rootParamIndex, const std::vector<ER_RHI_DESCRIPTOR_RANGE_TYPE>& ranges, const std::vector<UINT>& registerIndices,
 			const std::vector<UINT>& descriptorCounters, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) {	AbstractRHIMethodAssert(); }
@@ -474,6 +478,7 @@ namespace EveryRay_Core
 		virtual void* GetResource() { AbstractRHIMethodAssert(); return nullptr; }
 
 		virtual UINT GetMips() { AbstractRHIMethodAssert(); return 0; }
+		virtual UINT GetCalculatedMipCount() { AbstractRHIMethodAssert(); return 0; }
 		virtual UINT GetWidth() { AbstractRHIMethodAssert(); return 0; }
 		virtual UINT GetHeight() { AbstractRHIMethodAssert(); return 0; }
 		virtual UINT GetDepth() { AbstractRHIMethodAssert(); return 0; }

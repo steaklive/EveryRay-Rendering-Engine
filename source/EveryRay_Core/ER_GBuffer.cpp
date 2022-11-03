@@ -33,22 +33,22 @@ namespace EveryRay_Core {
 	{
 		auto rhi = GetCore()->GetRHI();
 
-		mAlbedoBuffer = rhi->CreateGPUTexture("ER_RHI_GPUTexture: GBuffer Albedo RT");
+		mAlbedoBuffer = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: GBuffer Albedo RT");
 		mAlbedoBuffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
 
-		mNormalBuffer = rhi->CreateGPUTexture("ER_RHI_GPUTexture: GBuffer Normals RT");
+		mNormalBuffer = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: GBuffer Normals RT");
 		mNormalBuffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_R16G16B16A16_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
 
-		mPositionsBuffer = rhi->CreateGPUTexture("ER_RHI_GPUTexture: GBuffer Positions RT");
+		mPositionsBuffer = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: GBuffer Positions RT");
 		mPositionsBuffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_R32G32B32A32_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
 
-		mExtraBuffer = rhi->CreateGPUTexture("ER_RHI_GPUTexture: GBuffer Extra RT");
+		mExtraBuffer = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: GBuffer Extra RT");
 		mExtraBuffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
 
-		mExtra2Buffer = rhi->CreateGPUTexture("ER_RHI_GPUTexture: GBuffer Extra2 RT");
+		mExtra2Buffer = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: GBuffer Extra2 RT");
 		mExtra2Buffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_R16G16B16A16_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
 
-		mDepthBuffer = rhi->CreateGPUTexture("ER_RHI_GPUTexture: GBuffer Depth");
+		mDepthBuffer = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: GBuffer Depth");
 		mDepthBuffer->CreateGPUTextureResource(rhi, mWidth, mHeight, 1, ER_FORMAT_D24_UNORM_S8_UINT, ER_BIND_SHADER_RESOURCE | ER_BIND_DEPTH_STENCIL);
 
 		mRootSignature = rhi->CreateRootSignature(2, 1);

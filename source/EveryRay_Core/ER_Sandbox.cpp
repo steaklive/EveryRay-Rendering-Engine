@@ -213,9 +213,12 @@ namespace EveryRay_Core {
 		rhi->EndGraphicsCommandList(rhi->GetPrepareGraphicsCommandListIndex());
 		rhi->ExecuteCommandLists(rhi->GetPrepareGraphicsCommandListIndex());
 
+		rhi->WaitForGpuOnGraphicsFence(); // we need to wait for the GPU to finish before running any callbacks (i.e., terrain, mip generation replacement, etc)
+		
+		rhi->ReplaceOriginalTexturesWithMipped();
+
 		if (mTerrain)
 		{
-			rhi->WaitForGpuOnGraphicsFence(); // we need to wait for the GPU to finish procedurally placing the data on terrain in the prepare command list/graphics queue
 			for (auto listener : mTerrain->ReadbackPlacedPositionsOnInitEvent->GetListeners())
 				listener(mTerrain);
 			mTerrain->ReadbackPlacedPositionsOnInitEvent->RemoveAllListeners();

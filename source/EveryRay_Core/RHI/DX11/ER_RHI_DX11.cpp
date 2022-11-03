@@ -302,7 +302,7 @@ namespace EveryRay_Core
 		return new ER_RHI_DX11_GPUBuffer(aDebugName);
 	}
 
-	ER_RHI_GPUTexture* ER_RHI_DX11::CreateGPUTexture(const std::string& aDebugName)
+	ER_RHI_GPUTexture* ER_RHI_DX11::CreateGPUTexture(const std::wstring& aDebugName)
 	{
 		return new ER_RHI_DX11_GPUTexture(aDebugName);
 	}
@@ -419,7 +419,7 @@ namespace EveryRay_Core
 		mDirect3DDeviceContext->Dispatch(ThreadGroupCountX, ThreadGroupCountY, ThreadGroupCountZ);
 	}
 
-	void ER_RHI_DX11::GenerateMips(ER_RHI_GPUTexture* aTexture)
+	void ER_RHI_DX11::GenerateMips(ER_RHI_GPUTexture* aTexture, bool isSRGB, ER_RHI_GPUTexture* aSRGBTexture)
 	{
 		assert(aTexture);
 		ID3D11ShaderResourceView* pShaderResourceView = static_cast<ID3D11ShaderResourceView*>(aTexture->GetSRV());

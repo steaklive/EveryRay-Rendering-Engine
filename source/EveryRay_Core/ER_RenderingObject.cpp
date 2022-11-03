@@ -139,10 +139,10 @@ namespace EveryRay_Core
 					LoadTexture(TextureType::TextureTypeDifffuse, result, i);
 				}
 				else
-					LoadTexture(TextureType::TextureTypeDifffuse, ER_Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), i);
+					LoadTexture(TextureType::TextureTypeDifffuse, ER_Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), i, true);
 			}
 			else
-				LoadTexture(TextureType::TextureTypeDifffuse, ER_Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), i);
+				LoadTexture(TextureType::TextureTypeDifffuse, ER_Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), i, true);
 
 			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeNormalMap))
 			{
@@ -153,10 +153,10 @@ namespace EveryRay_Core
 					LoadTexture(TextureType::TextureTypeNormalMap, result, i);
 				}
 				else
-					LoadTexture(TextureType::TextureTypeNormalMap, ER_Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"), i);
+					LoadTexture(TextureType::TextureTypeNormalMap, ER_Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"), i, true);
 			}
 			else
-				LoadTexture(TextureType::TextureTypeNormalMap, ER_Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"), i);
+				LoadTexture(TextureType::TextureTypeNormalMap, ER_Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"), i, true);
 
 			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeSpecularMap))
 			{
@@ -167,10 +167,10 @@ namespace EveryRay_Core
 					LoadTexture(TextureType::TextureTypeSpecularMap, result, i);
 				}
 				else
-					LoadTexture(TextureType::TextureTypeSpecularMap, ER_Utility::GetFilePath(L"content\\textures\\emptySpecularMap.png"), i);
+					LoadTexture(TextureType::TextureTypeSpecularMap, ER_Utility::GetFilePath(L"content\\textures\\emptySpecularMap.png"), i, true);
 			}
 			else
-				LoadTexture(TextureType::TextureTypeSpecularMap, ER_Utility::GetFilePath(L"content\\textures\\emptySpecularMap.png"), i);
+				LoadTexture(TextureType::TextureTypeSpecularMap, ER_Utility::GetFilePath(L"content\\textures\\emptySpecularMap.png"), i, true);
 
 			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeDisplacementMap))
 			{
@@ -181,10 +181,10 @@ namespace EveryRay_Core
 					LoadTexture(TextureType::TextureTypeDisplacementMap, result, i);
 				}
 				else
-					LoadTexture(TextureType::TextureTypeDisplacementMap, ER_Utility::GetFilePath(L"content\\textures\\emptyRoughnessMap.png"), i);
+					LoadTexture(TextureType::TextureTypeDisplacementMap, ER_Utility::GetFilePath(L"content\\textures\\emptyRoughnessMap.png"), i, true);
 			}
 			else
-				LoadTexture(TextureType::TextureTypeDisplacementMap, ER_Utility::GetFilePath(L"content\\textures\\emptyRoughnessMap.png"), i);
+				LoadTexture(TextureType::TextureTypeDisplacementMap, ER_Utility::GetFilePath(L"content\\textures\\emptyRoughnessMap.png"), i, true);
 
 			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeEmissive))
 			{
@@ -195,10 +195,10 @@ namespace EveryRay_Core
 					LoadTexture(TextureType::TextureTypeEmissive, result, i);
 				}
 				else
-					LoadTexture(TextureType::TextureTypeEmissive, ER_Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), i);
+					LoadTexture(TextureType::TextureTypeEmissive, ER_Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), i, true);
 			}
 			else
-				LoadTexture(TextureType::TextureTypeEmissive, ER_Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), i);
+				LoadTexture(TextureType::TextureTypeEmissive, ER_Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), i, true);
 		}
 	}
 	
@@ -238,7 +238,7 @@ namespace EveryRay_Core
 		//if (!extra3Path.empty())
 	}
 	
-	void ER_RenderingObject::LoadTexture(TextureType type, const std::wstring& path, int meshIndex)
+	void ER_RenderingObject::LoadTexture(TextureType type, const std::wstring& path, int meshIndex, bool isPlaceholder)
 	{
 		ER_RHI* rhi = mCore->GetRHI();
 
@@ -255,44 +255,121 @@ namespace EveryRay_Core
 		{
 		case TextureType::TextureTypeDifffuse:
 		{
-			mMeshesTextureBuffers[meshIndex].AlbedoMap = rhi->CreateGPUTexture("");
+			mMeshesTextureBuffers[meshIndex].AlbedoMap = rhi->CreateGPUTexture(L"");
 			mMeshesTextureBuffers[meshIndex].AlbedoMap->CreateGPUTextureResource(rhi, path, true);
+			if (!isPlaceholder)
+			{
+				rhi->GenerateMipsWithTextureReplacement(&mMeshesTextureBuffers[meshIndex].AlbedoMap,
+					[this, meshIndex](ER_RHI_GPUTexture* aNewTextureWithMips)
+					{
+						assert(aNewTextureWithMips);
+						DeleteObject(mMeshesTextureBuffers[meshIndex].AlbedoMap);
+						mMeshesTextureBuffers[meshIndex].AlbedoMap = aNewTextureWithMips;
+					}
+				);
+			}
 			break;
 		}
 		case TextureType::TextureTypeNormalMap:
 		{
-			mMeshesTextureBuffers[meshIndex].NormalMap = rhi->CreateGPUTexture("");
+			mMeshesTextureBuffers[meshIndex].NormalMap = rhi->CreateGPUTexture(L"");
 			mMeshesTextureBuffers[meshIndex].NormalMap->CreateGPUTextureResource(rhi, path, true);
+			if (!isPlaceholder)
+			{
+				rhi->GenerateMipsWithTextureReplacement(&mMeshesTextureBuffers[meshIndex].NormalMap,
+					[this, meshIndex](ER_RHI_GPUTexture* aNewTextureWithMips)
+					{
+						assert(aNewTextureWithMips);
+						DeleteObject(mMeshesTextureBuffers[meshIndex].NormalMap);
+						mMeshesTextureBuffers[meshIndex].NormalMap = aNewTextureWithMips;
+					}
+				);
+			}
 			break;
 		}
 		case TextureType::TextureTypeSpecularMap:
 		{
-			mMeshesTextureBuffers[meshIndex].SpecularMap = rhi->CreateGPUTexture("");
+			mMeshesTextureBuffers[meshIndex].SpecularMap = rhi->CreateGPUTexture(L"");
 			mMeshesTextureBuffers[meshIndex].SpecularMap->CreateGPUTextureResource(rhi, path, true);
+			if (!isPlaceholder)
+			{
+				rhi->GenerateMipsWithTextureReplacement(&mMeshesTextureBuffers[meshIndex].SpecularMap,
+					[this, meshIndex](ER_RHI_GPUTexture* aNewTextureWithMips)
+					{
+						assert(aNewTextureWithMips);
+						DeleteObject(mMeshesTextureBuffers[meshIndex].SpecularMap);
+						mMeshesTextureBuffers[meshIndex].SpecularMap = aNewTextureWithMips;
+					}
+				);
+			}
 			break;
 		}
 		case TextureType::TextureTypeEmissive:
 		{
-			mMeshesTextureBuffers[meshIndex].MetallicMap = rhi->CreateGPUTexture("");
+			mMeshesTextureBuffers[meshIndex].MetallicMap = rhi->CreateGPUTexture(L"");
 			mMeshesTextureBuffers[meshIndex].MetallicMap->CreateGPUTextureResource(rhi, path, true);
+			if (!isPlaceholder)
+			{
+				rhi->GenerateMipsWithTextureReplacement(&mMeshesTextureBuffers[meshIndex].MetallicMap,
+					[this, meshIndex](ER_RHI_GPUTexture* aNewTextureWithMips)
+					{
+						assert(aNewTextureWithMips);
+						DeleteObject(mMeshesTextureBuffers[meshIndex].MetallicMap);
+						mMeshesTextureBuffers[meshIndex].MetallicMap = aNewTextureWithMips;
+					}
+				);
+			}
 			break;	
 		}
 		case TextureType::TextureTypeDisplacementMap:
 		{
-			mMeshesTextureBuffers[meshIndex].RoughnessMap = rhi->CreateGPUTexture("");
+			mMeshesTextureBuffers[meshIndex].RoughnessMap = rhi->CreateGPUTexture(L"");
 			mMeshesTextureBuffers[meshIndex].RoughnessMap->CreateGPUTextureResource(rhi, path, true);
+			if (!isPlaceholder)
+			{
+				rhi->GenerateMipsWithTextureReplacement(&mMeshesTextureBuffers[meshIndex].RoughnessMap,
+					[this, meshIndex](ER_RHI_GPUTexture* aNewTextureWithMips)
+					{
+						assert(aNewTextureWithMips);
+						DeleteObject(mMeshesTextureBuffers[meshIndex].RoughnessMap);
+						mMeshesTextureBuffers[meshIndex].RoughnessMap = aNewTextureWithMips;
+					}
+				);
+			}
 			break;
 		}
 		case TextureType::TextureTypeHeightmap:
 		{
-			mMeshesTextureBuffers[meshIndex].HeightMap = rhi->CreateGPUTexture("");
+			mMeshesTextureBuffers[meshIndex].HeightMap = rhi->CreateGPUTexture(L"");
 			mMeshesTextureBuffers[meshIndex].HeightMap->CreateGPUTextureResource(rhi, path, true);
+			if (!isPlaceholder)
+			{
+				rhi->GenerateMipsWithTextureReplacement(&mMeshesTextureBuffers[meshIndex].HeightMap,
+					[this, meshIndex](ER_RHI_GPUTexture* aNewTextureWithMips)
+					{
+						assert(aNewTextureWithMips);
+						DeleteObject(mMeshesTextureBuffers[meshIndex].HeightMap);
+						mMeshesTextureBuffers[meshIndex].HeightMap = aNewTextureWithMips;
+					}
+				);
+			}
 			break;	
 		}
 		case TextureType::TextureTypeLightMap:
 		{
-			mMeshesTextureBuffers[meshIndex].ReflectionMaskMap = rhi->CreateGPUTexture("");
+			mMeshesTextureBuffers[meshIndex].ReflectionMaskMap = rhi->CreateGPUTexture(L"");
 			mMeshesTextureBuffers[meshIndex].ReflectionMaskMap->CreateGPUTextureResource(rhi, path, true);
+			if (!isPlaceholder)
+			{
+				rhi->GenerateMipsWithTextureReplacement(&mMeshesTextureBuffers[meshIndex].ReflectionMaskMap,
+					[this, meshIndex](ER_RHI_GPUTexture* aNewTextureWithMips)
+					{
+						assert(aNewTextureWithMips);
+						DeleteObject(mMeshesTextureBuffers[meshIndex].ReflectionMaskMap);
+						mMeshesTextureBuffers[meshIndex].ReflectionMaskMap = aNewTextureWithMips;
+					}
+				);
+			}
 			break;
 		}
 		}

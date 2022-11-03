@@ -39,7 +39,7 @@ namespace EveryRay_Core
 		{
 			mLightProjectorCenteredPositions.push_back(XMFLOAT3(0, 0, 0));
 			
-			mShadowMaps.push_back(rhi->CreateGPUTexture("ER_RHI_GPUTexture: Shadow Map #" + std::to_string(i)));
+			mShadowMaps.push_back(rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Shadow Map #" + std::to_wstring(i)));
 			mShadowMaps[i]->CreateGPUTextureResource(rhi, pWidth, pHeight, 1u, ER_FORMAT_D16_UNORM, ER_BIND_DEPTH_STENCIL | ER_BIND_SHADER_RESOURCE);
 
 			mCameraCascadesFrustums.push_back(XMMatrixIdentity());

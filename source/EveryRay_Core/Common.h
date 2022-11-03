@@ -92,4 +92,6 @@ inline unsigned int ER_BitmaskAlign(unsigned int value, unsigned int alignment)
 	return (value + alignment - 1) & ~(alignment - 1);
 }
 
+inline bool ER_IsPowerOfTwo(int v) { return v != 0 && (v & (v - 1)) == 0; }
+
 using ER_AABB = std::pair<XMFLOAT3, XMFLOAT3>;

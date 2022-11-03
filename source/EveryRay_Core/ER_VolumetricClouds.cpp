@@ -110,26 +110,26 @@ namespace EveryRay_Core {
 		mIlluminationResultDepthTarget = aIlluminationDepth;
 
 		//textures
-		mCloudTextureSRV = rhi->CreateGPUTexture("");
+		mCloudTextureSRV = rhi->CreateGPUTexture(L"");
 		mCloudTextureSRV->CreateGPUTextureResource(rhi, ER_Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\cloud.dds"), true, true);	
-		mWeatherTextureSRV = rhi->CreateGPUTexture("");
+		mWeatherTextureSRV = rhi->CreateGPUTexture(L"");
 		mWeatherTextureSRV->CreateGPUTextureResource(rhi, ER_Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\weather.dds"), true);
-		mWorleyTextureSRV = rhi->CreateGPUTexture("");
+		mWorleyTextureSRV = rhi->CreateGPUTexture(L"");
 		mWorleyTextureSRV->CreateGPUTextureResource(rhi, ER_Utility::GetFilePath(L"content\\textures\\VolumetricClouds\\worley.dds"), true, true);
 
-		mMainRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Volumetric Clouds Main RT");
+		mMainRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Volumetric Clouds Main RT");
 		mMainRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()) * mDownscaleFactor, static_cast<UINT>(mCore->ScreenHeight()) * mDownscaleFactor, 1u, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS);
 	
-		mUpsampleAndBlurRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Volumetric Clouds Upsample+Blur RT");
+		mUpsampleAndBlurRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Volumetric Clouds Upsample+Blur RT");
 		mUpsampleAndBlurRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS);
 		
-		mBlurRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Volumetric Clouds Blur RT");
+		mBlurRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Volumetric Clouds Blur RT");
 		mBlurRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
 
-		mSkyRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Volumetric Clouds Sky RT");
+		mSkyRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Volumetric Clouds Sky RT");
 		mSkyRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
 		
-		mSkyAndSunRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Volumetric Clouds Sky + Sun RT");
+		mSkyAndSunRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Volumetric Clouds Sky + Sun RT");
 		mSkyAndSunRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET);
 	}
 	

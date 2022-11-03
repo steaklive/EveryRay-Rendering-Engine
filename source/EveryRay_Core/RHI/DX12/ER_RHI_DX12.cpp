@@ -22,6 +22,12 @@ namespace EveryRay_Core
 	ER_RHI_DX12::~ER_RHI_DX12()
 	{
 		WaitForGpuOnGraphicsFence();
+		DeleteObject(mGenerateMips2DCS);
+		DeleteObject(mGenerateMips2DRS);
+		for (int i =0; i < DX12_MAX_GENERATE_MIPS_TEXTURES_IN_POOL; i++)
+		{
+			DeleteObject(mGenerateMipsWithReplacementReadyTexturesPool[i]);
+		}
 		DeleteObject(mDescriptorHeapManager);
 	}
 
@@ -254,6 +260,22 @@ namespace EveryRay_Core
 
 		ResetDescriptorManager();
 
+		//generate mips 2D state and rs
+		{
+			mGenerateMips2DCS = CreateGPUShader();
+			mGenerateMips2DCS->CompileShader(this, "content\\shaders\\GenerateMips2D.hlsl", "CSMain", ER_COMPUTE);
+
+			mGenerateMips2DRS = CreateRootSignature(3, 1);
+			if (mGenerateMips2DRS)
+			{
+				mGenerateMips2DRS->InitStaticSampler(this, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP);
+				mGenerateMips2DRS->InitDescriptorTable(this, 0, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 });
+				mGenerateMips2DRS->InitDescriptorTable(this, 1, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 });
+				mGenerateMips2DRS->InitConstant(this, 2, 0, 3);
+				mGenerateMips2DRS->Finalize(this, "ER_RHI_GPURootSignature: Generate Mips 2D");
+			}
+		}
+
 		return true;
 	}
 
@@ -445,7 +467,7 @@ namespace EveryRay_Core
 		return new ER_RHI_DX12_GPUBuffer(aDebugName);
 	}
 
-	ER_RHI_GPUTexture* ER_RHI_DX12::CreateGPUTexture(const std::string& aDebugName)
+	ER_RHI_GPUTexture* ER_RHI_DX12::CreateGPUTexture(const std::wstring& aDebugName)
 	{
 		return new ER_RHI_DX12_GPUTexture(aDebugName);
 	}
@@ -623,9 +645,104 @@ namespace EveryRay_Core
 		WaitForGpuOnCopyFence();
 	}
 
-	void ER_RHI_DX12::GenerateMips(ER_RHI_GPUTexture* aTexture)
+	void ER_RHI_DX12::GenerateMips(ER_RHI_GPUTexture* aTexture, bool isSRGB, ER_RHI_GPUTexture* aSRGBTexture)
 	{
-		//TODO
+		if ((aTexture->GetWidth() != aTexture->GetHeight()) /*|| !(ER_IsPowerOfTwo(aTexture->GetWidth()) && ER_IsPowerOfTwo(aTexture->GetHeight()))*/)
+			return; //TODO add support
+		
+		if (isSRGB)
+			assert(aSRGBTexture);
+
+		const UINT rootParamIndexSrv = 0;
+		const UINT rootParamIndexUav = 1;
+		const UINT rootParamIndexConstant = 2;
+
+		assert(mCurrentGraphicsCommandListIndex > -1);
+
+		UINT srcWidth = aTexture->GetWidth();
+		UINT srcHeight = aTexture->GetHeight();
+		UINT mipCount = aTexture->GetCalculatedMipCount();
+
+		assert(mipCount > 1);
+
+		TransitionResources({ aTexture }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_UNORDERED_ACCESS, mCurrentGraphicsCommandListIndex);
+
+		auto cmdList = mCommandListGraphics[mCurrentGraphicsCommandListIndex];
+
+		SetRootSignature(mGenerateMips2DRS, true);
+		if (!IsPSOReady(mGenerateMips2DPSOName, true))
+		{
+			InitializePSO(mGenerateMips2DPSOName, true);
+			SetRootSignatureToPSO(mGenerateMips2DPSOName, mGenerateMips2DRS, true);
+			SetShader(mGenerateMips2DCS);
+			FinalizePSO(mGenerateMips2DPSOName, true);
+		}
+		SetPSO(mGenerateMips2DPSOName, true);
+		for (UINT mip = 0; mip < mipCount; mip++)
+		{
+			if (!isSRGB && mip == 0)
+				continue;
+
+			UINT dstWidth = std::max(srcWidth >> mip, 1u);
+			UINT dstHeight = std::max(srcHeight >> mip, 1u);
+
+			cmdList->SetComputeRoot32BitConstant(rootParamIndexConstant, dstWidth, 0);
+			cmdList->SetComputeRoot32BitConstant(rootParamIndexConstant, dstHeight, 1);
+			cmdList->SetComputeRoot32BitConstant(rootParamIndexConstant, /*TODO isSRGB ? 1 : */0, 2);
+			SetShaderResources(ER_COMPUTE, { (isSRGB && aSRGBTexture) ? aSRGBTexture : aTexture }, 0, mGenerateMips2DRS, rootParamIndexSrv, true);
+			SetUnorderedAccessResources(ER_COMPUTE, { aTexture }, mip, mGenerateMips2DRS, rootParamIndexUav, true);
+
+			Dispatch(ER_CEIL(dstWidth, 8), ER_CEIL(dstHeight, 8), 1);
+
+			cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::UAV(static_cast<ID3D12Resource*>(aTexture->GetResource())));
+		}
+		UnsetPSO();
+		TransitionResources({ aTexture }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, mCurrentGraphicsCommandListIndex);
+	}
+
+	void ER_RHI_DX12::GenerateMipsWithTextureReplacement(ER_RHI_GPUTexture** aTexture, std::function<void(ER_RHI_GPUTexture*)> aReplacementCallback)
+	{
+		if ((*aTexture)->GetMips() > 1) //probably the texture already has mips
+			return;
+
+		if (mGenerateMipsWithReplacementCurrentTextureIndexInPool > DX12_MAX_GENERATE_MIPS_TEXTURES_IN_POOL)
+			throw ER_CoreException("ER_RHI_DX12:: There is no space left in the temp texture pool for mip generation! Bump DX12_MAX_GENERATE_MIPS_TEXTURES_IN_POOL.");
+
+		ER_RHI_DX12_GPUTexture* dx12Texture = static_cast<ER_RHI_DX12_GPUTexture*>(*aTexture);
+		assert(dx12Texture);
+
+		bool isSRGB = IsFormatSRGB(dx12Texture->GetFormat());
+		DXGI_FORMAT newFormat;
+		if (isSRGB)
+			newFormat = ChangeFormatToNonSRGB(dx12Texture->GetFormat());
+		else
+			newFormat = ChangeFormatToUncompressed(dx12Texture->GetFormat());
+
+		// create new texture with empty mips from the pool
+		std::wstring name = dx12Texture->GetDebugName() + L" + mip maps";
+		assert(!mGenerateMipsWithReplacementReadyTexturesPool[mGenerateMipsWithReplacementCurrentTextureIndexInPool]);
+		mGenerateMipsWithReplacementReadyTexturesPool[mGenerateMipsWithReplacementCurrentTextureIndexInPool] = CreateGPUTexture(name);
+		static_cast<ER_RHI_DX12_GPUTexture*>(mGenerateMipsWithReplacementReadyTexturesPool[mGenerateMipsWithReplacementCurrentTextureIndexInPool])->CreateSimpleGPUTexture2DResource(this, dx12Texture->GetWidth(), dx12Texture->GetHeight(), newFormat,
+			ER_RHI_BIND_FLAG::ER_BIND_SHADER_RESOURCE | ER_RHI_BIND_FLAG::ER_BIND_UNORDERED_ACCESS, dx12Texture->GetCalculatedMipCount());
+
+		// copy from main texture to 0 mip of new texture (if srgb, then the shader will write into mip 0)
+		if (!isSRGB)
+			CopyGPUTextureSubresourceRegion(mGenerateMipsWithReplacementReadyTexturesPool[mGenerateMipsWithReplacementCurrentTextureIndexInPool], 0, 0, 0, 0, *aTexture, 0);
+		// generate the mip chain in the new texture (read from original texture in the compute shader if sRGB)
+		GenerateMips(mGenerateMipsWithReplacementReadyTexturesPool[mGenerateMipsWithReplacementCurrentTextureIndexInPool], isSRGB, isSRGB ? *aTexture : nullptr);
+
+		mGenerateMipsWithReplacementCallbacks[mGenerateMipsWithReplacementCurrentTextureIndexInPool] = aReplacementCallback;
+		mGenerateMipsWithReplacementCurrentTextureIndexInPool++;
+		// we delete the original textures and replace them with mipped in ReplaceOriginalTexturesWithMipped() (we can't delete before flushing the gfx queue)
+	}
+
+	// Running the callbacks from all systems/objects that requested to generate mips with replacement instead of their original non-mip textures
+	// WARNING: should be called after flushing the GPU (otherwise everything that happens in GenerateMipsWithTextureReplacement() will work with deleted data and crash)
+	// WARNING: if you don't wait for the GPU to finish GenerateMips() passes, then you might get corrupted textures here
+	void ER_RHI_DX12::ReplaceOriginalTexturesWithMipped()
+	{
+		for (int i = 0; i < mGenerateMipsWithReplacementCurrentTextureIndexInPool; i++)
+			mGenerateMipsWithReplacementCallbacks[i](mGenerateMipsWithReplacementReadyTexturesPool[i]);
 	}
 
 	void ER_RHI_DX12::PresentGraphics()
@@ -962,7 +1079,7 @@ namespace EveryRay_Core
 			if (aUAVs[i]->IsBuffer())
 				gpuDescriptorHeap->AddToHandle(mDevice.Get(), uavHandle, static_cast<ER_RHI_DX12_GPUBuffer*>(aUAVs[i])->GetUAVDescriptorHandle());
 			else
-				gpuDescriptorHeap->AddToHandle(mDevice.Get(), uavHandle, static_cast<ER_RHI_DX12_GPUTexture*>(aUAVs[i])->GetUAVHandle());
+				gpuDescriptorHeap->AddToHandle(mDevice.Get(), uavHandle, static_cast<ER_RHI_DX12_GPUTexture*>(aUAVs[i])->GetUAVHandle(startSlot));
 		}
 
 		TransitionResources(aUAVs, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_UNORDERED_ACCESS, mCurrentGraphicsCommandListIndex);
@@ -1411,6 +1528,8 @@ namespace EveryRay_Core
 			return DXGI_FORMAT_R10G10B10A2_UINT;
 		case ER_RHI_FORMAT::ER_FORMAT_R11G11B10_FLOAT:
 			return DXGI_FORMAT_R11G11B10_FLOAT;
+		case ER_RHI_FORMAT::ER_FORMAT_R8G8B8A8_UNORM_sRGB:
+			return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 		case ER_RHI_FORMAT::ER_FORMAT_R8G8B8A8_TYPELESS:
 			return DXGI_FORMAT_R8G8B8A8_TYPELESS;
 		case ER_RHI_FORMAT::ER_FORMAT_R8G8B8A8_UNORM:
@@ -1681,6 +1800,60 @@ namespace EveryRay_Core
 			return D3D12_DESCRIPTOR_HEAP_TYPE::D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 		}
 		}
+	}
+
+	DXGI_FORMAT ER_RHI_DX12::ChangeFormatToNonSRGB(DXGI_FORMAT aFormat)
+	{
+		switch (aFormat)
+		{
+		case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+			return DXGI_FORMAT_R8G8B8A8_UNORM;
+		case DXGI_FORMAT_BC1_UNORM_SRGB:
+			return DXGI_FORMAT_BC1_UNORM;
+		case DXGI_FORMAT_BC2_UNORM_SRGB:
+			return DXGI_FORMAT_BC2_UNORM;
+		case DXGI_FORMAT_BC3_UNORM_SRGB:
+			return DXGI_FORMAT_BC3_UNORM;
+		case DXGI_FORMAT_BC7_UNORM_SRGB:
+			return DXGI_FORMAT_BC7_UNORM;
+		case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
+			return DXGI_FORMAT_B8G8R8A8_UNORM;
+
+		default:
+			{
+				assert(0);
+				return DXGI_FORMAT_UNKNOWN;
+			}
+		}
+	}
+
+	DXGI_FORMAT ER_RHI_DX12::ChangeFormatToUncompressed(DXGI_FORMAT aFormat)
+	{
+		switch (aFormat)
+		{
+		case DXGI_FORMAT_BC1_UNORM:
+			return DXGI_FORMAT_R16G16B16A16_FLOAT;
+		case DXGI_FORMAT_BC3_UNORM:
+		case DXGI_FORMAT_BC5_UNORM:
+		case DXGI_FORMAT_BC7_UNORM:
+			return DXGI_FORMAT_R32G32B32A32_FLOAT;
+
+		default:
+		{
+			return aFormat;
+		}
+		}
+	}
+
+	bool ER_RHI_DX12::IsFormatSRGB(DXGI_FORMAT aFormat)
+	{
+		return 
+			(aFormat == DXGI_FORMAT_R8G8B8A8_UNORM_SRGB) ||
+			(aFormat == DXGI_FORMAT_B8G8R8A8_UNORM_SRGB) ||
+			(aFormat == DXGI_FORMAT_BC1_UNORM_SRGB) ||
+			(aFormat == DXGI_FORMAT_BC3_UNORM_SRGB) ||
+			(aFormat == DXGI_FORMAT_BC2_UNORM_SRGB) || 
+			(aFormat == DXGI_FORMAT_BC7_UNORM_SRGB);
 	}
 
 	void ER_RHI_DX12::CreateMainRenderTargetAndDepth(int width, int height)

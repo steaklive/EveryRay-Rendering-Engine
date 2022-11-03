@@ -70,8 +70,8 @@ namespace EveryRay_Core
 		for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
 			mSphericalHarmonicsRGB.push_back(XMFLOAT3(0.0, 0.0, 0.0));
 
-		std::string probeType = (aProbeType == DIFFUSE_PROBE) ? "diffuse" : "specular";
-		mCubemapTexture = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Light Probe Cubemap " + probeType + " #" + std::to_string(mIndex));
+		std::wstring probeType = (aProbeType == DIFFUSE_PROBE) ? L"diffuse" : L"specular";
+		mCubemapTexture = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Light Probe Cubemap " + probeType + L" #" + std::to_wstring(mIndex));
 		mCubemapTexture->CreateGPUTextureResource(rhi, size, size, 1, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_NONE, (aProbeType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
 
 		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)

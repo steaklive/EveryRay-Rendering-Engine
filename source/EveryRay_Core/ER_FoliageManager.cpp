@@ -197,8 +197,16 @@ namespace EveryRay_Core
 
 		LoadBillboardModel(mType);
 
-		mAlbedoTexture = rhi->CreateGPUTexture("");
+		mAlbedoTexture = rhi->CreateGPUTexture(L"");
 		mAlbedoTexture->CreateGPUTextureResource(rhi, textureName, true);
+		rhi->GenerateMipsWithTextureReplacement(&mAlbedoTexture,
+			[this](ER_RHI_GPUTexture* aNewTextureWithMips)
+			{
+				assert(aNewTextureWithMips);
+				DeleteObject(mAlbedoTexture);
+				mAlbedoTexture = aNewTextureWithMips;
+			}
+		);
 	}
 
 	ER_Foliage::~ER_Foliage()

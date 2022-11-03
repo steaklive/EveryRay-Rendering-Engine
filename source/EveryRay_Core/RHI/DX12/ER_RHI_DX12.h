@@ -20,6 +20,8 @@
 #define DX12_MAX_BOUND_ROOT_PARAMS 8 
 #define DX12_MAX_BACK_BUFFER_COUNT 2
 
+#define DX12_MAX_GENERATE_MIPS_TEXTURES_IN_POOL 4096 // max # of textures pending for GenerateMipsWithTextureReplacement();
+
 namespace EveryRay_Core
 {
 	enum ER_RHI_DX12_PSO_STATE
@@ -60,7 +62,7 @@ namespace EveryRay_Core
 		
 		virtual ER_RHI_GPUShader* CreateGPUShader() override;
 		virtual ER_RHI_GPUBuffer* CreateGPUBuffer(const std::string& aDebugName) override;
-		virtual ER_RHI_GPUTexture* CreateGPUTexture(const std::string& aDebugName) override;
+		virtual ER_RHI_GPUTexture* CreateGPUTexture(const std::wstring& aDebugName) override;
 		virtual ER_RHI_GPURootSignature* CreateRootSignature(UINT NumRootParams = 0, UINT NumStaticSamplers = 0) override;
 		virtual ER_RHI_InputLayout* CreateInputLayout(ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount) override;
 
@@ -88,7 +90,9 @@ namespace EveryRay_Core
 		virtual void ExecuteCommandLists(int commandListIndex = 0, bool isCompute = false) override;
 		virtual void ExecuteCopyCommandList() override;
 
-		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture) override;
+		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture, bool isSRGB = false, ER_RHI_GPUTexture* aSRGBTexture = nullptr) override;
+		virtual void GenerateMipsWithTextureReplacement(ER_RHI_GPUTexture** aTexture, std::function<void(ER_RHI_GPUTexture*)> aReplacementCallback) override;
+		virtual void ReplaceOriginalTexturesWithMipped() override;
 
 		virtual void PresentGraphics() override;
 		virtual void PresentCompute() override;
@@ -194,6 +198,10 @@ namespace EveryRay_Core
 
 		D3D12_DESCRIPTOR_HEAP_TYPE GetHeapType(ER_RHI_DESCRIPTOR_HEAP_TYPE aType);
 
+		DXGI_FORMAT ChangeFormatToNonSRGB(DXGI_FORMAT aFormat);
+		DXGI_FORMAT ChangeFormatToUncompressed(DXGI_FORMAT aFormat);
+		bool IsFormatSRGB(DXGI_FORMAT aFormat);
+
 		void CreateMainRenderTargetAndDepth(int width, int height);
 		void CreateSamplerStates();
 		void CreateBlendStates();
@@ -264,5 +272,12 @@ namespace EveryRay_Core
 		bool mIsRaytracingTierAvailable = false;
 		bool mIsContextReadingBuffer = false;
 
+		ER_RHI_GPURootSignature* mGenerateMips2DRS = nullptr;
+		ER_RHI_GPUShader* mGenerateMips2DCS = nullptr;
+		std::string mGenerateMips2DPSOName = "ER_RHI_GPUPipelineStateObject: Generate Mips 2D";
+
+		ER_RHI_GPUTexture* mGenerateMipsWithReplacementReadyTexturesPool[DX12_MAX_GENERATE_MIPS_TEXTURES_IN_POOL] = { nullptr };
+		std::function<void(ER_RHI_GPUTexture*)> mGenerateMipsWithReplacementCallbacks[DX12_MAX_GENERATE_MIPS_TEXTURES_IN_POOL];
+		int mGenerateMipsWithReplacementCurrentTextureIndexInPool = 0; // should be atomic (in the future), at the moment we do not use multithreading for submitting mip generation commands
 	};
 }

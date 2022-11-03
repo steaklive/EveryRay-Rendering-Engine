@@ -4,7 +4,7 @@
 
 namespace EveryRay_Core
 {
-	ER_RHI_DX12_GPUTexture::ER_RHI_DX12_GPUTexture(const std::string& aDebugName)
+	ER_RHI_DX12_GPUTexture::ER_RHI_DX12_GPUTexture(const std::wstring& aDebugName)
 		: mDebugName(aDebugName)
 	{
 	}
@@ -287,9 +287,12 @@ namespace EveryRay_Core
 		}
 
 		if (mResource && !mDebugName.empty())
-			mResource->SetName(ER_Utility::ToWideString(mDebugName).c_str());
+			mResource->SetName(mDebugName.c_str());
 		if (mResourceUpload && !mDebugName.empty())
-			mResourceUpload->SetName(ER_Utility::ToWideString(mDebugName + " Upload").c_str());
+		{
+			std::wstring uploadname = mDebugName + L" Upload";
+			mResourceUpload->SetName(uploadname.c_str());
+		}
 	}
 	void ER_RHI_DX12_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath /*= false*/, bool is3D, bool skipFallback, bool* statusFlag)
 	{
@@ -378,6 +381,11 @@ namespace EveryRay_Core
 				srvDesc.Texture3D.MipLevels = desc.MipLevels;
 			}
 			device->CreateShaderResourceView(mResource.Get(), &srvDesc, mSRVHandle.GetCPUHandle());
+			
+			mMipLevels = desc.MipLevels;
+			mFormat = desc.Format;
+			mWidth = static_cast<UINT>(desc.Width);
+			mHeight = static_cast<UINT>(desc.Height);
 
 			if (statusFlag)
 				*statusFlag = true;
@@ -419,13 +427,149 @@ namespace EveryRay_Core
 			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 			srvDesc.Texture2D.MipLevels = 1;
 			device->CreateShaderResourceView(mResource.Get(), &srvDesc, mSRVHandle.GetCPUHandle());
+			
+			mMipLevels = desc.MipLevels;
+			mFormat = desc.Format;
+			mWidth = static_cast<UINT>(desc.Width);
+			mHeight = static_cast<UINT>(desc.Height);
 
 			if (statusFlag)
 				*statusFlag = true;
 		}
 
 		if (mResource)
+		{
 			mResource->SetName(aPath.c_str());
+			mDebugName = aPath;
+		}
+	}
+
+	void ER_RHI_DX12_GPUTexture::CreateSimpleGPUTexture2DResource(ER_RHI* aRHI, UINT width, UINT height, DXGI_FORMAT format, ER_RHI_BIND_FLAG bindFlags /*= ER_BIND_NONE*/, int mip)
+	{
+		assert(aRHI);
+		ER_RHI_DX12* aRHIDX12 = static_cast<ER_RHI_DX12*>(aRHI);
+		ID3D12Device* device = aRHIDX12->GetDevice();
+		assert(device);
+
+		ER_RHI_DX12_GPUDescriptorHeapManager* descriptorHeapManager = aRHIDX12->GetDescriptorHeapManager();
+		assert(descriptorHeapManager);
+
+		mIsLoadedFromFile = false;
+
+		//todo move to init list
+		mArraySize = 1;
+		mMipLevels = mip;
+		mBindFlags = bindFlags;
+		mWidth = width;
+		mHeight = height;
+		mIsCubemap = false;
+		mIsDepthStencil = false;
+		mFormat = format;
+
+		D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE;
+		if (bindFlags & ER_BIND_RENDER_TARGET)
+			flags |= D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+		if (bindFlags & ER_BIND_UNORDERED_ACCESS)
+			flags |= D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+
+		XMFLOAT4 clearColor = { 0, 0, 0, 0 };
+		D3D12_CLEAR_VALUE optimizedClearValue = {};
+		optimizedClearValue.Format = mFormat;
+		optimizedClearValue.Color[0] = clearColor.x;
+		optimizedClearValue.Color[1] = clearColor.y;
+		optimizedClearValue.Color[2] = clearColor.z;
+		optimizedClearValue.Color[3] = clearColor.w;
+
+		D3D12_RESOURCE_DESC textureDesc = {};
+		textureDesc.DepthOrArraySize = 1;
+		textureDesc.MipLevels = mMipLevels;
+		textureDesc.Format = mFormat;
+		textureDesc.Width = width;
+		textureDesc.Height = height;
+		textureDesc.Flags = flags;
+		textureDesc.SampleDesc.Count = 1;
+		textureDesc.SampleDesc.Quality = 0;
+		textureDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+
+		bool isRTorDT = bindFlags & ER_RHI_BIND_FLAG::ER_BIND_RENDER_TARGET;
+
+		if (FAILED(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE, &textureDesc, aRHIDX12->GetState(mCurrentResourceState), isRTorDT ? &optimizedClearValue : nullptr, IID_PPV_ARGS(&mResource))))
+			throw ER_CoreException("ER_RHI_DX12: Could not create a committed resource for the GPU texture");
+
+		if (bindFlags & ER_BIND_RENDER_TARGET)
+		{
+			mRTVHandles.resize(mip);
+			assert(!mIsDepthStencil);
+
+			D3D12_RENDER_TARGET_VIEW_DESC rDesc;
+			rDesc.Format = mFormat;
+			{
+				rDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+				for (int i = 0; i < mip; i++)
+				{
+					mRTVHandles[i] = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+					{
+						rDesc.Texture2D.MipSlice = i;
+						rDesc.Texture2D.PlaneSlice = 0;
+					}
+					device->CreateRenderTargetView(mResource.Get(), &rDesc, mRTVHandles[i].GetCPUHandle());
+				}
+			}
+		}
+		if (bindFlags & ER_BIND_UNORDERED_ACCESS)
+		{
+			assert(!mIsDepthStencil);
+
+			mUAVHandles.resize(mip);
+
+			D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc;
+			uavDesc.Buffer.FirstElement = 0;
+			uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+			int depthElements = 1;
+			uavDesc.Buffer.NumElements = width * height;
+			uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+			uavDesc.Format = mFormat;
+
+			for (int i = 0; i < mip; i++)
+			{
+				mUAVHandles[i] = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+				{
+					uavDesc.Texture2D.MipSlice = i;
+				}
+				device->CreateUnorderedAccessView(mResource.Get(), nullptr, &uavDesc, mUAVHandles[i].GetCPUHandle());
+			}
+		}
+		if (bindFlags & ER_BIND_SHADER_RESOURCE)
+		{
+			D3D12_SHADER_RESOURCE_VIEW_DESC sDesc = {};
+			sDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			sDesc.Format = mFormat;
+			mSRVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+			{
+				{
+					sDesc.Texture2D.MipLevels = mip;
+					sDesc.Texture2D.MostDetailedMip = 0;
+					sDesc.Texture2D.PlaneSlice = 0;
+					sDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+				}
+			}
+			device->CreateShaderResourceView(mResource.Get(), &sDesc, mSRVHandle.GetCPUHandle());
+		}
+
+		if (mResource && !mDebugName.empty())
+			mResource->SetName(mDebugName.c_str());
+		if (mResourceUpload && !mDebugName.empty())
+		{
+			std::wstring uploadname = mDebugName + L" Upload";
+			mResourceUpload->SetName(uploadname.c_str());
+		}
+	}
+
+	UINT ER_RHI_DX12_GPUTexture::GetCalculatedMipCount()
+	{
+		assert(mWidth && mHeight);
+		return 1 + static_cast<UINT>(floor(log2(std::max(mWidth, mHeight))));
 	}
 
 	void ER_RHI_DX12_GPUTexture::LoadFallbackTexture(ER_RHI* aRHI)
@@ -465,6 +609,10 @@ namespace EveryRay_Core
 		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MipLevels = 1;
 		device->CreateShaderResourceView(mResource.Get(), &srvDesc, mSRVHandle.GetCPUHandle());
+
+		mFormat = desc.Format;
+		mWidth = static_cast<UINT>(desc.Width);
+		mHeight = static_cast<UINT>(desc.Height);
 
 		if (mResource)
 			mResource->SetName(L"content\\textures\\uvChecker.jpg");

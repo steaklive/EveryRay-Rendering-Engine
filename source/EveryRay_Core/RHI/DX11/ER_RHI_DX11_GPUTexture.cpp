@@ -4,7 +4,7 @@
 
 namespace EveryRay_Core
 {
-	ER_RHI_DX11_GPUTexture::ER_RHI_DX11_GPUTexture(const std::string& aDebugName)
+	ER_RHI_DX11_GPUTexture::ER_RHI_DX11_GPUTexture(const std::wstring& aDebugName)
 	{
 
 	}

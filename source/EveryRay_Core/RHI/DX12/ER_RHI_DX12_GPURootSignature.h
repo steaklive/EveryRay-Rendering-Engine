@@ -127,6 +127,7 @@ namespace EveryRay_Core
 		ER_RHI_DX12_GPURootSignature(UINT NumRootParams = 0, UINT NumStaticSamplers = 0);
 		virtual ~ER_RHI_DX12_GPURootSignature();
 
+		virtual void InitConstant(ER_RHI* rhi, UINT index, UINT regIndex, UINT numDWORDs, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) override;
 		virtual void InitStaticSampler(ER_RHI* rhi, UINT regIndex, const ER_RHI_SAMPLER_STATE& samplers, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) override;
 		virtual void InitDescriptorTable(ER_RHI* rhi, int index, const std::vector<ER_RHI_DESCRIPTOR_RANGE_TYPE>& ranges, const std::vector<UINT>& registerIndices,
 			const std::vector<UINT>& descriptorCounters, ER_RHI_SHADER_VISIBILITY visibility = ER_RHI_SHADER_VISIBILITY_ALL) override;

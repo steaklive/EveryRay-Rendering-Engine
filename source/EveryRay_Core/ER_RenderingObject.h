@@ -268,7 +268,7 @@ namespace EveryRay_Core
 	private:
 		void UpdateAABB(ER_AABB& aabb, const XMMATRIX& transformMatrix);
 		void LoadAssignedMeshTextures();
-		void LoadTexture(TextureType type, const std::wstring& path, int meshIndex);
+		void LoadTexture(TextureType type, const std::wstring& path, int meshIndex, bool isPlaceholder = false);
 		void CreateInstanceBuffer(InstancedData* instanceData, UINT instanceCount, ER_RHI_GPUBuffer* instanceBuffer);
 		
 		void UpdateGizmos();

@@ -26,28 +26,28 @@ namespace EveryRay_Core
 
 		ER_RHI* rhi = game.GetRHI();
 
-		mTempDiffuseCubemapFacesRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Temp Diffuse Cubemap RT");
+		mTempDiffuseCubemapFacesRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Temp Diffuse Cubemap RT");
 		mTempDiffuseCubemapFacesRT->CreateGPUTextureResource(rhi, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, ER_FORMAT_R16G16B16A16_FLOAT,
 			ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1, -1, CUBEMAP_FACES_COUNT, true);
 
-		mTempDiffuseCubemapFacesConvolutedRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Temp Diffuse Cubemap Convoluted RT");
+		mTempDiffuseCubemapFacesConvolutedRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Temp Diffuse Cubemap Convoluted RT");
 		mTempDiffuseCubemapFacesConvolutedRT->CreateGPUTextureResource(rhi, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1, ER_FORMAT_R16G16B16A16_FLOAT,
 			ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1, -1, CUBEMAP_FACES_COUNT, true);
 		
-		mTempSpecularCubemapFacesRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Temp Specular Cubemap RT");
+		mTempSpecularCubemapFacesRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Temp Specular Cubemap RT");
 		mTempSpecularCubemapFacesRT->CreateGPUTextureResource(rhi, SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, ER_FORMAT_R8G8B8A8_UNORM,
 			ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
 
-		mTempSpecularCubemapFacesConvolutedRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Temp Specular Cubemap Convoluted RT");
+		mTempSpecularCubemapFacesConvolutedRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Temp Specular Cubemap Convoluted RT");
 		mTempSpecularCubemapFacesConvolutedRT->CreateGPUTextureResource(rhi, SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, ER_FORMAT_R8G8B8A8_UNORM,
 			ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true);
 
 		for (int i = 0; i < CUBEMAP_FACES_COUNT; i++)
 		{
-			mTempDiffuseCubemapDepthBuffers[i] = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Temp Cubemap Diffuse Depth Buffers");
+			mTempDiffuseCubemapDepthBuffers[i] = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Temp Cubemap Diffuse Depth Buffers");
 			mTempDiffuseCubemapDepthBuffers[i]->CreateGPUTextureResource(rhi, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE_SIZE, 1u, ER_FORMAT_D24_UNORM_S8_UINT,ER_BIND_SHADER_RESOURCE | ER_BIND_DEPTH_STENCIL);
 			
-			mTempSpecularCubemapDepthBuffers[i] = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Temp Cubemap Specular Depth Buffers");
+			mTempSpecularCubemapDepthBuffers[i] = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Temp Cubemap Specular Depth Buffers");
 			mTempSpecularCubemapDepthBuffers[i]->CreateGPUTextureResource(rhi, SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1u, ER_FORMAT_D24_UNORM_S8_UINT, ER_BIND_SHADER_RESOURCE | ER_BIND_DEPTH_STENCIL);
 		}
 
@@ -56,7 +56,7 @@ namespace EveryRay_Core
 		mConvolutionPS = rhi->CreateGPUShader();
 		mConvolutionPS->CompileShader(rhi, "content\\shaders\\IBL\\ProbeConvolution.hlsl", "PSMain", ER_PIXEL);
 
-		mIntegrationMapTextureSRV = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Integration Map BRDF");
+		mIntegrationMapTextureSRV = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Integration Map BRDF");
 		mIntegrationMapTextureSRV->CreateGPUTextureResource(rhi, ER_Utility::GetFilePath(L"content\\textures\\IntegrationMapBrdf.dds"), true);
 
 		if (!scene->HasLightProbesSupport())
@@ -376,7 +376,7 @@ namespace EveryRay_Core
 		mSpecularProbeRenderingObject->UpdateInstanceBuffer(mSpecularProbeRenderingObject->GetInstancesData());
 		std::partition(scene->objects.begin(), scene->objects.end(), [](const ER_SceneObject& obj) {	return obj.second->IsInstanced(); });
 
-		mSpecularCubemapArrayRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Specular Cubemap Array RT");
+		mSpecularCubemapArrayRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Specular Cubemap Array RT");
 		mSpecularCubemapArrayRT->CreateGPUTextureResource(rhi, SPECULAR_PROBE_SIZE, SPECULAR_PROBE_SIZE, 1, ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE, SPECULAR_PROBE_MIP_COUNT, -1, CUBEMAP_FACES_COUNT, true, mMaxSpecularProbesInVolumeCount);
 	}
 

@@ -14,6 +14,16 @@ namespace EveryRay_Core
 	{
 	}
 
+	void ER_RHI_DX12_GPURootSignature::InitConstant(ER_RHI* rhi, UINT index, UINT regIndex, UINT numDWORDs, ER_RHI_SHADER_VISIBILITY visibility /*= ER_RHI_SHADER_VISIBILITY_ALL*/)
+	{
+		ER_RHI_DX12* dx12 = static_cast<ER_RHI_DX12*>(rhi);
+		assert(dx12);
+
+		assert(index < static_cast<int>(mNumParameters));
+		ER_RHI_DX12_GPURootParameter& rootParam = mRootParameters.get()[index];
+		rootParam.InitAsConstants(regIndex, numDWORDs, dx12->GetShaderVisibility(visibility));
+	}
+
 	void ER_RHI_DX12_GPURootSignature::InitStaticSampler(ER_RHI* rhi, UINT regIndex, const ER_RHI_SAMPLER_STATE& sampler, ER_RHI_SHADER_VISIBILITY visibility /*= ER_RHI_SHADER_VISIBILITY_ALL*/)
 	{
 		ER_RHI_DX12* dx12 = static_cast<ER_RHI_DX12*>(rhi);

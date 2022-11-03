@@ -189,10 +189,10 @@ namespace EveryRay_Core
 		mTerrainTilesDataGPU->CreateGPUBufferResource(rhi, terrainTilesDataCPUBuffer, mNumTiles, sizeof(TerrainTileDataGPU), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 		DeleteObjects(terrainTilesDataCPUBuffer);
 
-		mTerrainTilesHeightmapsArrayTexture = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Terrain Tiles Heightmaps Array");
+		mTerrainTilesHeightmapsArrayTexture = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Terrain Tiles Heightmaps Array");
 		mTerrainTilesHeightmapsArrayTexture->CreateGPUTextureResource(rhi, mTileResolution, mTileResolution, 1, ER_FORMAT_R16_UNORM, ER_BIND_SHADER_RESOURCE, 1, -1, mNumTiles);
 		
-		mTerrainTilesSplatmapsArrayTexture = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Terraub Tiles Splatmaps Array");
+		mTerrainTilesSplatmapsArrayTexture = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Terraub Tiles Splatmaps Array");
 		mTerrainTilesSplatmapsArrayTexture->CreateGPUTextureResource(rhi, mTileResolution, mTileResolution, 1, ER_FORMAT_R16G16B16A16_UNORM, ER_BIND_SHADER_RESOURCE, 1, -1, mNumTiles);
 		
 		for (int tileIndex = 0; tileIndex < mNumTiles; tileIndex++)
@@ -209,24 +209,56 @@ namespace EveryRay_Core
 
 		if (!splatLayer0Path.empty())
 		{
-			mSplatChannelTextures[0] = rhi->CreateGPUTexture("");
+			mSplatChannelTextures[0] = rhi->CreateGPUTexture(L"");
 			mSplatChannelTextures[0]->CreateGPUTextureResource(rhi, splatLayer0Path, true);
-
+			rhi->GenerateMipsWithTextureReplacement(&mSplatChannelTextures[0],
+				[this](ER_RHI_GPUTexture* aNewTextureWithMips)
+				{
+					assert(aNewTextureWithMips);
+					DeleteObject(mSplatChannelTextures[0]);
+					mSplatChannelTextures[0] = aNewTextureWithMips;
+				}
+			);
 		}
 		if (!splatLayer1Path.empty())
 		{
-			mSplatChannelTextures[1] = rhi->CreateGPUTexture("");
+			mSplatChannelTextures[1] = rhi->CreateGPUTexture(L"");
 			mSplatChannelTextures[1]->CreateGPUTextureResource(rhi, splatLayer1Path, true);
+			rhi->GenerateMipsWithTextureReplacement(&mSplatChannelTextures[1],
+				[this](ER_RHI_GPUTexture* aNewTextureWithMips)
+				{
+					assert(aNewTextureWithMips);
+					DeleteObject(mSplatChannelTextures[1]);
+					mSplatChannelTextures[1] = aNewTextureWithMips;
+				}
+			);
+
 		}
 		if (!splatLayer2Path.empty())
 		{
-			mSplatChannelTextures[2] = rhi->CreateGPUTexture("");
+			mSplatChannelTextures[2] = rhi->CreateGPUTexture(L"");
 			mSplatChannelTextures[2]->CreateGPUTextureResource(rhi, splatLayer2Path, true);
+			rhi->GenerateMipsWithTextureReplacement(&mSplatChannelTextures[2],
+				[this](ER_RHI_GPUTexture* aNewTextureWithMips)
+				{
+					assert(aNewTextureWithMips);
+					DeleteObject(mSplatChannelTextures[2]);
+					mSplatChannelTextures[2] = aNewTextureWithMips;
+				}
+			);
 		}
 		if (!splatLayer3Path.empty())
 		{
-			mSplatChannelTextures[3] = rhi->CreateGPUTexture("");
+			mSplatChannelTextures[3] = rhi->CreateGPUTexture(L"");
 			mSplatChannelTextures[3]->CreateGPUTextureResource(rhi, splatLayer3Path, true);
+			rhi->GenerateMipsWithTextureReplacement(&mSplatChannelTextures[3],
+				[this](ER_RHI_GPUTexture* aNewTextureWithMips)
+				{
+					assert(aNewTextureWithMips);
+					DeleteObject(mSplatChannelTextures[3]);
+					mSplatChannelTextures[3] = aNewTextureWithMips;
+				}
+			);
 		}
 
 		int numTilesSqrt = sqrt(mNumTiles);
@@ -271,8 +303,17 @@ namespace EveryRay_Core
 		if (tileIndex >= mHeightMaps.size())
 			return;
 
-		mHeightMaps[tileIndex]->mSplatTexture = rhi->CreateGPUTexture("");
+		mHeightMaps[tileIndex]->mSplatTexture = rhi->CreateGPUTexture(L"");
 		mHeightMaps[tileIndex]->mSplatTexture->CreateGPUTextureResource(rhi, path, true);
+		rhi->GenerateMipsWithTextureReplacement(&mHeightMaps[tileIndex]->mSplatTexture,
+			[this, tileIndex](ER_RHI_GPUTexture* aNewTextureWithMips)
+			{
+				assert(aNewTextureWithMips);
+				DeleteObject(mHeightMaps[tileIndex]->mSplatTexture);
+				mHeightMaps[tileIndex]->mSplatTexture = aNewTextureWithMips;
+			}
+		);
+
 	}
 
 	void ER_Terrain::LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path)
@@ -283,7 +324,7 @@ namespace EveryRay_Core
 		if (tileIndex >= mHeightMaps.size())
 			return;
 		
-		mHeightMaps[tileIndex]->mHeightTexture = rhi->CreateGPUTexture("");
+		mHeightMaps[tileIndex]->mHeightTexture = rhi->CreateGPUTexture(L"");
 		mHeightMaps[tileIndex]->mHeightTexture->CreateGPUTextureResource(rhi, path, true);
 	}
 

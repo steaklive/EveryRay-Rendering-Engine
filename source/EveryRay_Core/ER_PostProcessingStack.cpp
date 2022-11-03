@@ -95,7 +95,7 @@ namespace EveryRay_Core {
 			
 			mLinearFogConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Linear Fog CB");
 
-			mLinearFogRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Linear Fog RT");
+			mLinearFogRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Linear Fog RT");
 			mLinearFogRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 
@@ -109,7 +109,7 @@ namespace EveryRay_Core {
 			}
 		}
 
-		mVolumetricFogRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Volumetric Fog RT");
+		mVolumetricFogRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Volumetric Fog RT");
 		mVolumetricFogRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
 			ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 
@@ -120,7 +120,7 @@ namespace EveryRay_Core {
 
 			mSSRConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: SSR CB");
 			
-			mSSRRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: SSR RT");
+			mSSRRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: SSR RT");
 			mSSRRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 
@@ -141,7 +141,7 @@ namespace EveryRay_Core {
 
 			mSSSConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: SSS CB");
 
-			mSSSRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: SSS RT");
+			mSSSRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: SSS RT");
 			mSSSRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 
@@ -160,7 +160,7 @@ namespace EveryRay_Core {
 			mTonemappingPS = rhi->CreateGPUShader();
 			mTonemappingPS->CompileShader(rhi, "content\\shaders\\Tonemap.hlsl", "PSMain", ER_PIXEL);
 
-			mTonemappingRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Tonemapping RT");
+			mTonemappingRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Tonemapping RT");
 			mTonemappingRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 
@@ -175,17 +175,17 @@ namespace EveryRay_Core {
 
 		//Color grading
 		{
-			mLUTs[0] = rhi->CreateGPUTexture("");
+			mLUTs[0] = rhi->CreateGPUTexture(L"");
 			mLUTs[0]->CreateGPUTextureResource(rhi, "content\\shaders\\LUT_1.png");
-			mLUTs[1] = rhi->CreateGPUTexture("");
+			mLUTs[1] = rhi->CreateGPUTexture(L"");
 			mLUTs[1]->CreateGPUTextureResource(rhi, "content\\shaders\\LUT_2.png");
-			mLUTs[2] = rhi->CreateGPUTexture("");
+			mLUTs[2] = rhi->CreateGPUTexture(L"");
 			mLUTs[2]->CreateGPUTextureResource(rhi, "content\\shaders\\LUT_3.png");
 			
 			mColorGradingPS = rhi->CreateGPUShader();
 			mColorGradingPS->CompileShader(rhi, "content\\shaders\\ColorGrading.hlsl", "PSMain", ER_PIXEL);
 
-			mColorGradingRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Color Grading RT");
+			mColorGradingRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Color Grading RT");
 			mColorGradingRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 
@@ -204,7 +204,7 @@ namespace EveryRay_Core {
 
 			mVignetteConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Vignette CB");
 			
-			mVignetteRT = rhi->CreateGPUTexture("ER_RHI_GPUTexture: Vignette RT");
+			mVignetteRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Vignette RT");
 			mVignetteRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 
@@ -225,7 +225,7 @@ namespace EveryRay_Core {
 
 			mFXAAConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: FXAA CB");
 
-			mFXAART = rhi->CreateGPUTexture("ER_RHI_GPUTexture: FXAA RT");
+			mFXAART = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: FXAA RT");
 			mFXAART->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore.ScreenWidth()), static_cast<UINT>(mCore.ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 
