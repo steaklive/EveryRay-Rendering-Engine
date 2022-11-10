@@ -448,8 +448,13 @@ namespace EveryRay_Core
 		assert(aRenderTarget);
 		ER_RHI_DX12_GPUTexture* uavDX12 = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTarget);
 		assert(uavDX12);
-		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->ClearUnorderedAccessViewFloat(uavDX12->GetUAVHandle().GetGPUHandle(), uavDX12->GetUAVHandle().GetCPUHandle(),
-			static_cast<ID3D12Resource*>(uavDX12->GetResource()), colors, 0, nullptr);
+
+		TransitionResources({ aRenderTarget }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_UNORDERED_ACCESS, mCurrentGraphicsCommandListIndex);
+
+		D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = uavDX12->GetUAVHandle().GetCPUHandle();
+		D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = uavDX12->GetUAVHandleGPU().GetGPUHandle();
+
+		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->ClearUnorderedAccessViewFloat(gpuHandle, cpuHandle,	static_cast<ID3D12Resource*>(uavDX12->GetResource()), colors, 0, nullptr);
 	}
 
 	ER_RHI_InputLayout* ER_RHI_DX12::CreateInputLayout(ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount)
