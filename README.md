@@ -50,6 +50,7 @@ Video demonstrations (scroll down for screenshots):
 - - supports loading from & saving to JSON scene files
 - CPU frustum culling
 - ImGUI, ImGuizmo
+- Input from mouse, keyboard and gamepad (XInput, but you can add your own)
  
 # Roadmap (big architectural engine tasks)
  * [X] <del>remove DX11 "Effects" library, all .fx shaders and refactor the material system (DONE)</del> (https://github.com/steaklive/EveryRay-Rendering-Engine/pull/51)
@@ -77,11 +78,13 @@ I originally started developing this project on DX11 several years ago with the 
 ![picture](screenshots/EveryRayTestScene.png)
 
 # Controls
-- Mouse + Right Click - camera rotation
-- WASD - camera side movement
-- E/Q - camera up/down movement
-- Backspace - enable editor
-- R/T/Y - scale/translate/rotate object in the editor mode
+- "Mouse + Right Click" or "Right Thumbstick" - camera rotation
+- "W/A/S/D" or "Left Thumbstick" - camera side movement (on gamepad holding "Left Trigger"/"Right Trigger" will slow/fasten the movement)
+- "E/Q" - camera up/down movement
+- "Backspace" or "Back Gamepad Button" - enable/disable editor
+- "R/T/Y" - scale/translate/rotate object in the editor mode
+
+Gamepad is currently not supported/tested with ImGui.
 
 # Notes
 You might increase TDR time of your GPU driver (explained here https://docs.substance3d.com/spdoc/gpu-drivers-crash-with-long-computations-128745489.html).
@@ -102,4 +105,4 @@ You might increase TDR time of your GPU driver (explained here https://docs.subs
 # Requirements
 - Visual Studio 2019
 - Windows 10 + SDK
-- DirectX 11 supported hardware
+- DirectX 11 or DirectX 12 supported hardware
