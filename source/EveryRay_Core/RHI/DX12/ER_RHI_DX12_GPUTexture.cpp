@@ -203,6 +203,7 @@ namespace EveryRay_Core
 			assert(!mIsDepthStencil);
 
 			mUAVHandles.resize(mip);
+			mUAVHandlesGPU.resize(mip);
 
 			D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc;
 			uavDesc.Buffer.FirstElement = 0;
@@ -216,6 +217,7 @@ namespace EveryRay_Core
 			for (int i = 0; i < mip; i++)
 			{
 				mUAVHandles[i] = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+				mUAVHandlesGPU[i] = descriptorHeapManager->CreateGPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1);
 				if (currentDepth > 0) {
 					uavDesc.Texture3D.MipSlice = i;
 					uavDesc.Texture3D.FirstWSlice = 0;
@@ -226,6 +228,7 @@ namespace EveryRay_Core
 					uavDesc.Texture2D.MipSlice = i;
 				}
 				device->CreateUnorderedAccessView(mResource.Get(), nullptr, &uavDesc, mUAVHandles[i].GetCPUHandle());
+				device->CreateUnorderedAccessView(mResource.Get(), nullptr, &uavDesc, mUAVHandlesGPU[i].GetCPUHandle());
 			}
 
 			//TODO add support for cubemap

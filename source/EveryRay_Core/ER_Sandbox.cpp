@@ -336,7 +336,7 @@ namespace EveryRay_Core {
 
 		// compute dynamic GI
 		{
-			//mIllumination->DrawDynamicGlobalIllumination(mGBuffer, gameTime);
+			mIllumination->DrawDynamicGlobalIllumination(mGBuffer, gameTime);
 		}
 #pragma endregion
 

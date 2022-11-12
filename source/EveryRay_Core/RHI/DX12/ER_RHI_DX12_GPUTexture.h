@@ -31,6 +31,7 @@ namespace EveryRay_Core
 
 		ER_RHI_DX12_DescriptorHandle& GetRTVHandle(int index = 0) { return mRTVHandles[index]; }
 		ER_RHI_DX12_DescriptorHandle& GetUAVHandle(int index = 0) { return mUAVHandles[index]; }
+		ER_RHI_DX12_DescriptorHandle& GetUAVHandleGPU(int index = 0) { return mUAVHandlesGPU[index]; }
 		ER_RHI_DX12_DescriptorHandle& GetSRVHandle() { return mSRVHandle; }
 		ER_RHI_DX12_DescriptorHandle& GetDSVHandle(bool readOnly = false) { if (readOnly) return mDSVReadOnlyHandle; else return mDSVHandle; }
  
@@ -49,7 +50,8 @@ namespace EveryRay_Core
 		ER_RHI_DX12_DescriptorHandle mDSVHandle;
 		ER_RHI_DX12_DescriptorHandle mDSVReadOnlyHandle;
 		std::vector<ER_RHI_DX12_DescriptorHandle> mRTVHandles;
-		std::vector<ER_RHI_DX12_DescriptorHandle> mUAVHandles;
+		std::vector<ER_RHI_DX12_DescriptorHandle> mUAVHandles; //non-shader visible heap
+		std::vector<ER_RHI_DX12_DescriptorHandle> mUAVHandlesGPU; //shader visible heap
 
 		ER_RHI_RESOURCE_STATE mCurrentResourceState = ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COMMON;
 		
