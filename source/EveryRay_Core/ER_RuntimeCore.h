@@ -8,8 +8,8 @@ namespace EveryRay_Core
 {
 	class ER_Mouse;
 	class ER_Keyboard;
+	class ER_Gamepad;
 	class ER_CameraFPS;
-	class RenderStateHelper;
 	class ER_Editor;
 	class ER_QuadRenderer;
 	
@@ -36,6 +36,7 @@ namespace EveryRay_Core
 		LPDIRECTINPUT8 mDirectInput;
 		ER_Keyboard* mKeyboard;
 		ER_Mouse* mMouse;
+		ER_Gamepad* mGamepad;
 		ER_CameraFPS* mCamera;
 		ER_Editor* mEditor;
 		ER_QuadRenderer* mQuadRenderer;

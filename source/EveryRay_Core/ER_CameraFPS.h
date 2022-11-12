@@ -6,6 +6,7 @@ namespace EveryRay_Core
 {
 	class ER_Keyboard;
 	class ER_Mouse;
+	class ER_Gamepad;
 
 	class ER_CameraFPS : public ER_Camera
 	{
@@ -17,32 +18,31 @@ namespace EveryRay_Core
 
 		virtual ~ER_CameraFPS();
 
-		const ER_Keyboard& GetKeyboard() const;
-		void SetKeyboard(ER_Keyboard& keyboard);
-
-		const ER_Mouse& GetMouse() const;
-		void SetMouse(ER_Mouse& mouse);
-
 		float& MouseSensitivity();
 		float& RotationRate();
 		float& MovementRate();
 		void SetMovementRate(float value);
 
-
 		virtual void Initialize() override;
 		virtual void Update(const ER_CoreTime& gameTime) override;
 
 		static const float DefaultMouseSensitivity;
+		static const float DefaultGamepadSensitivity;
 		static const float DefaultRotationRate;
 		static const float DefaultMovementRate;
 
 	protected:
 		float mMouseSensitivity;
+		float mGamepadSensitivity;
+		float mGamepadMovementSpeedFactor = 0.01f;
+		float mGamepadMovementSlowdownFactor = 0.1f;
+		float mGamepadMovementSpeedupFactor = 10.0f;
 		float mRotationRate;
 		float mMovementRate;
 
-		ER_Keyboard* mKeyboard;
-		ER_Mouse* mMouse;
+		ER_Gamepad* mGamepad = nullptr;
+		ER_Keyboard* mKeyboard = nullptr;
+		ER_Mouse* mMouse = nullptr;
 
 	private:
 		ER_CameraFPS(const ER_CameraFPS& rhs);

@@ -190,6 +190,7 @@
     <ClInclude Include="Common.h" />
     <ClInclude Include="ER_BasicColorMaterial.h" />
     <ClInclude Include="ER_DebugLightProbeMaterial.h" />
+    <ClInclude Include="ER_Gamepad.h" />
     <ClInclude Include="ER_GBufferMaterial.h" />
     <ClInclude Include="ER_RuntimeCore.h" />
     <ClInclude Include="ER_Sandbox.h" />
@@ -256,6 +257,7 @@
     <ClCompile Include="ER_Camera.cpp" />
     <ClCompile Include="ER_CameraFPS.cpp" />
     <ClCompile Include="ER_DebugLightProbeMaterial.cpp" />
+    <ClCompile Include="ER_Gamepad.cpp" />
     <ClCompile Include="ER_GBufferMaterial.cpp" />
     <ClCompile Include="ER_DirectionalLight.cpp" />
     <ClCompile Include="ER_Editor.cpp" />

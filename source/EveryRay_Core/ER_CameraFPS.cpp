@@ -4,10 +4,9 @@
 #include "ER_Core.h"
 #include "ER_CoreTime.h"
 #include "ER_Keyboard.h"
+#include "ER_Gamepad.h"
 #include "ER_Mouse.h"
 #include "ER_VectorHelper.h"
-
-#include "imgui.h"
 
 namespace EveryRay_Core
 {
@@ -16,44 +15,24 @@ namespace EveryRay_Core
 	const float ER_CameraFPS::DefaultRotationRate = XMConvertToRadians(1.0f);
 	const float ER_CameraFPS::DefaultMovementRate = 10.0f;
 	const float ER_CameraFPS::DefaultMouseSensitivity = 50.0f;
+	const float ER_CameraFPS::DefaultGamepadSensitivity = 0.005f;
 
 	ER_CameraFPS::ER_CameraFPS(ER_Core& game)
 		: ER_Camera(game), mKeyboard(nullptr), mMouse(nullptr),
-		mMouseSensitivity(DefaultMouseSensitivity), mRotationRate(DefaultRotationRate), mMovementRate(DefaultMovementRate)
+		mMouseSensitivity(DefaultMouseSensitivity), mRotationRate(DefaultRotationRate), mMovementRate(DefaultMovementRate),
+		mGamepad(nullptr), mGamepadSensitivity(DefaultGamepadSensitivity)
 	{
 	}
 
 	ER_CameraFPS::ER_CameraFPS(ER_Core& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance)
 		: ER_Camera(game, fieldOfView, aspectRatio, nearPlaneDistance, farPlaneDistance), mKeyboard(nullptr), mMouse(nullptr),
-		mMouseSensitivity(DefaultMouseSensitivity), mRotationRate(DefaultRotationRate), mMovementRate(DefaultMovementRate)
-
+		mMouseSensitivity(DefaultMouseSensitivity), mRotationRate(DefaultRotationRate), mMovementRate(DefaultMovementRate),
+		mGamepad(nullptr), mGamepadSensitivity(DefaultGamepadSensitivity)
 	{
 	}
 
 	ER_CameraFPS::~ER_CameraFPS()
 	{
-		mKeyboard = nullptr;
-		mMouse = nullptr;
-	}
-
-	const ER_Keyboard& ER_CameraFPS::GetKeyboard() const
-	{
-		return *mKeyboard;
-	}
-
-	void ER_CameraFPS::SetKeyboard(ER_Keyboard& keyboard)
-	{
-		mKeyboard = &keyboard;
-	}
-
-	const ER_Mouse& ER_CameraFPS::GetMouse() const
-	{
-		return *mMouse;
-	}
-
-	void ER_CameraFPS::SetMouse(ER_Mouse& mouse)
-	{
-		mMouse = &mouse;
 	}
 
 	float&ER_CameraFPS::MouseSensitivity()
@@ -77,11 +56,11 @@ namespace EveryRay_Core
 		mMovementRate = value;
 	}
 
-
 	void ER_CameraFPS::Initialize()
 	{
 		mKeyboard = (ER_Keyboard*)mCore->GetServices().FindService(ER_Keyboard::TypeIdClass());
 		mMouse = (ER_Mouse*)mCore->GetServices().FindService(ER_Mouse::TypeIdClass());
+		mGamepad = (ER_Gamepad*)mCore->GetServices().FindService(ER_Gamepad::TypeIdClass());
 
 		ER_Camera::Initialize();
 	}
@@ -89,7 +68,7 @@ namespace EveryRay_Core
 	void ER_CameraFPS::Update(const ER_CoreTime& gameTime)
 	{
 		XMFLOAT3 movementAmount = ER_Vector3Helper::Zero;
-		if (mKeyboard != nullptr )
+		if (mKeyboard)
 		{
 			if (mKeyboard->IsKeyDown(DIK_W))
 			{
@@ -121,15 +100,35 @@ namespace EveryRay_Core
 				movementAmount.z = -1.0f;
 			}
 		}
+		if (mGamepad)
+		{
+			if (mGamepad->GetTriggersMaxValue() > 0 && (mGamepad->GetLeftThumbX() != 0 || mGamepad->GetLeftThumbY() != 0))
+			{
+				float speed = mGamepadSensitivity * mGamepadMovementSpeedFactor;
+
+				if (mGamepad->GetLeftTriggerValue() > 0 && mGamepad->GetRightTriggerValue() == 0)
+					speed *= ER_Lerp(mGamepadMovementSlowdownFactor, 1.0f, (1.0f - static_cast<float>(mGamepad->GetLeftTriggerValue()) / static_cast<float>(mGamepad->GetTriggersMaxValue())));
+				else if (mGamepad->GetRightTriggerValue() > 0 && mGamepad->GetLeftTriggerValue() == 0)
+					speed *= mGamepadMovementSpeedupFactor * (static_cast<float>(mGamepad->GetRightTriggerValue()) / static_cast<float>(mGamepad->GetTriggersMaxValue()));
+
+				movementAmount.x = mGamepad->GetLeftThumbX() * speed;
+				movementAmount.y = mGamepad->GetLeftThumbY() * speed;
+			}
+		}
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 
 		XMFLOAT2 rotationAmount = ER_Vector2Helper::Zero;
-		if ((mMouse != nullptr) && (mMouse->IsButtonHeldDown(MouseButtonsRight)) && (!io.WantCaptureMouse))
+		if (mMouse && mMouse->IsButtonHeldDown(MouseButtonsRight) && !io.WantCaptureMouse)
 		{
 			LPDIMOUSESTATE mouseState = mMouse->CurrentState();
 			rotationAmount.x = -mouseState->lX * mMouseSensitivity;
 			rotationAmount.y = -mouseState->lY * mMouseSensitivity;
+		}
+		if (mGamepad && (mGamepad->GetRightThumbX() != 0 || mGamepad->GetRightThumbY() != 0))
+		{
+			rotationAmount.x = -mGamepad->GetRightThumbX() * mGamepadSensitivity;
+			rotationAmount.y = mGamepad->GetRightThumbY() * mGamepadSensitivity;
 		}
 
 		float elapsedTime = (float)gameTime.ElapsedCoreTime();

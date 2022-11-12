@@ -35,11 +35,18 @@ using namespace Microsoft::WRL;
 
 #include <DirectXMath.h>
 #include <DirectXPackedVector.h>
+using namespace DirectX;
+
+#if ER_PLATFORM_WIN64_DX11 || ER_PLATFORM_WIN64_DX12
 #ifndef DIRECTINPUT_VERSION
 #define DIRECTINPUT_VERSION 0x0800
 #endif
 #include <dinput.h>
-using namespace DirectX;
+#define USE_XINPUT // comment if you do not want to use XInput
+#ifdef USE_XINPUT
+#include <XInput.h>
+#endif
+#endif
 
 #include "imgui.h"
 #include "imgui_impl_win32.h"
@@ -82,16 +89,10 @@ using namespace DirectX;
 #define MAX_LOD 3
 
 template <typename T>
-inline T ER_DivideByMultiple(T value, unsigned int alignment)
-{
-	return (T)((value + alignment - 1) / alignment);
-}
+inline T ER_DivideByMultiple(T value, unsigned int alignment) {	return (T)((value + alignment - 1) / alignment); }
 
-inline unsigned int ER_BitmaskAlign(unsigned int value, unsigned int alignment)
-{
-	return (value + alignment - 1) & ~(alignment - 1);
-}
-
+inline unsigned int ER_BitmaskAlign(unsigned int value, unsigned int alignment) { return (value + alignment - 1) & ~(alignment - 1); }
 inline bool ER_IsPowerOfTwo(int v) { return v != 0 && (v & (v - 1)) == 0; }
+inline float ER_Lerp(const float& a, const float& b, const float& t) { return a + t * (b - a); }
 
 using ER_AABB = std::pair<XMFLOAT3, XMFLOAT3>;

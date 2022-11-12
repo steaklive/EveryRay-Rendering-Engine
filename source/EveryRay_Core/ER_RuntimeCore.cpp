@@ -4,6 +4,7 @@
 #include "ER_CoreException.h"
 #include "ER_Keyboard.h"
 #include "ER_Mouse.h"
+#include "ER_Gamepad.h"
 #include "ER_Utility.h"
 #include "ER_CameraFPS.h"
 #include "ER_ColorHelper.h"
@@ -28,6 +29,7 @@ namespace EveryRay_Core
 		mDirectInput(nullptr),
 		mKeyboard(nullptr),
 		mMouse(nullptr),
+		mGamepad(nullptr),
 		mShowProfiler(false),
 		mEditor(nullptr),
 		mQuadRenderer(nullptr)
@@ -63,6 +65,10 @@ namespace EveryRay_Core
 			mMouse = new ER_Mouse(*this, mDirectInput);
 			mCoreEngineComponents.push_back(mMouse);
 			mServices.AddService(ER_Mouse::TypeIdClass(), mMouse);
+
+			mGamepad = new ER_Gamepad(*this);
+			mCoreEngineComponents.push_back(mGamepad);
+			mServices.AddService(ER_Gamepad::TypeIdClass(), mGamepad);
 		}
 
 		mCamera = new ER_CameraFPS(*this, 1.5708f, this->AspectRatio(), nearPlaneDist, farPlaneDist );
@@ -198,7 +204,7 @@ namespace EveryRay_Core
 		ImGui::NewFrame();
 
 		ImGuizmo::BeginFrame();
-		if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Backspace)))
+		if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Backspace)) || mGamepad->WasButtonPressedThisFrame(GamepadButtons::GamepadBackButton))
 			ER_Utility::IsEditorMode = !ER_Utility::IsEditorMode;
 		ImGuizmo::Enable(ER_Utility::IsEditorMode);
 		if (ER_Utility::IsEditorMode)
