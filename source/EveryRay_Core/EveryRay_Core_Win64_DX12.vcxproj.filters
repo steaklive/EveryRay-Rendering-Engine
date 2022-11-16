@@ -622,6 +622,9 @@
     <FxCompile Include="..\..\content\shaders\GenerateMips2D.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="..\..\content\shaders\GenerateMips3D.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\content\shaders\Lighting.hlsli">

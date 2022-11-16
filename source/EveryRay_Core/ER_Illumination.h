@@ -159,7 +159,7 @@ namespace EveryRay_Core
 		ER_RHI_GPUConstantBuffer<IlluminationCBufferData::ForwardLightingCB> mForwardLightingConstantBuffer;
 		ER_RHI_GPUConstantBuffer<IlluminationCBufferData::LightProbesCB> mLightProbesConstantBuffer;
 
-		std::vector<ER_RHI_GPUTexture*> mVCTVoxelCascades3DRTs;
+		ER_RHI_GPUTexture* mVCTVoxelCascades3DRTs[NUM_VOXEL_GI_CASCADES] = { nullptr, nullptr };
 		ER_RHI_GPUTexture* mVCTVoxelizationDebugRT = nullptr;
 		ER_RHI_GPUTexture* mVCTMainRT = nullptr;
 		ER_RHI_GPUTexture* mVCTUpsampleAndBlurRT = nullptr;
@@ -211,17 +211,17 @@ namespace EveryRay_Core
 
 		ER_RHI_GPURootSignature* mDebugProbesRenderRS = nullptr;
 
-		float mWorldVoxelScales[NUM_VOXEL_GI_CASCADES] = { 2.0f, 0.5f };
-		XMFLOAT4 mVoxelCameraPositions[NUM_VOXEL_GI_CASCADES];
-		ER_AABB mVoxelCascadesAABBs[NUM_VOXEL_GI_CASCADES];
-		
-		std::vector<ER_RenderableAABB*> mDebugVoxelZonesGizmos;
-
 		//VCT GI
-		float mVCTIndirectDiffuseStrength = 1.0f;
+		XMFLOAT4 mVoxelCameraPositions[NUM_VOXEL_GI_CASCADES];
+		ER_AABB mLocalVoxelCascadesAABBs[NUM_VOXEL_GI_CASCADES]; // constant, must not change after initialization
+		ER_AABB mWorldVoxelCascadesAABBs[NUM_VOXEL_GI_CASCADES]; // dynamic, changes with camera movement (not in every frame probably in order to save perf)
+		ER_RenderableAABB* mDebugVoxelZonesGizmos[NUM_VOXEL_GI_CASCADES] = { nullptr, nullptr };
+		float mWorldVoxelScales[NUM_VOXEL_GI_CASCADES] = { 2.0f, 0.5f };
+
+		float mVCTIndirectDiffuseStrength = 0.2f;
 		float mVCTIndirectSpecularStrength = 1.0f;
 		float mVCTMaxConeTraceDistance = 100.0f;
-		float mVCTAoFalloff = 2.0f;
+		float mVCTAoFalloff = 15.0f;
 		float mVCTSamplingFactor = 0.5f;
 		float mVCTVoxelSampleOffset = 0.0f;
 		float mVCTGIPower = 1.0f;

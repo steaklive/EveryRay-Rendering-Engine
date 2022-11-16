@@ -144,6 +144,7 @@ float4 CalculateIndirectDiffuse(float3 worldPos, float3 normal, out float ao)
         coneDirection += diffuseConeDirections[i].x * right + diffuseConeDirections[i].z * up;
         coneDirection = normalize(coneDirection);
 
+        bool wasTracedInLastCascade = false;
         for (int cascadeIndex = 0; cascadeIndex < NUM_VOXEL_CASCADES; cascadeIndex++)
         {
             float shift = voxelCascadeResolutions[cascadeIndex] / WorldVoxelScales[cascadeIndex].r * 0.5f;
@@ -151,18 +152,18 @@ float4 CalculateIndirectDiffuse(float3 worldPos, float3 normal, out float ao)
             float3 voxelGridBoundsMin = VoxelCameraPositions[cascadeIndex].xyz - float3(shift, shift, shift);
         
             if (worldPos.x < voxelGridBoundsMin.x || worldPos.y < voxelGridBoundsMin.y || worldPos.z < voxelGridBoundsMin.z ||
-                worldPos.x > voxelGridBoundsMax.x || worldPos.y > voxelGridBoundsMax.y || worldPos.z > voxelGridBoundsMax.z)
+                worldPos.x > voxelGridBoundsMax.x || worldPos.y > voxelGridBoundsMax.y || worldPos.z > voxelGridBoundsMax.z || wasTracedInLastCascade)
                 continue; //try to trace from next cascade
             else
             {
                 result += TraceCone(worldPos, normal, coneDirection, coneAperture, tempAo, true, cascadeIndex, voxelCascadeResolutions[cascadeIndex]) * diffuseConeWeights[i];
                 finalAo += tempAo * diffuseConeWeights[i];
+                wasTracedInLastCascade = true;
             }
         }
     }
-    
+
     ao = finalAo;
-    
     return IndirectDiffuseStrength * result;
 }
 
@@ -172,7 +173,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     uint width, height;
     albedoBuffer.GetDimensions(width, height);
     
-    float2 texCooord = DTid.xy / float2(width / UpsampleRatio.x, height / UpsampleRatio.y);
+    float2 texCooord = (DTid.xy + 0.5f) / float2(width / UpsampleRatio.x, height / UpsampleRatio.y);
     
     float3 normal = normalize(normalBuffer.SampleLevel(LinearSampler, texCooord, 0).rgb);
     float4 worldPos = worldPosBuffer.SampleLevel(LinearSampler, texCooord, 0);

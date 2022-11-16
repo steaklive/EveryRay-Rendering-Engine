@@ -276,6 +276,10 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mGenerateMips2DCS = nullptr;
 		std::string mGenerateMips2DPSOName = "ER_RHI_GPUPipelineStateObject: Generate Mips 2D";
 
+		ER_RHI_GPURootSignature* mGenerateMips3DRS = nullptr;
+		ER_RHI_GPUShader* mGenerateMips3DCS = nullptr;
+		std::string mGenerateMips3DPSOName = "ER_RHI_GPUPipelineStateObject: Generate Mips 3D";
+
 		ER_RHI_GPUTexture* mGenerateMipsWithReplacementReadyTexturesPool[DX12_MAX_GENERATE_MIPS_TEXTURES_IN_POOL] = { nullptr };
 		std::function<void(ER_RHI_GPUTexture*)> mGenerateMipsWithReplacementCallbacks[DX12_MAX_GENERATE_MIPS_TEXTURES_IN_POOL];
 		int mGenerateMipsWithReplacementCurrentTextureIndexInPool = 0; // should be atomic (in the future), at the moment we do not use multithreading for submitting mip generation commands

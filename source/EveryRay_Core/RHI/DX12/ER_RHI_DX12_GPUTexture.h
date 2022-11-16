@@ -43,6 +43,7 @@ namespace EveryRay_Core
 
 		bool IsLoadedFromFile() { return mIsLoadedFromFile; }
 		const std::wstring& GetDebugName() { return mDebugName; }
+		int GetBackBufferIndex() { return mBackBufferIndex; }
 	private:
 		void LoadFallbackTexture(ER_RHI* aRHI);
 
@@ -68,6 +69,8 @@ namespace EveryRay_Core
 		bool mIsCubemap = false;
 		bool mIsDepthStencil = false;
 		bool mIsLoadedFromFile = false;
+
+		int mBackBufferIndex; //which heap we create our handles from etc. (only for non-loaded texture resources)
 
 		std::wstring mDebugName;
 	};

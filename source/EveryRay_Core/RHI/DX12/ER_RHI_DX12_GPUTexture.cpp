@@ -29,12 +29,13 @@ namespace EveryRay_Core
 		mArraySize = arraySize;
 		mMipLevels = mip;
 		mBindFlags = bindFlags;
-		mDepth = depth;
+		mDepth = depth == -1 ? 0 : depth;
 		mWidth = width;
 		mHeight = height;
 		mIsCubemap = isCubemap;
 		mIsDepthStencil = bindFlags & ER_BIND_DEPTH_STENCIL;
 		mFormat = aRHIDX12->GetFormat(format);
+		mBackBufferIndex = ER_RHI_DX12::mBackBufferIndex;
 
 		DXGI_FORMAT depthstencil_tex_format;
 		DXGI_FORMAT depthstencil_srv_format;

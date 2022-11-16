@@ -24,6 +24,8 @@ namespace EveryRay_Core
 		WaitForGpuOnGraphicsFence();
 		DeleteObject(mGenerateMips2DCS);
 		DeleteObject(mGenerateMips2DRS);
+		DeleteObject(mGenerateMips3DCS);
+		DeleteObject(mGenerateMips3DRS);
 		for (int i =0; i < DX12_MAX_GENERATE_MIPS_TEXTURES_IN_POOL; i++)
 		{
 			DeleteObject(mGenerateMipsWithReplacementReadyTexturesPool[i]);
@@ -260,10 +262,13 @@ namespace EveryRay_Core
 
 		ResetDescriptorManager();
 
-		//generate mips 2D state and rs
+		//generate mips 2D/3D state and rs
 		{
 			mGenerateMips2DCS = CreateGPUShader();
 			mGenerateMips2DCS->CompileShader(this, "content\\shaders\\GenerateMips2D.hlsl", "CSMain", ER_COMPUTE);
+
+			mGenerateMips3DCS = CreateGPUShader();
+			mGenerateMips3DCS->CompileShader(this, "content\\shaders\\GenerateMips3D.hlsl", "CSMain", ER_COMPUTE);
 
 			mGenerateMips2DRS = CreateRootSignature(3, 1);
 			if (mGenerateMips2DRS)
@@ -273,6 +278,16 @@ namespace EveryRay_Core
 				mGenerateMips2DRS->InitDescriptorTable(this, 1, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 });
 				mGenerateMips2DRS->InitConstant(this, 2, 0, 3);
 				mGenerateMips2DRS->Finalize(this, "ER_RHI_GPURootSignature: Generate Mips 2D");
+			}
+
+			mGenerateMips3DRS = CreateRootSignature(3, 1);
+			if (mGenerateMips3DRS)
+			{
+				mGenerateMips3DRS->InitStaticSampler(this, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP);
+				mGenerateMips3DRS->InitDescriptorTable(this, 0, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 });
+				mGenerateMips3DRS->InitDescriptorTable(this, 1, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 });
+				mGenerateMips3DRS->InitConstant(this, 2, 0, 4);
+				mGenerateMips3DRS->Finalize(this, "ER_RHI_GPURootSignature: Generate Mips 3D");
 			}
 		}
 
@@ -439,6 +454,7 @@ namespace EveryRay_Core
 		assert(aDepthTarget);
 		ER_RHI_DX12_GPUTexture* dtDX12 = static_cast<ER_RHI_DX12_GPUTexture*>(aDepthTarget);
 		assert(dtDX12);
+		TransitionResources({ aDepthTarget }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_DEPTH_WRITE);
 		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->ClearDepthStencilView(dtDX12->GetDSVHandle().GetCPUHandle(), (stencil == -1) ? D3D12_CLEAR_FLAG_DEPTH : D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, depth, stencil, 0, nullptr);
 	}
 
@@ -449,12 +465,28 @@ namespace EveryRay_Core
 		ER_RHI_DX12_GPUTexture* uavDX12 = static_cast<ER_RHI_DX12_GPUTexture*>(aRenderTarget);
 		assert(uavDX12);
 
+		if (uavDX12->GetBackBufferIndex() != mBackBufferIndex)
+			return; //quick fix for not touching the resource that was created on a different back buffer's heap
+
 		TransitionResources({ aRenderTarget }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_UNORDERED_ACCESS, mCurrentGraphicsCommandListIndex);
 
-		D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = uavDX12->GetUAVHandle().GetCPUHandle();
-		D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = uavDX12->GetUAVHandleGPU().GetGPUHandle();
+		if (uavDX12->GetMips() == 0)
+		{
+			D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = uavDX12->GetUAVHandle().GetCPUHandle();
+			D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = uavDX12->GetUAVHandleGPU().GetGPUHandle();
 
-		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->ClearUnorderedAccessViewFloat(gpuHandle, cpuHandle,	static_cast<ID3D12Resource*>(uavDX12->GetResource()), colors, 0, nullptr);
+			mCommandListGraphics[mCurrentGraphicsCommandListIndex]->ClearUnorderedAccessViewFloat(gpuHandle, cpuHandle, static_cast<ID3D12Resource*>(uavDX12->GetResource()), colors, 0, nullptr);
+		}
+		else
+		{
+			for (int i = 0; i < static_cast<int>(uavDX12->GetMips()); i++)
+			{
+				D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = uavDX12->GetUAVHandle(i).GetCPUHandle();
+				D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = uavDX12->GetUAVHandleGPU(i).GetGPUHandle();
+
+				mCommandListGraphics[mCurrentGraphicsCommandListIndex]->ClearUnorderedAccessViewFloat(gpuHandle, cpuHandle, static_cast<ID3D12Resource*>(uavDX12->GetResource()), colors, 0, nullptr);
+			}
+		}
 	}
 
 	ER_RHI_InputLayout* ER_RHI_DX12::CreateInputLayout(ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount)
@@ -666,23 +698,30 @@ namespace EveryRay_Core
 
 		UINT srcWidth = aTexture->GetWidth();
 		UINT srcHeight = aTexture->GetHeight();
-		UINT mipCount = aTexture->GetCalculatedMipCount();
+		UINT srcDepth = aTexture->GetDepth();
+		bool is3D = srcDepth > 0;
+		if (is3D && (srcDepth != srcHeight || srcDepth != srcWidth))
+			return;
 
+		UINT mipCount = (aTexture->GetMips() > 1) ? aTexture->GetMips() : aTexture->GetCalculatedMipCount();
 		assert(mipCount > 1);
 
 		TransitionResources({ aTexture }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_UNORDERED_ACCESS, mCurrentGraphicsCommandListIndex);
 
 		auto cmdList = mCommandListGraphics[mCurrentGraphicsCommandListIndex];
 
-		SetRootSignature(mGenerateMips2DRS, true);
-		if (!IsPSOReady(mGenerateMips2DPSOName, true))
+		const std::string& psoName = is3D ? mGenerateMips3DPSOName : mGenerateMips2DPSOName;
+		ER_RHI_GPURootSignature* rs = is3D ? mGenerateMips3DRS : mGenerateMips2DRS;
+
+		SetRootSignature(rs, true);
+		if (!IsPSOReady(psoName, true))
 		{
-			InitializePSO(mGenerateMips2DPSOName, true);
-			SetRootSignatureToPSO(mGenerateMips2DPSOName, mGenerateMips2DRS, true);
-			SetShader(mGenerateMips2DCS);
-			FinalizePSO(mGenerateMips2DPSOName, true);
+			InitializePSO(psoName, true);
+			SetRootSignatureToPSO(psoName, rs, true);
+			SetShader(is3D ? mGenerateMips3DCS : mGenerateMips2DCS);
+			FinalizePSO(psoName, true);
 		}
-		SetPSO(mGenerateMips2DPSOName, true);
+		SetPSO(psoName, true);
 		for (UINT mip = 0; mip < mipCount; mip++)
 		{
 			if (!isSRGB && mip == 0)
@@ -690,14 +729,17 @@ namespace EveryRay_Core
 
 			UINT dstWidth = std::max(srcWidth >> mip, 1u);
 			UINT dstHeight = std::max(srcHeight >> mip, 1u);
+			UINT dstDepth = is3D ? std::max(srcDepth >> mip, 1u) : 1u;
 
 			cmdList->SetComputeRoot32BitConstant(rootParamIndexConstant, dstWidth, 0);
 			cmdList->SetComputeRoot32BitConstant(rootParamIndexConstant, dstHeight, 1);
-			cmdList->SetComputeRoot32BitConstant(rootParamIndexConstant, /*TODO isSRGB ? 1 : */0, 2);
-			SetShaderResources(ER_COMPUTE, { (isSRGB && aSRGBTexture) ? aSRGBTexture : aTexture }, 0, mGenerateMips2DRS, rootParamIndexSrv, true);
-			SetUnorderedAccessResources(ER_COMPUTE, { aTexture }, mip, mGenerateMips2DRS, rootParamIndexUav, true);
+			if (is3D)
+				cmdList->SetComputeRoot32BitConstant(rootParamIndexConstant, dstDepth, 2);
+			cmdList->SetComputeRoot32BitConstant(rootParamIndexConstant, /*TODO isSRGB ? 1 : */0, is3D ? 3 : 2);
+			SetShaderResources(ER_COMPUTE, { (isSRGB && aSRGBTexture) ? aSRGBTexture : aTexture }, 0, rs, rootParamIndexSrv, true);
+			SetUnorderedAccessResources(ER_COMPUTE, { aTexture }, mip, rs, rootParamIndexUav, true);
 
-			Dispatch(ER_CEIL(dstWidth, 8), ER_CEIL(dstHeight, 8), 1);
+			Dispatch(ER_CEIL(dstWidth, 8), ER_CEIL(dstHeight, 8), is3D ? ER_CEIL(dstDepth, 8) : 1u);
 
 			cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::UAV(static_cast<ID3D12Resource*>(aTexture->GetResource())));
 		}
@@ -867,7 +909,7 @@ namespace EveryRay_Core
 		else
 		{
 			assert(0);
-			//TODO: OMSetRenderTargetsAndUnorderedAccessViews() is not available on DX12
+			//TODO: OMSetRenderTargetsAndUnorderedAccessViews() is not available on DX12, use SetUnorderedAccessResources() instead
 		}
 	}
 
@@ -2136,5 +2178,8 @@ namespace EveryRay_Core
 
 		depthStencilStateDesc.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
 		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_ALWAYS, depthStencilStateDesc));
+
+		depthStencilStateDesc.DepthEnable = FALSE;
+		mDepthStates.insert(std::make_pair(ER_RHI_DEPTH_STENCIL_STATE::ER_DISABLED, depthStencilStateDesc));
 	}
 }

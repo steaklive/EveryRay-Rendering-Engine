@@ -59,7 +59,7 @@ static const std::string voxelizationPSONames[NUM_VOXEL_GI_CASCADES] =
 
 namespace EveryRay_Core {
 
-	const float voxelCascadesSizes[NUM_VOXEL_GI_CASCADES] = { 256.0f, 256.0f };
+	const float voxelCascadesSizes[NUM_VOXEL_GI_CASCADES] = { 128.0, 128.0 };
 
 	ER_Illumination::ER_Illumination(ER_Core& game, ER_Camera& camera, const ER_DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const ER_Scene* scene)
 		: 
@@ -87,8 +87,11 @@ namespace EveryRay_Core {
 		DeleteObject(mForwardLightingSpecularProbesPS);
 		DeleteObject(mForwardLightingRenderingObjectInputLayout);
 		DeleteObject(mForwardLightingRenderingObjectInputLayout_Instancing);
-		DeletePointerCollection(mVCTVoxelCascades3DRTs);
-		DeletePointerCollection(mDebugVoxelZonesGizmos);
+		for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
+		{
+			DeleteObject(mVCTVoxelCascades3DRTs[i]);
+			DeleteObject(mDebugVoxelZonesGizmos[i]);
+		}
 		DeleteObject(mVCTVoxelizationDebugRT);
 		DeleteObject(mVCTMainRT);
 		DeleteObject(mVCTUpsampleAndBlurRT);
@@ -193,17 +196,17 @@ namespace EveryRay_Core {
 		{
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 			{
-				mVCTVoxelCascades3DRTs.push_back(rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Voxel Cone Tracing 3D Cascade #" + std::to_wstring(i)));
+				mVCTVoxelCascades3DRTs[i] = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Voxel Cone Tracing 3D Cascade #" + std::to_wstring(i));
 				mVCTVoxelCascades3DRTs[i]->CreateGPUTextureResource(rhi, voxelCascadesSizes[i], voxelCascadesSizes[i], 1u,
 					ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET | ER_BIND_UNORDERED_ACCESS, 6, voxelCascadesSizes[i]);
 				
 				mVoxelCameraPositions[i] = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f);
 				
-				mDebugVoxelZonesGizmos.push_back(new ER_RenderableAABB(*mCore, XMFLOAT4(0.1f, 0.34f, 0.1f, 1.0f)));
+				mDebugVoxelZonesGizmos[i] = new ER_RenderableAABB(*mCore, XMFLOAT4(0.1f, 0.34f, 0.1f, 1.0f));
 				float maxBB = voxelCascadesSizes[i] / mWorldVoxelScales[i] * 0.5f;
-				mVoxelCascadesAABBs[i].first = XMFLOAT3(-maxBB, -maxBB, -maxBB);
-				mVoxelCascadesAABBs[i].second = XMFLOAT3(maxBB, maxBB, maxBB);
-				mDebugVoxelZonesGizmos[i]->InitializeGeometry({ mVoxelCascadesAABBs[i].first, mVoxelCascadesAABBs[i].second });
+				mLocalVoxelCascadesAABBs[i].first = XMFLOAT3(-maxBB, -maxBB, -maxBB);
+				mLocalVoxelCascadesAABBs[i].second = XMFLOAT3(maxBB, maxBB, maxBB);
+				mDebugVoxelZonesGizmos[i]->InitializeGeometry({ mLocalVoxelCascadesAABBs[i].first, mLocalVoxelCascadesAABBs[i].second });
 			}
 			mVCTMainRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Voxel Cone Tracing Main RT");
 			mVCTMainRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()) * VCT_GI_MAIN_PASS_DOWNSCALE, static_cast<UINT>(mCore->ScreenHeight()) * VCT_GI_MAIN_PASS_DOWNSCALE, 1u, 
@@ -231,12 +234,13 @@ namespace EveryRay_Core {
 
 		// Root-signatures
 		{
-			mVoxelizationRS = rhi->CreateRootSignature(2, 2);
+			mVoxelizationRS = rhi->CreateRootSignature(3, 2);
 			if (mVoxelizationRS)
 			{
 				mVoxelizationRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_ALL);
 				mVoxelizationRS->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SHADER_VISIBILITY_ALL);
 				mVoxelizationRS->InitDescriptorTable(rhi, VOXELIZATION_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				mVoxelizationRS->InitDescriptorTable(rhi, VOXELIZATION_MAT_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mVoxelizationRS->InitDescriptorTable(rhi, VOXELIZATION_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mVoxelizationRS->Finalize(rhi, "ER_RHI_GPURootSignature: VoxelizationMaterial Pass", true);
 			}
@@ -379,7 +383,11 @@ namespace EveryRay_Core {
 				ER_RHI_Rect vctRect = { 0.0f, 0.0f, voxelCascadesSizes[cascade], voxelCascadesSizes[cascade] };
 				rhi->SetRect(vctRect);
 
-				rhi->SetRenderTargets({}, nullptr, mVCTVoxelCascades3DRTs[cascade]);
+				if (rhi->GetAPI() == ER_GRAPHICS_API::DX11)
+					rhi->SetRenderTargets({}, nullptr, mVCTVoxelCascades3DRTs[cascade]);
+				else
+					rhi->SetUnorderedAccessResources(ER_PIXEL, { mVCTVoxelCascades3DRTs[cascade] }, 0, mVoxelizationRS, VOXELIZATION_MAT_ROOT_DESCRIPTOR_TABLE_UAV_INDEX);
+
 				rhi->ClearUAV(mVCTVoxelCascades3DRTs[cascade], clearColorBlack);
 
 				std::string materialName = ER_MaterialHelper::voxelizationMaterialName + "_" + std::to_string(cascade);
@@ -417,10 +425,10 @@ namespace EveryRay_Core {
 				}
 
 				//voxelize extra objects
-				{
-					if (cascade == 0 && mFoliageSystem)
-						mFoliageSystem->Draw(gameTime, &mShadowMapper, FoliageRenderingPass::FOLIAGE_VOXELIZATION, {});
-				}
+				//{
+				//	if (cascade == 0 && mFoliageSystem)
+				//		mFoliageSystem->Draw(gameTime, &mShadowMapper, FoliageRenderingPass::FOLIAGE_VOXELIZATION, {});
+				//}
 
 				//reset back
 				rhi->UnbindResourcesFromShader(ER_VERTEX);
@@ -434,12 +442,13 @@ namespace EveryRay_Core {
 		}
 		
 		//voxelization debug
+		//TODO: for some reason not working on DX12
 		if (mShowVCTVoxelizationOnly) 
 		{
 			rhi->SetRootSignature(mVoxelizationDebugRS);
 			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_POINTLIST);
 
-			int cascade = 0; //TODO fix for multiple cascades
+			int cascade = 0; //TODO fix for other cascades
 			{
 				float sizeTranslateShift = -voxelCascadesSizes[cascade] / mWorldVoxelScales[cascade] * 0.5f;
 				mVoxelizationDebugConstantBuffer.Data.WorldVoxelCube =
@@ -452,6 +461,7 @@ namespace EveryRay_Core {
 
 				rhi->ClearRenderTarget(mVCTVoxelizationDebugRT, clearColorBlack);
 				rhi->ClearDepthStencilTarget(mDepthBuffer, 1.0f, 0);
+				rhi->SetRenderTargets({ mVCTVoxelizationDebugRT }, mDepthBuffer);
 
 				if (!rhi->IsPSOReady(mVoxelizationDebugPSOName))
 				{
@@ -461,7 +471,7 @@ namespace EveryRay_Core {
 					rhi->SetShader(mVCTVoxelizationDebugPS);
 					rhi->SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE::ER_DISABLED);
 					rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_BACK_CULLING);
-					rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_POINTLIST);
+					rhi->SetTopologyTypeToPSO(mVoxelizationDebugPSOName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_POINTLIST);
 					rhi->SetEmptyInputLayout();
 					rhi->SetRenderTargetFormats({ mVCTVoxelizationDebugRT }, mDepthBuffer);
 					rhi->SetRootSignatureToPSO(mVoxelizationDebugPSOName, mVoxelizationDebugRS);
@@ -493,8 +503,6 @@ namespace EveryRay_Core {
 				mVoxelConeTracingMainConstantBuffer.Data.WorldVoxelScales[i] = XMFLOAT4(mWorldVoxelScales[i], 0.0, 0.0, 0.0);
 			}
 
-			rhi->SetRootSignature(mVCTRS, true);
-
 			mVoxelConeTracingMainConstantBuffer.Data.CameraPos = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1);
 			mVoxelConeTracingMainConstantBuffer.Data.UpsampleRatio = XMFLOAT2(1.0f / VCT_GI_MAIN_PASS_DOWNSCALE, 1.0f / VCT_GI_MAIN_PASS_DOWNSCALE);
 			mVoxelConeTracingMainConstantBuffer.Data.IndirectDiffuseStrength = mVCTIndirectDiffuseStrength;
@@ -507,11 +515,11 @@ namespace EveryRay_Core {
 			mVoxelConeTracingMainConstantBuffer.Data.pad0 = XMFLOAT3(0, 0, 0);
 			mVoxelConeTracingMainConstantBuffer.ApplyChanges(rhi);
 
+			rhi->SetRootSignature(mVCTRS, true);
 			if (!rhi->IsPSOReady(mVCTMainPSOName, true))
 			{
 				rhi->InitializePSO(mVCTMainPSOName, true);
 				rhi->SetShader(mVCTMainCS);
-				rhi->SetRenderTargetFormats({});
 				rhi->SetRootSignatureToPSO(mVCTMainPSOName, mVCTRS, true);
 				rhi->FinalizePSO(mVCTMainPSOName, true);
 			}
@@ -538,12 +546,10 @@ namespace EveryRay_Core {
 			mUpsampleBlurConstantBuffer.ApplyChanges(rhi);
 
 			rhi->SetRootSignature(mUpsampleAndBlurRS, true);
-
 			if (!rhi->IsPSOReady(mUpsampleBlurPSOName, true))
 			{
 				rhi->InitializePSO(mUpsampleBlurPSOName, true);
 				rhi->SetShader(mUpsampleBlurCS);
-				rhi->SetRenderTargetFormats({});
 				rhi->SetRootSignatureToPSO(mUpsampleBlurPSOName, mUpsampleAndBlurRS, true);
 				rhi->FinalizePSO(mUpsampleBlurPSOName, true);
 			}
@@ -632,6 +638,17 @@ namespace EveryRay_Core {
 			}
 		}
 
+		for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
+		{
+			mWorldVoxelCascadesAABBs[cascade] = mLocalVoxelCascadesAABBs[cascade];
+			mWorldVoxelCascadesAABBs[cascade].first.x += mVoxelCameraPositions[cascade].x;
+			mWorldVoxelCascadesAABBs[cascade].first.y += mVoxelCameraPositions[cascade].y;
+			mWorldVoxelCascadesAABBs[cascade].first.z += mVoxelCameraPositions[cascade].z;
+			mWorldVoxelCascadesAABBs[cascade].second.x += mVoxelCameraPositions[cascade].x;
+			mWorldVoxelCascadesAABBs[cascade].second.y += mVoxelCameraPositions[cascade].y;
+			mWorldVoxelCascadesAABBs[cascade].second.z += mVoxelCameraPositions[cascade].z;
+		}
+
 		CPUCullObjectsAgainstVoxelCascades(scene);
 		UpdateVoxelCameraPosition();
 		UpdateImGui();
@@ -700,6 +717,9 @@ namespace EveryRay_Core {
 			{
 				mVoxelCameraPositions[i] = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f);
 				mIsVCTVoxelCameraPositionsUpdated = true;
+
+				if (mDebugVoxelZonesGizmos[i])
+					mDebugVoxelZonesGizmos[i]->Update(mWorldVoxelCascadesAABBs[i]);
 			}
 			else
 				mIsVCTVoxelCameraPositionsUpdated = false;
@@ -920,6 +940,9 @@ namespace EveryRay_Core {
 		{
 			for (auto& objectInfo : scene->objects)
 			{
+				if (!objectInfo.second->IsInVoxelization())
+					continue;
+
 				auto aabbObj = objectInfo.second->GetLocalAABB();
 				XMFLOAT3 position;
 				ER_MatrixHelper::GetTranslation(objectInfo.second->GetTransformationMatrix(), position);
@@ -930,33 +953,10 @@ namespace EveryRay_Core {
 				aabbObj.second.y += position.y;
 				aabbObj.second.z += position.z;
 
-				//check if exists in previous cascade container
-				if (cascade > 0)
-				{
-					auto it = mVoxelizationObjects[cascade - 1].find(objectInfo.first);
-					if (it != mVoxelizationObjects[cascade - 1].end())
-					{
-						//check if should be removed from current cascade container
-						auto it2 = mVoxelizationObjects[cascade].find(objectInfo.first);
-						if (it2 != mVoxelizationObjects[cascade].end())
-							mVoxelizationObjects[cascade].erase(it2);
-						
-						continue;
-					}
-				}
-
-				auto aabbCascade = mVoxelCascadesAABBs[cascade];
-				aabbCascade.first.x += mVoxelCameraPositions[cascade].x;
-				aabbCascade.first.y += mVoxelCameraPositions[cascade].y;
-				aabbCascade.first.z += mVoxelCameraPositions[cascade].z;		
-				aabbCascade.second.x += mVoxelCameraPositions[cascade].x;
-				aabbCascade.second.y += mVoxelCameraPositions[cascade].y;
-				aabbCascade.second.z += mVoxelCameraPositions[cascade].z;
-
 				bool isColliding =
-					(aabbObj.first.x <= aabbCascade.second.x && aabbObj.second.x >= aabbCascade.first.x) &&
-					(aabbObj.first.y <= aabbCascade.second.y && aabbObj.second.y >= aabbCascade.first.y) &&
-					(aabbObj.first.z <= aabbCascade.second.z && aabbObj.second.z >= aabbCascade.first.z);
+					(aabbObj.first.x <= mWorldVoxelCascadesAABBs[cascade].second.x && aabbObj.second.x >= mWorldVoxelCascadesAABBs[cascade].first.x) &&
+					(aabbObj.first.y <= mWorldVoxelCascadesAABBs[cascade].second.y && aabbObj.second.y >= mWorldVoxelCascadesAABBs[cascade].first.y) &&
+					(aabbObj.first.z <= mWorldVoxelCascadesAABBs[cascade].second.z && aabbObj.second.z >= mWorldVoxelCascadesAABBs[cascade].first.z);
 
 				auto it = mVoxelizationObjects[cascade].find(objectInfo.first);
 				if (isColliding && (it == mVoxelizationObjects[cascade].end()))
