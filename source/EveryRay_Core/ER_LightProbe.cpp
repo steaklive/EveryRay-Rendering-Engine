@@ -106,9 +106,11 @@ namespace EveryRay_Core
 			(mPosition.z > aMax.z || mPosition.z < aMin.z);
 	}
 
-#ifdef ER_PLATFORM_WIN64_DX11
 	void ER_LightProbe::StoreSphericalHarmonicsFromCubemap(ER_Core& game, ER_RHI_GPUTexture* aTextureConvoluted)
 	{
+		if (game.GetRHI()->GetAPI() != ER_GRAPHICS_API::DX11)
+			throw ER_CoreException("Storing SH from cubemap is only available on DX11 at the moment.");
+
 		assert(aTextureConvoluted);
 
 		ER_RHI* rhi = game.GetRHI();
@@ -134,6 +136,9 @@ namespace EveryRay_Core
 	void ER_LightProbe::Compute(ER_Core& game, ER_RHI_GPUTexture* aTextureNonConvoluted, ER_RHI_GPUTexture* aTextureConvoluted,
 		ER_RHI_GPUTexture** aDepthBuffers, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, ER_QuadRenderer* quadRenderer, ER_Skybox* skybox)
 	{
+		if (game.GetRHI()->GetAPI() != ER_GRAPHICS_API::DX11)
+			throw ER_CoreException("Computing light probes is only available on DX11 at the moment.");
+
 		if (mIsProbeLoadedFromDisk)
 			return;
 
@@ -172,6 +177,9 @@ namespace EveryRay_Core
 	void ER_LightProbe::DrawGeometryToProbe(ER_Core& game, ER_RHI_GPUTexture* aTextureNonConvoluted, ER_RHI_GPUTexture** aDepthBuffers,
 		const LightProbeRenderingObjectsInfo& objectsToRender, ER_Skybox* skybox)
 	{
+		if (game.GetRHI()->GetAPI() != ER_GRAPHICS_API::DX11)
+			throw ER_CoreException("Rendering to light probes is only available on DX11 at the moment.");
+
 		ER_RHI* rhi = game.GetRHI();
 		float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		bool isGlobal = (mIndex == -1);
@@ -181,6 +189,8 @@ namespace EveryRay_Core
 		ER_MaterialSystems matSystems;
 		matSystems.mDirectionalLight = mDirectionalLight;
 		matSystems.mShadowMapper = mShadowMapper;
+
+		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		//draw world to probe
 		for (int cubeMapFaceIndex = 0; cubeMapFaceIndex < CUBEMAP_FACES_COUNT; cubeMapFaceIndex++)
@@ -236,6 +246,9 @@ namespace EveryRay_Core
 
 	void ER_LightProbe::ConvoluteProbe(ER_Core& game, ER_QuadRenderer* quadRenderer, ER_RHI_GPUTexture* aTextureNonConvoluted, ER_RHI_GPUTexture* aTextureConvoluted)
 	{
+		if (game.GetRHI()->GetAPI() != ER_GRAPHICS_API::DX11)
+			throw ER_CoreException("Convoluting light probes is only available on DX11 at the moment.");
+
 		int mipCount = -1;
 		if (mProbeType == SPECULAR_PROBE)
 			mipCount = SPECULAR_PROBE_MIP_COUNT;
@@ -275,7 +288,10 @@ namespace EveryRay_Core
 				rhi->SetConstantBuffers(ER_PIXEL, { mConvolutionCB.Buffer() });
 
 				if (quadRenderer)
+				{
+					quadRenderer->PrepareDraw(rhi);
 					quadRenderer->Draw(rhi);
+				}
 
 				currentSize >>= 1;
 			}
@@ -288,6 +304,9 @@ namespace EveryRay_Core
 
 	void ER_LightProbe::SaveProbeOnDisk(ER_Core& game, const std::wstring& levelPath, ER_RHI_GPUTexture* aTextureConvoluted)
 	{
+		if (game.GetRHI()->GetAPI() != ER_GRAPHICS_API::DX11)
+			throw ER_CoreException("Saving light probes is only available on DX11 at the moment.");
+
 		bool saveAsSphericalHarmonics = mProbeType == DIFFUSE_PROBE && mIndex != -1;
 		std::wstring probeName = GetConstructedProbeName(levelPath, saveAsSphericalHarmonics);
 
@@ -348,7 +367,6 @@ namespace EveryRay_Core
 				throw ER_CoreException("Could not load probe that was already generated :(");
 		}
 	}
-#endif
 
 	// Method for loading probe from disk in 2 ways: spherical harmonics coefficients and light probe cubemap texture
 	bool ER_LightProbe::LoadProbeFromDisk(ER_Core& game, const std::wstring& levelPath)

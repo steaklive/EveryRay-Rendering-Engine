@@ -11,17 +11,15 @@ namespace EveryRay_Core
 	class ER_Camera;
 
 	namespace RenderToLightProbeMaterial_CBufferData {
-		struct ER_ALIGN_GPU_BUFFER RenderToLightProbeCB
+		struct ER_ALIGN_GPU_BUFFER RenderToLightProbeCB //must match with ER_Illumination::ForwardLightingCB
 		{
 			XMMATRIX ShadowMatrices[NUM_SHADOW_CASCADES];
 			XMMATRIX ViewProjection;
-			XMMATRIX World;
 			XMFLOAT4 ShadowTexelSize;
 			XMFLOAT4 ShadowCascadeDistances;
 			XMFLOAT4 SunDirection;
 			XMFLOAT4 SunColor;
 			XMFLOAT4 CameraPosition;
-			float UseGlobalDiffuseProbe;
 		};
 	}
 	class ER_RenderToLightProbeMaterial : public ER_Material

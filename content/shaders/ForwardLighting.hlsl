@@ -280,7 +280,7 @@ int GetPOMRayStepsCount(float3 worldPos, float3 normal)
     return numLayers;
 }
 
-float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex = -1, bool isSpecularProbeRendering = false)
+float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex = -1, bool isFakeAmbient = false)
 {
     float3x3 TBN = float3x3(vsOutput.Tangent, cross(vsOutput.Normal, vsOutput.Tangent), vsOutput.Normal);
     float2 texCoord = vsOutput.UV;
@@ -325,8 +325,8 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
     float3 directLighting = DirectLightingPBR(normalWS, SunColor, SunDirection.xyz, diffuseAlbedo.rgb, vsOutput.WorldPos, roughness, F0, metalness, CameraPosition.xyz);
     
     float3 indirectLighting = float3(0, 0, 0);
-    if (isSpecularProbeRendering)
-        indirectLighting = float3(0.05f, 0.05f, 0.05f) * diffuseAlbedo; //fake ambient term
+    if (isFakeAmbient)
+        indirectLighting = float3(0.02f, 0.02f, 0.02f) * diffuseAlbedo;
     
     if (IBL && SkipIndirectProbeLighting <= 0.0f)
     {
@@ -372,7 +372,7 @@ float3 PSMain(VS_OUTPUT vsOutput) : SV_Target0
 float3 PSMain_DiffuseProbes(VS_OUTPUT vsOutput) : SV_Target0
 {
     //since we dont do tonemapping for probe rendering, run gamma correction
-    return GetGammaCorrectColor(GetFinalColor(vsOutput, false, -2));
+    return GetGammaCorrectColor(GetFinalColor(vsOutput, false, NUM_OF_SHADOW_CASCADES - 1, true));
 }
 float3 PSMain_SpecularProbes(VS_OUTPUT vsOutput) : SV_Target0
 {
