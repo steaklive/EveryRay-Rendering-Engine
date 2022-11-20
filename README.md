@@ -75,7 +75,6 @@ I originally started developing this project on DX11 several years ago with the 
 ![picture](screenshots/EveryRayTerrain.png)
 ![picture](screenshots/EveryRayMaterials.png)
 ![picture](screenshots/EveryRayWater.png)
-![picture](screenshots/EveryRayCollisionDetection.png)
 
 # Controls
 - "Mouse + Right Click" or "Right Thumbstick" - camera rotation
