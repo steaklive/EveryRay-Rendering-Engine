@@ -200,11 +200,11 @@ namespace EveryRay_Core
 		mAlbedoTexture = rhi->CreateGPUTexture(L"");
 		mAlbedoTexture->CreateGPUTextureResource(rhi, textureName, true);
 		rhi->GenerateMipsWithTextureReplacement(&mAlbedoTexture,
-			[this](ER_RHI_GPUTexture* aNewTextureWithMips)
+			[this](ER_RHI_GPUTexture** aNewTextureWithMips)
 			{
-				assert(aNewTextureWithMips);
+				assert(*aNewTextureWithMips);
 				DeleteObject(mAlbedoTexture);
-				mAlbedoTexture = aNewTextureWithMips;
+				mAlbedoTexture = *aNewTextureWithMips;
 			}
 		);
 	}

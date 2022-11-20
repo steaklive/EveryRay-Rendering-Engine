@@ -619,6 +619,12 @@
     <FxCompile Include="..\..\content\shaders\SSS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="..\..\content\shaders\ClearUAV2D.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\ClearUAV3D.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
     <FxCompile Include="..\..\content\shaders\GenerateMips2D.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>

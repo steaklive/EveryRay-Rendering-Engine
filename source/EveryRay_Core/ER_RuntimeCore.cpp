@@ -102,7 +102,7 @@ namespace EveryRay_Core
 
 		ER_Core::Initialize();
 		LoadGlobalLevelsConfig();
-		SetLevel(mStartupSceneName);
+		SetLevel(mStartupSceneName, true);
 	}
 
 	void ER_RuntimeCore::LoadGlobalLevelsConfig()
@@ -146,7 +146,7 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_RuntimeCore::SetLevel(const std::string& aSceneName)
+	void ER_RuntimeCore::SetLevel(const std::string& aSceneName, bool isFirstLoad)
 	{
 		mCurrentSceneName = aSceneName;
 		mCamera->Reset();
@@ -155,6 +155,15 @@ namespace EveryRay_Core
 		{
 			mCurrentSandbox->Destroy(*this);
 			DeleteObject(mCurrentSandbox);
+		}
+
+		if (mRHI && !isFirstLoad)
+		{
+			mRHI->ResetRHI(mScreenWidth, mScreenHeight, mIsFullscreen);
+			mRHI->ResetReplacementMippedTexturesPool();
+			mRHI->ResetDescriptorManager();
+
+			mIsRHIReset = true;
 		}
 
 		mCurrentSandbox = new ER_Sandbox();
@@ -170,6 +179,8 @@ namespace EveryRay_Core
 	void ER_RuntimeCore::Update(const ER_CoreTime& gameTime)
 	{
 		assert(mCurrentSandbox);
+		if (mIsRHIReset)
+			mIsRHIReset = false;
 
 		auto startUpdateTimer = std::chrono::high_resolution_clock::now();
 
@@ -184,9 +195,11 @@ namespace EveryRay_Core
 		ER_Core::Update(gameTime); //engine components (input, camera, etc.);
 		mCurrentSandbox->Update(*this, gameTime); //level components (rendering systems, culling, etc.)
 
-		mRHI->EndGraphicsCommandList(updateCommandList);
-		mRHI->ExecuteCommandLists(updateCommandList); // it will wait for GPU on a copy fence in this method, too
-
+		if (!mIsRHIReset)
+		{
+			mRHI->EndGraphicsCommandList(updateCommandList);
+			mRHI->ExecuteCommandLists(updateCommandList); // it will wait for GPU on a copy fence in this method, too
+		}
 		auto endUpdateTimer = std::chrono::high_resolution_clock::now();
 		mElapsedTimeUpdateCPU = endUpdateTimer - startUpdateTimer;
 

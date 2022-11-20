@@ -27,7 +27,7 @@ namespace EveryRay_Core
 	
 	private:
 		void LoadGlobalLevelsConfig();
-		void SetLevel(const std::string& aSceneName);
+		void SetLevel(const std::string& aSceneName, bool isFirstLoad = false);
 		void UpdateImGui();
 
 		static const XMVECTORF32 BackgroundColor;
@@ -56,5 +56,6 @@ namespace EveryRay_Core
 
 		bool mShowProfiler;
 		bool mShowCameraSettings = true;
+		bool mIsRHIReset = false;
 	};
 }

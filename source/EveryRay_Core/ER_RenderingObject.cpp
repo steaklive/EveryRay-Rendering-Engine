@@ -260,11 +260,11 @@ namespace EveryRay_Core
 			if (!isPlaceholder)
 			{
 				rhi->GenerateMipsWithTextureReplacement(&mMeshesTextureBuffers[meshIndex].AlbedoMap,
-					[this, meshIndex](ER_RHI_GPUTexture* aNewTextureWithMips)
+					[this, meshIndex](ER_RHI_GPUTexture** aNewTextureWithMips)
 					{
-						assert(aNewTextureWithMips);
+						assert(*aNewTextureWithMips);
 						DeleteObject(mMeshesTextureBuffers[meshIndex].AlbedoMap);
-						mMeshesTextureBuffers[meshIndex].AlbedoMap = aNewTextureWithMips;
+						mMeshesTextureBuffers[meshIndex].AlbedoMap = *aNewTextureWithMips;
 					}
 				);
 			}
@@ -277,11 +277,11 @@ namespace EveryRay_Core
 			if (!isPlaceholder)
 			{
 				rhi->GenerateMipsWithTextureReplacement(&mMeshesTextureBuffers[meshIndex].NormalMap,
-					[this, meshIndex](ER_RHI_GPUTexture* aNewTextureWithMips)
+					[this, meshIndex](ER_RHI_GPUTexture** aNewTextureWithMips)
 					{
-						assert(aNewTextureWithMips);
+						assert(*aNewTextureWithMips);
 						DeleteObject(mMeshesTextureBuffers[meshIndex].NormalMap);
-						mMeshesTextureBuffers[meshIndex].NormalMap = aNewTextureWithMips;
+						mMeshesTextureBuffers[meshIndex].NormalMap = *aNewTextureWithMips;
 					}
 				);
 			}
@@ -294,11 +294,11 @@ namespace EveryRay_Core
 			if (!isPlaceholder)
 			{
 				rhi->GenerateMipsWithTextureReplacement(&mMeshesTextureBuffers[meshIndex].SpecularMap,
-					[this, meshIndex](ER_RHI_GPUTexture* aNewTextureWithMips)
+					[this, meshIndex](ER_RHI_GPUTexture** aNewTextureWithMips)
 					{
-						assert(aNewTextureWithMips);
+						assert(*aNewTextureWithMips);
 						DeleteObject(mMeshesTextureBuffers[meshIndex].SpecularMap);
-						mMeshesTextureBuffers[meshIndex].SpecularMap = aNewTextureWithMips;
+						mMeshesTextureBuffers[meshIndex].SpecularMap = *aNewTextureWithMips;
 					}
 				);
 			}
@@ -311,11 +311,11 @@ namespace EveryRay_Core
 			if (!isPlaceholder)
 			{
 				rhi->GenerateMipsWithTextureReplacement(&mMeshesTextureBuffers[meshIndex].MetallicMap,
-					[this, meshIndex](ER_RHI_GPUTexture* aNewTextureWithMips)
+					[this, meshIndex](ER_RHI_GPUTexture** aNewTextureWithMips)
 					{
-						assert(aNewTextureWithMips);
+						assert(*aNewTextureWithMips);
 						DeleteObject(mMeshesTextureBuffers[meshIndex].MetallicMap);
-						mMeshesTextureBuffers[meshIndex].MetallicMap = aNewTextureWithMips;
+						mMeshesTextureBuffers[meshIndex].MetallicMap = *aNewTextureWithMips;
 					}
 				);
 			}
@@ -328,11 +328,11 @@ namespace EveryRay_Core
 			if (!isPlaceholder)
 			{
 				rhi->GenerateMipsWithTextureReplacement(&mMeshesTextureBuffers[meshIndex].RoughnessMap,
-					[this, meshIndex](ER_RHI_GPUTexture* aNewTextureWithMips)
+					[this, meshIndex](ER_RHI_GPUTexture** aNewTextureWithMips)
 					{
-						assert(aNewTextureWithMips);
+						assert(*aNewTextureWithMips);
 						DeleteObject(mMeshesTextureBuffers[meshIndex].RoughnessMap);
-						mMeshesTextureBuffers[meshIndex].RoughnessMap = aNewTextureWithMips;
+						mMeshesTextureBuffers[meshIndex].RoughnessMap = *aNewTextureWithMips;
 					}
 				);
 			}
@@ -345,11 +345,11 @@ namespace EveryRay_Core
 			if (!isPlaceholder)
 			{
 				rhi->GenerateMipsWithTextureReplacement(&mMeshesTextureBuffers[meshIndex].HeightMap,
-					[this, meshIndex](ER_RHI_GPUTexture* aNewTextureWithMips)
+					[this, meshIndex](ER_RHI_GPUTexture** aNewTextureWithMips)
 					{
-						assert(aNewTextureWithMips);
+						assert(*aNewTextureWithMips);
 						DeleteObject(mMeshesTextureBuffers[meshIndex].HeightMap);
-						mMeshesTextureBuffers[meshIndex].HeightMap = aNewTextureWithMips;
+						mMeshesTextureBuffers[meshIndex].HeightMap = *aNewTextureWithMips;
 					}
 				);
 			}
@@ -362,11 +362,11 @@ namespace EveryRay_Core
 			if (!isPlaceholder)
 			{
 				rhi->GenerateMipsWithTextureReplacement(&mMeshesTextureBuffers[meshIndex].ReflectionMaskMap,
-					[this, meshIndex](ER_RHI_GPUTexture* aNewTextureWithMips)
+					[this, meshIndex](ER_RHI_GPUTexture** aNewTextureWithMips)
 					{
-						assert(aNewTextureWithMips);
+						assert(*aNewTextureWithMips);
 						DeleteObject(mMeshesTextureBuffers[meshIndex].ReflectionMaskMap);
-						mMeshesTextureBuffers[meshIndex].ReflectionMaskMap = aNewTextureWithMips;
+						mMeshesTextureBuffers[meshIndex].ReflectionMaskMap = *aNewTextureWithMips;
 					}
 				);
 			}

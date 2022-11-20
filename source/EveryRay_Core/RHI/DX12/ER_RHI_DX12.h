@@ -91,7 +91,7 @@ namespace EveryRay_Core
 		virtual void ExecuteCopyCommandList() override;
 
 		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture, bool isSRGB = false, ER_RHI_GPUTexture* aSRGBTexture = nullptr) override;
-		virtual void GenerateMipsWithTextureReplacement(ER_RHI_GPUTexture** aTexture, std::function<void(ER_RHI_GPUTexture*)> aReplacementCallback) override;
+		virtual void GenerateMipsWithTextureReplacement(ER_RHI_GPUTexture** aTexture, std::function<void(ER_RHI_GPUTexture**)> aReplacementCallback) override;
 		virtual void ReplaceOriginalTexturesWithMipped() override;
 
 		virtual void PresentGraphics() override;
@@ -170,6 +170,7 @@ namespace EveryRay_Core
 		virtual void WaitForGpuOnComputeFence() override;
 		virtual void WaitForGpuOnCopyFence() override;
 
+		virtual void ResetReplacementMippedTexturesPool() override;
 		virtual void ResetDescriptorManager() override;
 		virtual void ResetRHI(int width, int height, bool isFullscreen) override;
 
@@ -272,6 +273,14 @@ namespace EveryRay_Core
 		bool mIsRaytracingTierAvailable = false;
 		bool mIsContextReadingBuffer = false;
 
+		ER_RHI_GPURootSignature* mClearUAV2DRS = nullptr;
+		ER_RHI_GPUShader* mClearUAV2DCS = nullptr;
+		std::string mClearUAV2DPSOName = "ER_RHI_GPUPipelineStateObject: Clear UAV 2D";
+
+		ER_RHI_GPURootSignature* mClearUAV3DRS = nullptr;
+		ER_RHI_GPUShader* mClearUAV3DCS = nullptr;
+		std::string mClearUAV3DPSOName = "ER_RHI_GPUPipelineStateObject: Clear UAV 3D";
+
 		ER_RHI_GPURootSignature* mGenerateMips2DRS = nullptr;
 		ER_RHI_GPUShader* mGenerateMips2DCS = nullptr;
 		std::string mGenerateMips2DPSOName = "ER_RHI_GPUPipelineStateObject: Generate Mips 2D";
@@ -281,7 +290,7 @@ namespace EveryRay_Core
 		std::string mGenerateMips3DPSOName = "ER_RHI_GPUPipelineStateObject: Generate Mips 3D";
 
 		ER_RHI_GPUTexture* mGenerateMipsWithReplacementReadyTexturesPool[DX12_MAX_GENERATE_MIPS_TEXTURES_IN_POOL] = { nullptr };
-		std::function<void(ER_RHI_GPUTexture*)> mGenerateMipsWithReplacementCallbacks[DX12_MAX_GENERATE_MIPS_TEXTURES_IN_POOL];
+		std::function<void(ER_RHI_GPUTexture**)> mGenerateMipsWithReplacementCallbacks[DX12_MAX_GENERATE_MIPS_TEXTURES_IN_POOL];
 		int mGenerateMipsWithReplacementCurrentTextureIndexInPool = 0; // should be atomic (in the future), at the moment we do not use multithreading for submitting mip generation commands
 	};
 }

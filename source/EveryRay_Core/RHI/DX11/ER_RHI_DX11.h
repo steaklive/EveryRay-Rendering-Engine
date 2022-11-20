@@ -74,7 +74,7 @@ namespace EveryRay_Core
 		virtual void ExecuteCopyCommandList() override {}; //not supported on DX11
 
 		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture, bool isSRGB = false, ER_RHI_GPUTexture* aSRGBTexture = nullptr) override;
-		virtual void GenerateMipsWithTextureReplacement(ER_RHI_GPUTexture** aTexture, std::function<void(ER_RHI_GPUTexture*)> aReplacementCallback) override {}; //not supported on DX11
+		virtual void GenerateMipsWithTextureReplacement(ER_RHI_GPUTexture** aTexture, std::function<void(ER_RHI_GPUTexture**)> aReplacementCallback) override {}; //not supported on DX11
 		virtual void ReplaceOriginalTexturesWithMipped() override {}; //not supported on DX11
 
 		virtual void PresentGraphics() override;
@@ -149,6 +149,7 @@ namespace EveryRay_Core
 		virtual void WaitForGpuOnComputeFence() override {}; //not supported on DX11
 		virtual void WaitForGpuOnCopyFence() override {}; //not supported on DX11
 
+		virtual void ResetReplacementMippedTexturesPool() override {}; //not supported on DX11
 		virtual void ResetDescriptorManager() override {}; //not supported on DX11
 		virtual void ResetRHI(int width, int height, bool isFullscreen) override {}; //TODO
 

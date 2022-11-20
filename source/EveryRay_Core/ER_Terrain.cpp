@@ -212,11 +212,11 @@ namespace EveryRay_Core
 			mSplatChannelTextures[0] = rhi->CreateGPUTexture(L"");
 			mSplatChannelTextures[0]->CreateGPUTextureResource(rhi, splatLayer0Path, true);
 			rhi->GenerateMipsWithTextureReplacement(&mSplatChannelTextures[0],
-				[this](ER_RHI_GPUTexture* aNewTextureWithMips)
+				[this](ER_RHI_GPUTexture** aNewTextureWithMips)
 				{
-					assert(aNewTextureWithMips);
+					assert(*aNewTextureWithMips);
 					DeleteObject(mSplatChannelTextures[0]);
-					mSplatChannelTextures[0] = aNewTextureWithMips;
+					mSplatChannelTextures[0] = *aNewTextureWithMips;
 				}
 			);
 		}
@@ -225,11 +225,11 @@ namespace EveryRay_Core
 			mSplatChannelTextures[1] = rhi->CreateGPUTexture(L"");
 			mSplatChannelTextures[1]->CreateGPUTextureResource(rhi, splatLayer1Path, true);
 			rhi->GenerateMipsWithTextureReplacement(&mSplatChannelTextures[1],
-				[this](ER_RHI_GPUTexture* aNewTextureWithMips)
+				[this](ER_RHI_GPUTexture** aNewTextureWithMips)
 				{
-					assert(aNewTextureWithMips);
+					assert(*aNewTextureWithMips);
 					DeleteObject(mSplatChannelTextures[1]);
-					mSplatChannelTextures[1] = aNewTextureWithMips;
+					mSplatChannelTextures[1] = *aNewTextureWithMips;
 				}
 			);
 
@@ -239,11 +239,11 @@ namespace EveryRay_Core
 			mSplatChannelTextures[2] = rhi->CreateGPUTexture(L"");
 			mSplatChannelTextures[2]->CreateGPUTextureResource(rhi, splatLayer2Path, true);
 			rhi->GenerateMipsWithTextureReplacement(&mSplatChannelTextures[2],
-				[this](ER_RHI_GPUTexture* aNewTextureWithMips)
+				[this](ER_RHI_GPUTexture** aNewTextureWithMips)
 				{
-					assert(aNewTextureWithMips);
+					assert(*aNewTextureWithMips);
 					DeleteObject(mSplatChannelTextures[2]);
-					mSplatChannelTextures[2] = aNewTextureWithMips;
+					mSplatChannelTextures[2] = *aNewTextureWithMips;
 				}
 			);
 		}
@@ -252,11 +252,11 @@ namespace EveryRay_Core
 			mSplatChannelTextures[3] = rhi->CreateGPUTexture(L"");
 			mSplatChannelTextures[3]->CreateGPUTextureResource(rhi, splatLayer3Path, true);
 			rhi->GenerateMipsWithTextureReplacement(&mSplatChannelTextures[3],
-				[this](ER_RHI_GPUTexture* aNewTextureWithMips)
+				[this](ER_RHI_GPUTexture** aNewTextureWithMips)
 				{
-					assert(aNewTextureWithMips);
+					assert(*aNewTextureWithMips);
 					DeleteObject(mSplatChannelTextures[3]);
-					mSplatChannelTextures[3] = aNewTextureWithMips;
+					mSplatChannelTextures[3] = *aNewTextureWithMips;
 				}
 			);
 		}
@@ -306,11 +306,11 @@ namespace EveryRay_Core
 		mHeightMaps[tileIndex]->mSplatTexture = rhi->CreateGPUTexture(L"");
 		mHeightMaps[tileIndex]->mSplatTexture->CreateGPUTextureResource(rhi, path, true);
 		rhi->GenerateMipsWithTextureReplacement(&mHeightMaps[tileIndex]->mSplatTexture,
-			[this, tileIndex](ER_RHI_GPUTexture* aNewTextureWithMips)
+			[this, tileIndex](ER_RHI_GPUTexture** aNewTextureWithMips)
 			{
-				assert(aNewTextureWithMips);
+				assert(*aNewTextureWithMips);
 				DeleteObject(mHeightMaps[tileIndex]->mSplatTexture);
-				mHeightMaps[tileIndex]->mSplatTexture = aNewTextureWithMips;
+				mHeightMaps[tileIndex]->mSplatTexture = *aNewTextureWithMips;
 			}
 		);
 

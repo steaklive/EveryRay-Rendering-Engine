@@ -311,7 +311,7 @@ namespace EveryRay_Core
 		//TODO DispatchIndirect
 
 		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture, bool isSRGB = false, ER_RHI_GPUTexture* aSRGBTexture = nullptr) = 0;
-		virtual void GenerateMipsWithTextureReplacement(ER_RHI_GPUTexture** aTexture, std::function<void(ER_RHI_GPUTexture*)> aReplacementCallback) = 0;
+		virtual void GenerateMipsWithTextureReplacement(ER_RHI_GPUTexture** aTexture, std::function<void(ER_RHI_GPUTexture**)> aReplacementCallback) = 0;
 		virtual void ReplaceOriginalTexturesWithMipped() = 0;
 
 		virtual void ExecuteCommandLists(int commandListIndex = 0, bool isCompute = false) = 0;
@@ -398,6 +398,7 @@ namespace EveryRay_Core
 		virtual void WaitForGpuOnComputeFence() = 0;
 		virtual void WaitForGpuOnCopyFence() = 0;
 
+		virtual void ResetReplacementMippedTexturesPool() = 0;
 		virtual void ResetDescriptorManager() = 0;
 		virtual void ResetRHI(int width, int height, bool isFullscreen) = 0;
 

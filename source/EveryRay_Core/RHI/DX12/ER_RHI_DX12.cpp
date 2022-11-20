@@ -26,9 +26,16 @@ namespace EveryRay_Core
 		DeleteObject(mGenerateMips2DRS);
 		DeleteObject(mGenerateMips3DCS);
 		DeleteObject(mGenerateMips3DRS);
-		for (int i =0; i < DX12_MAX_GENERATE_MIPS_TEXTURES_IN_POOL; i++)
+		DeleteObject(mClearUAV2DCS);
+		DeleteObject(mClearUAV2DRS);
+		DeleteObject(mClearUAV3DCS);
+		DeleteObject(mClearUAV3DRS);
+
+		// we must be sure that the scene was deallocated already (objects deleted the textures by themselves)
+		for (int i = 0; i < DX12_MAX_GENERATE_MIPS_TEXTURES_IN_POOL; i++)
 		{
-			DeleteObject(mGenerateMipsWithReplacementReadyTexturesPool[i]);
+			mGenerateMipsWithReplacementReadyTexturesPool[i] = nullptr;
+			//DeleteObject(mGenerateMipsWithReplacementReadyTexturesPool[i]);
 		}
 		DeleteObject(mDescriptorHeapManager);
 	}
@@ -262,6 +269,29 @@ namespace EveryRay_Core
 
 		ResetDescriptorManager();
 
+		//clear uav state and rs
+		{
+			mClearUAV2DCS = CreateGPUShader();
+			mClearUAV2DCS->CompileShader(this, "content\\shaders\\ClearUAV2D.hlsl", "CSMain", ER_COMPUTE);
+			mClearUAV3DCS = CreateGPUShader();
+			mClearUAV3DCS->CompileShader(this, "content\\shaders\\ClearUAV3D.hlsl", "CSMain", ER_COMPUTE);
+
+			//TODO add constant for clear value
+			mClearUAV2DRS = CreateRootSignature(1, 0);
+			if (mClearUAV2DRS)
+			{
+				mClearUAV2DRS->InitDescriptorTable(this, 0, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 });
+				mClearUAV2DRS->Finalize(this, "ER_RHI_GPURootSignature: Clear UAV 2D");
+			}
+
+			//TODO add constant for clear value
+			mClearUAV3DRS = CreateRootSignature(1, 0);
+			if (mClearUAV3DRS)
+			{
+				mClearUAV3DRS->InitDescriptorTable(this, 0, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 });
+				mClearUAV3DRS->Finalize(this, "ER_RHI_GPURootSignature: Clear UAV 3D");
+			}
+		}
 		//generate mips 2D/3D state and rs
 		{
 			mGenerateMips2DCS = CreateGPUShader();
@@ -336,6 +366,17 @@ namespace EveryRay_Core
 					mFenceValuesCopy++;
 				}
 			}
+		}
+	}
+
+	void ER_RHI_DX12::ResetReplacementMippedTexturesPool()
+	{
+		mGenerateMipsWithReplacementCurrentTextureIndexInPool = 0;
+		// we must be sure that the scene was deallocated already (objects deleted the textures by themselves)
+		for (int i = 0; i < DX12_MAX_GENERATE_MIPS_TEXTURES_IN_POOL; i++)
+		{
+			mGenerateMipsWithReplacementReadyTexturesPool[i] = nullptr;
+			//DeleteObject(mGenerateMipsWithReplacementReadyTexturesPool[i]);
 		}
 	}
 
@@ -458,6 +499,7 @@ namespace EveryRay_Core
 		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->ClearDepthStencilView(dtDX12->GetDSVHandle().GetCPUHandle(), (stencil == -1) ? D3D12_CLEAR_FLAG_DEPTH : D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, depth, stencil, 0, nullptr);
 	}
 
+	// Two versions are available (shader and command). Shader is the default one at the moment
 	void ER_RHI_DX12::ClearUAV(ER_RHI_GPUResource* aRenderTarget, float colors[4])
 	{
 		assert(mCurrentGraphicsCommandListIndex > -1);
@@ -468,25 +510,67 @@ namespace EveryRay_Core
 		if (uavDX12->GetBackBufferIndex() != mBackBufferIndex)
 			return; //quick fix for not touching the resource that was created on a different back buffer's heap
 
+		bool is3D = uavDX12->GetDepth() > 0;
 		TransitionResources({ aRenderTarget }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_UNORDERED_ACCESS, mCurrentGraphicsCommandListIndex);
 
-		if (uavDX12->GetMips() == 0)
-		{
-			D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = uavDX12->GetUAVHandle().GetCPUHandle();
-			D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = uavDX12->GetUAVHandleGPU().GetGPUHandle();
+		#pragma region SHADER_CLEAR
+		auto cmdList = mCommandListGraphics[mCurrentGraphicsCommandListIndex];
 
-			mCommandListGraphics[mCurrentGraphicsCommandListIndex]->ClearUnorderedAccessViewFloat(gpuHandle, cpuHandle, static_cast<ID3D12Resource*>(uavDX12->GetResource()), colors, 0, nullptr);
-		}
-		else
-		{
-			for (int i = 0; i < static_cast<int>(uavDX12->GetMips()); i++)
-			{
-				D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = uavDX12->GetUAVHandle(i).GetCPUHandle();
-				D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = uavDX12->GetUAVHandleGPU(i).GetGPUHandle();
+		const std::string& psoName = is3D ? mClearUAV3DPSOName : mClearUAV2DPSOName;
+		ER_RHI_GPURootSignature* rs = is3D ? mClearUAV3DRS : mClearUAV2DRS;
 
-				mCommandListGraphics[mCurrentGraphicsCommandListIndex]->ClearUnorderedAccessViewFloat(gpuHandle, cpuHandle, static_cast<ID3D12Resource*>(uavDX12->GetResource()), colors, 0, nullptr);
-			}
+		SetRootSignature(rs, true);
+		if (!IsPSOReady(psoName, true))
+		{
+			InitializePSO(psoName, true);
+			SetRootSignatureToPSO(psoName, rs, true);
+			SetShader(is3D ? mClearUAV3DCS : mClearUAV2DCS);
+			FinalizePSO(psoName, true);
 		}
+		SetPSO(psoName, true);
+
+		int mipCount = uavDX12->GetMips();
+		UINT srcWidth = uavDX12->GetWidth();
+		UINT srcHeight = uavDX12->GetHeight();
+		UINT srcDepth = uavDX12->GetDepth();
+
+		for (int mip = 0; mip < mipCount; mip++)
+		{
+			UINT dstWidth = std::max(srcWidth >> mip, 1u);
+			UINT dstHeight = std::max(srcHeight >> mip, 1u);
+			UINT dstDepth = is3D ? std::max(srcDepth >> mip, 1u) : 1u;
+
+			//TODO set root constant for clear values
+			SetUnorderedAccessResources(ER_COMPUTE, { aRenderTarget }, mip, rs, 0, true);
+			Dispatch(ER_CEIL(dstWidth, 8), ER_CEIL(dstHeight, 8), is3D ? ER_CEIL(dstDepth, 8) : 1u);
+			cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::UAV(static_cast<ID3D12Resource*>(aRenderTarget->GetResource())));
+		}
+		UnsetPSO();
+		TransitionResources({ aRenderTarget }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, mCurrentGraphicsCommandListIndex);
+#pragma endregion
+
+		#pragma region COMMAND_CLEAR
+		// For some reason this giving some DX12 "unmatched descriptor" errors, although everything seems to be set up correctly with descriptors
+		// Maybe driver thing, but you can try it on your machine
+
+		//if (uavDX12->GetMips() <= 1)
+		//{
+		//	D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = uavDX12->GetUAVHandle().GetCPUHandle();
+		//	D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = uavDX12->GetUAVHandleGPU().GetGPUHandle();
+		//
+		//	mCommandListGraphics[mCurrentGraphicsCommandListIndex]->ClearUnorderedAccessViewFloat(gpuHandle, cpuHandle, static_cast<ID3D12Resource*>(uavDX12->GetResource()), colors, 0, nullptr);
+		//}
+		//else
+		//{
+		//	for (int i = 0; i < static_cast<int>(uavDX12->GetMips()); i++)
+		//	{
+		//		D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = uavDX12->GetUAVHandle(i).GetCPUHandle();
+		//		D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = uavDX12->GetUAVHandleGPU(i).GetGPUHandle();
+		//
+		//		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->ClearUnorderedAccessViewFloat(gpuHandle, cpuHandle, static_cast<ID3D12Resource*>(uavDX12->GetResource()), colors, 0, nullptr);
+		//	}
+		//}
+#pragma endregion
 	}
 
 	ER_RHI_InputLayout* ER_RHI_DX12::CreateInputLayout(ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount)
@@ -747,7 +831,7 @@ namespace EveryRay_Core
 		TransitionResources({ aTexture }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, mCurrentGraphicsCommandListIndex);
 	}
 
-	void ER_RHI_DX12::GenerateMipsWithTextureReplacement(ER_RHI_GPUTexture** aTexture, std::function<void(ER_RHI_GPUTexture*)> aReplacementCallback)
+	void ER_RHI_DX12::GenerateMipsWithTextureReplacement(ER_RHI_GPUTexture** aTexture, std::function<void(ER_RHI_GPUTexture**)> aReplacementCallback)
 	{
 		if ((*aTexture)->GetMips() > 1) //probably the texture already has mips
 			return;
@@ -789,7 +873,7 @@ namespace EveryRay_Core
 	void ER_RHI_DX12::ReplaceOriginalTexturesWithMipped()
 	{
 		for (int i = 0; i < mGenerateMipsWithReplacementCurrentTextureIndexInPool; i++)
-			mGenerateMipsWithReplacementCallbacks[i](mGenerateMipsWithReplacementReadyTexturesPool[i]);
+			mGenerateMipsWithReplacementCallbacks[i](&mGenerateMipsWithReplacementReadyTexturesPool[i]);
 	}
 
 	void ER_RHI_DX12::PresentGraphics()
