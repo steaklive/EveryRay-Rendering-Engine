@@ -53,7 +53,7 @@ namespace EveryRay_Core
 		std::string skyboxPath;
 		XMFLOAT3 cameraPosition;
 		XMFLOAT3 cameraDirection;
-		XMFLOAT3 sunDirection;
+		XMFLOAT3 sunDirection; //in degrees
 		XMFLOAT3 sunColor;
 		XMFLOAT3 ambientColor;
 

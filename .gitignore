@@ -27,5 +27,12 @@ content/levels/testScene/specular_probes/*
 !content/levels/testScene/specular_probes/empty.file
 !content/levels/testScene/diffuse_probes/diffuse_probe_global.dds
 !content/levels/testScene/specular_probes/specular_probe_global.dds
+# - sponzaScene
+content/levels/sponzaScene/diffuse_probes/*
+content/levels/sponzaScene/specular_probes/*
+!content/levels/sponzaScene/diffuse_probes/empty.file
+!content/levels/sponzaScene/specular_probes/empty.file
+!content/levels/sponzaScene/diffuse_probes/diffuse_probe_global.dds
+!content/levels/sponzaScene/specular_probes/specular_probe_global.dds
 # - other levels...
 

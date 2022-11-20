@@ -233,7 +233,7 @@ namespace EveryRay_Core
 						{
 							materialInfo->second->PrepareShaders();
 							static_cast<ER_RenderToLightProbeMaterial*>(materialInfo->second)->PrepareForRendering(matSystems, object.second, meshIndex, mCubemapCameras[cubeMapFaceIndex], nullptr);
-							object.second->DrawLOD(materialInfo->first, false, meshIndex, lod);
+							object.second->DrawLOD(materialInfo->first, false, meshIndex, lod, true);
 						}
 					}
 				}

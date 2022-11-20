@@ -59,7 +59,7 @@ namespace EveryRay_Core
 			}
 
 			if (root.isMember("sun_direction")) {
-				float vec3[3];
+				float vec3[3] = { 0.0, 0.0, 0.0 };
 				for (Json::Value::ArrayIndex i = 0; i != root["sun_direction"].size(); i++)
 					vec3[i] = root["sun_direction"][i].asFloat();
 

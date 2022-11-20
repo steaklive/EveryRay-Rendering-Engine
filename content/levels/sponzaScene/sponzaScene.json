@@ -11,6 +11,20 @@
 		55.0,
 		-43.0
 	],
+	"light_probes_diffuse_distance" : 15.0,
+	"light_probes_specular_distance" : 25.0,
+	"light_probes_volume_bounds_max" : 
+	[
+		185.0,
+		158.5,
+		115.0
+	],
+	"light_probes_volume_bounds_min" : 
+	[
+		-195.0,
+		-1.5,
+		-125.0
+	],
 	"rendering_objects" : 
 	[
 		{
@@ -49,6 +63,115 @@
 				0.0,
 				1.0,
 				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"use_in_global_lightprobe_rendering" : true
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\vegetation\\trees\\acer\\tree_acer_middle2.fbx",
+			"name" : "Acer Tree",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\models\\vegetation\\trees\\acer\\leaves0018_41_m_przod.png",
+					"normal" : "content\\models\\vegetation\\trees\\acer\\leaves0018_41_m_przod_n.png"
+				},
+				{
+					"albedo" : "content\\models\\vegetation\\trees\\acer\\BarkDecidious0164_5_M_TILED_dark.jpg",
+					"normal" : "content\\models\\vegetation\\trees\\acer\\BarkDecidious0164_5_M_TILED_dark_normal-min.png"
+				}
+			],
+			"transform" : 
+			[
+				2.2799999713897705,
+				0.0,
+				0.0,
+				-74.250282287597656,
+				0.0,
+				2.2799999713897705,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				2.2799999713897705,
+				10.196771621704102,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"use_in_global_lightprobe_rendering" : true
+		},
+		{
+			"instanced" : false,
+			"model_lods" : 
+			[
+				{
+					"path" : "content\\models\\bunny\\bunny_lod_high.fbx"
+				},
+				{
+					"path" : "content\\models\\bunny\\bunny_lod_mid.fbx"
+				},
+				{
+					"path" : "content\\models\\bunny\\bunny_lod_low.fbx"
+				}
+			],
+			"model_path" : "content\\models\\bunny\\bunny_lod_high.fbx",
+			"name" : "Bunny",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Bronze\\Bronze01_1K_BaseColor.png",
+					"metalness" : "content\\textures\\PBR\\Bronze\\Bronze01_1K_Metallic.png",
+					"normal" : "content\\textures\\PBR\\Bronze\\Bronze01_1K_Normal.png",
+					"roughness" : "content\\textures\\PBR\\Bronze\\Bronze01_1K_Roughness.png"
+				}
+			],
+			"transform" : 
+			[
+				0.45728021860122681,
+				0.0,
+				0.86749929189682007,
+				-88.001113891601562,
+				0.0,
+				0.98063987493515015,
+				0.0,
+				54.612316131591797,
+				-0.86749929189682007,
+				0.0,
+				0.45728021860122681,
+				-13.221109390258789,
 				0.0,
 				0.0,
 				0.0,
@@ -145,6 +268,11 @@
 		0.94999999999999996,
 		0.94999999999999996
 	],
-	"sun_direction" : [],
+	"sun_direction" : 
+	[
+		-77.0,
+		-25.0,
+		-37.0
+	],
 	"use_volumetric_fog" : true
 }

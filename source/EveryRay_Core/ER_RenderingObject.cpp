@@ -440,7 +440,7 @@ namespace EveryRay_Core
 			DrawLOD(materialName, toDepth, meshIndex, mCurrentLODIndex);
 	}
 
-	void ER_RenderingObject::DrawLOD(const std::string& materialName, bool toDepth, int meshIndex, int lod)
+	void ER_RenderingObject::DrawLOD(const std::string& materialName, bool toDepth, int meshIndex, int lod, bool skipCulling)
 	{
 		bool isForwardPass = materialName == ER_MaterialHelper::forwardLightingNonMaterialName && mIsForwardShading;
 
@@ -449,7 +449,7 @@ namespace EveryRay_Core
 		if (mMaterials.find(materialName) == mMaterials.end() && !isForwardPass)
 			return;
 		
-		if (mIsRendered && !mIsCulled && mCurrentLODIndex != -1)
+		if (mIsRendered && (skipCulling || !mIsCulled) && mCurrentLODIndex != -1)
 		{
 			if (!isForwardPass && (!mMaterials.size() || mMeshesRenderBuffers[lod].size() == 0))
 				return;

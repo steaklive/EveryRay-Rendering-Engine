@@ -107,7 +107,19 @@ namespace EveryRay_Core {
 
 		#pragma region INIT_DIRECTIONAL_LIGHT
         mDirectionalLight = new ER_DirectionalLight(game, camera);
-        mDirectionalLight->ApplyRotation(XMMatrixRotationAxis(mDirectionalLight->RightVector(), -XMConvertToRadians(70.0f)) * XMMatrixRotationAxis(mDirectionalLight->UpVector(), -XMConvertToRadians(25.0f)));
+		if (mScene->sunDirection.x == 0.0f && mScene->sunDirection.y == 0.0f && mScene->sunDirection.z == 0.0f) {
+			mDefaultSunRotationMatrix =
+				XMMatrixRotationAxis(mDirectionalLight->RightVector(), -XMConvertToRadians(70.0f)) *
+				XMMatrixRotationAxis(mDirectionalLight->UpVector(), -XMConvertToRadians(25.0f));
+			mDirectionalLight->ApplyRotation(mDefaultSunRotationMatrix);
+		}
+		else
+			mDirectionalLight->ApplyRotation(
+				XMMatrixRotationAxis(mDirectionalLight->RightVector(), XMConvertToRadians(mScene->sunDirection.x)) *
+				XMMatrixRotationAxis(mDirectionalLight->UpVector(), XMConvertToRadians(mScene->sunDirection.y)) *
+				XMMatrixRotationAxis(mDirectionalLight->DirectionVector(), -XMConvertToRadians(mScene->sunDirection.z))
+			);
+
         mDirectionalLight->SetAmbientColor(mScene->ambientColor);
         mDirectionalLight->SetSunColor(mScene->sunColor);
 #pragma endregion

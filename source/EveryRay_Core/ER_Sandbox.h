@@ -52,6 +52,8 @@ namespace EveryRay_Core
         void UpdateImGui();
         std::string mName;
 
+        XMMATRIX mDefaultSunRotationMatrix;
+
 		float mWindStrength = 1.0f;
 		float mWindFrequency = 1.0f;
 		float mWindGustDistance = 1.0f;
