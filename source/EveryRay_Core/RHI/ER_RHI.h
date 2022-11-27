@@ -402,6 +402,9 @@ namespace EveryRay_Core
 		virtual void ResetDescriptorManager() = 0;
 		virtual void ResetRHI(int width, int height, bool isFullscreen) = 0;
 
+		virtual void BeginEventTag(const std::string& aName, bool isComputeQueue = false) = 0;
+		virtual void EndEventTag(bool isComputeQueue = false) = 0;
+
 		inline const int GetPrepareGraphicsCommandListIndex() { return mPrepareGraphicsCommandListIndex; }
 		inline const int GetCurrentGraphicsCommandListIndex() { return mCurrentGraphicsCommandListIndex; }
 		inline const int GetCurrentComputeCommandListIndex() { return mCurrentComputeCommandListIndex; }

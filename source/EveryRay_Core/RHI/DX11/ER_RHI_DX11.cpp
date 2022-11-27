@@ -3,6 +3,7 @@
 #include "ER_RHI_DX11_GPUTexture.h"
 #include "ER_RHI_DX11_GPUShader.h"
 #include "..\..\ER_CoreException.h"
+#include "..\..\ER_Utility.h"
 
 #include "DirectXSH.h"
 
@@ -71,6 +72,7 @@ namespace EveryRay_Core
 
 		ReleaseObject(mDirect3DDeviceContext);
 		ReleaseObject(mDirect3DDevice);
+		ReleaseObject(mUserDefinedAnnotation);
 	}
 
 	bool ER_RHI_DX11::Initialize(HWND windowHandle, UINT width, UINT height, bool isFullscreen, bool isReset)
@@ -95,19 +97,16 @@ namespace EveryRay_Core
 		ID3D11Device* direct3DDevice = nullptr;
 		ID3D11DeviceContext* direct3DDeviceContext = nullptr;
 		if (FAILED(hr = D3D11CreateDevice(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, createDeviceFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &direct3DDevice, &mFeatureLevel, &direct3DDeviceContext)))
-		{
 			throw ER_CoreException("ER_RHI_DX11: D3D11CreateDevice() failed", hr);
-		}
 
 		if (FAILED(hr = direct3DDevice->QueryInterface(__uuidof(ID3D11Device1), reinterpret_cast<void**>(&mDirect3DDevice))))
-		{
 			throw ER_CoreException("ER_RHI_DX11: ID3D11Device::QueryInterface() failed", hr);
-		}
 
 		if (FAILED(hr = direct3DDeviceContext->QueryInterface(__uuidof(ID3D11DeviceContext1), reinterpret_cast<void**>(&mDirect3DDeviceContext))))
-		{
 			throw ER_CoreException("ER_RHI_DX11: ID3D11Device::QueryInterface() failed", hr);
-		}
+
+		if (FAILED(hr = direct3DDeviceContext->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), reinterpret_cast<void**>(&mUserDefinedAnnotation))))
+			throw ER_CoreException("ER_RHI_DX11: ID3D11Device::QueryInterface() failed", hr);
 
 		ReleaseObject(direct3DDevice);
 		ReleaseObject(direct3DDeviceContext);
@@ -967,6 +966,16 @@ namespace EveryRay_Core
 	{
 		ImGui_ImplDX11_Shutdown();
 	}
+
+	void ER_RHI_DX11::BeginEventTag(const std::string& aName, bool isComputeQueue /*= false*/)
+	{
+		mUserDefinedAnnotation->BeginEvent(ER_Utility::ToWideString(aName).c_str());
+	}
+
+	void ER_RHI_DX11::EndEventTag(bool isComputeQueue /*= false*/)
+	{
+		mUserDefinedAnnotation->EndEvent();
+	}	
 
 	DXGI_FORMAT ER_RHI_DX11::GetFormat(ER_RHI_FORMAT aFormat)
 	{

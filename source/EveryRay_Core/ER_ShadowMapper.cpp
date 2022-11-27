@@ -265,8 +265,12 @@ namespace EveryRay_Core
 			std::string materialName = ER_MaterialHelper::shadowMapMaterialName + " " + std::to_string(i);
 			BeginRenderingToShadowMap(i);
 
+			rhi->BeginEventTag("EveryRay: Shadow Maps (terrain), cascade " + std::to_string(i));
 			if (terrain)
 				terrain->Draw(TerrainRenderPass::TERRAIN_SHADOW, { mShadowMaps[i] }, nullptr, this, nullptr, i);
+			rhi->EndEventTag();
+
+			rhi->BeginEventTag("EveryRay: Shadow Maps (objects), cascade " + std::to_string(i));
 
 			rhi->SetRootSignature(mRootSignature);
 			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -303,6 +307,8 @@ namespace EveryRay_Core
 					}
 				}
 			}
+			rhi->EndEventTag();
+
 			rhi->UnsetPSO();
 			StopRenderingToShadowMap(i);
 		}

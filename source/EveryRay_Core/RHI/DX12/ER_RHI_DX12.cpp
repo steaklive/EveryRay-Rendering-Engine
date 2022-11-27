@@ -408,6 +408,16 @@ namespace EveryRay_Core
 		Initialize(mWindowHandle, width, height, isFullscreen, true);
 	}
 
+	void ER_RHI_DX12::BeginEventTag(const std::string& aName, bool isComputeQueue)
+	{
+		PIXBeginEvent(isComputeQueue ? mCommandListCompute[mCurrentComputeCommandListIndex].Get() : mCommandListGraphics[mCurrentGraphicsCommandListIndex].Get(), 0, aName.c_str());
+	}
+
+	void ER_RHI_DX12::EndEventTag(bool isComputeQueue)
+	{
+		PIXEndEvent(isComputeQueue ? mCommandListCompute[mCurrentComputeCommandListIndex].Get() : mCommandListGraphics[mCurrentGraphicsCommandListIndex].Get());
+	}
+
 	void ER_RHI_DX12::BeginGraphicsCommandList(int index)
 	{
 		assert(index < ER_RHI_MAX_GRAPHICS_COMMAND_LISTS);

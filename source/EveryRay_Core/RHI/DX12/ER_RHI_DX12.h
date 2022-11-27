@@ -4,6 +4,7 @@
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <d3dx12.h>
+#include "pix3.h"
 //#include <dxc/dxcapi.h>
 #if defined (_DEBUG) || (DEBUG)
 #include <dxgidebug.h>
@@ -173,6 +174,9 @@ namespace EveryRay_Core
 		virtual void ResetReplacementMippedTexturesPool() override;
 		virtual void ResetDescriptorManager() override;
 		virtual void ResetRHI(int width, int height, bool isFullscreen) override;
+
+		virtual void BeginEventTag(const std::string& aName, bool isComputeQueue = false) override;
+		virtual void EndEventTag(bool isComputeQueue = false) override;
 
 		ID3D12Device* GetDevice() const { return mDevice.Get(); }
 		ID3D12Device5* GetDeviceRaytracing() const { return (ID3D12Device5*)mDevice.Get(); }

@@ -194,17 +194,26 @@ namespace EveryRay_Core {
 		assert(mIlluminationResultDepthTarget);
 		auto rhi = mCore->GetRHI();
 
-		rhi->SetRenderTargets({ mSkyRT });
-		mSkybox.Draw(mSkyRT, nullptr, nullptr, true);
-		rhi->UnbindRenderTargets();
+		rhi->BeginEventTag("EveryRay: Volumetric Clouds (skybox)");
+		{
+			rhi->SetRenderTargets({ mSkyRT });
+			mSkybox.Draw(mSkyRT, nullptr, nullptr, true);
+			rhi->UnbindRenderTargets();
+		}
+		rhi->EndEventTag();
 
-		rhi->SetRenderTargets({ mSkyAndSunRT });
-		mSkybox.DrawSun(mSkyAndSunRT, nullptr, mSkyRT, mIlluminationResultDepthTarget, true);
-		rhi->UnbindRenderTargets();
+		rhi->BeginEventTag("EveryRay: Volumetric Clouds (sun)");
+		{
+			rhi->SetRenderTargets({ mSkyAndSunRT });
+			mSkybox.DrawSun(mSkyAndSunRT, nullptr, mSkyRT, mIlluminationResultDepthTarget, true);
+			rhi->UnbindRenderTargets();
+		}
+		rhi->EndEventTag();
 
 		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mCore->GetServices().FindService(ER_QuadRenderer::TypeIdClass());
 		assert(quadRenderer);
 
+		rhi->BeginEventTag("EveryRay: Volumetric Clouds (main pass)");
 		// main pass
 		{
 			rhi->SetRootSignature(mMainPassRS, true);
@@ -226,7 +235,9 @@ namespace EveryRay_Core {
 			
 			rhi->UnbindResourcesFromShader(ER_COMPUTE);
 		}
+		rhi->EndEventTag();
 
+		rhi->BeginEventTag("EveryRay: Volumetric Clouds (upsample+blur)");
 		//upsample and blur
 		{
 			mUpsampleBlurConstantBuffer.Data.Upsample = true;
@@ -250,6 +261,7 @@ namespace EveryRay_Core {
 			
 			rhi->UnbindResourcesFromShader(ER_COMPUTE);
 		}
+		rhi->EndEventTag();
 
 		//composite pass (happens in PostProcessing)
 	}

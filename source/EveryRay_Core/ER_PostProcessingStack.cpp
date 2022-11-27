@@ -483,6 +483,8 @@ namespace EveryRay_Core {
 		// Linear fog
 		if (mUseLinearFog)
 		{
+			rhi->BeginEventTag("EveryRay: Post Processing (Linear Fog)");
+
 			rhi->SetRenderTargets({ mLinearFogRT });
 			rhi->SetRootSignature(mLinearFogRS);
 			if (!rhi->IsPSOReady(mLinearFogPassPSOName))
@@ -506,11 +508,15 @@ namespace EveryRay_Core {
 
 			//[WARNING] Set from last post processing effect
 			mRenderTargetBeforeResolve = mLinearFogRT;
+
+			rhi->EndEventTag();
 		}
 
 		// SSS
 		if (mUseSSS)
 		{
+			rhi->BeginEventTag("EveryRay: Post Processing (SSS)");
+
 			ER_Illumination* illumination = mCore.GetLevel()->mIllumination;
 			if (illumination->IsSSSBlurring())
 			{
@@ -546,11 +552,15 @@ namespace EveryRay_Core {
 				//[WARNING] Set from last post processing effect
 				mRenderTargetBeforeResolve = mSSSRT;
 			}
+
+			rhi->EndEventTag();
 		}
 
 		// SSR
 		if (mUseSSR)
 		{
+			rhi->BeginEventTag("EveryRay: Post Processing (SSR)");
+
 			rhi->SetRenderTargets({ mSSRRT });
 			rhi->SetRootSignature(mSSRRS);
 			if (!rhi->IsPSOReady(mSSRPassPSOName))
@@ -574,26 +584,38 @@ namespace EveryRay_Core {
 
 			//[WARNING] Set from last post processing effect
 			mRenderTargetBeforeResolve = mSSRRT;
+
+			rhi->EndEventTag();
 		}
 
-		// Composite with volumetric clouds (if enabled)
-		if (aVolumetricClouds && aVolumetricClouds->IsEnabled())
-			aVolumetricClouds->Composite(mRenderTargetBeforeResolve);
-		
-		// Composite with volumetric fog (if enabled)
-		if (aVolumetricFog && aVolumetricFog->IsEnabled())
+		rhi->BeginEventTag("EveryRay: Post Processing (Volumetric Clouds - Composite)");
 		{
-			rhi->SetRenderTargets({ mVolumetricFogRT });
-			aVolumetricFog->Composite(mVolumetricFogRT, mRenderTargetBeforeResolve, gbuffer->GetPositions());
-			rhi->UnbindRenderTargets();
-
-			//[WARNING] Set from last post processing effect
-			mRenderTargetBeforeResolve = mVolumetricFogRT;
+			// Composite with volumetric clouds (if enabled)
+			if (aVolumetricClouds && aVolumetricClouds->IsEnabled())
+				aVolumetricClouds->Composite(mRenderTargetBeforeResolve);
 		}
+		rhi->EndEventTag();
+
+		// Composite with volumetric fog (if enabled)
+		rhi->BeginEventTag("EveryRay: Post Processing (Volumetric Fog - Composite)");
+		{
+			if (aVolumetricFog && aVolumetricFog->IsEnabled())
+			{
+				rhi->SetRenderTargets({ mVolumetricFogRT });
+				aVolumetricFog->Composite(mVolumetricFogRT, mRenderTargetBeforeResolve, gbuffer->GetPositions());
+				rhi->UnbindRenderTargets();
+
+				//[WARNING] Set from last post processing effect
+				mRenderTargetBeforeResolve = mVolumetricFogRT;
+			}
+		}
+		rhi->EndEventTag();
 
 		// Tonemap
 		if (mUseTonemap)
 		{
+			rhi->BeginEventTag("EveryRay: Post Processing (Tonemap)");
+
 			rhi->SetRenderTargets({ mTonemappingRT });
 			rhi->SetRootSignature(mTonemapRS);
 			if (!rhi->IsPSOReady(mTonemapPassPSOName))
@@ -617,11 +639,15 @@ namespace EveryRay_Core {
 
 			//[WARNING] Set from last post processing effect
 			mRenderTargetBeforeResolve = mTonemappingRT;
+
+			rhi->EndEventTag();
 		}
 
 		// Color grading
 		if (mUseColorGrading)
 		{
+			rhi->BeginEventTag("EveryRay: Post Processing (Color Grading)");
+
 			rhi->SetRenderTargets({ mColorGradingRT });
 			rhi->SetRootSignature(mColorGradingRS);
 			if (!rhi->IsPSOReady(mColorGradingPassPSOName))
@@ -645,11 +671,15 @@ namespace EveryRay_Core {
 
 			//[WARNING] Set from last post processing effect
 			mRenderTargetBeforeResolve = mColorGradingRT;
+
+			rhi->EndEventTag();
 		}
 
 		// Vignette
 		if (mUseVignette)
 		{
+			rhi->BeginEventTag("EveryRay: Post Processing (Vignette)");
+
 			rhi->SetRenderTargets({ mVignetteRT });
 			rhi->SetRootSignature(mVignetteRS);
 			if (!rhi->IsPSOReady(mVignettePassPSOName))
@@ -673,11 +703,15 @@ namespace EveryRay_Core {
 
 			//[WARNING] Set from last post processing effect
 			mRenderTargetBeforeResolve = mVignetteRT;
+
+			rhi->EndEventTag();
 		}
 
 		// FXAA
 		if (mUseFXAA)
 		{
+			rhi->BeginEventTag("EveryRay: Post Processing (FXAA)");
+
 			rhi->SetRenderTargets({ mFXAART });
 			rhi->SetRootSignature(mFXAARS);
 			if (!rhi->IsPSOReady(mFXAAPassPSOName))
@@ -701,6 +735,8 @@ namespace EveryRay_Core {
 
 			//[WARNING] Set from last post processing effect 
 			mRenderTargetBeforeResolve = mFXAART;
+
+			rhi->EndEventTag();
 		}
 	}
 }

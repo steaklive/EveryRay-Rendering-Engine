@@ -645,5 +645,6 @@
     <None Include="ER_Materials.inl">
       <Filter>Source Files\Graphics\Materials</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

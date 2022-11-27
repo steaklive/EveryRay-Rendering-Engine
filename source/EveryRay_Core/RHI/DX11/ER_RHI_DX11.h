@@ -153,6 +153,9 @@ namespace EveryRay_Core
 		virtual void ResetDescriptorManager() override {}; //not supported on DX11
 		virtual void ResetRHI(int width, int height, bool isFullscreen) override {}; //TODO
 
+		virtual void BeginEventTag(const std::string& aName, bool isComputeQueue = false) override;
+		virtual void EndEventTag(bool isComputeQueue = false) override;
+
 		ID3D11Device1* GetDevice() { return mDirect3DDevice; }
 		ID3D11DeviceContext1* GetContext() { return mDirect3DDeviceContext; }
 		DXGI_FORMAT GetFormat(ER_RHI_FORMAT aFormat);
@@ -171,6 +174,7 @@ namespace EveryRay_Core
 		ID3D11Device1* mDirect3DDevice = nullptr;
 		ID3D11DeviceContext1* mDirect3DDeviceContext = nullptr;
 		IDXGISwapChain1* mSwapChain = nullptr;
+		ID3DUserDefinedAnnotation* mUserDefinedAnnotation = nullptr;
 
 		ID3D11Texture2D* mDepthStencilBuffer = nullptr;
 		D3D11_TEXTURE2D_DESC mBackBufferDesc;

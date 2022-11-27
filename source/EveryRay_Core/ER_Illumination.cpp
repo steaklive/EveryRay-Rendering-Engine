@@ -337,14 +337,21 @@ namespace EveryRay_Core {
 		rhi->SetRenderTargets({ mLocalIlluminationRT }, gbuffer->GetDepth());
 		rhi->ClearRenderTarget(mLocalIlluminationRT, clearColorBlack);
 
+		rhi->BeginEventTag("EveryRay: Skybox rendering (main)");
 		if (skybox)
 		{
 			skybox->Draw(mLocalIlluminationRT, nullptr, gbuffer->GetDepth());
 			//skybox->DrawSun(mLocalIlluminationRT, nullptr, gbuffer->GetDepth());
 		}
+		rhi->EndEventTag();
 
+		rhi->BeginEventTag("EveryRay: Deferred Lighting");
 		DrawDeferredLighting(gbuffer, mLocalIlluminationRT);
+		rhi->EndEventTag();
+
+		rhi->BeginEventTag("EveryRay: Forward Lighting");
 		DrawForwardLighting(gbuffer, mLocalIlluminationRT);
+		rhi->EndEventTag();
 	}
 
 	// Dynamic GI based on "Interactive Indirect Illumination Using Voxel Cone Tracing" by C.Crassin et al.

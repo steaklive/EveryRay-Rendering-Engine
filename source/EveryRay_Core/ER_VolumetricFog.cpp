@@ -103,8 +103,13 @@ namespace EveryRay_Core {
 		auto rhi = GetCore()->GetRHI();
 		rhi->SetRootSignature(mInjectionAccumulationPassesRootSignature, true);
 
+		rhi->BeginEventTag("EveryRay: Volumetric Fog (injection)");
 		ComputeInjection();
+		rhi->EndEventTag();
+
+		rhi->BeginEventTag("EveryRay: Volumetric Fog (accumulation)");
 		ComputeAccumulation();
+		rhi->EndEventTag();
 	}
 
 	void ER_VolumetricFog::Update(const ER_CoreTime& gameTime)

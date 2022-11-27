@@ -312,108 +312,162 @@ namespace EveryRay_Core {
 		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		
 		#pragma region DRAW_GBUFFER
-		mGBuffer->Start();
-		mGBuffer->Draw(mScene);
-		if (mTerrain)
+		rhi->BeginEventTag("EveryRay: GBuffer");
 		{
-			mTerrain->Draw(TerrainRenderPass::TERRAIN_GBUFFER, 
-				{ mGBuffer->GetAlbedo(), mGBuffer->GetNormals(), mGBuffer->GetPositions(), mGBuffer->GetExtraBuffer(), mGBuffer->GetExtra2Buffer() }, mGBuffer->GetDepth());
+			mGBuffer->Start();
+
+			rhi->BeginEventTag("EveryRay: GBuffer (objects)");
+			mGBuffer->Draw(mScene);
+			rhi->EndEventTag();
+
+			rhi->BeginEventTag("EveryRay: GBuffer (terrain)");
+			if (mTerrain)
+			{
+				mTerrain->Draw(TerrainRenderPass::TERRAIN_GBUFFER,
+					{ mGBuffer->GetAlbedo(), mGBuffer->GetNormals(), mGBuffer->GetPositions(), mGBuffer->GetExtraBuffer(), mGBuffer->GetExtra2Buffer() }, mGBuffer->GetDepth());
+			}
+			rhi->EndEventTag();
+
+			rhi->BeginEventTag("EveryRay: GBuffer (foliage)");
+			if (mFoliageSystem)
+			{
+				mFoliageSystem->Draw(gameTime, nullptr, FoliageRenderingPass::FOLIAGE_GBUFFER,
+					{ mGBuffer->GetAlbedo(), mGBuffer->GetNormals(), mGBuffer->GetPositions(), mGBuffer->GetExtraBuffer(), mGBuffer->GetExtra2Buffer() }, mGBuffer->GetDepth());
+			}
+			rhi->EndEventTag();
+
+			mGBuffer->End();
 		}
-		if (mFoliageSystem)
-		{
-			mFoliageSystem->Draw(gameTime, nullptr, FoliageRenderingPass::FOLIAGE_GBUFFER,
-				{ mGBuffer->GetAlbedo(), mGBuffer->GetNormals(), mGBuffer->GetPositions(), mGBuffer->GetExtraBuffer(), mGBuffer->GetExtra2Buffer() }, mGBuffer->GetDepth());
-		}
-		mGBuffer->End();
+		rhi->EndEventTag();
 #pragma endregion
 		
 		#pragma region DRAW_SHADOWS
-		mShadowMapper->Draw(mScene, mTerrain);
+		rhi->BeginEventTag("EveryRay: Shadow Maps");
+		{
+			mShadowMapper->Draw(mScene, mTerrain);
+		}
+		rhi->EndEventTag();
 #pragma endregion
 		
 		#pragma region DRAW_GLOBAL_ILLUMINATION
-		
-		// compute static GI (load probes if they exist on disk, otherwise - compute them)
+		rhi->BeginEventTag("EveryRay: Compute/load light probes");
 		{
-			if (mScene->HasLightProbesSupport() && !mLightProbesManager->AreProbesReady())
+			// compute static GI (load probes if they exist on disk, otherwise - compute them)
 			{
-				game.CPUProfiler()->BeginCPUTime("Compute or load light probes");
-				mLightProbesManager->ComputeOrLoadLocalProbes(game, mScene->objects, mSkybox);
-				mLightProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
-				game.CPUProfiler()->EndCPUTime("Compute or load light probes");
+				if (mScene->HasLightProbesSupport() && !mLightProbesManager->AreProbesReady())
+				{
+					game.CPUProfiler()->BeginCPUTime("Compute or load light probes");
+					mLightProbesManager->ComputeOrLoadLocalProbes(game, mScene->objects, mSkybox);
+					mLightProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
+					game.CPUProfiler()->EndCPUTime("Compute or load light probes");
+				}
+				else if (!mLightProbesManager->IsEnabled() && !mLightProbesManager->AreGlobalProbesReady())
+					mLightProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
 			}
-			else if (!mLightProbesManager->IsEnabled() && !mLightProbesManager->AreGlobalProbesReady())
-				mLightProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
 		}
+		rhi->EndEventTag();
 
 		// compute dynamic GI
+		rhi->BeginEventTag("EveryRay: Dynamic Global Illumination");
 		{
 			mIllumination->DrawDynamicGlobalIllumination(mGBuffer, gameTime);
 		}
+		rhi->EndEventTag();
 #pragma endregion
 
 		#pragma region DRAW_LOCAL_ILLUMINATION
-		
-		mIllumination->DrawLocalIllumination(mGBuffer, mSkybox);
-		ER_RHI_GPUTexture* localRT = mIllumination->GetLocalIlluminationRT();
+		rhi->BeginEventTag("EveryRay: Local Illumination");
+		{
+			mIllumination->DrawLocalIllumination(mGBuffer, mSkybox);
+			ER_RHI_GPUTexture* localRT = mIllumination->GetLocalIlluminationRT();
 
-//		Terrain rendering is now in deferred; uncomment code below if you want to render in forward
-//		#pragma region DRAW_TERRAIN_FORWARD
-//		if (mTerrain)
-//			mTerrain->Draw(TerrainRenderPass::FORWARD, localRT, mShadowMapper, mLightProbesManager);
-//		#pragma endregion
-
+			//Terrain rendering is now in deferred; uncomment code below if you want to render in forward
+			// rhi->BeginEventTag("EveryRay: Forward Lighting (terrain)");
+			// 
+			//#pragma region DRAW_TERRAIN_FORWARD
+			//if (mTerrain)
+			//	mTerrain->Draw(TerrainRenderPass::FORWARD, localRT, mShadowMapper, mLightProbesManager);
+			// rhi->EndEventTag();
+			//#pragma endregion
+		}
+		rhi->EndEventTag();
 #pragma endregion
 
 		#pragma region DRAW_DEBUG_GIZMOS
 		// TODO: consider moving all debug gizmos to a separate debug renderer system
 		if (ER_Utility::IsEditorMode)
 		{
-			mIllumination->DrawDebugProbes(localRT, mGBuffer->GetDepth());
-
-			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST);
-			ER_RHI_GPURootSignature* debugGizmoRootSignature = mScene->GetStandardMaterialRootSignature(ER_MaterialHelper::basicColorMaterialName);
-			rhi->SetRootSignature(debugGizmoRootSignature);
+			rhi->BeginEventTag("EveryRay: Debug gizmos");
 			{
-				mIllumination->DrawDebugGizmos(localRT, mGBuffer->GetDepth(), debugGizmoRootSignature);
-				mDirectionalLight->DrawProxyModel(localRT, mGBuffer->GetDepth(), gameTime, debugGizmoRootSignature);
-				if (mTerrain)
-					mTerrain->DrawDebugGizmos(localRT, mGBuffer->GetDepth(), debugGizmoRootSignature);
-				if (mFoliageSystem)
-					mFoliageSystem->DrawDebugGizmos(localRT, mGBuffer->GetDepth(), debugGizmoRootSignature);
-				for (auto& it = mScene->objects.begin(); it != mScene->objects.end(); it++)
-					it->second->DrawAABB(localRT, mGBuffer->GetDepth(), debugGizmoRootSignature);
+				ER_RHI_GPUTexture* localRT = mIllumination->GetLocalIlluminationRT();
+
+				mIllumination->DrawDebugProbes(localRT, mGBuffer->GetDepth());
+
+				rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_LINELIST);
+				ER_RHI_GPURootSignature* debugGizmoRootSignature = mScene->GetStandardMaterialRootSignature(ER_MaterialHelper::basicColorMaterialName);
+				rhi->SetRootSignature(debugGizmoRootSignature);
+				{
+					mIllumination->DrawDebugGizmos(localRT, mGBuffer->GetDepth(), debugGizmoRootSignature);
+					mDirectionalLight->DrawProxyModel(localRT, mGBuffer->GetDepth(), gameTime, debugGizmoRootSignature);
+					if (mTerrain)
+						mTerrain->DrawDebugGizmos(localRT, mGBuffer->GetDepth(), debugGizmoRootSignature);
+					if (mFoliageSystem)
+						mFoliageSystem->DrawDebugGizmos(localRT, mGBuffer->GetDepth(), debugGizmoRootSignature);
+					for (auto& it = mScene->objects.begin(); it != mScene->objects.end(); it++)
+						it->second->DrawAABB(localRT, mGBuffer->GetDepth(), debugGizmoRootSignature);
+				}
+				rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			}
-			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			rhi->EndEventTag();
 		}
 #pragma endregion
 		
 		// combine the results of local and global illumination
-		mIllumination->CompositeTotalIllumination();
+		rhi->BeginEventTag("EveryRay: Composite Illumination");
+		{
+			mIllumination->CompositeTotalIllumination();
+		}
+		rhi->EndEventTag();
 
 		#pragma region DRAW_VOLUMETRIC_FOG
-		mVolumetricFog->Draw();
+		rhi->BeginEventTag("EveryRay: Volumetric Fog");
+		{
+			mVolumetricFog->Draw();
+		}
+		rhi->EndEventTag();
 #pragma endregion
 
 		#pragma region DRAW_VOLUMETRIC_CLOUDS
-		mVolumetricClouds->Draw(gameTime);
+		rhi->BeginEventTag("EveryRay: Volumetric Clouds");
+		{
+			mVolumetricClouds->Draw(gameTime);
+		}
+		rhi->EndEventTag();
 #pragma endregion	
 
 		#pragma region DRAW_POSTPROCESSING
-		auto quad = (ER_QuadRenderer*)game.GetServices().FindService(ER_QuadRenderer::TypeIdClass());
-		mPostProcessingStack->Begin(mIllumination->GetFinalIlluminationRT(), mGBuffer->GetDepth());
-		mPostProcessingStack->DrawEffects(gameTime, quad, mGBuffer, mVolumetricClouds, mVolumetricFog);
-		mPostProcessingStack->End();
+		rhi->BeginEventTag("EveryRay: Post Processing");
+		{
+			auto quad = (ER_QuadRenderer*)game.GetServices().FindService(ER_QuadRenderer::TypeIdClass());
+			mPostProcessingStack->Begin(mIllumination->GetFinalIlluminationRT(), mGBuffer->GetDepth());
+			mPostProcessingStack->DrawEffects(gameTime, quad, mGBuffer, mVolumetricClouds, mVolumetricFog);
+			mPostProcessingStack->End();
+		}
+		rhi->EndEventTag();
 #pragma endregion
 
 		// reset back to main RT before UI rendering
 		rhi->SetMainRenderTargets();
 
 		#pragma region DRAW_IMGUI
-		rhi->SetGPUDescriptorHeapImGui(rhi->GetCurrentGraphicsCommandListIndex());
+		rhi->BeginEventTag("EveryRay: ImGui");
+		{
+			rhi->SetGPUDescriptorHeapImGui(rhi->GetCurrentGraphicsCommandListIndex());
 
-		ImGui::Render();
-		rhi->RenderDrawDataImGui();
+			ImGui::Render();
+			rhi->RenderDrawDataImGui();
+		}
+		rhi->EndEventTag();
 #pragma endregion
 	}
 }
