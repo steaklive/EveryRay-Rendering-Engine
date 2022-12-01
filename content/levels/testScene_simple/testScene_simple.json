@@ -196,7 +196,7 @@
 			[
 				{
 					"albedo" : "content\\models\\lpshead\\DiffuseMap.dds",
-					"normal" : "content\\models\\lpshead\\NormalMap.png",
+					"normal" : "content\\models\\lpshead\\NormalMap.dds",
 					"roughness" : "content\\models\\lpshead\\RoughnessMap.png"
 				}
 			],
@@ -366,9 +366,8 @@
 			"textures" : 
 			[
 				{
-					"albedo" : "content\\models\\rocks\\rock_1\\rock_low_Base_Color.png",
-					"metalness" : "content\\models\\rocks\\rock_1\\rock_low_Metallic.png",
-					"normal" : "content\\models\\rocks\\rock_1\\rock_low_Normal_DirectX.png",
+					"albedo" : "content\\models\\rocks\\rock_1\\rock_low_Base_Color.dds",
+					"normal" : "content\\models\\rocks\\rock_1\\rock_low_Normal_DirectX.dds",
 					"roughness" : "content\\models\\rocks\\rock_1\\rock_low_Roughness.png"
 				}
 			],
