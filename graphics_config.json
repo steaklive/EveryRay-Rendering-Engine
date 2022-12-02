@@ -1,0 +1,71 @@
+{
+	"current_preset" : "high",
+	"presets" :
+	[
+		{
+			"preset_name" : "ultra low",
+			"resolution_width" : 1280,
+			"resolution_height" : 720,
+			"texture_quality" : 0,
+			"foliage_quality" : 0,
+			"shadow_quality" : 0,
+			"aa_quality" : 0,
+			"sss_quality" : 0,
+			"gi_quality" : 0,
+			"volumetric_fog_quality" : 0,
+			"volumetric_clouds_quality" : 0
+		},
+		{
+			"preset_name" : "low",
+			"resolution_width" : 1920,
+			"resolution_height" : 1080,
+			"texture_quality" : 0,
+			"foliage_quality" : 0,
+			"shadow_quality" : 0,
+			"aa_quality" : 1,
+			"sss_quality" : 1,
+			"gi_quality" : 0,
+			"volumetric_fog_quality" : 0,
+			"volumetric_clouds_quality" : 1
+		},
+		{
+			"preset_name" : "medium",
+			"resolution_width" : 1920,
+			"resolution_height" : 1080,
+			"texture_quality" : 1,
+			"foliage_quality" : 1,
+			"shadow_quality" : 1,
+			"aa_quality" : 1,
+			"sss_quality" : 1,
+			"gi_quality" : 1,
+			"volumetric_fog_quality" : 1,
+			"volumetric_clouds_quality" : 2
+		},
+		{
+			"preset_name" : "high",
+			"resolution_width" : 1920,
+			"resolution_height" : 1080,
+			"texture_quality" : 2,
+			"foliage_quality" : 2,
+			"shadow_quality" : 2,
+			"aa_quality" : 1,
+			"sss_quality" : 1,
+			"gi_quality" : 2,
+			"volumetric_fog_quality" : 2,
+			"volumetric_clouds_quality" : 3
+		},
+		{
+			"preset_name" : "ultra high",
+			"resolution_width" : 3840,
+			"resolution_height" : 2160,
+			"texture_quality" : 2,
+			"foliage_quality" : 2,
+			"shadow_quality" : 2,
+			"aa_quality" : 1,
+			"sss_quality" : 1,
+			"gi_quality" : 2,
+			"volumetric_fog_quality" : 2,
+			"volumetric_clouds_quality" : 3
+		}
+	]
+}

@@ -12,10 +12,17 @@ namespace EveryRay_Core
 	class ER_Scene;
 	class ER_Terrain;
 
+	enum ShadowQuality
+	{
+		SHADOW_LOW = 0,
+		SHADOW_MEDIUM,
+		SHADOW_HIGH
+	};
+
 	class ER_ShadowMapper : public ER_CoreComponent 
 	{
 	public:
-		ER_ShadowMapper(ER_Core& pCore, ER_Camera& camera, ER_DirectionalLight& dirLight, UINT pWidth, UINT pHeight, bool isCascaded = true);
+		ER_ShadowMapper(ER_Core& pCore, ER_Camera& camera, ER_DirectionalLight& dirLight, ShadowQuality pQuality, bool isCascaded = true);
 		~ER_ShadowMapper();
 
 		void Draw(const ER_Scene* scene, ER_Terrain* terrain = nullptr);

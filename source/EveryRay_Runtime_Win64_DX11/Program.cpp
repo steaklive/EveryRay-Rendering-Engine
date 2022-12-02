@@ -23,9 +23,9 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR command
 	//#endif
 
 #if defined(DEBUG) || defined(_DEBUG)
-	std::unique_ptr<ER_RuntimeCore> game(new ER_RuntimeCore(new ER_RHI_DX11(), instance, L"EveryRay Main Window Class", L"EveryRay - Rendering Engine | Win64 DX11 (Debug)", showCommand, 1920, 1080, false));
+	std::unique_ptr<ER_RuntimeCore> game(new ER_RuntimeCore(new ER_RHI_DX11(), instance, L"EveryRay Main Window Class", L"EveryRay - Rendering Engine | Win64 DX11 (Debug)", showCommand, false));
 #else
-	std::unique_ptr<ER_RuntimeCore> game(new ER_RuntimeCore(new ER_RHI_DX11(), instance, L"EveryRay Main Window Class", L"EveryRay - Rendering Engine | Win64 DX11 (Release)", showCommand, 1920, 1080, false));
+	std::unique_ptr<ER_RuntimeCore> game(new ER_RuntimeCore(new ER_RHI_DX11(), instance, L"EveryRay Main Window Class", L"EveryRay - Rendering Engine | Win64 DX11 (Release)", showCommand, false));
 #endif
 	try {
 		game->Run();

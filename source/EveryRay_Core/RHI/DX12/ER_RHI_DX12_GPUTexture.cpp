@@ -298,11 +298,11 @@ namespace EveryRay_Core
 			mResourceUpload->SetName(uploadname.c_str());
 		}
 	}
-	void ER_RHI_DX12_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath /*= false*/, bool is3D, bool skipFallback, bool* statusFlag)
+	void ER_RHI_DX12_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath /*= false*/, bool is3D, bool skipFallback, bool* statusFlag, bool isSilent)
 	{
-		CreateGPUTextureResource(aRHI, EveryRay_Core::ER_Utility::ToWideString(aPath), isFullPath, is3D);
+		CreateGPUTextureResource(aRHI, EveryRay_Core::ER_Utility::ToWideString(aPath), isFullPath, is3D, skipFallback, statusFlag, isSilent);
 	}
-	void ER_RHI_DX12_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath /*= false*/, bool is3D, bool skipFallback, bool* statusFlag)
+	void ER_RHI_DX12_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath /*= false*/, bool is3D, bool skipFallback, bool* statusFlag, bool isSilent)
 	{
 		assert(aRHI);
 		ER_RHI_DX12* aRHIDX12 = static_cast<ER_RHI_DX12*>(aRHI);
@@ -320,9 +320,10 @@ namespace EveryRay_Core
 		const wchar_t* postfixDDS_Capital = L".DDS";
 		bool isDDS = (originalPath.substr(originalPath.length() - 4) == std::wstring(postfixDDS)) || (originalPath.substr(originalPath.length() - 4) == std::wstring(postfixDDS_Capital));
 
-		auto outputLog = [](const std::wstring& pathT) {
+		auto outputLog = [isSilent](const std::wstring& pathT) {
 			std::wstring msg = L"[ER Logger][ER_RHI_DX12_GPUTexture] Failed to load texture from disk: " + pathT + L". Loading fallback texture instead unless forced not to. \n";
-			ER_OUTPUT_LOG(msg.c_str());
+			if (!isSilent)
+				ER_OUTPUT_LOG(msg.c_str());
 		};
 
 		if (isDDS)

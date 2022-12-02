@@ -61,13 +61,26 @@ namespace EveryRay_Core {
 
 	const float voxelCascadesSizes[NUM_VOXEL_GI_CASCADES] = { 128.0, 128.0 };
 
-	ER_Illumination::ER_Illumination(ER_Core& game, ER_Camera& camera, const ER_DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const ER_Scene* scene)
+	ER_Illumination::ER_Illumination(ER_Core& game, ER_Camera& camera, const ER_DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const ER_Scene* scene, GIQuality quality)
 		: 
 		ER_CoreComponent(game),
 		mCamera(camera),
 		mDirectionalLight(light),
-		mShadowMapper(shadowMapper)
+		mShadowMapper(shadowMapper),
+		mCurrentGIQuality(quality)
 	{
+		switch (quality)
+		{
+		case GIQuality::GI_LOW:
+			mVCTDownscaleFactor = 0.25; // we are not using VCT on this config anyway, just a placeholder
+			break;
+		case GIQuality::GI_MEDIUM:
+			mVCTDownscaleFactor = 0.5;
+			break;
+		case GIQuality::GI_HIGH:
+			mVCTDownscaleFactor = 0.75;
+			break;
+		}
 		Initialize(scene);
 	}
 
@@ -124,21 +137,24 @@ namespace EveryRay_Core {
 
 		//shaders
 		{
-			mVCTVoxelizationDebugVS = rhi->CreateGPUShader();
-			mVCTVoxelizationDebugVS->CompileShader(rhi, "content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl", "VSMain", ER_VERTEX);
+			if (mCurrentGIQuality != GIQuality::GI_LOW)
+			{
+				mVCTVoxelizationDebugVS = rhi->CreateGPUShader();
+				mVCTVoxelizationDebugVS->CompileShader(rhi, "content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl", "VSMain", ER_VERTEX);
 
-			mVCTVoxelizationDebugGS = rhi->CreateGPUShader();
-			mVCTVoxelizationDebugGS->CompileShader(rhi, "content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl", "GSMain", ER_GEOMETRY);
-			
-			mVCTVoxelizationDebugPS = rhi->CreateGPUShader();
-			mVCTVoxelizationDebugPS->CompileShader(rhi, "content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl", "PSMain", ER_PIXEL);
-			
-			mVCTMainCS = rhi->CreateGPUShader();
-			mVCTMainCS->CompileShader(rhi, "content\\shaders\\GI\\VoxelConeTracingMain.hlsl", "CSMain", ER_COMPUTE);
-			
+				mVCTVoxelizationDebugGS = rhi->CreateGPUShader();
+				mVCTVoxelizationDebugGS->CompileShader(rhi, "content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl", "GSMain", ER_GEOMETRY);
+
+				mVCTVoxelizationDebugPS = rhi->CreateGPUShader();
+				mVCTVoxelizationDebugPS->CompileShader(rhi, "content\\shaders\\GI\\VoxelConeTracingVoxelizationDebug.hlsl", "PSMain", ER_PIXEL);
+
+				mVCTMainCS = rhi->CreateGPUShader();
+				mVCTMainCS->CompileShader(rhi, "content\\shaders\\GI\\VoxelConeTracingMain.hlsl", "CSMain", ER_COMPUTE);
+			}
+
 			mUpsampleBlurCS = rhi->CreateGPUShader();
-			mUpsampleBlurCS->CompileShader(rhi, "content\\shaders\\UpsampleBlur.hlsl", "CSMain", ER_COMPUTE);	
-			
+			mUpsampleBlurCS->CompileShader(rhi, "content\\shaders\\UpsampleBlur.hlsl", "CSMain", ER_COMPUTE);
+
 			mCompositeIlluminationCS = rhi->CreateGPUShader();
 			mCompositeIlluminationCS->CompileShader(rhi, "content\\shaders\\CompositeIllumination.hlsl", "CSMain", ER_COMPUTE);
 
@@ -183,8 +199,11 @@ namespace EveryRay_Core {
 		
 		//cbuffers
 		{
-			mVoxelizationDebugConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Voxelization Debug CB");
-			mVoxelConeTracingMainConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Voxel Cone Tracing Main CB");
+			if (mCurrentGIQuality != GIQuality::GI_LOW)
+			{
+				mVoxelizationDebugConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Voxelization Debug CB");
+				mVoxelConeTracingMainConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Voxel Cone Tracing Main CB");
+			}
 			mCompositeTotalIlluminationConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Composite Total Illumination CB");
 			mUpsampleBlurConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Upsample+Blur CB");
 			mDeferredLightingConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Deferred Lighting CB");
@@ -194,32 +213,35 @@ namespace EveryRay_Core {
 
 		//RTs and gizmos
 		{
-			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
+			if (mCurrentGIQuality != GIQuality::GI_LOW)
 			{
-				mVCTVoxelCascades3DRTs[i] = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Voxel Cone Tracing 3D Cascade #" + std::to_wstring(i));
-				mVCTVoxelCascades3DRTs[i]->CreateGPUTextureResource(rhi, voxelCascadesSizes[i], voxelCascadesSizes[i], 1u,
-					ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET | ER_BIND_UNORDERED_ACCESS, 6, voxelCascadesSizes[i]);
-				
-				mVoxelCameraPositions[i] = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f);
-				
-				mDebugVoxelZonesGizmos[i] = new ER_RenderableAABB(*mCore, XMFLOAT4(0.1f, 0.34f, 0.1f, 1.0f));
-				float maxBB = voxelCascadesSizes[i] / mWorldVoxelScales[i] * 0.5f;
-				mLocalVoxelCascadesAABBs[i].first = XMFLOAT3(-maxBB, -maxBB, -maxBB);
-				mLocalVoxelCascadesAABBs[i].second = XMFLOAT3(maxBB, maxBB, maxBB);
-				mDebugVoxelZonesGizmos[i]->InitializeGeometry({ mLocalVoxelCascadesAABBs[i].first, mLocalVoxelCascadesAABBs[i].second });
+				for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
+				{
+					mVCTVoxelCascades3DRTs[i] = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Voxel Cone Tracing 3D Cascade #" + std::to_wstring(i));
+					mVCTVoxelCascades3DRTs[i]->CreateGPUTextureResource(rhi, voxelCascadesSizes[i], voxelCascadesSizes[i], 1u,
+						ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET | ER_BIND_UNORDERED_ACCESS, 6, voxelCascadesSizes[i]);
+
+					mVoxelCameraPositions[i] = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f);
+
+					mDebugVoxelZonesGizmos[i] = new ER_RenderableAABB(*mCore, XMFLOAT4(0.1f, 0.34f, 0.1f, 1.0f));
+					float maxBB = voxelCascadesSizes[i] / mWorldVoxelScales[i] * 0.5f;
+					mLocalVoxelCascadesAABBs[i].first = XMFLOAT3(-maxBB, -maxBB, -maxBB);
+					mLocalVoxelCascadesAABBs[i].second = XMFLOAT3(maxBB, maxBB, maxBB);
+					mDebugVoxelZonesGizmos[i]->InitializeGeometry({ mLocalVoxelCascadesAABBs[i].first, mLocalVoxelCascadesAABBs[i].second });
+				}
+				mVCTMainRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Voxel Cone Tracing Main RT");
+				mVCTMainRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()) * mVCTDownscaleFactor, static_cast<UINT>(mCore->ScreenHeight()) * mVCTDownscaleFactor, 1u,
+					ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1);
+
+				mVCTUpsampleAndBlurRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Voxel Cone Tracing Upsample+Blur RT");
+				mVCTUpsampleAndBlurRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
+					ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1);
+
+				mVCTVoxelizationDebugRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Voxel Cone Tracing Voxelization Debug RT");
+				mVCTVoxelizationDebugRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
+					ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
 			}
-			mVCTMainRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Voxel Cone Tracing Main RT");
-			mVCTMainRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()) * VCT_GI_MAIN_PASS_DOWNSCALE, static_cast<UINT>(mCore->ScreenHeight()) * VCT_GI_MAIN_PASS_DOWNSCALE, 1u, 
-				ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1);
-			
-			mVCTUpsampleAndBlurRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Voxel Cone Tracing Upsample+Blur RT");
-			mVCTUpsampleAndBlurRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
-				ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1);
-			
-			mVCTVoxelizationDebugRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Voxel Cone Tracing Voxelization Debug RT");
-			mVCTVoxelizationDebugRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
-				ER_FORMAT_R8G8B8A8_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET, 1);
-			
+
 			mFinalIlluminationRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Final Illumination RT");
 			mFinalIlluminationRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
 				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET | ER_BIND_UNORDERED_ACCESS, 1);
@@ -234,33 +256,36 @@ namespace EveryRay_Core {
 
 		// Root-signatures
 		{
-			mVoxelizationRS = rhi->CreateRootSignature(3, 2);
-			if (mVoxelizationRS)
+			if (mCurrentGIQuality != GIQuality::GI_LOW)
 			{
-				mVoxelizationRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_ALL);
-				mVoxelizationRS->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SHADER_VISIBILITY_ALL);
-				mVoxelizationRS->InitDescriptorTable(rhi, VOXELIZATION_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
-				mVoxelizationRS->InitDescriptorTable(rhi, VOXELIZATION_MAT_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
-				mVoxelizationRS->InitDescriptorTable(rhi, VOXELIZATION_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
-				mVoxelizationRS->Finalize(rhi, "ER_RHI_GPURootSignature: VoxelizationMaterial Pass", true);
-			}
+				mVoxelizationRS = rhi->CreateRootSignature(3, 2);
+				if (mVoxelizationRS)
+				{
+					mVoxelizationRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_ALL);
+					mVoxelizationRS->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SHADER_VISIBILITY_ALL);
+					mVoxelizationRS->InitDescriptorTable(rhi, VOXELIZATION_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
+					mVoxelizationRS->InitDescriptorTable(rhi, VOXELIZATION_MAT_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+					mVoxelizationRS->InitDescriptorTable(rhi, VOXELIZATION_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+					mVoxelizationRS->Finalize(rhi, "ER_RHI_GPURootSignature: VoxelizationMaterial Pass", true);
+				}
 
-			mVoxelizationDebugRS = rhi->CreateRootSignature(2, 0);
-			if (mVoxelizationDebugRS)
-			{
-				mVoxelizationDebugRS->InitDescriptorTable(rhi, VCT_DEBUG_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
-				mVoxelizationDebugRS->InitDescriptorTable(rhi, VCT_DEBUG_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
-				mVoxelizationDebugRS->Finalize(rhi, "ER_RHI_GPURootSignature: Voxelization Debug Pass", true);
-			}
+				mVoxelizationDebugRS = rhi->CreateRootSignature(2, 0);
+				if (mVoxelizationDebugRS)
+				{
+					mVoxelizationDebugRS->InitDescriptorTable(rhi, VCT_DEBUG_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+					mVoxelizationDebugRS->InitDescriptorTable(rhi, VCT_DEBUG_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+					mVoxelizationDebugRS->Finalize(rhi, "ER_RHI_GPURootSignature: Voxelization Debug Pass", true);
+				}
 
-			mVCTRS = rhi->CreateRootSignature(3, 1);
-			if (mVCTRS)
-			{
-				mVCTRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_ALL);
-				mVCTRS->InitDescriptorTable(rhi, VCT_MAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 4 + NUM_VOXEL_GI_CASCADES }, ER_RHI_SHADER_VISIBILITY_ALL);
-				mVCTRS->InitDescriptorTable(rhi, VCT_MAIN_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
-				mVCTRS->InitDescriptorTable(rhi, VCT_MAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
-				mVCTRS->Finalize(rhi, "ER_RHI_GPURootSignature: Voxel Cone Tracing Main Pass");
+				mVCTRS = rhi->CreateRootSignature(3, 1);
+				if (mVCTRS)
+				{
+					mVCTRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_ALL);
+					mVCTRS->InitDescriptorTable(rhi, VCT_MAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 4 + NUM_VOXEL_GI_CASCADES }, ER_RHI_SHADER_VISIBILITY_ALL);
+					mVCTRS->InitDescriptorTable(rhi, VCT_MAIN_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+					mVCTRS->InitDescriptorTable(rhi, VCT_MAIN_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+					mVCTRS->Finalize(rhi, "ER_RHI_GPURootSignature: Voxel Cone Tracing Main Pass");
+				}
 			}
 
 			mUpsampleAndBlurRS = rhi->CreateRootSignature(3, 1);
@@ -360,6 +385,9 @@ namespace EveryRay_Core {
 	void ER_Illumination::DrawDynamicGlobalIllumination(ER_GBuffer* gbuffer, const ER_CoreTime& gameTime)
 	{
 		ER_RHI* rhi = GetCore()->GetRHI();
+
+		if (mCurrentGIQuality == GIQuality::GI_LOW)
+			return;
 
 		if (!mEnabled)
 		{
@@ -511,7 +539,7 @@ namespace EveryRay_Core {
 			}
 
 			mVoxelConeTracingMainConstantBuffer.Data.CameraPos = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1);
-			mVoxelConeTracingMainConstantBuffer.Data.UpsampleRatio = XMFLOAT2(1.0f / VCT_GI_MAIN_PASS_DOWNSCALE, 1.0f / VCT_GI_MAIN_PASS_DOWNSCALE);
+			mVoxelConeTracingMainConstantBuffer.Data.UpsampleRatio = XMFLOAT2(1.0f / mVCTDownscaleFactor, 1.0f / mVCTDownscaleFactor);
 			mVoxelConeTracingMainConstantBuffer.Data.IndirectDiffuseStrength = mVCTIndirectDiffuseStrength;
 			mVoxelConeTracingMainConstantBuffer.Data.IndirectSpecularStrength = mVCTIndirectSpecularStrength;
 			mVoxelConeTracingMainConstantBuffer.Data.MaxConeTraceDistance = mVCTMaxConeTraceDistance;
@@ -576,7 +604,9 @@ namespace EveryRay_Core {
 	{
 		auto rhi = GetCore()->GetRHI();
 
-		mCompositeTotalIlluminationConstantBuffer.Data.DebugVoxelAO = XMFLOAT4(mShowVCTVoxelizationOnly ? 1.0f : -1.0f, mShowVCTAmbientOcclusionOnly ? 1.0f : -1.0f, 0.0, 0.0);
+		mCompositeTotalIlluminationConstantBuffer.Data.DebugVoxelAO_Disable = XMFLOAT4(
+			mShowVCTVoxelizationOnly ? 1.0f : -1.0f,
+			mShowVCTAmbientOcclusionOnly ? 1.0f : -1.0f, mCurrentGIQuality == GIQuality::GI_LOW ? 1.0f : 0.0f, 0.0f);
 		mCompositeTotalIlluminationConstantBuffer.ApplyChanges(rhi);
 
 		// mLocalIllumination might be bound as RTV before this pass
@@ -591,8 +621,16 @@ namespace EveryRay_Core {
 		}
 		rhi->SetPSO(mCompositeIlluminationPSOName, true);
 		rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
-		rhi->SetShaderResources(ER_COMPUTE, { mShowVCTVoxelizationOnly ? mVCTVoxelizationDebugRT : mVCTUpsampleAndBlurRT, mLocalIlluminationRT }, 0, 
-			mCompositeIlluminationRS, COMPOSITE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
+		if (mCurrentGIQuality == GIQuality::GI_LOW)
+		{
+			rhi->SetShaderResources(ER_COMPUTE, { nullptr, mLocalIlluminationRT }, 0,
+				mCompositeIlluminationRS, COMPOSITE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
+		}
+		else
+		{
+			rhi->SetShaderResources(ER_COMPUTE, { mShowVCTVoxelizationOnly ? mVCTVoxelizationDebugRT : mVCTUpsampleAndBlurRT, mLocalIlluminationRT }, 0,
+				mCompositeIlluminationRS, COMPOSITE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
+		}
 		rhi->SetUnorderedAccessResources(ER_COMPUTE, { mFinalIlluminationRT }, 0, mCompositeIlluminationRS, COMPOSITE_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
 		rhi->SetConstantBuffers(ER_COMPUTE, { mCompositeTotalIlluminationConstantBuffer.Buffer() }, 0, mCompositeIlluminationRS, COMPOSITE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
 		rhi->Dispatch(ER_DivideByMultiple(static_cast<UINT>(mFinalIlluminationRT->GetWidth()), 8u), ER_DivideByMultiple(static_cast<UINT>(mFinalIlluminationRT->GetHeight()), 8u), 1u);
@@ -603,6 +641,9 @@ namespace EveryRay_Core {
 
 	void ER_Illumination::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, ER_RHI_GPURootSignature* rs)
 	{
+		if (mCurrentGIQuality == GIQuality::GI_LOW)
+			return;
+
 		//voxel GI
 		if (mDrawVCTVoxelZonesGizmos) 
 		{
@@ -713,6 +754,9 @@ namespace EveryRay_Core {
 
 	void ER_Illumination::UpdateVoxelCameraPosition()
 	{
+		if (mCurrentGIQuality == GIQuality::GI_LOW)
+			return;
+
 		for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 		{
 			float halfCascadeBox = 0.5f * (voxelCascadesSizes[i] / mWorldVoxelScales[i] * 0.5f);
@@ -938,6 +982,9 @@ namespace EveryRay_Core {
 
 	void ER_Illumination::CPUCullObjectsAgainstVoxelCascades(const ER_Scene* scene)
 	{
+		if (mCurrentGIQuality == GIQuality::GI_LOW)
+			return;
+
 		//TODO add instancing support
 		//TODO fix repetition checks when the object AABB is bigger than the lower cascade (i.e. sponza)
 		//TODO add optimization for culling objects by checking its volume size in second+ cascades

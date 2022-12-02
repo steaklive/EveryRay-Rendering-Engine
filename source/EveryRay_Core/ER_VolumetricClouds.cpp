@@ -25,11 +25,12 @@
 #define COMPOSITE_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
 
 namespace EveryRay_Core {
-	ER_VolumetricClouds::ER_VolumetricClouds(ER_Core& game, ER_Camera& camera, ER_DirectionalLight& light, ER_Skybox& skybox)
+	ER_VolumetricClouds::ER_VolumetricClouds(ER_Core& game, ER_Camera& camera, ER_DirectionalLight& light, ER_Skybox& skybox, VolumetricCloudsQuality aQuality)
 		: ER_CoreComponent(game),
 		mCamera(camera), 
 		mDirectionalLight(light),
-		mSkybox(skybox)
+		mSkybox(skybox),
+		mCurrentQuality(aQuality)
 	{
 	}
 	ER_VolumetricClouds::~ER_VolumetricClouds()
@@ -55,6 +56,22 @@ namespace EveryRay_Core {
 
 	void ER_VolumetricClouds::Initialize(ER_RHI_GPUTexture* aIlluminationDepth) 
 	{
+		switch (mCurrentQuality)
+		{
+		case VolumetricCloudsQuality::VC_DISABLED:
+			return;
+			break;	
+		case VolumetricCloudsQuality::VC_LOW:
+			mDownscaleFactor = 0.5f;
+			break;	
+		case VolumetricCloudsQuality::VC_MEDIUM:
+			mDownscaleFactor = 0.75f;
+			break;
+		case VolumetricCloudsQuality::VC_HIGH:
+			mDownscaleFactor = 0.9f;
+			break;
+		}
+
 		//shaders
 		auto rhi = GetCore()->GetRHI();
 
@@ -135,6 +152,9 @@ namespace EveryRay_Core {
 	
 	void ER_VolumetricClouds::Update(const ER_CoreTime& gameTime)
 	{
+		if (mCurrentQuality == VolumetricCloudsQuality::VC_DISABLED)
+			return;
+
 		UpdateImGui();
 
 		if (!mEnabled)
@@ -188,7 +208,7 @@ namespace EveryRay_Core {
 
 	void ER_VolumetricClouds::Draw(const ER_CoreTime& gametime)
 	{
-		if (!mEnabled)
+		if (!mEnabled || mCurrentQuality == VolumetricCloudsQuality::VC_DISABLED)
 			return;
 
 		assert(mIlluminationResultDepthTarget);
@@ -268,6 +288,9 @@ namespace EveryRay_Core {
 
 	void ER_VolumetricClouds::Composite(ER_RHI_GPUTexture* aRenderTarget)
 	{
+		if (mCurrentQuality == VolumetricCloudsQuality::VC_DISABLED)
+			return;
+
 		ER_QuadRenderer* quadRenderer = (ER_QuadRenderer*)mCore->GetServices().FindService(ER_QuadRenderer::TypeIdClass());
 		assert(quadRenderer);
 

@@ -17,6 +17,15 @@ namespace EveryRay_Core
 	class ER_Camera;
 	class ER_Model;
 
+	enum RenderingObjectTextureQuality
+	{
+		OBJECT_TEXTURE_LOW = 0,
+		OBJECT_TEXTURE_MEDIUM,
+		OBJECT_TEXTURE_HIGH,
+
+		OBJECT_TEXTURE_COUNT,
+	};
+
 	struct RenderBufferData
 	{
 		ER_RHI_GPUBuffer*		VertexBuffer;
@@ -370,5 +379,7 @@ namespace EveryRay_Core
 			0.f, 0.f, 1.f, 0.f,
 			0.f, 0.f, 0.f, 1.f 
 		};
+
+		RenderingObjectTextureQuality							mCurrentTextureQuality = RenderingObjectTextureQuality::OBJECT_TEXTURE_LOW;
 	};
 }

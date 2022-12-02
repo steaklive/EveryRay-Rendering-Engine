@@ -54,7 +54,7 @@ namespace EveryRay_Core
 		ER_PostProcessingStack(ER_Core& pCore, ER_Camera& pCamera);
 		~ER_PostProcessingStack();
 
-		void Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR = true, bool pFog = false, bool pLightShafts = false);
+		void Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR = true, bool pFog = false, bool pLightShafts = false, bool pSSS = false);
 	
 		void Begin(ER_RHI_GPUTexture* aInitialRT, ER_RHI_GPUTexture* aDepthTarget);
 		void End(ER_RHI_GPUTexture* aResolveRT = nullptr);

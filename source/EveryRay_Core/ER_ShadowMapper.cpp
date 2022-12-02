@@ -25,22 +25,34 @@ static const std::string psoNameInstanced = "ER_RHI_GPUPipelineStateObject: Shad
 
 namespace EveryRay_Core
 {
-	ER_ShadowMapper::ER_ShadowMapper(ER_Core& pCore, ER_Camera& camera, ER_DirectionalLight& dirLight,  UINT pWidth, UINT pHeight, bool isCascaded)
+	ER_ShadowMapper::ER_ShadowMapper(ER_Core& pCore, ER_Camera& camera, ER_DirectionalLight& dirLight, ShadowQuality pQuality, bool isCascaded)
 		: ER_CoreComponent(pCore),
 		mShadowMaps(0, nullptr), 
 		mDirectionalLight(dirLight),
 		mCamera(camera),
-		mResolution(pWidth),
 		mIsCascaded(isCascaded)
 	{
 		auto rhi = GetCore()->GetRHI();
+
+		switch (pQuality)
+		{
+		case ShadowQuality::SHADOW_LOW:
+			mResolution = 512;
+			break;
+		case ShadowQuality::SHADOW_MEDIUM:
+			mResolution = 1024;
+			break;
+		case ShadowQuality::SHADOW_HIGH:
+			mResolution = 2048;
+			break;
+		}
 
 		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 		{
 			mLightProjectorCenteredPositions.push_back(XMFLOAT3(0, 0, 0));
 			
 			mShadowMaps.push_back(rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Shadow Map #" + std::to_wstring(i)));
-			mShadowMaps[i]->CreateGPUTextureResource(rhi, pWidth, pHeight, 1u, ER_FORMAT_D16_UNORM, ER_BIND_DEPTH_STENCIL | ER_BIND_SHADER_RESOURCE);
+			mShadowMaps[i]->CreateGPUTextureResource(rhi, mResolution, mResolution, 1u, ER_FORMAT_D16_UNORM, ER_BIND_DEPTH_STENCIL | ER_BIND_SHADER_RESOURCE);
 
 			mCameraCascadesFrustums.push_back(XMMatrixIdentity());
 			(isCascaded) ? mCameraCascadesFrustums[i].SetMatrix(mCamera.GetCustomViewProjectionMatrixForCascade(i)) : mCameraCascadesFrustums[i].SetMatrix(mCamera.ProjectionMatrix());
@@ -71,7 +83,7 @@ namespace EveryRay_Core
 
 	void ER_ShadowMapper::Update(const ER_CoreTime& gameTime)
 	{
-		for (size_t i = 0; i < NUM_SHADOW_CASCADES; i++)
+		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 		{
 			(mIsCascaded) ? mCameraCascadesFrustums[i].SetMatrix(mCamera.GetCustomViewProjectionMatrixForCascade(i)) : mCameraCascadesFrustums[i].SetMatrix(mCamera.ProjectionMatrix());
 

@@ -13,20 +13,32 @@ namespace EveryRay_Core
 	class ER_Editor;
 	class ER_QuadRenderer;
 	
+	enum GraphicsQualityPreset
+	{
+		ULTRA_LOW = 0,
+		LOW,
+		MEDIUM,
+		HIGH,
+		ULTRA_HIGH,
+		GRAPHICS_PRESETS_COUNT
+	};
+
 	class ER_RuntimeCore : public ER_Core
 	{
 	public:
-		ER_RuntimeCore(ER_RHI* aRHI, HINSTANCE instance, const std::wstring& windowClass, const std::wstring& windowTitle, int showCommand, UINT width, UINT height, bool isFullscreen);
+		ER_RuntimeCore(ER_RHI* aRHI, HINSTANCE instance, const std::wstring& windowClass, const std::wstring& windowTitle, int showCommand, bool isFullscreen);
 		~ER_RuntimeCore();
 
 		virtual void Initialize() override;
 		virtual void Update(const ER_CoreTime& gameTime) override;
 		virtual void Draw(const ER_CoreTime& gameTime) override;	
+
 	protected:
 		virtual void Shutdown() override;
 	
 	private:
 		void LoadGlobalLevelsConfig();
+		void LoadGraphicsConfig();
 		void SetLevel(const std::string& aSceneName, bool isFirstLoad = false);
 		void UpdateImGui();
 
@@ -57,5 +69,7 @@ namespace EveryRay_Core
 		bool mShowProfiler;
 		bool mShowCameraSettings = true;
 		bool mIsRHIReset = false;
+
+		GraphicsQualityPreset mCurrentGfxQuality;
 	};
 }

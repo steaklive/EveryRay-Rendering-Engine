@@ -10,6 +10,14 @@ namespace EveryRay_Core
 	class ER_Camera;
 	class ER_Skybox;
 
+	enum VolumetricCloudsQuality
+	{
+		VC_DISABLED = 0,
+		VC_LOW,
+		VC_MEDIUM,
+		VC_HIGH
+	};
+
 	namespace VolumetricCloudsCBufferData {
 		struct ER_ALIGN_GPU_BUFFER FrameCB
 		{
@@ -45,7 +53,7 @@ namespace EveryRay_Core
 	class ER_VolumetricClouds : public ER_CoreComponent
 	{
 	public:
-		ER_VolumetricClouds(ER_Core& game, ER_Camera& camera, ER_DirectionalLight& light, ER_Skybox& skybox);
+		ER_VolumetricClouds(ER_Core& game, ER_Camera& camera, ER_DirectionalLight& light, ER_Skybox& skybox, VolumetricCloudsQuality aQuality);
 		~ER_VolumetricClouds();
 
 		void Initialize(ER_RHI_GPUTexture* aIlluminationDepth);
@@ -104,5 +112,7 @@ namespace EveryRay_Core
 
 		bool mEnabled = true;
 		bool mShowDebug = false;
+
+		VolumetricCloudsQuality mCurrentQuality;
 	};
 }

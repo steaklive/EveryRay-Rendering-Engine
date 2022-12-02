@@ -1,5 +1,6 @@
 #include "ER_Sandbox.h"
 #include "ER_Utility.h"
+#include "ER_Settings.h"
 #include "ER_MaterialsCallbacks.h"
 #include "ER_Core.h"
 #include "ER_CoreTime.h"
@@ -126,7 +127,7 @@ namespace EveryRay_Core {
 
 		#pragma region INIT_SHADOWMAPPER
 		game.CPUProfiler()->BeginCPUTime("Shadow mapper init");
-        mShadowMapper = new ER_ShadowMapper(game, camera, *mDirectionalLight, 2048, 2048);
+        mShadowMapper = new ER_ShadowMapper(game, camera, *mDirectionalLight, (ShadowQuality)ER_Settings::ShadowsQuality);
         mDirectionalLight->RotationUpdateEvent->AddListener("shadow mapper", [&]() { mShadowMapper->ApplyTransform(); });
 		game.CPUProfiler()->EndCPUTime("Shadow mapper init");
 #pragma endregion
@@ -134,19 +135,19 @@ namespace EveryRay_Core {
 		#pragma region INIT_POST_PROCESSING
 		game.CPUProfiler()->BeginCPUTime("Post processing stack init");
         mPostProcessingStack = new ER_PostProcessingStack(game, camera);
-        mPostProcessingStack->Initialize(false, false, true, true, true, false, false, false);
+        mPostProcessingStack->Initialize(true, false, true, true, ER_Settings::AntiAliasingQuality > 0, false, false, false, ER_Settings::SubsurfaceScatteringQuality > 0);
 		game.CPUProfiler()->EndCPUTime("Post processing stack init");
 #pragma endregion
 
 		#pragma region INIT_ILLUMINATION
 		game.CPUProfiler()->BeginCPUTime("Illumination init");
-        mIllumination = new ER_Illumination(game, camera, *mDirectionalLight, *mShadowMapper, mScene);
+        mIllumination = new ER_Illumination(game, camera, *mDirectionalLight, *mShadowMapper, mScene, (GIQuality)ER_Settings::GlobalIlluminationQuality);
 		game.CPUProfiler()->EndCPUTime("Illumination init");
 #pragma endregion
 
 		#pragma region INIT_VOLUMETRIC_CLOUDS
 		game.CPUProfiler()->BeginCPUTime("Volumetric Clouds init");
-        mVolumetricClouds = new ER_VolumetricClouds(game, camera, *mDirectionalLight, *mSkybox);
+        mVolumetricClouds = new ER_VolumetricClouds(game, camera, *mDirectionalLight, *mSkybox, (VolumetricCloudsQuality)ER_Settings::VolumetricCloudsQuality);
 		mVolumetricClouds->Initialize(mGBuffer->GetDepth());
 		game.CPUProfiler()->EndCPUTime("Volumetric Clouds init");
 #pragma endregion	

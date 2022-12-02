@@ -267,6 +267,9 @@
     <ClInclude Include="ER_Gamepad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_Settings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -445,6 +448,9 @@
     </ClCompile>
     <ClCompile Include="ER_Gamepad.cpp">
       <Filter>Source Files\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_Settings.cpp">
+      <Filter>Source Files\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

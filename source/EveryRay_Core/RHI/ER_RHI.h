@@ -471,8 +471,8 @@ namespace EveryRay_Core
 
 		virtual void CreateGPUTextureResource(ER_RHI* aRHI, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE,
 			int mip = 1, int depth = -1, int arraySize = 1, bool isCubemap = false, int cubemapArraySize = -1) { AbstractRHIMethodAssert();	}
-		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath = false, bool is3D = false, bool skipFallback = false, bool* statusFlag = nullptr) { AbstractRHIMethodAssert(); }
-		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath = false, bool is3D = false, bool skipFallback = false, bool* statusFlag = nullptr) { AbstractRHIMethodAssert(); }
+		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath = false, bool is3D = false, bool skipFallback = false, bool* statusFlag = nullptr, bool isSilent = false) { AbstractRHIMethodAssert(); }
+		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath = false, bool is3D = false, bool skipFallback = false, bool* statusFlag = nullptr, bool isSilent = false) { AbstractRHIMethodAssert(); }
 
 		virtual void* GetRTV(void* aEmpty = nullptr) { AbstractRHIMethodAssert(); return nullptr; }
 		virtual void* GetRTV(int index) { AbstractRHIMethodAssert(); return nullptr; }

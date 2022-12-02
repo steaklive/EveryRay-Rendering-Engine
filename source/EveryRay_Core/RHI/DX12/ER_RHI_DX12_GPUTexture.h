@@ -12,8 +12,8 @@ namespace EveryRay_Core
 
 		virtual void CreateGPUTextureResource(ER_RHI* aRHI, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE,
 			int mip = 1, int depth = -1, int arraySize = 1, bool isCubemap = false, int cubemapArraySize = -1) override;
-		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath = false, bool is3D = false, bool skipFallback = false, bool* statusFlag = nullptr) override;
-		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath = false, bool is3D = false, bool skipFallback = false, bool* statusFlag = nullptr) override;
+		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::string& aPath, bool isFullPath = false, bool is3D = false, bool skipFallback = false, bool* statusFlag = nullptr, bool isSilent = false) override;
+		virtual void CreateGPUTextureResource(ER_RHI* aRHI, const std::wstring& aPath, bool isFullPath = false, bool is3D = false, bool skipFallback = false, bool* statusFlag = nullptr, bool isSilent = false) override;
 		void CreateSimpleGPUTexture2DResource(ER_RHI* aRHI, UINT width, UINT height, DXGI_FORMAT format, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, int mip = 1);
 
 		virtual void* GetRTV(void* aEmpty = nullptr) override { return nullptr; /* Not needed on DX12 */ }

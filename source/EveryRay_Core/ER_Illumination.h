@@ -7,7 +7,6 @@
 
 #define NUM_VOXEL_GI_CASCADES 2
 #define NUM_VOXEL_GI_TEX_MIPS 6
-#define VCT_GI_MAIN_PASS_DOWNSCALE 0.5
 
 namespace EveryRay_Core
 {
@@ -22,6 +21,17 @@ namespace EveryRay_Core
 	class ER_RenderingObject;
 	class ER_Skybox;
 	class ER_VolumetricFog;
+
+	// TODO: At the moment our GIQuality config only affects VCT and it's resolution (off, 0.5, 0.75), we should also add:
+	// - voxel resolution for vct per config (currently its hardcoded in voxelCascadesSizes)
+	// - light probes settings (i.e., limit the amount of reflection probes per config)
+	// - maybe something else...
+	enum GIQuality
+	{
+		GI_LOW = 0,
+		GI_MEDIUM,
+		GI_HIGH
+	};
 
 	namespace IlluminationCBufferData {
 		struct ER_ALIGN_GPU_BUFFER VoxelizationDebugCB
@@ -46,7 +56,7 @@ namespace EveryRay_Core
 		};
 		struct ER_ALIGN_GPU_BUFFER CompositeTotalIlluminationCB
 		{
-			XMFLOAT4 DebugVoxelAO;
+			XMFLOAT4 DebugVoxelAO_Disable;
 		};
 		struct ER_ALIGN_GPU_BUFFER UpsampleBlurCB
 		{
@@ -92,7 +102,7 @@ namespace EveryRay_Core
 	class ER_Illumination : public ER_CoreComponent
 	{
 	public:
-		ER_Illumination(ER_Core& game, ER_Camera& camera, const ER_DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const ER_Scene* scene);
+		ER_Illumination(ER_Core& game, ER_Camera& camera, const ER_DirectionalLight& light, const ER_ShadowMapper& shadowMapper, const ER_Scene* scene, GIQuality quality);
 		~ER_Illumination();
 
 		void Initialize(const ER_Scene* scene);
@@ -225,6 +235,7 @@ namespace EveryRay_Core
 		float mVCTSamplingFactor = 0.5f;
 		float mVCTVoxelSampleOffset = 0.0f;
 		float mVCTGIPower = 1.0f;
+		float mVCTDownscaleFactor = 0.5f; // % from full-res RT
 		bool mIsVCTVoxelCameraPositionsUpdated = true;
 		bool mShowVCTVoxelizationOnly = false;
 		bool mShowVCTAmbientOcclusionOnly = false;
@@ -247,5 +258,6 @@ namespace EveryRay_Core
 		bool mShowDebug = false;
 
 		RenderingObjectInfo mForwardPassObjects;
+		GIQuality mCurrentGIQuality;
 	};
 }

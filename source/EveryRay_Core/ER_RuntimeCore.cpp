@@ -6,6 +6,7 @@
 #include "ER_Mouse.h"
 #include "ER_Gamepad.h"
 #include "ER_Utility.h"
+#include "ER_Settings.h"
 #include "ER_CameraFPS.h"
 #include "ER_ColorHelper.h"
 #include "ER_MatrixHelper.h"
@@ -24,8 +25,8 @@ namespace EveryRay_Core
 	static float nearPlaneDist = 0.5f;
 	static float farPlaneDist = 600.0f;
 
-	ER_RuntimeCore::ER_RuntimeCore(ER_RHI* aRHI, HINSTANCE instance, const std::wstring& windowClass, const std::wstring& windowTitle, int showCommand, UINT width, UINT height, bool isFullscreen)
-		: ER_Core(aRHI, instance, windowClass, windowTitle, showCommand, width, height, isFullscreen),
+	ER_RuntimeCore::ER_RuntimeCore(ER_RHI* aRHI, HINSTANCE instance, const std::wstring& windowClass, const std::wstring& windowTitle, int showCommand, bool isFullscreen)
+		: ER_Core(aRHI, instance, windowClass, windowTitle, showCommand, isFullscreen),
 		mDirectInput(nullptr),
 		mKeyboard(nullptr),
 		mMouse(nullptr),
@@ -34,14 +35,16 @@ namespace EveryRay_Core
 		mEditor(nullptr),
 		mQuadRenderer(nullptr)
 	{
+		LoadGraphicsConfig();
+
 		mMainViewport.TopLeftX = 0.0f;
 		mMainViewport.TopLeftY = 0.0f;
-		mMainViewport.Width = static_cast<float>(width);
-		mMainViewport.Height = static_cast<float>(height);
+		mMainViewport.Width = static_cast<float>(mScreenWidth);
+		mMainViewport.Height = static_cast<float>(mScreenHeight);
 		mMainViewport.MinDepth = 0.0f;
 		mMainViewport.MaxDepth = 1.0f;
 
-		mMainRect = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
+		mMainRect = { 0, 0, static_cast<LONG>(mScreenWidth), static_cast<LONG>(mScreenHeight) };
 	}
 
 	ER_RuntimeCore::~ER_RuntimeCore()
@@ -142,6 +145,61 @@ namespace EveryRay_Core
 				mStartupSceneName = root["startup_scene"].asString();
 				if (mScenesPaths.find(mStartupSceneName) == mScenesPaths.end())
 					throw ER_CoreException("No startup scene defined in global_scenes_config.json");
+			}
+		}
+	}
+
+	void ER_RuntimeCore::LoadGraphicsConfig()
+	{
+		Json::Reader reader;
+		std::string path = ER_Utility::GetFilePath("graphics_config.json");
+		std::ifstream graphicsConfig(path.c_str(), std::ifstream::binary);
+
+		Json::Value root;
+
+		if (!reader.parse(graphicsConfig, root)) {
+			throw ER_CoreException(reader.getFormattedErrorMessages().c_str());
+		}
+		else
+		{
+			int numPresets = root["presets"].size();
+			if (numPresets == 0)
+				throw ER_CoreException("No presets defined in graphics_config.json");
+
+			if (numPresets != (int)GraphicsQualityPreset::GRAPHICS_PRESETS_COUNT)
+				throw ER_CoreException("No presets defined in graphics_config.json");
+
+			std::map<std::string, int> presetNames;
+			for (Json::Value::ArrayIndex i = 0; i != numPresets; i++)
+				presetNames.emplace(root["presets"][i]["preset_name"].asString(), i);
+
+			if (!root.isMember("current_preset"))
+				throw ER_CoreException("No current preset specified in graphics_config.json");
+
+			std::string currentPreset = root["current_preset"].asString();
+			auto it = presetNames.find(currentPreset);
+			if (it == presetNames.end())
+				throw ER_CoreException("Current preset is not recognized in graphics_config.json. Maybe a typo?");
+
+			int currentPresetIndex = it->second;
+			//set quality
+			{
+				mCurrentGfxQuality = (GraphicsQualityPreset)currentPresetIndex;
+
+				if (!root["presets"][currentPresetIndex].isMember("resolution_width") || !root["presets"][currentPresetIndex].isMember("resolution_height"))
+					throw ER_CoreException("Current preset has no specified resolution in graphics_config.json");
+
+				mScreenWidth = root["presets"][currentPresetIndex]["resolution_width"].asUInt();
+				mScreenHeight = root["presets"][currentPresetIndex]["resolution_height"].asUInt();
+
+				ER_Settings::TexturesQuality = root["presets"][currentPresetIndex]["texture_quality"].asInt();
+				ER_Settings::FoliageQuality = root["presets"][currentPresetIndex]["foliage_quality"].asInt();
+				ER_Settings::ShadowsQuality = root["presets"][currentPresetIndex]["shadow_quality"].asInt();
+				ER_Settings::GlobalIlluminationQuality = root["presets"][currentPresetIndex]["gi_quality"].asInt();
+				ER_Settings::AntiAliasingQuality = root["presets"][currentPresetIndex]["aa_quality"].asInt();
+				ER_Settings::SubsurfaceScatteringQuality = root["presets"][currentPresetIndex]["sss_quality"].asInt();
+				ER_Settings::VolumetricFogQuality = root["presets"][currentPresetIndex]["volumetric_fog_quality"].asInt();
+				ER_Settings::VolumetricCloudsQuality = root["presets"][currentPresetIndex]["volumetric_clouds_quality"].asInt();
 			}
 		}
 	}

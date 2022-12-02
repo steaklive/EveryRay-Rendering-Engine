@@ -202,6 +202,7 @@
     <ClInclude Include="ER_Material.h" />
     <ClInclude Include="ER_MaterialsCallbacks.h" />
     <ClInclude Include="ER_RenderToLightProbeMaterial.h" />
+    <ClInclude Include="ER_Settings.h" />
     <ClInclude Include="ER_ShadowMapMaterial.h" />
     <ClInclude Include="ER_VolumetricFog.h" />
     <ClInclude Include="ER_VoxelizationMaterial.h" />
@@ -271,6 +272,7 @@
     <ClCompile Include="ER_RenderToLightProbeMaterial.cpp" />
     <ClCompile Include="ER_RuntimeCore.cpp" />
     <ClCompile Include="ER_Sandbox.cpp" />
+    <ClCompile Include="ER_Settings.cpp" />
     <ClCompile Include="ER_ShadowMapMaterial.cpp" />
     <ClCompile Include="ER_Skybox.cpp" />
     <ClCompile Include="ER_VolumetricClouds.cpp" />

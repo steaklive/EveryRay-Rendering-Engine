@@ -15,6 +15,7 @@
 #include "ER_Camera.h"
 #include "ER_MatrixHelper.h"
 #include "ER_Terrain.h"
+#include "ER_Settings.h"
 
 namespace EveryRay_Core
 {
@@ -31,7 +32,8 @@ namespace EveryRay_Core
 		mAvailableInEditorMode(availableInEditor),
 		mTransformationMatrix(XMMatrixIdentity()),
 		mIsInstanced(isInstanced),
-		mIndexInScene(index)
+		mIndexInScene(index),
+		mCurrentTextureQuality((RenderingObjectTextureQuality)ER_Settings::TexturesQuality)
 	{
 		if (!mModel)
 		{
@@ -238,25 +240,56 @@ namespace EveryRay_Core
 		//if (!extra3Path.empty())
 	}
 	
+	// This is main method for loading textures before going to RHI
+	// It supports quality levels, format check and different types of textures
+	// TODO: remove the duplicated code
 	void ER_RenderingObject::LoadTexture(TextureType type, const std::wstring& path, int meshIndex, bool isPlaceholder)
 	{
 		ER_RHI* rhi = mCore->GetRHI();
+
+		const int extensionSymbolCount = 4; // .png, .dds, etc.
+		const int texQualityCount = RenderingObjectTextureQuality::OBJECT_TEXTURE_COUNT;
+		assert((int)mCurrentTextureQuality < texQualityCount);
+
+		const wchar_t* postfixQuality[RenderingObjectTextureQuality::OBJECT_TEXTURE_COUNT] =
+		{
+			 L"_lq",
+			 L"_mq",
+			 L"_hq"
+		};
+
+		std::wstring possiblePaths[RenderingObjectTextureQuality::OBJECT_TEXTURE_COUNT];
+
+		for (int i = 0; i < (int)RenderingObjectTextureQuality::OBJECT_TEXTURE_COUNT; i++)
+		{
+			possiblePaths[i] = path;
+			possiblePaths[i].insert(path.length() - extensionSymbolCount, std::wstring(postfixQuality[i]));
+		}
 
 		const wchar_t* postfixDDS = L".dds";
 		const wchar_t* postfixDDS_Capital = L".DDS";
 		const wchar_t* postfixTGA = L".tga";
 		const wchar_t* postfixTGA_Capital = L".TGA";
-
-		bool ddsLoader = (path.substr(path.length() - 4) == std::wstring(postfixDDS)) || (path.substr(path.length() - 4) == std::wstring(postfixDDS_Capital));
-		bool tgaLoader = (path.substr(path.length() - 4) == std::wstring(postfixTGA)) || (path.substr(path.length() - 4) == std::wstring(postfixTGA_Capital));
+		bool ddsLoader = (path.substr(path.length() - extensionSymbolCount) == std::wstring(postfixDDS)) || (path.substr(path.length() - extensionSymbolCount) == std::wstring(postfixDDS_Capital));
+		bool tgaLoader = (path.substr(path.length() - extensionSymbolCount) == std::wstring(postfixTGA)) || (path.substr(path.length() - extensionSymbolCount) == std::wstring(postfixTGA_Capital));
 		std::string errorMessage = mModel->GetFileName() + " of mesh index: " + std::to_string(meshIndex);
 
+		bool loadStatus = false;
 		switch (type)
 		{
 		case TextureType::TextureTypeDifffuse:
 		{
 			mMeshesTextureBuffers[meshIndex].AlbedoMap = rhi->CreateGPUTexture(L"");
-			mMeshesTextureBuffers[meshIndex].AlbedoMap->CreateGPUTextureResource(rhi, path, true);
+			//we start traversing through different texture quality levels unless we hit the first one
+			for (int i = (int)mCurrentTextureQuality; i >= 0; i--)
+			{
+				mMeshesTextureBuffers[meshIndex].AlbedoMap->CreateGPUTextureResource(rhi, possiblePaths[i], true, false, true, &loadStatus, true);
+				if (loadStatus) // success
+					break;
+
+				if (!loadStatus && i <= 0) // after we traversed all possible levels, lets load the original path (maybe the texture does not have postfix)
+					mMeshesTextureBuffers[meshIndex].AlbedoMap->CreateGPUTextureResource(rhi, path, true);
+			}
 			if (!isPlaceholder)
 			{
 				rhi->GenerateMipsWithTextureReplacement(&mMeshesTextureBuffers[meshIndex].AlbedoMap,
@@ -273,7 +306,16 @@ namespace EveryRay_Core
 		case TextureType::TextureTypeNormalMap:
 		{
 			mMeshesTextureBuffers[meshIndex].NormalMap = rhi->CreateGPUTexture(L"");
-			mMeshesTextureBuffers[meshIndex].NormalMap->CreateGPUTextureResource(rhi, path, true);
+			//we start traversing through different texture quality levels unless we hit the first one
+			for (int i = (int)mCurrentTextureQuality; i >= 0; i--)
+			{
+				mMeshesTextureBuffers[meshIndex].NormalMap->CreateGPUTextureResource(rhi, possiblePaths[i], true, false, true, &loadStatus, true);
+				if (loadStatus) // success
+					break;
+
+				if (!loadStatus && i <= 0) // after we traversed all possible levels, lets load the original path (maybe the texture does not have postfix)
+					mMeshesTextureBuffers[meshIndex].NormalMap->CreateGPUTextureResource(rhi, path, true);
+			}
 			if (!isPlaceholder)
 			{
 				rhi->GenerateMipsWithTextureReplacement(&mMeshesTextureBuffers[meshIndex].NormalMap,
@@ -290,7 +332,16 @@ namespace EveryRay_Core
 		case TextureType::TextureTypeSpecularMap:
 		{
 			mMeshesTextureBuffers[meshIndex].SpecularMap = rhi->CreateGPUTexture(L"");
-			mMeshesTextureBuffers[meshIndex].SpecularMap->CreateGPUTextureResource(rhi, path, true);
+			//we start traversing through different texture quality levels unless we hit the first one
+			for (int i = (int)mCurrentTextureQuality; i >= 0; i--)
+			{
+				mMeshesTextureBuffers[meshIndex].SpecularMap->CreateGPUTextureResource(rhi, possiblePaths[i], true, false, true, &loadStatus, true);
+				if (loadStatus) // success
+					break;
+
+				if (!loadStatus && i <= 0) // after we traversed all possible levels, lets load the original path (maybe the texture does not have postfix)
+					mMeshesTextureBuffers[meshIndex].SpecularMap->CreateGPUTextureResource(rhi, path, true);
+			}
 			if (!isPlaceholder)
 			{
 				rhi->GenerateMipsWithTextureReplacement(&mMeshesTextureBuffers[meshIndex].SpecularMap,
@@ -307,7 +358,16 @@ namespace EveryRay_Core
 		case TextureType::TextureTypeEmissive:
 		{
 			mMeshesTextureBuffers[meshIndex].MetallicMap = rhi->CreateGPUTexture(L"");
-			mMeshesTextureBuffers[meshIndex].MetallicMap->CreateGPUTextureResource(rhi, path, true);
+			//we start traversing through different texture quality levels unless we hit the first one
+			for (int i = (int)mCurrentTextureQuality; i >= 0; i--)
+			{
+				mMeshesTextureBuffers[meshIndex].MetallicMap->CreateGPUTextureResource(rhi, possiblePaths[i], true, false, true, &loadStatus, true);
+				if (loadStatus) // success
+					break;
+
+				if (!loadStatus && i <= 0) // after we traversed all possible levels, lets load the original path (maybe the texture does not have postfix)
+					mMeshesTextureBuffers[meshIndex].MetallicMap->CreateGPUTextureResource(rhi, path, true);
+			}
 			if (!isPlaceholder)
 			{
 				rhi->GenerateMipsWithTextureReplacement(&mMeshesTextureBuffers[meshIndex].MetallicMap,
@@ -324,7 +384,16 @@ namespace EveryRay_Core
 		case TextureType::TextureTypeDisplacementMap:
 		{
 			mMeshesTextureBuffers[meshIndex].RoughnessMap = rhi->CreateGPUTexture(L"");
-			mMeshesTextureBuffers[meshIndex].RoughnessMap->CreateGPUTextureResource(rhi, path, true);
+			//we start traversing through different texture quality levels unless we hit the first one
+			for (int i = (int)mCurrentTextureQuality; i >= 0; i--)
+			{
+				mMeshesTextureBuffers[meshIndex].RoughnessMap->CreateGPUTextureResource(rhi, possiblePaths[i], true, false, true, &loadStatus, true);
+				if (loadStatus) // success
+					break;
+
+				if (!loadStatus && i <= 0) // after we traversed all possible levels, lets load the original path (maybe the texture does not have postfix)
+					mMeshesTextureBuffers[meshIndex].RoughnessMap->CreateGPUTextureResource(rhi, path, true);
+			}
 			if (!isPlaceholder)
 			{
 				rhi->GenerateMipsWithTextureReplacement(&mMeshesTextureBuffers[meshIndex].RoughnessMap,
@@ -341,7 +410,16 @@ namespace EveryRay_Core
 		case TextureType::TextureTypeHeightmap:
 		{
 			mMeshesTextureBuffers[meshIndex].HeightMap = rhi->CreateGPUTexture(L"");
-			mMeshesTextureBuffers[meshIndex].HeightMap->CreateGPUTextureResource(rhi, path, true);
+			//we start traversing through different texture quality levels unless we hit the first one
+			for (int i = (int)mCurrentTextureQuality; i >= 0; i--)
+			{
+				mMeshesTextureBuffers[meshIndex].HeightMap->CreateGPUTextureResource(rhi, possiblePaths[i], true, false, true, &loadStatus, true);
+				if (loadStatus) // success
+					break;
+
+				if (!loadStatus && i <= 0) // after we traversed all possible levels, lets load the original path (maybe the texture does not have postfix)
+					mMeshesTextureBuffers[meshIndex].HeightMap->CreateGPUTextureResource(rhi, path, true);
+			}
 			if (!isPlaceholder)
 			{
 				rhi->GenerateMipsWithTextureReplacement(&mMeshesTextureBuffers[meshIndex].HeightMap,
@@ -358,7 +436,16 @@ namespace EveryRay_Core
 		case TextureType::TextureTypeLightMap:
 		{
 			mMeshesTextureBuffers[meshIndex].ReflectionMaskMap = rhi->CreateGPUTexture(L"");
-			mMeshesTextureBuffers[meshIndex].ReflectionMaskMap->CreateGPUTextureResource(rhi, path, true);
+			//we start traversing through different texture quality levels unless we hit the first one
+			for (int i = (int)mCurrentTextureQuality; i >= 0; i--)
+			{
+				mMeshesTextureBuffers[meshIndex].ReflectionMaskMap->CreateGPUTextureResource(rhi, possiblePaths[i], true, false, true, &loadStatus, true);
+				if (loadStatus) // success
+					break;
+
+				if (!loadStatus && i <= 0) // after we traversed all possible levels, lets load the original path (maybe the texture does not have postfix)
+					mMeshesTextureBuffers[meshIndex].ReflectionMaskMap->CreateGPUTextureResource(rhi, path, true);
+			}
 			if (!isPlaceholder)
 			{
 				rhi->GenerateMipsWithTextureReplacement(&mMeshesTextureBuffers[meshIndex].ReflectionMaskMap,
