@@ -435,7 +435,7 @@
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
 					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
 				}
 			],
@@ -489,7 +489,7 @@
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
 					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
 				}
 			],
@@ -542,7 +542,7 @@
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
 					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
 				}
 			],
@@ -595,7 +595,7 @@
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
 					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
 				}
 			],
@@ -650,7 +650,7 @@
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
 					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
 				}
 			],
@@ -705,7 +705,7 @@
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
 					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
 				}
 			],
@@ -758,7 +758,7 @@
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
 					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
 				}
 			],
@@ -811,7 +811,7 @@
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
 					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
 				}
 			],
@@ -864,7 +864,7 @@
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
 					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
 				}
 			],
@@ -917,7 +917,7 @@
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
 					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
 				}
 			],
@@ -963,14 +963,14 @@
 			"textures" : 
 			[
 				{
-					"albedo" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_basecolor.png",
-					"normal" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_normal-dx.png",
+					"albedo" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_basecolor.dds",
+					"normal" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_normal-dx.dds",
 					"roughness" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_roughness.png"
-				},
+				},	
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
 					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
 				}
 			],
@@ -1023,7 +1023,7 @@
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
 					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
 				}
 			],
@@ -1076,7 +1076,7 @@
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
 					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
 				}
 			],
@@ -1130,7 +1130,7 @@
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
 					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
 				}
 			],
@@ -1186,7 +1186,7 @@
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
 					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
 				}
 			],
@@ -1242,7 +1242,7 @@
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
 					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
 				}
 			],
@@ -1296,7 +1296,7 @@
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
 					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
 				}
 			],
@@ -1350,7 +1350,7 @@
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
 					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
 				}
 			],
@@ -1404,7 +1404,7 @@
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
 					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
 				}
 			],
@@ -1458,7 +1458,7 @@
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"metalness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-metalness.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
 					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
 				}
 			],
