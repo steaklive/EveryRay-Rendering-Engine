@@ -428,8 +428,8 @@
 			"textures" : 
 			[
 				{
-					"albedo" : "content\\textures\\PBR\\Concrete\\concrete2_albedo.png",
-					"normal" : "content\\textures\\PBR\\Concrete\\concrete2_Normal-dx.png",
+					"albedo" : "content\\textures\\PBR\\Concrete\\concrete2_albedo.dds",
+					"normal" : "content\\textures\\PBR\\Concrete\\concrete2_Normal-dx.dds",
 					"roughness" : "content\\textures\\PBR\\Concrete\\concrete2_Roughness.png"
 				},
 				{
@@ -797,8 +797,8 @@
 			"textures" : 
 			[
 				{
-					"albedo" : "content\\textures\\PBR\\Marble_Dark\\Marble01_2K_BaseColor.png",
-					"normal" : "content\\textures\\PBR\\Marble_Dark\\Marble01_2K_Normal.png",
+					"albedo" : "content\\textures\\PBR\\Marble_Dark\\Marble01_2K_BaseColor.dds",
+					"normal" : "content\\textures\\PBR\\Marble_Dark\\Marble01_2K_Normal.dds",
 					"roughness" : "content\\textures\\PBR\\Marble_Dark\\Marble01_2K_Roughness.png"
 				},
 				{
@@ -1219,9 +1219,9 @@
 			"textures" : 
 			[
 				{
-					"albedo" : "content\\textures\\PBR\\Bronze\\Bronze01_1K_BaseColor.png",
+					"albedo" : "content\\textures\\PBR\\Bronze\\Bronze01_1K_BaseColor.dds",
 					"metalness" : "content\\textures\\PBR\\Bronze\\Bronze01_1K_Metallic.png",
-					"normal" : "content\\textures\\PBR\\Bronze\\Bronze01_1K_Normal.png",
+					"normal" : "content\\textures\\PBR\\Bronze\\Bronze01_1K_Normal.dds",
 					"roughness" : "content\\textures\\PBR\\Bronze\\Bronze01_1K_Roughness.png"
 				},
 				{
