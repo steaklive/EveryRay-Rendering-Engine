@@ -109,7 +109,6 @@
 				{
 					"albedo" : "content\\textures\\PBR\\Pebbles\\Pebbles_024_BaseColor.jpg",
 					"height" : "content\\textures\\PBR\\Pebbles\\Pebbles_024_Height.png",
-					"metalness" : "content\\textures\\emptyMetallicMap.png",
 					"normal" : "content\\textures\\PBR\\Pebbles\\Pebbles_024_Normal.jpg",
 					"roughness" : "content\\textures\\PBR\\Pebbles\\Pebbles_024_Roughness.jpg"
 				}
@@ -480,9 +479,8 @@
 			"textures" : 
 			[
 				{
-					"albedo" : "content\\textures\\PBR\\Pavement\\PavingStones077_2K_Color.jpg",
-					"metalness" : "content\\textures\\emptyMetallicMap.png",
-					"normal" : "content\\textures\\PBR\\Pavement\\PavingStones077_2K_Normal.jpg",
+					"albedo" : "content\\textures\\PBR\\Pavement\\PavingStones077_2K_Color.dds",
+					"normal" : "content\\textures\\PBR\\Pavement\\PavingStones077_2K_Normal.dds",
 					"roughness" : "content\\textures\\PBR\\Pavement\\PavingStones077_2K_Roughness.jpg"
 				},
 				{
@@ -533,8 +531,8 @@
 			"textures" : 
 			[
 				{
-					"albedo" : "content\\textures\\PBR\\RedBrick\\redbricks2b-albedo.png",
-					"normal" : "content\\textures\\PBR\\RedBrick\\redbricks2b-normal.png",
+					"albedo" : "content\\textures\\PBR\\RedBrick\\redbricks2b-albedo.dds",
+					"normal" : "content\\textures\\PBR\\RedBrick\\redbricks2b-normal.dds",
 					"roughness" : "content\\textures\\PBR\\RedBrick\\redbricks2b-rough.png"
 				},
 				{
@@ -585,9 +583,9 @@
 			"textures" : 
 			[
 				{
-					"albedo" : "content\\textures\\PBR\\Sand_Stone\\sandstone_rock_001_COLOR.png",
+					"albedo" : "content\\textures\\PBR\\Sand_Stone\\sandstone_rock_001_COLOR.dds",
 					"height" : "content\\textures\\PBR\\Sand_Stone\\sandstone_rock_001_DISP.png",
-					"normal" : "content\\textures\\PBR\\Sand_Stone\\sandstone_rock_001_NRM.png"
+					"normal" : "content\\textures\\PBR\\Sand_Stone\\sandstone_rock_001_NRM.dds"
 				},
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
@@ -849,8 +847,8 @@
 			"textures" : 
 			[
 				{
-					"albedo" : "content\\textures\\PBR\\Tiles\\Herringbone_marble_tiles_01_Color.png",
-					"normal" : "content\\textures\\PBR\\Tiles\\Herringbone_marble_tiles_01_Normal.png",
+					"albedo" : "content\\textures\\PBR\\Tiles\\Herringbone_marble_tiles_01_Color.dds",
+					"normal" : "content\\textures\\PBR\\Tiles\\Herringbone_marble_tiles_01_Normal.dds",
 					"roughness" : "content\\textures\\PBR\\Tiles\\Herringbone_marble_tiles_01_Roughness.png"
 				},
 				{
@@ -1005,8 +1003,8 @@
 			"textures" : 
 			[
 				{
-					"albedo" : "content\\textures\\PBR\\Wood\\WoodFloor07_col.jpg",
-					"normal" : "content\\textures\\PBR\\Wood\\WoodFloor07_nrm.jpg",
+					"albedo" : "content\\textures\\PBR\\Wood\\WoodFloor07_col.dds",
+					"normal" : "content\\textures\\PBR\\Wood\\WoodFloor07_nrm.dds",
 					"roughness" : "content\\textures\\PBR\\Wood\\WoodFloor07_rgh.jpg"
 				},
 				{
@@ -1272,9 +1270,9 @@
 			"textures" : 
 			[
 				{
-					"albedo" : "content\\textures\\PBR\\Painted_Metal\\PaintedMetal02_1K_BaseColor.png",
-					"metalness" : "content\\textures\\PBR\\Painted_Metal\\PaintedMetal02_1K_Metallic.png",
-					"normal" : "content\\textures\\PBR\\Painted_Metal\\PaintedMetal02_1K_Normal.png",
+					"albedo" : "content\\textures\\PBR\\Painted_Metal\\PaintedMetal02_1K_BaseColor.dds",
+					"metalness" : "content\\textures\\PBR\\Painted_Metal\\PaintedMetal02_1K_Metallic.dds",
+					"normal" : "content\\textures\\PBR\\Painted_Metal\\PaintedMetal02_1K_Normal.dds",
 					"roughness" : "content\\textures\\PBR\\Painted_Metal\\PaintedMetal02_1K_Roughness.png"
 				},
 				{
@@ -1327,7 +1325,7 @@
 				{
 					"albedo" : "content\\textures\\PBR\\Painted_Metal_Blue\\ScratchedPaintedMetal01_1K_BaseColor.png",
 					"metalness" : "content\\textures\\PBR\\Painted_Metal_Blue\\ScratchedPaintedMetal01_1K_Metallic.png",
-					"normal" : "content\\textures\\PBR\\Painted_Metal_Blue\\ScratchedPaintedMetal01_1K_Normal.png",
+					"normal" : "content\\textures\\PBR\\Painted_Metal_Blue\\ScratchedPaintedMetal01_1K_Normal.dds",
 					"roughness" : "content\\textures\\PBR\\Painted_Metal_Blue\\ScratchedPaintedMetal01_1K_Roughness.png"
 				},
 				{
@@ -1378,9 +1376,9 @@
 			"textures" : 
 			[
 				{
-					"albedo" : "content\\textures\\PBR\\Silver\\SilverMetal_col.jpg",
+					"albedo" : "content\\textures\\PBR\\Silver\\SilverMetal_col.dds",
 					"metalness" : "content\\textures\\PBR\\Silver\\gold-scuffed_metallic.png",
-					"normal" : "content\\textures\\PBR\\Silver\\SilverMetal_nrm.jpg",
+					"normal" : "content\\textures\\PBR\\Silver\\SilverMetal_nrm.dds",
 					"roughness" : "content\\textures\\PBR\\Silver\\SilverMetal_rgh.jpg"
 				},
 				{
