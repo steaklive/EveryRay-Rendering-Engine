@@ -92,10 +92,13 @@ namespace EveryRay_Core
 			DeleteObject(object.second);
 		mMaterials.clear();
 
-		for (auto lod : mMeshesRenderBuffers)
-			for (auto meshRenderBuffer : lod)
-				DeletePointerCollection(meshRenderBuffer.second);
-		mMeshesRenderBuffers.clear();
+		for (int lodI = 0; lodI < GetLODCount(); lodI)
+		{
+			for (int meshI = 0; meshI < GetMeshCount(lodI); meshI++)
+			{
+				DeleteObject(mMeshRenderBuffers[lodI][meshI]);
+			}
+		}
 
 		for (auto meshesInstanceBuffersLOD : mMeshesInstanceBuffers)
 			DeletePointerCollection(meshesInstanceBuffersLOD);
@@ -469,48 +472,30 @@ namespace EveryRay_Core
 		assert(mModel);
 		ER_RHI* rhi = mCore->GetRHI();
 
-		mMeshesRenderBuffers.push_back({});
-		assert(mMeshesRenderBuffers.size() - 1 == lod);
+		mMeshRenderBuffers.push_back({});
+		assert(mMeshRenderBuffers.size() - 1 == lod);
 
-		auto createIndexBuffer = [this, rhi](const ER_Mesh& aMesh, int meshIndex, int lod, const std::string& materialName) {
-			mMeshesRenderBuffers[lod][materialName][meshIndex]->IndexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject - Index Buffer: " + mName + ", mat: " + materialName + ", lod: " + std::to_string(lod) + ", mesh: " + std::to_string(meshIndex));
-			aMesh.CreateIndexBuffer(mMeshesRenderBuffers[lod][materialName][meshIndex]->IndexBuffer);
-			mMeshesRenderBuffers[lod][materialName][meshIndex]->IndicesCount = aMesh.Indices().size();
+		auto createIndexBuffer = [this, rhi](const ER_Mesh& aMesh, int meshIndex, int lod) {
+			mMeshRenderBuffers[lod][meshIndex]->IndexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject - Index Buffer: " + mName + ", lod: " + std::to_string(lod) + ", mesh: " + std::to_string(meshIndex));
+			aMesh.CreateIndexBuffer(mMeshRenderBuffers[lod][meshIndex]->IndexBuffer);
+			mMeshRenderBuffers[lod][meshIndex]->IndicesCount = aMesh.Indices().size();
 		};
 
-		for (auto material : mMaterials)
 		{
-			mMeshesRenderBuffers[lod].insert(std::pair<std::string, std::vector<RenderBufferData*>>(material.first, std::vector<RenderBufferData*>()));
 			for (size_t i = 0; i < mMeshesCount[lod]; i++)
 			{
-				mMeshesRenderBuffers[lod][material.first].push_back(new RenderBufferData());
-				mMeshesRenderBuffers[lod][material.first][i]->VertexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject - Vertex Buffer: " + mName + ", mat: " + material.first + ", lod: " + std::to_string(lod) + ", mesh: " + std::to_string(i));
-				material.second->CreateVertexBuffer((lod == 0) ? mModel->GetMesh(i) : mModelLODs[lod - 1]->GetMesh(i), mMeshesRenderBuffers[lod][material.first][i]->VertexBuffer);
-				createIndexBuffer((lod == 0) ? mModel->GetMesh(i) : mModelLODs[lod - 1]->GetMesh(i), i, lod, material.first);
-
-				mMeshesRenderBuffers[lod][material.first][i]->Stride = mMaterials[material.first]->VertexSize();
-				mMeshesRenderBuffers[lod][material.first][i]->Offset = 0;
-			}
-		}
-
-		//special case for forward lighting (non-material case)
-		if (mIsForwardShading)
-		{
-			mMeshesRenderBuffers[lod].insert(std::pair<std::string, std::vector<RenderBufferData*>>(ER_MaterialHelper::forwardLightingNonMaterialName, std::vector<RenderBufferData*>()));
-			for (size_t i = 0; i < mMeshesCount[lod]; i++)
-			{
-				mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName].push_back(new RenderBufferData());
-				mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject - Vertex Buffer: " + mName + ", mat: " + ER_MaterialHelper::forwardLightingNonMaterialName + ", lod: " + std::to_string(lod) + ", mesh: " + std::to_string(i));
-
+				mMeshRenderBuffers[lod].push_back(new RenderBufferData());
+				mMeshRenderBuffers[lod][i]->VertexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject - Vertex Buffer: " + mName + ", lod: " + std::to_string(lod) + ", mesh: " + std::to_string(i));
+				
 				if (lod == 0)
-					mModel->GetMesh(i).CreateVertexBuffer_PositionUvNormalTangent(mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer);
+					mModel->GetMesh(i).CreateVertexBuffer_PositionUvNormalTangent(mMeshRenderBuffers[lod][i]->VertexBuffer);
 				else
-					mModelLODs[lod - 1]->GetMesh(i).CreateVertexBuffer_PositionUvNormalTangent(mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName][i]->VertexBuffer);
+					mModelLODs[lod - 1]->GetMesh(i).CreateVertexBuffer_PositionUvNormalTangent(mMeshRenderBuffers[lod][i]->VertexBuffer);
 
-				createIndexBuffer((lod == 0) ? mModel->GetMesh(i) : mModelLODs[lod - 1]->GetMesh(i), i, lod, ER_MaterialHelper::forwardLightingNonMaterialName);
+				createIndexBuffer((lod == 0) ? mModel->GetMesh(i) : mModelLODs[lod - 1]->GetMesh(i), i, lod);
 
-				mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName][i]->Stride = sizeof(VertexPositionTextureNormalTangent);
-				mMeshesRenderBuffers[lod][ER_MaterialHelper::forwardLightingNonMaterialName][i]->Offset = 0;
+				mMeshRenderBuffers[lod][i]->Stride = sizeof(VertexPositionTextureNormalTangent);
+				mMeshRenderBuffers[lod][i]->Offset = 0;
 			}
 		}
 	}
@@ -538,7 +523,7 @@ namespace EveryRay_Core
 		
 		if (mIsRendered && (skipCulling || !mIsCulled) && mCurrentLODIndex != -1)
 		{
-			if (!isForwardPass && (!mMaterials.size() || mMeshesRenderBuffers[lod].size() == 0))
+			if (!isForwardPass && (!mMaterials.size() || mMeshRenderBuffers[lod].size() == 0))
 				return;
 			
 			{
@@ -565,10 +550,10 @@ namespace EveryRay_Core
 			for (int i = (isSpecificMesh) ? meshIndex : 0; i < ((isSpecificMesh) ? meshIndex + 1 : mMeshesCount[lod]); i++)
 			{
 				if (mIsInstanced)
-					rhi->SetVertexBuffers({ mMeshesRenderBuffers[lod][materialName][i]->VertexBuffer, mMeshesInstanceBuffers[lod][i]->InstanceBuffer });
+					rhi->SetVertexBuffers({ mMeshRenderBuffers[lod][i]->VertexBuffer, mMeshesInstanceBuffers[lod][i]->InstanceBuffer });
 				else
-					rhi->SetVertexBuffers({ mMeshesRenderBuffers[lod][materialName][i]->VertexBuffer });
-				rhi->SetIndexBuffer(mMeshesRenderBuffers[lod][materialName][i]->IndexBuffer);
+					rhi->SetVertexBuffers({ mMeshRenderBuffers[lod][i]->VertexBuffer });
+				rhi->SetIndexBuffer(mMeshRenderBuffers[lod][i]->IndexBuffer);
 
 				// run prepare callbacks for standard materials (specials are, i.e., shadow mapping, which are processed in their own systems)
 				if (!isForwardPass && mMaterials[materialName]->IsStandard())
@@ -583,12 +568,12 @@ namespace EveryRay_Core
 				if (mIsInstanced)
 				{
 					if (mInstanceCountToRender[lod] > 0)
-						rhi->DrawIndexedInstanced(mMeshesRenderBuffers[lod][materialName][i]->IndicesCount, mInstanceCountToRender[lod], 0, 0, 0);
+						rhi->DrawIndexedInstanced(mMeshRenderBuffers[lod][i]->IndicesCount, mInstanceCountToRender[lod], 0, 0, 0);
 					else 
 						continue;
 				}
 				else
-					rhi->DrawIndexed(mMeshesRenderBuffers[lod][materialName][i]->IndicesCount);
+					rhi->DrawIndexed(mMeshRenderBuffers[lod][i]->IndicesCount);
 			}
 		}
 	}
@@ -734,7 +719,7 @@ namespace EveryRay_Core
 			mTempPostCullingInstanceData.clear();
 			{
 				std::vector<InstancedData> newInstanceData;
-				for (int instanceIndex = 0; instanceIndex < mInstanceCount; instanceIndex++)
+				for (int instanceIndex = 0; instanceIndex < static_cast<int>(mInstanceCount); instanceIndex++)
 				{
 					instanceWorldMatrix = XMLoadFloat4x4(&(mInstanceData[currentLOD][instanceIndex].World));
 					mInstanceCullingFlags[instanceIndex] = cullFunction(mInstanceAABBs[instanceIndex]);
@@ -758,7 +743,7 @@ namespace EveryRay_Core
 		XMMATRIX worldMatrix = XMMatrixIdentity();
 		for (int lod = 0; lod < GetLODCount(); lod++)
 		{
-			for (int instanceI = 0; instanceI < mInstanceCount; instanceI++)
+			for (int instanceI = 0; instanceI < static_cast<int>(mInstanceCount); instanceI++)
 			{
 				float scale = ER_Utility::RandomFloat(mTerrainProceduralObjectMinScale, mTerrainProceduralObjectMaxScale);
 				float roll = ER_Utility::RandomFloat(mTerrainProceduralObjectMinRoll, mTerrainProceduralObjectMaxRoll);
@@ -829,7 +814,7 @@ namespace EveryRay_Core
 				DeleteObjects(mTempInstancesPositions);
 				mTempInstancesPositions = new XMFLOAT4[mInstanceCount];
 
-				for (int instanceI = 0; instanceI < mInstanceCount; instanceI++)
+				for (int instanceI = 0; instanceI < static_cast<int>(mInstanceCount); instanceI++)
 				{
 					mTempInstancesPositions[instanceI] = XMFLOAT4(
 						mTerrainProceduralZoneCenterPos.x + ER_Utility::RandomFloat(-mTerrainProceduralZoneRadius, mTerrainProceduralZoneRadius),
@@ -891,7 +876,7 @@ namespace EveryRay_Core
 			if (mIsInstanced)
 			{
 				XMMATRIX instanceWorldMatrix = XMMatrixIdentity();
-				for (int instanceIndex = 0; instanceIndex < mInstanceCount; instanceIndex++)
+				for (int instanceIndex = 0; instanceIndex < static_cast<int>(mInstanceCount); instanceIndex++)
 				{
 					instanceWorldMatrix = XMLoadFloat4x4(&(mInstanceData[0][instanceIndex].World));
 					mInstanceAABBs[instanceIndex] = mLocalAABB;
@@ -1130,7 +1115,6 @@ namespace EveryRay_Core
 	
 	void ER_RenderingObject::LoadLOD(std::unique_ptr<ER_Model> pModel)
 	{
-		//assert();
 		mMeshesCount.push_back(pModel->Meshes().size());
 		mModelLODs.push_back(std::move(pModel));
 		mMeshVertices.push_back({});
@@ -1161,7 +1145,7 @@ namespace EveryRay_Core
 		if (lod == 0)
 		{
 			mInstanceCount = count;
-			for (int i = 0; i < mInstanceCount; i++)
+			for (int i = 0; i < static_cast<int>(mInstanceCount); i++)
 			{
 				std::string instanceName = mName + " #" + std::to_string(i);
 				mInstancesNames.push_back(instanceName);
@@ -1198,7 +1182,7 @@ namespace EveryRay_Core
 				mTempPostLoddingInstanceData.push_back({});
 
 			//traverse through original or culled instance data (sort of "read-only") to rebalance LOD's instance buffers
-			int length = (ER_Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData.size() : mInstanceData[0].size();
+			int length = (ER_Utility::IsMainCameraCPUFrustumCulling) ? static_cast<int>(mTempPostCullingInstanceData.size()) : static_cast<int>(mInstanceData[0].size());
 			for (int i = 0; i < length; i++)
 			{
 				XMFLOAT3 pos;
@@ -1210,7 +1194,7 @@ namespace EveryRay_Core
 					(mCamera.Position().y - pos.y) * (mCamera.Position().y - pos.y) +
 					(mCamera.Position().z - pos.z) * (mCamera.Position().z - pos.z);
 
-				XMMATRIX newMat;
+				//XMMATRIX newMat;
 				if (distanceToCameraSqr <= ER_Utility::DistancesLOD[0] * ER_Utility::DistancesLOD[0]) {
 					mTempPostLoddingInstanceData[0].push_back((ER_Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
 				}

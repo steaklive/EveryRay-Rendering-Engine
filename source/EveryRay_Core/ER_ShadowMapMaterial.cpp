@@ -22,7 +22,9 @@ namespace EveryRay_Core
 				ER_RHI_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 				{
 					{ "POSITION", 0, ER_FORMAT_R32G32B32A32_FLOAT, 0, 0, true, 0 },
-					{ "TEXCOORD", 0, ER_FORMAT_R32G32_FLOAT, 0, 0xffffffff, true, 0 }
+					{ "TEXCOORD", 0, ER_FORMAT_R32G32_FLOAT, 0, 0xffffffff, true, 0 },
+					{ "NORMAL", 0, ER_FORMAT_R32G32B32_FLOAT, 0, 0xffffffff,  true, 0 },
+					{ "TANGENT", 0, ER_FORMAT_R32G32B32_FLOAT, 0, 0xffffffff, true, 0 }
 				};
 				ER_Material::CreateVertexShader("content\\shaders\\ShadowMap.hlsl", inputElementDescriptions, ARRAYSIZE(inputElementDescriptions));
 			}
@@ -30,12 +32,14 @@ namespace EveryRay_Core
 			{
 				ER_RHI_INPUT_ELEMENT_DESC inputElementDescriptionsInstanced[] =
 				{
-					{ "POSITION", 0, ER_FORMAT_R32G32B32A32_FLOAT, 0, 0, true, 0 },
-					{ "TEXCOORD", 0, ER_FORMAT_R32G32_FLOAT, 0, 0xffffffff, true, 0 },
+					{ "POSITION", 0, ER_FORMAT_R32G32B32A32_FLOAT, 0, 0,	 true, 0 },
+					{ "TEXCOORD", 0, ER_FORMAT_R32G32_FLOAT, 0, 0xffffffff,  true, 0 },
+					{ "NORMAL", 0, ER_FORMAT_R32G32B32_FLOAT, 0, 0xffffffff, true, 0 },
+					{ "TANGENT", 0, ER_FORMAT_R32G32B32_FLOAT, 0, 0xffffffff,true, 0 },
 					{ "WORLD", 0, ER_FORMAT_R32G32B32A32_FLOAT, 1, 0, false, 1 },
-					{ "WORLD", 1, ER_FORMAT_R32G32B32A32_FLOAT, 1, 16, false, 1 },
-					{ "WORLD", 2, ER_FORMAT_R32G32B32A32_FLOAT, 1, 32, false, 1 },
-					{ "WORLD", 3, ER_FORMAT_R32G32B32A32_FLOAT, 1, 48, false, 1 }
+					{ "WORLD", 1, ER_FORMAT_R32G32B32A32_FLOAT, 1, 16,false, 1 },
+					{ "WORLD", 2, ER_FORMAT_R32G32B32A32_FLOAT, 1, 32,false, 1 },
+					{ "WORLD", 3, ER_FORMAT_R32G32B32A32_FLOAT, 1, 48,false, 1 }
 				};
 				ER_Material::CreateVertexShader("content\\shaders\\ShadowMap.hlsl", inputElementDescriptionsInstanced, ARRAYSIZE(inputElementDescriptionsInstanced));
 			}
@@ -82,12 +86,12 @@ namespace EveryRay_Core
 
 	void ER_ShadowMapMaterial::CreateVertexBuffer(const ER_Mesh& mesh, ER_RHI_GPUBuffer* vertexBuffer)
 	{
-		mesh.CreateVertexBuffer_PositionUv(vertexBuffer);
+		mesh.CreateVertexBuffer_PositionUvNormalTangent(vertexBuffer);
 	}
 
 	int ER_ShadowMapMaterial::VertexSize()
 	{
-		return sizeof(VertexPositionTexture);
+		return sizeof(VertexPositionTextureNormalTangent);
 	}
 
 }

@@ -293,10 +293,10 @@ namespace EveryRay_Core
 
 		///****************************************************************************************************************************
 		// *** mesh/model data (buffers, textures, etc.) ***
-		std::vector<std::map<std::string, std::vector<RenderBufferData*>>>	mMeshesRenderBuffers;
 		std::vector<TextureData>								mMeshesTextureBuffers;
-		std::vector<std::vector<InstanceBufferData*>>			mMeshesInstanceBuffers;
 		std::vector<std::vector<std::vector<XMFLOAT3>>>			mMeshVertices; // vertices per mesh, per LOD group
+		std::vector<std::vector<RenderBufferData*>>				mMeshRenderBuffers; // vertex/index buffers per mesh, per LOD group
+		std::vector<std::vector<InstanceBufferData*>>			mMeshesInstanceBuffers; // instance buffers per mesh, per LOD group
 		std::vector<std::vector<XMFLOAT3>>						mMeshAllVertices; // vertices of all meshes combined, per LOD group
 		std::vector<float>										mMeshesReflectionFactors; 
 		std::vector<int>										mMeshesCount;

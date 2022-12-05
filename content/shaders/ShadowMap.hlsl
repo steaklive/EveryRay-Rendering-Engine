@@ -16,12 +16,18 @@ struct VS_INPUT
 {
     float4 Position : POSITION;
     float2 TextureCoordinate : TEXCOORD;
+    float3 Normal : NORMAL;
+    float3 Tangent : TANGENT;
 };
     
 struct VS_INPUT_INSTANCING
 {
     float4 Position : POSITION;
     float2 TextureCoordinate : TEXCOORD;
+    float3 Normal : NORMAL;
+    float3 Tangent : TANGENT;
+    
+    //instancing
     row_major float4x4 World : WORLD;
 };
 
