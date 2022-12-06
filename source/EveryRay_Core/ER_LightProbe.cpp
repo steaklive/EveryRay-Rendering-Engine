@@ -378,21 +378,30 @@ namespace EveryRay_Core
 
 		if (loadAsSphericalHarmonics)
 		{
-			std::wifstream shFile(probeName.c_str());
-			if (shFile.is_open())
+			FILE* shFile = _wfopen(probeName.c_str(), L"r");
+			if (shFile)
 			{
-				float coefficients[3][SPHERICAL_HARMONICS_COEF_COUNT];
-				int channel = 0;
-				for (std::wstring line; std::getline(shFile, line);)
+				float coefficients[3][SPHERICAL_HARMONICS_COEF_COUNT] =
 				{
-					std::wistringstream in(line);
+					{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+					{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+					{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }
+				};
+				int channel = 0;
+				char line[256];
+				char channelSymbol;
+				while (fgets(line, sizeof(line), shFile))
+				{
+					if (channel == 3)
+						break;
 
-					std::wstring type;
-					in >> type;
-					if (type == L"r" || type == L"g" || type == L"b")
+					if (line[0] == 'r' || line[0] == 'g' || line[0] == 'b')
 					{
-						for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
-							in >> coefficients[channel][i];
+						sscanf(line, "%c %f %f %f %f %f %f %f %f %f", &channelSymbol,
+							&coefficients[channel][0], &coefficients[channel][1], &coefficients[channel][2],
+							&coefficients[channel][3], &coefficients[channel][4], &coefficients[channel][5],
+							&coefficients[channel][6], &coefficients[channel][7], &coefficients[channel][8]
+						);
 					}
 					else
 					{
@@ -409,11 +418,15 @@ namespace EveryRay_Core
 				for (int i = 0; i < SPHERICAL_HARMONICS_COEF_COUNT; i++)
 					mSphericalHarmonicsRGB[i] = XMFLOAT3(coefficients[0][i], coefficients[1][i], coefficients[2][i]);
 
+				std::wstring message = L"[ER Logger][ER_LightProbe] Successfully loaded probe's spherical harmonics file: " + probeName + L"\n";
+				ER_OUTPUT_LOG(message.c_str());
+
 				mIsProbeLoadedFromDisk = true;
-				shFile.close();
+				fclose(shFile);
 			}
 			else
 			{
+				DWORD error = GetLastError();
 				std::wstring message = L"[ER Logger][ER_LightProbe] Could not load probe's spherical harmonics file: " + probeName + L". This probe will be recomputed and saved to disk. \n";
 				ER_OUTPUT_LOG(message.c_str());
 				mIsProbeLoadedFromDisk = false;
@@ -426,6 +439,11 @@ namespace EveryRay_Core
 			if (!mIsProbeLoadedFromDisk)
 			{
 				std::wstring message = L"[ER Logger][ER_LightProbe] Could not load probe's texture file: " + probeName + L". This probe will be recomputed and saved to disk. \n";
+				ER_OUTPUT_LOG(message.c_str());
+			}
+			else
+			{
+				std::wstring message = L"[ER Logger][ER_LightProbe] Successfully loaded specular probe's cubemap texture: " + probeName + L"\n";
 				ER_OUTPUT_LOG(message.c_str());
 			}
 		}
