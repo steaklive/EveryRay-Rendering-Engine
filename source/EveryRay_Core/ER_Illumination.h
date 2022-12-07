@@ -240,6 +240,7 @@ namespace EveryRay_Core
 		bool mShowVCTVoxelizationOnly = false;
 		bool mShowVCTAmbientOcclusionOnly = false;
 		bool mDrawVCTVoxelZonesGizmos = false;
+		bool mIsVCTEnabled = false;
 
 		//light probes
 		bool mDrawDiffuseProbes = false;
@@ -254,7 +255,6 @@ namespace EveryRay_Core
 		float mSSSStrength = 1.35f;
 		float mSSSDirectionalLightPlaneScale = 0.15f;
 
-		bool mEnabled = false;
 		bool mShowDebug = false;
 
 		RenderingObjectInfo mForwardPassObjects;

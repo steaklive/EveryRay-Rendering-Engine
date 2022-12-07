@@ -389,7 +389,7 @@ namespace EveryRay_Core {
 		if (mCurrentGIQuality == GIQuality::GI_LOW)
 			return;
 
-		if (!mEnabled)
+		if (!mIsVCTEnabled)
 		{
 			rhi->ClearUAV(mVCTMainRT, clearColorBlack);
 			rhi->ClearUAV(mVCTUpsampleAndBlurRT, clearColorBlack);
@@ -712,7 +712,7 @@ namespace EveryRay_Core {
 		{
 			if (ImGui::CollapsingHeader("Dynamic - Voxel Cone Tracing"))
 			{
-				ImGui::Checkbox("VCT GI Enabled", &mEnabled);
+				ImGui::Checkbox("VCT GI Enabled", &mIsVCTEnabled);
 				ImGui::SliderFloat("VCT GI Intensity", &mVCTGIPower, 0.0f, 5.0f);
 				ImGui::SliderFloat("VCT Diffuse Strength", &mVCTIndirectDiffuseStrength, 0.0f, 1.0f);
 				ImGui::SliderFloat("VCT Specular Strength", &mVCTIndirectSpecularStrength, 0.0f, 1.0f);
