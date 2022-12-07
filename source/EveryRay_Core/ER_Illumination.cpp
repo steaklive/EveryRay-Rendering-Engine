@@ -533,7 +533,7 @@ namespace EveryRay_Core {
 
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 			{
-				rhi->GenerateMips(mVCTVoxelCascades3DRTs[i]);
+				rhi->GenerateMips(mVCTVoxelCascades3DRTs[i], mVCTVoxelCascades3DRTs[i]);
 				mVoxelConeTracingMainConstantBuffer.Data.VoxelCameraPositions[i] = mVoxelCameraPositions[i];
 				mVoxelConeTracingMainConstantBuffer.Data.WorldVoxelScales[i] = XMFLOAT4(mWorldVoxelScales[i], 0.0, 0.0, 0.0);
 			}

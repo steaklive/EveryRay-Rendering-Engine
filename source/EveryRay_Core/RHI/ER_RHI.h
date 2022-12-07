@@ -310,7 +310,7 @@ namespace EveryRay_Core
 		virtual void Dispatch(UINT ThreadGroupCountX, UINT ThreadGroupCountY, UINT ThreadGroupCountZ) = 0;
 		//TODO DispatchIndirect
 
-		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture, bool isSRGB = false, ER_RHI_GPUTexture* aSRGBTexture = nullptr) = 0;
+		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture, ER_RHI_GPUTexture* anOriginalTexture, bool isSRGB = false) = 0;
 		virtual void GenerateMipsWithTextureReplacement(ER_RHI_GPUTexture** aTexture, std::function<void(ER_RHI_GPUTexture**)> aReplacementCallback) = 0;
 		virtual void ReplaceOriginalTexturesWithMipped() = 0;
 

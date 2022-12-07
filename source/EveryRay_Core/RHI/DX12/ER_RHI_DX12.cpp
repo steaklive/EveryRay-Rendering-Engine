@@ -776,13 +776,12 @@ namespace EveryRay_Core
 		WaitForGpuOnCopyFence();
 	}
 
-	void ER_RHI_DX12::GenerateMips(ER_RHI_GPUTexture* aTexture, bool isSRGB, ER_RHI_GPUTexture* aSRGBTexture)
+	void ER_RHI_DX12::GenerateMips(ER_RHI_GPUTexture* aTexture, ER_RHI_GPUTexture* anOriginalTexture, bool isSRGB)
 	{
 		if ((aTexture->GetWidth() != aTexture->GetHeight()) /*|| !(ER_IsPowerOfTwo(aTexture->GetWidth()) && ER_IsPowerOfTwo(aTexture->GetHeight()))*/)
 			return; //TODO add support
 		
-		if (isSRGB)
-			assert(aSRGBTexture);
+		assert(anOriginalTexture);
 
 		const UINT rootParamIndexSrv = 0;
 		const UINT rootParamIndexUav = 1;
@@ -800,8 +799,6 @@ namespace EveryRay_Core
 		UINT mipCount = (aTexture->GetMips() > 1) ? aTexture->GetMips() : aTexture->GetCalculatedMipCount();
 		assert(mipCount > 1);
 
-		TransitionResources({ aTexture }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_UNORDERED_ACCESS, mCurrentGraphicsCommandListIndex);
-
 		auto cmdList = mCommandListGraphics[mCurrentGraphicsCommandListIndex];
 
 		const std::string& psoName = is3D ? mGenerateMips3DPSOName : mGenerateMips2DPSOName;
@@ -816,6 +813,8 @@ namespace EveryRay_Core
 			FinalizePSO(psoName, true);
 		}
 		SetPSO(psoName, true);
+		SetShaderResources(ER_COMPUTE, { anOriginalTexture }, 0, rs, rootParamIndexSrv, true);
+		TransitionResources({ aTexture }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_UNORDERED_ACCESS, mCurrentGraphicsCommandListIndex);
 		for (UINT mip = 0; mip < mipCount; mip++)
 		{
 			if (!isSRGB && mip == 0)
@@ -830,7 +829,6 @@ namespace EveryRay_Core
 			if (is3D)
 				cmdList->SetComputeRoot32BitConstant(rootParamIndexConstant, dstDepth, 2);
 			cmdList->SetComputeRoot32BitConstant(rootParamIndexConstant, /*TODO isSRGB ? 1 : */0, is3D ? 3 : 2);
-			SetShaderResources(ER_COMPUTE, { (isSRGB && aSRGBTexture) ? aSRGBTexture : aTexture }, 0, rs, rootParamIndexSrv, true);
 			SetUnorderedAccessResources(ER_COMPUTE, { aTexture }, mip, rs, rootParamIndexUav, true);
 
 			Dispatch(ER_CEIL(dstWidth, 8), ER_CEIL(dstHeight, 8), is3D ? ER_CEIL(dstDepth, 8) : 1u);
@@ -870,7 +868,7 @@ namespace EveryRay_Core
 		if (!isSRGB)
 			CopyGPUTextureSubresourceRegion(mGenerateMipsWithReplacementReadyTexturesPool[mGenerateMipsWithReplacementCurrentTextureIndexInPool], 0, 0, 0, 0, *aTexture, 0);
 		// generate the mip chain in the new texture (read from original texture in the compute shader if sRGB)
-		GenerateMips(mGenerateMipsWithReplacementReadyTexturesPool[mGenerateMipsWithReplacementCurrentTextureIndexInPool], isSRGB, isSRGB ? *aTexture : nullptr);
+		GenerateMips(mGenerateMipsWithReplacementReadyTexturesPool[mGenerateMipsWithReplacementCurrentTextureIndexInPool], *aTexture, isSRGB);
 
 		mGenerateMipsWithReplacementCallbacks[mGenerateMipsWithReplacementCurrentTextureIndexInPool] = aReplacementCallback;
 		mGenerateMipsWithReplacementCurrentTextureIndexInPool++;

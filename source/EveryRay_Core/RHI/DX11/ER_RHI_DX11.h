@@ -73,7 +73,7 @@ namespace EveryRay_Core
 		virtual void ExecuteCommandLists(int commandListIndex = 0, bool isCompute = false) override {}; //not supported on DX11
 		virtual void ExecuteCopyCommandList() override {}; //not supported on DX11
 
-		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture, bool isSRGB = false, ER_RHI_GPUTexture* aSRGBTexture = nullptr) override;
+		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture, ER_RHI_GPUTexture* anOriginalTexture, bool isSRGB = false) override;
 		virtual void GenerateMipsWithTextureReplacement(ER_RHI_GPUTexture** aTexture, std::function<void(ER_RHI_GPUTexture**)> aReplacementCallback) override {}; //not supported on DX11
 		virtual void ReplaceOriginalTexturesWithMipped() override {}; //not supported on DX11
 

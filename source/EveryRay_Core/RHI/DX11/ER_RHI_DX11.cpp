@@ -418,7 +418,7 @@ namespace EveryRay_Core
 		mDirect3DDeviceContext->Dispatch(ThreadGroupCountX, ThreadGroupCountY, ThreadGroupCountZ);
 	}
 
-	void ER_RHI_DX11::GenerateMips(ER_RHI_GPUTexture* aTexture, bool isSRGB, ER_RHI_GPUTexture* aSRGBTexture)
+	void ER_RHI_DX11::GenerateMips(ER_RHI_GPUTexture* aTexture, ER_RHI_GPUTexture* anOriginalTexture, bool isSRGB)
 	{
 		assert(aTexture);
 		ID3D11ShaderResourceView* pShaderResourceView = static_cast<ID3D11ShaderResourceView*>(aTexture->GetSRV());

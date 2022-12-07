@@ -21,7 +21,7 @@
 #define DX12_MAX_BOUND_ROOT_PARAMS 8 
 #define DX12_MAX_BACK_BUFFER_COUNT 2
 
-#define DX12_MAX_GENERATE_MIPS_TEXTURES_IN_POOL 4096 // max # of textures pending for GenerateMipsWithTextureReplacement();
+#define DX12_MAX_GENERATE_MIPS_TEXTURES_IN_POOL 2048 // max # of textures pending for GenerateMipsWithTextureReplacement();
 
 namespace EveryRay_Core
 {
@@ -91,7 +91,7 @@ namespace EveryRay_Core
 		virtual void ExecuteCommandLists(int commandListIndex = 0, bool isCompute = false) override;
 		virtual void ExecuteCopyCommandList() override;
 
-		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture, bool isSRGB = false, ER_RHI_GPUTexture* aSRGBTexture = nullptr) override;
+		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture, ER_RHI_GPUTexture* anOriginalTexture, bool isSRGB = false) override;
 		virtual void GenerateMipsWithTextureReplacement(ER_RHI_GPUTexture** aTexture, std::function<void(ER_RHI_GPUTexture**)> aReplacementCallback) override;
 		virtual void ReplaceOriginalTexturesWithMipped() override;
 

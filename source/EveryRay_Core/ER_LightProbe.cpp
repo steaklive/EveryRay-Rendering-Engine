@@ -241,7 +241,7 @@ namespace EveryRay_Core
 		}
 
 		if (mProbeType == SPECULAR_PROBE)
-			rhi->GenerateMips(aTextureNonConvoluted);
+			rhi->GenerateMips(aTextureNonConvoluted, nullptr);
 	}
 
 	void ER_LightProbe::ConvoluteProbe(ER_Core& game, ER_QuadRenderer* quadRenderer, ER_RHI_GPUTexture* aTextureNonConvoluted, ER_RHI_GPUTexture* aTextureConvoluted)
