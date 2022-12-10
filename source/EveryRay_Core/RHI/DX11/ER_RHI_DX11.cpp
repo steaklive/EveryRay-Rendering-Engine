@@ -418,7 +418,7 @@ namespace EveryRay_Core
 		mDirect3DDeviceContext->Dispatch(ThreadGroupCountX, ThreadGroupCountY, ThreadGroupCountZ);
 	}
 
-	void ER_RHI_DX11::GenerateMips(ER_RHI_GPUTexture* aTexture, ER_RHI_GPUTexture* anOriginalTexture, bool isSRGB)
+	void ER_RHI_DX11::GenerateMips(ER_RHI_GPUTexture* aTexture, ER_RHI_GPUTexture* aSRGBTexture)
 	{
 		assert(aTexture);
 		ID3D11ShaderResourceView* pShaderResourceView = static_cast<ID3D11ShaderResourceView*>(aTexture->GetSRV());
@@ -595,7 +595,7 @@ namespace EveryRay_Core
 	}
 
 	void ER_RHI_DX11::SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot,
-		ER_RHI_GPURootSignature* rs, int rootParamIndex, bool isComputeRS)
+		ER_RHI_GPURootSignature* rs, int rootParamIndex, bool isComputeRS, bool skipAutomaticTransition)
 	{
 		assert(aSRVs.size() > 0);
 		assert(aSRVs.size() <= DX11_MAX_BOUND_SHADER_RESOURCE_VIEWS);
@@ -637,7 +637,7 @@ namespace EveryRay_Core
 	}
 
 	void ER_RHI_DX11::SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot,
-		ER_RHI_GPURootSignature* rs, int rootParamIndex, bool isComputeRS)
+		ER_RHI_GPURootSignature* rs, int rootParamIndex, bool isComputeRS, bool skipAutomaticTransition)
 	{
 		assert(aUAVs.size() > 0);
 		assert(aUAVs.size() <= DX11_MAX_BOUND_UNORDERED_ACCESS_VIEWS);

@@ -73,7 +73,7 @@ namespace EveryRay_Core
 		virtual void ExecuteCommandLists(int commandListIndex = 0, bool isCompute = false) override {}; //not supported on DX11
 		virtual void ExecuteCopyCommandList() override {}; //not supported on DX11
 
-		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture, ER_RHI_GPUTexture* anOriginalTexture, bool isSRGB = false) override;
+		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture, ER_RHI_GPUTexture* aSRGBTexture = nullptr) override;
 		virtual void GenerateMipsWithTextureReplacement(ER_RHI_GPUTexture** aTexture, std::function<void(ER_RHI_GPUTexture**)> aReplacementCallback) override {}; //not supported on DX11
 		virtual void ReplaceOriginalTexturesWithMipped() override {}; //not supported on DX11
 
@@ -98,9 +98,9 @@ namespace EveryRay_Core
 		virtual void SetRect(const ER_RHI_Rect& rect) override;
 
 		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot = 0,
-			ER_RHI_GPURootSignature* rs = nullptr, int rootParamIndex = -1, bool isComputeRS = false) override;
+			ER_RHI_GPURootSignature* rs = nullptr, int rootParamIndex = -1, bool isComputeRS = false, bool skipAutomaticTransition = false) override;
 		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot = 0,
-			ER_RHI_GPURootSignature* rs = nullptr, int rootParamIndex = -1, bool isComputeRS = false) override;
+			ER_RHI_GPURootSignature* rs = nullptr, int rootParamIndex = -1, bool isComputeRS = false, bool skipAutomaticTransition = false) override;
 		virtual void SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot = 0,
 			ER_RHI_GPURootSignature* rs = nullptr, int rootParamIndex = -1, bool isComputeRS = false) override;
 		virtual void SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot = 0, ER_RHI_GPURootSignature* rs = nullptr) override;
@@ -119,8 +119,8 @@ namespace EveryRay_Core
 		virtual void SetGPUDescriptorHeap(ER_RHI_DESCRIPTOR_HEAP_TYPE aType, bool aReset) override {}; //not supported on DX11
 		virtual void SetGPUDescriptorHeapImGui(int cmdListIndex) override {}; //not supported on DX11
 
-		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0, bool isCopyQueue = false) override {}; //not supported on DX11
-		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0, bool isCopyQueue = false) override {}; //not supported on DX11
+		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0, bool isCopyQueue = false, int subresourceIndex = -1) override {}; //not supported on DX11
+		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0, bool isCopyQueue = false, int subresourceIndex = -1) override {}; //not supported on DX11
 		virtual void TransitionMainRenderTargetToPresent(int cmdListIndex = 0) override {}; //not supported on DX11
 
 		virtual bool IsPSOReady(const std::string& aName, bool isCompute = false) override { return false; } //not supported on DX11

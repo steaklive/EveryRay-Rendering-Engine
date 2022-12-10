@@ -418,12 +418,12 @@ namespace EveryRay_Core {
 				ER_RHI_Rect vctRect = { 0.0f, 0.0f, voxelCascadesSizes[cascade], voxelCascadesSizes[cascade] };
 				rhi->SetRect(vctRect);
 
+				rhi->ClearUAV(mVCTVoxelCascades3DRTs[cascade], clearColorBlack);
+
 				if (rhi->GetAPI() == ER_GRAPHICS_API::DX11)
 					rhi->SetRenderTargets({}, nullptr, mVCTVoxelCascades3DRTs[cascade]);
 				else
 					rhi->SetUnorderedAccessResources(ER_PIXEL, { mVCTVoxelCascades3DRTs[cascade] }, 0, mVoxelizationRS, VOXELIZATION_MAT_ROOT_DESCRIPTOR_TABLE_UAV_INDEX);
-
-				rhi->ClearUAV(mVCTVoxelCascades3DRTs[cascade], clearColorBlack);
 
 				std::string materialName = ER_MaterialHelper::voxelizationMaterialName + "_" + std::to_string(cascade);
 				const std::string& psoName = voxelizationPSONames[cascade];
@@ -533,7 +533,7 @@ namespace EveryRay_Core {
 
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 			{
-				rhi->GenerateMips(mVCTVoxelCascades3DRTs[i], mVCTVoxelCascades3DRTs[i]);
+				rhi->GenerateMips(mVCTVoxelCascades3DRTs[i]);
 				mVoxelConeTracingMainConstantBuffer.Data.VoxelCameraPositions[i] = mVoxelCameraPositions[i];
 				mVoxelConeTracingMainConstantBuffer.Data.WorldVoxelScales[i] = XMFLOAT4(mWorldVoxelScales[i], 0.0, 0.0, 0.0);
 			}

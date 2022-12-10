@@ -310,7 +310,7 @@ namespace EveryRay_Core
 		virtual void Dispatch(UINT ThreadGroupCountX, UINT ThreadGroupCountY, UINT ThreadGroupCountZ) = 0;
 		//TODO DispatchIndirect
 
-		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture, ER_RHI_GPUTexture* anOriginalTexture, bool isSRGB = false) = 0;
+		virtual void GenerateMips(ER_RHI_GPUTexture* aTexture, ER_RHI_GPUTexture* aSRGBTexture = nullptr) = 0;
 		virtual void GenerateMipsWithTextureReplacement(ER_RHI_GPUTexture** aTexture, std::function<void(ER_RHI_GPUTexture**)> aReplacementCallback) = 0;
 		virtual void ReplaceOriginalTexturesWithMipped() = 0;
 
@@ -348,9 +348,9 @@ namespace EveryRay_Core
 		virtual void SetShader(ER_RHI_GPUShader* aShader) = 0;
 		
 		virtual void SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot = 0,
-			ER_RHI_GPURootSignature* rs = nullptr, int rootParamIndex = -1, bool isComputeRS = false) = 0;
+			ER_RHI_GPURootSignature* rs = nullptr, int rootParamIndex = -1, bool isComputeRS = false, bool skipAutomaticTransition = false) = 0;
 		virtual void SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot = 0,
-			ER_RHI_GPURootSignature* rs = nullptr, int rootParamIndex = -1, bool isComputeRS = false) = 0;
+			ER_RHI_GPURootSignature* rs = nullptr, int rootParamIndex = -1, bool isComputeRS = false, bool skipAutomaticTransition = false) = 0;
 		virtual void SetConstantBuffers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUBuffer*>& aCBs, UINT startSlot = 0,
 			ER_RHI_GPURootSignature* rs = nullptr, int rootParamIndex = -1, bool isComputeRS = false) = 0;
 		virtual void SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot = 0, ER_RHI_GPURootSignature* rs = nullptr) = 0;
@@ -368,8 +368,8 @@ namespace EveryRay_Core
 		virtual void SetGPUDescriptorHeap(ER_RHI_DESCRIPTOR_HEAP_TYPE aType, bool aReset) = 0;
 		virtual void SetGPUDescriptorHeapImGui(int cmdListIndex) = 0;
 
-		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0, bool isCopyQueue = false) = 0;
-		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0, bool isCopyQueue = false) = 0;
+		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex = 0, bool isCopyQueue = false, int subresourceIndex = -1) = 0;
+		virtual void TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex = 0, bool isCopyQueue = false, int subresourceIndex = -1) = 0;
 		virtual void TransitionMainRenderTargetToPresent(int cmdListIndex = 0) = 0;
 
 		virtual bool IsPSOReady(const std::string& aName, bool isCompute = false) = 0;

@@ -776,12 +776,10 @@ namespace EveryRay_Core
 		WaitForGpuOnCopyFence();
 	}
 
-	void ER_RHI_DX12::GenerateMips(ER_RHI_GPUTexture* aTexture, ER_RHI_GPUTexture* anOriginalTexture, bool isSRGB)
+	void ER_RHI_DX12::GenerateMips(ER_RHI_GPUTexture* aTexture, ER_RHI_GPUTexture* aSRGBTexture)
 	{
 		if ((aTexture->GetWidth() != aTexture->GetHeight()) /*|| !(ER_IsPowerOfTwo(aTexture->GetWidth()) && ER_IsPowerOfTwo(aTexture->GetHeight()))*/)
 			return; //TODO add support
-		
-		assert(anOriginalTexture);
 
 		const UINT rootParamIndexSrv = 0;
 		const UINT rootParamIndexUav = 1;
@@ -813,11 +811,22 @@ namespace EveryRay_Core
 			FinalizePSO(psoName, true);
 		}
 		SetPSO(psoName, true);
-		SetShaderResources(ER_COMPUTE, { anOriginalTexture }, 0, rs, rootParamIndexSrv, true);
-		TransitionResources({ aTexture }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_UNORDERED_ACCESS, mCurrentGraphicsCommandListIndex);
+
+		//transition first mip to non-pixel shader resource (because we will read from it) and all other mips to unordered access
+		std::vector< CD3DX12_RESOURCE_BARRIER> barriers;
+		barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aTexture->GetResource()), GetState(aTexture->GetCurrentState()), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, 0));
+		for (UINT mip = 1; mip < mipCount; mip++)
+		{
+			if (GetState(aTexture->GetCurrentState()) != D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
+				barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aTexture->GetResource()), GetState(aTexture->GetCurrentState()), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, mip));
+		}
+		cmdList->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
+
+		SetShaderResources(ER_COMPUTE, { !aSRGBTexture ? aTexture : aSRGBTexture }, 0, rs, rootParamIndexSrv, true, true);
+
 		for (UINT mip = 0; mip < mipCount; mip++)
 		{
-			if (!isSRGB && mip == 0)
+			if (!aSRGBTexture && mip == 0)
 				continue;
 
 			UINT dstWidth = std::max(srcWidth >> mip, 1u);
@@ -828,15 +837,22 @@ namespace EveryRay_Core
 			cmdList->SetComputeRoot32BitConstant(rootParamIndexConstant, dstHeight, 1);
 			if (is3D)
 				cmdList->SetComputeRoot32BitConstant(rootParamIndexConstant, dstDepth, 2);
-			cmdList->SetComputeRoot32BitConstant(rootParamIndexConstant, /*TODO isSRGB ? 1 : */0, is3D ? 3 : 2);
-			SetUnorderedAccessResources(ER_COMPUTE, { aTexture }, mip, rs, rootParamIndexUav, true);
+			cmdList->SetComputeRoot32BitConstant(rootParamIndexConstant, /*TODO aSRGBTexture ? 1 : */0, is3D ? 3 : 2);
 
+			SetUnorderedAccessResources(ER_COMPUTE, { aTexture }, mip, rs, rootParamIndexUav, true, true);
 			Dispatch(ER_CEIL(dstWidth, 8), ER_CEIL(dstHeight, 8), is3D ? ER_CEIL(dstDepth, 8) : 1u);
 
 			cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::UAV(static_cast<ID3D12Resource*>(aTexture->GetResource())));
 		}
 		UnsetPSO();
-		TransitionResources({ aTexture }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, mCurrentGraphicsCommandListIndex);
+
+		//reset the transitions
+		std::vector< CD3DX12_RESOURCE_BARRIER> barriersFinal;
+		barriersFinal.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aTexture->GetResource()), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, 0));
+		for (UINT mip = 1; mip < mipCount; mip++)
+			barriersFinal.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aTexture->GetResource()), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, mip));
+		cmdList->ResourceBarrier(static_cast<UINT>(barriersFinal.size()), barriersFinal.data());
+		aTexture->SetCurrentState(ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	}
 
 	void ER_RHI_DX12::GenerateMipsWithTextureReplacement(ER_RHI_GPUTexture** aTexture, std::function<void(ER_RHI_GPUTexture**)> aReplacementCallback)
@@ -868,7 +884,7 @@ namespace EveryRay_Core
 		if (!isSRGB)
 			CopyGPUTextureSubresourceRegion(mGenerateMipsWithReplacementReadyTexturesPool[mGenerateMipsWithReplacementCurrentTextureIndexInPool], 0, 0, 0, 0, *aTexture, 0);
 		// generate the mip chain in the new texture (read from original texture in the compute shader if sRGB)
-		GenerateMips(mGenerateMipsWithReplacementReadyTexturesPool[mGenerateMipsWithReplacementCurrentTextureIndexInPool], *aTexture, isSRGB);
+		GenerateMips(mGenerateMipsWithReplacementReadyTexturesPool[mGenerateMipsWithReplacementCurrentTextureIndexInPool], isSRGB ? *aTexture : nullptr);
 
 		mGenerateMipsWithReplacementCallbacks[mGenerateMipsWithReplacementCurrentTextureIndexInPool] = aReplacementCallback;
 		mGenerateMipsWithReplacementCurrentTextureIndexInPool++;
@@ -1163,7 +1179,7 @@ namespace EveryRay_Core
 	}
 
 	void ER_RHI_DX12::SetShaderResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aSRVs, UINT startSlot /*= 0*/,
-		ER_RHI_GPURootSignature* rs, int rootParamIndex, bool isComputeRS)
+		ER_RHI_GPURootSignature* rs, int rootParamIndex, bool isComputeRS, bool skipAutomaticTransition)
 	{
 		int srvCount = static_cast<int>(aSRVs.size());
 		assert(rs);
@@ -1189,7 +1205,8 @@ namespace EveryRay_Core
 
 		}
 
-		TransitionResources(aSRVs, aShaderType == ER_RHI_SHADER_TYPE::ER_PIXEL ? ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE : ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, mCurrentGraphicsCommandListIndex);
+		if (!skipAutomaticTransition)
+			TransitionResources(aSRVs, aShaderType == ER_RHI_SHADER_TYPE::ER_PIXEL ? ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_PIXEL_SHADER_RESOURCE : ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, mCurrentGraphicsCommandListIndex);
 
 		if (!isComputeRS)
 			mCommandListGraphics[mCurrentGraphicsCommandListIndex]->SetGraphicsRootDescriptorTable(rootParamIndex, srvHandle.GetGPUHandle());
@@ -1200,7 +1217,7 @@ namespace EveryRay_Core
 	}
 
 	void ER_RHI_DX12::SetUnorderedAccessResources(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_GPUResource*>& aUAVs, UINT startSlot /*= 0*/,
-		ER_RHI_GPURootSignature* rs, int rootParamIndex, bool isComputeRS)
+		ER_RHI_GPURootSignature* rs, int rootParamIndex, bool isComputeRS, bool skipAutomaticTransition)
 	{
 		int uavCount = static_cast<int>(aUAVs.size());
 		assert(rs);
@@ -1221,7 +1238,8 @@ namespace EveryRay_Core
 				gpuDescriptorHeap->AddToHandle(mDevice.Get(), uavHandle, static_cast<ER_RHI_DX12_GPUTexture*>(aUAVs[i])->GetUAVHandle(startSlot));
 		}
 
-		TransitionResources(aUAVs, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_UNORDERED_ACCESS, mCurrentGraphicsCommandListIndex);
+		if (!skipAutomaticTransition)
+			TransitionResources(aUAVs, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_UNORDERED_ACCESS, mCurrentGraphicsCommandListIndex);
 
 		if (!isComputeRS)
 			mCommandListGraphics[mCurrentGraphicsCommandListIndex]->SetGraphicsRootDescriptorTable(rootParamIndex, uavHandle.GetGPUHandle());
@@ -1507,7 +1525,7 @@ namespace EveryRay_Core
 		mCurrentSetComputePSOName = "";
 	}
 
-	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex, bool isCopyQueue)
+	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, const std::vector<ER_RHI_RESOURCE_STATE>& aStates, int cmdListIndex, bool isCopyQueue, int subresourceIndex)
 	{
 		int size = static_cast<int>(aResources.size());
 		assert(size > 0 && size == aStates.size());
@@ -1521,7 +1539,9 @@ namespace EveryRay_Core
 
 			if (aResources[i] && aResources[i]->GetCurrentState() != aStates[i])
 			{
-				barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aStates[i])));
+				barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aStates[i]),
+					subresourceIndex < 0 ? D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES : subresourceIndex)
+				);
 				aResources[i]->SetCurrentState(aStates[i]);
 			}
 		}
@@ -1535,7 +1555,7 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex /*= 0*/, bool isCopyQueue)
+	void ER_RHI_DX12::TransitionResources(const std::vector<ER_RHI_GPUResource*>& aResources, ER_RHI_RESOURCE_STATE aState, int cmdListIndex /*= 0*/, bool isCopyQueue, int subresourceIndex)
 	{
 		int size = static_cast<int>(aResources.size());
 		std::vector<CD3DX12_RESOURCE_BARRIER> barriers;
@@ -1551,7 +1571,9 @@ namespace EveryRay_Core
 
 			if (aResources[i] && aResources[i]->GetCurrentState() != aState)
 			{
-				barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aState)));
+				barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(aResources[i]->GetResource()), GetState(aResources[i]->GetCurrentState()), GetState(aState),
+					subresourceIndex < 0 ? D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES : subresourceIndex)
+				);
 				aResources[i]->SetCurrentState(aState);
 			}
 		}
