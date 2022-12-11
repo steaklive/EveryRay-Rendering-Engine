@@ -28,12 +28,12 @@ namespace EveryRay_Core
 		ER_RHI_DX12_DescriptorHandle& GetSRVDescriptorHandle() { return mBufferSRVHandle; }
 		ER_RHI_DX12_DescriptorHandle& GetCBVDescriptorHandle() { return mBufferCBVHandle[ER_RHI_DX12::mBackBufferIndex]; }
 		
-		D3D12_VERTEX_BUFFER_VIEW& GetVertexBufferView() { return mVertexBufferView; }
+		D3D12_VERTEX_BUFFER_VIEW& GetVertexBufferView() { return mIsDynamic ? mVertexBufferViews[ER_RHI_DX12::mBackBufferIndex] : mVertexBufferViews[0]; }
 		D3D12_INDEX_BUFFER_VIEW& GetIndexBufferView() { return mIndexBufferView; }
 
 		void Map(ER_RHI* aRHI, void** aOutData);
 		void Unmap(ER_RHI* aRHI);
-		void Update(ER_RHI* aRHI, void* aData, int dataSize);
+		void Update(ER_RHI* aRHI, void* aData, int dataSize, bool updateForAllBackBuffers = false);
 		DXGI_FORMAT GetFormat() { return mFormat; }
 	private:
 		void UpdateSubresource(ER_RHI* aRHI, void* aData, int aSize, int cmdListIndex);
@@ -51,7 +51,7 @@ namespace EveryRay_Core
 		UINT mStride;
 		int mSize = 0;
 
-		D3D12_VERTEX_BUFFER_VIEW mVertexBufferView;
+		D3D12_VERTEX_BUFFER_VIEW mVertexBufferViews[DX12_MAX_BACK_BUFFER_COUNT];
 		D3D12_INDEX_BUFFER_VIEW mIndexBufferView;
 
 		D3D12_RESOURCE_FLAGS mResourceFlags = D3D12_RESOURCE_FLAG_NONE;

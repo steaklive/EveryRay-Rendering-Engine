@@ -134,7 +134,7 @@ namespace EveryRay_Core
 		virtual void UnbindRenderTargets() override;
 		virtual void UnbindResourcesFromShader(ER_RHI_SHADER_TYPE aShaderType, bool unbindShader = true) override;
 
-		virtual void UpdateBuffer(ER_RHI_GPUBuffer* aBuffer, void* aData, int dataSize) override;
+		virtual void UpdateBuffer(ER_RHI_GPUBuffer* aBuffer, void* aData, int dataSize, bool updateForAllBackBuffers = false) override;
 		
 		virtual bool IsHardwareRaytracingSupported() override { return false; }
 		

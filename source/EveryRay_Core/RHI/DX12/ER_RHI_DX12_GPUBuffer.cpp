@@ -98,14 +98,26 @@ namespace EveryRay_Core
 		if (bindFlags & ER_BIND_VERTEX_BUFFER)
 		{
 			// Initialize the vertex buffer view.
-			mVertexBufferView.BufferLocation = mBufferUpload[0]->GetGPUVirtualAddress();
-			mVertexBufferView.StrideInBytes = mStride;
-			mVertexBufferView.SizeInBytes = mSize;
+			if (!mIsDynamic)
+			{
+				mVertexBufferViews[0].BufferLocation = mBuffer->GetGPUVirtualAddress();
+				mVertexBufferViews[0].StrideInBytes = mStride;
+				mVertexBufferViews[0].SizeInBytes = mSize;
+			}
+			else //this is instance buffer (most likely) or dynamic vertex buffer (less likely)
+			{
+				for (int frameIndex = 0; frameIndex < DX12_MAX_BACK_BUFFER_COUNT; frameIndex++)
+				{
+					mVertexBufferViews[frameIndex].BufferLocation = mBufferUpload[frameIndex]->GetGPUVirtualAddress();
+					mVertexBufferViews[frameIndex].StrideInBytes = mStride;
+					mVertexBufferViews[frameIndex].SizeInBytes = mSize;
+				}
+			}
 		}
 
 		if (bindFlags & ER_BIND_INDEX_BUFFER)
 		{
-			mIndexBufferView.BufferLocation = mBufferUpload[0]->GetGPUVirtualAddress();
+			mIndexBufferView.BufferLocation = mBuffer->GetGPUVirtualAddress();
 			mIndexBufferView.Format = mFormat;
 			mIndexBufferView.SizeInBytes = mSize;
 		}
@@ -204,7 +216,7 @@ namespace EveryRay_Core
 			aRHIDX12->TransitionResources({ static_cast<ER_RHI_GPUResource*>(this) }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_GENERIC_READ, cmdListIndex);
 	}
 
-	void ER_RHI_DX12_GPUBuffer::Update(ER_RHI* aRHI, void* aData, int dataSize)
+	void ER_RHI_DX12_GPUBuffer::Update(ER_RHI* aRHI, void* aData, int dataSize, bool updateForAllBackBuffers)
 	{
 		assert(mSize >= dataSize);
 		assert(mIsDynamic);
@@ -213,7 +225,17 @@ namespace EveryRay_Core
 		ID3D12Device* device = aRHIDX12->GetDevice();
 
 		if (mIsDynamic)
-			memcpy(mMappedData[ER_RHI_DX12::mBackBufferIndex], aData, dataSize);
+		{
+			if (updateForAllBackBuffers)
+			{
+				for (int i = 0; i < DX12_MAX_BACK_BUFFER_COUNT; i++)
+				{
+					memcpy(mMappedData[i], aData, dataSize);
+				}
+			}
+			else
+				memcpy(mMappedData[ER_RHI_DX12::mBackBufferIndex], aData, dataSize);
+		}
 		//else
 		//	UpdateSubresource(aRHI, aData, dataSize, aRHIDX12->GetCurrentGraphicsCommandListIndex());
 	}

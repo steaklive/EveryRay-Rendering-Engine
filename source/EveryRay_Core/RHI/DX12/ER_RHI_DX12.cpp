@@ -1599,14 +1599,14 @@ namespace EveryRay_Core
 		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->OMSetRenderTargets(0, nullptr, false, nullptr);
 	}
 
-	void ER_RHI_DX12::UpdateBuffer(ER_RHI_GPUBuffer* aBuffer, void* aData, int dataSize)
+	void ER_RHI_DX12::UpdateBuffer(ER_RHI_GPUBuffer* aBuffer, void* aData, int dataSize, bool updateForAllBackBuffers)
 	{
 		assert(aBuffer->GetSize() >= dataSize);
 
 		ER_RHI_DX12_GPUBuffer* buffer = static_cast<ER_RHI_DX12_GPUBuffer*>(aBuffer);
 		assert(buffer);
 
-		buffer->Update(this, aData, dataSize);
+		buffer->Update(this, aData, dataSize, updateForAllBackBuffers);
 	}
 
 	void ER_RHI_DX12::InitImGui()

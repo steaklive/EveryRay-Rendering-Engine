@@ -933,7 +933,7 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_RHI_DX11::UpdateBuffer(ER_RHI_GPUBuffer* aBuffer, void* aData, int dataSize)
+	void ER_RHI_DX11::UpdateBuffer(ER_RHI_GPUBuffer* aBuffer, void* aData, int dataSize, bool updateForAllBackBuffers)
 	{
 		assert(aBuffer->GetSize() >= dataSize);
 

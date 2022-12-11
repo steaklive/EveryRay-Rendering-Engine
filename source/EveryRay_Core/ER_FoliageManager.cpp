@@ -599,7 +599,7 @@ namespace EveryRay_Core
 			mPatchesBufferGPU[i].worldMatrix = XMMatrixScaling(mPatchesBufferCPU[i].scale, mPatchesBufferCPU[i].scale, mPatchesBufferCPU[i].scale) * translationMatrix;
 		}
 
-		rhi->UpdateBuffer(mInstanceBuffer, (void*)mPatchesBufferGPU, (sizeof(GPUFoliageInstanceData) * mPatchesCount));
+		rhi->UpdateBuffer(mInstanceBuffer, (void*)mPatchesBufferGPU, (sizeof(GPUFoliageInstanceData) * mPatchesCount), mIsPlacedOnTerrain /* otherwise we won't have placed foliage in some frames */);
 	}
 
 	void ER_Foliage::UpdateBuffersCPU()
