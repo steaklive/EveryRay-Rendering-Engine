@@ -221,7 +221,7 @@ namespace EveryRay_Core
 
 	ER_Scene::~ER_Scene()
 	{
-		for (auto object : objects)
+		for (auto& object : objects)
 		{
 			object.second->MeshMaterialVariablesUpdateEvent->RemoveAllListeners();
 			DeleteObject(object.second);

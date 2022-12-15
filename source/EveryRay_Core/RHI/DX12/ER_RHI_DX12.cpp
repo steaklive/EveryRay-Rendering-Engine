@@ -31,12 +31,8 @@ namespace EveryRay_Core
 		DeleteObject(mClearUAV3DCS);
 		DeleteObject(mClearUAV3DRS);
 
-		// we must be sure that the scene was deallocated already (objects deleted the textures by themselves)
-		for (int i = 0; i < DX12_MAX_GENERATE_MIPS_TEXTURES_IN_POOL; i++)
-		{
-			mGenerateMipsWithReplacementReadyTexturesPool[i] = nullptr;
-			//DeleteObject(mGenerateMipsWithReplacementReadyTexturesPool[i]);
-		}
+		ResetReplacementMippedTexturesPool();
+
 		DeleteObject(mDescriptorHeapManager);
 	}
 

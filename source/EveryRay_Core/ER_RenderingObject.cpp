@@ -88,11 +88,11 @@ namespace EveryRay_Core
 	{
 		DeleteObject(MeshMaterialVariablesUpdateEvent);
 
-		for (auto object : mMaterials)
+		for (auto& object : mMaterials)
 			DeleteObject(object.second);
 		mMaterials.clear();
 
-		for (int lodI = 0; lodI < GetLODCount(); lodI)
+		for (int lodI = 0; lodI < GetLODCount(); lodI++)
 		{
 			for (int meshI = 0; meshI < GetMeshCount(lodI); meshI++)
 			{
@@ -100,7 +100,7 @@ namespace EveryRay_Core
 			}
 		}
 
-		for (auto meshesInstanceBuffersLOD : mMeshesInstanceBuffers)
+		for (auto& meshesInstanceBuffersLOD : mMeshesInstanceBuffers)
 			DeletePointerCollection(meshesInstanceBuffersLOD);
 		mMeshesInstanceBuffers.clear();
 
