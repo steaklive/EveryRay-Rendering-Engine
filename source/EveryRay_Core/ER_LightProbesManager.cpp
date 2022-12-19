@@ -120,13 +120,13 @@ namespace EveryRay_Core
 	void ER_LightProbesManager::SetupGlobalDiffuseProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight* light, ER_ShadowMapper* shadowMapper)
 	{
 		mGlobalDiffuseProbe = new ER_LightProbe(game, light, shadowMapper, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE, -1);
-		mGlobalDiffuseProbe->SetPosition(XMFLOAT3(0.0f, 2.0f, 0.0f)); //just a bit above the ground
+		mGlobalDiffuseProbe->SetPosition(camera.Position()); // TODO set custom position from level json
 		mGlobalDiffuseProbe->SetShaderInfoForConvolution(mConvolutionPS);
 	}
 	void ER_LightProbesManager::SetupGlobalSpecularProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight* light, ER_ShadowMapper*shadowMapper)
 	{
 		mGlobalSpecularProbe = new ER_LightProbe(game, light, shadowMapper, SPECULAR_PROBE_SIZE, SPECULAR_PROBE, -1);
-		mGlobalSpecularProbe->SetPosition(XMFLOAT3(0.0f, 2.0f, 0.0f)); //just a bit above the ground
+		mGlobalSpecularProbe->SetPosition(camera.Position()); // TODO set custom position from level json
 		mGlobalSpecularProbe->SetShaderInfoForConvolution(mConvolutionPS);
 	}
 

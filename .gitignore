@@ -19,6 +19,10 @@ bin/x64/dx12/Release/EveryRay_Core_Win64_DX12.lib
 !content/models/*.obj
 !content/models/vegetation/*.obj
 
+# ignore private levels & models
+content/models/private/
+content/levels/private/
+
 # ignore generated light probes in levels (except global probes):
 # - testScene
 content/levels/testScene/diffuse_probes/*

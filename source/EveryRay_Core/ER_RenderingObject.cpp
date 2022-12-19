@@ -172,38 +172,24 @@ namespace EveryRay_Core
 					LoadTexture(TextureType::TextureTypeSpecularMap, result, i);
 				}
 				else
-					LoadTexture(TextureType::TextureTypeSpecularMap, ER_Utility::GetFilePath(L"content\\textures\\emptySpecularMap.png"), i, true);
+					LoadTexture(TextureType::TextureTypeSpecularMap, ER_Utility::GetFilePath(L"content\\textures\\emptyRoughnessMap.png"), i, true);
 			}
 			else
-				LoadTexture(TextureType::TextureTypeSpecularMap, ER_Utility::GetFilePath(L"content\\textures\\emptySpecularMap.png"), i, true);
+				LoadTexture(TextureType::TextureTypeSpecularMap, ER_Utility::GetFilePath(L"content\\textures\\emptyRoughnessMap.png"), i, true);
 
-			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeDisplacementMap))
+			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeSpecularPowerMap))
 			{
-				const std::vector<std::wstring>& texturesRoughness = mModel->GetMesh(i).GetMaterial().GetTexturesByType(TextureType::TextureTypeDisplacementMap);
-				if (texturesRoughness.size() != 0)
-				{
-					std::wstring result = pathBuilder(texturesRoughness.at(0));
-					LoadTexture(TextureType::TextureTypeDisplacementMap, result, i);
-				}
-				else
-					LoadTexture(TextureType::TextureTypeDisplacementMap, ER_Utility::GetFilePath(L"content\\textures\\emptyRoughnessMap.png"), i, true);
-			}
-			else
-				LoadTexture(TextureType::TextureTypeDisplacementMap, ER_Utility::GetFilePath(L"content\\textures\\emptyRoughnessMap.png"), i, true);
-
-			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeEmissive))
-			{
-				const std::vector<std::wstring>& texturesMetallic = mModel->GetMesh(i).GetMaterial().GetTexturesByType(TextureType::TextureTypeEmissive);
+				const std::vector<std::wstring>& texturesMetallic = mModel->GetMesh(i).GetMaterial().GetTexturesByType(TextureType::TextureTypeSpecularPowerMap);
 				if (texturesMetallic.size() != 0)
 				{
 					std::wstring result = pathBuilder(texturesMetallic.at(0));
-					LoadTexture(TextureType::TextureTypeEmissive, result, i);
+					LoadTexture(TextureType::TextureTypeSpecularPowerMap, result, i);
 				}
 				else
-					LoadTexture(TextureType::TextureTypeEmissive, ER_Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), i, true);
+					LoadTexture(TextureType::TextureTypeSpecularPowerMap, ER_Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), i, true);
 			}
 			else
-				LoadTexture(TextureType::TextureTypeEmissive, ER_Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), i, true);
+				LoadTexture(TextureType::TextureTypeSpecularPowerMap, ER_Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), i, true);
 		}
 	}
 	
@@ -223,11 +209,11 @@ namespace EveryRay_Core
 
 		if (!mCustomRoughnessTextures[meshIndex].empty())
 			if (mCustomRoughnessTextures[meshIndex].back() != '\\')
-				LoadTexture(TextureType::TextureTypeDisplacementMap, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomRoughnessTextures[meshIndex])), meshIndex);
+				LoadTexture(TextureType::TextureTypeSpecularMap, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomRoughnessTextures[meshIndex])), meshIndex);
 
 		if (!mCustomMetalnessTextures[meshIndex].empty())
 			if (mCustomMetalnessTextures[meshIndex].back() != '\\')
-				LoadTexture(TextureType::TextureTypeEmissive, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomMetalnessTextures[meshIndex])), meshIndex);
+				LoadTexture(TextureType::TextureTypeSpecularPowerMap, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomMetalnessTextures[meshIndex])), meshIndex);
 
 		if (!mCustomHeightTextures[meshIndex].empty())
 			if (mCustomHeightTextures[meshIndex].back() != '\\')
@@ -332,33 +318,7 @@ namespace EveryRay_Core
 			}
 			break;
 		}
-		case TextureType::TextureTypeSpecularMap:
-		{
-			mMeshesTextureBuffers[meshIndex].SpecularMap = rhi->CreateGPUTexture(L"");
-			//we start traversing through different texture quality levels unless we hit the first one
-			for (int i = (int)mCurrentTextureQuality; i >= 0; i--)
-			{
-				mMeshesTextureBuffers[meshIndex].SpecularMap->CreateGPUTextureResource(rhi, possiblePaths[i], true, false, true, &loadStatus, true);
-				if (loadStatus) // success
-					break;
-
-				if (!loadStatus && i <= 0) // after we traversed all possible levels, lets load the original path (maybe the texture does not have postfix)
-					mMeshesTextureBuffers[meshIndex].SpecularMap->CreateGPUTextureResource(rhi, path, true);
-			}
-			if (!isPlaceholder)
-			{
-				rhi->GenerateMipsWithTextureReplacement(&mMeshesTextureBuffers[meshIndex].SpecularMap,
-					[this, meshIndex](ER_RHI_GPUTexture** aNewTextureWithMips)
-					{
-						assert(*aNewTextureWithMips);
-						DeleteObject(mMeshesTextureBuffers[meshIndex].SpecularMap);
-						mMeshesTextureBuffers[meshIndex].SpecularMap = *aNewTextureWithMips;
-					}
-				);
-			}
-			break;
-		}
-		case TextureType::TextureTypeEmissive:
+		case TextureType::TextureTypeSpecularPowerMap:
 		{
 			mMeshesTextureBuffers[meshIndex].MetallicMap = rhi->CreateGPUTexture(L"");
 			//we start traversing through different texture quality levels unless we hit the first one
@@ -384,7 +344,7 @@ namespace EveryRay_Core
 			}
 			break;	
 		}
-		case TextureType::TextureTypeDisplacementMap:
+		case TextureType::TextureTypeSpecularMap:
 		{
 			mMeshesTextureBuffers[meshIndex].RoughnessMap = rhi->CreateGPUTexture(L"");
 			//we start traversing through different texture quality levels unless we hit the first one

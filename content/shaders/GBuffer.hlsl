@@ -86,6 +86,17 @@ struct PS_OUTPUT
     float4 Extra2 : SV_Target4;
 };
 
+float3x3 invert_3x3(float3x3 M)
+{
+    float D = determinant(M);
+    float3x3 T = transpose(M);
+
+    return float3x3(
+        cross(T[1], T[2]),
+        cross(T[2], T[0]),
+        cross(T[0], T[1])) / (D + 1e-6);
+}
+
 PS_OUTPUT PSMain(VS_OUTPUT IN) : SV_Target
 {
     PS_OUTPUT OUT;
@@ -95,8 +106,25 @@ PS_OUTPUT PSMain(VS_OUTPUT IN) : SV_Target
     
     OUT.Color = albedo;
     
-    float4 normals = NormalMap.Sample(Sampler, IN.TextureCoordinate);
-    float3 sampledNormal = 2 * normals.xyz - float3(1.0, 1.0, 1.0); // Map normal from [0..1] to [-1..1]
+    float3 sampledNormal = normalize(2.0f * NormalMap.Sample(Sampler, IN.TextureCoordinate).xyz - float3(1.0, 1.0, 1.0));
+
+    // A way of calculating normals without tangent/bitangent
+    //float3x3 tbnTransform;
+    //float3 dp1 = ddx_fine(IN.WorldPos);
+    //float3 dp2 = ddy_fine(IN.WorldPos);
+    //float2 duv1 = ddx_fine(IN.TextureCoordinate);
+    //float2 duv2 = ddy_fine(IN.TextureCoordinate);
+    //float3x3 M = float3x3(dp1, dp2, normalize(IN.Normal));
+    //float3x3 inverseM = invert_3x3(M);
+    //float3 T = mul(inverseM, float3(duv1.x, duv2.x, 0));
+    //float3 B = mul(inverseM, float3(duv1.y, duv2.y, 0));
+    //float scaleT = 1.0f / (dot(T, T) + 1e-6);
+    //float scaleB = 1.0f / (dot(B, B) + 1e-6);
+    //tbnTransform[0] = normalize(T * scaleT);
+    //tbnTransform[1] = -normalize(B * scaleB);
+    //tbnTransform[2] = normalize(IN.Normal);
+    //sampledNormal = ((tbnTransform[0] * sampledNormal.x) + (tbnTransform[1] * sampledNormal.y) + (tbnTransform[2]));
+
     float3x3 tbn = float3x3(IN.Tangent, cross(IN.Normal, IN.Tangent), IN.Normal);
     sampledNormal = mul(sampledNormal.rgb, tbn); // Transform normal to world space
     
