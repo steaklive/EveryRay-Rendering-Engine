@@ -46,7 +46,6 @@ namespace EveryRay_Core
 		ER_RHI_GPURootSignature* GetStandardMaterialRootSignature(const std::string& materialName);
 		
 		ER_RenderingObject* FindRenderingObjectByName(const std::string& aName);
-
 		std::vector<ER_SceneObject> objects;
 
 		//TODO remove to private and make public methods
@@ -56,7 +55,6 @@ namespace EveryRay_Core
 		XMFLOAT3 sunDirection; //in degrees
 		XMFLOAT3 sunColor;
 		XMFLOAT3 ambientColor;
-
 	private:
 		void LoadRenderingObjectData(ER_RenderingObject* aObject);
 		void LoadRenderingObjectInstancedData(ER_RenderingObject* aObject);

@@ -33,6 +33,12 @@ namespace EveryRay_Core
 		virtual void Update(const ER_CoreTime& gameTime) override;
 		virtual void Draw(const ER_CoreTime& gameTime) override;	
 
+		virtual ER_RHI_GPUTexture* AddOrGetGPUTextureFromCache(const std::wstring& aFullPath, bool* didExist = nullptr, bool is3D = false, bool skipFallback = false, bool* statusFlag = nullptr, bool isSilent = false) override;
+		virtual void AddGPUTextureToCache(const std::wstring& aFullPath, ER_RHI_GPUTexture* aTexture) override;
+		virtual bool RemoveGPUTextureFromCache(const std::wstring& aFullPath, bool removeKey = false) override;
+		virtual void ReplaceGPUTextureFromCache(const std::wstring& aFullPath, ER_RHI_GPUTexture* aTex) override; // WARNING: dangerous!
+		virtual bool IsGPUTextureInCache(const std::wstring& aFullPath) override;
+
 	protected:
 		virtual void Shutdown() override;
 	
@@ -57,6 +63,8 @@ namespace EveryRay_Core
 
 		std::chrono::duration<double> mElapsedTimeUpdateCPU;
 		std::chrono::duration<double> mElapsedTimeRenderCPU;
+
+		std::map<std::wstring, ER_RHI_GPUTexture*> mObjectsTextureCache; // all textures from ER_RenderingObjects in the level
 
 		std::map<std::string, std::string> mScenesPaths;
 		std::vector<std::string> mScenesNamesByIndices;

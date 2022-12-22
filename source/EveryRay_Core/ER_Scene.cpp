@@ -712,5 +712,4 @@ namespace EveryRay_Core
 
 		return nullptr;
 	}
-
 }

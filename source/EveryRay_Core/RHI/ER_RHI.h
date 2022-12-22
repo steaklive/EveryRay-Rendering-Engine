@@ -491,6 +491,8 @@ namespace EveryRay_Core
 		virtual void SetCurrentState(ER_RHI_RESOURCE_STATE aState) { AbstractRHIMethodAssert(); }
 
 		inline virtual bool IsBuffer() { AbstractRHIMethodAssert(); return false; }
+
+		std::wstring debugName;
 	};
 
 	class ER_RHI_GPUBuffer : public ER_RHI_GPUResource

@@ -11,10 +11,13 @@ namespace EveryRay_Core
 
 	ER_RHI_DX12_GPUBuffer::~ER_RHI_DX12_GPUBuffer()
 	{
+		mBuffer.Reset();
+
 		for (int frameIndex = 0; frameIndex < DX12_MAX_BACK_BUFFER_COUNT; frameIndex++)
 		{
-			if (mBufferUpload[frameIndex] && mIsDynamic)
-				mBufferUpload[frameIndex]->Unmap(0, nullptr);
+			mBufferUpload[frameIndex].Reset();
+			//if (mBufferUpload[frameIndex] && mIsDynamic)
+			//	mBufferUpload[frameIndex]->Unmap(0, nullptr);
 		}
 	}
 

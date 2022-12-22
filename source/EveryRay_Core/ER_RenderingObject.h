@@ -78,33 +78,11 @@ namespace EveryRay_Core
 		ER_RHI_GPUTexture* ExtraMap2			= nullptr;  // can be used for extra textures (AO, opacity, displacement)
 		ER_RHI_GPUTexture* ExtraMap3			= nullptr;  // can be used for extra textures (AO, opacity, displacement)
 
-		TextureData(){}
-
-		TextureData(ER_RHI_GPUTexture* albedo, ER_RHI_GPUTexture* normal, ER_RHI_GPUTexture* specular, ER_RHI_GPUTexture* roughness, ER_RHI_GPUTexture* metallic, ER_RHI_GPUTexture* height,
-			ER_RHI_GPUTexture* extra1, ER_RHI_GPUTexture* extra2, ER_RHI_GPUTexture* extra3)
-			:
-			AlbedoMap(albedo),
-			NormalMap(normal),
-			SpecularMap(specular),
-			RoughnessMap(roughness),
-			MetallicMap(metallic),
-			HeightMap(height),
-			ReflectionMaskMap(extra1),
-			ExtraMap2(extra2),
-			ExtraMap3(extra3)
-		{}
+		TextureData() {}
 
 		~TextureData()
 		{
-			DeleteObject(AlbedoMap);
-			DeleteObject(NormalMap);
-			DeleteObject(SpecularMap);
-			DeleteObject(RoughnessMap);
-			DeleteObject(MetallicMap);
-			DeleteObject(HeightMap);
-			DeleteObject(ReflectionMaskMap);
-			DeleteObject(ExtraMap2);
-			DeleteObject(ExtraMap3);
+			// After adding new texture cache functionality in ER_RuntimeCore, we don't need to free here
 		}
 	};
 

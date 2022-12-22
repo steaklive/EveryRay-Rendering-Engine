@@ -7,10 +7,13 @@ namespace EveryRay_Core
 	ER_RHI_DX12_GPUTexture::ER_RHI_DX12_GPUTexture(const std::wstring& aDebugName)
 		: mDebugName(aDebugName)
 	{
+		debugName = mDebugName;
 	}
 
 	ER_RHI_DX12_GPUTexture::~ER_RHI_DX12_GPUTexture()
 	{
+		mResource.Reset();
+		mResourceUpload.Reset();
 	}
 
 	void ER_RHI_DX12_GPUTexture::CreateGPUTextureResource(ER_RHI* aRHI, UINT width, UINT height, UINT samples, ER_RHI_FORMAT format, ER_RHI_BIND_FLAG bindFlags /*= ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET*/, int mip /*= 1*/, int depth /*= -1*/, int arraySize /*= 1*/, bool isCubemap /*= false*/, int cubemapArraySize /*= -1*/)

@@ -368,7 +368,7 @@ namespace EveryRay_Core
 	void ER_RHI_DX12::ResetReplacementMippedTexturesPool()
 	{
 		mGenerateMipsWithReplacementCurrentTextureIndexInPool = 0;
-		// we must be sure that the scene was deallocated already (objects deleted the textures by themselves)
+		// we must be sure that the scene was deallocated already (objects deleted the textures by themselves or by the texture cache system in ER_RuntimeCore)
 		for (int i = 0; i < DX12_MAX_GENERATE_MIPS_TEXTURES_IN_POOL; i++)
 		{
 			mGenerateMipsWithReplacementReadyTexturesPool[i] = nullptr;
@@ -872,6 +872,7 @@ namespace EveryRay_Core
 		// create new texture with empty mips from the pool
 		std::wstring name = dx12Texture->GetDebugName() + L" + mip maps";
 		assert(!mGenerateMipsWithReplacementReadyTexturesPool[mGenerateMipsWithReplacementCurrentTextureIndexInPool]);
+
 		mGenerateMipsWithReplacementReadyTexturesPool[mGenerateMipsWithReplacementCurrentTextureIndexInPool] = CreateGPUTexture(name);
 		static_cast<ER_RHI_DX12_GPUTexture*>(mGenerateMipsWithReplacementReadyTexturesPool[mGenerateMipsWithReplacementCurrentTextureIndexInPool])->CreateSimpleGPUTexture2DResource(this, dx12Texture->GetWidth(), dx12Texture->GetHeight(), newFormat,
 			ER_RHI_BIND_FLAG::ER_BIND_SHADER_RESOURCE | ER_RHI_BIND_FLAG::ER_BIND_UNORDERED_ACCESS, dx12Texture->GetCalculatedMipCount());
