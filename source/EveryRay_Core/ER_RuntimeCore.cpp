@@ -215,9 +215,9 @@ namespace EveryRay_Core
 			DeleteObject(mCurrentSandbox);
 		}
 
-		for (auto& it : mObjectsTextureCache)
+		for (auto& it : mRenderingObjectsTextureCache)
 			DeleteObject(it.second);
-		mObjectsTextureCache.erase(mObjectsTextureCache.begin(), mObjectsTextureCache.end());
+		mRenderingObjectsTextureCache.erase(mRenderingObjectsTextureCache.begin(), mRenderingObjectsTextureCache.end());
 
 		if (mRHI && !isFirstLoad)
 		{
@@ -405,8 +405,8 @@ namespace EveryRay_Core
 
 	ER_RHI_GPUTexture* ER_RuntimeCore::AddOrGetGPUTextureFromCache(const std::wstring& aFullPath, bool* didExist, bool is3D /*= false*/, bool skipFallback /*= false*/, bool* statusFlag /*= nullptr*/, bool isSilent /*= false*/)
 	{
-		auto it = mObjectsTextureCache.find(aFullPath);
-		if (it != mObjectsTextureCache.end())
+		auto it = mRenderingObjectsTextureCache.find(aFullPath);
+		if (it != mRenderingObjectsTextureCache.end())
 		{
 			if (didExist)
 				*didExist = true;
@@ -417,12 +417,12 @@ namespace EveryRay_Core
 			if (didExist)
 				*didExist = false;
 
-			auto result = mObjectsTextureCache.emplace(aFullPath, mRHI->CreateGPUTexture(aFullPath));
+			auto result = mRenderingObjectsTextureCache.emplace(aFullPath, mRHI->CreateGPUTexture(aFullPath));
 			result.first->second->CreateGPUTextureResource(mRHI, aFullPath, true, is3D, skipFallback, statusFlag, isSilent);
 			if (statusFlag && *statusFlag == false)
 			{
 				DeleteObject(result.first->second);
-				mObjectsTextureCache.erase(aFullPath);
+				mRenderingObjectsTextureCache.erase(aFullPath);
 				return nullptr;
 			}
 			else
@@ -439,17 +439,17 @@ namespace EveryRay_Core
 
 	void ER_RuntimeCore::AddGPUTextureToCache(const std::wstring& aFullPath, ER_RHI_GPUTexture* aTexture)
 	{
-		mObjectsTextureCache.emplace(aFullPath, aTexture);
+		mRenderingObjectsTextureCache.emplace(aFullPath, aTexture);
 	}
 
 	bool ER_RuntimeCore::RemoveGPUTextureFromCache(const std::wstring& aFullPath, bool removeKey)
 	{
-		auto it = mObjectsTextureCache.find(aFullPath);
-		if (it != mObjectsTextureCache.end())
+		auto it = mRenderingObjectsTextureCache.find(aFullPath);
+		if (it != mRenderingObjectsTextureCache.end())
 		{
 			DeleteObject(it->second);
 			if (removeKey)
-				mObjectsTextureCache.erase(it->first);
+				mRenderingObjectsTextureCache.erase(it->first);
 
 			return true;
 		}
@@ -459,15 +459,15 @@ namespace EveryRay_Core
 
 	void ER_RuntimeCore::ReplaceGPUTextureFromCache(const std::wstring& aFullPath, ER_RHI_GPUTexture* aTex)
 	{
-		auto it = mObjectsTextureCache.find(aFullPath);
-		if (it != mObjectsTextureCache.end())
+		auto it = mRenderingObjectsTextureCache.find(aFullPath);
+		if (it != mRenderingObjectsTextureCache.end())
 			it->second = aTex;
 	}
 
 	bool ER_RuntimeCore::IsGPUTextureInCache(const std::wstring& aFullPath)
 	{
-		auto it = mObjectsTextureCache.find(aFullPath);
-		return (it != mObjectsTextureCache.end());
+		auto it = mRenderingObjectsTextureCache.find(aFullPath);
+		return (it != mRenderingObjectsTextureCache.end());
 	}
 
 }

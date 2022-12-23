@@ -339,7 +339,6 @@ namespace EveryRay_Core
 		}
 	}
 
-	//TODO refactor (remove duplicated code)
 	void ER_RenderingObject::LoadRenderBuffers(int lod)
 	{
 		assert(lod < GetLODCount());

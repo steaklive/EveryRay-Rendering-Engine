@@ -37,72 +37,60 @@ namespace EveryRay_Core
 		Json::Reader reader;
 		std::ifstream scene(path.c_str(), std::ifstream::binary);
 
-		if (!reader.parse(scene, root)) {
+		if (!reader.parse(scene, mSceneJsonRoot)) {
 			throw ER_CoreException(reader.getFormattedErrorMessages().c_str());
 		}
 		else {
 
-			if (root.isMember("camera_position")) {
+			if (mSceneJsonRoot.isMember("camera_position")) {
 				float vec3[3];
-				for (Json::Value::ArrayIndex i = 0; i != root["camera_position"].size(); i++)
-					vec3[i] = root["camera_position"][i].asFloat();
+				for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["camera_position"].size(); i++)
+					vec3[i] = mSceneJsonRoot["camera_position"][i].asFloat();
 
-				cameraPosition = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+				mCameraPosition = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
 			}
 
-			if (root.isMember("camera_direction")) {
+			if (mSceneJsonRoot.isMember("camera_direction")) {
 				float vec3[3];
-				for (Json::Value::ArrayIndex i = 0; i != root["camera_direction"].size(); i++)
-					vec3[i] = root["camera_direction"][i].asFloat();
+				for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["camera_direction"].size(); i++)
+					vec3[i] = mSceneJsonRoot["camera_direction"][i].asFloat();
 
-				cameraDirection = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+				mCameraDirection = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
 			}
 
-			if (root.isMember("sun_direction")) {
+			if (mSceneJsonRoot.isMember("sun_direction")) {
 				float vec3[3] = { 0.0, 0.0, 0.0 };
-				for (Json::Value::ArrayIndex i = 0; i != root["sun_direction"].size(); i++)
-					vec3[i] = root["sun_direction"][i].asFloat();
+				for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["sun_direction"].size(); i++)
+					vec3[i] = mSceneJsonRoot["sun_direction"][i].asFloat();
 
-				sunDirection = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+				mSunDirection = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
 			}
 
-			if (root.isMember("sun_color")) {
+			if (mSceneJsonRoot.isMember("sun_color")) {
 				float vec3[3];
-				for (Json::Value::ArrayIndex i = 0; i != root["sun_color"].size(); i++)
-					vec3[i] = root["sun_color"][i].asFloat();
+				for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["sun_color"].size(); i++)
+					vec3[i] = mSceneJsonRoot["sun_color"][i].asFloat();
 
-				sunColor = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
-			}
-
-			if (root.isMember("ambient_color")) {
-				float vec3[3];
-				for (Json::Value::ArrayIndex i = 0; i != root["ambient_color"].size(); i++)
-					vec3[i] = root["ambient_color"][i].asFloat();
-
-				ambientColor = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
-			}
-
-			if (root.isMember("skybox_path")) {
-				skyboxPath = root["skybox_path"].asString();
+				mSunColor = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
 			}
 
 			// terrain config
 			{
-				if (root.isMember("terrain_num_tiles")) {
+				if (mSceneJsonRoot.isMember("terrain_num_tiles")) {
 					mHasTerrain = true;
-					mTerrainTilesCount = root["terrain_num_tiles"].asInt();
-					if (root.isMember("terrain_tile_scale"))
-						mTerrainTileScale = root["terrain_tile_scale"].asFloat();
-					if (root.isMember("terrain_tile_resolution"))
-						mTerrainTileResolution = root["terrain_tile_resolution"].asInt();
+					mTerrainTilesCount = mSceneJsonRoot["terrain_num_tiles"].asInt();
+					if (mSceneJsonRoot.isMember("terrain_tile_scale"))
+						mTerrainTileScale = mSceneJsonRoot["terrain_tile_scale"].asFloat();
+					if (mSceneJsonRoot.isMember("terrain_tile_resolution"))
+						mTerrainTileResolution = mSceneJsonRoot["terrain_tile_resolution"].asInt();
 					std::string fieldName = "terrain_texture_splat_layer";
 					std::wstring result = L"";
 
 					for (int i = 0; i < 4; i++)
 					{
 						fieldName += std::to_string(i);
-						if (root.isMember(fieldName.c_str()))
-							result = ER_Utility::ToWideString(root[fieldName.c_str()].asString());
+						if (mSceneJsonRoot.isMember(fieldName.c_str()))
+							result = ER_Utility::ToWideString(mSceneJsonRoot[fieldName.c_str()].asString());
 						else
 							result = L"";
 					
@@ -116,49 +104,57 @@ namespace EveryRay_Core
 
 			// light probes config
 			{
-			if (root.isMember("light_probes_volume_bounds_min")) {
-				float vec3[3];
-				for (Json::Value::ArrayIndex i = 0; i != root["light_probes_volume_bounds_min"].size(); i++)
-					vec3[i] = root["light_probes_volume_bounds_min"][i].asFloat();
+				if (mSceneJsonRoot.isMember("light_probes_volume_bounds_min")) {
+					float vec3[3];
+					for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["light_probes_volume_bounds_min"].size(); i++)
+						vec3[i] = mSceneJsonRoot["light_probes_volume_bounds_min"][i].asFloat();
 
-				mLightProbesVolumeMinBounds = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+					mLightProbesVolumeMinBounds = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+				}
+				else
+					mHasLightProbes = false;
+
+				if (mSceneJsonRoot.isMember("light_probes_volume_bounds_max")) {
+					float vec3[3];
+					for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["light_probes_volume_bounds_max"].size(); i++)
+						vec3[i] = mSceneJsonRoot["light_probes_volume_bounds_max"][i].asFloat();
+
+					mLightProbesVolumeMaxBounds = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+				}
+				else
+					mHasLightProbes = false;
+
+				if (mSceneJsonRoot.isMember("light_probes_diffuse_distance"))
+					mLightProbesDiffuseDistance = mSceneJsonRoot["light_probes_diffuse_distance"].asFloat();
+				if (mSceneJsonRoot.isMember("light_probes_specular_distance"))
+					mLightProbesSpecularDistance = mSceneJsonRoot["light_probes_specular_distance"].asFloat();
+
+				if (mSceneJsonRoot.isMember("light_probe_global_cam_position")) {
+					float vec3[3];
+					for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["light_probe_global_cam_position"].size(); i++)
+						vec3[i] = mSceneJsonRoot["light_probe_global_cam_position"][i].asFloat();
+
+					mGlobalLightProbeCameraPos = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+				}
 			}
-			else
-				mHasLightProbes = false;
 
-			if (root.isMember("light_probes_volume_bounds_max")) {
-				float vec3[3];
-				for (Json::Value::ArrayIndex i = 0; i != root["light_probes_volume_bounds_max"].size(); i++)
-					vec3[i] = root["light_probes_volume_bounds_max"][i].asFloat();
-
-				mLightProbesVolumeMaxBounds = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
-			}
-			else
-				mHasLightProbes = false;
-
-			if (root.isMember("light_probes_diffuse_distance"))
-				mLightProbesDiffuseDistance = root["light_probes_diffuse_distance"].asFloat();
-			if (root.isMember("light_probes_specular_distance"))
-				mLightProbesSpecularDistance = root["light_probes_specular_distance"].asFloat();
-			}
-
-			if (root.isMember("foliage_zones"))
+			if (mSceneJsonRoot.isMember("foliage_zones"))
 				mHasFoliage = true;
 
-			if (root.isMember("use_volumetric_fog")) {
-				mHasVolumetricFog = root["use_volumetric_fog"].asBool();
+			if (mSceneJsonRoot.isMember("use_volumetric_fog")) {
+				mHasVolumetricFog = mSceneJsonRoot["use_volumetric_fog"].asBool();
 			}
 			else
 				mHasVolumetricFog = false;
 
 			// add rendering objects to scene
-			unsigned int numRenderingObjects = root["rendering_objects"].size();
+			unsigned int numRenderingObjects = mSceneJsonRoot["rendering_objects"].size();
 			for (Json::Value::ArrayIndex i = 0; i != numRenderingObjects; i++) {
 				objects.emplace_back(
-					root["rendering_objects"][i]["name"].asString(), 
-					new ER_RenderingObject(root["rendering_objects"][i]["name"].asString(), i, *mCore, mCamera, 
-						std::unique_ptr<ER_Model>(new ER_Model(*mCore, ER_Utility::GetFilePath(root["rendering_objects"][i]["model_path"].asString()), true)),
-						true, root["rendering_objects"][i]["instanced"].asBool())
+					mSceneJsonRoot["rendering_objects"][i]["name"].asString(), 
+					new ER_RenderingObject(mSceneJsonRoot["rendering_objects"][i]["name"].asString(), i, *mCore, mCamera, 
+						std::unique_ptr<ER_Model>(new ER_Model(*mCore, ER_Utility::GetFilePath(mSceneJsonRoot["rendering_objects"][i]["model_path"].asString()), true)),
+						true, mSceneJsonRoot["rendering_objects"][i]["instanced"].asBool())
 				);
 			}
 			std::partition(objects.begin(), objects.end(), [](const ER_SceneObject& obj) {	return obj.second->IsInstanced(); });
@@ -246,100 +242,100 @@ namespace EveryRay_Core
 
 		// load flags
 		{
-			if (root["rendering_objects"][i].isMember("foliageMask"))
-				aObject->SetFoliageMask(root["rendering_objects"][i]["foliageMask"].asBool());
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("foliageMask"))
+				aObject->SetFoliageMask(mSceneJsonRoot["rendering_objects"][i]["foliageMask"].asBool());
 			
-			if (root["rendering_objects"][i].isMember("use_indirect_global_lightprobe"))
-				aObject->SetUseIndirectGlobalLightProbe(root["rendering_objects"][i]["use_indirect_global_lightprobe"].asBool());
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("use_indirect_global_lightprobe"))
+				aObject->SetUseIndirectGlobalLightProbe(mSceneJsonRoot["rendering_objects"][i]["use_indirect_global_lightprobe"].asBool());
 			
-			if (root["rendering_objects"][i].isMember("use_in_global_lightprobe_rendering"))
-				aObject->SetIsUsedForGlobalLightProbeRendering(root["rendering_objects"][i]["use_in_global_lightprobe_rendering"].asBool());
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("use_in_global_lightprobe_rendering"))
+				aObject->SetIsUsedForGlobalLightProbeRendering(mSceneJsonRoot["rendering_objects"][i]["use_in_global_lightprobe_rendering"].asBool());
 			
-			if (root["rendering_objects"][i].isMember("use_parallax_occlusion_mapping"))
-				aObject->SetParallaxOcclusionMapping(root["rendering_objects"][i]["use_parallax_occlusion_mapping"].asBool());
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("use_parallax_occlusion_mapping"))
+				aObject->SetParallaxOcclusionMapping(mSceneJsonRoot["rendering_objects"][i]["use_parallax_occlusion_mapping"].asBool());
 			
-			if (root["rendering_objects"][i].isMember("use_forward_shading"))
-				aObject->SetForwardShading(root["rendering_objects"][i]["use_forward_shading"].asBool());
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("use_forward_shading"))
+				aObject->SetForwardShading(mSceneJsonRoot["rendering_objects"][i]["use_forward_shading"].asBool());
 
-			if (root["rendering_objects"][i].isMember("use_sss"))
-				aObject->SetSeparableSubsurfaceScattering(root["rendering_objects"][i]["use_sss"].asBool());
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("use_sss"))
+				aObject->SetSeparableSubsurfaceScattering(mSceneJsonRoot["rendering_objects"][i]["use_sss"].asBool());
 			
-			if (root["rendering_objects"][i].isMember("use_custom_alpha_discard"))
-				aObject->SetCustomAlphaDiscard(root["rendering_objects"][i]["use_custom_alpha_discard"].asFloat());
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("use_custom_alpha_discard"))
+				aObject->SetCustomAlphaDiscard(mSceneJsonRoot["rendering_objects"][i]["use_custom_alpha_discard"].asFloat());
 
 			//terrain
-			if (root["rendering_objects"][i].isMember("terrain_placement"))
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("terrain_placement"))
 			{
-				aObject->SetTerrainPlacement(root["rendering_objects"][i]["terrain_placement"].asBool());
+				aObject->SetTerrainPlacement(mSceneJsonRoot["rendering_objects"][i]["terrain_placement"].asBool());
 
-				if (root["rendering_objects"][i].isMember("terrain_splat_channel"))
-					aObject->SetTerrainProceduralPlacementSplatChannel(root["rendering_objects"][i]["terrain_splat_channel"].asInt());
+				if (mSceneJsonRoot["rendering_objects"][i].isMember("terrain_splat_channel"))
+					aObject->SetTerrainProceduralPlacementSplatChannel(mSceneJsonRoot["rendering_objects"][i]["terrain_splat_channel"].asInt());
 
 				//procedural flags
 				{
-					if (root["rendering_objects"][i].isMember("terrain_procedural_instance_scale_min") && root["rendering_objects"][i].isMember("terrain_procedural_instance_scale_max"))
+					if (mSceneJsonRoot["rendering_objects"][i].isMember("terrain_procedural_instance_scale_min") && mSceneJsonRoot["rendering_objects"][i].isMember("terrain_procedural_instance_scale_max"))
 						aObject->SetTerrainProceduralObjectsMinMaxScale(
-							root["rendering_objects"][i]["terrain_procedural_instance_scale_min"].asFloat(),
-							root["rendering_objects"][i]["terrain_procedural_instance_scale_max"].asFloat());
+							mSceneJsonRoot["rendering_objects"][i]["terrain_procedural_instance_scale_min"].asFloat(),
+							mSceneJsonRoot["rendering_objects"][i]["terrain_procedural_instance_scale_max"].asFloat());
 
-					if (root["rendering_objects"][i].isMember("terrain_procedural_instance_pitch_min") && root["rendering_objects"][i].isMember("terrain_procedural_instance_pitch_max"))
+					if (mSceneJsonRoot["rendering_objects"][i].isMember("terrain_procedural_instance_pitch_min") && mSceneJsonRoot["rendering_objects"][i].isMember("terrain_procedural_instance_pitch_max"))
 						aObject->SetTerrainProceduralObjectsMinMaxPitch(
-							root["rendering_objects"][i]["terrain_procedural_instance_pitch_min"].asFloat(),
-							root["rendering_objects"][i]["terrain_procedural_instance_pitch_max"].asFloat());
+							mSceneJsonRoot["rendering_objects"][i]["terrain_procedural_instance_pitch_min"].asFloat(),
+							mSceneJsonRoot["rendering_objects"][i]["terrain_procedural_instance_pitch_max"].asFloat());
 
-					if (root["rendering_objects"][i].isMember("terrain_procedural_instance_roll_min") && root["rendering_objects"][i].isMember("terrain_procedural_instance_roll_max"))
+					if (mSceneJsonRoot["rendering_objects"][i].isMember("terrain_procedural_instance_roll_min") && mSceneJsonRoot["rendering_objects"][i].isMember("terrain_procedural_instance_roll_max"))
 						aObject->SetTerrainProceduralObjectsMinMaxRoll(
-							root["rendering_objects"][i]["terrain_procedural_instance_roll_min"].asFloat(),
-							root["rendering_objects"][i]["terrain_procedural_instance_roll_max"].asFloat());
+							mSceneJsonRoot["rendering_objects"][i]["terrain_procedural_instance_roll_min"].asFloat(),
+							mSceneJsonRoot["rendering_objects"][i]["terrain_procedural_instance_roll_max"].asFloat());
 
-					if (root["rendering_objects"][i].isMember("terrain_procedural_instance_yaw_min") && root["rendering_objects"][i].isMember("terrain_procedural_instance_yaw_max"))
+					if (mSceneJsonRoot["rendering_objects"][i].isMember("terrain_procedural_instance_yaw_min") && mSceneJsonRoot["rendering_objects"][i].isMember("terrain_procedural_instance_yaw_max"))
 						aObject->SetTerrainProceduralObjectsMinMaxYaw(
-							root["rendering_objects"][i]["terrain_procedural_instance_yaw_min"].asFloat(),
-							root["rendering_objects"][i]["terrain_procedural_instance_yaw_max"].asFloat());
+							mSceneJsonRoot["rendering_objects"][i]["terrain_procedural_instance_yaw_min"].asFloat(),
+							mSceneJsonRoot["rendering_objects"][i]["terrain_procedural_instance_yaw_max"].asFloat());
 
-					if (isInstanced && root["rendering_objects"][i].isMember("terrain_procedural_instance_count"))
-						aObject->SetTerrainProceduralInstanceCount(root["rendering_objects"][i]["terrain_procedural_instance_count"].asInt());
+					if (isInstanced && mSceneJsonRoot["rendering_objects"][i].isMember("terrain_procedural_instance_count"))
+						aObject->SetTerrainProceduralInstanceCount(mSceneJsonRoot["rendering_objects"][i]["terrain_procedural_instance_count"].asInt());
 
-					if (root["rendering_objects"][i].isMember("terrain_procedural_zone_center_pos"))
+					if (mSceneJsonRoot["rendering_objects"][i].isMember("terrain_procedural_zone_center_pos"))
 					{
 						float vec3[3];
-						for (Json::Value::ArrayIndex vecI = 0; vecI != root["rendering_objects"][i]["terrain_procedural_zone_center_pos"].size(); vecI++)
-							vec3[vecI] = root["rendering_objects"][i]["terrain_procedural_zone_center_pos"][vecI].asFloat();
+						for (Json::Value::ArrayIndex vecI = 0; vecI != mSceneJsonRoot["rendering_objects"][i]["terrain_procedural_zone_center_pos"].size(); vecI++)
+							vec3[vecI] = mSceneJsonRoot["rendering_objects"][i]["terrain_procedural_zone_center_pos"][vecI].asFloat();
 
 						XMFLOAT3 centerPos = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
 						aObject->SetTerrainProceduralZoneCenterPos(centerPos);
 					}
 
-					if (isInstanced && root["rendering_objects"][i].isMember("terrain_procedural_zone_radius"))
-						aObject->SetTerrainProceduralZoneRadius(root["rendering_objects"][i]["terrain_procedural_zone_radius"].asFloat());
+					if (isInstanced && mSceneJsonRoot["rendering_objects"][i].isMember("terrain_procedural_zone_radius"))
+						aObject->SetTerrainProceduralZoneRadius(mSceneJsonRoot["rendering_objects"][i]["terrain_procedural_zone_radius"].asFloat());
 				}
 			}
 			
-			if (root["rendering_objects"][i].isMember("min_scale"))
-				aObject->SetMinScale(root["rendering_objects"][i]["min_scale"].asFloat());
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("min_scale"))
+				aObject->SetMinScale(mSceneJsonRoot["rendering_objects"][i]["min_scale"].asFloat());
 			
-			if (root["rendering_objects"][i].isMember("max_scale"))
-				aObject->SetMaxScale(root["rendering_objects"][i]["max_scale"].asFloat());
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("max_scale"))
+				aObject->SetMaxScale(mSceneJsonRoot["rendering_objects"][i]["max_scale"].asFloat());
 		}
 
 		// load materials
 		{
-			if (root["rendering_objects"][i].isMember("new_materials")) {
-				unsigned int numMaterials = root["rendering_objects"][i]["new_materials"].size();
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("new_materials")) {
+				unsigned int numMaterials = mSceneJsonRoot["rendering_objects"][i]["new_materials"].size();
 				for (Json::Value::ArrayIndex matIndex = 0; matIndex != numMaterials; matIndex++) {
-					std::string name = root["rendering_objects"][i]["new_materials"][matIndex]["name"].asString();
+					std::string name = mSceneJsonRoot["rendering_objects"][i]["new_materials"][matIndex]["name"].asString();
 
 					MaterialShaderEntries shaderEntries;
-					if (root["rendering_objects"][i]["new_materials"][matIndex].isMember("vertexEntry"))
-						shaderEntries.vertexEntry = root["rendering_objects"][i]["new_materials"][matIndex]["vertexEntry"].asString();
-					if (root["rendering_objects"][i]["new_materials"][matIndex].isMember("geometryEntry"))
-						shaderEntries.geometryEntry = root["rendering_objects"][i]["new_materials"][matIndex]["geometryEntry"].asString();
-					if (root["rendering_objects"][i]["new_materials"][matIndex].isMember("hullEntry"))
-						shaderEntries.hullEntry = root["rendering_objects"][i]["new_materials"][matIndex]["hullEntry"].asString();	
-					if (root["rendering_objects"][i]["new_materials"][matIndex].isMember("domainEntry"))
-						shaderEntries.domainEntry = root["rendering_objects"][i]["new_materials"][matIndex]["domainEntry"].asString();	
-					if (root["rendering_objects"][i]["new_materials"][matIndex].isMember("pixelEntry"))
-						shaderEntries.pixelEntry = root["rendering_objects"][i]["new_materials"][matIndex]["pixelEntry"].asString();
+					if (mSceneJsonRoot["rendering_objects"][i]["new_materials"][matIndex].isMember("vertexEntry"))
+						shaderEntries.vertexEntry = mSceneJsonRoot["rendering_objects"][i]["new_materials"][matIndex]["vertexEntry"].asString();
+					if (mSceneJsonRoot["rendering_objects"][i]["new_materials"][matIndex].isMember("geometryEntry"))
+						shaderEntries.geometryEntry = mSceneJsonRoot["rendering_objects"][i]["new_materials"][matIndex]["geometryEntry"].asString();
+					if (mSceneJsonRoot["rendering_objects"][i]["new_materials"][matIndex].isMember("hullEntry"))
+						shaderEntries.hullEntry = mSceneJsonRoot["rendering_objects"][i]["new_materials"][matIndex]["hullEntry"].asString();	
+					if (mSceneJsonRoot["rendering_objects"][i]["new_materials"][matIndex].isMember("domainEntry"))
+						shaderEntries.domainEntry = mSceneJsonRoot["rendering_objects"][i]["new_materials"][matIndex]["domainEntry"].asString();	
+					if (mSceneJsonRoot["rendering_objects"][i]["new_materials"][matIndex].isMember("pixelEntry"))
+						shaderEntries.pixelEntry = mSceneJsonRoot["rendering_objects"][i]["new_materials"][matIndex]["pixelEntry"].asString();
 
 					if (isInstanced) //be careful with the instancing support in shaders of the materials! (i.e., maybe the material does not have instancing entry point/support)
 						shaderEntries.vertexEntry = shaderEntries.vertexEntry + "_instancing";
@@ -396,21 +392,21 @@ namespace EveryRay_Core
 
 		// load custom textures
 		{
-			if (root["rendering_objects"][i].isMember("textures")) {
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("textures")) {
 
-				for (Json::Value::ArrayIndex mesh = 0; mesh != root["rendering_objects"][i]["textures"].size(); mesh++) {
-					if (root["rendering_objects"][i]["textures"][mesh].isMember("albedo"))
-						aObject->mCustomAlbedoTextures[mesh] = root["rendering_objects"][i]["textures"][mesh]["albedo"].asString();
-					if (root["rendering_objects"][i]["textures"][mesh].isMember("normal"))
-						aObject->mCustomNormalTextures[mesh] = root["rendering_objects"][i]["textures"][mesh]["normal"].asString();
-					if (root["rendering_objects"][i]["textures"][mesh].isMember("roughness"))
-						aObject->mCustomRoughnessTextures[mesh] = root["rendering_objects"][i]["textures"][mesh]["roughness"].asString();
-					if (root["rendering_objects"][i]["textures"][mesh].isMember("metalness"))
-						aObject->mCustomMetalnessTextures[mesh] = root["rendering_objects"][i]["textures"][mesh]["metalness"].asString();
-					if (root["rendering_objects"][i]["textures"][mesh].isMember("height"))
-						aObject->mCustomHeightTextures[mesh] = root["rendering_objects"][i]["textures"][mesh]["height"].asString();
-					if (root["rendering_objects"][i]["textures"][mesh].isMember("reflection_mask"))
-						aObject->mCustomReflectionMaskTextures[mesh] = root["rendering_objects"][i]["textures"][mesh]["reflection_mask"].asString();
+				for (Json::Value::ArrayIndex mesh = 0; mesh != mSceneJsonRoot["rendering_objects"][i]["textures"].size(); mesh++) {
+					if (mSceneJsonRoot["rendering_objects"][i]["textures"][mesh].isMember("albedo"))
+						aObject->mCustomAlbedoTextures[mesh] = mSceneJsonRoot["rendering_objects"][i]["textures"][mesh]["albedo"].asString();
+					if (mSceneJsonRoot["rendering_objects"][i]["textures"][mesh].isMember("normal"))
+						aObject->mCustomNormalTextures[mesh] = mSceneJsonRoot["rendering_objects"][i]["textures"][mesh]["normal"].asString();
+					if (mSceneJsonRoot["rendering_objects"][i]["textures"][mesh].isMember("roughness"))
+						aObject->mCustomRoughnessTextures[mesh] = mSceneJsonRoot["rendering_objects"][i]["textures"][mesh]["roughness"].asString();
+					if (mSceneJsonRoot["rendering_objects"][i]["textures"][mesh].isMember("metalness"))
+						aObject->mCustomMetalnessTextures[mesh] = mSceneJsonRoot["rendering_objects"][i]["textures"][mesh]["metalness"].asString();
+					if (mSceneJsonRoot["rendering_objects"][i]["textures"][mesh].isMember("height"))
+						aObject->mCustomHeightTextures[mesh] = mSceneJsonRoot["rendering_objects"][i]["textures"][mesh]["height"].asString();
+					if (mSceneJsonRoot["rendering_objects"][i]["textures"][mesh].isMember("reflection_mask"))
+						aObject->mCustomReflectionMaskTextures[mesh] = mSceneJsonRoot["rendering_objects"][i]["textures"][mesh]["reflection_mask"].asString();
 
 					aObject->LoadCustomMeshTextures(mesh);
 				}
@@ -419,15 +415,15 @@ namespace EveryRay_Core
 
 		// load world transform
 		{
-			if (root["rendering_objects"][i].isMember("transform")) {
-				if (root["rendering_objects"][i]["transform"].size() != 16)
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("transform")) {
+				if (mSceneJsonRoot["rendering_objects"][i]["transform"].size() != 16)
 				{
 					aObject->SetTransformationMatrix(XMMatrixIdentity());
 				}
 				else {
 					float matrix[16];
-					for (Json::Value::ArrayIndex matC = 0; matC != root["rendering_objects"][i]["transform"].size(); matC++) {
-						matrix[matC] = root["rendering_objects"][i]["transform"][matC].asFloat();
+					for (Json::Value::ArrayIndex matC = 0; matC != mSceneJsonRoot["rendering_objects"][i]["transform"].size(); matC++) {
+						matrix[matC] = mSceneJsonRoot["rendering_objects"][i]["transform"][matC].asFloat();
 					}
 					XMFLOAT4X4 worldTransform(matrix);
 					aObject->SetTransformationMatrix(XMMatrixTranspose(XMLoadFloat4x4(&worldTransform)));
@@ -439,10 +435,10 @@ namespace EveryRay_Core
 
 		// load lods
 		{
-			hasLODs = root["rendering_objects"][i].isMember("model_lods");
+			hasLODs = mSceneJsonRoot["rendering_objects"][i].isMember("model_lods");
 			if (hasLODs) {
-				for (Json::Value::ArrayIndex lod = 1 /* 0 is main model loaded before */; lod != root["rendering_objects"][i]["model_lods"].size(); lod++) {
-					std::string path = root["rendering_objects"][i]["model_lods"][lod]["path"].asString();
+				for (Json::Value::ArrayIndex lod = 1 /* 0 is main model loaded before */; lod != mSceneJsonRoot["rendering_objects"][i]["model_lods"].size(); lod++) {
+					std::string path = mSceneJsonRoot["rendering_objects"][i]["model_lods"][lod]["path"].asString();
 					aObject->LoadLOD(std::unique_ptr<ER_Model>(new ER_Model(*mCore, ER_Utility::GetFilePath(path), true)));
 				}
 			}
@@ -457,11 +453,11 @@ namespace EveryRay_Core
 	{
 		int i = aObject->GetIndexInScene();
 		bool isInstanced = aObject->IsInstanced();
-		bool hasLODs = root["rendering_objects"][i].isMember("model_lods");
+		bool hasLODs = mSceneJsonRoot["rendering_objects"][i].isMember("model_lods");
 		if (isInstanced) {
 			if (hasLODs)
 			{
-				for (int lod = 0; lod < root["rendering_objects"][i]["model_lods"].size(); lod++)
+				for (int lod = 0; lod < mSceneJsonRoot["rendering_objects"][i]["model_lods"].size(); lod++)
 				{
 					aObject->LoadInstanceBuffers(lod);
 					if (aObject->GetTerrainPlacement() && aObject->GetTerrainProceduralInstanceCount() > 0)
@@ -473,12 +469,12 @@ namespace EveryRay_Core
 					}
 					else
 					{
-						if (root["rendering_objects"][i].isMember("instances_transforms")) {
-							aObject->ResetInstanceData(root["rendering_objects"][i]["instances_transforms"].size(), true, lod);
-							for (Json::Value::ArrayIndex instance = 0; instance != root["rendering_objects"][i]["instances_transforms"].size(); instance++) {
+						if (mSceneJsonRoot["rendering_objects"][i].isMember("instances_transforms")) {
+							aObject->ResetInstanceData(mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size(), true, lod);
+							for (Json::Value::ArrayIndex instance = 0; instance != mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size(); instance++) {
 								float matrix[16];
-								for (Json::Value::ArrayIndex matC = 0; matC != root["rendering_objects"][i]["instances_transforms"][instance]["transform"].size(); matC++) {
-									matrix[matC] = root["rendering_objects"][i]["instances_transforms"][instance]["transform"][matC].asFloat();
+								for (Json::Value::ArrayIndex matC = 0; matC != mSceneJsonRoot["rendering_objects"][i]["instances_transforms"][instance]["transform"].size(); matC++) {
+									matrix[matC] = mSceneJsonRoot["rendering_objects"][i]["instances_transforms"][instance]["transform"][matC].asFloat();
 								}
 								XMFLOAT4X4 worldTransform(matrix);
 								aObject->AddInstanceData(XMMatrixTranspose(XMLoadFloat4x4(&worldTransform)), lod);
@@ -504,12 +500,12 @@ namespace EveryRay_Core
 				}
 				else
 				{
-					if (root["rendering_objects"][i].isMember("instances_transforms")) {
-						aObject->ResetInstanceData(root["rendering_objects"][i]["instances_transforms"].size(), true);
-						for (Json::Value::ArrayIndex instance = 0; instance != root["rendering_objects"][i]["instances_transforms"].size(); instance++) {
+					if (mSceneJsonRoot["rendering_objects"][i].isMember("instances_transforms")) {
+						aObject->ResetInstanceData(mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size(), true);
+						for (Json::Value::ArrayIndex instance = 0; instance != mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size(); instance++) {
 							float matrix[16];
-							for (Json::Value::ArrayIndex matC = 0; matC != root["rendering_objects"][i]["instances_transforms"][instance]["transform"].size(); matC++) {
-								matrix[matC] = root["rendering_objects"][i]["instances_transforms"][instance]["transform"][matC].asFloat();
+							for (Json::Value::ArrayIndex matC = 0; matC != mSceneJsonRoot["rendering_objects"][i]["instances_transforms"][instance]["transform"].size(); matC++) {
+								matrix[matC] = mSceneJsonRoot["rendering_objects"][i]["instances_transforms"][instance]["transform"][matC].asFloat();
 							}
 							XMFLOAT4X4 worldTransform(matrix);
 							aObject->AddInstanceData(XMMatrixTranspose(XMLoadFloat4x4(&worldTransform)));
@@ -530,10 +526,10 @@ namespace EveryRay_Core
 		if (mScenePath.empty())
 			throw ER_CoreException("Can't save to scene json file! Empty scene name...");
 
-		if (root.isMember("foliage_zones")) {
-			assert(foliageZones.size() == root["foliage_zones"].size());
+		if (mSceneJsonRoot.isMember("foliage_zones")) {
+			assert(foliageZones.size() == mSceneJsonRoot["foliage_zones"].size());
 			float vec3[3];
-			for (Json::Value::ArrayIndex iz = 0; iz != root["foliage_zones"].size(); iz++)
+			for (Json::Value::ArrayIndex iz = 0; iz != mSceneJsonRoot["foliage_zones"].size(); iz++)
 			{
 				Json::Value content(Json::arrayValue);
 				vec3[0] = foliageZones[iz]->GetDistributionCenter().x;
@@ -541,7 +537,7 @@ namespace EveryRay_Core
 				vec3[2] = foliageZones[iz]->GetDistributionCenter().z;
 				for (Json::Value::ArrayIndex i = 0; i < 3; i++)
 					content.append(vec3[i]);
-				root["foliage_zones"][iz]["position"] = content;
+				mSceneJsonRoot["foliage_zones"][iz]["position"] = content;
 			}
 		}
 
@@ -550,7 +546,7 @@ namespace EveryRay_Core
 
 		std::ofstream file_id;
 		file_id.open(mScenePath.c_str());
-		writer->write(root, &file_id);
+		writer->write(mSceneJsonRoot, &file_id);
 	}
 
 	void ER_Scene::SaveRenderingObjectsTransforms()
@@ -559,10 +555,10 @@ namespace EveryRay_Core
 			throw ER_CoreException("Can't save to scene json file! Empty scene name...");
 
 		// store world transform
-		for (Json::Value::ArrayIndex i = 0; i != root["rendering_objects"].size(); i++) {
+		for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["rendering_objects"].size(); i++) {
 			Json::Value content(Json::arrayValue);
-			if (root["rendering_objects"][i].isMember("transform")) {
-				ER_RenderingObject* rObj = FindRenderingObjectByName(root["rendering_objects"][i]["name"].asString());
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("transform")) {
+				ER_RenderingObject* rObj = FindRenderingObjectByName(mSceneJsonRoot["rendering_objects"][i]["name"].asString());
 				if (rObj)
 				{
 					XMFLOAT4X4 mat = rObj->GetTransformationMatrix4X4();
@@ -572,7 +568,7 @@ namespace EveryRay_Core
 					ER_MatrixHelper::GetFloatArray(mat, matF);
 					for (int i = 0; i < 16; i++)
 						content.append(matF[i]);
-					root["rendering_objects"][i]["transform"] = content;
+					mSceneJsonRoot["rendering_objects"][i]["transform"] = content;
 				}
 			}
 			else
@@ -584,21 +580,21 @@ namespace EveryRay_Core
 
 				for (int i = 0; i < 16; i++)
 					content.append(matF[i]);
-				root["rendering_objects"][i]["transform"] = content;
+				mSceneJsonRoot["rendering_objects"][i]["transform"] = content;
 			}
 
-			if (root["rendering_objects"][i].isMember("instanced")) 
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("instanced")) 
 			{
-				bool isInstanced = root["rendering_objects"][i]["instanced"].asBool();
+				bool isInstanced = mSceneJsonRoot["rendering_objects"][i]["instanced"].asBool();
 				if (isInstanced)
 				{
-					if (root["rendering_objects"][i].isMember("instances_transforms")) {
+					if (mSceneJsonRoot["rendering_objects"][i].isMember("instances_transforms")) {
 
-						ER_RenderingObject* rObj = FindRenderingObjectByName(root["rendering_objects"][i]["name"].asString());
-						if (!rObj || root["rendering_objects"][i]["instances_transforms"].size() != rObj->GetInstanceCount())
+						ER_RenderingObject* rObj = FindRenderingObjectByName(mSceneJsonRoot["rendering_objects"][i]["name"].asString());
+						if (!rObj || mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size() != rObj->GetInstanceCount())
 							throw ER_CoreException("Can't save instances transforms to scene json file! RenderObject's instance count is not equal to the number of instance transforms in scene file.");
 
-						for (Json::Value::ArrayIndex instance = 0; instance != root["rendering_objects"][i]["instances_transforms"].size(); instance++) {
+						for (Json::Value::ArrayIndex instance = 0; instance != mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size(); instance++) {
 							Json::Value contentInstanceTransform(Json::arrayValue);
 
 							XMFLOAT4X4 mat = rObj->GetInstancesData()[instance].World;
@@ -609,7 +605,7 @@ namespace EveryRay_Core
 							for (int i = 0; i < 16; i++)
 								contentInstanceTransform.append(matF[i]);
 
-							root["rendering_objects"][i]["instances_transforms"][instance]["transform"] = contentInstanceTransform;
+							mSceneJsonRoot["rendering_objects"][i]["instances_transforms"][instance]["transform"] = contentInstanceTransform;
 						}
 					}
 				}
@@ -621,7 +617,7 @@ namespace EveryRay_Core
 
 		std::ofstream file_id;
 		file_id.open(mScenePath.c_str());
-		writer->write(root, &file_id);
+		writer->write(mSceneJsonRoot, &file_id);
 	}
 
 	// We cant do reflection in C++, that is why we check every materials name and create a material out of it (and root-signature if needed)
@@ -656,32 +652,32 @@ namespace EveryRay_Core
 		ER_Core* core = GetCore();
 		assert(core);
 
-		if (!reader.parse(scene, root)) {
+		if (!reader.parse(scene, mSceneJsonRoot)) {
 			throw ER_CoreException(reader.getFormattedErrorMessages().c_str());
 		}
 		else {
-			if (root.isMember("foliage_zones")) {
-				for (Json::Value::ArrayIndex i = 0; i != root["foliage_zones"].size(); i++)
+			if (mSceneJsonRoot.isMember("foliage_zones")) {
+				for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["foliage_zones"].size(); i++)
 				{
 					float vec3[3];
-					for (Json::Value::ArrayIndex ia = 0; ia != root["foliage_zones"][i]["position"].size(); ia++)
-						vec3[ia] = root["foliage_zones"][i]["position"][ia].asFloat();
+					for (Json::Value::ArrayIndex ia = 0; ia != mSceneJsonRoot["foliage_zones"][i]["position"].size(); ia++)
+						vec3[ia] = mSceneJsonRoot["foliage_zones"][i]["position"][ia].asFloat();
 
 					bool placedOnTerrain = false;
-					if (root["foliage_zones"][i].isMember("placed_on_terrain"))
-						placedOnTerrain = root["foliage_zones"][i]["placed_on_terrain"].asBool();
+					if (mSceneJsonRoot["foliage_zones"][i].isMember("placed_on_terrain"))
+						placedOnTerrain = mSceneJsonRoot["foliage_zones"][i]["placed_on_terrain"].asBool();
 					
 					TerrainSplatChannels terrainChannel = TerrainSplatChannels::NONE;
-					if (root["foliage_zones"][i].isMember("placed_splat_channel"))
-						terrainChannel = (TerrainSplatChannels)(root["foliage_zones"][i]["placed_splat_channel"].asInt());
+					if (mSceneJsonRoot["foliage_zones"][i].isMember("placed_splat_channel"))
+						terrainChannel = (TerrainSplatChannels)(mSceneJsonRoot["foliage_zones"][i]["placed_splat_channel"].asInt());
 
 					foliageZones.push_back(new ER_Foliage(*core, mCamera, light,
-						root["foliage_zones"][i]["patch_count"].asInt(),
-						ER_Utility::GetFilePath(root["foliage_zones"][i]["texture_path"].asString()),
-						root["foliage_zones"][i]["average_scale"].asFloat(),
-						root["foliage_zones"][i]["distribution_radius"].asFloat(),
+						mSceneJsonRoot["foliage_zones"][i]["patch_count"].asInt(),
+						ER_Utility::GetFilePath(mSceneJsonRoot["foliage_zones"][i]["texture_path"].asString()),
+						mSceneJsonRoot["foliage_zones"][i]["average_scale"].asFloat(),
+						mSceneJsonRoot["foliage_zones"][i]["distribution_radius"].asFloat(),
 						XMFLOAT3(vec3[0], vec3[1], vec3[2]),
-						(FoliageBillboardType)root["foliage_zones"][i]["type"].asInt(), placedOnTerrain, terrainChannel));
+						(FoliageBillboardType)mSceneJsonRoot["foliage_zones"][i]["type"].asInt(), placedOnTerrain, terrainChannel));
 				}
 			}
 			else

@@ -21,19 +21,29 @@ namespace EveryRay_Core
 		~ER_Scene();
 
 		void SaveRenderingObjectsTransforms();
-		void SaveFoliageZonesTransforms(const std::vector<ER_Foliage*>& foliageZones);
+		ER_RenderingObject* FindRenderingObjectByName(const std::string& aName);
+		std::vector<ER_SceneObject> objects;
 
 		ER_Material* GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries, bool instanced);
+		ER_RHI_GPURootSignature* GetStandardMaterialRootSignature(const std::string& materialName);
+		
 		ER_Camera& GetCamera() { return mCamera; }
+		const XMFLOAT3& GetCameraPos() { return mCameraPosition; }
+		const XMFLOAT3& GetCameraDir() { return mCameraDirection; }
+
+		const XMFLOAT3& GetSunDir() { return mSunDirection; }
+		const XMFLOAT3& GetSunColor() { return mSunColor; }
 
 		bool HasLightProbesSupport() { return mHasLightProbes; }
 		const XMFLOAT3& GetLightProbesVolumeMinBounds() const { return mLightProbesVolumeMinBounds; }
 		const XMFLOAT3& GetLightProbesVolumeMaxBounds() const { return mLightProbesVolumeMaxBounds; }
 		float GetLightProbesDiffuseDistance() { return mLightProbesDiffuseDistance; }
 		float GetLightProbesSpecularDistance() { return mLightProbesSpecularDistance; }
-		
+		const XMFLOAT3& GetGlobalLightProbeCameraPos() { return mGlobalLightProbeCameraPos; }
+
 		bool HasFoliage() { return mHasFoliage; }
 		void LoadFoliageZones(std::vector<ER_Foliage*>& foliageZones, ER_DirectionalLight& light);
+		void SaveFoliageZonesTransforms(const std::vector<ER_Foliage*>& foliageZones);
 
 		bool HasTerrain() { return mHasTerrain; }
 		int GetTerrainTilesCount() { return mTerrainTilesCount; }
@@ -42,31 +52,23 @@ namespace EveryRay_Core
 		const std::wstring& GetTerrainSplatLayerTextureName(int index) { return mTerrainSplatLayersTextureNames[index]; }
 
 		bool HasVolumetricFog() { return mHasVolumetricFog; }
-
-		ER_RHI_GPURootSignature* GetStandardMaterialRootSignature(const std::string& materialName);
-		
-		ER_RenderingObject* FindRenderingObjectByName(const std::string& aName);
-		std::vector<ER_SceneObject> objects;
-
-		//TODO remove to private and make public methods
-		std::string skyboxPath;
-		XMFLOAT3 cameraPosition;
-		XMFLOAT3 cameraDirection;
-		XMFLOAT3 sunDirection; //in degrees
-		XMFLOAT3 sunColor;
-		XMFLOAT3 ambientColor;
 	private:
 		void LoadRenderingObjectData(ER_RenderingObject* aObject);
 		void LoadRenderingObjectInstancedData(ER_RenderingObject* aObject);
 
 		std::map<std::string, ER_RHI_GPURootSignature*> mStandardMaterialsRootSignatures;
 
-		Json::Value root;
 		ER_Camera& mCamera;
+		XMFLOAT3 mCameraPosition;
+		XMFLOAT3 mCameraDirection;
+
+		XMFLOAT3 mSunDirection; //in degrees
+		XMFLOAT3 mSunColor;
+
+		Json::Value mSceneJsonRoot;
 		std::string mScenePath;
 		
 		bool mHasVolumetricFog = false;
-
 		bool mHasFoliage = false;
 
 		bool mHasTerrain = false;
@@ -80,5 +82,6 @@ namespace EveryRay_Core
 		XMFLOAT3 mLightProbesVolumeMaxBounds = { 0,0,0 };
 		float mLightProbesDiffuseDistance = -1.0f;
 		float mLightProbesSpecularDistance = -1.0f;
+		XMFLOAT3 mGlobalLightProbeCameraPos = { 0,0,0 };
 	};
 }

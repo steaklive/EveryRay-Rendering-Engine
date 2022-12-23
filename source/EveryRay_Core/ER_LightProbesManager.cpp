@@ -72,16 +72,21 @@ namespace EveryRay_Core
 		mSceneProbesMaxBounds = scene->GetLightProbesVolumeMaxBounds();
 
 		mDistanceBetweenDiffuseProbes = scene->GetLightProbesDiffuseDistance();
+		if (mDistanceBetweenDiffuseProbes > 0)
+			SetupDiffuseProbes(game, camera, scene, light, shadowMapper);
+		else
+			SetupGlobalDiffuseProbe(game, camera, scene, light, shadowMapper);
+		
 		mDistanceBetweenSpecularProbes = scene->GetLightProbesSpecularDistance();
+		if (mDistanceBetweenSpecularProbes > 0)
+		{
+			mSpecularProbesVolumeSize = MAX_CUBEMAPS_IN_VOLUME_PER_AXIS * mDistanceBetweenSpecularProbes * 0.5f;
+			mMaxSpecularProbesInVolumeCount = MAX_CUBEMAPS_IN_VOLUME_PER_AXIS * MAX_CUBEMAPS_IN_VOLUME_PER_AXIS * MAX_CUBEMAPS_IN_VOLUME_PER_AXIS;
 
-		if (mDistanceBetweenDiffuseProbes <= 0.0f || mDistanceBetweenSpecularProbes <= 0.0f)
-			throw ER_CoreException("Loaded level has incorrect distances between probes (either diffuse or specular or both). Did you forget to assign them in the level file?");
-
-		mSpecularProbesVolumeSize = MAX_CUBEMAPS_IN_VOLUME_PER_AXIS * mDistanceBetweenSpecularProbes * 0.5f;
-		mMaxSpecularProbesInVolumeCount = MAX_CUBEMAPS_IN_VOLUME_PER_AXIS * MAX_CUBEMAPS_IN_VOLUME_PER_AXIS * MAX_CUBEMAPS_IN_VOLUME_PER_AXIS;
-
-		SetupDiffuseProbes(game, camera, scene, light, shadowMapper);
-		SetupSpecularProbes(game, camera, scene, light, shadowMapper);
+			SetupSpecularProbes(game, camera, scene, light, shadowMapper);
+		}
+		else
+			SetupGlobalSpecularProbe(game, camera, scene, light, shadowMapper);
 	}
 
 	ER_LightProbesManager::~ER_LightProbesManager()
@@ -120,13 +125,13 @@ namespace EveryRay_Core
 	void ER_LightProbesManager::SetupGlobalDiffuseProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight* light, ER_ShadowMapper* shadowMapper)
 	{
 		mGlobalDiffuseProbe = new ER_LightProbe(game, light, shadowMapper, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE, -1);
-		mGlobalDiffuseProbe->SetPosition(camera.Position()); // TODO set custom position from level json
+		mGlobalDiffuseProbe->SetPosition(scene->GetGlobalLightProbeCameraPos());
 		mGlobalDiffuseProbe->SetShaderInfoForConvolution(mConvolutionPS);
 	}
 	void ER_LightProbesManager::SetupGlobalSpecularProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight* light, ER_ShadowMapper*shadowMapper)
 	{
 		mGlobalSpecularProbe = new ER_LightProbe(game, light, shadowMapper, SPECULAR_PROBE_SIZE, SPECULAR_PROBE, -1);
-		mGlobalSpecularProbe->SetPosition(camera.Position()); // TODO set custom position from level json
+		mGlobalSpecularProbe->SetPosition(scene->GetGlobalLightProbeCameraPos());
 		mGlobalSpecularProbe->SetShaderInfoForConvolution(mConvolutionPS);
 	}
 
@@ -550,7 +555,7 @@ namespace EveryRay_Core
 
 		assert(numThreads > 0);
 
-		if (!mDiffuseProbesReady)
+		if (!mDiffuseProbesReady && mDistanceBetweenDiffuseProbes > 0)
 		{
 			std::wstring diffuseProbesPath = mLevelPath + L"diffuse_probes\\";
 			
@@ -603,7 +608,7 @@ namespace EveryRay_Core
 			DeleteObjects(shCPUBuffer);
 		}
 
-		if (!mSpecularProbesReady)
+		if (!mSpecularProbesReady && mDistanceBetweenSpecularProbes > 0)
 		{
 			std::wstring specularProbesPath = mLevelPath + L"specular_probes\\";
 
@@ -652,7 +657,7 @@ namespace EveryRay_Core
 		assert(rhi);
 
 		ER_RenderingObject* probeObject = aType == DIFFUSE_PROBE ? mDiffuseProbeRenderingObject : mSpecularProbeRenderingObject;
-		bool ready = aType == DIFFUSE_PROBE ? mDiffuseProbesReady : mSpecularProbesReady;
+		bool ready = aType == DIFFUSE_PROBE ? (mDiffuseProbesReady && mDistanceBetweenDiffuseProbes > 0) : (mSpecularProbesReady && mDistanceBetweenSpecularProbes > 0);
 		std::string& psoName = DIFFUSE_PROBE ? mDiffuseDebugLightProbePassPSOName : mSpecularDebugLightProbePassPSOName;
 
 		ER_MaterialSystems materialSystems;
@@ -693,12 +698,12 @@ namespace EveryRay_Core
 		ER_RenderingObject* probeRenderingObject = (aType == DIFFUSE_PROBE) ? mDiffuseProbeRenderingObject : mSpecularProbeRenderingObject;
 		if (aType == DIFFUSE_PROBE)
 		{
-			if (!mDiffuseProbesReady)
+			if (!mDiffuseProbesReady || mDistanceBetweenDiffuseProbes <= 0)
 				return;
 		}
 		else
 		{
-			if (!mSpecularProbesReady)
+			if (!mSpecularProbesReady || mDistanceBetweenSpecularProbes <= 0)
 				return;
 
 			mNonCulledSpecularProbesCount = 0;
