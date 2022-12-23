@@ -794,7 +794,8 @@ namespace EveryRay_Core
 	void ER_LightProbesManager::UpdateProbes(ER_Core& game)
 	{
 		//int difProbeCellIndexCamera = GetCellIndex(mMainCamera.Position(), DIFFUSE_PROBE);
-		assert(mMaxSpecularProbesInVolumeCount > 0);
+		if (mDistanceBetweenSpecularProbes > 0)
+			assert(mMaxSpecularProbesInVolumeCount > 0);
 
 		//UpdateProbesByType(game, DIFFUSE_PROBE); we do not need to update diffuse probes every frame anymore
 		UpdateProbesByType(game, SPECULAR_PROBE);
