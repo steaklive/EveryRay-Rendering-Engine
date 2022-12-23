@@ -483,9 +483,9 @@ float3 GetSpecularIrradiance(float3 worldPos, float3 camPos, float3 reflectDir, 
 }
 
 float3 IndirectLightingPBR(float3 normalWS, float3 diffuseAlbedo, float3 positionWS, float roughness, float3 F0, float metalness, float3 camPos, bool useGlobalProbe,
-    in LightProbeInfo probesInfo, in SamplerState linearSampler, in Texture2D<float4> integrationTexture, float ambientOcclusion)
+    in LightProbeInfo probesInfo, in SamplerState linearSampler, in SamplerState clampSampler, in Texture2D<float4> integrationTexture, float ambientOcclusion)
 {
-    float3 viewDir = normalize(camPos.xyz - positionWS);
+    float3 viewDir = normalize(camPos - positionWS);
     float nDotV = max(dot(normalWS, viewDir), 0.0);
     float3 reflectDir = normalize(reflect(-viewDir, normalWS));
     
@@ -494,12 +494,10 @@ float3 IndirectLightingPBR(float3 normalWS, float3 diffuseAlbedo, float3 positio
     float3 indirectDiffuseLighting = irradianceDiffuse * diffuseAlbedo * float3(1.0f - metalness, 1.0f - metalness, 1.0f - metalness);
 
     //indirect specular (split sum approximation http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf)
-    int mipIndex = floor(roughness * SPECULAR_PROBE_MIP_COUNT);
-    if (mipIndex >= SPECULAR_PROBE_MIP_COUNT)
-        return indirectDiffuseLighting * ambientOcclusion;
+    int mipIndex = roughness * (SPECULAR_PROBE_MIP_COUNT - 1);
     float3 prefilteredColor = GetSpecularIrradiance(positionWS, camPos, reflectDir, mipIndex, useGlobalProbe, linearSampler, probesInfo) / Pi;    
-    float2 environmentBRDF = integrationTexture.SampleLevel(linearSampler, float2(nDotV, roughness), 0).rg;
-    float3 indirectSpecularLighting = prefilteredColor * (Schlick_Fresnel_Roughness(nDotV, F0, roughness) * environmentBRDF.x + float3(environmentBRDF.y, environmentBRDF.y, environmentBRDF.y));
+    float2 environmentBRDF = integrationTexture.SampleLevel(clampSampler, float2(nDotV, roughness), 0).rg;
+    float3 indirectSpecularLighting = prefilteredColor * (Schlick_Fresnel_Roughness(nDotV, F0, roughness) * environmentBRDF.x + environmentBRDF.y);
     
     return (indirectDiffuseLighting + indirectSpecularLighting) * ambientOcclusion;
 }

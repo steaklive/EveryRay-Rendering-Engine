@@ -555,6 +555,9 @@ namespace EveryRay_Core
 
 		assert(numThreads > 0);
 
+		if (mDistanceBetweenDiffuseProbes <= 0.0)
+			mDiffuseProbesReady = true;
+
 		if (!mDiffuseProbesReady && mDistanceBetweenDiffuseProbes > 0)
 		{
 			std::wstring diffuseProbesPath = mLevelPath + L"diffuse_probes\\";
@@ -608,6 +611,8 @@ namespace EveryRay_Core
 			DeleteObjects(shCPUBuffer);
 		}
 
+		if (mDistanceBetweenSpecularProbes <= 0.0)
+			mSpecularProbesReady = true;
 		if (!mSpecularProbesReady && mDistanceBetweenSpecularProbes > 0)
 		{
 			std::wstring specularProbesPath = mLevelPath + L"specular_probes\\";

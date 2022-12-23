@@ -298,22 +298,24 @@ namespace EveryRay_Core {
 				mUpsampleAndBlurRS->Finalize(rhi, "ER_RHI_GPURootSignature: Upsample & Blur Pass");
 			}
 
-			mDeferredLightingRS = rhi->CreateRootSignature(3, 2);
+			mDeferredLightingRS = rhi->CreateRootSignature(3, 3);
 			if (mDeferredLightingRS)
 			{
 				mDeferredLightingRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_ALL);
 				mDeferredLightingRS->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SHADER_VISIBILITY_ALL);
+				mDeferredLightingRS->InitStaticSampler(rhi, 2, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP, ER_RHI_SHADER_VISIBILITY_ALL);
 				mDeferredLightingRS->InitDescriptorTable(rhi, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 18 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mDeferredLightingRS->InitDescriptorTable(rhi, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mDeferredLightingRS->InitDescriptorTable(rhi, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mDeferredLightingRS->Finalize(rhi, "ER_RHI_GPURootSignature: Deferred Lighting Pass");
 			}
 
-			mForwardLightingRS = rhi->CreateRootSignature(2, 2);
+			mForwardLightingRS = rhi->CreateRootSignature(2, 3);
 			if (mForwardLightingRS)
 			{
 				mForwardLightingRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mForwardLightingRS->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mForwardLightingRS->InitStaticSampler(rhi, 2, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mForwardLightingRS->InitDescriptorTable(rhi, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 18 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mForwardLightingRS->InitDescriptorTable(rhi, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 3 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mForwardLightingRS->Finalize(rhi, "ER_RHI_GPURootSignature: Forward Lighting Pass", true);
@@ -824,7 +826,7 @@ namespace EveryRay_Core {
 				rhi->FinalizePSO(mDeferredLightingPSOName, true);
 			}
 			rhi->SetPSO(mDeferredLightingPSOName, true);
-			rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
+			rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP });
 			rhi->SetUnorderedAccessResources(ER_COMPUTE, { aRenderTarget }, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
 			if (mProbesManager->AreGlobalProbesReady())
 			{
@@ -909,7 +911,7 @@ namespace EveryRay_Core {
 			rhi->FinalizePSO(psoName);
 		}
 		rhi->SetPSO(psoName);
-		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
+		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP });
 	}
 
 	void ER_Illumination::PrepareResourcesForForwardLighting(ER_RenderingObject* aObj, int meshIndex)

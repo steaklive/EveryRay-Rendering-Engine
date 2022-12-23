@@ -18,6 +18,7 @@
 
 SamplerState SamplerLinear : register(s0);
 SamplerComparisonState CascadedPcfShadowMapSampler : register(s1);
+SamplerState SamplerClamp: register(s2);
 
 RWTexture2D<float4> OutputTexture : register(u0);
 
@@ -134,7 +135,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
         probesInfo.distanceBetweenSpecularProbes = DistanceBetweenSpecularProbes;
         
         indirectLighting += IndirectLightingPBR(normalWS, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness, CameraPosition.xyz, useGlobalProbe > 0.0f,
-            probesInfo, SamplerLinear, IntegrationTexture, ao);
+            probesInfo, SamplerLinear, SamplerClamp, IntegrationTexture, ao);
     }
     
     float shadow = Deferred_GetShadow(worldPos, ShadowMatrices, ShadowCascadeDistances, ShadowTexelSize.x, CascadedShadowTextures, CascadedPcfShadowMapSampler);

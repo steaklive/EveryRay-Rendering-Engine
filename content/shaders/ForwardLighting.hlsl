@@ -30,6 +30,7 @@ Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t5);
 
 SamplerState SamplerLinear : register(s0);
 SamplerComparisonState CascadedPcfShadowMapSampler : register(s1);
+SamplerState SamplerClamp : register(s2);
 
 cbuffer ForwardLightingCBuffer : register(b0)
 {
@@ -351,7 +352,7 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
         
         bool useGlobalProbe = UseGlobalProbe > 0.0f;
         indirectLighting += IndirectLightingPBR(normalWS, diffuseAlbedo.rgb, vsOutput.WorldPos, roughness, F0, metalness, CameraPosition.xyz, useGlobalProbe,
-            probesInfo, SamplerLinear, IntegrationTexture, ao);
+            probesInfo, SamplerLinear, SamplerClamp, IntegrationTexture, ao);
     }
 
     float shadow = 0.0f;
