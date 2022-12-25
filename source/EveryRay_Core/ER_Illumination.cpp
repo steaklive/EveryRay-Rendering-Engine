@@ -120,8 +120,12 @@ namespace EveryRay_Core {
 		DeleteObject(mForwardLightingRS);
 		DeleteObject(mDebugProbesRenderRS);
 
-		mVoxelizationDebugConstantBuffer.Release();
-		mVoxelConeTracingMainConstantBuffer.Release();
+		if (mCurrentGIQuality != GIQuality::GI_LOW)
+		{
+			mVoxelizationDebugConstantBuffer.Release();
+			mVoxelConeTracingMainConstantBuffer.Release();
+		}
+
 		mUpsampleBlurConstantBuffer.Release();
 		mDeferredLightingConstantBuffer.Release();
 		mForwardLightingConstantBuffer.Release();

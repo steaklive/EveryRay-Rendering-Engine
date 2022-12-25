@@ -35,6 +35,9 @@ namespace EveryRay_Core {
 	}
 	ER_VolumetricClouds::~ER_VolumetricClouds()
 	{
+		if (mCurrentQuality == VolumetricCloudsQuality::VC_DISABLED)
+			return;
+
 		DeleteObject(mCloudTextureSRV);
 		DeleteObject(mWeatherTextureSRV);
 		DeleteObject(mWorleyTextureSRV);
