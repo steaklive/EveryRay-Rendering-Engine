@@ -138,7 +138,9 @@ namespace EveryRay_Core
 			resultPath += relativePath;
 			return resultPath;
 		};
+
 		bool loadStatus = false;
+
 		for (size_t i = 0; i < mMeshesCount[0]; i++)
 		{
 			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeDifffuse))
@@ -154,6 +156,7 @@ namespace EveryRay_Core
 			}
 			else
 				LoadTexture(&mMeshesTextureBuffers[i].AlbedoMap, &loadStatus, ER_Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), i, true);
+			loadStatus = false;
 
 			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeNormalMap))
 			{
@@ -168,6 +171,7 @@ namespace EveryRay_Core
 			}
 			else
 				LoadTexture(&mMeshesTextureBuffers[i].NormalMap, &loadStatus, ER_Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"), i, true);
+			loadStatus = false;
 
 			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeSpecularMap))
 			{
@@ -182,6 +186,7 @@ namespace EveryRay_Core
 			}
 			else
 				LoadTexture(&mMeshesTextureBuffers[i].RoughnessMap, &loadStatus,ER_Utility::GetFilePath(L"content\\textures\\emptyRoughnessMap.png"), i, true);
+			loadStatus = false;
 
 			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeSpecularPowerMap))
 			{
@@ -196,6 +201,7 @@ namespace EveryRay_Core
 			}
 			else
 				LoadTexture(&mMeshesTextureBuffers[i].MetallicMap, &loadStatus, ER_Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), i, true);
+			loadStatus = false;
 		}
 	}
 	
@@ -210,26 +216,32 @@ namespace EveryRay_Core
 		if (!mCustomAlbedoTextures[meshIndex].empty())
 			if (mCustomAlbedoTextures[meshIndex].back() != '\\')
 				LoadTexture(&mMeshesTextureBuffers[meshIndex].AlbedoMap, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomAlbedoTextures[meshIndex])), meshIndex);
+		loadStatus = false;
 
 		if (!mCustomNormalTextures[meshIndex].empty())
 			if (mCustomNormalTextures[meshIndex].back() != '\\')
 				LoadTexture(&mMeshesTextureBuffers[meshIndex].NormalMap, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomNormalTextures[meshIndex])), meshIndex);
+		loadStatus = false;
 
 		if (!mCustomRoughnessTextures[meshIndex].empty())
 			if (mCustomRoughnessTextures[meshIndex].back() != '\\')
 				LoadTexture(&mMeshesTextureBuffers[meshIndex].RoughnessMap, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomRoughnessTextures[meshIndex])), meshIndex);
+		loadStatus = false;
 
 		if (!mCustomMetalnessTextures[meshIndex].empty())
 			if (mCustomMetalnessTextures[meshIndex].back() != '\\')
 				LoadTexture(&mMeshesTextureBuffers[meshIndex].MetallicMap, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomMetalnessTextures[meshIndex])), meshIndex);
+		loadStatus = false;
 
 		if (!mCustomHeightTextures[meshIndex].empty())
 			if (mCustomHeightTextures[meshIndex].back() != '\\')
 				LoadTexture(&mMeshesTextureBuffers[meshIndex].HeightMap, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomHeightTextures[meshIndex])), meshIndex);
+		loadStatus = false;
 
 		if (!mCustomReflectionMaskTextures[meshIndex].empty())
 			if (mCustomReflectionMaskTextures[meshIndex].back() != '\\')
 				LoadTexture(&mMeshesTextureBuffers[meshIndex].ReflectionMaskMap, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomReflectionMaskTextures[meshIndex])), meshIndex);
+		loadStatus = false;
 
 		//TODO
 		//if (!extra2Path.empty())
@@ -243,10 +255,13 @@ namespace EveryRay_Core
 		bool loadStatus = false;
 		if (!mSnowAlbedoTexturePath.empty())
 			LoadTexture(&mSnowAlbedoTexture, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mSnowAlbedoTexturePath)), -1);
+		loadStatus = false;
 		if (!mSnowNormalTexturePath.empty())
 			LoadTexture(&mSnowNormalTexture, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mSnowNormalTexturePath)), -1);
+		loadStatus = false;
 		if (!mSnowRoughnessTexturePath.empty())
 			LoadTexture(&mSnowRoughnessTexture, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mSnowRoughnessTexturePath)), -1);
+		loadStatus = false;
 	}
 
 	// This is main method for loading textures before going to RHI
