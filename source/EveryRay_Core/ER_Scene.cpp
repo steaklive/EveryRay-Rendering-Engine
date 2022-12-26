@@ -200,13 +200,28 @@ namespace EveryRay_Core
 			assert(core);
 			ER_RHI* rhi = core->GetRHI();
 
-			ER_RHI_GPURootSignature* rs = rhi->CreateRootSignature(1, 0);
-			if (rs)
 			{
-				rs->InitDescriptorTable(rhi, BASICCOLOR_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
-				rs->Finalize(rhi, "ER_RHI_GPURootSignature: BasicColorMaterial Pass", true);
+				ER_RHI_GPURootSignature* rs = rhi->CreateRootSignature(1, 0);
+				if (rs)
+				{
+					rs->InitDescriptorTable(rhi, BASICCOLOR_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+					rs->Finalize(rhi, "ER_RHI_GPURootSignature: BasicColorMaterial Pass", true);
+				}
+				mStandardMaterialsRootSignatures.emplace(ER_MaterialHelper::basicColorMaterialName, rs);
 			}
-			mStandardMaterialsRootSignatures.emplace(ER_MaterialHelper::basicColorMaterialName, rs);
+
+			{
+				ER_RHI_GPURootSignature* rs = rhi->CreateRootSignature(2, 2);
+				if (rs)
+				{
+					rs->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
+					rs->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SHADER_VISIBILITY_PIXEL);
+					rs->InitDescriptorTable(rhi, SNOW_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 7 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+					rs->InitDescriptorTable(rhi, SNOW_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
+					rs->Finalize(rhi, "ER_RHI_GPURootSignature: SimpleSnowMaterial Pass", true);
+				}
+				mStandardMaterialsRootSignatures.emplace(ER_MaterialHelper::snowMaterialName, rs);
+			}
 		}
 
 		{
@@ -382,6 +397,17 @@ namespace EveryRay_Core
 							}
 						}
 					}
+					else if (name == ER_MaterialHelper::snowMaterialName)
+					{
+						if (mSceneJsonRoot["rendering_objects"][i].isMember("snow_albedo"))
+							aObject->mSnowAlbedoTexturePath = mSceneJsonRoot["rendering_objects"][i]["snow_albedo"].asString();
+						if (mSceneJsonRoot["rendering_objects"][i].isMember("snow_normal"))
+							aObject->mSnowNormalTexturePath = mSceneJsonRoot["rendering_objects"][i]["snow_normal"].asString();
+						if (mSceneJsonRoot["rendering_objects"][i].isMember("snow_roughness"))
+							aObject->mSnowRoughnessTexturePath = mSceneJsonRoot["rendering_objects"][i]["snow_roughness"].asString();
+
+						aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), name);
+					}
 					else //other standard materials
 						aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), name);
 				}
@@ -411,6 +437,7 @@ namespace EveryRay_Core
 					aObject->LoadCustomMeshTextures(mesh);
 				}
 			}
+			aObject->LoadCustomMaterialTextures();
 		}
 
 		// load world transform
@@ -639,6 +666,8 @@ namespace EveryRay_Core
 			material = new ER_RenderToLightProbeMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
 		else if (matName == "VoxelizationMaterial")
 			material = new ER_VoxelizationMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_GEOMETRY_SHADER | HAS_PIXEL_SHADER, instanced);
+		else if (matName == "SnowMaterial")
+			material = new ER_SimpleSnowMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
 		else
 			material = nullptr;
 

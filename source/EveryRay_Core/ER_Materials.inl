@@ -5,3 +5,4 @@
 #include "..\EveryRay_Core\ER_RenderToLightProbeMaterial.h"
 #include "..\EveryRay_Core\ER_DebugLightProbeMaterial.h"
 #include "..\EveryRay_Core\ER_VoxelizationMaterial.h"
+#include "..\EveryRay_Core\ER_SimpleSnowMaterial.h"

@@ -270,6 +270,9 @@
     <ClInclude Include="ER_Settings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_SimpleSnowMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -452,6 +455,9 @@
     <ClCompile Include="ER_Settings.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
+    <ClCompile Include="ER_SimpleSnowMaterial.cpp">
+      <Filter>Source Files\Graphics\Materials</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\content\shaders\VolumetricLight\Apply_PS.hlsl">
@@ -608,6 +614,9 @@
       <Filter>Shaders\VolumetricFog</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\SSS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\SimpleSnow.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

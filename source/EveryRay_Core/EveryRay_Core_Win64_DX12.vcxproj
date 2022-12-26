@@ -204,6 +204,7 @@
     <ClInclude Include="ER_RenderToLightProbeMaterial.h" />
     <ClInclude Include="ER_Settings.h" />
     <ClInclude Include="ER_ShadowMapMaterial.h" />
+    <ClInclude Include="ER_SimpleSnowMaterial.h" />
     <ClInclude Include="ER_VolumetricFog.h" />
     <ClInclude Include="ER_VoxelizationMaterial.h" />
     <ClInclude Include="ER_CameraFPS.h" />
@@ -276,6 +277,7 @@
     <ClCompile Include="ER_Sandbox.cpp" />
     <ClCompile Include="ER_Settings.cpp" />
     <ClCompile Include="ER_ShadowMapMaterial.cpp" />
+    <ClCompile Include="ER_SimpleSnowMaterial.cpp" />
     <ClCompile Include="ER_Skybox.cpp" />
     <ClCompile Include="ER_VolumetricClouds.cpp" />
     <ClCompile Include="ER_VolumetricFog.cpp" />
@@ -404,6 +406,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\ShadowMap.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\SimpleSnow.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

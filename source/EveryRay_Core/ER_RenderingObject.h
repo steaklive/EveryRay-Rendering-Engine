@@ -123,9 +123,12 @@ namespace EveryRay_Core
 		ER_RenderingObject(const std::string& pName, int index, ER_Core& pCore, ER_Camera& pCamera, std::unique_ptr<ER_Model> pModel, bool availableInEditor = false, bool isInstanced = false);
 		~ER_RenderingObject();
 
-		void LoadCustomMeshTextures(int meshIndex);
 		void LoadMaterial(ER_Material* pMaterial, const std::string& materialName);
 		void LoadRenderBuffers(int lod = 0);
+
+		void LoadCustomMeshTextures(int meshIndex);
+		void LoadCustomMaterialTextures();
+
 		void Draw(const std::string& materialName, bool toDepth = false, int meshIndex = -1);
 		void DrawLOD(const std::string& materialName, bool toDepth, int meshIndex, int lod, bool skipCulling = false);
 		void DrawAABB(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, ER_RHI_GPURootSignature* rs);
@@ -252,10 +255,18 @@ namespace EveryRay_Core
 		std::vector<std::string> mCustomMetalnessTextures;
 		std::vector<std::string> mCustomHeightTextures;
 		std::vector<std::string> mCustomReflectionMaskTextures;
+
+		std::string mSnowAlbedoTexturePath;
+		std::string mSnowNormalTexturePath;
+		std::string mSnowRoughnessTexturePath;
+
+		ER_RHI_GPUTexture* GetSnowAlbedoTexture() { return mSnowAlbedoTexture; }
+		ER_RHI_GPUTexture* GetSnowNormalTexture() { return mSnowNormalTexture; }
+		ER_RHI_GPUTexture* GetSnowRoughnessTexture() { return mSnowRoughnessTexture; }
 	private:
 		void UpdateAABB(ER_AABB& aabb, const XMMATRIX& transformMatrix);
 		void LoadAssignedMeshTextures();
-		void LoadTexture(TextureType type, const std::wstring& path, int meshIndex, bool isPlaceholder = false);
+		void LoadTexture(ER_RHI_GPUTexture** aTexture, bool* loadStat, const std::wstring& path, int meshIndex, bool isPlaceholder = false);
 		void CreateInstanceBuffer(InstancedData* instanceData, UINT instanceCount, ER_RHI_GPUBuffer* instanceBuffer);
 		
 		void UpdateGizmos();
@@ -315,6 +326,13 @@ namespace EveryRay_Core
 		float													mTerrainProceduralObjectMaxYaw = 0.0f;
 		bool													mIsTerrainPlacementFinished = false;
 		bool													mIsTerrainPlacement = false; //possible/wanted or not
+		///****************************************************************************************************************************
+		
+		///****************************************************************************************************************************
+		// *** extra materials data (snow, etc.) ***
+		ER_RHI_GPUTexture*										mSnowAlbedoTexture = nullptr;
+		ER_RHI_GPUTexture*										mSnowNormalTexture = nullptr;
+		ER_RHI_GPUTexture*										mSnowRoughnessTexture = nullptr;
 		///****************************************************************************************************************************
 
 		ER_AABB													mLocalAABB; //mesh space AABB

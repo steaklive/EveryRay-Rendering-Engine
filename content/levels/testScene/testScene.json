@@ -408,7 +408,7 @@
 		{
 			"instanced" : false,
 			"model_path" : "content\\models\\shaderball.fbx",
-			"name" : "Shader Ball Concrete",
+			"name" : "Shader Ball Bathroom",
 			"new_materials" : 
 			[
 				{
@@ -427,10 +427,10 @@
 			"textures" : 
 			[
 				{
-					"albedo" : "content\\textures\\PBR\\Concrete\\concrete2_albedo.dds",
-					"normal" : "content\\textures\\PBR\\Concrete\\concrete2_Normal-dx.dds",
-					"roughness" : "content\\textures\\PBR\\Concrete\\concrete2_Roughness.png"
-				},
+					"albedo" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_basecolor.dds",
+					"normal" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_normal-dx.dds",
+					"roughness" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_roughness.png"
+				},	
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
@@ -456,6 +456,64 @@
 				0.0,
 				1.0
 			]
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Bathroom w/ Snow",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				},
+				{
+					"name" : "SnowMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_basecolor.dds",
+					"normal" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_normal-dx.dds",
+					"roughness" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_roughness.png"
+				},	
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-115.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"snow_albedo" : "content\\textures\\PBR\\Snow\\Snow_001_COLOR.jpg",
+			"snow_normal" : "content\\textures\\PBR\\Snow\\Snow_001_NORM.jpg",
+			"snow_roughness" : "content\\textures\\PBR\\Snow\\Snow_001_ROUGH.jpg"
 		},
 		{
 			"instanced" : false,
@@ -932,7 +990,7 @@
 		{
 			"instanced" : false,
 			"model_path" : "content\\models\\shaderball.fbx",
-			"name" : "Shader Ball Bathroom",
+			"name" : "Shader Ball Concrete",
 			"new_materials" : 
 			[
 				{
@@ -951,10 +1009,10 @@
 			"textures" : 
 			[
 				{
-					"albedo" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_basecolor.dds",
-					"normal" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_normal-dx.dds",
-					"roughness" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_roughness.png"
-				},	
+					"albedo" : "content\\textures\\PBR\\Concrete\\concrete2_albedo.dds",
+					"normal" : "content\\textures\\PBR\\Concrete\\concrete2_Normal-dx.dds",
+					"roughness" : "content\\textures\\PBR\\Concrete\\concrete2_Roughness.png"
+				},
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
