@@ -351,7 +351,7 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
         probesInfo.distanceBetweenSpecularProbes = DistanceBetweenSpecularProbes;
         
         bool useGlobalProbe = UseGlobalProbe > 0.0f;
-        indirectLighting += IndirectLightingPBR(normalWS, diffuseAlbedo.rgb, vsOutput.WorldPos, roughness, F0, metalness, CameraPosition.xyz, useGlobalProbe,
+        indirectLighting += IndirectLightingPBR(SunDirection.xyz, normalWS, diffuseAlbedo.rgb, vsOutput.WorldPos, roughness, F0, metalness, CameraPosition.xyz, useGlobalProbe,
             probesInfo, SamplerLinear, SamplerClamp, IntegrationTexture, ao);
     }
 

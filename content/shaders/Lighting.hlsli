@@ -482,22 +482,28 @@ float3 GetSpecularIrradiance(float3 worldPos, float3 camPos, float3 reflectDir, 
     return finalSum;
 }
 
-float3 IndirectLightingPBR(float3 normalWS, float3 diffuseAlbedo, float3 positionWS, float roughness, float3 F0, float metalness, float3 camPos, bool useGlobalProbe,
+float3 IndirectLightingPBR(float3 lightDir, float3 normalWS, float3 diffuseAlbedo, float3 positionWS, float roughness, float3 F0, float metalness, float3 camPos, bool useGlobalProbe,
     in LightProbeInfo probesInfo, in SamplerState linearSampler, in SamplerState clampSampler, in Texture2D<float4> integrationTexture, float ambientOcclusion)
 {
     float3 viewDir = normalize(camPos - positionWS);
-    float nDotV = max(dot(normalWS, viewDir), 0.0);
+    float nDotV = abs(dot(normalWS, viewDir)) + 0.0001f;
     float3 reflectDir = normalize(reflect(-viewDir, normalWS));
+    float3 halfVec = normalize(viewDir + lightDir);
     
     //indirect diffuse
     float3 irradianceDiffuse = GetDiffuseIrradiance(positionWS, normalWS, camPos, useGlobalProbe, linearSampler, probesInfo) / Pi;
     float3 indirectDiffuseLighting = irradianceDiffuse * diffuseAlbedo * float3(1.0f - metalness, 1.0f - metalness, 1.0f - metalness);
+    
+    const float epsilon = 0.0001f;
+    if (roughness > 1.0 - epsilon) // simple hack to fix "rim" artifact of indiret specular in very rough surfaces 
+        return indirectDiffuseLighting * ambientOcclusion;
 
     //indirect specular (split sum approximation http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf)
     int mipIndex = roughness * (SPECULAR_PROBE_MIP_COUNT - 1);
-    float3 prefilteredColor = GetSpecularIrradiance(positionWS, camPos, reflectDir, mipIndex, useGlobalProbe, linearSampler, probesInfo) / Pi;    
+    float3 prefilteredColor = GetSpecularIrradiance(positionWS, camPos, reflectDir, mipIndex, useGlobalProbe, linearSampler, probesInfo) / Pi;
     float2 environmentBRDF = integrationTexture.SampleLevel(clampSampler, float2(nDotV, roughness), 0).rg;
-    float3 indirectSpecularLighting = prefilteredColor * (Schlick_Fresnel_Roughness(nDotV, F0, roughness) * environmentBRDF.x + environmentBRDF.y);
+    float LdotH = saturate(dot(lightDir, halfVec));
+    float3 indirectSpecularLighting = prefilteredColor * (Schlick_Fresnel_Roughness(LdotH, F0, roughness) * environmentBRDF.x + environmentBRDF.y);
     
     return (indirectDiffuseLighting + indirectSpecularLighting) * ambientOcclusion;
 }

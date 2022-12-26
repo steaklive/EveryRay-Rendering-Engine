@@ -134,7 +134,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
         probesInfo.distanceBetweenDiffuseProbes = DistanceBetweenDiffuseProbes;
         probesInfo.distanceBetweenSpecularProbes = DistanceBetweenSpecularProbes;
         
-        indirectLighting += IndirectLightingPBR(normalWS, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness, CameraPosition.xyz, useGlobalProbe > 0.0f,
+        indirectLighting += IndirectLightingPBR(SunDirection.xyz, normalWS, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness, CameraPosition.xyz, useGlobalProbe > 0.0f,
             probesInfo, SamplerLinear, SamplerClamp, IntegrationTexture, ao);
     }
     
