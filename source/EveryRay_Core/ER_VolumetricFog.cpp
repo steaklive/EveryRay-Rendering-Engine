@@ -136,6 +136,7 @@ namespace EveryRay_Core {
 		mMainConstantBuffer.Data.ThicknessFactor = mThicknessFactor;
 		mMainConstantBuffer.Data.AmbientIntensity = mAmbientIntensity;
 		mMainConstantBuffer.Data.PreviousFrameBlend = mPreviousFrameBlendFactor;
+		mMainConstantBuffer.Data.FrameIndex = static_cast<float>(GetCore()->GetFrameIndex());
 		mMainConstantBuffer.ApplyChanges(rhi);
 
 		mCompositeConstantBuffer.Data.ViewProj = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());

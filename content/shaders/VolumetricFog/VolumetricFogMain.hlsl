@@ -48,6 +48,7 @@ cbuffer VolumetricFogCBuffer : register(b0)
     float ThicknessFactor;
     float AmbientIntensity;
     float PreviousFrameBlend;
+    float FrameIndex;
 }
 float HenyeyGreensteinPhaseFunction(float3 viewDir, float3 lightDir, float g)
 {
@@ -79,7 +80,7 @@ void CSInjection(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DT
     
     if (texCoord.x < VOLUMETRIC_FOG_VOXEL_SIZE_X && texCoord.y < VOLUMETRIC_FOG_VOXEL_SIZE_Y && texCoord.z < VOLUMETRIC_FOG_VOXEL_SIZE_Z)
     {
-        float jitter = (GetBlueNoiseSample(texCoord) - 0.5f) * (1.0f - EPSILON);
+        float jitter = frac((GetBlueNoiseSample(texCoord) - 0.5f) * (1.0f - EPSILON) * FrameIndex);
         float3 voxelWorldPos = GetWorldPosFromVoxelID(texCoord, jitter, CameraNearFar.x, CameraNearFar.y, InvViewProj);
         float3 viewDir = normalize(CameraPosition.xyz - voxelWorldPos);
 
@@ -89,7 +90,7 @@ void CSInjection(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DT
         if (visibility > EPSILON)
             lighting += visibility * SunColor.xyz * HenyeyGreensteinPhaseFunction(viewDir, -SunDirection.xyz, Anisotropy);
         
-        float4 result = float4(lighting * Strength * Density, Density);
+        float4 result = float4(lighting * Strength * Density, visibility * Density);
         
         //previous frame interpolation
         {
