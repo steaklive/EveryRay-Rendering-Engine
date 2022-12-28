@@ -10,6 +10,7 @@ namespace EveryRay_Core
 	const std::string ER_MaterialHelper::debugLightProbeMaterialName = "DebugLightProbeMaterial";
 	const std::string ER_MaterialHelper::voxelizationMaterialName = "VoxelizationMaterial";
 	const std::string ER_MaterialHelper::snowMaterialName = "SnowMaterial";
+	const std::string ER_MaterialHelper::fresnelOutlineMaterialName = "FresnelOutlineMaterial";
 
 	const std::string ER_MaterialHelper::forwardLightingNonMaterialName = "FORWARD_LIGHTING_NON_MATERIAL";
 }

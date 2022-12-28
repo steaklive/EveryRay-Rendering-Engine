@@ -263,6 +263,9 @@ namespace EveryRay_Core
 		ER_RHI_GPUTexture* GetSnowAlbedoTexture() { return mSnowAlbedoTexture; }
 		ER_RHI_GPUTexture* GetSnowNormalTexture() { return mSnowNormalTexture; }
 		ER_RHI_GPUTexture* GetSnowRoughnessTexture() { return mSnowRoughnessTexture; }
+
+		void SetFresnelOutlineColor(const XMFLOAT3& aColor) { mFresnelOutlineColor = aColor; }
+		const XMFLOAT3& GetFresnelOutlineColor() { return mFresnelOutlineColor; }
 	private:
 		void UpdateAABB(ER_AABB& aabb, const XMMATRIX& transformMatrix);
 		void LoadAssignedMeshTextures();
@@ -333,6 +336,8 @@ namespace EveryRay_Core
 		ER_RHI_GPUTexture*										mSnowAlbedoTexture = nullptr;
 		ER_RHI_GPUTexture*										mSnowNormalTexture = nullptr;
 		ER_RHI_GPUTexture*										mSnowRoughnessTexture = nullptr;
+
+		XMFLOAT3												mFresnelOutlineColor = XMFLOAT3(1.0, 0.0, 0.0);
 		///****************************************************************************************************************************
 
 		ER_AABB													mLocalAABB; //mesh space AABB

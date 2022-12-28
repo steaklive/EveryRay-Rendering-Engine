@@ -42,6 +42,7 @@ namespace EveryRay_Core
 
 		ReleaseObject(mNoBlendState);
 		ReleaseObject(mAlphaToCoverageState);
+		ReleaseObject(mAlphaBlendState);
 
 		ReleaseObject(BackCullingRS);
 		ReleaseObject(FrontCullingRS);
@@ -1265,15 +1266,20 @@ namespace EveryRay_Core
 		D3D11_BLEND_DESC blendStateDescription;
 		ZeroMemory(&blendStateDescription, sizeof(D3D11_BLEND_DESC));
 
-		blendStateDescription.AlphaToCoverageEnable = TRUE;
 		blendStateDescription.RenderTarget[0].BlendEnable = TRUE;
-		blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+		blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
 		blendStateDescription.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
 		blendStateDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
 		blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
 		blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
 		blendStateDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 		blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
+		if (FAILED(mDirect3DDevice->CreateBlendState(&blendStateDescription, &mAlphaBlendState)))
+			throw ER_CoreException("ER_RHI_DX11: ID3D11Device::CreateBlendState() failed while create alpha blend state.");
+		mBlendStates.insert(std::make_pair(ER_RHI_BLEND_STATE::ER_ALPHA_BLEND, mAlphaBlendState));
+
+		blendStateDescription.AlphaToCoverageEnable = TRUE;
+		blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
 		if (FAILED(mDirect3DDevice->CreateBlendState(&blendStateDescription, &mAlphaToCoverageState)))
 			throw ER_CoreException("ER_RHI_DX11: ID3D11Device::CreateBlendState() failed while create alpha-to-coverage blend state.");
 		mBlendStates.insert(std::make_pair(ER_RHI_BLEND_STATE::ER_ALPHA_TO_COVERAGE, mAlphaToCoverageState));

@@ -518,6 +518,67 @@
 		{
 			"instanced" : false,
 			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Bathroom w/ Fresnel Outline",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				},
+				{
+					"name" : "FresnelOutlineMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_basecolor.dds",
+					"normal" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_normal-dx.dds",
+					"roughness" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_roughness.png"
+				},	
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-130.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"fresnel_outline_color" : 
+			[
+				0.2,
+				1.0,
+				0.1
+			]
+		},
+		{
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
 			"name" : "Shader Ball Pavement",
 			"new_materials" : 
 			[

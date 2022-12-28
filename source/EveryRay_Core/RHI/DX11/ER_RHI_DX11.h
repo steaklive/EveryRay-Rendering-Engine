@@ -198,6 +198,7 @@ namespace EveryRay_Core
 
 		ID3D11BlendState* mNoBlendState = nullptr;
 		ID3D11BlendState* mAlphaToCoverageState = nullptr;
+		ID3D11BlendState* mAlphaBlendState = nullptr;
 		std::map<ER_RHI_BLEND_STATE, ID3D11BlendState*> mBlendStates;
 
 		ID3D11RasterizerState* BackCullingRS = nullptr;

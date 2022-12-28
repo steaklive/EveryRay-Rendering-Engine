@@ -190,6 +190,7 @@
     <ClInclude Include="Common.h" />
     <ClInclude Include="ER_BasicColorMaterial.h" />
     <ClInclude Include="ER_DebugLightProbeMaterial.h" />
+    <ClInclude Include="ER_FresnelOutlineMaterial.h" />
     <ClInclude Include="ER_Gamepad.h" />
     <ClInclude Include="ER_GBufferMaterial.h" />
     <ClInclude Include="ER_RuntimeCore.h" />
@@ -302,6 +303,7 @@
     <ClCompile Include="ER_QuadRenderer.cpp" />
     <ClCompile Include="ER_Ray.cpp" />
     <ClCompile Include="ER_RenderableAABB.cpp" />
+    <ClCompile Include="ER_FresnelOutlineMaterial.cpp" />
     <ClCompile Include="RHI\DX11\ER_RHI_DX11.cpp" />
     <ClCompile Include="RHI\DX11\ER_RHI_DX11_GPUBuffer.cpp" />
     <ClCompile Include="RHI\DX11\ER_RHI_DX11_GPUShader.cpp" />
@@ -341,6 +343,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\ForwardLighting.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\FresnelOutline.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

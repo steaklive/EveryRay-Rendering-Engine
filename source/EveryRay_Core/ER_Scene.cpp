@@ -222,6 +222,16 @@ namespace EveryRay_Core
 				}
 				mStandardMaterialsRootSignatures.emplace(ER_MaterialHelper::snowMaterialName, rs);
 			}
+
+			{
+				ER_RHI_GPURootSignature* rs = rhi->CreateRootSignature(1, 0);
+				if (rs)
+				{
+					rs->InitDescriptorTable(rhi, FRESNEL_OUTLINE_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
+					rs->Finalize(rhi, "ER_RHI_GPURootSignature: FresnelOutlineMaterial Pass", true);
+				}
+				mStandardMaterialsRootSignatures.emplace(ER_MaterialHelper::fresnelOutlineMaterialName, rs);
+			}
 		}
 
 		{
@@ -397,23 +407,30 @@ namespace EveryRay_Core
 							}
 						}
 					}
-					else if (name == ER_MaterialHelper::snowMaterialName)
-					{
-						if (mSceneJsonRoot["rendering_objects"][i].isMember("snow_albedo"))
-							aObject->mSnowAlbedoTexturePath = mSceneJsonRoot["rendering_objects"][i]["snow_albedo"].asString();
-						if (mSceneJsonRoot["rendering_objects"][i].isMember("snow_normal"))
-							aObject->mSnowNormalTexturePath = mSceneJsonRoot["rendering_objects"][i]["snow_normal"].asString();
-						if (mSceneJsonRoot["rendering_objects"][i].isMember("snow_roughness"))
-							aObject->mSnowRoughnessTexturePath = mSceneJsonRoot["rendering_objects"][i]["snow_roughness"].asString();
-
-						aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), name);
-					}
 					else //other standard materials
 						aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), name);
 				}
 			}
 
 			aObject->LoadRenderBuffers();
+		}
+
+		// load extra materials data
+		if (mSceneJsonRoot["rendering_objects"][i].isMember("snow_albedo"))
+			aObject->mSnowAlbedoTexturePath = mSceneJsonRoot["rendering_objects"][i]["snow_albedo"].asString();
+		if (mSceneJsonRoot["rendering_objects"][i].isMember("snow_normal"))
+			aObject->mSnowNormalTexturePath = mSceneJsonRoot["rendering_objects"][i]["snow_normal"].asString();
+		if (mSceneJsonRoot["rendering_objects"][i].isMember("snow_roughness"))
+			aObject->mSnowRoughnessTexturePath = mSceneJsonRoot["rendering_objects"][i]["snow_roughness"].asString();
+		
+		if (mSceneJsonRoot["rendering_objects"][i].isMember("fresnel_outline_color"))
+		{
+			float vec3[3];
+			for (Json::Value::ArrayIndex vecI = 0; vecI != mSceneJsonRoot["rendering_objects"][i]["fresnel_outline_color"].size(); vecI++)
+				vec3[vecI] = mSceneJsonRoot["rendering_objects"][i]["fresnel_outline_color"][vecI].asFloat();
+
+			XMFLOAT3 color = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+			aObject->SetFresnelOutlineColor(color);
 		}
 
 		// load custom textures
@@ -668,6 +685,8 @@ namespace EveryRay_Core
 			material = new ER_VoxelizationMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_GEOMETRY_SHADER | HAS_PIXEL_SHADER, instanced);
 		else if (matName == "SnowMaterial")
 			material = new ER_SimpleSnowMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
+		else if (matName == "FresnelOutlineMaterial")
+			material = new ER_FresnelOutlineMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
 		else
 			material = nullptr;
 
