@@ -410,6 +410,10 @@ namespace EveryRay_Core
 					mObjectConstantBuffer.Data.UseGlobalProbe = true;
 					mObjectConstantBuffer.Data.SkipIndirectProbeLighting = false;
 				}
+
+				mObjectConstantBuffer.Data.IndexOfRefraction = mIOR;
+				mObjectConstantBuffer.Data.CustomRoughness = mCustomRoughness;
+				mObjectConstantBuffer.Data.CustomMetalness = mCustomMetalness;
 				mObjectConstantBuffer.ApplyChanges(rhi);
 
 			}
@@ -928,6 +932,10 @@ namespace EveryRay_Core
 			//		ImGuizmo::RecomposeMatrixFromComponents(mMatrixTranslation, mMatrixRotation, mMatrixScale, matrix);
 			//	}
 			//}
+
+			ImGui::SliderFloat("Custom roughness", &mCustomRoughness, -1.0f, 1.0f);
+			ImGui::SliderFloat("Custom metalness", &mCustomMetalness, -1.0f, 1.0f);
+			ImGui::SliderFloat("IOR", &mIOR, -5.0f, 5.0f);
 
 			//Transforms
 			if (ImGui::IsKeyPressed(84))

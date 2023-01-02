@@ -288,6 +288,18 @@ namespace EveryRay_Core
 			if (mSceneJsonRoot["rendering_objects"][i].isMember("use_custom_alpha_discard"))
 				aObject->SetCustomAlphaDiscard(mSceneJsonRoot["rendering_objects"][i]["use_custom_alpha_discard"].asFloat());
 
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("use_transparency"))
+				aObject->SetTransparency(mSceneJsonRoot["rendering_objects"][i]["use_transparency"].asBool());
+
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("index_of_refraction"))
+				aObject->SetIOR(mSceneJsonRoot["rendering_objects"][i]["index_of_refraction"].asFloat());
+
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("custom_roughness"))
+				aObject->SetCustomRoughness(mSceneJsonRoot["rendering_objects"][i]["custom_roughness"].asFloat());
+
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("custom_metalness"))
+				aObject->SetCustomMetalness(mSceneJsonRoot["rendering_objects"][i]["custom_metalness"].asFloat());
+
 			//terrain
 			if (mSceneJsonRoot["rendering_objects"][i].isMember("terrain_placement"))
 			{

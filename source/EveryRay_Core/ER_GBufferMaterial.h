@@ -16,6 +16,7 @@ namespace EveryRay_Core
 			XMMATRIX World;
 			XMFLOAT4 Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor;
 			XMFLOAT4 SkipDeferredLighting_UseSSS_CustomAlphaDiscard; // a - empty
+			XMFLOAT4 CustomRoughnessMetalness;
 		};
 	}
 	class ER_GBufferMaterial : public ER_Material

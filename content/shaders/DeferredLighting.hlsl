@@ -40,7 +40,7 @@ cbuffer DeferredLightingCBuffer : register(b0)
     float4 SunColor;
     float4 CameraPosition;
     float4 CameraNearFarPlanes;
-    float UseGlobalProbe;
+    float HasGlobalProbe;
     float SkipIndirectLighting;
     float SSSTranslucency;
     float SSSWidth;
@@ -70,7 +70,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
         return;
     }
     
-    bool useGlobalProbe = (UseGlobalProbe > 0.0f) || (extra2Gbuffer.r > 0.0f);
+    bool useGlobalProbe = (HasGlobalProbe > 0.0f) || (extra2Gbuffer.r > 0.0f);
     
     float4 worldPos = GbufferWorldPosTexture.Load(uint3(inPos, 0));
     if (worldPos.a < 0.000001f)
@@ -84,7 +84,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     float3 normalWS = normalize(GbufferNormalTexture.Load(uint3(inPos, 0)).rgb);
     
     float4 extraGbuffer = GbufferExtraTexture.Load(uint3(inPos, 0));
-    float roughness = extraGbuffer.g;
+    float roughness = max(0.01, extraGbuffer.g);
     float metalness = extraGbuffer.b;
     
     float ao = 1.0f; // TODO sample AO texture

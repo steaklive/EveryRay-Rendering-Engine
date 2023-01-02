@@ -76,7 +76,8 @@ namespace EveryRay_Core
 			aObj->IsForwardShading() ? 1.0f : 0.0f,
 			aObj->IsSeparableSubsurfaceScattering() ? 1.0f : -1.0f,
 			aObj->GetCustomAlphaDiscard(),
-			0.0);
+			0.0);	
+		mConstantBuffer.Data.CustomRoughnessMetalness = XMFLOAT4(aObj->GetCustomRoughness(), aObj->GetCustomMetalness(), 0.0f, 0.0f);
 		mConstantBuffer.ApplyChanges(rhi);
 		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() }, 0, rs, GBUFFER_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() }, 0, rs, GBUFFER_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);

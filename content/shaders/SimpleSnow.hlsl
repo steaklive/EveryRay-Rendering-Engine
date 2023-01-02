@@ -10,6 +10,7 @@ Texture2D<float4> SnowAlbedoTexture : register(t0);
 Texture2D<float4> SnowNormalTexture : register(t1);
 Texture2D<float4> SnowRoughnessTexture : register(t2);
 Texture2D<float4> NormalTexture : register(t3);
+
 Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t4);
 
 SamplerState SamplerLinear : register(s0);
@@ -27,13 +28,6 @@ cbuffer SnowCBuffer : register (b0)
     float4 SunColor;
     float4 CameraPosition;
     float4 SnowDepthLevelUVScale; // x - depth, y - level, z - uv scale
-}
-
-cbuffer ObjectCBuffer : register(b1)
-{
-    float4x4 World;
-    float UseGlobalProbe;
-    float SkipIndirectProbeLighting;
 }
 
 struct VS_INPUT

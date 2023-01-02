@@ -72,6 +72,8 @@
 			"type" : 1
 		}
 	],
+	"light_probes_diffuse_distance" : 15.0,
+	"light_probes_specular_distance" : 120.0,
 	"light_probes_volume_bounds_max" : 
 	[
 		120.0,
@@ -84,8 +86,6 @@
 		0.20000000000000001,
 		-120.0
 	],
-	"light_probes_diffuse_distance" : 15.0,
-	"light_probes_specular_distance" : 120.0,
 	"rendering_objects" : 
 	[
 		{
@@ -430,7 +430,7 @@
 					"albedo" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_basecolor.dds",
 					"normal" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_normal-dx.dds",
 					"roughness" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_roughness.png"
-				},	
+				},
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
@@ -458,6 +458,116 @@
 			]
 		},
 		{
+			"custom_roughness" : 0.20000000000000001,
+			"index_of_refraction" : 1.52,
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Glass Clear",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds"
+				},
+				{
+					"albedo" : "content\\textures\\colors\\white.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-115.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				45.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"use_forward_shading" : true,
+			"use_transparency" : true,
+			"use_indirect_global_lightprobe" : true
+		},	
+		{
+			"index_of_refraction" : 0.96,
+			"custom_roughness" : 0.1,
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Glass Green",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\green.png"
+				},
+				{
+					"albedo" : "content\\textures\\colors\\green.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-115.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				30.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"use_forward_shading" : true,
+			"use_transparency" : true,
+			"use_indirect_global_lightprobe" : true
+		},
+		{
 			"instanced" : false,
 			"model_path" : "content\\models\\shaderball.fbx",
 			"name" : "Shader Ball Bathroom w/ Snow",
@@ -479,13 +589,16 @@
 					"name" : "SnowMaterial"
 				}
 			],
+			"snow_albedo" : "content\\textures\\PBR\\Snow\\Snow_001_COLOR.jpg",
+			"snow_normal" : "content\\textures\\PBR\\Snow\\Snow_001_NORM.jpg",
+			"snow_roughness" : "content\\textures\\PBR\\Snow\\Snow_001_ROUGH.jpg",
 			"textures" : 
 			[
 				{
 					"albedo" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_basecolor.dds",
 					"normal" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_normal-dx.dds",
 					"roughness" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_roughness.png"
-				},	
+				},
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
@@ -510,12 +623,15 @@
 				0.0,
 				0.0,
 				1.0
-			],
-			"snow_albedo" : "content\\textures\\PBR\\Snow\\Snow_001_COLOR.jpg",
-			"snow_normal" : "content\\textures\\PBR\\Snow\\Snow_001_NORM.jpg",
-			"snow_roughness" : "content\\textures\\PBR\\Snow\\Snow_001_ROUGH.jpg"
+			]
 		},
 		{
+			"fresnel_outline_color" : 
+			[
+				0.90000000000000001,
+				0.1,
+				0.10000000000000001
+			],
 			"instanced" : false,
 			"model_path" : "content\\models\\shaderball.fbx",
 			"name" : "Shader Ball Bathroom w/ Fresnel Outline",
@@ -543,7 +659,7 @@
 					"albedo" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_basecolor.dds",
 					"normal" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_normal-dx.dds",
 					"roughness" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_roughness.png"
-				},	
+				},
 				{
 					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
 					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
@@ -568,12 +684,6 @@
 				0.0,
 				0.0,
 				1.0
-			],
-			"fresnel_outline_color" : 
-			[
-				0.2,
-				1.0,
-				0.1
 			]
 		},
 		{

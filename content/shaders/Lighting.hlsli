@@ -194,6 +194,25 @@ float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
     return ggx1 * ggx2;
 }
 
+float D_GGX(float linearRoughness, float NoH, const float3 h)
+{
+    // Walter et al. 2007, "Microfacet Models for Refraction through Rough Surfaces"
+    float oneMinusNoHSquared = 1.0 - NoH * NoH;
+    float a = NoH * linearRoughness;
+    float k = linearRoughness / (oneMinusNoHSquared + a * a + 0.0001);
+    float d = k * k * (1.0 / Pi);
+    return d;
+}
+
+float V_SmithGGXCorrelated(float linearRoughness, float NoV, float NoL) 
+{
+    // Heitz 2014, "Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs"
+    float a2 = linearRoughness * linearRoughness;
+    float GGXV = NoL * sqrt((NoV - a2 * NoV) * NoV + a2);
+    float GGXL = NoV * sqrt((NoL - a2 * NoL) * NoL + a2);
+    return 0.5 / (GGXV + GGXL + 0.0001);
+}
+
 // ================================================================================================
 // Fresnel with Schlick's approximation functions:
 // http://blog.selfshadow.com/publications/s2013-shading-course/rad/s2013_pbs_rad_notes.pdf
@@ -347,16 +366,20 @@ float3 DirectDiffuseBRDF(float3 diffuseAlbedo, float3 lightDir, float3 viewDir, 
 }
 float3 DirectSpecularBRDF_CookTorrance(float3 normalWS, float3 lightDir, float3 viewDir, float roughness, float3 F0, float3 halfVec)
 {
-    // Cook-Torrance BRDF
-    float NDF = DistributionGGX(normalWS, halfVec, roughness);
-    float G = GeometrySmith(normalWS, viewDir, lightDir, roughness);
     float3 F = Schlick_Fresnel(F0, max(dot(halfVec, viewDir), 0.0));
-           
-    float3 nominator = NDF * G * F;
-    float denominator = 4 * max(dot(normalWS, viewDir), 0.0) * max(dot(normalWS, lightDir), 0.0);
-    float3 specular = nominator / max(denominator, 0.001);
-       
-    return specular;
+
+    // Cook-Torrance BRDF
+    //float NDF = DistributionGGX(normalWS, halfVec, roughness);
+    //float G = GeometrySmith(normalWS, viewDir, lightDir, roughness);
+    //float3 nominator = NDF * G * F;
+    //float denominator = 4 * max(dot(normalWS, viewDir), 0.0) * max(dot(normalWS, lightDir), 0.0) + 0.0001;
+    //float3 specular = nominator / denominator; 
+    //return specular;
+
+    float V = V_SmithGGXCorrelated(roughness, max(dot(normalWS, viewDir), 0.0), max(dot(normalWS, lightDir), 0.0));
+    float D = D_GGX(roughness, max(dot(normalWS, halfVec), 0.0), halfVec);
+
+    return F * D * V;
 }
 float3 DirectLightingPBR(float3 normalWS, float4 lightColor, float3 lightDir, float3 diffuseAlbedo,
 	float3 positionWS, float roughness, float3 F0, float metallic, float3 camPos)
@@ -500,7 +523,7 @@ float3 IndirectLightingPBR(float3 lightDir, float3 normalWS, float3 diffuseAlbed
 
     //indirect specular (split sum approximation http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf)
     int mipIndex = roughness * (SPECULAR_PROBE_MIP_COUNT - 1);
-    float3 prefilteredColor = GetSpecularIrradiance(positionWS, camPos, reflectDir, mipIndex, useGlobalProbe, linearSampler, probesInfo) / Pi;
+    float3 prefilteredColor = pow(GetSpecularIrradiance(positionWS, camPos, reflectDir, mipIndex, useGlobalProbe, linearSampler, probesInfo), 2.2);
     float2 environmentBRDF = integrationTexture.SampleLevel(clampSampler, float2(nDotV, roughness), 0).rg;
     float LdotH = saturate(dot(lightDir, halfVec));
     float3 indirectSpecularLighting = prefilteredColor * (Schlick_Fresnel_Roughness(LdotH, F0, roughness) * environmentBRDF.x + environmentBRDF.y);

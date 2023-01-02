@@ -96,6 +96,7 @@ namespace EveryRay_Core {
 		DeleteObject(mForwardLightingVS);
 		DeleteObject(mForwardLightingVS_Instancing);
 		DeleteObject(mForwardLightingPS);
+		DeleteObject(mForwardLightingPS_Transparent);
 		DeleteObject(mForwardLightingDiffuseProbesPS);
 		DeleteObject(mForwardLightingSpecularProbesPS);
 		DeleteObject(mForwardLightingRenderingObjectInputLayout);
@@ -193,6 +194,9 @@ namespace EveryRay_Core {
 
 			mForwardLightingPS = rhi->CreateGPUShader();
 			mForwardLightingPS->CompileShader(rhi, "content\\shaders\\ForwardLighting.hlsl", "PSMain", ER_PIXEL);
+
+			mForwardLightingPS_Transparent = rhi->CreateGPUShader();
+			mForwardLightingPS_Transparent->CompileShader(rhi, "content\\shaders\\ForwardLighting.hlsl", "PSMain_Transparent", ER_PIXEL);
 
 			mForwardLightingDiffuseProbesPS = rhi->CreateGPUShader();
 			mForwardLightingDiffuseProbesPS->CompileShader(rhi, "content\\shaders\\ForwardLighting.hlsl", "PSMain_DiffuseProbes", ER_PIXEL);
@@ -801,7 +805,7 @@ namespace EveryRay_Core {
 			mDeferredLightingConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLight.GetDirectionalLightIntensity() };
 			mDeferredLightingConstantBuffer.Data.CameraPosition = XMFLOAT4{ mCamera.Position().x,mCamera.Position().y,mCamera.Position().z, 1.0f };
 			mDeferredLightingConstantBuffer.Data.CameraNearFarPlanes = XMFLOAT4{ mCamera.GetCameraNearShadowCascadeDistance(0), mCamera.GetCameraFarShadowCascadeDistance(0), 0.0f, 0.0f };
-			mDeferredLightingConstantBuffer.Data.UseGlobalProbe = !mProbesManager->IsEnabled() && mProbesManager->AreGlobalProbesReady();
+			mDeferredLightingConstantBuffer.Data.HasGlobalProbe = !mProbesManager->IsEnabled() && mProbesManager->AreGlobalProbesReady();
 			mDeferredLightingConstantBuffer.Data.SkipIndirectProbeLighting = mDebugSkipIndirectProbeLighting;
 			mDeferredLightingConstantBuffer.Data.SSSTranslucency = mSSSTranslucency;
 			mDeferredLightingConstantBuffer.Data.SSSWidth = mSSSWidth;
@@ -905,9 +909,9 @@ namespace EveryRay_Core {
 			rhi->InitializePSO(psoName);
 			rhi->SetInputLayout(aObj->IsInstanced() ? mForwardLightingRenderingObjectInputLayout_Instancing : mForwardLightingRenderingObjectInputLayout);
 			rhi->SetShader(aObj->IsInstanced() ? mForwardLightingVS_Instancing : mForwardLightingVS);
-			rhi->SetShader(mForwardLightingPS);
+			rhi->SetShader(aObj->IsTransparent() ? mForwardLightingPS_Transparent : mForwardLightingPS);
 			rhi->SetRasterizerState(ER_NO_CULLING);
-			rhi->SetBlendState(ER_NO_BLEND);
+			rhi->SetBlendState(aObj->IsTransparent() ? ER_ALPHA_BLEND : ER_NO_BLEND);
 			rhi->SetDepthStencilState(ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
 			rhi->SetRenderTargetFormats({ mLocalIlluminationRT }, mGbuffer->GetDepth());
 			rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

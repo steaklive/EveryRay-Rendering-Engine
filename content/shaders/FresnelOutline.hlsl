@@ -3,19 +3,13 @@
 //
 // Written by Gen Afanasev for 'EveryRay Rendering Engine', 2017-2022
 // ================================================================================================
+#include "Common.hlsli"
 
 cbuffer FresnelOutlineCBuffer : register (b0)
 {
     float4x4 ViewProjection;
     float4 CameraPosition;
     float4 FresnelColorExp; //rgb - color, a - exponent
-}
-
-cbuffer ObjectCBuffer : register(b1)
-{
-    float4x4 World;
-    float UseGlobalProbe;
-    float SkipIndirectProbeLighting;
 }
 
 struct VS_INPUT

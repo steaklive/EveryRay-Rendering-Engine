@@ -20,6 +20,7 @@ cbuffer GBufferCBuffer : register(b0)
     float4x4 World;
     float4 Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor;
     float4 SkipDeferredLighting_UseSSS_CustomAlphaDiscard; // a - empty
+    float4 CustomRoughnessMetalness; // r - roughness, g - metalness
 }
 
 SamplerState Sampler : register(s0);
@@ -131,8 +132,8 @@ PS_OUTPUT PSMain(VS_OUTPUT IN) : SV_Target
     OUT.Normal = float4(sampledNormal, 1.0);
     OUT.WorldPos = float4(IN.WorldPos, IN.Position.w);
     
-    float roughness = RoughnessMap.Sample(Sampler, IN.TextureCoordinate).r;
-    float metalness = MetallicMap.Sample(Sampler, IN.TextureCoordinate).r;
+    float roughness = CustomRoughnessMetalness.r >= 0.0f ? CustomRoughnessMetalness.r : RoughnessMap.Sample(Sampler, IN.TextureCoordinate).r;
+    float metalness = CustomRoughnessMetalness.g >= 0.0f ? CustomRoughnessMetalness.g : MetallicMap.Sample(Sampler, IN.TextureCoordinate).r;
     float reflectionMask = ReflectionMaskMap.Sample(Sampler, IN.TextureCoordinate).r;
     OUT.Extra = float4(reflectionMask, roughness, metalness, Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor.g);
     OUT.Extra2 = float4(

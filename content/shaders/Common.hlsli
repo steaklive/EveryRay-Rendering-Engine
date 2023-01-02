@@ -2,6 +2,16 @@
 
 static const float PI = 3.141592654f;
 
+cbuffer ObjectCBuffer : register(b1)
+{
+    float4x4 World;
+    float UseGlobalProbe;
+    float SkipIndirectProbeLighting;
+    float IOR;
+    float CustomRoughness;
+    float CustomMetalness;
+}
+
 struct QUAD_VS_IN
 {
     float4 Position : POSITION;

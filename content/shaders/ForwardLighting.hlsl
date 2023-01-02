@@ -43,12 +43,7 @@ cbuffer ForwardLightingCBuffer : register(b0)
     float4 CameraPosition;
 }
 
-cbuffer ObjectCBuffer : register(b1)
-{
-    float4x4 World;
-    float UseGlobalProbe;
-    float SkipIndirectProbeLighting;
-}
+// register(b1) is objects buffer from Common.hlsli
 
 cbuffer LightProbesCBuffer : register(b2)
 {
@@ -281,7 +276,7 @@ int GetPOMRayStepsCount(float3 worldPos, float3 normal)
     return numLayers;
 }
 
-float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex = -1, bool isFakeAmbient = false)
+float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex = -1, bool isFakeAmbient = false, bool isTransparent = false)
 {
     float3x3 TBN = float3x3(vsOutput.Tangent, cross(vsOutput.Normal, vsOutput.Tangent), vsOutput.Normal);
     float2 texCoord = vsOutput.UV;
@@ -315,16 +310,50 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
     clip(diffuseAlbedoNonGamma.a < 0.000001f ? -1 : 1);
     float3 diffuseAlbedo = pow(diffuseAlbedoNonGamma.rgb, 2.2);
     
-    float metalness = MetallicTexture.Sample(SamplerLinear, texCoord).r;
-    float roughness = RoughnessTexture.Sample(SamplerLinear, texCoord).r;
+    float metalness = CustomMetalness >= 0.0f ? CustomMetalness : MetallicTexture.Sample(SamplerLinear, texCoord).r;
+    float roughness = CustomRoughness >= 0.0f ? CustomRoughness : RoughnessTexture.Sample(SamplerLinear, texCoord).r;
     float ao = 1.0f; // TODO sample AO texture
     
     //reflectance at normal incidence for dia-electic or metal
     float3 F0 = float3(0.04, 0.04, 0.04);
     F0 = lerp(F0, diffuseAlbedo.rgb, metalness);
 
+    if (isTransparent)
+    {
+        float3 viewDir = normalize(vsOutput.WorldPos.xyz-CameraPosition.xyz);
+        float3 reflectDir = normalize(reflect(viewDir, normalWS));
+        float3 T = refract(viewDir, normalWS, 1.0f / IOR);
+
+        int mipIndex = roughness * (SPECULAR_PROBE_MIP_COUNT - 1);
+
+        // get closest specular light probe (unless specified to use global)
+        LightProbeInfo info;
+        info.globalIrradianceDiffuseProbeTexture = DiffuseGlobalProbeTexture;
+        info.globalIrradianceSpecularProbeTexture = SpecularGlobalProbeTexture;
+        info.DiffuseProbesCellsWithProbeIndicesArray = DiffuseProbesCellsWithProbeIndicesArray;
+        info.DiffuseSphericalHarmonicsCoefficientsArray = DiffuseSphericalHarmonicsCoefficientsArray;
+        info.DiffuseProbesPositionsArray = DiffuseProbesPositionsArray;
+        info.SpecularProbesTextureArray = SpecularProbesTextureArray;
+        info.SpecularProbesCellsWithProbeIndicesArray = SpecularProbesCellsWithProbeIndicesArray;
+        info.SpecularProbesTextureArrayIndices = SpecularProbesTextureArrayIndices;
+        info.SpecularProbesPositionsArray = SpecularProbesPositionsArray;
+        info.diffuseProbeCellsCount = DiffuseProbesCellsCount;
+        info.specularProbeCellsCount = SpecularProbesCellsCount;
+        info.sceneLightProbeBounds = SceneLightProbesBounds;
+        info.distanceBetweenDiffuseProbes = DistanceBetweenDiffuseProbes;
+        info.distanceBetweenSpecularProbes = DistanceBetweenSpecularProbes;
+
+        float3 reflectColor = pow(GetSpecularIrradiance(vsOutput.WorldPos.xyz, CameraPosition.xyz, reflectDir, mipIndex, UseGlobalProbe > 0.0f, SamplerLinear, info), 2.2);
+        float3 refractColor = pow(GetSpecularIrradiance(vsOutput.WorldPos.xyz, CameraPosition.xyz, T, mipIndex, UseGlobalProbe > 0.0f, SamplerLinear, info), 2.2);
+        
+        float nDotV = abs(dot(normalWS, -viewDir)) + 0.0001f;
+        float3 fresnelFactor = Schlick_Fresnel_Roughness(nDotV, F0, roughness);
+        float3 resultColor = lerp(refractColor, reflectColor, fresnelFactor);
+        return diffuseAlbedo * resultColor;
+    }
+
     float3 directLighting = DirectLightingPBR(normalWS, SunColor, SunDirection.xyz, diffuseAlbedo.rgb, vsOutput.WorldPos, roughness, F0, metalness, CameraPosition.xyz);
-    
+   
     float3 indirectLighting = float3(0, 0, 0);
     if (isFakeAmbient)
         indirectLighting = float3(0.02f, 0.02f, 0.02f) * diffuseAlbedo;
@@ -369,6 +398,10 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
 float3 PSMain(VS_OUTPUT vsOutput) : SV_Target0
 {
     return GetFinalColor(vsOutput, true);
+}
+float4 PSMain_Transparent(VS_OUTPUT vsOutput) : SV_Target0
+{
+    return float4(GetFinalColor(vsOutput, true, -1, false, true), 1.0);
 }
 float3 PSMain_DiffuseProbes(VS_OUTPUT vsOutput) : SV_Target0
 {

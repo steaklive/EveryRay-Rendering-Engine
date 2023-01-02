@@ -3,7 +3,7 @@
 cbuffer FoliageCBuffer : register(b0)
 {
     float4x4 ShadowMatrices[NUM_OF_SHADOW_CASCADES];
-    float4x4 World;
+    float4x4 FoliageWorld;
     float4x4 View;
     float4x4 Projection;
     float4 SunDirection;

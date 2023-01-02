@@ -72,7 +72,7 @@ namespace EveryRay_Core
 			XMFLOAT4 SunColor;
 			XMFLOAT4 CameraPosition;
 			XMFLOAT4 CameraNearFarPlanes;
-			float UseGlobalProbe;
+			float HasGlobalProbe;
 			float SkipIndirectProbeLighting;
 			float SSSTranslucency;
 			float SSSWidth;
@@ -206,6 +206,7 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mForwardLightingVS = nullptr;
 		ER_RHI_GPUShader* mForwardLightingVS_Instancing = nullptr;
 		ER_RHI_GPUShader* mForwardLightingPS = nullptr;
+		ER_RHI_GPUShader* mForwardLightingPS_Transparent = nullptr;
 		std::string mForwardLightingPSOName = "ER_RHI_GPUPipelineStateObject: Forward Lighting Pass";
 		std::string mForwardLightingInstancingPSOName = "ER_RHI_GPUPipelineStateObject: Forward Lighting (Instancing) Pass";
 		ER_RHI_GPURootSignature* mForwardLightingRS = nullptr;

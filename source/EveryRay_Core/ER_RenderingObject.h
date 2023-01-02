@@ -64,6 +64,9 @@ namespace EveryRay_Core
 		XMMATRIX World;
 		float UseGlobalProbe;
 		float SkipIndirectProbeLighting;
+		float IndexOfRefraction;
+		float CustomRoughness;
+		float CustomMetalness;
 	};
 
 	struct TextureData
@@ -231,7 +234,19 @@ namespace EveryRay_Core
 
 		bool IsInLightProbe() { return mIsInLightProbe; }
 		void SetInLightProbe(bool value) { mIsInLightProbe = value; }
+
+		bool IsTransparent() { return mIsTransparent; }
+		void SetTransparency(bool value) { mIsTransparent = value; }
+
+		float GetIOR() { return mIOR; }
+		void SetIOR(float value) { mIOR = value; }
 		
+		float GetCustomRoughness() { return mCustomRoughness; }
+		void SetCustomRoughness(float value) { mCustomRoughness = value; }
+
+		float GetCustomMetalness() { return mCustomMetalness; }
+		void SetCustomMetalness(float value) { mCustomMetalness = value; }
+
 		bool IsSeparableSubsurfaceScattering() { return mIsSeparableSubsurfaceScattering; }
 		void SetSeparableSubsurfaceScattering(bool value) { mIsSeparableSubsurfaceScattering = value; }
 
@@ -366,6 +381,10 @@ namespace EveryRay_Core
 		bool													mIsInGbuffer = false;
 		bool													mUseIndirectGlobalLightProbe = false;
 		bool													mIsUsedForGlobalLightProbeRendering = false;
+		bool													mIsTransparent = false;
+		float													mIOR = 1.52f; // glass IOR by default
+		float													mCustomRoughness = -1.0f;
+		float													mCustomMetalness = -1.0f;
 		float													mCustomAlphaDiscard = 0.1f;
 		float													mMinScale = 1.0f;
 		float													mMaxScale = 1.0f;
