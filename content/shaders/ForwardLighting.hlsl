@@ -285,7 +285,7 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
     float height = HeightTexture.Sample(SamplerLinear, texCoord).r;
     float POMSelfShadow = 1.0f;
 #if PARALLAX_OCCLUSION_MAPPING_SUPPORT
-    if (height > 0.0f) // Parallax Occlusion Mapping
+    if (!isTransparent && height > 0.0f) // Parallax Occlusion Mapping
     {
         int stepsCount = GetPOMRayStepsCount(vsOutput.WorldPos.rgb, vsOutput.Normal);
         texCoord = CalculatePOMUVOffset(vsOutput.ParallaxOffset, vsOutput.UV, stepsCount);
@@ -320,6 +320,7 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
 
     if (isTransparent)
     {
+        float mask = height; //just a hack to get transparency mask texture in height channel (we dont need it here anyway)
         float3 viewDir = normalize(vsOutput.WorldPos.xyz-CameraPosition.xyz);
         float3 reflectDir = normalize(reflect(viewDir, normalWS));
         float3 T = refract(viewDir, normalWS, 1.0f / IOR);
@@ -349,7 +350,8 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
         float nDotV = abs(dot(normalWS, -viewDir)) + 0.0001f;
         float3 fresnelFactor = Schlick_Fresnel_Roughness(nDotV, F0, roughness);
         float3 resultColor = lerp(refractColor, reflectColor, fresnelFactor);
-        return diffuseAlbedo * resultColor;
+
+        return lerp(diffuseAlbedo, diffuseAlbedo * resultColor, mask);
     }
 
     float3 directLighting = DirectLightingPBR(normalWS, SunColor, SunDirection.xyz, diffuseAlbedo.rgb, vsOutput.WorldPos, roughness, F0, metalness, CameraPosition.xyz);

@@ -482,12 +482,14 @@
 			[
 				{
 					"albedo" : "content\\textures\\colors\\white.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds"
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
+					"reflection_mask" : "content\\textures\\colors\\white.png"
 				},
 				{
 					"albedo" : "content\\textures\\colors\\white.png",
 					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
-					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png",
+					"reflection_mask" : "content\\textures\\colors\\white.png"
 				}
 			],
 			"transform" : 
@@ -514,7 +516,7 @@
 			"use_indirect_global_lightprobe" : true
 		},	
 		{
-			"index_of_refraction" : 0.96,
+			"index_of_refraction" : 1.085,
 			"custom_roughness" : 0.1,
 			"instanced" : false,
 			"model_path" : "content\\models\\shaderball.fbx",
@@ -537,11 +539,13 @@
 			"textures" : 
 			[
 				{
-					"albedo" : "content\\textures\\colors\\green.png"
+					"albedo" : "content\\textures\\colors\\green.png",
+					"reflection_mask" : "content\\textures\\colors\\white.png"
 				},
 				{
 					"albedo" : "content\\textures\\colors\\green.png",
-					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds"
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
+					"reflection_mask" : "content\\textures\\colors\\white.png"
 				}
 			],
 			"transform" : 
@@ -558,6 +562,64 @@
 				0.0,
 				1.0,
 				30.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"use_forward_shading" : true,
+			"use_transparency" : true,
+			"use_indirect_global_lightprobe" : true
+		},
+		{
+			"index_of_refraction" : 0.8,
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Glass Pink Blocks",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\PBR\\Glass_Blocks\\Glass_Blocks_001_basecolor.jpg",
+					"normal" : "content\\textures\\PBR\\Glass_Blocks\\Glass_Blocks_001_normal.jpg",
+					"roughness" : "content\\textures\\PBR\\Glass_Blocks\\Glass_Blocks_001_roughness.jpg",
+					"reflection_mask" : "content\\textures\\PBR\\Glass_Blocks\\Glass_Blocks_001_Glass.jpg"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\Glass_Blocks\\Glass_Blocks_001_basecolor.jpg",
+					"normal" : "content\\textures\\PBR\\Glass_Blocks\\Glass_Blocks_001_normal.jpg",
+					"roughness" : "content\\textures\\PBR\\Glass_Blocks\\Glass_Blocks_001_roughness.jpg",
+					"reflection_mask" : "content\\textures\\PBR\\Glass_Blocks\\Glass_Blocks_001_Glass.jpg"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-115.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				15.0,
 				0.0,
 				0.0,
 				0.0,
@@ -628,9 +690,9 @@
 		{
 			"fresnel_outline_color" : 
 			[
-				0.90000000000000001,
-				0.1,
-				0.10000000000000001
+				0.46,
+				0.0,
+				0.78
 			],
 			"instanced" : false,
 			"model_path" : "content\\models\\shaderball.fbx",
