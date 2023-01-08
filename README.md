@@ -82,9 +82,9 @@ I originally started developing this project on DX11 several years ago with the 
 
 # Screenshots
 
+![picture](screenshots/EveryRayMaterials.png)
 ![picture](screenshots/EveryRaySponza.png)
 ![picture](screenshots/EveryRayTerrain.png)
-![picture](screenshots/EveryRayMaterials.png)
 ![picture](screenshots/EveryRayWater.png)
 
 # Controls
