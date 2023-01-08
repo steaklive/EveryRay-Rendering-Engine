@@ -27,12 +27,23 @@ Video demonstrations (scroll down for screenshots):
 - - Dynamic: Cascaded Voxel Cone Tracing (AO, diffuse, specular)
 - Cascaded Shadow Mapping
 - Parallax-Occlusion Mapping w/ soft self-shadowing
-- Separable Subsurface Scattering
 - Terrain w/ GPU tessellation
 - Foliage
 - Volumetric clouds
 - Volumetric fog
-- Post Processing: Linear Fog, SSR, Tonemap, LUT color grading, Vignette, FXAA
+- Post Processing:
+- - Linear Fog
+- - Screen Space Reflections
+- - Separable Subsurface Scattering
+- - Tonemapping
+- - LUT color grading
+- - Vignette
+- - Anti-aliasing (FXAA)
+- Special extra materials:
+- - Snow Material
+- - Fresnel-Outline Material
+- - Fake-Transparency Material (reflect+refract)
+- - Fur Shell Material
 
 # Some of the engine concepts/features
 - Concept of an "ER_RHI" (aka "Rendering Hardware Interface"): graphics API is abstracted from the general code (systems, etc.)
