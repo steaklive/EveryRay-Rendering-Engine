@@ -1,10 +1,4 @@
 {
-	"ambient_color" : 
-	[
-		0.67000000000000004,
-		0.66000000000000003,
-		0.57999999999999996
-	],
 	"camera_direction" : 
 	[
 		0.0,
@@ -20,71 +14,136 @@
 	"foliage_zones" : 
 	[
 		{
-			"average_scale" : 3.5,
-			"distribution_radius" : 30.0,
-			"patch_count" : 50,
+			"average_scale" : 2.5,
+			"distribution_radius" : 13.0,
+			"patch_count" : 10,
 			"position" : 
 			[
 				30.0,
-				-0.10000000000000001,
-				0.0
+				0.33339524269104004,
+				80.0
 			],
 			"texture_path" : "content\\textures\\foliage\\grass_flower_type1.png",
 			"type" : 0
 		},
 		{
-			"average_scale" : 2.5,
-			"distribution_radius" : 30.0,
-			"patch_count" : 600,
+			"average_scale" : 3.0,
+			"distribution_radius" : 7.0,
+			"patch_count" : 15,
 			"position" : 
 			[
 				30.0,
-				-0.10000000000000001,
-				0.0
+				0.79759275913238525,
+				80.0
 			],
 			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
-			"type" : 1
+			"type" : 3
 		},
 		{
-			"average_scale" : 2.0,
-			"distribution_radius" : 30.0,
-			"patch_count" : 20,
+			"average_scale" : 3.0,
+			"distribution_radius" : 13.0,
+			"patch_count" : 150,
 			"position" : 
 			[
-				65.0,
-				-0.10000000000000001,
-				0.0
+				30.0,
+				0.5495452880859375,
+				80.0
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"type" : 2
+		},
+		{
+			"average_scale" : 2.5,
+			"distribution_radius" : 13.0,
+			"patch_count" : 10,
+			"position" : 
+			[
+				50.0,
+				0.33339524269104004,
+				80.0
 			],
 			"texture_path" : "content\\textures\\foliage\\grass_flower_type3.png",
 			"type" : 0
 		},
 		{
-			"average_scale" : 2.5,
-			"distribution_radius" : 30.0,
-			"patch_count" : 600,
+			"average_scale" : 3.0,
+			"distribution_radius" : 7.0,
+			"patch_count" : 15,
 			"position" : 
 			[
-				65.0,
-				-0.10000000000000001,
-				0.0
+				50.0,
+				0.79759275913238525,
+				80.0
 			],
 			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
-			"type" : 1
+			"type" : 3
+		},
+		{
+			"average_scale" : 3.0,
+			"distribution_radius" : 13.0,
+			"patch_count" : 150,
+			"position" : 
+			[
+				50.0,
+				0.5495452880859375,
+				80.0
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"type" : 2
+		},
+		{
+			"average_scale" : 2.5,
+			"distribution_radius" : 13.0,
+			"patch_count" : 10,
+			"position" : 
+			[
+				70.0,
+				0.33339524269104004,
+				80.0
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_flower_type10.png",
+			"type" : 0
+		},
+		{
+			"average_scale" : 3.0,
+			"distribution_radius" : 7.0,
+			"patch_count" : 15,
+			"position" : 
+			[
+				70.0,
+				0.79759275913238525,
+				80.0
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"type" : 3
+		},
+		{
+			"average_scale" : 3.0,
+			"distribution_radius" : 13.0,
+			"patch_count" : 150,
+			"position" : 
+			[
+				70.0,
+				0.5495452880859375,
+				80.0
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"type" : 2
 		}
 	],
-	"light_probes_diffuse_distance" : 15.0,
-	"light_probes_specular_distance" : 120.0,
+	"light_probes_diffuse_distance" : 30.0,
+	"light_probes_specular_distance" : 50.0,
 	"light_probes_volume_bounds_max" : 
 	[
-		120.0,
-		120.2,
-		120.0
+		100.0,
+		52.2,
+		86.0
 	],
 	"light_probes_volume_bounds_min" : 
 	[
-		-120.0,
+		-144.0,
 		0.20000000000000001,
-		-120.0
+		-46.0
 	],
 	"rendering_objects" : 
 	[
@@ -118,7 +177,7 @@
 				0.083492308855056763,
 				-0.38095787167549133,
 				0.0,
-				50.305789947509766,
+				120.0,
 				0.38095787167549133,
 				0.083492308855056763,
 				0.0,
@@ -126,7 +185,7 @@
 				0.0,
 				0.0,
 				0.38999858498573303,
-				16.0,
+				25.0,
 				0.0,
 				0.0,
 				0.0,
@@ -166,7 +225,7 @@
 				0.083492308855056763,
 				-0.38095787167549133,
 				0.0,
-				50.305789947509766,
+				120.0,
 				0.38095787167549133,
 				0.083492308855056763,
 				0.0,
@@ -174,7 +233,7 @@
 				0.0,
 				0.0,
 				0.38999858498573303,
-				-16.0,
+				-10.0,
 				0.0,
 				0.0,
 				0.0,
@@ -186,7 +245,7 @@
 		{
 			"instanced" : false,
 			"model_path" : "content\\models\\default_plane\\plane.fbx",
-			"name" : "Plane Rocks Moss (POM)",
+			"name" : "Plane Organic Skin (POM)",
 			"new_materials" : 
 			[
 				{
@@ -202,11 +261,10 @@
 			"textures" : 
 			[
 				{
-					"albedo" : "content\\textures\\PBR\\RockMoss\\Rock_Moss_001_basecolor.jpg",
-					"height" : "content\\textures\\PBR\\RockMoss\\Rock_Moss_001_height.png",
-					"metalness" : "content\\textures\\emptyMetallicMap.png",
-					"normal" : "content\\textures\\PBR\\RockMoss\\Rock_Moss_001_normal.jpg",
-					"roughness" : "content\\textures\\PBR\\RockMoss\\Rock_Moss_001_roughness.jpg"
+					"albedo" : "content\\textures\\PBR\\OrganicSkin\\Abstract_Organic_003_basecolor.jpg",
+					"height" : "content\\textures\\PBR\\OrganicSkin\\Abstract_Organic_003_height.png",
+					"normal" : "content\\textures\\PBR\\OrganicSkin\\Abstract_Organic_003_normal.jpg",
+					"roughness" : "content\\textures\\PBR\\OrganicSkin\\Abstract_Organic_003_roughness.jpg"
 				}
 			],
 			"transform" : 
@@ -214,7 +272,7 @@
 				0.083492308855056763,
 				-0.38095787167549133,
 				0.0,
-				50.305789947509766,
+				120.0,
 				0.38095787167549133,
 				0.083492308855056763,
 				0.0,
@@ -222,7 +280,7 @@
 				0.0,
 				0.0,
 				0.38999858498573303,
-				48.0,
+				60.0,
 				0.0,
 				0.0,
 				0.0,
@@ -270,9 +328,75 @@
 			"use_indirect_global_lightprobe" : true
 		},
 		{
-			"instanced" : false,
-			"model_path" : "content\\models\\sphere.fbx",
-			"name" : "Simple sphere Pink",
+			"instanced" : true,
+			"instances_transforms" : 
+			[
+				{
+					"transform" : 
+					[
+						8.1999998092651367,
+						0.0,
+						0.0,
+						30.0,
+						0.0,
+						8.1999998092651367,
+						0.0,
+						-0.20000000298023224,
+						0.0,
+						0.0,
+						8.1999998092651367,
+						80.0,
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					]
+				},
+				{
+					"transform" : 
+					[
+						8.1999998092651367,
+						0.0,
+						0.0,
+						50.0,
+						0.0,
+						8.1999998092651367,
+						0.0,
+						-0.20000000298023224,
+						0.0,
+						0.0,
+						8.1999998092651367,
+						80.0,
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					]
+				},
+				{
+					"transform" : 
+					[
+						8.1999998092651367,
+						0.0,
+						0.0,
+						70.0,
+						0.0,
+						8.1999998092651367,
+						0.0,
+						-0.20000000298023224,
+						0.0,
+						0.0,
+						8.1999998092651367,
+						80.0,
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					]
+				}
+			],
+			"model_path" : "content\\models\\flowerbed.fbx",
+			"name" : "Flowerbed",
 			"new_materials" : 
 			[
 				{
@@ -285,31 +409,43 @@
 					"name" : "RenderToLightProbeMaterial"
 				}
 			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\grassGroundTexture.jpg"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\Concrete\\concrete2_albedo.png",
+					"normal" : "content\\textures\\PBR\\Concrete\\concrete2_Normal-dx.png",
+					"roughness" : "content\\textures\\PBR\\Concrete\\concrete2_Roughness.png"
+				}
+			],
 			"transform" : 
 			[
-				1.4175000190734863,
+				9.0576000213623047,
 				0.0,
 				0.0,
-				11.084320068359375,
+				30.0,
 				0.0,
-				1.4175000190734863,
+				9.0576000213623047,
 				0.0,
-				7.3902015686035156,
+				-0.13127541542053223,
 				0.0,
 				0.0,
-				1.4175000190734863,
-				-22.753517150878906,
+				9.0576000213623047,
+				80.0,
 				0.0,
 				0.0,
 				0.0,
 				1.0
-			],
-			"use_forward_shading" : true
+			]
 		},
 		{
+			"custom_metalness" : 0.0,
+			"custom_roughness" : 0.0,
 			"instanced" : false,
 			"model_path" : "content\\models\\sphere.fbx",
-			"name" : "Dynamic sphere White",
+			"name" : "PBR Test Sphere Rgh 0.0 Mtl 0.0",
 			"new_materials" : 
 			[
 				{
@@ -333,15 +469,15 @@
 				0.65205007791519165,
 				0.0,
 				0.0,
-				18.557842254638672,
+				20.0,
 				0.0,
 				0.65205007791519165,
 				0.0,
-				22.331504821777344,
+				-0.58915901184082031,
 				0.0,
 				0.0,
 				0.65205007791519165,
-				-14.861448287963867,
+				0.0,
 				0.0,
 				0.0,
 				0.0,
@@ -349,21 +485,11 @@
 			]
 		},
 		{
+			"custom_metalness" : 0.0,
+			"custom_roughness" : 0.20000000000000001,
 			"instanced" : false,
-			"model_lods" : 
-			[
-				{
-					"path" : "content\\models\\rocks\\rock_1\\rock_1_lod_high.fbx"
-				},
-				{
-					"path" : "content\\models\\rocks\\rock_1\\rock_1_lod_mid.fbx"
-				},
-				{
-					"path" : "content\\models\\rocks\\rock_1\\rock_1_lod_low.fbx"
-				}
-			],
-			"model_path" : "content\\models\\rocks\\rock_1\\rock_1_lod_high.fbx",
-			"name" : "Rock 1",
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.2 Mtl 0.0",
 			"new_materials" : 
 			[
 				{
@@ -373,32 +499,1525 @@
 					"name" : "GBufferMaterial"
 				},
 				{
-					"name" : "RenderToLightProbeMaterial"
+					"name" : "VoxelizationMaterial"
 				}
 			],
 			"textures" : 
 			[
 				{
-					"albedo" : "content\\models\\rocks\\rock_1\\rock_low_Base_Color.png",
-					"metalness" : "content\\models\\rocks\\rock_1\\rock_low_Metallic.png",
-					"normal" : "content\\models\\rocks\\rock_1\\rock_low_Normal_DirectX.png",
-					"roughness" : "content\\models\\rocks\\rock_1\\rock_low_Roughness.png"
+					"albedo" : "content\\textures\\colors\\white.png"
 				}
 			],
 			"transform" : 
 			[
-				0.90517723560333252,
-				0.0,
-				0.4250321090221405,
-				38.242660522460938,
-				0.0,
-				1.0,
+				0.65205007791519165,
 				0.0,
 				0.0,
-				-0.4250321090221405,
+				30.0,
 				0.0,
-				0.90517723560333252,
-				41.258087158203125,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.0,
+			"custom_roughness" : 0.40000000000000002,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.4 Mtl 0.0",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				40.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.0,
+			"custom_roughness" : 0.59999999999999998,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.6 Mtl 0.0",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				50.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.0,
+			"custom_roughness" : 0.80000000000000004,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.8 Mtl 0.0",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				60.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.0,
+			"custom_roughness" : 0.98999999999999999,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 1.0 Mtl 0.0",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				70.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.20000000000000001,
+			"custom_roughness" : 0.0,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.0 Mtl 0.2",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				20.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				10.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.20000000000000001,
+			"custom_roughness" : 0.20000000000000001,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.2 Mtl 0.2",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				30.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				10.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.20000000000000001,
+			"custom_roughness" : 0.40000000000000002,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.4 Mtl 0.2",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				40.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				10.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.20000000000000001,
+			"custom_roughness" : 0.59999999999999998,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.6 Mtl 0.2",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				50.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				10.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.20000000000000001,
+			"custom_roughness" : 0.80000000000000004,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.8 Mtl 0.2",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				60.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				10.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.20000000000000001,
+			"custom_roughness" : 0.98999999999999999,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 1.0 Mtl 0.2",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				70.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				10.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.40000000000000002,
+			"custom_roughness" : 0.0,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.0 Mtl 0.4",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				20.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				20.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.40000000000000002,
+			"custom_roughness" : 0.20000000000000001,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.2 Mtl 0.4",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				30.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				20.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.40000000000000002,
+			"custom_roughness" : 0.40000000000000002,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.4 Mtl 0.4",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				40.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				20.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.40000000000000002,
+			"custom_roughness" : 0.59999999999999998,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.6 Mtl 0.4",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				50.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				20.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.40000000000000002,
+			"custom_roughness" : 0.80000000000000004,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.8 Mtl 0.4",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				60.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				20.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.40000000000000002,
+			"custom_roughness" : 0.98999999999999999,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 1.0 Mtl 0.4",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				70.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				20.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.59999999999999998,
+			"custom_roughness" : 0.0,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.0 Mtl 0.6",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				20.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				30.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.59999999999999998,
+			"custom_roughness" : 0.20000000000000001,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.2 Mtl 0.6",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				30.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				30.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.59999999999999998,
+			"custom_roughness" : 0.40000000000000002,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.4 Mtl 0.6",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				40.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				30.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.59999999999999998,
+			"custom_roughness" : 0.59999999999999998,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.6 Mtl 0.6",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				50.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				30.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.59999999999999998,
+			"custom_roughness" : 0.80000000000000004,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.8 Mtl 0.6",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				60.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				30.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.59999999999999998,
+			"custom_roughness" : 0.98999999999999999,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 1.0 Mtl 0.6",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				70.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				30.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.80000000000000004,
+			"custom_roughness" : 0.0,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.0 Mtl 0.8",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				20.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				40.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.80000000000000004,
+			"custom_roughness" : 0.20000000000000001,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.2 Mtl 0.8",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				30.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				40.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.80000000000000004,
+			"custom_roughness" : 0.40000000000000002,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.4 Mtl 0.8",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				40.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				40.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.80000000000000004,
+			"custom_roughness" : 0.59999999999999998,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.6 Mtl 0.8",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				50.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				40.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.80000000000000004,
+			"custom_roughness" : 0.80000000000000004,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.8 Mtl 0.8",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				60.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				40.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.80000000000000004,
+			"custom_roughness" : 0.98999999999999999,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 1.0 Mtl 0.8",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				70.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				40.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 1.0,
+			"custom_roughness" : 0.0,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.0 Mtl 1.0",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				20.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				50.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 1.0,
+			"custom_roughness" : 0.20000000000000001,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.2 Mtl 1.0",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				30.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				50.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 1.0,
+			"custom_roughness" : 0.40000000000000002,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.4 Mtl 1.0",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				40.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				50.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 1.0,
+			"custom_roughness" : 0.59999999999999998,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.6 Mtl 1.0",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				50.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				50.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 1.0,
+			"custom_roughness" : 0.80000000000000004,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 0.8 Mtl 1.0",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				60.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				50.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 1.0,
+			"custom_roughness" : 0.98999999999999999,
+			"instanced" : false,
+			"model_path" : "content\\models\\sphere.fbx",
+			"name" : "PBR Test Sphere Rgh 1.0 Mtl 1.0",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\white.png"
+				}
+			],
+			"transform" : 
+			[
+				0.65205007791519165,
+				0.0,
+				0.0,
+				70.0,
+				0.0,
+				0.65205007791519165,
+				0.0,
+				-0.58915901184082031,
+				0.0,
+				0.0,
+				0.65205007791519165,
+				50.0,
 				0.0,
 				0.0,
 				0.0,
@@ -751,19 +2370,19 @@
 		{
 			"fur_color" : 
 			[
-				0.51,
+				0.51000000000000001,
 				0.0,
 				0.01
 			],
 			"fur_color_interpolation" : 1.0,
+			"fur_cutoff" : 0.35999999999999999,
+			"fur_cutoff_end" : 0.46999999999999997,
+			"fur_gravity_strength" : 0.36399999999999999,
 			"fur_height" : "content\\textures\\grain_noise.png",
 			"fur_layers_count" : 15,
-			"fur_length" : 1.67,
-			"fur_cutoff" : 0.36,
-			"fur_cutoff_end" : 0.47,
-			"fur_wind_frequency" : 1.39,
-			"fur_gravity_strength" : 0.364,
-			"fur_uv_scale" : 0.1,
+			"fur_length" : 1.6699999999999999,
+			"fur_uv_scale" : 0.10000000000000001,
+			"fur_wind_frequency" : 1.3899999999999999,
 			"instanced" : false,
 			"model_path" : "content\\models\\shaderball.fbx",
 			"name" : "Shader Ball Fur Red",
@@ -820,14 +2439,14 @@
 		},
 		{
 			"fur_color_interpolation" : 1.0,
-			"fur_height" : "content\\textures\\grain_noise.png",
-			"fur_layers_count" : 13,
-			"fur_length" : 0.6,
 			"fur_cutoff" : 0.11,
 			"fur_cutoff_end" : 1.0,
-			"fur_wind_frequency" : 2.4,
 			"fur_gravity_strength" : 0.182,
+			"fur_height" : "content\\textures\\grain_noise.png",
+			"fur_layers_count" : 13,
+			"fur_length" : 0.59999999999999998,
 			"fur_uv_scale" : 0.37,
+			"fur_wind_frequency" : 2.3999999999999999,
 			"instanced" : false,
 			"model_path" : "content\\models\\shaderball.fbx",
 			"name" : "Shader Ball Fur Zebra",
@@ -884,14 +2503,14 @@
 		},
 		{
 			"fur_color_interpolation" : 0.0,
+			"fur_cutoff" : 0.089999999999999997,
+			"fur_cutoff_end" : 0.316,
+			"fur_gravity_strength" : 0.25,
 			"fur_height" : "content\\textures\\grain_noise.png",
 			"fur_layers_count" : 10,
-			"fur_length" : 0.92,
-			"fur_cutoff" : 0.09,
-			"fur_cutoff_end" : 0.316,
-			"fur_wind_frequency" : 1.0,
-			"fur_gravity_strength" : 0.25,
+			"fur_length" : 0.92000000000000004,
 			"fur_uv_scale" : 0.37,
+			"fur_wind_frequency" : 1.0,
 			"instanced" : false,
 			"model_path" : "content\\models\\shaderball.fbx",
 			"name" : "Shader Ball Fur Swirl",
@@ -1943,51 +3562,6 @@
 				0.0,
 				1.0,
 				45.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"instanced" : false,
-			"model_path" : "content\\models\\couch\\couch.fbx",
-			"name" : "Green couch",
-			"new_materials" : 
-			[
-				{
-					"name" : "ShadowMapMaterial"
-				},
-				{
-					"name" : "GBufferMaterial"
-				},
-				{
-					"name" : "RenderToLightProbeMaterial"
-				}
-			],
-			"textures" : 
-			[
-				{
-					"albedo" : "content\\models\\couch\\Color_map.png",
-					"metalness" : "content\\models\\couch\\Metalic_map.png",
-					"normal" : "content\\models\\couch\\Normal_map.png",
-					"roughness" : "content\\models\\couch\\Roughness_map.png"
-				}
-			],
-			"transform" : 
-			[
-				7.690000057220459,
-				0.0,
-				0.0,
-				42.430252075195312,
-				0.0,
-				7.690000057220459,
-				0.0,
-				-0.12476038932800293,
-				0.0,
-				0.0,
-				7.690000057220459,
-				39.210628509521484,
 				0.0,
 				0.0,
 				0.0,
