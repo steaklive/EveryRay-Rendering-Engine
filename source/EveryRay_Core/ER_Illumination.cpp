@@ -903,7 +903,12 @@ namespace EveryRay_Core {
 	{
 		auto rhi = mCore->GetRHI();
 
-		std::string& psoName = aObj->IsInstanced() ? mForwardLightingInstancingPSOName : mForwardLightingPSOName;
+		std::string psoName;
+		if (!aObj->IsTransparent())
+			psoName = aObj->IsInstanced() ? mForwardLightingInstancingPSOName : mForwardLightingPSOName;
+		else
+			psoName = aObj->IsInstanced() ? mForwardLightingTransparentInstancingPSOName : mForwardLightingTransparentPSOName;
+
 		if (!rhi->IsPSOReady(psoName))
 		{
 			rhi->InitializePSO(psoName);

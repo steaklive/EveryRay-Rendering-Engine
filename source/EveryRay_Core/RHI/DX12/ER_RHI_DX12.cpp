@@ -2179,14 +2179,17 @@ namespace EveryRay_Core
 		blendStateDescription.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
 		blendStateDescription.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
 		blendStateDescription.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-		blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-		blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+		blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_SRC_ALPHA;
+		blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
 		blendStateDescription.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-		blendStateDescription.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+		blendStateDescription.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_RED | D3D12_COLOR_WRITE_ENABLE_GREEN | D3D12_COLOR_WRITE_ENABLE_BLUE;
 		mBlendStates.insert(std::make_pair(ER_RHI_BLEND_STATE::ER_ALPHA_BLEND, blendStateDescription));
 
+		blendStateDescription.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 		blendStateDescription.AlphaToCoverageEnable = TRUE;
 		blendStateDescription.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
+		blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+		blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
 		mBlendStates.insert(std::make_pair(ER_RHI_BLEND_STATE::ER_ALPHA_TO_COVERAGE, blendStateDescription));
 
 		blendStateDescription.RenderTarget[0].BlendEnable = FALSE;

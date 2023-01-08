@@ -34,6 +34,8 @@ namespace EveryRay_Core
 			ER_OUTPUT_LOG(msg.c_str());
 		}
 
+		CreateStandardMaterialsRootSignatures();
+
 		Json::Reader reader;
 		std::ifstream scene(path.c_str(), std::ifstream::binary);
 
@@ -196,45 +198,6 @@ namespace EveryRay_Core
 		}
 
 		{
-			ER_Core* core = GetCore();
-			assert(core);
-			ER_RHI* rhi = core->GetRHI();
-
-			{
-				ER_RHI_GPURootSignature* rs = rhi->CreateRootSignature(1, 0);
-				if (rs)
-				{
-					rs->InitDescriptorTable(rhi, BASICCOLOR_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
-					rs->Finalize(rhi, "ER_RHI_GPURootSignature: BasicColorMaterial Pass", true);
-				}
-				mStandardMaterialsRootSignatures.emplace(ER_MaterialHelper::basicColorMaterialName, rs);
-			}
-
-			{
-				ER_RHI_GPURootSignature* rs = rhi->CreateRootSignature(2, 2);
-				if (rs)
-				{
-					rs->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
-					rs->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SHADER_VISIBILITY_PIXEL);
-					rs->InitDescriptorTable(rhi, SNOW_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 7 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
-					rs->InitDescriptorTable(rhi, SNOW_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
-					rs->Finalize(rhi, "ER_RHI_GPURootSignature: SimpleSnowMaterial Pass", true);
-				}
-				mStandardMaterialsRootSignatures.emplace(ER_MaterialHelper::snowMaterialName, rs);
-			}
-
-			{
-				ER_RHI_GPURootSignature* rs = rhi->CreateRootSignature(1, 0);
-				if (rs)
-				{
-					rs->InitDescriptorTable(rhi, FRESNEL_OUTLINE_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
-					rs->Finalize(rhi, "ER_RHI_GPURootSignature: FresnelOutlineMaterial Pass", true);
-				}
-				mStandardMaterialsRootSignatures.emplace(ER_MaterialHelper::fresnelOutlineMaterialName, rs);
-			}
-		}
-
-		{
 			std::wstring msg = L"[ER Logger][ER_Scene] Finished loading scene: " + ER_Utility::ToWideString(path) + L" Enjoy! \n";
 			ER_OUTPUT_LOG(msg.c_str());
 		}
@@ -254,6 +217,59 @@ namespace EveryRay_Core
 			DeleteObject(rs.second);
 		}
 		mStandardMaterialsRootSignatures.clear();
+	}
+
+	void ER_Scene::CreateStandardMaterialsRootSignatures()
+	{
+		ER_Core* core = GetCore();
+		assert(core);
+		ER_RHI* rhi = core->GetRHI();
+
+		{
+			ER_RHI_GPURootSignature* rs = rhi->CreateRootSignature(1, 0);
+			if (rs)
+			{
+				rs->InitDescriptorTable(rhi, BASICCOLOR_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				rs->Finalize(rhi, "ER_RHI_GPURootSignature: BasicColorMaterial Pass", true);
+			}
+			mStandardMaterialsRootSignatures.emplace(ER_MaterialHelper::basicColorMaterialName, rs);
+		}
+
+		{
+			ER_RHI_GPURootSignature* rs = rhi->CreateRootSignature(2, 2);
+			if (rs)
+			{
+				rs->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				rs->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				rs->InitDescriptorTable(rhi, SNOW_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 7 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				rs->InitDescriptorTable(rhi, SNOW_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				rs->Finalize(rhi, "ER_RHI_GPURootSignature: SimpleSnowMaterial Pass", true);
+			}
+			mStandardMaterialsRootSignatures.emplace(ER_MaterialHelper::snowMaterialName, rs);
+		}
+
+		{
+			ER_RHI_GPURootSignature* rs = rhi->CreateRootSignature(1, 0);
+			if (rs)
+			{
+				rs->InitDescriptorTable(rhi, FRESNEL_OUTLINE_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				rs->Finalize(rhi, "ER_RHI_GPURootSignature: FresnelOutlineMaterial Pass", true);
+			}
+			mStandardMaterialsRootSignatures.emplace(ER_MaterialHelper::fresnelOutlineMaterialName, rs);
+		}
+
+		{
+			ER_RHI_GPURootSignature* rs = rhi->CreateRootSignature(2, 2);
+			if (rs)
+			{
+				rs->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				rs->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				rs->InitDescriptorTable(rhi, FUR_SHELL_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 6 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				rs->InitDescriptorTable(rhi, FUR_SHELL_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				rs->Finalize(rhi, "ER_RHI_GPURootSignature: FurShellMaterial Pass", true);
+			}
+			mStandardMaterialsRootSignatures.emplace(ER_MaterialHelper::furShellMaterialName, rs);
+		}
 	}
 
 	void ER_Scene::LoadRenderingObjectData(ER_RenderingObject* aObject)
@@ -427,6 +443,7 @@ namespace EveryRay_Core
 					}
 					else if (name == ER_MaterialHelper::furShellMaterialName)
 					{
+						ER_RHI_GPURootSignature* rs = mStandardMaterialsRootSignatures.at(name);
 						int layerCount = aObject->GetFurLayersCount();
 						if (layerCount > 0)
 						{
@@ -434,8 +451,11 @@ namespace EveryRay_Core
 							{
 								const std::string fullname = ER_MaterialHelper::furShellMaterialName + "_" + std::to_string(layer);
 								aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced, layer), fullname);
+								if (rs)
+									mStandardMaterialsRootSignatures.emplace(fullname, rs);
 							}
 						}
+
 					}
 					else if (name == ER_MaterialHelper::renderToLightProbeMaterialName)
 					{

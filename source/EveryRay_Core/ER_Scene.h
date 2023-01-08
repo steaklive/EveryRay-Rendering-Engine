@@ -53,6 +53,7 @@ namespace EveryRay_Core
 
 		bool HasVolumetricFog() { return mHasVolumetricFog; }
 	private:
+		void CreateStandardMaterialsRootSignatures();
 		void LoadRenderingObjectData(ER_RenderingObject* aObject);
 		void LoadRenderingObjectInstancedData(ER_RenderingObject* aObject);
 
