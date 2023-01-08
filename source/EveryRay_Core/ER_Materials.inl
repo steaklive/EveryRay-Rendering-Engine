@@ -7,3 +7,4 @@
 #include "..\EveryRay_Core\ER_VoxelizationMaterial.h"
 #include "..\EveryRay_Core\ER_SimpleSnowMaterial.h"
 #include "..\EveryRay_Core\ER_FresnelOutlineMaterial.h"
+#include "..\EveryRay_Core\ER_FurShellMaterial.h"

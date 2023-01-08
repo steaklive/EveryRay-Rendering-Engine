@@ -15,6 +15,7 @@ namespace EveryRay_Core
 		static const std::string voxelizationMaterialName;
 		static const std::string snowMaterialName;
 		static const std::string fresnelOutlineMaterialName;
+		static const std::string furShellMaterialName;
 
 		static const std::string forwardLightingNonMaterialName;
 	};

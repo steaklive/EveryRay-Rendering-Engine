@@ -24,7 +24,7 @@ namespace EveryRay_Core
 		ER_RenderingObject* FindRenderingObjectByName(const std::string& aName);
 		std::vector<ER_SceneObject> objects;
 
-		ER_Material* GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries, bool instanced);
+		ER_Material* GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries, bool instanced, int layerIndex = -1);
 		ER_RHI_GPURootSignature* GetStandardMaterialRootSignature(const std::string& materialName);
 		
 		ER_Camera& GetCamera() { return mCamera; }

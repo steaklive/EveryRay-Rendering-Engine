@@ -488,8 +488,8 @@
 				{
 					"albedo" : "content\\textures\\colors\\white.png",
 					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
-					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png",
-					"reflection_mask" : "content\\textures\\colors\\white.png"
+					"reflection_mask" : "content\\textures\\colors\\white.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
 				}
 			],
 			"transform" : 
@@ -512,12 +512,12 @@
 				1.0
 			],
 			"use_forward_shading" : true,
-			"use_transparency" : true,
-			"use_indirect_global_lightprobe" : true
-		},	
+			"use_indirect_global_lightprobe" : true,
+			"use_transparency" : true
+		},
 		{
+			"custom_roughness" : 0.10000000000000001,
 			"index_of_refraction" : 1.085,
-			"custom_roughness" : 0.1,
 			"instanced" : false,
 			"model_path" : "content\\models\\shaderball.fbx",
 			"name" : "Shader Ball Glass Green",
@@ -568,11 +568,11 @@
 				1.0
 			],
 			"use_forward_shading" : true,
-			"use_transparency" : true,
-			"use_indirect_global_lightprobe" : true
+			"use_indirect_global_lightprobe" : true,
+			"use_transparency" : true
 		},
 		{
-			"index_of_refraction" : 0.8,
+			"index_of_refraction" : 0.80000000000000004,
 			"instanced" : false,
 			"model_path" : "content\\models\\shaderball.fbx",
 			"name" : "Shader Ball Glass Pink Blocks",
@@ -596,14 +596,14 @@
 				{
 					"albedo" : "content\\textures\\PBR\\Glass_Blocks\\Glass_Blocks_001_basecolor.jpg",
 					"normal" : "content\\textures\\PBR\\Glass_Blocks\\Glass_Blocks_001_normal.jpg",
-					"roughness" : "content\\textures\\PBR\\Glass_Blocks\\Glass_Blocks_001_roughness.jpg",
-					"reflection_mask" : "content\\textures\\PBR\\Glass_Blocks\\Glass_Blocks_001_Glass.jpg"
+					"reflection_mask" : "content\\textures\\PBR\\Glass_Blocks\\Glass_Blocks_001_Glass.jpg",
+					"roughness" : "content\\textures\\PBR\\Glass_Blocks\\Glass_Blocks_001_roughness.jpg"
 				},
 				{
 					"albedo" : "content\\textures\\PBR\\Glass_Blocks\\Glass_Blocks_001_basecolor.jpg",
 					"normal" : "content\\textures\\PBR\\Glass_Blocks\\Glass_Blocks_001_normal.jpg",
-					"roughness" : "content\\textures\\PBR\\Glass_Blocks\\Glass_Blocks_001_roughness.jpg",
-					"reflection_mask" : "content\\textures\\PBR\\Glass_Blocks\\Glass_Blocks_001_Glass.jpg"
+					"reflection_mask" : "content\\textures\\PBR\\Glass_Blocks\\Glass_Blocks_001_Glass.jpg",
+					"roughness" : "content\\textures\\PBR\\Glass_Blocks\\Glass_Blocks_001_roughness.jpg"
 				}
 			],
 			"transform" : 
@@ -626,8 +626,8 @@
 				1.0
 			],
 			"use_forward_shading" : true,
-			"use_transparency" : true,
-			"use_indirect_global_lightprobe" : true
+			"use_indirect_global_lightprobe" : true,
+			"use_transparency" : true
 		},
 		{
 			"instanced" : false,
@@ -690,9 +690,9 @@
 		{
 			"fresnel_outline_color" : 
 			[
-				0.46,
+				0.46000000000000002,
 				0.0,
-				0.78
+				0.78000000000000003
 			],
 			"instanced" : false,
 			"model_path" : "content\\models\\shaderball.fbx",
@@ -742,6 +742,204 @@
 				0.0,
 				1.0,
 				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"fur_color" : 
+			[
+				0.51,
+				0.0,
+				0.01
+			],
+			"fur_color_interpolation" : 1.0,
+			"fur_height" : "content\\textures\\grain_noise.png",
+			"fur_layers_count" : 15,
+			"fur_length" : 1.67,
+			"fur_cutoff" : 0.36,
+			"fur_cutoff_end" : 0.47,
+			"fur_wind_frequency" : 1.39,
+			"fur_gravity_strength" : 0.364,
+			"fur_uv_scale" : 0.1,
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Fur Red",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				},
+				{
+					"name" : "FurShellMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\black.png",
+					"reflection_mask" : "content\\textures\\colors\\white.png"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
+					"reflection_mask" : "content\\textures\\colors\\black.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-130.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				15.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"fur_color_interpolation" : 1.0,
+			"fur_height" : "content\\textures\\grain_noise.png",
+			"fur_layers_count" : 13,
+			"fur_length" : 0.6,
+			"fur_cutoff" : 0.11,
+			"fur_cutoff_end" : 1.0,
+			"fur_wind_frequency" : 2.4,
+			"fur_gravity_strength" : 0.182,
+			"fur_uv_scale" : 0.37,
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Fur Zebra",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				},
+				{
+					"name" : "FurShellMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\colors\\black.png",
+					"reflection_mask" : "content\\textures\\pattern_zebra.jpg"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
+					"reflection_mask" : "content\\textures\\colors\\black.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-130.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				30.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"fur_color_interpolation" : 0.0,
+			"fur_height" : "content\\textures\\grain_noise.png",
+			"fur_layers_count" : 10,
+			"fur_length" : 0.92,
+			"fur_cutoff" : 0.09,
+			"fur_cutoff_end" : 0.316,
+			"fur_wind_frequency" : 1.0,
+			"fur_gravity_strength" : 0.25,
+			"fur_uv_scale" : 0.37,
+			"instanced" : false,
+			"model_path" : "content\\models\\shaderball.fbx",
+			"name" : "Shader Ball Fur Swirl",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
+				},
+				{
+					"name" : "FurShellMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\pattern_swirl.jpg",
+					"reflection_mask" : "content\\textures\\colors\\white.png"
+				},
+				{
+					"albedo" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-albedo.png",
+					"normal" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-normal2b.dds",
+					"reflection_mask" : "content\\textures\\colors\\black.png",
+					"roughness" : "content\\textures\\PBR\\PlasticPattern\\plasticpattern1-roughness2.png"
+				}
+			],
+			"transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				-130.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				45.0,
 				0.0,
 				0.0,
 				0.0,
@@ -1524,7 +1722,7 @@
 				1.0,
 				0.0,
 				0.0,
-				-100.0,
+				-70.0,
 				0.0,
 				1.0,
 				0.0,
@@ -1630,7 +1828,7 @@
 				1.0,
 				0.0,
 				0.0,
-				-70.0,
+				-100.0,
 				0.0,
 				1.0,
 				0.0,

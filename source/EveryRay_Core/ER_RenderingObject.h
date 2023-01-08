@@ -271,6 +271,7 @@ namespace EveryRay_Core
 		std::vector<std::string> mCustomHeightTextures;
 		std::vector<std::string> mCustomReflectionMaskTextures;
 
+		//snow
 		std::string mSnowAlbedoTexturePath;
 		std::string mSnowNormalTexturePath;
 		std::string mSnowRoughnessTexturePath;
@@ -279,8 +280,31 @@ namespace EveryRay_Core
 		ER_RHI_GPUTexture* GetSnowNormalTexture() { return mSnowNormalTexture; }
 		ER_RHI_GPUTexture* GetSnowRoughnessTexture() { return mSnowRoughnessTexture; }
 
+		//fresnel outline
 		void SetFresnelOutlineColor(const XMFLOAT3& aColor) { mFresnelOutlineColor = aColor; }
 		const XMFLOAT3& GetFresnelOutlineColor() { return mFresnelOutlineColor; }
+		
+		//fur
+		std::string mFurHeightTexturePath;
+		ER_RHI_GPUTexture* GetFurMaskTexture(int meshIndex) { return mMeshesTextureBuffers[meshIndex].ReflectionMaskMap; }
+		ER_RHI_GPUTexture* GetFurHeightTexture() { return mFurHeightTexture; }
+		int GetFurLayersCount() { return mFurLayersCount; }
+		void SetFurLayersCount(int value) { mFurLayersCount = value; }
+		XMFLOAT3 GetFurColor() { return XMFLOAT3(mFurColor[0], mFurColor[1], mFurColor[2]); }
+		void SetFurColor(float r, float g, float b) { mFurColor[0] = r; mFurColor[1] = g; mFurColor[2] = b; }
+		float GetFurColorInterpolation() { return mFurColorInterpolation; }
+		void SetFurColorInterpolation(float value) { mFurColorInterpolation = value; }
+		void SetFurLength(float val) { mFurLength = val; }
+		float GetFurLength() { return mFurLength; }
+		void SetFurCutoff(float val) { mFurCutoff = val; }
+		float GetFurCutoff() { return mFurCutoff; }	
+		void SetFurCutoffEnd(float val) { mFurCutoffEnd = val; }
+		float GetFurCutoffEnd() { return mFurCutoffEnd; }	
+		void SetFurUVScale(float val) { mFurUVScale = val; }
+		float GetFurUVScale() { return mFurUVScale; }
+		void SetFurWindFrequency(float v) { mFurWindFrequency = v; }
+		void SetFurGravityStrength(float v) { mFurGravityStrength = v; }
+		XMFLOAT4 GetFurGravityStrength(); 
 	private:
 		void UpdateAABB(ER_AABB& aabb, const XMMATRIX& transformMatrix);
 		void LoadAssignedMeshTextures();
@@ -353,6 +377,18 @@ namespace EveryRay_Core
 		ER_RHI_GPUTexture*										mSnowRoughnessTexture = nullptr;
 
 		XMFLOAT3												mFresnelOutlineColor = XMFLOAT3(1.0, 0.0, 0.0);
+
+		ER_RHI_GPUTexture*										mFurHeightTexture = nullptr;
+		float													mFurColor[3] = { 1.0, 1.0, 1.0 };
+		float													mFurColorInterpolation = 1.0f;
+		int														mFurLayersCount = -1;
+		float													mFurLength = 0.25f;
+		float													mFurCutoff = 0.5f;
+		float													mFurCutoffEnd = 0.5f;
+		float													mFurGravityStrength = 0.25f;
+		float													mFurGravityDirection[3] = { -0.4f, -0.7f, 0.2f };
+		float													mFurWindFrequency = 1.0f;
+		float													mFurUVScale = 1.0f;
 		///****************************************************************************************************************************
 
 		ER_AABB													mLocalAABB; //mesh space AABB

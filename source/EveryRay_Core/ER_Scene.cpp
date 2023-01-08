@@ -300,6 +300,32 @@ namespace EveryRay_Core
 			if (mSceneJsonRoot["rendering_objects"][i].isMember("custom_metalness"))
 				aObject->SetCustomMetalness(mSceneJsonRoot["rendering_objects"][i]["custom_metalness"].asFloat());
 
+			//fur
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("fur_layers_count"))
+				aObject->SetFurLayersCount(mSceneJsonRoot["rendering_objects"][i]["fur_layers_count"].asInt());
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("fur_color"))
+			{
+				float vec3[3];
+				for (Json::Value::ArrayIndex vecI = 0; vecI != mSceneJsonRoot["rendering_objects"][i]["fur_color"].size(); vecI++)
+					vec3[vecI] = mSceneJsonRoot["rendering_objects"][i]["fur_color"][vecI].asFloat();
+
+				aObject->SetFurColor(vec3[0], vec3[1], vec3[2]);
+			}
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("fur_color_interpolation"))
+				aObject->SetFurColorInterpolation(mSceneJsonRoot["rendering_objects"][i]["fur_color_interpolation"].asFloat());
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("fur_length"))
+				aObject->SetFurLength(mSceneJsonRoot["rendering_objects"][i]["fur_length"].asFloat());
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("fur_cutoff"))
+				aObject->SetFurCutoff(mSceneJsonRoot["rendering_objects"][i]["fur_cutoff"].asFloat());
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("fur_cutoff_end"))
+				aObject->SetFurCutoffEnd(mSceneJsonRoot["rendering_objects"][i]["fur_cutoff_end"].asFloat());
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("fur_wind_frequency"))
+				aObject->SetFurWindFrequency(mSceneJsonRoot["rendering_objects"][i]["fur_wind_frequency"].asFloat());
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("fur_gravity_strength"))
+				aObject->SetFurGravityStrength(mSceneJsonRoot["rendering_objects"][i]["fur_gravity_strength"].asFloat());
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("fur_uv_scale"))
+				aObject->SetFurUVScale(mSceneJsonRoot["rendering_objects"][i]["fur_uv_scale"].asFloat());
+
 			//terrain
 			if (mSceneJsonRoot["rendering_objects"][i].isMember("terrain_placement"))
 			{
@@ -399,6 +425,18 @@ namespace EveryRay_Core
 							aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced), fullname);
 						}
 					}
+					else if (name == ER_MaterialHelper::furShellMaterialName)
+					{
+						int layerCount = aObject->GetFurLayersCount();
+						if (layerCount > 0)
+						{
+							for (int layer = 0; layer < layerCount; layer++)
+							{
+								const std::string fullname = ER_MaterialHelper::furShellMaterialName + "_" + std::to_string(layer);
+								aObject->LoadMaterial(GetMaterialByName(name, shaderEntries, isInstanced, layer), fullname);
+							}
+						}
+					}
 					else if (name == ER_MaterialHelper::renderToLightProbeMaterialName)
 					{
 						std::string originalPSEntry = shaderEntries.pixelEntry;
@@ -444,6 +482,9 @@ namespace EveryRay_Core
 			XMFLOAT3 color = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
 			aObject->SetFresnelOutlineColor(color);
 		}
+
+		if (mSceneJsonRoot["rendering_objects"][i].isMember("fur_height"))
+			aObject->mFurHeightTexturePath = mSceneJsonRoot["rendering_objects"][i]["fur_height"].asString();
 
 		// load custom textures
 		{
@@ -677,7 +718,8 @@ namespace EveryRay_Core
 	}
 
 	// We cant do reflection in C++, that is why we check every materials name and create a material out of it (and root-signature if needed)
-	ER_Material* ER_Scene::GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries, bool instanced)
+	// "layerIndex" is used when we need to render multiple layers/copies of the material and keep track of each index
+	ER_Material* ER_Scene::GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries, bool instanced, int layerIndex)
 	{
 		ER_Core* core = GetCore();
 		assert(core);
@@ -699,6 +741,8 @@ namespace EveryRay_Core
 			material = new ER_SimpleSnowMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
 		else if (matName == "FresnelOutlineMaterial")
 			material = new ER_FresnelOutlineMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
+		else if (matName == "FurShellMaterial")
+			material = new ER_FurShellMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced, layerIndex);
 		else
 			material = nullptr;
 

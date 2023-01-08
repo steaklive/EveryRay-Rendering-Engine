@@ -20,7 +20,7 @@ SamplerState SamplerLinear : register(s0);
 SamplerComparisonState CascadedPcfShadowMapSampler : register(s1);
 SamplerState SamplerClamp: register(s2);
 
-RWTexture2D<float4> OutputTexture : register(u0);
+RWTexture2D<unorm float4> OutputTexture : register(u0);
 
 Texture2D<float4> GbufferAlbedoTexture : register(t0);
 Texture2D<float4> GbufferNormalTexture : register(t1);

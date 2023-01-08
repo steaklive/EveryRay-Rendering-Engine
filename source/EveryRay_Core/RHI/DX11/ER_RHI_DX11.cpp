@@ -1270,16 +1270,19 @@ namespace EveryRay_Core
 		blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
 		blendStateDescription.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
 		blendStateDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-		blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-		blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+		blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
+		blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
 		blendStateDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-		blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
+		blendStateDescription.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_RED | D3D11_COLOR_WRITE_ENABLE_GREEN | D3D11_COLOR_WRITE_ENABLE_BLUE;
 		if (FAILED(mDirect3DDevice->CreateBlendState(&blendStateDescription, &mAlphaBlendState)))
 			throw ER_CoreException("ER_RHI_DX11: ID3D11Device::CreateBlendState() failed while create alpha blend state.");
 		mBlendStates.insert(std::make_pair(ER_RHI_BLEND_STATE::ER_ALPHA_BLEND, mAlphaBlendState));
 
+		blendStateDescription.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 		blendStateDescription.AlphaToCoverageEnable = TRUE;
 		blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+		blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+		blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
 		if (FAILED(mDirect3DDevice->CreateBlendState(&blendStateDescription, &mAlphaToCoverageState)))
 			throw ER_CoreException("ER_RHI_DX11: ID3D11Device::CreateBlendState() failed while create alpha-to-coverage blend state.");
 		mBlendStates.insert(std::make_pair(ER_RHI_BLEND_STATE::ER_ALPHA_TO_COVERAGE, mAlphaToCoverageState));

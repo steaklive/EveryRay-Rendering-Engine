@@ -276,6 +276,9 @@
     <ClInclude Include="ER_FresnelOutlineMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_FurShellMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -464,6 +467,9 @@
     <ClCompile Include="ER_FresnelOutlineMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
+    <ClCompile Include="ER_FurShellMaterial.cpp">
+      <Filter>Source Files\Graphics\Materials</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\content\shaders\VolumetricLight\Apply_PS.hlsl">
@@ -626,6 +632,9 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\FresnelOutline.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\FurShell.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

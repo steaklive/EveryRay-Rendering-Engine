@@ -116,6 +116,7 @@ namespace EveryRay_Core
 		DeleteObject(mSnowNormalTexture);
 		DeleteObject(mSnowRoughnessTexture);
 
+		DeleteObject(mFurHeightTexture);
 		mObjectConstantBuffer.Release();
 	}
 
@@ -252,6 +253,7 @@ namespace EveryRay_Core
 	//from custom materials that the object has (snow, etc.); they are global for all meshes
 	void ER_RenderingObject::LoadCustomMaterialTextures()
 	{
+		//snow
 		bool loadStatus = false;
 		if (!mSnowAlbedoTexturePath.empty())
 			LoadTexture(&mSnowAlbedoTexture, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mSnowAlbedoTexturePath)), -1);
@@ -261,6 +263,11 @@ namespace EveryRay_Core
 		loadStatus = false;
 		if (!mSnowRoughnessTexturePath.empty())
 			LoadTexture(&mSnowRoughnessTexture, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mSnowRoughnessTexturePath)), -1);
+		loadStatus = false;
+
+		//fur
+		if (!mFurHeightTexturePath.empty())
+			LoadTexture(&mFurHeightTexture, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mFurHeightTexturePath)), -1);
 		loadStatus = false;
 	}
 
@@ -634,6 +641,12 @@ namespace EveryRay_Core
 		}
 	}
 
+	XMFLOAT4 ER_RenderingObject::GetFurGravityStrength()
+	{
+		float time = static_cast<float>(mCore->GetCoreTotalTime());
+		return XMFLOAT4{ sin(time * mFurWindFrequency) * mFurGravityDirection[0], sin(time * mFurWindFrequency) * mFurGravityDirection[1], sin(time * mFurWindFrequency) * mFurGravityDirection[2], mFurGravityStrength };
+	}
+
 	// Placement on terrain based on object's properties defined in level file (instance count, terrain splat, object scale variation, etc.)
 	// This method is not supposed to run every frame, but during initialization or on request
 	void ER_RenderingObject::PlaceProcedurallyOnTerrain(bool isOnInit)
@@ -935,7 +948,20 @@ namespace EveryRay_Core
 
 			ImGui::SliderFloat("Custom roughness", &mCustomRoughness, -1.0f, 1.0f);
 			ImGui::SliderFloat("Custom metalness", &mCustomMetalness, -1.0f, 1.0f);
-			ImGui::SliderFloat("IOR", &mIOR, -5.0f, 5.0f);
+			if (mIsTransparent)
+				ImGui::SliderFloat("IOR", &mIOR, -5.0f, 5.0f);
+			if (mFurLayersCount > 0)
+			{
+				ImGui::ColorEdit3("Fur Color", mFurColor);
+				ImGui::SliderFloat("Fur Interpolation with albedo", &mFurColorInterpolation, 0.0, 1.0);
+				ImGui::SliderFloat("Fur Length", &mFurLength, 0.01f, 25.0f);
+				ImGui::SliderFloat("Fur Cutoff", &mFurCutoff, 0.01f, 1.0f);
+				ImGui::SliderFloat("Fur Cutoff End", &mFurCutoffEnd, 0.01f, 1.0f);
+				ImGui::SliderFloat("Fur UV Scale", &mFurUVScale, 0.01f, 15.0f);
+				ImGui::SliderFloat3("Fur Gravity Dir", &mFurGravityDirection[0], -1.0, 1.0);
+				ImGui::SliderFloat("Fur Gravity Strength", &mFurGravityStrength, 0.0, 10.0);
+				ImGui::SliderFloat("Fur Wind Frequency", &mFurWindFrequency, 0.0, 10.0);
+			}
 
 			//Transforms
 			if (ImGui::IsKeyPressed(84))

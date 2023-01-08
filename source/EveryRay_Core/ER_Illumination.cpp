@@ -256,7 +256,7 @@ namespace EveryRay_Core {
 			
 			mLocalIlluminationRT = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Local Illumination RT");
 			mLocalIlluminationRT->CreateGPUTextureResource(rhi, static_cast<UINT>(mCore->ScreenWidth()), static_cast<UINT>(mCore->ScreenHeight()), 1u,
-				ER_FORMAT_R11G11B10_FLOAT, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET | ER_BIND_UNORDERED_ACCESS, 1);
+				ER_FORMAT_R10G10B10A2_UNORM, ER_BIND_SHADER_RESOURCE | ER_BIND_RENDER_TARGET | ER_BIND_UNORDERED_ACCESS, 1);
 			
 			mDepthBuffer = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Depth Buffer (ER_Illumination)");
 			mDepthBuffer->CreateGPUTextureResource(rhi, mCore->ScreenWidth(), mCore->ScreenHeight(), 1u, ER_FORMAT_D24_UNORM_S8_UINT, ER_BIND_SHADER_RESOURCE | ER_BIND_DEPTH_STENCIL);
