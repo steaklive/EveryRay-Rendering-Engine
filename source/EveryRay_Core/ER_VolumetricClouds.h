@@ -113,6 +113,6 @@ namespace EveryRay_Core
 		bool mEnabled = true;
 		bool mShowDebug = false;
 
-		VolumetricCloudsQuality mCurrentQuality;
+		VolumetricCloudsQuality mCurrentQuality = VC_DISABLED;
 	};
 }
