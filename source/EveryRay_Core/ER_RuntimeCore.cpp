@@ -361,6 +361,12 @@ namespace EveryRay_Core
 		DeleteObject(mMouse);
 		DeleteObject(mCamera);
 
+		if (mCurrentSandbox)
+		{
+			mCurrentSandbox->Destroy(*this);
+			DeleteObject(mCurrentSandbox);
+		}
+
 		//destroy imgui
 		{
 			if (mRHI)

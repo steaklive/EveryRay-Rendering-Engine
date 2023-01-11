@@ -207,7 +207,7 @@ namespace EveryRay_Core
 		ER_RHI_GPUTexture* mTerrainTilesSplatmapsArrayTexture = nullptr;
 
 		std::vector<HeightMap*> mHeightMaps;
-		ER_RHI_GPUTexture* mSplatChannelTextures[NUM_TEXTURE_SPLAT_CHANNELS] = { nullptr };
+		ER_RHI_GPUTexture* mSplatChannelTextures[NUM_TEXTURE_SPLAT_CHANNELS] = { nullptr, nullptr, nullptr, nullptr };
 
 		ER_RHI_GPUBuffer* mReadbackPositionsBuffer = nullptr;
 		ER_RHI_GPUBuffer* mTempPositionsBuffer = nullptr;

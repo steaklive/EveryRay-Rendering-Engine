@@ -589,10 +589,7 @@ namespace EveryRay_Core
 	{
 		ER_RHI* rhi = mCore.GetRHI();
 
-		double angle;
-		float rotation, windRotation;
 		XMMATRIX translationMatrix;
-
 		for (int i = 0; i < mPatchesCount; i++)
 		{
 			translationMatrix = XMMatrixTranslation(mPatchesBufferCPU[i].xPos, mPatchesBufferCPU[i].yPos, mPatchesBufferCPU[i].zPos);

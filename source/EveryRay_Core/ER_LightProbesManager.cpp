@@ -476,7 +476,7 @@ namespace EveryRay_Core
 		return finalIndex;
 	}
 
-	const DirectX::XMFLOAT4& ER_LightProbesManager::GetProbesCellsCount(ER_ProbeType aType)
+	XMFLOAT4 ER_LightProbesManager::GetProbesCellsCount(ER_ProbeType aType)
 	{
 		if (aType == DIFFUSE_PROBE)
 			return XMFLOAT4(mDiffuseProbesCellsCountX, mDiffuseProbesCellsCountY, mDiffuseProbesCellsCountZ, mDiffuseProbesCellsCountTotal);

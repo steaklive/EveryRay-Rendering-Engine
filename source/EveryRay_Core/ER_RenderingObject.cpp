@@ -112,11 +112,6 @@ namespace EveryRay_Core
 		DeleteObject(mOutputPositionsOnTerrainBuffer);
 		DeleteObjects(mTempInstancesPositions);
 
-		DeleteObject(mSnowAlbedoTexture);
-		DeleteObject(mSnowNormalTexture);
-		DeleteObject(mSnowRoughnessTexture);
-
-		DeleteObject(mFurHeightTexture);
 		mObjectConstantBuffer.Release();
 	}
 

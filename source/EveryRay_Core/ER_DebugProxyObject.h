@@ -48,9 +48,9 @@ namespace EveryRay_Core
 		ER_Core& mCore;
 
 		std::string mModelFileName;
-		ER_BasicColorMaterial* mMaterial;
-		ER_RHI_GPUBuffer* mVertexBuffer;
-		ER_RHI_GPUBuffer* mIndexBuffer;
+		ER_BasicColorMaterial* mMaterial = nullptr;
+		ER_RHI_GPUBuffer* mVertexBuffer = nullptr;
+		ER_RHI_GPUBuffer* mIndexBuffer = nullptr;
 		UINT mIndexCount;
 
 		XMFLOAT4X4 mWorldMatrix;

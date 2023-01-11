@@ -62,7 +62,7 @@ namespace EveryRay_Core
 		ER_ShadowMapper* mShadowMapper = nullptr;
 
 		LightProbeRenderingObjectsInfo mObjectsToRenderPerFace[6];
-		ER_Camera* mCubemapCameras[6];
+		ER_Camera* mCubemapCameras[6] = { nullptr };
 
 		ER_RHI_GPUTexture* mCubemapTexture = nullptr; // for regular diffuse probe it should be null (because we use SH)
 		ER_RHI_GPUConstantBuffer<LightProbeCBufferData::ProbeConvolutionCB> mConvolutionCB;

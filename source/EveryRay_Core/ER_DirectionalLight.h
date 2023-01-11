@@ -65,7 +65,7 @@ namespace EveryRay_Core
 	private:
 		void UpdateTransformArray(CXMMATRIX transform);
 
-		ER_DebugProxyObject* mProxyModel;
+		ER_DebugProxyObject* mProxyModel = nullptr;
 
 		float mObjectTransformMatrix[16] =
 		{

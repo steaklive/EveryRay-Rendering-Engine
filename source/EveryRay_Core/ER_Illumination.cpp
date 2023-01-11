@@ -707,7 +707,7 @@ namespace EveryRay_Core {
 			mWorldVoxelCascadesAABBs[cascade].second.z += mVoxelCameraPositions[cascade].z;
 		}
 
-		CPUCullObjectsAgainstVoxelCascades(scene);
+		//CPUCullObjectsAgainstVoxelCascades(scene);
 		UpdateVoxelCameraPosition();
 		UpdateImGui();
 	}
