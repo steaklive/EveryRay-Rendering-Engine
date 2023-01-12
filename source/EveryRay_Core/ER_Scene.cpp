@@ -18,11 +18,11 @@
 #include "ER_DirectionalLight.h"
 #include "ER_Terrain.h"
 
-//#if defined(DEBUG) || defined(_DEBUG)  
-//	#define MULTITHREADED_SCENE_LOAD 0
-//#else
-	#define MULTITHREADED_SCENE_LOAD 0 //TODO currently multithreading is crashing, i should fix threading issues first
-//#endif
+#if defined(DEBUG) || defined(_DEBUG)  
+	#define MULTITHREADED_SCENE_LOAD 0
+#else
+	#define MULTITHREADED_SCENE_LOAD 1
+#endif
 
 namespace EveryRay_Core 
 {
