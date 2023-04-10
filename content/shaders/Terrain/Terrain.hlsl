@@ -269,7 +269,8 @@ float4 PSMain(DS_OUTPUT IN) : SV_Target
     probesInfo.globalIrradianceSpecularProbeTexture = SpecularGlobalProbeTexture;
     
     float3 directLighting = DirectLightingPBR(normal, SunColor, SunDirection.xyz, diffuseAlbedo.rgb, IN.worldPos.xyz, roughness, float3(0.04, 0.04, 0.04), metalness, CameraPosition.xyz);
-    float3 indirectLighting = IndirectLightingPBR(normal, diffuseAlbedo.rgb, IN.worldPos.xyz, roughness, float3(0.04, 0.04, 0.04), metalness, CameraPosition.xyz, true, probesInfo, LinearSampler, IntegrationTexture, ao);
+    float3 indirectLighting = IndirectLightingPBR(SunDirection.xyz, normal, diffuseAlbedo.rgb, IN.worldPos.xyz, roughness, float3(0.04, 0.04, 0.04), metalness, CameraPosition.xyz,
+        true, probesInfo, LinearSampler, LinearSamplerClamp, IntegrationTexture, ao);
     return float4(directLighting * shadow + indirectLighting, 1.0f);
 }
 
