@@ -23,7 +23,7 @@ static const int DETAIL_TEXTURE_REPEAT = 32;
 
 cbuffer TerrainDataCBuffer : register(b0)
 {
-    float4x4 World[MAX_TERRAIN_TILE_COUNT];
+    float4x4 TerrainTileWorld[MAX_TERRAIN_TILE_COUNT];
     float4x4 ShadowMatrices[NUM_OF_SHADOW_CASCADES];
     float4x4 View;
     float4x4 Projection;
@@ -147,7 +147,7 @@ PatchData hull_constant_function(InputPatch<HS_INPUT, 1> inputPatch)
     output.TileIndex = inputPatch[0].TileIndex;
     
     float4 pos = float4(origin.x, 0.0f, origin.y, 1.0f);
-    pos = mul(pos, World[(int)(output.TileIndex)]);
+    pos = mul(pos, TerrainTileWorld[(int)(output.TileIndex)]);
 
     distance_to_camera = length(CameraPosition.xz - pos.xz - float2(0, size.y * 0.5));
     tesselation_factor = GetTessellationFactorFromCamera(distance_to_camera);
@@ -208,7 +208,7 @@ DS_OUTPUT DSMain(PatchData input, float2 uv : SV_DomainLocation, OutputPatch<HS_
     //float3 normalRot = mul(normal, normal_rotation_matrix);
     
 	// writing output params
-    float4x4 worldMat = World[(int)input.TileIndex];
+    float4x4 worldMat = TerrainTileWorld[(int)input.TileIndex];
     output.position = mul(float4(vertexPosition, 1.0), worldMat);
     output.worldPos = output.position;
     output.position = mul(output.position, View);
@@ -234,7 +234,7 @@ DS_OUTPUT DSShadowMap(PatchData input, float2 uv : SV_DomainLocation, OutputPatc
     vertexPosition.y = TerrainHeightScale * height;
     
 	// writing output params
-    output.position = mul(float4(vertexPosition, 1.0), mul(World[(int)input.TileIndex], LightViewProjection));
+    output.position = mul(float4(vertexPosition, 1.0), mul(TerrainTileWorld[(int)input.TileIndex], LightViewProjection));
     output.Depth = output.position.zw;
  
     return output;

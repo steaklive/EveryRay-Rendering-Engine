@@ -543,9 +543,9 @@ namespace EveryRay_Core
 		for (int i = 0; i < MAX_TERRAIN_TILE_COUNT; i++, tileIndex++)
 		{
 			if (tileIndex < static_cast<int>(mHeightMaps.size()))
-				mTerrainConstantBuffer.Data.World[tileIndex] = XMMatrixTranspose(mHeightMaps[tileIndex]->mWorldMatrixTS);
+				mTerrainConstantBuffer.Data.TerrainTileWorld[tileIndex] = XMMatrixTranspose(mHeightMaps[tileIndex]->mWorldMatrixTS);
 			else
-				mTerrainConstantBuffer.Data.World[i] = XMMatrixIdentity();
+				mTerrainConstantBuffer.Data.TerrainTileWorld[i] = XMMatrixIdentity();
 		}
 		mTerrainConstantBuffer.Data.View = XMMatrixTranspose(camera->ViewMatrix());
 		mTerrainConstantBuffer.Data.Projection = XMMatrixTranspose(camera->ProjectionMatrix());

@@ -55,7 +55,7 @@ namespace EveryRay_Core
 		};
 
 		struct ER_ALIGN_GPU_BUFFER TerrainCB {
-			XMMATRIX World[MAX_TERRAIN_TILE_COUNT];
+			XMMATRIX TerrainTileWorld[MAX_TERRAIN_TILE_COUNT];
 			XMMATRIX ShadowMatrices[NUM_SHADOW_CASCADES];
 			XMMATRIX View;
 			XMMATRIX Projection;
