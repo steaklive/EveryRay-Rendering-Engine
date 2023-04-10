@@ -25,6 +25,8 @@ namespace EveryRay_Core
 	static float nearPlaneDist = 0.5f;
 	static float farPlaneDist = 600.0f;
 
+	static std::mutex renderingObjectsTextureCacheMutex;
+
 	ER_RuntimeCore::ER_RuntimeCore(ER_RHI* aRHI, HINSTANCE instance, const std::wstring& windowClass, const std::wstring& windowTitle, int showCommand, bool isFullscreen)
 		: ER_Core(aRHI, instance, windowClass, windowTitle, showCommand, isFullscreen),
 		mDirectInput(nullptr),
@@ -361,6 +363,12 @@ namespace EveryRay_Core
 		DeleteObject(mMouse);
 		DeleteObject(mCamera);
 
+		if (mCurrentSandbox)
+		{
+			mCurrentSandbox->Destroy(*this);
+			DeleteObject(mCurrentSandbox);
+		}
+
 		//destroy imgui
 		{
 			if (mRHI)
@@ -405,6 +413,8 @@ namespace EveryRay_Core
 
 	ER_RHI_GPUTexture* ER_RuntimeCore::AddOrGetGPUTextureFromCache(const std::wstring& aFullPath, bool* didExist, bool is3D /*= false*/, bool skipFallback /*= false*/, bool* statusFlag /*= nullptr*/, bool isSilent /*= false*/)
 	{
+		const std::lock_guard<std::mutex> lock(renderingObjectsTextureCacheMutex);
+
 		auto it = mRenderingObjectsTextureCache.find(aFullPath);
 		if (it != mRenderingObjectsTextureCache.end())
 		{

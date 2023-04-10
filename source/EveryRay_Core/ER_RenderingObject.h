@@ -146,7 +146,7 @@ namespace EveryRay_Core
 		const UINT GetInstanceCount(int lod = 0) { return (mIsInstanced ? static_cast<UINT>(mInstanceData[lod].size()) : 0); }
 		std::vector<InstancedData>& GetInstancesData(int lod = 0) { return mInstanceData[lod]; }
 		
-		const XMFLOAT4X4& GetTransformationMatrix4X4() const { return XMFLOAT4X4(mCurrentObjectTransformMatrix); }
+		XMFLOAT4X4 GetTransformationMatrix4X4() const { return XMFLOAT4X4(mCurrentObjectTransformMatrix); }
 		const XMMATRIX& GetTransformationMatrix() const { return mTransformationMatrix; }
 
 		ER_AABB& GetLocalAABB() { return mLocalAABB; } //local space (no transforms)
@@ -394,7 +394,7 @@ namespace EveryRay_Core
 		ER_AABB													mLocalAABB; //mesh space AABB
 		ER_AABB													mGlobalAABB; //world space AABB
 		XMFLOAT3												mCurrentGlobalAABBVertices[8];
-		ER_RenderableAABB*										mDebugGizmoAABB;
+		ER_RenderableAABB*										mDebugGizmoAABB = nullptr;
 	
 		std::string												mName;
 		const char*												mInstancedNamesUI[MAX_INSTANCE_COUNT];

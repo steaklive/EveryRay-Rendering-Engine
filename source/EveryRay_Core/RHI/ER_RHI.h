@@ -531,7 +531,7 @@ namespace EveryRay_Core
 	public:
 		T Data;
 	protected:
-		ER_RHI_GPUBuffer* buffer;
+		ER_RHI_GPUBuffer* buffer = nullptr;
 		bool initialized;
 	public:
 		ER_RHI_GPUConstantBuffer() : initialized(false)

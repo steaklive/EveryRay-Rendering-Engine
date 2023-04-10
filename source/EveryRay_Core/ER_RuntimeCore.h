@@ -48,12 +48,12 @@ namespace EveryRay_Core
 		void UpdateImGui();
 
 		LPDIRECTINPUT8 mDirectInput;
-		ER_Keyboard* mKeyboard;
-		ER_Mouse* mMouse;
-		ER_Gamepad* mGamepad;
-		ER_CameraFPS* mCamera;
-		ER_Editor* mEditor;
-		ER_QuadRenderer* mQuadRenderer;
+		ER_Keyboard* mKeyboard = nullptr;
+		ER_Mouse* mMouse = nullptr;
+		ER_Gamepad* mGamepad = nullptr;
+		ER_CameraFPS* mCamera = nullptr;
+		ER_Editor* mEditor = nullptr;
+		ER_QuadRenderer* mQuadRenderer = nullptr;
 
 		ER_RHI_Viewport mMainViewport;
 
@@ -64,7 +64,7 @@ namespace EveryRay_Core
 
 		std::map<std::string, std::string> mScenesPaths;
 		std::vector<std::string> mScenesNamesByIndices;
-		char* mDisplayedLevelNames[MAX_SCENES_COUNT];
+		char* mDisplayedLevelNames[MAX_SCENES_COUNT] = { 0 };
 		unsigned int mNumParsedScenesFromConfig;
 
 		std::string mStartupSceneName;

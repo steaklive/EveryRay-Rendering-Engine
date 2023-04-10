@@ -26,7 +26,7 @@ namespace EveryRay_Core
 		XMFLOAT4 GetTopSkyColor() { return XMFLOAT4(topColorSky[0], topColorSky[1], topColorSky[2], topColorSky[3]); }
 		bool IsSkyboxUsingCustomColor() { return mUseCustomSkyboxColor; }
 	private:
-		ER_Scene* mScene;
+		ER_Scene* mScene = nullptr;
 
 		ER_Editor(const ER_Editor& rhs);
 		ER_Editor& operator=(const ER_Editor& rhs);

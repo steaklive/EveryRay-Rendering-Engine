@@ -243,7 +243,7 @@ namespace EveryRay_Core
 	private:
 		void UpdateImGui();
 		std::vector<ER_Foliage*> mFoliageCollection;
-		ER_Scene* mScene;
+		ER_Scene* mScene = nullptr;
 
 		ER_RHI_GPURootSignature* mRootSignature = nullptr;
 

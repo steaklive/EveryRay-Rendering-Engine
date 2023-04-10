@@ -602,13 +602,6 @@ namespace EveryRay_Core {
 			rhi->EndEventTag();
 		}
 
-		rhi->BeginEventTag("EveryRay: Post Processing (Volumetric Clouds - Composite)");
-		{
-			// Composite with volumetric clouds (if enabled)
-			if (aVolumetricClouds && aVolumetricClouds->IsEnabled())
-				aVolumetricClouds->Composite(mRenderTargetBeforeResolve);
-		}
-		rhi->EndEventTag();
 
 		// Composite with volumetric fog (if enabled)
 		rhi->BeginEventTag("EveryRay: Post Processing (Volumetric Fog - Composite)");
@@ -656,6 +649,14 @@ namespace EveryRay_Core {
 
 			rhi->EndEventTag();
 		}
+
+		rhi->BeginEventTag("EveryRay: Post Processing (Volumetric Clouds - Composite)");
+		{
+			// Composite with volumetric clouds (if enabled)
+			if (aVolumetricClouds && aVolumetricClouds->IsEnabled())
+				aVolumetricClouds->Composite(mRenderTargetBeforeResolve);
+		}
+		rhi->EndEventTag();
 
 		// Color grading
 		if (mUseColorGrading)

@@ -74,7 +74,7 @@ namespace EveryRay_Core
 
 		ER_RHI_GPUTexture* GetIntegrationMap() { return mIntegrationMapTextureSRV; }
 		
-		const XMFLOAT4& GetProbesCellsCount(ER_ProbeType aType);
+		XMFLOAT4 GetProbesCellsCount(ER_ProbeType aType);
 		const XMFLOAT3& GetSceneProbesVolumeMin() { return mSceneProbesMinBounds; }
 		const XMFLOAT3& GetSceneProbesVolumeMax() { return mSceneProbesMaxBounds; }
 
@@ -110,7 +110,7 @@ namespace EveryRay_Core
 		ER_RHI_GPUBuffer* mDiffuseProbesSphericalHarmonicsGPUBuffer = nullptr;
 		ER_RHI_GPUTexture* mTempDiffuseCubemapFacesRT = nullptr;
 		ER_RHI_GPUTexture* mTempDiffuseCubemapFacesConvolutedRT = nullptr;
-		ER_RHI_GPUTexture* mTempDiffuseCubemapDepthBuffers[CUBEMAP_FACES_COUNT] = { nullptr };
+		ER_RHI_GPUTexture* mTempDiffuseCubemapDepthBuffers[CUBEMAP_FACES_COUNT] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 		std::vector<ER_LightProbeCell> mDiffuseProbesCells;
 		ER_AABB mDiffuseProbesCellBounds;
 		int mDiffuseProbesCountTotal = 0;
@@ -136,7 +136,7 @@ namespace EveryRay_Core
 		ER_RHI_GPUBuffer* mSpecularProbesPositionsGPUBuffer = nullptr;
 		ER_RHI_GPUTexture* mTempSpecularCubemapFacesRT = nullptr;
 		ER_RHI_GPUTexture* mTempSpecularCubemapFacesConvolutedRT = nullptr;
-		ER_RHI_GPUTexture* mTempSpecularCubemapDepthBuffers[CUBEMAP_FACES_COUNT] = { nullptr };
+		ER_RHI_GPUTexture* mTempSpecularCubemapDepthBuffers[CUBEMAP_FACES_COUNT] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 		ER_RHI_GPUTexture* mSpecularCubemapArrayRT = nullptr;
 		std::vector<ER_LightProbeCell> mSpecularProbesCells;
 		ER_AABB mSpecularProbesCellBounds;
