@@ -148,7 +148,7 @@ namespace EveryRay_Core
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	ER_Foliage::ER_Foliage(ER_Core& pCore, ER_Camera& pCamera, ER_DirectionalLight& pLight, int pPatchesCount, const std::string& textureName, float scale, float distributionRadius,
-		const XMFLOAT3& distributionCenter, FoliageBillboardType bType, bool isPlacedOnTerrain, int placeChannel)
+		const XMFLOAT3& distributionCenter, FoliageBillboardType bType, bool isPlacedOnTerrain, int placeChannel, float placedHeightDelta)
 		:
 		mCore(pCore),
 		mCamera(pCamera),
@@ -161,7 +161,8 @@ namespace EveryRay_Core
 		mType(bType),
 		mTextureName(textureName),
 		mIsPlacedOnTerrain(isPlacedOnTerrain),
-		mTerrainSplatChannel(placeChannel)
+		mTerrainSplatChannel(placeChannel),
+		mPlacementHeightDelta(placedHeightDelta)
 	{
 		auto rhi = mCore.GetRHI();
 
@@ -241,28 +242,28 @@ namespace EveryRay_Core
 			std::unique_ptr<ER_Model> quadSingleModel(new ER_Model(mCore, ER_Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_single.obj"), true));
 			quadSingleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(mVertexBuffer);
 			quadSingleModel->GetMesh(0).CreateIndexBuffer(mIndexBuffer);
-			mVerticesCount = quadSingleModel->GetMesh(0).Indices().size();
+			mVerticesCount = static_cast<int>(quadSingleModel->GetMesh(0).Indices().size());
 		}
 		else if (bType == FoliageBillboardType::TWO_QUADS_CROSSING) {
 			mIsRotating = false;
 			std::unique_ptr<ER_Model> quadDoubleModel(new ER_Model(mCore, ER_Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_double.obj"), true));
 			quadDoubleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(mVertexBuffer);
 			quadDoubleModel->GetMesh(0).CreateIndexBuffer(mIndexBuffer);
-			mVerticesCount = quadDoubleModel->GetMesh(0).Indices().size();
+			mVerticesCount = static_cast<int>(quadDoubleModel->GetMesh(0).Indices().size());
 		}
 		else if (bType == FoliageBillboardType::THREE_QUADS_CROSSING) {
 			mIsRotating = false;
 			std::unique_ptr<ER_Model> quadTripleModel(new ER_Model(mCore, ER_Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_triple.obj"), true));
 			quadTripleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(mVertexBuffer);
 			quadTripleModel->GetMesh(0).CreateIndexBuffer(mIndexBuffer);
-			mVerticesCount = quadTripleModel->GetMesh(0).Indices().size();
+			mVerticesCount = static_cast<int>(quadTripleModel->GetMesh(0).Indices().size());
 		}
 		else if (bType == FoliageBillboardType::MULTIPLE_QUADS_CROSSING) {
 			mIsRotating = false;
 			std::unique_ptr<ER_Model> quadMultipleModel(new ER_Model(mCore, ER_Utility::GetFilePath("content\\models\\vegetation\\foliage_quad_multiple.obj"), true));
 			quadMultipleModel->GetMesh(0).CreateVertexBuffer_PositionUvNormal(mVertexBuffer);
 			quadMultipleModel->GetMesh(0).CreateIndexBuffer(mIndexBuffer);
-			mVerticesCount = quadMultipleModel->GetMesh(0).Indices().size();
+			mVerticesCount = static_cast<int>(quadMultipleModel->GetMesh(0).Indices().size());
 		}
 	}
 	void ER_Foliage::Initialize()
@@ -295,7 +296,7 @@ namespace EveryRay_Core
 				mOutputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: On-terrain placement output positions buffer");
 				mOutputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, mCurrentPositions, mPatchesCount, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L /*legacy from DX11*/, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
 
-				terrain->PlaceOnTerrain(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mCurrentPositions, mPatchesCount, (TerrainSplatChannels)mTerrainSplatChannel);
+				terrain->PlaceOnTerrain(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mCurrentPositions, mPatchesCount, (TerrainSplatChannels)mTerrainSplatChannel, nullptr, 0, mPlacementHeightDelta);
 #ifndef ER_PLATFORM_WIN64_DX11
 				std::string eventName = "On-terrain placement callback - initialization of foliage: " + mName;
 				terrain->ReadbackPlacedPositionsOnInitEvent->AddListener(eventName, [&](ER_Terrain* aTerrain)
@@ -544,7 +545,7 @@ namespace EveryRay_Core
 						mOutputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: foliage on-terrain placement output positions buffer");
 						mOutputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, mCurrentPositions, mPatchesCount, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L /*legacy from DX11*/, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
 
-						terrain->PlaceOnTerrain(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mCurrentPositions, mPatchesCount, currentChannel);
+						terrain->PlaceOnTerrain(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mCurrentPositions, mPatchesCount, currentChannel, nullptr, 0, mPlacementHeightDelta);
 #ifndef ER_PLATFORM_WIN64_DX11
 						std::string eventName = "On-terrain placement callback - update of foliage: " + mName;
 						terrain->ReadbackPlacedPositionsOnUpdateEvent->AddListener(eventName, [&](ER_Terrain* aTerrain)

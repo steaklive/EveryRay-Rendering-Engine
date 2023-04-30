@@ -156,7 +156,7 @@ namespace EveryRay_Core
 		void SetTerrainHeightScale(float scale) { mTerrainTessellatedHeightScale = scale; }
 		HeightMap* GetHeightmap(int index) { return mHeightMaps.at(index); }
 		void PlaceOnTerrain(ER_RHI_GPUBuffer* outputBuffer, ER_RHI_GPUBuffer* inputBuffer, XMFLOAT4* positions, int positionsCount,
-			TerrainSplatChannels splatChannel = TerrainSplatChannels::NONE,	XMFLOAT4* terrainVertices = nullptr, int terrainVertexCount = 0);
+			TerrainSplatChannels splatChannel = TerrainSplatChannels::NONE,	XMFLOAT4* terrainVertices = nullptr, int terrainVertexCount = 0, float customDampDelta = FLT_MAX);
 		void ReadbackPlacedPositions(ER_RHI_GPUBuffer* outputBuffer, ER_RHI_GPUBuffer* inputBuffer, XMFLOAT4* positions, int positionsCount);
 		//float GetHeightScale(bool tessellated) { if (tessellated) return mTerrainTessellatedHeightScale; else return mTerrainNonTessellatedHeightScale; }
 

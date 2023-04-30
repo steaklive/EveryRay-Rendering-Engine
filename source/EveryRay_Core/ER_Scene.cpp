@@ -795,13 +795,17 @@ namespace EveryRay_Core
 					if (mSceneJsonRoot["foliage_zones"][i].isMember("placed_splat_channel"))
 						terrainChannel = (TerrainSplatChannels)(mSceneJsonRoot["foliage_zones"][i]["placed_splat_channel"].asInt());
 
+					float placedHeightDelta = 0.0f;
+					if (mSceneJsonRoot["foliage_zones"][i].isMember("placed_height_delta"))
+						placedHeightDelta = mSceneJsonRoot["foliage_zones"][i]["placed_height_delta"].asFloat();
+
 					foliageZones.push_back(new ER_Foliage(*core, mCamera, light,
 						mSceneJsonRoot["foliage_zones"][i]["patch_count"].asInt(),
 						ER_Utility::GetFilePath(mSceneJsonRoot["foliage_zones"][i]["texture_path"].asString()),
 						mSceneJsonRoot["foliage_zones"][i]["average_scale"].asFloat(),
 						mSceneJsonRoot["foliage_zones"][i]["distribution_radius"].asFloat(),
 						XMFLOAT3(vec3[0], vec3[1], vec3[2]),
-						(FoliageBillboardType)mSceneJsonRoot["foliage_zones"][i]["type"].asInt(), placedOnTerrain, terrainChannel));
+						(FoliageBillboardType)mSceneJsonRoot["foliage_zones"][i]["type"].asInt(), placedOnTerrain, terrainChannel, placedHeightDelta));
 				}
 			}
 			else

@@ -1022,7 +1022,7 @@ namespace EveryRay_Core
 	// - placing ER_RenderingObject(s) on terrain (even their instances individually)
 	// - placing ER_Foliage patches on terrain (batch placement)
 	void ER_Terrain::PlaceOnTerrain(ER_RHI_GPUBuffer* outputBuffer, ER_RHI_GPUBuffer* inputBuffer, XMFLOAT4* positions, int positionsCount,
-		TerrainSplatChannels splatChannel, XMFLOAT4* terrainVertices, int terrainVertexCount)
+		TerrainSplatChannels splatChannel, XMFLOAT4* terrainVertices, int terrainVertexCount, float customDampDelta)
 	{
 		assert(inputBuffer && outputBuffer);
 		ER_RHI* rhi = GetCore()->GetRHI();
@@ -1045,7 +1045,7 @@ namespace EveryRay_Core
 		mPlaceOnTerrainConstantBuffer.Data.HeightScale = mTerrainTessellatedHeightScale;
 		mPlaceOnTerrainConstantBuffer.Data.SplatChannel = splatChannel == TerrainSplatChannels::NONE ? -1.0f : static_cast<float>(splatChannel);
 		mPlaceOnTerrainConstantBuffer.Data.TerrainTileCount = static_cast<int>(mNumTiles);
-		mPlaceOnTerrainConstantBuffer.Data.PlacementHeightDelta = mPlacementHeightDelta;
+		mPlaceOnTerrainConstantBuffer.Data.PlacementHeightDelta = abs(customDampDelta - FLT_MAX) < std::numeric_limits<float>::epsilon() ? mPlacementHeightDelta : customDampDelta;
 		mPlaceOnTerrainConstantBuffer.ApplyChanges(rhi);
 		rhi->SetConstantBuffers(ER_COMPUTE, { mPlaceOnTerrainConstantBuffer.Buffer() }, 0,
 			mTerrainPlacementPassRS, PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);

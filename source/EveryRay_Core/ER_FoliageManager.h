@@ -79,7 +79,7 @@ namespace EveryRay_Core
 	public:
 		ER_Foliage(ER_Core& pCore, ER_Camera& pCamera, ER_DirectionalLight& pLight, int pPatchesCount, const std::string& textureName, float scale = 1.0f, float distributionRadius = 100, 
 			const XMFLOAT3& distributionCenter = XMFLOAT3(0.0f, 0.0f, 0.0f), FoliageBillboardType bType = FoliageBillboardType::SINGLE,
-			bool isPlacedOnTerrain = false, int terrainPlaceChannel = 4);
+			bool isPlacedOnTerrain = false, int terrainPlaceChannel = 4, float placedHeightDelta = 0.0f);
 		~ER_Foliage();
 
 		void Initialize();
@@ -173,6 +173,7 @@ namespace EveryRay_Core
 
 		int mTerrainSplatChannel = 4;
 		bool mIsPlacedOnTerrain = false;
+		float mPlacementHeightDelta = 0.0;
 
 		ER_RenderableAABB* mDebugGizmoAABB = nullptr;
 		ER_AABB mAABB;
