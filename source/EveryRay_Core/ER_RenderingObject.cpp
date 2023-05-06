@@ -547,7 +547,7 @@ namespace EveryRay_Core
 	void ER_RenderingObject::PerformCPUFrustumCull(ER_Camera* camera)
 	{
 		auto frustum = camera->GetFrustum();
-		auto cullFunction = [frustum](ER_AABB& aabb) {
+		auto cullFunction = [&frustum](ER_AABB& aabb) {
 			bool culled = false;
 			// start a loop through all frustum planes
 			for (int planeID = 0; planeID < 6; ++planeID)
@@ -605,9 +605,9 @@ namespace EveryRay_Core
 				}
 				mTempPostCullingInstanceData = newInstanceData; //we store a copy for future usages
 
-				//update every LOD group with new instance data after CPU frustum culling
-				for (int lodIndex = 0; lodIndex < GetLODCount(); lodIndex++)
-					UpdateInstanceBuffer(mTempPostCullingInstanceData, lodIndex);
+				// if we have lods, we will update instance buffers later in UpdateLODs()
+				if (GetLODCount() <= 1)
+					UpdateInstanceBuffer(mTempPostCullingInstanceData, 0);
 			}
 		}
 		else
@@ -739,9 +739,9 @@ namespace EveryRay_Core
 		ER_Camera* camera = (ER_Camera*)(mCore->GetServices().FindService(ER_Camera::TypeIdClass()));
 		assert(camera);
 
-		bool editable = ER_Utility::IsEditorMode && mAvailableInEditorMode && mIsSelected;
+		bool isCurrentlyEditable = ER_Utility::IsEditorMode && mAvailableInEditorMode && mIsSelected;
 
-		if (editable && mIsInstanced)
+		if (isCurrentlyEditable && mIsInstanced)
 		{
 			// load current selected instance's transform to temp transform (for UI)
 			ER_MatrixHelper::GetFloatArray(mInstanceData[0][mEditorSelectedInstancedObjectIndex].World, mCurrentObjectTransformMatrix);
@@ -783,7 +783,7 @@ namespace EveryRay_Core
 		if (GetLODCount() > 1)
 			UpdateLODs();
 
-		if (editable)
+		if (isCurrentlyEditable)
 		{
 			UpdateGizmos();
 			ShowInstancesListWindow();
@@ -1071,6 +1071,10 @@ namespace EveryRay_Core
 
 	void ER_RenderingObject::UpdateLODs()
 	{
+		const float sqrDistLod0 = ER_Utility::DistancesLOD[0] * ER_Utility::DistancesLOD[0];
+		const float sqrDistLod1 = ER_Utility::DistancesLOD[1] * ER_Utility::DistancesLOD[1];
+		const float sqrDistLod2 = ER_Utility::DistancesLOD[2] * ER_Utility::DistancesLOD[2];
+
 		if (mIsInstanced) {
 			if (!ER_Utility::IsMainCameraCPUFrustumCulling && mInstanceData.size() == 0)
 				return;
@@ -1095,13 +1099,13 @@ namespace EveryRay_Core
 					(mCamera.Position().z - pos.z) * (mCamera.Position().z - pos.z);
 
 				//XMMATRIX newMat;
-				if (distanceToCameraSqr <= ER_Utility::DistancesLOD[0] * ER_Utility::DistancesLOD[0]) {
+				if (distanceToCameraSqr <= sqrDistLod0) {
 					mTempPostLoddingInstanceData[0].push_back((ER_Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
 				}
-				else if (ER_Utility::DistancesLOD[0] * ER_Utility::DistancesLOD[0] < distanceToCameraSqr && distanceToCameraSqr <= ER_Utility::DistancesLOD[1] * ER_Utility::DistancesLOD[1]) {
+				else if (sqrDistLod0 < distanceToCameraSqr && distanceToCameraSqr <= sqrDistLod1) {
 					mTempPostLoddingInstanceData[1].push_back((ER_Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
 				}
-				else if (ER_Utility::DistancesLOD[1] * ER_Utility::DistancesLOD[1] < distanceToCameraSqr && distanceToCameraSqr <= ER_Utility::DistancesLOD[2] * ER_Utility::DistancesLOD[2]) {
+				else if (sqrDistLod1 < distanceToCameraSqr && distanceToCameraSqr <= sqrDistLod2) {
 					mTempPostLoddingInstanceData[2].push_back((ER_Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
 				}
 			}
@@ -1119,13 +1123,13 @@ namespace EveryRay_Core
 				(mCamera.Position().y - pos.y) * (mCamera.Position().y - pos.y) +
 				(mCamera.Position().z - pos.z) * (mCamera.Position().z - pos.z);
 
-			if (distanceToCameraSqr <= ER_Utility::DistancesLOD[0] * ER_Utility::DistancesLOD[0]) {
+			if (distanceToCameraSqr <= sqrDistLod0) {
 				mCurrentLODIndex = 0;
 			}
-			else if (ER_Utility::DistancesLOD[0] * ER_Utility::DistancesLOD[0] < distanceToCameraSqr && distanceToCameraSqr <= ER_Utility::DistancesLOD[1] * ER_Utility::DistancesLOD[1]) {
+			else if (sqrDistLod0 < distanceToCameraSqr && distanceToCameraSqr <= sqrDistLod1) {
 				mCurrentLODIndex = 1;
 			}
-			else if (ER_Utility::DistancesLOD[1] * ER_Utility::DistancesLOD[1] < distanceToCameraSqr && distanceToCameraSqr <= ER_Utility::DistancesLOD[2] * ER_Utility::DistancesLOD[2]) {
+			else if (sqrDistLod1 < distanceToCameraSqr && distanceToCameraSqr <= sqrDistLod2) {
 				mCurrentLODIndex = 2;
 			}
 			else

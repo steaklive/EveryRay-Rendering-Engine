@@ -307,6 +307,9 @@ namespace EveryRay_Core
 			if (mSceneJsonRoot["rendering_objects"][i].isMember("use_transparency"))
 				aObject->SetTransparency(mSceneJsonRoot["rendering_objects"][i]["use_transparency"].asBool());
 
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("skipIndirectSpecular"))
+				aObject->SetIsSkipIndirectSpecular(mSceneJsonRoot["rendering_objects"][i]["skipIndirectSpecular"].asBool());
+
 			if (mSceneJsonRoot["rendering_objects"][i].isMember("index_of_refraction"))
 				aObject->SetIOR(mSceneJsonRoot["rendering_objects"][i]["index_of_refraction"].asFloat());
 

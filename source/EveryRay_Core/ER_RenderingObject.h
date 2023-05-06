@@ -257,6 +257,9 @@ namespace EveryRay_Core
 		bool IsUsedForGlobalLightProbeRendering() { return mIsUsedForGlobalLightProbeRendering; }
 		void SetIsUsedForGlobalLightProbeRendering(bool value) { mIsUsedForGlobalLightProbeRendering = value; }
 
+		bool IsSkipIndirectSpecular() { return mIsSkipIndirectSpecular; }
+		void SetIsSkipIndirectSpecular(bool value) { mIsSkipIndirectSpecular = value; }
+
 		int GetIndexInScene() { return mIndexInScene; }
 		void SetIndexInScene(int index) { mIndexInScene = index; }
 
@@ -417,6 +420,7 @@ namespace EveryRay_Core
 		bool													mIsInGbuffer = false;
 		bool													mUseIndirectGlobalLightProbe = false;
 		bool													mIsUsedForGlobalLightProbeRendering = false;
+		bool													mIsSkipIndirectSpecular = false; //only works with deferred rendering
 		bool													mIsTransparent = false;
 		float													mIOR = 1.52f; // glass IOR by default
 		float													mCustomRoughness = -1.0f;

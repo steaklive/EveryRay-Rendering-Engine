@@ -527,7 +527,7 @@ namespace EveryRay_Core
 			std::string textureText = "* Texture: " + mTextureName;
 			ImGui::Text(textureText.c_str());
 			
-			if (!mIsPlacedOnTerrain)
+			//if (!mIsPlacedOnTerrain)
 			{
 				//terrain
 				{

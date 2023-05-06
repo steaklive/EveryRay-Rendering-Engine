@@ -70,7 +70,12 @@ float4 PSMain(QUAD_VS_OUT IN) : SV_Target
 {
     float4 color = ColorTexture.Sample(Sampler, IN.TexCoord);
     float reflectionMaskFactor = GBufferExtra.Sample(Sampler, IN.TexCoord).r;
-    if (reflectionMaskFactor == 0.0f)
+    if (reflectionMaskFactor <= 0.5f)
+        return color;
+
+	// we don't want reflections on foliage
+    float foliageFactor = GBufferExtra.Sample(Sampler, IN.TexCoord).a;
+    if (foliageFactor >= 1.0f)
         return color;
     
 	float depth = DepthTexture.Sample(Sampler, IN.TexCoord).r;

@@ -383,7 +383,7 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
         
         bool useGlobalProbe = UseGlobalProbe > 0.0f;
         indirectLighting += IndirectLightingPBR(SunDirection.xyz, normalWS, diffuseAlbedo.rgb, vsOutput.WorldPos, roughness, F0, metalness, CameraPosition.xyz, useGlobalProbe,
-            probesInfo, SamplerLinear, SamplerClamp, IntegrationTexture, ao);
+            probesInfo, SamplerLinear, SamplerClamp, IntegrationTexture, ao, false);
     }
 
     float shadow = 0.0f;

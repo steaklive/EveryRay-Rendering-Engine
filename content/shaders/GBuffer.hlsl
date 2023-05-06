@@ -20,7 +20,7 @@ cbuffer GBufferCBuffer : register(b0)
     float4x4 World;
     float4 Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor;
     float4 SkipDeferredLighting_UseSSS_CustomAlphaDiscard; // a - empty
-    float4 CustomRoughnessMetalness; // r - roughness, g - metalness
+    float4 CustomRoughnessMetalnessSkipIndSpec; // r - roughness, g - metalness, b - skip indirect specular
 }
 
 SamplerState Sampler : register(s0);
@@ -98,7 +98,7 @@ float3x3 invert_3x3(float3x3 M)
         cross(T[0], T[1])) / (D + 1e-6);
 }
 
-PS_OUTPUT PSMain(VS_OUTPUT IN) : SV_Target
+PS_OUTPUT PSMain(VS_OUTPUT IN, bool isFrontFace : SV_IsFrontFace) : SV_Target
 {
     PS_OUTPUT OUT;
     float4 albedo = AlbedoMap.Sample(Sampler, IN.TextureCoordinate);
@@ -108,7 +108,7 @@ PS_OUTPUT PSMain(VS_OUTPUT IN) : SV_Target
     OUT.Color = albedo;
     
     float3 sampledNormal = normalize(2.0f * NormalMap.Sample(Sampler, IN.TextureCoordinate).xyz - float3(1.0, 1.0, 1.0));
-
+ 
     // A way of calculating normals without tangent/bitangent
     //float3x3 tbnTransform;
     //float3 dp1 = ddx_fine(IN.WorldPos);
@@ -132,9 +132,9 @@ PS_OUTPUT PSMain(VS_OUTPUT IN) : SV_Target
     OUT.Normal = float4(sampledNormal, 1.0);
     OUT.WorldPos = float4(IN.WorldPos, IN.Position.w);
     
-    float roughness = CustomRoughnessMetalness.r >= 0.0f ? CustomRoughnessMetalness.r : RoughnessMap.Sample(Sampler, IN.TextureCoordinate).r;
-    float metalness = CustomRoughnessMetalness.g >= 0.0f ? CustomRoughnessMetalness.g : MetallicMap.Sample(Sampler, IN.TextureCoordinate).r;
-    float reflectionMask = ReflectionMaskMap.Sample(Sampler, IN.TextureCoordinate).r;
+    float roughness = CustomRoughnessMetalnessSkipIndSpec.r >= 0.0f ? CustomRoughnessMetalnessSkipIndSpec.r : RoughnessMap.Sample(Sampler, IN.TextureCoordinate).r;
+    float metalness = CustomRoughnessMetalnessSkipIndSpec.g >= 0.0f ? CustomRoughnessMetalnessSkipIndSpec.g : MetallicMap.Sample(Sampler, IN.TextureCoordinate).r;
+    float reflectionMask = CustomRoughnessMetalnessSkipIndSpec.b > 0.0 ? 0.5f : ReflectionMaskMap.Sample(Sampler, IN.TextureCoordinate).r;
     OUT.Extra = float4(reflectionMask, roughness, metalness, Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor.g);
     OUT.Extra2 = float4(
         Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor.b, 

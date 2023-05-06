@@ -86,13 +86,15 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     float4 extraGbuffer = GbufferExtraTexture.Load(uint3(inPos, 0));
     float roughness = max(0.01, extraGbuffer.g);
     float metalness = extraGbuffer.b;
-    
+    float reflectionMask = extraGbuffer.r; // works as "skip indirect specular" flag when combined with foliage mask
+
     float ao = 1.0f; // TODO sample AO texture
     
     bool usePOM = extra2Gbuffer.g > -1.0f; // TODO add POM support to Deferred
     bool useSSS = extra2Gbuffer.b > -1.0f && SSSAvailable > 0.0f;
     bool isFoliage = extraGbuffer.a >= 1.0f;
-    
+    bool skipIndirectSpecular = reflectionMask <= 0.5f; // we store 2.0f if we need to skip indirect specular
+
     //reflectance at normal incidence for dia-electic or metal
     float3 F0 = float3(0.04, 0.04, 0.04);
     F0 = lerp(F0, diffuseAlbedo.rgb, metalness);
@@ -135,7 +137,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
         probesInfo.distanceBetweenSpecularProbes = DistanceBetweenSpecularProbes;
         
         indirectLighting += IndirectLightingPBR(SunDirection.xyz, normalWS, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness, CameraPosition.xyz, useGlobalProbe > 0.0f,
-            probesInfo, SamplerLinear, SamplerClamp, IntegrationTexture, ao);
+            probesInfo, SamplerLinear, SamplerClamp, IntegrationTexture, ao, skipIndirectSpecular);
     }
     
     float shadow = Deferred_GetShadow(worldPos, ShadowMatrices, ShadowCascadeDistances, ShadowTexelSize.x, CascadedShadowTextures, CascadedPcfShadowMapSampler);
