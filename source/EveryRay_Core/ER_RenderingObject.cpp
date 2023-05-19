@@ -20,6 +20,7 @@
 
 namespace EveryRay_Core
 {
+	static bool useIndirectRendering = true; //GPU-driven way of rendering instanced objects (culling them on GPU and not performing CPU readback)
 	static int currentSplatChannnel = (int)TerrainSplatChannels::NONE;
 
 	ER_RenderingObject::ER_RenderingObject(const std::string& pName, int index, ER_Core& pCore, ER_Camera& pCamera, std::unique_ptr<ER_Model> pModel, bool availableInEditor, bool isInstanced)
@@ -113,6 +114,13 @@ namespace EveryRay_Core
 		DeleteObjects(mTempInstancesPositions);
 
 		mObjectConstantBuffer.Release();
+
+		for (int i = 0; i < GetMeshCount(); ++i)
+		{
+			DeleteObject(mIndirectArgsBuffers[i]);
+		}
+		DeleteObject(mIndirectAppendInstanceDataBuffer);
+		DeleteObject(mIndirectOriginalInstanceDataBuffer);
 	}
 
 	void ER_RenderingObject::LoadMaterial(ER_Material* pMaterial, const std::string& materialName)
@@ -348,6 +356,18 @@ namespace EveryRay_Core
 		mMeshRenderBuffers.push_back({});
 		assert(mMeshRenderBuffers.size() - 1 == lod);
 
+		if (lod == 0)
+		{
+			mIndirectArgsBuffers.resize(mMeshesCount[lod]);
+			const int numArgs = 5; // number of args for DrawIndexedInstanced
+			for (int meshIndex = 0; meshIndex < mMeshesCount[lod]; meshIndex++)
+			{
+				mIndirectArgsBuffers[meshIndex] = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject - Indirect Args Buffer : " + mName + ", mesh : " + std::to_string(meshIndex));
+				mIndirectArgsBuffers[meshIndex]->CreateGPUBufferResource(rhi, nullptr, numArgs/* * GetLODCount()*/, sizeof(UINT), false,
+					ER_BIND_UNORDERED_ACCESS | ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_DRAWINDIRECT_ARGS, ER_RHI_FORMAT::ER_FORMAT_R32_UINT);
+			}
+		}
+
 		auto createIndexBuffer = [this, rhi](const ER_Mesh& aMesh, int meshIndex, int lod) {
 			mMeshRenderBuffers[lod][meshIndex]->IndexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject - Index Buffer: " + mName + ", lod: " + std::to_string(lod) + ", mesh: " + std::to_string(meshIndex));
 			aMesh.CreateIndexBuffer(mMeshRenderBuffers[lod][meshIndex]->IndexBuffer);
@@ -427,7 +447,17 @@ namespace EveryRay_Core
 			for (int i = (isSpecificMesh) ? meshIndex : 0; i < ((isSpecificMesh) ? meshIndex + 1 : mMeshesCount[lod]); i++)
 			{
 				if (mIsInstanced)
-					rhi->SetVertexBuffers({ mMeshRenderBuffers[lod][i]->VertexBuffer, mMeshesInstanceBuffers[lod][i]->InstanceBuffer });
+				{
+					//TODO
+					//if (useIndirectRendering)
+					//{
+					//	//instead of instance buffer, we set a read-only structured buffer with instance data
+					//	rhi->SetVertexBuffers({ mMeshRenderBuffers[lod][i]->VertexBuffer });
+					//	rhi->SetShaderResources(ER_RHI_SHADER_TYPE::ER_VERTEX, { mIndirectAppendInstanceDataBuffer });
+					//}
+					//else
+						rhi->SetVertexBuffers({ mMeshRenderBuffers[lod][i]->VertexBuffer, mMeshesInstanceBuffers[lod][i]->InstanceBuffer });
+				}
 				else
 					rhi->SetVertexBuffers({ mMeshRenderBuffers[lod][i]->VertexBuffer });
 				rhi->SetIndexBuffer(mMeshRenderBuffers[lod][i]->IndexBuffer);
@@ -444,10 +474,18 @@ namespace EveryRay_Core
 
 				if (mIsInstanced)
 				{
-					if (mInstanceCountToRender[lod] > 0)
-						rhi->DrawIndexedInstanced(mMeshRenderBuffers[lod][i]->IndicesCount, mInstanceCountToRender[lod], 0, 0, 0);
-					else 
-						continue;
+					//TODO
+					//if (useIndirectRendering)
+					//{
+					//	rhi->DrawIndexedInstancedIndirect(mIndirectArgsBuffers[i], 0); // TODO the offset can prob be used for lod data
+					//}
+					//else
+					{
+						if (mInstanceCountToRender[lod] > 0)
+							rhi->DrawIndexedInstanced(mMeshRenderBuffers[lod][i]->IndicesCount, mInstanceCountToRender[lod], 0, 0, 0);
+						else
+							continue;
+					}
 				}
 				else
 					rhi->DrawIndexed(mMeshRenderBuffers[lod][i]->IndicesCount);
@@ -765,6 +803,8 @@ namespace EveryRay_Core
 					mInstanceAABBs[instanceIndex] = mLocalAABB;
 					UpdateAABB(mInstanceAABBs[instanceIndex], instanceWorldMatrix);
 				}
+
+				CreateIndirectInstanceData(); // only happens once but we need to do it after first update
 			}
 		}
 
@@ -1067,6 +1107,47 @@ namespace EveryRay_Core
 
 		assert(lod < mInstanceData.size());
 		mInstanceData[lod].push_back(InstancedData(worldMatrix));
+	}
+
+	void ER_RenderingObject::CreateIndirectInstanceData()
+	{
+		if (!useIndirectRendering)
+			return;
+
+		if (mIndirectOriginalInstanceDataBuffer) // means we already created the buffers
+			return;
+
+		assert(!mIndirectAppendInstanceDataBuffer);
+		assert(!mIndirectOriginalInstanceDataBuffer);
+		assert(mInstanceCount);
+		assert(mInstanceAABBs.size());
+		assert(mInstanceData[0].size());
+
+		ER_RHI* rhi = mCore->GetRHI();
+		mIndirectAppendInstanceDataBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject - Indirect Append Instance Data Buffer : " + mName);
+		mIndirectOriginalInstanceDataBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject - Indirect Original Instance Data Buffer : " + mName);
+
+		struct IndirectInstanceData 
+		{
+			XMFLOAT4X4 world;
+			XMFLOAT4 aabbMin;
+			XMFLOAT4 aabbMax;
+		};
+
+		std::vector<IndirectInstanceData> data;
+		data.resize(mInstanceCount);
+
+		for (int i = 0; i < mInstanceCount; ++i)
+		{
+			data[i].world = mInstanceData[0][i].World;
+			data[i].aabbMin = XMFLOAT4(mInstanceAABBs[i].first.x, mInstanceAABBs[i].first.y, mInstanceAABBs[i].first.z, 1.0f);
+			data[i].aabbMax = XMFLOAT4(mInstanceAABBs[i].second.x, mInstanceAABBs[i].second.y, mInstanceAABBs[i].second.z, 1.0f);
+		}
+
+		mIndirectOriginalInstanceDataBuffer->CreateGPUBufferResource(rhi, &data[0], mInstanceCount, sizeof(IndirectInstanceData), false,
+			ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
+		mIndirectAppendInstanceDataBuffer->CreateGPUBufferResource(rhi, nullptr, mInstanceCount, sizeof(IndirectInstanceData), false,
+			ER_BIND_UNORDERED_ACCESS | ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED, ER_FORMAT_UNKNOWN, true);
 	}
 
 	void ER_RenderingObject::UpdateLODs()

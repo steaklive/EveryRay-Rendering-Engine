@@ -414,6 +414,14 @@ namespace EveryRay_Core
 		mDirect3DDeviceContext->DrawIndexedInstanced(IndexCountPerInstance, InstanceCount, StartIndexLocation, BaseVertexLocation, StartInstanceLocation);
 	}
 
+	void ER_RHI_DX11::DrawIndexedInstancedIndirect(ER_RHI_GPUBuffer* anArgsBuffer, UINT alignedByteOffset)
+	{
+		assert(anArgsBuffer);
+
+		ER_RHI_DX11_GPUBuffer* dx11Buffer = static_cast<ER_RHI_DX11_GPUBuffer*>(anArgsBuffer);
+		mDirect3DDeviceContext->DrawIndexedInstancedIndirect(static_cast<ID3D11Buffer*>(dx11Buffer->GetBuffer()), alignedByteOffset);
+	}
+
 	void ER_RHI_DX11::Dispatch(UINT ThreadGroupCountX, UINT ThreadGroupCountY, UINT ThreadGroupCountZ)
 	{
 		mDirect3DDeviceContext->Dispatch(ThreadGroupCountX, ThreadGroupCountY, ThreadGroupCountZ);

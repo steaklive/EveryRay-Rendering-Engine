@@ -21,6 +21,7 @@
 #include "ER_VolumetricFog.h"
 #include "ER_Illumination.h"
 #include "ER_LightProbesManager.h"
+#include "ER_GPUCuller.h"
 
 #include "RHI/ER_RHI.h"
 
@@ -52,6 +53,7 @@ namespace EveryRay_Core {
 		DeleteObject(mScene);
 		DeleteObject(mLightProbesManager);
 		DeleteObject(mTerrain);
+		DeleteObject(mGPUCuller);
 		game.CPUProfiler()->EndCPUTime("Destroying scene: " + mName);
 	}
 
@@ -196,6 +198,14 @@ namespace EveryRay_Core {
 		}
 #pragma endregion
 
+#pragma region INIT_GPU_CULLER
+		game.CPUProfiler()->BeginCPUTime("GPU Culler init");
+		mGPUCuller = new ER_GPUCuller(game, camera);
+		mGPUCuller->Initialize();
+		game.CPUProfiler()->EndCPUTime("GPU Culler init");
+#pragma endregion
+
+
 		#pragma region INIT_MATERIAL_CALLBACKS
 		game.CPUProfiler()->BeginCPUTime("Material callbacks init");
 		ER_MaterialSystems materialSystems;
@@ -312,6 +322,12 @@ namespace EveryRay_Core {
 		ER_RHI* rhi = game.GetRHI();
 		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		
+		#pragma region GPU_CULLING
+		rhi->BeginEventTag("EveryRay: GPU Culling");
+		mGPUCuller->PerformCull(mScene);
+		rhi->EndEventTag();
+#pragma endregion
+
 		#pragma region DRAW_GBUFFER
 		rhi->BeginEventTag("EveryRay: GBuffer");
 		{

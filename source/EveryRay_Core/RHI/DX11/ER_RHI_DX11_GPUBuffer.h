@@ -9,7 +9,9 @@ namespace EveryRay_Core
 		ER_RHI_DX11_GPUBuffer(const std::string& aDebugName);
 		virtual ~ER_RHI_DX11_GPUBuffer();
 
-		virtual void CreateGPUBufferResource(ER_RHI* aRHI, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic = false, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, ER_RHI_RESOURCE_MISC_FLAG miscFlags = ER_RESOURCE_MISC_NONE, ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN) override;
+		virtual void CreateGPUBufferResource(ER_RHI* aRHI, void* aData, UINT objectsCount, UINT byteStride,
+			bool isDynamic = false, ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, 
+			ER_RHI_RESOURCE_MISC_FLAG miscFlags = ER_RESOURCE_MISC_NONE, ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN, bool canAppend = false) override;
 		virtual void* GetBuffer() override { return mBuffer; }
 		virtual void* GetSRV() override { return mBufferSRV; }
 		virtual void* GetUAV() override { return mBufferUAV; }

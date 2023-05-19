@@ -573,71 +573,74 @@ namespace EveryRay_Core
 	{
 		int i = aObject->GetIndexInScene();
 		bool isInstanced = aObject->IsInstanced();
-		bool hasLODs = mSceneJsonRoot["rendering_objects"][i].isMember("model_lods");
-		if (isInstanced) {
-			if (hasLODs)
-			{
-				for (int lod = 0; lod < mSceneJsonRoot["rendering_objects"][i]["model_lods"].size(); lod++)
-				{
-					aObject->LoadInstanceBuffers(lod);
-					if (aObject->GetTerrainPlacement() && aObject->GetTerrainProceduralInstanceCount() > 0)
-					{
-						int instanceCount = aObject->GetTerrainProceduralInstanceCount();
-						aObject->ResetInstanceData(instanceCount, true, lod);
-						for (int i = 0; i < instanceCount; i++)
-							aObject->AddInstanceData(XMMatrixIdentity(), lod);
-					}
-					else
-					{
-						if (mSceneJsonRoot["rendering_objects"][i].isMember("instances_transforms")) {
-							aObject->ResetInstanceData(mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size(), true, lod);
-							for (Json::Value::ArrayIndex instance = 0; instance != mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size(); instance++) {
-								float matrix[16];
-								for (Json::Value::ArrayIndex matC = 0; matC != mSceneJsonRoot["rendering_objects"][i]["instances_transforms"][instance]["transform"].size(); matC++) {
-									matrix[matC] = mSceneJsonRoot["rendering_objects"][i]["instances_transforms"][instance]["transform"][matC].asFloat();
-								}
-								XMFLOAT4X4 worldTransform(matrix);
-								aObject->AddInstanceData(XMMatrixTranspose(XMLoadFloat4x4(&worldTransform)), lod);
-							}
-						}
-						else {
-							aObject->ResetInstanceData(1, true, lod);
-							aObject->AddInstanceData(aObject->GetTransformationMatrix(), lod);
-						}
-					}
-					aObject->UpdateInstanceBuffer(aObject->GetInstancesData(), lod);
-				}
-			}
-			else {
-				aObject->LoadInstanceBuffers();
+		if (!isInstanced)
+			return;
 
+		bool hasLODs = mSceneJsonRoot["rendering_objects"][i].isMember("model_lods");
+		if (hasLODs)
+		{
+			for (int lod = 0; lod < mSceneJsonRoot["rendering_objects"][i]["model_lods"].size(); lod++)
+			{
+				aObject->LoadInstanceBuffers(lod);
 				if (aObject->GetTerrainPlacement() && aObject->GetTerrainProceduralInstanceCount() > 0)
 				{
 					int instanceCount = aObject->GetTerrainProceduralInstanceCount();
-					aObject->ResetInstanceData(instanceCount, true);
+					aObject->ResetInstanceData(instanceCount, true, lod);
 					for (int i = 0; i < instanceCount; i++)
-						aObject->AddInstanceData(XMMatrixIdentity());
+						aObject->AddInstanceData(XMMatrixIdentity(), lod);
 				}
 				else
 				{
 					if (mSceneJsonRoot["rendering_objects"][i].isMember("instances_transforms")) {
-						aObject->ResetInstanceData(mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size(), true);
+						aObject->ResetInstanceData(mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size(), true, lod);
 						for (Json::Value::ArrayIndex instance = 0; instance != mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size(); instance++) {
 							float matrix[16];
 							for (Json::Value::ArrayIndex matC = 0; matC != mSceneJsonRoot["rendering_objects"][i]["instances_transforms"][instance]["transform"].size(); matC++) {
 								matrix[matC] = mSceneJsonRoot["rendering_objects"][i]["instances_transforms"][instance]["transform"][matC].asFloat();
 							}
 							XMFLOAT4X4 worldTransform(matrix);
-							aObject->AddInstanceData(XMMatrixTranspose(XMLoadFloat4x4(&worldTransform)));
+							aObject->AddInstanceData(XMMatrixTranspose(XMLoadFloat4x4(&worldTransform)), lod);
 						}
 					}
 					else {
-						aObject->ResetInstanceData(1, true);
-						aObject->AddInstanceData(aObject->GetTransformationMatrix());
+						aObject->ResetInstanceData(1, true, lod);
+						aObject->AddInstanceData(aObject->GetTransformationMatrix(), lod);
 					}
 				}
-				aObject->UpdateInstanceBuffer(aObject->GetInstancesData());
+				if (lod == 0)
+
+				aObject->UpdateInstanceBuffer(aObject->GetInstancesData(), lod);
 			}
+		}
+		else {
+			aObject->LoadInstanceBuffers();
+
+			if (aObject->GetTerrainPlacement() && aObject->GetTerrainProceduralInstanceCount() > 0)
+			{
+				int instanceCount = aObject->GetTerrainProceduralInstanceCount();
+				aObject->ResetInstanceData(instanceCount, true);
+				for (int i = 0; i < instanceCount; i++)
+					aObject->AddInstanceData(XMMatrixIdentity());
+			}
+			else
+			{
+				if (mSceneJsonRoot["rendering_objects"][i].isMember("instances_transforms")) {
+					aObject->ResetInstanceData(mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size(), true);
+					for (Json::Value::ArrayIndex instance = 0; instance != mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size(); instance++) {
+						float matrix[16];
+						for (Json::Value::ArrayIndex matC = 0; matC != mSceneJsonRoot["rendering_objects"][i]["instances_transforms"][instance]["transform"].size(); matC++) {
+							matrix[matC] = mSceneJsonRoot["rendering_objects"][i]["instances_transforms"][instance]["transform"][matC].asFloat();
+						}
+						XMFLOAT4X4 worldTransform(matrix);
+						aObject->AddInstanceData(XMMatrixTranspose(XMLoadFloat4x4(&worldTransform)));
+					}
+				}
+				else {
+					aObject->ResetInstanceData(1, true);
+					aObject->AddInstanceData(aObject->GetTransformationMatrix());
+				}
+			}
+			aObject->UpdateInstanceBuffer(aObject->GetInstancesData());
 		}
 	}
 

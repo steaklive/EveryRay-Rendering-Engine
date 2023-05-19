@@ -145,7 +145,8 @@ namespace EveryRay_Core
 		const std::vector<XMFLOAT3>& GetVertices(int lod = 0) { return mMeshAllVertices[lod]; }
 		const UINT GetInstanceCount(int lod = 0) { return (mIsInstanced ? static_cast<UINT>(mInstanceData[lod].size()) : 0); }
 		std::vector<InstancedData>& GetInstancesData(int lod = 0) { return mInstanceData[lod]; }
-		
+		const int GetIndexCount(int lod, int mesh) const { return mMeshRenderBuffers[lod][mesh]->IndicesCount; }
+
 		XMFLOAT4X4 GetTransformationMatrix4X4() const { return XMFLOAT4X4(mCurrentObjectTransformMatrix); }
 		const XMMATRIX& GetTransformationMatrix() const { return mTransformationMatrix; }
 
@@ -162,9 +163,14 @@ namespace EveryRay_Core
 		void UpdateInstanceBuffer(std::vector<InstancedData>& instanceData, int lod = 0);
 		void ResetInstanceData(int count, bool clear = false, int lod = 0);
 		void AddInstanceData(const XMMATRIX& worldMatrix, int lod = -1);
+		void CreateIndirectInstanceData();
 		UINT InstanceSize() const;
 		
 		void PerformCPUFrustumCull(ER_Camera* camera);
+
+		ER_RHI_GPUBuffer* GetIndirectAppendInstanceBuffer() { return mIndirectAppendInstanceDataBuffer; }
+		ER_RHI_GPUBuffer* GetIndirectOriginalInstanceBuffer() { return mIndirectOriginalInstanceDataBuffer; }
+		ER_RHI_GPUBuffer* GetIndirectArgsBuffer(int meshIndex) { return mIndirectArgsBuffers[meshIndex]; }
 
 		void Rename(const std::string& name) { mName = name; }
 		const std::string& GetName() { return mName; }
@@ -350,7 +356,11 @@ namespace EveryRay_Core
 		std::vector<UINT>										mInstanceCountToRender; //instance render count  (per LOD group)
 		std::vector<std::vector<InstancedData>>					mInstanceData; //original instance data  (per LOD group)
 		XMFLOAT4*												mTempInstancesPositions = nullptr;
-		// 
+
+		//instance data but for indirect rendering (new and more efficient way to render instanced objects)
+		std::vector<ER_RHI_GPUBuffer*>							mIndirectArgsBuffers; // draw indexed instance indirect args per mesh (instance count is calculated in compute)
+		ER_RHI_GPUBuffer*										mIndirectAppendInstanceDataBuffer = nullptr; //instance transforms appened in compute shader
+		ER_RHI_GPUBuffer*										mIndirectOriginalInstanceDataBuffer = nullptr; //original instance transforms
 		///****************************************************************************************************************************
 
 		///****************************************************************************************************************************

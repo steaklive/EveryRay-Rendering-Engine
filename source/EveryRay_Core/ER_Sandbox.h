@@ -21,6 +21,7 @@ namespace EveryRay_Core
     class ER_LightProbesManager;
     class ER_PostProcessingStack;
     class ER_QuadRenderer;
+    class ER_GPUCuller;
 
 	class ER_Sandbox
 	{
@@ -48,6 +49,7 @@ namespace EveryRay_Core
         ER_Terrain* mTerrain = nullptr;
         ER_PostProcessingStack* mPostProcessingStack = nullptr;
         ER_QuadRenderer* mQuadRenderer = nullptr;
+        ER_GPUCuller* mGPUCuller = nullptr;
     private:
         void UpdateImGui();
         std::string mName;

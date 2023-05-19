@@ -306,7 +306,7 @@ namespace EveryRay_Core
 		virtual void DrawIndexed(UINT IndexCount) = 0;
 		virtual void DrawInstanced(UINT VertexCountPerInstance, UINT InstanceCount, UINT StartVertexLocation, UINT StartInstanceLocation) = 0;
 		virtual void DrawIndexedInstanced(UINT IndexCountPerInstance, UINT InstanceCount, UINT StartIndexLocation, INT BaseVertexLocation, UINT StartInstanceLocation) = 0;
-		//TODO DrawIndirect
+		virtual void DrawIndexedInstancedIndirect(ER_RHI_GPUBuffer* anArgsBuffer, UINT alignedByteOffset) = 0;
 
 		virtual void Dispatch(UINT ThreadGroupCountX, UINT ThreadGroupCountY, UINT ThreadGroupCountZ) = 0;
 		//TODO DispatchIndirect
@@ -502,8 +502,9 @@ namespace EveryRay_Core
 		ER_RHI_GPUBuffer() {}
 		virtual ~ER_RHI_GPUBuffer() {}
 
-		virtual void CreateGPUBufferResource(ER_RHI* aRHI, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic = false, 
-			ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, ER_RHI_RESOURCE_MISC_FLAG miscFlags = ER_RESOURCE_MISC_NONE, ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN) { AbstractRHIMethodAssert();	}
+		virtual void CreateGPUBufferResource(ER_RHI* aRHI, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic = false,
+			ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, ER_RHI_RESOURCE_MISC_FLAG miscFlags = ER_RESOURCE_MISC_NONE,
+			ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN, bool canAppend = false) {	AbstractRHIMethodAssert(); }
 		virtual void* GetBuffer() { AbstractRHIMethodAssert();  return nullptr; }
 		virtual int GetSize() { AbstractRHIMethodAssert(); return 0; }
 		virtual UINT GetStride() { AbstractRHIMethodAssert(); return 0; }

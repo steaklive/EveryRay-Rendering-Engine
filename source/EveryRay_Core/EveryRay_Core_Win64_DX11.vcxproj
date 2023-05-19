@@ -124,6 +124,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)\external\JsonCpp\include;$(SolutionDir)\external\ImGUI\;$(SolutionDir)\external\Assimp\lib\x64;$(SolutionDir)\external\Assimp\include;$(SolutionDir)\external\DirectXMath\SHMath;$(SolutionDir)\external\DirectXMath\Inc;$(SolutionDir)\external\DirectXTex\;$(SolutionDir)\external\DirectXTK\Inc;$(WindowsSDK_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OmitFramePointers>false</OmitFramePointers>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -172,6 +173,7 @@
       <OmitFramePointers>false</OmitFramePointers>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -194,6 +196,7 @@
     <ClInclude Include="ER_FurShellMaterial.h" />
     <ClInclude Include="ER_Gamepad.h" />
     <ClInclude Include="ER_GBufferMaterial.h" />
+    <ClInclude Include="ER_GPUCuller.h" />
     <ClInclude Include="ER_RuntimeCore.h" />
     <ClInclude Include="ER_Sandbox.h" />
     <ClInclude Include="ER_DirectionalLight.h" />
@@ -267,6 +270,7 @@
     <ClCompile Include="ER_DirectionalLight.cpp" />
     <ClCompile Include="ER_Editor.cpp" />
     <ClCompile Include="ER_CPUProfiler.cpp" />
+    <ClCompile Include="ER_GPUCuller.cpp" />
     <ClCompile Include="ER_Illumination.cpp" />
     <ClCompile Include="ER_LightProbe.cpp" />
     <ClCompile Include="ER_LightProbesManager.cpp" />
@@ -381,6 +385,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\content\shaders\IBL\ProbeConvolution.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\IndirectCulling.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
