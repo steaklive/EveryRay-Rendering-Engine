@@ -927,7 +927,7 @@ namespace EveryRay_Core {
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP });
 	}
 
-	void ER_Illumination::PrepareResourcesForForwardLighting(ER_RenderingObject* aObj, int meshIndex)
+	void ER_Illumination::PrepareResourcesForForwardLighting(ER_RenderingObject* aObj, int meshIndex, int lod)
 	{
 		assert(mGbuffer);
 
@@ -963,9 +963,9 @@ namespace EveryRay_Core {
 				rhi->SetConstantBuffers(ER_PIXEL,  { mForwardLightingConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 			}
 
+			std::vector<ER_RHI_GPUResource*> resources(18);
 			if (mProbesManager->AreGlobalProbesReady())
 			{
-				std::vector<ER_RHI_GPUResource*> resources(18);
 				resources[0] = aObj->GetTextureData(meshIndex).AlbedoMap;
 				resources[1] = aObj->GetTextureData(meshIndex).NormalMap;
 				resources[2] = aObj->GetTextureData(meshIndex).MetallicMap;
@@ -985,6 +985,9 @@ namespace EveryRay_Core {
 				resources[17] = mProbesManager->GetIntegrationMap();
 				rhi->SetShaderResources(ER_PIXEL, resources, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 			}
+
+			if (aObj->IsIndirectlyRendered())
+				rhi->SetShaderResources(ER_VERTEX, { aObj->GetIndirectNewInstanceBuffer() }, static_cast<int>(resources.size()), mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 
 			// we unset PSO after all objects are rendered
 		}

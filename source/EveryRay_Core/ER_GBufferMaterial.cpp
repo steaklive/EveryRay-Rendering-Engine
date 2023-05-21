@@ -66,7 +66,6 @@ namespace EveryRay_Core
 		assert(camera);
 
 		mConstantBuffer.Data.ViewProjection = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());
-		mConstantBuffer.Data.World = XMMatrixTranspose(aObj->GetTransformationMatrix());
 		mConstantBuffer.Data.Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor = XMFLOAT4(
 			aObj->GetMeshReflectionFactor(meshIndex) ? 1.0f : 0.0f,
 			aObj->GetFoliageMask() ? 1.0f : 0.0f,
@@ -77,9 +76,13 @@ namespace EveryRay_Core
 			aObj->IsSeparableSubsurfaceScattering() ? 1.0f : -1.0f,
 			aObj->GetCustomAlphaDiscard(),
 			0.0);	
-		mConstantBuffer.Data.CustomRoughnessMetalness = XMFLOAT4(aObj->GetCustomRoughness(), aObj->GetCustomMetalness(), aObj->IsSkipIndirectSpecular() ? 1.0f : 0.0f, 0.0f);
+		mConstantBuffer.Data.CustomRoughness_Metalness_SkipIndSpec = XMFLOAT4(
+			aObj->GetCustomRoughness(),
+			aObj->GetCustomMetalness(),
+			aObj->IsSkipIndirectSpecular() ? 1.0f : 0.0f,
+			0.0f);
 		mConstantBuffer.ApplyChanges(rhi);
-		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() }, 0, rs, GBUFFER_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer() }, 0, rs, GBUFFER_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() }, 0, rs, GBUFFER_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 
 		std::vector<ER_RHI_GPUResource*> resources;
@@ -89,9 +92,11 @@ namespace EveryRay_Core
 		resources.push_back(aObj->GetTextureData(meshIndex).MetallicMap);
 		resources.push_back(aObj->GetTextureData(meshIndex).HeightMap);	
 		resources.push_back(aObj->GetTextureData(meshIndex).ReflectionMaskMap);
-
 		rhi->SetShaderResources(ER_PIXEL, resources, 0, rs, GBUFFER_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP }, 0, rs);
+
+		if (aObj->IsIndirectlyRendered())
+			rhi->SetShaderResources(ER_VERTEX, { aObj->GetIndirectNewInstanceBuffer() }, static_cast<int>(resources.size()), rs, GBUFFER_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 	}
 
 	void ER_GBufferMaterial::PrepareResourcesForStandardMaterial(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, ER_RHI_GPURootSignature* rs)

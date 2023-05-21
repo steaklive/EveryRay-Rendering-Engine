@@ -71,11 +71,13 @@ namespace EveryRay_Core
 		mConstantBuffer.Data.WorldLightViewProjection = XMMatrixTranspose(aObj->GetTransformationMatrix() * lvp);
 		mConstantBuffer.Data.LightViewProjection = XMMatrixTranspose(lvp);
 		mConstantBuffer.ApplyChanges(rhi);
-		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer() }, 0, rs, SHADOWMAP_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer() }, 0, rs, SHADOWMAP_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() }, 0, rs, SHADOWMAP_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 
 		if (aObj->GetTextureData(meshIndex).AlbedoMap)
 			rhi->SetShaderResources(ER_PIXEL, { aObj->GetTextureData(meshIndex).AlbedoMap }, 0, rs, SHADOWMAP_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
+		if (aObj->IsIndirectlyRendered())
+			rhi->SetShaderResources(ER_VERTEX, { aObj->GetIndirectNewInstanceBuffer() }, 1, rs, SHADOWMAP_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 	}
 

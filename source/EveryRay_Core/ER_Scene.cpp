@@ -307,6 +307,9 @@ namespace EveryRay_Core
 			if (mSceneJsonRoot["rendering_objects"][i].isMember("use_transparency"))
 				aObject->SetTransparency(mSceneJsonRoot["rendering_objects"][i]["use_transparency"].asBool());
 
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("use_indirect_rendering"))
+				aObject->SetUseIndirectRendering(mSceneJsonRoot["rendering_objects"][i]["use_indirect_rendering"].asBool());
+
 			if (mSceneJsonRoot["rendering_objects"][i].isMember("skipIndirectSpecular"))
 				aObject->SetIsSkipIndirectSpecular(mSceneJsonRoot["rendering_objects"][i]["skipIndirectSpecular"].asBool());
 
@@ -607,8 +610,6 @@ namespace EveryRay_Core
 						aObject->AddInstanceData(aObject->GetTransformationMatrix(), lod);
 					}
 				}
-				if (lod == 0)
-
 				aObject->UpdateInstanceBuffer(aObject->GetInstancesData(), lod);
 			}
 		}

@@ -38,6 +38,7 @@ namespace EveryRay_Core
 
 		if (scene->HasMeshes())
 		{
+			assert(scene->mNumMeshes < MAX_MESH_COUNT);
 			for (UINT i = 0; i < scene->mNumMeshes; i++)
 				mMeshes.push_back(ER_Mesh(*this, mMaterials[scene->mMeshes[i]->mMaterialIndex], *(scene->mMeshes[i])));
 		}

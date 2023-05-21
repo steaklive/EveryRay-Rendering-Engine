@@ -12,13 +12,15 @@ namespace EveryRay_Core
 	{
 		struct ER_ALIGN_GPU_BUFFER MeshConstants
 		{
-			XMINT4 IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc;
+			XMINT4 IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc[MAX_LOD * MAX_MESH_COUNT];
+			UINT OriginalInstancesCount;
 		};
 
 		struct ER_ALIGN_GPU_BUFFER CameraConstants
 		{
 			XMFLOAT4 FrustumPlanes[6];
 			XMFLOAT4 LodCameraDistances;
+			XMFLOAT4 CameraPos;
 		};
 	}
 
@@ -30,16 +32,20 @@ namespace EveryRay_Core
 
 		void Initialize();
 		void PerformCull(ER_Scene* aScene);
+		void ClearCounters(ER_Scene* aScene);
 
 	private:
 		ER_Core& mCore;
 		ER_Camera& mCamera;
 
 		ER_RHI_GPUShader* mIndirectCullingCS = nullptr;
+		ER_RHI_GPUShader* mIndirectCullingClearCS = nullptr;
 		ER_RHI_GPUConstantBuffer<IndirectCullingCBufferData::MeshConstants> mMeshConstantBuffer;
 		ER_RHI_GPUConstantBuffer<IndirectCullingCBufferData::CameraConstants> mCameraConstantBuffer;
 		ER_RHI_GPURootSignature* mIndirectCullingRS = nullptr;
+		ER_RHI_GPURootSignature* mIndirectCullingClearRS = nullptr;
 		const std::string mPSOName = "ER_RHI_GPUPipelineStateObject: Indirect Cull Pass";
+		const std::string mPSOClearName = "ER_RHI_GPUPipelineStateObject: Indirect Cull Pass Clear";
 		
 		int mIndirectCullsCounterPerFrame = 0;
 	};

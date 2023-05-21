@@ -223,7 +223,7 @@ namespace EveryRay_Core {
 				if (layeredMaterial.second->IsStandard())
 				{
 					object.second->MeshMaterialVariablesUpdateEvent->AddListener(layeredMaterial.first,
-						[&, matSystems = materialSystems](int meshIndex) { 
+						[&, matSystems = materialSystems](int meshIndex, int lodIndex) { 
 							layeredMaterial.second->PrepareResourcesForStandardMaterial(matSystems, object.second, meshIndex, mScene->GetStandardMaterialRootSignature(layeredMaterial.first));
 						}
 					);

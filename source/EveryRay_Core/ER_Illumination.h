@@ -122,7 +122,7 @@ namespace EveryRay_Core
 		void SetProbesManager(ER_LightProbesManager* manager) { mProbesManager = manager; }
 
 		void PreparePipelineForForwardLighting(ER_RenderingObject* aObj);
-		void PrepareResourcesForForwardLighting(ER_RenderingObject* aObj, int meshIndex);
+		void PrepareResourcesForForwardLighting(ER_RenderingObject* aObj, int meshIndex, int lod);
 
 		ER_RHI_GPUTexture* GetLocalIlluminationRT() const { return mLocalIlluminationRT; }
 		ER_RHI_GPUTexture* GetFinalIlluminationRT() const { return mFinalIlluminationRT; }

@@ -6,6 +6,8 @@
 //
 // Written by Gen Afanasev for 'EveryRay Rendering Engine', 2017-2022
 // ================================================================================================
+#include "IndirectCulling.hlsli"
+#include "Common.hlsli"
 
 Texture2D<float4> AlbedoMap : register(t0);
 Texture2D<float4> NormalMap : register(t1);
@@ -14,22 +16,16 @@ Texture2D<float> MetallicMap : register(t3);
 Texture2D<float> HeightMap : register(t4);
 Texture2D<float> ReflectionMaskMap : register(t5);
 
-struct Instance
-{
-    float4x4 World;
-    float4 AABBmin;
-    float4 AABBmax;
-};
 StructuredBuffer<Instance> IndirectInstanceData : register(t6);
 
 cbuffer GBufferCBuffer : register(b0)
 {
     float4x4 ViewProjection;
-    float4x4 World;
     float4 Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor;
     float4 SkipDeferredLighting_UseSSS_CustomAlphaDiscard; // a - empty
-    float4 CustomRoughness_Metalness_SkipIndSpec_UseIndInstance;
+    float4 CustomRoughness_Metalness_SkipIndSpec;
 }
+// register(b1) is objects cbuffer from Common.hlsli
 
 SamplerState Sampler : register(s0);
 
@@ -49,7 +45,7 @@ struct VS_INPUT_INSTANCING
     float3 Tangent : TANGENT;
     
     //instancing
-    row_major float4x4 World : WORLD; // not used when indirect rendering
+    row_major float4x4 World : WORLD; // not used with indirect rendering
     uint InstanceID : SV_InstanceID;
 };
 
@@ -78,7 +74,8 @@ VS_OUTPUT VSMain_instancing(VS_INPUT_INSTANCING IN)
 {
     VS_OUTPUT OUT = (VS_OUTPUT) 0;
     
-    float4x4 World = CustomRoughness_Metalness_SkipIndSpec_UseIndInstance.w > 0.0 ? IndirectInstanceData[IN.InstanceID].World : IN.World;
+    float4x4 World = IsIndirectlyRendered > 0.0 ?
+        transpose(IndirectInstanceData[(int)OriginalInstanceCount * (int)CurrentLod + IN.InstanceID].WorldMat) : IN.World;
     OUT.WorldPos = mul(IN.ObjectPosition, World).xyz;
     OUT.Position = mul(float4(OUT.WorldPos, 1.0f), ViewProjection);
     OUT.Normal = normalize(mul(float4(IN.Normal, 0), World).xyz);
@@ -142,9 +139,9 @@ PS_OUTPUT PSMain(VS_OUTPUT IN, bool isFrontFace : SV_IsFrontFace) : SV_Target
     OUT.Normal = float4(sampledNormal, 1.0);
     OUT.WorldPos = float4(IN.WorldPos, IN.Position.w);
     
-    float roughness = CustomRoughness_Metalness_SkipIndSpec_UseIndInstance.r >= 0.0f ? CustomRoughness_Metalness_SkipIndSpec_UseIndInstance.r : RoughnessMap.Sample(Sampler, IN.TextureCoordinate).r;
-    float metalness = CustomRoughness_Metalness_SkipIndSpec_UseIndInstance.g >= 0.0f ? CustomRoughness_Metalness_SkipIndSpec_UseIndInstance.g : MetallicMap.Sample(Sampler, IN.TextureCoordinate).r;
-    float reflectionMask = CustomRoughness_Metalness_SkipIndSpec_UseIndInstance.b > 0.0 ? 0.5f : ReflectionMaskMap.Sample(Sampler, IN.TextureCoordinate).r;
+    float roughness = CustomRoughness_Metalness_SkipIndSpec.r >= 0.0f ? CustomRoughness_Metalness_SkipIndSpec.r : RoughnessMap.Sample(Sampler, IN.TextureCoordinate).r;
+    float metalness = CustomRoughness_Metalness_SkipIndSpec.g >= 0.0f ? CustomRoughness_Metalness_SkipIndSpec.g : MetallicMap.Sample(Sampler, IN.TextureCoordinate).r;
+    float reflectionMask = CustomRoughness_Metalness_SkipIndSpec.b > 0.0 ? 0.5f : ReflectionMaskMap.Sample(Sampler, IN.TextureCoordinate).r;
     OUT.Extra = float4(reflectionMask, roughness, metalness, Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor.g);
     OUT.Extra2 = float4(
         Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor.b, 

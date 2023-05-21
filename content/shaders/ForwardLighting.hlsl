@@ -19,6 +19,7 @@
 // ================================================================================================
 
 #include "Lighting.hlsli"
+#include "IndirectCulling.hlsli"
 #include "Common.hlsli"
 
 Texture2D<float4> AlbedoTexture : register(t0);
@@ -27,6 +28,8 @@ Texture2D<float4> MetallicTexture : register(t2);
 Texture2D<float4> RoughnessTexture : register(t3);
 Texture2D<float4> HeightTexture : register(t4);
 Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t5);
+
+StructuredBuffer<Instance> IndirectInstanceData : register(t18); // because all other indices before are taken for lighting buffers (i.e., probes)
 
 SamplerState SamplerLinear : register(s0);
 SamplerComparisonState CascadedPcfShadowMapSampler : register(s1);
@@ -43,7 +46,7 @@ cbuffer ForwardLightingCBuffer : register(b0)
     float4 CameraPosition;
 }
 
-// register(b1) is objects buffer from Common.hlsli
+// register(b1) is objects cbuffer from Common.hlsli
 
 cbuffer LightProbesCBuffer : register(b2)
 {
@@ -70,7 +73,8 @@ struct VS_INPUT_INSTANCING
     float3 Tangent : TANGENT;
     
     //instancing
-    row_major float4x4 World : WORLD;
+    row_major float4x4 World : WORLD; // not used with indirect rendering
+    uint InstanceID : SV_InstanceID;
 };
 
 struct VS_OUTPUT
@@ -133,15 +137,18 @@ VS_OUTPUT VSMain_instancing(VS_INPUT_INSTANCING IN)
 {
     VS_OUTPUT OUT = (VS_OUTPUT) 0;
 
-    OUT.WorldPos = mul(IN.Position, IN.World).xyz;
+    float4x4 World = IsIndirectlyRendered > 0.0 ?
+        transpose(IndirectInstanceData[(int)OriginalInstanceCount * (int)CurrentLod + IN.InstanceID].WorldMat) : IN.World;
+
+    OUT.WorldPos = mul(IN.Position, World).xyz;
     OUT.Position = mul(float4(OUT.WorldPos, 1.0f), ViewProjection);
     OUT.UV = IN.Texcoord0;
-    OUT.Normal = normalize(mul(float4(IN.Normal, 0), IN.World).xyz);
-    OUT.Tangent = normalize(mul(float4(IN.Tangent, 0), IN.World).xyz);
+    OUT.Normal = normalize(mul(float4(IN.Normal, 0), World).xyz);
+    OUT.Tangent = normalize(mul(float4(IN.Tangent, 0), World).xyz);
     OUT.ViewDir = IN.Position.xyz - CameraPosition.xyz;
-    OUT.ShadowCoord0 = mul(IN.Position, mul(IN.World, ShadowMatrices[0])).xyz;
-    OUT.ShadowCoord1 = mul(IN.Position, mul(IN.World, ShadowMatrices[1])).xyz;
-    OUT.ShadowCoord2 = mul(IN.Position, mul(IN.World, ShadowMatrices[2])).xyz;
+    OUT.ShadowCoord0 = mul(IN.Position, mul(World, ShadowMatrices[0])).xyz;
+    OUT.ShadowCoord1 = mul(IN.Position, mul(World, ShadowMatrices[1])).xyz;
+    OUT.ShadowCoord2 = mul(IN.Position, mul(World, ShadowMatrices[2])).xyz;
     
 #if PARALLAX_OCCLUSION_MAPPING_SUPPORT
     float3x3 TBN = float3x3(OUT.Tangent, cross(OUT.Normal, OUT.Tangent), OUT.Normal);
@@ -323,7 +330,7 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
         float mask = height; //just a hack to get transparency mask texture in height channel (we dont need it here anyway)
         float3 viewDir = normalize(vsOutput.WorldPos.xyz-CameraPosition.xyz);
         float3 reflectDir = normalize(reflect(viewDir, normalWS));
-        float3 T = refract(viewDir, normalWS, 1.0f / IOR);
+        float3 T = refract(viewDir, normalWS, 1.0f / IndexOfRefraction);
 
         int mipIndex = roughness * (SPECULAR_PROBE_MIP_COUNT - 1);
 

@@ -7,10 +7,13 @@ cbuffer ObjectCBuffer : register(b1)
     float4x4 World;
     float UseGlobalProbe;
     float SkipIndirectProbeLighting;
-    float IOR;
+    float IndexOfRefraction;
     float CustomRoughness;
     float CustomMetalness;
-}
+    float OriginalInstanceCount;
+    float CurrentLod;
+    float IsIndirectlyRendered;
+};
 
 struct QUAD_VS_IN
 {

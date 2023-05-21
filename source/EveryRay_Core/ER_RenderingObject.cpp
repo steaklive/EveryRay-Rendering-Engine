@@ -20,7 +20,6 @@
 
 namespace EveryRay_Core
 {
-	static bool useIndirectRendering = true; //GPU-driven way of rendering instanced objects (culling them on GPU and not performing CPU readback)
 	static int currentSplatChannnel = (int)TerrainSplatChannels::NONE;
 
 	ER_RenderingObject::ER_RenderingObject(const std::string& pName, int index, ER_Core& pCore, ER_Camera& pCamera, std::unique_ptr<ER_Model> pModel, bool availableInEditor, bool isInstanced)
@@ -115,12 +114,12 @@ namespace EveryRay_Core
 
 		mObjectConstantBuffer.Release();
 
-		for (int i = 0; i < GetMeshCount(); ++i)
+		if (mIsIndirectlyRendered)
 		{
-			DeleteObject(mIndirectArgsBuffers[i]);
+			DeleteObject(mIndirectArgsBuffer);
+			DeleteObject(mIndirectNewInstanceDataBuffer);
+			DeleteObject(mIndirectOriginalInstanceDataBuffer);
 		}
-		DeleteObject(mIndirectAppendInstanceDataBuffer);
-		DeleteObject(mIndirectOriginalInstanceDataBuffer);
 	}
 
 	void ER_RenderingObject::LoadMaterial(ER_Material* pMaterial, const std::string& materialName)
@@ -356,16 +355,13 @@ namespace EveryRay_Core
 		mMeshRenderBuffers.push_back({});
 		assert(mMeshRenderBuffers.size() - 1 == lod);
 
-		if (lod == 0)
+		if (!mIndirectArgsBuffer && mIsIndirectlyRendered)
 		{
-			mIndirectArgsBuffers.resize(mMeshesCount[lod]);
 			const int numArgs = 5; // number of args for DrawIndexedInstanced
-			for (int meshIndex = 0; meshIndex < mMeshesCount[lod]; meshIndex++)
-			{
-				mIndirectArgsBuffers[meshIndex] = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject - Indirect Args Buffer : " + mName + ", mesh : " + std::to_string(meshIndex));
-				mIndirectArgsBuffers[meshIndex]->CreateGPUBufferResource(rhi, nullptr, numArgs/* * GetLODCount()*/, sizeof(UINT), false,
-					ER_BIND_UNORDERED_ACCESS | ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_DRAWINDIRECT_ARGS, ER_RHI_FORMAT::ER_FORMAT_R32_UINT);
-			}
+			int size = numArgs * MAX_MESH_COUNT * MAX_LOD; // we always assume that all lods have same mesh count...
+			mIndirectArgsBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject - Indirect Args Buffer : " + mName);
+			mIndirectArgsBuffer->CreateGPUBufferResource(rhi, nullptr, size, sizeof(UINT), false,
+				ER_BIND_UNORDERED_ACCESS | ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_DRAWINDIRECT_ARGS, ER_RHI_FORMAT::ER_FORMAT_R32_UINT);
 		}
 
 		auto createIndexBuffer = [this, rhi](const ER_Mesh& aMesh, int meshIndex, int lod) {
@@ -436,6 +432,9 @@ namespace EveryRay_Core
 				mObjectConstantBuffer.Data.IndexOfRefraction = mIOR;
 				mObjectConstantBuffer.Data.CustomRoughness = mCustomRoughness;
 				mObjectConstantBuffer.Data.CustomMetalness = mCustomMetalness;
+				mObjectConstantBuffer.Data.OriginalInstanceCount = mInstanceCount;
+				mObjectConstantBuffer.Data.CurrentLod = lod;
+				mObjectConstantBuffer.Data.IsIndirectlyRendered = mIsIndirectlyRendered ? 1.0f : 0.0f;
 				mObjectConstantBuffer.ApplyChanges(rhi);
 
 			}
@@ -444,51 +443,50 @@ namespace EveryRay_Core
 				mCore->GetLevel()->mIllumination->PreparePipelineForForwardLighting(this);
 
 			bool isSpecificMesh = (meshIndex != -1);
-			for (int i = (isSpecificMesh) ? meshIndex : 0; i < ((isSpecificMesh) ? meshIndex + 1 : mMeshesCount[lod]); i++)
+			for (int meshI = (isSpecificMesh) ? meshIndex : 0; meshI < ((isSpecificMesh) ? meshIndex + 1 : mMeshesCount[lod]); meshI++)
 			{
 				if (mIsInstanced)
 				{
-					//TODO
-					//if (useIndirectRendering)
-					//{
-					//	//instead of instance buffer, we set a read-only structured buffer with instance data
-					//	rhi->SetVertexBuffers({ mMeshRenderBuffers[lod][i]->VertexBuffer });
-					//	rhi->SetShaderResources(ER_RHI_SHADER_TYPE::ER_VERTEX, { mIndirectAppendInstanceDataBuffer });
-					//}
-					//else
-						rhi->SetVertexBuffers({ mMeshRenderBuffers[lod][i]->VertexBuffer, mMeshesInstanceBuffers[lod][i]->InstanceBuffer });
+					if (mIsIndirectlyRendered)
+					{
+						//instead of instance buffer, we set a read-only structured buffer with instance data in the system (i.e. GBuffer)
+						//WARNING: Make sure the system actually sets that buffer!
+						rhi->SetVertexBuffers({ mMeshRenderBuffers[lod][meshI]->VertexBuffer });
+					}
+					else
+						rhi->SetVertexBuffers({ mMeshRenderBuffers[lod][meshI]->VertexBuffer, mMeshesInstanceBuffers[lod][meshI]->InstanceBuffer });
 				}
 				else
-					rhi->SetVertexBuffers({ mMeshRenderBuffers[lod][i]->VertexBuffer });
-				rhi->SetIndexBuffer(mMeshRenderBuffers[lod][i]->IndexBuffer);
+					rhi->SetVertexBuffers({ mMeshRenderBuffers[lod][meshI]->VertexBuffer });
+				rhi->SetIndexBuffer(mMeshRenderBuffers[lod][meshI]->IndexBuffer);
 
 				// run prepare callbacks for standard materials (specials are, i.e., shadow mapping, which are processed in their own systems)
 				if (!isForwardPass && mMaterials[materialName]->IsStandard())
 				{
 					auto prepareMaterialBeforeRendering = MeshMaterialVariablesUpdateEvent->GetListener(materialName);
 					if (prepareMaterialBeforeRendering)
-						prepareMaterialBeforeRendering(i);
+						prepareMaterialBeforeRendering(meshI, lod);
 				}
 				else if (isForwardPass && mCore->GetLevel()->mIllumination)
-					mCore->GetLevel()->mIllumination->PrepareResourcesForForwardLighting(this, i);
+					mCore->GetLevel()->mIllumination->PrepareResourcesForForwardLighting(this, meshI, lod);
 
 				if (mIsInstanced)
 				{
-					//TODO
-					//if (useIndirectRendering)
-					//{
-					//	rhi->DrawIndexedInstancedIndirect(mIndirectArgsBuffers[i], 0); // TODO the offset can prob be used for lod data
-					//}
-					//else
+					if (mIsIndirectlyRendered)
+					{
+						int offset = (MAX_MESH_COUNT * lod + meshI) * 5 * sizeof(UINT); //5 is args count of DrawIndexedInstanced()
+						rhi->DrawIndexedInstancedIndirect(mIndirectArgsBuffer, offset);
+					}
+					else
 					{
 						if (mInstanceCountToRender[lod] > 0)
-							rhi->DrawIndexedInstanced(mMeshRenderBuffers[lod][i]->IndicesCount, mInstanceCountToRender[lod], 0, 0, 0);
+							rhi->DrawIndexedInstanced(mMeshRenderBuffers[lod][meshI]->IndicesCount, mInstanceCountToRender[lod], 0, 0, 0);
 						else
 							continue;
 					}
 				}
 				else
-					rhi->DrawIndexed(mMeshRenderBuffers[lod][i]->IndicesCount);
+					rhi->DrawIndexed(mMeshRenderBuffers[lod][meshI]->IndicesCount);
 			}
 		}
 	}
@@ -543,6 +541,11 @@ namespace EveryRay_Core
 		for (int i = mInstanceData[lod].size(); i < MAX_INSTANCE_COUNT; i++)
 			AddInstanceData(XMMatrixIdentity(), lod);
 
+#ifdef NDEBUG
+		if (mIsIndirectlyRendered)
+			return;
+#endif
+
 		//mMeshesInstanceBuffers.clear();
 		for (size_t i = 0; i < mMeshesCount[lod]; i++)
 		{
@@ -565,6 +568,11 @@ namespace EveryRay_Core
 	// new instancing code
 	void ER_RenderingObject::UpdateInstanceBuffer(std::vector<InstancedData>& instanceData, int lod)
 	{
+#ifdef NDEBUG
+		if (mIsIndirectlyRendered)
+			return;
+#endif
+
 		assert(lod < mMeshesInstanceBuffers.size());
 
 		for (size_t i = 0; i < mMeshesCount[lod]; i++)
@@ -582,8 +590,12 @@ namespace EveryRay_Core
 		return sizeof(InstancedData);
 	}
 
+	// This method culls the object (or its instances) on CPU 
+	// Note: for instanced objects consider using indirect rendering instead (culling will happen on GPU and not in this method)
 	void ER_RenderingObject::PerformCPUFrustumCull(ER_Camera* camera)
 	{
+		assert(!mIsIndirectlyRendered);
+
 		auto frustum = camera->GetFrustum();
 		auto cullFunction = [&frustum](ER_AABB& aabb) {
 			bool culled = false;
@@ -803,20 +815,25 @@ namespace EveryRay_Core
 					mInstanceAABBs[instanceIndex] = mLocalAABB;
 					UpdateAABB(mInstanceAABBs[instanceIndex], instanceWorldMatrix);
 				}
-
-				CreateIndirectInstanceData(); // only happens once but we need to do it after first update
 			}
 		}
 
-		if (ER_Utility::IsMainCameraCPUFrustumCulling && camera)
-			PerformCPUFrustumCull(camera);
-		else
+		if (mIsIndirectlyRendered)
+			CreateIndirectInstanceData(); // only happens once but we need to do it after the first update (i.e. after we placed the instances and calculated their AABBs)
+		else // fallback for old CPU frustum culling (i.e., makes sense for non-instanced objects)
 		{
-			if (mIsInstanced)
+			if (ER_Utility::IsMainCameraCPUFrustumCulling && camera)
+				PerformCPUFrustumCull(camera);
+			else
 			{
-				//just updating transforms (that could be changed in a previous frame); this is not optimal (GPU buffer map() every frame...)
-				for (int lod = 0; lod < GetLODCount(); lod++)
-					UpdateInstanceBuffer(mInstanceData[lod], lod);
+				// you can still use CPU culling of instances with buffer updates (for objects which do not use indirect rendering)
+				// however, this is left here mainly for legacy reason and potential debugging of indirect culling/rendering bugs
+				if (mIsInstanced)
+				{
+					//just updating transforms (that could be changed in a previous frame); this is not optimal (GPU buffer map() every frame...)
+					for (int lod = 0; lod < GetLODCount(); lod++)
+						UpdateInstanceBuffer(mInstanceData[lod], lod);
+				}
 			}
 		}
 
@@ -1111,20 +1128,19 @@ namespace EveryRay_Core
 
 	void ER_RenderingObject::CreateIndirectInstanceData()
 	{
-		if (!useIndirectRendering)
-			return;
-
 		if (mIndirectOriginalInstanceDataBuffer) // means we already created the buffers
 			return;
 
-		assert(!mIndirectAppendInstanceDataBuffer);
+		assert(mIsIndirectlyRendered);
+		assert(!mIndirectNewInstanceDataBuffer);
 		assert(!mIndirectOriginalInstanceDataBuffer);
 		assert(mInstanceCount);
 		assert(mInstanceAABBs.size());
 		assert(mInstanceData[0].size());
 
 		ER_RHI* rhi = mCore->GetRHI();
-		mIndirectAppendInstanceDataBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject - Indirect Append Instance Data Buffer : " + mName);
+
+		mIndirectNewInstanceDataBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject - Indirect New Instance Data Buffer : " + mName);
 		mIndirectOriginalInstanceDataBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject - Indirect Original Instance Data Buffer : " + mName);
 
 		struct IndirectInstanceData 
@@ -1146,8 +1162,8 @@ namespace EveryRay_Core
 
 		mIndirectOriginalInstanceDataBuffer->CreateGPUBufferResource(rhi, &data[0], mInstanceCount, sizeof(IndirectInstanceData), false,
 			ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
-		mIndirectAppendInstanceDataBuffer->CreateGPUBufferResource(rhi, nullptr, mInstanceCount, sizeof(IndirectInstanceData), false,
-			ER_BIND_UNORDERED_ACCESS | ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED, ER_FORMAT_UNKNOWN, true);
+		mIndirectNewInstanceDataBuffer->CreateGPUBufferResource(rhi, nullptr, mInstanceCount * MAX_LOD, sizeof(IndirectInstanceData), false,
+			ER_BIND_UNORDERED_ACCESS | ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED, ER_FORMAT_UNKNOWN);
 	}
 
 	void ER_RenderingObject::UpdateLODs()
@@ -1157,6 +1173,8 @@ namespace EveryRay_Core
 		const float sqrDistLod2 = ER_Utility::DistancesLOD[2] * ER_Utility::DistancesLOD[2];
 
 		if (mIsInstanced) {
+			if (!mIsIndirectlyRendered) // LODs are also updated in ER_GPUCuller, so no need to do that here
+				return;
 			if (!ER_Utility::IsMainCameraCPUFrustumCulling && mInstanceData.size() == 0)
 				return;
 			if (ER_Utility::IsMainCameraCPUFrustumCulling && mTempPostCullingInstanceData.size() == 0)

@@ -16,6 +16,8 @@
 #define GPU_CULL_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX 1
 #define GPU_CULL_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 2
 
+#define GPU_CULL_CLEAR_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX 0
+#define GPU_CULL_CLEAR_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 1
 namespace EveryRay_Core
 {
 
@@ -28,6 +30,7 @@ namespace EveryRay_Core
 	{
 		DeleteObject(mIndirectCullingCS);
 		DeleteObject(mIndirectCullingRS);
+		DeleteObject(mIndirectCullingClearCS);
 
 		mMeshConstantBuffer.Release();
 		mCameraConstantBuffer.Release();
@@ -39,6 +42,8 @@ namespace EveryRay_Core
 
 		mIndirectCullingCS = rhi->CreateGPUShader();
 		mIndirectCullingCS->CompileShader(rhi, "content\\shaders\\IndirectCulling.hlsl", "CSMain", ER_COMPUTE);
+		mIndirectCullingClearCS = rhi->CreateGPUShader();
+		mIndirectCullingClearCS->CompileShader(rhi, "content\\shaders\\IndirectCullingClear.hlsl", "CSMain", ER_COMPUTE);
 
 		//TODO root signature
 
@@ -47,9 +52,60 @@ namespace EveryRay_Core
 		mCameraConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: GPU Culler Camera CB");
 	}
 
+	void ER_GPUCuller::ClearCounters(ER_Scene* aScene)
+	{
+		assert(aScene);
+		auto rhi = mCore.GetRHI();
+
+		rhi->SetRootSignature(mIndirectCullingClearRS, true);
+		if (!rhi->IsPSOReady(mPSOClearName, true))
+		{
+			rhi->InitializePSO(mPSOClearName, true);
+			rhi->SetShader(mIndirectCullingClearCS);
+			rhi->SetRootSignatureToPSO(mPSOClearName, mIndirectCullingClearRS, true);
+			rhi->FinalizePSO(mPSOClearName, true);
+		}
+		rhi->SetPSO(mPSOClearName, true);
+
+		for (ER_SceneObject& obPair : aScene->objects)
+		{
+			ER_RenderingObject* aObj = obPair.second;
+
+			if (!aObj->IsIndirectlyRendered())
+				continue;
+
+			rhi->ClearUAV(aObj->GetIndirectNewInstanceBuffer(), 0);
+
+			rhi->SetUnorderedAccessResources(ER_COMPUTE,
+				{
+					aObj->GetIndirectArgsBuffer()
+				}, 0, mIndirectCullingRS, GPU_CULL_CLEAR_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
+
+			int offset, indexCount = 0;
+			for (int lodI = 0; lodI < MAX_LOD; lodI++)
+			{
+				for (int meshI = 0; meshI < MAX_MESH_COUNT; meshI++)
+				{
+					offset = MAX_MESH_COUNT * lodI + meshI;
+					indexCount = (meshI < aObj->GetMeshCount()) ? aObj->GetIndexCount(lodI, meshI) : INT_MAX;
+					mMeshConstantBuffer.Data.IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc[offset] = XMINT4(indexCount, 0, 0, 0);
+				}
+			}
+			mMeshConstantBuffer.Data.OriginalInstancesCount = aObj->GetInstanceCount();
+			mMeshConstantBuffer.ApplyChanges(rhi);
+			rhi->SetConstantBuffers(ER_COMPUTE, { mMeshConstantBuffer.Buffer() }, 0, mIndirectCullingClearRS, GPU_CULL_CLEAR_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
+
+			rhi->Dispatch(1u, 1u, 1u);
+		}
+		rhi->UnsetPSO();
+		rhi->UnbindResourcesFromShader(ER_COMPUTE);
+	}
+
 	void ER_GPUCuller::PerformCull(ER_Scene* aScene)
 	{
 		assert(aScene);
+
+		ClearCounters(aScene);
 
 		mIndirectCullsCounterPerFrame = 0;
 		auto rhi = mCore.GetRHI();
@@ -66,33 +122,45 @@ namespace EveryRay_Core
 
 		for (int i = 0; i < 6; ++i)
 			mCameraConstantBuffer.Data.FrustumPlanes[i] = mCamera.GetFrustum().Planes()[i];
-		mCameraConstantBuffer.Data.LodCameraDistances = XMFLOAT4(ER_Utility::DistancesLOD[0], ER_Utility::DistancesLOD[1], ER_Utility::DistancesLOD[2], 0.0f);
+		mCameraConstantBuffer.Data.LodCameraDistances = XMFLOAT4(
+			ER_Utility::DistancesLOD[0] * ER_Utility::DistancesLOD[0], 
+			ER_Utility::DistancesLOD[1] * ER_Utility::DistancesLOD[1],
+			ER_Utility::DistancesLOD[2] * ER_Utility::DistancesLOD[2], 0.0f);
+		mCameraConstantBuffer.Data.CameraPos = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f);
 		mCameraConstantBuffer.ApplyChanges(rhi);
 
 		for (ER_SceneObject& obPair : aScene->objects)
 		{
 			ER_RenderingObject* aObj = obPair.second;
 
-			if (!aObj->IsInstanced())
-				return; //not interested in non-instanced objects
+			if (!aObj->IsIndirectlyRendered())
+				continue;
 
 			rhi->SetShaderResources(ER_COMPUTE, { aObj->GetIndirectOriginalInstanceBuffer() }, 0, mIndirectCullingRS, GPU_CULL_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
 			
-			rhi->SetUnorderedAccessResources(ER_COMPUTE, { aObj->GetIndirectAppendInstanceBuffer() }, 0, mIndirectCullingRS, GPU_CULL_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
+			rhi->SetUnorderedAccessResources(ER_COMPUTE,
+				{ 
+					aObj->GetIndirectNewInstanceBuffer(),
+					aObj->GetIndirectArgsBuffer()
+				}, 0, mIndirectCullingRS, GPU_CULL_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
 
-			for (int i = 0; i < aObj->GetMeshCount(); i++)
+			int offset, indexCount = 0;
+			for (int lodI = 0; lodI < MAX_LOD; lodI++)
 			{
-				rhi->SetUnorderedAccessResources(ER_COMPUTE, { aObj->GetIndirectArgsBuffer(i) }, 1, mIndirectCullingRS, GPU_CULL_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
-
-				mMeshConstantBuffer.Data.IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc = XMINT4(aObj->GetIndexCount(0, i), 0, 0, 0);
-				mMeshConstantBuffer.ApplyChanges(rhi);
-				rhi->SetConstantBuffers(ER_COMPUTE, { mMeshConstantBuffer.Buffer(), mCameraConstantBuffer.Buffer() },
-					0, mIndirectCullingRS, GPU_CULL_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
-
-				rhi->Dispatch(ER_DivideByMultiple(static_cast<UINT>(aObj->GetInstanceCount()), 64u), 1u, 1u);
-				mIndirectCullsCounterPerFrame++;
+				for (int meshI = 0; meshI < MAX_MESH_COUNT; meshI++)
+				{
+					offset = MAX_MESH_COUNT * lodI + meshI;
+					indexCount = (meshI < aObj->GetMeshCount()) ? aObj->GetIndexCount(lodI, meshI) : INT_MAX;
+					mMeshConstantBuffer.Data.IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc[offset] = XMINT4(indexCount, 0, 0, 0);
+				}
 			}
+			mMeshConstantBuffer.Data.OriginalInstancesCount = aObj->GetInstanceCount();
+			mMeshConstantBuffer.ApplyChanges(rhi);
+			rhi->SetConstantBuffers(ER_COMPUTE, { mMeshConstantBuffer.Buffer(), mCameraConstantBuffer.Buffer() },
+				0, mIndirectCullingRS, GPU_CULL_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
 
+			rhi->Dispatch(ER_DivideByMultiple(static_cast<UINT>(aObj->GetInstanceCount()), 64u), 1u, 1u);
+			mIndirectCullsCounterPerFrame++;
 		}
 		rhi->UnsetPSO();
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);

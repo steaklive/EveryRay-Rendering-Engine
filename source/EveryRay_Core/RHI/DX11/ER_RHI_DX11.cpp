@@ -267,6 +267,16 @@ namespace EveryRay_Core
 		mDirect3DDeviceContext->ClearUnorderedAccessViewFloat(pUnorderedAccessView, colors);
 	}
 
+	void ER_RHI_DX11::ClearUAV(ER_RHI_GPUBuffer* aBuffer, UINT clear)
+	{
+		assert(aBuffer);
+		ID3D11UnorderedAccessView* pUnorderedAccessView = static_cast<ID3D11UnorderedAccessView*>(aBuffer->GetUAV());
+		assert(pUnorderedAccessView);
+
+		UINT clears[4] = { clear, clear, clear, clear };
+		mDirect3DDeviceContext->ClearUnorderedAccessViewUint(pUnorderedAccessView, clears);
+	}
+
 	void ER_RHI_DX11::CreateInputLayout(ER_RHI_InputLayout* aOutInputLayout, ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount, const void* shaderBytecodeWithInputSignature, UINT byteCodeLength)
 	{
 		assert(inputElementDescriptions);

@@ -59,6 +59,7 @@ namespace EveryRay_Core
 		}
 	};
 
+	// TODO replace floats with bitmask where possible
 	struct ER_ALIGN_GPU_BUFFER ObjectCB
 	{
 		XMMATRIX World;
@@ -67,6 +68,9 @@ namespace EveryRay_Core
 		float IndexOfRefraction;
 		float CustomRoughness;
 		float CustomMetalness;
+		float OriginalInstanceCount;
+		float CurrentLod;
+		float IsIndirectlyRendered;
 	};
 
 	struct TextureData
@@ -120,7 +124,7 @@ namespace EveryRay_Core
 
 	class ER_RenderingObject
 	{
-		using Delegate_MeshMaterialVariablesUpdate = std::function<void(int)>; // mesh index for input
+		using Delegate_MeshMaterialVariablesUpdate = std::function<void(int, int)>; // mesh index & lod index for input
 
 	public:
 		ER_RenderingObject(const std::string& pName, int index, ER_Core& pCore, ER_Camera& pCamera, std::unique_ptr<ER_Model> pModel, bool availableInEditor = false, bool isInstanced = false);
@@ -168,9 +172,11 @@ namespace EveryRay_Core
 		
 		void PerformCPUFrustumCull(ER_Camera* camera);
 
-		ER_RHI_GPUBuffer* GetIndirectAppendInstanceBuffer() { return mIndirectAppendInstanceDataBuffer; }
+		void SetUseIndirectRendering(bool value) { mIsIndirectlyRendered = value; }
+		bool IsIndirectlyRendered() { return mIsIndirectlyRendered; }
+		ER_RHI_GPUBuffer* GetIndirectNewInstanceBuffer() { return mIndirectNewInstanceDataBuffer; }
 		ER_RHI_GPUBuffer* GetIndirectOriginalInstanceBuffer() { return mIndirectOriginalInstanceDataBuffer; }
-		ER_RHI_GPUBuffer* GetIndirectArgsBuffer(int meshIndex) { return mIndirectArgsBuffers[meshIndex]; }
+		ER_RHI_GPUBuffer* GetIndirectArgsBuffer() { return mIndirectArgsBuffer; }
 
 		void Rename(const std::string& name) { mName = name; }
 		const std::string& GetName() { return mName; }
@@ -357,10 +363,13 @@ namespace EveryRay_Core
 		std::vector<std::vector<InstancedData>>					mInstanceData; //original instance data  (per LOD group)
 		XMFLOAT4*												mTempInstancesPositions = nullptr;
 
-		//instance data but for indirect rendering (new and more efficient way to render instanced objects)
-		std::vector<ER_RHI_GPUBuffer*>							mIndirectArgsBuffers; // draw indexed instance indirect args per mesh (instance count is calculated in compute)
-		ER_RHI_GPUBuffer*										mIndirectAppendInstanceDataBuffer = nullptr; //instance transforms appened in compute shader
+		// GPU-driven way of culling and rendering instances without CPU readbacks (new and preferred)
+		// WARNING: Make sure to use this for objects with high instances counts to make this efficient
+		// WARNING: Has nothing to do with indirect lighting!
+		bool													mIsIndirectlyRendered = false; // parsed from the scene file
 		ER_RHI_GPUBuffer*										mIndirectOriginalInstanceDataBuffer = nullptr; //original instance transforms
+		ER_RHI_GPUBuffer*										mIndirectNewInstanceDataBuffer = nullptr; //new instance transforms of all LODs culled and processed in CS
+		ER_RHI_GPUBuffer*										mIndirectArgsBuffer = nullptr; // draw indexed instance indirect args for all meshes (instance count is calculated in CS)
 		///****************************************************************************************************************************
 
 		///****************************************************************************************************************************

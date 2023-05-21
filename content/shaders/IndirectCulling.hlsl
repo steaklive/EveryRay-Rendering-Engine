@@ -1,24 +1,21 @@
+#include "IndirectCulling.hlsli"
 
 cbuffer MeshConstants : register(b0)
 {
-	uint4 IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc;
+	uint4 IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc[MAX_LOD_COUNT * MAX_MESH_COUNT];
+	uint OriginalInstancesCount;
 };
 
 cbuffer CameraConstants : register(b1)
 {
 	float4 FrustumPlanes[6];
-	float4 LODCameraDistances;
+	float4 LODCameraSqrDistances;
+	float4 CameraPos;
 };
 
-struct Instance
-{
-	float4x4 World;
-	float4 AABBmin;
-	float4 AABBmax;
-};
 StructuredBuffer<Instance> instanceData : register(t0);
-AppendStructuredBuffer<Instance> newInstanceData : register(u0);
-RWBuffer<uint> argsBuffer : register(u1);
+RWStructuredBuffer<Instance> newInstanceData : register(u0); // OriginalInstancesCount * MAX_LOD_COUNT
+RWBuffer<uint> argsBuffer : register(u1); // MAX_LOD_COUNT * MAX_MESH_COUNT * 5
 
 bool PerformFrustumCull(float4 aabbMin, float4 aabbMax)
 {
@@ -62,32 +59,50 @@ bool PerformFrustumCull(float4 aabbMin, float4 aabbMax)
 	return culled;
 }
 
+int CalculateLodIndex(float4x4 worldMat)
+{
+	float3 pos = float3(worldMat[0][3], worldMat[1][3], worldMat[2][3]);
+
+	float distanceToCameraSqr =
+		(CameraPos.x - pos.x) * (CameraPos.x - pos.x) +
+		(CameraPos.y - pos.y) * (CameraPos.y - pos.y) +
+		(CameraPos.z - pos.z) * (CameraPos.z - pos.z);
+
+	if (distanceToCameraSqr <= LODCameraSqrDistances.x)
+		return 0;
+	else if (LODCameraSqrDistances.x < distanceToCameraSqr && distanceToCameraSqr <= LODCameraSqrDistances.y)
+		return 1;
+	else if (LODCameraSqrDistances.y < distanceToCameraSqr && distanceToCameraSqr <= LODCameraSqrDistances.z)
+		return 2;
+
+	return -1;
+}
+
 [numthreads(64, 1, 1)]
 void CSMain(int3 DTid : SV_DispatchThreadID)
 {
-	int lod = 0;
-
-	if (DTid.x == 0)
-	{
-		argsBuffer[lod = 0] = IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc.x;
-		argsBuffer[lod + 1] = 0;
-		argsBuffer[lod + 2] = IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc.y;
-		argsBuffer[lod + 3] = IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc.z;
-		argsBuffer[lod + 4] = IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc.w;
-	}
-
-	GroupMemoryBarrier();
-
 	int index = DTid.x;
+	if (index >= OriginalInstancesCount)
+		return;
 
 	Instance data = instanceData[index];
 
 	bool isCulled = PerformFrustumCull(data.AABBmin, data.AABBmax);
 	if (!isCulled)
 	{
-		uint instanceIndexTemp;
-		InterlockedAdd(argsBuffer[lod + 1], 1, instanceIndexTemp);
+		int lod = CalculateLodIndex(data.WorldMat);
+		if (lod == -1)
+			return;
 
-		newInstanceData.Append(data);
+		// we just need to copy the counters for all meshes in that lod
+		for (int mesh = 0; mesh < MAX_MESH_COUNT; mesh++)
+		{
+			uint offset = MAX_MESH_COUNT * lod + mesh;
+
+			uint outIndex;
+			InterlockedAdd(argsBuffer[offset * 5 + 1], 1, outIndex);
+			if (mesh == 0)
+				newInstanceData[OriginalInstancesCount * lod + outIndex] = data;
+		}
 	}
 }
