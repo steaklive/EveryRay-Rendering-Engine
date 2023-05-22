@@ -76,6 +76,9 @@
     <Filter Include="Source Files\Graphics\RHI\DX12">
       <UniqueIdentifier>{7b23075b-f133-4541-a434-a6f9d363f260}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\IndirectCulling">
+      <UniqueIdentifier>{034183c2-591c-4c84-967d-616c25279088}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -288,6 +291,9 @@
     <ClInclude Include="ER_FurShellMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_GPUCuller.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -485,6 +491,9 @@
     <ClCompile Include="ER_FurShellMaterial.cpp">
       <Filter>Source Files\Graphics\Materials</Filter>
     </ClCompile>
+    <ClCompile Include="ER_GPUCuller.cpp">
+      <Filter>Source Files\Graphics\Rendering systems</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\content\shaders\VolumetricLight\Apply_PS.hlsl">
@@ -664,6 +673,12 @@
     <FxCompile Include="..\..\content\shaders\FurShell.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="..\..\content\shaders\IndirectCulling.hlsl">
+      <Filter>Shaders\IndirectCulling</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\content\shaders\IndirectCullingClear.hlsl">
+      <Filter>Shaders\IndirectCulling</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\content\shaders\Lighting.hlsli">
@@ -679,5 +694,8 @@
       <Filter>Source Files\Graphics\Materials</Filter>
     </None>
     <None Include="packages.config" />
+    <None Include="..\..\content\shaders\IndirectCulling.hlsli">
+      <Filter>Shaders\IndirectCulling</Filter>
+    </None>
   </ItemGroup>
 </Project>

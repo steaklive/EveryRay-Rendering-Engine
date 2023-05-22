@@ -18,7 +18,7 @@ namespace EveryRay_Core
 	}
 
 	void ER_RHI_DX11_GPUBuffer::CreateGPUBufferResource(ER_RHI* aRHI, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic /*= false*/,
-		ER_RHI_BIND_FLAG bindFlags /*= 0*/, UINT cpuAccessFlags /*= 0*/, ER_RHI_RESOURCE_MISC_FLAG miscFlags /*= 0*/, ER_RHI_FORMAT format /*= ER_FORMAT_UNKNOWN*/, bool canAppend)
+		ER_RHI_BIND_FLAG bindFlags /*= 0*/, UINT cpuAccessFlags /*= 0*/, ER_RHI_RESOURCE_MISC_FLAG miscFlags /*= 0*/, ER_RHI_FORMAT format /*= ER_FORMAT_UNKNOWN*/)
 	{
 		assert(aRHI);
 		ER_RHI_DX11* aRHIDX11 = static_cast<ER_RHI_DX11*>(aRHI);
@@ -72,7 +72,7 @@ namespace EveryRay_Core
 			uav_desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
 			uav_desc.Buffer.FirstElement = 0;
 			uav_desc.Buffer.NumElements = objectsCount;
-			uav_desc.Buffer.Flags = canAppend ? D3D11_BUFFER_UAV_FLAG_APPEND : 0;
+			uav_desc.Buffer.Flags = /*canAppend ? D3D11_BUFFER_UAV_FLAG_APPEND :*/ 0;
 			if (FAILED(device->CreateUnorderedAccessView(mBuffer, &uav_desc, &mBufferUAV)))
 				throw ER_CoreException("ER_RHI_DX11: Failed to create UAV of GPU buffer.");
 		}

@@ -60,6 +60,7 @@ namespace EveryRay_Core
 		virtual void ClearRenderTarget(ER_RHI_GPUTexture* aRenderTarget, float colors[4], int rtvArrayIndex = -1) override;
 		virtual void ClearDepthStencilTarget(ER_RHI_GPUTexture* aDepthTarget, float depth, UINT stencil = -1) override;
 		virtual void ClearUAV(ER_RHI_GPUResource* aRenderTarget, float colors[4]) override;
+		virtual void ClearUAV(ER_RHI_GPUBuffer* aBuffer, UINT value) override;
 		
 		virtual ER_RHI_GPUShader* CreateGPUShader() override;
 		virtual ER_RHI_GPUBuffer* CreateGPUBuffer(const std::string& aDebugName) override;
@@ -83,7 +84,7 @@ namespace EveryRay_Core
 		virtual void DrawIndexed(UINT IndexCount) override;
 		virtual void DrawInstanced(UINT VertexCountPerInstance, UINT InstanceCount, UINT StartVertexLocation, UINT StartInstanceLocation) override;
 		virtual void DrawIndexedInstanced(UINT IndexCountPerInstance, UINT InstanceCount, UINT StartIndexLocation, INT BaseVertexLocation, UINT StartInstanceLocation) override;
-		//TODO DrawIndirect
+		virtual void DrawIndexedInstancedIndirect(ER_RHI_GPUBuffer* anArgsBuffer, UINT alignedByteOffset) override;
 
 		virtual void Dispatch(UINT ThreadGroupCountX, UINT ThreadGroupCountY, UINT ThreadGroupCountZ) override;
 		//TODO DispatchIndirect

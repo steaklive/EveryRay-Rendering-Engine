@@ -579,6 +579,11 @@ namespace EveryRay_Core
 #pragma endregion
 	}
 
+	void ER_RHI_DX12::ClearUAV(ER_RHI_GPUBuffer* aBuffer, UINT value)
+	{
+
+	}
+
 	ER_RHI_InputLayout* ER_RHI_DX12::CreateInputLayout(ER_RHI_INPUT_ELEMENT_DESC* inputElementDescriptions, UINT inputElementDescriptionCount)
 	{
 		return new ER_RHI_InputLayout(inputElementDescriptions, inputElementDescriptionCount);
@@ -746,6 +751,12 @@ namespace EveryRay_Core
 		assert(InstanceCount > 0);
 
 		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->DrawIndexedInstanced(IndexCountPerInstance, InstanceCount, StartIndexLocation, BaseVertexLocation, StartInstanceLocation);
+	}
+
+	void ER_RHI_DX12::DrawIndexedInstancedIndirect(ER_RHI_GPUBuffer* anArgsBuffer, UINT alignedByteOffset)
+	{
+		//assert(mCurrentGraphicsCommandListIndex > -1);
+		//mCommandListGraphics[mCurrentGraphicsCommandListIndex]->
 	}
 
 	void ER_RHI_DX12::Dispatch(UINT ThreadGroupCountX, UINT ThreadGroupCountY, UINT ThreadGroupCountZ)

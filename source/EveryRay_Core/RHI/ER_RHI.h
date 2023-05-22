@@ -505,7 +505,7 @@ namespace EveryRay_Core
 
 		virtual void CreateGPUBufferResource(ER_RHI* aRHI, void* aData, UINT objectsCount, UINT byteStride, bool isDynamic = false,
 			ER_RHI_BIND_FLAG bindFlags = ER_BIND_NONE, UINT cpuAccessFlags = 0, ER_RHI_RESOURCE_MISC_FLAG miscFlags = ER_RESOURCE_MISC_NONE,
-			ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN, bool canAppend = false) {	AbstractRHIMethodAssert(); }
+			ER_RHI_FORMAT format = ER_FORMAT_UNKNOWN) {	AbstractRHIMethodAssert(); }
 		virtual void* GetBuffer() { AbstractRHIMethodAssert();  return nullptr; }
 		virtual int GetSize() { AbstractRHIMethodAssert(); return 0; }
 		virtual UINT GetStride() { AbstractRHIMethodAssert(); return 0; }
