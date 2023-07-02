@@ -130,7 +130,8 @@ namespace EveryRay_Core
 		virtual void SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot = 0, ER_RHI_GPURootSignature* rs = nullptr) override;
 		
 		virtual void SetRootSignature(ER_RHI_GPURootSignature* rs, bool isCompute = false) override;
-		
+		virtual void SetRootConstant(UINT aConstant, UINT aRootIndex, UINT anOffset = 0, bool isCompute = false) override;
+
 		virtual void SetInputLayout(ER_RHI_InputLayout* aIL) override;
 		virtual void SetEmptyInputLayout() override;
 		virtual void SetIndexBuffer(ER_RHI_GPUBuffer* aBuffer, UINT offset = 0) override;
@@ -272,6 +273,8 @@ namespace EveryRay_Core
 		ER_RHI_DX12_PSO_STATE mCurrentPSOState = ER_RHI_DX12_PSO_STATE::UNSET;
 
 		ER_RHI_DX12_GPUDescriptorHeapManager* mDescriptorHeapManager = nullptr;
+
+		ComPtr<ID3D12CommandSignature> mCommandSignature_DrawIndexed;
 
 		D3D12_SAMPLER_DESC mEmptySampler;
 

@@ -69,9 +69,13 @@ namespace EveryRay_Core
 		float CustomRoughness;
 		float CustomMetalness;
 		float OriginalInstanceCount;
-		float CurrentLod;
 		float IsIndirectlyRendered;
 	};
+
+	//struct ER_ALIGN_GPU_BUFFER ObjectCB
+	//{
+	//	UINT CurrentLOD;
+	//};
 
 	struct TextureData
 	{

@@ -27,6 +27,11 @@ cbuffer GBufferCBuffer : register(b0)
 }
 // register(b1) is objects cbuffer from Common.hlsli
 
+cbuffer RootConstant : register(b2)
+{
+    uint CurrentLod;
+}
+
 SamplerState Sampler : register(s0);
 
 struct VS_INPUT
@@ -75,7 +80,7 @@ VS_OUTPUT VSMain_instancing(VS_INPUT_INSTANCING IN)
     VS_OUTPUT OUT = (VS_OUTPUT) 0;
     
     float4x4 World = IsIndirectlyRendered > 0.0 ?
-        transpose(IndirectInstanceData[(int)OriginalInstanceCount * (int)CurrentLod + IN.InstanceID].WorldMat) : IN.World;
+        transpose(IndirectInstanceData[(int)OriginalInstanceCount * CurrentLod + IN.InstanceID].WorldMat) : IN.World;
     OUT.WorldPos = mul(IN.ObjectPosition, World).xyz;
     OUT.Position = mul(float4(OUT.WorldPos, 1.0f), ViewProjection);
     OUT.Normal = normalize(mul(float4(IN.Normal, 0), World).xyz);

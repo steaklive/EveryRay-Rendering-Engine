@@ -433,7 +433,6 @@ namespace EveryRay_Core
 				mObjectConstantBuffer.Data.CustomRoughness = mCustomRoughness;
 				mObjectConstantBuffer.Data.CustomMetalness = mCustomMetalness;
 				mObjectConstantBuffer.Data.OriginalInstanceCount = mInstanceCount;
-				mObjectConstantBuffer.Data.CurrentLod = lod;
 				mObjectConstantBuffer.Data.IsIndirectlyRendered = mIsIndirectlyRendered ? 1.0f : 0.0f;
 				mObjectConstantBuffer.ApplyChanges(rhi);
 
@@ -460,7 +459,7 @@ namespace EveryRay_Core
 					rhi->SetVertexBuffers({ mMeshRenderBuffers[lod][meshI]->VertexBuffer });
 				rhi->SetIndexBuffer(mMeshRenderBuffers[lod][meshI]->IndexBuffer);
 
-				// run prepare callbacks for standard materials (specials are, i.e., shadow mapping, which are processed in their own systems)
+				// run prepare callbacks for standard materials (specials, i.e., shadow mapping, are processed in their own systems)
 				if (!isForwardPass && mMaterials[materialName]->IsStandard())
 				{
 					auto prepareMaterialBeforeRendering = MeshMaterialVariablesUpdateEvent->GetListener(materialName);
@@ -474,7 +473,10 @@ namespace EveryRay_Core
 				{
 					if (mIsIndirectlyRendered)
 					{
-						int offset = (MAX_MESH_COUNT * lod + meshI) * 5 * sizeof(UINT); //5 is args count of DrawIndexedInstanced()
+						if (!isForwardPass)
+							mMaterials[materialName]->SetRootConstantForMaterial(static_cast<UINT>(lod));
+
+						const int offset = (MAX_MESH_COUNT * lod + meshI) * 5 * sizeof(UINT); //5 is args count of DrawIndexedInstanced()
 						rhi->DrawIndexedInstancedIndirect(mIndirectArgsBuffer, offset);
 					}
 					else

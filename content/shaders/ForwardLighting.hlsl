@@ -57,6 +57,11 @@ cbuffer LightProbesCBuffer : register(b2)
     float DistanceBetweenSpecularProbes;
 }
 
+cbuffer RootConstant : register(b3)
+{
+    uint CurrentLod;
+}
+
 struct VS_INPUT
 {
     float4 Position : POSITION;
@@ -138,7 +143,7 @@ VS_OUTPUT VSMain_instancing(VS_INPUT_INSTANCING IN)
     VS_OUTPUT OUT = (VS_OUTPUT) 0;
 
     float4x4 World = IsIndirectlyRendered > 0.0 ?
-        transpose(IndirectInstanceData[(int)OriginalInstanceCount * (int)CurrentLod + IN.InstanceID].WorldMat) : IN.World;
+        transpose(IndirectInstanceData[(int)OriginalInstanceCount * CurrentLod + IN.InstanceID].WorldMat) : IN.World;
 
     OUT.WorldPos = mul(IN.Position, World).xyz;
     OUT.Position = mul(float4(OUT.WorldPos, 1.0f), ViewProjection);

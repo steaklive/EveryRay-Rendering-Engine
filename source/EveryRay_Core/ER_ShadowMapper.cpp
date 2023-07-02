@@ -63,12 +63,14 @@ namespace EveryRay_Core
 			//mLightProjectors[i]->ApplyRotation(mDirectionalLight.GetTransform());
 		}
 
-		mRootSignature = rhi->CreateRootSignature(2, 1);
+		mRootSignature = rhi->CreateRootSignature(4, 1);
 		if (mRootSignature)
 		{
 			mRootSignature->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
-			mRootSignature->InitDescriptorTable(rhi, SHADOWMAP_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
+			mRootSignature->InitDescriptorTable(rhi, SHADOWMAP_MAT_ROOT_DESCRIPTOR_TABLE_PIXEL_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+			mRootSignature->InitDescriptorTable(rhi, SHADOWMAP_MAT_ROOT_DESCRIPTOR_TABLE_VERTEX_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 1 }, { 1 }, ER_RHI_SHADER_VISIBILITY_VERTEX);
 			mRootSignature->InitDescriptorTable(rhi, SHADOWMAP_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
+			mRootSignature->InitConstant(rhi, SHADOWMAP_MAT_ROOT_ROOT_CONSTANT_INDEX, 2 /*we already use 2 slots for CBVs*/, 1 /* only 1 constant for LOD index*/, ER_RHI_SHADER_VISIBILITY_ALL);
 			mRootSignature->Finalize(rhi, "ER_RHI_GPURootSignature: ShadowMapMaterial Pass", true);
 		}
 	}

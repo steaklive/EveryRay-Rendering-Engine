@@ -107,6 +107,7 @@ namespace EveryRay_Core
 		virtual void SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot = 0, ER_RHI_GPURootSignature* rs = nullptr) override;
 		
 		virtual void SetRootSignature(ER_RHI_GPURootSignature* rs, bool isCompute = false) override {}; //not supported on DX11
+		virtual void SetRootConstant(UINT aConstant, UINT aRootIndex, UINT anOffset = 0, bool isCompute = false) override {}; //not supported on DX11
 
 		virtual void SetShader(ER_RHI_GPUShader* aShader) override;
 		virtual void SetInputLayout(ER_RHI_InputLayout* aIL) override;

@@ -92,16 +92,22 @@ namespace EveryRay_Core
 		resources.push_back(aObj->GetTextureData(meshIndex).MetallicMap);
 		resources.push_back(aObj->GetTextureData(meshIndex).HeightMap);	
 		resources.push_back(aObj->GetTextureData(meshIndex).ReflectionMaskMap);
-		rhi->SetShaderResources(ER_PIXEL, resources, 0, rs, GBUFFER_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
+		rhi->SetShaderResources(ER_PIXEL, resources, 0, rs, GBUFFER_MAT_ROOT_DESCRIPTOR_TABLE_PIXEL_SRV_INDEX);
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP }, 0, rs);
 
 		if (aObj->IsIndirectlyRendered())
-			rhi->SetShaderResources(ER_VERTEX, { aObj->GetIndirectNewInstanceBuffer() }, static_cast<int>(resources.size()), rs, GBUFFER_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
+			rhi->SetShaderResources(ER_VERTEX, { aObj->GetIndirectNewInstanceBuffer() }, static_cast<int>(resources.size()), rs, GBUFFER_MAT_ROOT_DESCRIPTOR_TABLE_VERTEX_SRV_INDEX);
 	}
 
 	void ER_GBufferMaterial::PrepareResourcesForStandardMaterial(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, ER_RHI_GPURootSignature* rs)
 	{
 		//not used because this material is not standard
+	}
+
+	void ER_GBufferMaterial::SetRootConstantForMaterial(UINT a32BitConstant)
+	{
+		auto rhi = ER_Material::GetCore()->GetRHI();
+		rhi->SetRootConstant(a32BitConstant, GBUFFER_MAT_ROOT_CONSTANT_INDEX);
 	}
 
 	void ER_GBufferMaterial::CreateVertexBuffer(const ER_Mesh& mesh, ER_RHI_GPUBuffer* vertexBuffer)

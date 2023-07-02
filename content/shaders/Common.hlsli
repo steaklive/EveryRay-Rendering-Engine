@@ -11,7 +11,6 @@ cbuffer ObjectCBuffer : register(b1)
     float CustomRoughness;
     float CustomMetalness;
     float OriginalInstanceCount;
-    float CurrentLod;
     float IsIndirectlyRendered;
 };
 

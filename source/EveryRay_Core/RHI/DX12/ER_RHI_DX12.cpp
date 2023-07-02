@@ -317,6 +317,20 @@ namespace EveryRay_Core
 			}
 		}
 
+		// Create the command signatures used for indirect drawing.
+		{
+			// DrawInstanced call
+			D3D12_INDIRECT_ARGUMENT_DESC argumentDescs[1] = {};
+			argumentDescs[0].Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED;
+
+			D3D12_COMMAND_SIGNATURE_DESC commandSignatureDesc = {};
+			commandSignatureDesc.pArgumentDescs = argumentDescs;
+			commandSignatureDesc.NumArgumentDescs = _countof(argumentDescs);
+			commandSignatureDesc.ByteStride = sizeof(D3D12_DRAW_INDEXED_ARGUMENTS);
+
+			if (FAILED(mDevice->CreateCommandSignature(&commandSignatureDesc, nullptr, IID_PPV_ARGS(mCommandSignature_DrawIndexed.ReleaseAndGetAddressOf()))))
+				throw ER_CoreException("ER_RHI_DX12: Could not create command signature (Draw Indexed)");
+		}
 		return true;
 	}
 
@@ -755,8 +769,12 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::DrawIndexedInstancedIndirect(ER_RHI_GPUBuffer* anArgsBuffer, UINT alignedByteOffset)
 	{
-		//assert(mCurrentGraphicsCommandListIndex > -1);
-		//mCommandListGraphics[mCurrentGraphicsCommandListIndex]->
+		assert(anArgsBuffer);
+		assert(mCurrentGraphicsCommandListIndex > -1);
+
+		TransitionResources({ anArgsBuffer }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_INDIRECT_ARGUMENT);
+
+		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->ExecuteIndirect(mCommandSignature_DrawIndexed.Get(), 1, static_cast<ID3D12Resource*>(anArgsBuffer->GetResource()), 0, nullptr, 0);
 	}
 
 	void ER_RHI_DX12::Dispatch(UINT ThreadGroupCountX, UINT ThreadGroupCountY, UINT ThreadGroupCountZ)
@@ -1364,6 +1382,16 @@ namespace EveryRay_Core
 			mCommandListGraphics[mCurrentGraphicsCommandListIndex]->SetGraphicsRootSignature(static_cast<ER_RHI_DX12_GPURootSignature*>(rs)->GetSignature());
 		else
 			mCommandListGraphics[mCurrentGraphicsCommandListIndex]->SetComputeRootSignature(static_cast<ER_RHI_DX12_GPURootSignature*>(rs)->GetSignature());
+
+		//TODO compute queue
+	}
+
+	void ER_RHI_DX12::SetRootConstant(UINT aConstant, UINT aRootIndex, UINT anOffset, bool isCompute)
+	{
+		if (!isCompute)
+			mCommandListGraphics[mCurrentGraphicsCommandListIndex]->SetGraphicsRoot32BitConstant(aRootIndex, aConstant, anOffset);
+		else
+			mCommandListGraphics[mCurrentGraphicsCommandListIndex]->SetComputeRoot32BitConstant(aRootIndex, aConstant, anOffset);
 
 		//TODO compute queue
 	}

@@ -358,7 +358,8 @@ namespace EveryRay_Core
 		virtual void SetSamplers(ER_RHI_SHADER_TYPE aShaderType, const std::vector<ER_RHI_SAMPLER_STATE>& aSamplers, UINT startSlot = 0, ER_RHI_GPURootSignature* rs = nullptr) = 0;
 		
 		virtual void SetRootSignature(ER_RHI_GPURootSignature* rs, bool isCompute = false) = 0;
-		
+		virtual void SetRootConstant(UINT aConstant, UINT aRootIndex, UINT anOffset = 0, bool isCompute = false) = 0;
+
 		virtual void SetIndexBuffer(ER_RHI_GPUBuffer* aBuffer, UINT offset = 0) = 0;
 		virtual void SetVertexBuffers(const std::vector<ER_RHI_GPUBuffer*>& aVertexBuffers) = 0;
 		virtual void SetInputLayout(ER_RHI_InputLayout* aIL) = 0;

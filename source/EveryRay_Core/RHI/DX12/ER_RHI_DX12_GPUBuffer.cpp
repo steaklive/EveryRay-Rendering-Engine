@@ -95,7 +95,7 @@ namespace EveryRay_Core
 			}
 		}
 
-		if (!mIsDynamic)
+		if (aData && !mIsDynamic)
 			UpdateSubresource(aRHI, aData, mSize, aRHIDX12->GetCurrentGraphicsCommandListIndex());
 
 		if (bindFlags & ER_BIND_VERTEX_BUFFER)
@@ -131,7 +131,10 @@ namespace EveryRay_Core
 
 			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			srvDesc.Format = mFormat;
+			if (miscFlags & ER_RHI_RESOURCE_MISC_FLAG::ER_RESOURCE_MISC_DRAWINDIRECT_ARGS)
+				srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+			else
+				srvDesc.Format = mFormat;
 			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
 			srvDesc.Buffer.NumElements = objectsCount;
 			srvDesc.Buffer.StructureByteStride = byteStride;
@@ -145,7 +148,10 @@ namespace EveryRay_Core
 			mBufferUAVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 			D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-			uavDesc.Format = mFormat;
+			if (miscFlags & ER_RHI_RESOURCE_MISC_FLAG::ER_RESOURCE_MISC_DRAWINDIRECT_ARGS)
+				uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+			else
+				uavDesc.Format = mFormat;
 			uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
 			uavDesc.Buffer.NumElements = objectsCount;
 			uavDesc.Buffer.StructureByteStride = byteStride;

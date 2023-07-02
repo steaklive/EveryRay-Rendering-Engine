@@ -18,6 +18,7 @@
 
 #define GPU_CULL_CLEAR_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX 0
 #define GPU_CULL_CLEAR_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 1
+
 namespace EveryRay_Core
 {
 
@@ -31,6 +32,7 @@ namespace EveryRay_Core
 		DeleteObject(mIndirectCullingCS);
 		DeleteObject(mIndirectCullingRS);
 		DeleteObject(mIndirectCullingClearCS);
+		DeleteObject(mIndirectCullingClearRS);
 
 		mMeshConstantBuffer.Release();
 		mCameraConstantBuffer.Release();
@@ -45,7 +47,23 @@ namespace EveryRay_Core
 		mIndirectCullingClearCS = rhi->CreateGPUShader();
 		mIndirectCullingClearCS->CompileShader(rhi, "content\\shaders\\IndirectCullingClear.hlsl", "CSMain", ER_COMPUTE);
 
-		//TODO root signature
+		//root signatures
+		mIndirectCullingRS = rhi->CreateRootSignature(3, 0);
+		if (mIndirectCullingRS)
+		{
+			mIndirectCullingRS->InitDescriptorTable(rhi, GPU_CULL_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 2 });
+			mIndirectCullingRS->InitDescriptorTable(rhi, GPU_CULL_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 });
+			mIndirectCullingRS->InitDescriptorTable(rhi, GPU_CULL_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 });
+			mIndirectCullingRS->Finalize(rhi, "ER_RHI_GPURootSignature: Indirect Culling Main");
+		}
+
+		mIndirectCullingClearRS = rhi->CreateRootSignature(2, 0);
+		if (mIndirectCullingClearRS)
+		{
+			mIndirectCullingClearRS->InitDescriptorTable(rhi, GPU_CULL_CLEAR_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 });
+			mIndirectCullingClearRS->InitDescriptorTable(rhi, GPU_CULL_CLEAR_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 });
+			mIndirectCullingClearRS->Finalize(rhi, "ER_RHI_GPURootSignature: Indirect Culling Clear");
+		}
 
 		//cbuffers
 		mMeshConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: GPU Culler Mesh CB");

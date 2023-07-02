@@ -38,6 +38,7 @@ namespace EveryRay_Core
 
 		// This method has to be overriden in standard material classes (not special like shadow map material, etc.) and can be used as a callback if bound to ER_RenderingObject
 		virtual void PrepareResourcesForStandardMaterial(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, ER_RHI_GPURootSignature* rs) = 0;
+		virtual void SetRootConstantForMaterial(UINT a32BitRootConstant) { }; // nothing here, override in specific materials
 		virtual void CreateVertexBuffer(const ER_Mesh& mesh, ER_RHI_GPUBuffer* vertexBuffer) = 0;
 		virtual int VertexSize() = 0;
 

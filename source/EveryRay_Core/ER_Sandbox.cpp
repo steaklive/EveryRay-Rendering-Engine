@@ -324,9 +324,7 @@ namespace EveryRay_Core {
 		
 		#pragma region GPU_CULLING
 		rhi->BeginEventTag("EveryRay: GPU Culling");
-#if ER_PLATFORM_WIN64_DX11 // TODO remove once fixed on DX12
 		mGPUCuller->PerformCull(mScene);
-#endif
 		rhi->EndEventTag();
 #pragma endregion
 

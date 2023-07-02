@@ -17,6 +17,11 @@ cbuffer ShadowMapCBuffer : register(b0)
 }
 // register(b1) is objects cbuffer from Common.hlsli
 
+cbuffer RootConstant : register(b2)
+{
+    uint CurrentLod;
+}
+
 struct VS_INPUT
 {
     float4 Position : POSITION;
@@ -64,7 +69,7 @@ VS_OUTPUT VSMain_instancing(VS_INPUT_INSTANCING IN)
     VS_OUTPUT OUT = (VS_OUTPUT) 0;
 
     float4x4 World = IsIndirectlyRendered > 0.0 ?
-        transpose(IndirectInstanceData[(int)OriginalInstanceCount * (int)CurrentLod + IN.InstanceID].WorldMat) : IN.World;
+        transpose(IndirectInstanceData[(int)OriginalInstanceCount * CurrentLod + IN.InstanceID].WorldMat) : IN.World;
     float3 WorldPos = mul(IN.Position, World).xyz;
     OUT.Position = mul(float4(WorldPos, 1.0f), LightViewProjection);
     OUT.Depth = OUT.Position.zw;

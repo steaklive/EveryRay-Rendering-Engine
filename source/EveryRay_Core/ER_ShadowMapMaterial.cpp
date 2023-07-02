@@ -72,18 +72,24 @@ namespace EveryRay_Core
 		mConstantBuffer.Data.LightViewProjection = XMMatrixTranspose(lvp);
 		mConstantBuffer.ApplyChanges(rhi);
 		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer() }, 0, rs, SHADOWMAP_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
-		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer() }, 0, rs, SHADOWMAP_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer() }, 0, rs, SHADOWMAP_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 
 		if (aObj->GetTextureData(meshIndex).AlbedoMap)
-			rhi->SetShaderResources(ER_PIXEL, { aObj->GetTextureData(meshIndex).AlbedoMap }, 0, rs, SHADOWMAP_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
+			rhi->SetShaderResources(ER_PIXEL, { aObj->GetTextureData(meshIndex).AlbedoMap }, 0, rs, SHADOWMAP_MAT_ROOT_DESCRIPTOR_TABLE_PIXEL_SRV_INDEX);
 		if (aObj->IsIndirectlyRendered())
-			rhi->SetShaderResources(ER_VERTEX, { aObj->GetIndirectNewInstanceBuffer() }, 1, rs, SHADOWMAP_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
+			rhi->SetShaderResources(ER_VERTEX, { aObj->GetIndirectNewInstanceBuffer() }, 1, rs, SHADOWMAP_MAT_ROOT_DESCRIPTOR_TABLE_VERTEX_SRV_INDEX);
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 	}
 
 	void ER_ShadowMapMaterial::PrepareResourcesForStandardMaterial(ER_MaterialSystems neededSystems, ER_RenderingObject* aObj, int meshIndex, ER_RHI_GPURootSignature* rs)
 	{
 		//not used because this material is not standard
+	}
+
+	void ER_ShadowMapMaterial::SetRootConstantForMaterial(UINT a32BitConstant)
+	{
+		auto rhi = ER_Material::GetCore()->GetRHI();
+		rhi->SetRootConstant(a32BitConstant, SHADOWMAP_MAT_ROOT_ROOT_CONSTANT_INDEX);
 	}
 
 	void ER_ShadowMapMaterial::CreateVertexBuffer(const ER_Mesh& mesh, ER_RHI_GPUBuffer* vertexBuffer)
