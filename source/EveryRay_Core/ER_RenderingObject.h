@@ -72,10 +72,10 @@ namespace EveryRay_Core
 		float IsIndirectlyRendered;
 	};
 
-	//struct ER_ALIGN_GPU_BUFFER ObjectCB
-	//{
-	//	UINT CurrentLOD;
-	//};
+	struct ER_ALIGN_GPU_BUFFER ObjectFakeRootCB
+	{
+		UINT CurrentLOD;
+	};
 
 	struct TextureData
 	{
@@ -280,6 +280,7 @@ namespace EveryRay_Core
 		void SetIndexInScene(int index) { mIndexInScene = index; }
 
 		ER_RHI_GPUConstantBuffer<ObjectCB>& GetObjectsConstantBuffer() { return mObjectConstantBuffer; }
+		ER_RHI_GPUConstantBuffer<ObjectFakeRootCB>& GetObjectsFakeRootConstantBuffer() { return mObjectFakeRootConstantBuffer; }
 
 		ER_GenericEvent<Delegate_MeshMaterialVariablesUpdate>* MeshMaterialVariablesUpdateEvent = new ER_GenericEvent<Delegate_MeshMaterialVariablesUpdate>();
 	
@@ -340,6 +341,7 @@ namespace EveryRay_Core
 		std::map<std::string, ER_Material*>						mMaterials;
 
 		ER_RHI_GPUConstantBuffer<ObjectCB>						mObjectConstantBuffer;
+		ER_RHI_GPUConstantBuffer<ObjectFakeRootCB>				mObjectFakeRootConstantBuffer; // for platforms where root constants aren't supported
 
 		///****************************************************************************************************************************
 		// *** mesh/model data (buffers, textures, etc.) ***

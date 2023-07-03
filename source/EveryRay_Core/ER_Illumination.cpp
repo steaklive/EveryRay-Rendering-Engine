@@ -958,12 +958,31 @@ namespace EveryRay_Core {
 				mLightProbesConstantBuffer.Data.DistanceBetweenSpecularProbes = mProbesManager->GetDistanceBetweenSpecularProbes();
 				mLightProbesConstantBuffer.ApplyChanges(rhi);
 
-				rhi->SetConstantBuffers(ER_VERTEX, { mForwardLightingConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer(), mLightProbesConstantBuffer.Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
-				rhi->SetConstantBuffers(ER_PIXEL,  { mForwardLightingConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer(), mLightProbesConstantBuffer.Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+				if (rhi->IsRootConstantSupported())
+				{
+					rhi->SetConstantBuffers(ER_VERTEX, { mForwardLightingConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer(), mLightProbesConstantBuffer.Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+					rhi->SetRootConstant(static_cast<UINT>(lod), FORWARD_LIGHTING_PASS_ROOT_CONSTANT_INDEX);
+				}
+				else
+				{
+					rhi->SetConstantBuffers(ER_VERTEX, { 
+						mForwardLightingConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer(), mLightProbesConstantBuffer.Buffer(), aObj->GetObjectsFakeRootConstantBuffer().Buffer()
+						}, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+				}
+				rhi->SetConstantBuffers(ER_PIXEL, { mForwardLightingConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer(), mLightProbesConstantBuffer.Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 			}
 			else
 			{
-				rhi->SetConstantBuffers(ER_VERTEX, { mForwardLightingConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+				if (rhi->IsRootConstantSupported())
+				{
+					rhi->SetConstantBuffers(ER_VERTEX, { mForwardLightingConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+					rhi->SetRootConstant(static_cast<UINT>(lod), FORWARD_LIGHTING_PASS_ROOT_CONSTANT_INDEX);
+				}
+				else
+				{
+					rhi->SetConstantBuffers(ER_VERTEX, { mForwardLightingConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+					rhi->SetConstantBuffers(ER_VERTEX, { aObj->GetObjectsFakeRootConstantBuffer().Buffer() }, 3 /* we used 0-2 slots already*/, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+				}
 				rhi->SetConstantBuffers(ER_PIXEL,  { mForwardLightingConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 			}
 
@@ -992,8 +1011,6 @@ namespace EveryRay_Core {
 
 			if (aObj->IsIndirectlyRendered())
 				rhi->SetShaderResources(ER_VERTEX, { aObj->GetIndirectNewInstanceBuffer() }, static_cast<int>(resources.size()), mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_VERTEX_SRV_INDEX);
-
-			rhi->SetRootConstant(static_cast<UINT>(lod), FORWARD_LIGHTING_PASS_ROOT_CONSTANT_INDEX);
 
 			// we unset PSO after all objects are rendered
 		}

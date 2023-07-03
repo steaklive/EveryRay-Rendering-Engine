@@ -83,6 +83,7 @@ namespace EveryRay_Core
 		mTransformationMatrix = XMLoadFloat4x4(&transform);
 
 		mObjectConstantBuffer.Initialize(pCore.GetRHI(), "ER_RHI_GPUBuffer: Object's CB: " + mName);
+		mObjectFakeRootConstantBuffer.Initialize(pCore.GetRHI(), "ER_RHI_GPUBuffer: Object's Fake Root CB: " + mName);
 	}
 
 	ER_RenderingObject::~ER_RenderingObject()
@@ -113,6 +114,7 @@ namespace EveryRay_Core
 		DeleteObjects(mTempInstancesPositions);
 
 		mObjectConstantBuffer.Release();
+		mObjectFakeRootConstantBuffer.Release();
 
 		if (mIsIndirectlyRendered)
 		{
@@ -436,6 +438,8 @@ namespace EveryRay_Core
 				mObjectConstantBuffer.Data.IsIndirectlyRendered = mIsIndirectlyRendered ? 1.0f : 0.0f;
 				mObjectConstantBuffer.ApplyChanges(rhi);
 
+				mObjectFakeRootConstantBuffer.Data.CurrentLOD = lod;
+				mObjectFakeRootConstantBuffer.ApplyChanges(rhi);
 			}
 
 			if (isForwardPass && mCore->GetLevel()->mIllumination)

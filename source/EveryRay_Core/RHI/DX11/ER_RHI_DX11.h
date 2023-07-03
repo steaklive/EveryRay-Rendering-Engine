@@ -139,7 +139,8 @@ namespace EveryRay_Core
 		virtual void UpdateBuffer(ER_RHI_GPUBuffer* aBuffer, void* aData, int dataSize, bool updateForAllBackBuffers = false) override;
 		
 		virtual bool IsHardwareRaytracingSupported() override { return false; }
-		
+		virtual bool IsRootConstantSupported()  override { return false; }
+
 		virtual void InitImGui() override;
 		virtual void StartNewImGuiFrame() override;
 		virtual void RenderDrawDataImGui(int cmdListIndex = 0) override;

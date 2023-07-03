@@ -774,7 +774,7 @@ namespace EveryRay_Core
 
 		TransitionResources({ anArgsBuffer }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_INDIRECT_ARGUMENT);
 
-		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->ExecuteIndirect(mCommandSignature_DrawIndexed.Get(), 1, static_cast<ID3D12Resource*>(anArgsBuffer->GetResource()), 0, nullptr, 0);
+		mCommandListGraphics[mCurrentGraphicsCommandListIndex]->ExecuteIndirect(mCommandSignature_DrawIndexed.Get(), 1, static_cast<ID3D12Resource*>(anArgsBuffer->GetResource()), alignedByteOffset, nullptr, 0);
 	}
 
 	void ER_RHI_DX12::Dispatch(UINT ThreadGroupCountX, UINT ThreadGroupCountY, UINT ThreadGroupCountZ)
