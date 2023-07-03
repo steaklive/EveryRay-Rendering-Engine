@@ -54,6 +54,7 @@ Video demonstrations (scroll down for screenshots):
 - - supports materials
 - - supports GPU instancing
 - - supports LOD groups
+- - supports indirect GPU rendering (GBuffer, Shadow, Forward passes) w/ GPU culling
 - - supports AABB (with visualization)
 - - supports on-terrain procedural placement & instances distribution
 - - customizable via "Object editor" (with instancing support)
