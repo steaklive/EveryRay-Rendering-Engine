@@ -93,7 +93,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     bool usePOM = extra2Gbuffer.g > -1.0f; // TODO add POM support to Deferred
     bool useSSS = extra2Gbuffer.b > -1.0f && SSSAvailable > 0.0f;
     bool isFoliage = extraGbuffer.a >= 1.0f;
-    bool skipIndirectSpecular = reflectionMask <= 0.5f; // we store 2.0f if we need to skip indirect specular
+    bool skipIndirectSpecular = reflectionMask > 1.9999f; // we store 2.0f if we need to skip indirect specular
 
     //reflectance at normal incidence for dia-electic or metal
     float3 F0 = float3(0.04, 0.04, 0.04);

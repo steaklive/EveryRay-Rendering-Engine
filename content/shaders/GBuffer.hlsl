@@ -146,7 +146,7 @@ PS_OUTPUT PSMain(VS_OUTPUT IN, bool isFrontFace : SV_IsFrontFace) : SV_Target
     
     float roughness = CustomRoughness_Metalness_SkipIndSpec.r >= 0.0f ? CustomRoughness_Metalness_SkipIndSpec.r : RoughnessMap.Sample(Sampler, IN.TextureCoordinate).r;
     float metalness = CustomRoughness_Metalness_SkipIndSpec.g >= 0.0f ? CustomRoughness_Metalness_SkipIndSpec.g : MetallicMap.Sample(Sampler, IN.TextureCoordinate).r;
-    float reflectionMask = CustomRoughness_Metalness_SkipIndSpec.b > 0.0 ? 0.5f : ReflectionMaskMap.Sample(Sampler, IN.TextureCoordinate).r;
+    float reflectionMask = CustomRoughness_Metalness_SkipIndSpec.b > 0.0 ? 2.0f : ReflectionMaskMap.Sample(Sampler, IN.TextureCoordinate).r;
     OUT.Extra = float4(reflectionMask, roughness, metalness, Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor.g);
     OUT.Extra2 = float4(
         Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor.b, 
