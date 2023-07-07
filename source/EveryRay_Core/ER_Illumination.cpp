@@ -993,7 +993,7 @@ namespace EveryRay_Core {
 				resources[1] = aObj->GetTextureData(meshIndex).NormalMap;
 				resources[2] = aObj->GetTextureData(meshIndex).MetallicMap;
 				resources[3] = aObj->GetTextureData(meshIndex).RoughnessMap;
-				resources[4] = aObj->IsTransparent() ? aObj->GetTextureData(meshIndex).ReflectionMaskMap : aObj->GetTextureData(meshIndex).HeightMap;
+				resources[4] = aObj->IsTransparent() ? aObj->GetTextureData(meshIndex).ExtraMaskMap : aObj->GetTextureData(meshIndex).HeightMap;
 				for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 					resources[5 + i] = mShadowMapper.GetShadowTexture(i);
 				resources[8] = mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture();

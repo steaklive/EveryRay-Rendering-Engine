@@ -25,8 +25,8 @@ namespace EveryRay_Core
 		ER_RHI_GPUTexture* GetAlbedo() { return mAlbedoBuffer; }
 		ER_RHI_GPUTexture* GetNormals() { return mNormalBuffer; }
 		ER_RHI_GPUTexture* GetPositions() { return mPositionsBuffer; }
-		ER_RHI_GPUTexture* GetExtraBuffer() { return mExtraBuffer; } // [reflection mask, roughness, metalness, foliage mask]
-		ER_RHI_GPUTexture* GetExtra2Buffer() { return mExtra2Buffer; } // [global diffuse probe mask, height (for POM, etc.), SSS, skip deferred lighting]
+		ER_RHI_GPUTexture* GetExtraBuffer() { return mExtraBuffer; } // [4 channels: extra mask value, roughness, metalness, height mask value]
+		ER_RHI_GPUTexture* GetExtra2Buffer() { return mExtra2Buffer; } // [1 channel: "RenderingObjectFlags" bitmasks]
 		ER_RHI_GPUTexture* GetDepth() { return mDepthBuffer; }
 
 	private:

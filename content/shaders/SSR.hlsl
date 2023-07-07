@@ -2,8 +2,9 @@
 
 Texture2D<float4> ColorTexture : register(t0);
 Texture2D<float4> GBufferNormals : register(t1);
-Texture2D<float4> GBufferExtra : register(t2); //reflection mask in R channel
-Texture2D<float> DepthTexture : register(t3);
+Texture2D<float4> GbufferExtraTexture : register(t2); // [extra mask value (i.e. reflection), roughness, metalness, height mask value]
+Texture2D<uint> GbufferExtra2Texture : register(t3); // [rendering object bitmask flags]
+Texture2D<float> DepthTexture : register(t4);
 
 SamplerState Sampler : register(s0);
 
@@ -69,13 +70,17 @@ float3 ReconstructWorldPosFromDepth(float2 uv, float depth)
 float4 PSMain(QUAD_VS_OUT IN) : SV_Target
 {
     float4 color = ColorTexture.Sample(Sampler, IN.TexCoord);
-    float reflectionMaskFactor = GBufferExtra.Sample(Sampler, IN.TexCoord).r;
-    if (reflectionMaskFactor < 0.00001f || reflectionMaskFactor > 1.0f)
+    
+    uint width, height;
+    GbufferExtra2Texture.GetDimensions(width, height);
+    
+    uint objectFlags = GbufferExtra2Texture.Load(uint3(IN.TexCoord * uint2(width, height), 0)).r;
+    if (!(objectFlags & RENDERING_OBJECT_FLAG_REFLECTION) ||
+        (objectFlags & RENDERING_OBJECT_FLAG_FOLIAGE) || (objectFlags & RENDERING_OBJECT_FLAG_TRANSPARENT) || (objectFlags & RENDERING_OBJECT_FLAG_FUR))
         return color;
 
-	// we don't want reflections on foliage
-    float foliageFactor = GBufferExtra.Sample(Sampler, IN.TexCoord).a;
-    if (foliageFactor >= 1.0f)
+    float reflectionMaskFactor = GbufferExtraTexture.Sample(Sampler, IN.TexCoord).r;
+    if (reflectionMaskFactor < 0.0001)
         return color;
     
 	float depth = DepthTexture.Sample(Sampler, IN.TexCoord).r;

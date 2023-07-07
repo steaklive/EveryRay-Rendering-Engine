@@ -10,7 +10,7 @@
 // - add support for point/spot lights
 // - add support for ambient occlusion
 //
-// Written by Gen Afanasev for 'EveryRay Rendering Engine', 2017-2022
+// Written by Gen Afanasev for 'EveryRay Rendering Engine', 2017-2023
 // ================================================================================================
 
 #include "Lighting.hlsli"
@@ -25,8 +25,8 @@ RWTexture2D<unorm float4> OutputTexture : register(u0);
 Texture2D<float4> GbufferAlbedoTexture : register(t0);
 Texture2D<float4> GbufferNormalTexture : register(t1);
 Texture2D<float4> GbufferWorldPosTexture : register(t2);
-Texture2D<float4> GbufferExtraTexture : register(t3); // [reflection mask, roughness, metalness, foliage mask]
-Texture2D<float4> GbufferExtra2Texture : register(t4); // [global diffuse probe mask, POM, SSS, skip deferred lighting]
+Texture2D<float4> GbufferExtraTexture : register(t3); // [4 channels: extra mask value, roughness, metalness, height mask value]
+Texture2D<uint> GbufferExtra2Texture : register(t4); // [1 channel: rendering object bitmask flags]
 
 Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t5);
 
@@ -61,16 +61,15 @@ cbuffer LightProbesCBuffer : register(b1)
 void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID)
 {
     uint2 inPos = DTid.xy;
-    
-    float4 extra2Gbuffer = GbufferExtra2Texture.Load(uint3(inPos, 0));
-    bool skipLighting = extra2Gbuffer.a > 0.0f;
-    if (skipLighting)
+    uint objectFlags = GbufferExtra2Texture.Load(uint3(inPos, 0)).r;
+
+    if (objectFlags & RENDERING_OBJECT_FLAG_SKIP_DEFERRED_PASS)
     {
         OutputTexture[inPos] += float4(0.0, 0.0, 0.0, 0.0f);
         return;
     }
     
-    bool useGlobalProbe = (HasGlobalProbe > 0.0f) || (extra2Gbuffer.r > 0.0f);
+    bool useGlobalProbe = (HasGlobalProbe > 0.0f) || (objectFlags & RENDERING_OBJECT_FLAG_USE_GLOBAL_DIF_PROBE);
     
     float4 worldPos = GbufferWorldPosTexture.Load(uint3(inPos, 0));
     if (worldPos.a < 0.000001f)
@@ -86,14 +85,12 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     float4 extraGbuffer = GbufferExtraTexture.Load(uint3(inPos, 0));
     float roughness = max(0.01, extraGbuffer.g);
     float metalness = extraGbuffer.b;
-    float reflectionMask = extraGbuffer.r; // works as "skip indirect specular" flag when combined with foliage mask
-
-    float ao = 1.0f; // TODO sample AO texture
+    float ao = 1.0f; // TODO add support for AO textures
     
-    bool usePOM = extra2Gbuffer.g > -1.0f; // TODO add POM support to Deferred
-    bool useSSS = extra2Gbuffer.b > -1.0f && SSSAvailable > 0.0f;
-    bool isFoliage = extraGbuffer.a >= 1.0f;
-    bool skipIndirectSpecular = reflectionMask > 1.9999f; // we store 2.0f if we need to skip indirect specular
+    bool usePOM = (objectFlags & RENDERING_OBJECT_FLAG_POM); // TODO add POM support to Deferred
+    bool useSSS = (objectFlags & RENDERING_OBJECT_FLAG_SSS) && SSSAvailable > 0.0f;
+    bool isFoliage = (objectFlags & RENDERING_OBJECT_FLAG_FOLIAGE);
+    bool skipIndirectSpecular = (objectFlags & RENDERING_OBJECT_FLAG_SKIP_INDIRECT_SPEC); // we store 2.0f if we need to skip indirect specular
 
     //reflectance at normal incidence for dia-electic or metal
     float3 F0 = float3(0.04, 0.04, 0.04);

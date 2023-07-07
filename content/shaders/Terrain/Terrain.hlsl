@@ -280,7 +280,7 @@ struct PS_GBUFFER_OUTPUT
     float4 Normal : SV_Target1;
     float4 WorldPos : SV_Target2;
     float4 Extra : SV_Target3;
-    float4 Extra2 : SV_Target4;
+    uint Extra2 : SV_Target4;
 };
 
 PS_GBUFFER_OUTPUT PSGBuffer(DS_OUTPUT IN) : SV_Target
@@ -309,7 +309,7 @@ PS_GBUFFER_OUTPUT PSGBuffer(DS_OUTPUT IN) : SV_Target
     float metalness = 0.0f;
     float reflectionMask = 0.0f;
     OUT.Extra = float4(reflectionMask, roughness, metalness, 0.0f);
-    OUT.Extra2 = float4(1.0f, -1.0f, 0.0f, 0.0f);
+    OUT.Extra2 = 0;
     return OUT;
 }
 

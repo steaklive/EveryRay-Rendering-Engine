@@ -66,7 +66,7 @@ struct PS_OUTPUT_GBUFFER
     float4 Normal : SV_Target1;
     float4 WorldPos : SV_Target2;
     float4 Extra : SV_Target3;
-    float4 Extra2 : SV_Target4;
+    uint Extra2 : SV_Target4;
 };
 
 VS_OUTPUT VSMain(VS_INPUT IN)
@@ -307,7 +307,6 @@ PS_OUTPUT_GBUFFER PSMain_gbuffer(VS_OUTPUT IN) : SV_Target
     OUT.Normal = float4(IN.Normal, 1.0f);
     OUT.WorldPos = float4(IN.WorldPos, 1.0f);
     OUT.Extra = float4(0.0, 0.0, 0.0, 1.0f);
-    OUT.Extra2 = float4(0.0, -1.0f, 0.1, 0.0f); // b - custom alpha discard
+    OUT.Extra2 = 0;
     return OUT;
-
 }

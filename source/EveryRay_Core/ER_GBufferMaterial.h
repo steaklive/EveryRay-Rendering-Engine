@@ -15,9 +15,6 @@ namespace EveryRay_Core
 		struct ER_ALIGN_GPU_BUFFER GBufferCB
 		{
 			XMMATRIX ViewProjection;
-			XMFLOAT4 Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor;
-			XMFLOAT4 SkipDeferredLighting_UseSSS_CustomAlphaDiscard; // a - empty
-			XMFLOAT4 CustomRoughness_Metalness_SkipIndSpec;
 		};
 	}
 	class ER_GBufferMaterial : public ER_Material

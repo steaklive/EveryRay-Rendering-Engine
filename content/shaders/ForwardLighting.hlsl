@@ -26,7 +26,7 @@ Texture2D<float4> AlbedoTexture : register(t0);
 Texture2D<float4> NormalTexture : register(t1);
 Texture2D<float4> MetallicTexture : register(t2);
 Texture2D<float4> RoughnessTexture : register(t3);
-Texture2D<float4> HeightTexture : register(t4);
+Texture2D<float> ExtraMaskTexture : register(t4); // transparent mask, POM height mask
 Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t5);
 
 StructuredBuffer<Instance> IndirectInstanceData : register(t18); // because all other indices before are taken for lighting buffers (i.e., probes)
@@ -142,7 +142,7 @@ VS_OUTPUT VSMain_instancing(VS_INPUT_INSTANCING IN)
 {
     VS_OUTPUT OUT = (VS_OUTPUT) 0;
 
-    float4x4 World = IsIndirectlyRendered > 0.0 ?
+    float4x4 World = (RenderingObjectFlags & RENDERING_OBJECT_FLAG_GPU_INDIRECT_DRAW) ?
         transpose(IndirectInstanceData[(int)OriginalInstanceCount * CurrentLod + IN.InstanceID].WorldMat) : IN.World;
 
     OUT.WorldPos = mul(IN.Position, World).xyz;
@@ -194,13 +194,13 @@ float CalculatePOMSelfShadow(float2 parallaxOffset, float2 uv, int numSteps)
 
     float2 texOffsetPerStep = stepSize * parallaxOffset;
     float2 texCurrentOffset = uv;
-    float currentBound = HeightTexture.SampleGrad(SamplerLinear, texCurrentOffset, dx, dy).r;
+    float currentBound = ExtraMaskTexture.SampleGrad(SamplerLinear, texCurrentOffset, dx, dy).r;
     float softShadow = 0.0f;
     
     while (stepIndex < numSteps)
     {
         texCurrentOffset += texOffsetPerStep;
-        currentHeight = HeightTexture.SampleGrad(SamplerLinear, texCurrentOffset, dx, dy).r;
+        currentHeight = ExtraMaskTexture.SampleGrad(SamplerLinear, texCurrentOffset, dx, dy).r;
 
         currentBound += stepSize;
 
@@ -243,7 +243,7 @@ float2 CalculatePOMUVOffset(float2 parallaxOffset, float2 uv, int numSteps)
     while (stepIndex < numSteps)
     {
         texCurrentOffset -= texOffsetPerStep;
-        currentHeight = HeightTexture.SampleGrad(SamplerLinear, texCurrentOffset, dx, dy).r;
+        currentHeight = ExtraMaskTexture.SampleGrad(SamplerLinear, texCurrentOffset, dx, dy).r;
 
         currentBound -= stepSize;
 
@@ -294,10 +294,12 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
     float2 texCoord = vsOutput.UV;
     
     float3 normalWS = float3(0.0, 0.0, 0.0);
-    float height = HeightTexture.Sample(SamplerLinear, texCoord).r;
+    float extraMaskValue = (RenderingObjectFlags & RENDERING_OBJECT_FLAG_POM) || (RenderingObjectFlags & RENDERING_OBJECT_FLAG_TRANSPARENT) ?
+        ExtraMaskTexture.Sample(SamplerLinear, texCoord).r : -1.0f;
+    
     float POMSelfShadow = 1.0f;
 #if PARALLAX_OCCLUSION_MAPPING_SUPPORT
-    if (!isTransparent && height > 0.0f) // Parallax Occlusion Mapping
+    if (!isTransparent && (RenderingObjectFlags & RENDERING_OBJECT_FLAG_POM) && extraMaskValue >= 0.0f) // Parallax Occlusion Mapping
     {
         int stepsCount = GetPOMRayStepsCount(vsOutput.WorldPos.rgb, vsOutput.Normal);
         texCoord = CalculatePOMUVOffset(vsOutput.ParallaxOffset, vsOutput.UV, stepsCount);
@@ -332,7 +334,7 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
 
     if (isTransparent)
     {
-        float mask = height; //just a hack to get transparency mask texture in height channel (we dont need it here anyway)
+        float transparencyMask = extraMaskValue; //just a hack to get transparency mask texture in height channel (we dont need it here anyway)
         float3 viewDir = normalize(vsOutput.WorldPos.xyz-CameraPosition.xyz);
         float3 reflectDir = normalize(reflect(viewDir, normalWS));
         float3 T = refract(viewDir, normalWS, 1.0f / IndexOfRefraction);
@@ -356,14 +358,15 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
         info.distanceBetweenDiffuseProbes = DistanceBetweenDiffuseProbes;
         info.distanceBetweenSpecularProbes = DistanceBetweenSpecularProbes;
 
-        float3 reflectColor = pow(GetSpecularIrradiance(vsOutput.WorldPos.xyz, CameraPosition.xyz, reflectDir, mipIndex, UseGlobalProbe > 0.0f, SamplerLinear, info), 2.2);
-        float3 refractColor = pow(GetSpecularIrradiance(vsOutput.WorldPos.xyz, CameraPosition.xyz, T, mipIndex, UseGlobalProbe > 0.0f, SamplerLinear, info), 2.2);
+        bool useGlobalSpecProbe = (RenderingObjectFlags & RENDERING_OBJECT_FLAG_USE_GLOBAL_SPEC_PROBE);
+        float3 reflectColor = pow(GetSpecularIrradiance(vsOutput.WorldPos.xyz, CameraPosition.xyz, reflectDir, mipIndex, useGlobalSpecProbe, SamplerLinear, info), 2.2);
+        float3 refractColor = pow(GetSpecularIrradiance(vsOutput.WorldPos.xyz, CameraPosition.xyz, T, mipIndex, useGlobalSpecProbe, SamplerLinear, info), 2.2);
         
         float nDotV = abs(dot(normalWS, -viewDir)) + 0.0001f;
         float3 fresnelFactor = Schlick_Fresnel_Roughness(nDotV, F0, roughness);
         float3 resultColor = lerp(refractColor, reflectColor, fresnelFactor);
 
-        return lerp(diffuseAlbedo, diffuseAlbedo * resultColor, mask);
+        return lerp(diffuseAlbedo, diffuseAlbedo * resultColor, transparencyMask);
     }
 
     float3 directLighting = DirectLightingPBR(normalWS, SunColor, SunDirection.xyz, diffuseAlbedo.rgb, vsOutput.WorldPos, roughness, F0, metalness, CameraPosition.xyz);
@@ -372,7 +375,8 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
     if (isFakeAmbient)
         indirectLighting = float3(0.02f, 0.02f, 0.02f) * diffuseAlbedo;
     
-    if (IBL && SkipIndirectProbeLighting <= 0.0f)
+    bool skipIndirectLighting = (RenderingObjectFlags & RENDERING_OBJECT_FLAG_SKIP_INDIRECT_DIF) && (RenderingObjectFlags & RENDERING_OBJECT_FLAG_SKIP_INDIRECT_SPEC);
+    if (IBL && !skipIndirectLighting)
     {
         LightProbeInfo probesInfo;
         probesInfo.globalIrradianceDiffuseProbeTexture = DiffuseGlobalProbeTexture;
@@ -393,9 +397,9 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
         probesInfo.distanceBetweenDiffuseProbes = DistanceBetweenDiffuseProbes;
         probesInfo.distanceBetweenSpecularProbes = DistanceBetweenSpecularProbes;
         
-        bool useGlobalProbe = UseGlobalProbe > 0.0f;
-        indirectLighting += IndirectLightingPBR(SunDirection.xyz, normalWS, diffuseAlbedo.rgb, vsOutput.WorldPos, roughness, F0, metalness, CameraPosition.xyz, useGlobalProbe,
-            probesInfo, SamplerLinear, SamplerClamp, IntegrationTexture, ao, false);
+        bool useGlobalProbe = (RenderingObjectFlags & RENDERING_OBJECT_FLAG_USE_GLOBAL_DIF_PROBE) || (RenderingObjectFlags & RENDERING_OBJECT_FLAG_USE_GLOBAL_SPEC_PROBE);
+        indirectLighting += IndirectLightingPBR(SunDirection.xyz, normalWS, diffuseAlbedo.rgb, vsOutput.WorldPos, roughness, F0, metalness, CameraPosition.xyz,
+            useGlobalProbe, probesInfo, SamplerLinear, SamplerClamp, IntegrationTexture, ao, false);
     }
 
     float shadow = 0.0f;

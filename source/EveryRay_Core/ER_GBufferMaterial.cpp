@@ -66,21 +66,6 @@ namespace EveryRay_Core
 		assert(camera);
 
 		mConstantBuffer.Data.ViewProjection = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());
-		mConstantBuffer.Data.Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor = XMFLOAT4(
-			aObj->GetMeshReflectionFactor(meshIndex) ? 1.0f : 0.0f,
-			aObj->GetFoliageMask() ? 1.0f : 0.0f,
-			aObj->GetUseIndirectGlobalLightProbeMask() ? 1.0f : 0.0f,
-			aObj->IsParallaxOcclusionMapping() ? 1.0f : 0.0f);
-		mConstantBuffer.Data.SkipDeferredLighting_UseSSS_CustomAlphaDiscard = XMFLOAT4(
-			aObj->IsForwardShading() ? 1.0f : 0.0f,
-			aObj->IsSeparableSubsurfaceScattering() ? 1.0f : -1.0f,
-			aObj->GetCustomAlphaDiscard(),
-			0.0);	
-		mConstantBuffer.Data.CustomRoughness_Metalness_SkipIndSpec = XMFLOAT4(
-			aObj->GetCustomRoughness(),
-			aObj->GetCustomMetalness(),
-			aObj->IsSkipIndirectSpecular() ? 1.0f : 0.0f,
-			0.0f);
 		mConstantBuffer.ApplyChanges(rhi);
 		
 		if (!rhi->IsRootConstantSupported())
@@ -99,7 +84,7 @@ namespace EveryRay_Core
 		resources.push_back(aObj->GetTextureData(meshIndex).RoughnessMap);
 		resources.push_back(aObj->GetTextureData(meshIndex).MetallicMap);
 		resources.push_back(aObj->GetTextureData(meshIndex).HeightMap);	
-		resources.push_back(aObj->GetTextureData(meshIndex).ReflectionMaskMap);
+		resources.push_back(aObj->GetTextureData(meshIndex).ExtraMaskMap);
 		rhi->SetShaderResources(ER_PIXEL, resources, 0, rs, GBUFFER_MAT_ROOT_DESCRIPTOR_TABLE_PIXEL_SRV_INDEX);
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP }, 0, rs);
 

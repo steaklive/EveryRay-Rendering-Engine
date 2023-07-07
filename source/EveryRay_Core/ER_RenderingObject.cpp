@@ -30,7 +30,7 @@ namespace EveryRay_Core
 		mMeshesReflectionFactors(0),
 		mName(pName),
 		mDebugGizmoAABB(nullptr),
-		mAvailableInEditorMode(availableInEditor),
+		mIsAvailableInEditorMode(availableInEditor),
 		mTransformationMatrix(XMMatrixIdentity()),
 		mIsInstanced(isInstanced),
 		mIndexInScene(index),
@@ -74,7 +74,7 @@ namespace EveryRay_Core
 		mLocalAABB = mModel->GenerateAABB();
 		mGlobalAABB = mLocalAABB;
 
-		if (mAvailableInEditorMode) {
+		if (mIsAvailableInEditorMode) {
 			mDebugGizmoAABB = new ER_RenderableAABB(*mCore, XMFLOAT4{ 0.0f, 0.0f, 1.0f, 1.0f });
 			mDebugGizmoAABB->InitializeGeometry({ mLocalAABB.first, mLocalAABB.second });
 		}
@@ -245,7 +245,7 @@ namespace EveryRay_Core
 
 		if (!mCustomReflectionMaskTextures[meshIndex].empty())
 			if (mCustomReflectionMaskTextures[meshIndex].back() != '\\')
-				LoadTexture(&mMeshesTextureBuffers[meshIndex].ReflectionMaskMap, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomReflectionMaskTextures[meshIndex])), meshIndex);
+				LoadTexture(&mMeshesTextureBuffers[meshIndex].ExtraMaskMap, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomReflectionMaskTextures[meshIndex])), meshIndex);
 		loadStatus = false;
 
 		//TODO
@@ -419,23 +419,12 @@ namespace EveryRay_Core
 			
 			{
 				mObjectConstantBuffer.Data.World = XMMatrixTranspose(mTransformationMatrix);
-				
-				if (mCore->GetLevel()->mIllumination)
-				{
-					mObjectConstantBuffer.Data.UseGlobalProbe = mUseIndirectGlobalLightProbe || (!mCore->GetLevel()->mLightProbesManager->IsEnabled() && mCore->GetLevel()->mLightProbesManager->AreGlobalProbesReady());
-					mObjectConstantBuffer.Data.SkipIndirectProbeLighting = mCore->GetLevel()->mIllumination->IsSkippingIndirectRendering();
-				}
-				else
-				{
-					mObjectConstantBuffer.Data.UseGlobalProbe = true;
-					mObjectConstantBuffer.Data.SkipIndirectProbeLighting = false;
-				}
-
 				mObjectConstantBuffer.Data.IndexOfRefraction = mIOR;
 				mObjectConstantBuffer.Data.CustomRoughness = mCustomRoughness;
 				mObjectConstantBuffer.Data.CustomMetalness = mCustomMetalness;
+				mObjectConstantBuffer.Data.CustomAlphaDiscard = mCustomAlphaDiscard;
 				mObjectConstantBuffer.Data.OriginalInstanceCount = mInstanceCount;
-				mObjectConstantBuffer.Data.IsIndirectlyRendered = mIsIndirectlyRendered ? 1.0f : 0.0f;
+				mObjectConstantBuffer.Data.RenderingObjectFlags = mObjectShaderBitmaskFlags;
 				mObjectConstantBuffer.ApplyChanges(rhi);
 
 				mObjectFakeRootConstantBuffer.Data.CurrentLOD = lod;
@@ -499,7 +488,7 @@ namespace EveryRay_Core
 
 	void ER_RenderingObject::DrawAABB(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, ER_RHI_GPURootSignature* rs)
 	{
-		if (mIsSelected && mAvailableInEditorMode && mEnableAABBDebug && ER_Utility::IsEditorMode)
+		if (mIsSelected && mIsAvailableInEditorMode && mIsAABBDebugEnabled && ER_Utility::IsEditorMode)
 			mDebugGizmoAABB->Draw(aRenderTarget, aDepth, rs);
 	}
 
@@ -792,10 +781,12 @@ namespace EveryRay_Core
 	}
 	void ER_RenderingObject::Update(const ER_CoreTime& time)
 	{
+		UpdateBitmaskFlags();
+
 		ER_Camera* camera = (ER_Camera*)(mCore->GetServices().FindService(ER_Camera::TypeIdClass()));
 		assert(camera);
 
-		bool isCurrentlyEditable = ER_Utility::IsEditorMode && mAvailableInEditorMode && mIsSelected;
+		bool isCurrentlyEditable = ER_Utility::IsEditorMode && mIsAvailableInEditorMode && mIsSelected;
 
 		if (isCurrentlyEditable && mIsInstanced)
 		{
@@ -850,7 +841,7 @@ namespace EveryRay_Core
 		{
 			UpdateGizmos();
 			ShowInstancesListWindow();
-			if (mEnableAABBDebug)
+			if (mIsAABBDebugEnabled)
 				mDebugGizmoAABB->Update(mGlobalAABB);
 		}
 	}
@@ -895,7 +886,7 @@ namespace EveryRay_Core
 	
 	void ER_RenderingObject::UpdateGizmos()
 	{
-		if (!(mAvailableInEditorMode && mIsSelected))
+		if (!(mIsAvailableInEditorMode && mIsSelected))
 			return;
 
 		ER_MatrixHelper::GetFloatArray(mCamera.ViewMatrix4X4(), mCameraViewMatrix);
@@ -973,8 +964,8 @@ namespace EveryRay_Core
 
 			ImGui::Separator();
 			ImGui::Checkbox("Rendered", &mIsRendered);
-			ImGui::Checkbox("Show AABB", &mEnableAABBDebug);
-			ImGui::Checkbox("Show Wireframe", &mWireframeMode);
+			ImGui::Checkbox("Show AABB", &mIsAABBDebugEnabled);
+			ImGui::Checkbox("Show Wireframe", &mIsWireframeMode);
 			if (ImGui::Button("Move camera to"))
 			{
 				XMFLOAT3 newCameraPos;
@@ -1052,12 +1043,78 @@ namespace EveryRay_Core
 		}
 	}
 	
+	void ER_RenderingObject::UpdateBitmaskFlags()
+	{
+		mObjectShaderBitmaskFlags = 0;
+
+		if (mUseIndirectGlobalLightProbe || (!mCore->GetLevel()->mLightProbesManager->IsEnabled() && mCore->GetLevel()->mLightProbesManager->AreGlobalProbesReady()))
+		{
+			mObjectShaderBitmaskFlags |= RENDERING_OBJECT_FLAG_USE_GLOBAL_DIF_PROBE;
+			mObjectShaderBitmaskFlags |= RENDERING_OBJECT_FLAG_USE_GLOBAL_SPEC_PROBE;
+		}
+		else
+		{
+			mObjectShaderBitmaskFlags &= ~RENDERING_OBJECT_FLAG_USE_GLOBAL_DIF_PROBE;
+			mObjectShaderBitmaskFlags &= ~RENDERING_OBJECT_FLAG_USE_GLOBAL_SPEC_PROBE;
+		}
+
+		if (mIsSeparableSubsurfaceScattering)
+			mObjectShaderBitmaskFlags |= RENDERING_OBJECT_FLAG_SSS;
+		else
+			mObjectShaderBitmaskFlags &= ~RENDERING_OBJECT_FLAG_SSS;
+
+		if (mIsPOM)
+			mObjectShaderBitmaskFlags |= RENDERING_OBJECT_FLAG_POM;
+		else
+			mObjectShaderBitmaskFlags &= ~RENDERING_OBJECT_FLAG_POM;
+
+		if (mIsReflective)
+			mObjectShaderBitmaskFlags |= RENDERING_OBJECT_FLAG_REFLECTION;
+		else
+			mObjectShaderBitmaskFlags &= ~RENDERING_OBJECT_FLAG_REFLECTION;
+
+		if (mIsMarkedAsFoliage)
+			mObjectShaderBitmaskFlags |= RENDERING_OBJECT_FLAG_FOLIAGE;
+		else
+			mObjectShaderBitmaskFlags &= ~RENDERING_OBJECT_FLAG_FOLIAGE;
+
+		if (mIsTransparent)
+			mObjectShaderBitmaskFlags |= RENDERING_OBJECT_FLAG_TRANSPARENT;
+		else
+			mObjectShaderBitmaskFlags &= ~RENDERING_OBJECT_FLAG_TRANSPARENT;
+
+		if (mFurLayersCount > 0)
+			mObjectShaderBitmaskFlags |= RENDERING_OBJECT_FLAG_FUR;
+		else
+			mObjectShaderBitmaskFlags &= ~RENDERING_OBJECT_FLAG_FUR;
+
+		if (mIsForwardShading)
+			mObjectShaderBitmaskFlags |= RENDERING_OBJECT_FLAG_SKIP_DEFERRED_PASS;
+		else
+			mObjectShaderBitmaskFlags &= ~RENDERING_OBJECT_FLAG_SKIP_DEFERRED_PASS;
+
+		if (mIsSkippedIndirectDiffuse)
+			mObjectShaderBitmaskFlags |= RENDERING_OBJECT_FLAG_SKIP_INDIRECT_DIF;
+		else
+			mObjectShaderBitmaskFlags &= ~RENDERING_OBJECT_FLAG_SKIP_INDIRECT_DIF;
+
+		if (mIsSkippedIndirectSpecular)
+			mObjectShaderBitmaskFlags |= RENDERING_OBJECT_FLAG_SKIP_INDIRECT_SPEC;
+		else
+			mObjectShaderBitmaskFlags &= ~RENDERING_OBJECT_FLAG_SKIP_INDIRECT_SPEC;
+
+		if (mIsIndirectlyRendered)
+			mObjectShaderBitmaskFlags |= RENDERING_OBJECT_FLAG_GPU_INDIRECT_DRAW;
+		else
+			mObjectShaderBitmaskFlags &= ~RENDERING_OBJECT_FLAG_GPU_INDIRECT_DRAW;
+	}
+
 	// Shows an ImGui window for instances list.
 	// You can select an instance, read some useful info about it and edit it via "Objects Editor".
 	// We do not need to edit per LOD (LODs share same transforms, AABBs, names).
 	void ER_RenderingObject::ShowInstancesListWindow()
 	{
-		if (!(mAvailableInEditorMode && mIsSelected && mIsInstanced))
+		if (!(mIsAvailableInEditorMode && mIsSelected && mIsInstanced))
 			return;
 
 		assert(mInstanceCount != 0);

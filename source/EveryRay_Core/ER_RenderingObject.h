@@ -8,6 +8,21 @@
 
 const UINT MAX_INSTANCE_COUNT = 20000;
 
+// Bitmasks for "RenderingObjectFlags" as decimal values
+// Keep in sync with content/shaders/Common.hlsli!
+const UINT RENDERING_OBJECT_FLAG_USE_GLOBAL_DIF_PROBE		 = 1;    //  000000000001 // use global diffuse probe
+const UINT RENDERING_OBJECT_FLAG_USE_GLOBAL_SPEC_PROBE		 = 2;    //  000000000010 // use global specular probe
+const UINT RENDERING_OBJECT_FLAG_SSS						 = 4;    //  000000000100 // use sss
+const UINT RENDERING_OBJECT_FLAG_POM						 = 8;    //  000000001000 // use pom
+const UINT RENDERING_OBJECT_FLAG_REFLECTION					 = 16;   //  000000010000 // use reflection mask
+const UINT RENDERING_OBJECT_FLAG_FOLIAGE					 = 32;   //  000000100000 // is foliage
+const UINT RENDERING_OBJECT_FLAG_TRANSPARENT				 = 64;   //  000001000000 // is transparent
+const UINT RENDERING_OBJECT_FLAG_FUR						 = 128;  //  000010000000 // is fur
+const UINT RENDERING_OBJECT_FLAG_SKIP_DEFERRED_PASS			 = 256;  //  000100000000 // skip deferred pass
+const UINT RENDERING_OBJECT_FLAG_SKIP_INDIRECT_DIF			 = 512;  //  001000000000 // skip indirect specular lighting
+const UINT RENDERING_OBJECT_FLAG_SKIP_INDIRECT_SPEC			 = 1024; //  010000000000 // skip indirect specular lighting
+const UINT RENDERING_OBJECT_FLAG_GPU_INDIRECT_DRAW			 = 2048; //  100000000000 // used for GPU indirect drawing
+
 namespace EveryRay_Core
 {
 	class ER_Core;
@@ -59,17 +74,15 @@ namespace EveryRay_Core
 		}
 	};
 
-	// TODO replace floats with bitmask where possible
 	struct ER_ALIGN_GPU_BUFFER ObjectCB
 	{
 		XMMATRIX World;
-		float UseGlobalProbe;
-		float SkipIndirectProbeLighting;
 		float IndexOfRefraction;
 		float CustomRoughness;
 		float CustomMetalness;
-		float OriginalInstanceCount;
-		float IsIndirectlyRendered;
+		float CustomAlphaDiscard;
+		UINT OriginalInstanceCount;
+		UINT RenderingObjectFlags;
 	};
 
 	struct ER_ALIGN_GPU_BUFFER ObjectFakeRootCB
@@ -84,10 +97,10 @@ namespace EveryRay_Core
 		ER_RHI_GPUTexture* SpecularMap			= nullptr;
 		ER_RHI_GPUTexture* MetallicMap			= nullptr;
 		ER_RHI_GPUTexture* RoughnessMap			= nullptr;
-		ER_RHI_GPUTexture* HeightMap			= nullptr;
-		ER_RHI_GPUTexture* ReflectionMaskMap	= nullptr;
-		ER_RHI_GPUTexture* ExtraMap2			= nullptr;  // can be used for extra textures (AO, opacity, displacement)
-		ER_RHI_GPUTexture* ExtraMap3			= nullptr;  // can be used for extra textures (AO, opacity, displacement)
+		ER_RHI_GPUTexture* HeightMap			= nullptr; // used for POM
+		ER_RHI_GPUTexture* ExtraMaskMap			= nullptr; // used for reflection, transparency or fur masks
+		ER_RHI_GPUTexture* ExtraMap2			= nullptr; // can be used for extra textures (AO, opacity, displacement)
+		ER_RHI_GPUTexture* ExtraMap3			= nullptr; // can be used for extra textures (AO, opacity, displacement)
 
 		TextureData() {}
 
@@ -201,7 +214,7 @@ namespace EveryRay_Core
 		void SetSelected(bool val) { mIsSelected = val; }
 
 		bool IsInstanced() { return mIsInstanced; }
-		bool IsAvailableInEditor() { return mAvailableInEditorMode; }
+		bool IsAvailableInEditor() { return mIsAvailableInEditorMode; }
 
 		bool IsRendered() { return mIsRendered; }
 		void SetRendered(bool val) { mIsRendered = val; }
@@ -230,11 +243,14 @@ namespace EveryRay_Core
 		void SetTerrainProceduralObjectsMinMaxPitch(float minPitch, float maxPitch) { mTerrainProceduralObjectMinPitch = XMConvertToRadians(minPitch); mTerrainProceduralObjectMaxPitch = XMConvertToRadians(maxPitch); }
 		void SetTerrainProceduralObjectsMinMaxRoll(float minRoll, float maxRoll) { mTerrainProceduralObjectMinRoll = XMConvertToRadians(minRoll); mTerrainProceduralObjectMaxRoll = XMConvertToRadians(maxRoll); }
 
+		void SetReflective(bool value) { mIsReflective = value; }
+		bool IsReflective() { return mIsReflective; }
+
 		void SetMeshReflectionFactor(int meshIndex, float factor) { mMeshesReflectionFactors[meshIndex] = factor; }
 		float GetMeshReflectionFactor(int meshIndex) { return mMeshesReflectionFactors[meshIndex]; }
 
-		bool GetFoliageMask() { return mFoliageMask; }
-		void SetFoliageMask(bool value) { mFoliageMask = value; }
+		bool GetIsMarkedAsFoliage() { return mIsMarkedAsFoliage; }
+		void SetIsMarkedAsFoliage(bool value) { mIsMarkedAsFoliage = value; }
 
 		bool IsForwardShading() { return mIsForwardShading; }
 		void SetForwardShading(bool value) { mIsForwardShading = value; }
@@ -268,13 +284,12 @@ namespace EveryRay_Core
 
 		void SetUseIndirectGlobalLightProbe(bool value) { mUseIndirectGlobalLightProbe = value; }
 		bool GetUseIndirectGlobalLightProbe() { return mUseIndirectGlobalLightProbe; }
-		float GetUseIndirectGlobalLightProbeMask() { return mUseIndirectGlobalLightProbe ? 1.0f : 0.0f; }
 
 		bool IsUsedForGlobalLightProbeRendering() { return mIsUsedForGlobalLightProbeRendering; }
 		void SetIsUsedForGlobalLightProbeRendering(bool value) { mIsUsedForGlobalLightProbeRendering = value; }
 
-		bool IsSkipIndirectSpecular() { return mIsSkipIndirectSpecular; }
-		void SetIsSkipIndirectSpecular(bool value) { mIsSkipIndirectSpecular = value; }
+		bool IsSkippedIndirectSpecular() { return mIsSkippedIndirectSpecular; }
+		void SetSkipIndirectSpecular(bool value) { mIsSkippedIndirectSpecular = value; }
 
 		int GetIndexInScene() { return mIndexInScene; }
 		void SetIndexInScene(int index) { mIndexInScene = index; }
@@ -306,7 +321,7 @@ namespace EveryRay_Core
 		
 		//fur
 		std::string mFurHeightTexturePath;
-		ER_RHI_GPUTexture* GetFurMaskTexture(int meshIndex) { return mMeshesTextureBuffers[meshIndex].ReflectionMaskMap; }
+		ER_RHI_GPUTexture* GetFurMaskTexture(int meshIndex) { return mMeshesTextureBuffers[meshIndex].ExtraMaskMap; }
 		ER_RHI_GPUTexture* GetFurHeightTexture() { return mFurHeightTexture; }
 		int GetFurLayersCount() { return mFurLayersCount; }
 		void SetFurLayersCount(int value) { mFurLayersCount = value; }
@@ -335,6 +350,8 @@ namespace EveryRay_Core
 		void ShowInstancesListWindow();
 		void ShowObjectsEditorWindow(const float *cameraView, float *cameraProjection, float* matrix);
 		
+		void UpdateBitmaskFlags();
+
 		ER_Core* mCore = nullptr;
 		ER_Camera& mCamera;
 
@@ -429,23 +446,25 @@ namespace EveryRay_Core
 		int														mIndexInScene = -1;
 		int														mCurrentLODIndex = 0; //only used for non-instanced object
 		int														mEditorSelectedInstancedObjectIndex = 0;
-		bool													mEnableAABBDebug = true;
-		bool													mWireframeMode = false;
-		bool													mAvailableInEditorMode = false;
+		bool													mIsAABBDebugEnabled = true;
+		bool													mIsWireframeMode = false;
+		bool													mIsAvailableInEditorMode = false;
 		bool													mIsSelected = false;
 		bool													mIsRendered = true;
 		bool													mIsInstanced = false;
 		bool													mIsForwardShading = false;
 		bool													mIsPOM = false;
 		bool													mIsCulled = false; //only for non-instanced objects
-		bool													mFoliageMask = false;
+		bool													mIsMarkedAsFoliage = false;
 		bool													mIsInLightProbe = false;
 		bool													mIsSeparableSubsurfaceScattering = false;
 		bool													mIsInVoxelization = false;
 		bool													mIsInGbuffer = false;
 		bool													mUseIndirectGlobalLightProbe = false;
 		bool													mIsUsedForGlobalLightProbeRendering = false;
-		bool													mIsSkipIndirectSpecular = false; //only works with deferred rendering
+		bool													mIsSkippedIndirectSpecular = false;
+		bool													mIsSkippedIndirectDiffuse = false;
+		bool													mIsReflective = false; //appeared in SSR and such
 		bool													mIsTransparent = false;
 		float													mIOR = 1.52f; // glass IOR by default
 		float													mCustomRoughness = -1.0f;
@@ -466,5 +485,6 @@ namespace EveryRay_Core
 		};
 
 		RenderingObjectTextureQuality							mCurrentTextureQuality = RenderingObjectTextureQuality::OBJECT_TEXTURE_LOW;
+		UINT													mObjectShaderBitmaskFlags = 0; // "RenderingObjectFlags" in shaders
 	};
 }

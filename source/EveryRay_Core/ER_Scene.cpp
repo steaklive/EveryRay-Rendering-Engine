@@ -284,7 +284,7 @@ namespace EveryRay_Core
 		// load flags
 		{
 			if (mSceneJsonRoot["rendering_objects"][i].isMember("foliageMask"))
-				aObject->SetFoliageMask(mSceneJsonRoot["rendering_objects"][i]["foliageMask"].asBool());
+				aObject->SetIsMarkedAsFoliage(mSceneJsonRoot["rendering_objects"][i]["foliageMask"].asBool());
 			
 			if (mSceneJsonRoot["rendering_objects"][i].isMember("use_indirect_global_lightprobe"))
 				aObject->SetUseIndirectGlobalLightProbe(mSceneJsonRoot["rendering_objects"][i]["use_indirect_global_lightprobe"].asBool());
@@ -298,6 +298,9 @@ namespace EveryRay_Core
 			if (mSceneJsonRoot["rendering_objects"][i].isMember("use_forward_shading"))
 				aObject->SetForwardShading(mSceneJsonRoot["rendering_objects"][i]["use_forward_shading"].asBool());
 
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("use_reflection"))
+				aObject->SetReflective(mSceneJsonRoot["rendering_objects"][i]["use_reflection"].asBool());
+
 			if (mSceneJsonRoot["rendering_objects"][i].isMember("use_sss"))
 				aObject->SetSeparableSubsurfaceScattering(mSceneJsonRoot["rendering_objects"][i]["use_sss"].asBool());
 			
@@ -310,8 +313,8 @@ namespace EveryRay_Core
 			if (mSceneJsonRoot["rendering_objects"][i].isMember("use_indirect_rendering"))
 				aObject->SetUseIndirectRendering(mSceneJsonRoot["rendering_objects"][i]["use_indirect_rendering"].asBool());
 
-			if (mSceneJsonRoot["rendering_objects"][i].isMember("skipIndirectSpecular"))
-				aObject->SetIsSkipIndirectSpecular(mSceneJsonRoot["rendering_objects"][i]["skipIndirectSpecular"].asBool());
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("skip_indirect_specular"))
+				aObject->SetSkipIndirectSpecular(mSceneJsonRoot["rendering_objects"][i]["skip_indirect_specular"].asBool());
 
 			if (mSceneJsonRoot["rendering_objects"][i].isMember("index_of_refraction"))
 				aObject->SetIOR(mSceneJsonRoot["rendering_objects"][i]["index_of_refraction"].asFloat());

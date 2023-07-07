@@ -68,7 +68,7 @@ VS_OUTPUT VSMain_instancing(VS_INPUT_INSTANCING IN)
 {
     VS_OUTPUT OUT = (VS_OUTPUT) 0;
 
-    float4x4 World = IsIndirectlyRendered > 0.0 ?
+    float4x4 World = (RenderingObjectFlags & RENDERING_OBJECT_FLAG_GPU_INDIRECT_DRAW) ?
         transpose(IndirectInstanceData[(int)OriginalInstanceCount * CurrentLod + IN.InstanceID].WorldMat) : IN.World;
     float3 WorldPos = mul(IN.Position, World).xyz;
     OUT.Position = mul(float4(WorldPos, 1.0f), LightViewProjection);

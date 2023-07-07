@@ -80,7 +80,7 @@ cbuffer SSSBlurCB : register(b0)
 
 Texture2D<float4> PreBlurColorTexture : register(t0);
 Texture2D<float> DepthTexture : register(t1);
-Texture2D<float4> GbufferExtra2Texture : register(t2); //b - SSS mask
+Texture2D<uint> GbufferExtra2Texture : register(t2);
 
 SamplerState SamplerLinear : register(s0);
 
@@ -89,8 +89,12 @@ float4 BlurPS(QUAD_VS_OUT input) : SV_Target
     // Fetch color of current pixel:
     float4 colorM = PreBlurColorTexture.SampleLevel(SamplerLinear, input.TexCoord, 0);
     
-    float hasSSS = GbufferExtra2Texture.SampleLevel(SamplerLinear, input.TexCoord, 0).b;
-    if (hasSSS < 0.0f)
+    uint width, height;
+    GbufferExtra2Texture.GetDimensions(width, height);
+    uint objectFlags = GbufferExtra2Texture.Load(uint3(input.TexCoord * uint2(width, height), 0)).r;
+    
+    bool hasSSS = objectFlags & RENDERING_OBJECT_FLAG_SSS;
+    if (!hasSSS)
         return colorM;
     
     // Fetch linear depth of current pixel:

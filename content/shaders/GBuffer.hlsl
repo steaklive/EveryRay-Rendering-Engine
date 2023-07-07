@@ -13,17 +13,15 @@ Texture2D<float4> AlbedoMap : register(t0);
 Texture2D<float4> NormalMap : register(t1);
 Texture2D<float> RoughnessMap : register(t2);
 Texture2D<float> MetallicMap : register(t3);
-Texture2D<float> HeightMap : register(t4);
-Texture2D<float> ReflectionMaskMap : register(t5);
+Texture2D<float> HeightMap : register(t4); // used for POM
+Texture2D<float> ExtraMaskMap : register(t5); // used for reflection, fur, transparent masks
 
 StructuredBuffer<Instance> IndirectInstanceData : register(t6);
 
+// ********************************
 cbuffer GBufferCBuffer : register(b0)
 {
     float4x4 ViewProjection;
-    float4 Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor;
-    float4 SkipDeferredLighting_UseSSS_CustomAlphaDiscard; // a - empty
-    float4 CustomRoughness_Metalness_SkipIndSpec;
 }
 // register(b1) is objects cbuffer from Common.hlsli
 
@@ -79,7 +77,7 @@ VS_OUTPUT VSMain_instancing(VS_INPUT_INSTANCING IN)
 {
     VS_OUTPUT OUT = (VS_OUTPUT) 0;
     
-    float4x4 World = IsIndirectlyRendered > 0.0 ?
+    float4x4 World = (RenderingObjectFlags & RENDERING_OBJECT_FLAG_GPU_INDIRECT_DRAW) ?
         transpose(IndirectInstanceData[(int)OriginalInstanceCount * CurrentLod + IN.InstanceID].WorldMat) : IN.World;
     OUT.WorldPos = mul(IN.ObjectPosition, World).xyz;
     OUT.Position = mul(float4(OUT.WorldPos, 1.0f), ViewProjection);
@@ -96,7 +94,7 @@ struct PS_OUTPUT
     float4 Normal : SV_Target1;
     float4 WorldPos : SV_Target2;
     float4 Extra : SV_Target3;
-    float4 Extra2 : SV_Target4;
+    uint Extra2 : SV_Target4;
 };
 
 float3x3 invert_3x3(float3x3 M)
@@ -114,7 +112,7 @@ PS_OUTPUT PSMain(VS_OUTPUT IN, bool isFrontFace : SV_IsFrontFace) : SV_Target
 {
     PS_OUTPUT OUT;
     float4 albedo = AlbedoMap.Sample(Sampler, IN.TextureCoordinate);
-    if (albedo.a < SkipDeferredLighting_UseSSS_CustomAlphaDiscard.b)
+    if (albedo.a < CustomAlphaDiscard)
         discard;
     
     OUT.Color = albedo;
@@ -144,14 +142,18 @@ PS_OUTPUT PSMain(VS_OUTPUT IN, bool isFrontFace : SV_IsFrontFace) : SV_Target
     OUT.Normal = float4(sampledNormal, 1.0);
     OUT.WorldPos = float4(IN.WorldPos, IN.Position.w);
     
-    float roughness = CustomRoughness_Metalness_SkipIndSpec.r >= 0.0f ? CustomRoughness_Metalness_SkipIndSpec.r : RoughnessMap.Sample(Sampler, IN.TextureCoordinate).r;
-    float metalness = CustomRoughness_Metalness_SkipIndSpec.g >= 0.0f ? CustomRoughness_Metalness_SkipIndSpec.g : MetallicMap.Sample(Sampler, IN.TextureCoordinate).r;
-    float reflectionMask = CustomRoughness_Metalness_SkipIndSpec.b > 0.0 ? 2.0f : ReflectionMaskMap.Sample(Sampler, IN.TextureCoordinate).r;
-    OUT.Extra = float4(reflectionMask, roughness, metalness, Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor.g);
-    OUT.Extra2 = float4(
-        Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor.b, 
-        Reflection_Foliage_UseGlobalDiffuseProbe_POM_MaskFactor.a ? HeightMap.Sample(Sampler, IN.TextureCoordinate).r : -1.0f, 
-        SkipDeferredLighting_UseSSS_CustomAlphaDiscard.g,
-        SkipDeferredLighting_UseSSS_CustomAlphaDiscard.r);
+    float roughness = CustomRoughness >= 0.0f ? CustomRoughness : RoughnessMap.Sample(Sampler, IN.TextureCoordinate).r;
+    float metalness = CustomMetalness >= 0.0f ? CustomMetalness : MetallicMap.Sample(Sampler, IN.TextureCoordinate).r;
+    
+    bool needsExtraMask = 
+        (RenderingObjectFlags & RENDERING_OBJECT_FLAG_REFLECTION) ||
+        (RenderingObjectFlags & RENDERING_OBJECT_FLAG_TRANSPARENT) ||
+        (RenderingObjectFlags & RENDERING_OBJECT_FLAG_FUR);
+    float extraMaskValue = needsExtraMask ? ExtraMaskMap.Sample(Sampler, IN.TextureCoordinate).r : -1.0f;
+    
+    float heightMaskValue = (RenderingObjectFlags & RENDERING_OBJECT_FLAG_POM) ? HeightMap.Sample(Sampler, IN.TextureCoordinate).r : -1.0f;
+    
+    OUT.Extra = float4(extraMaskValue, roughness, metalness, heightMaskValue);
+    OUT.Extra2 = RenderingObjectFlags;
     return OUT;
 }

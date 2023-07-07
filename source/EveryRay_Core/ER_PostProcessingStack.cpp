@@ -132,7 +132,7 @@ namespace EveryRay_Core {
 			if (mSSRRS)
 			{
 				mSSRRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
-				mSSRRS->InitDescriptorTable(rhi, SSR_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 4 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mSSRRS->InitDescriptorTable(rhi, SSR_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 5 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mSSRRS->InitDescriptorTable(rhi, SSR_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mSSRRS->Finalize(rhi, "ER_RHI_GPURootSignature: SSR Pass", true);
 			}
@@ -410,7 +410,7 @@ namespace EveryRay_Core {
 		mSSRConstantBuffer.ApplyChanges(rhi);
 
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
-		rhi->SetShaderResources(ER_PIXEL, { aInputTexture, gbuffer->GetNormals(), gbuffer->GetExtraBuffer(), mDepthTarget }, 0,
+		rhi->SetShaderResources(ER_PIXEL, { aInputTexture, gbuffer->GetNormals(), gbuffer->GetExtraBuffer(), gbuffer->GetExtra2Buffer(), mDepthTarget }, 0,
 			mSSSRS, SSR_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 		rhi->SetConstantBuffers(ER_PIXEL, { mSSRConstantBuffer.Buffer() }, 0, mSSRRS, SSR_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 	}
