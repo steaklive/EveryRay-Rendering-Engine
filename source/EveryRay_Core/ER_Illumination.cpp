@@ -1009,7 +1009,7 @@ namespace EveryRay_Core {
 				rhi->SetShaderResources(ER_PIXEL, resources, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_PIXEL_SRV_INDEX);
 			}
 
-			if (aObj->IsIndirectlyRendered())
+			if (aObj->IsGPUIndirectlyRendered())
 				rhi->SetShaderResources(ER_VERTEX, { aObj->GetIndirectNewInstanceBuffer() }, static_cast<int>(resources.size()), mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_VERTEX_SRV_INDEX);
 
 			// we unset PSO after all objects are rendered

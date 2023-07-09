@@ -428,7 +428,7 @@ namespace EveryRay_Core
 		if (!rhi->IsPSOReady(psoName))
 		{
 			rhi->InitializePSO(psoName);
-			rhi->SetBlendState(ER_ALPHA_TO_COVERAGE, blendFactor, 0xffffffff);
+			rhi->SetBlendState(ER_ALPHA_TO_COVERAGE_4_TARGETS, blendFactor, 0xffffffff);
 			rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING);
 			rhi->SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
 			rhi->SetTopologyTypeToPSO(psoName, ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

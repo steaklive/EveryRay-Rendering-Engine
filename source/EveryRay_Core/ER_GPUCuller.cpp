@@ -89,7 +89,7 @@ namespace EveryRay_Core
 		{
 			ER_RenderingObject* aObj = obPair.second;
 
-			if (!aObj->IsIndirectlyRendered())
+			if (!aObj->IsGPUIndirectlyRendered())
 				continue;
 
 			rhi->ClearUAV(aObj->GetIndirectNewInstanceBuffer(), 0);
@@ -105,7 +105,10 @@ namespace EveryRay_Core
 				for (int meshI = 0; meshI < MAX_MESH_COUNT; meshI++)
 				{
 					offset = MAX_MESH_COUNT * lodI + meshI;
-					indexCount = (meshI < aObj->GetMeshCount()) ? aObj->GetIndexCount(lodI, meshI) : INT_MAX;
+					if (lodI < aObj->GetLODCount())
+						indexCount = (meshI < aObj->GetMeshCount(/*TODO ideally from LOD but we dont support that atm*/)) ? aObj->GetIndexCount(lodI, meshI) : INT_MAX;
+					else
+						indexCount = INT_MAX;
 					mMeshConstantBuffer.Data.IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc[offset] = XMINT4(indexCount, 0, 0, 0);
 				}
 			}
@@ -151,7 +154,7 @@ namespace EveryRay_Core
 		{
 			ER_RenderingObject* aObj = obPair.second;
 
-			if (!aObj->IsIndirectlyRendered())
+			if (!aObj->IsGPUIndirectlyRendered())
 				continue;
 
 			rhi->SetShaderResources(ER_COMPUTE, { aObj->GetIndirectOriginalInstanceBuffer() }, 0, mIndirectCullingRS, GPU_CULL_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
@@ -168,7 +171,10 @@ namespace EveryRay_Core
 				for (int meshI = 0; meshI < MAX_MESH_COUNT; meshI++)
 				{
 					offset = MAX_MESH_COUNT * lodI + meshI;
-					indexCount = (meshI < aObj->GetMeshCount()) ? aObj->GetIndexCount(lodI, meshI) : INT_MAX;
+					if (lodI < aObj->GetLODCount())
+						indexCount = (meshI < aObj->GetMeshCount(/*TODO ideally from LOD but we dont support that atm*/)) ? aObj->GetIndexCount(lodI, meshI) : INT_MAX;
+					else
+						indexCount = INT_MAX;
 					mMeshConstantBuffer.Data.IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc[offset] = XMINT4(indexCount, 0, 0, 0);
 				}
 			}

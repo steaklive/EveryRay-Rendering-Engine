@@ -152,6 +152,7 @@ namespace EveryRay_Core
 
 		void LoadCustomMeshTextures(int meshIndex);
 		void LoadCustomMaterialTextures();
+		void LoadAssignedMeshTextures(int meshIndex);
 
 		void Draw(const std::string& materialName, bool toDepth = false, int meshIndex = -1);
 		void DrawLOD(const std::string& materialName, bool toDepth, int meshIndex, int lod, bool skipCulling = false);
@@ -189,8 +190,8 @@ namespace EveryRay_Core
 		
 		void PerformCPUFrustumCull(ER_Camera* camera);
 
-		void SetUseIndirectRendering(bool value) { mIsIndirectlyRendered = value; }
-		bool IsIndirectlyRendered() { return mIsIndirectlyRendered; }
+		void SetGPUIndirectlyRendered(bool value) { mIsIndirectlyRendered = value; }
+		bool IsGPUIndirectlyRendered() { return mIsIndirectlyRendered; }
 		ER_RHI_GPUBuffer* GetIndirectNewInstanceBuffer() { return mIndirectNewInstanceDataBuffer; }
 		ER_RHI_GPUBuffer* GetIndirectOriginalInstanceBuffer() { return mIndirectOriginalInstanceDataBuffer; }
 		ER_RHI_GPUBuffer* GetIndirectArgsBuffer() { return mIndirectArgsBuffer; }
@@ -342,7 +343,6 @@ namespace EveryRay_Core
 		XMFLOAT4 GetFurGravityStrength(); 
 	private:
 		void UpdateAABB(ER_AABB& aabb, const XMMATRIX& transformMatrix);
-		void LoadAssignedMeshTextures();
 		void LoadTexture(ER_RHI_GPUTexture** aTexture, bool* loadStat, const std::wstring& path, int meshIndex, bool isPlaceholder = false);
 		void CreateInstanceBuffer(InstancedData* instanceData, UINT instanceCount, ER_RHI_GPUBuffer* instanceBuffer);
 		
@@ -367,8 +367,8 @@ namespace EveryRay_Core
 		std::vector<std::vector<RenderBufferData*>>				mMeshRenderBuffers; // vertex/index buffers per mesh, per LOD group
 		std::vector<std::vector<InstanceBufferData*>>			mMeshesInstanceBuffers; // instance buffers per mesh, per LOD group
 		std::vector<std::vector<XMFLOAT3>>						mMeshAllVertices; // vertices of all meshes combined, per LOD group
-		std::vector<float>										mMeshesReflectionFactors; 
-		std::vector<int>										mMeshesCount;
+		std::vector<float>										mMeshesReflectionFactors; // mesh reflection factors, per LOD group
+		std::vector<int>										mMeshesCount; // mesh count, per LOD group
 		std::unique_ptr<ER_Model>								mModel;
 		std::vector<std::unique_ptr<ER_Model>>					mModelLODs;
 		// 

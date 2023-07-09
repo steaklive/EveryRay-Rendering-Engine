@@ -70,7 +70,6 @@ namespace EveryRay_Core
 			}
 		}
 
-		LoadAssignedMeshTextures();
 		mLocalAABB = mModel->GenerateAABB();
 		mGlobalAABB = mLocalAABB;
 
@@ -131,7 +130,8 @@ namespace EveryRay_Core
 	}
 
 	//from mesh-built-in textures (something that was specified in 3D tool, like Blender or Maya)
-	void ER_RenderingObject::LoadAssignedMeshTextures()
+	//executed after LoadCustomMeshTextures()
+	void ER_RenderingObject::LoadAssignedMeshTextures(int meshIndex)
 	{
 		auto pathBuilder = [&](std::wstring relativePath)
 		{
@@ -146,66 +146,78 @@ namespace EveryRay_Core
 
 		bool loadStatus = false;
 
-		for (size_t i = 0; i < mMeshesCount[0]; i++)
+		assert(meshIndex < mMeshesCount[0]);
 		{
-			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeDifffuse))
+			if (!mMeshesTextureBuffers[meshIndex].AlbedoMap) // if we did not load a custom one before
 			{
-				const std::vector<std::wstring>& texturesAlbedo = mModel->GetMesh(i).GetMaterial().GetTexturesByType(TextureType::TextureTypeDifffuse);
-				if (texturesAlbedo.size() != 0)
+				if (mModel->GetMesh(meshIndex).GetMaterial().HasTexturesOfType(TextureType::TextureTypeDifffuse))
 				{
-					std::wstring result = pathBuilder(texturesAlbedo.at(0));
-					LoadTexture(&mMeshesTextureBuffers[i].AlbedoMap, &loadStatus,result, i);
+					const std::vector<std::wstring>& texturesAlbedo = mModel->GetMesh(meshIndex).GetMaterial().GetTexturesByType(TextureType::TextureTypeDifffuse);
+					if (texturesAlbedo.size() != 0)
+					{
+						std::wstring result = pathBuilder(texturesAlbedo.at(0));
+						LoadTexture(&mMeshesTextureBuffers[meshIndex].AlbedoMap, &loadStatus, result, meshIndex);
+					}
+					else
+						LoadTexture(&mMeshesTextureBuffers[meshIndex].AlbedoMap, &loadStatus, ER_Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), meshIndex, true);
 				}
 				else
-					LoadTexture(&mMeshesTextureBuffers[i].AlbedoMap, &loadStatus, ER_Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), i, true);
+					LoadTexture(&mMeshesTextureBuffers[meshIndex].AlbedoMap, &loadStatus, ER_Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), meshIndex, true);
 			}
-			else
-				LoadTexture(&mMeshesTextureBuffers[i].AlbedoMap, &loadStatus, ER_Utility::GetFilePath(L"content\\textures\\emptyDiffuseMap.png"), i, true);
 			loadStatus = false;
 
-			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeNormalMap))
+			if (!mMeshesTextureBuffers[meshIndex].NormalMap) // if we did not load a custom one before
 			{
-				const std::vector<std::wstring>& texturesNormal = mModel->GetMesh(i).GetMaterial().GetTexturesByType(TextureType::TextureTypeNormalMap);
-				if (texturesNormal.size() != 0)
+				if (mModel->GetMesh(meshIndex).GetMaterial().HasTexturesOfType(TextureType::TextureTypeNormalMap))
 				{
-					std::wstring result = pathBuilder(texturesNormal.at(0));
-					LoadTexture(&mMeshesTextureBuffers[i].NormalMap, &loadStatus, result, i);
+					const std::vector<std::wstring>& texturesNormal = mModel->GetMesh(meshIndex).GetMaterial().GetTexturesByType(TextureType::TextureTypeNormalMap);
+					if (texturesNormal.size() != 0)
+					{
+						std::wstring result = pathBuilder(texturesNormal.at(0));
+						LoadTexture(&mMeshesTextureBuffers[meshIndex].NormalMap, &loadStatus, result, meshIndex);
+					}
+					else
+						LoadTexture(&mMeshesTextureBuffers[meshIndex].NormalMap, &loadStatus, ER_Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"), meshIndex, true);
 				}
 				else
-					LoadTexture(&mMeshesTextureBuffers[i].NormalMap, &loadStatus, ER_Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"), i, true);
+					LoadTexture(&mMeshesTextureBuffers[meshIndex].NormalMap, &loadStatus, ER_Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"), meshIndex, true);
 			}
-			else
-				LoadTexture(&mMeshesTextureBuffers[i].NormalMap, &loadStatus, ER_Utility::GetFilePath(L"content\\textures\\emptyNormalMap.jpg"), i, true);
 			loadStatus = false;
 
-			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeSpecularMap))
+			if (!mMeshesTextureBuffers[meshIndex].RoughnessMap) // if we did not load a custom one before
 			{
-				const std::vector<std::wstring>& texturesSpec = mModel->GetMesh(i).GetMaterial().GetTexturesByType(TextureType::TextureTypeSpecularMap);
-				if (texturesSpec.size() != 0)
+				if (mModel->GetMesh(meshIndex).GetMaterial().HasTexturesOfType(TextureType::TextureTypeSpecularMap))
 				{
-					std::wstring result = pathBuilder(texturesSpec.at(0));
-					LoadTexture(&mMeshesTextureBuffers[i].RoughnessMap, &loadStatus, result, i);
+					const std::vector<std::wstring>& texturesSpec = mModel->GetMesh(meshIndex).GetMaterial().GetTexturesByType(TextureType::TextureTypeSpecularMap);
+					if (texturesSpec.size() != 0)
+					{
+						std::wstring result = pathBuilder(texturesSpec.at(0));
+						LoadTexture(&mMeshesTextureBuffers[meshIndex].RoughnessMap, &loadStatus, result, meshIndex);
+					}
+					else
+						LoadTexture(&mMeshesTextureBuffers[meshIndex].RoughnessMap, &loadStatus, ER_Utility::GetFilePath(L"content\\textures\\emptyRoughnessMap.png"), meshIndex, true);
 				}
 				else
-					LoadTexture(&mMeshesTextureBuffers[i].RoughnessMap, &loadStatus, ER_Utility::GetFilePath(L"content\\textures\\emptyRoughnessMap.png"), i, true);
+					LoadTexture(&mMeshesTextureBuffers[meshIndex].RoughnessMap, &loadStatus, ER_Utility::GetFilePath(L"content\\textures\\emptyRoughnessMap.png"), meshIndex, true);
 			}
-			else
-				LoadTexture(&mMeshesTextureBuffers[i].RoughnessMap, &loadStatus,ER_Utility::GetFilePath(L"content\\textures\\emptyRoughnessMap.png"), i, true);
 			loadStatus = false;
 
-			if (mModel->GetMesh(i).GetMaterial().HasTexturesOfType(TextureType::TextureTypeSpecularPowerMap))
+			if (!mMeshesTextureBuffers[meshIndex].MetallicMap) // if we did not load a custom one before
 			{
-				const std::vector<std::wstring>& texturesMetallic = mModel->GetMesh(i).GetMaterial().GetTexturesByType(TextureType::TextureTypeSpecularPowerMap);
-				if (texturesMetallic.size() != 0)
+				if (mModel->GetMesh(meshIndex).GetMaterial().HasTexturesOfType(TextureType::TextureTypeSpecularPowerMap))
 				{
-					std::wstring result = pathBuilder(texturesMetallic.at(0));
-					LoadTexture(&mMeshesTextureBuffers[i].MetallicMap, &loadStatus, result, i);
+					const std::vector<std::wstring>& texturesMetallic = mModel->GetMesh(meshIndex).GetMaterial().GetTexturesByType(TextureType::TextureTypeSpecularPowerMap);
+					if (texturesMetallic.size() != 0)
+					{
+						std::wstring result = pathBuilder(texturesMetallic.at(0));
+						LoadTexture(&mMeshesTextureBuffers[meshIndex].MetallicMap, &loadStatus, result, meshIndex);
+					}
+					else
+						LoadTexture(&mMeshesTextureBuffers[meshIndex].MetallicMap, &loadStatus, ER_Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), meshIndex, true);
 				}
 				else
-					LoadTexture(&mMeshesTextureBuffers[i].MetallicMap, &loadStatus,  ER_Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), i, true);
+					LoadTexture(&mMeshesTextureBuffers[meshIndex].MetallicMap, &loadStatus, ER_Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), meshIndex, true);
 			}
-			else
-				LoadTexture(&mMeshesTextureBuffers[i].MetallicMap, &loadStatus, ER_Utility::GetFilePath(L"content\\textures\\emptyMetallicMap.png"), i, true);
 			loadStatus = false;
 		}
 	}
@@ -218,34 +230,28 @@ namespace EveryRay_Core
 
 		bool loadStatus = false;
 
-		if (!mCustomAlbedoTextures[meshIndex].empty())
-			if (mCustomAlbedoTextures[meshIndex].back() != '\\')
-				LoadTexture(&mMeshesTextureBuffers[meshIndex].AlbedoMap, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomAlbedoTextures[meshIndex])), meshIndex);
+		if (!mCustomAlbedoTextures[meshIndex].empty() && mCustomAlbedoTextures[meshIndex].back() != '\\')
+			LoadTexture(&mMeshesTextureBuffers[meshIndex].AlbedoMap, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomAlbedoTextures[meshIndex])), meshIndex);
 		loadStatus = false;
 
-		if (!mCustomNormalTextures[meshIndex].empty())
-			if (mCustomNormalTextures[meshIndex].back() != '\\')
-				LoadTexture(&mMeshesTextureBuffers[meshIndex].NormalMap, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomNormalTextures[meshIndex])), meshIndex);
+		if (!mCustomNormalTextures[meshIndex].empty() && mCustomNormalTextures[meshIndex].back() != '\\')
+			LoadTexture(&mMeshesTextureBuffers[meshIndex].NormalMap, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomNormalTextures[meshIndex])), meshIndex);
 		loadStatus = false;
 
-		if (!mCustomRoughnessTextures[meshIndex].empty())
-			if (mCustomRoughnessTextures[meshIndex].back() != '\\')
-				LoadTexture(&mMeshesTextureBuffers[meshIndex].RoughnessMap, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomRoughnessTextures[meshIndex])), meshIndex);
+		if (!mCustomRoughnessTextures[meshIndex].empty() && mCustomRoughnessTextures[meshIndex].back() != '\\')
+			LoadTexture(&mMeshesTextureBuffers[meshIndex].RoughnessMap, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomRoughnessTextures[meshIndex])), meshIndex);
 		loadStatus = false;
 
-		if (!mCustomMetalnessTextures[meshIndex].empty())
-			if (mCustomMetalnessTextures[meshIndex].back() != '\\')
-				LoadTexture(&mMeshesTextureBuffers[meshIndex].MetallicMap, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomMetalnessTextures[meshIndex])), meshIndex);
+		if (!mCustomMetalnessTextures[meshIndex].empty() && mCustomMetalnessTextures[meshIndex].back() != '\\')
+			LoadTexture(&mMeshesTextureBuffers[meshIndex].MetallicMap, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomMetalnessTextures[meshIndex])), meshIndex);
 		loadStatus = false;
 
-		if (!mCustomHeightTextures[meshIndex].empty())
-			if (mCustomHeightTextures[meshIndex].back() != '\\')
-				LoadTexture(&mMeshesTextureBuffers[meshIndex].HeightMap, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomHeightTextures[meshIndex])), meshIndex);
+		if (!mCustomHeightTextures[meshIndex].empty() && mCustomHeightTextures[meshIndex].back() != '\\')
+			LoadTexture(&mMeshesTextureBuffers[meshIndex].HeightMap, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomHeightTextures[meshIndex])), meshIndex);
 		loadStatus = false;
 
-		if (!mCustomReflectionMaskTextures[meshIndex].empty())
-			if (mCustomReflectionMaskTextures[meshIndex].back() != '\\')
-				LoadTexture(&mMeshesTextureBuffers[meshIndex].ExtraMaskMap, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomReflectionMaskTextures[meshIndex])), meshIndex);
+		if (!mCustomReflectionMaskTextures[meshIndex].empty() && mCustomReflectionMaskTextures[meshIndex].back() != '\\')
+			LoadTexture(&mMeshesTextureBuffers[meshIndex].ExtraMaskMap, &loadStatus, ER_Utility::GetFilePath(ER_Utility::ToWideString(mCustomReflectionMaskTextures[meshIndex])), meshIndex);
 		loadStatus = false;
 
 		//TODO

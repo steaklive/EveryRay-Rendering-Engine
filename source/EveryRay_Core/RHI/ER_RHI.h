@@ -52,6 +52,7 @@ namespace EveryRay_Core
 	{
 		ER_NO_BLEND,
 		ER_ALPHA_TO_COVERAGE,
+		ER_ALPHA_TO_COVERAGE_4_TARGETS,
 		ER_ALPHA_BLEND
 	};
 

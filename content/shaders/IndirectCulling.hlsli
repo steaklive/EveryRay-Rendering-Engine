@@ -1,6 +1,6 @@
 //These should match the cpp ones in Common.h
 #define MAX_LOD_COUNT 3
-#define MAX_MESH_COUNT 16
+#define MAX_MESH_COUNT 32
 
 struct Instance
 {

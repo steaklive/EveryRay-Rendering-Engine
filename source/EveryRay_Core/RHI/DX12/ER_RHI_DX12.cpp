@@ -2231,6 +2231,14 @@ namespace EveryRay_Core
 		blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
 		mBlendStates.insert(std::make_pair(ER_RHI_BLEND_STATE::ER_ALPHA_TO_COVERAGE, blendStateDescription));
 
+		{
+			D3D12_BLEND_DESC blendStateDescriptionMultiTarget = blendStateDescription;
+			blendStateDescriptionMultiTarget.IndependentBlendEnable = TRUE;
+			for (int i = 0; i < 4; i++)
+				blendStateDescriptionMultiTarget.RenderTarget[i] = blendStateDescriptionMultiTarget.RenderTarget[0];
+			mBlendStates.insert(std::make_pair(ER_RHI_BLEND_STATE::ER_ALPHA_TO_COVERAGE_4_TARGETS, blendStateDescriptionMultiTarget));
+		}
+
 		blendStateDescription.RenderTarget[0].BlendEnable = FALSE;
 		blendStateDescription.AlphaToCoverageEnable = FALSE;
 		mBlendStates.insert(std::make_pair(ER_RHI_BLEND_STATE::ER_NO_BLEND, blendStateDescription));

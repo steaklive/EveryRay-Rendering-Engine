@@ -1305,6 +1305,16 @@ namespace EveryRay_Core
 			throw ER_CoreException("ER_RHI_DX11: ID3D11Device::CreateBlendState() failed while create alpha-to-coverage blend state.");
 		mBlendStates.insert(std::make_pair(ER_RHI_BLEND_STATE::ER_ALPHA_TO_COVERAGE, mAlphaToCoverageState));
 
+		{
+			D3D11_BLEND_DESC blendStateDescriptionMultiTarget = blendStateDescription;
+			blendStateDescriptionMultiTarget.IndependentBlendEnable = TRUE;
+			for (int i = 0; i < 4; i++)
+				blendStateDescriptionMultiTarget.RenderTarget[i] = blendStateDescriptionMultiTarget.RenderTarget[0];
+			if (FAILED(mDirect3DDevice->CreateBlendState(&blendStateDescriptionMultiTarget, &mAlphaToCoverageState_4Targets)))
+				throw ER_CoreException("ER_RHI_DX11: ID3D11Device::CreateBlendState() failed while create alpha-to-coverage 4 targets blend state.");
+			mBlendStates.insert(std::make_pair(ER_RHI_BLEND_STATE::ER_ALPHA_TO_COVERAGE_4_TARGETS, mAlphaToCoverageState_4Targets));
+		}
+
 		blendStateDescription.RenderTarget[0].BlendEnable = FALSE;
 		blendStateDescription.AlphaToCoverageEnable = FALSE;
 		if (FAILED(mDirect3DDevice->CreateBlendState(&blendStateDescription, &mNoBlendState)))

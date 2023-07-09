@@ -183,6 +183,9 @@ namespace EveryRay_Core
 			if (it == presetNames.end())
 				throw ER_CoreException("Current preset is not recognized in graphics_config.json. Maybe a typo?");
 
+			std::string logMessage = "[ER Logger][ER_Core] Selected graphics preset: " + currentPreset + "\n";
+			ER_OUTPUT_LOG(ER_Utility::ToWideString(logMessage).c_str());
+
 			int currentPresetIndex = it->second;
 			//set quality
 			{

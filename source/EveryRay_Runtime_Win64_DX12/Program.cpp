@@ -18,6 +18,9 @@ using namespace EveryRay_Core;
 
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR commandLine, int showCommand)
 {
+	if (FAILED(CoInitializeEx(nullptr, COINIT_MULTITHREADED)))
+		throw ER_CoreException("Failed to call CoInitializeEx");
+
 	//#if defined(DEBUG) || defined(_DEBUG)
 	//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF|_CRTDBG_LEAK_CHECK_DF);
 	//#endif

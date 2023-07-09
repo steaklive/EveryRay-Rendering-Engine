@@ -310,8 +310,8 @@ namespace EveryRay_Core
 			if (mSceneJsonRoot["rendering_objects"][i].isMember("use_transparency"))
 				aObject->SetTransparency(mSceneJsonRoot["rendering_objects"][i]["use_transparency"].asBool());
 
-			if (mSceneJsonRoot["rendering_objects"][i].isMember("use_indirect_rendering"))
-				aObject->SetUseIndirectRendering(mSceneJsonRoot["rendering_objects"][i]["use_indirect_rendering"].asBool());
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("use_gpu_indirect_rendering"))
+				aObject->SetGPUIndirectlyRendered(mSceneJsonRoot["rendering_objects"][i]["use_gpu_indirect_rendering"].asBool());
 
 			if (mSceneJsonRoot["rendering_objects"][i].isMember("skip_indirect_specular"))
 				aObject->SetSkipIndirectSpecular(mSceneJsonRoot["rendering_objects"][i]["skip_indirect_specular"].asBool());
@@ -515,26 +515,33 @@ namespace EveryRay_Core
 		if (mSceneJsonRoot["rendering_objects"][i].isMember("fur_height"))
 			aObject->mFurHeightTexturePath = mSceneJsonRoot["rendering_objects"][i]["fur_height"].asString();
 
-		// load custom textures
+		// load textures
 		{
-			if (mSceneJsonRoot["rendering_objects"][i].isMember("textures")) {
+			const int meshCount = aObject->GetMeshCount();
 
-				for (Json::Value::ArrayIndex mesh = 0; mesh != mSceneJsonRoot["rendering_objects"][i]["textures"].size(); mesh++) {
-					if (mSceneJsonRoot["rendering_objects"][i]["textures"][mesh].isMember("albedo"))
-						aObject->mCustomAlbedoTextures[mesh] = mSceneJsonRoot["rendering_objects"][i]["textures"][mesh]["albedo"].asString();
-					if (mSceneJsonRoot["rendering_objects"][i]["textures"][mesh].isMember("normal"))
-						aObject->mCustomNormalTextures[mesh] = mSceneJsonRoot["rendering_objects"][i]["textures"][mesh]["normal"].asString();
-					if (mSceneJsonRoot["rendering_objects"][i]["textures"][mesh].isMember("roughness"))
-						aObject->mCustomRoughnessTextures[mesh] = mSceneJsonRoot["rendering_objects"][i]["textures"][mesh]["roughness"].asString();
-					if (mSceneJsonRoot["rendering_objects"][i]["textures"][mesh].isMember("metalness"))
-						aObject->mCustomMetalnessTextures[mesh] = mSceneJsonRoot["rendering_objects"][i]["textures"][mesh]["metalness"].asString();
-					if (mSceneJsonRoot["rendering_objects"][i]["textures"][mesh].isMember("height"))
-						aObject->mCustomHeightTextures[mesh] = mSceneJsonRoot["rendering_objects"][i]["textures"][mesh]["height"].asString();
-					if (mSceneJsonRoot["rendering_objects"][i]["textures"][mesh].isMember("reflection_mask"))
-						aObject->mCustomReflectionMaskTextures[mesh] = mSceneJsonRoot["rendering_objects"][i]["textures"][mesh]["reflection_mask"].asString();
+			const bool containsCustomTextures = mSceneJsonRoot["rendering_objects"][i].isMember("textures");
+			const int maxCustomTextures = mSceneJsonRoot["rendering_objects"][i]["textures"].size();
 
-					aObject->LoadCustomMeshTextures(mesh);
+			for (int meshIndex = 0; meshIndex < meshCount; meshIndex++)
+			{
+				if (containsCustomTextures && meshIndex < maxCustomTextures)
+				{
+					if (mSceneJsonRoot["rendering_objects"][i]["textures"][meshIndex].isMember("albedo"))
+						aObject->mCustomAlbedoTextures[meshIndex] = mSceneJsonRoot["rendering_objects"][i]["textures"][meshIndex]["albedo"].asString();
+					if (mSceneJsonRoot["rendering_objects"][i]["textures"][meshIndex].isMember("normal"))
+						aObject->mCustomNormalTextures[meshIndex] = mSceneJsonRoot["rendering_objects"][i]["textures"][meshIndex]["normal"].asString();
+					if (mSceneJsonRoot["rendering_objects"][i]["textures"][meshIndex].isMember("roughness"))
+						aObject->mCustomRoughnessTextures[meshIndex] = mSceneJsonRoot["rendering_objects"][i]["textures"][meshIndex]["roughness"].asString();
+					if (mSceneJsonRoot["rendering_objects"][i]["textures"][meshIndex].isMember("metalness"))
+						aObject->mCustomMetalnessTextures[meshIndex] = mSceneJsonRoot["rendering_objects"][i]["textures"][meshIndex]["metalness"].asString();
+					if (mSceneJsonRoot["rendering_objects"][i]["textures"][meshIndex].isMember("height"))
+						aObject->mCustomHeightTextures[meshIndex] = mSceneJsonRoot["rendering_objects"][i]["textures"][meshIndex]["height"].asString();
+					if (mSceneJsonRoot["rendering_objects"][i]["textures"][meshIndex].isMember("reflection_mask"))
+						aObject->mCustomReflectionMaskTextures[meshIndex] = mSceneJsonRoot["rendering_objects"][i]["textures"][meshIndex]["reflection_mask"].asString();
+
+					aObject->LoadCustomMeshTextures(meshIndex);
 				}
+				aObject->LoadAssignedMeshTextures(meshIndex);
 			}
 			aObject->LoadCustomMaterialTextures();
 		}
