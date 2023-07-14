@@ -108,7 +108,7 @@ float3x3 invert_3x3(float3x3 M)
         cross(T[0], T[1])) / (D + 1e-6);
 }
 
-PS_OUTPUT PSMain(VS_OUTPUT IN, bool isFrontFace : SV_IsFrontFace) : SV_Target
+PS_OUTPUT PSMain(VS_OUTPUT IN, bool isFrontFace : SV_IsFrontFace)
 {
     PS_OUTPUT OUT;
     float4 albedo = AlbedoMap.Sample(Sampler, IN.TextureCoordinate);
