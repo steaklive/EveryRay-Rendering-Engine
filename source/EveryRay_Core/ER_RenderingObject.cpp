@@ -470,7 +470,7 @@ namespace EveryRay_Core
 
 				if (mIsInstanced)
 				{
-					if (mIsIndirectlyRendered)
+					if (mIsIndirectlyRendered && mIndirectArgsBuffer)
 					{
 						if (!isForwardPass)
 							mMaterials[materialName]->SetRootConstantForMaterial(static_cast<UINT>(lod));
@@ -1197,7 +1197,12 @@ namespace EveryRay_Core
 
 	void ER_RenderingObject::CreateIndirectInstanceData()
 	{
+		ER_RHI* rhi = mCore->GetRHI();
+
 		if (mIndirectOriginalInstanceDataBuffer) // means we already created the buffers
+			return;
+
+		if (rhi->GetCurrentGraphicsCommandListIndex() == -1)
 			return;
 
 		assert(mIsIndirectlyRendered);
@@ -1206,8 +1211,6 @@ namespace EveryRay_Core
 		assert(mInstanceCount);
 		assert(mInstanceAABBs.size());
 		assert(mInstanceData[0].size());
-
-		ER_RHI* rhi = mCore->GetRHI();
 
 		mIndirectNewInstanceDataBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject - Indirect New Instance Data Buffer : " + mName);
 		mIndirectOriginalInstanceDataBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject - Indirect Original Instance Data Buffer : " + mName);

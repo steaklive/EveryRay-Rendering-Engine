@@ -89,7 +89,7 @@ namespace EveryRay_Core
 		{
 			ER_RenderingObject* aObj = obPair.second;
 
-			if (!aObj->IsGPUIndirectlyRendered())
+			if (!aObj->IsGPUIndirectlyRendered() || !aObj->GetIndirectArgsBuffer())
 				continue;
 
 			rhi->ClearUAV(aObj->GetIndirectNewInstanceBuffer(), 0);
@@ -154,7 +154,7 @@ namespace EveryRay_Core
 		{
 			ER_RenderingObject* aObj = obPair.second;
 
-			if (!aObj->IsGPUIndirectlyRendered())
+			if (!aObj->IsGPUIndirectlyRendered() || !aObj->GetIndirectOriginalInstanceBuffer())
 				continue;
 
 			rhi->SetShaderResources(ER_COMPUTE, { aObj->GetIndirectOriginalInstanceBuffer() }, 0, mIndirectCullingRS, GPU_CULL_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);

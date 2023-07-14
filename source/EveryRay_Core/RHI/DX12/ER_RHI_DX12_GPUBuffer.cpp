@@ -205,8 +205,9 @@ namespace EveryRay_Core
 	void ER_RHI_DX12_GPUBuffer::UpdateSubresource(ER_RHI* aRHI, void* aData, int dataSize, int cmdListIndex)
 	{
 		assert(mSize >= dataSize);
-
+		assert(cmdListIndex != -1);
 		assert(aRHI);
+
 		ER_RHI_DX12* aRHIDX12 = static_cast<ER_RHI_DX12*>(aRHI);
 
 		D3D12_SUBRESOURCE_DATA data = {};
