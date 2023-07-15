@@ -299,14 +299,14 @@ float4 PSMain(VS_OUTPUT IN) : SV_Target //forward pass
     return color;
 }
 
-PS_OUTPUT_GBUFFER PSMain_gbuffer(VS_OUTPUT IN) : SV_Target
+PS_OUTPUT_GBUFFER PSMain_gbuffer(VS_OUTPUT IN)
 {
     PS_OUTPUT_GBUFFER OUT;
 
     OUT.Color = AlbedoTexture.Sample(ColorSampler, IN.TextureCoordinates);
     OUT.Normal = float4(IN.Normal, 1.0f);
     OUT.WorldPos = float4(IN.WorldPos, 1.0f);
-    OUT.Extra = float4(0.0, 0.0, 0.0, 1.0f);
+    OUT.Extra = float4(0.0, 0.0, 0.0, 0.0f);
     OUT.Extra2 = RENDERING_OBJECT_FLAG_FOLIAGE;
     return OUT;
 }

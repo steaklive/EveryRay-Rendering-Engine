@@ -40,12 +40,11 @@ cbuffer DeferredLightingCBuffer : register(b0)
     float4 SunColor;
     float4 CameraPosition;
     float4 CameraNearFarPlanes;
-    float HasGlobalProbe;
-    float SkipIndirectLighting;
     float SSSTranslucency;
     float SSSWidth;
     float SSSDirectionLightMaxPlane;
     float SSSAvailable;
+    bool HasGlobalProbe;
 }
 
 cbuffer LightProbesCBuffer : register(b1)
@@ -69,7 +68,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
         return;
     }
     
-    bool useGlobalProbe = (HasGlobalProbe > 0.0f) || (objectFlags & RENDERING_OBJECT_FLAG_USE_GLOBAL_DIF_PROBE);
+    bool useGlobalProbe = HasGlobalProbe || (objectFlags & RENDERING_OBJECT_FLAG_USE_GLOBAL_DIF_PROBE);
     
     float4 worldPos = GbufferWorldPosTexture.Load(uint3(inPos, 0));
     if (worldPos.a < 0.000001f)
@@ -90,7 +89,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     bool usePOM = (objectFlags & RENDERING_OBJECT_FLAG_POM); // TODO add POM support to Deferred
     bool useSSS = (objectFlags & RENDERING_OBJECT_FLAG_SSS) && SSSAvailable > 0.0f;
     bool isFoliage = (objectFlags & RENDERING_OBJECT_FLAG_FOLIAGE);
-    bool skipIndirectSpecular = (objectFlags & RENDERING_OBJECT_FLAG_SKIP_INDIRECT_SPEC); // we store 2.0f if we need to skip indirect specular
+    bool skipIndirectSpecular = (objectFlags & RENDERING_OBJECT_FLAG_SKIP_INDIRECT_SPEC);
 
     //reflectance at normal incidence for dia-electic or metal
     float3 F0 = float3(0.04, 0.04, 0.04);
@@ -112,7 +111,9 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     if (isFoliage)
         indirectLighting = float3(0.1f, 0.1f, 0.1f) * diffuseAlbedo.rgb; // fake ambient for foliage
     
-    if (!isFoliage && SkipIndirectLighting <= 0.0f)
+    bool skipIndirectLighting = (objectFlags & RENDERING_OBJECT_FLAG_SKIP_INDIRECT_DIF) && (objectFlags & RENDERING_OBJECT_FLAG_SKIP_INDIRECT_SPEC);
+
+    if (!isFoliage && !skipIndirectLighting)
     {
         LightProbeInfo probesInfo;      
         probesInfo.globalIrradianceDiffuseProbeTexture = DiffuseGlobalProbeTexture;

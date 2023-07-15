@@ -162,7 +162,7 @@ namespace EveryRay_Core
 			std::partition(objects.begin(), objects.end(), [](const ER_SceneObject& obj) {	return obj.second->IsInstanced(); });
 			assert(numRenderingObjects == objects.size());
 
-#if MULTITHREADED_SCENE_LOAD
+#if MULTITHREADED_SCENE_LOAD && !ER_PLATFORM_WIN64_DX12
 			int numThreads = std::thread::hardware_concurrency();
 #else
 			int numThreads = 1;

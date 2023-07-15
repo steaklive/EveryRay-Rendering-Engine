@@ -1099,15 +1099,26 @@ namespace EveryRay_Core
 		else
 			mObjectShaderBitmaskFlags &= ~RENDERING_OBJECT_FLAG_SKIP_DEFERRED_PASS;
 
-		if (mIsSkippedIndirectDiffuse)
+		if (mCore->GetLevel()->mIllumination->IsDebugSkipIndirectLighting())
+		{
 			mObjectShaderBitmaskFlags |= RENDERING_OBJECT_FLAG_SKIP_INDIRECT_DIF;
-		else
-			mObjectShaderBitmaskFlags &= ~RENDERING_OBJECT_FLAG_SKIP_INDIRECT_DIF;
-
-		if (mIsSkippedIndirectSpecular)
 			mObjectShaderBitmaskFlags |= RENDERING_OBJECT_FLAG_SKIP_INDIRECT_SPEC;
+		}
 		else
+		{
+			mObjectShaderBitmaskFlags &= ~RENDERING_OBJECT_FLAG_SKIP_INDIRECT_DIF;
 			mObjectShaderBitmaskFlags &= ~RENDERING_OBJECT_FLAG_SKIP_INDIRECT_SPEC;
+
+			if (mIsSkippedIndirectDiffuse)
+				mObjectShaderBitmaskFlags |= RENDERING_OBJECT_FLAG_SKIP_INDIRECT_DIF;
+			else
+				mObjectShaderBitmaskFlags &= ~RENDERING_OBJECT_FLAG_SKIP_INDIRECT_DIF;
+
+			if (mIsSkippedIndirectSpecular)
+				mObjectShaderBitmaskFlags |= RENDERING_OBJECT_FLAG_SKIP_INDIRECT_SPEC;
+			else
+				mObjectShaderBitmaskFlags &= ~RENDERING_OBJECT_FLAG_SKIP_INDIRECT_SPEC;
+		}
 
 		if (mIsIndirectlyRendered)
 			mObjectShaderBitmaskFlags |= RENDERING_OBJECT_FLAG_GPU_INDIRECT_DRAW;
@@ -1202,7 +1213,7 @@ namespace EveryRay_Core
 		if (mIndirectOriginalInstanceDataBuffer) // means we already created the buffers
 			return;
 
-		if (rhi->GetCurrentGraphicsCommandListIndex() == -1)
+		if (rhi->GetAPI() == DX12 && rhi->GetCurrentGraphicsCommandListIndex() == -1)
 			return;
 
 		assert(mIsIndirectlyRendered);

@@ -809,12 +809,11 @@ namespace EveryRay_Core {
 			mDeferredLightingConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLight.GetDirectionalLightIntensity() };
 			mDeferredLightingConstantBuffer.Data.CameraPosition = XMFLOAT4{ mCamera.Position().x,mCamera.Position().y,mCamera.Position().z, 1.0f };
 			mDeferredLightingConstantBuffer.Data.CameraNearFarPlanes = XMFLOAT4{ mCamera.GetCameraNearShadowCascadeDistance(0), mCamera.GetCameraFarShadowCascadeDistance(0), 0.0f, 0.0f };
-			mDeferredLightingConstantBuffer.Data.HasGlobalProbe = !mProbesManager->IsEnabled() && mProbesManager->AreGlobalProbesReady();
-			mDeferredLightingConstantBuffer.Data.SkipIndirectProbeLighting = mDebugSkipIndirectProbeLighting;
 			mDeferredLightingConstantBuffer.Data.SSSTranslucency = mSSSTranslucency;
 			mDeferredLightingConstantBuffer.Data.SSSWidth = mSSSWidth;
 			mDeferredLightingConstantBuffer.Data.SSSDirectionLightMaxPlane = mSSSDirectionalLightPlaneScale;
 			mDeferredLightingConstantBuffer.Data.SSSAvailable = (mIsSSS && !mIsSSSCulled) ? 1.0f : -1.0f;
+			mDeferredLightingConstantBuffer.Data.HasGlobalProbe = !mProbesManager->IsEnabled() && mProbesManager->AreGlobalProbesReady();
 			mDeferredLightingConstantBuffer.ApplyChanges(rhi);
 
 			if (mProbesManager->IsEnabled())

@@ -1308,8 +1308,15 @@ namespace EveryRay_Core
 		{
 			D3D11_BLEND_DESC blendStateDescriptionMultiTarget = blendStateDescription;
 			blendStateDescriptionMultiTarget.IndependentBlendEnable = TRUE;
-			for (int i = 0; i < 4; i++)
+			int i;
+			for (i = 0; i < 4; i++)
 				blendStateDescriptionMultiTarget.RenderTarget[i] = blendStateDescriptionMultiTarget.RenderTarget[0];
+			for (i = 4; i < D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT; i++)
+			{
+				blendStateDescriptionMultiTarget.RenderTarget[i].BlendEnable = FALSE;
+				blendStateDescriptionMultiTarget.RenderTarget[i].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_RED | D3D11_COLOR_WRITE_ENABLE_GREEN | D3D11_COLOR_WRITE_ENABLE_BLUE;
+			}
+
 			if (FAILED(mDirect3DDevice->CreateBlendState(&blendStateDescriptionMultiTarget, &mAlphaToCoverageState_4Targets)))
 				throw ER_CoreException("ER_RHI_DX11: ID3D11Device::CreateBlendState() failed while create alpha-to-coverage 4 targets blend state.");
 			mBlendStates.insert(std::make_pair(ER_RHI_BLEND_STATE::ER_ALPHA_TO_COVERAGE_4_TARGETS, mAlphaToCoverageState_4Targets));

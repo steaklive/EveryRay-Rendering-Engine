@@ -72,12 +72,11 @@ namespace EveryRay_Core
 			XMFLOAT4 SunColor;
 			XMFLOAT4 CameraPosition;
 			XMFLOAT4 CameraNearFarPlanes;
-			float HasGlobalProbe;
-			float SkipIndirectProbeLighting;
 			float SSSTranslucency;
 			float SSSWidth;
 			float SSSDirectionLightMaxPlane;
 			float SSSAvailable;
+			bool HasGlobalProbe;
 		};
 		struct ER_ALIGN_GPU_BUFFER ForwardLightingCB
 		{
@@ -139,7 +138,7 @@ namespace EveryRay_Core
 		float GetSSSDirLightPlaneScale() { return mSSSDirectionalLightPlaneScale; }
 		void SetSSSDirLightPlaneScale(float val) { mSSSDirectionalLightPlaneScale = val; }
 
-		bool IsSkippingIndirectRendering() { return mDebugSkipIndirectProbeLighting; }
+		bool IsDebugSkipIndirectLighting() { return mDebugSkipIndirectProbeLighting; }
 	private:
 		void DrawDeferredLighting(ER_GBuffer* gbuffer, ER_RHI_GPUTexture* aRenderTarget);
 		void DrawForwardLighting(ER_GBuffer* gbuffer, ER_RHI_GPUTexture* aRenderTarget);

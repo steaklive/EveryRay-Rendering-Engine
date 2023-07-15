@@ -2234,8 +2234,14 @@ namespace EveryRay_Core
 		{
 			D3D12_BLEND_DESC blendStateDescriptionMultiTarget = blendStateDescription;
 			blendStateDescriptionMultiTarget.IndependentBlendEnable = TRUE;
-			for (int i = 0; i < 4; i++)
+			int i;
+			for (i = 0; i < 4; i++)
 				blendStateDescriptionMultiTarget.RenderTarget[i] = blendStateDescriptionMultiTarget.RenderTarget[0];
+			for (i = 4; i < D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT; i++)
+			{
+				blendStateDescriptionMultiTarget.RenderTarget[i].BlendEnable = FALSE;
+				blendStateDescriptionMultiTarget.RenderTarget[i].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_RED | D3D12_COLOR_WRITE_ENABLE_GREEN | D3D12_COLOR_WRITE_ENABLE_BLUE;
+			}
 			mBlendStates.insert(std::make_pair(ER_RHI_BLEND_STATE::ER_ALPHA_TO_COVERAGE_4_TARGETS, blendStateDescriptionMultiTarget));
 		}
 
