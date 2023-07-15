@@ -102,21 +102,7 @@ namespace EveryRay_Core
 					aObj->GetIndirectArgsBuffer()
 				}, 0, mIndirectCullingRS, GPU_CULL_CLEAR_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
 
-			int offset, indexCount = 0;
-			for (int lodI = 0; lodI < MAX_LOD; lodI++)
-			{
-				for (int meshI = 0; meshI < MAX_MESH_COUNT; meshI++)
-				{
-					offset = MAX_MESH_COUNT * lodI + meshI;
-					if (lodI < aObj->GetLODCount())
-						indexCount = (meshI < aObj->GetMeshCount(/*TODO ideally from LOD but we dont support that atm*/)) ? aObj->GetIndexCount(lodI, meshI) : INT_MAX;
-					else
-						indexCount = INT_MAX;
-					mMeshConstantBuffer.Data.IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc[offset] = XMINT4(indexCount, 0, 0, 0);
-				}
-			}
-			mMeshConstantBuffer.Data.OriginalInstancesCount = aObj->GetInstanceCount();
-			mMeshConstantBuffer.ApplyChanges(rhi);
+			UpdateMeshesConstantBuffer(aObj);
 			rhi->SetConstantBuffers(ER_COMPUTE, { mMeshConstantBuffer.Buffer() }, 0, mIndirectCullingClearRS, GPU_CULL_CLEAR_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
 
 			rhi->Dispatch(1u, 1u, 1u);
@@ -124,6 +110,7 @@ namespace EveryRay_Core
 		rhi->UnsetPSO();
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 	}
+
 
 	void ER_GPUCuller::PerformCull(ER_Scene* aScene)
 	{
@@ -171,21 +158,7 @@ namespace EveryRay_Core
 					aObj->GetIndirectArgsBuffer()
 				}, 0, mIndirectCullingRS, GPU_CULL_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
 
-			int offset, indexCount = 0;
-			for (int lodI = 0; lodI < MAX_LOD; lodI++)
-			{
-				for (int meshI = 0; meshI < MAX_MESH_COUNT; meshI++)
-				{
-					offset = MAX_MESH_COUNT * lodI + meshI;
-					if (lodI < aObj->GetLODCount())
-						indexCount = (meshI < aObj->GetMeshCount(/*TODO ideally from LOD but we dont support that atm*/)) ? aObj->GetIndexCount(lodI, meshI) : INT_MAX;
-					else
-						indexCount = INT_MAX;
-					mMeshConstantBuffer.Data.IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc[offset] = XMINT4(indexCount, 0, 0, 0);
-				}
-			}
-			mMeshConstantBuffer.Data.OriginalInstancesCount = aObj->GetInstanceCount();
-			mMeshConstantBuffer.ApplyChanges(rhi);
+			UpdateMeshesConstantBuffer(aObj);
 			rhi->SetConstantBuffers(ER_COMPUTE, { mMeshConstantBuffer.Buffer(), mCameraConstantBuffer.Buffer() },
 				0, mIndirectCullingRS, GPU_CULL_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
 
@@ -196,4 +169,30 @@ namespace EveryRay_Core
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 	}
 
+	void ER_GPUCuller::UpdateMeshesConstantBuffer(const ER_RenderingObject* aObj)
+	{
+		auto rhi = mCore.GetRHI();
+		const int totalObjLodCount = aObj->GetLODCount();
+
+		int offset, indexCount, lastAvailableLod = 0;
+		for (int lodI = 0; lodI < MAX_LOD; lodI++)
+		{
+			for (int meshI = 0; meshI < MAX_MESH_COUNT; meshI++)
+			{
+				offset = MAX_MESH_COUNT * lodI + meshI;
+				if (lodI < totalObjLodCount)
+					indexCount = (meshI < aObj->GetMeshCount(/*TODO ideally from lodI but we dont support meshes per LOD yet*/)) ? aObj->GetIndexCount(lodI, meshI) : INT_MAX;
+				else
+					indexCount = INT_MAX;
+					// Uncomment this if you want to fallback into previous LOD (you have to adjust ER_RenderingObject::Draw())
+					// indexCount = (meshI < aObj->GetMeshCount(/*TODO ideally from lastAvailableLod but we dont support meshes per LOD yet*/)) ? aObj->GetIndexCount(lastAvailableLod, meshI) : INT_MAX;
+				
+				mMeshConstantBuffer.Data.IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc[offset] = XMINT4(indexCount, 0, 0, 0);
+			}
+			if (lodI < totalObjLodCount)
+				lastAvailableLod = lodI;
+		}
+		mMeshConstantBuffer.Data.OriginalInstancesCount = aObj->GetInstanceCount();
+		mMeshConstantBuffer.ApplyChanges(rhi);
+	}
 }

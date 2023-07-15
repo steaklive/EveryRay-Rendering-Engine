@@ -165,7 +165,7 @@ namespace EveryRay_Core
 		
 		const int GetMeshCount(int lod = 0) const { return mMeshesCount[lod]; }
 		const std::vector<XMFLOAT3>& GetVertices(int lod = 0) { return mMeshAllVertices[lod]; }
-		const UINT GetInstanceCount(int lod = 0) { return (mIsInstanced ? static_cast<UINT>(mInstanceData[lod].size()) : 0); }
+		const UINT GetInstanceCount(int lod = 0) const { return (mIsInstanced ? static_cast<UINT>(mInstanceData[lod].size()) : 0); }
 		std::vector<InstancedData>& GetInstancesData(int lod = 0) { return mInstanceData[lod]; }
 		const int GetIndexCount(int lod, int mesh) const { return mMeshRenderBuffers[lod][mesh]->IndicesCount; }
 
@@ -199,7 +199,7 @@ namespace EveryRay_Core
 		void Rename(const std::string& name) { mName = name; }
 		const std::string& GetName() { return mName; }
 
-		int GetLODCount() {
+		const int GetLODCount() const {
 			return 1 + static_cast<int>(mModelLODs.size());
 		}
 		void UpdateLODs();

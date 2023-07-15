@@ -7,6 +7,7 @@ namespace EveryRay_Core
 {
 	class ER_Camera;
 	class ER_Scene;
+	class ER_RenderingObject;
 
 	namespace IndirectCullingCBufferData
 	{
@@ -35,6 +36,7 @@ namespace EveryRay_Core
 		void ClearCounters(ER_Scene* aScene);
 
 	private:
+		void UpdateMeshesConstantBuffer(const ER_RenderingObject* aObj);
 		ER_Core& mCore;
 		ER_Camera& mCamera;
 
