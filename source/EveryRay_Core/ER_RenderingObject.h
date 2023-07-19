@@ -199,9 +199,7 @@ namespace EveryRay_Core
 		void Rename(const std::string& name) { mName = name; }
 		const std::string& GetName() { return mName; }
 
-		const int GetLODCount() const {
-			return 1 + static_cast<int>(mModelLODs.size());
-		}
+		const int GetLODCount() const {	return 1 + static_cast<int>(mModelLODs.size());	}
 		void UpdateLODs();
 		void LoadLOD(std::unique_ptr<ER_Model> pModel);
 		
@@ -347,10 +345,9 @@ namespace EveryRay_Core
 		void CreateInstanceBuffer(InstancedData* instanceData, UINT instanceCount, ER_RHI_GPUBuffer* instanceBuffer);
 		
 		void UpdateGizmos();
+		void UpdateBitmaskFlags();
 		void ShowInstancesListWindow();
 		void ShowObjectsEditorWindow(const float *cameraView, float *cameraProjection, float* matrix);
-		
-		void UpdateBitmaskFlags();
 
 		ER_Core* mCore = nullptr;
 		ER_Camera& mCamera;

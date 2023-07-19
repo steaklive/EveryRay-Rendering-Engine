@@ -911,144 +911,6 @@ namespace EveryRay_Core
 		}
 	}
 	
-	// Shows and updates an ImGui/ImGizmo window for objects editor.
-	// You can edit transform (via UI or via gizmo), you can move to object, set/read some flags, get some useful info, etc.
-	void ER_RenderingObject::ShowObjectsEditorWindow(const float *cameraView, float *cameraProjection, float* matrix)
-	{
-		static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
-		static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
-		static bool useSnap = false;
-		static float snap[3] = { 1.f, 1.f, 1.f };
-		static float bounds[] = { -0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f };
-		static float boundsSnap[] = { 0.1f, 0.1f, 0.1f };
-		static bool boundSizing = false;
-		static bool boundSizingSnap = false;
-
-		if (ER_Utility::IsEditorMode) {
-
-			ER_Utility::IsLightEditor = false;
-			ER_Utility::IsFoliageEditor = false;
-
-			ImGui::Begin("Object Editor");
-			std::string name = mName;
-			if (mIsInstanced)
-			{
-				name = mInstancesNames[mEditorSelectedInstancedObjectIndex];
-				if (mInstanceCullingFlags[mEditorSelectedInstancedObjectIndex]) //showing info for main LOD only in editor
-					name += " (Culled)";
-			}
-			else
-			{
-				name += " LOD #" + std::to_string(mCurrentLODIndex);
-				if (mIsCulled)
-					name += " (Culled)";
-			}
-
-			ImGui::TextColored(ImVec4(0.8f, 0.2f, 0.24f, 1), name.c_str());
-
-			ImGui::Separator();
-			std::string lodCountText = "* LOD count: " + std::to_string(GetLODCount());
-			ImGui::Text(lodCountText.c_str());
-			for (int lodI = 0; lodI < GetLODCount(); lodI++)
-			{
-				std::string vertexCountText = "--> Vertex count LOD#" + std::to_string(lodI) + ": " + std::to_string(GetVertices(lodI).size());
-				ImGui::Text(vertexCountText.c_str());
-			}
-
-			std::string meshCountText = "* Mesh count: " + std::to_string(GetMeshCount());
-			ImGui::Text(meshCountText.c_str());
-
-			std::string instanceCountText = "* Instance count: " + std::to_string(GetInstanceCount());
-			ImGui::Text(instanceCountText.c_str());
-
-			std::string shadingModeName = "* Shaded in: ";
-			if (mIsForwardShading)
-				shadingModeName += "Forward";
-			else 
-				shadingModeName += "Deferred";
-			ImGui::Text(shadingModeName.c_str());
-
-			ImGui::Separator();
-			ImGui::Checkbox("Rendered", &mIsRendered);
-			ImGui::Checkbox("Show AABB", &mIsAABBDebugEnabled);
-			ImGui::Checkbox("Show Wireframe", &mIsWireframeMode);
-			if (ImGui::Button("Move camera to"))
-			{
-				XMFLOAT3 newCameraPos;
-				ER_MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), newCameraPos);
-
-				ER_Camera* camera = (ER_Camera*)(mCore->GetServices().FindService(ER_Camera::TypeIdClass()));
-				if (camera)
-					camera->SetPosition(newCameraPos);
-			}
-
-			//terrain
-			//{
-			//	ImGui::Combo("Terrain splat channel", &currentSplatChannnel, DisplayedSplatChannnelNames, 5);
-			//	TerrainSplatChannels currentChannel = (TerrainSplatChannels)currentSplatChannnel;
-			//	ER_Terrain* terrain = mCore->GetLevel()->mTerrain;
-			//
-			//	if (ImGui::Button("Place on terrain") && terrain && terrain->IsLoaded())
-			//	{
-			//		XMFLOAT4 currentPos;
-			//		ER_MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), currentPos);
-			//		terrain->PlaceOnTerrain(&currentPos, 1, currentChannel);
-			//
-			//		mMatrixTranslation[0] = currentPos.x;
-			//		mMatrixTranslation[1] = currentPos.y;
-			//		mMatrixTranslation[2] = currentPos.z;
-			//		ImGuizmo::RecomposeMatrixFromComponents(mMatrixTranslation, mMatrixRotation, mMatrixScale, matrix);
-			//	}
-			//}
-
-			ImGui::SliderFloat("Custom roughness", &mCustomRoughness, -1.0f, 1.0f);
-			ImGui::SliderFloat("Custom metalness", &mCustomMetalness, -1.0f, 1.0f);
-			if (mIsTransparent)
-				ImGui::SliderFloat("IOR", &mIOR, -5.0f, 5.0f);
-			if (mFurLayersCount > 0)
-			{
-				ImGui::ColorEdit3("Fur Color", mFurColor);
-				ImGui::SliderFloat("Fur Interpolation with albedo", &mFurColorInterpolation, 0.0, 1.0);
-				ImGui::SliderFloat("Fur Length", &mFurLength, 0.01f, 25.0f);
-				ImGui::SliderFloat("Fur Cutoff", &mFurCutoff, 0.01f, 1.0f);
-				ImGui::SliderFloat("Fur Cutoff End", &mFurCutoffEnd, 0.01f, 1.0f);
-				ImGui::SliderFloat("Fur UV Scale", &mFurUVScale, 0.01f, 15.0f);
-				ImGui::SliderFloat3("Fur Gravity Dir", &mFurGravityDirection[0], -1.0, 1.0);
-				ImGui::SliderFloat("Fur Gravity Strength", &mFurGravityStrength, 0.0, 10.0);
-				ImGui::SliderFloat("Fur Wind Frequency", &mFurWindFrequency, 0.0, 10.0);
-			}
-
-			//Transforms
-			if (ImGui::IsKeyPressed(84))
-				mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-			if (ImGui::IsKeyPressed(89))
-				mCurrentGizmoOperation = ImGuizmo::ROTATE;
-			if (ImGui::IsKeyPressed(82)) // r Key
-				mCurrentGizmoOperation = ImGuizmo::SCALE;
-
-			if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
-				mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-			ImGui::SameLine();
-			if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE))
-				mCurrentGizmoOperation = ImGuizmo::ROTATE;
-			ImGui::SameLine();
-			if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
-				mCurrentGizmoOperation = ImGuizmo::SCALE;
-
-
-			ImGuizmo::DecomposeMatrixToComponents(matrix, mMatrixTranslation, mMatrixRotation, mMatrixScale);
-			ImGui::InputFloat3("Tr", mMatrixTranslation, 3);
-			ImGui::InputFloat3("Rt", mMatrixRotation, 3);
-			ImGui::InputFloat3("Sc", mMatrixScale, 3);
-			ImGuizmo::RecomposeMatrixFromComponents(mMatrixTranslation, mMatrixRotation, mMatrixScale, matrix);
-			ImGui::End();
-
-			ImGuiIO& io = ImGui::GetIO();
-			ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-			ImGuizmo::Manipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, matrix, NULL, useSnap ? &snap[0] : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
-		}
-	}
-	
 	void ER_RenderingObject::UpdateBitmaskFlags()
 	{
 		mObjectShaderBitmaskFlags = 0;
@@ -1126,12 +988,168 @@ namespace EveryRay_Core
 			mObjectShaderBitmaskFlags &= ~RENDERING_OBJECT_FLAG_GPU_INDIRECT_DRAW;
 	}
 
-	// Shows an ImGui window for instances list.
+	// Shows and updates an ImGui/ImGizmo window for objects editor.
+	// You can edit the transform (via UI or via gizmo), you can move camera to object, set/read some flags, get some useful info, etc.
+	void ER_RenderingObject::ShowObjectsEditorWindow(const float *cameraView, float *cameraProjection, float* matrix)
+	{
+		static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
+		static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
+		static bool useSnap = false;
+		static float snap[3] = { 1.f, 1.f, 1.f };
+		static float bounds[] = { -0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f };
+		static float boundsSnap[] = { 0.1f, 0.1f, 0.1f };
+		static bool boundSizing = false;
+		static bool boundSizingSnap = false;
+
+		if (ER_Utility::IsEditorMode) 
+		{
+			ER_Utility::IsLightEditor = false;
+			ER_Utility::IsFoliageEditor = false;
+
+			ImGui::Begin("Object Editor");
+			std::string name = mName;
+			if (!mIsIndirectlyRendered)
+			{
+				if (mIsInstanced)
+				{
+					name = mInstancesNames[mEditorSelectedInstancedObjectIndex];
+					if (mInstanceCullingFlags[mEditorSelectedInstancedObjectIndex]) //showing info for main LOD only in editor
+						name += " (Culled)";
+				}
+				else
+				{
+					name += " LOD #" + std::to_string(mCurrentLODIndex);
+					if (mIsCulled)
+						name += " (Culled)";
+				}
+			}
+
+			ImGui::TextColored(ImVec4(0.8f, 0.2f, 0.24f, 1), name.c_str());
+
+			ImGui::Separator();
+			std::string lodCountText = "* LOD count: " + std::to_string(GetLODCount());
+			ImGui::Text(lodCountText.c_str());
+			for (int lodI = 0; lodI < GetLODCount(); lodI++)
+			{
+				std::string vertexCountText = "--> Vertex count LOD#" + std::to_string(lodI) + ": " + std::to_string(GetVertices(lodI).size());
+				ImGui::Text(vertexCountText.c_str());
+			}
+
+			std::string meshCountText = "* Mesh count: " + std::to_string(GetMeshCount());
+			ImGui::Text(meshCountText.c_str());
+
+			std::string instanceCountText = "* Instance count: " + std::to_string(GetInstanceCount());
+			ImGui::Text(instanceCountText.c_str());
+
+			std::string shadingModeName = "* Shaded in: ";
+			if (mIsForwardShading)
+				shadingModeName += "Forward";
+			else 
+				shadingModeName += "Deferred";
+			ImGui::Text(shadingModeName.c_str());
+
+			if (mIsIndirectlyRendered)
+			{
+				std::string info = "* GPU indirect drawcall";
+				ImGui::Text(info.c_str());
+				info = "Can't be transformed in editor";
+				ImGui::Text(info.c_str());
+			}
+
+			ImGui::Separator();
+			ImGui::Checkbox("Rendered", &mIsRendered);
+			ImGui::Checkbox("Show AABB", &mIsAABBDebugEnabled);
+			ImGui::Checkbox("Show Wireframe", &mIsWireframeMode);
+			ImGui::Checkbox("Skip indirect spec.", &mIsSkippedIndirectSpecular);
+			//ImGui::Checkbox("Skip indirect dif.", &mIsSkippedIndirectDiffuse);
+			if (ImGui::Button("Move camera to"))
+			{
+				XMFLOAT3 newCameraPos;
+				ER_MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), newCameraPos);
+
+				ER_Camera* camera = (ER_Camera*)(mCore->GetServices().FindService(ER_Camera::TypeIdClass()));
+				if (camera)
+					camera->SetPosition(newCameraPos);
+			}
+
+			//terrain
+			//{
+			//	ImGui::Combo("Terrain splat channel", &currentSplatChannnel, DisplayedSplatChannnelNames, 5);
+			//	TerrainSplatChannels currentChannel = (TerrainSplatChannels)currentSplatChannnel;
+			//	ER_Terrain* terrain = mCore->GetLevel()->mTerrain;
+			//
+			//	if (ImGui::Button("Place on terrain") && terrain && terrain->IsLoaded())
+			//	{
+			//		XMFLOAT4 currentPos;
+			//		ER_MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), currentPos);
+			//		terrain->PlaceOnTerrain(&currentPos, 1, currentChannel);
+			//
+			//		mMatrixTranslation[0] = currentPos.x;
+			//		mMatrixTranslation[1] = currentPos.y;
+			//		mMatrixTranslation[2] = currentPos.z;
+			//		ImGuizmo::RecomposeMatrixFromComponents(mMatrixTranslation, mMatrixRotation, mMatrixScale, matrix);
+			//	}
+			//}
+
+			ImGui::SliderFloat("Custom roughness", &mCustomRoughness, -1.0f, 1.0f);
+			ImGui::SliderFloat("Custom metalness", &mCustomMetalness, -1.0f, 1.0f);
+			ImGui::SliderFloat("Custom alpha discard", &mCustomAlphaDiscard, 0.0f, 1.0f);
+			if (mIsTransparent)
+				ImGui::SliderFloat("IOR", &mIOR, -5.0f, 5.0f);
+			if (mFurLayersCount > 0)
+			{
+				ImGui::ColorEdit3("Fur Color", mFurColor);
+				ImGui::SliderFloat("Fur Interpolation with albedo", &mFurColorInterpolation, 0.0, 1.0);
+				ImGui::SliderFloat("Fur Length", &mFurLength, 0.01f, 25.0f);
+				ImGui::SliderFloat("Fur Cutoff", &mFurCutoff, 0.01f, 1.0f);
+				ImGui::SliderFloat("Fur Cutoff End", &mFurCutoffEnd, 0.01f, 1.0f);
+				ImGui::SliderFloat("Fur UV Scale", &mFurUVScale, 0.01f, 15.0f);
+				ImGui::SliderFloat3("Fur Gravity Dir", &mFurGravityDirection[0], -1.0, 1.0);
+				ImGui::SliderFloat("Fur Gravity Strength", &mFurGravityStrength, 0.0, 10.0);
+				ImGui::SliderFloat("Fur Wind Frequency", &mFurWindFrequency, 0.0, 10.0);
+			}
+
+			//Transforms
+			if (!mIsIndirectlyRendered)
+			{
+				if (ImGui::IsKeyPressed(84))
+					mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+				if (ImGui::IsKeyPressed(89))
+					mCurrentGizmoOperation = ImGuizmo::ROTATE;
+				if (ImGui::IsKeyPressed(82)) // r Key
+					mCurrentGizmoOperation = ImGuizmo::SCALE;
+
+				if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
+					mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+				ImGui::SameLine();
+				if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE))
+					mCurrentGizmoOperation = ImGuizmo::ROTATE;
+				ImGui::SameLine();
+				if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
+					mCurrentGizmoOperation = ImGuizmo::SCALE;
+
+
+				ImGuizmo::DecomposeMatrixToComponents(matrix, mMatrixTranslation, mMatrixRotation, mMatrixScale);
+				ImGui::InputFloat3("Tr", mMatrixTranslation, 3);
+				ImGui::InputFloat3("Rt", mMatrixRotation, 3);
+				ImGui::InputFloat3("Sc", mMatrixScale, 3);
+				ImGuizmo::RecomposeMatrixFromComponents(mMatrixTranslation, mMatrixRotation, mMatrixScale, matrix);
+			}
+			ImGui::End();
+
+			ImGuiIO& io = ImGui::GetIO();
+			ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+			ImGuizmo::Manipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, matrix, NULL, useSnap ? &snap[0] : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
+		}
+	}
+	
+	// Shows an ImGui window for the list of instances.
 	// You can select an instance, read some useful info about it and edit it via "Objects Editor".
 	// We do not need to edit per LOD (LODs share same transforms, AABBs, names).
+	// Note: does not work for objects rendered indirectly on the GPU!
 	void ER_RenderingObject::ShowInstancesListWindow()
 	{
-		if (!(mIsAvailableInEditorMode && mIsSelected && mIsInstanced))
+		if (!(mIsAvailableInEditorMode && mIsSelected && mIsInstanced) || mIsIndirectlyRendered)
 			return;
 
 		assert(mInstanceCount != 0);
@@ -1150,6 +1168,77 @@ namespace EveryRay_Core
 		ImGui::End();
 	}
 	
+	void ER_RenderingObject::UpdateLODs()
+	{
+		const float sqrDistLod0 = ER_Utility::DistancesLOD[0] * ER_Utility::DistancesLOD[0];
+		const float sqrDistLod1 = ER_Utility::DistancesLOD[1] * ER_Utility::DistancesLOD[1];
+		const float sqrDistLod2 = ER_Utility::DistancesLOD[2] * ER_Utility::DistancesLOD[2];
+
+		if (mIsInstanced) {
+			if (!mIsIndirectlyRendered) // LODs are also updated in ER_GPUCuller, so no need to do that here
+				return;
+			if (!ER_Utility::IsMainCameraCPUFrustumCulling && mInstanceData.size() == 0)
+				return;
+			if (ER_Utility::IsMainCameraCPUFrustumCulling && mTempPostCullingInstanceData.size() == 0)
+				return;
+
+			mTempPostLoddingInstanceData.clear();
+			for (int lod = 0; lod < GetLODCount(); lod++)
+				mTempPostLoddingInstanceData.push_back({});
+
+			//traverse through original or culled instance data (sort of "read-only") to rebalance LOD's instance buffers
+			int length = (ER_Utility::IsMainCameraCPUFrustumCulling) ? static_cast<int>(mTempPostCullingInstanceData.size()) : static_cast<int>(mInstanceData[0].size());
+			for (int i = 0; i < length; i++)
+			{
+				XMFLOAT3 pos;
+				XMMATRIX mat = (ER_Utility::IsMainCameraCPUFrustumCulling) ? XMLoadFloat4x4(&mTempPostCullingInstanceData[i].World) : XMLoadFloat4x4(&mInstanceData[0][i].World);
+				ER_MatrixHelper::GetTranslation(mat, pos);
+
+				float distanceToCameraSqr =
+					(mCamera.Position().x - pos.x) * (mCamera.Position().x - pos.x) +
+					(mCamera.Position().y - pos.y) * (mCamera.Position().y - pos.y) +
+					(mCamera.Position().z - pos.z) * (mCamera.Position().z - pos.z);
+
+				//XMMATRIX newMat;
+				if (distanceToCameraSqr <= sqrDistLod0) {
+					mTempPostLoddingInstanceData[0].push_back((ER_Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
+				}
+				else if (sqrDistLod0 < distanceToCameraSqr && distanceToCameraSqr <= sqrDistLod1) {
+					mTempPostLoddingInstanceData[1].push_back((ER_Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
+				}
+				else if (sqrDistLod1 < distanceToCameraSqr && distanceToCameraSqr <= sqrDistLod2) {
+					mTempPostLoddingInstanceData[2].push_back((ER_Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
+				}
+			}
+
+			for (int i = 0; i < GetLODCount(); i++)
+				UpdateInstanceBuffer(mTempPostLoddingInstanceData[i], i);
+		}
+		else
+		{
+			XMFLOAT3 pos;
+			ER_MatrixHelper::GetTranslation(mTransformationMatrix, pos);
+
+			float distanceToCameraSqr =
+				(mCamera.Position().x - pos.x) * (mCamera.Position().x - pos.x) +
+				(mCamera.Position().y - pos.y) * (mCamera.Position().y - pos.y) +
+				(mCamera.Position().z - pos.z) * (mCamera.Position().z - pos.z);
+
+			if (distanceToCameraSqr <= sqrDistLod0) {
+				mCurrentLODIndex = 0;
+			}
+			else if (sqrDistLod0 < distanceToCameraSqr && distanceToCameraSqr <= sqrDistLod1) {
+				mCurrentLODIndex = 1;
+			}
+			else if (sqrDistLod1 < distanceToCameraSqr && distanceToCameraSqr <= sqrDistLod2) {
+				mCurrentLODIndex = 2;
+			}
+			else
+				mCurrentLODIndex = -1; //culled
+
+			mCurrentLODIndex = std::min(mCurrentLODIndex, GetLODCount());
+		}
+	}
 	void ER_RenderingObject::LoadLOD(std::unique_ptr<ER_Model> pModel)
 	{
 		mMeshesCount.push_back(pModel->Meshes().size());
@@ -1247,78 +1336,6 @@ namespace EveryRay_Core
 			ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 		mIndirectNewInstanceDataBuffer->CreateGPUBufferResource(rhi, nullptr, mInstanceCount * MAX_LOD, sizeof(IndirectInstanceData), false,
 			ER_BIND_UNORDERED_ACCESS | ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED, ER_FORMAT_UNKNOWN);
-	}
-
-	void ER_RenderingObject::UpdateLODs()
-	{
-		const float sqrDistLod0 = ER_Utility::DistancesLOD[0] * ER_Utility::DistancesLOD[0];
-		const float sqrDistLod1 = ER_Utility::DistancesLOD[1] * ER_Utility::DistancesLOD[1];
-		const float sqrDistLod2 = ER_Utility::DistancesLOD[2] * ER_Utility::DistancesLOD[2];
-
-		if (mIsInstanced) {
-			if (!mIsIndirectlyRendered) // LODs are also updated in ER_GPUCuller, so no need to do that here
-				return;
-			if (!ER_Utility::IsMainCameraCPUFrustumCulling && mInstanceData.size() == 0)
-				return;
-			if (ER_Utility::IsMainCameraCPUFrustumCulling && mTempPostCullingInstanceData.size() == 0)
-				return;
-
-			mTempPostLoddingInstanceData.clear();
-			for (int lod = 0; lod < GetLODCount(); lod++)
-				mTempPostLoddingInstanceData.push_back({});
-
-			//traverse through original or culled instance data (sort of "read-only") to rebalance LOD's instance buffers
-			int length = (ER_Utility::IsMainCameraCPUFrustumCulling) ? static_cast<int>(mTempPostCullingInstanceData.size()) : static_cast<int>(mInstanceData[0].size());
-			for (int i = 0; i < length; i++)
-			{
-				XMFLOAT3 pos;
-				XMMATRIX mat = (ER_Utility::IsMainCameraCPUFrustumCulling) ? XMLoadFloat4x4(&mTempPostCullingInstanceData[i].World) : XMLoadFloat4x4(&mInstanceData[0][i].World);
-				ER_MatrixHelper::GetTranslation(mat, pos);
-
-				float distanceToCameraSqr =
-					(mCamera.Position().x - pos.x) * (mCamera.Position().x - pos.x) +
-					(mCamera.Position().y - pos.y) * (mCamera.Position().y - pos.y) +
-					(mCamera.Position().z - pos.z) * (mCamera.Position().z - pos.z);
-
-				//XMMATRIX newMat;
-				if (distanceToCameraSqr <= sqrDistLod0) {
-					mTempPostLoddingInstanceData[0].push_back((ER_Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
-				}
-				else if (sqrDistLod0 < distanceToCameraSqr && distanceToCameraSqr <= sqrDistLod1) {
-					mTempPostLoddingInstanceData[1].push_back((ER_Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
-				}
-				else if (sqrDistLod1 < distanceToCameraSqr && distanceToCameraSqr <= sqrDistLod2) {
-					mTempPostLoddingInstanceData[2].push_back((ER_Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
-				}
-			}
-
-			for (int i = 0; i < GetLODCount(); i++)
-				UpdateInstanceBuffer(mTempPostLoddingInstanceData[i], i);
-		}
-		else
-		{
-			XMFLOAT3 pos;
-			ER_MatrixHelper::GetTranslation(mTransformationMatrix, pos);
-
-			float distanceToCameraSqr =
-				(mCamera.Position().x - pos.x) * (mCamera.Position().x - pos.x) +
-				(mCamera.Position().y - pos.y) * (mCamera.Position().y - pos.y) +
-				(mCamera.Position().z - pos.z) * (mCamera.Position().z - pos.z);
-
-			if (distanceToCameraSqr <= sqrDistLod0) {
-				mCurrentLODIndex = 0;
-			}
-			else if (sqrDistLod0 < distanceToCameraSqr && distanceToCameraSqr <= sqrDistLod1) {
-				mCurrentLODIndex = 1;
-			}
-			else if (sqrDistLod1 < distanceToCameraSqr && distanceToCameraSqr <= sqrDistLod2) {
-				mCurrentLODIndex = 2;
-			}
-			else
-				mCurrentLODIndex = -1; //culled
-
-			mCurrentLODIndex = std::min(mCurrentLODIndex, GetLODCount());
-		}
 	}
 }
 
