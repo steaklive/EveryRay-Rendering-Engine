@@ -16,6 +16,7 @@
 #include "ER_LightProbe.h"
 #include "ER_RenderableAABB.h"
 #include "ER_Camera.h"
+#include "ER_GBuffer.h"
 
 #define USE_RAYCASTING_FOR_ON_TERRAIN_PLACEMENT 0
 
@@ -520,6 +521,9 @@ namespace EveryRay_Core
 	void ER_Terrain::Draw(TerrainRenderPass aPass, const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget, ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade)
 	{
 		if (!mEnabled || !mLoaded)
+			return;
+
+		if (aPass == TerrainRenderPass::TERRAIN_GBUFFER && !(GetCore()->GetLevel()->mGBuffer->IsEnabled()))
 			return;
 
 		ER_RHI* rhi = mCore->GetRHI();

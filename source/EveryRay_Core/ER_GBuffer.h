@@ -21,6 +21,8 @@ namespace EveryRay_Core
 		void Start();
 		void End();
 		void Draw(const ER_Scene* scene);
+		void Config() { mShowDebug = !mShowDebug; }
+		bool IsEnabled() { return mIsEnabled; }
 
 		ER_RHI_GPUTexture* GetAlbedo() { return mAlbedoBuffer; }
 		ER_RHI_GPUTexture* GetNormals() { return mNormalBuffer; }
@@ -30,6 +32,8 @@ namespace EveryRay_Core
 		ER_RHI_GPUTexture* GetDepth() { return mDepthBuffer; }
 
 	private:
+		void UpdateImGui();
+
 		ER_RHI_GPURootSignature* mRootSignature = nullptr;
 
 		ER_RHI_GPUTexture* mDepthBuffer = nullptr;
@@ -41,5 +45,7 @@ namespace EveryRay_Core
 
 		int mWidth;
 		int mHeight;
+		bool mIsEnabled = true;
+		bool mShowDebug = false;
 	};
 }

@@ -261,6 +261,7 @@ namespace EveryRay_Core {
 			mDirectionalLight->GetSunBrightness(), mDirectionalLight->GetSunExponent());
 		mSkybox->Update();
 		mSkybox->UpdateSun(gameTime);
+		mGBuffer->Update(gameTime);
 		mPostProcessingStack->Update();
 		mVolumetricClouds->Update(gameTime);
 		mVolumetricFog->Update(gameTime);
@@ -294,6 +295,9 @@ namespace EveryRay_Core {
 
 		if (ImGui::Button("Volumetric Fog") && mVolumetricFog)
 			mVolumetricFog->Config();
+
+		if (ImGui::Button("GBuffer") && mGBuffer)
+			mGBuffer->Config();
 
         if (ImGui::Button("Global Illumination") && mIllumination)
 			mIllumination->Config();

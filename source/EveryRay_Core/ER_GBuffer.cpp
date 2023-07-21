@@ -65,6 +65,7 @@ namespace EveryRay_Core {
 
 	void ER_GBuffer::Update(const ER_CoreTime& time)
 	{
+		UpdateImGui();
 	}
 
 	void ER_GBuffer::Start()
@@ -94,6 +95,8 @@ namespace EveryRay_Core {
 	void ER_GBuffer::Draw(const ER_Scene* scene)
 	{
 		auto rhi = GetCore()->GetRHI();
+		if (!mIsEnabled)
+			return;
 
 		rhi->SetRootSignature(mRootSignature);
 		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -132,4 +135,15 @@ namespace EveryRay_Core {
 		}
 		rhi->UnsetPSO();
 	}
+
+	void ER_GBuffer::UpdateImGui()
+	{
+		if (!mShowDebug)
+			return;
+
+		ImGui::Begin("GBuffer");
+		ImGui::Checkbox("Enabled", &mIsEnabled);
+		ImGui::End();
+	}
+
 }

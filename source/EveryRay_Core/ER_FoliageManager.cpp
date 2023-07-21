@@ -14,6 +14,7 @@
 #include "ER_Camera.h"
 #include "ER_RenderableAABB.h"
 #include "ER_Terrain.h"
+#include "ER_GBuffer.h"
 
 #define FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
 #define FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 1
@@ -411,6 +412,9 @@ namespace EveryRay_Core
 	void ER_Foliage::Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass, 
 		const std::vector<ER_RHI_GPUTexture*>& aGbufferTextures, ER_RHI_GPUTexture* aDepthTarget, ER_RHI_GPURootSignature* rs)
 	{
+		if (renderPass == FOLIAGE_GBUFFER && !(mCore.GetLevel()->mGBuffer->IsEnabled()))
+			return;
+
 		if(renderPass == FOLIAGE_VOXELIZATION)
 			assert(worldShadowMapper);
 
