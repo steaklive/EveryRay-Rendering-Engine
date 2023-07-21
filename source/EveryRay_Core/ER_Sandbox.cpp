@@ -286,22 +286,22 @@ namespace EveryRay_Core {
     {
         ImGui::Begin("Systems Config");
 
-        if (ImGui::Button("Post Processing Stack")) 
+        if (ImGui::Button("Post Processing Stack") && mPostProcessingStack)
             mPostProcessingStack->Config();
 
-		if (ImGui::Button("Volumetric Clouds"))
+		if (ImGui::Button("Volumetric Clouds") && mVolumetricClouds)
 			mVolumetricClouds->Config();
 
-		if (ImGui::Button("Volumetric Fog"))
+		if (ImGui::Button("Volumetric Fog") && mVolumetricFog)
 			mVolumetricFog->Config();
 
-        if (ImGui::Button("Global Illumination"))
+        if (ImGui::Button("Global Illumination") && mIllumination)
 			mIllumination->Config();
 
-		if (ImGui::Button("Foliage"))
+		if (ImGui::Button("Foliage") && mFoliageSystem)
 			mFoliageSystem->Config();
 
-		if (ImGui::Button("Terrain"))
+		if (ImGui::Button("Terrain") && mTerrain)
 			mTerrain->Config();
 
 		if (ImGui::CollapsingHeader("Wind"))

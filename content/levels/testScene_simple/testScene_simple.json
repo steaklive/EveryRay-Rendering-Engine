@@ -54,7 +54,8 @@
 				0.0,
 				1.0
 			],
-			"use_in_global_lightprobe_rendering" : true
+			"use_in_global_lightprobe_rendering" : true,
+			"use_reflection" : true
 		},
 		{
 			"instanced" : false,

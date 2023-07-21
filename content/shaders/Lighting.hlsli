@@ -516,17 +516,13 @@ float3 IndirectLightingPBR(float3 lightDir, float3 normalWS, float3 diffuseAlbed
     //indirect diffuse
     float3 irradianceDiffuse = GetDiffuseIrradiance(positionWS, normalWS, camPos, useGlobalProbe, linearSampler, probesInfo) / Pi;
     float3 indirectDiffuseLighting = irradianceDiffuse * diffuseAlbedo * float3(1.0f - metalness, 1.0f - metalness, 1.0f - metalness);
-    
-    const float epsilon = 0.0001f;
-    if (roughness > 1.0 - epsilon) // simple hack to fix "rim" artifact of indiret specular in very rough surfaces 
-        return indirectDiffuseLighting * ambientOcclusion;
 
     //indirect specular (split sum approximation http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf)
     if (!skipSpecular)
     {
         int mipIndex = roughness * (SPECULAR_PROBE_MIP_COUNT - 1);
         float3 prefilteredColor = pow(GetSpecularIrradiance(positionWS, camPos, reflectDir, mipIndex, useGlobalProbe, linearSampler, probesInfo), 2.2);
-        float2 environmentBRDF = integrationTexture.SampleLevel(clampSampler, float2(nDotV, roughness), 0).rg;
+        float2 environmentBRDF = integrationTexture.SampleLevel(clampSampler, float2(nDotV, 1.0 - roughness), 0).rg;
         float LdotH = saturate(dot(lightDir, halfVec));
         float3 indirectSpecularLighting = prefilteredColor * (Schlick_Fresnel_Roughness(LdotH, F0, roughness) * environmentBRDF.x + environmentBRDF.y);
         
