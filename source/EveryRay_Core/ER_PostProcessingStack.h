@@ -68,7 +68,7 @@ namespace EveryRay_Core
 		bool isWindowOpened = false;
 
 	private:
-		void PrepareDrawingTonemapping(ER_RHI_GPUTexture* aInputTexture);
+		void PrepareDrawingTonemapping(ER_RHI_GPUTexture* aInputTexture, ER_GBuffer* gbuffer);
 		void PrepareDrawingSSR(const ER_CoreTime& gameTime, ER_RHI_GPUTexture* aInputTexture, ER_GBuffer* gbuffer);
 		void PrepareDrawingSSS(const ER_CoreTime& gameTime, ER_RHI_GPUTexture* aInputTexture, ER_GBuffer* gbuffer, bool verticalPass);
 		void PrepareDrawingLinearFog(ER_RHI_GPUTexture* aInputTexture);

@@ -1,3 +1,4 @@
+// A simple UI scene editor for modifying objects and some systems (skybox, etc.)
 #pragma once
 
 #include "ER_CoreComponent.h"
@@ -22,9 +23,11 @@ namespace EveryRay_Core
 		virtual void Update(const ER_CoreTime& gameTime) override;
 		void LoadScene(ER_Scene* scene);
 
-		XMFLOAT4 GetBottomSkyColor() { return XMFLOAT4(bottomColorSky[0],bottomColorSky[1],bottomColorSky[2],bottomColorSky[3]); }
-		XMFLOAT4 GetTopSkyColor() { return XMFLOAT4(topColorSky[0], topColorSky[1], topColorSky[2], topColorSky[3]); }
 		bool IsSkyboxUsingCustomColor() { return mUseCustomSkyboxColor; }
+		XMFLOAT4 GetBottomSkyColor() { return XMFLOAT4(mBottomColorSky[0],mBottomColorSky[1],mBottomColorSky[2],mBottomColorSky[3]); }
+		XMFLOAT4 GetTopSkyColor() { return XMFLOAT4(mTopColorSky[0], mTopColorSky[1], mTopColorSky[2], mTopColorSky[3]); }
+		float GetSkyMinHeight() { return mSkyMinHeight; }
+		float GetSkyMaxHeight() { return mSkyMaxHeight; }
 	private:
 		ER_Scene* mScene = nullptr;
 
@@ -34,7 +37,9 @@ namespace EveryRay_Core
 		const char* editorObjectsNames[MAX_OBJECTS_COUNT];
 
 		bool mUseCustomSkyboxColor = true;
-		float bottomColorSky[4] = {217.0f / 255.0f, 217.0f / 255.0f, 218.0f / 255.0f, 1.0f};
-		float topColorSky[4] = { 175.0f / 255.0f, 200.0f / 255.0f, 211.0f / 255.0f, 1.0f };
+		float mBottomColorSky[4] = {245.0f / 255.0f, 245.0f / 255.0f, 245.0f / 255.0f, 1.0f};
+		float mTopColorSky[4] = { 0.0f / 255.0f, 133.0f / 255.0f, 191.0f / 255.0f, 1.0f };
+		float mSkyMinHeight = 0.191f;
+		float mSkyMaxHeight = 4.2f;
 	};
 }

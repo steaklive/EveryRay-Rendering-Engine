@@ -155,6 +155,7 @@ namespace EveryRay_Core
 		mSkyboxConstantBuffer.Data.SunColor = mSunColor;
 		mSkyboxConstantBuffer.Data.BottomColor = mBottomColor;
 		mSkyboxConstantBuffer.Data.TopColor = mTopColor;
+		mSkyboxConstantBuffer.Data.SkyHeight = mSkyHeight;
 		mSkyboxConstantBuffer.ApplyChanges(rhi);
 
 		if (!rhi->IsPSOReady(psoName))

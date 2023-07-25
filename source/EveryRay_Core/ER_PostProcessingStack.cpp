@@ -176,7 +176,7 @@ namespace EveryRay_Core {
 			if (mTonemapRS)
 			{
 				mTonemapRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
-				mTonemapRS->InitDescriptorTable(rhi, TONEMAP_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mTonemapRS->InitDescriptorTable(rhi, TONEMAP_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mTonemapRS->Finalize(rhi, "ER_RHI_GPURootSignature: Tonemap Pass", true);
 			}
 		}
@@ -384,13 +384,13 @@ namespace EveryRay_Core {
 		rhi->UnbindResourcesFromShader(ER_PIXEL);
 	}
 
-	void ER_PostProcessingStack::PrepareDrawingTonemapping(ER_RHI_GPUTexture* aInputTexture)
+	void ER_PostProcessingStack::PrepareDrawingTonemapping(ER_RHI_GPUTexture* aInputTexture, ER_GBuffer* gbuffer)
 	{
 		assert(aInputTexture);
 		auto rhi = mCore.GetRHI();
 
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
-		rhi->SetShaderResources(ER_PIXEL, { aInputTexture }, 0, mTonemapRS, TONEMAP_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
+		rhi->SetShaderResources(ER_PIXEL, { aInputTexture, gbuffer->GetDepth() }, 0, mTonemapRS, TONEMAP_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 	}
 
 	void ER_PostProcessingStack::PrepareDrawingSSR(const ER_CoreTime& gameTime, ER_RHI_GPUTexture* aInputTexture, ER_GBuffer* gbuffer)
@@ -618,6 +618,14 @@ namespace EveryRay_Core {
 		}
 		rhi->EndEventTag();
 
+		rhi->BeginEventTag("EveryRay: Post Processing (Volumetric Clouds - Composite)");
+		{
+			// Composite with volumetric clouds (if enabled)
+			if (aVolumetricClouds && aVolumetricClouds->IsEnabled())
+				aVolumetricClouds->Composite(mRenderTargetBeforeResolve);
+		}
+		rhi->EndEventTag();
+
 		// Tonemap
 		if (mUseTonemap)
 		{
@@ -638,7 +646,7 @@ namespace EveryRay_Core {
 				rhi->FinalizePSO(mTonemapPassPSOName);
 			}
 			rhi->SetPSO(mTonemapPassPSOName);
-			PrepareDrawingTonemapping(mRenderTargetBeforeResolve);
+			PrepareDrawingTonemapping(mRenderTargetBeforeResolve, gbuffer);
 			quad->Draw(rhi);
 			rhi->UnsetPSO();
 
@@ -649,14 +657,6 @@ namespace EveryRay_Core {
 
 			rhi->EndEventTag();
 		}
-
-		rhi->BeginEventTag("EveryRay: Post Processing (Volumetric Clouds - Composite)");
-		{
-			// Composite with volumetric clouds (if enabled)
-			if (aVolumetricClouds && aVolumetricClouds->IsEnabled())
-				aVolumetricClouds->Composite(mRenderTargetBeforeResolve);
-		}
-		rhi->EndEventTag();
 
 		// Color grading
 		if (mUseColorGrading)

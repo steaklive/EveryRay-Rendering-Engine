@@ -4,6 +4,7 @@ cbuffer SkyboCBuffer : register(b0)
     float4 SunColor;
     float4 TopColor;
     float4 BottomColor;
+    float2 SkyHeight;
 }
 
 struct VS_INPUT
@@ -32,9 +33,7 @@ float4 PSMain(VS_OUTPUT IN) : SV_Target
 {
     float4 color;
     float height = IN.SkyboxPos.y;
-    if (height < 0.0f)
-        height = 0.0f;
     
-    color = lerp(BottomColor, TopColor, height);
+    color = lerp(BottomColor, TopColor, smoothstep(SkyHeight.x, SkyHeight.y, height));
     return saturate(color * SunColor);
 }

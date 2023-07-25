@@ -11,6 +11,7 @@
 #include "Lighting.hlsli"
 
 Texture2D<float4> ColorTexture : register(t0);
+Texture2D<float> DepthTexture : register(t1); // for ignoring sky
 SamplerState LinearSampler : register(s0);
 
 float3 ApplySRGBCurve(float3 x)
@@ -38,6 +39,12 @@ float3 ACESFilm(float3 x)
 float4 PSMain(QUAD_VS_OUT IN) : SV_Target
 {
     float3 hdrColor = ColorTexture.Sample(LinearSampler, IN.TexCoord).rgb;
-    float3 sdrColor = /*ACESFilm*/TM_Stanard(hdrColor);
-    return float4(ApplySRGBCurve(sdrColor), 1.0f);
+    float depth = DepthTexture.Sample(LinearSampler, IN.TexCoord).r;
+    if (depth < 1.0f - EPSILON)
+    {
+        float3 sdrColor = /*ACESFilm*/TM_Stanard(hdrColor);
+        return float4(ApplySRGBCurve(sdrColor), 1.0f);
+    }
+    else
+        return float4(hdrColor, 1.0f);
 }

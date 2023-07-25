@@ -1,6 +1,7 @@
 #define NUM_OF_SHADOW_CASCADES 3
 
 static const float PI = 3.141592654f;
+static const float EPSILON = 0.0001f;
 
 // Bitmasks for "RenderingObjectFlags" as decimal values
 // Keep in sync with ER_RenderingObject.h!

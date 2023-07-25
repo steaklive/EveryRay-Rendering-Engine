@@ -254,7 +254,7 @@ namespace EveryRay_Core {
 
 		//TODO refactor skybox updates
 		mSkybox->SetUseCustomSkyColor(mEditor->IsSkyboxUsingCustomColor());
-		mSkybox->SetSkyColors(mEditor->GetBottomSkyColor(), mEditor->GetTopSkyColor());
+		mSkybox->SetSkyParams(mEditor->GetBottomSkyColor(), mEditor->GetTopSkyColor(), mEditor->GetSkyMinHeight(), mEditor->GetSkyMaxHeight());
 		mSkybox->SetSunData(mDirectionalLight->IsSunRendered(),
 			XMFLOAT4(mDirectionalLight->Direction().x, mDirectionalLight->Direction().y, mDirectionalLight->Direction().z, 1.0),
 			XMFLOAT4(mDirectionalLight->GetDirectionalLightColor().x, mDirectionalLight->GetDirectionalLightColor().y, mDirectionalLight->GetDirectionalLightColor().z, 1.0),
@@ -308,6 +308,7 @@ namespace EveryRay_Core {
 		if (ImGui::Button("Terrain") && mTerrain)
 			mTerrain->Config();
 
+		//TODO remove from here
 		if (ImGui::CollapsingHeader("Wind"))
 		{
 			ImGui::SliderFloat("Wind strength", &mWindStrength, 0.0f, 100.0f);

@@ -41,12 +41,18 @@ namespace EveryRay_Core
 			ImGui::Separator();
 
 			//skybox
-			ImGui::Checkbox("Enable custom skybox colors", &mUseCustomSkyboxColor);
-			if (mUseCustomSkyboxColor) {
-				ImGui::ColorEdit4("Bottom color", bottomColorSky);
-				ImGui::ColorEdit4("Top color", topColorSky);
+			{
+				ImGui::Checkbox("Custom sky colors", &mUseCustomSkyboxColor);
+				if (mUseCustomSkyboxColor)
+				{
+					ImGui::ColorEdit4("Bottom color", mBottomColorSky);
+					ImGui::ColorEdit4("Top color", mTopColorSky);
+				}
+				ImGui::SliderFloat("Sky Min Height", &mSkyMinHeight, -25.0f, 25.0f);
+				ImGui::SliderFloat("Sky Max Height", &mSkyMaxHeight, -25.0f, 25.0f);
+
+				ImGui::Separator();
 			}
-			ImGui::Separator();
 
 			//objects
 			ImGui::TextColored(ImVec4(0.12f, 0.78f, 0.44f, 1), "Scene objects");

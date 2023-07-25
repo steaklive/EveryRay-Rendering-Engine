@@ -24,6 +24,7 @@ namespace EveryRay_Core
 			XMFLOAT4 SunColor;
 			XMFLOAT4 TopColor;
 			XMFLOAT4 BottomColor;
+			XMFLOAT2 SkyHeight;
 		};
 	}
 
@@ -39,13 +40,20 @@ namespace EveryRay_Core
 		void Update(ER_Camera* aCustomCamera = nullptr);
 		void UpdateSun(const ER_CoreTime& gameTime, ER_Camera* aCustomCamera = nullptr);
 
+		bool IsMovable() { return mIsMovable; }
 		void SetMovable(bool value) { mIsMovable = value; };
+
+		bool IsUsingCustomSkyColor() { return mUseCustomColor; }
 		void SetUseCustomSkyColor(bool value) { mUseCustomColor = value; }
-		void SetSkyColors(const XMFLOAT4& bottom, const XMFLOAT4& top) {
+
+		void SetSkyParams(const XMFLOAT4& bottom, const XMFLOAT4& top, float skyHeightMin = -4.0f, float skyHeightMax = 4.0f) 
+		{
 			mBottomColor = bottom;
 			mTopColor = top;
+			mSkyHeight = XMFLOAT2(skyHeightMin, skyHeightMax);
 		}
-		void SetSunData(bool rendered, const XMFLOAT4& sunDir, const XMFLOAT4& sunColor, float brightness, float exponent) {
+		void SetSunData(bool rendered, const XMFLOAT4& sunDir, const XMFLOAT4& sunColor, float brightness, float exponent)
+		{
 			mDrawSun = rendered;
 			mSunDir = sunDir;
 			mSunColor = sunColor;
@@ -72,6 +80,7 @@ namespace EveryRay_Core
 
 		XMFLOAT4 mBottomColor;
 		XMFLOAT4 mTopColor;
+		XMFLOAT2 mSkyHeight;
 
 		bool mDrawSun = true;
 		ER_RHI_GPUShader* mSunPS = nullptr;

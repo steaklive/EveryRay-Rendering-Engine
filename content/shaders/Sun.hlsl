@@ -48,14 +48,10 @@ float4 main(float4 pos : SV_Position, float2 tex : TEXCOORD0) : SV_Target
     float4 sunColor = skyTex.Sample(DefaultSampler, tex);
     sunColor += renderSun(worldDir);
     
-    float sceneDepth = sceneDepthTex.Sample(DefaultSampler, tex).r;
-    if (sceneDepth < 0.9998f)
-        return float4(0.0, 0.0, 0.0, 1.0);
-    else
-        return sunColor;
+    return sunColor;
 }
 
-// for light shafts
+// for light shafts [deprecated]
 float4 occlusion(float4 pos : SV_Position, float2 tex : TEXCOORD0) : SV_Target
 {
     //compute ray direction

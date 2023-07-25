@@ -344,7 +344,6 @@ void main(int3 dispatchThreadID : SV_DispatchThreadID) // Thread ID
     cloudsColor = RaymarchToCloud(tex, startPos, endPos, finalColor.rgb, cloudDistance, float2(width, height));
     cloudsColor.rgb = cloudsColor.rgb * 1.8f - 0.1f;
    
-    finalColor.rgb = finalColor.rgb * (1.0 - cloudsColor.a) + cloudsColor.rgb;
-    
+    finalColor.rgb = lerp(finalColor.rgb, finalColor.rgb * (1.0f - cloudsColor.a) + cloudsColor.rgb, cloudsColor.a);
     output[dispatchThreadID.xy] = finalColor;
 }
