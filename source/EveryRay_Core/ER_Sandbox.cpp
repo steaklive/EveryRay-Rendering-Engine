@@ -191,7 +191,7 @@ namespace EveryRay_Core {
 		if (mScene->HasFoliage())
 		{
 			game.CPUProfiler()->BeginCPUTime("Foliage init");
-			mFoliageSystem = new ER_FoliageManager(game, mScene, *mDirectionalLight);
+			mFoliageSystem = new ER_FoliageManager(game, mScene, *mDirectionalLight, (FoliageQuality)ER_Settings::FoliageQuality);
 			mFoliageSystem->FoliageSystemInitializedEvent->AddListener("foliage initialized for GI", [&]() { mIllumination->SetFoliageSystemForGI(mFoliageSystem); });
 			mFoliageSystem->Initialize();
 			game.CPUProfiler()->EndCPUTime("Foliage init");

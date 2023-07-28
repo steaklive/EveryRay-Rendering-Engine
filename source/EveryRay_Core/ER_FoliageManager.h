@@ -6,6 +6,12 @@
 
 #define MAX_FOLIAGE_ZONES 4096
 
+// Minimum amount of drawn patches/instances before we start applying graphics config's "quality" factor.
+// In other words, for example, our foliage zone has N patches to render (after culling or without it).
+// If N > MIN_FOLIAGE_PATCHES_QUALITY_THRESHOLD, then we apply a "quality" factor that will reduce the amount of patches.
+// If N <= MIN_FOLIAGE_PATCHES_QUALITY_THRESHOLD, then we assume that any graphics config can handle that amount of geometry.
+#define MIN_FOLIAGE_PATCHES_QUALITY_THRESHOLD 1000
+
 namespace EveryRay_Core
 {
 	class ER_Scene;
@@ -53,6 +59,13 @@ namespace EveryRay_Core
 		TWO_QUADS_CROSSING = 1,
 		THREE_QUADS_CROSSING = 2,
 		MULTIPLE_QUADS_CROSSING = 3
+	};
+	enum FoliageQuality
+	{
+		FOLIAGE_ULTRA_LOW = 0,
+		FOLIAGE_LOW,
+		FOLIAGE_MEDIUM,
+		FOLIAGE_HIGH
 	};
 
 	struct ER_ALIGN_GPU_BUFFER GPUFoliagePatchData //for GPU vertex buffer
@@ -127,10 +140,11 @@ namespace EveryRay_Core
 
 		bool PerformCPUFrustumCulling(ER_Camera* camera);
 
-		void SetName(const std::string& name) { mName = name; }
+		void SetName(const std::string& name) { mName = name; mOriginalName = name; }
 		const std::string& GetName() { return mName; }
 
 		bool IsSelectedInEditor() { return mIsSelectedInEditor; }
+		bool IsCulled() { return mIsCulled; }
 	private:
 		void PrepareRendering(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, ER_RHI_GPURootSignature* rs);
 		void InitializeBuffersGPU(int count);
@@ -181,12 +195,13 @@ namespace EveryRay_Core
 		const float mAABBExtentXZ = 1.0f;
 
 		std::string mName;
+		std::string mOriginalName; //unchanged
 		std::string mTextureName;
 
 		bool mIsSelectedInEditor = false;
 		bool mIsCulled = false;
 
-		int mPatchesCount = 0;
+		int mPatchesCount = 0; // original patches count (unchanged)
 		int mPatchesCountToRender = 0;
 
 		float mMaxDistanceToCamera = 0.0f;
@@ -227,7 +242,7 @@ namespace EveryRay_Core
 	class ER_FoliageManager : public ER_CoreComponent
 	{
 	public:
-		ER_FoliageManager(ER_Core& pCore, ER_Scene* aScene, ER_DirectionalLight& light);
+		ER_FoliageManager(ER_Core& pCore, ER_Scene* aScene, ER_DirectionalLight& light, FoliageQuality aQuality = FoliageQuality::FOLIAGE_HIGH);
 		~ER_FoliageManager();
 
 		void Initialize();
@@ -235,9 +250,12 @@ namespace EveryRay_Core
 		void Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass,
 			const std::vector<ER_RHI_GPUTexture*>& aGbufferTextures, ER_RHI_GPUTexture* aDepthTarget = nullptr);
 		void DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, ER_RHI_GPURootSignature* rs);
+		void Config() { mShowDebug = !mShowDebug; }
+
 		void AddFoliage(ER_Foliage* foliage);
 		void SetVoxelizationParams(float* scale, const float* dimensions, XMFLOAT4* voxelCamera);
-		void Config() { mShowDebug = !mShowDebug; }
+
+		float GetQualityFactor() { return mCurrentFoliageQualityFactor; }
 
 		using Delegate_FoliageSystemInitialized = std::function<void()>;
 		ER_GenericEvent<Delegate_FoliageSystemInitialized>* FoliageSystemInitializedEvent = new ER_GenericEvent<Delegate_FoliageSystemInitialized>();
@@ -247,6 +265,9 @@ namespace EveryRay_Core
 		ER_Scene* mScene = nullptr;
 
 		ER_RHI_GPURootSignature* mRootSignature = nullptr;
+
+		FoliageQuality mCurrentFoliageQuality = FoliageQuality::FOLIAGE_HIGH;
+		float mCurrentFoliageQualityFactor = 1.0f; // percentage of drawn foliage patches/instances based on quality preset (only active when > MIN_FOLIAGE_PATCHES_QUALITY_THRESHOLD)
 
 		const char* mFoliageZonesNamesUI[MAX_FOLIAGE_ZONES];
 

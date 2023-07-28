@@ -56,6 +56,7 @@ namespace EveryRay_Core
 
 			//objects
 			ImGui::TextColored(ImVec4(0.12f, 0.78f, 0.44f, 1), "Scene objects");
+			ImGui::Checkbox("Stop drawing objects", &ER_Utility::StopDrawingRenderingObjects);
 			if (ImGui::CollapsingHeader("Global LOD Properties"))
 			{
 				ImGui::SliderFloat("LOD #0 distance", &ER_Utility::DistancesLOD[0], 0.0f, 100.0f);

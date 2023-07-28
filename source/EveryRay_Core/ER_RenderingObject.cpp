@@ -411,6 +411,9 @@ namespace EveryRay_Core
 
 	void ER_RenderingObject::DrawLOD(const std::string& materialName, bool toDepth, int meshIndex, int lod, bool skipCulling)
 	{
+		if (ER_Utility::StopDrawingRenderingObjects)
+			return;
+
 		bool isForwardPass = materialName == ER_MaterialHelper::forwardLightingNonMaterialName && mIsForwardShading;
 
 		ER_RHI* rhi = mCore->GetRHI();

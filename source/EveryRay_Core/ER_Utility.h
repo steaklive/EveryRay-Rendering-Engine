@@ -30,6 +30,7 @@ namespace EveryRay_Core
 		static bool IsFoliageEditor;
 		static bool IsMainCameraCPUFrustumCulling;
 		static float DistancesLOD[MAX_LOD];
+		static bool StopDrawingRenderingObjects;
 	private:
 		ER_Utility();
 		ER_Utility(const ER_Utility& rhs);

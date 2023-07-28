@@ -24,8 +24,8 @@ namespace EveryRay_Core
 	static int currentSplatChannnel = (int)TerrainSplatChannels::NONE;
 	static const float blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-	ER_FoliageManager::ER_FoliageManager(ER_Core& pCore, ER_Scene* aScene, ER_DirectionalLight& light) 
-		: ER_CoreComponent(pCore), mScene(aScene)
+	ER_FoliageManager::ER_FoliageManager(ER_Core& pCore, ER_Scene* aScene, ER_DirectionalLight& light, FoliageQuality aQuality)
+		: ER_CoreComponent(pCore), mScene(aScene), mCurrentFoliageQuality(aQuality)
 	{
 		assert(aScene);
 		if (aScene->HasFoliage())
@@ -40,6 +40,22 @@ namespace EveryRay_Core
 			mRootSignature->InitDescriptorTable(rhi, FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 4 }, ER_RHI_SHADER_VISIBILITY_ALL);
 			mRootSignature->InitDescriptorTable(rhi, FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
 			mRootSignature->Finalize(rhi, "ER_RHI_GPURootSignature: Foliage", true);
+		}
+
+		switch (mCurrentFoliageQuality)
+		{
+		case FoliageQuality::FOLIAGE_ULTRA_LOW:
+			mCurrentFoliageQualityFactor = 0.3f;
+			break;
+		case FoliageQuality::FOLIAGE_LOW:
+			mCurrentFoliageQualityFactor = 0.5f;
+			break;
+		case FoliageQuality::FOLIAGE_MEDIUM:
+			mCurrentFoliageQualityFactor = 0.75f;
+			break;
+		case FoliageQuality::FOLIAGE_HIGH:
+			mCurrentFoliageQualityFactor = 1.0f;
+			break;
 		}
 	}
 
@@ -495,6 +511,10 @@ namespace EveryRay_Core
 		//UpdateBufferGPU();
 		CalculateDynamicLOD(distanceToCam);
 
+		// adjust patches count based on quality factor
+		if (mPatchesCount > MIN_FOLIAGE_PATCHES_QUALITY_THRESHOLD && mPatchesCountToRender > MIN_FOLIAGE_PATCHES_QUALITY_THRESHOLD)
+			mPatchesCountToRender *= mCore.GetLevel()->mFoliageSystem->GetQualityFactor();
+
 		if (mDebugGizmoAABB)
 			mDebugGizmoAABB->Update(mAABB);
 
@@ -587,6 +607,7 @@ namespace EveryRay_Core
 				mTransformationMatrix = XMLoadFloat4x4(&mat);
 			}
 		}
+		mName = mIsCulled ? mOriginalName + " (Culled)" : mOriginalName;
 	}
 
 	// updating world matrices of visible patches
