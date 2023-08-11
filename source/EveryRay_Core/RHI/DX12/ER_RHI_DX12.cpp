@@ -49,7 +49,7 @@ namespace EveryRay_Core
 			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(debugController.GetAddressOf()))))
 				debugController->EnableDebugLayer();
 			else
-				ER_OUTPUT_LOG(L"[ER Logger] ER_RHI_DX12: Direct3D Debug Device is not available\n");
+				ER_OUTPUT_LOG(L"[ER Logger][ER_RHI_DX12] Direct3D Debug Device is not available\n");
 
 			ComPtr<IDXGIInfoQueue> dxgiInfoQueue;
 			if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(dxgiInfoQueue.GetAddressOf()))))
@@ -1505,7 +1505,7 @@ namespace EveryRay_Core
 		assert(mCurrentGraphicsCommandListIndex > -1);
 		auto resetPSO = [&](const std::string& name, bool comp)
 		{
-			std::wstring msg = L"[ER Logger] ER_RHI_DX12: Could not find PSO to set, adding it now and trying to reset: " + ER_Utility::ToWideString(aName) + L'\n';
+			std::wstring msg = L"[ER Logger][ER_RHI_DX12] Could not find PSO to set, adding it now and trying to reset: " + ER_Utility::ToWideString(aName) + L'\n';
 			ER_OUTPUT_LOG(msg.c_str());
 			InitializePSO(name, comp);
 			SetPSO(name, comp);

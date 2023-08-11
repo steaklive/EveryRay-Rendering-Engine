@@ -68,7 +68,7 @@ namespace EveryRay_Core
 		}
 		else
 		{
-			std::string message = "[ER_Logger] ER_RHI_DX12: Finished creating graphics PSO: ";
+			std::string message = "[ER_Logger][ER_RHI_DX12] Finished creating graphics PSO: ";
 			message += mName;
 			message += '\n';
 			ER_OUTPUT_LOG(ER_Utility::ToWideString(message).c_str());
@@ -144,7 +144,7 @@ namespace EveryRay_Core
 		}
 		else
 		{
-			std::string message = "[ER_Logger] ER_RHI_DX12: Finished creating compute PSO: ";
+			std::string message = "[ER_Logger][ER_RHI_DX12] Finished creating compute PSO: ";
 			message += mName;
 			message += '\n';
 			ER_OUTPUT_LOG(ER_Utility::ToWideString(message).c_str());

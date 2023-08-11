@@ -69,6 +69,7 @@ namespace EveryRay_Core
 		if (heapProperties.Type == D3D12_HEAP_TYPE_READBACK)
 			return;
 
+		desc.Width = GetRequiredIntermediateSize(mBuffer.Get(), 0, 1);
 		desc.Flags &= ~D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
 		for (int frameIndex = 0; frameIndex < DX12_MAX_BACK_BUFFER_COUNT; frameIndex++)
