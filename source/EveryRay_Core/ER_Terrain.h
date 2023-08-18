@@ -152,7 +152,7 @@ namespace EveryRay_Core
 		void SetDynamicTessellation(bool flag) { mUseDynamicTessellation = flag; }
 		void SetTessellationFactor(int tessellationFactor) { mTessellationFactor = tessellationFactor; }
 		void SetDynamicTessellationDistanceFactor(float factor) { mTessellationDistanceFactor = factor; }
-		void SetTessellationFactorDynamic(float factor) { mTessellationFactorDynamic = factor; }
+		void SetTessellationFactorDynamic(int factor) { mTessellationFactorDynamic = factor; }
 		void SetTerrainHeightScale(float scale) { mTerrainTessellatedHeightScale = scale; }
 		HeightMap* GetHeightmap(int index) { return mHeightMaps.at(index); }
 		void PlaceOnTerrain(ER_RHI_GPUBuffer* outputBuffer, ER_RHI_GPUBuffer* inputBuffer, XMFLOAT4* positions, int positionsCount,

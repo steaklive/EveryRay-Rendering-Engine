@@ -38,8 +38,8 @@ namespace EveryRay_Core
 		mFormat = aRHIDX12->GetFormat(format);
 		mStride = byteStride;
 		mSize = objectsCount * byteStride;
-		if ((bindFlags & ER_RHI_BIND_FLAG::ER_BIND_CONSTANT_BUFFER) || (miscFlags == ER_RHI_RESOURCE_MISC_FLAG::ER_RESOURCE_MISC_BUFFER_STRUCTURED))
-			mSize = ER_BitmaskAlign(objectsCount * byteStride, ER_GPU_BUFFER_ALIGNMENT);
+		//if ((bindFlags & ER_RHI_BIND_FLAG::ER_BIND_CONSTANT_BUFFER)/* || (miscFlags == ER_RHI_RESOURCE_MISC_FLAG::ER_RESOURCE_MISC_BUFFER_STRUCTURED)*/)
+		//	mSize = ER_BitmaskAlign(objectsCount * byteStride, ER_GPU_BUFFER_ALIGNMENT);
 		if (bindFlags & ER_RHI_BIND_FLAG::ER_BIND_UNORDERED_ACCESS)
 			mResourceFlags |= D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
@@ -69,12 +69,12 @@ namespace EveryRay_Core
 		if (heapProperties.Type == D3D12_HEAP_TYPE_READBACK)
 			return;
 
-		desc.Width = GetRequiredIntermediateSize(mBuffer.Get(), 0, 1);
 		desc.Flags &= ~D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
+		CD3DX12_RESOURCE_DESC uploadResDesc = CD3DX12_RESOURCE_DESC::Buffer(GetRequiredIntermediateSize(mBuffer.Get(), 0, 1));
 		for (int frameIndex = 0; frameIndex < DX12_MAX_BACK_BUFFER_COUNT; frameIndex++)
 		{
-			if (FAILED(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&mBufferUpload[frameIndex]))))
+			if (FAILED(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE, &uploadResDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&mBufferUpload[frameIndex]))))
 				throw ER_CoreException("ER_RHI_DX12: Failed to create committed resource of GPU buffer (upload).");
 
 			if (mIsDynamic)
@@ -214,7 +214,7 @@ namespace EveryRay_Core
 		D3D12_SUBRESOURCE_DATA data = {};
 		data.pData = aData;
 		data.RowPitch = dataSize;
-		data.SlicePitch = 0;
+		data.SlicePitch = dataSize;
 
 		aRHIDX12->TransitionResources({ static_cast<ER_RHI_GPUResource*>(this) }, ER_RHI_RESOURCE_STATE::ER_RESOURCE_STATE_COPY_DEST, cmdListIndex);
 		UpdateSubresources(aRHIDX12->GetGraphicsCommandList(cmdListIndex), mBuffer.Get(), mBufferUpload[ER_RHI_DX12::mBackBufferIndex].Get(), 0, 0, 1, &data);

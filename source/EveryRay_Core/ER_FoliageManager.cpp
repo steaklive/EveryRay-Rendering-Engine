@@ -70,11 +70,15 @@ namespace EveryRay_Core
 	{
 		int zoneIndex = 0;
 		std::string name;
-		for (auto& foliage : mFoliageCollection) {
+		for (auto& foliage : mFoliageCollection)
+		{
 			name = "Foliage zone #" + std::to_string(zoneIndex);
 			foliage->SetName(name);
 			foliage->Initialize();
 			zoneIndex++;
+
+			//name += "\n";
+			//ER_OUTPUT_LOG(ER_Utility::ToWideString(name).c_str());
 		}
 
 		for (auto listener : FoliageSystemInitializedEvent->GetListeners())
@@ -155,7 +159,7 @@ namespace EveryRay_Core
 			mFoliageZonesNamesUI[i] = mFoliageCollection[i]->GetName().c_str();
 
 		ImGui::PushItemWidth(-1);
-		ImGui::ListBox("##empty", &mEditorSelectedFoliageZoneIndex, mFoliageZonesNamesUI, mFoliageCollection.size(), 15);
+		ImGui::ListBox("##empty", &mEditorSelectedFoliageZoneIndex, mFoliageZonesNamesUI, static_cast<int>(mFoliageCollection.size()), 15);
 		ImGui::End();
 
 		for (int i = 0; i < mFoliageCollection.size(); i++)
@@ -513,7 +517,7 @@ namespace EveryRay_Core
 
 		// adjust patches count based on quality factor
 		if (mPatchesCount > MIN_FOLIAGE_PATCHES_QUALITY_THRESHOLD && mPatchesCountToRender > MIN_FOLIAGE_PATCHES_QUALITY_THRESHOLD)
-			mPatchesCountToRender *= mCore.GetLevel()->mFoliageSystem->GetQualityFactor();
+			mPatchesCountToRender = static_cast<int>(static_cast<float>(mPatchesCountToRender) * mCore.GetLevel()->mFoliageSystem->GetQualityFactor());
 
 		if (mDebugGizmoAABB)
 			mDebugGizmoAABB->Update(mAABB);
@@ -701,7 +705,7 @@ namespace EveryRay_Core
 		else if (factor < 0.0f)
 			factor = 0.0f;
 
-		mPatchesCountToRender = mPatchesCount * (1.0f - factor);
+		mPatchesCountToRender = static_cast<int>(static_cast<float>(mPatchesCount) * (1.0f - factor));
 	}
 
 }

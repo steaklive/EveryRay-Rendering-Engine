@@ -85,6 +85,13 @@ namespace EveryRay_Core
 		UINT RenderingObjectFlags;
 	};
 
+	struct ER_ALIGN_GPU_BUFFER IndirectMeshCB
+	{
+		XMINT4 IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc[MAX_LOD * MAX_MESH_COUNT];
+		UINT OriginalInstancesCount;
+		XMINT3 pad;
+	};
+
 	struct ER_ALIGN_GPU_BUFFER ObjectFakeRootCB
 	{
 		UINT CurrentLOD;
@@ -195,6 +202,7 @@ namespace EveryRay_Core
 		ER_RHI_GPUBuffer* GetIndirectNewInstanceBuffer() { return mIndirectNewInstanceDataBuffer; }
 		ER_RHI_GPUBuffer* GetIndirectOriginalInstanceBuffer() { return mIndirectOriginalInstanceDataBuffer; }
 		ER_RHI_GPUBuffer* GetIndirectArgsBuffer() { return mIndirectArgsBuffer; }
+		ER_RHI_GPUBuffer* GetIndirectMeshConstantBuffer();
 
 		void Rename(const std::string& name) { mName = name; }
 		const std::string& GetName() { return mName; }
@@ -390,6 +398,8 @@ namespace EveryRay_Core
 		ER_RHI_GPUBuffer*										mIndirectOriginalInstanceDataBuffer = nullptr; //original instance transforms
 		ER_RHI_GPUBuffer*										mIndirectNewInstanceDataBuffer = nullptr; //new instance transforms of all LODs culled and processed in CS
 		ER_RHI_GPUBuffer*										mIndirectArgsBuffer = nullptr; // draw indexed instance indirect args for all meshes (instance count is calculated in CS)
+		ER_RHI_GPUConstantBuffer<IndirectMeshCB>				mIndirectMeshConstants; // not used on DX11-like APIs;
+		
 		///****************************************************************************************************************************
 
 		///****************************************************************************************************************************

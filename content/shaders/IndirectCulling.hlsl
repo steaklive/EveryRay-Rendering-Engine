@@ -4,6 +4,7 @@ cbuffer MeshConstants : register(b0)
 {
 	uint4 IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc[MAX_LOD_COUNT * MAX_MESH_COUNT];
 	uint OriginalInstancesCount;
+    uint3 pad;
 };
 
 cbuffer CameraConstants : register(b1)

@@ -34,7 +34,9 @@ namespace EveryRay_Core
 		DeleteObject(mIndirectCullingClearCS);
 		DeleteObject(mIndirectCullingClearRS);
 
+#if ER_PLATFORM_WIN64_DX11
 		mMeshConstantBuffer.Release();
+#endif
 		mCameraConstantBuffer.Release();
 	}
 
@@ -66,7 +68,9 @@ namespace EveryRay_Core
 		}
 
 		//cbuffers
+#if ER_PLATFORM_WIN64_DX11
 		mMeshConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: GPU Culler Mesh CB");
+#endif
 		mCameraConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: GPU Culler Camera CB");
 	}
 
@@ -102,8 +106,14 @@ namespace EveryRay_Core
 					aObj->GetIndirectArgsBuffer()
 				}, 0, mIndirectCullingRS, GPU_CULL_CLEAR_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
 
+			ER_RHI_GPUBuffer* meshConstants = nullptr;
+#if ER_PLATFORM_WIN64_DX11
 			UpdateMeshesConstantBuffer(aObj);
-			rhi->SetConstantBuffers(ER_COMPUTE, { mMeshConstantBuffer.Buffer() }, 0, mIndirectCullingClearRS, GPU_CULL_CLEAR_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
+			meshConstants = mMeshConstantBuffer.Buffer();
+#else
+			meshConstants = aObj->GetIndirectMeshConstantBuffer();
+#endif
+			rhi->SetConstantBuffers(ER_COMPUTE, { meshConstants }, 0, mIndirectCullingClearRS, GPU_CULL_CLEAR_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
 
 			rhi->Dispatch(1u, 1u, 1u);
 		}
@@ -158,8 +168,14 @@ namespace EveryRay_Core
 					aObj->GetIndirectArgsBuffer()
 				}, 0, mIndirectCullingRS, GPU_CULL_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
 
+			ER_RHI_GPUBuffer* meshConstants = nullptr;
+#if ER_PLATFORM_WIN64_DX11
 			UpdateMeshesConstantBuffer(aObj);
-			rhi->SetConstantBuffers(ER_COMPUTE, { mMeshConstantBuffer.Buffer(), mCameraConstantBuffer.Buffer() },
+			meshConstants = mMeshConstantBuffer.Buffer();
+#else
+			meshConstants = aObj->GetIndirectMeshConstantBuffer();
+#endif
+			rhi->SetConstantBuffers(ER_COMPUTE, { meshConstants, mCameraConstantBuffer.Buffer() },
 				0, mIndirectCullingRS, GPU_CULL_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
 
 			rhi->Dispatch(ER_DivideByMultiple(static_cast<UINT>(aObj->GetInstanceCount()), 64u), 1u, 1u);
@@ -169,6 +185,7 @@ namespace EveryRay_Core
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 	}
 
+#if ER_PLATFORM_WIN64_DX11
 	void ER_GPUCuller::UpdateMeshesConstantBuffer(const ER_RenderingObject* aObj)
 	{
 		auto rhi = mCore.GetRHI();
@@ -193,6 +210,8 @@ namespace EveryRay_Core
 				lastAvailableLod = lodI;
 		}
 		mMeshConstantBuffer.Data.OriginalInstancesCount = aObj->GetInstanceCount();
+		mMeshConstantBuffer.Data.pad = XMINT3(0,0,0);
 		mMeshConstantBuffer.ApplyChanges(rhi);
 	}
+#endif
 }

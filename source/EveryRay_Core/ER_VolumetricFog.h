@@ -90,6 +90,9 @@ namespace EveryRay_Core
 		float mBlendingWithSceneColorFactor = 1.0f;
 		float mPreviousFrameBlendFactor = 0.05f;
 
+		float mCustomNearPlane = 1.0f;
+		float mCustomFarPlane = 200.0f;
+
 		bool mCurrentTexture3DRead = false;
 
 		bool mEnabled = true;

@@ -11,11 +11,14 @@ namespace EveryRay_Core
 
 	namespace IndirectCullingCBufferData
 	{
+#if ER_PLATFORM_WIN64_DX11
 		struct ER_ALIGN_GPU_BUFFER MeshConstants
 		{
 			XMINT4 IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc[MAX_LOD * MAX_MESH_COUNT];
 			UINT OriginalInstancesCount;
+			XMINT3 pad;
 		};
+#endif
 
 		struct ER_ALIGN_GPU_BUFFER CameraConstants
 		{
@@ -36,13 +39,15 @@ namespace EveryRay_Core
 		void ClearCounters(ER_Scene* aScene);
 
 	private:
-		void UpdateMeshesConstantBuffer(const ER_RenderingObject* aObj);
 		ER_Core& mCore;
 		ER_Camera& mCamera;
 
 		ER_RHI_GPUShader* mIndirectCullingCS = nullptr;
 		ER_RHI_GPUShader* mIndirectCullingClearCS = nullptr;
+#if ER_PLATFORM_WIN64_DX11
+		void UpdateMeshesConstantBuffer(const ER_RenderingObject* aObj);
 		ER_RHI_GPUConstantBuffer<IndirectCullingCBufferData::MeshConstants> mMeshConstantBuffer;
+#endif
 		ER_RHI_GPUConstantBuffer<IndirectCullingCBufferData::CameraConstants> mCameraConstantBuffer;
 		ER_RHI_GPURootSignature* mIndirectCullingRS = nullptr;
 		ER_RHI_GPURootSignature* mIndirectCullingClearRS = nullptr;

@@ -129,7 +129,7 @@ namespace EveryRay_Core {
 		mMainConstantBuffer.Data.SunDirection = XMFLOAT4{ -mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f };
 		mMainConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLight.GetDirectionalLightIntensity() };
 		mMainConstantBuffer.Data.CameraPosition = XMFLOAT4{ camera->Position().x, camera->Position().y, camera->Position().z, 1.0f };
-		mMainConstantBuffer.Data.CameraNearFar = XMFLOAT4{ camera->NearPlaneDistance(), camera->FarPlaneDistance(), 0.0f, 0.0f };
+		mMainConstantBuffer.Data.CameraNearFar = XMFLOAT4{ mCustomNearPlane, mCustomFarPlane, 0.0f, 0.0f };
 		mMainConstantBuffer.Data.Anisotropy = mAnisotropy;
 		mMainConstantBuffer.Data.Density = mDensity;
 		mMainConstantBuffer.Data.Strength = mStrength;
@@ -140,7 +140,7 @@ namespace EveryRay_Core {
 		mMainConstantBuffer.ApplyChanges(rhi);
 
 		mCompositeConstantBuffer.Data.ViewProj = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());
-		mCompositeConstantBuffer.Data.CameraNearFar = XMFLOAT4{ camera->NearPlaneDistance(), camera->FarPlaneDistance(), 0.0f, 0.0f };
+		mCompositeConstantBuffer.Data.CameraNearFar = XMFLOAT4{ mCustomNearPlane, mCustomFarPlane, 0.0f, 0.0f };
 		mCompositeConstantBuffer.Data.BlendingWithSceneColorFactor = mBlendingWithSceneColorFactor;
 		mCompositeConstantBuffer.ApplyChanges(rhi);
 		
@@ -161,6 +161,8 @@ namespace EveryRay_Core {
 		ImGui::SliderFloat("Ambient Intensity", &mAmbientIntensity, 0.0f, 1.0f);
 		ImGui::SliderFloat("Blending with scene", &mBlendingWithSceneColorFactor, 0.0f, 1.0f);
 		ImGui::SliderFloat("Blending with previous frame", &mPreviousFrameBlendFactor, 0.0f, 0.1f);
+		ImGui::SliderFloat("Custom near plane", &mCustomNearPlane, 0.01f, 5.0f);
+		ImGui::SliderFloat("Custom far plane", &mCustomFarPlane, 10.0f, 10000.0f);
 		ImGui::End();
 	}
 

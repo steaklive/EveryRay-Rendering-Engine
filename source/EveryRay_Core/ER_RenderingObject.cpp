@@ -83,6 +83,10 @@ namespace EveryRay_Core
 
 		mObjectConstantBuffer.Initialize(pCore.GetRHI(), "ER_RHI_GPUBuffer: Object's CB: " + mName);
 		mObjectFakeRootConstantBuffer.Initialize(pCore.GetRHI(), "ER_RHI_GPUBuffer: Object's Fake Root CB: " + mName);
+#if !ER_PLATFORM_WIN64_DX11
+		if (mIsIndirectlyRendered)
+			mIndirectMeshConstants.Initialize(pCore.GetRHI(), "ER_RHI_GPUBuffer: GPU Indirect Mesh CB: " + mName);
+#endif
 	}
 
 	ER_RenderingObject::~ER_RenderingObject()
@@ -117,6 +121,9 @@ namespace EveryRay_Core
 
 		if (mIsIndirectlyRendered)
 		{
+#if !ER_PLATFORM_WIN64_DX11
+			mIndirectMeshConstants.Release();
+#endif
 			DeleteObject(mIndirectArgsBuffer);
 			DeleteObject(mIndirectNewInstanceDataBuffer);
 			DeleteObject(mIndirectOriginalInstanceDataBuffer);
@@ -1171,6 +1178,43 @@ namespace EveryRay_Core
 		ImGui::End();
 	}
 	
+	ER_RHI_GPUBuffer* ER_RenderingObject::GetIndirectMeshConstantBuffer()
+	{
+		if (!mIsIndirectlyRendered)
+			return nullptr;
+
+		ER_RHI* rhi = mCore->GetRHI();
+
+		if (!mIndirectMeshConstants.IsInitialized() && mIsIndirectlyRendered)
+			mIndirectMeshConstants.Initialize(rhi, "ER_RHI_GPUBuffer: GPU Indirect Mesh CB: " + mName);
+
+		const int totalObjLodCount = GetLODCount();
+
+		int offset, indexCount, lastAvailableLod = 0;
+		for (int lodI = 0; lodI < MAX_LOD; lodI++)
+		{
+			for (int meshI = 0; meshI < MAX_MESH_COUNT; meshI++)
+			{
+				offset = MAX_MESH_COUNT * lodI + meshI;
+				if (lodI < totalObjLodCount)
+					indexCount = (meshI < GetMeshCount(/*TODO ideally from lodI but we dont support meshes per LOD yet*/)) ? GetIndexCount(lodI, meshI) : INT_MAX;
+				else
+					indexCount = INT_MAX;
+				// Uncomment this if you want to fallback into previous LOD (you have to adjust ER_RenderingObject::Draw())
+				// indexCount = (meshI < aObj->GetMeshCount(/*TODO ideally from lastAvailableLod but we dont support meshes per LOD yet*/)) ? aObj->GetIndexCount(lastAvailableLod, meshI) : INT_MAX;
+
+				mIndirectMeshConstants.Data.IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc[offset] = XMINT4(indexCount, 0, 0, 0);
+			}
+			if (lodI < totalObjLodCount)
+				lastAvailableLod = lodI;
+		}
+		mIndirectMeshConstants.Data.OriginalInstancesCount = GetInstanceCount();
+		mIndirectMeshConstants.Data.pad = XMINT3(0, 0, 0);
+		mIndirectMeshConstants.ApplyChanges(rhi);
+
+		return mIndirectMeshConstants.Buffer();
+	}
+
 	void ER_RenderingObject::UpdateLODs()
 	{
 		const float sqrDistLod0 = ER_Utility::DistancesLOD[0] * ER_Utility::DistancesLOD[0];

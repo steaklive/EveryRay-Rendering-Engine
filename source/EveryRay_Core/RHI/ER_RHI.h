@@ -544,6 +544,7 @@ namespace EveryRay_Core
 			ZeroMemory(&Data, sizeof(T));
 		}
 
+		bool IsInitialized() { return initialized; }
 		void Release() {
 			DeleteObject(buffer);
 		}
