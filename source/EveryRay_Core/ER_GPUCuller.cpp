@@ -121,7 +121,6 @@ namespace EveryRay_Core
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 	}
 
-
 	void ER_GPUCuller::PerformCull(ER_Scene* aScene)
 	{
 		assert(aScene);
@@ -189,26 +188,9 @@ namespace EveryRay_Core
 	void ER_GPUCuller::UpdateMeshesConstantBuffer(const ER_RenderingObject* aObj)
 	{
 		auto rhi = mCore.GetRHI();
-		const int totalObjLodCount = aObj->GetLODCount();
 
-		int offset, indexCount, lastAvailableLod = 0;
-		for (int lodI = 0; lodI < MAX_LOD; lodI++)
-		{
-			for (int meshI = 0; meshI < MAX_MESH_COUNT; meshI++)
-			{
-				offset = MAX_MESH_COUNT * lodI + meshI;
-				if (lodI < totalObjLodCount)
-					indexCount = (meshI < aObj->GetMeshCount(/*TODO ideally from lodI but we dont support meshes per LOD yet*/)) ? aObj->GetIndexCount(lodI, meshI) : INT_MAX;
-				else
-					indexCount = INT_MAX;
-					// Uncomment this if you want to fallback into previous LOD (you have to adjust ER_RenderingObject::Draw())
-					// indexCount = (meshI < aObj->GetMeshCount(/*TODO ideally from lastAvailableLod but we dont support meshes per LOD yet*/)) ? aObj->GetIndexCount(lastAvailableLod, meshI) : INT_MAX;
-				
-				mMeshConstantBuffer.Data.IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc[offset] = XMINT4(indexCount, 0, 0, 0);
-			}
-			if (lodI < totalObjLodCount)
-				lastAvailableLod = lodI;
-		}
+		const XMINT4* argsArray = aObj->GetIndirectDrawArgsArray();
+		memcpy(mMeshConstantBuffer.Data.IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc, argsArray, sizeof(XMINT4) * MAX_LOD * MAX_MESH_COUNT);
 		mMeshConstantBuffer.Data.OriginalInstancesCount = aObj->GetInstanceCount();
 		mMeshConstantBuffer.Data.pad = XMINT3(0,0,0);
 		mMeshConstantBuffer.ApplyChanges(rhi);

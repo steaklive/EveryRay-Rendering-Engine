@@ -83,10 +83,6 @@ namespace EveryRay_Core
 
 		mObjectConstantBuffer.Initialize(pCore.GetRHI(), "ER_RHI_GPUBuffer: Object's CB: " + mName);
 		mObjectFakeRootConstantBuffer.Initialize(pCore.GetRHI(), "ER_RHI_GPUBuffer: Object's Fake Root CB: " + mName);
-#if !ER_PLATFORM_WIN64_DX11
-		if (mIsIndirectlyRendered)
-			mIndirectMeshConstants.Initialize(pCore.GetRHI(), "ER_RHI_GPUBuffer: GPU Indirect Mesh CB: " + mName);
-#endif
 	}
 
 	ER_RenderingObject::~ER_RenderingObject()
@@ -832,7 +828,30 @@ namespace EveryRay_Core
 		}
 
 		if (mIsIndirectlyRendered)
+		{
 			CreateIndirectInstanceData(); // only happens once but we need to do it after the first update (i.e. after we placed the instances and calculated their AABBs)
+
+			const int totalObjLodCount = GetLODCount();
+			// update draw args array
+			int offset, indexCount, lastAvailableLod = 0;
+			for (int lodI = 0; lodI < MAX_LOD; lodI++)
+			{
+				for (int meshI = 0; meshI < MAX_MESH_COUNT; meshI++)
+				{
+					offset = MAX_MESH_COUNT * lodI + meshI;
+					if (lodI < totalObjLodCount)
+						indexCount = (meshI < GetMeshCount(/*TODO ideally from lodI but we dont support meshes per LOD yet*/)) ? GetIndexCount(lodI, meshI) : INT_MAX;
+					else
+						indexCount = INT_MAX;
+					// Uncomment this if you want to fallback into previous LOD (you have to adjust ER_RenderingObject::Draw())
+					// indexCount = (meshI < aObj->GetMeshCount(/*TODO ideally from lastAvailableLod but we dont support meshes per LOD yet*/)) ? aObj->GetIndexCount(lastAvailableLod, meshI) : INT_MAX;
+
+					mIndirectDrawArgsArray[offset] = XMINT4(indexCount, 0, 0, 0);
+				}
+				if (lodI < totalObjLodCount)
+					lastAvailableLod = lodI;
+			}
+		}
 		else // fallback for old CPU frustum culling (i.e., makes sense for non-instanced objects)
 		{
 			if (ER_Utility::IsMainCameraCPUFrustumCulling && camera)
@@ -1188,26 +1207,7 @@ namespace EveryRay_Core
 		if (!mIndirectMeshConstants.IsInitialized() && mIsIndirectlyRendered)
 			mIndirectMeshConstants.Initialize(rhi, "ER_RHI_GPUBuffer: GPU Indirect Mesh CB: " + mName);
 
-		const int totalObjLodCount = GetLODCount();
-
-		int offset, indexCount, lastAvailableLod = 0;
-		for (int lodI = 0; lodI < MAX_LOD; lodI++)
-		{
-			for (int meshI = 0; meshI < MAX_MESH_COUNT; meshI++)
-			{
-				offset = MAX_MESH_COUNT * lodI + meshI;
-				if (lodI < totalObjLodCount)
-					indexCount = (meshI < GetMeshCount(/*TODO ideally from lodI but we dont support meshes per LOD yet*/)) ? GetIndexCount(lodI, meshI) : INT_MAX;
-				else
-					indexCount = INT_MAX;
-				// Uncomment this if you want to fallback into previous LOD (you have to adjust ER_RenderingObject::Draw())
-				// indexCount = (meshI < aObj->GetMeshCount(/*TODO ideally from lastAvailableLod but we dont support meshes per LOD yet*/)) ? aObj->GetIndexCount(lastAvailableLod, meshI) : INT_MAX;
-
-				mIndirectMeshConstants.Data.IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc[offset] = XMINT4(indexCount, 0, 0, 0);
-			}
-			if (lodI < totalObjLodCount)
-				lastAvailableLod = lodI;
-		}
+		memcpy(mIndirectMeshConstants.Data.IndexCount_StartIndexLoc_BaseVtxLoc_StartInstLoc, mIndirectDrawArgsArray, sizeof(XMINT4) * MAX_LOD * MAX_MESH_COUNT);
 		mIndirectMeshConstants.Data.OriginalInstancesCount = GetInstanceCount();
 		mIndirectMeshConstants.Data.pad = XMINT3(0, 0, 0);
 		mIndirectMeshConstants.ApplyChanges(rhi);
