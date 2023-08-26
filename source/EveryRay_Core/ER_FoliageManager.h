@@ -273,7 +273,7 @@ namespace EveryRay_Core
 
 		int mEditorSelectedFoliageZoneIndex = 0;
 
-		float mMaxDistanceToCamera = 300.0f; // more than this => culled completely
+		float mMaxDistanceToCamera = 825.0f; // more than this => culled completely
 		float mDeltaDistanceToCamera = 30.0f; // from which distance we start dynamic culling (patches)
 
 		bool mShowDebug = false;

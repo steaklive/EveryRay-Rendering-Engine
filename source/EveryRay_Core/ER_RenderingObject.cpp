@@ -815,7 +815,7 @@ namespace EveryRay_Core
 			mGlobalAABB = mLocalAABB;
 			UpdateAABB(mGlobalAABB, mTransformationMatrix);
 
-			if (mIsInstanced)
+			if (mIsInstanced && (!mIsIndirectlyRendered || (mIsIndirectlyRendered && !mIndirectOriginalInstanceDataBuffer)))
 			{
 				XMMATRIX instanceWorldMatrix = XMMatrixIdentity();
 				for (int instanceIndex = 0; instanceIndex < static_cast<int>(mInstanceCount); instanceIndex++)
@@ -828,30 +828,7 @@ namespace EveryRay_Core
 		}
 
 		if (mIsIndirectlyRendered)
-		{
 			CreateIndirectInstanceData(); // only happens once but we need to do it after the first update (i.e. after we placed the instances and calculated their AABBs)
-
-			const int totalObjLodCount = GetLODCount();
-			// update draw args array
-			int offset, indexCount, lastAvailableLod = 0;
-			for (int lodI = 0; lodI < MAX_LOD; lodI++)
-			{
-				for (int meshI = 0; meshI < MAX_MESH_COUNT; meshI++)
-				{
-					offset = MAX_MESH_COUNT * lodI + meshI;
-					if (lodI < totalObjLodCount)
-						indexCount = (meshI < GetMeshCount(/*TODO ideally from lodI but we dont support meshes per LOD yet*/)) ? GetIndexCount(lodI, meshI) : INT_MAX;
-					else
-						indexCount = INT_MAX;
-					// Uncomment this if you want to fallback into previous LOD (you have to adjust ER_RenderingObject::Draw())
-					// indexCount = (meshI < aObj->GetMeshCount(/*TODO ideally from lastAvailableLod but we dont support meshes per LOD yet*/)) ? aObj->GetIndexCount(lastAvailableLod, meshI) : INT_MAX;
-
-					mIndirectDrawArgsArray[offset] = XMINT4(indexCount, 0, 0, 0);
-				}
-				if (lodI < totalObjLodCount)
-					lastAvailableLod = lodI;
-			}
-		}
 		else // fallback for old CPU frustum culling (i.e., makes sense for non-instanced objects)
 		{
 			if (ER_Utility::IsMainCameraCPUFrustumCulling && camera)
@@ -1383,6 +1360,27 @@ namespace EveryRay_Core
 			ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 		mIndirectNewInstanceDataBuffer->CreateGPUBufferResource(rhi, nullptr, mInstanceCount * MAX_LOD, sizeof(IndirectInstanceData), false,
 			ER_BIND_UNORDERED_ACCESS | ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED, ER_FORMAT_UNKNOWN);
+
+		const int totalObjLodCount = GetLODCount();
+		// update draw args array
+		int offset, indexCount, lastAvailableLod = 0;
+		for (int lodI = 0; lodI < MAX_LOD; lodI++)
+		{
+			for (int meshI = 0; meshI < MAX_MESH_COUNT; meshI++)
+			{
+				offset = MAX_MESH_COUNT * lodI + meshI;
+				if (lodI < totalObjLodCount)
+					indexCount = (meshI < GetMeshCount(/*TODO ideally from lodI but we dont support meshes per LOD yet*/)) ? GetIndexCount(lodI, meshI) : INT_MAX;
+				else
+					indexCount = INT_MAX;
+				// Uncomment this if you want to fallback into previous LOD (you have to adjust ER_RenderingObject::Draw())
+				// indexCount = (meshI < aObj->GetMeshCount(/*TODO ideally from lastAvailableLod but we dont support meshes per LOD yet*/)) ? aObj->GetIndexCount(lastAvailableLod, meshI) : INT_MAX;
+
+				mIndirectDrawArgsArray[offset] = XMINT4(indexCount, 0, 0, 0);
+			}
+			if (lodI < totalObjLodCount)
+				lastAvailableLod = lodI;
+		}
 	}
 }
 
