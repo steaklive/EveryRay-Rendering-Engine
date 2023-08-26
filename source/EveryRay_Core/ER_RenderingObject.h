@@ -203,7 +203,7 @@ namespace EveryRay_Core
 		ER_RHI_GPUBuffer* GetIndirectOriginalInstanceBuffer() { return mIndirectOriginalInstanceDataBuffer; }
 		ER_RHI_GPUBuffer* GetIndirectArgsBuffer() { return mIndirectArgsBuffer; }
 		ER_RHI_GPUBuffer* GetIndirectMeshConstantBuffer();
-		const XMINT4* GetIndirectDrawArgsArray() { return mIndirectDrawArgsArray; }
+		const XMINT4* GetIndirectDrawArgsArray() const { return mIndirectDrawArgsArray; }
 
 		void Rename(const std::string& name) { mName = name; }
 		const std::string& GetName() { return mName; }
