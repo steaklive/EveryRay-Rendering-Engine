@@ -17,6 +17,7 @@
 #include "ER_FoliageManager.h"
 #include "ER_DirectionalLight.h"
 #include "ER_Terrain.h"
+#include "ER_PostProcessingStack.h"
 
 #if defined(DEBUG) || defined(_DEBUG)  
 	#define MULTITHREADED_SCENE_LOAD 0
@@ -75,6 +76,12 @@ namespace EveryRay_Core
 
 				mSunColor = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
 			}
+
+			if (mSceneJsonRoot.isMember("use_volumetric_fog")) {
+				mHasVolumetricFog = mSceneJsonRoot["use_volumetric_fog"].asBool();
+			}
+			else
+				mHasVolumetricFog = false;
 
 			// terrain config
 			{
@@ -142,12 +149,6 @@ namespace EveryRay_Core
 
 			if (mSceneJsonRoot.isMember("foliage_zones"))
 				mHasFoliage = true;
-
-			if (mSceneJsonRoot.isMember("use_volumetric_fog")) {
-				mHasVolumetricFog = mSceneJsonRoot["use_volumetric_fog"].asBool();
-			}
-			else
-				mHasVolumetricFog = false;
 
 			// add rendering objects to scene
 			unsigned int numRenderingObjects = mSceneJsonRoot["rendering_objects"].size();
@@ -684,6 +685,33 @@ namespace EveryRay_Core
 		std::ofstream file_id;
 		file_id.open(mScenePath.c_str());
 		writer->write(mSceneJsonRoot, &file_id);
+	}
+
+	void ER_Scene::LoadPostProcessing()
+	{
+		ER_Core* core = GetCore();
+		ER_PostProcessingStack* pp = core->GetLevel()->mPostProcessingStack;
+
+		if (mSceneJsonRoot.isMember("posteffects_linearfog_enabled"))
+			pp->SetUseLinearFog(mSceneJsonRoot["posteffects_linearfog_enabled"].asBool());
+
+		if (mSceneJsonRoot.isMember("posteffects_aa_enabled"))
+			pp->SetUseAntiAliasing(mSceneJsonRoot["posteffects_aa_enabled"].asBool());
+
+		if (mSceneJsonRoot.isMember("posteffects_tonemapping_enabled"))
+			pp->SetUseTonemapping(mSceneJsonRoot["posteffects_tonemapping_enabled"].asBool());
+
+		if (mSceneJsonRoot.isMember("posteffects_sss_enabled"))
+			pp->SetUseSSS(mSceneJsonRoot["posteffects_sss_enabled"].asBool());
+
+		if (mSceneJsonRoot.isMember("posteffects_ssr_enabled"))
+			pp->SetUseSSR(mSceneJsonRoot["posteffects_ssr_enabled"].asBool());
+
+		if (mSceneJsonRoot.isMember("posteffects_vignette_enabled"))
+			pp->SetUseVignette(mSceneJsonRoot["posteffects_vignette_enabled"].asBool());
+
+		if (mSceneJsonRoot.isMember("posteffects_colorgrading_enabled"))
+			pp->SetUseColorGrading(mSceneJsonRoot["posteffects_colorgrading_enabled"].asBool());
 	}
 
 	void ER_Scene::SaveRenderingObjectsTransforms()

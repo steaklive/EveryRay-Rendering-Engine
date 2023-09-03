@@ -2347,5 +2347,12 @@
 	"terrain_texture_splat_layer3" : "splat_terrainSandTexture.dds",
 	"terrain_tile_resolution" : 512,
 	"terrain_tile_scale" : 2.0,
-	"use_volumetric_fog" : false
+	"use_volumetric_fog" : false,
+	"posteffects_linearfog_enabled" : true,
+	"posteffects_aa_enabled" : true,
+	"posteffects_tonemapping_enabled" : true,
+	"posteffects_sss_enabled" : false,
+	"posteffects_ssr_enabled" : false,
+	"posteffects_vignette_enabled" : true,
+	"posteffects_colorgrading_enabled" : false
 }

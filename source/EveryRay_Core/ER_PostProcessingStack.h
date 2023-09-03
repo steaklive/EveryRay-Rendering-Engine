@@ -54,7 +54,7 @@ namespace EveryRay_Core
 		ER_PostProcessingStack(ER_Core& pCore, ER_Camera& pCamera);
 		~ER_PostProcessingStack();
 
-		void Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR = true, bool pFog = false, bool pLightShafts = false, bool pSSS = false);
+		void Initialize();
 	
 		void Begin(ER_RHI_GPUTexture* aInitialRT, ER_RHI_GPUTexture* aDepthTarget);
 		void End(ER_RHI_GPUTexture* aResolveRT = nullptr);
@@ -65,8 +65,15 @@ namespace EveryRay_Core
 		void Update();
 		void Config() { mShowDebug = !mShowDebug; }
 
-		bool isWindowOpened = false;
+		void SetUseLinearFog(bool value) { mUseLinearFog = value; }
+		void SetUseAntiAliasing(bool value) { mUseFXAA = value; }
+		void SetUseSSS(bool value) { mUseSSS = value; }
+		void SetUseSSR(bool value) { mUseSSR = value; }
+		void SetUseColorGrading(bool value) { mUseColorGrading = value; }
+		void SetUseVignette(bool value) { mUseVignette = value; }
+		void SetUseTonemapping(bool value) { mUseTonemap = value; }
 
+		bool isWindowOpened = false;
 	private:
 		void PrepareDrawingTonemapping(ER_RHI_GPUTexture* aInputTexture, ER_GBuffer* gbuffer);
 		void PrepareDrawingSSR(const ER_CoreTime& gameTime, ER_RHI_GPUTexture* aInputTexture, ER_GBuffer* gbuffer);

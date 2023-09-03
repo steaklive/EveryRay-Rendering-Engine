@@ -9,6 +9,7 @@
 #include "ER_VolumetricClouds.h"
 #include "ER_VolumetricFog.h"
 #include "ER_Illumination.h"
+#include "ER_Settings.h"
 
 #define LINEARFOG_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
 #define LINEARFOG_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 1
@@ -74,7 +75,7 @@ namespace EveryRay_Core {
 		mLinearFogConstantBuffer.Release();
 	}
 
-	void ER_PostProcessingStack::Initialize(bool pTonemap, bool pMotionBlur, bool pColorGrading, bool pVignette, bool pFXAA, bool pSSR, bool pFog, bool pLightShafts, bool pSSS)
+	void ER_PostProcessingStack::Initialize()
 	{
 		auto rhi = mCore.GetRHI();
 
@@ -90,8 +91,6 @@ namespace EveryRay_Core {
 
 		//Linear fog
 		{
-			mUseLinearFog = pFog;
-
 			mLinearFogPS = rhi->CreateGPUShader();
 			mLinearFogPS->CompileShader(rhi, "content\\shaders\\LinearFog.hlsl", "PSMain", ER_PIXEL);
 			
@@ -117,8 +116,6 @@ namespace EveryRay_Core {
 
 		//SSR
 		{
-			mUseSSR = pSSR;
-
 			mSSRPS = rhi->CreateGPUShader();
 			mSSRPS->CompileShader(rhi, "content\\shaders\\SSR.hlsl", "PSMain", ER_PIXEL);
 
@@ -140,8 +137,6 @@ namespace EveryRay_Core {
 
 		//SSS
 		{
-			mUseSSS = pSSS;
-
 			mSSSPS = rhi->CreateGPUShader();
 			mSSSPS->CompileShader(rhi, "content\\shaders\\SSS.hlsl", "BlurPS", ER_PIXEL);
 
@@ -163,8 +158,6 @@ namespace EveryRay_Core {
 
 		//Tonemap
 		{		
-			mUseTonemap = pTonemap;
-
 			mTonemappingPS = rhi->CreateGPUShader();
 			mTonemappingPS->CompileShader(rhi, "content\\shaders\\Tonemap.hlsl", "PSMain", ER_PIXEL);
 
@@ -183,8 +176,6 @@ namespace EveryRay_Core {
 
 		//Color grading
 		{
-			mUseColorGrading = pColorGrading;
-
 			mLUTs[0] = rhi->CreateGPUTexture(L"");
 			mLUTs[0]->CreateGPUTextureResource(rhi, "content\\shaders\\LUT_1.png");
 			mLUTs[1] = rhi->CreateGPUTexture(L"");
@@ -209,8 +200,6 @@ namespace EveryRay_Core {
 
 		//Vignette
 		{
-			mUseVignette = pVignette;
-
 			mVignettePS = rhi->CreateGPUShader();
 			mVignettePS->CompileShader(rhi, "content\\shaders\\Vignette.hlsl", "PSMain", ER_PIXEL);
 
@@ -232,8 +221,6 @@ namespace EveryRay_Core {
 		
 		//FXAA
 		{
-			mUseFXAA = pFXAA;
-
 			mFXAAPS = rhi->CreateGPUShader();
 			mFXAAPS->CompileShader(rhi, "content\\shaders\\FXAA.hlsl", "PSMain", ER_PIXEL);
 
@@ -256,6 +243,9 @@ namespace EveryRay_Core {
 
 	void ER_PostProcessingStack::Update()
 	{	
+		mUseFXAA &= ER_Settings::AntiAliasingQuality > 0;
+		mUseSSS &= ER_Settings::SubsurfaceScatteringQuality > 0;
+
 		ShowPostProcessingWindow();
 	}
 

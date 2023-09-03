@@ -3575,5 +3575,12 @@
 		0.94999999999999996,
 		0.94999999999999996
 	],
-	"sun_direction" : []
+	"sun_direction" : [],
+	"posteffects_linearfog_enabled" : false,
+	"posteffects_aa_enabled" : true,
+	"posteffects_tonemapping_enabled" : true,
+	"posteffects_sss_enabled" : true,
+	"posteffects_ssr_enabled" : false,
+	"posteffects_vignette_enabled" : true,
+	"posteffects_colorgrading_enabled" : true
 }
