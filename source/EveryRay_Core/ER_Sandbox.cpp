@@ -137,7 +137,7 @@ namespace EveryRay_Core {
 		#pragma region INIT_POST_PROCESSING
 		game.CPUProfiler()->BeginCPUTime("Post processing stack init");
         mPostProcessingStack = new ER_PostProcessingStack(game, camera);
-		mScene->LoadPostProcessing();
+		mScene->LoadPostProcessingConfig();
         mPostProcessingStack->Initialize();
 		game.CPUProfiler()->EndCPUTime("Post processing stack init");
 #pragma endregion

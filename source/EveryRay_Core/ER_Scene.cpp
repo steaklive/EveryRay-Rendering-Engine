@@ -687,7 +687,7 @@ namespace EveryRay_Core
 		writer->write(mSceneJsonRoot, &file_id);
 	}
 
-	void ER_Scene::LoadPostProcessing()
+	void ER_Scene::LoadPostProcessingConfig()
 	{
 		ER_Core* core = GetCore();
 		ER_PostProcessingStack* pp = core->GetLevel()->mPostProcessingStack;
