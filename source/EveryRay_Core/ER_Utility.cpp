@@ -13,7 +13,7 @@ namespace EveryRay_Core
 	bool ER_Utility::IsFoliageEditor = false;
 	bool ER_Utility::IsMainCameraCPUFrustumCulling = true;
 	bool ER_Utility::StopDrawingRenderingObjects = false;
-	float ER_Utility::DistancesLOD[MAX_LOD] = { 100.0f, 300.0f, 2000.0f };
+	float ER_Utility::DistancesLOD[MAX_LOD] = { 200.0f, 500.0f, 2000.0f };
 
 	std::string ER_Utility::CurrentDirectory()
 	{

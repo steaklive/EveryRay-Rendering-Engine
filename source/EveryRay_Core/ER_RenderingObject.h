@@ -6,7 +6,7 @@
 
 #include "RHI\ER_RHI.h"
 
-const UINT MAX_INSTANCE_COUNT = 20000;
+const UINT MAX_DIRECT_INSTANCE_COUNT = 20000; // max count for instances which are NOT GPU indirectly drawn
 
 // Bitmasks for "RenderingObjectFlags" as decimal values
 // Keep in sync with content/shaders/Common.hlsli!
@@ -238,6 +238,7 @@ namespace EveryRay_Core
 		void StoreInstanceDataAfterTerrainPlacement();
 		void SetTerrainPlacement(bool flag) { mIsTerrainPlacement = flag; }
 		bool GetTerrainPlacement() { return mIsTerrainPlacement; }
+		void SetTerrainProceduralPlacementHeightDelta(float delta) { mTerrainProceduralPlacementHeightDelta = delta; }
 		void SetTerrainProceduralPlacementSplatChannel(int channel) { mTerrainProceduralPlacementSplatChannel = channel; }
 		int GetTerrainProceduralPlacementSplatChannel() { return mTerrainProceduralPlacementSplatChannel; }
 		void SetTerrainProceduralInstanceCount(int count) { mTerrainProceduralInstanceCount = count; }
@@ -409,6 +410,7 @@ namespace EveryRay_Core
 		ER_RHI_GPUBuffer*										mInputPositionsOnTerrainBuffer = nullptr; //input positions for on-terrain placement pass
 		ER_RHI_GPUBuffer*										mOutputPositionsOnTerrainBuffer = nullptr; //output positions for on-terrain placement pass
 		int														mTerrainProceduralPlacementSplatChannel = 4; //TerrainSplatChannel::NONE // on which terrain splat to place
+		float													mTerrainProceduralPlacementHeightDelta = 0.0f; //delta from the object's origin above terrain
 		int														mTerrainProceduralInstanceCount = 0;
 		XMFLOAT3												mTerrainProceduralZoneCenterPos; // center of procedural placement
 		float													mTerrainProceduralZoneRadius = 0.0f; // radius of procedural placement
@@ -451,7 +453,7 @@ namespace EveryRay_Core
 		ER_RenderableAABB*										mDebugGizmoAABB = nullptr;
 	
 		std::string												mName;
-		const char*												mInstancedNamesUI[MAX_INSTANCE_COUNT];
+		const char*												mInstancedNamesUI[MAX_DIRECT_INSTANCE_COUNT];
 		int														mIndexInScene = -1;
 		int														mCurrentLODIndex = 0; //only used for non-instanced object
 		int														mEditorSelectedInstancedObjectIndex = 0;

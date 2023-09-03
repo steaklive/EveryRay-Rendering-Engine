@@ -359,6 +359,9 @@ namespace EveryRay_Core
 				if (mSceneJsonRoot["rendering_objects"][i].isMember("terrain_splat_channel"))
 					aObject->SetTerrainProceduralPlacementSplatChannel(mSceneJsonRoot["rendering_objects"][i]["terrain_splat_channel"].asInt());
 
+				if (mSceneJsonRoot["rendering_objects"][i].isMember("terrain_height_delta"))
+					aObject->SetTerrainProceduralPlacementHeightDelta(mSceneJsonRoot["rendering_objects"][i]["terrain_height_delta"].asFloat());
+
 				//procedural flags
 				{
 					if (mSceneJsonRoot["rendering_objects"][i].isMember("terrain_procedural_instance_scale_min") && mSceneJsonRoot["rendering_objects"][i].isMember("terrain_procedural_instance_scale_max"))

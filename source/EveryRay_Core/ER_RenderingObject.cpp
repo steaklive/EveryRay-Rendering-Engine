@@ -545,7 +545,7 @@ namespace EveryRay_Core
 		assert(lod == mMeshesInstanceBuffers.size() - 1);
 
 		//adding extra instance data until we reach MAX_INSTANCE_COUNT 
-		for (int i = mInstanceData[lod].size(); i < MAX_INSTANCE_COUNT; i++)
+		for (int i = mInstanceData[lod].size(); i < MAX_DIRECT_INSTANCE_COUNT; i++)
 			AddInstanceData(XMMatrixIdentity(), lod);
 
 #ifdef NDEBUG
@@ -558,18 +558,18 @@ namespace EveryRay_Core
 		{
 			mMeshesInstanceBuffers[lod].push_back(new InstanceBufferData());
 			mMeshesInstanceBuffers[lod][i]->InstanceBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject - Instance Buffer: " + mName + ", lod: " + std::to_string(lod) + ", mesh: " + std::to_string(i));
-			CreateInstanceBuffer(&mInstanceData[lod][0], MAX_INSTANCE_COUNT, mMeshesInstanceBuffers[lod][i]->InstanceBuffer);
+			CreateInstanceBuffer(&mInstanceData[lod][0], MAX_DIRECT_INSTANCE_COUNT, mMeshesInstanceBuffers[lod][i]->InstanceBuffer);
 			mMeshesInstanceBuffers[lod][i]->Stride = sizeof(InstancedData);
 		}
 	}
 	// new instancing code
 	void ER_RenderingObject::CreateInstanceBuffer(InstancedData* instanceData, UINT instanceCount, ER_RHI_GPUBuffer* instanceBuffer)
 	{
-		if (instanceCount > MAX_INSTANCE_COUNT)
+		if (instanceCount > MAX_DIRECT_INSTANCE_COUNT)
 			throw ER_CoreException("Instances count limit is exceeded!");
 
 		assert(instanceBuffer);
-		instanceBuffer->CreateGPUBufferResource(mCore->GetRHI(), instanceData, MAX_INSTANCE_COUNT, InstanceSize(), true, ER_BIND_VERTEX_BUFFER);
+		instanceBuffer->CreateGPUBufferResource(mCore->GetRHI(), instanceData, MAX_DIRECT_INSTANCE_COUNT, InstanceSize(), true, ER_BIND_VERTEX_BUFFER);
 	}
 
 	// new instancing code
@@ -724,7 +724,8 @@ namespace EveryRay_Core
 				mOutputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject on-terrain placement output positions buffer: " + mName);
 				mOutputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, &currentPos, 1, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L /*legacy from DX11*/, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
 
-				terrain->PlaceOnTerrain(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, &currentPos, 1, (TerrainSplatChannels)mTerrainProceduralPlacementSplatChannel);
+				terrain->PlaceOnTerrain(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, &currentPos, 1, (TerrainSplatChannels)mTerrainProceduralPlacementSplatChannel,
+					nullptr, 0, abs(mTerrainProceduralPlacementHeightDelta) < std::numeric_limits<float>::epsilon() ? FLT_MAX : mTerrainProceduralPlacementHeightDelta);
 			
 #ifndef ER_PLATFORM_WIN64_DX11
 				std::string eventName = "On-terrain placement callback - initialization of ER_RenderingObject: " + mName;
@@ -769,7 +770,8 @@ namespace EveryRay_Core
 				mInputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, mTempInstancesPositions, mInstanceCount, sizeof(XMFLOAT4), false, ER_BIND_UNORDERED_ACCESS, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 				mOutputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject on-terrain placement input positions buffer: " + mName);
 				mOutputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, mTempInstancesPositions, mInstanceCount, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L /*legacy from DX11*/, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
-				terrain->PlaceOnTerrain(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mTempInstancesPositions, mInstanceCount, (TerrainSplatChannels)mTerrainProceduralPlacementSplatChannel);
+				terrain->PlaceOnTerrain(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mTempInstancesPositions, mInstanceCount, (TerrainSplatChannels)mTerrainProceduralPlacementSplatChannel,
+					nullptr, 0, abs(mTerrainProceduralPlacementHeightDelta) < std::numeric_limits<float>::epsilon() ? FLT_MAX : mTerrainProceduralPlacementHeightDelta);
 				
 #ifndef ER_PLATFORM_WIN64_DX11
 				std::string eventName = "On-terrain placement callback - initialization of ER_RenderingObject: " + mName;
