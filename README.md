@@ -28,10 +28,10 @@ Video demonstrations (scroll down for screenshots):
 - Cascaded Shadow Mapping
 - Parallax-Occlusion Mapping w/ soft self-shadowing
 - Terrain w/ GPU tessellation
-- Foliage
+- Foliage zones
 - Volumetric clouds
 - Volumetric fog
-- Post Processing:
+- Post Processing Volumes:
 - - Linear Fog
 - - Screen Space Reflections
 - - Separable Subsurface Scattering
