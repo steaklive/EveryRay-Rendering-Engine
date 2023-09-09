@@ -659,6 +659,49 @@ namespace EveryRay_Core
 		}
 	}
 
+	void ER_Scene::LoadFoliageZones(std::vector<ER_Foliage*>& foliageZones, ER_DirectionalLight& light)
+	{
+		Json::Reader reader;
+		std::ifstream scene(mScenePath.c_str(), std::ifstream::binary);
+		ER_Core* core = GetCore();
+		assert(core);
+
+		if (!reader.parse(scene, mSceneJsonRoot)) {
+			throw ER_CoreException(reader.getFormattedErrorMessages().c_str());
+		}
+		else {
+			if (mSceneJsonRoot.isMember("foliage_zones")) {
+				for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["foliage_zones"].size(); i++)
+				{
+					float vec3[3];
+					for (Json::Value::ArrayIndex ia = 0; ia != mSceneJsonRoot["foliage_zones"][i]["position"].size(); ia++)
+						vec3[ia] = mSceneJsonRoot["foliage_zones"][i]["position"][ia].asFloat();
+
+					bool placedOnTerrain = false;
+					if (mSceneJsonRoot["foliage_zones"][i].isMember("placed_on_terrain"))
+						placedOnTerrain = mSceneJsonRoot["foliage_zones"][i]["placed_on_terrain"].asBool();
+					
+					TerrainSplatChannels terrainChannel = TerrainSplatChannels::NONE;
+					if (mSceneJsonRoot["foliage_zones"][i].isMember("placed_splat_channel"))
+						terrainChannel = (TerrainSplatChannels)(mSceneJsonRoot["foliage_zones"][i]["placed_splat_channel"].asInt());
+
+					float placedHeightDelta = 0.0f;
+					if (mSceneJsonRoot["foliage_zones"][i].isMember("placed_height_delta"))
+						placedHeightDelta = mSceneJsonRoot["foliage_zones"][i]["placed_height_delta"].asFloat();
+
+					foliageZones.push_back(new ER_Foliage(*core, mCamera, light,
+						mSceneJsonRoot["foliage_zones"][i]["patch_count"].asInt(),
+						ER_Utility::GetFilePath(mSceneJsonRoot["foliage_zones"][i]["texture_path"].asString()),
+						mSceneJsonRoot["foliage_zones"][i]["average_scale"].asFloat(),
+						mSceneJsonRoot["foliage_zones"][i]["distribution_radius"].asFloat(),
+						XMFLOAT3(vec3[0], vec3[1], vec3[2]),
+						(FoliageBillboardType)mSceneJsonRoot["foliage_zones"][i]["type"].asInt(), placedOnTerrain, terrainChannel, placedHeightDelta));
+				}
+			}
+			else
+				mHasFoliage = false;
+		}
+	}
 	void ER_Scene::SaveFoliageZonesTransforms(const std::vector<ER_Foliage*>& foliageZones)
 	{
 		if (mScenePath.empty())
@@ -780,6 +823,56 @@ namespace EveryRay_Core
 		if (mSceneJsonRoot.isMember("posteffects_aa_enabled"))
 			pp->SetUseAntiAliasing(mSceneJsonRoot["posteffects_aa_enabled"].asBool());
 	}
+	void ER_Scene::SavePostProcessingVolumes()
+	{
+		if (mScenePath.empty())
+			throw ER_CoreException("Can't save to scene json file! Empty scene name...");
+
+		ER_Core* core = GetCore();
+		assert(core);
+
+		ER_PostProcessingStack* pp = core->GetLevel()->mPostProcessingStack;
+
+		if (mSceneJsonRoot.isMember("posteffects_volumes"))
+		{
+			assert(pp->GetPostEffectsVolumesCount() == mSceneJsonRoot["posteffects_volumes"].size());
+			for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["posteffects_volumes"].size(); i++)
+			{
+				Json::Value content(Json::arrayValue);
+				if (mSceneJsonRoot["posteffects_volumes"][i].isMember("volume_transform"))
+				{
+					const PostEffectsVolume& volume = pp->GetPostEffectsVolume(i);
+					
+					XMFLOAT4X4 mat = volume.GetTransform();
+					XMMATRIX matXM = XMMatrixTranspose(XMLoadFloat4x4(&mat));
+					XMStoreFloat4x4(&mat, matXM);
+					float matF[16];
+					ER_MatrixHelper::GetFloatArray(mat, matF);
+					for (int i = 0; i < 16; i++)
+						content.append(matF[i]);
+					mSceneJsonRoot["posteffects_volumes"][i]["volume_transform"] = content;
+				}
+				else
+				{
+					float matF[16];
+					XMFLOAT4X4 mat;
+					XMStoreFloat4x4(&mat, XMMatrixTranspose(XMMatrixIdentity()));
+					ER_MatrixHelper::GetFloatArray(mat, matF);
+
+					for (int i = 0; i < 16; i++)
+						content.append(matF[i]);
+					mSceneJsonRoot["posteffects_volumes"][i]["volume_transform"] = content;
+				}
+			}
+		}
+
+		Json::StreamWriterBuilder builder;
+		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+
+		std::ofstream file_id;
+		file_id.open(mScenePath.c_str());
+		writer->write(mSceneJsonRoot, &file_id);
+	}
 
 	void ER_Scene::SaveRenderingObjectsTransforms()
 	{
@@ -884,49 +977,6 @@ namespace EveryRay_Core
 		return material;
 	}
 
-	void ER_Scene::LoadFoliageZones(std::vector<ER_Foliage*>& foliageZones, ER_DirectionalLight& light)
-	{
-		Json::Reader reader;
-		std::ifstream scene(mScenePath.c_str(), std::ifstream::binary);
-		ER_Core* core = GetCore();
-		assert(core);
-
-		if (!reader.parse(scene, mSceneJsonRoot)) {
-			throw ER_CoreException(reader.getFormattedErrorMessages().c_str());
-		}
-		else {
-			if (mSceneJsonRoot.isMember("foliage_zones")) {
-				for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["foliage_zones"].size(); i++)
-				{
-					float vec3[3];
-					for (Json::Value::ArrayIndex ia = 0; ia != mSceneJsonRoot["foliage_zones"][i]["position"].size(); ia++)
-						vec3[ia] = mSceneJsonRoot["foliage_zones"][i]["position"][ia].asFloat();
-
-					bool placedOnTerrain = false;
-					if (mSceneJsonRoot["foliage_zones"][i].isMember("placed_on_terrain"))
-						placedOnTerrain = mSceneJsonRoot["foliage_zones"][i]["placed_on_terrain"].asBool();
-					
-					TerrainSplatChannels terrainChannel = TerrainSplatChannels::NONE;
-					if (mSceneJsonRoot["foliage_zones"][i].isMember("placed_splat_channel"))
-						terrainChannel = (TerrainSplatChannels)(mSceneJsonRoot["foliage_zones"][i]["placed_splat_channel"].asInt());
-
-					float placedHeightDelta = 0.0f;
-					if (mSceneJsonRoot["foliage_zones"][i].isMember("placed_height_delta"))
-						placedHeightDelta = mSceneJsonRoot["foliage_zones"][i]["placed_height_delta"].asFloat();
-
-					foliageZones.push_back(new ER_Foliage(*core, mCamera, light,
-						mSceneJsonRoot["foliage_zones"][i]["patch_count"].asInt(),
-						ER_Utility::GetFilePath(mSceneJsonRoot["foliage_zones"][i]["texture_path"].asString()),
-						mSceneJsonRoot["foliage_zones"][i]["average_scale"].asFloat(),
-						mSceneJsonRoot["foliage_zones"][i]["distribution_radius"].asFloat(),
-						XMFLOAT3(vec3[0], vec3[1], vec3[2]),
-						(FoliageBillboardType)mSceneJsonRoot["foliage_zones"][i]["type"].asInt(), placedOnTerrain, terrainChannel, placedHeightDelta));
-				}
-			}
-			else
-				mHasFoliage = false;
-		}
-	}
 
 	ER_RHI_GPURootSignature* ER_Scene::GetStandardMaterialRootSignature(const std::string& materialName)
 	{

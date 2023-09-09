@@ -52,6 +52,8 @@ namespace EveryRay_Core
 		const std::wstring& GetTerrainSplatLayerTextureName(int index) { return mTerrainSplatLayersTextureNames[index]; }
 
 		void LoadPostProcessingVolumes();
+		void SavePostProcessingVolumes();
+
 		bool HasVolumetricFog() { return mHasVolumetricFog; }
 	private:
 		void CreateStandardMaterialsRootSignatures();

@@ -135,6 +135,8 @@ namespace EveryRay_Core
 
 		void ReservePostEffectsVolumes(int count);
 		bool AddPostEffectsVolume(const XMFLOAT4X4& aTransform, const PostEffectsVolumeValues& aValues, const std::string& aName);
+		int GetPostEffectsVolumesCount() const { return static_cast<int>(mPostEffectsVolumes.size()); }
+		const PostEffectsVolume& GetPostEffectsVolume(int index) const { return mPostEffectsVolumes[index]; }
 
 		bool isWindowOpened = false;
 	private:

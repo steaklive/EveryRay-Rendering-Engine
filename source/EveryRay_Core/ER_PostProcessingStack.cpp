@@ -11,6 +11,7 @@
 #include "ER_Illumination.h"
 #include "ER_Settings.h"
 #include "ER_RenderableAABB.h"
+#include "ER_Scene.h"
 
 #define LINEARFOG_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
 #define LINEARFOG_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 1
@@ -361,6 +362,9 @@ namespace EveryRay_Core {
 		ImGui::TextWrapped("Note: saving the values from above to the volume is not yet supported!");
 		ImGui::Checkbox("Show volumes", &mShowDebugVolumes);
 		ImGui::Checkbox("Enable volume editor", &ER_Utility::IsPostEffectsVolumeEditor);
+		
+		if (ImGui::Button("Save volume changes"))
+			mCore.GetLevel()->mScene->SavePostProcessingVolumes();
 
 		bool editable = ER_Utility::IsEditorMode && ER_Utility::IsPostEffectsVolumeEditor;
 		if (editable)
@@ -368,15 +372,11 @@ namespace EveryRay_Core {
 			//disable all other editors
 			ER_Utility::IsFoliageEditor = ER_Utility::IsLightEditor = false;
 
-			//TODO
-			//if (ImGui::Button("Save volume changes"))
-			//	mScene->SaveFoliageZonesTransforms(mFoliageCollection);
-
 			for (int i = 0; i < static_cast<int>(mPostEffectsVolumes.size()); i++)
-				mPostEffectsVolumesNamesUI[i] = mPostEffectsVolumes[i].name.c_str();
+				mEditorPostEffectsVolumesNames[i] = mPostEffectsVolumes[i].name.c_str();
 
 			ImGui::PushItemWidth(-1);
-			ImGui::ListBox("##empty", &mSelectedEditorPostEffectsVolumeIndex, mPostEffectsVolumesNamesUI, static_cast<int>(mPostEffectsVolumes.size()), 5);
+			ImGui::ListBox("##empty", &mSelectedEditorPostEffectsVolumeIndex, mEditorPostEffectsVolumesNames, static_cast<int>(mPostEffectsVolumes.size()), 5);
 
 			//Transform the selected volume
 			if (mSelectedEditorPostEffectsVolumeIndex != -1)
@@ -386,7 +386,7 @@ namespace EveryRay_Core {
 				ER_MatrixHelper::GetFloatArray(mCamera.ViewMatrix4X4(), cameraViewMat);
 				ER_MatrixHelper::GetFloatArray(mCamera.ProjectionMatrix4X4(), cameraProjMat);
 
-				ER_MatrixHelper::GetFloatArray(mPostEffectsVolumes[mSelectedEditorPostEffectsVolumeIndex].GetTransform(), mCurrentVolumeTransformMatrix);
+				ER_MatrixHelper::GetFloatArray(mPostEffectsVolumes[mSelectedEditorPostEffectsVolumeIndex].GetTransform(), mEditorCurrentPostEffectsVolumeTransformMatrix);
 
 				static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
 				static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
@@ -408,21 +408,22 @@ namespace EveryRay_Core {
 				if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
 					mCurrentGizmoOperation = ImGuizmo::SCALE;
 
-				ImGuizmo::DecomposeMatrixToComponents(mCurrentVolumeTransformMatrix, mEditorVolumeMatrixTranslation, mEditorVolumeMatrixRotation, mEditorVolumeMatrixScale);
-				ImGui::InputFloat3("Tr", mEditorVolumeMatrixTranslation, 3);
-				ImGui::InputFloat3("Sc", mEditorVolumeMatrixScale, 3);
-				ImGuizmo::RecomposeMatrixFromComponents(mEditorVolumeMatrixTranslation, mEditorVolumeMatrixRotation, mEditorVolumeMatrixScale, mCurrentVolumeTransformMatrix);
+				ImGuizmo::DecomposeMatrixToComponents(mEditorCurrentPostEffectsVolumeTransformMatrix, 
+					mEditorPostEffectsVolumeMatrixTranslation, mEditorPostEffectsVolumeMatrixRotation, mEditorPostEffectsVolumeMatrixScale);
+				ImGui::InputFloat3("Tr", mEditorPostEffectsVolumeMatrixTranslation, 3);
+				ImGui::InputFloat3("Sc", mEditorPostEffectsVolumeMatrixScale, 3);
+				ImGuizmo::RecomposeMatrixFromComponents(mEditorPostEffectsVolumeMatrixTranslation,
+					mEditorPostEffectsVolumeMatrixRotation, mEditorPostEffectsVolumeMatrixScale, mEditorCurrentPostEffectsVolumeTransformMatrix);
 				ImGui::Checkbox("Volume enabled", &(mPostEffectsVolumes[mSelectedEditorPostEffectsVolumeIndex].isEnabled));
 				ImGui::End();
 
 				ImGuiIO& io = ImGui::GetIO();
 				ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-				ImGuizmo::Manipulate(cameraViewMat, cameraProjMat, mCurrentGizmoOperation, mCurrentGizmoMode, mCurrentVolumeTransformMatrix,
+				ImGuizmo::Manipulate(cameraViewMat, cameraProjMat, mCurrentGizmoOperation, mCurrentGizmoMode, mEditorCurrentPostEffectsVolumeTransformMatrix,
 					NULL, useSnap ? &snap[0] : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
 
-				XMFLOAT4X4 mat(mCurrentVolumeTransformMatrix);
+				XMFLOAT4X4 mat(mEditorCurrentPostEffectsVolumeTransformMatrix);
 				mPostEffectsVolumes[mSelectedEditorPostEffectsVolumeIndex].SetTransform(mat, true);
-
 			}
 			else
 				ImGui::End();
@@ -482,7 +483,7 @@ namespace EveryRay_Core {
 
 	void ER_PostProcessingStack::UpdatePostEffectsVolumes()
 	{
-		mCurrentPostEffectsVolumeIndex = -1;
+		mCurrentActivePostEffectsVolumeIndex = -1;
 		// TODO: add priority system at some point
 		for (int i = 0; i < static_cast<int>(mPostEffectsVolumes.size()); i++)
 		{
@@ -498,12 +499,12 @@ namespace EveryRay_Core {
 
 			if (isColliding)
 			{
-				mCurrentPostEffectsVolumeIndex = i;
+				mCurrentActivePostEffectsVolumeIndex = i;
 				break;
 			}
 		}
 
-		SetPostEffectsValuesFromVolume(mCurrentPostEffectsVolumeIndex);
+		SetPostEffectsValuesFromVolume(mCurrentActivePostEffectsVolumeIndex);
 	}
 
 	void ER_PostProcessingStack::SetPostEffectsValuesFromVolume(int index /*= -1*/)
