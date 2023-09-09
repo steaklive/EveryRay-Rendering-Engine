@@ -687,31 +687,98 @@ namespace EveryRay_Core
 		writer->write(mSceneJsonRoot, &file_id);
 	}
 
-	void ER_Scene::LoadPostProcessingConfig()
+	void ER_Scene::LoadPostProcessingVolumes()
 	{
 		ER_Core* core = GetCore();
+		assert(core);
+
 		ER_PostProcessingStack* pp = core->GetLevel()->mPostProcessingStack;
 
-		if (mSceneJsonRoot.isMember("posteffects_linearfog_enabled"))
-			pp->SetUseLinearFog(mSceneJsonRoot["posteffects_linearfog_enabled"].asBool());
+		Json::Reader reader;
+		std::ifstream scene(mScenePath.c_str(), std::ifstream::binary);
+
+		if (!reader.parse(scene, mSceneJsonRoot)) {
+			throw ER_CoreException(reader.getFormattedErrorMessages().c_str());
+		}
+		else
+		{
+			if (mSceneJsonRoot.isMember("posteffects_volumes")) 
+			{
+				XMFLOAT4X4 transform = 
+				{
+					1.f, 0.f, 0.f, 0.f,
+					0.f, 1.f, 0.f, 0.f,
+					0.f, 0.f, 1.f, 0.f,
+					0.f, 0.f, 0.f, 1.f
+				};
+				int size = mSceneJsonRoot["posteffects_volumes"].size();
+				pp->ReservePostEffectsVolumes(size);
+				for (Json::Value::ArrayIndex i = 0; i != size; i++)
+				{
+					if (mSceneJsonRoot["posteffects_volumes"][i].isMember("volume_transform"))
+					{
+						if (mSceneJsonRoot["posteffects_volumes"][i]["volume_transform"].size() == 16)
+						{
+							float matrix[16];
+							for (Json::Value::ArrayIndex matC = 0; matC != mSceneJsonRoot["posteffects_volumes"][i]["volume_transform"].size(); matC++)
+								matrix[matC] = mSceneJsonRoot["posteffects_volumes"][i]["volume_transform"][matC].asFloat();
+
+							XMFLOAT4X4 worldTransform(matrix);
+							XMMATRIX transformM = XMMatrixTranspose(XMLoadFloat4x4(&worldTransform));
+
+							XMStoreFloat4x4(&transform, transformM);
+						}
+					}
+
+					PostEffectsVolumeValues values = {};
+
+					if (mSceneJsonRoot["posteffects_volumes"][i].isMember("posteffects_linearfog_enabled"))
+						values.linearFogEnable = mSceneJsonRoot["posteffects_volumes"][i]["posteffects_linearfog_enabled"].asBool();
+					if (mSceneJsonRoot["posteffects_volumes"][i].isMember("posteffects_linearfog_density"))
+						values.linearFogDensity = mSceneJsonRoot["posteffects_volumes"][i]["posteffects_linearfog_density"].asFloat();
+					if (mSceneJsonRoot["posteffects_volumes"][i].isMember("posteffects_linearfog_color"))
+					{
+						float vec3[3];
+						for (Json::Value::ArrayIndex j = 0; j != mSceneJsonRoot["posteffects_volumes"][i]["posteffects_linearfog_color"].size(); j++)
+							vec3[j] = mSceneJsonRoot["posteffects_volumes"][i]["posteffects_linearfog_color"][j].asFloat();
+
+						values.linearFogColor[0] = vec3[0];
+						values.linearFogColor[1] = vec3[1];
+						values.linearFogColor[2] = vec3[2];
+					}
+
+					if (mSceneJsonRoot["posteffects_volumes"][i].isMember("posteffects_tonemapping_enabled"))
+						values.tonemappingEnable = mSceneJsonRoot["posteffects_volumes"][i]["posteffects_tonemapping_enabled"].asBool();
+
+					if (mSceneJsonRoot["posteffects_volumes"][i].isMember("posteffects_sss_enabled"))
+						values.sssEnable = mSceneJsonRoot["posteffects_volumes"][i]["posteffects_sss_enabled"].asBool();
+
+					if (mSceneJsonRoot["posteffects_volumes"][i].isMember("posteffects_ssr_enabled"))
+						values.ssrEnable = mSceneJsonRoot["posteffects_volumes"][i]["posteffects_ssr_enabled"].asBool();
+
+					if (mSceneJsonRoot["posteffects_volumes"][i].isMember("posteffects_vignette_enabled"))
+						values.vignetteEnable = mSceneJsonRoot["posteffects_volumes"][i]["posteffects_vignette_enabled"].asBool();
+					if (mSceneJsonRoot["posteffects_volumes"][i].isMember("posteffects_vignette_softness"))
+						values.vignetteSoftness = mSceneJsonRoot["posteffects_volumes"][i]["posteffects_vignette_softness"].asFloat();
+					if (mSceneJsonRoot["posteffects_volumes"][i].isMember("posteffects_vignette_radius"))
+						values.vignetteRadius = mSceneJsonRoot["posteffects_volumes"][i]["posteffects_vignette_radius"].asFloat();
+
+					if (mSceneJsonRoot["posteffects_volumes"][i].isMember("posteffects_colorgrading_enabled"))
+						values.colorGradingEnable = mSceneJsonRoot["posteffects_volumes"][i]["posteffects_colorgrading_enabled"].asBool();
+					if (mSceneJsonRoot["posteffects_volumes"][i].isMember("posteffects_colorgrading_lut"))
+						values.colorGradingLUTIndex = mSceneJsonRoot["posteffects_volumes"][i]["posteffects_colorgrading_lut"].asUInt();
+
+					std::string name = "";
+					if (mSceneJsonRoot["posteffects_volumes"][i].isMember("volume_name"))
+						name = mSceneJsonRoot["posteffects_volumes"][i]["volume_name"].asString();
+
+					pp->AddPostEffectsVolume(transform, values, name);
+				}
+			}
+		}
 
 		if (mSceneJsonRoot.isMember("posteffects_aa_enabled"))
 			pp->SetUseAntiAliasing(mSceneJsonRoot["posteffects_aa_enabled"].asBool());
-
-		if (mSceneJsonRoot.isMember("posteffects_tonemapping_enabled"))
-			pp->SetUseTonemapping(mSceneJsonRoot["posteffects_tonemapping_enabled"].asBool());
-
-		if (mSceneJsonRoot.isMember("posteffects_sss_enabled"))
-			pp->SetUseSSS(mSceneJsonRoot["posteffects_sss_enabled"].asBool());
-
-		if (mSceneJsonRoot.isMember("posteffects_ssr_enabled"))
-			pp->SetUseSSR(mSceneJsonRoot["posteffects_ssr_enabled"].asBool());
-
-		if (mSceneJsonRoot.isMember("posteffects_vignette_enabled"))
-			pp->SetUseVignette(mSceneJsonRoot["posteffects_vignette_enabled"].asBool());
-
-		if (mSceneJsonRoot.isMember("posteffects_colorgrading_enabled"))
-			pp->SetUseColorGrading(mSceneJsonRoot["posteffects_colorgrading_enabled"].asBool());
 	}
 
 	void ER_Scene::SaveRenderingObjectsTransforms()

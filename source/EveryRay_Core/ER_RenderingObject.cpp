@@ -1013,6 +1013,7 @@ namespace EveryRay_Core
 		{
 			ER_Utility::IsLightEditor = false;
 			ER_Utility::IsFoliageEditor = false;
+			ER_Utility::IsPostEffectsVolumeEditor = false;
 
 			ImGui::Begin("Object Editor");
 			std::string name = mName;

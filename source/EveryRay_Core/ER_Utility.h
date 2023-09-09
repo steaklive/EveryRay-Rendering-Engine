@@ -28,6 +28,7 @@ namespace EveryRay_Core
 		static bool IsEditorMode;
 		static bool IsLightEditor;
 		static bool IsFoliageEditor;
+		static bool IsPostEffectsVolumeEditor;
 		static bool IsMainCameraCPUFrustumCulling;
 		static float DistancesLOD[MAX_LOD];
 		static bool StopDrawingRenderingObjects;

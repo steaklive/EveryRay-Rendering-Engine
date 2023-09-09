@@ -51,7 +51,7 @@ namespace EveryRay_Core
 		float GetTerrainTileScale() { return mTerrainTileScale; }
 		const std::wstring& GetTerrainSplatLayerTextureName(int index) { return mTerrainSplatLayersTextureNames[index]; }
 
-		void LoadPostProcessingConfig();
+		void LoadPostProcessingVolumes();
 		bool HasVolumetricFog() { return mHasVolumetricFog; }
 	private:
 		void CreateStandardMaterialsRootSignatures();

@@ -265,11 +265,68 @@
 	],
 	"sun_direction" : [],
 	"use_volumetric_fog" : false,
-	"posteffects_linearfog_enabled" : false,
-	"posteffects_aa_enabled" : true,
-	"posteffects_tonemapping_enabled" : true,
-	"posteffects_sss_enabled" : true,
-	"posteffects_ssr_enabled" : true,
-	"posteffects_vignette_enabled" : true,
-	"posteffects_colorgrading_enabled" : true
+	"posteffects_volumes":
+	[
+		{
+			"volume_name" : "PP_Volume_1",
+			"volume_transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"posteffects_linearfog_enabled" : false,
+			"posteffects_tonemapping_enabled" : true,
+			"posteffects_sss_enabled" : true,
+			"posteffects_ssr_enabled" : true,
+			"posteffects_vignette_enabled" : true,
+			"posteffects_vignette_softness" : 0.67,
+			"posteffects_vignette_radius" : 0.62,
+			"posteffects_colorgrading_enabled" : true,
+			"posteffects_colorgrading_lut" : 0
+		},
+		{
+			"volume_name" : "PP_Volume_2",
+			"volume_transform" : 
+			[
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				15.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"posteffects_linearfog_enabled" : false,
+			"posteffects_tonemapping_enabled" : true,
+			"posteffects_sss_enabled" : true,
+			"posteffects_ssr_enabled" : false,
+			"posteffects_vignette_enabled" : false,
+			"posteffects_colorgrading_enabled" : true,
+			"posteffects_colorgrading_lut" : 1
+		}
+	],
+	"posteffects_aa_enabled" : true
 }

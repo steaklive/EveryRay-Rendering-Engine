@@ -137,7 +137,7 @@ namespace EveryRay_Core {
 		#pragma region INIT_POST_PROCESSING
 		game.CPUProfiler()->BeginCPUTime("Post processing stack init");
         mPostProcessingStack = new ER_PostProcessingStack(game, camera);
-		mScene->LoadPostProcessingConfig();
+		mScene->LoadPostProcessingVolumes();
         mPostProcessingStack->Initialize();
 		game.CPUProfiler()->EndCPUTime("Post processing stack init");
 #pragma endregion
@@ -436,6 +436,8 @@ namespace EveryRay_Core {
 						mTerrain->DrawDebugGizmos(localRT, mGBuffer->GetDepth(), debugGizmoRootSignature);
 					if (mFoliageSystem)
 						mFoliageSystem->DrawDebugGizmos(localRT, mGBuffer->GetDepth(), debugGizmoRootSignature);
+					if (mPostProcessingStack)
+						mPostProcessingStack->DrawPostEffectsVolumesDebugGizmos(localRT, mGBuffer->GetDepth(), debugGizmoRootSignature);
 					for (auto& it = mScene->objects.begin(); it != mScene->objects.end(); it++)
 						it->second->DrawAABB(localRT, mGBuffer->GetDepth(), debugGizmoRootSignature);
 				}

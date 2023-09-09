@@ -11,6 +11,7 @@ namespace EveryRay_Core
 	bool ER_Utility::IsEditorMode = false;
 	bool ER_Utility::IsLightEditor = false;
 	bool ER_Utility::IsFoliageEditor = false;
+	bool ER_Utility::IsPostEffectsVolumeEditor = false;
 	bool ER_Utility::IsMainCameraCPUFrustumCulling = true;
 	bool ER_Utility::StopDrawingRenderingObjects = false;
 	float ER_Utility::DistancesLOD[MAX_LOD] = { 200.0f, 500.0f, 2000.0f };
