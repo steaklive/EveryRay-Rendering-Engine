@@ -60,23 +60,31 @@ Video demonstrations (scroll down for screenshots):
 - - customizable via "Object editor" (with instancing support)
 - Concept of a generic scene, which contains "ER_RenderingObject" elements + scene data (lights, terrain, GI and other info):
 - - supports loading from & saving to JSON scene files
+- Concept of graphics presets for achieving performance on various hardware configurations
+- - loaded from graphics_config.json file
+- - impacts the quality of several systems (resolutions, shadows, textures)
 - CPU frustum culling
 - ImGUI, ImGuizmo
 - Input from mouse, keyboard and gamepad (XInput, but you can add your own)
  
-# Roadmap (big architectural engine tasks)
+# Roadmap - Engine Architecture
  * [X] <del>remove DX11 "Effects" library, all .fx shaders and refactor the material system (DONE)</del> (https://github.com/steaklive/EveryRay-Rendering-Engine/pull/51)
  * [X] <del>remove all low-level DX11 code and put it into the abstracted RHI (DONE)</del> (https://github.com/steaklive/EveryRay-Rendering-Engine/pull/56)
  * [X] <del>add support for DX12 (DONE)</del> (https://github.com/steaklive/EveryRay-Rendering-Engine/pull/57)
  * [ ] remove DirectXMath and its usages (maybe come up with a custom math lib)
  * [ ] add cross-API shader compiler
  * [ ] add simple job-system (i.e. for Update(), CPU culling, etc.)
+ * [ ] add support for multi-threaded command lists on modern APIs (after job-system)
  * [ ] add simple memory management system (for now CPU memory; at least linear, pool allocators)
 
-# Roadmap (big graphics tasks)
+# Roadmap - Graphics
  * [ ] Order Independent Transparency (in Forward pass)
  * [ ] Atmospheric Scattering (Mie, etc.)
+ * [ ] Contact hardening shadows
+ * [ ] Stochastic reflections
  * [ ] Better Anti-Aliasing (SMAA, TAA, explore FSR/DLSS)
+ * [ ] Hardware accelerated ray-tracing (i.e., DXR shadows, reflections, AO)
+ * [ ] High-poly geometry with mesh shaders
 
 # Note on the API
 I originally started developing this project on DX11 several years ago with the mindset of DX11/OpenGL-era APIs (single threaded renderer, immediate context, etc.). However, only recently I added support for DX12 into EveryRay and, unfortunately, I only had time for "1 to 1" port from DX11 to DX12 (which also took many months and is still not 100% ready to replace DX11). That means that DX12 is currently underused in the engine and is not bringing any improvements yet (in performance, for example). This will likely change in the future, as I start refactoring/adding support to many new DX12-era concepts (i.e. async compute, multithreaded command list submission, bindless, etc.). That will take time and serious changes in the architecture of EveryRay, but it would be worth it alongside with other novel features, like DirectX Raytracing or mesh shaders. DX12 can really be more powerful than DX11 when you treat it with care:)
@@ -98,7 +106,7 @@ I originally started developing this project on DX11 several years ago with the 
 Gamepad is currently not supported/tested with ImGui.
 
 # Notes
-You might increase TDR time of your GPU driver (explained here https://docs.substance3d.com/spdoc/gpu-drivers-crash-with-long-computations-128745489.html).
+- You might increase TDR time of your GPU driver (explained here https://docs.substance3d.com/spdoc/gpu-drivers-crash-with-long-computations-128745489.html).
 
 # External Dependencies
 - DirectXTK (https://github.com/Microsoft/DirectXTK)
