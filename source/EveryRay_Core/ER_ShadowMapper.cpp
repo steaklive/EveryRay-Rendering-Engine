@@ -61,7 +61,7 @@ namespace EveryRay_Core
 			else
 				mCameraCascadesFrustums[i].SetMatrix(mCamera.ProjectionMatrix());
 
-			mLightProjectors.emplace_back(ER_Projector(pCore));
+			mLightProjectors.emplace_back(pCore);
 			mLightProjectors[i].Initialize();
 			mLightProjectors[i].SetProjectionMatrix(GetProjectionBoundingSphere(i));
 			//mLightProjectors[i]->ApplyRotation(mDirectionalLight.GetTransform());
