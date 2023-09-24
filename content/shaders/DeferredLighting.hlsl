@@ -141,5 +141,20 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     float shadow = Deferred_GetShadow(worldPos, ShadowMatrices, ShadowCascadeDistances, ShadowTexelSize.x, CascadedShadowTextures, CascadedPcfShadowMapSampler);
     
     float3 color = (directLighting * shadow) + indirectLighting;
+
+    //debug shadow cascades
+    if (ShadowCascadeDistances.w > 0.0)
+    {
+        float depthDistance = worldPos.a;
+        if (depthDistance < ShadowCascadeDistances.x)
+            color *= float4(1.0, 0.0, 0.0, 1.0);
+        else if (depthDistance < ShadowCascadeDistances.y)
+            color *= float4(0.0, 1.0, 0.0, 1.0);
+        else if (depthDistance < ShadowCascadeDistances.z)
+            color *= float4(0.0, 0.0, 1.0, 1.0);
+        else
+            color *= float4(1.0, 0.0, 1.0, 1.0);
+    }
+
     OutputTexture[inPos] += float4(color, 1.0f);
 }

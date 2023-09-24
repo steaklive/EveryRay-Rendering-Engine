@@ -258,6 +258,7 @@ namespace EveryRay_Core
 		float mSSSDirectionalLightPlaneScale = 0.15f;
 
 		bool mShowDebug = false;
+		bool mDebugShadowCascades = false; // only works in deferred mode
 
 		RenderingObjectInfo mForwardPassObjects;
 		GIQuality mCurrentGIQuality;

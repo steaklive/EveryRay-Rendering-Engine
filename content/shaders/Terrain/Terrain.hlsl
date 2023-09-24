@@ -303,7 +303,7 @@ PS_GBUFFER_OUTPUT PSGBuffer(DS_OUTPUT IN) : SV_Target
     
     OUT.Color = float4(diffuseAlbedo, 1.0f);
     OUT.Normal = float4(normal, 1.0);
-    OUT.WorldPos = IN.worldPos;
+    OUT.WorldPos = float4(IN.worldPos.rgb, IN.position.w);
     
     float roughness = 1.0f;
     float metalness = 0.0f;

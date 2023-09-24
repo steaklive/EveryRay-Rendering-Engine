@@ -36,6 +36,10 @@ namespace EveryRay_Core
 		void ApplyTransform();
 		//void ApplyRotation();
 
+		float GetCameraFarShadowCascadeDistance(int index) const;
+		float GetCameraNearShadowCascadeDistance(int index) const;
+		XMMATRIX GetCustomViewProjectionMatrixForCascade(const XMMATRIX& viewMatrix, float fov, float aspectRatio, float nearPlaneDistance, int cascadeIndex) const;
+
 	private:
 		XMMATRIX GetLightProjectionMatrixInFrustum(int index, ER_Frustum& cameraFrustum, ER_DirectionalLight& light);
 		XMMATRIX GetProjectionBoundingSphere(int index);

@@ -8,8 +8,6 @@
 #include "ER_RenderingObject.h"
 #include "ER_Utility.h"
 
-#define MAX_NUM_CASCADES 3
-
 namespace EveryRay_Core
 {
 	RTTI_DEFINITIONS(ER_Camera)
@@ -17,9 +15,6 @@ namespace EveryRay_Core
 	const float ER_Camera::DefaultFieldOfView = XM_PIDIV2;
 	const float ER_Camera::DefaultNearPlaneDistance = 0.01f;
 	const float ER_Camera::DefaultFarPlaneDistance = 600;
-
-	const float cameraCascadeDistances[MAX_NUM_CASCADES] = { 125.0f, 500.0f, 1200.0f };
-	//const float cascadeDistances[MAX_NUM_CASCADES] = { 75.0f, 150.0f, 600.0f };
 
 	ER_Camera::ER_Camera(ER_Core& game)
 		: ER_CoreComponent(game),
@@ -164,33 +159,6 @@ namespace EveryRay_Core
 		UpdateProjectionMatrix();
 	}
 
-	XMMATRIX ER_Camera::GetCustomViewProjectionMatrixForCascade(int cascadeIndex)
-	{
-		XMMATRIX projectionMatrix;
-		float delta = 5.0f;
-
-		switch (cascadeIndex)
-		{
-		case 0:
-			projectionMatrix = XMMatrixPerspectiveFovRH(mFieldOfView, mAspectRatio, mNearPlaneDistance, cameraCascadeDistances[0]);
-			break;
-		case 1:
-			projectionMatrix = XMMatrixPerspectiveFovRH(mFieldOfView, mAspectRatio, cameraCascadeDistances[0], cameraCascadeDistances[1]);
-			break;
-		case 2:
-			projectionMatrix = XMMatrixPerspectiveFovRH(mFieldOfView, mAspectRatio, cameraCascadeDistances[1], cameraCascadeDistances[2]);
-			break;
-
-
-		default:
-			projectionMatrix = XMMatrixPerspectiveFovRH(mFieldOfView, mAspectRatio, mNearPlaneDistance, cameraCascadeDistances[2]);
-		}
-
-		XMMATRIX viewMatrix = XMLoadFloat4x4(&mViewMatrix);
-
-		return XMMatrixMultiply(viewMatrix, projectionMatrix);
-	}
-
 	void ER_Camera::SetNearPlaneDistance(float value)
 	{
 		mNearPlaneDistance = value;
@@ -271,19 +239,5 @@ namespace EveryRay_Core
 	XMMATRIX ER_Camera::RotationTransformMatrix() const
 	{
 		return mRotationMatrix;
-	}
-
-	float ER_Camera::GetCameraFarShadowCascadeDistance (int index) const
-	{
-		assert(index < (sizeof(cameraCascadeDistances) / sizeof(cameraCascadeDistances[0])));
-		return cameraCascadeDistances[index];
-	}
-	float ER_Camera::GetCameraNearShadowCascadeDistance (int index) const
-	{
-		assert(index < (sizeof(cameraCascadeDistances) / sizeof(cameraCascadeDistances[0])));
-		if (index == 0)
-			return mNearPlaneDistance;
-		else
-			return cameraCascadeDistances[index - 1];
 	}
 }

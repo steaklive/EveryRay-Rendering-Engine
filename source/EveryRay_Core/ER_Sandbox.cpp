@@ -300,7 +300,7 @@ namespace EveryRay_Core {
 		if (ImGui::Button("GBuffer") && mGBuffer)
 			mGBuffer->Config();
 
-        if (ImGui::Button("Global Illumination") && mIllumination)
+        if (ImGui::Button("Illumination") && mIllumination)
 			mIllumination->Config();
 
 		if (ImGui::Button("Foliage") && mFoliageSystem)

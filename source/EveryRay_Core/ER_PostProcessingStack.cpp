@@ -516,7 +516,7 @@ namespace EveryRay_Core {
 			mLinearFogColor[0] = mLinearFogColorDefault[0];
 			mLinearFogColor[1] = mLinearFogColorDefault[1];
 			mLinearFogColor[2] = mLinearFogColorDefault[2];
-			mLinearFogDensity = mLinearFogDensity;
+			mLinearFogDensity = mLinearFogDensityDefault;
 
 			mUseTonemap = mUseTonemapDefault;
 			mUseSSR = mUseSSRDefault;

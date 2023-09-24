@@ -540,7 +540,7 @@ namespace EveryRay_Core
 			}
 
 			mTerrainConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / worldShadowMapper->GetResolution(), 1.0f, 1.0f , 1.0f };
-			mTerrainConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ camera->GetCameraFarShadowCascadeDistance(0), camera->GetCameraFarShadowCascadeDistance(1), camera->GetCameraFarShadowCascadeDistance(2), 1.0f };
+			mTerrainConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ worldShadowMapper->GetCameraFarShadowCascadeDistance(0), worldShadowMapper->GetCameraFarShadowCascadeDistance(1), worldShadowMapper->GetCameraFarShadowCascadeDistance(2), 1.0f };
 		}
 
 		int tileIndex = 0;

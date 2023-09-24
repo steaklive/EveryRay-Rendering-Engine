@@ -753,6 +753,15 @@ namespace EveryRay_Core {
 				ImGui::Checkbox("DEBUG - Specular probes", &mDrawSpecularProbes);
 			}
 		}
+		if (ImGui::CollapsingHeader("Shadow Properties"))
+		{
+			ImGui::SliderFloat("Cascade #0 distance", &ER_Utility::ShadowCascadeDistances[0], 0.0f, 300.0f);
+			ImGui::SliderFloat("Cascade #1 distance", &ER_Utility::ShadowCascadeDistances[1], ER_Utility::ShadowCascadeDistances[0], 1000.0f);
+			ImGui::SliderFloat("Cascade #2 distance", &ER_Utility::ShadowCascadeDistances[2], ER_Utility::ShadowCascadeDistances[1], 5000.0f);
+			
+			ImGui::Checkbox("DEBUG - Shadow cascades", &mDebugShadowCascades);
+		}
+
 		ImGui::End();
 	}
 
@@ -791,91 +800,98 @@ namespace EveryRay_Core {
 		}
 	}
 
+	// Compute deferred lighting pass 
 	void ER_Illumination::DrawDeferredLighting(ER_GBuffer* gbuffer, ER_RHI_GPUTexture* aRenderTarget)
 	{
-		static const float clearColorBlack[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
 		auto rhi = mCore->GetRHI();
+		assert(aRenderTarget);
 
-		//compute pass
-		if (aRenderTarget)
+		if (!aRenderTarget)
+			return;
+
+		for (size_t i = 0; i < NUM_SHADOW_CASCADES; i++)
+			mDeferredLightingConstantBuffer.Data.ShadowMatrices[i] = mShadowMapper.GetViewMatrix(i) * mShadowMapper.GetProjectionMatrix(i) /** XMLoadFloat4x4(&ER_MatrixHelper::GetProjectionShadowMatrix())*/;
+		mDeferredLightingConstantBuffer.Data.ViewProj = XMMatrixTranspose(mCamera.ViewMatrix() * mCamera.ProjectionMatrix());
+		mDeferredLightingConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ 
+			mShadowMapper.GetCameraFarShadowCascadeDistance(0), mShadowMapper.GetCameraFarShadowCascadeDistance(1), mShadowMapper.GetCameraFarShadowCascadeDistance(2),
+			mDebugShadowCascades ? 1.0f : 0.0f };
+		mDeferredLightingConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / mShadowMapper.GetResolution(), 1.0f, 1.0f , 1.0f };
+		mDeferredLightingConstantBuffer.Data.SunDirection = XMFLOAT4{ -mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f };
+		mDeferredLightingConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLight.GetDirectionalLightIntensity() };
+		mDeferredLightingConstantBuffer.Data.CameraPosition = XMFLOAT4{ mCamera.Position().x,mCamera.Position().y,mCamera.Position().z, 1.0f };
+		mDeferredLightingConstantBuffer.Data.CameraNearFarPlanes = XMFLOAT4{ mCamera.NearPlaneDistance(), mCamera.FarPlaneDistance(), 0.0f, 0.0f };
+		mDeferredLightingConstantBuffer.Data.SSSTranslucency = mSSSTranslucency;
+		mDeferredLightingConstantBuffer.Data.SSSWidth = mSSSWidth;
+		mDeferredLightingConstantBuffer.Data.SSSDirectionLightMaxPlane = mSSSDirectionalLightPlaneScale;
+		mDeferredLightingConstantBuffer.Data.SSSAvailable = (mIsSSS && !mIsSSSCulled) ? 1.0f : -1.0f;
+		mDeferredLightingConstantBuffer.Data.HasGlobalProbe = !mProbesManager->IsEnabled() && mProbesManager->AreGlobalProbesReady();
+		mDeferredLightingConstantBuffer.ApplyChanges(rhi);
+
+		if (mProbesManager->IsEnabled())
 		{
-			for (size_t i = 0; i < NUM_SHADOW_CASCADES; i++)
-				mDeferredLightingConstantBuffer.Data.ShadowMatrices[i] = mShadowMapper.GetViewMatrix(i) * mShadowMapper.GetProjectionMatrix(i) /** XMLoadFloat4x4(&ER_MatrixHelper::GetProjectionShadowMatrix())*/;
-			mDeferredLightingConstantBuffer.Data.ViewProj = XMMatrixTranspose(mCamera.ViewMatrix() * mCamera.ProjectionMatrix());
-			mDeferredLightingConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ mCamera.GetCameraFarShadowCascadeDistance(0), mCamera.GetCameraFarShadowCascadeDistance(1), mCamera.GetCameraFarShadowCascadeDistance(2), 1.0f };
-			mDeferredLightingConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / mShadowMapper.GetResolution(), 1.0f, 1.0f , 1.0f };
-			mDeferredLightingConstantBuffer.Data.SunDirection = XMFLOAT4{ -mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f };
-			mDeferredLightingConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLight.GetDirectionalLightIntensity() };
-			mDeferredLightingConstantBuffer.Data.CameraPosition = XMFLOAT4{ mCamera.Position().x,mCamera.Position().y,mCamera.Position().z, 1.0f };
-			mDeferredLightingConstantBuffer.Data.CameraNearFarPlanes = XMFLOAT4{ mCamera.GetCameraNearShadowCascadeDistance(0), mCamera.GetCameraFarShadowCascadeDistance(0), 0.0f, 0.0f };
-			mDeferredLightingConstantBuffer.Data.SSSTranslucency = mSSSTranslucency;
-			mDeferredLightingConstantBuffer.Data.SSSWidth = mSSSWidth;
-			mDeferredLightingConstantBuffer.Data.SSSDirectionLightMaxPlane = mSSSDirectionalLightPlaneScale;
-			mDeferredLightingConstantBuffer.Data.SSSAvailable = (mIsSSS && !mIsSSSCulled) ? 1.0f : -1.0f;
-			mDeferredLightingConstantBuffer.Data.HasGlobalProbe = !mProbesManager->IsEnabled() && mProbesManager->AreGlobalProbesReady();
-			mDeferredLightingConstantBuffer.ApplyChanges(rhi);
-
-			if (mProbesManager->IsEnabled())
-			{
-				mLightProbesConstantBuffer.Data.DiffuseProbesCellsCount = mProbesManager->GetProbesCellsCount(DIFFUSE_PROBE);
-				mLightProbesConstantBuffer.Data.SpecularProbesCellsCount = mProbesManager->GetProbesCellsCount(SPECULAR_PROBE);
-				mLightProbesConstantBuffer.Data.SceneLightProbesBounds = XMFLOAT4{ mProbesManager->GetSceneProbesVolumeMin().x, mProbesManager->GetSceneProbesVolumeMin().y, mProbesManager->GetSceneProbesVolumeMin().z, 1.0f };
-				mLightProbesConstantBuffer.Data.DistanceBetweenDiffuseProbes = mProbesManager->GetDistanceBetweenDiffuseProbes();
-				mLightProbesConstantBuffer.Data.DistanceBetweenSpecularProbes = mProbesManager->GetDistanceBetweenSpecularProbes();
-				mLightProbesConstantBuffer.ApplyChanges(rhi);
-			}
-
-			rhi->UnbindRenderTargets();
-			
-			rhi->SetRootSignature(mDeferredLightingRS, true);
-			if (!rhi->IsPSOReady(mDeferredLightingPSOName, true))
-			{
-				rhi->InitializePSO(mDeferredLightingPSOName, true);
-				rhi->SetShader(mDeferredLightingCS);
-				rhi->SetRootSignatureToPSO(mDeferredLightingPSOName, mDeferredLightingRS, true);
-				rhi->FinalizePSO(mDeferredLightingPSOName, true);
-			}
-			rhi->SetPSO(mDeferredLightingPSOName, true);
-			rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP });
-			rhi->SetUnorderedAccessResources(ER_COMPUTE, { aRenderTarget }, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
-			if (mProbesManager->AreGlobalProbesReady())
-			{
-				if (mProbesManager->IsEnabled())
-					rhi->SetConstantBuffers(ER_COMPUTE, { mDeferredLightingConstantBuffer.Buffer(), mLightProbesConstantBuffer.Buffer() }, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
-				else
-					rhi->SetConstantBuffers(ER_COMPUTE, { mDeferredLightingConstantBuffer.Buffer() }, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
-
-				std::vector<ER_RHI_GPUResource*> resources(18);
-				resources[0] = gbuffer->GetAlbedo();
-				resources[1] = gbuffer->GetNormals();
-				resources[2] = gbuffer->GetPositions();
-				resources[3] = gbuffer->GetExtraBuffer();
-				resources[4] = gbuffer->GetExtra2Buffer();
-				for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
-					resources[5 + i] = mShadowMapper.GetShadowTexture(i);
-				resources[8] = mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture();
-				resources[9] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer() : nullptr;
-				resources[10] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer() : nullptr;
-				resources[11] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesPositionsBuffer() : nullptr;
-				resources[12] = mProbesManager->GetGlobalSpecularProbe()->GetCubemapTexture();
-				resources[13] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray() : nullptr;
-				resources[14] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesCellsIndicesBuffer() : nullptr;
-				resources[15] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer() : nullptr;
-				resources[16] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesPositionsBuffer() : nullptr;
-				resources[17] = mProbesManager->GetIntegrationMap();
-				rhi->SetShaderResources(ER_COMPUTE, resources, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
-			}
-
-			rhi->Dispatch(ER_DivideByMultiple(static_cast<UINT>(aRenderTarget->GetWidth()), 8u), ER_DivideByMultiple(static_cast<UINT>(aRenderTarget->GetHeight()), 8u), 1u);
-			rhi->UnbindResourcesFromShader(ER_COMPUTE);
-			rhi->UnsetPSO();
+			mLightProbesConstantBuffer.Data.DiffuseProbesCellsCount = mProbesManager->GetProbesCellsCount(DIFFUSE_PROBE);
+			mLightProbesConstantBuffer.Data.SpecularProbesCellsCount = mProbesManager->GetProbesCellsCount(SPECULAR_PROBE);
+			mLightProbesConstantBuffer.Data.SceneLightProbesBounds = XMFLOAT4{ mProbesManager->GetSceneProbesVolumeMin().x, mProbesManager->GetSceneProbesVolumeMin().y, mProbesManager->GetSceneProbesVolumeMin().z, 1.0f };
+			mLightProbesConstantBuffer.Data.DistanceBetweenDiffuseProbes = mProbesManager->GetDistanceBetweenDiffuseProbes();
+			mLightProbesConstantBuffer.Data.DistanceBetweenSpecularProbes = mProbesManager->GetDistanceBetweenSpecularProbes();
+			mLightProbesConstantBuffer.ApplyChanges(rhi);
 		}
+
+		rhi->UnbindRenderTargets();
+		
+		rhi->SetRootSignature(mDeferredLightingRS, true);
+		if (!rhi->IsPSOReady(mDeferredLightingPSOName, true))
+		{
+			rhi->InitializePSO(mDeferredLightingPSOName, true);
+			rhi->SetShader(mDeferredLightingCS);
+			rhi->SetRootSignatureToPSO(mDeferredLightingPSOName, mDeferredLightingRS, true);
+			rhi->FinalizePSO(mDeferredLightingPSOName, true);
+		}
+		rhi->SetPSO(mDeferredLightingPSOName, true);
+		rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP });
+		rhi->SetUnorderedAccessResources(ER_COMPUTE, { aRenderTarget }, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
+		if (mProbesManager->AreGlobalProbesReady())
+		{
+			if (mProbesManager->IsEnabled())
+				rhi->SetConstantBuffers(ER_COMPUTE, { mDeferredLightingConstantBuffer.Buffer(), mLightProbesConstantBuffer.Buffer() }, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
+			else
+				rhi->SetConstantBuffers(ER_COMPUTE, { mDeferredLightingConstantBuffer.Buffer() }, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
+
+			std::vector<ER_RHI_GPUResource*> resources(18);
+			resources[0] = gbuffer->GetAlbedo();
+			resources[1] = gbuffer->GetNormals();
+			resources[2] = gbuffer->GetPositions();
+			resources[3] = gbuffer->GetExtraBuffer();
+			resources[4] = gbuffer->GetExtra2Buffer();
+			for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
+				resources[5 + i] = mShadowMapper.GetShadowTexture(i);
+			resources[8] = mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture();
+			resources[9] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer() : nullptr;
+			resources[10] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer() : nullptr;
+			resources[11] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesPositionsBuffer() : nullptr;
+			resources[12] = mProbesManager->GetGlobalSpecularProbe()->GetCubemapTexture();
+			resources[13] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray() : nullptr;
+			resources[14] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesCellsIndicesBuffer() : nullptr;
+			resources[15] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer() : nullptr;
+			resources[16] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesPositionsBuffer() : nullptr;
+			resources[17] = mProbesManager->GetIntegrationMap();
+			rhi->SetShaderResources(ER_COMPUTE, resources, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
+		}
+
+		rhi->Dispatch(ER_DivideByMultiple(static_cast<UINT>(aRenderTarget->GetWidth()), 8u), ER_DivideByMultiple(static_cast<UINT>(aRenderTarget->GetHeight()), 8u), 1u);
+		rhi->UnbindResourcesFromShader(ER_COMPUTE);
+		rhi->UnsetPSO();
 	}
 
+	// Forward lighting passes for rendering objects
 	void ER_Illumination::DrawForwardLighting(ER_GBuffer* gbuffer, ER_RHI_GPUTexture* aRenderTarget)
 	{
 		auto rhi = mCore->GetRHI();
+		assert(aRenderTarget);
+
+		if (!aRenderTarget)
+			return;
+
 		rhi->SetRenderTargets({ aRenderTarget }, gbuffer->GetDepth());
 		rhi->SetRootSignature(mForwardLightingRS);
 		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -942,7 +958,7 @@ namespace EveryRay_Core {
 				mForwardLightingConstantBuffer.Data.ShadowMatrices[i] = XMMatrixTranspose(mShadowMapper.GetViewMatrix(i) * mShadowMapper.GetProjectionMatrix(i) * XMLoadFloat4x4(&ER_MatrixHelper::GetProjectionShadowMatrix()));
 			mForwardLightingConstantBuffer.Data.ViewProjection = XMMatrixTranspose(mCamera.ViewMatrix() * mCamera.ProjectionMatrix());
 			mForwardLightingConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / mShadowMapper.GetResolution(), 1.0f, 1.0f , 1.0f };
-			mForwardLightingConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ mCamera.GetCameraFarShadowCascadeDistance(0), mCamera.GetCameraFarShadowCascadeDistance(1), mCamera.GetCameraFarShadowCascadeDistance(2), 1.0f };
+			mForwardLightingConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ mShadowMapper.GetCameraFarShadowCascadeDistance(0), mShadowMapper.GetCameraFarShadowCascadeDistance(1), mShadowMapper.GetCameraFarShadowCascadeDistance(2), 1.0f };
 			mForwardLightingConstantBuffer.Data.SunDirection = XMFLOAT4{ -mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f };
 			mForwardLightingConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLight.GetDirectionalLightIntensity() };
 			mForwardLightingConstantBuffer.Data.CameraPosition = XMFLOAT4{ mCamera.Position().x,mCamera.Position().y,mCamera.Position().z, 1.0f };

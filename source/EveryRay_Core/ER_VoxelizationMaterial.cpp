@@ -78,7 +78,10 @@ namespace EveryRay_Core
 		mConstantBuffer.Data.ViewProjection = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());
 		mConstantBuffer.Data.ShadowMatrix = XMMatrixTranspose(neededSystems.mShadowMapper->GetViewMatrix(shadowCascadeIndex) * neededSystems.mShadowMapper->GetProjectionMatrix(shadowCascadeIndex) * XMLoadFloat4x4(&ER_MatrixHelper::GetProjectionShadowMatrix()));
 		mConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / neededSystems.mShadowMapper->GetResolution(), 1.0f, 1.0f, 1.0f };
-		mConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ camera->GetCameraFarShadowCascadeDistance(0), camera->GetCameraFarShadowCascadeDistance(1), camera->GetCameraFarShadowCascadeDistance(2), 1.0f };
+		mConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ 
+			neededSystems.mShadowMapper->GetCameraFarShadowCascadeDistance(0),
+			neededSystems.mShadowMapper->GetCameraFarShadowCascadeDistance(1),
+			neededSystems.mShadowMapper->GetCameraFarShadowCascadeDistance(2), 1.0f };
 		mConstantBuffer.Data.VoxelCameraPos = voxelCameraPos;
 		mConstantBuffer.Data.VoxelTextureDimension = voxelTexSize;
 		mConstantBuffer.Data.WorldVoxelScale = voxelScale;

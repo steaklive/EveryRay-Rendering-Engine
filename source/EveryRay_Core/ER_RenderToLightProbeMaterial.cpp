@@ -71,7 +71,10 @@ namespace EveryRay_Core
 			mConstantBuffer.Data.ShadowMatrices[i] = XMMatrixTranspose(neededSystems.mShadowMapper->GetViewMatrix(i) * neededSystems.mShadowMapper->GetProjectionMatrix(i) * XMLoadFloat4x4(&ER_MatrixHelper::GetProjectionShadowMatrix()));
 		mConstantBuffer.Data.ViewProjection = XMMatrixTranspose(cubemapCamera->ViewMatrix() * cubemapCamera->ProjectionMatrix());
 		mConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / neededSystems.mShadowMapper->GetResolution(), 1.0f, 1.0f, 1.0f };
-		mConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ cubemapCamera->GetCameraFarShadowCascadeDistance(0), cubemapCamera->GetCameraFarShadowCascadeDistance(1), cubemapCamera->GetCameraFarShadowCascadeDistance(2), 1.0f };
+		mConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ 
+			neededSystems.mShadowMapper->GetCameraFarShadowCascadeDistance(0),
+			neededSystems.mShadowMapper->GetCameraFarShadowCascadeDistance(1),
+			neededSystems.mShadowMapper->GetCameraFarShadowCascadeDistance(2), 1.0f };
 		mConstantBuffer.Data.SunDirection = XMFLOAT4{ -neededSystems.mDirectionalLight->Direction().x, -neededSystems.mDirectionalLight->Direction().y, -neededSystems.mDirectionalLight->Direction().z, 1.0f };
 		mConstantBuffer.Data.SunColor = XMFLOAT4{ neededSystems.mDirectionalLight->GetDirectionalLightColor().x, neededSystems.mDirectionalLight->GetDirectionalLightColor().y, neededSystems.mDirectionalLight->GetDirectionalLightColor().z, neededSystems.mDirectionalLight->GetDirectionalLightIntensity() };
 		mConstantBuffer.Data.CameraPosition = XMFLOAT4{ cubemapCamera->Position().x, cubemapCamera->Position().y, cubemapCamera->Position().z, 1.0f };

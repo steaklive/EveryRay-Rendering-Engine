@@ -41,9 +41,6 @@ namespace EveryRay_Core
 		XMMATRIX ViewProjectionMatrix() const;
 		XMMATRIX RotationTransformMatrix() const;
 
-		float GetCameraFarShadowCascadeDistance (int index) const;
-		float GetCameraNearShadowCascadeDistance (int index) const;
-
 		virtual void SetPosition(FLOAT x, FLOAT y, FLOAT z);
 		virtual void SetPosition(FXMVECTOR position);
 		virtual void SetPosition(const XMFLOAT3& position);
@@ -52,8 +49,6 @@ namespace EveryRay_Core
 		virtual void SetFOV(float fov);
 		virtual void SetNearPlaneDistance(float value);
 		virtual void SetFarPlaneDistance(float value);
-		virtual XMMATRIX GetCustomViewProjectionMatrixForCascade(int cascadeIndex);
-
 
 		virtual void Reset();
 		virtual void Initialize() override;
