@@ -61,9 +61,9 @@ namespace EveryRay_Core
 			else
 				mCameraCascadesFrustums[i].SetMatrix(mCamera.ProjectionMatrix());
 
-			mLightProjectors.push_back(new ER_Projector(pCore));
-			mLightProjectors[i]->Initialize();
-			mLightProjectors[i]->SetProjectionMatrix(GetProjectionBoundingSphere(i));
+			mLightProjectors.emplace_back(ER_Projector(pCore));
+			mLightProjectors[i].Initialize();
+			mLightProjectors[i].SetProjectionMatrix(GetProjectionBoundingSphere(i));
 			//mLightProjectors[i]->ApplyRotation(mDirectionalLight.GetTransform());
 		}
 
@@ -82,7 +82,6 @@ namespace EveryRay_Core
 	ER_ShadowMapper::~ER_ShadowMapper()
 	{
 		DeletePointerCollection(mShadowMaps);
-		DeletePointerCollection(mLightProjectors);
 
 		DeleteObject(mRootSignature);
 	}
@@ -96,10 +95,10 @@ namespace EveryRay_Core
 			else
 				mCameraCascadesFrustums[i].SetMatrix(mCamera.ProjectionMatrix());
 
-			mLightProjectors[i]->SetPosition(mLightProjectorCenteredPositions[i].x, mLightProjectorCenteredPositions[i].y, mLightProjectorCenteredPositions[i].z);
-			mLightProjectors[i]->SetProjectionMatrix(GetProjectionBoundingSphere(i));
-			mLightProjectors[i]->SetViewMatrix(mLightProjectorCenteredPositions[i], mDirectionalLight.Direction(), mDirectionalLight.Up());
-			mLightProjectors[i]->Update();
+			mLightProjectors[i].SetPosition(mLightProjectorCenteredPositions[i].x, mLightProjectorCenteredPositions[i].y, mLightProjectorCenteredPositions[i].z);
+			mLightProjectors[i].SetProjectionMatrix(GetProjectionBoundingSphere(i));
+			mLightProjectors[i].SetViewMatrix(mLightProjectorCenteredPositions[i], mDirectionalLight.Direction(), mDirectionalLight.Up());
+			mLightProjectors[i].Update();
 		}
 	}
 
@@ -144,12 +143,12 @@ namespace EveryRay_Core
 	XMMATRIX ER_ShadowMapper::GetViewMatrix(int cascadeIndex /*= 0*/) const
 	{
 		assert(cascadeIndex < NUM_SHADOW_CASCADES);
-		return mLightProjectors.at(cascadeIndex)->ViewMatrix();
+		return mLightProjectors[cascadeIndex].ViewMatrix();
 	}
 	XMMATRIX ER_ShadowMapper::GetProjectionMatrix(int cascadeIndex /*= 0*/) const
 	{
 		assert(cascadeIndex < NUM_SHADOW_CASCADES);
-		return mLightProjectors.at(cascadeIndex)->ProjectionMatrix();
+		return mLightProjectors[cascadeIndex].ProjectionMatrix();
 	}
 
 	ER_RHI_GPUTexture* ER_ShadowMapper::GetShadowTexture(int cascadeIndex) const
@@ -166,7 +165,7 @@ namespace EveryRay_Core
 	void ER_ShadowMapper::ApplyTransform()
 	{
 		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
-			mLightProjectors[i]->ApplyTransform(mDirectionalLight.GetTransform());
+			mLightProjectors[i].ApplyTransform(mDirectionalLight.GetTransform());
 	}
 
 	XMMATRIX ER_ShadowMapper::GetLightProjectionMatrixInFrustum(int index, ER_Frustum& cameraFrustum, ER_DirectionalLight& light)

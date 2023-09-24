@@ -50,7 +50,7 @@ namespace EveryRay_Core
 		ER_RHI_GPURootSignature* mRootSignature = nullptr;
 
 		std::vector<ER_RHI_GPUTexture*> mShadowMaps;
-		std::vector<ER_Projector*> mLightProjectors;
+		std::vector<ER_Projector> mLightProjectors;
 		std::vector<ER_Frustum> mCameraCascadesFrustums;
 		std::vector<XMFLOAT3> mLightProjectorCenteredPositions;
 
