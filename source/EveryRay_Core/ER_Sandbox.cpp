@@ -86,7 +86,7 @@ namespace EveryRay_Core {
 		#pragma region INIT_QUAD_RENDERER
 		mQuadRenderer = (ER_QuadRenderer*)game.GetServices().FindService(ER_QuadRenderer::TypeIdClass());
 		assert(mQuadRenderer);
-		mQuadRenderer->Setup();
+		mQuadRenderer->Initialize();
 #pragma endregion
 
 		#pragma region INIT_GBUFFER

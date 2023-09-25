@@ -17,7 +17,7 @@ namespace EveryRay_Core {
 		DeleteObject(mIndexBuffer);
 	}
 
-	void ER_QuadRenderer::Setup()
+	void ER_QuadRenderer::Initialize()
 	{
 		auto rhi = GetCore()->GetRHI();
 		QuadVertex* vertices = new QuadVertex[4];
@@ -39,7 +39,6 @@ namespace EveryRay_Core {
 		vertices[3].TextureCoordinates = XMFLOAT2(1.0f, 0.0f);
 
 		unsigned long* indices = new unsigned long[6];
-
 		indices[0] = 0;
 		indices[1] = 1;
 		indices[2] = 2;
@@ -75,6 +74,9 @@ namespace EveryRay_Core {
 
 		mVS = rhi->CreateGPUShader();
 		mVS->CompileShader(rhi, "content\\shaders\\Quad.hlsl", "VSMain", ER_VERTEX, mInputLayout);
+
+		DeleteObjects(vertices);
+		DeleteObjects(indices);
 	}
 
 	void ER_QuadRenderer::PrepareDraw(ER_RHI* rhi)
