@@ -63,7 +63,9 @@ namespace EveryRay_Core
 
 			mLightProjectors.emplace_back(pCore);
 			mLightProjectors[i].Initialize();
-			mLightProjectors[i].SetProjectionMatrix(GetProjectionBoundingSphere(i));
+
+			float sphereRadius = 0.0f;
+			mLightProjectors[i].SetProjectionMatrix(GetProjectionBoundingSphere(i, sphereRadius));
 			//mLightProjectors[i]->ApplyRotation(mDirectionalLight.GetTransform());
 		}
 
@@ -88,6 +90,21 @@ namespace EveryRay_Core
 
 	void ER_ShadowMapper::Update(const ER_CoreTime& gameTime)
 	{
+		ER_Frustum& cameraFrustum = mCamera.GetFrustum();
+		XMFLOAT3 frustumCorners[8] = {};
+
+		frustumCorners[0] = (cameraFrustum.Corners()[0]);
+		frustumCorners[1] = (cameraFrustum.Corners()[1]);
+		frustumCorners[2] = (cameraFrustum.Corners()[2]);
+		frustumCorners[3] = (cameraFrustum.Corners()[3]);
+		frustumCorners[4] = (cameraFrustum.Corners()[4]);
+		frustumCorners[5] = (cameraFrustum.Corners()[5]);
+		frustumCorners[6] = (cameraFrustum.Corners()[6]);
+		frustumCorners[7] = (cameraFrustum.Corners()[7]);
+
+		XMVECTOR direction = XMLoadFloat3(&mDirectionalLight.Direction());
+		XMVECTOR upDirection = XMLoadFloat3(&mDirectionalLight.Up());
+
 		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 		{
 			if (mIsCascaded)
@@ -95,8 +112,34 @@ namespace EveryRay_Core
 			else
 				mCameraCascadesFrustums[i].SetMatrix(mCamera.ProjectionMatrix());
 
+			float sphereRadius = 0.0f;
+			XMMATRIX projectionMatrix = GetProjectionBoundingSphere(i, sphereRadius);
+
+			if (mIsTexelSizeIncremented)
+			{
+				assert(sphereRadius);
+				float texelUnit = static_cast<float>(mResolution) / (sphereRadius * 2.0f);
+
+				XMMATRIX scale = XMMatrixScaling(texelUnit, texelUnit, texelUnit);
+
+				XMMATRIX baseViewMatrix = XMMatrixLookToRH({ 0.0, 0.0, 0.0, 1.0 }, direction, upDirection);
+				baseViewMatrix *= scale;
+				XMMATRIX invBaseViewMatrix = XMMatrixInverse(nullptr, baseViewMatrix);
+
+				XMVECTOR posV = XMLoadFloat3(&mLightProjectorCenteredPositions[i]);
+				posV = XMVector3Transform(posV, baseViewMatrix);
+				
+				XMFLOAT3 pos;
+				XMStoreFloat3(&pos, posV);
+				pos.x = floor(pos.x);
+				pos.y = floor(pos.y);
+				posV = XMLoadFloat3(&pos);
+				posV = XMVector3Transform(posV, invBaseViewMatrix);
+				XMStoreFloat3(&mLightProjectorCenteredPositions[i], posV);
+			}
+
 			mLightProjectors[i].SetPosition(mLightProjectorCenteredPositions[i].x, mLightProjectorCenteredPositions[i].y, mLightProjectorCenteredPositions[i].z);
-			mLightProjectors[i].SetProjectionMatrix(GetProjectionBoundingSphere(i));
+			mLightProjectors[i].SetProjectionMatrix(projectionMatrix);
 			mLightProjectors[i].SetViewMatrix(mLightProjectorCenteredPositions[i], mDirectionalLight.Direction(), mDirectionalLight.Up());
 			mLightProjectors[i].Update();
 		}
@@ -236,7 +279,7 @@ namespace EveryRay_Core
 		XMMATRIX projectionMatrix = XMMatrixOrthographicRH(maxX - minX, maxY - minY, -delta, maxZ - minZ);
 		return projectionMatrix;
 	}
-	XMMATRIX ER_ShadowMapper::GetProjectionBoundingSphere(int index)
+	XMMATRIX ER_ShadowMapper::GetProjectionBoundingSphere(int index, float& sphereRadius)
 	{
 		// Create a bounding sphere around the camera frustum for 360 rotation
 		float nearV = GetCameraNearShadowCascadeDistance(index);
@@ -260,7 +303,7 @@ namespace EveryRay_Core
 			mCamera.Position().x + farCorner.x  * farV - sphereCenter.x,
 			mCamera.Position().y + farCorner.y  * farV - sphereCenter.y,
 			mCamera.Position().z + farCorner.z  * farV - sphereCenter.z);
-		float sphereRadius = sqrt(boundVec.x * boundVec.x + boundVec.y * boundVec.y + boundVec.z * boundVec.z);
+		sphereRadius = sqrt(boundVec.x * boundVec.x + boundVec.y * boundVec.y + boundVec.z * boundVec.z);
 
 		mLightProjectorCenteredPositions[index] =
 			XMFLOAT3(

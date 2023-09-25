@@ -42,7 +42,7 @@ namespace EveryRay_Core
 
 	private:
 		XMMATRIX GetLightProjectionMatrixInFrustum(int index, ER_Frustum& cameraFrustum, ER_DirectionalLight& light);
-		XMMATRIX GetProjectionBoundingSphere(int index);
+		XMMATRIX GetProjectionBoundingSphere(int index, float& sphereRadius);
 
 		ER_Camera& mCamera;
 		ER_DirectionalLight& mDirectionalLight;
@@ -61,5 +61,6 @@ namespace EveryRay_Core
 		XMMATRIX mShadowMapProjectionMatrix;
 		UINT mResolution = 0;
 		bool mIsCascaded = true;
+		bool mIsTexelSizeIncremented = true;
 	};
 }

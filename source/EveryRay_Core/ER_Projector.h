@@ -41,7 +41,7 @@ namespace EveryRay_Core
 		void Initialize();
 		void Update();
 		void UpdateViewMatrix();
-		void SetViewMatrix(XMFLOAT3 pos, XMFLOAT3 dir, XMFLOAT3 up);
+		void SetViewMatrix(const XMFLOAT3& pos, const XMFLOAT3& dir, const XMFLOAT3& up);
 		void UpdateProjectionMatrix();
 		void SetProjectionMatrix(CXMMATRIX matrix);
 		void ApplyRotation(CXMMATRIX transform);

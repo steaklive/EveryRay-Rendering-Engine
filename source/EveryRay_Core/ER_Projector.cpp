@@ -159,7 +159,7 @@ namespace EveryRay_Core
 		XMStoreFloat4x4(&mViewMatrix, viewMatrix);
 	}
 
-	void ER_Projector::SetViewMatrix(XMFLOAT3 pos, XMFLOAT3 dir, XMFLOAT3 up)
+	void ER_Projector::SetViewMatrix(const XMFLOAT3& pos, const XMFLOAT3& dir, const XMFLOAT3& up)
 	{
 		mPosition = pos;
 		mDirection = dir;
