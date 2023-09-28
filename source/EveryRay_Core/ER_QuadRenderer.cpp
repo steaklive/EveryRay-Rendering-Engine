@@ -17,7 +17,7 @@ namespace EveryRay_Core {
 		DeleteObject(mIndexBuffer);
 	}
 
-	void ER_QuadRenderer::Initialize()
+	void ER_QuadRenderer::Init()
 	{
 		auto rhi = GetCore()->GetRHI();
 		QuadVertex* vertices = new QuadVertex[4];

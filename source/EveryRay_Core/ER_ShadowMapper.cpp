@@ -282,7 +282,7 @@ namespace EveryRay_Core
 	XMMATRIX ER_ShadowMapper::GetProjectionBoundingSphere(int index, float& sphereRadius)
 	{
 		// Create a bounding sphere around the camera frustum for 360 rotation
-		float nearV = GetCameraNearShadowCascadeDistance(index);
+		float nearV = index == 0 ? mCamera.NearPlaneDistance() : GetCameraNearShadowCascadeDistance(index);
 		float farV = GetCameraFarShadowCascadeDistance(index);
 		float endV = nearV + farV;
 		XMFLOAT3 sphereCenter = XMFLOAT3(

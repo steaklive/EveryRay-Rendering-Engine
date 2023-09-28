@@ -17,7 +17,7 @@ namespace EveryRay_Core
 		ER_QuadRenderer(ER_Core& game);
 		~ER_QuadRenderer();
 
-		void Initialize();
+		void Init();
 		void PrepareDraw(ER_RHI* rhi);
 		void Draw(ER_RHI* rhi, bool unbindShader = true);
 
