@@ -507,25 +507,25 @@ namespace EveryRay_Core
 	void ER_RenderingObject::SetTransformationMatrix(const XMMATRIX& mat)
 	{
 		mTransformationMatrix = mat;
-		ER_MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
+		ER_MatrixHelper::SetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
 	}
 
 	void ER_RenderingObject::SetTranslation(float x, float y, float z)
 	{
 		mTransformationMatrix *= XMMatrixTranslation(x, y, z);
-		ER_MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
+		ER_MatrixHelper::SetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
 	}
 
 	void ER_RenderingObject::SetScale(float x, float y, float z)
 	{
 		mTransformationMatrix *= XMMatrixScaling(x, y, z);
-		ER_MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
+		ER_MatrixHelper::SetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
 	}
 
 	void ER_RenderingObject::SetRotation(float x, float y, float z)
 	{
 		mTransformationMatrix *= XMMatrixRotationRollPitchYaw(x, y, z);
-		ER_MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
+		ER_MatrixHelper::SetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
 	}
 
 	// new instancing code
@@ -805,7 +805,7 @@ namespace EveryRay_Core
 		if (isCurrentlyEditable && mIsInstanced)
 		{
 			// load current selected instance's transform to temp transform (for UI)
-			ER_MatrixHelper::GetFloatArray(mInstanceData[0][mEditorSelectedInstancedObjectIndex].World, mCurrentObjectTransformMatrix);
+			ER_MatrixHelper::SetFloatArray(mInstanceData[0][mEditorSelectedInstancedObjectIndex].World, mCurrentObjectTransformMatrix);
 		}
 
 		// place procedurally on terrain (only executed once, on load)
@@ -903,8 +903,8 @@ namespace EveryRay_Core
 		if (!(mIsAvailableInEditorMode && mIsSelected))
 			return;
 
-		ER_MatrixHelper::GetFloatArray(mCamera.ViewMatrix4X4(), mCameraViewMatrix);
-		ER_MatrixHelper::GetFloatArray(mCamera.ProjectionMatrix4X4(), mCameraProjectionMatrix);
+		ER_MatrixHelper::SetFloatArray(mCamera.ViewMatrix4X4(), mCameraViewMatrix);
+		ER_MatrixHelper::SetFloatArray(mCamera.ProjectionMatrix4X4(), mCameraProjectionMatrix);
 
 		ShowObjectsEditorWindow(mCameraViewMatrix, mCameraProjectionMatrix, mCurrentObjectTransformMatrix);
 

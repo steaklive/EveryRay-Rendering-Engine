@@ -4,6 +4,8 @@
 #include "ER_VectorHelper.h"
 #include "ER_Utility.h"
 #include "ER_MatrixHelper.h"
+#include "ER_Camera.h"
+#include "ER_Core.h"
 
 #include "imgui.h"
 #include "ImGuizmo.h"
@@ -24,8 +26,7 @@ namespace EveryRay_Core
 		//directional gizmo model
 		mProxyModel = new ER_DebugProxyObject(*mCore, camera, ER_Utility::GetFilePath("content\\models\\proxy\\proxy_direction_arrow.obj"), 1.0f);
 		mProxyModel->Initialize();
-		mProxyModel->SetPosition(0.0f, 50.0, 0.0f);
-		mPseudoTranslation = XMMatrixTranslation(mProxyModel->Position().x, mProxyModel->Position().y ,mProxyModel->Position().z);
+		mProxyModel->SetPosition(0.0f, 0.0f, 0.0f);
 	}
 
 	ER_DirectionalLight::~ER_DirectionalLight()
@@ -89,7 +90,7 @@ namespace EveryRay_Core
 		if (mProxyModel)
 			mProxyModel->ApplyRotation(transform);
 
-		UpdateTransformArray(transform * mPseudoTranslation);
+		UpdateTransformArray(mTransformMatrix);
 	}
 
 	void ER_DirectionalLight::ApplyRotation(const XMFLOAT4X4& transform)
@@ -130,18 +131,30 @@ namespace EveryRay_Core
 
 	void ER_DirectionalLight::DrawProxyModel(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, const ER_CoreTime & time, ER_RHI_GPURootSignature* rs)
 	{
-		if (mProxyModel)
+		if (mProxyModel && ER_Utility::IsEditorMode && ER_Utility::IsLightEditor)
 			mProxyModel->Draw(aRenderTarget, aDepth, time, rs);
 	}
 
-	void ER_DirectionalLight::UpdateProxyModel(const ER_CoreTime & time, XMFLOAT4X4 viewMatrix, XMFLOAT4X4 projectionMatrix)
+	void ER_DirectionalLight::UpdateProxyModel(const ER_CoreTime & time, const XMFLOAT4X4& viewMatrix, const XMFLOAT4X4& projectionMatrix)
 	{
+		ER_Camera* camera = (ER_Camera*)(GetCore()->GetServices().FindService(ER_Camera::TypeIdClass()));
+		assert(camera);
+
+		XMFLOAT3 gizmoPos = XMFLOAT3(
+			(camera->Position().x + mProxyModelGizmoTranslationDelta.x),
+			(camera->Position().y + mProxyModelGizmoTranslationDelta.y),
+			(camera->Position().z + mProxyModelGizmoTranslationDelta.z));
+
 		if (mProxyModel)
 		{
+			mProxyModel->SetPosition(gizmoPos);
 			mProxyModel->Update(time);
 
-			ER_MatrixHelper::GetFloatArray(viewMatrix, mCameraViewMatrix);
-			ER_MatrixHelper::GetFloatArray(projectionMatrix, mCameraProjectionMatrix);
+			ER_MatrixHelper::SetTranslation(mTransformMatrix, gizmoPos);
+			ER_MatrixHelper::SetFloatArray(mTransformMatrix, mObjectTransformMatrix);
+
+			ER_MatrixHelper::SetFloatArray(viewMatrix, mCameraViewMatrix);
+			ER_MatrixHelper::SetFloatArray(projectionMatrix, mCameraProjectionMatrix);
 
 			UpdateGizmoTransform(mCameraViewMatrix, mCameraProjectionMatrix, mObjectTransformMatrix);
 		}
@@ -158,7 +171,8 @@ namespace EveryRay_Core
 		static bool boundSizing = false;
 		static bool boundSizingSnap = false;
 
-		if (ER_Utility::IsEditorMode && ER_Utility::IsLightEditor) {
+		if (ER_Utility::IsEditorMode && ER_Utility::IsLightEditor)
+		{
 			ImGui::Begin("Directional Light Editor");
 
 			ImGui::ColorEdit3("Sun Color", mSunColor);
@@ -189,7 +203,7 @@ namespace EveryRay_Core
 		XMFLOAT4X4 transformMatrix;
 		XMStoreFloat4x4(&transformMatrix, transform);
 
-		ER_MatrixHelper::GetFloatArray(transformMatrix, mObjectTransformMatrix);
+		ER_MatrixHelper::SetFloatArray(transformMatrix, mObjectTransformMatrix);
 	}
 
 	const XMMATRIX& ER_DirectionalLight::LightMatrix(const XMFLOAT3& mPosition) const

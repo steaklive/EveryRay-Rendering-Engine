@@ -339,7 +339,7 @@ namespace EveryRay_Core
 		}
 
 		mTransformationMatrix = XMMatrixTranslation(mDistributionCenter.x, mDistributionCenter.y, mDistributionCenter.z);
-		ER_MatrixHelper::GetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
+		ER_MatrixHelper::SetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
 	}
 
 	void ER_Foliage::InitializeBuffersGPU(int count)
@@ -525,8 +525,8 @@ namespace EveryRay_Core
 		//imgui
 		if (editable)
 		{
-			ER_MatrixHelper::GetFloatArray(mCamera.ViewMatrix4X4(), mCameraViewMatrix);
-			ER_MatrixHelper::GetFloatArray(mCamera.ProjectionMatrix4X4(), mCameraProjectionMatrix);
+			ER_MatrixHelper::SetFloatArray(mCamera.ViewMatrix4X4(), mCameraViewMatrix);
+			ER_MatrixHelper::SetFloatArray(mCamera.ProjectionMatrix4X4(), mCameraProjectionMatrix);
 
 			static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
 			static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);

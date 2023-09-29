@@ -29,16 +29,16 @@ namespace EveryRay_Core
 		XMVECTOR RightVector() const;
 
 		const XMMATRIX& LightMatrix(const XMFLOAT3& position) const;
+		const XMMATRIX& GetTransform() const { return mTransformMatrix; }
 
 		void ApplyRotation(CXMMATRIX transform);
 		void ApplyRotation(const XMFLOAT4X4& transform);
 		void ApplyTransform(const float* transform);
 		void DrawProxyModel(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, const ER_CoreTime& time, ER_RHI_GPURootSignature* rs);
-		void UpdateProxyModel(const ER_CoreTime& time, XMFLOAT4X4 viewMatrix, XMFLOAT4X4 projectionMatrix);
+		void UpdateProxyModel(const ER_CoreTime& time, const XMFLOAT4X4& viewMatrix, const XMFLOAT4X4& projectionMatrix);
 		void UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix);
 		XMFLOAT3 GetDirectionalLightColor() const { return XMFLOAT3(mSunColor); }
 		XMFLOAT3 GetAmbientLightColor() const { return XMFLOAT3(mAmbientColor); }
-		XMMATRIX GetTransform() { return mTransformMatrix; }
 		void SetSunColor(XMFLOAT3 color) {
 			mSunColor[0] = color.x;
 			mSunColor[1] = color.y;
@@ -52,7 +52,6 @@ namespace EveryRay_Core
 		bool IsSunRendered() { return mDrawSun; }
 		float GetSunBrightness() { return mSunBrightness; }
 		float GetSunExponent() { return mSunExponent; }
-
 		float GetDirectionalLightIntensity() const { return mDirectionalLightIntensity; }
 
 		ER_GenericEvent<Delegate_RotationUpdate>* RotationUpdateEvent = new ER_GenericEvent<Delegate_RotationUpdate>();
@@ -78,14 +77,14 @@ namespace EveryRay_Core
 		float mCameraViewMatrix[16];
 		float mCameraProjectionMatrix[16];
 
-		XMMATRIX mPseudoTranslation = XMMatrixIdentity(); //from proxy model
+		XMFLOAT3 mProxyModelGizmoTranslationDelta = { -4.0, -3.0, -10.0f };
 
 		float mSunColor[3] = { 1.0f, 0.95f, 0.863f };
 		float mAmbientColor[3] = { 0.08f, 0.08f, 0.08f };
 
 		XMMATRIX mTransformMatrix = XMMatrixIdentity();
+		
 		bool mDrawSun = true;
-
 		float mSunExponent = 10000;
 		float mSunBrightness = 2.637f;
 		float mDirectionalLightIntensity = 4.0f;

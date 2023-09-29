@@ -140,15 +140,15 @@ namespace EveryRay_Core
 		return rowVector;
 	}
 
-	void ER_MatrixHelper::GetFloatArray(const XMMATRIX & pMat, float* matrixArray)
+	void ER_MatrixHelper::SetFloatArray(const XMMATRIX & pMat, float* matrixArray)
 	{
 		XMFLOAT4X4 mat;
 		XMStoreFloat4x4(&mat, pMat);
 
-		GetFloatArray(mat, matrixArray);
+		SetFloatArray(mat, matrixArray);
 	}
 
-	void ER_MatrixHelper::GetFloatArray(const XMFLOAT4X4& mat, float* matrixArray)
+	void ER_MatrixHelper::SetFloatArray(const XMFLOAT4X4& mat, float* matrixArray)
 	{
 		matrixArray[0] = mat._11;
 		matrixArray[1] = mat._12;

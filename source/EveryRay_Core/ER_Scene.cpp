@@ -847,7 +847,7 @@ namespace EveryRay_Core
 					XMMATRIX matXM = XMMatrixTranspose(XMLoadFloat4x4(&mat));
 					XMStoreFloat4x4(&mat, matXM);
 					float matF[16];
-					ER_MatrixHelper::GetFloatArray(mat, matF);
+					ER_MatrixHelper::SetFloatArray(mat, matF);
 					for (int i = 0; i < 16; i++)
 						content.append(matF[i]);
 					mSceneJsonRoot["posteffects_volumes"][i]["volume_transform"] = content;
@@ -857,7 +857,7 @@ namespace EveryRay_Core
 					float matF[16];
 					XMFLOAT4X4 mat;
 					XMStoreFloat4x4(&mat, XMMatrixTranspose(XMMatrixIdentity()));
-					ER_MatrixHelper::GetFloatArray(mat, matF);
+					ER_MatrixHelper::SetFloatArray(mat, matF);
 
 					for (int i = 0; i < 16; i++)
 						content.append(matF[i]);
@@ -890,7 +890,7 @@ namespace EveryRay_Core
 					XMMATRIX matXM = XMMatrixTranspose(XMLoadFloat4x4(&mat));
 					XMStoreFloat4x4(&mat, matXM);
 					float matF[16];
-					ER_MatrixHelper::GetFloatArray(mat, matF);
+					ER_MatrixHelper::SetFloatArray(mat, matF);
 					for (int i = 0; i < 16; i++)
 						content.append(matF[i]);
 					mSceneJsonRoot["rendering_objects"][i]["transform"] = content;
@@ -901,7 +901,7 @@ namespace EveryRay_Core
 				float matF[16];
 				XMFLOAT4X4 mat;
 				XMStoreFloat4x4(&mat, XMMatrixTranspose(XMMatrixIdentity()));
-				ER_MatrixHelper::GetFloatArray(mat, matF);
+				ER_MatrixHelper::SetFloatArray(mat, matF);
 
 				for (int i = 0; i < 16; i++)
 					content.append(matF[i]);
@@ -926,7 +926,7 @@ namespace EveryRay_Core
 							XMMATRIX matXM = XMMatrixTranspose(XMLoadFloat4x4(&mat));
 							XMStoreFloat4x4(&mat, matXM);
 							float matF[16];
-							ER_MatrixHelper::GetFloatArray(mat, matF);
+							ER_MatrixHelper::SetFloatArray(mat, matF);
 							for (int i = 0; i < 16; i++)
 								contentInstanceTransform.append(matF[i]);
 

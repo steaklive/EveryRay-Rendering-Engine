@@ -383,10 +383,10 @@ namespace EveryRay_Core {
 			{
 				float cameraViewMat[16];
 				float cameraProjMat[16];
-				ER_MatrixHelper::GetFloatArray(mCamera.ViewMatrix4X4(), cameraViewMat);
-				ER_MatrixHelper::GetFloatArray(mCamera.ProjectionMatrix4X4(), cameraProjMat);
+				ER_MatrixHelper::SetFloatArray(mCamera.ViewMatrix4X4(), cameraViewMat);
+				ER_MatrixHelper::SetFloatArray(mCamera.ProjectionMatrix4X4(), cameraProjMat);
 
-				ER_MatrixHelper::GetFloatArray(mPostEffectsVolumes[mSelectedEditorPostEffectsVolumeIndex].GetTransform(), mEditorCurrentPostEffectsVolumeTransformMatrix);
+				ER_MatrixHelper::SetFloatArray(mPostEffectsVolumes[mSelectedEditorPostEffectsVolumeIndex].GetTransform(), mEditorCurrentPostEffectsVolumeTransformMatrix);
 
 				static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
 				static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
