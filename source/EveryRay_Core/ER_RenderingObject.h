@@ -10,18 +10,19 @@ const UINT MAX_DIRECT_INSTANCE_COUNT = 20000; // max count for instances which a
 
 // Bitmasks for "RenderingObjectFlags" as decimal values
 // Keep in sync with content/shaders/Common.hlsli!
-const UINT RENDERING_OBJECT_FLAG_USE_GLOBAL_DIF_PROBE		 = 1;    //  000000000001 // use global diffuse probe
-const UINT RENDERING_OBJECT_FLAG_USE_GLOBAL_SPEC_PROBE		 = 2;    //  000000000010 // use global specular probe
-const UINT RENDERING_OBJECT_FLAG_SSS						 = 4;    //  000000000100 // use sss
-const UINT RENDERING_OBJECT_FLAG_POM						 = 8;    //  000000001000 // use pom
-const UINT RENDERING_OBJECT_FLAG_REFLECTION					 = 16;   //  000000010000 // use reflection mask
-const UINT RENDERING_OBJECT_FLAG_FOLIAGE					 = 32;   //  000000100000 // is foliage
-const UINT RENDERING_OBJECT_FLAG_TRANSPARENT				 = 64;   //  000001000000 // is transparent
-const UINT RENDERING_OBJECT_FLAG_FUR						 = 128;  //  000010000000 // is fur
-const UINT RENDERING_OBJECT_FLAG_SKIP_DEFERRED_PASS			 = 256;  //  000100000000 // skip deferred pass
-const UINT RENDERING_OBJECT_FLAG_SKIP_INDIRECT_DIF			 = 512;  //  001000000000 // skip indirect specular lighting
-const UINT RENDERING_OBJECT_FLAG_SKIP_INDIRECT_SPEC			 = 1024; //  010000000000 // skip indirect specular lighting
-const UINT RENDERING_OBJECT_FLAG_GPU_INDIRECT_DRAW			 = 2048; //  100000000000 // used for GPU indirect drawing
+const UINT RENDERING_OBJECT_FLAG_USE_GLOBAL_DIF_PROBE		 = 1;    //  0000000000001 // use global diffuse probe
+const UINT RENDERING_OBJECT_FLAG_USE_GLOBAL_SPEC_PROBE		 = 2;    //  0000000000010 // use global specular probe
+const UINT RENDERING_OBJECT_FLAG_SSS						 = 4;    //  0000000000100 // use sss
+const UINT RENDERING_OBJECT_FLAG_POM						 = 8;    //  0000000001000 // use pom
+const UINT RENDERING_OBJECT_FLAG_REFLECTION					 = 16;   //  0000000010000 // use reflection mask
+const UINT RENDERING_OBJECT_FLAG_FOLIAGE					 = 32;   //  0000000100000 // is foliage
+const UINT RENDERING_OBJECT_FLAG_TRANSPARENT				 = 64;   //  0000001000000 // is transparent
+const UINT RENDERING_OBJECT_FLAG_FUR						 = 128;  //  0000010000000 // is fur
+const UINT RENDERING_OBJECT_FLAG_SKIP_DEFERRED_PASS			 = 256;  //  0000100000000 // skip deferred pass
+const UINT RENDERING_OBJECT_FLAG_SKIP_INDIRECT_DIF			 = 512;  //  0001000000000 // skip indirect specular lighting
+const UINT RENDERING_OBJECT_FLAG_SKIP_INDIRECT_SPEC			 = 1024; //  0010000000000 // skip indirect specular lighting
+const UINT RENDERING_OBJECT_FLAG_GPU_INDIRECT_DRAW			 = 2048; //  0100000000000 // used for GPU indirect drawing
+const UINT RENDERING_OBJECT_FLAG_TRIPLANAR_MAPPING			 = 4096; //  1000000000000 // use triplanar mapping
 
 namespace EveryRay_Core
 {
@@ -303,6 +304,11 @@ namespace EveryRay_Core
 		int GetIndexInScene() { return mIndexInScene; }
 		void SetIndexInScene(int index) { mIndexInScene = index; }
 
+		bool IsTriplanarMapped() { return mIsTriplanarMapped; }
+		void SetTriplanarMapping(bool value) { mIsTriplanarMapped = value; }
+		float GetTriplanarMappedSharpness() { return mTriplanarMappingSharpness; }
+		void SetTriplanarMappedSharpness(float value) { mTriplanarMappingSharpness = value; }
+
 		ER_RHI_GPUConstantBuffer<ObjectCB>& GetObjectsConstantBuffer() { return mObjectConstantBuffer; }
 		ER_RHI_GPUConstantBuffer<ObjectFakeRootCB>& GetObjectsFakeRootConstantBuffer() { return mObjectFakeRootConstantBuffer; }
 
@@ -477,6 +483,8 @@ namespace EveryRay_Core
 		bool													mIsSkippedIndirectDiffuse = false;
 		bool													mIsReflective = false; //appeared in SSR and such
 		bool													mIsTransparent = false;
+		bool													mIsTriplanarMapped = false;
+		float													mTriplanarMappingSharpness = 1.0f;
 		float													mIOR = 1.52f; // glass IOR by default
 		float													mCustomRoughness = -1.0f;
 		float													mCustomMetalness = -1.0f;

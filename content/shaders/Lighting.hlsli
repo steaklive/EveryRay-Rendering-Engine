@@ -5,6 +5,8 @@
 #define PARALLAX_OCCLUSION_MAPPING_HEIGHT_SCALE 0.05
 #define PARALLAX_OCCLUSION_MAPPING_SOFT_SHADOWS_FACTOR 10.0
 
+#define TRIPLANAR_MAPPING_BLEND_SHARPNESS 4.0
+
 static const float4 ColorWhite = { 1, 1, 1, 1 };
 static const float Pi = 3.141592654f;
 

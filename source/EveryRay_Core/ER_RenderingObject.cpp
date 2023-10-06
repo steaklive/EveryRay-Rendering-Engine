@@ -994,6 +994,11 @@ namespace EveryRay_Core
 			mObjectShaderBitmaskFlags |= RENDERING_OBJECT_FLAG_GPU_INDIRECT_DRAW;
 		else
 			mObjectShaderBitmaskFlags &= ~RENDERING_OBJECT_FLAG_GPU_INDIRECT_DRAW;
+
+		if (mIsTriplanarMapped)
+			mObjectShaderBitmaskFlags |= RENDERING_OBJECT_FLAG_TRIPLANAR_MAPPING;
+		else
+			mObjectShaderBitmaskFlags &= ~RENDERING_OBJECT_FLAG_TRIPLANAR_MAPPING;
 	}
 
 	// Shows and updates an ImGui/ImGizmo window for objects editor.
@@ -1117,6 +1122,9 @@ namespace EveryRay_Core
 				ImGui::SliderFloat("Fur Gravity Strength", &mFurGravityStrength, 0.0, 10.0);
 				ImGui::SliderFloat("Fur Wind Frequency", &mFurWindFrequency, 0.0, 10.0);
 			}
+			ImGui::Checkbox("Triplanar mapping", &mIsTriplanarMapped);
+			//f (mIsTriplanarMapped)
+			//	ImGui::SliderFloat("Triplanar mapping - sharpness", &mTriplanarMappingSharpness, 0.01, 50.0f);
 
 			//Transforms
 			if (!mIsIndirectlyRendered)

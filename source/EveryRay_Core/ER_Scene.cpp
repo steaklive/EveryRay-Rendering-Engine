@@ -326,6 +326,11 @@ namespace EveryRay_Core
 			if (mSceneJsonRoot["rendering_objects"][i].isMember("custom_metalness"))
 				aObject->SetCustomMetalness(mSceneJsonRoot["rendering_objects"][i]["custom_metalness"].asFloat());
 
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("use_triplanar_mapping"))
+				aObject->SetTriplanarMapping(mSceneJsonRoot["rendering_objects"][i]["use_triplanar_mapping"].asBool());
+			//if (mSceneJsonRoot["rendering_objects"][i].isMember("triplanar_mapping_sharpness"))
+			//	aObject->SetTriplanarMappedSharpness(mSceneJsonRoot["rendering_objects"][i]["triplanar_mapping_sharpness"].asFloat());
+
 			//fur
 			if (mSceneJsonRoot["rendering_objects"][i].isMember("fur_layers_count"))
 				aObject->SetFurLayersCount(mSceneJsonRoot["rendering_objects"][i]["fur_layers_count"].asInt());

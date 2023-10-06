@@ -294,8 +294,17 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
     float2 texCoord = vsOutput.UV;
     
     float3 normalWS = float3(0.0, 0.0, 0.0);
-    float extraMaskValue = (RenderingObjectFlags & RENDERING_OBJECT_FLAG_POM) || (RenderingObjectFlags & RENDERING_OBJECT_FLAG_TRANSPARENT) ?
-        ExtraMaskTexture.Sample(SamplerLinear, texCoord).r : -1.0f;
+
+    bool useTriplanarMapping = (RenderingObjectFlags & RENDERING_OBJECT_FLAG_TRIPLANAR_MAPPING) && !(RenderingObjectFlags & RENDERING_OBJECT_FLAG_POM);
+
+    float extraMaskValue = -1.0f; 
+    if ((RenderingObjectFlags & RENDERING_OBJECT_FLAG_POM) || (RenderingObjectFlags & RENDERING_OBJECT_FLAG_TRANSPARENT))
+    {
+        if (useTriplanarMapping)
+            extraMaskValue = GetTriplanarMapping(ExtraMaskTexture, SamplerLinear, vsOutput.WorldPos.xyz, vsOutput.Normal.xyz, TRIPLANAR_MAPPING_BLEND_SHARPNESS);
+        else
+            extraMaskValue = ExtraMaskTexture.Sample(SamplerLinear, texCoord).r;
+    }
     
     float POMSelfShadow = 1.0f;
 #if PARALLAX_OCCLUSION_MAPPING_SUPPORT
@@ -303,7 +312,11 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
     {
         int stepsCount = GetPOMRayStepsCount(vsOutput.WorldPos.rgb, vsOutput.Normal);
         texCoord = CalculatePOMUVOffset(vsOutput.ParallaxOffset, vsOutput.UV, stepsCount);
-        float3 sampledNormal = (2 * NormalTexture.Sample(SamplerLinear, texCoord).xyz) - 1.0;
+        float3 sampledNormal = float3(0.0, 0.0, 0.0);
+        if (!useTriplanarMapping)
+            sampledNormal = 2.0 * NormalTexture.Sample(SamplerLinear, texCoord).xyz - 1.0;
+        else
+            sampledNormal = 2.0 * GetTriplanarMapping(NormalTexture, SamplerLinear, vsOutput.WorldPos.xyz, vsOutput.Normal.xyz, TRIPLANAR_MAPPING_BLEND_SHARPNESS).xyz - 1.0;
         sampledNormal = mul(sampledNormal, TBN);
         normalWS = normalize(sampledNormal);
         
@@ -315,17 +328,46 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
     else
 #endif
     {
-        float3 sampledNormal = (2 * NormalTexture.Sample(SamplerLinear, texCoord).xyz) - 1.0;
+        float3 sampledNormal = float3(0.0, 0.0, 0.0);
+        if (!useTriplanarMapping)
+            sampledNormal = 2.0 * NormalTexture.Sample(SamplerLinear, texCoord).xyz - 1.0;
+        else
+            sampledNormal = 2.0 * GetTriplanarMapping(NormalTexture, SamplerLinear, vsOutput.WorldPos.xyz, vsOutput.Normal.xyz, TRIPLANAR_MAPPING_BLEND_SHARPNESS).xyz - 1.0;
         sampledNormal = mul(sampledNormal, TBN);
         normalWS = normalize(sampledNormal);
     }
     
-    float4 diffuseAlbedoNonGamma = AlbedoTexture.Sample(SamplerLinear, texCoord);
+    float4 diffuseAlbedoNonGamma = float4(0.0, 0.0, 0.0, 0.0);
+    if (!useTriplanarMapping)
+        diffuseAlbedoNonGamma = AlbedoTexture.Sample(SamplerLinear, texCoord);
+    else
+        diffuseAlbedoNonGamma = GetTriplanarMapping(AlbedoTexture, SamplerLinear, vsOutput.WorldPos.xyz, vsOutput.Normal.xyz, TRIPLANAR_MAPPING_BLEND_SHARPNESS);
+
     clip(diffuseAlbedoNonGamma.a < 0.000001f ? -1 : 1);
     float3 diffuseAlbedo = pow(diffuseAlbedoNonGamma.rgb, 2.2);
     
-    float metalness = CustomMetalness >= 0.0f ? CustomMetalness : MetallicTexture.Sample(SamplerLinear, texCoord).r;
-    float roughness = CustomRoughness >= 0.0f ? CustomRoughness : RoughnessTexture.Sample(SamplerLinear, texCoord).r;
+    float metalness = 0.0f;
+    if (CustomMetalness >= 0.0f)
+        metalness = CustomMetalness;
+    else
+    {
+        if (!useTriplanarMapping)
+            metalness = MetallicTexture.Sample(SamplerLinear, texCoord);
+        else
+            metalness = GetTriplanarMapping(MetallicTexture, SamplerLinear, vsOutput.WorldPos.xyz, vsOutput.Normal.xyz, TRIPLANAR_MAPPING_BLEND_SHARPNESS);
+    }
+
+    float roughness = 0.0f;
+    if (CustomRoughness >= 0.0f)
+        roughness = CustomRoughness;
+    else
+    {
+        if (!useTriplanarMapping)
+            roughness = RoughnessTexture.Sample(SamplerLinear, texCoord);
+        else
+            roughness = GetTriplanarMapping(RoughnessTexture, SamplerLinear, vsOutput.WorldPos.xyz, vsOutput.Normal.xyz, TRIPLANAR_MAPPING_BLEND_SHARPNESS);
+    }
+
     float ao = 1.0f; // TODO sample AO texture
     
     //reflectance at normal incidence for dia-electic or metal
