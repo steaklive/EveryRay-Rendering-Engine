@@ -360,7 +360,7 @@ namespace EveryRay_Core {
 		ImGui::Separator();
 		ImGui::TextWrapped("You can transform the volumes below (when editor is enabled)");
 		ImGui::TextWrapped("Note: saving the values from above to the volume is not yet supported!");
-		ImGui::Checkbox("Show volumes", &mShowDebugVolumes);
+		ImGui::Checkbox("Show debug gizmo volumes", &mShowDebugVolumes);
 		ImGui::Checkbox("Enable volume editor", &ER_Utility::IsPostEffectsVolumeEditor);
 		
 		if (ImGui::Button("Save volume changes"))

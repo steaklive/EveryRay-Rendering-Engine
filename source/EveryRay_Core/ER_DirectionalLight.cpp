@@ -141,9 +141,9 @@ namespace EveryRay_Core
 		assert(camera);
 
 		XMFLOAT3 gizmoPos = XMFLOAT3(
-			(camera->Position().x + mProxyModelGizmoTranslationDelta.x),
-			(camera->Position().y + mProxyModelGizmoTranslationDelta.y),
-			(camera->Position().z + mProxyModelGizmoTranslationDelta.z));
+			(camera->Position().x + camera->Direction().x * mProxyModelGizmoTranslationDelta),
+			(camera->Position().y + camera->Direction().y * mProxyModelGizmoTranslationDelta),
+			(camera->Position().z + camera->Direction().z * mProxyModelGizmoTranslationDelta));
 
 		if (mProxyModel)
 		{
