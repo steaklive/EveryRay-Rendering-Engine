@@ -206,10 +206,18 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mForwardLightingVS_Instancing = nullptr;
 		ER_RHI_GPUShader* mForwardLightingPS = nullptr;
 		ER_RHI_GPUShader* mForwardLightingPS_Transparent = nullptr;
+
 		std::string mForwardLightingPSOName = "ER_RHI_GPUPipelineStateObject: Forward Lighting Pass";
+		std::string mForwardLightingWireframePSOName = "ER_RHI_GPUPipelineStateObject: Forward Lighting Pass (Wireframe)";
+
 		std::string mForwardLightingInstancingPSOName = "ER_RHI_GPUPipelineStateObject: Forward Lighting (Instancing) Pass";
+		std::string mForwardLightingInstancingWireframePSOName = "ER_RHI_GPUPipelineStateObject: Forward Lighting (Wireframe)(Instancing) Pass";
+
 		std::string mForwardLightingTransparentPSOName = "ER_RHI_GPUPipelineStateObject: Forward Lighting Pass (Transparent)";
+		std::string mForwardLightingTransparentWireframePSOName = "ER_RHI_GPUPipelineStateObject: Forward Lighting Pass (Wireframe)(Transparent)";
+
 		std::string mForwardLightingTransparentInstancingPSOName = "ER_RHI_GPUPipelineStateObject: Forward Lighting (Instancing) Pass (Transparent)";
+		std::string mForwardLightingTransparentInstancingWireframePSOName = "ER_RHI_GPUPipelineStateObject: Forward Lighting (Wireframe)(Instancing) Pass (Transparent)";
 		ER_RHI_GPURootSignature* mForwardLightingRS = nullptr;
 
 		ER_RHI_GPUShader* mForwardLightingDiffuseProbesPS = nullptr;

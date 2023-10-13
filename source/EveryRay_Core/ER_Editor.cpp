@@ -37,6 +37,7 @@ namespace EveryRay_Core
 	{
 		if (ER_Utility::IsEditorMode) {
 			ImGui::Begin("Scene Editor");
+			ImGui::Checkbox("Enable wireframe", &ER_Utility::IsWireframe);
 			ImGui::Checkbox("Enable light editor", &ER_Utility::IsLightEditor);
 			ImGui::Separator();
 

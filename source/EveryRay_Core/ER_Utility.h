@@ -32,6 +32,7 @@ namespace EveryRay_Core
 		static bool IsPostEffectsVolumeEditor;
 		static bool IsMainCameraCPUFrustumCulling;
 		static bool StopDrawingRenderingObjects;
+		static bool IsWireframe;
 		static float DistancesLOD[MAX_LOD];
 		static float ShadowCascadeDistances[NUM_SHADOW_CASCADES];
 	private:

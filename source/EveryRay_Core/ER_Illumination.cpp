@@ -922,11 +922,21 @@ namespace EveryRay_Core {
 	{
 		auto rhi = mCore->GetRHI();
 
-		std::string psoName;
+		std::string& psoName = mForwardLightingPSOName;
 		if (!aObj->IsTransparent())
-			psoName = aObj->IsInstanced() ? mForwardLightingInstancingPSOName : mForwardLightingPSOName;
+		{
+			if (aObj->IsInstanced())
+				psoName = !ER_Utility::IsWireframe ? mForwardLightingInstancingPSOName : mForwardLightingInstancingWireframePSOName;
+			else
+				psoName = !ER_Utility::IsWireframe ? mForwardLightingPSOName : mForwardLightingWireframePSOName;
+		}
 		else
-			psoName = aObj->IsInstanced() ? mForwardLightingTransparentInstancingPSOName : mForwardLightingTransparentPSOName;
+		{
+			if (aObj->IsInstanced())
+				psoName = !ER_Utility::IsWireframe ? mForwardLightingTransparentInstancingPSOName : mForwardLightingTransparentInstancingWireframePSOName;
+			else
+				psoName = !ER_Utility::IsWireframe ? mForwardLightingTransparentPSOName : mForwardLightingTransparentWireframePSOName;
+		}
 
 		if (!rhi->IsPSOReady(psoName))
 		{
@@ -934,7 +944,7 @@ namespace EveryRay_Core {
 			rhi->SetInputLayout(aObj->IsInstanced() ? mForwardLightingRenderingObjectInputLayout_Instancing : mForwardLightingRenderingObjectInputLayout);
 			rhi->SetShader(aObj->IsInstanced() ? mForwardLightingVS_Instancing : mForwardLightingVS);
 			rhi->SetShader(aObj->IsTransparent() ? mForwardLightingPS_Transparent : mForwardLightingPS);
-			rhi->SetRasterizerState(ER_NO_CULLING);
+			rhi->SetRasterizerState(ER_Utility::IsWireframe ? ER_WIREFRAME : ER_NO_CULLING);
 			rhi->SetBlendState(aObj->IsTransparent() ? ER_ALPHA_BLEND : ER_NO_BLEND);
 			rhi->SetDepthStencilState(ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
 			rhi->SetRenderTargetFormats({ mLocalIlluminationRT }, mGbuffer->GetDepth());

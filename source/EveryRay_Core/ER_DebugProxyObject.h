@@ -25,8 +25,6 @@ namespace EveryRay_Core
 		XMVECTOR UpVector() const;
 		XMVECTOR RightVector() const;
 
-		bool& DisplayWireframe();
-
 		void SetPosition(FLOAT x, FLOAT y, FLOAT z);
 		void SetPosition(FXMVECTOR position);
 		void SetPosition(const XMFLOAT3& position);
@@ -56,7 +54,6 @@ namespace EveryRay_Core
 		XMFLOAT4X4 mWorldMatrix;
 		XMFLOAT4X4 mScaleMatrix;
 
-		bool mDisplayWireframe;
 		XMFLOAT3 mPosition;
 		XMFLOAT3 mDirection;
 		XMFLOAT3 mUp;

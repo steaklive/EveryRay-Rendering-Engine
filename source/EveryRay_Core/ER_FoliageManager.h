@@ -104,7 +104,6 @@ namespace EveryRay_Core
 		bool IsSelected() { return mIsSelectedInEditor; }
 		void SetSelected(bool val) { mIsSelectedInEditor = val; }
 		
-		void SetWireframe(bool flag) { mIsWireframe = flag; }
 		void SetDynamicLODMaxDistance(float val) { mMaxDistanceToCamera = val; }
 		void SetDynamicDeltaDistanceToCamera(float val) { mDeltaDistanceToCamera = val; }
 
@@ -164,6 +163,7 @@ namespace EveryRay_Core
 
 		ER_RHI_GPUShader* mPS_GBuffer = nullptr;
 		std::string mFoliageGBufferPassPSOName = "ER_RHI_GPUPipelineStateObject: Foliage - Gbuffer Pass";
+		std::string mFoliageGBufferPassWireframePSOName = "ER_RHI_GPUPipelineStateObject: Foliage - Gbuffer (Wireframe) Pass";
 
 		ER_RHI_GPUShader* mPS_Voxelization = nullptr;
 		std::string mFoliageVoxelizationPassPSOName = "ER_RHI_GPUPipelineStateObject: Foliage - Voxelization Pass";
@@ -207,7 +207,6 @@ namespace EveryRay_Core
 		float mMaxDistanceToCamera = 0.0f;
 		float mDeltaDistanceToCamera = 0.0f;
 
-		bool mIsWireframe = false;
 		float mScale;
 		XMFLOAT3 mDistributionCenter;
 		float mDistributionRadius;

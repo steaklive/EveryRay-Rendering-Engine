@@ -148,7 +148,6 @@ namespace EveryRay_Core
 		
 		void SetLevelPath(const std::wstring& aPath) { mLevelPath = aPath; };
 
-		void SetWireframeMode(bool flag) { mIsWireframe = flag; }
 		void SetDynamicTessellation(bool flag) { mUseDynamicTessellation = flag; }
 		void SetTessellationFactor(int tessellationFactor) { mTessellationFactor = tessellationFactor; }
 		void SetDynamicTessellationDistanceFactor(float factor) { mTessellationDistanceFactor = factor; }
@@ -189,6 +188,7 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mDS = nullptr;
 		ER_RHI_GPUShader* mPS = nullptr;
 		std::string mTerrainMainPassPSOName = "ER_RHI_GPUPipelineStateObject: Terrain - Main Pass";
+		std::string mTerrainMainPassWireframePSOName = "ER_RHI_GPUPipelineStateObject: Terrain - Main (Wireframe) Pass";
 
 		ER_RHI_GPUShader* mDS_ShadowMap = nullptr;
 		ER_RHI_GPUShader* mPS_ShadowMap = nullptr;
@@ -196,6 +196,7 @@ namespace EveryRay_Core
 
 		ER_RHI_GPUShader* mPS_GBuffer = nullptr;
 		std::string mTerrainGBufferPassPSOName = "ER_RHI_GPUPipelineStateObject: Terrain - GBuffer Pass";
+		std::string mTerrainGBufferPassWireframePSOName = "ER_RHI_GPUPipelineStateObject: Terrain - GBuffer (Wireframe) Pass";
 
 		ER_RHI_GPUShader* mPlaceOnTerrainCS = nullptr;
 		std::string mTerrainPlacementPassPSOName = "ER_RHI_GPUPipelineStateObject: Terrain - Placement Pass";
@@ -221,7 +222,6 @@ namespace EveryRay_Core
 		int mTileResolution = 0; //texture res. of one terrain tile (based on heightmap)
 		float mTileScale = 0.0f;
 		float mTerrainTessellatedHeightScale = 328.0f;
-		bool mIsWireframe = false;
 		bool mUseDynamicTessellation = true;
 		int mTessellationFactor = 4;
 		int mTessellationFactorDynamic = 64;

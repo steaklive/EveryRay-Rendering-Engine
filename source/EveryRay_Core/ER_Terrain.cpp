@@ -32,7 +32,6 @@ namespace EveryRay_Core
 {
 	ER_Terrain::ER_Terrain(ER_Core& pCore, ER_DirectionalLight& light) :
 		ER_CoreComponent(pCore),
-		mIsWireframe(false),
 		mHeightMaps(0, nullptr),
 		mDirectionalLight(light)
 	{
@@ -596,7 +595,6 @@ namespace EveryRay_Core
 			ImGui::Checkbox("Enabled", &mEnabled);
 			ImGui::Checkbox("CPU frustum culling", &mDoCPUFrustumCulling);
 			ImGui::Checkbox("Debug tiles AABBs", &mDrawDebugAABBs);
-			ImGui::Checkbox("Render wireframe", &mIsWireframe);
 			ImGui::SliderInt("Tessellation factor static", &mTessellationFactor, 1, 64);
 			ImGui::SliderInt("Tessellation factor dynamic", &mTessellationFactorDynamic, 1, 64);
 			ImGui::Checkbox("Use dynamic tessellation", &mUseDynamicTessellation);
@@ -624,11 +622,11 @@ namespace EveryRay_Core
 		ER_RHI_PRIMITIVE_TYPE originalPrimitiveTopology = rhi->GetCurrentTopologyType();
 
 		ER_RHI_GPURootSignature* rootSig = mTerrainCommonPassRS;
-		std::string& psoName = mTerrainMainPassPSOName;
+		std::string& psoName = ER_Utility::IsWireframe ? mTerrainMainPassWireframePSOName : mTerrainMainPassPSOName;
 		if (aPass == TERRAIN_SHADOW)
 			psoName = mTerrainShadowPassPSOName;
 		else if (aPass == TERRAIN_GBUFFER)
-			psoName = mTerrainGBufferPassPSOName;
+			psoName = ER_Utility::IsWireframe ? mTerrainGBufferPassWireframePSOName : mTerrainGBufferPassPSOName;
 
 		rhi->SetRootSignature(rootSig);
 		rhi->SetVertexBuffers({ mHeightMaps[tileIndex]->mVertexBufferTS });
@@ -659,7 +657,7 @@ namespace EveryRay_Core
 				else if (aPass == TerrainRenderPass::TERRAIN_GBUFFER)
 					rhi->SetShader(mPS_GBuffer);
 
-				rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING);
+				rhi->SetRasterizerState(ER_Utility::IsWireframe ? ER_RHI_RASTERIZER_STATE::ER_WIREFRAME : ER_RHI_RASTERIZER_STATE::ER_NO_CULLING);
 				rhi->SetRenderTargetFormats(aRenderTargets, aDepthTarget);
 			}
 				
@@ -715,15 +713,7 @@ namespace EveryRay_Core
 			rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
 		}
 		
-		// TODO: bring back wireframe support (needs a new PSO)
-		//if (mIsWireframe)
-		//{
-		//	rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_WIREFRAME);
-		//	rhi->Draw(NUM_TERRAIN_PATCHES_PER_TILE * NUM_TERRAIN_PATCHES_PER_TILE);
-		//	rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_NO_CULLING);
-		//}
-		//else
-			rhi->Draw(NUM_TERRAIN_PATCHES_PER_TILE * NUM_TERRAIN_PATCHES_PER_TILE);
+		rhi->Draw(NUM_TERRAIN_PATCHES_PER_TILE * NUM_TERRAIN_PATCHES_PER_TILE);
 		
 		rhi->UnsetPSO();
 

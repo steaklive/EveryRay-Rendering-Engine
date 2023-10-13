@@ -464,7 +464,6 @@ namespace EveryRay_Core
 		int														mCurrentLODIndex = 0; //only used for non-instanced object
 		int														mEditorSelectedInstancedObjectIndex = 0;
 		bool													mIsAABBDebugEnabled = true;
-		bool													mIsWireframeMode = false;
 		bool													mIsAvailableInEditorMode = false;
 		bool													mIsSelected = false;
 		bool													mIsRendered = true;

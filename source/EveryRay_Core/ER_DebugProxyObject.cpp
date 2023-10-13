@@ -22,7 +22,7 @@ namespace EveryRay_Core
 		mCore(game),
 		mModelFileName(modelFileName), mMaterial(nullptr),
 		mVertexBuffer(nullptr), mIndexBuffer(nullptr), mIndexCount(0),
-		mWorldMatrix(ER_MatrixHelper::Identity), mScaleMatrix(ER_MatrixHelper::Identity), mDisplayWireframe(false),
+		mWorldMatrix(ER_MatrixHelper::Identity), mScaleMatrix(ER_MatrixHelper::Identity),
 		mPosition(ER_Vector3Helper::Zero), mDirection(ER_Vector3Helper::Forward), mUp(ER_Vector3Helper::Up), mRight(ER_Vector3Helper::Right)
 	{
 		XMStoreFloat4x4(&mScaleMatrix, XMMatrixScaling(scale, scale, scale));
@@ -73,11 +73,6 @@ namespace EveryRay_Core
 	XMVECTOR ER_DebugProxyObject::RightVector() const
 	{
 		return XMLoadFloat3(&mRight);
-	}
-
-	bool& ER_DebugProxyObject::DisplayWireframe()
-	{
-		return mDisplayWireframe;
 	}
 
 	void ER_DebugProxyObject::SetPosition(FLOAT x, FLOAT y, FLOAT z)

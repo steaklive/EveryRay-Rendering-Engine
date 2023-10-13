@@ -10,8 +10,10 @@
 
 namespace EveryRay_Core {
 
-	static const std::string psoNameNonInstanced = "ER_RHI_GPUPipelineStateObject: GBufferMaterial";
-	static const std::string psoNameInstanced = "ER_RHI_GPUPipelineStateObject: GBufferMaterial w/ Instancing";
+	static std::string psoNameNonInstanced = "ER_RHI_GPUPipelineStateObject: GBufferMaterial";
+	static std::string psoNameInstanced = "ER_RHI_GPUPipelineStateObject: GBufferMaterial w/ Instancing";
+	static std::string psoNameNonInstancedWireframe = "ER_RHI_GPUPipelineStateObject: GBufferMaterial (Wireframe)";
+	static std::string psoNameInstancedWireframe = "ER_RHI_GPUPipelineStateObject: GBufferMaterial w/ Instancing (Wireframe)";
 
 	ER_GBuffer::ER_GBuffer(ER_Core& game, ER_Camera& camera, int width, int height):
 		ER_CoreComponent(game), mWidth(width), mHeight(height)
@@ -81,7 +83,7 @@ namespace EveryRay_Core {
 		rhi->ClearRenderTarget(mExtraBuffer, color);
 		rhi->ClearRenderTarget(mExtra2Buffer, color);
 		rhi->ClearDepthStencilTarget(mDepthBuffer, 1.0f, 0);
-		rhi->SetRasterizerState(ER_NO_CULLING);
+		rhi->SetRasterizerState(ER_Utility::IsWireframe ? ER_WIREFRAME : ER_NO_CULLING);
 	}
 
 	void ER_GBuffer::End()
@@ -108,7 +110,10 @@ namespace EveryRay_Core {
 			if (renderingObject->IsCulled())
 				continue;
 
-			const std::string& psoName = renderingObject->IsInstanced() ? psoNameInstanced : psoNameNonInstanced;
+			std::string& psoName = ER_Utility::IsWireframe ? psoNameNonInstancedWireframe : psoNameNonInstanced;
+			if (renderingObject->IsInstanced())
+				psoName = ER_Utility::IsWireframe ? psoNameInstancedWireframe : psoNameInstanced;
+
 			auto materialInfo = renderingObject->GetMaterials().find(ER_MaterialHelper::gbufferMaterialName);
 			if (materialInfo != renderingObject->GetMaterials().end())
 			{
@@ -117,7 +122,7 @@ namespace EveryRay_Core {
 				{
 					rhi->InitializePSO(psoName);
 					material->PrepareShaders();
-					rhi->SetRasterizerState(ER_NO_CULLING);
+					rhi->SetRasterizerState(ER_Utility::IsWireframe ? ER_WIREFRAME : ER_NO_CULLING);
 					rhi->SetBlendState(ER_NO_BLEND);
 					rhi->SetDepthStencilState(ER_RHI_DEPTH_STENCIL_STATE::ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
 					rhi->SetRenderTargetFormats({ mAlbedoBuffer, mNormalBuffer, mPositionsBuffer, mExtraBuffer, mExtra2Buffer }, mDepthBuffer);

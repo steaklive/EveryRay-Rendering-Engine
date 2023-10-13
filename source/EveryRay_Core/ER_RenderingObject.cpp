@@ -18,6 +18,8 @@
 #include "ER_Settings.h"
 #include "ER_Scene.h"
 
+#define LOAD_OLD_INSTANCED_DATA_FOR_GPU_INDIRECT_OBJECTS 0 // uncommnet if you need to debug "direct" instancing code (old-way)
+
 namespace EveryRay_Core
 {
 	static int currentSplatChannnel = (int)TerrainSplatChannels::NONE;
@@ -548,7 +550,7 @@ namespace EveryRay_Core
 		for (int i = mInstanceData[lod].size(); i < MAX_DIRECT_INSTANCE_COUNT; i++)
 			AddInstanceData(XMMatrixIdentity(), lod);
 
-#ifdef NDEBUG
+#if !LOAD_OLD_INSTANCED_DATA_FOR_GPU_INDIRECT_OBJECTS
 		if (mIsIndirectlyRendered)
 			return;
 #endif
@@ -575,7 +577,7 @@ namespace EveryRay_Core
 	// new instancing code
 	void ER_RenderingObject::UpdateInstanceBuffer(std::vector<InstancedData>& instanceData, int lod)
 	{
-#ifdef NDEBUG
+#if !LOAD_OLD_INSTANCED_DATA_FOR_GPU_INDIRECT_OBJECTS
 		if (mIsIndirectlyRendered)
 			return;
 #endif
@@ -1073,7 +1075,6 @@ namespace EveryRay_Core
 			ImGui::Separator();
 			ImGui::Checkbox("Rendered", &mIsRendered);
 			ImGui::Checkbox("Show AABB", &mIsAABBDebugEnabled);
-			ImGui::Checkbox("Show Wireframe", &mIsWireframeMode);
 			ImGui::Checkbox("Skip indirect spec.", &mIsSkippedIndirectSpecular);
 			//ImGui::Checkbox("Skip indirect dif.", &mIsSkippedIndirectDiffuse);
 			if (ImGui::Button("Move camera to"))
