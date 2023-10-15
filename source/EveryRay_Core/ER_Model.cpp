@@ -12,7 +12,7 @@
 
 namespace EveryRay_Core
 {
-	ER_Model::ER_Model(ER_Core& game, const std::string& filename, bool flipUVs)
+	ER_Model::ER_Model(ER_Core& game, const std::string& filename, bool flipUVs, bool isSilent)
 		: mCore(game), mMeshes(), mMaterials()
 	{
 		Assimp::Importer importer;
@@ -27,8 +27,16 @@ namespace EveryRay_Core
 		
 		if (scene == nullptr)
 		{
-			throw ER_CoreException(importer.GetErrorString());
+			if (!isSilent)
+				throw ER_CoreException(importer.GetErrorString());
+			else
+			{
+				mIsLoaded = false;
+				return;
+			}
 		}
+		else
+			mIsLoaded = true;
 
 		if (scene->HasMaterials())
 		{

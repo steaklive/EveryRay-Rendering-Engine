@@ -12,6 +12,7 @@ namespace EveryRay_Core
 	class ER_CameraFPS;
 	class ER_Editor;
 	class ER_QuadRenderer;
+	class ER_Model;
 	
 	enum GraphicsQualityPreset
 	{
@@ -32,6 +33,9 @@ namespace EveryRay_Core
 		virtual void Initialize() override;
 		virtual void Update(const ER_CoreTime& gameTime) override;
 		virtual void Draw(const ER_CoreTime& gameTime) override;	
+
+		// methods for 3D models (on disk) cache from ER_RenderingObjects in the level
+		virtual ER_Model* AddOrGet3DModelFromCache(const std::string& aFullPath, bool* didExist = nullptr, bool isSilent = false) override;
 
 		// methods for physical textures (on disk) cache from ER_RenderingObjects in the level
 		virtual ER_RHI_GPUTexture* AddOrGetGPUTextureFromCache(const std::wstring& aFullPath, bool* didExist = nullptr, bool is3D = false, bool skipFallback = false, bool* statusFlag = nullptr, bool isSilent = false) override;
@@ -61,6 +65,7 @@ namespace EveryRay_Core
 		std::chrono::duration<double> mElapsedTimeRenderCPU;
 
 		std::map<std::wstring, ER_RHI_GPUTexture*> mRenderingObjectsTextureCache; // all physical textures (on disk) from ER_RenderingObjects in the level
+		std::map<std::string, ER_Model> mRenderingObjects3DModelsCache; // all 3D models from ER_RenderingObjects in the level (not wstring due to assimp)
 
 		std::map<std::string, std::string> mScenesPaths;
 		std::vector<std::string> mScenesNamesByIndices;

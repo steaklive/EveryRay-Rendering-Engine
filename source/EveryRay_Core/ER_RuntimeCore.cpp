@@ -13,6 +13,7 @@
 #include "ER_Sandbox.h"
 #include "ER_Editor.h"
 #include "ER_QuadRenderer.h"
+#include "ER_Model.h"
 
 #include "..\JsonCpp\include\json\json.h"
 
@@ -26,6 +27,7 @@ namespace EveryRay_Core
 	static float farPlaneDist = 600.0f;
 
 	static std::mutex renderingObjectsTextureCacheMutex;
+	static std::mutex renderingObjects3DModelsCacheMutex;
 
 	ER_RuntimeCore::ER_RuntimeCore(ER_RHI* aRHI, HINSTANCE instance, const std::wstring& windowClass, const std::wstring& windowTitle, int showCommand, bool isFullscreen)
 		: ER_Core(aRHI, instance, windowClass, windowTitle, showCommand, isFullscreen),
@@ -224,6 +226,8 @@ namespace EveryRay_Core
 			DeleteObject(it.second);
 		mRenderingObjectsTextureCache.erase(mRenderingObjectsTextureCache.begin(), mRenderingObjectsTextureCache.end());
 
+		mRenderingObjects3DModelsCache.erase(mRenderingObjects3DModelsCache.begin(), mRenderingObjects3DModelsCache.end());
+
 		if (mRHI && !isFirstLoad)
 		{
 			mRHI->ResetRHI(mScreenWidth, mScreenHeight, mIsFullscreen);
@@ -412,6 +416,45 @@ namespace EveryRay_Core
 
 		auto endRenderTimer = std::chrono::high_resolution_clock::now();
 		mElapsedTimeRenderCPU = endRenderTimer - startRenderTimer;
+	}
+
+	ER_Model* ER_RuntimeCore::AddOrGet3DModelFromCache(const std::string& aFullPath, bool* didExist /*= nullptr*/, bool isSilent /*= false*/)
+	{
+		const std::lock_guard<std::mutex> lock(renderingObjects3DModelsCacheMutex);
+		
+		auto it = mRenderingObjects3DModelsCache.find(aFullPath);
+		if (it != mRenderingObjects3DModelsCache.end())
+		{
+			if (didExist)
+				*didExist = true;
+			return &(it->second);
+		}
+		else
+		{
+			if (didExist)
+				*didExist = false;
+
+			auto result = mRenderingObjects3DModelsCache.emplace(std::piecewise_construct,
+				std::forward_as_tuple(aFullPath), std::forward_as_tuple(*this, aFullPath, true, isSilent)); // this is ugly and we might consider updating to c++17 (try_emplace)
+			if (!result.first->second.IsLoaded())
+			{
+				std::string msg = "[ER Logger][ER_Core] Error! Could not load a new 3D model to models cache: " + aFullPath + '\n';
+				ER_OUTPUT_LOG(ER_Utility::ToWideString(msg).c_str());
+
+				mRenderingObjects3DModelsCache.erase(aFullPath);
+
+				return nullptr;
+			}
+			else
+			{
+				std::string msg = "[ER Logger][ER_Core] Added new 3D model to models cache: " + aFullPath + '\n';
+				ER_OUTPUT_LOG(ER_Utility::ToWideString(msg).c_str());
+
+				return &(result.first->second);
+			}
+		}
+
+		return nullptr;
 	}
 
 	ER_RHI_GPUTexture* ER_RuntimeCore::AddOrGetGPUTextureFromCache(const std::wstring& aFullPath, bool* didExist, bool is3D /*= false*/, bool skipFallback /*= false*/, bool* statusFlag /*= nullptr*/, bool isSilent /*= false*/)

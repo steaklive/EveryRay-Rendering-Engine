@@ -152,7 +152,7 @@ namespace EveryRay_Core
 		using Delegate_MeshMaterialVariablesUpdate = std::function<void(int, int)>; // mesh index & lod index for input
 
 	public:
-		ER_RenderingObject(const std::string& pName, int index, ER_Core& pCore, ER_Camera& pCamera, std::unique_ptr<ER_Model> pModel, bool availableInEditor = false, bool isInstanced = false);
+		ER_RenderingObject(const std::string& pName, int index, ER_Core& pCore, ER_Camera& pCamera, const std::string& pModelPath, bool availableInEditor = false, bool isInstanced = false);
 		~ER_RenderingObject();
 
 		void LoadMaterial(ER_Material* pMaterial, const std::string& materialName);
@@ -211,7 +211,7 @@ namespace EveryRay_Core
 
 		const int GetLODCount() const {	return 1 + static_cast<int>(mModelLODs.size());	}
 		void UpdateLODs();
-		void LoadLOD(std::unique_ptr<ER_Model> pModel);
+		void AddLOD(const std::string& pModelLODPath);
 		
 		float GetMinScale() { return mMinScale; }
 		void SetMinScale(float v) { mMinScale = v; }
@@ -355,6 +355,8 @@ namespace EveryRay_Core
 		void SetFurWindFrequency(float v) { mFurWindFrequency = v; }
 		void SetFurGravityStrength(float v) { mFurGravityStrength = v; }
 		XMFLOAT4 GetFurGravityStrength(); 
+
+		bool IsLoaded() { return mIsLoaded; }
 	private:
 		void UpdateAABB(ER_AABB& aabb, const XMMATRIX& transformMatrix);
 		void LoadTexture(ER_RHI_GPUTexture** aTexture, bool* loadStat, const std::wstring& path, int meshIndex, bool isPlaceholder = false);
@@ -382,8 +384,9 @@ namespace EveryRay_Core
 		std::vector<std::vector<XMFLOAT3>>						mMeshAllVertices; // vertices of all meshes combined, per LOD group
 		std::vector<float>										mMeshesReflectionFactors; // mesh reflection factors, per LOD group
 		std::vector<int>										mMeshesCount; // mesh count, per LOD group
-		std::unique_ptr<ER_Model>								mModel;
-		std::vector<std::unique_ptr<ER_Model>>					mModelLODs;
+		ER_Model*												mModel = nullptr; // just a pointer to the model cache
+		std::vector<ER_Model*>									mModelLODs; // just pointers to the model cache
+		bool													mIsLoaded = false; // whether 3D model was loaded for this object
 		// 
 		///****************************************************************************************************************************
 

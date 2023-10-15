@@ -11,7 +11,7 @@ namespace EveryRay_Core
 	class ER_Model
 	{
 	public:
-		ER_Model(ER_Core& game, const std::string& filename, bool flipUVs = false);
+		ER_Model(ER_Core& game, const std::string& filename, bool flipUVs = false, bool isSilent = true);
 		~ER_Model();
 
 		ER_Core& GetCore();
@@ -24,7 +24,7 @@ namespace EveryRay_Core
 		const std::string& GetFileName() { return mFilename; }
 		const char* GetFileNameChar() { return mFilename.c_str(); }
 		const ER_AABB& GenerateAABB();
-
+		bool IsLoaded() { return mIsLoaded; }
 	private:
 		ER_Model(const ER_Model& rhs);
 		ER_Model& operator=(const ER_Model& rhs);
@@ -34,5 +34,7 @@ namespace EveryRay_Core
 		std::vector<ER_Mesh> mMeshes;
 		std::vector<ER_ModelMaterial> mMaterials;
 		std::string mFilename;
+
+		bool mIsLoaded = false;
 	};
 }

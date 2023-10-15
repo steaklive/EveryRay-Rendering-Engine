@@ -156,7 +156,7 @@ namespace EveryRay_Core
 				objects.emplace_back(
 					mSceneJsonRoot["rendering_objects"][i]["name"].asString(), 
 					new ER_RenderingObject(mSceneJsonRoot["rendering_objects"][i]["name"].asString(), i, *mCore, mCamera, 
-						std::unique_ptr<ER_Model>(new ER_Model(*mCore, ER_Utility::GetFilePath(mSceneJsonRoot["rendering_objects"][i]["model_path"].asString()), true)),
+						ER_Utility::GetFilePath(mSceneJsonRoot["rendering_objects"][i]["model_path"].asString()),
 						true, mSceneJsonRoot["rendering_objects"][i]["instanced"].asBool())
 				);
 			}
@@ -275,7 +275,7 @@ namespace EveryRay_Core
 
 	void ER_Scene::LoadRenderingObjectData(ER_RenderingObject* aObject)
 	{
-		if (!aObject)
+		if (!aObject || !aObject->IsLoaded())
 			return;
 
 		int i = aObject->GetIndexInScene();
@@ -581,7 +581,7 @@ namespace EveryRay_Core
 			if (hasLODs) {
 				for (Json::Value::ArrayIndex lod = 1 /* 0 is main model loaded before */; lod != mSceneJsonRoot["rendering_objects"][i]["model_lods"].size(); lod++) {
 					std::string path = mSceneJsonRoot["rendering_objects"][i]["model_lods"][lod]["path"].asString();
-					aObject->LoadLOD(std::unique_ptr<ER_Model>(new ER_Model(*mCore, ER_Utility::GetFilePath(path), true)));
+					aObject->AddLOD(ER_Utility::GetFilePath(path));
 				}
 			}
 		}

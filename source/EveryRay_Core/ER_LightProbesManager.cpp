@@ -238,7 +238,7 @@ namespace EveryRay_Core
 		
 		std::string name = "Debug diffuse lightprobes ";
 		scene->objects.emplace_back(name, new ER_RenderingObject(name, scene->objects.size(), core, camera,
-				std::unique_ptr<ER_Model>(new ER_Model(core, ER_Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true));
+			ER_Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), false, true));
 
 		MaterialShaderEntries shaderEntries;
 		shaderEntries.vertexEntry += "_instancing";
@@ -363,7 +363,7 @@ namespace EveryRay_Core
 
 		std::string name = "Debug specular lightprobes ";
 		scene->objects.emplace_back(name, new ER_RenderingObject(name, scene->objects.size(), game, camera,
-				std::unique_ptr<ER_Model>(new ER_Model(game, ER_Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), true)), false, true));
+			ER_Utility::GetFilePath("content\\models\\sphere_lowpoly.fbx"), false, true));
 		
 		MaterialShaderEntries shaderEntries;
 		shaderEntries.vertexEntry += "_instancing";

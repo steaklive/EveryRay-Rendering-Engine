@@ -24,11 +24,10 @@ namespace EveryRay_Core
 {
 	static int currentSplatChannnel = (int)TerrainSplatChannels::NONE;
 
-	ER_RenderingObject::ER_RenderingObject(const std::string& pName, int index, ER_Core& pCore, ER_Camera& pCamera, std::unique_ptr<ER_Model> pModel, bool availableInEditor, bool isInstanced)
+	ER_RenderingObject::ER_RenderingObject(const std::string& pName, int index, ER_Core& pCore, ER_Camera& pCamera, const std::string& pModelPath, bool availableInEditor, bool isInstanced)
 		:
 		mCore(&pCore),
 		mCamera(pCamera),
-		mModel(std::move(pModel)),
 		mMeshesReflectionFactors(0),
 		mName(pName),
 		mDebugGizmoAABB(nullptr),
@@ -38,19 +37,19 @@ namespace EveryRay_Core
 		mIndexInScene(index),
 		mCurrentTextureQuality((RenderingObjectTextureQuality)ER_Settings::TexturesQuality)
 	{
+		mModel = mCore->AddOrGet3DModelFromCache(pModelPath, nullptr, true);
 		if (!mModel)
 		{
-			std::string message = "Failed to create a RenderingObject from a model: ";
-			message.append(pName);
-			throw ER_CoreException(message.c_str());
+			mIsLoaded = false;
+			return;
 		}
 
 		mMeshesCount.push_back(0); // main LOD
 		mMeshVertices.push_back({}); // main LOD
 		mMeshAllVertices.push_back({}); // main LOD
 
-		mMeshesCount[0] = mModel->Meshes().size();
-		for (size_t i = 0; i < mMeshesCount[0]; i++)
+		mMeshesCount[0] = static_cast<int>(mModel->Meshes().size());
+		for (int i = 0; i < mMeshesCount[0]; i++)
 		{
 			mMeshVertices[0].push_back(mModel->GetMesh(i).Vertices());
 			mMeshesTextureBuffers.push_back(TextureData());
@@ -85,6 +84,8 @@ namespace EveryRay_Core
 
 		mObjectConstantBuffer.Initialize(pCore.GetRHI(), "ER_RHI_GPUBuffer: Object's CB: " + mName);
 		mObjectFakeRootConstantBuffer.Initialize(pCore.GetRHI(), "ER_RHI_GPUBuffer: Object's Fake Root CB: " + mName);
+
+		mIsLoaded = true;
 	}
 
 	ER_RenderingObject::~ER_RenderingObject()
@@ -95,11 +96,14 @@ namespace EveryRay_Core
 			DeleteObject(object.second);
 		mMaterials.clear();
 
-		for (int lodI = 0; lodI < GetLODCount(); lodI++)
+		if (mIsLoaded)
 		{
-			for (int meshI = 0; meshI < GetMeshCount(lodI); meshI++)
+			for (int lodI = 0; lodI < GetLODCount(); lodI++)
 			{
-				DeleteObject(mMeshRenderBuffers[lodI][meshI]);
+				for (int meshI = 0; meshI < GetMeshCount(lodI); meshI++)
+				{
+					DeleteObject(mMeshRenderBuffers[lodI][meshI]);
+				}
 			}
 		}
 
@@ -138,6 +142,9 @@ namespace EveryRay_Core
 	//executed after LoadCustomMeshTextures()
 	void ER_RenderingObject::LoadAssignedMeshTextures(int meshIndex)
 	{
+		if (!mIsLoaded)
+			return;
+
 		auto pathBuilder = [&](std::wstring relativePath)
 		{
 			std::string fullPath;
@@ -230,6 +237,9 @@ namespace EveryRay_Core
 	//from custom specified mesh textures in level file
 	void ER_RenderingObject::LoadCustomMeshTextures(int meshIndex)
 	{
+		if (!mIsLoaded)
+			return;
+
 		assert(meshIndex < mMeshesCount[0]);
 		std::string errorMessage = mModel->GetFileName() + " of mesh index: " + std::to_string(meshIndex);
 
@@ -268,6 +278,9 @@ namespace EveryRay_Core
 	//from custom materials that the object has (snow, etc.); they are global for all meshes
 	void ER_RenderingObject::LoadCustomMaterialTextures()
 	{
+		if (!mIsLoaded)
+			return;
+
 		//snow
 		bool loadStatus = false;
 		if (!mSnowAlbedoTexturePath.empty())
@@ -290,6 +303,9 @@ namespace EveryRay_Core
 	// It supports quality levels, format check and different types of textures
 	void ER_RenderingObject::LoadTexture(ER_RHI_GPUTexture** aTexture, bool* loadStat, const std::wstring& path, int meshIndex, bool isPlaceholder)
 	{
+		if (!mIsLoaded)
+			return;
+
 		assert(loadStat);
 		ER_RHI* rhi = mCore->GetRHI();
 
@@ -361,6 +377,9 @@ namespace EveryRay_Core
 
 	void ER_RenderingObject::LoadRenderBuffers(int lod)
 	{
+		if (!mIsLoaded)
+			return;
+
 		assert(lod < GetLODCount());
 		assert(mModel);
 		ER_RHI* rhi = mCore->GetRHI();
@@ -380,11 +399,11 @@ namespace EveryRay_Core
 		auto createIndexBuffer = [this, rhi](const ER_Mesh& aMesh, int meshIndex, int lod) {
 			mMeshRenderBuffers[lod][meshIndex]->IndexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject - Index Buffer: " + mName + ", lod: " + std::to_string(lod) + ", mesh: " + std::to_string(meshIndex));
 			aMesh.CreateIndexBuffer(mMeshRenderBuffers[lod][meshIndex]->IndexBuffer);
-			mMeshRenderBuffers[lod][meshIndex]->IndicesCount = aMesh.Indices().size();
+			mMeshRenderBuffers[lod][meshIndex]->IndicesCount = static_cast<UINT>(aMesh.Indices().size());
 		};
 
 		{
-			for (size_t i = 0; i < mMeshesCount[lod]; i++)
+			for (int i = 0; i < mMeshesCount[lod]; i++)
 			{
 				mMeshRenderBuffers[lod].push_back(new RenderBufferData());
 				mMeshRenderBuffers[lod][i]->VertexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: ER_RenderingObject - Vertex Buffer: " + mName + ", lod: " + std::to_string(lod) + ", mesh: " + std::to_string(i));
@@ -402,8 +421,11 @@ namespace EveryRay_Core
 		}
 	}
 	
-	void ER_RenderingObject::Draw(const std::string& materialName, bool toDepth, int meshIndex) {
-		
+	void ER_RenderingObject::Draw(const std::string& materialName, bool toDepth, int meshIndex) 
+	{
+		if (!mIsLoaded)
+			return;
+
 		// for instanced objects we run DrawLOD() for all available LODs (some instances might end up in one LOD, others in other LODs)
 		if (mIsInstanced)
 		{
@@ -416,6 +438,9 @@ namespace EveryRay_Core
 
 	void ER_RenderingObject::DrawLOD(const std::string& materialName, bool toDepth, int meshIndex, int lod, bool skipCulling)
 	{
+		if (!mIsLoaded)
+			return;
+
 		if (ER_Utility::StopDrawingRenderingObjects)
 			return;
 
@@ -502,6 +527,9 @@ namespace EveryRay_Core
 
 	void ER_RenderingObject::DrawAABB(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, ER_RHI_GPURootSignature* rs)
 	{
+		if (!mIsLoaded)
+			return;
+
 		if (mIsSelected && mIsAvailableInEditorMode && mIsAABBDebugEnabled && ER_Utility::IsEditorMode)
 			mDebugGizmoAABB->Draw(aRenderTarget, aDepth, rs);
 	}
@@ -533,6 +561,9 @@ namespace EveryRay_Core
 	// new instancing code
 	void ER_RenderingObject::LoadInstanceBuffers(int lod)
 	{
+		if (!mIsLoaded)
+			return;
+
 		auto rhi = mCore->GetRHI();
 		assert(mModel != nullptr);
 		assert(mIsInstanced == true);
@@ -547,7 +578,7 @@ namespace EveryRay_Core
 		assert(lod == mMeshesInstanceBuffers.size() - 1);
 
 		//adding extra instance data until we reach MAX_INSTANCE_COUNT 
-		for (int i = mInstanceData[lod].size(); i < MAX_DIRECT_INSTANCE_COUNT; i++)
+		for (int i = static_cast<int>(mInstanceData[lod].size()); i < MAX_DIRECT_INSTANCE_COUNT; i++)
 			AddInstanceData(XMMatrixIdentity(), lod);
 
 #if !LOAD_OLD_INSTANCED_DATA_FOR_GPU_INDIRECT_OBJECTS
@@ -567,6 +598,9 @@ namespace EveryRay_Core
 	// new instancing code
 	void ER_RenderingObject::CreateInstanceBuffer(InstancedData* instanceData, UINT instanceCount, ER_RHI_GPUBuffer* instanceBuffer)
 	{
+		if (!mIsLoaded)
+			return;
+
 		if (instanceCount > MAX_DIRECT_INSTANCE_COUNT)
 			throw ER_CoreException("Instances count limit is exceeded!");
 
@@ -577,6 +611,9 @@ namespace EveryRay_Core
 	// new instancing code
 	void ER_RenderingObject::UpdateInstanceBuffer(std::vector<InstancedData>& instanceData, int lod)
 	{
+		if (!mIsLoaded)
+			return;
+
 #if !LOAD_OLD_INSTANCED_DATA_FOR_GPU_INDIRECT_OBJECTS
 		if (mIsIndirectlyRendered)
 			return;
@@ -587,7 +624,7 @@ namespace EveryRay_Core
 		for (size_t i = 0; i < mMeshesCount[lod]; i++)
 		{
 			//CreateInstanceBuffer(instanceData);
-			mInstanceCountToRender[lod] = instanceData.size();
+			mInstanceCountToRender[lod] = static_cast<UINT>(instanceData.size());
 
 			// dynamically update instance buffer
 			mCore->GetRHI()->UpdateBuffer(mMeshesInstanceBuffers[lod][i]->InstanceBuffer, mInstanceCountToRender[lod] == 0 ? nullptr : &instanceData[0], InstanceSize() * mInstanceCountToRender[lod]);
@@ -603,6 +640,9 @@ namespace EveryRay_Core
 	// Note: for instanced objects consider using indirect rendering instead (culling will happen on GPU and not in this method)
 	void ER_RenderingObject::PerformCPUFrustumCull(ER_Camera* camera)
 	{
+		if (!mIsLoaded)
+			return;
+
 		assert(!mIsIndirectlyRendered);
 
 		auto frustum = camera->GetFrustum();
@@ -675,6 +715,9 @@ namespace EveryRay_Core
 
 	void ER_RenderingObject::StoreInstanceDataAfterTerrainPlacement()
 	{
+		if (!mIsLoaded)
+			return;
+
 		assert(mTempInstancesPositions);
 		XMMATRIX worldMatrix = XMMatrixIdentity();
 		for (int lod = 0; lod < GetLODCount(); lod++)
@@ -705,6 +748,9 @@ namespace EveryRay_Core
 	// This method is not supposed to run every frame, but during initialization or on request
 	void ER_RenderingObject::PlaceProcedurallyOnTerrain(bool isOnInit)
 	{
+		if (!mIsLoaded)
+			return;
+
 		auto rhi = mCore->GetRHI();
 
 		ER_Terrain* terrain = mCore->GetLevel()->mTerrain;
@@ -797,6 +843,9 @@ namespace EveryRay_Core
 	}
 	void ER_RenderingObject::Update(const ER_CoreTime& time)
 	{
+		if (!mIsLoaded)
+			return;
+
 		UpdateBitmaskFlags();
 
 		ER_Camera* camera = (ER_Camera*)(mCore->GetServices().FindService(ER_Camera::TypeIdClass()));
@@ -1182,13 +1231,13 @@ namespace EveryRay_Core
 		}
 
 		ImGui::PushItemWidth(-1);
-		ImGui::ListBox("##empty", &mEditorSelectedInstancedObjectIndex, mInstancedNamesUI, mInstanceData[0].size(), 15);
+		ImGui::ListBox("##empty", &mEditorSelectedInstancedObjectIndex, mInstancedNamesUI, static_cast<int>(mInstanceData[0].size()), 15);
 		ImGui::End();
 	}
 	
 	ER_RHI_GPUBuffer* ER_RenderingObject::GetIndirectMeshConstantBuffer()
 	{
-		if (!mIsIndirectlyRendered)
+		if (!mIsIndirectlyRendered || !mIsLoaded)
 			return nullptr;
 
 		ER_RHI* rhi = mCore->GetRHI();
@@ -1206,6 +1255,9 @@ namespace EveryRay_Core
 
 	void ER_RenderingObject::UpdateLODs()
 	{
+		if (!mIsLoaded)
+			return;
+
 		const float sqrDistLod0 = ER_Utility::DistancesLOD[0] * ER_Utility::DistancesLOD[0];
 		const float sqrDistLod1 = ER_Utility::DistancesLOD[1] * ER_Utility::DistancesLOD[1];
 		const float sqrDistLod2 = ER_Utility::DistancesLOD[2] * ER_Utility::DistancesLOD[2];
@@ -1275,16 +1327,23 @@ namespace EveryRay_Core
 			mCurrentLODIndex = std::min(mCurrentLODIndex, GetLODCount());
 		}
 	}
-	void ER_RenderingObject::LoadLOD(std::unique_ptr<ER_Model> pModel)
+	void ER_RenderingObject::AddLOD(const std::string& pModelLODPath)
 	{
-		mMeshesCount.push_back(pModel->Meshes().size());
-		mModelLODs.push_back(std::move(pModel));
+		if (!mIsLoaded)
+			return;
+
+		ER_Model* pModel = mCore->AddOrGet3DModelFromCache(pModelLODPath, nullptr, true);
+		if (!pModel)
+			return;
+
+		mMeshesCount.push_back(static_cast<int>(pModel->Meshes().size()));
+		mModelLODs.push_back(pModel);
 		mMeshVertices.push_back({});
 		mMeshAllVertices.push_back({}); 
 
-		int lodIndex = mMeshesCount.size() - 1;
+		int lodIndex = static_cast<int>(mMeshesCount.size()) - 1;
 
-		for (size_t i = 0; i < mMeshesCount[lodIndex]; i++)
+		for (int i = 0; i < mMeshesCount[lodIndex]; i++)
 			mMeshVertices[lodIndex].push_back(mModelLODs[lodIndex - 1]->GetMesh(i).Vertices());
 
 		for (size_t i = 0; i < mMeshVertices[lodIndex].size(); i++)
@@ -1300,6 +1359,9 @@ namespace EveryRay_Core
 
 	void ER_RenderingObject::ResetInstanceData(int count, bool clear, int lod)
 	{
+		if (!mIsLoaded)
+			return;
+
 		assert(lod < GetLODCount());
 
 		mInstanceCountToRender[lod] = count;
@@ -1321,6 +1383,9 @@ namespace EveryRay_Core
 	}
 	void ER_RenderingObject::AddInstanceData(const XMMATRIX& worldMatrix, int lod)
 	{
+		if (!mIsLoaded)
+			return;
+
 		if (lod == -1) {
 			for (int lod = 0; lod < GetLODCount(); lod++)
 				mInstanceData[lod].push_back(InstancedData(worldMatrix));
@@ -1333,6 +1398,9 @@ namespace EveryRay_Core
 
 	void ER_RenderingObject::CreateIndirectInstanceData()
 	{
+		if (!mIsLoaded)
+			return;
+
 		ER_RHI* rhi = mCore->GetRHI();
 
 		if (mIndirectOriginalInstanceDataBuffer) // means we already created the buffers
@@ -1361,7 +1429,7 @@ namespace EveryRay_Core
 		std::vector<IndirectInstanceData> data;
 		data.resize(mInstanceCount);
 
-		for (int i = 0; i < mInstanceCount; ++i)
+		for (UINT i = 0; i < mInstanceCount; ++i)
 		{
 			data[i].world = mInstanceData[0][i].World;
 			data[i].aabbMin = XMFLOAT4(mInstanceAABBs[i].first.x, mInstanceAABBs[i].first.y, mInstanceAABBs[i].first.z, 1.0f);
