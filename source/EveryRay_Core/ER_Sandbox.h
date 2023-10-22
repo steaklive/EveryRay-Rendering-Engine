@@ -10,6 +10,7 @@ namespace EveryRay_Core
     class ER_Editor;
     class ER_Keyboard;
     class ER_DirectionalLight;
+    class ER_PointLight;
     class ER_Skybox;
     class ER_GBuffer;
     class ER_ShadowMapper;
@@ -50,6 +51,8 @@ namespace EveryRay_Core
         ER_PostProcessingStack* mPostProcessingStack = nullptr;
         ER_QuadRenderer* mQuadRenderer = nullptr;
         ER_GPUCuller* mGPUCuller = nullptr;
+
+        std::vector<ER_PointLight*> mPointLights;
     private:
         void UpdateImGui();
         std::string mName;

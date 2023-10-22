@@ -9,6 +9,7 @@
 #include "ER_QuadRenderer.h"
 #include "ER_Camera.h"
 #include "ER_DirectionalLight.h"
+#include "ER_PointLight.h"
 #include "ER_Keyboard.h"
 #include "ER_Skybox.h"
 #include "ER_PostProcessingStack.h"
@@ -54,6 +55,9 @@ namespace EveryRay_Core {
 		DeleteObject(mLightProbesManager);
 		DeleteObject(mTerrain);
 		DeleteObject(mGPUCuller);
+
+		//mPointLights.clear();
+
 		game.CPUProfiler()->EndCPUTime("Destroying scene: " + mName);
 	}
 

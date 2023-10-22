@@ -328,5 +328,30 @@
 		0.94999999999999996
 	],
 	"sun_direction" : [],
+	"point_lights":
+	[
+		{
+			"position" :
+			[
+				5.0, 10.0, 0.0
+			],
+			"color" :
+			[
+				1.0, 0.0, 0.0, 1.0
+			],
+			"radius" : 15.0
+		},
+		{
+			"position" :
+			[
+				-3.0, 15.0, 0.0
+			],
+			"color" :
+			[
+				0.1, 0.7, 1.0, 1.0
+			],
+			"radius" : 20.0
+		}
+	],
 	"use_volumetric_fog" : false
 }

@@ -15,6 +15,8 @@ static const int NUM_OF_PROBES_PER_CELL = 8;
 static const int SPECULAR_PROBE_MIP_COUNT = 6;
 static const int SPHERICAL_HARMONICS_ORDER = 2;
 static const int SPHERICAL_HARMONICS_COEF_COUNT = (SPHERICAL_HARMONICS_ORDER + 1) * (SPHERICAL_HARMONICS_ORDER + 1);
+static const uint MAX_POINT_LIGHTS = 64; // TODO: hardcoded until we implement tiled deferred/forward
+static const float POINT_LIGHTS_CUTOFF = 0.005; // TODO: parse from light
 
 TextureCube<float4> DiffuseGlobalProbeTexture : register(t8); // global probe (fallback)
 StructuredBuffer<int> DiffuseProbesCellsWithProbeIndicesArray : register(t9); //linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
@@ -28,6 +30,15 @@ StructuredBuffer<int> SpecularProbesTextureArrayIndices : register(t15); //array
 StructuredBuffer<float3> SpecularProbesPositionsArray : register(t16); //linear array of all specular probes positions
 
 Texture2D<float4> IntegrationTexture : register(t17);
+
+// ... smth extra
+
+struct PointLight
+{
+    float4 PositionRadius; // radius < 0.0 - invisible
+    float4 ColorIntensity;
+};
+StructuredBuffer<PointLight> PointLightsArray : register(t20);
 
 float3 GetGammaCorrectColor(float3 inputColor)
 {

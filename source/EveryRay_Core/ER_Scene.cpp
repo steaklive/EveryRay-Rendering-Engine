@@ -16,6 +16,7 @@
 #include "ER_LightProbesManager.h"
 #include "ER_FoliageManager.h"
 #include "ER_DirectionalLight.h"
+#include "ER_PointLight.h"
 #include "ER_Terrain.h"
 #include "ER_PostProcessingStack.h"
 
@@ -45,45 +46,80 @@ namespace EveryRay_Core
 		}
 		else {
 
-			if (mSceneJsonRoot.isMember("camera_position")) {
-				float vec3[3];
-				for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["camera_position"].size(); i++)
-					vec3[i] = mSceneJsonRoot["camera_position"][i].asFloat();
+			// load camera
+			{
+				if (mSceneJsonRoot.isMember("camera_position")) {
+					float vec3[3];
+					for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["camera_position"].size(); i++)
+						vec3[i] = mSceneJsonRoot["camera_position"][i].asFloat();
 
-				mCameraPosition = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+					mCameraPosition = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+				}
+
+				if (mSceneJsonRoot.isMember("camera_direction")) {
+					float vec3[3];
+					for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["camera_direction"].size(); i++)
+						vec3[i] = mSceneJsonRoot["camera_direction"][i].asFloat();
+
+					mCameraDirection = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+				}
 			}
 
-			if (mSceneJsonRoot.isMember("camera_direction")) {
-				float vec3[3];
-				for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["camera_direction"].size(); i++)
-					vec3[i] = mSceneJsonRoot["camera_direction"][i].asFloat();
+			// load sun
+			{
+				if (mSceneJsonRoot.isMember("sun_direction")) {
+					float vec3[3] = { 0.0, 0.0, 0.0 };
+					for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["sun_direction"].size(); i++)
+						vec3[i] = mSceneJsonRoot["sun_direction"][i].asFloat();
 
-				mCameraDirection = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+					mSunDirection = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+				}
+
+				if (mSceneJsonRoot.isMember("sun_color")) {
+					float vec3[3];
+					for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["sun_color"].size(); i++)
+						vec3[i] = mSceneJsonRoot["sun_color"][i].asFloat();
+
+					mSunColor = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+				}
 			}
 
-			if (mSceneJsonRoot.isMember("sun_direction")) {
-				float vec3[3] = { 0.0, 0.0, 0.0 };
-				for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["sun_direction"].size(); i++)
-					vec3[i] = mSceneJsonRoot["sun_direction"][i].asFloat();
+			// load point lights
+			{
+				std::vector<ER_PointLight*>& lights = pCore.GetLevel()->mPointLights;
 
-				mSunDirection = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+				unsigned int numLights = mSceneJsonRoot["point_lights"].size();
+				for (Json::Value::ArrayIndex i = 0; i != numLights; i++)
+				{
+					float position[3] = { 0.0, 0.0, 0.0 };
+					if (mSceneJsonRoot["point_lights"][i].isMember("position"))
+					{
+						for (Json::Value::ArrayIndex j = 0; j != mSceneJsonRoot["point_lights"][i]["position"].size(); j++)
+							position[j] = mSceneJsonRoot["point_lights"][i]["position"][j].asFloat();
+
+						//light.SetPosition(XMFLOAT3(position[0], position[1], position[2]));
+					}
+
+					float radius = 0.0;
+					if (mSceneJsonRoot["point_lights"][i].isMember("radius"))
+						radius = mSceneJsonRoot["point_lights"][i]["radius"].asFloat();
+						//light.SetRadius(mSceneJsonRoot["point_lights"][i]["radius"].asFloat());
+
+					lights.push_back(new ER_PointLight(pCore, XMFLOAT3(position[0],position[1],position[2]), radius));
+
+					if (mSceneJsonRoot["point_lights"][i].isMember("color"))
+					{
+						float vec4[4];
+						for (Json::Value::ArrayIndex j = 0; j != mSceneJsonRoot["point_lights"][i]["color"].size(); j++)
+							vec4[j] = mSceneJsonRoot["point_lights"][i]["color"][j].asFloat();
+
+						lights.back()->SetColor(XMFLOAT4(vec4[0], vec4[1], vec4[2], vec4[3]));
+					}
+
+				}
 			}
 
-			if (mSceneJsonRoot.isMember("sun_color")) {
-				float vec3[3];
-				for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["sun_color"].size(); i++)
-					vec3[i] = mSceneJsonRoot["sun_color"][i].asFloat();
-
-				mSunColor = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
-			}
-
-			if (mSceneJsonRoot.isMember("use_volumetric_fog")) {
-				mHasVolumetricFog = mSceneJsonRoot["use_volumetric_fog"].asBool();
-			}
-			else
-				mHasVolumetricFog = false;
-
-			// terrain config
+			// load terrain
 			{
 				if (mSceneJsonRoot.isMember("terrain_num_tiles")) {
 					mHasTerrain = true;
@@ -111,7 +147,7 @@ namespace EveryRay_Core
 				mHasTerrain = false;
 			}
 
-			// light probes config
+			// load light probes
 			{
 				if (mSceneJsonRoot.isMember("light_probes_volume_bounds_min")) {
 					float vec3[3];
@@ -145,6 +181,15 @@ namespace EveryRay_Core
 
 					mGlobalLightProbeCameraPos = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
 				}
+			}
+
+			// load volumetrics info
+			{
+				if (mSceneJsonRoot.isMember("use_volumetric_fog")) {
+					mHasVolumetricFog = mSceneJsonRoot["use_volumetric_fog"].asBool();
+				}
+				else
+					mHasVolumetricFog = false;
 			}
 
 			if (mSceneJsonRoot.isMember("foliage_zones"))

@@ -5,6 +5,7 @@
 #include "ER_CoreTime.h"
 #include "ER_Camera.h"
 #include "ER_DirectionalLight.h"
+#include "ER_PointLight.h"
 #include "ER_CoreException.h"
 #include "ER_Model.h"
 #include "ER_Mesh.h"
@@ -114,6 +115,7 @@ namespace EveryRay_Core {
 		DeleteObject(mLocalIlluminationRT);
 		DeleteObject(mFinalIlluminationRT);
 		DeleteObject(mDepthBuffer);
+		DeleteObject(mPointLightsBuffer);
 		DeleteObject(mVCTRS);
 		DeleteObject(mUpsampleAndBlurRS);
 		DeleteObject(mCompositeIlluminationRS);
@@ -264,6 +266,28 @@ namespace EveryRay_Core {
 			mDepthBuffer->CreateGPUTextureResource(rhi, mCore->ScreenWidth(), mCore->ScreenHeight(), 1u, ER_FORMAT_D24_UNORM_S8_UINT, ER_BIND_SHADER_RESOURCE | ER_BIND_DEPTH_STENCIL);
 		}
 
+		//light buffers
+		{
+			const std::vector<ER_PointLight*>& lights = GetCore()->GetLevel()->mPointLights;
+			const UINT sceneLightCount = static_cast<UINT>(lights.size());
+			
+			PointLightData data[MAX_NUM_POINT_LIGHTS];
+
+			for (UINT i = 0; i < MAX_NUM_POINT_LIGHTS; ++i)
+			{
+				if (i < sceneLightCount)
+				{
+					data[i].PositionRadius = XMFLOAT4(lights[i]->GetPosition().x, lights[i]->GetPosition().y, lights[i]->GetPosition().z, lights[i]->GetRadius());
+					data[i].ColorIntensity = XMFLOAT4(lights[i]->GetColor().x, lights[i]->GetColor().y, lights[i]->GetColor().z, lights[i]->GetColor().w);
+				}
+				else
+					data[i].PositionRadius = XMFLOAT4(0.0, 0.0, 0.0, -1.0);
+			}
+
+			mPointLightsBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Point Lights Buffer");
+			mPointLightsBuffer->CreateGPUBufferResource(rhi, data, MAX_NUM_POINT_LIGHTS, sizeof(PointLightData), false,
+				/*ER_BIND_UNORDERED_ACCESS | */ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED, ER_FORMAT_UNKNOWN);
+		}
 		// Root-signatures
 		{
 			if (mCurrentGIQuality != GIQuality::GI_LOW)
@@ -857,7 +881,7 @@ namespace EveryRay_Core {
 			else
 				rhi->SetConstantBuffers(ER_COMPUTE, { mDeferredLightingConstantBuffer.Buffer() }, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
 
-			std::vector<ER_RHI_GPUResource*> resources(18);
+			std::vector<ER_RHI_GPUResource*> resources(21);
 			resources[0] = gbuffer->GetAlbedo();
 			resources[1] = gbuffer->GetNormals();
 			resources[2] = gbuffer->GetPositions();
@@ -875,6 +899,11 @@ namespace EveryRay_Core {
 			resources[15] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer() : nullptr;
 			resources[16] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesPositionsBuffer() : nullptr;
 			resources[17] = mProbesManager->GetIntegrationMap();
+
+			resources[18] = nullptr;
+			resources[19] = nullptr;
+
+			resources[20] = mPointLightsBuffer;
 			rhi->SetShaderResources(ER_COMPUTE, resources, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
 		}
 

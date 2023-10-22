@@ -97,9 +97,31 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
 
     float3 directLighting = float3(0.0, 0.0, 0.0);
     if (isFoliage)
+    {
         directLighting = SunColor.rgb * diffuseAlbedo.rgb * max(dot(normalWS, SunDirection.xyz), 0.0);
+        // TODO: add other light sources contribution
+    }
     else
+    {
         directLighting = DirectLightingPBR(normalWS, SunColor, SunDirection.xyz, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness, CameraPosition.xyz);
+
+        for (uint i = 0; i < MAX_POINT_LIGHTS; i++)
+        {
+            PointLight light = PointLightsArray[i];
+            if (light.PositionRadius.a <= 0.0f)
+                continue;
+
+            float3 dir = normalize(light.PositionRadius.rgb - worldPos.rgb);
+            float distance = length(dir);
+            float d = max(distance - light.PositionRadius.a, 0);
+            float denom = d / light.PositionRadius.a + 1;
+            float attenuation = 1 / (denom * denom);
+            attenuation = (attenuation - POINT_LIGHTS_CUTOFF) / (1 - POINT_LIGHTS_CUTOFF);
+            attenuation = max(attenuation, 0);
+
+            directLighting += DirectLightingPBR(normalWS, light.ColorIntensity * attenuation, dir, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness, CameraPosition.xyz);
+        }
+    }
     
     if (useSSS)
     {

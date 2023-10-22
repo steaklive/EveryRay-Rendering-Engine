@@ -8,6 +8,8 @@
 #define NUM_VOXEL_GI_CASCADES 2
 #define NUM_VOXEL_GI_TEX_MIPS 6
 
+#define MAX_NUM_POINT_LIGHTS 64 // keep in sync with Lighting.hlsli; deprecate once tiled rendering is implemented
+
 namespace EveryRay_Core
 {
 	class ER_CoreTime;
@@ -31,6 +33,12 @@ namespace EveryRay_Core
 		GI_LOW = 0,
 		GI_MEDIUM,
 		GI_HIGH
+	};
+
+	struct PointLightData
+	{
+		XMFLOAT4 PositionRadius;
+		XMFLOAT4 ColorIntensity;
 	};
 
 	namespace IlluminationCBufferData {
@@ -178,6 +186,8 @@ namespace EveryRay_Core
 
 		ER_RHI_GPUTexture* mDepthBuffer = nullptr;
 		ER_RHI_GPUTexture* mShadowMap = nullptr;
+
+		ER_RHI_GPUBuffer* mPointLightsBuffer = nullptr;
 
 		ER_RHI_GPUShader* mVCTVoxelizationDebugVS = nullptr;
 		ER_RHI_GPUShader* mVCTVoxelizationDebugGS = nullptr;
