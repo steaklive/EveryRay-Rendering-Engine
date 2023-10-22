@@ -1,5 +1,7 @@
 #define FLT_MAX 3.402823466e+38
 
+#define NUM_OF_SHADOW_CASCADES 3
+
 #define PARALLAX_OCCLUSION_MAPPING_SUPPORT 1
 #define PARALLAX_OCCLUSION_MAPPING_SELF_SHADOW_SUPPORT 1
 #define PARALLAX_OCCLUSION_MAPPING_HEIGHT_SCALE 0.05
@@ -18,6 +20,11 @@ static const int SPHERICAL_HARMONICS_COEF_COUNT = (SPHERICAL_HARMONICS_ORDER + 1
 static const uint MAX_POINT_LIGHTS = 64; // TODO: hardcoded until we implement tiled deferred/forward
 static const float POINT_LIGHTS_CUTOFF = 0.005; // TODO: parse from light
 
+SamplerState SamplerLinear : register(s0);
+SamplerComparisonState CascadedPcfShadowMapSampler : register(s1);
+SamplerState SamplerClamp : register(s2);
+Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t5);
+
 TextureCube<float4> DiffuseGlobalProbeTexture : register(t8); // global probe (fallback)
 StructuredBuffer<int> DiffuseProbesCellsWithProbeIndicesArray : register(t9); //linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
 StructuredBuffer<float3> DiffuseSphericalHarmonicsCoefficientsArray : register(t10); //linear array of all diffuse probes 2nd order coefficients (9)
@@ -31,7 +38,13 @@ StructuredBuffer<float3> SpecularProbesPositionsArray : register(t16); //linear 
 
 Texture2D<float4> IntegrationTexture : register(t17);
 
-// ... smth extra
+// ... extra bindings:
+// t18:
+//  - ForwardLighting.hlsl: indirect instance buffer
+//  - DeferredLighting.hlsl: AVAILABLE!
+// t19:
+//  - ForwardLighting.hlsl: AVAILABLE!
+//  - DeferredLighting.hlsl: AVAILABLE!
 
 struct PointLight
 {
@@ -168,6 +181,18 @@ float Forward_GetShadow(float4 ShadowCascadeDistances, float3 ShadowCoords[NUM_S
         return
             1.0f;
     }
+}
+
+float GetPointLightAttenuation(float3 dir, float radius)
+{
+    float distance = length(dir);
+    float d = max(distance - radius, 0);
+    float denom = d / radius + 1;
+    float attenuation = 1 / (denom * denom);
+    attenuation = (attenuation - POINT_LIGHTS_CUTOFF) / (1 - POINT_LIGHTS_CUTOFF);
+    attenuation = max(attenuation, 0);
+    
+    return attenuation;
 }
 
 // ===============================================================================================

@@ -874,38 +874,24 @@ namespace EveryRay_Core {
 		rhi->SetPSO(mDeferredLightingPSOName, true);
 		rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP });
 		rhi->SetUnorderedAccessResources(ER_COMPUTE, { aRenderTarget }, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
+
 		if (mProbesManager->AreGlobalProbesReady())
 		{
 			if (mProbesManager->IsEnabled())
 				rhi->SetConstantBuffers(ER_COMPUTE, { mDeferredLightingConstantBuffer.Buffer(), mLightProbesConstantBuffer.Buffer() }, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
 			else
 				rhi->SetConstantBuffers(ER_COMPUTE, { mDeferredLightingConstantBuffer.Buffer() }, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
-
-			std::vector<ER_RHI_GPUResource*> resources(21);
-			resources[0] = gbuffer->GetAlbedo();
-			resources[1] = gbuffer->GetNormals();
-			resources[2] = gbuffer->GetPositions();
-			resources[3] = gbuffer->GetExtraBuffer();
-			resources[4] = gbuffer->GetExtra2Buffer();
-			for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
-				resources[5 + i] = mShadowMapper.GetShadowTexture(i);
-			resources[8] = mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture();
-			resources[9] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer() : nullptr;
-			resources[10] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer() : nullptr;
-			resources[11] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesPositionsBuffer() : nullptr;
-			resources[12] = mProbesManager->GetGlobalSpecularProbe()->GetCubemapTexture();
-			resources[13] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray() : nullptr;
-			resources[14] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesCellsIndicesBuffer() : nullptr;
-			resources[15] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer() : nullptr;
-			resources[16] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesPositionsBuffer() : nullptr;
-			resources[17] = mProbesManager->GetIntegrationMap();
-
-			resources[18] = nullptr;
-			resources[19] = nullptr;
-
-			resources[20] = mPointLightsBuffer;
-			rhi->SetShaderResources(ER_COMPUTE, resources, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
 		}
+
+		std::vector<ER_RHI_GPUResource*> resources(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1);
+		resources[0] = gbuffer->GetAlbedo();
+		resources[1] = gbuffer->GetNormals();
+		resources[2] = gbuffer->GetPositions();
+		resources[3] = gbuffer->GetExtraBuffer();
+		resources[4] = gbuffer->GetExtra2Buffer();
+		rhi->SetShaderResources(ER_COMPUTE, resources, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
+		
+		SetCommonLightingShaderResources(ER_COMPUTE, static_cast<UINT>(resources.size()), mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 
 		rhi->Dispatch(ER_DivideByMultiple(static_cast<UINT>(aRenderTarget->GetWidth()), 8u), ER_DivideByMultiple(static_cast<UINT>(aRenderTarget->GetHeight()), 8u), 1u);
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
@@ -945,6 +931,34 @@ namespace EveryRay_Core {
 				}
 			}
 		}
+	}
+
+	void ER_Illumination::SetCommonLightingShaderResources(ER_RHI_SHADER_TYPE aShaderType, UINT startSlot /*= 0*/, ER_RHI_GPURootSignature* rs /*= nullptr*/, int rootParamIndex /*= -1*/)
+	{
+		assert(startSlot == (SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1));
+
+		std::vector<ER_RHI_GPUResource*> resources(SRV_INDEX_MAX - SRV_INDEX_MAX_RESERVED_FOR_TEXTURES, nullptr);
+		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
+			resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_CSM_START + i] = mShadowMapper.GetShadowTexture(i);
+
+		if (mProbesManager->AreGlobalProbesReady())
+		{
+			resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_GLOBAL_DIFFUSE_PROBE] = mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture();
+			resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_DIFFUSE_PROBES_CELLS_INDICES] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer() : nullptr;
+			resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_DIFFUSE_PROBES_SH_COEFFICIENTS] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer() : nullptr;
+			resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_DIFFUSE_PROBES_POSITIONS] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesPositionsBuffer() : nullptr;
+			resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_GLOBAL_SPECULAR_PROBE] = mProbesManager->GetGlobalSpecularProbe()->GetCubemapTexture();
+			resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_SPECULAR_PROBES_CULLED] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray() : nullptr;
+			resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_SPECULAR_PROBES_CELLS_INDICES] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesCellsIndicesBuffer() : nullptr;
+			resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_SPECULAR_PROBES_ARRAY_INDICES] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer() : nullptr;
+			resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_SPECULAR_PROBES_POSITIONS] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesPositionsBuffer() : nullptr;
+			resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_INTEGRATION_MAP] = mProbesManager->GetIntegrationMap();
+		}
+
+		resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_POINT_LIGHTS] = mPointLightsBuffer;
+
+		auto rhi = mCore->GetRHI();
+		rhi->SetShaderResources(aShaderType, resources, startSlot, rs, rootParamIndex, aShaderType == ER_RHI_SHADER_TYPE::ER_COMPUTE);
 	}
 
 	void ER_Illumination::PreparePipelineForForwardLighting(ER_RenderingObject* aObj)
@@ -1040,31 +1054,18 @@ namespace EveryRay_Core {
 				rhi->SetConstantBuffers(ER_PIXEL,  { mForwardLightingConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 			}
 
-			std::vector<ER_RHI_GPUResource*> resources(18);
-			if (mProbesManager->AreGlobalProbesReady())
-			{
-				resources[0] = aObj->GetTextureData(meshIndex).AlbedoMap;
-				resources[1] = aObj->GetTextureData(meshIndex).NormalMap;
-				resources[2] = aObj->GetTextureData(meshIndex).MetallicMap;
-				resources[3] = aObj->GetTextureData(meshIndex).RoughnessMap;
-				resources[4] = aObj->IsTransparent() ? aObj->GetTextureData(meshIndex).ExtraMaskMap : aObj->GetTextureData(meshIndex).HeightMap;
-				for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
-					resources[5 + i] = mShadowMapper.GetShadowTexture(i);
-				resources[8] = mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture();
-				resources[9] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer() : nullptr;
-				resources[10] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer() : nullptr;
-				resources[11] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesPositionsBuffer() : nullptr;
-				resources[12] = mProbesManager->GetGlobalSpecularProbe()->GetCubemapTexture();
-				resources[13] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray() : nullptr;
-				resources[14] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesCellsIndicesBuffer() : nullptr;
-				resources[15] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer() : nullptr;
-				resources[16] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesPositionsBuffer() : nullptr;
-				resources[17] = mProbesManager->GetIntegrationMap();
-				rhi->SetShaderResources(ER_PIXEL, resources, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_PIXEL_SRV_INDEX);
-			}
+			std::vector<ER_RHI_GPUResource*> resources(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1);
+			resources[0] = aObj->GetTextureData(meshIndex).AlbedoMap;
+			resources[1] = aObj->GetTextureData(meshIndex).NormalMap;
+			resources[2] = aObj->GetTextureData(meshIndex).MetallicMap;
+			resources[3] = aObj->GetTextureData(meshIndex).RoughnessMap;
+			resources[4] = aObj->IsTransparent() ? aObj->GetTextureData(meshIndex).ExtraMaskMap : aObj->GetTextureData(meshIndex).HeightMap;
+			rhi->SetShaderResources(ER_PIXEL, resources, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_VERTEX_SRV_INDEX);
+
+			SetCommonLightingShaderResources(ER_PIXEL, static_cast<UINT>(resources.size()), mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_PIXEL_SRV_INDEX);
 
 			if (aObj->IsGPUIndirectlyRendered())
-				rhi->SetShaderResources(ER_VERTEX, { aObj->GetIndirectNewInstanceBuffer() }, static_cast<int>(resources.size()), mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_VERTEX_SRV_INDEX);
+				rhi->SetShaderResources(ER_VERTEX, { aObj->GetIndirectNewInstanceBuffer() }, SRV_INDEX_INDIRECT_INSTANCE_BUFFER, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_VERTEX_SRV_INDEX);
 
 			// we unset PSO after all objects are rendered
 		}

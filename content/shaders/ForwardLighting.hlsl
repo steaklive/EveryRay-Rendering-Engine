@@ -27,13 +27,10 @@ Texture2D<float4> NormalTexture : register(t1);
 Texture2D<float4> MetallicTexture : register(t2);
 Texture2D<float4> RoughnessTexture : register(t3);
 Texture2D<float> ExtraMaskTexture : register(t4); // transparent mask, POM height mask
-Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t5);
 
-StructuredBuffer<Instance> IndirectInstanceData : register(t18); // because all other indices before are taken for lighting buffers (i.e., probes)
+// WARNING: Check Lighting.hlsli or Common.hlsli before binding into a specific index!
 
-SamplerState SamplerLinear : register(s0);
-SamplerComparisonState CascadedPcfShadowMapSampler : register(s1);
-SamplerState SamplerClamp : register(s2);
+StructuredBuffer<Instance> IndirectInstanceData : register(t18);
 
 cbuffer ForwardLightingCBuffer : register(b0)
 {
@@ -412,7 +409,18 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
     }
 
     float3 directLighting = DirectLightingPBR(normalWS, SunColor, SunDirection.xyz, diffuseAlbedo.rgb, vsOutput.WorldPos, roughness, F0, metalness, CameraPosition.xyz);
-   
+    for (uint i = 0; i < MAX_POINT_LIGHTS; i++)
+    {
+        PointLight light = PointLightsArray[i];
+        if (light.PositionRadius.a <= 0.0f)
+            continue;
+
+        float3 dir = normalize(light.PositionRadius.rgb - vsOutput.WorldPos);
+        float attenuation = GetPointLightAttenuation(dir, light.PositionRadius.a);
+
+        directLighting += DirectLightingPBR(normalWS, light.ColorIntensity * attenuation, dir, diffuseAlbedo.rgb, vsOutput.WorldPos, roughness, F0, metalness, CameraPosition.xyz);
+    }
+    
     float3 indirectLighting = float3(0, 0, 0);
     if (isFakeAmbient)
         indirectLighting = float3(0.02f, 0.02f, 0.02f) * diffuseAlbedo;

@@ -16,10 +16,6 @@
 #include "Lighting.hlsli"
 #include "Common.hlsli"
 
-SamplerState SamplerLinear : register(s0);
-SamplerComparisonState CascadedPcfShadowMapSampler : register(s1);
-SamplerState SamplerClamp: register(s2);
-
 RWTexture2D<unorm float4> OutputTexture : register(u0);
 
 Texture2D<float4> GbufferAlbedoTexture : register(t0);
@@ -28,7 +24,7 @@ Texture2D<float4> GbufferWorldPosTexture : register(t2);
 Texture2D<float4> GbufferExtraTexture : register(t3); // [4 channels: extra mask value, roughness, metalness, height mask value]
 Texture2D<uint> GbufferExtra2Texture : register(t4); // [1 channel: rendering object bitmask flags]
 
-Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t5);
+// WARNING: Check Lighting.hlsli or Common.hlsli before binding into a specific index!
 
 cbuffer DeferredLightingCBuffer : register(b0)
 {
@@ -112,12 +108,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
                 continue;
 
             float3 dir = normalize(light.PositionRadius.rgb - worldPos.rgb);
-            float distance = length(dir);
-            float d = max(distance - light.PositionRadius.a, 0);
-            float denom = d / light.PositionRadius.a + 1;
-            float attenuation = 1 / (denom * denom);
-            attenuation = (attenuation - POINT_LIGHTS_CUTOFF) / (1 - POINT_LIGHTS_CUTOFF);
-            attenuation = max(attenuation, 0);
+            float attenuation = GetPointLightAttenuation(dir, light.PositionRadius.a);
 
             directLighting += DirectLightingPBR(normalWS, light.ColorIntensity * attenuation, dir, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness, CameraPosition.xyz);
         }

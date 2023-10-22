@@ -10,6 +10,29 @@
 
 #define MAX_NUM_POINT_LIGHTS 64 // keep in sync with Lighting.hlsli; deprecate once tiled rendering is implemented
 
+// Keep these commong resources indices in sync with Lighting.hlsli
+#define SRV_INDEX_MAX_RESERVED_FOR_TEXTURES			4 // until which index bindings are reserved for textures (in both Deferred/Forward)
+#define SRV_INDEX_CSM_START							5
+#define SRV_INDEX_CSM_END							5 + NUM_SHADOW_CASCADES - 1
+
+#define SRV_INDEX_GLOBAL_DIFFUSE_PROBE				8
+#define SRV_INDEX_DIFFUSE_PROBES_CELLS_INDICES		9
+#define SRV_INDEX_DIFFUSE_PROBES_SH_COEFFICIENTS	10
+#define SRV_INDEX_DIFFUSE_PROBES_POSITIONS			11
+#define SRV_INDEX_GLOBAL_SPECULAR_PROBE				12
+#define SRV_INDEX_SPECULAR_PROBES_CULLED			13
+#define SRV_INDEX_SPECULAR_PROBES_CELLS_INDICES		14
+#define SRV_INDEX_SPECULAR_PROBES_ARRAY_INDICES		15
+#define SRV_INDEX_SPECULAR_PROBES_POSITIONS			16
+
+#define SRV_INDEX_INTEGRATION_MAP					17
+
+#define SRV_INDEX_INDIRECT_INSTANCE_BUFFER			18 // only in forward shader
+
+#define SRV_INDEX_POINT_LIGHTS						20
+
+#define SRV_INDEX_MAX								22 // nothing more than this index is allowed in Deferred/Forward shaders; increase if needed
+
 namespace EveryRay_Core
 {
 	class ER_CoreTime;
@@ -150,6 +173,9 @@ namespace EveryRay_Core
 	private:
 		void DrawDeferredLighting(ER_GBuffer* gbuffer, ER_RHI_GPUTexture* aRenderTarget);
 		void DrawForwardLighting(ER_GBuffer* gbuffer, ER_RHI_GPUTexture* aRenderTarget);
+
+		// resources that are common for both forward / deferred shaders
+		void SetCommonLightingShaderResources(ER_RHI_SHADER_TYPE aShaderType, UINT startSlot = 0,	ER_RHI_GPURootSignature* rs = nullptr, int rootParamIndex = -1);
 
 		void UpdateImGui();
 		void UpdateVoxelCameraPosition();
