@@ -409,18 +409,21 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
     }
 
     float3 directLighting = DirectLightingPBR(normalWS, SunColor, SunDirection.xyz, diffuseAlbedo.rgb, vsOutput.WorldPos, roughness, F0, metalness, CameraPosition.xyz);
+    
+	float3 pointLighting = float3(0.0, 0.0, 0.0);
     for (uint i = 0; i < MAX_POINT_LIGHTS; i++)
     {
         PointLight light = PointLightsArray[i];
         if (light.PositionRadius.a <= 0.0f)
             continue;
 
-        float3 dir = normalize(light.PositionRadius.rgb - vsOutput.WorldPos);
-        float attenuation = GetPointLightAttenuation(dir, light.PositionRadius.a);
+        float3 lightVec = float3(light.PositionRadius.rgb - vsOutput.WorldPos);
+        float3 dir = normalize(lightVec);
+        float distanceSqr = dot(lightVec, lightVec);
+        float attenuation = (1 / (distanceSqr + 1));
 
-        directLighting += DirectLightingPBR(normalWS, light.ColorIntensity * attenuation, dir, diffuseAlbedo.rgb, vsOutput.WorldPos, roughness, F0, metalness, CameraPosition.xyz);
-    }
-    
+        pointLighting += DirectLightingPBR(normalWS, float4(light.ColorIntensity.rgb * attenuation, light.ColorIntensity.a), dir, diffuseAlbedo.rgb, vsOutput.WorldPos, roughness, F0, metalness, CameraPosition.xyz);
+    }    
     float3 indirectLighting = float3(0, 0, 0);
     if (isFakeAmbient)
         indirectLighting = float3(0.02f, 0.02f, 0.02f) * diffuseAlbedo;
@@ -458,8 +461,8 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
         shadow = 1.0f;
     else // standard 3 cascades or forced cascade
         shadow = Forward_GetShadow(ShadowCascadeDistances, shadowCoords, ShadowTexelSize.r, CascadedShadowTextures, CascadedPcfShadowMapSampler, vsOutput.Position.w, forcedCascadeShadowIndex);
-    
-    float3 color = (directLighting * shadow * POMSelfShadow) + indirectLighting;
+
+    float3 color = ((directLighting * shadow + saturate(pointLighting)) * POMSelfShadow) + indirectLighting;
     return color;
 }
 

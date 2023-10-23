@@ -183,15 +183,13 @@ float Forward_GetShadow(float4 ShadowCascadeDistances, float3 ShadowCoords[NUM_S
     }
 }
 
-float GetPointLightAttenuation(float3 dir, float radius)
+//TODO: FIX! (NOT USED)
+float GetPointLightAttenuation(float3 lightVec, float radius)
 {
-    float distance = length(dir);
-    float d = max(distance - radius, 0);
-    float denom = d / radius + 1;
-    float attenuation = 1 / (denom * denom);
-    attenuation = (attenuation - POINT_LIGHTS_CUTOFF) / (1 - POINT_LIGHTS_CUTOFF);
-    attenuation = max(attenuation, 0);
-    
+    float distanceSqr = dot(lightVec, lightVec);
+    float attenuation = 1 / (distanceSqr + 1);
+    float a = pow(distanceSqr * (1 / (radius * radius)), 2);
+    attenuation *= saturate(1 - a) * saturate(1 - a);
     return attenuation;
 }
 
