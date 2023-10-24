@@ -419,11 +419,14 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
 
         float3 lightVec = float3(light.PositionRadius.rgb - vsOutput.WorldPos);
         float3 dir = normalize(lightVec);
-        float distanceSqr = dot(lightVec, lightVec);
-        float attenuation = (1 / (distanceSqr + 1));
+        
+        //float distanceSqr = dot(lightVec, lightVec);
+        float distance = length(lightVec);
+        float attenuation = GetPointLightAttenuation(distance, light.PositionRadius.a); //(1 / (distanceSqr + 1));
 
-        pointLighting += DirectLightingPBR(normalWS, float4(light.ColorIntensity.rgb * attenuation, light.ColorIntensity.a), dir, diffuseAlbedo.rgb, vsOutput.WorldPos, roughness, F0, metalness, CameraPosition.xyz);
+        pointLighting += DirectLightingPBR(normalWS,  light.ColorIntensity * attenuation , dir, diffuseAlbedo.rgb, vsOutput.WorldPos, roughness, F0, metalness, CameraPosition.xyz);
     }    
+
     float3 indirectLighting = float3(0, 0, 0);
     if (isFakeAmbient)
         indirectLighting = float3(0.02f, 0.02f, 0.02f) * diffuseAlbedo;
@@ -462,7 +465,7 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
     else // standard 3 cascades or forced cascade
         shadow = Forward_GetShadow(ShadowCascadeDistances, shadowCoords, ShadowTexelSize.r, CascadedShadowTextures, CascadedPcfShadowMapSampler, vsOutput.Position.w, forcedCascadeShadowIndex);
 
-    float3 color = ((directLighting * shadow + saturate(pointLighting)) * POMSelfShadow) + indirectLighting;
+    float3 color = ((directLighting * shadow + pointLighting) * POMSelfShadow) + indirectLighting;
     return color;
 }
 

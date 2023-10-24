@@ -99,6 +99,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     }
     else
         directLighting = DirectLightingPBR(normalWS, SunColor, SunDirection.xyz, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness, CameraPosition.xyz);
+    
     float3 pointLighting = float3(0.0, 0.0, 0.0);
     for (uint i = 0; i < MAX_POINT_LIGHTS; i++)
     {
@@ -108,11 +109,13 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
 
         float3 lightVec = float3(light.PositionRadius.rgb - worldPos.rgb);
         float3 dir = normalize(lightVec);
-        float distanceSqr = dot(lightVec, lightVec);
-        float attenuation = (1 / (distanceSqr + 1));
+        
+        float distance = length(lightVec);
+        float attenuation = GetPointLightAttenuation(distance, light.PositionRadius.a);
 
-        pointLighting += DirectLightingPBR(normalWS, float4(light.ColorIntensity.rgb * attenuation, light.ColorIntensity.a), dir, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness, CameraPosition.xyz);
+        pointLighting += DirectLightingPBR(normalWS, light.ColorIntensity * attenuation, dir, diffuseAlbedo.rgb, worldPos.rgb, roughness, F0, metalness, CameraPosition.xyz);
     }    
+    
     if (useSSS)
     {
         directLighting += SunColor.rgb * diffuseAlbedo.rgb * 
