@@ -25,11 +25,13 @@ namespace EveryRay_Core
 		static void PathJoin(std::wstring& dest, const std::wstring& sourceDirectory, const std::wstring& sourceFile);
 		static void GetPathExtension(const std::wstring& source, std::wstring& dest);
 		static float RandomFloat(float a, float b);
+		static void DisableAllEditors();
 
 		static bool IsEditorMode;
-		static bool IsLightEditor;
+		static bool IsSunLightEditor;
 		static bool IsFoliageEditor;
 		static bool IsPostEffectsVolumeEditor;
+
 		static bool IsMainCameraCPUFrustumCulling;
 		static bool StopDrawingRenderingObjects;
 		static bool IsWireframe;

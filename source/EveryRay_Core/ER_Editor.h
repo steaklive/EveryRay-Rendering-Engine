@@ -2,8 +2,9 @@
 #pragma once
 
 #include "ER_CoreComponent.h"
-#define MAX_OBJECTS_COUNT 1000
-#define MAX_LOD 3
+#define MAX_OBJECTS_IN_EDITOR_COUNT 1024
+#define MAX_POINT_LIGHTS_IN_EDITOR_COUNT MAX_NUM_POINT_LIGHTS
+#define MAX_SYMBOLS_PER_NAME 64
 
 namespace EveryRay_Core
 {
@@ -19,9 +20,8 @@ namespace EveryRay_Core
 		ER_Editor(ER_Core& game);
 		virtual ~ER_Editor();
 
-		virtual void Initialize() override;
+		void Initialize(ER_Scene* scene);
 		virtual void Update(const ER_CoreTime& gameTime) override;
-		void LoadScene(ER_Scene* scene);
 
 		bool IsSkyboxUsingCustomColor() { return mUseCustomSkyboxColor; }
 		XMFLOAT4 GetBottomSkyColor() { return XMFLOAT4(mBottomColorSky[0],mBottomColorSky[1],mBottomColorSky[2],mBottomColorSky[3]); }
@@ -34,7 +34,8 @@ namespace EveryRay_Core
 		ER_Editor(const ER_Editor& rhs);
 		ER_Editor& operator=(const ER_Editor& rhs);
 
-		const char* editorObjectsNames[MAX_OBJECTS_COUNT];
+		const char* editorObjectsNames[MAX_OBJECTS_IN_EDITOR_COUNT];
+		char* editorPointLightsNames[MAX_POINT_LIGHTS_IN_EDITOR_COUNT];
 
 		bool mUseCustomSkyboxColor = true;
 		float mBottomColorSky[4] = {245.0f / 255.0f, 245.0f / 255.0f, 245.0f / 255.0f, 1.0f};

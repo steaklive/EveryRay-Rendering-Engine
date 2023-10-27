@@ -9,7 +9,7 @@
 namespace EveryRay_Core
 {
 	bool ER_Utility::IsEditorMode = false;
-	bool ER_Utility::IsLightEditor = false;
+	bool ER_Utility::IsSunLightEditor = false;
 	bool ER_Utility::IsFoliageEditor = false;
 	bool ER_Utility::IsPostEffectsVolumeEditor = false;
 	bool ER_Utility::IsMainCameraCPUFrustumCulling = true;
@@ -170,5 +170,10 @@ namespace EveryRay_Core
 		float diff = b - a;
 		float r = random * diff;
 		return a + r;
+	}
+
+	void ER_Utility::DisableAllEditors()
+	{
+		ER_Utility::IsFoliageEditor = ER_Utility::IsSunLightEditor = ER_Utility::IsPostEffectsVolumeEditor = false;
 	}
 }

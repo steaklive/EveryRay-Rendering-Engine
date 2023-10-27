@@ -8,37 +8,70 @@
 #include "ER_RenderingObject.h"
 #include "ER_Utility.h"
 #include "ER_Scene.h"
+#include "ER_PointLight.h"
 
 namespace EveryRay_Core
 {
 	RTTI_DEFINITIONS(ER_Editor)
 	static int selectedObjectIndex = -1;
+	static int selectedPointLightIndex = -1;
 	
 	ER_Editor::ER_Editor(ER_Core& game)
 		: ER_CoreComponent(game)
 	{
+		memset(editorObjectsNames, 0, sizeof(char*) * MAX_OBJECTS_IN_EDITOR_COUNT);
+		memset(editorPointLightsNames, 0, sizeof(char*) * MAX_POINT_LIGHTS_IN_EDITOR_COUNT);
 	}
 
 	ER_Editor::~ER_Editor()
 	{
 	}
 
-	void ER_Editor::Initialize()
-	{
-
-	}
-
-	void ER_Editor::LoadScene(ER_Scene* scene)
+	void ER_Editor::Initialize(ER_Scene* scene)
 	{
 		mScene = scene;
 	}
 
 	void ER_Editor::Update(const ER_CoreTime& gameTime)
 	{
-		if (ER_Utility::IsEditorMode) {
+		if (ER_Utility::IsEditorMode) 
+		{
 			ImGui::Begin("Scene Editor");
 			ImGui::Checkbox("Enable wireframe", &ER_Utility::IsWireframe);
-			ImGui::Checkbox("Enable light editor", &ER_Utility::IsLightEditor);
+			ImGui::Separator();
+			ImGui::Checkbox("Enable sun light editor", &ER_Utility::IsSunLightEditor);
+			if (ER_Utility::IsSunLightEditor)
+			{
+				for (int i = 0; i < static_cast<int>(GetCore()->GetLevel()->mPointLights.size()); i++)
+					GetCore()->GetLevel()->mPointLights[i]->SetSelectedInEditor(false);
+
+				selectedPointLightIndex = -1;
+			}
+
+			ImGui::Text("Point lights");
+			{
+				int objectIndex = 0;
+				int objectsSize = static_cast<int>(GetCore()->GetLevel()->mPointLights.size());
+				for (auto& object : GetCore()->GetLevel()->mPointLights)
+				{
+					if (objectIndex >= MAX_POINT_LIGHTS_IN_EDITOR_COUNT)
+						continue;
+
+					std::string name = "Point Light #" + std::to_string(objectIndex);
+					editorPointLightsNames[objectIndex] = strdup(name.c_str());;
+					objectIndex++;
+				}
+
+				ImGui::ListBox("##empty", &selectedPointLightIndex, editorPointLightsNames, static_cast<int>(GetCore()->GetLevel()->mPointLights.size()));
+
+				for (int i = 0; i < objectsSize; i++)
+					GetCore()->GetLevel()->mPointLights[i]->SetSelectedInEditor(i == selectedPointLightIndex);
+
+				// disable other editors if we selected a point light
+				if (selectedPointLightIndex >= 0)
+					ER_Utility::DisableAllEditors();
+			}
+
 			ImGui::Separator();
 
 			//skybox
@@ -55,50 +88,44 @@ namespace EveryRay_Core
 				ImGui::Separator();
 			}
 
-			//objects
-			ImGui::TextColored(ImVec4(0.12f, 0.78f, 0.44f, 1), "Scene objects");
-			ImGui::Checkbox("Stop drawing objects", &ER_Utility::StopDrawingRenderingObjects);
-			if (ImGui::CollapsingHeader("Global LOD Properties"))
+			//rendering objects
 			{
-				ImGui::SliderFloat("LOD #0 distance", &ER_Utility::DistancesLOD[0], 0.0f, 300.0f);
-				ImGui::SliderFloat("LOD #1 distance", &ER_Utility::DistancesLOD[1], ER_Utility::DistancesLOD[0], 1000.0f);
-				ImGui::SliderFloat("LOD #2 distance", &ER_Utility::DistancesLOD[2], ER_Utility::DistancesLOD[1], 5000.0f);
-				//add more if needed
-			}
-			if (ImGui::Button("Save transforms")) {
-				mScene->SaveRenderingObjectsTransforms();
-			}
-
-			int objectIndex = 0;
-			int objectsSize = 0;
-			for (auto& object : mScene->objects) {
-				if (object.second->IsAvailableInEditor())
+				ImGui::TextColored(ImVec4(0.12f, 0.78f, 0.44f, 1), "Scene objects");
+				ImGui::Checkbox("Stop drawing objects", &ER_Utility::StopDrawingRenderingObjects);
+				if (ImGui::CollapsingHeader("Global LOD Properties"))
 				{
-					editorObjectsNames[objectIndex] = object.first.c_str();
-					objectIndex++;
+					ImGui::SliderFloat("LOD #0 distance", &ER_Utility::DistancesLOD[0], 0.0f, 300.0f);
+					ImGui::SliderFloat("LOD #1 distance", &ER_Utility::DistancesLOD[1], ER_Utility::DistancesLOD[0], 1000.0f);
+					ImGui::SliderFloat("LOD #2 distance", &ER_Utility::DistancesLOD[2], ER_Utility::DistancesLOD[1], 5000.0f);
+					//add more if needed
 				}
-			}
-			objectsSize = objectIndex;
+				if (ImGui::Button("Save transforms")) {
+					mScene->SaveRenderingObjectsTransforms();
+				}
 
-			ImGui::PushItemWidth(-1);
-			if (ImGui::Button("Deselect")) {
-				selectedObjectIndex = -1;
-			}
-			ImGui::ListBox("##empty", &selectedObjectIndex, editorObjectsNames, objectsSize);
-
-			for (size_t i = 0; i < objectsSize; i++)
-			{
-				if (i == selectedObjectIndex)
+				int objectIndex = 0;
+				int objectsSize = 0;
+				for (auto& object : mScene->objects)
 				{
-					auto renderingObject = mScene->FindRenderingObjectByName(editorObjectsNames[selectedObjectIndex]);
-					if (renderingObject)
-						renderingObject->SetSelected(true);
+					if (object.second->IsAvailableInEditor() && objectIndex < MAX_OBJECTS_IN_EDITOR_COUNT)
+					{
+						editorObjectsNames[objectIndex] = object.first.c_str();
+						objectIndex++;
+					}
 				}
-				else
+				objectsSize = objectIndex;
+
+				ImGui::PushItemWidth(-1);
+				if (ImGui::Button("Deselect")) {
+					selectedObjectIndex = -1;
+				}
+				ImGui::ListBox("##empty", &selectedObjectIndex, editorObjectsNames, objectsSize);
+
+				for (int i = 0; i < objectsSize; i++)
 				{
 					auto renderingObject = mScene->FindRenderingObjectByName(editorObjectsNames[i]);
 					if (renderingObject)
-						renderingObject->SetSelected(false);
+						renderingObject->SetSelected(i == selectedObjectIndex);
 				}
 			}
 

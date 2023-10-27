@@ -150,6 +150,11 @@ namespace EveryRay_Core
 		ImGui::SliderFloat("Max LOD distance", &mMaxDistanceToCamera, 150.0f, 1500.0f);
 		ImGui::SliderFloat("Delta LOD distance", &mDeltaDistanceToCamera, 15.0f, 150.0f);
 		ImGui::Checkbox("Enable foliage editor", &ER_Utility::IsFoliageEditor);
+		if (ER_Utility::IsFoliageEditor)
+		{
+			ER_Utility::DisableAllEditors();
+			ER_Utility::IsFoliageEditor = true;
+		}
 		if (ImGui::Button("Save foliage changes"))
 			mScene->SaveFoliageZonesTransforms(mFoliageCollection);
 

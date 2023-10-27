@@ -369,8 +369,8 @@ namespace EveryRay_Core {
 		bool editable = ER_Utility::IsEditorMode && ER_Utility::IsPostEffectsVolumeEditor;
 		if (editable)
 		{
-			//disable all other editors
-			ER_Utility::IsFoliageEditor = ER_Utility::IsLightEditor = false;
+			ER_Utility::DisableAllEditors();
+			ER_Utility::IsPostEffectsVolumeEditor = true;
 
 			for (int i = 0; i < static_cast<int>(mPostEffectsVolumes.size()); i++)
 				mEditorPostEffectsVolumesNames[i] = mPostEffectsVolumes[i].name.c_str();

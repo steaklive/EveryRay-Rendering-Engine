@@ -35,8 +35,8 @@ namespace EveryRay_Core
 
 		ER_RHI_GPUConstantBuffer<SimpleSnowMaterial_CBufferData::SnowCB> mConstantBuffer;
 
-		float mSnowLevel = 0.65;
-		float mSnowDepth = 0.15;
-		float mSnowUVScale = 0.2;
+		float mSnowLevel = 0.65f;
+		float mSnowDepth = 0.15f;
+		float mSnowUVScale = 0.2f;
 	};
 }

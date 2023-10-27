@@ -8,8 +8,6 @@
 #define NUM_VOXEL_GI_CASCADES 2
 #define NUM_VOXEL_GI_TEX_MIPS 6
 
-#define MAX_NUM_POINT_LIGHTS 64 // keep in sync with Lighting.hlsli; deprecate once tiled rendering is implemented
-
 // Keep these commong resources indices in sync with Lighting.hlsli
 #define SRV_INDEX_MAX_RESERVED_FOR_TEXTURES			4 // until which index bindings are reserved for textures (in both Deferred/Forward)
 #define SRV_INDEX_CSM_START							5
@@ -170,6 +168,7 @@ namespace EveryRay_Core
 		void SetSSSDirLightPlaneScale(float val) { mSSSDirectionalLightPlaneScale = val; }
 
 		bool IsDebugSkipIndirectLighting() { return mDebugSkipIndirectProbeLighting; }
+
 	private:
 		void DrawDeferredLighting(ER_GBuffer* gbuffer, ER_RHI_GPUTexture* aRenderTarget);
 		void DrawForwardLighting(ER_GBuffer* gbuffer, ER_RHI_GPUTexture* aRenderTarget);
@@ -179,6 +178,8 @@ namespace EveryRay_Core
 
 		void UpdateImGui();
 		void UpdateVoxelCameraPosition();
+
+		void UpdatePointLightsDataCPU();
 
 		void CPUCullObjectsAgainstVoxelCascades(const ER_Scene* scene);
 
@@ -266,6 +267,8 @@ namespace EveryRay_Core
 		ER_RHI_InputLayout* mForwardLightingRenderingObjectInputLayout_Instancing = nullptr;
 
 		ER_RHI_GPURootSignature* mDebugProbesRenderRS = nullptr;
+
+		PointLightData mPointLightsDataCPU[MAX_NUM_POINT_LIGHTS];
 
 		//VCT GI
 		XMFLOAT4 mVoxelCameraPositions[NUM_VOXEL_GI_CASCADES];

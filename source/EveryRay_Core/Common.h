@@ -88,6 +88,7 @@ using namespace DirectX;
 #define NUM_SHADOW_CASCADES 3
 #define MAX_LOD 3
 #define MAX_MESH_COUNT 32 // should match with IndirectCulling.hlsli
+#define MAX_NUM_POINT_LIGHTS 64 // keep in sync with Lighting.hlsli; deprecate or bump once tiled rendering is implemented
 
 template <typename T>
 inline T ER_DivideByMultiple(T value, unsigned int alignment) {	return (T)((value + alignment - 1) / alignment); }

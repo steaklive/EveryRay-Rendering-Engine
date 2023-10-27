@@ -267,25 +267,11 @@ namespace EveryRay_Core {
 		}
 
 		//light buffers
-		{
-			const std::vector<ER_PointLight*>& lights = GetCore()->GetLevel()->mPointLights;
-			const UINT sceneLightCount = static_cast<UINT>(lights.size());
-			
-			PointLightData data[MAX_NUM_POINT_LIGHTS];
-
-			for (UINT i = 0; i < MAX_NUM_POINT_LIGHTS; ++i)
-			{
-				if (i < sceneLightCount)
-				{
-					data[i].PositionRadius = XMFLOAT4(lights[i]->GetPosition().x, lights[i]->GetPosition().y, lights[i]->GetPosition().z, lights[i]->GetRadius());
-					data[i].ColorIntensity = XMFLOAT4(lights[i]->GetColor().x, lights[i]->GetColor().y, lights[i]->GetColor().z, lights[i]->GetColor().w);
-				}
-				else
-					data[i].PositionRadius = XMFLOAT4(0.0, 0.0, 0.0, -1.0);
-			}
+		{	
+			UpdatePointLightsDataCPU();
 
 			mPointLightsBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Point Lights Buffer");
-			mPointLightsBuffer->CreateGPUBufferResource(rhi, data, MAX_NUM_POINT_LIGHTS, sizeof(PointLightData), false,
+			mPointLightsBuffer->CreateGPUBufferResource(rhi, mPointLightsDataCPU, MAX_NUM_POINT_LIGHTS, sizeof(PointLightData), true,
 				/*ER_BIND_UNORDERED_ACCESS | */ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED, ER_FORMAT_UNKNOWN);
 		}
 		// Root-signatures
@@ -397,6 +383,13 @@ namespace EveryRay_Core {
 		mGbuffer = gbuffer;
 
 		ER_RHI* rhi = GetCore()->GetRHI();
+
+		if (mPointLightsBuffer) //TODO check against hash change and not update every frame
+		{
+			UpdatePointLightsDataCPU();
+			rhi->UpdateBuffer(mPointLightsBuffer, mPointLightsDataCPU, sizeof(PointLightData) * MAX_NUM_POINT_LIGHTS);
+		}
+
 		rhi->SetRenderTargets({ mLocalIlluminationRT }, gbuffer->GetDepth());
 		rhi->ClearRenderTarget(mLocalIlluminationRT, clearColorBlack);
 
@@ -821,6 +814,23 @@ namespace EveryRay_Core {
 			}
 			else
 				mIsVCTVoxelCameraPositionsUpdated = false;
+		}
+	}
+
+	void ER_Illumination::UpdatePointLightsDataCPU()
+	{
+		const std::vector<ER_PointLight*>& lights = GetCore()->GetLevel()->mPointLights;
+		const UINT sceneLightCount = static_cast<UINT>(lights.size());
+
+		for (UINT i = 0; i < MAX_NUM_POINT_LIGHTS; ++i)
+		{
+			if (i < sceneLightCount)
+			{
+				mPointLightsDataCPU[i].PositionRadius = XMFLOAT4(lights[i]->GetPosition().x, lights[i]->GetPosition().y, lights[i]->GetPosition().z, lights[i]->GetRadius());
+				mPointLightsDataCPU[i].ColorIntensity = XMFLOAT4(lights[i]->GetColor().x, lights[i]->GetColor().y, lights[i]->GetColor().z, lights[i]->GetColor().w);
+			}
+			else
+				mPointLightsDataCPU[i].PositionRadius = XMFLOAT4(0.0, 0.0, 0.0, -1.0);
 		}
 	}
 

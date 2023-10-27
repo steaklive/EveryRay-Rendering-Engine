@@ -105,7 +105,10 @@ namespace EveryRay_Core
 						radius = mSceneJsonRoot["point_lights"][i]["radius"].asFloat();
 						//light.SetRadius(mSceneJsonRoot["point_lights"][i]["radius"].asFloat());
 
-					lights.push_back(new ER_PointLight(pCore, XMFLOAT3(position[0],position[1],position[2]), radius));
+					if (static_cast<int>(lights.size()) < MAX_NUM_POINT_LIGHTS)
+						lights.push_back(new ER_PointLight(pCore, XMFLOAT3(position[0], position[1], position[2]), radius));
+					else
+						throw ER_CoreException("Exceeded the max number of point lights when loading the scene!");
 
 					if (mSceneJsonRoot["point_lights"][i].isMember("color"))
 					{
@@ -646,7 +649,7 @@ namespace EveryRay_Core
 		bool hasLODs = mSceneJsonRoot["rendering_objects"][i].isMember("model_lods");
 		if (hasLODs)
 		{
-			for (int lod = 0; lod < mSceneJsonRoot["rendering_objects"][i]["model_lods"].size(); lod++)
+			for (int lod = 0; lod < static_cast<int>(mSceneJsonRoot["rendering_objects"][i]["model_lods"].size()); lod++)
 			{
 				aObject->LoadInstanceBuffers(lod);
 				if (aObject->GetTerrainPlacement() && aObject->GetTerrainProceduralInstanceCount() > 0)

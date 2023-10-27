@@ -1067,7 +1067,7 @@ namespace EveryRay_Core
 
 		if (ER_Utility::IsEditorMode) 
 		{
-			ER_Utility::IsLightEditor = false;
+			ER_Utility::IsSunLightEditor = false;
 			ER_Utility::IsFoliageEditor = false;
 			ER_Utility::IsPostEffectsVolumeEditor = false;
 

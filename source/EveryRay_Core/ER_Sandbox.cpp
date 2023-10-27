@@ -84,7 +84,7 @@ namespace EveryRay_Core {
 		#pragma region INIT_EDITOR
 		mEditor = (ER_Editor*)game.GetServices().FindService(ER_Editor::TypeIdClass());
 		assert(mEditor);
-		mEditor->LoadScene(mScene);
+		mEditor->Initialize(mScene);
 #pragma endregion
 
 		#pragma region INIT_QUAD_RENDERER
@@ -281,6 +281,8 @@ namespace EveryRay_Core {
 		mDirectionalLight->UpdateProxyModel(gameTime, 
 			((ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass()))->ViewMatrix4X4(),
 			((ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass()))->ProjectionMatrix4X4()); //TODO refactor to DebugRenderer
+		for (auto& pointLight : mPointLights)
+			pointLight->Update(gameTime);
 
 		for (auto& object : mScene->objects)
 			object.second->Update(gameTime);

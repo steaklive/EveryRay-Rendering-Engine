@@ -131,7 +131,7 @@ namespace EveryRay_Core
 
 	void ER_DirectionalLight::DrawProxyModel(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, const ER_CoreTime & time, ER_RHI_GPURootSignature* rs)
 	{
-		if (mProxyModel && ER_Utility::IsEditorMode && ER_Utility::IsLightEditor)
+		if (mProxyModel && ER_Utility::IsEditorMode && ER_Utility::IsSunLightEditor)
 			mProxyModel->Draw(aRenderTarget, aDepth, time, rs);
 	}
 
@@ -171,7 +171,7 @@ namespace EveryRay_Core
 		static bool boundSizing = false;
 		static bool boundSizingSnap = false;
 
-		if (ER_Utility::IsEditorMode && ER_Utility::IsLightEditor)
+		if (ER_Utility::IsEditorMode && ER_Utility::IsSunLightEditor)
 		{
 			ImGui::Begin("Directional Light Editor");
 
