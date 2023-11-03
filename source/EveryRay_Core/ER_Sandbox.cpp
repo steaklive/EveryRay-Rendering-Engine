@@ -127,7 +127,7 @@ namespace EveryRay_Core {
 				XMMatrixRotationAxis(mDirectionalLight->DirectionVector(), -XMConvertToRadians(sunDirection.z))
 			);
 
-        mDirectionalLight->SetSunColor(mScene->GetSunColor());
+        mDirectionalLight->SetColor(mScene->GetSunColor());
 #pragma endregion
 
 		#pragma region INIT_SHADOWMAPPER
@@ -259,10 +259,10 @@ namespace EveryRay_Core {
 		//TODO refactor skybox updates
 		mSkybox->SetUseCustomSkyColor(mEditor->IsSkyboxUsingCustomColor());
 		mSkybox->SetSkyParams(mEditor->GetBottomSkyColor(), mEditor->GetTopSkyColor(), mEditor->GetSkyMinHeight(), mEditor->GetSkyMaxHeight());
-		mSkybox->SetSunData(mDirectionalLight->IsSunRendered(),
+		mSkybox->SetSunData(mDirectionalLight->IsSunOnSkyRendered(),
 			XMFLOAT4(mDirectionalLight->Direction().x, mDirectionalLight->Direction().y, mDirectionalLight->Direction().z, 1.0),
-			XMFLOAT4(mDirectionalLight->GetDirectionalLightColor().x, mDirectionalLight->GetDirectionalLightColor().y, mDirectionalLight->GetDirectionalLightColor().z, 1.0),
-			mDirectionalLight->GetSunBrightness(), mDirectionalLight->GetSunExponent());
+			XMFLOAT4(mDirectionalLight->GetColor().x, mDirectionalLight->GetColor().y, mDirectionalLight->GetColor().z, 1.0),
+			mDirectionalLight->GetSunOnSkyBrightness(), mDirectionalLight->GetSunOnSkyExponent());
 		mSkybox->Update();
 		mSkybox->UpdateSun(gameTime);
 		mGBuffer->Update(gameTime);

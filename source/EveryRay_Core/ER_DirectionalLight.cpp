@@ -175,18 +175,18 @@ namespace EveryRay_Core
 		{
 			ImGui::Begin("Directional Light Editor");
 
-			ImGui::ColorEdit3("Sun Color", mSunColor);
+			ImGui::ColorEdit3("Color", mColor);
 			ImGui::ColorEdit3("Ambient Color", mAmbientColor);
+			ImGui::SliderFloat("Intensity", &mLightIntensity, 0.0f, 50.0f);
 
 			ImGuizmo::DecomposeMatrixToComponents(matrix, mMatrixTranslation, mMatrixRotation, mMatrixScale);
 			ImGui::InputFloat3("Rotate", mMatrixRotation, 3);
 			ImGuizmo::RecomposeMatrixFromComponents(mMatrixTranslation, mMatrixRotation, mMatrixScale, matrix);
 
-			ImGui::Checkbox("Render Sun", &mDrawSun);
-			if (mDrawSun) {
-				ImGui::SliderFloat("Sun Exponent", &mSunExponent, 1.0f, 10000.0f);
-				ImGui::SliderFloat("Sun Brightness", &mSunBrightness, 0.0f, 10.0f);
-				ImGui::SliderFloat("Sun Intensity", &mDirectionalLightIntensity, 0.0f, 50.0f);
+			ImGui::Checkbox("Render Sun On Sky", &mDrawSunOnSky);
+			if (mDrawSunOnSky) {
+				ImGui::SliderFloat("Sun On Sky Exponent", &mSunOnSkyExponent, 1.0f, 10000.0f);
+				ImGui::SliderFloat("Sun On Sky Brightness", &mSunOnSkyBrightness, 0.0f, 10.0f);
 			}
 			ImGui::End();
 

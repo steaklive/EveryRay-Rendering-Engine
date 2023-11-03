@@ -95,7 +95,7 @@ namespace EveryRay_Core
 		mConstantBuffer.Data.ShadowTexelSize = XMFLOAT4{ 1.0f / neededSystems.mShadowMapper->GetResolution(), 1.0f, 1.0f, 1.0f };
 		mConstantBuffer.Data.ShadowCascadeDistances = XMFLOAT4{ neededSystems.mShadowMapper->GetCameraFarShadowCascadeDistance(0), neededSystems.mShadowMapper->GetCameraFarShadowCascadeDistance(1), neededSystems.mShadowMapper->GetCameraFarShadowCascadeDistance(2), 1.0f };
 		mConstantBuffer.Data.SunDirection = XMFLOAT4{ -neededSystems.mDirectionalLight->Direction().x, -neededSystems.mDirectionalLight->Direction().y, -neededSystems.mDirectionalLight->Direction().z, 1.0f };
-		mConstantBuffer.Data.SunColor = XMFLOAT4{ neededSystems.mDirectionalLight->GetDirectionalLightColor().x, neededSystems.mDirectionalLight->GetDirectionalLightColor().y, neededSystems.mDirectionalLight->GetDirectionalLightColor().z, neededSystems.mDirectionalLight->GetDirectionalLightIntensity() };
+		mConstantBuffer.Data.SunColor = XMFLOAT4{ neededSystems.mDirectionalLight->GetColor().x, neededSystems.mDirectionalLight->GetColor().y, neededSystems.mDirectionalLight->GetColor().z, neededSystems.mDirectionalLight->GetIntensity() };
 		mConstantBuffer.Data.CameraPosition = XMFLOAT4{ neededSystems.mCamera->Position().x, neededSystems.mCamera->Position().y, neededSystems.mCamera->Position().z, 1.0f };
 		mConstantBuffer.Data.FurColor = XMFLOAT4{ aObj->GetFurColor().x, aObj->GetFurColor().y,  aObj->GetFurColor().z,  aObj->GetFurColorInterpolation() };
 		mConstantBuffer.Data.FurLengthCutoffCutoffEndFade = XMFLOAT4{ aObj->GetFurLength(), aObj->GetFurCutoff(), aObj->GetFurCutoffEnd(), 0.0f };

@@ -168,7 +168,7 @@ namespace EveryRay_Core {
 		mFrameConstantBuffer.Data.InvProj = XMMatrixInverse(nullptr, mCamera.ProjectionMatrix());
 		mFrameConstantBuffer.Data.InvView = XMMatrixInverse(nullptr, mCamera.ViewMatrix());
 		mFrameConstantBuffer.Data.LightDir = -mDirectionalLight.DirectionVector();
-		mFrameConstantBuffer.Data.LightCol = XMVECTOR{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, 1.0f };
+		mFrameConstantBuffer.Data.LightCol = XMVECTOR{ mDirectionalLight.GetColor().x, mDirectionalLight.GetColor().y, mDirectionalLight.GetColor().z, 1.0f };
 		mFrameConstantBuffer.Data.CameraPos = mCamera.PositionVector();
 		mFrameConstantBuffer.Data.UpsampleRatio = XMFLOAT2(1.0f / mDownscaleFactor, 1.0f / mDownscaleFactor);
 		mFrameConstantBuffer.ApplyChanges(rhi);

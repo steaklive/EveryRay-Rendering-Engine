@@ -553,7 +553,7 @@ namespace EveryRay_Core
 		mTerrainConstantBuffer.Data.View = XMMatrixTranspose(camera->ViewMatrix());
 		mTerrainConstantBuffer.Data.Projection = XMMatrixTranspose(camera->ProjectionMatrix());
 		mTerrainConstantBuffer.Data.SunDirection = XMFLOAT4(-mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f);
-		mTerrainConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetDirectionalLightColor().x, mDirectionalLight.GetDirectionalLightColor().y, mDirectionalLight.GetDirectionalLightColor().z, mDirectionalLight.GetDirectionalLightIntensity() };
+		mTerrainConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetColor().x, mDirectionalLight.GetColor().y, mDirectionalLight.GetColor().z, mDirectionalLight.GetIntensity() };
 		mTerrainConstantBuffer.Data.CameraPosition = XMFLOAT4(camera->Position().x, camera->Position().y, camera->Position().z, 1.0f);
 		mTerrainConstantBuffer.Data.TessellationFactor = static_cast<float>(mTessellationFactor);
 		mTerrainConstantBuffer.Data.TerrainHeightScale = mTerrainTessellatedHeightScale;

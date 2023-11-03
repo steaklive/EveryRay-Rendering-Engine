@@ -37,22 +37,25 @@ namespace EveryRay_Core
 		void DrawProxyModel(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, const ER_CoreTime& time, ER_RHI_GPURootSignature* rs);
 		void UpdateProxyModel(const ER_CoreTime& time, const XMFLOAT4X4& viewMatrix, const XMFLOAT4X4& projectionMatrix);
 		void UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix);
-		XMFLOAT3 GetDirectionalLightColor() const { return XMFLOAT3(mSunColor); }
-		XMFLOAT3 GetAmbientLightColor() const { return XMFLOAT3(mAmbientColor); }
-		void SetSunColor(XMFLOAT3 color) {
-			mSunColor[0] = color.x;
-			mSunColor[1] = color.y;
-			mSunColor[2] = color.z;
+		
+		XMFLOAT3 GetColor() const { return XMFLOAT3(mColor); }
+		void SetColor(const XMFLOAT3& color) {
+			mColor[0] = color.x;
+			mColor[1] = color.y;
+			mColor[2] = color.z;
 		}
-		void SetAmbientColor(XMFLOAT3 color) {
+		float GetIntensity() const { return mLightIntensity; }
+		XMFLOAT3 GetAmbientLightColor() const { return XMFLOAT3(mAmbientColor); }
+		void SetAmbientColor(const XMFLOAT3& color) {
 			mAmbientColor[0] = color.x;
 			mAmbientColor[1] = color.y;
 			mAmbientColor[2] = color.z;
 		}
-		bool IsSunRendered() { return mDrawSun; }
-		float GetSunBrightness() { return mSunBrightness; }
-		float GetSunExponent() { return mSunExponent; }
-		float GetDirectionalLightIntensity() const { return mDirectionalLightIntensity; }
+		
+		// TODO: remove from here to ER_Editor or somewhere else
+		bool IsSunOnSkyRendered() { return mDrawSunOnSky; }				// doesn't affect shading, just for visuals on sky
+		float GetSunOnSkyBrightness() { return mSunOnSkyBrightness; }	// doesn't affect shading, just for visuals on sky
+		float GetSunOnSkyExponent() { return mSunOnSkyExponent; }		// doesn't affect shading, just for visuals on sky
 
 		ER_GenericEvent<Delegate_RotationUpdate>* RotationUpdateEvent = new ER_GenericEvent<Delegate_RotationUpdate>();
 
@@ -79,14 +82,14 @@ namespace EveryRay_Core
 
 		float mProxyModelGizmoTranslationDelta = 10.0f;
 
-		float mSunColor[3] = { 1.0f, 0.95f, 0.863f };
+		float mColor[3] = { 1.0f, 0.95f, 0.863f };
 		float mAmbientColor[3] = { 0.08f, 0.08f, 0.08f };
 
 		XMMATRIX mTransformMatrix = XMMatrixIdentity();
 		
-		bool mDrawSun = true;
-		float mSunExponent = 10000;
-		float mSunBrightness = 2.637f;
-		float mDirectionalLightIntensity = 4.0f;
+		bool mDrawSunOnSky = true;
+		float mSunOnSkyExponent = 10000;
+		float mSunOnSkyBrightness = 2.637f;
+		float mLightIntensity = 4.0f;
 	};
 }
