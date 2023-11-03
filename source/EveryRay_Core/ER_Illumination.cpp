@@ -324,7 +324,7 @@ namespace EveryRay_Core {
 				mDeferredLightingRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_ALL);
 				mDeferredLightingRS->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SHADER_VISIBILITY_ALL);
 				mDeferredLightingRS->InitStaticSampler(rhi, 2, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP, ER_RHI_SHADER_VISIBILITY_ALL);
-				mDeferredLightingRS->InitDescriptorTable(rhi, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 18 }, ER_RHI_SHADER_VISIBILITY_ALL);
+				mDeferredLightingRS->InitDescriptorTable(rhi, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { SRV_INDEX_MAX }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mDeferredLightingRS->InitDescriptorTable(rhi, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mDeferredLightingRS->InitDescriptorTable(rhi, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mDeferredLightingRS->Finalize(rhi, "ER_RHI_GPURootSignature: Deferred Lighting Pass");
@@ -336,8 +336,8 @@ namespace EveryRay_Core {
 				mForwardLightingRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mForwardLightingRS->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mForwardLightingRS->InitStaticSampler(rhi, 2, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP, ER_RHI_SHADER_VISIBILITY_PIXEL);
-				mForwardLightingRS->InitDescriptorTable(rhi, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_PIXEL_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 18 }, ER_RHI_SHADER_VISIBILITY_PIXEL);
-				mForwardLightingRS->InitDescriptorTable(rhi, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_VERTEX_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 18 }, { 1 }, ER_RHI_SHADER_VISIBILITY_VERTEX);
+				mForwardLightingRS->InitDescriptorTable(rhi, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_PIXEL_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { SRV_INDEX_MAX }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mForwardLightingRS->InitDescriptorTable(rhi, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_VERTEX_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { SRV_INDEX_INDIRECT_INSTANCE_BUFFER }, { 1 }, ER_RHI_SHADER_VISIBILITY_VERTEX);
 				mForwardLightingRS->InitDescriptorTable(rhi, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 3 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mForwardLightingRS->InitConstant(rhi, FORWARD_LIGHTING_PASS_ROOT_CONSTANT_INDEX, 3 /*we already use 3 slots for CBVs*/, 1 /* only 1 constant for LOD index*/, ER_RHI_SHADER_VISIBILITY_ALL);
 				mForwardLightingRS->Finalize(rhi, "ER_RHI_GPURootSignature: Forward Lighting Pass", true);
@@ -383,12 +383,6 @@ namespace EveryRay_Core {
 		mGbuffer = gbuffer;
 
 		ER_RHI* rhi = GetCore()->GetRHI();
-
-		if (mPointLightsBuffer) //TODO check against hash change and not update every frame
-		{
-			UpdatePointLightsDataCPU();
-			rhi->UpdateBuffer(mPointLightsBuffer, mPointLightsDataCPU, sizeof(PointLightData) * MAX_NUM_POINT_LIGHTS);
-		}
 
 		rhi->SetRenderTargets({ mLocalIlluminationRT }, gbuffer->GetDepth());
 		rhi->ClearRenderTarget(mLocalIlluminationRT, clearColorBlack);
@@ -703,6 +697,13 @@ namespace EveryRay_Core {
 
 	void ER_Illumination::Update(const ER_CoreTime& gameTime, const ER_Scene* scene)
 	{
+		if (mPointLightsBuffer) //TODO check against hash change and not update every frame
+		{
+			UpdatePointLightsDataCPU();
+			auto rhi = GetCore()->GetRHI();
+			rhi->UpdateBuffer(mPointLightsBuffer, mPointLightsDataCPU, sizeof(PointLightData) * MAX_NUM_POINT_LIGHTS);
+		}
+
 		//check SSS culling
 		{
 			for (auto& objectInfo : scene->objects)
@@ -899,9 +900,11 @@ namespace EveryRay_Core {
 		resources[2] = gbuffer->GetPositions();
 		resources[3] = gbuffer->GetExtraBuffer();
 		resources[4] = gbuffer->GetExtra2Buffer();
-		rhi->SetShaderResources(ER_COMPUTE, resources, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
 		
-		SetCommonLightingShaderResources(ER_COMPUTE, static_cast<UINT>(resources.size()), mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
+		std::vector<ER_RHI_GPUResource*> commonResources = GetCommonLightingShaderResources();
+		resources.insert(resources.end(), commonResources.begin(), commonResources.end());
+
+		rhi->SetShaderResources(ER_COMPUTE, resources, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
 
 		rhi->Dispatch(ER_DivideByMultiple(static_cast<UINT>(aRenderTarget->GetWidth()), 8u), ER_DivideByMultiple(static_cast<UINT>(aRenderTarget->GetHeight()), 8u), 1u);
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
@@ -943,10 +946,8 @@ namespace EveryRay_Core {
 		}
 	}
 
-	void ER_Illumination::SetCommonLightingShaderResources(ER_RHI_SHADER_TYPE aShaderType, UINT startSlot /*= 0*/, ER_RHI_GPURootSignature* rs /*= nullptr*/, int rootParamIndex /*= -1*/)
+	std::vector<ER_RHI_GPUResource*> ER_Illumination::GetCommonLightingShaderResources()
 	{
-		assert(startSlot == (SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1));
-
 		std::vector<ER_RHI_GPUResource*> resources(SRV_INDEX_MAX - SRV_INDEX_MAX_RESERVED_FOR_TEXTURES, nullptr);
 		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 			resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_CSM_START + i] = mShadowMapper.GetShadowTexture(i);
@@ -967,8 +968,7 @@ namespace EveryRay_Core {
 
 		resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_POINT_LIGHTS] = mPointLightsBuffer;
 
-		auto rhi = mCore->GetRHI();
-		rhi->SetShaderResources(aShaderType, resources, startSlot, rs, rootParamIndex, aShaderType == ER_RHI_SHADER_TYPE::ER_COMPUTE);
+		return resources;
 	}
 
 	void ER_Illumination::PreparePipelineForForwardLighting(ER_RenderingObject* aObj)
@@ -1070,9 +1070,11 @@ namespace EveryRay_Core {
 			resources[2] = aObj->GetTextureData(meshIndex).MetallicMap;
 			resources[3] = aObj->GetTextureData(meshIndex).RoughnessMap;
 			resources[4] = aObj->IsTransparent() ? aObj->GetTextureData(meshIndex).ExtraMaskMap : aObj->GetTextureData(meshIndex).HeightMap;
-			rhi->SetShaderResources(ER_PIXEL, resources, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_VERTEX_SRV_INDEX);
 
-			SetCommonLightingShaderResources(ER_PIXEL, static_cast<UINT>(resources.size()), mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_PIXEL_SRV_INDEX);
+			std::vector<ER_RHI_GPUResource*> commonResources = GetCommonLightingShaderResources();
+			resources.insert(resources.end(), commonResources.begin(), commonResources.end());
+
+			rhi->SetShaderResources(ER_PIXEL, resources, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_PIXEL_SRV_INDEX);
 
 			if (aObj->IsGPUIndirectlyRendered())
 				rhi->SetShaderResources(ER_VERTEX, { aObj->GetIndirectNewInstanceBuffer() }, SRV_INDEX_INDIRECT_INSTANCE_BUFFER, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_VERTEX_SRV_INDEX);

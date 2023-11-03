@@ -174,7 +174,7 @@ namespace EveryRay_Core
 		void DrawForwardLighting(ER_GBuffer* gbuffer, ER_RHI_GPUTexture* aRenderTarget);
 
 		// resources that are common for both forward / deferred shaders
-		void SetCommonLightingShaderResources(ER_RHI_SHADER_TYPE aShaderType, UINT startSlot = 0,	ER_RHI_GPURootSignature* rs = nullptr, int rootParamIndex = -1);
+		std::vector<ER_RHI_GPUResource*> GetCommonLightingShaderResources();
 
 		void UpdateImGui();
 		void UpdateVoxelCameraPosition();

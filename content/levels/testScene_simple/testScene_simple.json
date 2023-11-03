@@ -11,70 +11,8 @@
 		6.7999999999999998,
 		37.0
 	],
+	"point_lights" : null,
 	"posteffects_aa_enabled" : true,
-	"posteffects_volumes" : 
-	[
-		{
-			"posteffects_colorgrading_enabled" : true,
-			"posteffects_colorgrading_lut" : 0,
-			"posteffects_linearfog_enabled" : false,
-			"posteffects_ssr_enabled" : true,
-			"posteffects_sss_enabled" : true,
-			"posteffects_tonemapping_enabled" : true,
-			"posteffects_vignette_enabled" : true,
-			"posteffects_vignette_radius" : 0.62,
-			"posteffects_vignette_softness" : 0.67000000000000004,
-			"volume_name" : "PP_Volume_1",
-			"volume_transform" : 
-			[
-				5.0880899429321289,
-				0.0,
-				0.0,
-				-23.234880447387695,
-				0.0,
-				8.1345710754394531,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.7865114212036133,
-				17.263864517211914,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"posteffects_colorgrading_enabled" : true,
-			"posteffects_colorgrading_lut" : 1,
-			"posteffects_linearfog_enabled" : false,
-			"posteffects_ssr_enabled" : false,
-			"posteffects_sss_enabled" : true,
-			"posteffects_tonemapping_enabled" : true,
-			"posteffects_vignette_enabled" : false,
-			"volume_name" : "PP_Volume_2",
-			"volume_transform" : 
-			[
-				5.3242688179016113,
-				0.0,
-				0.0,
-				38.197345733642578,
-				0.0,
-				9.3499345779418945,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				10.245656967163086,
-				5.0374126434326172,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		}
-	],
 	"rendering_objects" : 
 	[
 		{
@@ -328,30 +266,5 @@
 		0.94999999999999996
 	],
 	"sun_direction" : [],
-	"point_lights":
-	[
-		{
-			"position" :
-			[
-				10.0, 10.0, 0.0
-			],
-			"color" :
-			[
-				1.0, 0.0, 0.0, 10.0
-			],
-			"radius" : 0.5
-		},
-		{
-			"position" :
-			[
-				-3.0, 15.0, 0.0
-			],
-			"color" :
-			[
-				0.1, 0.7, 1.0, 1.0
-			],
-			"radius" : 20.0
-		}
-	],
 	"use_volumetric_fog" : false
 }
