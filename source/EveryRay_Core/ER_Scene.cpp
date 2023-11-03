@@ -1042,6 +1042,60 @@ namespace EveryRay_Core
 			return nullptr;
 	}
 
+	void ER_Scene::SavePointLightsData()
+	{
+		if (mScenePath.empty())
+			throw ER_CoreException("Can't save to scene json file! Empty scene name...");
+
+		std::vector<ER_PointLight*>& lights = GetCore()->GetLevel()->mPointLights;
+		
+		// store world transform
+		for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["point_lights"].size(); i++) 
+		{
+			ER_PointLight* light = lights[i];
+
+			if (mSceneJsonRoot["point_lights"][i].isMember("position")) 
+			{
+				Json::Value content(Json::arrayValue);
+				if (light)
+				{
+					content.append(light->GetPosition().x);
+					content.append(light->GetPosition().y);
+					content.append(light->GetPosition().z);
+
+					mSceneJsonRoot["point_lights"][i]["position"] = content;
+				}
+			}
+
+			if (mSceneJsonRoot["point_lights"][i].isMember("color"))
+			{
+				Json::Value content(Json::arrayValue);
+				if (light)
+				{
+					content.append(light->GetColor().x);
+					content.append(light->GetColor().y);
+					content.append(light->GetColor().z);
+					content.append(light->GetColor().w);
+
+					mSceneJsonRoot["point_lights"][i]["color"] = content;
+				}
+			}
+
+			if (mSceneJsonRoot["point_lights"][i].isMember("radius"))
+			{
+				if (light)
+					mSceneJsonRoot["point_lights"][i]["radius"] = light->GetRadius();
+			}
+		}
+
+		Json::StreamWriterBuilder builder;
+		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+
+		std::ofstream file_id;
+		file_id.open(mScenePath.c_str());
+		writer->write(mSceneJsonRoot, &file_id);
+	}
+
 	ER_RenderingObject* ER_Scene::FindRenderingObjectByName(const std::string& aName)
 	{
 		for (auto& sceneObj : objects)

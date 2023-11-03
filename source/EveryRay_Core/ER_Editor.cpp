@@ -37,44 +37,49 @@ namespace EveryRay_Core
 		if (ER_Utility::IsEditorMode) 
 		{
 			ImGui::Begin("Scene Editor");
-			ImGui::Checkbox("Enable wireframe", &ER_Utility::IsWireframe);
-			ImGui::Separator();
-			ImGui::Checkbox("Enable sun light editor", &ER_Utility::IsSunLightEditor);
-			if (ER_Utility::IsSunLightEditor)
-			{
-				for (int i = 0; i < static_cast<int>(GetCore()->GetLevel()->mPointLights.size()); i++)
-					GetCore()->GetLevel()->mPointLights[i]->SetSelectedInEditor(false);
 
-				selectedPointLightIndex = -1;
-			}
-
-			ImGui::Text("Point lights");
+			if (ImGui::CollapsingHeader("Lights"))
 			{
-				int objectIndex = 0;
-				int objectsSize = static_cast<int>(GetCore()->GetLevel()->mPointLights.size());
-				for (auto& object : GetCore()->GetLevel()->mPointLights)
+				ImGui::Checkbox("Enable sun editor", &ER_Utility::IsSunLightEditor);
+				if (ER_Utility::IsSunLightEditor)
 				{
-					if (objectIndex >= MAX_POINT_LIGHTS_IN_EDITOR_COUNT)
-						continue;
+					for (int i = 0; i < static_cast<int>(GetCore()->GetLevel()->mPointLights.size()); i++)
+						GetCore()->GetLevel()->mPointLights[i]->SetSelectedInEditor(false);
 
-					std::string name = "Point Light #" + std::to_string(objectIndex);
-					editorPointLightsNames[objectIndex] = strdup(name.c_str());;
-					objectIndex++;
+					selectedPointLightIndex = -1;
 				}
 
-				ImGui::ListBox("##empty", &selectedPointLightIndex, editorPointLightsNames, static_cast<int>(GetCore()->GetLevel()->mPointLights.size()));
+				{
+					int objectIndex = 0;
+					int objectsSize = static_cast<int>(GetCore()->GetLevel()->mPointLights.size());
+					for (auto& object : GetCore()->GetLevel()->mPointLights)
+					{
+						if (objectIndex >= MAX_POINT_LIGHTS_IN_EDITOR_COUNT)
+							continue;
 
-				for (int i = 0; i < objectsSize; i++)
-					GetCore()->GetLevel()->mPointLights[i]->SetSelectedInEditor(i == selectedPointLightIndex);
+						std::string name = "Point Light #" + std::to_string(objectIndex);
+						editorPointLightsNames[objectIndex] = strdup(name.c_str());;
+						objectIndex++;
+					}
 
-				// disable other editors if we selected a point light
-				if (selectedPointLightIndex >= 0)
-					ER_Utility::DisableAllEditors();
+					ImGui::ListBox("Point Lights", &selectedPointLightIndex, editorPointLightsNames, static_cast<int>(GetCore()->GetLevel()->mPointLights.size()));
+					if (ImGui::Button("Save Lights Data"))
+						mScene->SavePointLightsData();
+					ImGui::SameLine();
+					if (ImGui::Button("Deselect Light"))
+						selectedPointLightIndex = -1;
+
+					for (int i = 0; i < objectsSize; i++)
+						GetCore()->GetLevel()->mPointLights[i]->SetSelectedInEditor(i == selectedPointLightIndex);
+
+					// disable other editors if we selected a point light
+					if (selectedPointLightIndex >= 0)
+						ER_Utility::DisableAllEditors();
+				}
 			}
 
-			ImGui::Separator();
-
 			//skybox
+			if (ImGui::CollapsingHeader("Sky"))
 			{
 				ImGui::Checkbox("Custom sky colors", &mUseCustomSkyboxColor);
 				if (mUseCustomSkyboxColor)
@@ -89,9 +94,11 @@ namespace EveryRay_Core
 			}
 
 			//rendering objects
+			if (ImGui::CollapsingHeader("Rendering Objects"))
 			{
-				ImGui::TextColored(ImVec4(0.12f, 0.78f, 0.44f, 1), "Scene objects");
-				ImGui::Checkbox("Stop drawing objects", &ER_Utility::StopDrawingRenderingObjects);
+				ImGui::Checkbox("Stop drawing", &ER_Utility::StopDrawingRenderingObjects);
+				ImGui::Checkbox("Enable wireframe", &ER_Utility::IsWireframe);
+
 				if (ImGui::CollapsingHeader("Global LOD Properties"))
 				{
 					ImGui::SliderFloat("LOD #0 distance", &ER_Utility::DistancesLOD[0], 0.0f, 300.0f);
@@ -99,9 +106,11 @@ namespace EveryRay_Core
 					ImGui::SliderFloat("LOD #2 distance", &ER_Utility::DistancesLOD[2], ER_Utility::DistancesLOD[1], 5000.0f);
 					//add more if needed
 				}
-				if (ImGui::Button("Save transforms")) {
+				if (ImGui::Button("Save Object's Transform"))
 					mScene->SaveRenderingObjectsTransforms();
-				}
+				ImGui::SameLine();
+				if (ImGui::Button("Deselect Object"))
+					selectedObjectIndex = -1;
 
 				int objectIndex = 0;
 				int objectsSize = 0;
@@ -116,9 +125,6 @@ namespace EveryRay_Core
 				objectsSize = objectIndex;
 
 				ImGui::PushItemWidth(-1);
-				if (ImGui::Button("Deselect")) {
-					selectedObjectIndex = -1;
-				}
 				ImGui::ListBox("##empty", &selectedObjectIndex, editorObjectsNames, objectsSize);
 
 				for (int i = 0; i < objectsSize; i++)

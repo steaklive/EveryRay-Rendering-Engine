@@ -55,8 +55,7 @@ namespace EveryRay_Core {
 		DeleteObject(mLightProbesManager);
 		DeleteObject(mTerrain);
 		DeleteObject(mGPUCuller);
-
-		//mPointLights.clear();
+		DeletePointerCollection(mPointLights);
 
 		game.CPUProfiler()->EndCPUTime("Destroying scene: " + mName);
 	}

@@ -33,6 +33,7 @@ namespace EveryRay_Core
 
 		const XMFLOAT3& GetSunDir() { return mSunDirection; }
 		const XMFLOAT3& GetSunColor() { return mSunColor; }
+		void SavePointLightsData();
 
 		bool HasLightProbesSupport() { return mHasLightProbes; }
 		const XMFLOAT3& GetLightProbesVolumeMinBounds() const { return mLightProbesVolumeMinBounds; }
