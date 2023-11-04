@@ -70,7 +70,8 @@ namespace EveryRay_Core {
 		mCamera(camera),
 		mDirectionalLight(light),
 		mShadowMapper(shadowMapper),
-		mCurrentGIQuality(quality)
+		mCurrentGIQuality(quality),
+		mLastPointLightsDataCPUHash(0)
 	{
 		switch (quality)
 		{
@@ -271,9 +272,11 @@ namespace EveryRay_Core {
 			UpdatePointLightsDataCPU();
 
 			mPointLightsBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Point Lights Buffer");
-			mPointLightsBuffer->CreateGPUBufferResource(rhi, mPointLightsDataCPU, MAX_NUM_POINT_LIGHTS, sizeof(PointLightData), true,
-				/*ER_BIND_UNORDERED_ACCESS | */ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED, ER_FORMAT_UNKNOWN);
+			mPointLightsBuffer->CreateGPUBufferResource(rhi, mPointLightsDataCPU, MAX_NUM_POINT_LIGHTS, sizeof(PointLightData), true, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
+		
+			mLastPointLightsDataCPUHash = ER_Utility::FastHash(mPointLightsDataCPU, sizeof(PointLightData) * MAX_NUM_POINT_LIGHTS);
 		}
+
 		// Root-signatures
 		{
 			if (mCurrentGIQuality != GIQuality::GI_LOW)
@@ -697,14 +700,21 @@ namespace EveryRay_Core {
 
 	void ER_Illumination::Update(const ER_CoreTime& gameTime, const ER_Scene* scene)
 	{
-		if (mPointLightsBuffer) //TODO check against hash change and not update every frame
+		// point lights data
 		{
 			UpdatePointLightsDataCPU();
-			auto rhi = GetCore()->GetRHI();
-			rhi->UpdateBuffer(mPointLightsBuffer, mPointLightsDataCPU, sizeof(PointLightData) * MAX_NUM_POINT_LIGHTS);
+
+			UINT currentPointLightsDataCPUHash = ER_Utility::FastHash(mPointLightsDataCPU, sizeof(PointLightData) * MAX_NUM_POINT_LIGHTS);
+			if (mPointLightsBuffer && (mLastPointLightsDataCPUHash != currentPointLightsDataCPUHash))
+			{
+				auto rhi = GetCore()->GetRHI();
+				rhi->UpdateBuffer(mPointLightsBuffer, mPointLightsDataCPU, sizeof(PointLightData) * MAX_NUM_POINT_LIGHTS);
+
+				mLastPointLightsDataCPUHash = currentPointLightsDataCPUHash;
+			}
 		}
 
-		//check SSS culling
+		// SSS flag
 		{
 			for (auto& objectInfo : scene->objects)
 			{
@@ -718,19 +728,23 @@ namespace EveryRay_Core {
 			}
 		}
 
-		for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
+		// voxel data
 		{
-			mWorldVoxelCascadesAABBs[cascade] = mLocalVoxelCascadesAABBs[cascade];
-			mWorldVoxelCascadesAABBs[cascade].first.x += mVoxelCameraPositions[cascade].x;
-			mWorldVoxelCascadesAABBs[cascade].first.y += mVoxelCameraPositions[cascade].y;
-			mWorldVoxelCascadesAABBs[cascade].first.z += mVoxelCameraPositions[cascade].z;
-			mWorldVoxelCascadesAABBs[cascade].second.x += mVoxelCameraPositions[cascade].x;
-			mWorldVoxelCascadesAABBs[cascade].second.y += mVoxelCameraPositions[cascade].y;
-			mWorldVoxelCascadesAABBs[cascade].second.z += mVoxelCameraPositions[cascade].z;
+			for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
+			{
+				mWorldVoxelCascadesAABBs[cascade] = mLocalVoxelCascadesAABBs[cascade];
+				mWorldVoxelCascadesAABBs[cascade].first.x += mVoxelCameraPositions[cascade].x;
+				mWorldVoxelCascadesAABBs[cascade].first.y += mVoxelCameraPositions[cascade].y;
+				mWorldVoxelCascadesAABBs[cascade].first.z += mVoxelCameraPositions[cascade].z;
+				mWorldVoxelCascadesAABBs[cascade].second.x += mVoxelCameraPositions[cascade].x;
+				mWorldVoxelCascadesAABBs[cascade].second.y += mVoxelCameraPositions[cascade].y;
+				mWorldVoxelCascadesAABBs[cascade].second.z += mVoxelCameraPositions[cascade].z;
+			}
+
+			CPUCullObjectsAgainstVoxelCascades(scene);
+			UpdateVoxelCameraPosition();
 		}
 
-		CPUCullObjectsAgainstVoxelCascades(scene);
-		UpdateVoxelCameraPosition();
 		UpdateImGui();
 	}
 

@@ -24,8 +24,8 @@ namespace EveryRay_Core
 
 		inline virtual bool IsBuffer() override { return true; }
 
-		ER_RHI_DX12_DescriptorHandle& GetUAVDescriptorHandle() { return mBufferUAVHandle; }
-		ER_RHI_DX12_DescriptorHandle& GetSRVDescriptorHandle() { return mBufferSRVHandle; }
+		ER_RHI_DX12_DescriptorHandle& GetUAVDescriptorHandle() { return mIsDynamic ? mBufferUAVHandle[ER_RHI_DX12::mBackBufferIndex] : mBufferUAVHandle[0]; }
+		ER_RHI_DX12_DescriptorHandle& GetSRVDescriptorHandle() { return mIsDynamic ? mBufferSRVHandle[ER_RHI_DX12::mBackBufferIndex] : mBufferSRVHandle[0]; }
 		ER_RHI_DX12_DescriptorHandle& GetCBVDescriptorHandle() { return mBufferCBVHandle[ER_RHI_DX12::mBackBufferIndex]; }
 		
 		D3D12_VERTEX_BUFFER_VIEW& GetVertexBufferView() { return mIsDynamic ? mVertexBufferViews[ER_RHI_DX12::mBackBufferIndex] : mVertexBufferViews[0]; }
@@ -40,8 +40,8 @@ namespace EveryRay_Core
 		ComPtr<ID3D12Resource> mBuffer;
 		ComPtr<ID3D12Resource> mBufferUpload[DX12_MAX_BACK_BUFFER_COUNT];
 
-		ER_RHI_DX12_DescriptorHandle mBufferUAVHandle;
-		ER_RHI_DX12_DescriptorHandle mBufferSRVHandle;
+		ER_RHI_DX12_DescriptorHandle mBufferUAVHandle[DX12_MAX_BACK_BUFFER_COUNT];
+		ER_RHI_DX12_DescriptorHandle mBufferSRVHandle[DX12_MAX_BACK_BUFFER_COUNT];
 		ER_RHI_DX12_DescriptorHandle mBufferCBVHandle[DX12_MAX_BACK_BUFFER_COUNT];
 
 		DXGI_FORMAT mFormat;

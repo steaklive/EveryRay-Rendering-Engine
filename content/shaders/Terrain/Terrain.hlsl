@@ -83,16 +83,11 @@ struct PatchData
     float TileIndex : TILE_INDEX;
 };
 
-SamplerState LinearSampler : register(s0);
-SamplerState LinearSamplerClamp : register(s1);
-SamplerComparisonState CascadedPcfShadowMapSampler : register(s2);
-
 Texture2D<float4> SplatTexture : register(t0);
 Texture2D<float4> Channel0Texture : register(t1);
 Texture2D<float4> Channel1Texture : register(t2);
 Texture2D<float4> Channel2Texture : register(t3);
 Texture2D<float4> Channel3Texture : register(t4);
-Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t5);
 
 // here go some GI probe textures from Lighting.hlsli (from t8 to t17), thats why we start from t18 
 
@@ -117,10 +112,10 @@ float GetTessellationFactorFromCamera(float distance)
 float3 GetNormalFromHeightmap(float2 uv, float texelSize, float maxHeight)
 {
     float4 h;
-    h[0] = HeightTexture.SampleLevel(LinearSamplerClamp, uv + texelSize * float2(0, -1), 0).r * maxHeight;
-    h[1] = HeightTexture.SampleLevel(LinearSamplerClamp, uv + texelSize * float2(-1, 0), 0).r * maxHeight;
-    h[2] = HeightTexture.SampleLevel(LinearSamplerClamp, uv + texelSize * float2(1, 0), 0).r * maxHeight;
-    h[3] = HeightTexture.SampleLevel(LinearSamplerClamp, uv + texelSize * float2(0, 1), 0).r * maxHeight;
+    h[0] = HeightTexture.SampleLevel(SamplerClamp, uv + texelSize * float2(0, -1), 0).r * maxHeight;
+    h[1] = HeightTexture.SampleLevel(SamplerClamp, uv + texelSize * float2(-1, 0), 0).r * maxHeight;
+    h[2] = HeightTexture.SampleLevel(SamplerClamp, uv + texelSize * float2(1, 0), 0).r * maxHeight;
+    h[3] = HeightTexture.SampleLevel(SamplerClamp, uv + texelSize * float2(0, 1), 0).r * maxHeight;
     
     float3 n;
     n.z = h[0] - h[3];
@@ -191,7 +186,7 @@ DS_OUTPUT DSMain(PatchData input, float2 uv : SV_DomainLocation, OutputPatch<HS_
     float3 vertexPosition;
     
     float2 texcoord01 = (input.origin + uv * input.size) / TileSize;
-    float height = HeightTexture.SampleLevel(LinearSamplerClamp, texcoord01, 0).r;
+    float height = HeightTexture.SampleLevel(SamplerClamp, texcoord01, 0).r;
 	
     vertexPosition.xz = input.origin + uv * input.size;
     vertexPosition.y = TerrainHeightScale * height;
@@ -228,7 +223,7 @@ DS_OUTPUT DSShadowMap(PatchData input, float2 uv : SV_DomainLocation, OutputPatc
     float3 vertexPosition;
     
     float2 texcoord01 = (input.origin + uv * input.size) / TileSize;
-    float height = HeightTexture.SampleLevel(LinearSamplerClamp, texcoord01, 0).r;
+    float height = HeightTexture.SampleLevel(SamplerClamp, texcoord01, 0).r;
 	
     vertexPosition.xz = input.origin + uv * input.size;
     vertexPosition.y = TerrainHeightScale * height;
@@ -250,11 +245,11 @@ float4 PSMain(DS_OUTPUT IN) : SV_Target
     float3 normal = GetNormalFromHeightmap(uvTile, 1.0f / TileSize, TerrainHeightScale);
     uvTile.y = 1.0f - uvTile.y;
     
-    float4 splat = SplatTexture.Sample(LinearSamplerClamp, uvTile + 1.0f / TileSize);
-    float3 channel0 = pow(Channel0Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb, 2.2);
-    float3 channel1 = pow(Channel1Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb, 2.2);
-    float3 channel2 = pow(Channel2Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb, 2.2);
-    float3 channel3 = pow(Channel3Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb, 2.2);
+    float4 splat = SplatTexture.Sample(SamplerClamp, uvTile + 1.0f / TileSize);
+    float3 channel0 = pow(Channel0Texture.Sample(SamplerLinear, uvTile * DETAIL_TEXTURE_REPEAT).rgb, 2.2);
+    float3 channel1 = pow(Channel1Texture.Sample(SamplerLinear, uvTile * DETAIL_TEXTURE_REPEAT).rgb, 2.2);
+    float3 channel2 = pow(Channel2Texture.Sample(SamplerLinear, uvTile * DETAIL_TEXTURE_REPEAT).rgb, 2.2);
+    float3 channel3 = pow(Channel3Texture.Sample(SamplerLinear, uvTile * DETAIL_TEXTURE_REPEAT).rgb, 2.2);
     float3 diffuseAlbedo = saturate(splat.r * channel0 + splat.g * channel1 + splat.b * channel2 + splat.a * channel3);
 
     float3 shadowCoords[3] = { IN.shadowCoord0, IN.shadowCoord1, IN.shadowCoord2 };
@@ -270,7 +265,7 @@ float4 PSMain(DS_OUTPUT IN) : SV_Target
     
     float3 directLighting = DirectLightingPBR(normal, SunColor, SunDirection.xyz, diffuseAlbedo.rgb, IN.worldPos.xyz, roughness, float3(0.04, 0.04, 0.04), metalness, CameraPosition.xyz);
     float3 indirectLighting = IndirectLightingPBR(SunDirection.xyz, normal, diffuseAlbedo.rgb, IN.worldPos.xyz, roughness, float3(0.04, 0.04, 0.04), metalness, CameraPosition.xyz,
-        true, probesInfo, LinearSampler, LinearSamplerClamp, IntegrationTexture, ao, false);
+        true, probesInfo, SamplerLinear, SamplerClamp, IntegrationTexture, ao, false);
     return float4(directLighting * shadow + indirectLighting, 1.0f);
 }
 
@@ -294,11 +289,11 @@ PS_GBUFFER_OUTPUT PSGBuffer(DS_OUTPUT IN) : SV_Target
     float3 normal = GetNormalFromHeightmap(uvTile, 1.0f / TileSize, TerrainHeightScale);
     uvTile.y = 1.0f - uvTile.y;
     
-    float4 splat = SplatTexture.Sample(LinearSamplerClamp, uvTile + 1.0f / TileSize);
-    float3 channel0 = Channel0Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
-    float3 channel1 = Channel1Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
-    float3 channel2 = Channel2Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
-    float3 channel3 = Channel3Texture.Sample(LinearSampler, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
+    float4 splat = SplatTexture.Sample(SamplerClamp, uvTile + 1.0f / TileSize);
+    float3 channel0 = Channel0Texture.Sample(SamplerLinear, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
+    float3 channel1 = Channel1Texture.Sample(SamplerLinear, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
+    float3 channel2 = Channel2Texture.Sample(SamplerLinear, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
+    float3 channel3 = Channel3Texture.Sample(SamplerLinear, uvTile * DETAIL_TEXTURE_REPEAT).rgb;
     float3 diffuseAlbedo = saturate(splat.r * channel0 + splat.g * channel1 + splat.b * channel2 + splat.a * channel3);
     
     OUT.Color = float4(diffuseAlbedo, 1.0f);

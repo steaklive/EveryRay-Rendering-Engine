@@ -1,4 +1,5 @@
 #include "Common.hlsli"
+#include "Lighting.hlsli"
 
 cbuffer FoliageCBuffer : register(b0)
 {
@@ -24,11 +25,8 @@ cbuffer FoliageCBuffer : register(b0)
     float VoxelTextureDimension;
 }
 
-SamplerState ColorSampler : register(s0);
-SamplerComparisonState CascadedPcfShadowMapSampler : register(s1);
-
 Texture2D<float4> AlbedoTexture : register(t0);
-Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t1);
+Texture2D<float> CascadedShadowMaps[NUM_OF_SHADOW_CASCADES] : register(t2);
 
 RWTexture3D<float4> OutputVoxelGITexture : register(u0);
 
@@ -193,15 +191,15 @@ float CalculateShadow(float3 ShadowCoord, int index)
     float d4 = Dilation * ShadowTexelSize.x * 0.375;
     float result = (
         2.0 *
-        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy, ShadowCoord.z) +
-        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d2, d1), ShadowCoord.z) +
-        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d1, -d2), ShadowCoord.z) +
-        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d2, -d1), ShadowCoord.z) +
-        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d1, d2), ShadowCoord.z) +
-        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d4, d3), ShadowCoord.z) +
-        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d3, -d4), ShadowCoord.z) +
-        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d4, -d3), ShadowCoord.z) +
-        CascadedShadowTextures[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d3, d4), ShadowCoord.z)
+        CascadedShadowMaps[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy, ShadowCoord.z) +
+        CascadedShadowMaps[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d2, d1), ShadowCoord.z) +
+        CascadedShadowMaps[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d1, -d2), ShadowCoord.z) +
+        CascadedShadowMaps[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d2, -d1), ShadowCoord.z) +
+        CascadedShadowMaps[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d1, d2), ShadowCoord.z) +
+        CascadedShadowMaps[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d4, d3), ShadowCoord.z) +
+        CascadedShadowMaps[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(-d3, -d4), ShadowCoord.z) +
+        CascadedShadowMaps[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d4, -d3), ShadowCoord.z) +
+        CascadedShadowMaps[index].SampleCmpLevelZero(CascadedPcfShadowMapSampler, ShadowCoord.xy + float2(d3, d4), ShadowCoord.z)
         ) / 10.0;
 
     return result * result;
@@ -274,7 +272,7 @@ void PSMain_voxelization(PS_GI_IN input)
     voxelPos.y = -voxelPos.y;
     
     int3 finalVoxelPos = width * float3(0.5f * voxelPos + float3(0.5f, 0.5f, 0.5f));
-    float4 colorRes = AlbedoTexture.Sample(ColorSampler, input.UV);
+    float4 colorRes = AlbedoTexture.Sample(SamplerLinear, input.UV);
     voxelPos.y = -voxelPos.y;
     
     float4 worldPos = float4(VoxelToWorld(voxelPos), 1.0f);
@@ -289,7 +287,7 @@ void PSMain_voxelization(PS_GI_IN input)
 
 float4 PSMain(VS_OUTPUT IN) : SV_Target //forward pass
 {
-    float4 albedo = AlbedoTexture.Sample(ColorSampler, IN.TextureCoordinates);
+    float4 albedo = AlbedoTexture.Sample(SamplerLinear, IN.TextureCoordinates);
     float shadow = GetShadow(IN.ShadowCoord0, IN.ShadowCoord1, IN.ShadowCoord2, IN.Position.w);
     shadow = clamp(shadow, 0.5f, 1.0f);
     
@@ -303,7 +301,7 @@ PS_OUTPUT_GBUFFER PSMain_gbuffer(VS_OUTPUT IN)
 {
     PS_OUTPUT_GBUFFER OUT;
 
-    OUT.Color = AlbedoTexture.Sample(ColorSampler, IN.TextureCoordinates);
+    OUT.Color = AlbedoTexture.Sample(SamplerLinear, IN.TextureCoordinates);
     OUT.Normal = float4(IN.Normal, 1.0f);
     OUT.WorldPos = float4(IN.WorldPos, 1.0f);
     OUT.Extra = float4(0.0, 0.0, 0.0, 0.0f);

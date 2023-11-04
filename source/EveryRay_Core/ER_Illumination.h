@@ -269,6 +269,7 @@ namespace EveryRay_Core
 		ER_RHI_GPURootSignature* mDebugProbesRenderRS = nullptr;
 
 		PointLightData mPointLightsDataCPU[MAX_NUM_POINT_LIGHTS];
+		UINT mLastPointLightsDataCPUHash = 0;
 
 		//VCT GI
 		XMFLOAT4 mVoxelCameraPositions[NUM_VOXEL_GI_CASCADES];

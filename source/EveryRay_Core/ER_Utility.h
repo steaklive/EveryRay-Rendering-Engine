@@ -25,6 +25,7 @@ namespace EveryRay_Core
 		static void PathJoin(std::wstring& dest, const std::wstring& sourceDirectory, const std::wstring& sourceFile);
 		static void GetPathExtension(const std::wstring& source, std::wstring& dest);
 		static float RandomFloat(float a, float b);
+		static UINT FastHash(const void* aData, int len);
 		static void DisableAllEditors();
 
 		static bool IsEditorMode;

@@ -38,8 +38,6 @@ namespace EveryRay_Core
 		mFormat = aRHIDX12->GetFormat(format);
 		mStride = byteStride;
 		mSize = objectsCount * byteStride;
-		//if ((bindFlags & ER_RHI_BIND_FLAG::ER_BIND_CONSTANT_BUFFER)/* || (miscFlags == ER_RHI_RESOURCE_MISC_FLAG::ER_RESOURCE_MISC_BUFFER_STRUCTURED)*/)
-		//	mSize = ER_BitmaskAlign(objectsCount * byteStride, ER_GPU_BUFFER_ALIGNMENT);
 		if (bindFlags & ER_RHI_BIND_FLAG::ER_BIND_UNORDERED_ACCESS)
 			mResourceFlags |= D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
@@ -94,6 +92,45 @@ namespace EveryRay_Core
 				cbvDesc.SizeInBytes = mSize;
 				device->CreateConstantBufferView(&cbvDesc, mBufferCBVHandle[frameIndex].GetCPUHandle());
 			}
+
+			if (bindFlags & ER_RHI_BIND_FLAG::ER_BIND_SHADER_RESOURCE)
+			{
+				if ((!mIsDynamic && frameIndex == 0) || mIsDynamic)
+				{
+					mBufferSRVHandle[frameIndex] = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, frameIndex);
+
+					D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+					srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+					if (miscFlags & ER_RHI_RESOURCE_MISC_FLAG::ER_RESOURCE_MISC_DRAWINDIRECT_ARGS)
+						srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+					else
+						srvDesc.Format = mFormat;
+					srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+					srvDesc.Buffer.NumElements = objectsCount;
+					srvDesc.Buffer.StructureByteStride = byteStride;
+					srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+					device->CreateShaderResourceView(mIsDynamic ? mBufferUpload[frameIndex].Get() : mBuffer.Get(), &srvDesc, mBufferSRVHandle[frameIndex].GetCPUHandle());
+				}
+			}
+
+			if (bindFlags & ER_RHI_BIND_FLAG::ER_BIND_UNORDERED_ACCESS)
+			{
+				if ((!mIsDynamic && frameIndex == 0) || mIsDynamic)
+				{
+					mBufferUAVHandle[frameIndex] = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, frameIndex);
+
+					D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+					if (miscFlags & ER_RHI_RESOURCE_MISC_FLAG::ER_RESOURCE_MISC_DRAWINDIRECT_ARGS)
+						uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+					else
+						uavDesc.Format = mFormat;
+					uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+					uavDesc.Buffer.NumElements = objectsCount;
+					uavDesc.Buffer.StructureByteStride = byteStride;
+					uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+					device->CreateUnorderedAccessView(mIsDynamic ? mBufferUpload[frameIndex].Get() : mBuffer.Get(), nullptr, &uavDesc, mBufferUAVHandle[frameIndex].GetCPUHandle());
+				}
+			}
 		}
 
 		if (aData && !mIsDynamic)
@@ -126,40 +163,6 @@ namespace EveryRay_Core
 			mIndexBufferView.SizeInBytes = mSize;
 		}
 
-		if (bindFlags & ER_BIND_SHADER_RESOURCE)
-		{
-			mBufferSRVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			if (miscFlags & ER_RHI_RESOURCE_MISC_FLAG::ER_RESOURCE_MISC_DRAWINDIRECT_ARGS)
-				srvDesc.Format = DXGI_FORMAT_UNKNOWN;
-			else
-				srvDesc.Format = mFormat;
-			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-			srvDesc.Buffer.NumElements = objectsCount;
-			srvDesc.Buffer.StructureByteStride = byteStride;
-			srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-			device->CreateShaderResourceView(mBuffer.Get(), &srvDesc, mBufferSRVHandle.GetCPUHandle());
-
-		}
-
-		if (bindFlags & ER_BIND_UNORDERED_ACCESS)
-		{
-			mBufferUAVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-			D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-			if (miscFlags & ER_RHI_RESOURCE_MISC_FLAG::ER_RESOURCE_MISC_DRAWINDIRECT_ARGS)
-				uavDesc.Format = DXGI_FORMAT_UNKNOWN;
-			else
-				uavDesc.Format = mFormat;
-			uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
-			uavDesc.Buffer.NumElements = objectsCount;
-			uavDesc.Buffer.StructureByteStride = byteStride;
-			uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
-			device->CreateUnorderedAccessView(mBuffer.Get(), nullptr, &uavDesc, mBufferUAVHandle.GetCPUHandle());
-		}
-
 		if (mBuffer)
 			mBuffer->SetName(ER_Utility::ToWideString(mDebugName).c_str());
 
@@ -168,7 +171,6 @@ namespace EveryRay_Core
 			if (mBufferUpload[i])
 				mBufferUpload[i]->SetName(ER_Utility::ToWideString(mDebugName + " Upload frame #" + std::to_string(i)).c_str());
 		}
-
 	}
 
 	void ER_RHI_DX12_GPUBuffer::Map(ER_RHI* aRHI, void** aOutData)
