@@ -11,11 +11,6 @@ Texture2D<float4> SnowNormalTexture : register(t1);
 Texture2D<float4> SnowRoughnessTexture : register(t2);
 Texture2D<float4> NormalTexture : register(t3);
 
-Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t4);
-
-SamplerState SamplerLinear : register(s0);
-SamplerComparisonState CascadedPcfShadowMapSampler : register(s1);
-
 static const float3 snowDir = { 0.0, 1.0, 0.0 };
 
 cbuffer SnowCBuffer : register (b0)

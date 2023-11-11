@@ -108,13 +108,13 @@ namespace EveryRay_Core
 		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer() }, 0, rs, SNOW_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 		rhi->SetConstantBuffers(ER_PIXEL, { mConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer() }, 0, rs, SNOW_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 
-		std::vector<ER_RHI_GPUResource*> resources;
-		resources.push_back(aObj->GetSnowAlbedoTexture());
-		resources.push_back(aObj->GetSnowNormalTexture());
-		resources.push_back(aObj->GetSnowRoughnessTexture());
-		resources.push_back(aObj->GetTextureData(meshIndex).NormalMap);
+		std::vector<ER_RHI_GPUResource*> resources(LIGHTING_SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + NUM_SHADOW_CASCADES + 1);
+		resources[0] = aObj->GetSnowAlbedoTexture();
+		resources[1] = aObj->GetSnowNormalTexture();
+		resources[2] = aObj->GetSnowRoughnessTexture();
+		resources[3] = aObj->GetTextureData(meshIndex).NormalMap;
 		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
-			resources.push_back(neededSystems.mShadowMapper->GetShadowTexture(i));
+			resources[LIGHTING_SRV_INDEX_CSM_START + i] = neededSystems.mShadowMapper->GetShadowTexture(i);
 		rhi->SetShaderResources(ER_PIXEL, resources, 0, rs, SNOW_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 
 		rhi->SetSamplers(ER_PIXEL, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });

@@ -10,11 +10,6 @@ Texture2D<float4> FurAlbedoTexture : register(t0);
 Texture2D<float> FurHeightTexture : register(t1);
 Texture2D<float> FurMaskTexture : register(t2);
 
-Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t3);
-
-SamplerState SamplerLinear : register(s0);
-SamplerComparisonState CascadedPcfShadowMapSampler : register(s1);
-
 cbuffer FurShellCBuffer : register (b0)
 {
     float4x4 ShadowMatrices[NUM_OF_SHADOW_CASCADES];
