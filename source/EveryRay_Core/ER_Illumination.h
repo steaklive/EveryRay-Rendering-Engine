@@ -5,31 +5,31 @@
 
 #include "RHI/ER_RHI.h"
 
+// Voxel Cone Tracing (dynamic indirect illumination)
 #define NUM_VOXEL_GI_CASCADES 2
 #define NUM_VOXEL_GI_TEX_MIPS 6
 
-// Keep these commong resources indices in sync with Lighting.hlsli
-#define SRV_INDEX_MAX_RESERVED_FOR_TEXTURES			4 // until which index bindings are reserved for textures (in both Deferred/Forward)
-#define SRV_INDEX_CSM_START							5
-#define SRV_INDEX_CSM_END							5 + NUM_SHADOW_CASCADES - 1
+// These are common SRVs which are shared between Deferred/Forward lighting shaders. Keep them in sync with Lighting.hlsli!
+#define LIGHTING_SRV_INDEX_MAX_RESERVED_FOR_TEXTURES		4 // until which index bindings are reserved for textures (in both Deferred/Forward)
+#define LIGHTING_SRV_INDEX_CSM_START						5
+#define LIGHTING_SRV_INDEX_CSM_END							5 + NUM_SHADOW_CASCADES - 1
 
-#define SRV_INDEX_GLOBAL_DIFFUSE_PROBE				8
-#define SRV_INDEX_DIFFUSE_PROBES_CELLS_INDICES		9
-#define SRV_INDEX_DIFFUSE_PROBES_SH_COEFFICIENTS	10
-#define SRV_INDEX_DIFFUSE_PROBES_POSITIONS			11
-#define SRV_INDEX_GLOBAL_SPECULAR_PROBE				12
-#define SRV_INDEX_SPECULAR_PROBES_CULLED			13
-#define SRV_INDEX_SPECULAR_PROBES_CELLS_INDICES		14
-#define SRV_INDEX_SPECULAR_PROBES_ARRAY_INDICES		15
-#define SRV_INDEX_SPECULAR_PROBES_POSITIONS			16
+#define LIGHTING_SRV_INDEX_GLOBAL_DIFFUSE_PROBE				8
+#define LIGHTING_SRV_INDEX_DIFFUSE_PROBES_CELLS_INDICES		9
+#define LIGHTING_SRV_INDEX_DIFFUSE_PROBES_SH_COEFFICIENTS	10
+#define LIGHTING_SRV_INDEX_DIFFUSE_PROBES_POSITIONS			11
+#define LIGHTING_SRV_INDEX_GLOBAL_SPECULAR_PROBE			12
+#define LIGHTING_SRV_INDEX_SPECULAR_PROBES_CULLED			13
+#define LIGHTING_SRV_INDEX_SPECULAR_PROBES_CELLS_INDICES	14
+#define LIGHTING_SRV_INDEX_SPECULAR_PROBES_ARRAY_INDICES	15
+#define LIGHTING_SRV_INDEX_SPECULAR_PROBES_POSITIONS		16
+#define LIGHTING_SRV_INDEX_INTEGRATION_MAP					17
 
-#define SRV_INDEX_INTEGRATION_MAP					17
+#define LIGHTING_SRV_INDEX_INDIRECT_INSTANCE_BUFFER			18 // only in forward shader
 
-#define SRV_INDEX_INDIRECT_INSTANCE_BUFFER			18 // only in forward shader
-
-#define SRV_INDEX_POINT_LIGHTS						20
-
-#define SRV_INDEX_MAX								22 // nothing more than this index is allowed in Deferred/Forward shaders; increase if needed
+#define LIGHTING_SRV_INDEX_POINT_LIGHTS						20
+// ...
+#define LIGHTING_SRV_INDEX_MAX								22 // nothing > is allowed in Deferred/Forward shaders; increase if needed
 
 namespace EveryRay_Core
 {

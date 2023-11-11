@@ -327,7 +327,7 @@ namespace EveryRay_Core {
 				mDeferredLightingRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_ALL);
 				mDeferredLightingRS->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SHADER_VISIBILITY_ALL);
 				mDeferredLightingRS->InitStaticSampler(rhi, 2, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP, ER_RHI_SHADER_VISIBILITY_ALL);
-				mDeferredLightingRS->InitDescriptorTable(rhi, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { SRV_INDEX_MAX }, ER_RHI_SHADER_VISIBILITY_ALL);
+				mDeferredLightingRS->InitDescriptorTable(rhi, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { LIGHTING_SRV_INDEX_MAX }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mDeferredLightingRS->InitDescriptorTable(rhi, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mDeferredLightingRS->InitDescriptorTable(rhi, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 2 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mDeferredLightingRS->Finalize(rhi, "ER_RHI_GPURootSignature: Deferred Lighting Pass");
@@ -339,8 +339,8 @@ namespace EveryRay_Core {
 				mForwardLightingRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mForwardLightingRS->InitStaticSampler(rhi, 1, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS, ER_RHI_SHADER_VISIBILITY_PIXEL);
 				mForwardLightingRS->InitStaticSampler(rhi, 2, ER_RHI_SAMPLER_STATE::ER_TRILINEAR_CLAMP, ER_RHI_SHADER_VISIBILITY_PIXEL);
-				mForwardLightingRS->InitDescriptorTable(rhi, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_PIXEL_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { SRV_INDEX_MAX }, ER_RHI_SHADER_VISIBILITY_PIXEL);
-				mForwardLightingRS->InitDescriptorTable(rhi, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_VERTEX_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { SRV_INDEX_INDIRECT_INSTANCE_BUFFER }, { 1 }, ER_RHI_SHADER_VISIBILITY_VERTEX);
+				mForwardLightingRS->InitDescriptorTable(rhi, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_PIXEL_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { LIGHTING_SRV_INDEX_MAX }, ER_RHI_SHADER_VISIBILITY_PIXEL);
+				mForwardLightingRS->InitDescriptorTable(rhi, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_VERTEX_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { LIGHTING_SRV_INDEX_INDIRECT_INSTANCE_BUFFER }, { 1 }, ER_RHI_SHADER_VISIBILITY_VERTEX);
 				mForwardLightingRS->InitDescriptorTable(rhi, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 3 }, ER_RHI_SHADER_VISIBILITY_ALL);
 				mForwardLightingRS->InitConstant(rhi, FORWARD_LIGHTING_PASS_ROOT_CONSTANT_INDEX, 3 /*we already use 3 slots for CBVs*/, 1 /* only 1 constant for LOD index*/, ER_RHI_SHADER_VISIBILITY_ALL);
 				mForwardLightingRS->Finalize(rhi, "ER_RHI_GPURootSignature: Forward Lighting Pass", true);
@@ -908,7 +908,7 @@ namespace EveryRay_Core {
 				rhi->SetConstantBuffers(ER_COMPUTE, { mDeferredLightingConstantBuffer.Buffer() }, 0, mDeferredLightingRS, DEFERRED_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
 		}
 
-		std::vector<ER_RHI_GPUResource*> resources(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1);
+		std::vector<ER_RHI_GPUResource*> resources(LIGHTING_SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1);
 		resources[0] = gbuffer->GetAlbedo();
 		resources[1] = gbuffer->GetNormals();
 		resources[2] = gbuffer->GetPositions();
@@ -962,25 +962,25 @@ namespace EveryRay_Core {
 
 	std::vector<ER_RHI_GPUResource*> ER_Illumination::GetCommonLightingShaderResources()
 	{
-		std::vector<ER_RHI_GPUResource*> resources(SRV_INDEX_MAX - SRV_INDEX_MAX_RESERVED_FOR_TEXTURES, nullptr);
+		std::vector<ER_RHI_GPUResource*> resources(LIGHTING_SRV_INDEX_MAX - LIGHTING_SRV_INDEX_MAX_RESERVED_FOR_TEXTURES, nullptr);
 		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
-			resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_CSM_START + i] = mShadowMapper.GetShadowTexture(i);
+			resources[-(LIGHTING_SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + LIGHTING_SRV_INDEX_CSM_START + i] = mShadowMapper.GetShadowTexture(i);
 
 		if (mProbesManager->AreGlobalProbesReady())
 		{
-			resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_GLOBAL_DIFFUSE_PROBE] = mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture();
-			resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_DIFFUSE_PROBES_CELLS_INDICES] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer() : nullptr;
-			resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_DIFFUSE_PROBES_SH_COEFFICIENTS] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer() : nullptr;
-			resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_DIFFUSE_PROBES_POSITIONS] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesPositionsBuffer() : nullptr;
-			resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_GLOBAL_SPECULAR_PROBE] = mProbesManager->GetGlobalSpecularProbe()->GetCubemapTexture();
-			resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_SPECULAR_PROBES_CULLED] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray() : nullptr;
-			resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_SPECULAR_PROBES_CELLS_INDICES] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesCellsIndicesBuffer() : nullptr;
-			resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_SPECULAR_PROBES_ARRAY_INDICES] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer() : nullptr;
-			resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_SPECULAR_PROBES_POSITIONS] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesPositionsBuffer() : nullptr;
-			resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_INTEGRATION_MAP] = mProbesManager->GetIntegrationMap();
+			resources[-(LIGHTING_SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + LIGHTING_SRV_INDEX_GLOBAL_DIFFUSE_PROBE] = mProbesManager->GetGlobalDiffuseProbe()->GetCubemapTexture();
+			resources[-(LIGHTING_SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + LIGHTING_SRV_INDEX_DIFFUSE_PROBES_CELLS_INDICES] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesCellsIndicesBuffer() : nullptr;
+			resources[-(LIGHTING_SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + LIGHTING_SRV_INDEX_DIFFUSE_PROBES_SH_COEFFICIENTS] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesSphericalHarmonicsCoefficientsBuffer() : nullptr;
+			resources[-(LIGHTING_SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + LIGHTING_SRV_INDEX_DIFFUSE_PROBES_POSITIONS] = mProbesManager->IsEnabled() ? mProbesManager->GetDiffuseProbesPositionsBuffer() : nullptr;
+			resources[-(LIGHTING_SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + LIGHTING_SRV_INDEX_GLOBAL_SPECULAR_PROBE] = mProbesManager->GetGlobalSpecularProbe()->GetCubemapTexture();
+			resources[-(LIGHTING_SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + LIGHTING_SRV_INDEX_SPECULAR_PROBES_CULLED] = mProbesManager->IsEnabled() ? mProbesManager->GetCulledSpecularProbesTextureArray() : nullptr;
+			resources[-(LIGHTING_SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + LIGHTING_SRV_INDEX_SPECULAR_PROBES_CELLS_INDICES] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesCellsIndicesBuffer() : nullptr;
+			resources[-(LIGHTING_SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + LIGHTING_SRV_INDEX_SPECULAR_PROBES_ARRAY_INDICES] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesTexArrayIndicesBuffer() : nullptr;
+			resources[-(LIGHTING_SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + LIGHTING_SRV_INDEX_SPECULAR_PROBES_POSITIONS] = mProbesManager->IsEnabled() ? mProbesManager->GetSpecularProbesPositionsBuffer() : nullptr;
+			resources[-(LIGHTING_SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + LIGHTING_SRV_INDEX_INTEGRATION_MAP] = mProbesManager->GetIntegrationMap();
 		}
 
-		resources[-(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + SRV_INDEX_POINT_LIGHTS] = mPointLightsBuffer;
+		resources[-(LIGHTING_SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1) + LIGHTING_SRV_INDEX_POINT_LIGHTS] = mPointLightsBuffer;
 
 		return resources;
 	}
@@ -1078,7 +1078,7 @@ namespace EveryRay_Core {
 				rhi->SetConstantBuffers(ER_PIXEL,  { mForwardLightingConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 			}
 
-			std::vector<ER_RHI_GPUResource*> resources(SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1);
+			std::vector<ER_RHI_GPUResource*> resources(LIGHTING_SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1);
 			resources[0] = aObj->GetTextureData(meshIndex).AlbedoMap;
 			resources[1] = aObj->GetTextureData(meshIndex).NormalMap;
 			resources[2] = aObj->GetTextureData(meshIndex).MetallicMap;
@@ -1091,7 +1091,7 @@ namespace EveryRay_Core {
 			rhi->SetShaderResources(ER_PIXEL, resources, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_PIXEL_SRV_INDEX);
 
 			if (aObj->IsGPUIndirectlyRendered())
-				rhi->SetShaderResources(ER_VERTEX, { aObj->GetIndirectNewInstanceBuffer() }, SRV_INDEX_INDIRECT_INSTANCE_BUFFER, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_VERTEX_SRV_INDEX);
+				rhi->SetShaderResources(ER_VERTEX, { aObj->GetIndirectNewInstanceBuffer() }, LIGHTING_SRV_INDEX_INDIRECT_INSTANCE_BUFFER, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_VERTEX_SRV_INDEX);
 
 			// we unset PSO after all objects are rendered
 		}
