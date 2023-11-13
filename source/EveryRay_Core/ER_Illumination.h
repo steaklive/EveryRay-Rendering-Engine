@@ -31,6 +31,16 @@
 // ...
 #define LIGHTING_SRV_INDEX_MAX								22 // nothing > is allowed in Deferred/Forward shaders; increase if needed
 
+// Keep in sync with CompositeIllumination.hlsl!
+#define	COMPOSITE_FLAGS_NONE                          0x00000000
+#define COMPOSITE_FLAGS_NO_GI                         0x00000001
+#define COMPOSITE_FLAGS_DEBUG_GI_AO                   0x00000002
+#define COMPOSITE_FLAGS_DEBUG_GI_INDIRECT             0x00000003
+#define COMPOSITE_FLAGS_DEBUG_GBUFFER_ALBEDO          0x00000004
+#define COMPOSITE_FLAGS_DEBUG_GBUFFER_NORMALS         0x00000005
+#define COMPOSITE_FLAGS_DEBUG_GBUFFER_ROUGHNESS       0x00000006
+#define COMPOSITE_FLAGS_DEBUG_GBUFFER_METALNESS       0x00000007
+
 namespace EveryRay_Core
 {
 	class ER_CoreTime;
@@ -54,6 +64,16 @@ namespace EveryRay_Core
 		GI_LOW = 0,
 		GI_MEDIUM,
 		GI_HIGH
+	};
+
+	enum VCTDebugMode
+	{
+		VCT_DEBUG_NONE = 0,
+		VCT_DEBUG_AO,
+		VCT_DEBUG_VOXELS,
+		VCT_DEBUG_INDIRECT, // final indirect GI result
+
+		VCT_DEBUG_COUNT
 	};
 
 	struct PointLightData
@@ -85,7 +105,7 @@ namespace EveryRay_Core
 		};
 		struct ER_ALIGN_GPU_BUFFER CompositeTotalIlluminationCB
 		{
-			XMFLOAT4 DebugVoxelAO_Disable;
+			UINT CompositeFlags;
 		};
 		struct ER_ALIGN_GPU_BUFFER UpsampleBlurCB
 		{
@@ -137,13 +157,13 @@ namespace EveryRay_Core
 
 		void DrawLocalIllumination(ER_GBuffer* gbuffer, ER_Skybox* skybox);
 		void DrawDynamicGlobalIllumination(ER_GBuffer* gbuffer, const ER_CoreTime& gameTime);
-		void CompositeTotalIllumination();
+		void CompositeTotalIllumination(ER_GBuffer* gbuffer);
 
 		void DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, ER_RHI_GPURootSignature* rs);
 		void DrawDebugProbes(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth);
 
 		void Update(const ER_CoreTime& gameTime, const ER_Scene* scene);
-		void Config() { mShowDebug = !mShowDebug; }
+		void Config() { mShowDebugWindow = !mShowDebugWindow; }
 
 		void SetShadowMap(ER_RHI_GPUTexture* tex) { mShadowMap = tex; }
 		void SetFoliageSystemForGI(ER_FoliageManager* foliageSystem);
@@ -287,8 +307,8 @@ namespace EveryRay_Core
 		float mVCTGIPower = 1.0f;
 		float mVCTDownscaleFactor = 0.5f; // % from full-res RT
 		bool mIsVCTVoxelCameraPositionsUpdated = true;
-		bool mShowVCTVoxelizationOnly = false;
-		bool mShowVCTAmbientOcclusionOnly = false;
+		
+		VCTDebugMode mVCTDebugMode = VCTDebugMode::VCT_DEBUG_NONE;
 		bool mDrawVCTVoxelZonesGizmos = false;
 		bool mIsVCTEnabled = false;
 
@@ -305,7 +325,7 @@ namespace EveryRay_Core
 		float mSSSStrength = 1.35f;
 		float mSSSDirectionalLightPlaneScale = 0.15f;
 
-		bool mShowDebug = false;
+		bool mShowDebugWindow = false;
 		bool mDebugShadowCascades = false; // only works in deferred mode
 
 		RenderingObjectInfo mForwardPassObjects;

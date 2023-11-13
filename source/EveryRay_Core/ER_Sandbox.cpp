@@ -455,7 +455,7 @@ namespace EveryRay_Core {
 		// combine the results of local and global illumination
 		rhi->BeginEventTag("EveryRay: Composite Illumination");
 		{
-			mIllumination->CompositeTotalIllumination();
+			mIllumination->CompositeTotalIllumination(mGBuffer);
 		}
 		rhi->EndEventTag();
 

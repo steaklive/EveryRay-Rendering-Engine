@@ -15,6 +15,15 @@ namespace EveryRay_Core {
 	static std::string psoNameNonInstancedWireframe = "ER_RHI_GPUPipelineStateObject: GBufferMaterial (Wireframe)";
 	static std::string psoNameInstancedWireframe = "ER_RHI_GPUPipelineStateObject: GBufferMaterial w/ Instancing (Wireframe)";
 
+	static const char* debugModeNames[GBufferDebugMode::GBUFFER_DEBUG_COUNT] = 
+	{
+		"None",
+		"Albedo",
+		"Normals",
+		"Roughness",
+		"Metalness"
+	};
+
 	ER_GBuffer::ER_GBuffer(ER_Core& game, ER_Camera& camera, int width, int height):
 		ER_CoreComponent(game), mWidth(width), mHeight(height)
 	{
@@ -148,6 +157,8 @@ namespace EveryRay_Core {
 
 		ImGui::Begin("GBuffer");
 		ImGui::Checkbox("Enabled", &mIsEnabled);
+
+		ImGui::ListBox("Debug Mode", &(int)mCurrentDebugMode, debugModeNames, (int)GBufferDebugMode::GBUFFER_DEBUG_COUNT, (int)GBufferDebugMode::GBUFFER_DEBUG_COUNT);
 		ImGui::End();
 	}
 

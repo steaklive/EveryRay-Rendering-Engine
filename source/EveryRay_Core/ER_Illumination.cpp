@@ -506,7 +506,7 @@ namespace EveryRay_Core {
 		
 		//voxelization debug
 		//TODO: for some reason not working on DX12
-		if (mShowVCTVoxelizationOnly) 
+		if (mVCTDebugMode == VCT_DEBUG_VOXELS)
 		{
 			rhi->SetRootSignature(mVoxelizationDebugRS);
 			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_POINTLIST);
@@ -628,13 +628,52 @@ namespace EveryRay_Core {
 	}
 
 	// Combine GI output (Voxel Cone Tracing) with local illumination output
-	void ER_Illumination::CompositeTotalIllumination()
+	void ER_Illumination::CompositeTotalIllumination(ER_GBuffer* gbuffer)
 	{
 		auto rhi = GetCore()->GetRHI();
 
-		mCompositeTotalIlluminationConstantBuffer.Data.DebugVoxelAO_Disable = XMFLOAT4(
-			mShowVCTVoxelizationOnly ? 1.0f : -1.0f,
-			mShowVCTAmbientOcclusionOnly ? 1.0f : -1.0f, mCurrentGIQuality == GIQuality::GI_LOW ? 1.0f : 0.0f, 0.0f);
+		ER_RHI_GPUTexture* currentCustomLocalIllumination = mLocalIlluminationRT;
+
+		mCompositeTotalIlluminationConstantBuffer.Data.CompositeFlags = COMPOSITE_FLAGS_NONE;
+		GBufferDebugMode currentDebugMode = gbuffer->GetCurrentDebugMode();
+		if (currentDebugMode == GBUFFER_DEBUG_NONE)
+		{
+			if (mCurrentGIQuality == GIQuality::GI_LOW)
+				mCompositeTotalIlluminationConstantBuffer.Data.CompositeFlags = COMPOSITE_FLAGS_NO_GI;
+			else
+			{
+				if (mVCTDebugMode == VCT_DEBUG_AO)
+					mCompositeTotalIlluminationConstantBuffer.Data.CompositeFlags = COMPOSITE_FLAGS_DEBUG_GI_AO;
+				else if (mVCTDebugMode == VCT_DEBUG_VOXELS || mVCTDebugMode == VCT_DEBUG_INDIRECT)
+					mCompositeTotalIlluminationConstantBuffer.Data.CompositeFlags = COMPOSITE_FLAGS_DEBUG_GI_INDIRECT;
+			}
+		}
+		else
+		{
+			mVCTDebugMode = VCT_DEBUG_NONE;
+
+			switch (currentDebugMode)
+			{
+			case GBUFFER_DEBUG_ALBEDO:
+				mCompositeTotalIlluminationConstantBuffer.Data.CompositeFlags = COMPOSITE_FLAGS_DEBUG_GBUFFER_ALBEDO;
+				currentCustomLocalIllumination = gbuffer->GetAlbedo();
+				break;
+			case GBUFFER_DEBUG_NORMALS:
+				mCompositeTotalIlluminationConstantBuffer.Data.CompositeFlags = COMPOSITE_FLAGS_DEBUG_GBUFFER_NORMALS;
+				currentCustomLocalIllumination = gbuffer->GetNormals();
+				break;
+			case GBUFFER_DEBUG_ROUGHNESS:
+				mCompositeTotalIlluminationConstantBuffer.Data.CompositeFlags = COMPOSITE_FLAGS_DEBUG_GBUFFER_ROUGHNESS;
+				currentCustomLocalIllumination = gbuffer->GetExtraBuffer();
+				break;
+			case GBUFFER_DEBUG_METALNESS:
+				mCompositeTotalIlluminationConstantBuffer.Data.CompositeFlags = COMPOSITE_FLAGS_DEBUG_GBUFFER_METALNESS;
+				currentCustomLocalIllumination = gbuffer->GetExtraBuffer();
+				break;
+			default:
+				mCompositeTotalIlluminationConstantBuffer.Data.CompositeFlags = COMPOSITE_FLAGS_NONE;
+			}
+		}
 		mCompositeTotalIlluminationConstantBuffer.ApplyChanges(rhi);
 
 		// mLocalIllumination might be bound as RTV before this pass
@@ -651,12 +690,12 @@ namespace EveryRay_Core {
 		rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP });
 		if (mCurrentGIQuality == GIQuality::GI_LOW)
 		{
-			rhi->SetShaderResources(ER_COMPUTE, { nullptr, mLocalIlluminationRT }, 0,
+			rhi->SetShaderResources(ER_COMPUTE, { nullptr, currentCustomLocalIllumination }, 0,
 				mCompositeIlluminationRS, COMPOSITE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
 		}
 		else
 		{
-			rhi->SetShaderResources(ER_COMPUTE, { mShowVCTVoxelizationOnly ? mVCTVoxelizationDebugRT : mVCTUpsampleAndBlurRT, mLocalIlluminationRT }, 0,
+			rhi->SetShaderResources(ER_COMPUTE, { mVCTDebugMode == VCT_DEBUG_VOXELS ? mVCTVoxelizationDebugRT : mVCTUpsampleAndBlurRT, currentCustomLocalIllumination }, 0,
 				mCompositeIlluminationRS, COMPOSITE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
 		}
 		rhi->SetUnorderedAccessResources(ER_COMPUTE, { mFinalIlluminationRT }, 0, mCompositeIlluminationRS, COMPOSITE_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, true);
@@ -750,7 +789,7 @@ namespace EveryRay_Core {
 
 	void ER_Illumination::UpdateImGui()
 	{
-		if (!mShowDebug)
+		if (!mShowDebugWindow)
 			return;
 
 		ImGui::Begin("Illumination System");
@@ -772,8 +811,7 @@ namespace EveryRay_Core {
 					ImGui::SliderFloat(name.c_str(), &mWorldVoxelScales[cascade], 0.1f, 10.0f);
 				}
 				ImGui::Separator();
-				ImGui::Checkbox("DEBUG - Ambient Occlusion", &mShowVCTAmbientOcclusionOnly);
-				ImGui::Checkbox("DEBUG - Voxel Texture", &mShowVCTVoxelizationOnly);
+				ImGui::SliderInt("DEBUG - None, AO, Voxels, Indirect", &(int)mVCTDebugMode, 0, VCT_DEBUG_COUNT - 1);
 				ImGui::Checkbox("DEBUG - Voxel Cascades Gizmos (Editor)", &mDrawVCTVoxelZonesGizmos);
 			}
 			if (ImGui::CollapsingHeader("Static - Light Probes"))

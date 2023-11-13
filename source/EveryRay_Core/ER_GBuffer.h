@@ -9,6 +9,17 @@ namespace EveryRay_Core
 	class ER_Scene;
 	class ER_Camera;
 
+	enum GBufferDebugMode
+	{
+		GBUFFER_DEBUG_NONE = 0,
+		GBUFFER_DEBUG_ALBEDO,
+		GBUFFER_DEBUG_NORMALS,
+		GBUFFER_DEBUG_ROUGHNESS,
+		GBUFFER_DEBUG_METALNESS,
+
+		GBUFFER_DEBUG_COUNT
+	};
+
 	class ER_GBuffer: public ER_CoreComponent
 	{
 	public:
@@ -31,6 +42,8 @@ namespace EveryRay_Core
 		ER_RHI_GPUTexture* GetExtra2Buffer() { return mExtra2Buffer; } // [1 channel: "RenderingObjectFlags" bitmasks]
 		ER_RHI_GPUTexture* GetDepth() { return mDepthBuffer; }
 
+		GBufferDebugMode GetCurrentDebugMode() { return mCurrentDebugMode; }
+
 	private:
 		void UpdateImGui();
 
@@ -47,5 +60,7 @@ namespace EveryRay_Core
 		int mHeight;
 		bool mIsEnabled = true;
 		bool mShowDebug = false;
+
+		GBufferDebugMode mCurrentDebugMode = GBUFFER_DEBUG_NONE;
 	};
 }
