@@ -362,9 +362,9 @@ namespace EveryRay_Core
 		void LoadTexture(ER_RHI_GPUTexture** aTexture, bool* loadStat, const std::wstring& path, int meshIndex, bool isPlaceholder = false);
 		void CreateInstanceBuffer(InstancedData* instanceData, UINT instanceCount, ER_RHI_GPUBuffer* instanceBuffer);
 		
-		void UpdateGizmos();
+		void UpdateGizmosAndUI();
 		void UpdateBitmaskFlags();
-		void ShowInstancesListWindow();
+
 		void ShowObjectsEditorWindow(const float *cameraView, float *cameraProjection, float* matrix);
 
 		ER_Core* mCore = nullptr;
@@ -462,10 +462,11 @@ namespace EveryRay_Core
 		ER_RenderableAABB*										mDebugGizmoAABB = nullptr;
 	
 		std::string												mName;
-		const char*												mInstancedNamesUI[MAX_DIRECT_INSTANCE_COUNT];
+		const char*												mInstancedNamesUI[MAX_DIRECT_INSTANCE_COUNT] = { nullptr };
 		int														mIndexInScene = -1;
 		int														mCurrentLODIndex = 0; //only used for non-instanced object
-		int														mEditorSelectedInstancedObjectIndex = 0;
+		int														mEditorSelectedInstancedObjectIndex = 0; //only for direct instances and not GPU-driven/indirect
+		int														mEditorSelectedInstancedObjectIndexNextFrame = 0; //only for direct instances and not GPU-driven/indirect
 		bool													mIsAABBDebugEnabled = true;
 		bool													mIsAvailableInEditorMode = false;
 		bool													mIsSelected = false;

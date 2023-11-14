@@ -23,6 +23,7 @@
 namespace EveryRay_Core
 {
 	static int currentSplatChannnel = (int)TerrainSplatChannels::NONE;
+	static const int maxInstancesHeightUI = 5;
 
 	ER_RenderingObject::ER_RenderingObject(const std::string& pName, int index, ER_Core& pCore, ER_Camera& pCamera, const std::string& pModelPath, bool availableInEditor, bool isInstanced)
 		:
@@ -855,6 +856,7 @@ namespace EveryRay_Core
 
 		if (isCurrentlyEditable && mIsInstanced)
 		{
+			mEditorSelectedInstancedObjectIndex = mEditorSelectedInstancedObjectIndexNextFrame;
 			// load current selected instance's transform to temp transform (for UI)
 			ER_MatrixHelper::SetFloatArray(mInstanceData[0][mEditorSelectedInstancedObjectIndex].World, mCurrentObjectTransformMatrix);
 		}
@@ -904,8 +906,7 @@ namespace EveryRay_Core
 
 		if (isCurrentlyEditable)
 		{
-			UpdateGizmos();
-			ShowInstancesListWindow();
+			UpdateGizmosAndUI();
 			if (mIsAABBDebugEnabled)
 				mDebugGizmoAABB->Update(mGlobalAABB);
 		}
@@ -949,7 +950,7 @@ namespace EveryRay_Core
 		aabb = ER_AABB(minVertex, maxVertex);
 	}
 	
-	void ER_RenderingObject::UpdateGizmos()
+	void ER_RenderingObject::UpdateGizmosAndUI()
 	{
 		if (!(mIsAvailableInEditorMode && mIsSelected))
 			return;
@@ -1067,9 +1068,8 @@ namespace EveryRay_Core
 
 		if (ER_Utility::IsEditorMode) 
 		{
-			ER_Utility::IsSunLightEditor = false;
-			ER_Utility::IsFoliageEditor = false;
-			ER_Utility::IsPostEffectsVolumeEditor = false;
+			ER_Utility::DisableAllEditors();
+			ER_Utility::IsEditorMode = true;
 
 			ImGui::Begin("Object Editor");
 			std::string name = mName;
@@ -1105,27 +1105,26 @@ namespace EveryRay_Core
 
 			std::string instanceCountText = "* Instance count: " + std::to_string(GetInstanceCount());
 			ImGui::Text(instanceCountText.c_str());
+			if (mIsIndirectlyRendered)
+			{
+				std::string info = "GPU indirect drawcall";
+				ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1), info.c_str());
+				info = "Instances can't be transformed in editor";
+				ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1), info.c_str());
+			}
+			ImGui::Separator();
 
-			std::string shadingModeName = "* Shaded in: ";
+			std::string shadingModeName = "Shaded in: ";
 			if (mIsForwardShading)
 				shadingModeName += "Forward";
 			else 
 				shadingModeName += "Deferred";
 			ImGui::Text(shadingModeName.c_str());
 
-			if (mIsIndirectlyRendered)
-			{
-				std::string info = "* GPU indirect drawcall";
-				ImGui::Text(info.c_str());
-				info = "Can't be transformed in editor";
-				ImGui::Text(info.c_str());
-			}
-
 			ImGui::Separator();
 			ImGui::Checkbox("Rendered", &mIsRendered);
 			ImGui::Checkbox("Show AABB", &mIsAABBDebugEnabled);
-			ImGui::Checkbox("Skip indirect spec.", &mIsSkippedIndirectSpecular);
-			//ImGui::Checkbox("Skip indirect dif.", &mIsSkippedIndirectDiffuse);
+
 			if (ImGui::Button("Move camera to"))
 			{
 				XMFLOAT3 newCameraPos;
@@ -1134,6 +1133,18 @@ namespace EveryRay_Core
 				ER_Camera* camera = (ER_Camera*)(mCore->GetServices().FindService(ER_Camera::TypeIdClass()));
 				if (camera)
 					camera->SetPosition(newCameraPos);
+			}
+
+			if (mIsAvailableInEditorMode && mIsSelected && mIsInstanced && !mIsIndirectlyRendered)
+			{
+				// Shows a list of instances.
+				// You can select an instance, read some useful info about it and edit it via "Objects Editor".
+				// We do not need to edit per LOD (LODs share same transforms, AABBs, names).
+				// Note: does not work for objects rendered indirectly on the GPU!
+
+				ImGui::Text("Instances (dynamic):");
+				ImGui::PushItemWidth(-1);
+				ImGui::ListBox("##empty", &mEditorSelectedInstancedObjectIndexNextFrame, mInstancedNamesUI, static_cast<int>(mInstanceData[0].size()), maxInstancesHeightUI);
 			}
 
 			//terrain
@@ -1155,26 +1166,32 @@ namespace EveryRay_Core
 			//	}
 			//}
 
-			ImGui::SliderFloat("Custom roughness", &mCustomRoughness, -1.0f, 1.0f);
-			ImGui::SliderFloat("Custom metalness", &mCustomMetalness, -1.0f, 1.0f);
-			ImGui::SliderFloat("Custom alpha discard", &mCustomAlphaDiscard, 0.0f, 1.0f);
-			if (mIsTransparent)
-				ImGui::SliderFloat("IOR", &mIOR, -5.0f, 5.0f);
-			if (mFurLayersCount > 0)
+			if (ImGui::CollapsingHeader("Custom properties"))
 			{
-				ImGui::ColorEdit3("Fur Color", mFurColor);
-				ImGui::SliderFloat("Fur Interpolation with albedo", &mFurColorInterpolation, 0.0, 1.0);
-				ImGui::SliderFloat("Fur Length", &mFurLength, 0.01f, 25.0f);
-				ImGui::SliderFloat("Fur Cutoff", &mFurCutoff, 0.01f, 1.0f);
-				ImGui::SliderFloat("Fur Cutoff End", &mFurCutoffEnd, 0.01f, 1.0f);
-				ImGui::SliderFloat("Fur UV Scale", &mFurUVScale, 0.01f, 15.0f);
-				ImGui::SliderFloat3("Fur Gravity Dir", &mFurGravityDirection[0], -1.0, 1.0);
-				ImGui::SliderFloat("Fur Gravity Strength", &mFurGravityStrength, 0.0, 10.0);
-				ImGui::SliderFloat("Fur Wind Frequency", &mFurWindFrequency, 0.0, 10.0);
+				ImGui::SliderFloat("Custom roughness", &mCustomRoughness, -1.0f, 1.0f);
+				ImGui::SliderFloat("Custom metalness", &mCustomMetalness, -1.0f, 1.0f);
+				ImGui::SliderFloat("Custom alpha discard", &mCustomAlphaDiscard, 0.0f, 1.0f);
+				if (mIsTransparent)
+					ImGui::SliderFloat("IOR", &mIOR, -5.0f, 5.0f);
+				if (mFurLayersCount > 0)
+				{
+					ImGui::ColorEdit3("Fur Color", mFurColor);
+					ImGui::SliderFloat("Fur Interpolation with albedo", &mFurColorInterpolation, 0.0, 1.0);
+					ImGui::SliderFloat("Fur Length", &mFurLength, 0.01f, 25.0f);
+					ImGui::SliderFloat("Fur Cutoff", &mFurCutoff, 0.01f, 1.0f);
+					ImGui::SliderFloat("Fur Cutoff End", &mFurCutoffEnd, 0.01f, 1.0f);
+					ImGui::SliderFloat("Fur UV Scale", &mFurUVScale, 0.01f, 15.0f);
+					ImGui::SliderFloat3("Fur Gravity Dir", &mFurGravityDirection[0], -1.0, 1.0);
+					ImGui::SliderFloat("Fur Gravity Strength", &mFurGravityStrength, 0.0, 10.0);
+					ImGui::SliderFloat("Fur Wind Frequency", &mFurWindFrequency, 0.0, 10.0);
+				}
+				ImGui::Checkbox("Triplanar mapping", &mIsTriplanarMapped);
+				//f (mIsTriplanarMapped)
+				//	ImGui::SliderFloat("Triplanar mapping - sharpness", &mTriplanarMappingSharpness, 0.01, 50.0f);
+
+				ImGui::Checkbox("DEBUG - Skip indirect spec.", &mIsSkippedIndirectSpecular);
+				ImGui::Checkbox("DEBUG - Skip indirect dif.", &mIsSkippedIndirectDiffuse);
 			}
-			ImGui::Checkbox("Triplanar mapping", &mIsTriplanarMapped);
-			//f (mIsTriplanarMapped)
-			//	ImGui::SliderFloat("Triplanar mapping - sharpness", &mTriplanarMappingSharpness, 0.01, 50.0f);
 
 			//Transforms
 			if (!mIsIndirectlyRendered)
@@ -1209,32 +1226,7 @@ namespace EveryRay_Core
 			ImGuizmo::Manipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, matrix, NULL, useSnap ? &snap[0] : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
 		}
 	}
-	
-	// Shows an ImGui window for the list of instances.
-	// You can select an instance, read some useful info about it and edit it via "Objects Editor".
-	// We do not need to edit per LOD (LODs share same transforms, AABBs, names).
-	// Note: does not work for objects rendered indirectly on the GPU!
-	void ER_RenderingObject::ShowInstancesListWindow()
-	{
-		if (!(mIsAvailableInEditorMode && mIsSelected && mIsInstanced) || mIsIndirectlyRendered)
-			return;
-
-		assert(mInstanceCount != 0);
-		assert(mInstanceData[0].size() != 0 && mInstanceData[0].size() == mInstanceCount);
-		assert(mInstancesNames.size() == mInstanceCount);
-
-		std::string title = mName + " instances:";
-		ImGui::Begin(title.c_str());
-
-		for (int i = 0; i < mInstanceData[0].size(); i++) {
-			mInstancedNamesUI[i] = mInstancesNames[i].c_str();
-		}
-
-		ImGui::PushItemWidth(-1);
-		ImGui::ListBox("##empty", &mEditorSelectedInstancedObjectIndex, mInstancedNamesUI, static_cast<int>(mInstanceData[0].size()), 15);
-		ImGui::End();
-	}
-	
+		
 	ER_RHI_GPUBuffer* ER_RenderingObject::GetIndirectMeshConstantBuffer()
 	{
 		if (!mIsIndirectlyRendered || !mIsLoaded)
@@ -1373,6 +1365,8 @@ namespace EveryRay_Core
 			{
 				std::string instanceName = mName + " #" + std::to_string(i);
 				mInstancesNames.push_back(instanceName);
+				mInstancedNamesUI[i] = strdup(instanceName.c_str());
+
 				mInstanceAABBs.push_back(mLocalAABB);
 				mInstanceCullingFlags.push_back(false);
 			}
