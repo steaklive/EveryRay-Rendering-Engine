@@ -91,6 +91,11 @@ namespace EveryRay_Core
 		mPosition = position;
 	}
 
+	void ER_DebugProxyObject::SetColor(const XMFLOAT4& aColor)
+	{
+		mColor = aColor;
+	}
+
 	void ER_DebugProxyObject::ApplyRotation(CXMMATRIX transform)
 	{
 		XMVECTOR direction = XMLoadFloat3(&mDirection);
@@ -142,9 +147,9 @@ namespace EveryRay_Core
 
 	void ER_DebugProxyObject::Initialize()
 	{
-		SetCurrentDirectory(ER_Utility::ExecutableDirectory().c_str());
-
-		std::unique_ptr<ER_Model> model(new ER_Model(mCore, mModelFileName, true));
+		ER_Model* model = mCore.AddOrGet3DModelFromCache(mModelFileName, nullptr, false);
+		if (!model)
+			return;
 
 		mMaterial = new ER_BasicColorMaterial(mCore, {}, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER);
 
@@ -154,7 +159,7 @@ namespace EveryRay_Core
 		mMaterial->CreateVertexBuffer(meshes[0], mVertexBuffer);
 		mIndexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Debug Proxy Object - Index Buffer");
 		meshes[0].CreateIndexBuffer(mIndexBuffer);
-		mIndexCount = meshes[0].Indices().size();
+		mIndexCount = static_cast<UINT>(meshes[0].Indices().size());
 	}
 
 	void ER_DebugProxyObject::Update(const ER_CoreTime& gameTime)
@@ -187,7 +192,7 @@ namespace EveryRay_Core
 			rhi->FinalizePSO(psoName);
 		}
 		rhi->SetPSO(psoName);
-		mMaterial->PrepareForRendering(XMLoadFloat4x4(&mWorldMatrix), { 1.0f, 0.65f, 0.0f, 1.0f }, rs);
+		mMaterial->PrepareForRendering(XMLoadFloat4x4(&mWorldMatrix), mColor, rs);
 		rhi->DrawIndexed(mIndexCount);
 		rhi->UnsetPSO();
 	}

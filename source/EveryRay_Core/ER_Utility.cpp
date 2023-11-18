@@ -10,9 +10,11 @@ namespace EveryRay_Core
 {
 	bool ER_Utility::IsEditorMode = false;
 	bool ER_Utility::IsSunLightEditor = false;
+	bool ER_Utility::IsWindEditor = false;
 	bool ER_Utility::IsFoliageEditor = false;
 	bool ER_Utility::IsPostEffectsVolumeEditor = false;
 	bool ER_Utility::IsMainCameraCPUFrustumCulling = true;
+
 	bool ER_Utility::StopDrawingRenderingObjects = false;
 	bool ER_Utility::IsWireframe = false;
 	float ER_Utility::DistancesLOD[MAX_LOD] = { 200.0f, 500.0f, 2000.0f };
@@ -174,7 +176,7 @@ namespace EveryRay_Core
 
 	void ER_Utility::DisableAllEditors()
 	{
-		ER_Utility::IsFoliageEditor = ER_Utility::IsSunLightEditor = ER_Utility::IsPostEffectsVolumeEditor = false;
+		ER_Utility::IsFoliageEditor = ER_Utility::IsSunLightEditor = ER_Utility::IsPostEffectsVolumeEditor = ER_Utility::IsWindEditor = false;
 	}
 
 	// http://www.azillionmonkeys.com/qed/hash.html

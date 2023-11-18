@@ -29,6 +29,8 @@ namespace EveryRay_Core
 		void SetPosition(FXMVECTOR position);
 		void SetPosition(const XMFLOAT3& position);
 
+		void SetColor(const XMFLOAT4& aColor);
+
 		void ApplyRotation(CXMMATRIX transform);
 		void ApplyTransform(XMMATRIX transformMatrix);
 		void ApplyRotation(const XMFLOAT4X4& transform);
@@ -58,5 +60,7 @@ namespace EveryRay_Core
 		XMFLOAT3 mDirection;
 		XMFLOAT3 mUp;
 		XMFLOAT3 mRight;
+
+		XMFLOAT4 mColor = { 1.0f, 0.65f, 0.0f, 1.0f };
 	};
 }

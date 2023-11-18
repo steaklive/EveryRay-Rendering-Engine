@@ -15,6 +15,7 @@ namespace EveryRay_Core
 	RTTI_DEFINITIONS(ER_Editor)
 	static int selectedObjectIndex = -1;
 	static int selectedPointLightIndex = -1;
+	static const int maxRenderingObjectsListHeight = 15;
 	
 	ER_Editor::ER_Editor(ER_Core& game)
 		: ER_CoreComponent(game)
@@ -38,11 +39,13 @@ namespace EveryRay_Core
 		{
 			ImGui::Begin("Scene Editor");
 
-			if (ImGui::CollapsingHeader("Lights"))
+			if (ImGui::CollapsingHeader("Environment - Lights"))
 			{
 				ImGui::Checkbox("Enable sun editor", &ER_Utility::IsSunLightEditor);
 				if (ER_Utility::IsSunLightEditor)
 				{
+					ER_Utility::DisableAllEditors(); ER_Utility::IsSunLightEditor = true;
+					
 					for (int i = 0; i < static_cast<int>(GetCore()->GetLevel()->mPointLights.size()); i++)
 						GetCore()->GetLevel()->mPointLights[i]->SetSelectedInEditor(false);
 
@@ -78,8 +81,7 @@ namespace EveryRay_Core
 				}
 			}
 
-			//skybox
-			if (ImGui::CollapsingHeader("Sky"))
+			if (ImGui::CollapsingHeader("Environment - Sky"))
 			{
 				ImGui::Checkbox("Custom sky colors", &mUseCustomSkyboxColor);
 				if (mUseCustomSkyboxColor)
@@ -91,6 +93,16 @@ namespace EveryRay_Core
 				ImGui::SliderFloat("Sky Max Height", &mSkyMaxHeight, -25.0f, 25.0f);
 
 				ImGui::Separator();
+			}
+
+			if (ImGui::CollapsingHeader("Environment - Wind"))
+			{
+				ImGui::Checkbox("Enable wind editor", &ER_Utility::IsWindEditor);
+
+				if (ER_Utility::IsWindEditor)
+				{
+					ER_Utility::DisableAllEditors(); ER_Utility::IsWindEditor = true;
+				}
 			}
 
 			//rendering objects
@@ -125,7 +137,7 @@ namespace EveryRay_Core
 				objectsSize = objectIndex;
 
 				ImGui::PushItemWidth(-1);
-				ImGui::ListBox("##empty", &selectedObjectIndex, editorObjectsNames, objectsSize);
+				ImGui::ListBox("##empty", &selectedObjectIndex, editorObjectsNames, objectsSize, maxRenderingObjectsListHeight);
 
 				for (int i = 0; i < objectsSize; i++)
 				{

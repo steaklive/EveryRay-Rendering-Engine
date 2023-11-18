@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "ER_DirectionalLight.h"
+#include "ER_Wind.h"
 #include "ER_VectorHelper.h"
 #include "ER_Utility.h"
 #include "ER_MatrixHelper.h"
@@ -9,17 +9,20 @@
 
 #include "imgui.h"
 #include "ImGuizmo.h"
+
 namespace EveryRay_Core
 {
-	RTTI_DEFINITIONS(ER_DirectionalLight)
+	RTTI_DEFINITIONS(ER_Wind)
 
-	ER_DirectionalLight::ER_DirectionalLight(ER_Core& game) : ER_Light(game),
+	ER_Wind::ER_Wind(ER_Core& game) :
+		ER_CoreComponent(game),
 		mDirection(ER_Vector3Helper::Forward),
 		mUp(ER_Vector3Helper::Up), mRight(ER_Vector3Helper::Right), mProxyModel(nullptr)
 	{
 	}
 
-	ER_DirectionalLight::ER_DirectionalLight(ER_Core& game, ER_Camera& camera) : ER_Light(game),
+	ER_Wind::ER_Wind(ER_Core& game, ER_Camera& camera) :
+		ER_CoreComponent(game),
 		mDirection(ER_Vector3Helper::Forward),
 		mUp(ER_Vector3Helper::Up), mRight(ER_Vector3Helper::Right), mProxyModel(nullptr)
 	{
@@ -27,47 +30,45 @@ namespace EveryRay_Core
 		mProxyModel = new ER_DebugProxyObject(game, camera, ER_Utility::GetFilePath("content\\models\\proxy\\proxy_direction_arrow.obj"), 1.0f);
 		mProxyModel->Initialize();
 		mProxyModel->SetPosition(0.0f, 0.0f, 0.0f);
+		mProxyModel->SetColor(XMFLOAT4(0.0f, 0.2f, 1.0f, 1.0f));
 	}
 
-	ER_DirectionalLight::~ER_DirectionalLight()
+	ER_Wind::~ER_Wind()
 	{
 		DeleteObject(mProxyModel);
-
-		RotationUpdateEvent->RemoveAllListeners();
-		DeleteObject(RotationUpdateEvent);
 	}
 
-	const XMFLOAT3& ER_DirectionalLight::Direction() const
+	const XMFLOAT3& ER_Wind::Direction() const
 	{
 		return mDirection;
 	}
 
-	const XMFLOAT3& ER_DirectionalLight::Up() const
+	const XMFLOAT3& ER_Wind::Up() const
 	{
 		return mUp;
 	}
 
-	const XMFLOAT3& ER_DirectionalLight::Right() const
+	const XMFLOAT3& ER_Wind::Right() const
 	{
 		return mRight;
 	}
 
-	XMVECTOR ER_DirectionalLight::DirectionVector() const
+	XMVECTOR ER_Wind::DirectionVector() const
 	{
 		return XMLoadFloat3(&mDirection);
 	}
 
-	XMVECTOR ER_DirectionalLight::UpVector() const
+	XMVECTOR ER_Wind::UpVector() const
 	{
 		return XMLoadFloat3(&mUp);
 	}
 
-	XMVECTOR ER_DirectionalLight::RightVector() const
+	XMVECTOR ER_Wind::RightVector() const
 	{
 		return XMLoadFloat3(&mRight);
 	}
 
-	void ER_DirectionalLight::ApplyRotation(CXMMATRIX transform)
+	void ER_Wind::ApplyRotation(CXMMATRIX transform)
 	{
 		mTransformMatrix = transform;
 
@@ -76,7 +77,7 @@ namespace EveryRay_Core
 
 		direction = XMVector3TransformNormal(direction, transform);
 		direction = XMVector3Normalize(direction);
-		
+
 		up = XMVector3TransformNormal(up, transform);
 		up = XMVector3Normalize(up);
 
@@ -93,17 +94,17 @@ namespace EveryRay_Core
 		UpdateTransformArray(mTransformMatrix);
 	}
 
-	void ER_DirectionalLight::ApplyRotation(const XMFLOAT4X4& transform)
+	void ER_Wind::ApplyRotation(const XMFLOAT4X4& transform)
 	{
 		XMMATRIX transformMatrix = XMLoadFloat4x4(&transform);
 		ApplyRotation(transformMatrix);
 	}
 
-	void ER_DirectionalLight::ApplyTransform(const float* transform)
+	void ER_Wind::ApplyTransform(const float* transform)
 	{
 		XMFLOAT4X4 transformMatrixFloat = XMFLOAT4X4(transform);
 		XMMATRIX transformMatrix = XMLoadFloat4x4(&transformMatrixFloat);
-		
+
 		XMVECTOR direction = XMVECTOR{ 0.0f, 0.0, -1.0f };
 		XMVECTOR up = XMVECTOR{ 0.0f, 1.0, 0.0f };
 
@@ -124,18 +125,15 @@ namespace EveryRay_Core
 
 		if (mProxyModel)
 			mProxyModel->ApplyTransform(transformMatrix);
-
-		for (auto listener : RotationUpdateEvent->GetListeners())
-			listener();
 	}
 
-	void ER_DirectionalLight::DrawProxyModel(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, const ER_CoreTime & time, ER_RHI_GPURootSignature* rs)
+	void ER_Wind::DrawProxyModel(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, const ER_CoreTime& time, ER_RHI_GPURootSignature* rs)
 	{
-		if (mProxyModel && ER_Utility::IsEditorMode && ER_Utility::IsSunLightEditor)
+		if (mProxyModel && ER_Utility::IsEditorMode && ER_Utility::IsWindEditor)
 			mProxyModel->Draw(aRenderTarget, aDepth, time, rs);
 	}
 
-	void ER_DirectionalLight::UpdateProxyModel(const ER_CoreTime & time, const XMFLOAT4X4& viewMatrix, const XMFLOAT4X4& projectionMatrix)
+	void ER_Wind::UpdateProxyModel(const ER_CoreTime& time, const XMFLOAT4X4& viewMatrix, const XMFLOAT4X4& projectionMatrix)
 	{
 		ER_Camera* camera = (ER_Camera*)(GetCore()->GetServices().FindService(ER_Camera::TypeIdClass()));
 		assert(camera);
@@ -160,7 +158,7 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_DirectionalLight::UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix)
+	void ER_Wind::UpdateGizmoTransform(const float* cameraView, float* cameraProjection, float* matrix)
 	{
 		static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
 		static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
@@ -171,34 +169,29 @@ namespace EveryRay_Core
 		static bool boundSizing = false;
 		static bool boundSizingSnap = false;
 
-		if (ER_Utility::IsEditorMode && ER_Utility::IsSunLightEditor)
+		if (ER_Utility::IsEditorMode && ER_Utility::IsWindEditor)
 		{
-			ImGui::Begin("Directional Light Editor");
+			ImGui::Begin("Wind Editor");
 
-			ImGui::ColorEdit3("Color", mColor);
-			ImGui::ColorEdit3("Ambient Color", mAmbientColor);
-			ImGui::SliderFloat("Intensity", &mLightIntensity, 0.0f, 50.0f);
+			ImGui::SliderFloat("Wind strength", &mWindStrength, 0.0f, 10.0f);
+			ImGui::SliderFloat("Wind gust distance", &mWindGustDistance, 0.0f, 10.0f);
+			ImGui::SliderFloat("Wind frequency", &mWindFrequency, 0.0f, 10.0f);
 
 			ImGuizmo::DecomposeMatrixToComponents(matrix, mMatrixTranslation, mMatrixRotation, mMatrixScale);
 			ImGui::InputFloat3("Rotate", mMatrixRotation, 3);
 			ImGuizmo::RecomposeMatrixFromComponents(mMatrixTranslation, mMatrixRotation, mMatrixScale, matrix);
 
-			ImGui::Checkbox("Render Sun On Sky", &mDrawSunOnSky);
-			if (mDrawSunOnSky) {
-				ImGui::SliderFloat("Sun On Sky Exponent", &mSunOnSkyExponent, 1.0f, 10000.0f);
-				ImGui::SliderFloat("Sun On Sky Brightness", &mSunOnSkyBrightness, 0.0f, 10.0f);
-			}
 			ImGui::End();
 
 			ImGuiIO& io = ImGui::GetIO();
 			ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
 			ImGuizmo::Manipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, matrix, NULL, useSnap ? &snap[0] : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
-		
+
 			ApplyTransform(matrix);
 		}
 	}
 
-	void ER_DirectionalLight::UpdateTransformArray(CXMMATRIX transform)
+	void ER_Wind::UpdateTransformArray(CXMMATRIX transform)
 	{
 		XMFLOAT4X4 transformMatrix;
 		XMStoreFloat4x4(&transformMatrix, transform);
@@ -206,7 +199,7 @@ namespace EveryRay_Core
 		ER_MatrixHelper::SetFloatArray(transformMatrix, mObjectTransformMatrix);
 	}
 
-	const XMMATRIX& ER_DirectionalLight::LightMatrix(const XMFLOAT3& mPosition) const
+	const XMMATRIX& ER_Wind::LightMatrix(const XMFLOAT3& mPosition) const
 	{
 		XMVECTOR eyePosition = XMLoadFloat3(&mPosition);
 		XMVECTOR direction = XMLoadFloat3(&mDirection);

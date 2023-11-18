@@ -13,6 +13,7 @@
 #include "ER_VertexDeclarations.h"
 #include "ER_Skybox.h"
 #include "ER_QuadRenderer.h"
+#include "ER_Wind.h"
 
 #define MAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
 #define MAIN_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX 1
@@ -164,6 +165,7 @@ namespace EveryRay_Core {
 			return;
 
 		auto rhi = mCore->GetRHI();
+		const ER_Wind* wind = mCore->GetLevel()->mWind;
 
 		mFrameConstantBuffer.Data.InvProj = XMMatrixInverse(nullptr, mCamera.ProjectionMatrix());
 		mFrameConstantBuffer.Data.InvView = XMMatrixInverse(nullptr, mCamera.ViewMatrix());
@@ -174,8 +176,8 @@ namespace EveryRay_Core {
 		mFrameConstantBuffer.ApplyChanges(rhi);
 
 		mCloudsConstantBuffer.Data.AmbientColor = XMVECTOR{ mAmbientColor[0], mAmbientColor[1], mAmbientColor[2], 1.0f };
-		mCloudsConstantBuffer.Data.WindDir = XMVECTOR{ 1.0f, 0.0f, 0.0f, 1.0f };
-		mCloudsConstantBuffer.Data.WindSpeed = mWindSpeedMultiplier;
+		mCloudsConstantBuffer.Data.WindDir = XMVECTOR{ -wind->Direction().x, -wind->Direction().y, -wind->Direction().z, 1.0f };
+		mCloudsConstantBuffer.Data.WindSpeed = mWindSpeedMultiplier * wind->GetStrength();
 		mCloudsConstantBuffer.Data.Time = static_cast<float>(gameTime.TotalCoreTime());
 		mCloudsConstantBuffer.Data.Crispiness = mCrispiness;
 		mCloudsConstantBuffer.Data.Curliness = mCurliness;

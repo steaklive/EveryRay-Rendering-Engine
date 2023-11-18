@@ -20,6 +20,7 @@
 #include "ER_Scene.h"
 #include "ER_VolumetricClouds.h"
 #include "ER_VolumetricFog.h"
+#include "ER_Wind.h"
 #include "ER_Illumination.h"
 #include "ER_LightProbesManager.h"
 #include "ER_GPUCuller.h"
@@ -54,6 +55,7 @@ namespace EveryRay_Core {
 		DeleteObject(mScene);
 		DeleteObject(mLightProbesManager);
 		DeleteObject(mTerrain);
+		DeleteObject(mWind);
 		DeleteObject(mGPUCuller);
 		DeletePointerCollection(mPointLights);
 
@@ -115,10 +117,10 @@ namespace EveryRay_Core {
         mDirectionalLight = new ER_DirectionalLight(game, camera);
 		auto sunDirection = mScene->GetSunDir();
 		if (sunDirection.x == 0.0f && sunDirection.y == 0.0f && sunDirection.z == 0.0f) {
-			mDefaultSunRotationMatrix =
+			XMMATRIX defaultSunRotationMatrix =
 				XMMatrixRotationAxis(mDirectionalLight->RightVector(), -XMConvertToRadians(70.0f)) *
 				XMMatrixRotationAxis(mDirectionalLight->UpVector(), -XMConvertToRadians(25.0f));
-			mDirectionalLight->ApplyRotation(mDefaultSunRotationMatrix);
+			mDirectionalLight->ApplyRotation(defaultSunRotationMatrix);
 		}
 		else
 			mDirectionalLight->ApplyRotation(
@@ -202,6 +204,12 @@ namespace EveryRay_Core {
 		}
 #pragma endregion
 
+#pragma region INIT_WIND
+		game.CPUProfiler()->BeginCPUTime("Wind init");
+		mWind = new ER_Wind(game, camera);
+		game.CPUProfiler()->EndCPUTime("Wind init");
+#pragma endregion
+
 #pragma region INIT_GPU_CULLER
 		game.CPUProfiler()->BeginCPUTime("GPU Culler init");
 		mGPUCuller = new ER_GPUCuller(game, camera);
@@ -276,7 +284,11 @@ namespace EveryRay_Core {
 			mLightProbesManager->UpdateProbes(game);
 		mShadowMapper->Update(gameTime);
 		if (mFoliageSystem && mScene->HasFoliage())
-			mFoliageSystem->Update(gameTime, mWindGustDistance, mWindStrength, mWindFrequency);
+			mFoliageSystem->Update(gameTime);
+
+		mWind->UpdateProxyModel(gameTime,
+			((ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass()))->ViewMatrix4X4(),
+			((ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass()))->ProjectionMatrix4X4()); //TODO refactor to DebugRenderer
 		mDirectionalLight->UpdateProxyModel(gameTime, 
 			((ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass()))->ViewMatrix4X4(),
 			((ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass()))->ProjectionMatrix4X4()); //TODO refactor to DebugRenderer
@@ -313,17 +325,6 @@ namespace EveryRay_Core {
 
 		if (ImGui::Button("Terrain") && mTerrain)
 			mTerrain->Config();
-
-		//TODO remove from here
-		if (ImGui::CollapsingHeader("Wind"))
-		{
-			ImGui::SliderFloat("Wind strength", &mWindStrength, 0.0f, 100.0f);
-			ImGui::SliderFloat("Wind gust distance", &mWindGustDistance, 0.0f, 100.0f);
-			ImGui::SliderFloat("Wind frequency", &mWindFrequency, 0.0f, 100.0f);
-		}
-
-		//TODO shadow mapper config
-		//TODO skybox config
 
         ImGui::End();
     }
@@ -437,6 +438,7 @@ namespace EveryRay_Core {
 				{
 					mIllumination->DrawDebugGizmos(localRT, mGBuffer->GetDepth(), debugGizmoRootSignature);
 					mDirectionalLight->DrawProxyModel(localRT, mGBuffer->GetDepth(), gameTime, debugGizmoRootSignature);
+					mWind->DrawProxyModel(localRT, mGBuffer->GetDepth(), gameTime, debugGizmoRootSignature);
 					if (mTerrain)
 						mTerrain->DrawDebugGizmos(localRT, mGBuffer->GetDepth(), debugGizmoRootSignature);
 					if (mFoliageSystem)

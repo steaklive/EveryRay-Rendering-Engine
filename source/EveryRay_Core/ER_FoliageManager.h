@@ -108,12 +108,6 @@ namespace EveryRay_Core
 		void SetDynamicDeltaDistanceToCamera(float val) { mDeltaDistanceToCamera = val; }
 
 		bool IsRotating() { return mIsRotating; }
-		void SetWindParams(float gustDistance, float strength, float frequency) 
-		{
-			mWindGustDistance = gustDistance;
-			mWindStrength = strength;
-			mWindFrequency = frequency;
-		}
 
 		int GetPatchesCount() { return mPatchesCount; }
 		void SetPatchPosition(int i, float x, float y, float z) {
@@ -245,7 +239,7 @@ namespace EveryRay_Core
 		~ER_FoliageManager();
 
 		void Initialize();
-		void Update(const ER_CoreTime& gameTime, float gustDistance, float strength, float frequency);
+		void Update(const ER_CoreTime& gameTime);
 		void Draw(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, FoliageRenderingPass renderPass,
 			const std::vector<ER_RHI_GPUTexture*>& aGbufferTextures, ER_RHI_GPUTexture* aDepthTarget = nullptr);
 		void DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, ER_RHI_GPURootSignature* rs);

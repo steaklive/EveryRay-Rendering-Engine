@@ -15,6 +15,7 @@
 #include "ER_RenderableAABB.h"
 #include "ER_Terrain.h"
 #include "ER_GBuffer.h"
+#include "ER_Wind.h"
 
 #define FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
 #define FOLIAGE_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 1
@@ -85,7 +86,7 @@ namespace EveryRay_Core
 			listener();
 	}
 
-	void ER_FoliageManager::Update(const ER_CoreTime& gameTime, float gustDistance, float strength, float frequency)
+	void ER_FoliageManager::Update(const ER_CoreTime& gameTime)
 	{
 		ER_Camera* camera = (ER_Camera*)(mCore->GetServices().FindService(ER_Camera::TypeIdClass()));
 
@@ -96,7 +97,6 @@ namespace EveryRay_Core
 				foliage->SetDynamicDeltaDistanceToCamera(mDeltaDistanceToCamera);
 				foliage->SetDynamicLODMaxDistance(mMaxDistanceToCamera);
 
-				foliage->SetWindParams(gustDistance, strength, frequency);
 				foliage->Update(gameTime);
 				foliage->PerformCPUFrustumCulling((ER_Utility::IsMainCameraCPUFrustumCulling && mEnableCulling) ? camera : nullptr);
 			}
@@ -392,6 +392,7 @@ namespace EveryRay_Core
 	void ER_Foliage::PrepareRendering(const ER_CoreTime& gameTime, const ER_ShadowMapper* worldShadowMapper, ER_RHI_GPURootSignature* rs)
 	{
 		auto rhi = mCore.GetRHI();
+		const ER_Wind* wind = mCore.GetLevel()->mWind;
 
 		if (worldShadowMapper)
 		{
@@ -409,13 +410,13 @@ namespace EveryRay_Core
 		mFoliageConstantBuffer.Data.AmbientColor = XMFLOAT4{ mDirectionalLight.GetAmbientLightColor().x, mDirectionalLight.GetAmbientLightColor().y, mDirectionalLight.GetAmbientLightColor().z , 1.0f };
 		mFoliageConstantBuffer.Data.CameraDirection = XMFLOAT4(mCamera.Direction().x, mCamera.Direction().y, mCamera.Direction().z, 1.0f);
 		mFoliageConstantBuffer.Data.CameraPos = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f);
-		mFoliageConstantBuffer.Data.WindDirection = XMFLOAT4{ 0.0f, 0.0f, 1.0f , 1.0f };
+		mFoliageConstantBuffer.Data.WindDirection = XMFLOAT4{ -wind->Direction().x, -wind->Direction().y, -wind->Direction().z, 1.0f };
 		mFoliageConstantBuffer.Data.VoxelCameraPos = XMFLOAT4{ mVoxelCameraPos->x, mVoxelCameraPos->y, mVoxelCameraPos->z, 1.0 };
 		mFoliageConstantBuffer.Data.RotateToCamera = (mIsRotating) ? 1.0f : 0.0f;;
 		mFoliageConstantBuffer.Data.Time = static_cast<float>(gameTime.TotalCoreTime());
-		mFoliageConstantBuffer.Data.WindStrength = mWindStrength;
-		mFoliageConstantBuffer.Data.WindFrequency = mWindFrequency;
-		mFoliageConstantBuffer.Data.WindGustDistance = mWindGustDistance;
+		mFoliageConstantBuffer.Data.WindStrength = wind->GetStrength();
+		mFoliageConstantBuffer.Data.WindFrequency = wind->GetFrequency();
+		mFoliageConstantBuffer.Data.WindGustDistance = wind->GetGustDistance();
 		mFoliageConstantBuffer.Data.WorldVoxelScale = *mWorldVoxelScale;
 		mFoliageConstantBuffer.Data.VoxelTextureDimension = *mVoxelTextureDimension;
 		mFoliageConstantBuffer.ApplyChanges(rhi);

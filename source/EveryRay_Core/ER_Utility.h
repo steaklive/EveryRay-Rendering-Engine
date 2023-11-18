@@ -30,6 +30,7 @@ namespace EveryRay_Core
 
 		static bool IsEditorMode;
 		static bool IsSunLightEditor;
+		static bool IsWindEditor;
 		static bool IsFoliageEditor;
 		static bool IsPostEffectsVolumeEditor;
 

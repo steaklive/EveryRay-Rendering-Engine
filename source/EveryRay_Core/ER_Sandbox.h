@@ -19,6 +19,7 @@ namespace EveryRay_Core
     class ER_VolumetricClouds;
 	class ER_VolumetricFog;
     class ER_Illumination;
+    class ER_Wind;
     class ER_LightProbesManager;
     class ER_PostProcessingStack;
     class ER_QuadRenderer;
@@ -48,6 +49,7 @@ namespace EveryRay_Core
         ER_Illumination* mIllumination = nullptr;
         ER_LightProbesManager* mLightProbesManager = nullptr;
         ER_Terrain* mTerrain = nullptr;
+        ER_Wind* mWind = nullptr;
         ER_PostProcessingStack* mPostProcessingStack = nullptr;
         ER_QuadRenderer* mQuadRenderer = nullptr;
         ER_GPUCuller* mGPUCuller = nullptr;
@@ -55,13 +57,8 @@ namespace EveryRay_Core
         std::vector<ER_PointLight*> mPointLights;
     private:
         void UpdateImGui();
+
         std::string mName;
-
-        XMMATRIX mDefaultSunRotationMatrix;
-
-		float mWindStrength = 1.0f;
-		float mWindFrequency = 1.0f;
-		float mWindGustDistance = 1.0f;
 	};
 
 }
