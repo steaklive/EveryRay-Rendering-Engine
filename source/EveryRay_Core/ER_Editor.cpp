@@ -20,12 +20,20 @@ namespace EveryRay_Core
 	ER_Editor::ER_Editor(ER_Core& game)
 		: ER_CoreComponent(game)
 	{
-		memset(editorObjectsNames, 0, sizeof(char*) * MAX_OBJECTS_IN_EDITOR_COUNT);
-		memset(editorPointLightsNames, 0, sizeof(char*) * MAX_POINT_LIGHTS_IN_EDITOR_COUNT);
+		for (int i = 0; i < MAX_OBJECTS_IN_EDITOR_COUNT; i++)
+			mEditorObjectsNames[i] = (char*)malloc(sizeof(char) * MAX_NAME_CHAR_LENGTH);
+
+		for (int i = 0; i < MAX_POINT_LIGHTS_IN_EDITOR_COUNT; i++)
+			mEditorPointLightsNames[i] = (char*)malloc(sizeof(char) * MAX_NAME_CHAR_LENGTH);
 	}
 
 	ER_Editor::~ER_Editor()
 	{
+		for (int i = 0; i < MAX_OBJECTS_IN_EDITOR_COUNT; i++)
+			DeleteObjects(mEditorObjectsNames[i]);
+
+		for (int i = 0; i < MAX_POINT_LIGHTS_IN_EDITOR_COUNT; i++)
+			DeleteObjects(mEditorPointLightsNames[i]);
 	}
 
 	void ER_Editor::Initialize(ER_Scene* scene)
@@ -61,11 +69,11 @@ namespace EveryRay_Core
 							continue;
 
 						std::string name = "Point Light #" + std::to_string(objectIndex);
-						editorPointLightsNames[objectIndex] = strdup(name.c_str());;
+						strcpy(mEditorPointLightsNames[objectIndex], name.c_str());
 						objectIndex++;
 					}
 
-					ImGui::ListBox("Point Lights", &selectedPointLightIndex, editorPointLightsNames, static_cast<int>(GetCore()->GetLevel()->mPointLights.size()));
+					ImGui::ListBox("Point Lights", &selectedPointLightIndex, mEditorPointLightsNames, static_cast<int>(GetCore()->GetLevel()->mPointLights.size()));
 					if (ImGui::Button("Save Lights Data"))
 						mScene->SavePointLightsData();
 					ImGui::SameLine();
@@ -130,18 +138,18 @@ namespace EveryRay_Core
 				{
 					if (object.second->IsAvailableInEditor() && objectIndex < MAX_OBJECTS_IN_EDITOR_COUNT)
 					{
-						editorObjectsNames[objectIndex] = object.first.c_str();
+						strcpy(mEditorObjectsNames[objectIndex], object.first.c_str());
 						objectIndex++;
 					}
 				}
 				objectsSize = objectIndex;
 
 				ImGui::PushItemWidth(-1);
-				ImGui::ListBox("##empty", &selectedObjectIndex, editorObjectsNames, objectsSize, maxRenderingObjectsListHeight);
+				ImGui::ListBox("##empty", &selectedObjectIndex, mEditorObjectsNames, objectsSize, maxRenderingObjectsListHeight);
 
 				for (int i = 0; i < objectsSize; i++)
 				{
-					auto renderingObject = mScene->FindRenderingObjectByName(editorObjectsNames[i]);
+					auto renderingObject = mScene->FindRenderingObjectByName(mEditorObjectsNames[i]);
 					if (renderingObject)
 						renderingObject->SetSelected(i == selectedObjectIndex);
 				}

@@ -80,11 +80,17 @@ namespace EveryRay_Core
 			mDebugGizmoAABB->InitializeGeometry({ mLocalAABB.first, mLocalAABB.second });
 		}
 
-		XMFLOAT4X4 transform = XMFLOAT4X4( mCurrentObjectTransformMatrix );
+		XMFLOAT4X4 transform = XMFLOAT4X4( mEditorCurrentObjectTransformMatrix );
 		mTransformationMatrix = XMLoadFloat4x4(&transform);
 
 		mObjectConstantBuffer.Initialize(pCore.GetRHI(), "ER_RHI_GPUBuffer: Object's CB: " + mName);
 		mObjectFakeRootConstantBuffer.Initialize(pCore.GetRHI(), "ER_RHI_GPUBuffer: Object's Fake Root CB: " + mName);
+
+		if (!mIsIndirectlyRendered)
+		{
+			for (int i = 0; i < MAX_DIRECT_INSTANCE_COUNT; i++)
+				mEditorInstancedNamesUI[i] = (char*)malloc(sizeof(char) * MAX_NAME_CHAR_LENGTH);
+		}
 
 		mIsLoaded = true;
 	}
@@ -130,6 +136,11 @@ namespace EveryRay_Core
 			DeleteObject(mIndirectArgsBuffer);
 			DeleteObject(mIndirectNewInstanceDataBuffer);
 			DeleteObject(mIndirectOriginalInstanceDataBuffer);
+		}
+		else
+		{
+			for (int i = 0; i < MAX_DIRECT_INSTANCE_COUNT; i++)
+				DeleteObjects(mEditorInstancedNamesUI[i]);
 		}
 	}
 
@@ -538,25 +549,25 @@ namespace EveryRay_Core
 	void ER_RenderingObject::SetTransformationMatrix(const XMMATRIX& mat)
 	{
 		mTransformationMatrix = mat;
-		ER_MatrixHelper::SetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
+		ER_MatrixHelper::SetFloatArray(mTransformationMatrix, mEditorCurrentObjectTransformMatrix);
 	}
 
 	void ER_RenderingObject::SetTranslation(float x, float y, float z)
 	{
 		mTransformationMatrix *= XMMatrixTranslation(x, y, z);
-		ER_MatrixHelper::SetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
+		ER_MatrixHelper::SetFloatArray(mTransformationMatrix, mEditorCurrentObjectTransformMatrix);
 	}
 
 	void ER_RenderingObject::SetScale(float x, float y, float z)
 	{
 		mTransformationMatrix *= XMMatrixScaling(x, y, z);
-		ER_MatrixHelper::SetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
+		ER_MatrixHelper::SetFloatArray(mTransformationMatrix, mEditorCurrentObjectTransformMatrix);
 	}
 
 	void ER_RenderingObject::SetRotation(float x, float y, float z)
 	{
 		mTransformationMatrix *= XMMatrixRotationRollPitchYaw(x, y, z);
-		ER_MatrixHelper::SetFloatArray(mTransformationMatrix, mCurrentObjectTransformMatrix);
+		ER_MatrixHelper::SetFloatArray(mTransformationMatrix, mEditorCurrentObjectTransformMatrix);
 	}
 
 	// new instancing code
@@ -761,7 +772,7 @@ namespace EveryRay_Core
 		if (!mIsInstanced)
 		{
 			XMFLOAT4 currentPos;
-			ER_MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), currentPos);
+			ER_MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mEditorCurrentObjectTransformMatrix))), currentPos);
 
 			if (isOnInit)
 			{
@@ -858,7 +869,7 @@ namespace EveryRay_Core
 		{
 			mEditorSelectedInstancedObjectIndex = mEditorSelectedInstancedObjectIndexNextFrame;
 			// load current selected instance's transform to temp transform (for UI)
-			ER_MatrixHelper::SetFloatArray(mInstanceData[0][mEditorSelectedInstancedObjectIndex].World, mCurrentObjectTransformMatrix);
+			ER_MatrixHelper::SetFloatArray(mInstanceData[0][mEditorSelectedInstancedObjectIndex].World, mEditorCurrentObjectTransformMatrix);
 		}
 
 		// place procedurally on terrain (only executed once, on load)
@@ -958,16 +969,16 @@ namespace EveryRay_Core
 		ER_MatrixHelper::SetFloatArray(mCamera.ViewMatrix4X4(), mCameraViewMatrix);
 		ER_MatrixHelper::SetFloatArray(mCamera.ProjectionMatrix4X4(), mCameraProjectionMatrix);
 
-		ShowObjectsEditorWindow(mCameraViewMatrix, mCameraProjectionMatrix, mCurrentObjectTransformMatrix);
+		ShowObjectsEditorWindow(mCameraViewMatrix, mCameraProjectionMatrix, mEditorCurrentObjectTransformMatrix);
 
-		XMFLOAT4X4 mat(mCurrentObjectTransformMatrix);
+		XMFLOAT4X4 mat(mEditorCurrentObjectTransformMatrix);
 		mTransformationMatrix = XMLoadFloat4x4(&mat);
 
 		//update instance world transform (from editor's gizmo/UI)
 		if (mIsInstanced && ER_Utility::IsEditorMode)
 		{
 			for (int lod = 0; lod < GetLODCount(); lod++)
-				mInstanceData[lod][mEditorSelectedInstancedObjectIndex].World = XMFLOAT4X4(mCurrentObjectTransformMatrix);
+				mInstanceData[lod][mEditorSelectedInstancedObjectIndex].World = XMFLOAT4X4(mEditorCurrentObjectTransformMatrix);
 		}
 	}
 	
@@ -1077,7 +1088,7 @@ namespace EveryRay_Core
 			{
 				if (mIsInstanced)
 				{
-					name = mInstancesNames[mEditorSelectedInstancedObjectIndex];
+					name = mEditorInstancedNamesUI[mEditorSelectedInstancedObjectIndex] ? mEditorInstancedNamesUI[mEditorSelectedInstancedObjectIndex] : "Unknown Name";
 					if (mInstanceCullingFlags[mEditorSelectedInstancedObjectIndex]) //showing info for main LOD only in editor
 						name += " (Culled)";
 				}
@@ -1128,7 +1139,7 @@ namespace EveryRay_Core
 			if (ImGui::Button("Move camera to"))
 			{
 				XMFLOAT3 newCameraPos;
-				ER_MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), newCameraPos);
+				ER_MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mEditorCurrentObjectTransformMatrix))), newCameraPos);
 
 				ER_Camera* camera = (ER_Camera*)(mCore->GetServices().FindService(ER_Camera::TypeIdClass()));
 				if (camera)
@@ -1144,7 +1155,7 @@ namespace EveryRay_Core
 
 				ImGui::Text("Instances (dynamic):");
 				ImGui::PushItemWidth(-1);
-				ImGui::ListBox("##empty", &mEditorSelectedInstancedObjectIndexNextFrame, mInstancedNamesUI, static_cast<int>(mInstanceData[0].size()), maxInstancesHeightUI);
+				ImGui::ListBox("##empty", &mEditorSelectedInstancedObjectIndexNextFrame, mEditorInstancedNamesUI, static_cast<int>(mInstanceData[0].size()), maxInstancesHeightUI);
 			}
 
 			//terrain
@@ -1213,11 +1224,11 @@ namespace EveryRay_Core
 					mCurrentGizmoOperation = ImGuizmo::SCALE;
 
 
-				ImGuizmo::DecomposeMatrixToComponents(matrix, mMatrixTranslation, mMatrixRotation, mMatrixScale);
-				ImGui::InputFloat3("Tr", mMatrixTranslation, 3);
-				ImGui::InputFloat3("Rt", mMatrixRotation, 3);
-				ImGui::InputFloat3("Sc", mMatrixScale, 3);
-				ImGuizmo::RecomposeMatrixFromComponents(mMatrixTranslation, mMatrixRotation, mMatrixScale, matrix);
+				ImGuizmo::DecomposeMatrixToComponents(matrix, mEditorMatrixTranslation, mEditorMatrixRotation, mEditorMatrixScale);
+				ImGui::InputFloat3("Tr", mEditorMatrixTranslation, 3);
+				ImGui::InputFloat3("Rt", mEditorMatrixRotation, 3);
+				ImGui::InputFloat3("Sc", mEditorMatrixScale, 3);
+				ImGuizmo::RecomposeMatrixFromComponents(mEditorMatrixTranslation, mEditorMatrixRotation, mEditorMatrixScale, matrix);
 			}
 			ImGui::End();
 
@@ -1361,14 +1372,20 @@ namespace EveryRay_Core
 		if (lod == 0)
 		{
 			mInstanceCount = count;
-			for (int i = 0; i < static_cast<int>(mInstanceCount); i++)
-			{
-				std::string instanceName = mName + " #" + std::to_string(i);
-				mInstancesNames.push_back(instanceName);
-				mInstancedNamesUI[i] = strdup(instanceName.c_str());
 
-				mInstanceAABBs.push_back(mLocalAABB);
-				mInstanceCullingFlags.push_back(false);
+			mInstanceAABBs.clear();
+			mInstanceAABBs.resize(mInstanceCount, mLocalAABB);
+
+			mInstanceCullingFlags.clear();
+			mInstanceCullingFlags.resize(mInstanceCount, false);
+
+			if (!mIsIndirectlyRendered)
+			{
+				for (int i = 0; i < count; i++)
+				{
+					std::string instanceName = mName + " #" + std::to_string(i);
+					strcpy(mEditorInstancedNamesUI[i], instanceName.c_str());
+				}
 			}
 		}
 

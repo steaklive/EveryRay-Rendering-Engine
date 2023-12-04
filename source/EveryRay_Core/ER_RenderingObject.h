@@ -6,6 +6,8 @@
 
 #include "RHI\ER_RHI.h"
 
+#define MAX_NAME_CHAR_LENGTH 100
+
 const UINT MAX_DIRECT_INSTANCE_COUNT = 20000; // max count for instances which are NOT GPU indirectly drawn
 
 // Bitmasks for "RenderingObjectFlags" as decimal values
@@ -177,7 +179,7 @@ namespace EveryRay_Core
 		std::vector<InstancedData>& GetInstancesData(int lod = 0) { return mInstanceData[lod]; }
 		const int GetIndexCount(int lod, int mesh) const { return mMeshRenderBuffers[lod][mesh]->IndicesCount; }
 
-		XMFLOAT4X4 GetTransformationMatrix4X4() const { return XMFLOAT4X4(mCurrentObjectTransformMatrix); }
+		XMFLOAT4X4 GetTransformationMatrix4X4() const { return XMFLOAT4X4(mEditorCurrentObjectTransformMatrix); }
 		const XMMATRIX& GetTransformationMatrix() const { return mTransformationMatrix; }
 
 		ER_AABB& GetLocalAABB() { return mLocalAABB; } //local space (no transforms)
@@ -393,7 +395,6 @@ namespace EveryRay_Core
 		///****************************************************************************************************************************
 		// *** instancing data (counters, transforms etc.) ***
 		UINT													mInstanceCount = 0;
-		std::vector<std::string>								mInstancesNames; // collection of names of instances (mName + index)
 		std::vector<ER_AABB>									mInstanceAABBs; // collection of AABBs for every instance (shared for LODs)
 		std::vector<bool>										mInstanceCullingFlags; // collection of culling flags for every instance (vector is lame here btw...)
 		std::vector<InstancedData>								mTempPostCullingInstanceData; // temp instance data after CPU culling
@@ -462,11 +463,8 @@ namespace EveryRay_Core
 		ER_RenderableAABB*										mDebugGizmoAABB = nullptr;
 	
 		std::string												mName;
-		const char*												mInstancedNamesUI[MAX_DIRECT_INSTANCE_COUNT] = { nullptr };
 		int														mIndexInScene = -1;
 		int														mCurrentLODIndex = 0; //only used for non-instanced object
-		int														mEditorSelectedInstancedObjectIndex = 0; //only for direct instances and not GPU-driven/indirect
-		int														mEditorSelectedInstancedObjectIndexNextFrame = 0; //only for direct instances and not GPU-driven/indirect
 		bool													mIsAABBDebugEnabled = true;
 		bool													mIsAvailableInEditorMode = false;
 		bool													mIsSelected = false;
@@ -497,14 +495,18 @@ namespace EveryRay_Core
 		float													mCameraViewMatrix[16];
 		float													mCameraProjectionMatrix[16];
 		XMMATRIX												mTransformationMatrix;
-		float													mMatrixTranslation[3], mMatrixRotation[3], mMatrixScale[3];
-		float													mCurrentObjectTransformMatrix[16] = 
+
+		float													mEditorMatrixTranslation[3], mEditorMatrixRotation[3], mEditorMatrixScale[3];
+		float													mEditorCurrentObjectTransformMatrix[16] = 
 		{   
 			1.f, 0.f, 0.f, 0.f,
 			0.f, 1.f, 0.f, 0.f,
 			0.f, 0.f, 1.f, 0.f,
 			0.f, 0.f, 0.f, 1.f 
 		};
+		char*													mEditorInstancedNamesUI[MAX_DIRECT_INSTANCE_COUNT] = { nullptr };	//only for direct instances and not GPU-driven/indirect
+		int														mEditorSelectedInstancedObjectIndex = 0;							//only for direct instances and not GPU-driven/indirect
+		int														mEditorSelectedInstancedObjectIndexNextFrame = 0;					//only for direct instances and not GPU-driven/indirect
 
 		RenderingObjectTextureQuality							mCurrentTextureQuality = RenderingObjectTextureQuality::OBJECT_TEXTURE_LOW;
 		UINT													mObjectShaderBitmaskFlags = 0; // "RenderingObjectFlags" in shaders

@@ -34,8 +34,8 @@ namespace EveryRay_Core
 		ER_Editor(const ER_Editor& rhs);
 		ER_Editor& operator=(const ER_Editor& rhs);
 
-		const char* editorObjectsNames[MAX_OBJECTS_IN_EDITOR_COUNT];
-		char* editorPointLightsNames[MAX_POINT_LIGHTS_IN_EDITOR_COUNT];
+		char* mEditorObjectsNames[MAX_OBJECTS_IN_EDITOR_COUNT] = { nullptr };
+		char* mEditorPointLightsNames[MAX_POINT_LIGHTS_IN_EDITOR_COUNT] = { nullptr };
 
 		bool mUseCustomSkyboxColor = true;
 		float mBottomColorSky[4] = {245.0f / 255.0f, 245.0f / 255.0f, 245.0f / 255.0f, 1.0f};
