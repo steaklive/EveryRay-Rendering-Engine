@@ -30,10 +30,10 @@ namespace EveryRay_Core
 	ER_Editor::~ER_Editor()
 	{
 		for (int i = 0; i < MAX_OBJECTS_IN_EDITOR_COUNT; i++)
-			DeleteObjects(mEditorObjectsNames[i]);
+			free(mEditorObjectsNames[i]);
 
 		for (int i = 0; i < MAX_POINT_LIGHTS_IN_EDITOR_COUNT; i++)
-			DeleteObjects(mEditorPointLightsNames[i]);
+			free(mEditorPointLightsNames[i]);
 	}
 
 	void ER_Editor::Initialize(ER_Scene* scene)

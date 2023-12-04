@@ -140,7 +140,7 @@ namespace EveryRay_Core
 		else
 		{
 			for (int i = 0; i < MAX_DIRECT_INSTANCE_COUNT; i++)
-				DeleteObjects(mEditorInstancedNamesUI[i]);
+				free(mEditorInstancedNamesUI[i]);
 		}
 	}
 
