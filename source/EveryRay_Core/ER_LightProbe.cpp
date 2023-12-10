@@ -181,7 +181,6 @@ namespace EveryRay_Core
 			throw ER_CoreException("Rendering to light probes is only available on DX11 at the moment.");
 
 		ER_RHI* rhi = game.GetRHI();
-		float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		bool isGlobal = (mIndex == -1);
 
 		std::string materialListenerName = ((mProbeType == DIFFUSE_PROBE) ? "diffuse_" : "specular_") + ER_MaterialHelper::renderToLightProbeMaterialName;
@@ -198,7 +197,7 @@ namespace EveryRay_Core
 			// Set the render target and clear it.
 			int rtvShift = (mProbeType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT;
 			rhi->SetRenderTargets({ aTextureNonConvoluted }, aDepthBuffers[cubeMapFaceIndex], nullptr, cubeMapFaceIndex * rtvShift);
-			rhi->ClearRenderTarget(aTextureNonConvoluted, clearColor, cubeMapFaceIndex);
+			rhi->ClearRenderTarget(aTextureNonConvoluted, clearColorBlack, cubeMapFaceIndex);
 			rhi->ClearDepthStencilTarget(aDepthBuffers[cubeMapFaceIndex], 1.0f, 0);
 
 			//rendering objects and sky
@@ -255,8 +254,6 @@ namespace EveryRay_Core
 
 		ER_RHI* rhi = game.GetRHI();
 
-		float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
 		int totalMips = (mipCount == -1) ? 1 : mipCount;
 		int rtvShift = (mProbeType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT;
 
@@ -278,7 +275,7 @@ namespace EveryRay_Core
 				rhi->SetViewport(newViewPort);
 
 				rhi->SetRenderTargets({ aTextureConvoluted }, nullptr, nullptr, cubeMapFace * rtvShift + mip);
-				rhi->ClearRenderTarget(aTextureConvoluted, clearColor, cubeMapFace * rtvShift + mip);
+				rhi->ClearRenderTarget(aTextureConvoluted, clearColorBlack, cubeMapFace * rtvShift + mip);
 
 				rhi->SetConstantBuffers(ER_VERTEX, { mConvolutionCB.Buffer() });
 

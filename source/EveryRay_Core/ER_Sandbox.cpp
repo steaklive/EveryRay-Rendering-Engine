@@ -162,7 +162,7 @@ namespace EveryRay_Core {
 
 		#pragma region INIT_VOLUMETRIC_FOG
 		game.CPUProfiler()->BeginCPUTime("Volumetric Fog init");
-		mVolumetricFog = new ER_VolumetricFog(game, *mDirectionalLight, *mShadowMapper);
+		mVolumetricFog = new ER_VolumetricFog(game, *mDirectionalLight, *mShadowMapper, (VolumetricFogQuality)ER_Settings::VolumetricFogQuality);
 		mVolumetricFog->Initialize();
 		mVolumetricFog->SetEnabled(mScene->HasVolumetricFog());
 		game.CPUProfiler()->EndCPUTime("Volumetric Fog init");

@@ -7,9 +7,7 @@
 #include "ER_Camera.h"
 #include "ER_QuadRenderer.h"
 
-#define VOXEL_SIZE_X 160
-#define VOXEL_SIZE_Y 90
-#define VOXEL_SIZE_Z 128
+#define VOXEL_VOLUME_SIZE_Z 128
 
 #define INJECTION_ACCUMULATION_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
 #define INJECTION_ACCUMULATION_ROOT_DESCRIPTOR_TABLE_UAV_INDEX 1
@@ -18,17 +16,19 @@
 #define COMPOSITE_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
 #define COMPOSITE_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 1
 
-static float clearColorBlack[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
 namespace EveryRay_Core {
-	ER_VolumetricFog::ER_VolumetricFog(ER_Core& game, const ER_DirectionalLight& aLight, const ER_ShadowMapper& aShadowMapper)
-	    : ER_CoreComponent(game), mShadowMapper(aShadowMapper), mDirectionalLight(aLight)
+	ER_VolumetricFog::ER_VolumetricFog(ER_Core& game, const ER_DirectionalLight& aLight, const ER_ShadowMapper& aShadowMapper, VolumetricFogQuality aQuality)
+	    : ER_CoreComponent(game), mShadowMapper(aShadowMapper), mDirectionalLight(aLight), mCurrentQuality(aQuality), mPrevViewProj(XMMatrixIdentity())
 	{	
-		mPrevViewProj = XMMatrixIdentity();
 	}
 	
 	ER_VolumetricFog::~ER_VolumetricFog()
 	{
+		if (mCurrentQuality == VolumetricFogQuality::VF_DISABLED)
+			return;
+
+		DeleteObject(mCameraFog);
+
 		DeleteObject(mTempVoxelInjectionTexture3D[0]);
 		DeleteObject(mTempVoxelInjectionTexture3D[1]);
 		DeleteObject(mFinalVoxelAccumulationTexture3D);
@@ -46,19 +46,38 @@ namespace EveryRay_Core {
     
 	void ER_VolumetricFog::Initialize()
 	{
+		switch (mCurrentQuality)
+		{
+		case VolumetricFogQuality::VF_DISABLED:
+			return;
+			break;
+		case VolumetricFogQuality::VF_MEDIUM:
+			mCurrentVoxelVolumeSizeX = 160;
+			mCurrentVoxelVolumeSizeY = 90;
+			break;
+		case VolumetricFogQuality::VF_HIGH:
+			mCurrentVoxelVolumeSizeX = 240;
+			mCurrentVoxelVolumeSizeY = 135;
+			break;
+		}
+
 		auto rhi = GetCore()->GetRHI();
-		
+
+		ER_Camera* cameraScene = (ER_Camera*)GetCore()->GetServices().FindService(ER_Camera::TypeIdClass());
+		mCameraFog = new ER_Camera(*GetCore(), cameraScene->FieldOfView(), cameraScene->AspectRatio(), mCustomNearPlane, mCustomFarPlane);
+		mCameraFog->Initialize();
+
 		mTempVoxelInjectionTexture3D[0] = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Volumetric Fog Temp Voxel Injection 3D #0");
-		mTempVoxelInjectionTexture3D[0]->CreateGPUTextureResource(rhi, VOXEL_SIZE_X, VOXEL_SIZE_Y, 1, ER_FORMAT_R16G16B16A16_FLOAT,
-			ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1, VOXEL_SIZE_Z);
+		mTempVoxelInjectionTexture3D[0]->CreateGPUTextureResource(rhi, mCurrentVoxelVolumeSizeX, mCurrentVoxelVolumeSizeY, 1, ER_FORMAT_R16G16B16A16_FLOAT,
+			ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1, VOXEL_VOLUME_SIZE_Z);
 
 		mTempVoxelInjectionTexture3D[1] = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Volumetric Fog Temp Voxel Injection 3D #1");
-		mTempVoxelInjectionTexture3D[1]->CreateGPUTextureResource(rhi, VOXEL_SIZE_X, VOXEL_SIZE_Y, 1, ER_FORMAT_R16G16B16A16_FLOAT,
-			ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1, VOXEL_SIZE_Z);
+		mTempVoxelInjectionTexture3D[1]->CreateGPUTextureResource(rhi, mCurrentVoxelVolumeSizeX, mCurrentVoxelVolumeSizeY, 1, ER_FORMAT_R16G16B16A16_FLOAT,
+			ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1, VOXEL_VOLUME_SIZE_Z);
 
 		mFinalVoxelAccumulationTexture3D = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Volumetric Fog Final Voxel Accumulation 3D");
-		mFinalVoxelAccumulationTexture3D->CreateGPUTextureResource(rhi, VOXEL_SIZE_X, VOXEL_SIZE_Y, 1, ER_FORMAT_R16G16B16A16_FLOAT,
-			ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1, VOXEL_SIZE_Z);
+		mFinalVoxelAccumulationTexture3D->CreateGPUTextureResource(rhi, mCurrentVoxelVolumeSizeX, mCurrentVoxelVolumeSizeY, 1, ER_FORMAT_R16G16B16A16_FLOAT,
+			ER_BIND_SHADER_RESOURCE | ER_BIND_UNORDERED_ACCESS, 1, VOXEL_VOLUME_SIZE_Z);
 
 		mBlueNoiseTexture = rhi->CreateGPUTexture(L"");
 		mBlueNoiseTexture->CreateGPUTextureResource(rhi, "content\\textures\\blueNoise.dds");
@@ -97,7 +116,7 @@ namespace EveryRay_Core {
 
 	void ER_VolumetricFog::Draw()
 	{
-		if (!mEnabled)
+		if (mCurrentQuality == VolumetricFogQuality::VF_DISABLED || !mEnabled)
 			return;
 
 		auto rhi = GetCore()->GetRHI();
@@ -114,14 +133,23 @@ namespace EveryRay_Core {
 
 	void ER_VolumetricFog::Update(const ER_CoreTime& gameTime)
 	{
-		ER_Camera* camera = (ER_Camera*)GetCore()->GetServices().FindService(ER_Camera::TypeIdClass());
-		assert(camera);
+		if (mCurrentQuality == VolumetricFogQuality::VF_DISABLED)
+			return;
 
 		UpdateImGui();
-		auto rhi = GetCore()->GetRHI();
 
 		if (!mEnabled)
 			return;
+
+		ER_Camera* cameraScene = (ER_Camera*)GetCore()->GetServices().FindService(ER_Camera::TypeIdClass());
+		ER_Camera* camera = mCameraFog;
+		camera->SetPosition(cameraScene->Position());
+		camera->SetDirection(cameraScene->Direction());
+		camera->SetUp(cameraScene->Up());
+		camera->SetFovNearFarPlanesDistance(cameraScene->FieldOfView(), mCustomNearPlane, mCustomFarPlane);
+		camera->Update(gameTime);
+
+		auto rhi = GetCore()->GetRHI();
 
 		mMainConstantBuffer.Data.InvViewProj = XMMatrixTranspose(XMMatrixInverse(nullptr, camera->ViewMatrix() * camera->ProjectionMatrix()));
 		mMainConstantBuffer.Data.PrevViewProj = mPrevViewProj;
@@ -129,18 +157,17 @@ namespace EveryRay_Core {
 		mMainConstantBuffer.Data.SunDirection = XMFLOAT4{ -mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f };
 		mMainConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetColor().x, mDirectionalLight.GetColor().y, mDirectionalLight.GetColor().z, mDirectionalLight.GetIntensity() };
 		mMainConstantBuffer.Data.CameraPosition = XMFLOAT4{ camera->Position().x, camera->Position().y, camera->Position().z, 1.0f };
-		mMainConstantBuffer.Data.CameraNearFar = XMFLOAT4{ mCustomNearPlane, mCustomFarPlane, 0.0f, 0.0f };
+		mMainConstantBuffer.Data.CameraNearFar_FrameIndex_PreviousFrameBlend = XMFLOAT4{ mCustomNearPlane, mCustomFarPlane, static_cast<float>(GetCore()->GetFrameIndex()), mPreviousFrameBlendFactor };
+		mMainConstantBuffer.Data.VolumeSize = XMFLOAT4{ static_cast<float>(mCurrentVoxelVolumeSizeX), static_cast<float>(mCurrentVoxelVolumeSizeY), VOXEL_VOLUME_SIZE_Z, 0.0f };
 		mMainConstantBuffer.Data.Anisotropy = mAnisotropy;
 		mMainConstantBuffer.Data.Density = mDensity;
 		mMainConstantBuffer.Data.Strength = mStrength;
 		mMainConstantBuffer.Data.ThicknessFactor = mThicknessFactor;
-		mMainConstantBuffer.Data.AmbientIntensity = mAmbientIntensity;
-		mMainConstantBuffer.Data.PreviousFrameBlend = mPreviousFrameBlendFactor;
-		mMainConstantBuffer.Data.FrameIndex = static_cast<float>(GetCore()->GetFrameIndex());
 		mMainConstantBuffer.ApplyChanges(rhi);
 
 		mCompositeConstantBuffer.Data.ViewProj = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());
 		mCompositeConstantBuffer.Data.CameraNearFar = XMFLOAT4{ mCustomNearPlane, mCustomFarPlane, 0.0f, 0.0f };
+		mCompositeConstantBuffer.Data.VolumeSize = mMainConstantBuffer.Data.VolumeSize;
 		mCompositeConstantBuffer.Data.BlendingWithSceneColorFactor = mBlendingWithSceneColorFactor;
 		mCompositeConstantBuffer.ApplyChanges(rhi);
 		
@@ -158,10 +185,9 @@ namespace EveryRay_Core {
 		ImGui::SliderFloat("Density", &mDensity, 0.1f, 10.0f);
 		ImGui::SliderFloat("Strength", &mStrength, 0.0f, 50.0f);
 		ImGui::SliderFloat("Thickness", &mThicknessFactor, 0.0f, 0.1f);
-		ImGui::SliderFloat("Ambient Intensity", &mAmbientIntensity, 0.0f, 1.0f);
 		ImGui::SliderFloat("Blending with scene", &mBlendingWithSceneColorFactor, 0.0f, 1.0f);
-		ImGui::SliderFloat("Blending with previous frame", &mPreviousFrameBlendFactor, 0.0f, 0.1f);
-		ImGui::SliderFloat("Custom near plane", &mCustomNearPlane, 0.01f, 5.0f);
+		ImGui::SliderFloat("Blending with previous frame", &mPreviousFrameBlendFactor, 0.0f, 1.0f);
+		ImGui::SliderFloat("Custom near plane", &mCustomNearPlane, 0.01f, 10.0f);
 		ImGui::SliderFloat("Custom far plane", &mCustomFarPlane, 10.0f, 10000.0f);
 		ImGui::End();
 	}
@@ -189,7 +215,7 @@ namespace EveryRay_Core {
 		rhi->SetConstantBuffers(ER_COMPUTE, { mMainConstantBuffer.Buffer() }, 0, 
 			mInjectionAccumulationPassesRootSignature, INJECTION_ACCUMULATION_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
 		rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
-		rhi->Dispatch(ER_CEIL(VOXEL_SIZE_X, 8), ER_CEIL(VOXEL_SIZE_Y, 8), ER_CEIL(VOXEL_SIZE_Z, 1));
+		rhi->Dispatch(ER_CEIL(mCurrentVoxelVolumeSizeX, 8), ER_CEIL(mCurrentVoxelVolumeSizeY, 8), ER_CEIL(VOXEL_VOLUME_SIZE_Z, 1));
 		rhi->UnsetPSO();
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 
@@ -218,7 +244,7 @@ namespace EveryRay_Core {
 		rhi->SetConstantBuffers(ER_COMPUTE, { mMainConstantBuffer.Buffer() }, 0,
 			mInjectionAccumulationPassesRootSignature, INJECTION_ACCUMULATION_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
 		rhi->SetSamplers(ER_COMPUTE, { ER_RHI_SAMPLER_STATE::ER_TRILINEAR_WRAP, ER_RHI_SAMPLER_STATE::ER_SHADOW_SS });
-		rhi->Dispatch(ER_CEIL(VOXEL_SIZE_X, 8), ER_CEIL(VOXEL_SIZE_Y, 8), 1);
+		rhi->Dispatch(ER_CEIL(mCurrentVoxelVolumeSizeX, 8), ER_CEIL(mCurrentVoxelVolumeSizeY, 8), 1);
 		rhi->UnsetPSO();
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 	}

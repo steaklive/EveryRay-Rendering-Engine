@@ -41,14 +41,12 @@ cbuffer VolumetricFogCBuffer : register(b0)
     float4 SunDirection;
     float4 SunColor;
     float4 CameraPosition;
-    float4 CameraNearFar;
+    float4 CameraNearFar_FrameIndex_PreviousFrameBlend;
+    float4 VolumeSize;
     float Anisotropy;
     float Density;
     float Strength;
     float ThicknessFactor;
-    float AmbientIntensity;
-    float PreviousFrameBlend;
-    float FrameIndex;
 }
 float HenyeyGreensteinPhaseFunction(float3 viewDir, float3 lightDir, float g)
 {
@@ -78,41 +76,47 @@ void CSInjection(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DT
 {
     uint3 texCoord = DTid.xyz;
     
-    if (texCoord.x < VOLUMETRIC_FOG_VOXEL_SIZE_X && texCoord.y < VOLUMETRIC_FOG_VOXEL_SIZE_Y && texCoord.z < VOLUMETRIC_FOG_VOXEL_SIZE_Z)
+    if (texCoord.x < VolumeSize.x && texCoord.y < VolumeSize.y && texCoord.z < VolumeSize.z)
     {
-        float jitter = frac((GetBlueNoiseSample(texCoord) - 0.5f) * (1.0f - EPSILON) * FrameIndex);
-        float3 voxelWorldPos = GetWorldPosFromVoxelID(texCoord, jitter, CameraNearFar.x, CameraNearFar.y, InvViewProj);
+        float jitter = frac((GetBlueNoiseSample(texCoord) - 0.5f) * (1.0f - EPSILON) * CameraNearFar_FrameIndex_PreviousFrameBlend.z);
+        float3 voxelWorldPos = GetWorldPosFromVoxelID(texCoord, jitter, CameraNearFar_FrameIndex_PreviousFrameBlend.x, CameraNearFar_FrameIndex_PreviousFrameBlend.y, InvViewProj, VolumeSize.xyz);
+        float3 voxelWorldPosNoJitter = GetWorldPosFromVoxelID(texCoord, 0.0f, CameraNearFar_FrameIndex_PreviousFrameBlend.x, CameraNearFar_FrameIndex_PreviousFrameBlend.y, InvViewProj, VolumeSize.xyz);
         float3 viewDir = normalize(CameraPosition.xyz - voxelWorldPos);
 
-        float3 lighting = float3(AmbientIntensity, AmbientIntensity, AmbientIntensity);
+        float3 lighting = float3(0.0, 0.0, 0.0);
         float visibility = GetVisibility(voxelWorldPos, ShadowMatrix);
+        float visibility2 = GetVisibility(voxelWorldPosNoJitter, ShadowMatrix);
 
         if (visibility > EPSILON)
             lighting += visibility * SunColor.xyz * HenyeyGreensteinPhaseFunction(viewDir, -SunDirection.xyz, Anisotropy);
+        else if (visibility2 <= EPSILON)
+        {
+            VoxelWriteTexture[texCoord] = float4(0.0, 0.0, 0.0, 0.0);
+            return;
+        }
         
         float4 result = float4(lighting * Strength * Density, visibility * Density);
         
         //previous frame interpolation
         {
-            float3 voxelWorldPosNoJitter = GetWorldPosFromVoxelID(texCoord, 0.0f, CameraNearFar.x, CameraNearFar.y, InvViewProj);
-            float3 prevUV = GetUVFromVolumetricFogVoxelWorldPos(voxelWorldPosNoJitter, CameraNearFar.x, CameraNearFar.y, PrevViewProj);
+            float3 prevUV = GetUVFromVolumetricFogVoxelWorldPos(voxelWorldPosNoJitter, 
+            CameraNearFar_FrameIndex_PreviousFrameBlend.x, CameraNearFar_FrameIndex_PreviousFrameBlend.y, PrevViewProj, VolumeSize.xyz);
             
             if (prevUV.x >= 0.0f && prevUV.y >= 0.0f && prevUV.z >= 0.0f &&
                 prevUV.x <= 1.0f && prevUV.y <= 1.0f && prevUV.z <= 1.0f)
             {
                 float4 prevResult = VoxelReadTexture.SampleLevel(SamplerLinear, prevUV, 0.0f);
-                result = lerp(prevResult, result, PreviousFrameBlend);
+                result = lerp(result, prevResult, CameraNearFar_FrameIndex_PreviousFrameBlend.w);
             }
         }
 
         VoxelWriteTexture[texCoord] = result;
     }
-
 }
 
 float GetSliceDistance(int z, float near, float far)
 {
-    return near * pow(far / near, (float(z) + 0.5f) / float(VOLUMETRIC_FOG_VOXEL_SIZE_Z));
+    return near * pow(far / near, (float(z) + 0.5f) / VolumeSize.z);
 }
 float GetSliceThickness(int z, float near, float far)
 {
@@ -123,7 +127,7 @@ float GetSliceThickness(int z, float near, float far)
 float4 Accumulate(int z, float4 result /*color (rgb) & transmittance (alpha)*/, float4 colorDensityPerSlice /*color (rgb) & density (alpha)*/)
 {
     colorDensityPerSlice.a = max(colorDensityPerSlice.a, 0.000001);
-    float thickness = GetSliceThickness(z, CameraNearFar.x, CameraNearFar.y);
+    float thickness = GetSliceThickness(z, CameraNearFar_FrameIndex_PreviousFrameBlend.x, CameraNearFar_FrameIndex_PreviousFrameBlend.y);
     float sliceTransmittance = exp(-colorDensityPerSlice.a * thickness * ThicknessFactor);
 
     float3 sliceScattering = colorDensityPerSlice.rgb * (1.0f - sliceTransmittance) / colorDensityPerSlice.a;
@@ -137,7 +141,7 @@ void CSAccumulation(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3
 {
     float4 result = float4(0.0f, 0.0f, 0.0f, 1.0f);
 
-    for (int z = 0; z < VOLUMETRIC_FOG_VOXEL_SIZE_Z; z++)
+    for (int z = 0; z < VolumeSize.z; z++)
     {
         uint3 texCoord = uint3(DTid.xy, z);
         float4 colorDensityPerSlice = VoxelReadTexture.Load(uint4(texCoord, 0));

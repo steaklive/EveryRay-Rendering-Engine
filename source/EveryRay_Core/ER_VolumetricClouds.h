@@ -62,7 +62,7 @@ namespace EveryRay_Core
 		void Update(const ER_CoreTime& gameTime);
 		void Config() { mShowDebug = !mShowDebug; }
 		void Composite(ER_RHI_GPUTexture* aRenderTarget);
-		bool IsEnabled() { return mEnabled; }
+		bool IsEnabled() { return mEnabled && (mCurrentQuality != VolumetricCloudsQuality::VC_DISABLED); }
 		void SetDownscaleFactor(float val) { mDownscaleFactor = val; }
 	private:
 		void UpdateImGui();

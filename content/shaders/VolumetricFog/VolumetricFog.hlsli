@@ -1,5 +1,3 @@
-#define VOLUMETRIC_FOG_VOXEL_SIZE_X 160
-#define VOLUMETRIC_FOG_VOXEL_SIZE_Y 90
 #define VOLUMETRIC_FOG_VOXEL_SIZE_Z 128
 
 float LinearToExponentialDepth(float z, float NearPlaneZ, float FarPlaneZ)
@@ -17,11 +15,10 @@ float ExponentialToLinearDepth(float z, float n, float f)
     return 1.0f / (z_buffer_params_x * z + z_buffer_params_y);
 }
 
-float3 GetWorldPosFromVoxelID(uint3 texCoord, float jitter, float near, float far, float4x4 invViewProj)
+float3 GetWorldPosFromVoxelID(uint3 texCoord, float jitter, float near, float far, float4x4 invViewProj, float3 volumeSize)
 {
-    float viewZ = near * pow(far / near, (float(texCoord.z) + 0.5f + jitter) / float(VOLUMETRIC_FOG_VOXEL_SIZE_Z));
-    float z = near / far + (float(texCoord.z) + 0.5f + jitter) / float(VOLUMETRIC_FOG_VOXEL_SIZE_Z) * (1.0f - near / far);
-    float3 uv = float3((float(texCoord.x) + 0.5f) / float(VOLUMETRIC_FOG_VOXEL_SIZE_X), (float(texCoord.y) + 0.5f) / float(VOLUMETRIC_FOG_VOXEL_SIZE_Y), viewZ / far);
+    float viewZ = near * pow(far / near, (float(texCoord.z) + 0.5f + jitter) / volumeSize.z);
+    float3 uv = float3((float(texCoord.x) + 0.5f) / volumeSize.x, (float(texCoord.y) + 0.5f) / volumeSize.y, viewZ / far);
     
     float3 ndc;
     ndc.x = 2.0f * uv.x - 1.0f;
@@ -33,7 +30,7 @@ float3 GetWorldPosFromVoxelID(uint3 texCoord, float jitter, float near, float fa
     return worldPos.rgb;
 }
 
-float3 GetUVFromVolumetricFogVoxelWorldPos(float3 worldPos, float n, float f, float4x4 viewProj)
+float3 GetUVFromVolumetricFogVoxelWorldPos(float3 worldPos, float n, float f, float4x4 viewProj, float3 volumeSize)
 {
     float4 ndc = mul(float4(worldPos, 1.0f), viewProj);
     ndc = ndc / ndc.w;
@@ -43,8 +40,8 @@ float3 GetUVFromVolumetricFogVoxelWorldPos(float3 worldPos, float n, float f, fl
     uv.y = 0.5f - ndc.y * 0.5f; //turn upside down for DX
     uv.z = ExponentialToLinearDepth(ndc.z * 0.5f + 0.5f, n, f);
     
-    float2 params = float2(float(VOLUMETRIC_FOG_VOXEL_SIZE_Z) / log2(f / n), -(float(VOLUMETRIC_FOG_VOXEL_SIZE_Z) * log2(n) / log2(f / n)));
+    float2 params = float2(volumeSize.z / log2(f / n), -(volumeSize.z * log2(n) / log2(f / n)));
     float view_z = uv.z * f;
-    uv.z = (max(log2(view_z) * params.x + params.y, 0.0f)) / VOLUMETRIC_FOG_VOXEL_SIZE_Z;
+    uv.z = (max(log2(view_z) * params.x + params.y, 0.0f)) / volumeSize.z;
     return uv;
 }

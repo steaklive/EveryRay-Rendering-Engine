@@ -18,12 +18,13 @@ cbuffer VolumetricFogCompositeCBuffer : register(b0)
 {
     float4x4 ViewProj;
     float4 CameraNearFarPlanes;
+    float4 VoxelSize;
     float BlendingWithSceneColorFactor;
 }
 
 float3 GetVolumetricFog(float3 inputColor, float3 worldPos, float nearPlane, float farPlane, float4x4 viewProj)
 {
-    float3 uv = GetUVFromVolumetricFogVoxelWorldPos(worldPos, nearPlane, farPlane, viewProj);
+    float3 uv = GetUVFromVolumetricFogVoxelWorldPos(worldPos, nearPlane, farPlane, viewProj, VoxelSize.xyz);
     float4 scatteredLight = VolumetricFogVoxelGridTexture.SampleLevel(SamplerLinear, uv, 0.0f);
     return inputColor * scatteredLight.a + scatteredLight.rgb;
 }

@@ -165,6 +165,14 @@ namespace EveryRay_Core
 		UpdateProjectionMatrix();
 	}
 
+	void ER_Camera::SetFovNearFarPlanesDistance(float aFov, float aNear, float aFar)
+	{
+		mFieldOfView = aFov;
+		mFarPlaneDistance = aFar;
+		mNearPlaneDistance = aNear;
+		UpdateProjectionMatrix();
+	}
+
 	void ER_Camera::Reset()
 	{
 		mPosition = ER_Vector3Helper::Zero;

@@ -7,6 +7,10 @@
 #include "ER_ColorHelper.h"
 #include "ER_MaterialHelper.h"
 
+static float clearColorBlack[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+static float clearColorWhite[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+static float clearColorRed[4]	= { 1.0f, 0.0f, 0.0f, 1.0f };
+
 namespace EveryRay_Core
 {
 	class ER_Utility

@@ -28,8 +28,6 @@
 #include "ER_Skybox.h"
 #include "ER_VolumetricFog.h"
 
-static float clearColorBlack[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
 static const std::string voxelizationPSONames[NUM_VOXEL_GI_CASCADES] =
 {
 	"ER_RHI_GPUPipelineStateObject: VoxelizationMaterial Pass (cascade 0)",

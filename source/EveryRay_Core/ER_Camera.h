@@ -49,6 +49,7 @@ namespace EveryRay_Core
 		virtual void SetFOV(float fov);
 		virtual void SetNearPlaneDistance(float value);
 		virtual void SetFarPlaneDistance(float value);
+		virtual void SetFovNearFarPlanesDistance(float aFov, float aNear, float aFar);
 
 		virtual void Reset();
 		virtual void Initialize() override;

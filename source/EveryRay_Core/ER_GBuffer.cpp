@@ -83,14 +83,12 @@ namespace EveryRay_Core {
 	{
 		auto rhi = GetCore()->GetRHI();
 
-		float color[4] = { 0,0,0,0 };
-
 		rhi->SetRenderTargets({ mAlbedoBuffer, mNormalBuffer, mPositionsBuffer,	mExtraBuffer, mExtra2Buffer }, mDepthBuffer);
-		rhi->ClearRenderTarget(mAlbedoBuffer, color);
-		rhi->ClearRenderTarget(mNormalBuffer, color);
-		rhi->ClearRenderTarget(mPositionsBuffer, color);
-		rhi->ClearRenderTarget(mExtraBuffer, color);
-		rhi->ClearRenderTarget(mExtra2Buffer, color);
+		rhi->ClearRenderTarget(mAlbedoBuffer, clearColorBlack);
+		rhi->ClearRenderTarget(mNormalBuffer, clearColorBlack);
+		rhi->ClearRenderTarget(mPositionsBuffer, clearColorBlack);
+		rhi->ClearRenderTarget(mExtraBuffer, clearColorBlack);
+		rhi->ClearRenderTarget(mExtra2Buffer, clearColorBlack);
 		rhi->ClearDepthStencilTarget(mDepthBuffer, 1.0f, 0);
 		rhi->SetRasterizerState(ER_Utility::IsWireframe ? ER_WIREFRAME : ER_NO_CULLING);
 	}
