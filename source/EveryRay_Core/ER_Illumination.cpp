@@ -766,6 +766,9 @@ namespace EveryRay_Core {
 		{
 			for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
 			{
+				if (!mIsVCTVoxelCameraPositionsUpdated[cascade])
+					continue;
+
 				mWorldVoxelCascadesAABBs[cascade] = mLocalVoxelCascadesAABBs[cascade];
 				mWorldVoxelCascadesAABBs[cascade].first.x += mVoxelCameraPositions[cascade].x;
 				mWorldVoxelCascadesAABBs[cascade].first.y += mVoxelCameraPositions[cascade].y;
@@ -774,11 +777,12 @@ namespace EveryRay_Core {
 				mWorldVoxelCascadesAABBs[cascade].second.y += mVoxelCameraPositions[cascade].y;
 				mWorldVoxelCascadesAABBs[cascade].second.z += mVoxelCameraPositions[cascade].z;
 				
-				if (mDebugVoxelZonesGizmos[cascade] && mIsVCTVoxelCameraPositionsUpdated[cascade])
+				if (mDebugVoxelZonesGizmos[cascade])
 					mDebugVoxelZonesGizmos[cascade]->Update(mWorldVoxelCascadesAABBs[cascade]);
+				
+				CPUCullObjectsAgainstVoxelCascade(scene, cascade);
 			}
 
-			CPUCullObjectsAgainstVoxelCascades(scene);
 			UpdateVoxelCameraPosition();
 		}
 
@@ -803,17 +807,24 @@ namespace EveryRay_Core {
 				ImGui::SliderFloat("VCT AO Falloff", &mVCTAoFalloff, 0.0f, 2.0f);
 				ImGui::SliderFloat("VCT Sampling Factor", &mVCTSamplingFactor, 0.01f, 3.0f);
 				ImGui::SliderFloat("VCT Sample Offset", &mVCTVoxelSampleOffset, -0.1f, 0.1f);
-				ImGui::Separator();
-				for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
+				if (ImGui::CollapsingHeader("Voxel Cascades Properties"))
 				{
-					std::string name = "VCT Voxel Scale Cascade " + std::to_string(cascade);
-					ImGui::SliderFloat(name.c_str(), &mWorldVoxelScales[cascade], 0.1f, 10.0f);
-					std::string name2 = "DEBUG - VCT Voxel Cascade Gizmo (Editor) #" + std::to_string(cascade);
-					ImGui::Checkbox(name2.c_str(), &mShowVCTVoxelZonesGizmos[cascade]);
+					for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
+					{
+						std::string objectsInVolumeText = "Num objects in VCT Voxel Cascade " + std::to_string(cascade) + ": " + std::to_string(static_cast<int>(mVoxelizationObjects[cascade].size()));
+						ImGui::Text(objectsInVolumeText.c_str());
+
+						std::string name = "Voxel Cascade " + std::to_string(cascade) + " Scale";
+						ImGui::SliderFloat(name.c_str(), &mWorldVoxelScales[cascade], 0.1f, 10.0f);
+
+						std::string name2 = "DEBUG - VCT Voxel Cascade " + std::to_string(cascade) + " Gizmo (Editor)";
+						ImGui::Checkbox(name2.c_str(), &mShowVCTVoxelZonesGizmos[cascade]);
+
+						ImGui::Separator();
+					}
+					ImGui::Checkbox("DEBUG - Voxel Cascades Update Always", &mIsVCTAlwaysUpdated);
 				}
-				ImGui::Separator();
 				ImGui::SliderInt("DEBUG - None, AO, Voxels, Indirect", &(int)mVCTDebugMode, 0, VCT_DEBUG_COUNT - 1);
-				ImGui::Checkbox("DEBUG - Voxel Cascades Update Always", &mIsVCTAlwaysUpdated);
 			}
 			if (ImGui::CollapsingHeader("Static - Light Probes"))
 			{
@@ -1138,44 +1149,43 @@ namespace EveryRay_Core {
 		return mGbuffer->GetDepth();
 	}
 
-	void ER_Illumination::CPUCullObjectsAgainstVoxelCascades(const ER_Scene* scene)
+	void ER_Illumination::CPUCullObjectsAgainstVoxelCascade(const ER_Scene* scene, int cascade)
 	{
 		if (mCurrentGIQuality == GIQuality::GI_LOW)
 			return;
+
+		assert(cascade < NUM_VOXEL_GI_CASCADES);
 
 		//TODO add instancing support
 		//TODO fix repetition checks when the object AABB is bigger than the lower cascade (i.e. sponza)
 		//TODO add optimization for culling objects by checking its volume size in second+ cascades
 		//TODO add indirect drawing support (GPU cull)
 		//TODO add multithreading per cascade
-		for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
+		for (auto& objectInfo : scene->objects)
 		{
-			for (auto& objectInfo : scene->objects)
-			{
-				if (!objectInfo.second->IsInVoxelization())
-					continue;
+			if (!objectInfo.second->IsInVoxelization())
+				continue;
 
-				auto aabbObj = objectInfo.second->GetLocalAABB();
-				XMFLOAT3 position;
-				ER_MatrixHelper::GetTranslation(objectInfo.second->GetTransformationMatrix(), position);
-				aabbObj.first.x += position.x;
-				aabbObj.first.y += position.y;
-				aabbObj.first.z += position.z;
-				aabbObj.second.x += position.x;
-				aabbObj.second.y += position.y;
-				aabbObj.second.z += position.z;
+			auto aabbObj = objectInfo.second->GetLocalAABB();
+			XMFLOAT3 position;
+			ER_MatrixHelper::GetTranslation(objectInfo.second->GetTransformationMatrix(), position);
+			aabbObj.first.x += position.x;
+			aabbObj.first.y += position.y;
+			aabbObj.first.z += position.z;
+			aabbObj.second.x += position.x;
+			aabbObj.second.y += position.y;
+			aabbObj.second.z += position.z;
 
-				bool isColliding =
-					(aabbObj.first.x <= mWorldVoxelCascadesAABBs[cascade].second.x && aabbObj.second.x >= mWorldVoxelCascadesAABBs[cascade].first.x) &&
-					(aabbObj.first.y <= mWorldVoxelCascadesAABBs[cascade].second.y && aabbObj.second.y >= mWorldVoxelCascadesAABBs[cascade].first.y) &&
-					(aabbObj.first.z <= mWorldVoxelCascadesAABBs[cascade].second.z && aabbObj.second.z >= mWorldVoxelCascadesAABBs[cascade].first.z);
+			bool isColliding =
+				(aabbObj.first.x <= mWorldVoxelCascadesAABBs[cascade].second.x && aabbObj.second.x >= mWorldVoxelCascadesAABBs[cascade].first.x) &&
+				(aabbObj.first.y <= mWorldVoxelCascadesAABBs[cascade].second.y && aabbObj.second.y >= mWorldVoxelCascadesAABBs[cascade].first.y) &&
+				(aabbObj.first.z <= mWorldVoxelCascadesAABBs[cascade].second.z && aabbObj.second.z >= mWorldVoxelCascadesAABBs[cascade].first.z);
 
-				auto it = mVoxelizationObjects[cascade].find(objectInfo.first);
-				if (isColliding && (it == mVoxelizationObjects[cascade].end()))
-					mVoxelizationObjects[cascade].insert(objectInfo);
-				else if (!isColliding && (it != mVoxelizationObjects[cascade].end()))
-					mVoxelizationObjects[cascade].erase(it);
-			}
+			auto it = mVoxelizationObjects[cascade].find(objectInfo.first);
+			if (isColliding && (it == mVoxelizationObjects[cascade].end()))
+				mVoxelizationObjects[cascade].insert(objectInfo);
+			else if (!isColliding && (it != mVoxelizationObjects[cascade].end()))
+				mVoxelizationObjects[cascade].erase(it);
 		}
 	}
 }

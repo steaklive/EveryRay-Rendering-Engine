@@ -201,7 +201,7 @@ namespace EveryRay_Core
 
 		void UpdatePointLightsDataCPU();
 
-		void CPUCullObjectsAgainstVoxelCascades(const ER_Scene* scene);
+		void CPUCullObjectsAgainstVoxelCascade(const ER_Scene* scene, int cascade);
 
 		ER_Camera& mCamera;
 		const ER_DirectionalLight& mDirectionalLight;
