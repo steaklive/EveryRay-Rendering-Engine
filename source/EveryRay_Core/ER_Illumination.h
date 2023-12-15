@@ -294,7 +294,7 @@ namespace EveryRay_Core
 		//VCT GI
 		XMFLOAT4 mVoxelCameraPositions[NUM_VOXEL_GI_CASCADES];
 		ER_AABB mLocalVoxelCascadesAABBs[NUM_VOXEL_GI_CASCADES]; // constant, must not change after initialization
-		ER_AABB mWorldVoxelCascadesAABBs[NUM_VOXEL_GI_CASCADES]; // dynamic, changes with camera movement (not in every frame probably in order to save perf)
+		ER_AABB mWorldVoxelCascadesAABBs[NUM_VOXEL_GI_CASCADES]; // dynamic, changes with camera movement (not in every frame in order to save perf)
 		ER_RenderableAABB* mDebugVoxelZonesGizmos[NUM_VOXEL_GI_CASCADES] = { nullptr, nullptr };
 		float mWorldVoxelScales[NUM_VOXEL_GI_CASCADES] = { 2.0f, 0.5f };
 
@@ -306,10 +306,11 @@ namespace EveryRay_Core
 		float mVCTVoxelSampleOffset = 0.0f;
 		float mVCTGIPower = 1.0f;
 		float mVCTDownscaleFactor = 0.5f; // % from full-res RT
-		bool mIsVCTVoxelCameraPositionsUpdated = true;
+		bool mIsVCTVoxelCameraPositionsUpdated[NUM_VOXEL_GI_CASCADES] = { true, true }; // whether the volume was updated in the last frame
+		bool mIsVCTAlwaysUpdated = false; // update volumes every frame (only for debugging)
 		
 		VCTDebugMode mVCTDebugMode = VCTDebugMode::VCT_DEBUG_NONE;
-		bool mDrawVCTVoxelZonesGizmos = false;
+		bool mShowVCTVoxelZonesGizmos[NUM_VOXEL_GI_CASCADES] = { false, false };
 		bool mIsVCTEnabled = false;
 
 		//light probes

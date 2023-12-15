@@ -710,14 +710,11 @@ namespace EveryRay_Core {
 			return;
 
 		//voxel GI
-		if (mDrawVCTVoxelZonesGizmos) 
+		for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
 		{
-			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
-			{
+			if (mShowVCTVoxelZonesGizmos[i])
 				mDebugVoxelZonesGizmos[i]->Draw(aRenderTarget, aDepth, rs);
-			}
 		}
-
 	}
 
 	void ER_Illumination::DrawDebugProbes(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth)
@@ -776,6 +773,9 @@ namespace EveryRay_Core {
 				mWorldVoxelCascadesAABBs[cascade].second.x += mVoxelCameraPositions[cascade].x;
 				mWorldVoxelCascadesAABBs[cascade].second.y += mVoxelCameraPositions[cascade].y;
 				mWorldVoxelCascadesAABBs[cascade].second.z += mVoxelCameraPositions[cascade].z;
+				
+				if (mDebugVoxelZonesGizmos[cascade] && mIsVCTVoxelCameraPositionsUpdated[cascade])
+					mDebugVoxelZonesGizmos[cascade]->Update(mWorldVoxelCascadesAABBs[cascade]);
 			}
 
 			CPUCullObjectsAgainstVoxelCascades(scene);
@@ -803,14 +803,17 @@ namespace EveryRay_Core {
 				ImGui::SliderFloat("VCT AO Falloff", &mVCTAoFalloff, 0.0f, 2.0f);
 				ImGui::SliderFloat("VCT Sampling Factor", &mVCTSamplingFactor, 0.01f, 3.0f);
 				ImGui::SliderFloat("VCT Sample Offset", &mVCTVoxelSampleOffset, -0.1f, 0.1f);
+				ImGui::Separator();
 				for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
 				{
 					std::string name = "VCT Voxel Scale Cascade " + std::to_string(cascade);
 					ImGui::SliderFloat(name.c_str(), &mWorldVoxelScales[cascade], 0.1f, 10.0f);
+					std::string name2 = "DEBUG - VCT Voxel Cascade Gizmo (Editor) #" + std::to_string(cascade);
+					ImGui::Checkbox(name2.c_str(), &mShowVCTVoxelZonesGizmos[cascade]);
 				}
 				ImGui::Separator();
 				ImGui::SliderInt("DEBUG - None, AO, Voxels, Indirect", &(int)mVCTDebugMode, 0, VCT_DEBUG_COUNT - 1);
-				ImGui::Checkbox("DEBUG - Voxel Cascades Gizmos (Editor)", &mDrawVCTVoxelZonesGizmos);
+				ImGui::Checkbox("DEBUG - Voxel Cascades Update Always", &mIsVCTAlwaysUpdated);
 			}
 			if (ImGui::CollapsingHeader("Static - Light Probes"))
 			{
@@ -855,16 +858,13 @@ namespace EveryRay_Core {
 			XMFLOAT3 voxelGridBoundsMin = XMFLOAT3{ mVoxelCameraPositions[i].x - halfCascadeBox, mVoxelCameraPositions[i].y - halfCascadeBox, mVoxelCameraPositions[i].z - halfCascadeBox };
 			
 			if (mCamera.Position().x < voxelGridBoundsMin.x || mCamera.Position().y < voxelGridBoundsMin.y || mCamera.Position().z < voxelGridBoundsMin.z ||
-				mCamera.Position().x > voxelGridBoundsMax.x || mCamera.Position().y > voxelGridBoundsMax.y || mCamera.Position().z > voxelGridBoundsMax.z)
+				mCamera.Position().x > voxelGridBoundsMax.x || mCamera.Position().y > voxelGridBoundsMax.y || mCamera.Position().z > voxelGridBoundsMax.z || mIsVCTAlwaysUpdated)
 			{
 				mVoxelCameraPositions[i] = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f);
-				mIsVCTVoxelCameraPositionsUpdated = true;
-
-				if (mDebugVoxelZonesGizmos[i])
-					mDebugVoxelZonesGizmos[i]->Update(mWorldVoxelCascadesAABBs[i]);
+				mIsVCTVoxelCameraPositionsUpdated[i] = true;
 			}
 			else
-				mIsVCTVoxelCameraPositionsUpdated = false;
+				mIsVCTVoxelCameraPositionsUpdated[i] = false;
 		}
 	}
 
