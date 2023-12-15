@@ -766,20 +766,21 @@ namespace EveryRay_Core {
 		{
 			for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
 			{
-				if (!mIsVCTVoxelCameraPositionsUpdated[cascade])
-					continue;
+				if (mIsVCTVoxelCameraPositionsUpdated[cascade])
+				{
+					mWorldVoxelCascadesAABBs[cascade] = mLocalVoxelCascadesAABBs[cascade];
+					mWorldVoxelCascadesAABBs[cascade].first.x += mVoxelCameraPositions[cascade].x;
+					mWorldVoxelCascadesAABBs[cascade].first.y += mVoxelCameraPositions[cascade].y;
+					mWorldVoxelCascadesAABBs[cascade].first.z += mVoxelCameraPositions[cascade].z;
+					mWorldVoxelCascadesAABBs[cascade].second.x += mVoxelCameraPositions[cascade].x;
+					mWorldVoxelCascadesAABBs[cascade].second.y += mVoxelCameraPositions[cascade].y;
+					mWorldVoxelCascadesAABBs[cascade].second.z += mVoxelCameraPositions[cascade].z;
 
-				mWorldVoxelCascadesAABBs[cascade] = mLocalVoxelCascadesAABBs[cascade];
-				mWorldVoxelCascadesAABBs[cascade].first.x += mVoxelCameraPositions[cascade].x;
-				mWorldVoxelCascadesAABBs[cascade].first.y += mVoxelCameraPositions[cascade].y;
-				mWorldVoxelCascadesAABBs[cascade].first.z += mVoxelCameraPositions[cascade].z;
-				mWorldVoxelCascadesAABBs[cascade].second.x += mVoxelCameraPositions[cascade].x;
-				mWorldVoxelCascadesAABBs[cascade].second.y += mVoxelCameraPositions[cascade].y;
-				mWorldVoxelCascadesAABBs[cascade].second.z += mVoxelCameraPositions[cascade].z;
+					if (mDebugVoxelZonesGizmos[cascade])
+						mDebugVoxelZonesGizmos[cascade]->Update(mWorldVoxelCascadesAABBs[cascade]);
+				}
 				
-				if (mDebugVoxelZonesGizmos[cascade])
-					mDebugVoxelZonesGizmos[cascade]->Update(mWorldVoxelCascadesAABBs[cascade]);
-				
+				// we need it every frame because objects can be dynamic
 				CPUCullObjectsAgainstVoxelCascade(scene, cascade);
 			}
 
