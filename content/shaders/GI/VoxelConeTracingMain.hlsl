@@ -3,6 +3,9 @@
 #define NUM_SHADOW_CASCADES 3
 #define NUM_VOXEL_CASCADES 2
 
+#define DEBUG_CASCADE_BLENDING 0
+#define DEBUG_SKIPPED_VOXELS 0
+
 static const float4 colorWhite = { 1, 1, 1, 1 };
 static const float coneAperture = 0.577f; // 6 cones, 60deg each, tan(30deg) = aperture
 static const float3 diffuseConeDirections[] =
@@ -30,14 +33,7 @@ Texture3D<float4> voxelTextures[NUM_VOXEL_CASCADES] : register(t4);
 
 RWTexture2D<float4> outputTexture : register(u0);
 
-SamplerState LinearSampler
-{
-    Filter = MIN_MAG_MIP_LINEAR;
-    AddressU = BORDER;
-    AddressV = BORDER;
-    AddressW = BORDER;
-    BorderColor = colorWhite;
-};
+SamplerState LinearSampler : register(s0);
 
 cbuffer VCTMainCB : register(b0)
 {
@@ -52,7 +48,8 @@ cbuffer VCTMainCB : register(b0)
     float SamplingFactor;
     float VoxelSampleOffset;
     float GIPower;
-    float3 pad1;
+    float PreviousRadianceDelta;
+    float2 pad1;
 };
 
 float4 GetVoxel(float3 worldPosition, float3 weight, float lod, int cascadeIndex, int cascadeResolution)
@@ -121,7 +118,9 @@ float4 CalculateIndirectSpecular(float3 worldPos, float3 normal, float4 specular
 
 float4 CalculateIndirectDiffuse(float3 worldPos, float3 normal, out float ao)
 {
-    float4 result = float4(0.0, 0.0, 0.0, 1.0);
+    float4 totalRadiance = float4(0.0, 0.0, 0.0, 1.0);
+    float totalAo = 0.0f;
+    float tempAo = 0.0f;
     float3 coneDirection;
     
     float3 upDir = float3(0.0f, 1.0f, 0.0f);
@@ -130,41 +129,68 @@ float4 CalculateIndirectDiffuse(float3 worldPos, float3 normal, out float ao)
 
     float3 right = normalize(upDir - dot(normal, upDir) * normal);
     float3 up = cross(right, normal);
-    
-    float finalAo = 0.0f;
-    float tempAo = 0.0f;
-    
+       
     uint voxelCascadeResolutions[NUM_VOXEL_CASCADES], empty1, empty2;
-    for (int cascadeIndex = 0; cascadeIndex < NUM_VOXEL_CASCADES; cascadeIndex++)
-        voxelTextures[cascadeIndex].GetDimensions(voxelCascadeResolutions[cascadeIndex], empty1, empty2);
-    
-    for (int i = 0; i < NUM_VOXEL_CONES; i++)
+    for (int cascadeIndex = NUM_VOXEL_CASCADES - 1; cascadeIndex >= 0; cascadeIndex--)
     {
-        coneDirection = normal;
-        coneDirection += diffuseConeDirections[i].x * right + diffuseConeDirections[i].z * up;
-        coneDirection = normalize(coneDirection);
+        voxelTextures[cascadeIndex].GetDimensions(voxelCascadeResolutions[cascadeIndex], empty1, empty2);
 
-        bool wasTracedInLastCascade = false;
-        for (int cascadeIndex = 0; cascadeIndex < NUM_VOXEL_CASCADES; cascadeIndex++)
+        float4 currentCascadeRadiance = float4(0.0, 0.0, 0.0, 1.0);
+        float currentCascadeAo = 0.0f;
+
+        const float shift = voxelCascadeResolutions[cascadeIndex] / WorldVoxelScales[cascadeIndex].r * 0.5f;
+        const float3 voxelGridBoundsMax = VoxelCameraPositions[cascadeIndex].xyz + float3(shift, shift, shift);
+        const float3 voxelGridBoundsMin = VoxelCameraPositions[cascadeIndex].xyz - float3(shift, shift, shift);
+
+        // if prev cascade (bigger) didn't trace anything < margin in that position, we skip re-tracing as an optimization
+        const bool canSkipVoxel = (cascadeIndex < NUM_VOXEL_CASCADES - 1) && (totalRadiance.x < PreviousRadianceDelta && totalRadiance.y < PreviousRadianceDelta && totalRadiance.z < PreviousRadianceDelta);
+
+#if DEBUG_SKIPPED_VOXELS
+        if (canSkipVoxel)
+            totalRadiance = float4(1.0, 0.0, 1.0, 1.0);
+#endif
+
+        float distToCenter = distance(worldPos.xyz, VoxelCameraPositions[cascadeIndex].xyz);
+        float distBetweenBounds = abs(voxelGridBoundsMax.x - voxelGridBoundsMin.x);
+
+        if (worldPos.x < voxelGridBoundsMin.x || worldPos.y < voxelGridBoundsMin.y || worldPos.z < voxelGridBoundsMin.z ||
+            worldPos.x > voxelGridBoundsMax.x || worldPos.y > voxelGridBoundsMax.y || worldPos.z > voxelGridBoundsMax.z || canSkipVoxel)
+            continue; //try to trace from next cascade
+        else
         {
-            float shift = voxelCascadeResolutions[cascadeIndex] / WorldVoxelScales[cascadeIndex].r * 0.5f;
-            float3 voxelGridBoundsMax = VoxelCameraPositions[cascadeIndex].xyz + float3(shift, shift, shift);
-            float3 voxelGridBoundsMin = VoxelCameraPositions[cascadeIndex].xyz - float3(shift, shift, shift);
+            for (int i = 0; i < NUM_VOXEL_CONES; i++)
+            {
+                coneDirection = normal;
+                coneDirection += diffuseConeDirections[i].x * right + diffuseConeDirections[i].z * up;
+                coneDirection = normalize(coneDirection);
         
-            if (worldPos.x < voxelGridBoundsMin.x || worldPos.y < voxelGridBoundsMin.y || worldPos.z < voxelGridBoundsMin.z ||
-                worldPos.x > voxelGridBoundsMax.x || worldPos.y > voxelGridBoundsMax.y || worldPos.z > voxelGridBoundsMax.z || wasTracedInLastCascade)
-                continue; //try to trace from next cascade
+                currentCascadeRadiance += TraceCone(worldPos, normal, coneDirection, coneAperture, tempAo, true, cascadeIndex, voxelCascadeResolutions[cascadeIndex]) * diffuseConeWeights[i];
+                currentCascadeAo += tempAo * diffuseConeWeights[i];
+            }
+
+            if (cascadeIndex == NUM_VOXEL_CASCADES - 1)
+            {
+#if DEBUG_CASCADE_BLENDING
+                totalRadiance += float4(1.0, 0.0, 0.0, 1.0);
+#else
+                totalRadiance += currentCascadeRadiance;
+#endif
+                totalAo += currentCascadeAo;
+            }
             else
             {
-                result += TraceCone(worldPos, normal, coneDirection, coneAperture, tempAo, true, cascadeIndex, voxelCascadeResolutions[cascadeIndex]) * diffuseConeWeights[i];
-                finalAo += tempAo * diffuseConeWeights[i];
-                wasTracedInLastCascade = true;
+#if DEBUG_CASCADE_BLENDING
+                currentCascadeRadiance = float4(0.0, 0.0, 0.0, 1.0);
+#endif
+                float blendFactor = distToCenter / (0.5f * distBetweenBounds); // how much to blend from the bounds of the cascade: the further from the center, the more you blend with bigger cascades
+                totalAo = lerp(currentCascadeAo, totalAo, blendFactor);
+                totalRadiance = lerp(currentCascadeRadiance,totalRadiance, blendFactor);
             }
         }
     }
 
-    ao = finalAo;
-    return IndirectDiffuseStrength * result;
+    ao = totalAo;
+    return IndirectDiffuseStrength * totalRadiance;
 }
 
 [numthreads(8, 8, 1)]

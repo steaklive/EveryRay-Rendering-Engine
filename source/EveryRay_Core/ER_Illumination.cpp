@@ -573,7 +573,8 @@ namespace EveryRay_Core {
 			mVoxelConeTracingMainConstantBuffer.Data.SamplingFactor = mVCTSamplingFactor;
 			mVoxelConeTracingMainConstantBuffer.Data.VoxelSampleOffset = mVCTVoxelSampleOffset;
 			mVoxelConeTracingMainConstantBuffer.Data.GIPower = mVCTGIPower;
-			mVoxelConeTracingMainConstantBuffer.Data.pad0 = XMFLOAT3(0, 0, 0);
+			mVoxelConeTracingMainConstantBuffer.Data.PreviousRadianceDelta = mVCTPreviousRadianceDelta;
+			mVoxelConeTracingMainConstantBuffer.Data.pad0 = XMFLOAT2(0.0, 0.0);
 			mVoxelConeTracingMainConstantBuffer.ApplyChanges(rhi);
 
 			rhi->SetRootSignature(mVCTRS, true);
@@ -802,6 +803,7 @@ namespace EveryRay_Core {
 			{
 				ImGui::Checkbox("VCT GI Enabled", &mIsVCTEnabled);
 				ImGui::SliderFloat("VCT GI Intensity", &mVCTGIPower, 0.0f, 5.0f);
+				ImGui::SliderFloat("VCT Min Radiance Margin", &mVCTPreviousRadianceDelta, 0.0f, 0.1f);
 				ImGui::SliderFloat("VCT Diffuse Strength", &mVCTIndirectDiffuseStrength, 0.0f, 1.0f);
 				ImGui::SliderFloat("VCT Specular Strength", &mVCTIndirectSpecularStrength, 0.0f, 1.0f);
 				ImGui::SliderFloat("VCT Max Cone Trace Dist", &mVCTMaxConeTraceDistance, 0.0f, 2500.0f);
@@ -1167,20 +1169,12 @@ namespace EveryRay_Core {
 			if (!objectInfo.second->IsInVoxelization())
 				continue;
 
-			auto aabbObj = objectInfo.second->GetLocalAABB();
-			XMFLOAT3 position;
-			ER_MatrixHelper::GetTranslation(objectInfo.second->GetTransformationMatrix(), position);
-			aabbObj.first.x += position.x;
-			aabbObj.first.y += position.y;
-			aabbObj.first.z += position.z;
-			aabbObj.second.x += position.x;
-			aabbObj.second.y += position.y;
-			aabbObj.second.z += position.z;
+			ER_AABB& aabbObj = objectInfo.second->GetGlobalAABB();
 
-			bool isColliding =
-				(aabbObj.first.x <= mWorldVoxelCascadesAABBs[cascade].second.x && aabbObj.second.x >= mWorldVoxelCascadesAABBs[cascade].first.x) &&
-				(aabbObj.first.y <= mWorldVoxelCascadesAABBs[cascade].second.y && aabbObj.second.y >= mWorldVoxelCascadesAABBs[cascade].first.y) &&
-				(aabbObj.first.z <= mWorldVoxelCascadesAABBs[cascade].second.z && aabbObj.second.z >= mWorldVoxelCascadesAABBs[cascade].first.z);
+			bool isColliding = objectInfo.second->IsInstanced() ||
+				((aabbObj.first.x <= mWorldVoxelCascadesAABBs[cascade].second.x && aabbObj.second.x >= mWorldVoxelCascadesAABBs[cascade].first.x) &&
+				 (aabbObj.first.y <= mWorldVoxelCascadesAABBs[cascade].second.y && aabbObj.second.y >= mWorldVoxelCascadesAABBs[cascade].first.y) &&
+				 (aabbObj.first.z <= mWorldVoxelCascadesAABBs[cascade].second.z && aabbObj.second.z >= mWorldVoxelCascadesAABBs[cascade].first.z));
 
 			auto it = mVoxelizationObjects[cascade].find(objectInfo.first);
 			if (isColliding && (it == mVoxelizationObjects[cascade].end()))

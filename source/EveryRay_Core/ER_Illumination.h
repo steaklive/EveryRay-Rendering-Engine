@@ -101,7 +101,8 @@ namespace EveryRay_Core
 			float SamplingFactor;
 			float VoxelSampleOffset;
 			float GIPower;
-			XMFLOAT3 pad0;
+			float PreviousRadianceDelta;
+			XMFLOAT2 pad0;
 		};
 		struct ER_ALIGN_GPU_BUFFER CompositeTotalIlluminationCB
 		{
@@ -298,13 +299,14 @@ namespace EveryRay_Core
 		ER_RenderableAABB* mDebugVoxelZonesGizmos[NUM_VOXEL_GI_CASCADES] = { nullptr, nullptr };
 		float mWorldVoxelScales[NUM_VOXEL_GI_CASCADES] = { 2.0f, 0.5f };
 
-		float mVCTIndirectDiffuseStrength = 0.2f;
+		float mVCTIndirectDiffuseStrength = 0.4f;
 		float mVCTIndirectSpecularStrength = 1.0f;
 		float mVCTMaxConeTraceDistance = 100.0f;
-		float mVCTAoFalloff = 15.0f;
+		float mVCTAoFalloff = 0.15f;
 		float mVCTSamplingFactor = 0.5f;
 		float mVCTVoxelSampleOffset = 0.0f;
 		float mVCTGIPower = 1.0f;
+		float mVCTPreviousRadianceDelta = 0.01f;
 		float mVCTDownscaleFactor = 0.5f; // % from full-res RT
 		bool mIsVCTVoxelCameraPositionsUpdated[NUM_VOXEL_GI_CASCADES] = { true, true }; // whether the volume was updated in the last frame
 		bool mIsVCTAlwaysUpdated = false; // update volumes every frame (only for debugging)
