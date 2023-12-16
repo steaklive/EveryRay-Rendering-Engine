@@ -6,6 +6,8 @@
 #define DEBUG_CASCADE_BLENDING 0
 #define DEBUG_SKIPPED_VOXELS 0
 
+#define ENABLE_SPECULAR_TRACING 0
+
 static const float4 colorWhite = { 1, 1, 1, 1 };
 static const float coneAperture = 0.577f; // 6 cones, 60deg each, tan(30deg) = aperture
 static const float3 diffuseConeDirections[] =
@@ -88,6 +90,7 @@ float4 TraceCone(float3 pos, float3 normal, float3 direction, float aperture, ou
     return color;
 }
 
+// TODO: add similar blending, skipping, etc. functionality as in indirect diffuse
 float4 CalculateIndirectSpecular(float3 worldPos, float3 normal, float4 specular)
 {
     float4 result = float4(0.0, 0.0, 0.0, 1.0);
@@ -208,7 +211,10 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
        
     float ao = 0.0f;
     float4 indirectDiffuse = CalculateIndirectDiffuse(worldPos.rgb, normal.rgb, ao);
-    //float4 indirectSpecular = CalculateIndirectSpecular(worldPos.rgb, normal.rgb, float4(albedo.rgb, extraGbuffer.g));
-
-    outputTexture[DTid.xy] = GIPower * saturate(float4(indirectDiffuse.rgb * albedo.rgb /*+ indirectSpecular.rgb*/, ao));
+#if ENABLE_SPECULAR_TRACING
+    float4 indirectSpecular = CalculateIndirectSpecular(worldPos.rgb, normal.rgb, float4(albedo.rgb, extraGbuffer.g));
+#else
+    float4 indirectSpecular = float4(0.0, 0.0, 0.0, 0.0);
+#endif
+    outputTexture[DTid.xy] = GIPower * saturate(float4(indirectDiffuse.rgb * albedo.rgb + indirectSpecular.rgb, ao));
 }
