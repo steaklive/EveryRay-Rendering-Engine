@@ -14,7 +14,7 @@ cbuffer CompositeCB : register(b0)
 #define	COMPOSITE_FLAGS_NONE                          0x00000000
 #define COMPOSITE_FLAGS_NO_GI                         0x00000001
 #define COMPOSITE_FLAGS_DEBUG_GI_AO                   0x00000002
-#define COMPOSITE_FLAGS_DEBUG_GI_INDIRECT             0x00000003
+#define COMPOSITE_FLAGS_DEBUG_GI_IRRADIANCE           0x00000003
 #define COMPOSITE_FLAGS_DEBUG_GBUFFER_ALBEDO          0x00000004
 #define COMPOSITE_FLAGS_DEBUG_GBUFFER_NORMALS         0x00000005
 #define COMPOSITE_FLAGS_DEBUG_GBUFFER_ROUGHNESS       0x00000006
@@ -28,7 +28,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
     float2 texCooord = DTid.xy / float2(width, height);
     float4 localIllumination = InputLocalIlluminationTexture.SampleLevel(LinearSampler, texCooord, 0);
     
-    if (CompositeFlags > COMPOSITE_FLAGS_DEBUG_GI_INDIRECT)
+    if (CompositeFlags > COMPOSITE_FLAGS_DEBUG_GI_IRRADIANCE)
     {
         if (CompositeFlags == COMPOSITE_FLAGS_DEBUG_GBUFFER_ALBEDO)
             outputTexture[DTid.xy] = float4(pow(localIllumination.rgb, 2.2), 1.0f);
@@ -48,7 +48,7 @@ void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : 
         outputTexture[DTid.xy] = float4(localIllumination.rgb, 1.0f);
     else if (CompositeFlags == COMPOSITE_FLAGS_DEBUG_GI_AO)
         outputTexture[DTid.xy] = float4(ao, ao, ao, 1.0f);
-    else if (CompositeFlags == COMPOSITE_FLAGS_DEBUG_GI_INDIRECT)
+    else if (CompositeFlags == COMPOSITE_FLAGS_DEBUG_GI_IRRADIANCE)
          outputTexture[DTid.xy] = float4(globalIllumination.rgb, 1.0f);
     else
         outputTexture[DTid.xy] = localIllumination + float4(globalIllumination.rgb * ao, 1.0f);

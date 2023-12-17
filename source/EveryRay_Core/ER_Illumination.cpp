@@ -433,7 +433,7 @@ namespace EveryRay_Core {
 
 		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		//voxelization
+		rhi->BeginEventTag("EveryRay: Voxel Cone Tracing - Voxelization");
 		{
 			rhi->SetRootSignature(mVoxelizationRS);
 			for (int cascade = 0; cascade < NUM_VOXEL_GI_CASCADES; cascade++)
@@ -501,18 +501,24 @@ namespace EveryRay_Core {
 				rhi->SetRasterizerState(ER_RHI_RASTERIZER_STATE::ER_BACK_CULLING);
 			}
 		}
+		rhi->EndEventTag();
 		
-		//voxelization debug
-		//TODO: for some reason not working on DX12
 		if (mVCTDebugMode == VCT_DEBUG_VOXELS)
 		{
+			if (rhi->GetAPI() == DX12)
+				throw ER_CoreException("'Voxel Cone Tracing - Debug Voxels' is not yet supported on DX12!");
+
+			rhi->BeginEventTag("EveryRay: Voxel Cone Tracing - Debug Voxels");
 			rhi->SetRootSignature(mVoxelizationDebugRS);
 			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_POINTLIST);
 
-			int cascade = 0; //TODO fix for other cascades
+			assert(mVCTVoxelsDebugSelectedCascade < NUM_VOXEL_GI_CASCADES);
+			int cascade = mVCTVoxelsDebugSelectedCascade;
 			{
+				float scale = 1.0f / (mWorldVoxelScales[cascade] * 0.5f);
 				float sizeTranslateShift = -voxelCascadesSizes[cascade] / mWorldVoxelScales[cascade] * 0.5f;
 				mVoxelizationDebugConstantBuffer.Data.WorldVoxelCube =
+					XMMatrixScaling(scale, scale, scale) *
 					XMMatrixTranslation(
 						sizeTranslateShift + mVoxelCameraPositions[cascade].x,
 						sizeTranslateShift - mVoxelCameraPositions[cascade].y,
@@ -539,7 +545,7 @@ namespace EveryRay_Core {
 					rhi->FinalizePSO(mVoxelizationDebugPSOName);
 				}
 				rhi->SetPSO(mVoxelizationDebugPSOName);
-				rhi->SetShaderResources(ER_VERTEX, { mVCTVoxelCascades3DRTs[cascade] }, 0, mVoxelizationDebugRS, VCT_DEBUG_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
+				rhi->SetShaderResources(ER_VERTEX,	 { mVCTVoxelCascades3DRTs[cascade] }, 0, mVoxelizationDebugRS, VCT_DEBUG_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 				rhi->SetConstantBuffers(ER_VERTEX,   { mVoxelizationDebugConstantBuffer.Buffer() }, 0, mVoxelizationDebugRS, VCT_DEBUG_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 				rhi->SetConstantBuffers(ER_GEOMETRY, { mVoxelizationDebugConstantBuffer.Buffer() }, 0, mVoxelizationDebugRS, VCT_DEBUG_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 				rhi->SetConstantBuffers(ER_PIXEL,    { mVoxelizationDebugConstantBuffer.Buffer() }, 0, mVoxelizationDebugRS, VCT_DEBUG_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
@@ -552,9 +558,11 @@ namespace EveryRay_Core {
 				rhi->UnbindResourcesFromShader(ER_PIXEL);
 				rhi->SetDepthStencilState(ER_DEPTH_ONLY_WRITE_COMPARISON_LESS_EQUAL);
 			}
+			rhi->EndEventTag();
 		}
 		else // main pass
 		{
+			rhi->BeginEventTag("EveryRay: Voxel Cone Tracing - Main");
 			rhi->UnbindRenderTargets();
 
 			for (int i = 0; i < NUM_VOXEL_GI_CASCADES; i++)
@@ -600,9 +608,11 @@ namespace EveryRay_Core {
 			rhi->Dispatch(ER_DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetWidth()), 8u), ER_DivideByMultiple(static_cast<UINT>(mVCTMainRT->GetHeight()), 8u), 1u);
 			rhi->UnsetPSO();
 			rhi->UnbindResourcesFromShader(ER_COMPUTE);
+
+			rhi->EndEventTag();
 		}
 
-		//upsample & blur
+		rhi->BeginEventTag("EveryRay: Voxel Cone Tracing - Upsample/Blur");
 		{
 			mUpsampleBlurConstantBuffer.Data.Upsample = true;
 			mUpsampleBlurConstantBuffer.ApplyChanges(rhi);
@@ -624,6 +634,7 @@ namespace EveryRay_Core {
 			rhi->UnsetPSO();
 			rhi->UnbindResourcesFromShader(ER_COMPUTE);
 		}
+		rhi->EndEventTag();
 	}
 
 	// Combine GI output (Voxel Cone Tracing) with local illumination output
@@ -643,8 +654,8 @@ namespace EveryRay_Core {
 			{
 				if (mVCTDebugMode == VCT_DEBUG_AO)
 					mCompositeTotalIlluminationConstantBuffer.Data.CompositeFlags = COMPOSITE_FLAGS_DEBUG_GI_AO;
-				else if (mVCTDebugMode == VCT_DEBUG_VOXELS || mVCTDebugMode == VCT_DEBUG_INDIRECT)
-					mCompositeTotalIlluminationConstantBuffer.Data.CompositeFlags = COMPOSITE_FLAGS_DEBUG_GI_INDIRECT;
+				else if (mVCTDebugMode == VCT_DEBUG_VOXELS || mVCTDebugMode == VCT_DEBUG_IRRADIANCE)
+					mCompositeTotalIlluminationConstantBuffer.Data.CompositeFlags = COMPOSITE_FLAGS_DEBUG_GI_IRRADIANCE;
 			}
 		}
 		else
@@ -827,7 +838,9 @@ namespace EveryRay_Core {
 					}
 					ImGui::Checkbox("DEBUG - Voxel Cascades Update Always", &mIsVCTAlwaysUpdated);
 				}
-				ImGui::SliderInt("DEBUG - None, AO, Voxels, Indirect", &(int)mVCTDebugMode, 0, VCT_DEBUG_COUNT - 1);
+				ImGui::SliderInt("DEBUG - None, AO, Irradiance, Voxels", &(int)mVCTDebugMode, 0, VCT_DEBUG_COUNT - 1);
+				if (mVCTDebugMode == VCT_DEBUG_VOXELS)
+					ImGui::SliderInt("DEBUG - Cascade Index", &mVCTVoxelsDebugSelectedCascade, 0, NUM_VOXEL_GI_CASCADES - 1);
 			}
 			if (ImGui::CollapsingHeader("Static - Light Probes"))
 			{

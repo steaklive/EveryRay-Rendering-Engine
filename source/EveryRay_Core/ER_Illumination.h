@@ -35,7 +35,7 @@
 #define	COMPOSITE_FLAGS_NONE                          0x00000000
 #define COMPOSITE_FLAGS_NO_GI                         0x00000001
 #define COMPOSITE_FLAGS_DEBUG_GI_AO                   0x00000002
-#define COMPOSITE_FLAGS_DEBUG_GI_INDIRECT             0x00000003
+#define COMPOSITE_FLAGS_DEBUG_GI_IRRADIANCE           0x00000003
 #define COMPOSITE_FLAGS_DEBUG_GBUFFER_ALBEDO          0x00000004
 #define COMPOSITE_FLAGS_DEBUG_GBUFFER_NORMALS         0x00000005
 #define COMPOSITE_FLAGS_DEBUG_GBUFFER_ROUGHNESS       0x00000006
@@ -55,9 +55,12 @@ namespace EveryRay_Core
 	class ER_Skybox;
 	class ER_VolumetricFog;
 
-	// TODO: At the moment our GIQuality config only affects VCT and it's resolution (off, 0.5, 0.75), we should also add:
-	// - voxel resolution for vct per config (currently its hardcoded in voxelCascadesSizes)
-	// - light probes settings (i.e., limit the amount of reflection probes per config)
+	// TODO: At the moment our GIQuality config only affects VCT and it's final output RT resolution (off, 0.5, 0.75), we can also add:
+	// - dynamic gi: 
+	// - - voxel resolution for vct per config (currently its hardcoded in 'voxelCascadesSizes')
+	// - - cone amounts per voxel trace (currently everything is hardcoded with 6 cones)
+	// - static gi:
+	// - - limit the amount of reflection probes per config
 	// - maybe something else...
 	enum GIQuality
 	{
@@ -70,8 +73,8 @@ namespace EveryRay_Core
 	{
 		VCT_DEBUG_NONE = 0,
 		VCT_DEBUG_AO,
+		VCT_DEBUG_IRRADIANCE, // final indirect GI result
 		VCT_DEBUG_VOXELS,
-		VCT_DEBUG_INDIRECT, // final indirect GI result
 
 		VCT_DEBUG_COUNT
 	};
@@ -312,6 +315,7 @@ namespace EveryRay_Core
 		bool mIsVCTAlwaysUpdated = false; // update volumes every frame (only for debugging)
 		
 		VCTDebugMode mVCTDebugMode = VCTDebugMode::VCT_DEBUG_NONE;
+		int mVCTVoxelsDebugSelectedCascade = 0; // cascade for VCTDebugMode::VCT_DEBUG_VOXELS
 		bool mShowVCTVoxelZonesGizmos[NUM_VOXEL_GI_CASCADES] = { false, false };
 		bool mIsVCTEnabled = false;
 
