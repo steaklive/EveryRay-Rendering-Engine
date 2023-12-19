@@ -294,6 +294,9 @@
     <ClInclude Include="ER_GPUCuller.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ER_Wind.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -493,6 +496,9 @@
     </ClCompile>
     <ClCompile Include="ER_GPUCuller.cpp">
       <Filter>Source Files\Graphics\Rendering systems</Filter>
+    </ClCompile>
+    <ClCompile Include="ER_Wind.cpp">
+      <Filter>Source Files\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

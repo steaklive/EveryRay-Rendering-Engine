@@ -238,6 +238,7 @@
     <ClInclude Include="ER_Ray.h" />
     <ClInclude Include="ER_RenderableAABB.h" />
     <ClInclude Include="ER_RenderingObject.h" />
+    <ClInclude Include="ER_Wind.h" />
     <ClInclude Include="RHI\DX12\ER_RHI_DX12.h" />
     <ClInclude Include="RHI\DX12\ER_RHI_DX12_GPUBuffer.h" />
     <ClInclude Include="RHI\DX12\ER_RHI_DX12_GPUDescriptorHeapManager.h" />
@@ -315,6 +316,7 @@
     <ClCompile Include="ER_Scene.cpp" />
     <ClCompile Include="ER_CoreServicesContainer.cpp" />
     <ClCompile Include="ER_ShadowMapper.cpp" />
+    <ClCompile Include="ER_Wind.cpp" />
     <ClCompile Include="RHI\DX12\ER_RHI_DX12.cpp" />
     <ClCompile Include="RHI\DX12\ER_RHI_DX12_GPUBuffer.cpp" />
     <ClCompile Include="RHI\DX12\ER_RHI_DX12_GPUDescriptorHeapManager.cpp" />
