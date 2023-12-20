@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "ER_Wind.h"
 #include "ER_VectorHelper.h"
 #include "ER_Utility.h"
@@ -7,8 +5,7 @@
 #include "ER_Camera.h"
 #include "ER_Core.h"
 
-#include "imgui.h"
-#include "ImGuizmo.h"
+#include "Common.h"
 
 namespace EveryRay_Core
 {

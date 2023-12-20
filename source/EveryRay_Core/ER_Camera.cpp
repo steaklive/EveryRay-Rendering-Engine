@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "ER_Camera.h"
 #include "ER_Core.h"
 #include "ER_CoreTime.h"

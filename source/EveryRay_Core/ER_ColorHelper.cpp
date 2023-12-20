@@ -1,7 +1,4 @@
-#include "stdafx.h"
-
 #include "ER_ColorHelper.h"
-
 
 namespace EveryRay_Core
 {

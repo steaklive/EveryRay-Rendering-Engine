@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #include <stdio.h>
 
 #include "ER_Terrain.h"

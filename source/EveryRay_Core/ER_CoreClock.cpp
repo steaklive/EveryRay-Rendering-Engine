@@ -1,4 +1,4 @@
-#include "stdafx.h"
+//
 #include "ER_CoreClock.h"
 #include "ER_CoreTime.h"
 

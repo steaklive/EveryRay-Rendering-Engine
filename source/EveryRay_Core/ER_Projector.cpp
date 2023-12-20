@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 
 #include "ER_Projector.h"
 #include "ER_Core.h"

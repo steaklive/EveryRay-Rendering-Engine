@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #include "ER_MaterialHelper.h"
 
 namespace EveryRay_Core

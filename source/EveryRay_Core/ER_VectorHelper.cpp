@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 
 #include <sstream>
 #include "ER_VectorHelper.h"

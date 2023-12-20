@@ -1,8 +1,5 @@
 #define ER_PLATFORM_WIN64_DX11 1
 
-#include "stdafx.h"
-#include <memory>
-
 #include "..\EveryRay_Core\ER_RuntimeCore.h"
 #include "..\EveryRay_Core\ER_CoreException.h"
 #include "..\EveryRay_Core\RHI\ER_RHI.h"

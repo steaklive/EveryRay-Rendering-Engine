@@ -1,5 +1,4 @@
 #pragma once
-#include "stdafx.h"
 #include <exception>
 #include <Windows.h>
 #include <string>

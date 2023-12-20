@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #include <stdio.h>
 #include "ER_VolumetricClouds.h"
 #include "ER_CoreTime.h"

@@ -1,5 +1,5 @@
 
-#include "stdafx.h"
+
 #include "ER_Utility.h"
 #include <algorithm>
 #include <exception>

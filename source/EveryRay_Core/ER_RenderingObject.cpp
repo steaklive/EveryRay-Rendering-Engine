@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #include <iostream>
 
 #include "ER_RenderingObject.h"

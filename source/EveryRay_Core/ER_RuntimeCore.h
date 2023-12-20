@@ -1,5 +1,5 @@
 #pragma once
-#define MAX_SCENES_COUNT 25
+#define MAX_SCENES_COUNT 25 // bump if needed
 
 #include "ER_Core.h"
 #include "Common.h"
@@ -69,8 +69,8 @@ namespace EveryRay_Core
 
 		std::map<std::string, std::string> mScenesPaths;
 		std::vector<std::string> mScenesNamesByIndices;
-		char* mDisplayedLevelNames[MAX_SCENES_COUNT] = { 0 };
-		unsigned int mNumParsedScenesFromConfig;
+		char* mDisplayedLevelNames[MAX_SCENES_COUNT] = { nullptr };
+		unsigned int mNumParsedScenesFromConfig = 0;
 
 		std::string mStartupSceneName;
 		std::string mCurrentSceneName;

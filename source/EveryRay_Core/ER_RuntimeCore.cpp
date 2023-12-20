@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "ER_RuntimeCore.h"
 #include "ER_CoreException.h"
 #include "ER_Keyboard.h"
@@ -19,7 +17,6 @@
 
 namespace EveryRay_Core
 {
-	static float colorBlack[4] = { 0.0, 0.0, 0.0, 0.0 };
 	static int currentLevel = 0;
 	static float fov = 60.0f;
 	static float movementRate = 10.0f;
@@ -57,8 +54,6 @@ namespace EveryRay_Core
 
 	void ER_RuntimeCore::Initialize()
 	{
-		//SetCurrentDirectory(ER_Utility::ExecutableDirectory().c_str());
-
 		{
 			if (FAILED(DirectInput8Create(mInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (LPVOID*)&mDirectInput, nullptr)))
 			{
@@ -66,16 +61,16 @@ namespace EveryRay_Core
 			}
 
 			mKeyboard = new ER_Keyboard(*this, mDirectInput);
-			mCoreEngineComponents.push_back(mKeyboard);
-			mServices.AddService(ER_Keyboard::TypeIdClass(), mKeyboard);
+			mCoreComponents.push_back(mKeyboard);
+			mCoreServices.AddService(ER_Keyboard::TypeIdClass(), mKeyboard);
 
 			mMouse = new ER_Mouse(*this, mDirectInput);
-			mCoreEngineComponents.push_back(mMouse);
-			mServices.AddService(ER_Mouse::TypeIdClass(), mMouse);
+			mCoreComponents.push_back(mMouse);
+			mCoreServices.AddService(ER_Mouse::TypeIdClass(), mMouse);
 
 			mGamepad = new ER_Gamepad(*this);
-			mCoreEngineComponents.push_back(mGamepad);
-			mServices.AddService(ER_Gamepad::TypeIdClass(), mGamepad);
+			mCoreComponents.push_back(mGamepad);
+			mCoreServices.AddService(ER_Gamepad::TypeIdClass(), mGamepad);
 		}
 
 		mCamera = new ER_CameraFPS(*this, 1.5708f, this->AspectRatio(), nearPlaneDist, farPlaneDist );
@@ -84,16 +79,16 @@ namespace EveryRay_Core
 		mCamera->SetFOV(fov*XM_PI / 180.0f);
 		mCamera->SetNearPlaneDistance(nearPlaneDist);
 		mCamera->SetFarPlaneDistance(farPlaneDist);
-		mCoreEngineComponents.push_back(mCamera);
-		mServices.AddService(ER_Camera::TypeIdClass(), mCamera);
+		mCoreComponents.push_back(mCamera);
+		mCoreServices.AddService(ER_Camera::TypeIdClass(), mCamera);
 
 		mEditor = new ER_Editor(*this);
-		mCoreEngineComponents.push_back(mEditor);
-		mServices.AddService(ER_Editor::TypeIdClass(), mEditor);
+		mCoreComponents.push_back(mEditor);
+		mCoreServices.AddService(ER_Editor::TypeIdClass(), mEditor);
 
 		mQuadRenderer = new ER_QuadRenderer(*this);
-		mCoreEngineComponents.push_back(mQuadRenderer);
-		mServices.AddService(ER_QuadRenderer::TypeIdClass(), mQuadRenderer);
+		mCoreComponents.push_back(mQuadRenderer);
+		mCoreServices.AddService(ER_QuadRenderer::TypeIdClass(), mQuadRenderer);
 
 		#pragma region INITIALIZE_IMGUI
 
@@ -397,7 +392,7 @@ namespace EveryRay_Core
 		mRHI->BeginGraphicsCommandList();
 		mRHI->SetGPUDescriptorHeap(ER_RHI_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
 
-		mRHI->ClearMainRenderTarget(colorBlack);
+		mRHI->ClearMainRenderTarget(clearColorBlack);
 		mRHI->ClearMainDepthStencilTarget(1.0f, 0);
 
 		mRHI->SetViewport(mMainViewport);

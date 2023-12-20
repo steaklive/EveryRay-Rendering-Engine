@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 
 #include "ER_Mesh.h"
 #include "ER_Model.h"

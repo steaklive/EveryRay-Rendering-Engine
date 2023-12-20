@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "ER_CoreServicesContainer.h"
 
 namespace EveryRay_Core

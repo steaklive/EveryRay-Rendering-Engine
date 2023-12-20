@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 
 #include "ER_PointLight.h"
 #include "ER_Core.h"

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #include "ER_MatrixHelper.h"
 
 namespace EveryRay_Core
