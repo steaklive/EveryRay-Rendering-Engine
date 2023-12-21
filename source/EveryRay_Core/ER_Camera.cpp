@@ -11,8 +11,8 @@ namespace EveryRay_Core
 	RTTI_DEFINITIONS(ER_Camera)
 
 	const float ER_Camera::DefaultFieldOfView = XM_PIDIV2;
-	const float ER_Camera::DefaultNearPlaneDistance = 0.01f;
-	const float ER_Camera::DefaultFarPlaneDistance = 600;
+	const float ER_Camera::DefaultNearPlaneDistance = 0.5f;
+	const float ER_Camera::DefaultFarPlaneDistance = 100000.0f;
 
 	ER_Camera::ER_Camera(ER_Core& game)
 		: ER_CoreComponent(game),

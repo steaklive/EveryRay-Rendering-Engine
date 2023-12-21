@@ -75,10 +75,7 @@ namespace EveryRay_Core {
 		#pragma region INIT_SCENE
 		game.CPUProfiler()->BeginCPUTime("Scene init: " + sceneName);
         mScene = new ER_Scene(game, camera, sceneFolderPath + sceneName + ".json");
-		//TODO move to scene
-        camera.SetPosition(mScene->GetCameraPos());
-        camera.SetDirection(mScene->GetCameraDir());
-        camera.SetFarPlaneDistance(100000.0f);
+		mScene->LoadPointLightsData();
 		game.CPUProfiler()->EndCPUTime("Scene init: " + sceneName);
 #pragma endregion
 
@@ -106,17 +103,13 @@ namespace EveryRay_Core {
         assert(mKeyboard);
 #pragma endregion
 
-		#pragma region INIT_SKYBOX
-		game.CPUProfiler()->BeginCPUTime("Skybox init");
-        mSkybox = new ER_Skybox(game, camera, 10000);
-        mSkybox->Initialize();
-		game.CPUProfiler()->EndCPUTime("Skybox init");
-#pragma endregion
-
 		#pragma region INIT_DIRECTIONAL_LIGHT
         mDirectionalLight = new ER_DirectionalLight(game, camera);
-		auto sunDirection = mScene->GetSunDir();
-		if (sunDirection.x == 0.0f && sunDirection.y == 0.0f && sunDirection.z == 0.0f) {
+		XMFLOAT3 sunDirection = mScene->GetValueFromSceneRoot<XMFLOAT3>("sun_direction");
+		if (sunDirection.x < std::numeric_limits<float>::epsilon() &&
+			sunDirection.y < std::numeric_limits<float>::epsilon() &&
+			sunDirection.z < std::numeric_limits<float>::epsilon())
+		{
 			XMMATRIX defaultSunRotationMatrix =
 				XMMatrixRotationAxis(mDirectionalLight->RightVector(), -XMConvertToRadians(70.0f)) *
 				XMMatrixRotationAxis(mDirectionalLight->UpVector(), -XMConvertToRadians(25.0f));
@@ -129,7 +122,18 @@ namespace EveryRay_Core {
 				XMMatrixRotationAxis(mDirectionalLight->DirectionVector(), -XMConvertToRadians(sunDirection.z))
 			);
 
-        mDirectionalLight->SetColor(mScene->GetSunColor());
+		if (mScene->IsValueInSceneRoot("sun_color"))
+			mDirectionalLight->SetColor(mScene->GetValueFromSceneRoot<XMFLOAT3>("sun_color"));
+		else
+			mDirectionalLight->SetColor(XMFLOAT3(1.0, 0.0, 0.0));
+
+#pragma endregion
+
+		#pragma region INIT_SKYBOX
+		game.CPUProfiler()->BeginCPUTime("Skybox init");
+        mSkybox = new ER_Skybox(game, camera, *mDirectionalLight, 10000);
+        mSkybox->Initialize();
+		game.CPUProfiler()->EndCPUTime("Skybox init");
 #pragma endregion
 
 		#pragma region INIT_SHADOWMAPPER
@@ -164,7 +168,7 @@ namespace EveryRay_Core {
 		game.CPUProfiler()->BeginCPUTime("Volumetric Fog init");
 		mVolumetricFog = new ER_VolumetricFog(game, *mDirectionalLight, *mShadowMapper, (VolumetricFogQuality)ER_Settings::VolumetricFogQuality);
 		mVolumetricFog->Initialize();
-		mVolumetricFog->SetEnabled(mScene->HasVolumetricFog());
+		mVolumetricFog->SetEnabled(mScene->GetValueFromSceneRoot<bool>("volumetric_fog_enabled"));
 		game.CPUProfiler()->EndCPUTime("Volumetric Fog init");
 #pragma endregion
 
@@ -177,7 +181,7 @@ namespace EveryRay_Core {
 #pragma endregion
 
 		#pragma region INIT_TERRAIN
-		if (mScene->HasTerrain())
+		if (mScene->IsValueInSceneRoot("terrain_num_tiles"))
 		{
 			game.CPUProfiler()->BeginCPUTime("Terrain init");
 			mTerrain = new ER_Terrain(game, *mDirectionalLight);
@@ -194,7 +198,7 @@ namespace EveryRay_Core {
 #pragma endregion
 
 		#pragma region INIT_FOLIAGE_MANAGER
-		if (mScene->HasFoliage())
+		if (mScene->IsValueInSceneRoot("foliage_zones"))
 		{
 			game.CPUProfiler()->BeginCPUTime("Foliage init");
 			mFoliageSystem = new ER_FoliageManager(game, mScene, *mDirectionalLight, (FoliageQuality)ER_Settings::FoliageQuality);
@@ -262,36 +266,39 @@ namespace EveryRay_Core {
 
 	void ER_Sandbox::Update(ER_Core& game, const ER_CoreTime& gameTime)
 	{
-		//TODO refactor to updates for elements of ER_CoreComponent type
-
-		//TODO refactor skybox updates
-		mSkybox->SetUseCustomSkyColor(mEditor->IsSkyboxUsingCustomColor());
-		mSkybox->SetSkyParams(mEditor->GetBottomSkyColor(), mEditor->GetTopSkyColor(), mEditor->GetSkyMinHeight(), mEditor->GetSkyMaxHeight());
-		mSkybox->SetSunData(mDirectionalLight->IsSunOnSkyRendered(),
-			XMFLOAT4(mDirectionalLight->Direction().x, mDirectionalLight->Direction().y, mDirectionalLight->Direction().z, 1.0),
-			XMFLOAT4(mDirectionalLight->GetColor().x, mDirectionalLight->GetColor().y, mDirectionalLight->GetColor().z, 1.0),
-			mDirectionalLight->GetSunOnSkyBrightness(), mDirectionalLight->GetSunOnSkyExponent());
-		mSkybox->Update();
+		mSkybox->Update(gameTime);
 		mSkybox->UpdateSun(gameTime);
+
 		mGBuffer->Update(gameTime);
+
 		mPostProcessingStack->Update();
+
 		mVolumetricClouds->Update(gameTime);
+
 		mVolumetricFog->Update(gameTime);
-		if (mTerrain && mScene->HasTerrain())
+
+		if (mTerrain)
 			mTerrain->Update(gameTime);
+
 		mIllumination->Update(gameTime, mScene);
-		if (mScene->HasLightProbesSupport() && mLightProbesManager->IsEnabled())
+
+		if (mLightProbesManager->IsEnabled())
 			mLightProbesManager->UpdateProbes(game);
+
 		mShadowMapper->Update(gameTime);
-		if (mFoliageSystem && mScene->HasFoliage())
+
+		if (mFoliageSystem && mFoliageSystem->HasFoliage())
 			mFoliageSystem->Update(gameTime);
 
+		// TODO: consider moving all debug gizmos to a separate debug renderer system
 		mWind->UpdateProxyModel(gameTime,
 			((ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass()))->ViewMatrix4X4(),
-			((ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass()))->ProjectionMatrix4X4()); //TODO refactor to DebugRenderer
+			((ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass()))->ProjectionMatrix4X4());
+		// TODO: consider moving all debug gizmos to a separate debug renderer system
 		mDirectionalLight->UpdateProxyModel(gameTime, 
 			((ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass()))->ViewMatrix4X4(),
-			((ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass()))->ProjectionMatrix4X4()); //TODO refactor to DebugRenderer
+			((ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass()))->ProjectionMatrix4X4());
+		
 		for (auto& pointLight : mPointLights)
 			pointLight->Update(gameTime);
 
@@ -381,9 +388,9 @@ namespace EveryRay_Core {
 		#pragma region DRAW_GLOBAL_ILLUMINATION
 		rhi->BeginEventTag("EveryRay: Compute/load light probes");
 		{
-			// compute static GI (load probes if they exist on disk, otherwise - compute them)
+			// compute static GI (load probes if they exist on disk, otherwise - compute and save them)
 			{
-				if (mScene->HasLightProbesSupport() && !mLightProbesManager->AreProbesReady())
+				if (mLightProbesManager->IsEnabled() && !mLightProbesManager->AreProbesReady())
 				{
 					game.CPUProfiler()->BeginCPUTime("Compute or load light probes");
 					mLightProbesManager->ComputeOrLoadLocalProbes(game, mScene->objects, mSkybox);

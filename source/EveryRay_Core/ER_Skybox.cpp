@@ -1,16 +1,16 @@
-
-
 #include "ER_Skybox.h"
 #include "ER_Core.h"
 #include "ER_CoreException.h"
 #include "ER_CoreTime.h"
 #include "ER_Camera.h"
+#include "ER_DirectionalLight.h"
 #include "ER_MatrixHelper.h"
 #include "ER_Model.h"
 #include "ER_Mesh.h"
 #include "ER_Utility.h"
 #include "ER_QuadRenderer.h"
 #include "ER_VertexDeclarations.h"
+#include "ER_Scene.h"
 
 #define SKYBOX_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 0
 
@@ -19,8 +19,8 @@
 
 namespace EveryRay_Core
 {
-	ER_Skybox::ER_Skybox(ER_Core& game, ER_Camera& camera, float scale)
-		: ER_CoreComponent(game), mCore(game), mCamera(camera),
+	ER_Skybox::ER_Skybox(ER_Core& game, ER_Camera& camera, ER_DirectionalLight& light, float scale)
+		: ER_CoreComponent(game), mCore(game), mCamera(camera), mSun(light),
 		mVertexBuffer(nullptr), mIndexBuffer(nullptr), mIndexCount(0),
 		mWorldMatrix(ER_MatrixHelper::Identity), mScaleMatrix(ER_MatrixHelper::Identity), mScale(scale)
 	{
@@ -46,16 +46,36 @@ namespace EveryRay_Core
 	{
 		auto rhi = mCore.GetRHI();
 
-		std::unique_ptr<ER_Model> model(new ER_Model(mCore, ER_Utility::GetFilePath("content\\models\\sphere_lowpoly.obj"), true));
+		ER_Scene* scene = mCore.GetLevel()->mScene;
+		if (scene->IsValueInSceneRoot("sky_color_top"))
+		{
+			mTopColor = scene->GetValueFromSceneRoot<XMFLOAT4>("sky_color_top");
+			mTopColorEditor[0] = mTopColor.x;
+			mTopColorEditor[1] = mTopColor.y;
+			mTopColorEditor[2] = mTopColor.z;
+			mTopColorEditor[3] = mTopColor.w;
+		}
+		if (scene->IsValueInSceneRoot("sky_color_bottom"))
+		{
+			mBottomColor = scene->GetValueFromSceneRoot<XMFLOAT4>("sky_color_bottom");
+			mBottomColorEditor[0] = mTopColor.x;
+			mBottomColorEditor[1] = mTopColor.y;
+			mBottomColorEditor[2] = mTopColor.z;
+			mBottomColorEditor[3] = mTopColor.w;
+		}
 
-		auto& meshes = model->Meshes();
-		mVertexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Skybox - Vertex Buffer");
-		meshes[0].CreateVertexBuffer_Position(mVertexBuffer);
-		mIndexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Skybox - Index Buffer");
-		meshes[0].CreateIndexBuffer(mIndexBuffer);
-		mIndexCount = meshes[0].Indices().size();
+		//model & geometry
+		{
+			ER_Model* model = mCore.AddOrGet3DModelFromCache(ER_Utility::GetFilePath("content\\models\\sphere_lowpoly.obj"));
+			auto& meshes = model->Meshes();
+			mVertexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Skybox - Vertex Buffer");
+			meshes[0].CreateVertexBuffer_Position(mVertexBuffer);
+			mIndexBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Skybox - Index Buffer");
+			meshes[0].CreateIndexBuffer(mIndexBuffer);
+			mIndexCount = static_cast<UINT>(meshes[0].Indices().size());
+		}
 
-		//skybox
+		//skybox rendering
 		{
 			ER_RHI_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 			{
@@ -79,7 +99,7 @@ namespace EveryRay_Core
 			}
 		}
 
-		//sun
+		//sun rendering
 		{
 			mSunPS = rhi->CreateGPUShader();
 			mSunPS->CompileShader(rhi, "content\\shaders\\Sun.hlsl", "main", ER_PIXEL);
@@ -100,8 +120,15 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_Skybox::Update(ER_Camera* aCustomCamera)
+	void ER_Skybox::Update(const ER_CoreTime& gameTime, ER_Camera* aCustomCamera)
 	{
+		if (mUseCustomSkyboxColor)
+		{
+			mBottomColor = XMFLOAT4(mBottomColorEditor[0], mBottomColorEditor[1], mBottomColorEditor[2], mBottomColorEditor[3]);
+			mTopColor = XMFLOAT4(mTopColorEditor[0], mTopColorEditor[1], mTopColorEditor[2], mTopColorEditor[3]);
+			mSkyHeight = XMFLOAT2(mSkyMinHeightEditor, mSkyMaxHeightEditor);
+		}
+
 		XMFLOAT3 position;
 		if (aCustomCamera)
 			position = aCustomCamera->Position();
@@ -113,6 +140,12 @@ namespace EveryRay_Core
 
 	void ER_Skybox::UpdateSun(const ER_CoreTime& gameTime, ER_Camera* aCustomCamera)
 	{
+		mDrawSun = mSun.IsSunOnSkyRendered();
+		mSunDir = XMFLOAT4(mSun.Direction().x, mSun.Direction().y, mSun.Direction().z, 1.0);
+		mSunColor = XMFLOAT4(mSun.GetColor().x, mSun.GetColor().y, mSun.GetColor().z, 1.0);
+		mSunBrightness = mSun.GetSunOnSkyBrightness();
+		mSunExponent = mSun.GetSunOnSkyExponent();
+
 		auto rhi = mCore.GetRHI();
 
 		if (aCustomCamera)
@@ -238,7 +271,7 @@ namespace EveryRay_Core
 		float b = 2.0f * (dir.x * L.x + dir.y * L.y + dir.z * L.z);
 		float c = L.x * L.x + L.y * L.y + L.z * L.z - radius2;
 
-		float discr = b * b - 4.0 * a * c;
+		float discr = b * b - 4.0f * a * c;
 		t = (-b + sqrt(discr)) / 2;
 
 		return XMFLOAT4(dir.x * t, dir.y * t, dir.z * t, 1.0f);

@@ -28,6 +28,107 @@
 
 namespace EveryRay_Core 
 {
+	template<>
+	int ER_Scene::GetValueFromSceneRoot(const std::string& aName)
+	{
+		int value = 0;
+		if (mSceneJsonRoot.isMember(aName.c_str()))
+			value = mSceneJsonRoot[aName.c_str()].asInt();
+		else
+			ShowNoValueFoundMessage(aName);
+
+		return value;
+	}
+
+	template<>
+	UINT ER_Scene::GetValueFromSceneRoot(const std::string& aName)
+	{
+		UINT value = 0;
+		if (mSceneJsonRoot.isMember(aName.c_str()))
+			value = mSceneJsonRoot[aName.c_str()].asUInt();
+		else
+			ShowNoValueFoundMessage(aName);
+
+		return value;
+	}
+
+	template<>
+	bool ER_Scene::GetValueFromSceneRoot(const std::string& aName)
+	{
+		bool value = false;
+		if (mSceneJsonRoot.isMember(aName.c_str()))
+			value = mSceneJsonRoot[aName.c_str()].asBool();
+		else
+			ShowNoValueFoundMessage(aName);
+
+		return value;
+	}
+
+	template<>
+	float ER_Scene::GetValueFromSceneRoot(const std::string& aName)
+	{
+		float value = 0.0f;
+		if (mSceneJsonRoot.isMember(aName.c_str()))
+			value = mSceneJsonRoot[aName.c_str()].asFloat();
+		else
+			ShowNoValueFoundMessage(aName);
+
+		return value;
+	}
+
+	template<>
+	XMFLOAT3 ER_Scene::GetValueFromSceneRoot(const std::string& aName)
+	{
+		XMFLOAT3 value = XMFLOAT3(0.0f, 0.0f, 0.0f);
+		if (mSceneJsonRoot.isMember(aName.c_str()))
+		{
+			float vec3[3] = { 0.0, 0.0, 0.0 };
+			for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot[aName.c_str()].size(); i++)
+				vec3[i] = mSceneJsonRoot[aName.c_str()][i].asFloat();
+
+			value = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
+		}
+		else
+			ShowNoValueFoundMessage(aName);
+
+		return value;
+	}
+
+	template<>
+	XMFLOAT4 ER_Scene::GetValueFromSceneRoot(const std::string& aName)
+	{
+		XMFLOAT4 value = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+		if (mSceneJsonRoot.isMember(aName.c_str()))
+		{
+			float vec4[4] = { 0.0, 0.0, 0.0, 0.0 };
+			for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot[aName.c_str()].size(); i++)
+				vec4[i] = mSceneJsonRoot[aName.c_str()][i].asFloat();
+
+			value = XMFLOAT4(vec4[0], vec4[1], vec4[2], vec4[3]);
+		}
+		else
+			ShowNoValueFoundMessage(aName);
+
+		return value;
+	}
+
+	template<>
+	std::string ER_Scene::GetValueFromSceneRoot(const std::string& aName)
+	{
+		std::string value = "";
+		if (mSceneJsonRoot.isMember(aName.c_str()))
+			value = mSceneJsonRoot[aName.c_str()].asString();
+		else
+			ShowNoValueFoundMessage(aName);
+
+		return value;
+	}
+
+	bool ER_Scene::IsValueInSceneRoot(const std::string& aName)
+	{
+		return mSceneJsonRoot.isMember(aName.c_str());
+	}
+
 	ER_Scene::ER_Scene(ER_Core& pCore, ER_Camera& pCamera, const std::string& path) :
 		ER_CoreComponent(pCore), mCamera(pCamera), mScenePath(path)
 	{
@@ -48,155 +149,17 @@ namespace EveryRay_Core
 
 			// load camera
 			{
-				if (mSceneJsonRoot.isMember("camera_position")) {
-					float vec3[3];
-					for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["camera_position"].size(); i++)
-						vec3[i] = mSceneJsonRoot["camera_position"][i].asFloat();
+				mCamera.SetPosition(GetValueFromSceneRoot<XMFLOAT3>("camera_position"));
 
-					mCameraPosition = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
-				}
+				if (IsValueInSceneRoot("camera_direction"))
+					mCamera.SetDirection(GetValueFromSceneRoot<XMFLOAT3>("camera_direction"));
 
-				if (mSceneJsonRoot.isMember("camera_direction")) {
-					float vec3[3];
-					for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["camera_direction"].size(); i++)
-						vec3[i] = mSceneJsonRoot["camera_direction"][i].asFloat();
+				if (IsValueInSceneRoot("camera_plane_far"))
+					mCamera.SetFarPlaneDistance(GetValueFromSceneRoot<float>("camera_plane_far"));
 
-					mCameraDirection = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
-				}
+				if (IsValueInSceneRoot("camera_plane_near"))
+					mCamera.SetNearPlaneDistance(GetValueFromSceneRoot<float>("camera_plane_near"));
 			}
-
-			// load sun
-			{
-				if (mSceneJsonRoot.isMember("sun_direction")) {
-					float vec3[3] = { 0.0, 0.0, 0.0 };
-					for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["sun_direction"].size(); i++)
-						vec3[i] = mSceneJsonRoot["sun_direction"][i].asFloat();
-
-					mSunDirection = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
-				}
-
-				if (mSceneJsonRoot.isMember("sun_color")) {
-					float vec3[3];
-					for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["sun_color"].size(); i++)
-						vec3[i] = mSceneJsonRoot["sun_color"][i].asFloat();
-
-					mSunColor = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
-				}
-			}
-
-			// load point lights
-			{
-				std::vector<ER_PointLight*>& lights = pCore.GetLevel()->mPointLights;
-
-				unsigned int numLights = mSceneJsonRoot["point_lights"].size();
-				for (Json::Value::ArrayIndex i = 0; i != numLights; i++)
-				{
-					float position[3] = { 0.0, 0.0, 0.0 };
-					if (mSceneJsonRoot["point_lights"][i].isMember("position"))
-					{
-						for (Json::Value::ArrayIndex j = 0; j != mSceneJsonRoot["point_lights"][i]["position"].size(); j++)
-							position[j] = mSceneJsonRoot["point_lights"][i]["position"][j].asFloat();
-
-						//light.SetPosition(XMFLOAT3(position[0], position[1], position[2]));
-					}
-
-					float radius = 0.0;
-					if (mSceneJsonRoot["point_lights"][i].isMember("radius"))
-						radius = mSceneJsonRoot["point_lights"][i]["radius"].asFloat();
-						//light.SetRadius(mSceneJsonRoot["point_lights"][i]["radius"].asFloat());
-
-					if (static_cast<int>(lights.size()) < MAX_NUM_POINT_LIGHTS)
-						lights.push_back(new ER_PointLight(pCore, XMFLOAT3(position[0], position[1], position[2]), radius));
-					else
-						throw ER_CoreException("Exceeded the max number of point lights when loading the scene!");
-
-					if (mSceneJsonRoot["point_lights"][i].isMember("color"))
-					{
-						float vec4[4];
-						for (Json::Value::ArrayIndex j = 0; j != mSceneJsonRoot["point_lights"][i]["color"].size(); j++)
-							vec4[j] = mSceneJsonRoot["point_lights"][i]["color"][j].asFloat();
-
-						lights.back()->SetColor(XMFLOAT4(vec4[0], vec4[1], vec4[2], vec4[3]));
-					}
-
-				}
-			}
-
-			// load terrain
-			{
-				if (mSceneJsonRoot.isMember("terrain_num_tiles")) {
-					mHasTerrain = true;
-					mTerrainTilesCount = mSceneJsonRoot["terrain_num_tiles"].asInt();
-					if (mSceneJsonRoot.isMember("terrain_tile_scale"))
-						mTerrainTileScale = mSceneJsonRoot["terrain_tile_scale"].asFloat();
-					if (mSceneJsonRoot.isMember("terrain_tile_resolution"))
-						mTerrainTileResolution = mSceneJsonRoot["terrain_tile_resolution"].asInt();
-					std::string fieldName = "terrain_texture_splat_layer";
-					std::wstring result = L"";
-
-					for (int i = 0; i < 4; i++)
-					{
-						fieldName += std::to_string(i);
-						if (mSceneJsonRoot.isMember(fieldName.c_str()))
-							result = ER_Utility::ToWideString(mSceneJsonRoot[fieldName.c_str()].asString());
-						else
-							result = L"";
-					
-						fieldName = "terrain_texture_splat_layer";
-						mTerrainSplatLayersTextureNames[i] = result;
-					}
-				}
-				else
-				mHasTerrain = false;
-			}
-
-			// load light probes
-			{
-				if (mSceneJsonRoot.isMember("light_probes_volume_bounds_min")) {
-					float vec3[3];
-					for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["light_probes_volume_bounds_min"].size(); i++)
-						vec3[i] = mSceneJsonRoot["light_probes_volume_bounds_min"][i].asFloat();
-
-					mLightProbesVolumeMinBounds = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
-				}
-				else
-					mHasLightProbes = false;
-
-				if (mSceneJsonRoot.isMember("light_probes_volume_bounds_max")) {
-					float vec3[3];
-					for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["light_probes_volume_bounds_max"].size(); i++)
-						vec3[i] = mSceneJsonRoot["light_probes_volume_bounds_max"][i].asFloat();
-
-					mLightProbesVolumeMaxBounds = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
-				}
-				else
-					mHasLightProbes = false;
-
-				if (mSceneJsonRoot.isMember("light_probes_diffuse_distance"))
-					mLightProbesDiffuseDistance = mSceneJsonRoot["light_probes_diffuse_distance"].asFloat();
-				if (mSceneJsonRoot.isMember("light_probes_specular_distance"))
-					mLightProbesSpecularDistance = mSceneJsonRoot["light_probes_specular_distance"].asFloat();
-
-				if (mSceneJsonRoot.isMember("light_probe_global_cam_position")) {
-					float vec3[3];
-					for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["light_probe_global_cam_position"].size(); i++)
-						vec3[i] = mSceneJsonRoot["light_probe_global_cam_position"][i].asFloat();
-
-					mGlobalLightProbeCameraPos = XMFLOAT3(vec3[0], vec3[1], vec3[2]);
-				}
-			}
-
-			// load volumetrics info
-			{
-				if (mSceneJsonRoot.isMember("use_volumetric_fog")) {
-					mHasVolumetricFog = mSceneJsonRoot["use_volumetric_fog"].asBool();
-				}
-				else
-					mHasVolumetricFog = false;
-			}
-
-			if (mSceneJsonRoot.isMember("foliage_zones"))
-				mHasFoliage = true;
 
 			// add rendering objects to scene
 			unsigned int numRenderingObjects = mSceneJsonRoot["rendering_objects"].size();
@@ -639,6 +602,88 @@ namespace EveryRay_Core
 		std::wstring msg = L"[ER Logger][ER_Scene] Loaded rendering object into scene: " + ER_Utility::ToWideString(aObject->GetName()) + L'\n';
 		ER_OUTPUT_LOG(msg.c_str());
 	}
+	void ER_Scene::SaveRenderingObjectsTransforms()
+	{
+		if (mScenePath.empty())
+			throw ER_CoreException("Can't save to scene json file! Empty scene name...");
+
+		// store world transform
+		for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["rendering_objects"].size(); i++) {
+			Json::Value content(Json::arrayValue);
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("transform")) {
+				ER_RenderingObject* rObj = FindRenderingObjectByName(mSceneJsonRoot["rendering_objects"][i]["name"].asString());
+				if (rObj)
+				{
+					XMFLOAT4X4 mat = rObj->GetTransformationMatrix4X4();
+					XMMATRIX matXM = XMMatrixTranspose(XMLoadFloat4x4(&mat));
+					XMStoreFloat4x4(&mat, matXM);
+					float matF[16];
+					ER_MatrixHelper::SetFloatArray(mat, matF);
+					for (int i = 0; i < 16; i++)
+						content.append(matF[i]);
+					mSceneJsonRoot["rendering_objects"][i]["transform"] = content;
+				}
+			}
+			else
+			{
+				float matF[16];
+				XMFLOAT4X4 mat;
+				XMStoreFloat4x4(&mat, XMMatrixTranspose(XMMatrixIdentity()));
+				ER_MatrixHelper::SetFloatArray(mat, matF);
+
+				for (int i = 0; i < 16; i++)
+					content.append(matF[i]);
+				mSceneJsonRoot["rendering_objects"][i]["transform"] = content;
+			}
+
+			if (mSceneJsonRoot["rendering_objects"][i].isMember("instanced")) 
+			{
+				bool isInstanced = mSceneJsonRoot["rendering_objects"][i]["instanced"].asBool();
+				if (isInstanced)
+				{
+					if (mSceneJsonRoot["rendering_objects"][i].isMember("instances_transforms")) {
+
+						ER_RenderingObject* rObj = FindRenderingObjectByName(mSceneJsonRoot["rendering_objects"][i]["name"].asString());
+						if (!rObj || mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size() != rObj->GetInstanceCount())
+							throw ER_CoreException("Can't save instances transforms to scene json file! RenderObject's instance count is not equal to the number of instance transforms in scene file.");
+
+						for (Json::Value::ArrayIndex instance = 0; instance != mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size(); instance++) {
+							Json::Value contentInstanceTransform(Json::arrayValue);
+
+							XMFLOAT4X4 mat = rObj->GetInstancesData()[instance].World;
+							XMMATRIX matXM = XMMatrixTranspose(XMLoadFloat4x4(&mat));
+							XMStoreFloat4x4(&mat, matXM);
+							float matF[16];
+							ER_MatrixHelper::SetFloatArray(mat, matF);
+							for (int i = 0; i < 16; i++)
+								contentInstanceTransform.append(matF[i]);
+
+							mSceneJsonRoot["rendering_objects"][i]["instances_transforms"][instance]["transform"] = contentInstanceTransform;
+						}
+					}
+				}
+			}
+		}
+
+		Json::StreamWriterBuilder builder;
+		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+
+		std::ofstream file_id;
+		file_id.open(mScenePath.c_str());
+		writer->write(mSceneJsonRoot, &file_id);
+	}
+	ER_RenderingObject* ER_Scene::FindRenderingObjectByName(const std::string& aName)
+	{
+		for (auto& sceneObj : objects)
+		{
+			if (sceneObj.first == aName)
+				return sceneObj.second;
+			else
+				continue;
+		}
+
+		return nullptr;
+	}
 
 	// [WARNING] NOT THREAD-SAFE!
 	void ER_Scene::LoadRenderingObjectInstancedData(ER_RenderingObject* aObject)
@@ -725,7 +770,8 @@ namespace EveryRay_Core
 			throw ER_CoreException(reader.getFormattedErrorMessages().c_str());
 		}
 		else {
-			if (mSceneJsonRoot.isMember("foliage_zones")) {
+			if (mSceneJsonRoot.isMember("foliage_zones")) 
+			{
 				for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["foliage_zones"].size(); i++)
 				{
 					float vec3[3];
@@ -753,8 +799,6 @@ namespace EveryRay_Core
 						(FoliageBillboardType)mSceneJsonRoot["foliage_zones"][i]["type"].asInt(), placedOnTerrain, terrainChannel, placedHeightDelta));
 				}
 			}
-			else
-				mHasFoliage = false;
 		}
 	}
 	void ER_Scene::SaveFoliageZonesTransforms(const std::vector<ER_Foliage*>& foliageZones)
@@ -929,77 +973,6 @@ namespace EveryRay_Core
 		writer->write(mSceneJsonRoot, &file_id);
 	}
 
-	void ER_Scene::SaveRenderingObjectsTransforms()
-	{
-		if (mScenePath.empty())
-			throw ER_CoreException("Can't save to scene json file! Empty scene name...");
-
-		// store world transform
-		for (Json::Value::ArrayIndex i = 0; i != mSceneJsonRoot["rendering_objects"].size(); i++) {
-			Json::Value content(Json::arrayValue);
-			if (mSceneJsonRoot["rendering_objects"][i].isMember("transform")) {
-				ER_RenderingObject* rObj = FindRenderingObjectByName(mSceneJsonRoot["rendering_objects"][i]["name"].asString());
-				if (rObj)
-				{
-					XMFLOAT4X4 mat = rObj->GetTransformationMatrix4X4();
-					XMMATRIX matXM = XMMatrixTranspose(XMLoadFloat4x4(&mat));
-					XMStoreFloat4x4(&mat, matXM);
-					float matF[16];
-					ER_MatrixHelper::SetFloatArray(mat, matF);
-					for (int i = 0; i < 16; i++)
-						content.append(matF[i]);
-					mSceneJsonRoot["rendering_objects"][i]["transform"] = content;
-				}
-			}
-			else
-			{
-				float matF[16];
-				XMFLOAT4X4 mat;
-				XMStoreFloat4x4(&mat, XMMatrixTranspose(XMMatrixIdentity()));
-				ER_MatrixHelper::SetFloatArray(mat, matF);
-
-				for (int i = 0; i < 16; i++)
-					content.append(matF[i]);
-				mSceneJsonRoot["rendering_objects"][i]["transform"] = content;
-			}
-
-			if (mSceneJsonRoot["rendering_objects"][i].isMember("instanced")) 
-			{
-				bool isInstanced = mSceneJsonRoot["rendering_objects"][i]["instanced"].asBool();
-				if (isInstanced)
-				{
-					if (mSceneJsonRoot["rendering_objects"][i].isMember("instances_transforms")) {
-
-						ER_RenderingObject* rObj = FindRenderingObjectByName(mSceneJsonRoot["rendering_objects"][i]["name"].asString());
-						if (!rObj || mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size() != rObj->GetInstanceCount())
-							throw ER_CoreException("Can't save instances transforms to scene json file! RenderObject's instance count is not equal to the number of instance transforms in scene file.");
-
-						for (Json::Value::ArrayIndex instance = 0; instance != mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size(); instance++) {
-							Json::Value contentInstanceTransform(Json::arrayValue);
-
-							XMFLOAT4X4 mat = rObj->GetInstancesData()[instance].World;
-							XMMATRIX matXM = XMMatrixTranspose(XMLoadFloat4x4(&mat));
-							XMStoreFloat4x4(&mat, matXM);
-							float matF[16];
-							ER_MatrixHelper::SetFloatArray(mat, matF);
-							for (int i = 0; i < 16; i++)
-								contentInstanceTransform.append(matF[i]);
-
-							mSceneJsonRoot["rendering_objects"][i]["instances_transforms"][instance]["transform"] = contentInstanceTransform;
-						}
-					}
-				}
-			}
-		}
-
-		Json::StreamWriterBuilder builder;
-		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
-
-		std::ofstream file_id;
-		file_id.open(mScenePath.c_str());
-		writer->write(mSceneJsonRoot, &file_id);
-	}
-
 	// We cant do reflection in C++, that is why we check every materials name and create a material out of it (and root-signature if needed)
 	// "layerIndex" is used when we need to render multiple layers/copies of the material and keep track of each index
 	ER_Material* ER_Scene::GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries, bool instanced, int layerIndex)
@@ -1032,7 +1005,6 @@ namespace EveryRay_Core
 		return material;
 	}
 
-
 	ER_RHI_GPURootSignature* ER_Scene::GetStandardMaterialRootSignature(const std::string& materialName)
 	{
 		auto it = mStandardMaterialsRootSignatures.find(materialName);
@@ -1044,6 +1016,43 @@ namespace EveryRay_Core
 			return nullptr;
 	}
 
+	void ER_Scene::LoadPointLightsData()
+	{
+		std::vector<ER_PointLight*>& lights = GetCore()->GetLevel()->mPointLights;
+
+		unsigned int numLights = mSceneJsonRoot["point_lights"].size();
+		for (Json::Value::ArrayIndex i = 0; i != numLights; i++)
+		{
+			float position[3] = { 0.0, 0.0, 0.0 };
+			if (mSceneJsonRoot["point_lights"][i].isMember("position"))
+			{
+				for (Json::Value::ArrayIndex j = 0; j != mSceneJsonRoot["point_lights"][i]["position"].size(); j++)
+					position[j] = mSceneJsonRoot["point_lights"][i]["position"][j].asFloat();
+
+				//light.SetPosition(XMFLOAT3(position[0], position[1], position[2]));
+			}
+
+			float radius = 0.0;
+			if (mSceneJsonRoot["point_lights"][i].isMember("radius"))
+				radius = mSceneJsonRoot["point_lights"][i]["radius"].asFloat();
+			//light.SetRadius(mSceneJsonRoot["point_lights"][i]["radius"].asFloat());
+
+			if (static_cast<int>(lights.size()) < MAX_NUM_POINT_LIGHTS)
+				lights.push_back(new ER_PointLight(*GetCore(), XMFLOAT3(position[0], position[1], position[2]), radius));
+			else
+				throw ER_CoreException("Exceeded the max number of point lights when loading the scene!");
+
+			if (mSceneJsonRoot["point_lights"][i].isMember("color"))
+			{
+				float vec4[4];
+				for (Json::Value::ArrayIndex j = 0; j != mSceneJsonRoot["point_lights"][i]["color"].size(); j++)
+					vec4[j] = mSceneJsonRoot["point_lights"][i]["color"][j].asFloat();
+
+				lights.back()->SetColor(XMFLOAT4(vec4[0], vec4[1], vec4[2], vec4[3]));
+			}
+
+		}
+	}
 	void ER_Scene::SavePointLightsData()
 	{
 		if (mScenePath.empty())
@@ -1097,17 +1106,10 @@ namespace EveryRay_Core
 		file_id.open(mScenePath.c_str());
 		writer->write(mSceneJsonRoot, &file_id);
 	}
-
-	ER_RenderingObject* ER_Scene::FindRenderingObjectByName(const std::string& aName)
+	
+	void ER_Scene::ShowNoValueFoundMessage(const std::string& aName)
 	{
-		for (auto& sceneObj : objects)
-		{
-			if (sceneObj.first == aName)
-				return sceneObj.second;
-			else
-				continue;
-		}
-
-		return nullptr;
+		std::wstring msg = L"[ER Logger][ER_Scene] Could not load a requested value: " + ER_Utility::ToWideString(aName) + L"\n";
+		ER_OUTPUT_LOG(msg.c_str());
 	}
 }

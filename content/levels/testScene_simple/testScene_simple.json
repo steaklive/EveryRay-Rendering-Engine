@@ -11,6 +11,8 @@
 		6.7999999999999998,
 		37.0
 	],
+	"camera_plane_far" : 100000.0,
+	"camera_plane_near" : 0.5,
 	"posteffects_aa_enabled" : true,
 	"rendering_objects" : 
 	[
@@ -265,5 +267,5 @@
 		0.94999999999999996
 	],
 	"sun_direction" : [],
-	"use_volumetric_fog" : false
+	"volumetric_fog_enabled" : false
 }

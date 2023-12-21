@@ -8,11 +8,13 @@
 #include "ER_RenderingObject.h"
 #include "ER_Utility.h"
 #include "ER_Scene.h"
+#include "ER_Skybox.h"
 #include "ER_PointLight.h"
 
 namespace EveryRay_Core
 {
 	RTTI_DEFINITIONS(ER_Editor)
+
 	static int selectedObjectIndex = -1;
 	static int selectedPointLightIndex = -1;
 	static const int maxRenderingObjectsListHeight = 15;
@@ -91,14 +93,13 @@ namespace EveryRay_Core
 
 			if (ImGui::CollapsingHeader("Environment - Sky"))
 			{
-				ImGui::Checkbox("Custom sky colors", &mUseCustomSkyboxColor);
-				if (mUseCustomSkyboxColor)
+				ER_Skybox* sky = GetCore()->GetLevel()->mSkybox;
 				{
-					ImGui::ColorEdit4("Bottom color", mBottomColorSky);
-					ImGui::ColorEdit4("Top color", mTopColorSky);
+					ImGui::ColorEdit4("Bottom color", sky->mBottomColorEditor);
+					ImGui::ColorEdit4("Top color", sky->mTopColorEditor);
 				}
-				ImGui::SliderFloat("Sky Min Height", &mSkyMinHeight, -25.0f, 25.0f);
-				ImGui::SliderFloat("Sky Max Height", &mSkyMaxHeight, -25.0f, 25.0f);
+				ImGui::SliderFloat("Sky Min Height", &sky->mSkyMinHeightEditor, -25.0f, 25.0f);
+				ImGui::SliderFloat("Sky Max Height", &sky->mSkyMaxHeightEditor, -25.0f, 25.0f);
 
 				ImGui::Separator();
 			}

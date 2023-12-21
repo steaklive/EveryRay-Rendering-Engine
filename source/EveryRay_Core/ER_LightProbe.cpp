@@ -204,11 +204,11 @@ namespace EveryRay_Core
 			{
 				if (skybox)
 				{
-					skybox->Update(mCubemapCameras[cubeMapFaceIndex]);
+					skybox->Update(game.GetCoreTime(), mCubemapCameras[cubeMapFaceIndex]);
 					skybox->Draw(aTextureNonConvoluted, mCubemapCameras[cubeMapFaceIndex], aDepthBuffers[cubeMapFaceIndex]);
 					//TODO draw sun
 					//...
-					//skybox->UpdateSun(gameTime, mCubemapCameras[cubeMapFace]);
+					//skybox->UpdateSun(game.GetCoreTime(), mCubemapCameras[cubeMapFace]);
 				}
 
 				// We don't do lodding because it is bound to main camera... We force pick lod 0.

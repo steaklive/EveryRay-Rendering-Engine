@@ -3350,5 +3350,5 @@
 		0.94999999999999996
 	],
 	"sun_direction" : [],
-	"use_volumetric_fog" : false
+	"volumetric_fog_enabled" : true
 }

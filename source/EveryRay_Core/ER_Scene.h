@@ -27,66 +27,31 @@ namespace EveryRay_Core
 		ER_Material* GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries, bool instanced, int layerIndex = -1);
 		ER_RHI_GPURootSignature* GetStandardMaterialRootSignature(const std::string& materialName);
 		
-		ER_Camera& GetCamera() { return mCamera; }
-		const XMFLOAT3& GetCameraPos() { return mCameraPosition; }
-		const XMFLOAT3& GetCameraDir() { return mCameraDirection; }
-
-		const XMFLOAT3& GetSunDir() { return mSunDirection; }
-		const XMFLOAT3& GetSunColor() { return mSunColor; }
+		void LoadPointLightsData();
 		void SavePointLightsData();
 
-		bool HasLightProbesSupport() { return mHasLightProbes; }
-		const XMFLOAT3& GetLightProbesVolumeMinBounds() const { return mLightProbesVolumeMinBounds; }
-		const XMFLOAT3& GetLightProbesVolumeMaxBounds() const { return mLightProbesVolumeMaxBounds; }
-		float GetLightProbesDiffuseDistance() { return mLightProbesDiffuseDistance; }
-		float GetLightProbesSpecularDistance() { return mLightProbesSpecularDistance; }
-		const XMFLOAT3& GetGlobalLightProbeCameraPos() { return mGlobalLightProbeCameraPos; }
-
-		bool HasFoliage() { return mHasFoliage; }
 		void LoadFoliageZones(std::vector<ER_Foliage*>& foliageZones, ER_DirectionalLight& light);
 		void SaveFoliageZonesTransforms(const std::vector<ER_Foliage*>& foliageZones);
-
-		bool HasTerrain() { return mHasTerrain; }
-		int GetTerrainTilesCount() { return mTerrainTilesCount; }
-		int GetTerrainTileResolution() { return mTerrainTileResolution; }
-		float GetTerrainTileScale() { return mTerrainTileScale; }
-		const std::wstring& GetTerrainSplatLayerTextureName(int index) { return mTerrainSplatLayersTextureNames[index]; }
 
 		void LoadPostProcessingVolumes();
 		void SavePostProcessingVolumes();
 
-		bool HasVolumetricFog() { return mHasVolumetricFog; }
+		template<typename T>
+		T GetValueFromSceneRoot(const std::string& aName);
+		bool IsValueInSceneRoot(const std::string& aName);
+
 	private:
 		void CreateStandardMaterialsRootSignatures();
 		void LoadRenderingObjectData(ER_RenderingObject* aObject);
 		void LoadRenderingObjectInstancedData(ER_RenderingObject* aObject);
 
+		void ShowNoValueFoundMessage(const std::string& aName);
+
 		std::map<std::string, ER_RHI_GPURootSignature*> mStandardMaterialsRootSignatures;
-
-		ER_Camera& mCamera;
-		XMFLOAT3 mCameraPosition;
-		XMFLOAT3 mCameraDirection;
-
-		XMFLOAT3 mSunDirection; //in degrees
-		XMFLOAT3 mSunColor;
 
 		Json::Value mSceneJsonRoot;
 		std::string mScenePath;
-		
-		bool mHasVolumetricFog = false;
-		bool mHasFoliage = false;
 
-		bool mHasTerrain = false;
-		int mTerrainTilesCount = 0;
-		int mTerrainTileResolution = 0;
-		float mTerrainTileScale = 1.0f;
-		std::wstring mTerrainSplatLayersTextureNames[4];
-
-		bool mHasLightProbes = true;
-		XMFLOAT3 mLightProbesVolumeMinBounds = { 0,0,0 };
-		XMFLOAT3 mLightProbesVolumeMaxBounds = { 0,0,0 };
-		float mLightProbesDiffuseDistance = -1.0f;
-		float mLightProbesSpecularDistance = -1.0f;
-		XMFLOAT3 mGlobalLightProbeCameraPos = { 0,0,0 };
+		ER_Camera& mCamera;
 	};
 }

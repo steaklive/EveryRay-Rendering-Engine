@@ -248,6 +248,8 @@ namespace EveryRay_Core
 		void AddFoliage(ER_Foliage* foliage);
 		void SetVoxelizationParams(float* scale, const float* dimensions, XMFLOAT4* voxelCamera);
 
+		bool HasFoliage() { return mHasFoliage; }
+
 		float GetQualityFactor() { return mCurrentFoliageQualityFactor; }
 
 		using Delegate_FoliageSystemInitialized = std::function<void()>;
@@ -272,5 +274,6 @@ namespace EveryRay_Core
 		bool mShowDebug = false;
 		bool mEnabled = true;
 		bool mEnableCulling = true;
+		bool mHasFoliage = false;
 	};
 }

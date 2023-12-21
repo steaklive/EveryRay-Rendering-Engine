@@ -310,5 +310,5 @@
 		-25.0,
 		-37.0
 	],
-	"use_volumetric_fog" : true
+	"volumetric_fog_enabled" : true
 }

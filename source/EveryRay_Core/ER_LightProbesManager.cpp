@@ -59,7 +59,7 @@ namespace EveryRay_Core
 		mIntegrationMapTextureSRV = rhi->CreateGPUTexture(L"ER_RHI_GPUTexture: Integration Map BRDF");
 		mIntegrationMapTextureSRV->CreateGPUTextureResource(rhi, ER_Utility::GetFilePath(L"content\\textures\\IntegrationMapBrdf.dds"), true);
 
-		if (!scene->HasLightProbesSupport())
+		if (!scene->IsValueInSceneRoot("light_probes_volume_bounds_min") && !scene->IsValueInSceneRoot("light_probes_volume_bounds_max"))
 		{
 			mEnabled = false;
 
@@ -68,16 +68,16 @@ namespace EveryRay_Core
 			return;
 		}
 
-		mSceneProbesMinBounds = scene->GetLightProbesVolumeMinBounds();
-		mSceneProbesMaxBounds = scene->GetLightProbesVolumeMaxBounds();
+		mSceneProbesMinBounds = scene->GetValueFromSceneRoot<XMFLOAT3>("light_probes_volume_bounds_min");
+		mSceneProbesMaxBounds = scene->GetValueFromSceneRoot<XMFLOAT3>("light_probes_volume_bounds_max");
 
-		mDistanceBetweenDiffuseProbes = scene->GetLightProbesDiffuseDistance();
+		mDistanceBetweenDiffuseProbes = scene->IsValueInSceneRoot("light_probes_diffuse_distance") ? scene->GetValueFromSceneRoot<float>("light_probes_diffuse_distance") : -1.0f;
 		if (mDistanceBetweenDiffuseProbes > 0)
 			SetupDiffuseProbes(game, camera, scene, light, shadowMapper);
 		else
 			SetupGlobalDiffuseProbe(game, camera, scene, light, shadowMapper);
 		
-		mDistanceBetweenSpecularProbes = scene->GetLightProbesSpecularDistance();
+		mDistanceBetweenSpecularProbes = scene->IsValueInSceneRoot("light_probes_specular_distance") ? scene->GetValueFromSceneRoot<float>("light_probes_specular_distance") : -1.0f;
 		if (mDistanceBetweenSpecularProbes > 0)
 		{
 			mSpecularProbesVolumeSize = MAX_CUBEMAPS_IN_VOLUME_PER_AXIS * mDistanceBetweenSpecularProbes * 0.5f;
@@ -125,13 +125,13 @@ namespace EveryRay_Core
 	void ER_LightProbesManager::SetupGlobalDiffuseProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight* light, ER_ShadowMapper* shadowMapper)
 	{
 		mGlobalDiffuseProbe = new ER_LightProbe(game, light, shadowMapper, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE, -1);
-		mGlobalDiffuseProbe->SetPosition(scene->GetGlobalLightProbeCameraPos());
+		mGlobalDiffuseProbe->SetPosition(scene->GetValueFromSceneRoot<XMFLOAT3>("light_probe_global_cam_position"));
 		mGlobalDiffuseProbe->SetShaderInfoForConvolution(mConvolutionPS);
 	}
 	void ER_LightProbesManager::SetupGlobalSpecularProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight* light, ER_ShadowMapper*shadowMapper)
 	{
 		mGlobalSpecularProbe = new ER_LightProbe(game, light, shadowMapper, SPECULAR_PROBE_SIZE, SPECULAR_PROBE, -1);
-		mGlobalSpecularProbe->SetPosition(scene->GetGlobalLightProbeCameraPos());
+		mGlobalSpecularProbe->SetPosition(scene->GetValueFromSceneRoot<XMFLOAT3>("light_probe_global_cam_position"));
 		mGlobalSpecularProbe->SetShaderInfoForConvolution(mConvolutionPS);
 	}
 

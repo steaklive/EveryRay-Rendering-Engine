@@ -135,41 +135,56 @@ namespace EveryRay_Core
 
 	void ER_Terrain::LoadTerrainData(ER_Scene* aScene)
 	{
+		assert(!mLevelPath.empty());
 		ER_RHI* rhi = GetCore()->GetRHI();
 
-		if (!aScene->HasTerrain())
+		if (!aScene->IsValueInSceneRoot("terrain_num_tiles"))
 		{
 			mEnabled = false;
 			mLoaded = false;
 			return;
 		}
-		else
-			mLoaded = true;
-		assert(!mLevelPath.empty());
 
-		mTileResolution = aScene->GetTerrainTileResolution();
-		if (mTileResolution == 0)
-			throw ER_CoreException("Tile resolution (= heightmap texture tile resolution) of the terrain is 0!");
-
-		mTileScale = aScene->GetTerrainTileScale();
-		mWidth = mHeight = mTileResolution;
-
-		mNumTiles = aScene->GetTerrainTilesCount();
+		mNumTiles = aScene->GetValueFromSceneRoot<int>("terrain_num_tiles");
 		if (!(mNumTiles && !(mNumTiles & (mNumTiles - 1))))
 			throw ER_CoreException("Number of tiles defined is not a power of 2!");
 
 		if (mNumTiles > MAX_TERRAIN_TILE_COUNT)
 			throw ER_CoreException("Number of tiles exceeds MAX_TERRAIN_TILE_COUNT!");
 
+		mTileScale = aScene->GetValueFromSceneRoot<float>("terrain_tile_scale");
+
+		mTileResolution = aScene->GetValueFromSceneRoot<int>("terrain_tile_resolution");
+		if (mTileResolution == 0)
+			throw ER_CoreException("Tile resolution (= heightmap texture tile resolution) of the terrain is 0!");
+		mWidth = mHeight = mTileResolution;
+
+		std::wstring terrainSplatLayersTextureNames[NUM_TEXTURE_SPLAT_CHANNELS];
+		const std::string baseName = "terrain_texture_splat_layer";
+		std::string currentName = baseName;
+
+		for (int i = 0; i < NUM_TEXTURE_SPLAT_CHANNELS; i++)
+		{
+			currentName += std::to_string(i);
+			if (aScene->IsValueInSceneRoot(currentName.c_str()))
+				terrainSplatLayersTextureNames[i] = ER_Utility::ToWideString(aScene->GetValueFromSceneRoot<std::string>(currentName.c_str()));
+			else
+				terrainSplatLayersTextureNames[i] = L"";
+
+			currentName = baseName;
+		}
+
+		mLoaded = true;
+		
 		for (int i = 0; i < mNumTiles; i++)
 			mHeightMaps.push_back(new HeightMap(mWidth, mHeight));
 
 		std::wstring path = mLevelPath + L"terrain\\";
 		LoadTextures(path, 
-			path + aScene->GetTerrainSplatLayerTextureName(0),
-			path + aScene->GetTerrainSplatLayerTextureName(1),
-			path + aScene->GetTerrainSplatLayerTextureName(2),
-			path + aScene->GetTerrainSplatLayerTextureName(3)
+			path + terrainSplatLayersTextureNames[0],
+			path + terrainSplatLayersTextureNames[1],
+			path + terrainSplatLayersTextureNames[2],
+			path + terrainSplatLayersTextureNames[3]
 		); //not thread-safe
 
 		for (int i = 0; i < mNumTiles; i++)
@@ -578,6 +593,9 @@ namespace EveryRay_Core
 
 	void ER_Terrain::Update(const ER_CoreTime& gameTime)
 	{
+		if (!mEnabled && !mLoaded)
+			return;
+
 		ER_Camera* camera = (ER_Camera*)(mCore->GetServices().FindService(ER_Camera::TypeIdClass()));
 
 		int visibleTiles = 0;

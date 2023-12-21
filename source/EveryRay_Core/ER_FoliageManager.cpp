@@ -29,8 +29,13 @@ namespace EveryRay_Core
 		: ER_CoreComponent(pCore), mScene(aScene), mCurrentFoliageQuality(aQuality)
 	{
 		assert(aScene);
-		if (aScene->HasFoliage())
+		if (aScene->IsValueInSceneRoot("foliage_zones"))
+		{
+			mHasFoliage = true;
 			aScene->LoadFoliageZones(mFoliageCollection, light);
+		}
+		else
+			mHasFoliage = false;
 
 		ER_RHI* rhi = pCore.GetRHI();
 		mRootSignature = rhi->CreateRootSignature(2, 2);
