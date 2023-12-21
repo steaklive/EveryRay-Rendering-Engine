@@ -433,7 +433,9 @@ namespace EveryRay_Core
 		assert(index < ER_RHI_MAX_GRAPHICS_COMMAND_LISTS);
 
 		mCurrentGraphicsCommandListIndex = index;
-
+#if defined(_DEBUG) || defined (DEBUG)
+		mCurrentPSOSwitchesCount = 0;
+#endif
 		HRESULT hr;
 		if (FAILED(hr = mCommandAllocatorsGraphics[mBackBufferIndex][index]->Reset()))
 		{
@@ -1534,6 +1536,10 @@ namespace EveryRay_Core
 					mCurrentGraphicsPSOName = it->first;
 					mCurrentSetGraphicsPSOName = mCurrentGraphicsPSOName;
 					mCurrentPSOState = ER_RHI_DX12_PSO_STATE::GRAPHICS;
+
+#if defined(_DEBUG) || defined (DEBUG)
+					mCurrentPSOSwitchesCount++;
+#endif
 				}
 			}
 			else
@@ -1554,6 +1560,10 @@ namespace EveryRay_Core
 					mCurrentComputePSOName = it->first;
 					mCurrentSetComputePSOName = mCurrentComputePSOName;
 					mCurrentPSOState = ER_RHI_DX12_PSO_STATE::COMPUTE;
+
+#if defined(_DEBUG) || defined (DEBUG)
+					mCurrentPSOSwitchesCount++;
+#endif
 				}
 			}
 			else

@@ -272,6 +272,9 @@ namespace EveryRay_Core
 		std::string mCurrentSetGraphicsPSOName; //which was set to command list already
 		std::string mCurrentSetComputePSOName; //which was set to command list already
 		ER_RHI_DX12_PSO_STATE mCurrentPSOState = ER_RHI_DX12_PSO_STATE::UNSET;
+#if defined(_DEBUG) || defined (DEBUG)
+		UINT mCurrentPSOSwitchesCount = 0; // to debug how many times we switch our PSOs per frame
+#endif
 
 		ER_RHI_DX12_GPUDescriptorHeapManager* mDescriptorHeapManager = nullptr;
 
