@@ -451,8 +451,8 @@ namespace EveryRay_Core {
 				else
 					rhi->SetUnorderedAccessResources(ER_PIXEL, { mVCTVoxelCascades3DRTs[cascade] }, 0, mVoxelizationRS, VOXELIZATION_MAT_ROOT_DESCRIPTOR_TABLE_UAV_INDEX);
 
-				std::string materialName = ER_MaterialHelper::voxelizationMaterialName + "_" + std::to_string(cascade);
-				const std::string& psoName = voxelizationPSONames[cascade];
+				const std::string materialName = ER_MaterialHelper::voxelizationMaterialName + "_" + std::to_string(cascade);
+				const std::string psoName = voxelizationPSONames[cascade];
 
 				for (auto& obj : mVoxelizationObjects[cascade])
 				{
@@ -1052,7 +1052,7 @@ namespace EveryRay_Core {
 	{
 		auto rhi = mCore->GetRHI();
 
-		std::string& psoName = mForwardLightingPSOName;
+		std::string psoName = mForwardLightingPSOName;
 		if (!aObj->IsTransparent())
 		{
 			if (aObj->IsInstanced())

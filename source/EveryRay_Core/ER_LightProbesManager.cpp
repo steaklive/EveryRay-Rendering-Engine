@@ -663,7 +663,7 @@ namespace EveryRay_Core
 
 		ER_RenderingObject* probeObject = aType == DIFFUSE_PROBE ? mDiffuseProbeRenderingObject : mSpecularProbeRenderingObject;
 		bool ready = aType == DIFFUSE_PROBE ? (mDiffuseProbesReady && mDistanceBetweenDiffuseProbes > 0) : (mSpecularProbesReady && mDistanceBetweenSpecularProbes > 0);
-		std::string& psoName = DIFFUSE_PROBE ? mDiffuseDebugLightProbePassPSOName : mSpecularDebugLightProbePassPSOName;
+		const std::string psoName = DIFFUSE_PROBE ? mDiffuseDebugLightProbePassPSOName : mSpecularDebugLightProbePassPSOName;
 
 		ER_MaterialSystems materialSystems;
 		materialSystems.mProbesManager = this;

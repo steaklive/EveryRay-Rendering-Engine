@@ -281,6 +281,7 @@ namespace EveryRay_Core
 
 		bool mIsRaytracingTierAvailable = false;
 		bool mIsContextReadingBuffer = false;
+		bool mIsInstancedBufferBound = false;
 
 		ER_RHI_GPURootSignature* mClearUAV2DRS = nullptr;
 		ER_RHI_GPUShader* mClearUAV2DCS = nullptr;

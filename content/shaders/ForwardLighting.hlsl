@@ -75,7 +75,7 @@ struct VS_INPUT_INSTANCING
     float3 Tangent : TANGENT;
     
     //instancing
-    row_major float4x4 World : WORLD; // not used with indirect rendering
+    row_major float4x4 InstanceWorld : WORLD; // not used with indirect rendering
     uint InstanceID : SV_InstanceID;
 };
 
@@ -139,18 +139,18 @@ VS_OUTPUT VSMain_instancing(VS_INPUT_INSTANCING IN)
 {
     VS_OUTPUT OUT = (VS_OUTPUT) 0;
 
-    float4x4 World = (RenderingObjectFlags & RENDERING_OBJECT_FLAG_GPU_INDIRECT_DRAW) ?
-        transpose(IndirectInstanceData[(int)OriginalInstanceCount * CurrentLod + IN.InstanceID].WorldMat) : IN.World;
+    float4x4 WorldM = (RenderingObjectFlags & RENDERING_OBJECT_FLAG_GPU_INDIRECT_DRAW) ?
+        transpose(IndirectInstanceData[(int)OriginalInstanceCount * CurrentLod + IN.InstanceID].WorldMat) : IN.InstanceWorld;
 
-    OUT.WorldPos = mul(IN.Position, World).xyz;
+    OUT.WorldPos = mul(IN.Position, WorldM).xyz;
     OUT.Position = mul(float4(OUT.WorldPos, 1.0f), ViewProjection);
     OUT.UV = IN.Texcoord0;
-    OUT.Normal = normalize(mul(float4(IN.Normal, 0), World).xyz);
-    OUT.Tangent = normalize(mul(float4(IN.Tangent, 0), World).xyz);
+    OUT.Normal = normalize(mul(float4(IN.Normal, 0), WorldM).xyz);
+    OUT.Tangent = normalize(mul(float4(IN.Tangent, 0), WorldM).xyz);
     OUT.ViewDir = IN.Position.xyz - CameraPosition.xyz;
-    OUT.ShadowCoord0 = mul(IN.Position, mul(World, ShadowMatrices[0])).xyz;
-    OUT.ShadowCoord1 = mul(IN.Position, mul(World, ShadowMatrices[1])).xyz;
-    OUT.ShadowCoord2 = mul(IN.Position, mul(World, ShadowMatrices[2])).xyz;
+    OUT.ShadowCoord0 = mul(IN.Position, mul(WorldM, ShadowMatrices[0])).xyz;
+    OUT.ShadowCoord1 = mul(IN.Position, mul(WorldM, ShadowMatrices[1])).xyz;
+    OUT.ShadowCoord2 = mul(IN.Position, mul(WorldM, ShadowMatrices[2])).xyz;
     
 #if PARALLAX_OCCLUSION_MAPPING_SUPPORT
     float3x3 TBN = float3x3(OUT.Tangent, cross(OUT.Normal, OUT.Tangent), OUT.Normal);

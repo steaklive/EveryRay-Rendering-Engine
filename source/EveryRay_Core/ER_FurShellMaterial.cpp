@@ -72,7 +72,7 @@ namespace EveryRay_Core
 		rhi->SetRootSignature(rs);
 		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		const std::string& psoName =  aObj->IsInstanced() ? psoNameInstanced : psoNameNonInstanced;
+		const std::string psoName = aObj->IsInstanced() ? psoNameInstanced : psoNameNonInstanced;
 		if (!rhi->IsPSOReady(psoName))
 		{
 			rhi->InitializePSO(psoName);

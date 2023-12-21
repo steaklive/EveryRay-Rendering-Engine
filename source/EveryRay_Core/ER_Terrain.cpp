@@ -622,7 +622,7 @@ namespace EveryRay_Core
 		ER_RHI_PRIMITIVE_TYPE originalPrimitiveTopology = rhi->GetCurrentTopologyType();
 
 		ER_RHI_GPURootSignature* rootSig = mTerrainCommonPassRS;
-		std::string& psoName = ER_Utility::IsWireframe ? mTerrainMainPassWireframePSOName : mTerrainMainPassPSOName;
+		std::string psoName = ER_Utility::IsWireframe ? mTerrainMainPassWireframePSOName : mTerrainMainPassPSOName;
 		if (aPass == TERRAIN_SHADOW)
 			psoName = mTerrainShadowPassPSOName;
 		else if (aPass == TERRAIN_GBUFFER)

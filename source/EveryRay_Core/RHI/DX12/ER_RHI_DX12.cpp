@@ -536,7 +536,7 @@ namespace EveryRay_Core
 		#pragma region SHADER_CLEAR
 		auto cmdList = mCommandListGraphics[mCurrentGraphicsCommandListIndex];
 
-		const std::string& psoName = is3D ? mClearUAV3DPSOName : mClearUAV2DPSOName;
+		const std::string psoName = is3D ? mClearUAV3DPSOName : mClearUAV2DPSOName;
 		ER_RHI_GPURootSignature* rs = is3D ? mClearUAV3DRS : mClearUAV2DRS;
 
 		SetRootSignature(rs, true);
@@ -1350,6 +1350,11 @@ namespace EveryRay_Core
 
 			D3D12_VERTEX_BUFFER_VIEW view = buffer->GetVertexBufferView();
 			mCommandListGraphics[mCurrentGraphicsCommandListIndex]->IASetVertexBuffers(0, 1, &view);
+			if (mIsInstancedBufferBound)
+			{
+				mCommandListGraphics[mCurrentGraphicsCommandListIndex]->IASetVertexBuffers(1, 1, nullptr);
+				mIsInstancedBufferBound = false;
+			}
 		}
 		else //+ instance buffer
 		{
@@ -1365,6 +1370,8 @@ namespace EveryRay_Core
 
 			D3D12_VERTEX_BUFFER_VIEW views[2] = { vertexBuffer->GetVertexBufferView(), instanceBuffer->GetVertexBufferView() };
 			mCommandListGraphics[mCurrentGraphicsCommandListIndex]->IASetVertexBuffers(0, 2, views);
+
+			mIsInstancedBufferBound = true;
 		}
 	}
 

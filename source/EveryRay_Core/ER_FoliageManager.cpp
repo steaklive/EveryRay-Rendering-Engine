@@ -453,7 +453,7 @@ namespace EveryRay_Core
 		rhi->SetIndexBuffer(mIndexBuffer);
 
 		bool isVoxelizationRenderPass = renderPass == FOLIAGE_VOXELIZATION;
-		std::string& psoName = ER_Utility::IsWireframe ? mFoliageGBufferPassWireframePSOName : mFoliageGBufferPassPSOName;
+		std::string psoName = ER_Utility::IsWireframe ? mFoliageGBufferPassWireframePSOName : mFoliageGBufferPassPSOName;
 		if (isVoxelizationRenderPass)
 			psoName = mFoliageVoxelizationPassPSOName;
 

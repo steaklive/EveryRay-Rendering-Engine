@@ -339,10 +339,11 @@ namespace EveryRay_Core
 			rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 			int objectIndex = 0;
+			std::string psoName;
 			for (auto renderingObjectInfo = scene->objects.begin(); renderingObjectInfo != scene->objects.end(); renderingObjectInfo++, objectIndex++)
 			{
 				ER_RenderingObject* renderingObject = renderingObjectInfo->second;
-				const std::string& psoName = renderingObject->IsInstanced() ? psoNameInstanced : psoNameNonInstanced;
+				psoName = renderingObject->IsInstanced() ? psoNameInstanced : psoNameNonInstanced;
 				auto materialInfo = renderingObject->GetMaterials().find(materialName);
 				if (materialInfo != renderingObject->GetMaterials().end())
 				{

@@ -38,7 +38,7 @@ struct VS_INPUT_INSTANCING
     float3 Tangent : TANGENT;
     
     //instancing;
-    row_major float4x4 World : WORLD; // not used with indirect rendering
+    row_major float4x4 InstanceWorld : WORLD; // not used with indirect rendering
     uint InstanceID : SV_InstanceID;
 };
 
@@ -68,9 +68,9 @@ VS_OUTPUT VSMain_instancing(VS_INPUT_INSTANCING IN)
 {
     VS_OUTPUT OUT = (VS_OUTPUT) 0;
 
-    float4x4 World = (RenderingObjectFlags & RENDERING_OBJECT_FLAG_GPU_INDIRECT_DRAW) ?
-        transpose(IndirectInstanceData[(int)OriginalInstanceCount * CurrentLod + IN.InstanceID].WorldMat) : IN.World;
-    float3 WorldPos = mul(IN.Position, World).xyz;
+    float4x4 WorldM = (RenderingObjectFlags & RENDERING_OBJECT_FLAG_GPU_INDIRECT_DRAW) ?
+        transpose(IndirectInstanceData[(int)OriginalInstanceCount * CurrentLod + IN.InstanceID].WorldMat) : IN.InstanceWorld;
+    float3 WorldPos = mul(IN.Position, WorldM).xyz;
     OUT.Position = mul(float4(WorldPos, 1.0f), LightViewProjection);
     OUT.Depth = OUT.Position.zw;
     OUT.TextureCoordinate = IN.TextureCoordinate;

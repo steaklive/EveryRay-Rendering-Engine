@@ -111,13 +111,15 @@ namespace EveryRay_Core {
 		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		ER_MaterialSystems materialSystems;
+		std::string psoName;
+
 		for (auto renderingObjectInfo = scene->objects.begin(); renderingObjectInfo != scene->objects.end(); renderingObjectInfo++)
 		{
 			ER_RenderingObject* renderingObject = renderingObjectInfo->second;
 			if (renderingObject->IsCulled())
 				continue;
 
-			std::string& psoName = ER_Utility::IsWireframe ? psoNameNonInstancedWireframe : psoNameNonInstanced;
+			psoName = ER_Utility::IsWireframe ? psoNameNonInstancedWireframe : psoNameNonInstanced;
 			if (renderingObject->IsInstanced())
 				psoName = ER_Utility::IsWireframe ? psoNameInstancedWireframe : psoNameInstanced;
 

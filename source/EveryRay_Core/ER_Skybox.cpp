@@ -135,7 +135,7 @@ namespace EveryRay_Core
 	void ER_Skybox::Draw(ER_RHI_GPUTexture* aRenderTarget, ER_Camera* aCustomCamera, ER_RHI_GPUTexture* aSceneDepth, bool isVolumetricCloudsPass)
 	{
 		assert(aRenderTarget);
-		const std::string& psoName = isVolumetricCloudsPass ? mSkyboxPassVolumetricCloudsPSOName : mSkyboxPassPSOName;
+		const std::string psoName = isVolumetricCloudsPass ? mSkyboxPassVolumetricCloudsPSOName : mSkyboxPassPSOName;
 
 		auto rhi = mCore.GetRHI();
 
