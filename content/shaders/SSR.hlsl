@@ -12,8 +12,7 @@ cbuffer CBufferPerObject : register(b0)
 {
     float4x4 InvProjMatrix;
     float4x4 InvViewMatrix;
-    float4x4 ViewMatrix;
-    float4x4 ProjMatrix;
+    float4x4 ViewProjMatrix;
 	float4 CameraPosition;
     float StepSize;
     float MaxThickness;
@@ -29,14 +28,13 @@ float4 Raytrace(float3 reflectionWorld, const int maxCount, float stepSize, floa
 {
     float4 color = float4(0.0, 0.0f, 0.0f, 0.0f);
     float3 step = StepSize * reflectionWorld;
-    float4x4 projView = mul(ViewMatrix, ProjMatrix);
     bool success = false;
     
     for (int i = 1; i <= maxCount; i++)
     {
         float3 ray = (i + noise(uv + Time)) * step;
         float3 rayPos = pos + ray;
-        float4 vpPos = mul(float4(rayPos, 1.0f), projView);
+        float4 vpPos = mul(float4(rayPos, 1.0f), ViewProjMatrix);
         float2 rayUv = vpPos.xy / vpPos.w * float2(0.5f, -0.5f) + float2(0.5f, -0.5f);
 
         float rayDepth = vpPos.z / vpPos.w;

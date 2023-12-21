@@ -36,8 +36,7 @@ namespace EveryRay_Core
 		{
 			XMMATRIX InvProjMatrix;
 			XMMATRIX InvViewMatrix;
-			XMMATRIX ViewMatrix;
-			XMMATRIX ProjMatrix;
+			XMMATRIX ViewProjMatrix;
 			XMFLOAT4 CameraPosition;
 			float StepSize;
 			float MaxThickness;

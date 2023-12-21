@@ -566,10 +566,9 @@ namespace EveryRay_Core {
 		assert(aInputTexture);
 		auto rhi = mCore.GetRHI();
 
-		mSSRConstantBuffer.Data.InvProjMatrix = XMMatrixTranspose(XMMatrixInverse(nullptr, mCamera.ProjectionMatrix()));
-		mSSRConstantBuffer.Data.InvViewMatrix = XMMatrixTranspose(XMMatrixInverse(nullptr, mCamera.ViewMatrix()));
-		mSSRConstantBuffer.Data.ViewMatrix = XMMatrixTranspose(mCamera.ViewMatrix());
-		mSSRConstantBuffer.Data.ProjMatrix = XMMatrixTranspose(mCamera.ProjectionMatrix());
+		mSSRConstantBuffer.Data.InvProjMatrix = XMMatrixInverse(nullptr, mCamera.ProjectionMatrix());
+		mSSRConstantBuffer.Data.InvViewMatrix = XMMatrixInverse(nullptr, mCamera.ViewMatrix());
+		mSSRConstantBuffer.Data.ViewProjMatrix = XMMatrixTranspose(mCamera.ViewMatrix() * mCamera.ProjectionMatrix());
 		mSSRConstantBuffer.Data.CameraPosition = XMFLOAT4(mCamera.Position().x,mCamera.Position().y,mCamera.Position().z,1.0f);
 		mSSRConstantBuffer.Data.StepSize = mSSRStepSize;
 		mSSRConstantBuffer.Data.MaxThickness = mSSRMaxThickness;
