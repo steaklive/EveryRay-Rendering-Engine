@@ -1,6 +1,8 @@
 // Volumetric clouds shader inspired by https://www.guerrilla-games.com/read/the-real-time-volumetric-cloudscapes-of-horizon-zero-dawn
 // Also inspired by https://github.com/fede-vaccaro/TerrainEngine-OpenGL
 
+#include "..\\Common.hlsli"
+
 SamplerState CloudSampler : register(s0);
 SamplerState SimpleSampler : register(s1);
 
@@ -35,6 +37,8 @@ cbuffer CloudsConstants : register(b1)
     float BottomHeight;
     float TopHeight;
     float DensityFactor;
+    float DistanceToFadeFrom; // when to start fading
+    float DistanceOfFade; // for how long to fade
 }
 
 static const float PLANET_RADIUS = 600000.0f;
@@ -302,13 +306,14 @@ void main(int3 dispatchThreadID : SV_DispatchThreadID) // Thread ID
     inputTex.GetDimensions(width, height);
     
     float2 tex = dispatchThreadID.xy / float2(width / UpsampleRatio.x, height / UpsampleRatio.y);
-    float4 finalColor = float4(0.0, 0.0, 0.0, 1.0f);
-    finalColor = inputTex.SampleLevel(SimpleSampler, tex, 0);
+    float4 baseColor = inputTex.SampleLevel(SimpleSampler, tex, 0);
     float4 cloudsColor = float4(0.0, 0.0, 0.0, 0.0f);
     
-    if (sceneDepthTex.SampleLevel(SimpleSampler, tex, 0).r < 0.999f)
+    float depth = sceneDepthTex.SampleLevel(SimpleSampler, tex, 0).r;
+    float3 worldPos = ReconstructWorldPosFromDepth(tex, depth, InvProj, InvView);
+    if (depth < 0.999f || worldPos.y < 0.0f)
     {
-        output[dispatchThreadID.xy] = finalColor;
+        output[dispatchThreadID.xy] = baseColor;
         return;
     }
         
@@ -340,10 +345,23 @@ void main(int3 dispatchThreadID : SV_DispatchThreadID) // Thread ID
         RaySphereIntersectionFromOriginPoint(CameraPos.rgb, worldDir, innerRadius, endPos);
     }
     
-    float4 cloudDistance;
-    cloudsColor = RaymarchToCloud(tex, startPos, endPos, finalColor.rgb, cloudDistance, float2(width, height));
+    float3 skyColor = baseColor.rgb;
+    float3 outputColor = skyColor;
+
+    float4 cloudPos;
+    cloudsColor = RaymarchToCloud(tex, startPos, endPos, baseColor.rgb, cloudPos, float2(width, height));
     cloudsColor.rgb = cloudsColor.rgb * 1.8f - 0.1f;
-   
-    finalColor.rgb = lerp(finalColor.rgb, finalColor.rgb * (1.0f - cloudsColor.a) + cloudsColor.rgb, cloudsColor.a);
-    output[dispatchThreadID.xy] = finalColor;
+
+    baseColor.rgb = lerp(baseColor.rgb, baseColor.rgb * (1.0f - cloudsColor.a) + cloudsColor.rgb, cloudsColor.a * 1.0);
+
+    float cloudToCameraDistance = distance(CameraPos.xyz, cloudPos.xyz);
+    if (cloudToCameraDistance <= DistanceToFadeFrom)
+        outputColor = baseColor.rgb;
+    else if (cloudToCameraDistance > DistanceToFadeFrom && cloudToCameraDistance <= DistanceToFadeFrom + DistanceOfFade)
+    {
+        float factor = (cloudToCameraDistance - DistanceToFadeFrom) / DistanceOfFade;
+        outputColor = lerp(baseColor.rgb, skyColor.rgb, factor);
+    }
+
+    output[dispatchThreadID.xy] = float4(outputColor, 1.0f);
 }

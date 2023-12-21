@@ -52,6 +52,24 @@ float LinearizeDepth(float depth, float NearPlaneZ, float FarPlaneZ)
     return linearDepth;
 }
 
+float3 ReconstructWorldPosFromDepth(float2 uv, float depth, float4x4 invProj, float4x4 invView)
+{
+    float ndcX = uv.x * 2 - 1;
+    float ndcY = 1 - uv.y * 2; // Remember to flip y!!!
+    float4 viewPos = mul(invProj, float4(ndcX, ndcY, depth, 1.0f));
+    viewPos = viewPos / viewPos.w;
+    return mul(invView, viewPos).xyz;
+}
+
+float3 ReconstructViewPosFromDepth(float2 uv, float depth, float4x4 invProj)
+{
+    float ndcX = uv.x * 2 - 1;
+    float ndcY = 1 - uv.y * 2; // Remember to flip y!!!
+    float4 viewPos = mul(invProj, float4(ndcX, ndcY, depth, 1.0f));
+    viewPos = viewPos / viewPos.w;
+    return viewPos.xyz;
+}
+
 float3 GetTriplanarMappingWeights(float3 aWorldNormal, float aSharpness)
 {
     float3 blendWeights = pow(abs(aWorldNormal), aSharpness);

@@ -58,14 +58,7 @@ float4 Raytrace(float3 reflectionWorld, const int maxCount, float stepSize, floa
 	
     return color;
 }
-float3 ReconstructWorldPosFromDepth(float2 uv, float depth)
-{
-    float ndcX = uv.x * 2 - 1;
-    float ndcY = 1 - uv.y * 2; // Remember to flip y!!!
-    float4 viewPos = mul(float4(ndcX, ndcY, depth, 1.0f), InvProjMatrix);
-    viewPos = viewPos / viewPos.w;
-    return mul(viewPos, InvViewMatrix).xyz;
-}
+
 
 float4 PSMain(QUAD_VS_OUT IN) : SV_Target
 {
@@ -88,7 +81,7 @@ float4 PSMain(QUAD_VS_OUT IN) : SV_Target
         return color;
     
     float4 normal = GBufferNormals.Sample(Sampler, IN.TexCoord);
-    float4 worldSpacePosition = float4(ReconstructWorldPosFromDepth(IN.TexCoord, depth), 1.0f);
+    float4 worldSpacePosition = float4(ReconstructWorldPosFromDepth(IN.TexCoord, depth, InvProjMatrix, InvViewMatrix), 1.0f);
     float4 camDir = normalize(worldSpacePosition - CameraPosition);
     float3 refDir = normalize(reflect(normalize(camDir), normal));
     float4 reflectedColor = Raytrace(refDir, 50, StepSize, worldSpacePosition.rgb, IN.TexCoord);

@@ -42,6 +42,8 @@ namespace EveryRay_Core
 			float CloudsBottomHeight;
 			float CloudsTopHeight;
 			float DensityFactor;
+			float DistanceToFadeFrom; // when to start fading
+			float DistanceOfFade; // for how long to fade
 		};
 
 		struct ER_ALIGN_GPU_BUFFER UpsampleBlurCB
@@ -109,6 +111,8 @@ namespace EveryRay_Core
 		float mCloudsTopHeight = 16400.0f;
 		float mDensityFactor = 0.006f;
 		float mDownscaleFactor = 0.5f;
+		float mDistanceToFadeFrom = 58000.0f;
+		float mDistanceOfFade = 10000.0f;
 
 		bool mEnabled = true;
 		bool mShowDebug = false;

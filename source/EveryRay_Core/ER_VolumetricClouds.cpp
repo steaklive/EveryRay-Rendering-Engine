@@ -186,6 +186,8 @@ namespace EveryRay_Core {
 		mCloudsConstantBuffer.Data.CloudsBottomHeight = mCloudsBottomHeight;
 		mCloudsConstantBuffer.Data.CloudsTopHeight = mCloudsTopHeight;
 		mCloudsConstantBuffer.Data.DensityFactor = mDensityFactor;
+		mCloudsConstantBuffer.Data.DistanceToFadeFrom = mDistanceToFadeFrom;
+		mCloudsConstantBuffer.Data.DistanceOfFade = mDistanceOfFade;
 		mCloudsConstantBuffer.ApplyChanges(rhi);
 
 		mUpsampleBlurConstantBuffer.Data.Upsample = true;
@@ -207,6 +209,8 @@ namespace EveryRay_Core {
 		ImGui::SliderFloat("Crispiness", &mCrispiness, 0.0f, 100.0f);
 		ImGui::SliderFloat("Curliness", &mCurliness, 0.0f, 5.0f);
 		ImGui::SliderFloat("Coverage", &mCoverage, 0.0f, 1.0f);
+		ImGui::SliderFloat("Distance to fade from", &mDistanceToFadeFrom, mCloudsTopHeight, 100000.0f);
+		ImGui::SliderFloat("Distance of fade", &mDistanceOfFade, 0.0f, 50000.0f);
 		ImGui::SliderFloat("Wind speed factor", &mWindSpeedMultiplier, 0.0f, 10000.0f);
 		ImGui::End();
 	}
