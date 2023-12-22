@@ -155,7 +155,7 @@ namespace EveryRay_Core {
 		mMainConstantBuffer.Data.PrevViewProj = mPrevViewProj;
 		mMainConstantBuffer.Data.ShadowMatrix = mShadowMapper.GetViewMatrix(0) * mShadowMapper.GetProjectionMatrix(0) /** XMLoadFloat4x4(&MatrixHelper::GetProjectionShadowMatrix())*/;
 		mMainConstantBuffer.Data.SunDirection = XMFLOAT4{ -mDirectionalLight.Direction().x, -mDirectionalLight.Direction().y, -mDirectionalLight.Direction().z, 1.0f };
-		mMainConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetColor().x, mDirectionalLight.GetColor().y, mDirectionalLight.GetColor().z, mDirectionalLight.GetIntensity() };
+		mMainConstantBuffer.Data.SunColor = XMFLOAT4{ mDirectionalLight.GetColor().x, mDirectionalLight.GetColor().y, mDirectionalLight.GetColor().z, mDirectionalLight.mLightIntensity };
 		mMainConstantBuffer.Data.CameraPosition = XMFLOAT4{ camera->Position().x, camera->Position().y, camera->Position().z, 1.0f };
 		mMainConstantBuffer.Data.CameraNearFar_FrameIndex_PreviousFrameBlend = XMFLOAT4{ mCustomNearPlane, mCustomFarPlane, static_cast<float>(GetCore()->GetFrameIndex()), mPreviousFrameBlendFactor };
 		mMainConstantBuffer.Data.VolumeSize = XMFLOAT4{ static_cast<float>(mCurrentVoxelVolumeSizeX), static_cast<float>(mCurrentVoxelVolumeSizeY), VOXEL_VOLUME_SIZE_Z, 0.0f };

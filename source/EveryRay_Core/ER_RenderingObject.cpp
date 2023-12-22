@@ -1077,10 +1077,10 @@ namespace EveryRay_Core
 		static bool boundSizing = false;
 		static bool boundSizingSnap = false;
 
-		if (ER_Utility::IsEditorMode) 
+		if (ER_Utility::IsEditorMode && ER_Utility::IsRenderingObjectEditor)
 		{
 			ER_Utility::DisableAllEditors();
-			ER_Utility::IsEditorMode = true;
+			ER_Utility::IsRenderingObjectEditor = true;
 
 			ImGui::Begin("Object Editor");
 			std::string name = mName;

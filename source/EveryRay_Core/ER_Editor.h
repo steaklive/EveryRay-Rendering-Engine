@@ -8,6 +8,7 @@
 
 namespace EveryRay_Core
 {
+	class ER_CameraFPS;
 	class ER_RenderingObject;
 	class ER_CoreTime;
 	class ER_Scene;
@@ -24,6 +25,7 @@ namespace EveryRay_Core
 		virtual void Update(const ER_CoreTime& gameTime) override;
 	private:
 		ER_Scene* mScene = nullptr;
+		ER_CameraFPS* mCamera = nullptr;
 
 		ER_Editor(const ER_Editor& rhs);
 		ER_Editor& operator=(const ER_Editor& rhs);

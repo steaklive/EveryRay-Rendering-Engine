@@ -147,44 +147,6 @@ namespace EveryRay_Core
 
 			ER_MatrixHelper::SetTranslation(mTransformMatrix, gizmoPos);
 			ER_MatrixHelper::SetFloatArray(mTransformMatrix, mObjectTransformMatrix);
-
-			ER_MatrixHelper::SetFloatArray(viewMatrix, mCameraViewMatrix);
-			ER_MatrixHelper::SetFloatArray(projectionMatrix, mCameraProjectionMatrix);
-
-			UpdateGizmoTransform(mCameraViewMatrix, mCameraProjectionMatrix, mObjectTransformMatrix);
-		}
-	}
-
-	void ER_Wind::UpdateGizmoTransform(const float* cameraView, float* cameraProjection, float* matrix)
-	{
-		static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
-		static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
-		static bool useSnap = false;
-		static float snap[3] = { 1.f, 1.f, 1.f };
-		static float bounds[] = { -0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f };
-		static float boundsSnap[] = { 0.1f, 0.1f, 0.1f };
-		static bool boundSizing = false;
-		static bool boundSizingSnap = false;
-
-		if (ER_Utility::IsEditorMode && ER_Utility::IsWindEditor)
-		{
-			ImGui::Begin("Wind Editor");
-
-			ImGui::SliderFloat("Wind strength", &mWindStrength, 0.0f, 10.0f);
-			ImGui::SliderFloat("Wind gust distance", &mWindGustDistance, 0.0f, 10.0f);
-			ImGui::SliderFloat("Wind frequency", &mWindFrequency, 0.0f, 10.0f);
-
-			ImGuizmo::DecomposeMatrixToComponents(matrix, mMatrixTranslation, mMatrixRotation, mMatrixScale);
-			ImGui::InputFloat3("Rotate", mMatrixRotation, 3);
-			ImGuizmo::RecomposeMatrixFromComponents(mMatrixTranslation, mMatrixRotation, mMatrixScale, matrix);
-
-			ImGui::End();
-
-			ImGuiIO& io = ImGui::GetIO();
-			ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-			ImGuizmo::Manipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, matrix, NULL, useSnap ? &snap[0] : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
-
-			ApplyTransform(matrix);
 		}
 	}
 

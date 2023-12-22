@@ -44,7 +44,7 @@ namespace EveryRay_Core
 			mColor[1] = color.y;
 			mColor[2] = color.z;
 		}
-		float GetIntensity() const { return mLightIntensity; }
+
 		XMFLOAT3 GetAmbientLightColor() const { return XMFLOAT3(mAmbientColor); }
 		void SetAmbientColor(const XMFLOAT3& color) {
 			mAmbientColor[0] = color.x;
@@ -52,22 +52,7 @@ namespace EveryRay_Core
 			mAmbientColor[2] = color.z;
 		}
 		
-		// TODO: remove from here to ER_Editor or somewhere else
-		bool IsSunOnSkyRendered() { return mDrawSunOnSky; }				// doesn't affect shading, just for visuals on sky
-		float GetSunOnSkyBrightness() { return mSunOnSkyBrightness; }	// doesn't affect shading, just for visuals on sky
-		float GetSunOnSkyExponent() { return mSunOnSkyExponent; }		// doesn't affect shading, just for visuals on sky
-
 		ER_GenericEvent<Delegate_RotationUpdate>* RotationUpdateEvent = new ER_GenericEvent<Delegate_RotationUpdate>();
-
-	protected:
-		XMFLOAT3 mDirection;
-		XMFLOAT3 mUp;
-		XMFLOAT3 mRight;
-
-	private:
-		void UpdateTransformArray(CXMMATRIX transform);
-
-		ER_DebugProxyObject* mProxyModel = nullptr;
 
 		float mObjectTransformMatrix[16] =
 		{
@@ -76,20 +61,24 @@ namespace EveryRay_Core
 			0.f, 0.f, 1.f, 0.f,
 			0.f, 0.f, 0.f, 1.f
 		};
-		float mMatrixTranslation[3], mMatrixRotation[3], mMatrixScale[3];
-		float mCameraViewMatrix[16];
-		float mCameraProjectionMatrix[16];
-
-		float mProxyModelGizmoTranslationDelta = 10.0f;
 
 		float mColor[3] = { 1.0f, 0.95f, 0.863f };
 		float mAmbientColor[3] = { 0.08f, 0.08f, 0.08f };
 
-		XMMATRIX mTransformMatrix = XMMatrixIdentity();
-		
 		bool mDrawSunOnSky = true;
 		float mSunOnSkyExponent = 10000;
 		float mSunOnSkyBrightness = 2.637f;
 		float mLightIntensity = 4.0f;
+	protected:
+		XMFLOAT3 mDirection;
+		XMFLOAT3 mUp;
+		XMFLOAT3 mRight;
+	private:
+		void UpdateTransformArray(CXMMATRIX transform);
+
+		ER_DebugProxyObject* mProxyModel = nullptr;
+		float mProxyModelGizmoTranslationDelta = 10.0f;
+
+		XMMATRIX mTransformMatrix = XMMatrixIdentity();
 	};
 }

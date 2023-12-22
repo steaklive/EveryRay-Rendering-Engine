@@ -1,6 +1,7 @@
 
 
 #include "ER_Editor.h"
+#include "ER_CameraFPS.h"
 #include "ER_Core.h"
 #include "ER_CoreTime.h"
 #include "ER_VectorHelper.h"
@@ -10,6 +11,9 @@
 #include "ER_Scene.h"
 #include "ER_Skybox.h"
 #include "ER_PointLight.h"
+#include "ER_MatrixHelper.h"
+#include "ER_Wind.h"
+#include "ER_DirectionalLight.h"
 
 namespace EveryRay_Core
 {
@@ -19,6 +23,11 @@ namespace EveryRay_Core
 	static int selectedPointLightIndex = -1;
 	static const int maxRenderingObjectsListHeight = 15;
 	
+	static float cameraFov = 60.0f;
+	static float cameraMovementRate = 10.0f;
+	static float nearPlaneDist = 0.5f;
+	static float farPlaneDist = 100000.0f;
+
 	ER_Editor::ER_Editor(ER_Core& game)
 		: ER_CoreComponent(game)
 	{
@@ -27,6 +36,8 @@ namespace EveryRay_Core
 
 		for (int i = 0; i < MAX_POINT_LIGHTS_IN_EDITOR_COUNT; i++)
 			mEditorPointLightsNames[i] = (char*)malloc(sizeof(char) * MAX_NAME_CHAR_LENGTH);
+
+		mCamera = (ER_CameraFPS*)(GetCore()->GetServices().FindService(ER_Camera::TypeIdClass()));
 	}
 
 	ER_Editor::~ER_Editor()
@@ -47,7 +58,43 @@ namespace EveryRay_Core
 	{
 		if (ER_Utility::IsEditorMode) 
 		{
+			static ImGuizmo::OPERATION currentGizmoOperation(ImGuizmo::ROTATE);
+			static ImGuizmo::MODE currentGizmoMode(ImGuizmo::WORLD);
+			static bool useSnap = false;
+			static float snap[3] = { 1.f, 1.f, 1.f };
+			static float bounds[] = { -0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f };
+			static float boundsSnap[] = { 0.1f, 0.1f, 0.1f };
+			static bool boundSizing = false;
+			static bool boundSizingSnap = false;
+
+			float cameraViewMatrix[16];
+			float cameraProjectionMatrix[16];
+			ER_MatrixHelper::SetFloatArray(mCamera->ViewMatrix(), cameraViewMatrix);
+			ER_MatrixHelper::SetFloatArray(mCamera->ProjectionMatrix(), cameraProjectionMatrix);
+
+			float matrixTranslation[3], matrixRotation[3], matrixScale[3];
+
 			ImGui::Begin("Scene Editor");
+
+			if (ImGui::CollapsingHeader("Camera"))
+			{
+				assert(mCamera);
+				ImGui::Text("Position: (%.1f,%.1f,%.1f)", mCamera->Position().x, mCamera->Position().y, mCamera->Position().z);
+				if (ImGui::Button("Reset Position"))
+					mCamera->SetPosition(XMFLOAT3(0, 0, 0));
+				ImGui::SameLine();
+				if (ImGui::Button("Reset Direction"))
+					mCamera->SetDirection(XMFLOAT3(0, 0, 1));
+				ImGui::SliderFloat("Speed", &cameraMovementRate, 0.0f, 2000.0f);
+				mCamera->SetMovementRate(cameraMovementRate);
+				ImGui::SliderFloat("FOV", &cameraFov, 1.0f, 90.0f);
+				mCamera->SetFOV(cameraFov * XM_PI / 180.0f);
+				ImGui::SliderFloat("Near Plane", &nearPlaneDist, 0.5f, 150.0f);
+				mCamera->SetNearPlaneDistance(nearPlaneDist);
+				ImGui::SliderFloat("Far Plane", &farPlaneDist, 150.0f, 200000.0f);
+				mCamera->SetFarPlaneDistance(farPlaneDist);
+				ImGui::Checkbox("CPU frustum culling", &ER_Utility::IsMainCameraCPUFrustumCulling);
+			}
 
 			if (ImGui::CollapsingHeader("Environment - Lights"))
 			{
@@ -60,6 +107,28 @@ namespace EveryRay_Core
 						GetCore()->GetLevel()->mPointLights[i]->SetSelectedInEditor(false);
 
 					selectedPointLightIndex = -1;
+
+					ER_DirectionalLight* sun = GetCore()->GetLevel()->mDirectionalLight;
+					ImGui::ColorEdit3("Color", sun->mColor);
+					ImGui::ColorEdit3("Ambient Color", sun->mAmbientColor);
+					ImGui::SliderFloat("Intensity", &sun->mLightIntensity, 0.0f, 50.0f);
+
+					ImGuizmo::DecomposeMatrixToComponents(sun->mObjectTransformMatrix, matrixTranslation, matrixRotation, matrixScale);
+					ImGui::InputFloat3("Rotate", matrixRotation, 3);
+					ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, sun->mObjectTransformMatrix);
+
+					ImGui::Checkbox("Render Sun On Sky", &sun->mDrawSunOnSky);
+					if (sun->mDrawSunOnSky) 
+					{
+						ImGui::SliderFloat("Sun On Sky Exponent", &sun->mSunOnSkyExponent, 1.0f, 10000.0f);
+						ImGui::SliderFloat("Sun On Sky Brightness", &sun->mSunOnSkyBrightness, 0.0f, 10.0f);
+					}
+
+					ImGuiIO& io = ImGui::GetIO();
+					ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+					ImGuizmo::Manipulate(cameraViewMatrix, cameraProjectionMatrix, currentGizmoOperation, currentGizmoMode, sun->mObjectTransformMatrix, NULL, useSnap ? &snap[0] : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
+
+					sun->ApplyTransform(sun->mObjectTransformMatrix);
 				}
 
 				{
@@ -110,15 +179,34 @@ namespace EveryRay_Core
 
 				if (ER_Utility::IsWindEditor)
 				{
+					ER_Wind* wind = GetCore()->GetLevel()->mWind;
 					ER_Utility::DisableAllEditors(); ER_Utility::IsWindEditor = true;
+
+					ImGui::SliderFloat("Wind strength", &wind->mWindStrength, 0.0f, 10.0f);
+					ImGui::SliderFloat("Wind gust distance", &wind->mWindGustDistance, 0.0f, 10.0f);
+					ImGui::SliderFloat("Wind frequency", &wind->mWindFrequency, 0.0f, 10.0f);
+
+					ImGuizmo::DecomposeMatrixToComponents(wind->mObjectTransformMatrix, matrixTranslation, matrixRotation, matrixScale);
+					ImGui::InputFloat3("Rotate", matrixRotation, 3);
+					ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, wind->mObjectTransformMatrix);
+
+					ImGuiIO& io = ImGui::GetIO();
+					ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+					ImGuizmo::Manipulate(cameraViewMatrix, cameraProjectionMatrix, currentGizmoOperation, currentGizmoMode, wind->mObjectTransformMatrix, NULL, useSnap ? &snap[0] : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
+				
+					wind->ApplyTransform(wind->mObjectTransformMatrix);
 				}
 			}
 
-			//rendering objects
 			if (ImGui::CollapsingHeader("Rendering Objects"))
 			{
 				ImGui::Checkbox("Stop drawing", &ER_Utility::StopDrawingRenderingObjects);
 				ImGui::Checkbox("Enable wireframe", &ER_Utility::IsWireframe);
+				ImGui::Checkbox("Enable object editor", &ER_Utility::IsRenderingObjectEditor);
+				if (ER_Utility::IsRenderingObjectEditor)
+				{
+					ER_Utility::DisableAllEditors(); ER_Utility::IsRenderingObjectEditor = true;
+				}
 
 				if (ImGui::CollapsingHeader("Global LOD Properties"))
 				{

@@ -142,8 +142,6 @@ namespace EveryRay_Core
 			object->SetVoxelizationParams(scale, dimensions, voxelCamera);
 	}
 	
-	const std::string showNoteInEditorText = "Note: enable full editor mode for this to work.";
-
 	void ER_FoliageManager::UpdateImGui()
 	{
 		if (!mShowDebug || mFoliageCollection.size() == 0)
@@ -154,16 +152,13 @@ namespace EveryRay_Core
 		ImGui::Checkbox("CPU frustum cull", &mEnableCulling);
 		ImGui::SliderFloat("Max LOD distance", &mMaxDistanceToCamera, 150.0f, 1500.0f);
 		ImGui::SliderFloat("Delta LOD distance", &mDeltaDistanceToCamera, 15.0f, 150.0f);
-		ImGui::Checkbox("Enable foliage editor", &ER_Utility::IsFoliageEditor);
+		ImGui::Checkbox("Open foliage editor (must be in editor mode!)", &ER_Utility::IsFoliageEditor);
 		if (ER_Utility::IsFoliageEditor)
 		{
-			ER_Utility::DisableAllEditors();
-			ER_Utility::IsFoliageEditor = true;
+			ER_Utility::DisableAllEditors(); ER_Utility::IsFoliageEditor = true;
 		}
 		if (ImGui::Button("Save foliage changes"))
 			mScene->SaveFoliageZonesData(mFoliageCollection);
-
-		ImGui::Text(showNoteInEditorText.c_str());
 
 		for (int i = 0; i < mFoliageCollection.size(); i++)
 			mFoliageZonesNamesUI[i] = mFoliageCollection[i]->GetName().c_str();
@@ -566,8 +561,8 @@ namespace EveryRay_Core
 			ImGui::Text(patchRenderedCountText.c_str());
 
 			std::string textureText = "* Texture: " + mTextureName;
-			ImGui::Text(textureText.c_str());
-			
+			ImGui::TextWrapped(textureText.c_str());
+
 			//if (!mIsPlacedOnTerrain)
 			{
 				//terrain
@@ -608,12 +603,21 @@ namespace EveryRay_Core
 					}
 				}
 
+				if (ImGui::Button("Move camera to"))
+				{
+					XMFLOAT3 newCameraPos;
+					ER_MatrixHelper::GetTranslation(XMLoadFloat4x4(&(XMFLOAT4X4(mCurrentObjectTransformMatrix))), newCameraPos);
+
+					mCamera.SetPosition(newCameraPos);
+				}
+
 				if (ImGui::IsKeyPressed(84))
 					mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
 
 				ImGuizmo::DecomposeMatrixToComponents(mCurrentObjectTransformMatrix, mMatrixTranslation, mMatrixRotation, mMatrixScale);
 				ImGui::InputFloat3("Tr", mMatrixTranslation, 3);
 				ImGuizmo::RecomposeMatrixFromComponents(mMatrixTranslation, mMatrixRotation, mMatrixScale, mCurrentObjectTransformMatrix);
+
 				ImGui::End();
 
 				ImGuiIO& io = ImGui::GetIO();

@@ -72,6 +72,11 @@ namespace EveryRay_Core {
 		rhi->BeginGraphicsCommandList(rhi->GetPrepareGraphicsCommandListIndex()); // for texture loading etc. (everything before the first frame starts)
 		rhi->SetGPUDescriptorHeap(ER_RHI_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
 
+		#pragma region INIT_CONTROLS
+        mKeyboard = (ER_Keyboard*)game.GetServices().FindService(ER_Keyboard::TypeIdClass());
+        assert(mKeyboard);
+#pragma endregion
+
 		#pragma region INIT_SCENE
 		game.CPUProfiler()->BeginCPUTime("Scene init: " + sceneName);
         mScene = new ER_Scene(game, camera, sceneFolderPath + sceneName + ".json");
@@ -96,11 +101,6 @@ namespace EveryRay_Core {
         mGBuffer = new ER_GBuffer(game, camera, game.ScreenWidth(), game.ScreenHeight());
         mGBuffer->Initialize();
         game.CPUProfiler()->EndCPUTime("Gbuffer init");
-#pragma endregion
-
-		#pragma region INIT_CONTROLS
-        mKeyboard = (ER_Keyboard*)game.GetServices().FindService(ER_Keyboard::TypeIdClass());
-        assert(mKeyboard);
 #pragma endregion
 
 		#pragma region INIT_DIRECTIONAL_LIGHT
@@ -208,19 +208,18 @@ namespace EveryRay_Core {
 		}
 #pragma endregion
 
-#pragma region INIT_WIND
+		#pragma region INIT_WIND
 		game.CPUProfiler()->BeginCPUTime("Wind init");
 		mWind = new ER_Wind(game, camera);
 		game.CPUProfiler()->EndCPUTime("Wind init");
 #pragma endregion
 
-#pragma region INIT_GPU_CULLER
+		#pragma region INIT_GPU_CULLER
 		game.CPUProfiler()->BeginCPUTime("GPU Culler init");
 		mGPUCuller = new ER_GPUCuller(game, camera);
 		mGPUCuller->Initialize();
 		game.CPUProfiler()->EndCPUTime("GPU Culler init");
 #pragma endregion
-
 
 		#pragma region INIT_MATERIAL_CALLBACKS
 		game.CPUProfiler()->BeginCPUTime("Material callbacks init");
@@ -310,7 +309,7 @@ namespace EveryRay_Core {
 
     void ER_Sandbox::UpdateImGui()
     {
-        ImGui::Begin("Systems Config");
+        ImGui::Begin("Gfx Systems Config");
 
         if (ImGui::Button("Post Processing Stack") && mPostProcessingStack)
             mPostProcessingStack->Config();

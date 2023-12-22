@@ -32,7 +32,8 @@ namespace EveryRay_Core
 		static UINT FastHash(const void* aData, int len);
 		static void DisableAllEditors();
 
-		static bool IsEditorMode;
+		static bool IsEditorMode; // global flag for editor mode
+		static bool IsRenderingObjectEditor;
 		static bool IsSunLightEditor;
 		static bool IsWindEditor;
 		static bool IsFoliageEditor;

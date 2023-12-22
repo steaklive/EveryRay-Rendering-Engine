@@ -9,6 +9,7 @@
 namespace EveryRay_Core
 {
 	bool ER_Utility::IsEditorMode = false;
+	bool ER_Utility::IsRenderingObjectEditor = false;
 	bool ER_Utility::IsSunLightEditor = false;
 	bool ER_Utility::IsWindEditor = false;
 	bool ER_Utility::IsFoliageEditor = false;
@@ -176,7 +177,7 @@ namespace EveryRay_Core
 
 	void ER_Utility::DisableAllEditors()
 	{
-		ER_Utility::IsFoliageEditor = ER_Utility::IsSunLightEditor = ER_Utility::IsPostEffectsVolumeEditor = ER_Utility::IsWindEditor = false;
+		ER_Utility::IsRenderingObjectEditor = ER_Utility::IsFoliageEditor = ER_Utility::IsSunLightEditor = ER_Utility::IsPostEffectsVolumeEditor = ER_Utility::IsWindEditor = false;
 	}
 
 	// http://www.azillionmonkeys.com/qed/hash.html

@@ -150,52 +150,8 @@ namespace EveryRay_Core
 
 			ER_MatrixHelper::SetTranslation(mTransformMatrix, gizmoPos);
 			ER_MatrixHelper::SetFloatArray(mTransformMatrix, mObjectTransformMatrix);
-
-			ER_MatrixHelper::SetFloatArray(viewMatrix, mCameraViewMatrix);
-			ER_MatrixHelper::SetFloatArray(projectionMatrix, mCameraProjectionMatrix);
-
-			UpdateGizmoTransform(mCameraViewMatrix, mCameraProjectionMatrix, mObjectTransformMatrix);
 		}
 	}
-
-	void ER_DirectionalLight::UpdateGizmoTransform(const float *cameraView, float *cameraProjection, float* matrix)
-	{
-		static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
-		static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
-		static bool useSnap = false;
-		static float snap[3] = { 1.f, 1.f, 1.f };
-		static float bounds[] = { -0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f };
-		static float boundsSnap[] = { 0.1f, 0.1f, 0.1f };
-		static bool boundSizing = false;
-		static bool boundSizingSnap = false;
-
-		if (ER_Utility::IsEditorMode && ER_Utility::IsSunLightEditor)
-		{
-			ImGui::Begin("Directional Light Editor");
-
-			ImGui::ColorEdit3("Color", mColor);
-			ImGui::ColorEdit3("Ambient Color", mAmbientColor);
-			ImGui::SliderFloat("Intensity", &mLightIntensity, 0.0f, 50.0f);
-
-			ImGuizmo::DecomposeMatrixToComponents(matrix, mMatrixTranslation, mMatrixRotation, mMatrixScale);
-			ImGui::InputFloat3("Rotate", mMatrixRotation, 3);
-			ImGuizmo::RecomposeMatrixFromComponents(mMatrixTranslation, mMatrixRotation, mMatrixScale, matrix);
-
-			ImGui::Checkbox("Render Sun On Sky", &mDrawSunOnSky);
-			if (mDrawSunOnSky) {
-				ImGui::SliderFloat("Sun On Sky Exponent", &mSunOnSkyExponent, 1.0f, 10000.0f);
-				ImGui::SliderFloat("Sun On Sky Brightness", &mSunOnSkyBrightness, 0.0f, 10.0f);
-			}
-			ImGui::End();
-
-			ImGuiIO& io = ImGui::GetIO();
-			ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-			ImGuizmo::Manipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, matrix, NULL, useSnap ? &snap[0] : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
-		
-			ApplyTransform(matrix);
-		}
-	}
-
 	void ER_DirectionalLight::UpdateTransformArray(CXMMATRIX transform)
 	{
 		XMFLOAT4X4 transformMatrix;

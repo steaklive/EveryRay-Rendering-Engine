@@ -18,11 +18,6 @@
 namespace EveryRay_Core
 {
 	static int currentLevel = 0;
-	static float fov = 60.0f;
-	static float movementRate = 10.0f;
-	static float nearPlaneDist = 0.5f;
-	static float farPlaneDist = 600.0f;
-
 	static std::mutex renderingObjectsTextureCacheMutex;
 	static std::mutex renderingObjects3DModelsCacheMutex;
 
@@ -73,12 +68,12 @@ namespace EveryRay_Core
 			mCoreServices.AddService(ER_Gamepad::TypeIdClass(), mGamepad);
 		}
 
-		mCamera = new ER_CameraFPS(*this, 1.5708f, this->AspectRatio(), nearPlaneDist, farPlaneDist );
+		mCamera = new ER_CameraFPS(*this, 1.5708f, this->AspectRatio(), 0.5f, 100000.0f);
 		mCamera->SetPosition(0.0f, 20.0f, 65.0f);
-		mCamera->SetMovementRate(movementRate);
-		mCamera->SetFOV(fov*XM_PI / 180.0f);
-		mCamera->SetNearPlaneDistance(nearPlaneDist);
-		mCamera->SetFarPlaneDistance(farPlaneDist);
+		mCamera->SetMovementRate(10.0f);
+		mCamera->SetFOV(60.0f * XM_PI / 180.0f);
+		mCamera->SetNearPlaneDistance(0.5f);
+		mCamera->SetFarPlaneDistance(100000.0f);
 		mCoreComponents.push_back(mCamera);
 		mCoreServices.AddService(ER_Camera::TypeIdClass(), mCamera);
 
@@ -268,9 +263,6 @@ namespace EveryRay_Core
 		}
 		auto endUpdateTimer = std::chrono::high_resolution_clock::now();
 		mElapsedTimeUpdateCPU = endUpdateTimer - startUpdateTimer;
-
-		farPlaneDist = mCamera->FarPlaneDistance();
-		nearPlaneDist = mCamera->NearPlaneDistance();
 	}
 	
 	void ER_RuntimeCore::UpdateImGui()
@@ -286,62 +278,28 @@ namespace EveryRay_Core
 		if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Backspace)) || mGamepad->WasButtonPressedThisFrame(GamepadButtons::GamepadBackButton))
 			ER_Utility::IsEditorMode = !ER_Utility::IsEditorMode;
 		ImGuizmo::Enable(ER_Utility::IsEditorMode);
-		if (ER_Utility::IsEditorMode)
-		{
-			ImGui::Begin("EveryRay Camera Editor");
-
-			ImGui::Text("Camera Position: (%.1f,%.1f,%.1f)", mCamera->Position().x, mCamera->Position().y, mCamera->Position().z);
-			if (ImGui::Button("Reset Position"))
-				mCamera->SetPosition(XMFLOAT3(0, 0, 0));
-			ImGui::SameLine();
-			if (ImGui::Button("Reset Direction"))
-				mCamera->SetDirection(XMFLOAT3(0, 0, 1));
-			ImGui::SliderFloat("Camera Speed", &movementRate, 0.0f, 2000.0f);
-			mCamera->SetMovementRate(movementRate);
-			ImGui::SliderFloat("Camera FOV", &fov, 1.0f, 90.0f);
-			mCamera->SetFOV(fov*XM_PI / 180.0f);
-			ImGui::SliderFloat("Camera Near Plane", &nearPlaneDist, 0.5f, 150.0f);
-			mCamera->SetNearPlaneDistance(nearPlaneDist);
-			ImGui::SliderFloat("Camera Far Plane", &farPlaneDist, 150.0f, 200000.0f);
-			mCamera->SetFarPlaneDistance(farPlaneDist);
-			ImGui::Checkbox("CPU frustum culling", &ER_Utility::IsMainCameraCPUFrustumCulling);
-			ImGui::End();
-		}
 			
 		ImGui::SetNextWindowBgAlpha(0.9f); // Transparent background
-		if (ImGui::Begin("EveryRay - Rendering Engine: Configuration"))
+		if (ImGui::Begin("EveryRay - Rendering Engine"))
 		{
 			ImGui::TextColored(ImVec4(0.52f, 0.78f, 0.04f, 1), "Welcome to EveryRay!");
 			ImGui::Separator();
 			
 			ImGui::TextColored(ImVec4(0.95f, 0.5f, 0.0f, 1), "FPS: (%.1f FPS), %.3f ms/frame", ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
-			
 			if (ImGui::IsMousePosValid())
 				ImGui::Text("Mouse Position: (%.1f,%.1f)", ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
 			else
 				ImGui::Text("Mouse Position: <invalid>");
 			
 			ImGui::Separator();
-
-			ImGui::Checkbox("Switch to Editor", &ER_Utility::IsEditorMode);
-
-			ImGui::Checkbox("Show Profiler", &mShowProfiler);
-			if (mShowProfiler)
+			ImGui::Checkbox("Open Editor", &ER_Utility::IsEditorMode);
+			
+			if (ImGui::CollapsingHeader("Profiler"))
 			{
-				ImGui::Begin("EveryRay Profiler");
-				
-				if (ImGui::CollapsingHeader("CPU Time"))
-				{
-					ImGui::TextColored(ImVec4(0.8f, 0.0f, 0.0f, 1), "Render: %f ms", mElapsedTimeRenderCPU.count() * 1000);
-					ImGui::TextColored(ImVec4(0.8f, 0.0f, 0.0f, 1), "Update: %f ms", mElapsedTimeUpdateCPU.count() * 1000);
-				}
-				if (ImGui::CollapsingHeader("GPU Time"))
-				{
-				}
-				ImGui::End();
+				ImGui::TextColored(ImVec4(0.95f, 0.5f, 0.0f, 1), "CPU Render: %f ms", mElapsedTimeRenderCPU.count() * 1000);
+				ImGui::TextColored(ImVec4(0.95f, 0.5f, 0.0f, 1), "CPU Update: %f ms", mElapsedTimeUpdateCPU.count() * 1000);
 			}
-			ImGui::Separator();
-
+			
 			if (ImGui::CollapsingHeader("Load level"))
 			{
 				if (ImGui::Combo("Level", &currentLevel, mDisplayedLevelNames, mNumParsedScenesFromConfig))

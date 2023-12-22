@@ -140,11 +140,11 @@ namespace EveryRay_Core
 
 	void ER_Skybox::UpdateSun(const ER_CoreTime& gameTime, ER_Camera* aCustomCamera)
 	{
-		mDrawSun = mSun.IsSunOnSkyRendered();
+		mDrawSun = mSun.mDrawSunOnSky;
 		mSunDir = XMFLOAT4(mSun.Direction().x, mSun.Direction().y, mSun.Direction().z, 1.0);
 		mSunColor = XMFLOAT4(mSun.GetColor().x, mSun.GetColor().y, mSun.GetColor().z, 1.0);
-		mSunBrightness = mSun.GetSunOnSkyBrightness();
-		mSunExponent = mSun.GetSunOnSkyExponent();
+		mSunBrightness = mSun.mSunOnSkyBrightness;
+		mSunExponent = mSun.mSunOnSkyExponent;
 
 		auto rhi = mCore.GetRHI();
 

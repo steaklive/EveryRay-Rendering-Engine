@@ -101,7 +101,7 @@ namespace EveryRay_Core
 			neededSystems.mShadowMapper->GetCameraFarShadowCascadeDistance(1), 
 			neededSystems.mShadowMapper->GetCameraFarShadowCascadeDistance(2), 1.0f };
 		mConstantBuffer.Data.SunDirection = XMFLOAT4{ -neededSystems.mDirectionalLight->Direction().x, -neededSystems.mDirectionalLight->Direction().y, -neededSystems.mDirectionalLight->Direction().z, 1.0f };
-		mConstantBuffer.Data.SunColor = XMFLOAT4{ neededSystems.mDirectionalLight->GetColor().x, neededSystems.mDirectionalLight->GetColor().y, neededSystems.mDirectionalLight->GetColor().z, neededSystems.mDirectionalLight->GetIntensity() };
+		mConstantBuffer.Data.SunColor = XMFLOAT4{ neededSystems.mDirectionalLight->GetColor().x, neededSystems.mDirectionalLight->GetColor().y, neededSystems.mDirectionalLight->GetColor().z, neededSystems.mDirectionalLight->mLightIntensity };
 		mConstantBuffer.Data.CameraPosition = XMFLOAT4{ neededSystems.mCamera->Position().x, neededSystems.mCamera->Position().y, neededSystems.mCamera->Position().z, 1.0f };
 		mConstantBuffer.Data.SnowDepthLevel = XMFLOAT4{ mSnowDepth, mSnowLevel, mSnowUVScale, 0.0f };
 		mConstantBuffer.ApplyChanges(rhi);
