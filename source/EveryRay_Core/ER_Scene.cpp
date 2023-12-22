@@ -602,7 +602,81 @@ namespace EveryRay_Core
 		std::wstring msg = L"[ER Logger][ER_Scene] Loaded rendering object into scene: " + ER_Utility::ToWideString(aObject->GetName()) + L'\n';
 		ER_OUTPUT_LOG(msg.c_str());
 	}
-	void ER_Scene::SaveRenderingObjectsTransforms()
+	// [WARNING] NOT THREAD-SAFE!
+	void ER_Scene::LoadRenderingObjectInstancedData(ER_RenderingObject* aObject)
+	{
+		int i = aObject->GetIndexInScene();
+		bool isInstanced = aObject->IsInstanced();
+		if (!isInstanced)
+			return;
+
+		bool hasLODs = mSceneJsonRoot["rendering_objects"][i].isMember("model_lods");
+		if (hasLODs)
+		{
+			for (int lod = 0; lod < static_cast<int>(mSceneJsonRoot["rendering_objects"][i]["model_lods"].size()); lod++)
+			{
+				aObject->LoadInstanceBuffers(lod);
+				if (aObject->GetTerrainPlacement() && aObject->GetTerrainProceduralInstanceCount() > 0)
+				{
+					int instanceCount = aObject->GetTerrainProceduralInstanceCount();
+					aObject->ResetInstanceData(instanceCount, true, lod);
+					for (int i = 0; i < instanceCount; i++)
+						aObject->AddInstanceData(XMMatrixIdentity(), lod);
+				}
+				else
+				{
+					if (mSceneJsonRoot["rendering_objects"][i].isMember("instances_transforms")) {
+						aObject->ResetInstanceData(mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size(), true, lod);
+						for (Json::Value::ArrayIndex instance = 0; instance != mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size(); instance++) {
+							float matrix[16];
+							for (Json::Value::ArrayIndex matC = 0; matC != mSceneJsonRoot["rendering_objects"][i]["instances_transforms"][instance]["transform"].size(); matC++) {
+								matrix[matC] = mSceneJsonRoot["rendering_objects"][i]["instances_transforms"][instance]["transform"][matC].asFloat();
+							}
+							XMFLOAT4X4 worldTransform(matrix);
+							aObject->AddInstanceData(XMMatrixTranspose(XMLoadFloat4x4(&worldTransform)), lod);
+						}
+					}
+					else {
+						aObject->ResetInstanceData(1, true, lod);
+						aObject->AddInstanceData(aObject->GetTransformationMatrix(), lod);
+					}
+				}
+				aObject->UpdateInstanceBuffer(aObject->GetInstancesData(), lod);
+			}
+		}
+		else {
+			aObject->LoadInstanceBuffers();
+
+			if (aObject->GetTerrainPlacement() && aObject->GetTerrainProceduralInstanceCount() > 0)
+			{
+				int instanceCount = aObject->GetTerrainProceduralInstanceCount();
+				aObject->ResetInstanceData(instanceCount, true);
+				for (int i = 0; i < instanceCount; i++)
+					aObject->AddInstanceData(XMMatrixIdentity());
+			}
+			else
+			{
+				if (mSceneJsonRoot["rendering_objects"][i].isMember("instances_transforms")) {
+					aObject->ResetInstanceData(mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size(), true);
+					for (Json::Value::ArrayIndex instance = 0; instance != mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size(); instance++) {
+						float matrix[16];
+						for (Json::Value::ArrayIndex matC = 0; matC != mSceneJsonRoot["rendering_objects"][i]["instances_transforms"][instance]["transform"].size(); matC++) {
+							matrix[matC] = mSceneJsonRoot["rendering_objects"][i]["instances_transforms"][instance]["transform"][matC].asFloat();
+						}
+						XMFLOAT4X4 worldTransform(matrix);
+						aObject->AddInstanceData(XMMatrixTranspose(XMLoadFloat4x4(&worldTransform)));
+					}
+				}
+				else {
+					aObject->ResetInstanceData(1, true);
+					aObject->AddInstanceData(aObject->GetTransformationMatrix());
+				}
+			}
+			aObject->UpdateInstanceBuffer(aObject->GetInstancesData());
+		}
+	}
+	// TODO: add functionality for storing flags, etc. (currently only transforms can be saved to json)
+	void ER_Scene::SaveRenderingObjectsData()
 	{
 		if (mScenePath.empty())
 			throw ER_CoreException("Can't save to scene json file! Empty scene name...");
@@ -685,81 +759,7 @@ namespace EveryRay_Core
 		return nullptr;
 	}
 
-	// [WARNING] NOT THREAD-SAFE!
-	void ER_Scene::LoadRenderingObjectInstancedData(ER_RenderingObject* aObject)
-	{
-		int i = aObject->GetIndexInScene();
-		bool isInstanced = aObject->IsInstanced();
-		if (!isInstanced)
-			return;
-
-		bool hasLODs = mSceneJsonRoot["rendering_objects"][i].isMember("model_lods");
-		if (hasLODs)
-		{
-			for (int lod = 0; lod < static_cast<int>(mSceneJsonRoot["rendering_objects"][i]["model_lods"].size()); lod++)
-			{
-				aObject->LoadInstanceBuffers(lod);
-				if (aObject->GetTerrainPlacement() && aObject->GetTerrainProceduralInstanceCount() > 0)
-				{
-					int instanceCount = aObject->GetTerrainProceduralInstanceCount();
-					aObject->ResetInstanceData(instanceCount, true, lod);
-					for (int i = 0; i < instanceCount; i++)
-						aObject->AddInstanceData(XMMatrixIdentity(), lod);
-				}
-				else
-				{
-					if (mSceneJsonRoot["rendering_objects"][i].isMember("instances_transforms")) {
-						aObject->ResetInstanceData(mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size(), true, lod);
-						for (Json::Value::ArrayIndex instance = 0; instance != mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size(); instance++) {
-							float matrix[16];
-							for (Json::Value::ArrayIndex matC = 0; matC != mSceneJsonRoot["rendering_objects"][i]["instances_transforms"][instance]["transform"].size(); matC++) {
-								matrix[matC] = mSceneJsonRoot["rendering_objects"][i]["instances_transforms"][instance]["transform"][matC].asFloat();
-							}
-							XMFLOAT4X4 worldTransform(matrix);
-							aObject->AddInstanceData(XMMatrixTranspose(XMLoadFloat4x4(&worldTransform)), lod);
-						}
-					}
-					else {
-						aObject->ResetInstanceData(1, true, lod);
-						aObject->AddInstanceData(aObject->GetTransformationMatrix(), lod);
-					}
-				}
-				aObject->UpdateInstanceBuffer(aObject->GetInstancesData(), lod);
-			}
-		}
-		else {
-			aObject->LoadInstanceBuffers();
-
-			if (aObject->GetTerrainPlacement() && aObject->GetTerrainProceduralInstanceCount() > 0)
-			{
-				int instanceCount = aObject->GetTerrainProceduralInstanceCount();
-				aObject->ResetInstanceData(instanceCount, true);
-				for (int i = 0; i < instanceCount; i++)
-					aObject->AddInstanceData(XMMatrixIdentity());
-			}
-			else
-			{
-				if (mSceneJsonRoot["rendering_objects"][i].isMember("instances_transforms")) {
-					aObject->ResetInstanceData(mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size(), true);
-					for (Json::Value::ArrayIndex instance = 0; instance != mSceneJsonRoot["rendering_objects"][i]["instances_transforms"].size(); instance++) {
-						float matrix[16];
-						for (Json::Value::ArrayIndex matC = 0; matC != mSceneJsonRoot["rendering_objects"][i]["instances_transforms"][instance]["transform"].size(); matC++) {
-							matrix[matC] = mSceneJsonRoot["rendering_objects"][i]["instances_transforms"][instance]["transform"][matC].asFloat();
-						}
-						XMFLOAT4X4 worldTransform(matrix);
-						aObject->AddInstanceData(XMMatrixTranspose(XMLoadFloat4x4(&worldTransform)));
-					}
-				}
-				else {
-					aObject->ResetInstanceData(1, true);
-					aObject->AddInstanceData(aObject->GetTransformationMatrix());
-				}
-			}
-			aObject->UpdateInstanceBuffer(aObject->GetInstancesData());
-		}
-	}
-
-	void ER_Scene::LoadFoliageZones(std::vector<ER_Foliage*>& foliageZones, ER_DirectionalLight& light)
+	void ER_Scene::LoadFoliageZonesData(std::vector<ER_Foliage*>& foliageZones, ER_DirectionalLight& light)
 	{
 		Json::Reader reader;
 		std::ifstream scene(mScenePath.c_str(), std::ifstream::binary);
@@ -801,7 +801,8 @@ namespace EveryRay_Core
 			}
 		}
 	}
-	void ER_Scene::SaveFoliageZonesTransforms(const std::vector<ER_Foliage*>& foliageZones)
+	// TODO: add functionality for storing flags, etc. (currently only transforms can be saved to json)
+	void ER_Scene::SaveFoliageZonesData(const std::vector<ER_Foliage*>& foliageZones)
 	{
 		if (mScenePath.empty())
 			throw ER_CoreException("Can't save to scene json file! Empty scene name...");
@@ -829,7 +830,7 @@ namespace EveryRay_Core
 		writer->write(mSceneJsonRoot, &file_id);
 	}
 
-	void ER_Scene::LoadPostProcessingVolumes()
+	void ER_Scene::LoadPostProcessingVolumesData()
 	{
 		ER_Core* core = GetCore();
 		assert(core);
@@ -922,7 +923,7 @@ namespace EveryRay_Core
 		if (mSceneJsonRoot.isMember("posteffects_aa_enabled"))
 			pp->SetUseAntiAliasing(mSceneJsonRoot["posteffects_aa_enabled"].asBool());
 	}
-	void ER_Scene::SavePostProcessingVolumes()
+	void ER_Scene::SavePostProcessingVolumesData()
 	{
 		if (mScenePath.empty())
 			throw ER_CoreException("Can't save to scene json file! Empty scene name...");
@@ -971,49 +972,6 @@ namespace EveryRay_Core
 		std::ofstream file_id;
 		file_id.open(mScenePath.c_str());
 		writer->write(mSceneJsonRoot, &file_id);
-	}
-
-	// We cant do reflection in C++, that is why we check every materials name and create a material out of it (and root-signature if needed)
-	// "layerIndex" is used when we need to render multiple layers/copies of the material and keep track of each index
-	ER_Material* ER_Scene::GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries, bool instanced, int layerIndex)
-	{
-		ER_Core* core = GetCore();
-		assert(core);
-		ER_RHI* rhi = core->GetRHI();
-
-		ER_Material* material = nullptr;
-
-		if (matName == "BasicColorMaterial")
-			material = new ER_BasicColorMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER /*TODO instanced support*/);
-		else if (matName == "ShadowMapMaterial")
-			material = new ER_ShadowMapMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
-		else if (matName == "GBufferMaterial")
-			material = new ER_GBufferMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
-		else if (matName == "RenderToLightProbeMaterial")
-			material = new ER_RenderToLightProbeMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
-		else if (matName == "VoxelizationMaterial")
-			material = new ER_VoxelizationMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_GEOMETRY_SHADER | HAS_PIXEL_SHADER, instanced);
-		else if (matName == "SnowMaterial")
-			material = new ER_SimpleSnowMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
-		else if (matName == "FresnelOutlineMaterial")
-			material = new ER_FresnelOutlineMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
-		else if (matName == "FurShellMaterial")
-			material = new ER_FurShellMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced, layerIndex);
-		else
-			material = nullptr;
-
-		return material;
-	}
-
-	ER_RHI_GPURootSignature* ER_Scene::GetStandardMaterialRootSignature(const std::string& materialName)
-	{
-		auto it = mStandardMaterialsRootSignatures.find(materialName);
-		if (it != mStandardMaterialsRootSignatures.end())
-		{
-			return it->second;
-		}
-		else
-			return nullptr;
 	}
 
 	void ER_Scene::LoadPointLightsData()
@@ -1107,6 +1065,49 @@ namespace EveryRay_Core
 		writer->write(mSceneJsonRoot, &file_id);
 	}
 	
+	// We cant do reflection in C++, that is why we check every materials name and create a material out of it (and root-signature if needed)
+	// "layerIndex" is used when we need to render multiple layers/copies of the material and keep track of each index
+	ER_Material* ER_Scene::GetMaterialByName(const std::string& matName, const MaterialShaderEntries& entries, bool instanced, int layerIndex)
+	{
+		ER_Core* core = GetCore();
+		assert(core);
+		ER_RHI* rhi = core->GetRHI();
+
+		ER_Material* material = nullptr;
+
+		if (matName == "BasicColorMaterial")
+			material = new ER_BasicColorMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER /*TODO instanced support*/);
+		else if (matName == "ShadowMapMaterial")
+			material = new ER_ShadowMapMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
+		else if (matName == "GBufferMaterial")
+			material = new ER_GBufferMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
+		else if (matName == "RenderToLightProbeMaterial")
+			material = new ER_RenderToLightProbeMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
+		else if (matName == "VoxelizationMaterial")
+			material = new ER_VoxelizationMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_GEOMETRY_SHADER | HAS_PIXEL_SHADER, instanced);
+		else if (matName == "SnowMaterial")
+			material = new ER_SimpleSnowMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
+		else if (matName == "FresnelOutlineMaterial")
+			material = new ER_FresnelOutlineMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced);
+		else if (matName == "FurShellMaterial")
+			material = new ER_FurShellMaterial(*core, entries, HAS_VERTEX_SHADER | HAS_PIXEL_SHADER, instanced, layerIndex);
+		else
+			material = nullptr;
+
+		return material;
+	}
+
+	ER_RHI_GPURootSignature* ER_Scene::GetStandardMaterialRootSignature(const std::string& materialName)
+	{
+		auto it = mStandardMaterialsRootSignatures.find(materialName);
+		if (it != mStandardMaterialsRootSignatures.end())
+		{
+			return it->second;
+		}
+		else
+			return nullptr;
+	}
+
 	void ER_Scene::ShowNoValueFoundMessage(const std::string& aName)
 	{
 		std::wstring msg = L"[ER Logger][ER_Scene] Could not load a requested value: " + ER_Utility::ToWideString(aName) + L"\n";

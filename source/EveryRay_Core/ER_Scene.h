@@ -20,7 +20,8 @@ namespace EveryRay_Core
 		ER_Scene(ER_Core& pCore, ER_Camera& pCamera, const std::string& path);
 		~ER_Scene();
 
-		void SaveRenderingObjectsTransforms();
+		void LoadRenderingObjectData(ER_RenderingObject* aObject);
+		void SaveRenderingObjectsData();
 		ER_RenderingObject* FindRenderingObjectByName(const std::string& aName);
 		std::vector<ER_SceneObject> objects;
 
@@ -30,20 +31,20 @@ namespace EveryRay_Core
 		void LoadPointLightsData();
 		void SavePointLightsData();
 
-		void LoadFoliageZones(std::vector<ER_Foliage*>& foliageZones, ER_DirectionalLight& light);
-		void SaveFoliageZonesTransforms(const std::vector<ER_Foliage*>& foliageZones);
+		void LoadFoliageZonesData(std::vector<ER_Foliage*>& foliageZones, ER_DirectionalLight& light);
+		void SaveFoliageZonesData(const std::vector<ER_Foliage*>& foliageZones);
 
-		void LoadPostProcessingVolumes();
-		void SavePostProcessingVolumes();
+		void LoadPostProcessingVolumesData();
+		void SavePostProcessingVolumesData();
 
 		template<typename T>
 		T GetValueFromSceneRoot(const std::string& aName);
 		bool IsValueInSceneRoot(const std::string& aName);
 
 	private:
-		void CreateStandardMaterialsRootSignatures();
-		void LoadRenderingObjectData(ER_RenderingObject* aObject);
 		void LoadRenderingObjectInstancedData(ER_RenderingObject* aObject);
+		
+		void CreateStandardMaterialsRootSignatures();
 
 		void ShowNoValueFoundMessage(const std::string& aName);
 

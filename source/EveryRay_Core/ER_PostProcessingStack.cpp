@@ -364,7 +364,7 @@ namespace EveryRay_Core {
 		ImGui::Checkbox("Enable volume editor", &ER_Utility::IsPostEffectsVolumeEditor);
 		
 		if (ImGui::Button("Save volume changes"))
-			mCore.GetLevel()->mScene->SavePostProcessingVolumes();
+			mCore.GetLevel()->mScene->SavePostProcessingVolumesData();
 
 		bool editable = ER_Utility::IsEditorMode && ER_Utility::IsPostEffectsVolumeEditor;
 		if (editable)

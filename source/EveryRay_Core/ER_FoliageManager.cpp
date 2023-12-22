@@ -32,7 +32,7 @@ namespace EveryRay_Core
 		if (aScene->IsValueInSceneRoot("foliage_zones"))
 		{
 			mHasFoliage = true;
-			aScene->LoadFoliageZones(mFoliageCollection, light);
+			aScene->LoadFoliageZonesData(mFoliageCollection, light);
 		}
 		else
 			mHasFoliage = false;
@@ -161,7 +161,7 @@ namespace EveryRay_Core
 			ER_Utility::IsFoliageEditor = true;
 		}
 		if (ImGui::Button("Save foliage changes"))
-			mScene->SaveFoliageZonesTransforms(mFoliageCollection);
+			mScene->SaveFoliageZonesData(mFoliageCollection);
 
 		ImGui::Text(showNoteInEditorText.c_str());
 

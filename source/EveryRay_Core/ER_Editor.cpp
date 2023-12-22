@@ -128,7 +128,7 @@ namespace EveryRay_Core
 					//add more if needed
 				}
 				if (ImGui::Button("Save Object's Transform"))
-					mScene->SaveRenderingObjectsTransforms();
+					mScene->SaveRenderingObjectsData();
 				ImGui::SameLine();
 				if (ImGui::Button("Deselect Object"))
 					selectedObjectIndex = -1;
