@@ -1266,7 +1266,7 @@ namespace EveryRay_Core
 		const float sqrDistLod2 = ER_Utility::DistancesLOD[2] * ER_Utility::DistancesLOD[2];
 
 		if (mIsInstanced) {
-			if (!mIsIndirectlyRendered) // LODs are also updated in ER_GPUCuller, so no need to do that here
+			if (mIsIndirectlyRendered) // LODs are also updated in ER_GPUCuller, so no need to do that here
 				return;
 			if (!ER_Utility::IsMainCameraCPUFrustumCulling && mInstanceData.size() == 0)
 				return;
@@ -1383,7 +1383,7 @@ namespace EveryRay_Core
 			{
 				for (int i = 0; i < count; i++)
 				{
-					std::string instanceName = mName + " #" + std::to_string(i);
+					std::string instanceName = mName + " instance #" + std::to_string(i);
 					strcpy(mEditorInstancedNamesUI[i], instanceName.c_str());
 				}
 			}

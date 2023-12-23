@@ -931,6 +931,18 @@
 					]
 				}
 			],
+			"model_lods" : 
+			[
+				{
+					"path" : "content\\models\\rocks\\rock_1\\rock_1_lod_high.fbx"
+				},
+				{
+					"path" : "content\\models\\rocks\\rock_1\\rock_1_lod_mid.fbx"
+				},
+				{
+					"path" : "content\\models\\rocks\\rock_1\\rock_1_lod_low.fbx"
+				}
+			],
 			"model_path" : "content\\models\\rocks\\rock_1\\rock_1_lod_high.fbx",
 			"name" : "Rocks",
 			"new_materials" : 
