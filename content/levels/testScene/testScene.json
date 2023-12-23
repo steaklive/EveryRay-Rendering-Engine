@@ -1,15 +1,9 @@
 {
-	"camera_direction" : 
-	[
-		0.0,
-		0.0,
-		-1.0
-	],
 	"camera_position" : 
 	[
-		0.0,
-		10.0,
-		35.0
+		-116.0,
+		20.0,
+		155.0
 	],
 	"foliage_zones" : 
 	[
@@ -19,9 +13,9 @@
 			"patch_count" : 10,
 			"position" : 
 			[
-				30.0,
+				100.0,
 				0.33339524269104004,
-				80.0
+				95.0
 			],
 			"texture_path" : "content\\textures\\foliage\\grass_flower_type1.png",
 			"type" : 0
@@ -32,9 +26,9 @@
 			"patch_count" : 15,
 			"position" : 
 			[
-				30.0,
+				100.0,
 				0.79759275913238525,
-				80.0
+				95.0
 			],
 			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
 			"type" : 3
@@ -45,9 +39,9 @@
 			"patch_count" : 150,
 			"position" : 
 			[
-				30.0,
+				100.0,
 				0.5495452880859375,
-				80.0
+				95.0
 			],
 			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
 			"type" : 2
@@ -58,9 +52,9 @@
 			"patch_count" : 10,
 			"position" : 
 			[
-				50.0,
+				120.0,
 				0.33339524269104004,
-				80.0
+				95.0
 			],
 			"texture_path" : "content\\textures\\foliage\\grass_flower_type3.png",
 			"type" : 0
@@ -71,9 +65,9 @@
 			"patch_count" : 15,
 			"position" : 
 			[
-				50.0,
+				120.0,
 				0.79759275913238525,
-				80.0
+				95.0
 			],
 			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
 			"type" : 3
@@ -84,9 +78,9 @@
 			"patch_count" : 150,
 			"position" : 
 			[
-				50.0,
+				120.0,
 				0.5495452880859375,
-				80.0
+				95.0
 			],
 			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
 			"type" : 2
@@ -97,9 +91,9 @@
 			"patch_count" : 10,
 			"position" : 
 			[
-				70.0,
+				140.0,
 				0.33339524269104004,
-				80.0
+				95.0
 			],
 			"texture_path" : "content\\textures\\foliage\\grass_flower_type10.png",
 			"type" : 0
@@ -110,9 +104,9 @@
 			"patch_count" : 15,
 			"position" : 
 			[
-				70.0,
+				140.0,
 				0.79759275913238525,
-				80.0
+				95.0
 			],
 			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
 			"type" : 3
@@ -123,30 +117,415 @@
 			"patch_count" : 150,
 			"position" : 
 			[
-				70.0,
+				140.0,
 				0.5495452880859375,
-				80.0
+				95.0
 			],
 			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
 			"type" : 2
 		}
 	],
-	"light_probes_diffuse_distance" : 30.0,
+	"light_probes_diffuse_distance" : 15.0,
 	"light_probes_specular_distance" : 50.0,
 	"light_probes_volume_bounds_max" : 
 	[
-		100.0,
-		52.2,
+		210.0,
+		52.200000000000003,
 		86.0
 	],
 	"light_probes_volume_bounds_min" : 
 	[
-		-144.0,
+		-210.0,
 		0.20000000000000001,
-		-46.0
+		-26.0
+	],
+	"point_lights" : 
+	[
+		{
+			"color" : 
+			[
+				0.61764669418334961,
+				0.0,
+				1.0,
+				400.0
+			],
+			"position" : 
+			[
+				186.96023559570312,
+				5.2644810676574707,
+				36.819038391113281
+			],
+			"radius" : 3.8459999561309814
+		},
+		{
+			"color" : 
+			[
+				0.10000000149011612,
+				0.69999998807907104,
+				1.0,
+				67.307998657226562
+			],
+			"position" : 
+			[
+				171.850341796875,
+				12.036750793457031,
+				26.779014587402344
+			],
+			"radius" : 12.5
+		},
+		{
+			"color" : 
+			[
+				0.98039215803146362,
+				0.23068025708198547,
+				0.0,
+				689.02398681640625
+			],
+			"position" : 
+			[
+				163.78157043457031,
+				10.736303329467773,
+				9.1758785247802734
+			],
+			"radius" : 4.2680001258850098
+		}
+	],
+	"posteffects_aa_enabled" : true,
+	"posteffects_colorgrading_enabled" : true,
+	"posteffects_linearfog_enabled" : false,
+	"posteffects_ssr_enabled" : false,
+	"posteffects_sss_enabled" : true,
+	"posteffects_tonemapping_enabled" : true,
+	"posteffects_vignette_enabled" : true,
+	"posteffects_volumes" : 
+	[
+		{
+			"posteffects_colorgrading_enabled" : false,
+			"posteffects_colorgrading_lut" : 1,
+			"posteffects_linearfog_color" : 
+			[
+				0.94999999999999996,
+				0.90000000000000002,
+				0.94999999999999996
+			],
+			"posteffects_linearfog_density" : 2000,
+			"posteffects_linearfog_enabled" : true,
+			"posteffects_ssr_enabled" : false,
+			"posteffects_sss_enabled" : false,
+			"posteffects_tonemapping_enabled" : true,
+			"posteffects_vignette_enabled" : false,
+			"posteffects_vignette_radius" : 0.62,
+			"posteffects_vignette_softness" : 0.67000000000000004,
+			"volume_name" : "PP_1",
+			"volume_transform" : 
+			[
+				20.0,
+				0.0,
+				0.0,
+				-50.0,
+				0.0,
+				20.0,
+				0.0,
+				15.0,
+				0.0,
+				0.0,
+				20.0,
+				200.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"posteffects_colorgrading_enabled" : true,
+			"posteffects_colorgrading_lut" : 1,
+			"posteffects_linearfog_color" : 
+			[
+				0.94999999999999996,
+				0.90000000000000002,
+				0.94999999999999996
+			],
+			"posteffects_linearfog_density" : 2000,
+			"posteffects_linearfog_enabled" : false,
+			"posteffects_ssr_enabled" : false,
+			"posteffects_sss_enabled" : false,
+			"posteffects_tonemapping_enabled" : true,
+			"posteffects_vignette_enabled" : true,
+			"posteffects_vignette_radius" : 0.62,
+			"posteffects_vignette_softness" : 0.67000000000000004,
+			"volume_name" : "PP_2",
+			"volume_transform" : 
+			[
+				20.0,
+				0.0,
+				0.0,
+				12.0,
+				0.0,
+				20.0,
+				0.0,
+				15.0,
+				0.0,
+				0.0,
+				20.0,
+				200.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"posteffects_colorgrading_enabled" : true,
+			"posteffects_colorgrading_lut" : 2,
+			"posteffects_linearfog_color" : 
+			[
+				0.94999999999999996,
+				0.0,
+				0.20000000000000001
+			],
+			"posteffects_linearfog_density" : 3000,
+			"posteffects_linearfog_enabled" : true,
+			"posteffects_ssr_enabled" : false,
+			"posteffects_sss_enabled" : false,
+			"posteffects_tonemapping_enabled" : true,
+			"posteffects_vignette_enabled" : false,
+			"posteffects_vignette_radius" : 0.62,
+			"posteffects_vignette_softness" : 0.67000000000000004,
+			"volume_name" : "PP_3",
+			"volume_transform" : 
+			[
+				20.0,
+				0.0,
+				0.0,
+				74.0,
+				0.0,
+				20.0,
+				0.0,
+				15.0,
+				0.0,
+				0.0,
+				20.0,
+				200.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		}
 	],
 	"rendering_objects" : 
 	[
+		{
+			"model_path" : "content\\models\\text3d\\text_materials.fbx",
+			"name" : "Text 3D - Materials",
+			"new_materials" : 
+			[
+				{
+					"name" : "BasicColorMaterial"
+				}
+			],
+			"transform" : 
+			[
+				5.991969108581543,
+				0.0,
+				0.0,
+				-135.03898620605469,
+				0.0,
+				-2.6226831550957286e-07,
+				6.0,
+				-0.13706564903259277,
+				0.0,
+				-6.0,
+				-2.6226831550957286e-07,
+				62.111824035644531,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"use_forward_shading" : true
+		},
+		{
+			"model_path" : "content\\models\\text3d\\text_posteffects.fbx",
+			"name" : "Text 3D - Post Effects Volumes",
+			"new_materials" : 
+			[
+				{
+					"name" : "BasicColorMaterial"
+				}
+			],
+			"transform" : 
+			[
+				5.9878392219543457,
+				0.0,
+				0.0,
+				-69.977264404296875,
+				0.0,
+				-2.6226831550957286e-07,
+				6.0,
+				-0.40000000596046448,
+				0.0,
+				-6.0,
+				-2.6226831550957286e-07,
+				235.18142700195312,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"use_forward_shading" : true
+		},
+		{
+			"model_path" : "content\\models\\text3d\\text_pbr.fbx",
+			"name" : "Text 3D - PBR",
+			"new_materials" : 
+			[
+				{
+					"name" : "BasicColorMaterial"
+				}
+			],
+			"transform" : 
+			[
+				5.9936728477478027,
+				0.0,
+				0.0,
+				16.774286270141602,
+				0.0,
+				-2.6226831550957286e-07,
+				6.0,
+				-0.40000000596046448,
+				0.0,
+				-6.0,
+				-2.6226831550957286e-07,
+				64.367851257324219,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"use_forward_shading" : true
+		},
+		{
+			"model_path" : "content\\models\\text3d\\text_foliage.fbx",
+			"name" : "Text 3D - Foliage",
+			"new_materials" : 
+			[
+				{
+					"name" : "BasicColorMaterial"
+				}
+			],
+			"transform" : 
+			[
+				5.9918427467346191,
+				0.0,
+				0.0,
+				90.811538696289062,
+				0.0,
+				-2.6226831550957286e-07,
+				6.0,
+				-0.40000000596046448,
+				0.0,
+				-6.0,
+				-2.6226831550957286e-07,
+				111.69073486328125,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"use_forward_shading" : true
+		},
+		{
+			"model_path" : "content\\models\\text3d\\text_pom.fbx",
+			"name" : "Text 3D - POM",
+			"new_materials" : 
+			[
+				{
+					"name" : "BasicColorMaterial"
+				}
+			],
+			"transform" : 
+			[
+				5.9921860694885254,
+				0.0,
+				0.0,
+				-237.11399841308594,
+				0.0,
+				-2.6226831550957286e-07,
+				6.0,
+				-0.40000000596046448,
+				0.0,
+				-6.0,
+				-2.6226831550957286e-07,
+				19.738117218017578,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"use_forward_shading" : true
+		},
+		{
+			"model_path" : "content\\models\\text3d\\text_props.fbx",
+			"name" : "Text 3D - Props",
+			"new_materials" : 
+			[
+				{
+					"name" : "BasicColorMaterial"
+				}
+			],
+			"transform" : 
+			[
+				5.991884708404541,
+				0.0,
+				0.0,
+				137.94744873046875,
+				0.0,
+				-2.6226831550957286e-07,
+				6.0,
+				-0.40000000596046448,
+				0.0,
+				-6.0,
+				-2.6226831550957286e-07,
+				62.111824035644531,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"use_forward_shading" : true
+		},
+		{
+			"model_path" : "content\\models\\text3d\\text_lights.fbx",
+			"name" : "Text 3D - Lights",
+			"new_materials" : 
+			[
+				{
+					"name" : "BasicColorMaterial"
+				}
+			],
+			"transform" : 
+			[
+				5.9926590919494629,
+				0.0,
+				0.0,
+				201.33491516113281,
+				0.0,
+				-2.6226831550957286e-07,
+				6.0,
+				-0.40000000596046448,
+				0.0,
+				-6.0,
+				-2.6226831550957286e-07,
+				63.146064758300781,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"use_forward_shading" : true
+		},
 		{
 			"instanced" : false,
 			"model_path" : "content\\models\\default_plane\\plane.fbx",
@@ -174,18 +553,18 @@
 			],
 			"transform" : 
 			[
-				0.083492308855056763,
-				-0.38095787167549133,
-				0.0,
-				120.0,
-				0.38095787167549133,
-				0.083492308855056763,
-				0.0,
-				16.38648796081543,
+				0.30000001192092896,
 				0.0,
 				0.0,
-				0.38999858498573303,
-				25.0,
+				-180.0,
+				0.0,
+				0.067485325038433075,
+				-0.29231107234954834,
+				13.0,
+				0.0,
+				0.29231107234954834,
+				0.067485325038433075,
+				50.0,
 				0.0,
 				0.0,
 				0.0,
@@ -222,18 +601,18 @@
 			],
 			"transform" : 
 			[
-				0.083492308855056763,
-				-0.38095787167549133,
-				0.0,
-				120.0,
-				0.38095787167549133,
-				0.083492308855056763,
-				0.0,
-				16.38648796081543,
+				0.30000001192092896,
 				0.0,
 				0.0,
-				0.38999858498573303,
-				-10.0,
+				-180.0,
+				0.0,
+				0.067485325038433075,
+				-0.29231107234954834,
+				13.0,
+				0.0,
+				0.29231107234954834,
+				0.067485325038433075,
+				21.0,
 				0.0,
 				0.0,
 				0.0,
@@ -269,18 +648,18 @@
 			],
 			"transform" : 
 			[
-				0.083492308855056763,
-				-0.38095787167549133,
-				0.0,
-				120.0,
-				0.38095787167549133,
-				0.083492308855056763,
-				0.0,
-				16.368000030517578,
+				0.30000001192092896,
 				0.0,
 				0.0,
-				0.38999858498573303,
-				60.0,
+				-180.0,
+				0.0,
+				0.067485325038433075,
+				-0.29231107234954834,
+				13.0,
+				0.0,
+				0.29231107234954834,
+				0.067485325038433075,
+				-8.0,
 				0.0,
 				0.0,
 				0.0,
@@ -328,6 +707,272 @@
 			"use_indirect_global_lightprobe" : true
 		},
 		{
+			"instanced" : false,
+			"model_path" : "content\\models\\shed\\shed.fbx",
+			"name" : "Shed",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\models\\shed\\001_diffuse.dds",
+					"normal" : "content\\models\\shed\\001_normal.dds",
+					"roughness" : "content\\models\\shed\\001_roughness.png"
+				}
+			],
+			"transform" : 
+			[
+				6.0511007308959961,
+				-4.3368220329284668,
+				-1.8956846759010659e-07,
+				170.41261291503906,
+				0.0,
+				-3.2542152439418714e-07,
+				7.4447751045227051,
+				12.104063034057617,
+				-4.3367710113525391,
+				-6.0511713027954102,
+				-2.6450504719832679e-07,
+				28.109193801879883,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"use_in_global_lightprobe_rendering" : true,
+			"use_indirect_global_lightprobe" : true
+		},
+		{
+			"instanced" : true,
+			"instances_transforms" : 
+			[
+				{
+					"transform" : 
+					[
+						8.3152503967285156,
+						-9.0634851455688477,
+						-3.9617677316527988e-07,
+						142.32557678222656,
+						0.0,
+						-5.3765023722007754e-07,
+						12.299979209899902,
+						-0.20000000298023224,
+						-9.0634908676147461,
+						-8.3152456283569336,
+						-3.6347020682114817e-07,
+						28.135824203491211,
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					]
+				},
+				{
+					"transform" : 
+					[
+						6.0621557235717773,
+						0.0,
+						-10.702359199523926,
+						141.30947875976562,
+						0.0,
+						12.300000190734863,
+						0.0,
+						2.9474420547485352,
+						10.702359199523926,
+						0.0,
+						6.0621557235717773,
+						20.249843597412109,
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					]
+				}
+			],
+			"model_path" : "content\\models\\barrel\\barrel.fbx",
+			"name" : "Barrels",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\models\\barrel\\Barrel1_BaseColor.dds",
+					"metalness" : "content\\models\\barrel\\Barrel1_Metallic.png",
+					"normal" : "content\\models\\barrel\\Barrel1_Normal.dds",
+					"roughness" : "content\\models\\barrel\\Barrel1_Roughness.png"
+				}
+			],
+			"transform" : 
+			[
+				6.0621557235717773,
+				0.0,
+				-10.702359199523926,
+				141.30947875976562,
+				0.0,
+				12.300000190734863,
+				0.0,
+				2.9474420547485352,
+				10.702359199523926,
+				0.0,
+				6.0621557235717773,
+				20.249843597412109,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"instanced" : true,
+			"instances_transforms" : 
+			[
+				{
+					"transform" : 
+					[
+						-0.3433012068271637,
+						-5.7306097005493939e-06,
+						0.71658414602279663,
+						150.22914123535156,
+						0.44166237115859985,
+						0.62570500373840332,
+						0.21160052716732025,
+						-0.87189960479736328,
+						-0.56428521871566772,
+						0.48973864316940308,
+						-0.27033886313438416,
+						38.780204772949219,
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					]
+				},
+				{
+					"transform" : 
+					[
+						0.7137719988822937,
+						1.1617104611616469e-08,
+						0.40017053484916687,
+						146.25196838378906,
+						-1.3313502300604796e-08,
+						0.81829452514648438,
+						-8.551435601300561e-12,
+						0.74668455123901367,
+						-0.40017053484916687,
+						-6.5032335072601199e-09,
+						0.7137719988822937,
+						35.423561096191406,
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					]
+				},
+				{
+					"transform" : 
+					[
+						-0.4838334321975708,
+						-0.1549796462059021,
+						0.060728531330823898,
+						145.75588989257812,
+						-0.15505298972129822,
+						0.48753976821899414,
+						0.0088008977472782135,
+						0.10057306289672852,
+						-0.060527611523866653,
+						-0.010080813430249691,
+						-0.5079846978187561,
+						40.037681579589844,
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					]
+				},
+				{
+					"transform" : 
+					[
+						0.23094259202480316,
+						0.0,
+						-0.30169135332107544,
+						140.43621826171875,
+						0.0,
+						0.37993448972702026,
+						0.0,
+						-0.48795509338378906,
+						0.30169135332107544,
+						0.0,
+						0.23094259202480316,
+						33.176795959472656,
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					]
+				}
+			],
+			"model_path" : "content\\models\\rocks\\rock_1\\rock_1_lod_high.fbx",
+			"name" : "Rocks",
+			"new_materials" : 
+			[
+				{
+					"name" : "ShadowMapMaterial"
+				},
+				{
+					"name" : "GBufferMaterial"
+				},
+				{
+					"name" : "RenderToLightProbeMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\models\\rocks\\rock_1\\rock_low_Base_Color.dds",
+					"normal" : "content\\models\\rocks\\rock_1\\rock_low_Normal_DirectX.dds"
+				}
+			],
+			"transform" : 
+			[
+				2.0910017490386963,
+				0.0,
+				0.0,
+				141.30947875976562,
+				0.0,
+				2.0910003185272217,
+				0.0,
+				2.9474420547485352,
+				0.0,
+				0.0,
+				2.0910017490386963,
+				95.567131042480469,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
 			"instanced" : true,
 			"instances_transforms" : 
 			[
@@ -337,7 +982,7 @@
 						8.1999998092651367,
 						0.0,
 						0.0,
-						30.0,
+						100.0,
 						0.0,
 						8.1999998092651367,
 						0.0,
@@ -345,7 +990,7 @@
 						0.0,
 						0.0,
 						8.1999998092651367,
-						80.0,
+						95.0,
 						0.0,
 						0.0,
 						0.0,
@@ -358,7 +1003,7 @@
 						8.1999998092651367,
 						0.0,
 						0.0,
-						50.0,
+						120.0,
 						0.0,
 						8.1999998092651367,
 						0.0,
@@ -366,7 +1011,7 @@
 						0.0,
 						0.0,
 						8.1999998092651367,
-						80.0,
+						95.0,
 						0.0,
 						0.0,
 						0.0,
@@ -379,7 +1024,7 @@
 						8.1999998092651367,
 						0.0,
 						0.0,
-						70.0,
+						140.0,
 						0.0,
 						8.1999998092651367,
 						0.0,
@@ -387,7 +1032,7 @@
 						0.0,
 						0.0,
 						8.1999998092651367,
-						80.0,
+						95.0,
 						0.0,
 						0.0,
 						0.0,
@@ -422,18 +1067,18 @@
 			],
 			"transform" : 
 			[
-				9.0576000213623047,
+				8.1999998092651367,
 				0.0,
 				0.0,
-				30.0,
+				140.0,
 				0.0,
-				9.0576000213623047,
+				8.1999998092651367,
 				0.0,
-				-0.13127541542053223,
+				-0.20000000298023224,
 				0.0,
 				0.0,
-				9.0576000213623047,
-				80.0,
+				8.1999998092651367,
+				95.0,
 				0.0,
 				0.0,
 				0.0,
@@ -3575,12 +4220,10 @@
 		0.94999999999999996,
 		0.94999999999999996
 	],
-	"sun_direction" : [],
-	"posteffects_linearfog_enabled" : false,
-	"posteffects_aa_enabled" : true,
-	"posteffects_tonemapping_enabled" : true,
-	"posteffects_sss_enabled" : true,
-	"posteffects_ssr_enabled" : false,
-	"posteffects_vignette_enabled" : true,
-	"posteffects_colorgrading_enabled" : true
+	"sun_direction" : 
+	[
+		-71.5,
+		-27.5,
+		30.0
+	]
 }

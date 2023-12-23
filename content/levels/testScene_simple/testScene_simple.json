@@ -1,10 +1,4 @@
 {
-	"camera_direction" : 
-	[
-		0.0,
-		0.0,
-		-1.0
-	],
 	"camera_position" : 
 	[
 		0.0,
@@ -280,6 +274,5 @@
 		-54.0,
 		-24.0,
 		-24.0
-	],
-	"volumetric_fog_enabled" : false
+	]
 }
