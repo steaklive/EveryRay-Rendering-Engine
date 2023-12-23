@@ -113,6 +113,7 @@ namespace EveryRay_Core
 					ImGui::ColorEdit3("Ambient Color", sun->mAmbientColor);
 					ImGui::SliderFloat("Intensity", &sun->mLightIntensity, 0.0f, 50.0f);
 
+					currentGizmoOperation = ImGuizmo::ROTATE;
 					ImGuizmo::DecomposeMatrixToComponents(sun->mObjectTransformMatrix, matrixTranslation, matrixRotation, matrixScale);
 					ImGui::InputFloat3("Rotate", matrixRotation, 3);
 					ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, sun->mObjectTransformMatrix);
@@ -131,6 +132,8 @@ namespace EveryRay_Core
 					sun->ApplyTransform(sun->mObjectTransformMatrix);
 				}
 
+				//point lights
+				ImGui::Separator();
 				{
 					int objectIndex = 0;
 					int objectsSize = static_cast<int>(GetCore()->GetLevel()->mPointLights.size());
@@ -154,9 +157,45 @@ namespace EveryRay_Core
 					for (int i = 0; i < objectsSize; i++)
 						GetCore()->GetLevel()->mPointLights[i]->SetSelectedInEditor(i == selectedPointLightIndex);
 
-					// disable other editors if we selected a point light
 					if (selectedPointLightIndex >= 0)
+					{
 						ER_Utility::DisableAllEditors();
+
+						ER_PointLight* light = GetCore()->GetLevel()->mPointLights[selectedPointLightIndex];
+
+						ImGui::ColorEdit3("Color", light->mEditorColor);
+						ImGui::SliderFloat("Intensity", &light->mEditorIntensity, 0.0f, 1000.0f);
+						light->SetColor(XMFLOAT4(light->mEditorColor[0], light->mEditorColor[1], light->mEditorColor[2], light->mEditorIntensity));
+
+						ImGui::SliderFloat("Radius", &light->mRadius, 0.0f, 100.0f);
+
+						light->mEditorCurrentTransformMatrix[12] = light->GetPosition().x;
+						light->mEditorCurrentTransformMatrix[13] = light->GetPosition().y;
+						light->mEditorCurrentTransformMatrix[14] = light->GetPosition().z;
+
+						currentGizmoOperation = ImGuizmo::TRANSLATE;
+						currentGizmoMode = ImGuizmo::WORLD;
+
+						if (ImGui::IsKeyPressed(84))
+							currentGizmoOperation = ImGuizmo::TRANSLATE;
+
+						ImGuizmo::DecomposeMatrixToComponents(light->mEditorCurrentTransformMatrix, matrixTranslation, matrixRotation, matrixScale);
+						ImGui::InputFloat3("Translate", matrixTranslation, 3);
+						ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, light->mEditorCurrentTransformMatrix);
+
+						if (ImGui::Button("Move camera to"))
+						{
+							XMFLOAT3 newCameraPos = light->GetPosition();
+							mCamera->SetPosition(newCameraPos);
+						}
+
+						ImGuiIO& io = ImGui::GetIO();
+						ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+						ImGuizmo::Manipulate(cameraViewMatrix, cameraProjectionMatrix, currentGizmoOperation, currentGizmoMode, light->mEditorCurrentTransformMatrix,
+							NULL, useSnap ? &snap[0] : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
+
+						light->SetPosition(XMFLOAT3(light->mEditorCurrentTransformMatrix[12], light->mEditorCurrentTransformMatrix[13], light->mEditorCurrentTransformMatrix[14]));
+					}
 				}
 			}
 

@@ -50,7 +50,7 @@ namespace EveryRay_Core
 
 		mConstantBuffer.Data.World = XMMatrixTranspose(aObj->GetTransformationMatrix());
 		mConstantBuffer.Data.ViewProjection = XMMatrixTranspose(camera->ViewMatrix() * camera->ProjectionMatrix());
-		mConstantBuffer.Data.Color = XMFLOAT4{0.0, 1.0, 0.0, 0.0};
+		mConstantBuffer.Data.Color = XMFLOAT4{0.0, 0.0, 0.0, 0.0};
 		mConstantBuffer.ApplyChanges(rhi);
 
 		rhi->SetRootSignature(rs);

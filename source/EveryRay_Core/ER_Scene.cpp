@@ -1053,7 +1053,7 @@ namespace EveryRay_Core
 			if (mSceneJsonRoot["point_lights"][i].isMember("radius"))
 			{
 				if (light)
-					mSceneJsonRoot["point_lights"][i]["radius"] = light->GetRadius();
+					mSceneJsonRoot["point_lights"][i]["radius"] = light->mRadius;
 			}
 		}
 

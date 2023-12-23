@@ -904,7 +904,7 @@ namespace EveryRay_Core {
 		{
 			if (i < sceneLightCount)
 			{
-				mPointLightsDataCPU[i].PositionRadius = XMFLOAT4(lights[i]->GetPosition().x, lights[i]->GetPosition().y, lights[i]->GetPosition().z, lights[i]->GetRadius());
+				mPointLightsDataCPU[i].PositionRadius = XMFLOAT4(lights[i]->GetPosition().x, lights[i]->GetPosition().y, lights[i]->GetPosition().z, lights[i]->mRadius);
 				mPointLightsDataCPU[i].ColorIntensity = XMFLOAT4(lights[i]->GetColor().x, lights[i]->GetColor().y, lights[i]->GetColor().z, lights[i]->GetColor().w);
 			}
 			else

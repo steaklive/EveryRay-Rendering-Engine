@@ -20,21 +20,12 @@ namespace EveryRay_Core
 		const XMFLOAT3& GetPosition() const { return mPosition; }
 		XMVECTOR PositionVector() const;
 
-		void SetRadius(float value);
-		float GetRadius() const { return mRadius; }
-
 		void SetSelectedInEditor(bool value) { mIsSelectedInEditor = value; }
 		bool IsSelectedInEditor() { return mIsSelectedInEditor; }
-	protected:
-		XMFLOAT3 mPosition;
-	private:
-		float mRadius;
 
+		float mRadius;
 		float mEditorColor[3] = { 0.0f, 0.0f, 0.0f };
 		float mEditorIntensity = 1.0f;
-		float mEditorMatrixTranslation[3];
-		float mEditorMatrixRotation[3];
-		float mEditorMatrixScale[3];
 		float mEditorCurrentTransformMatrix[16] =
 		{
 			1.f, 0.f, 0.f, 0.f,
@@ -42,6 +33,10 @@ namespace EveryRay_Core
 			0.f, 0.f, 1.f, 0.f,
 			0.f, 0.f, 0.f, 1.f
 		};
+	protected:
+		XMFLOAT3 mPosition;
+	private:
+
 		bool mIsSelectedInEditor = false;
 	};
 }
