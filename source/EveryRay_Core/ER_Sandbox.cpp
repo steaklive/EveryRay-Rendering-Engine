@@ -106,9 +106,9 @@ namespace EveryRay_Core {
 		#pragma region INIT_DIRECTIONAL_LIGHT
         mDirectionalLight = new ER_DirectionalLight(game, camera);
 		XMFLOAT3 sunDirection = mScene->GetValueFromSceneRoot<XMFLOAT3>("sun_direction");
-		if (sunDirection.x < std::numeric_limits<float>::epsilon() &&
-			sunDirection.y < std::numeric_limits<float>::epsilon() &&
-			sunDirection.z < std::numeric_limits<float>::epsilon())
+		if (abs(sunDirection.x) < std::numeric_limits<float>::epsilon() &&
+			abs(sunDirection.y) < std::numeric_limits<float>::epsilon() &&
+			abs(sunDirection.z) < std::numeric_limits<float>::epsilon())
 		{
 			XMMATRIX defaultSunRotationMatrix =
 				XMMatrixRotationAxis(mDirectionalLight->RightVector(), -XMConvertToRadians(70.0f)) *
@@ -460,13 +460,15 @@ namespace EveryRay_Core {
 		}
 #pragma endregion
 		
+		#pragma region DRAW_COMPOSITE
 		// combine the results of local and global illumination
 		rhi->BeginEventTag("EveryRay: Composite Illumination");
 		{
 			mIllumination->CompositeTotalIllumination(mGBuffer);
 		}
 		rhi->EndEventTag();
-
+#pragma endregion
+		
 		#pragma region DRAW_VOLUMETRIC_FOG
 		rhi->BeginEventTag("EveryRay: Volumetric Fog");
 		{

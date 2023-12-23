@@ -162,6 +162,8 @@
 			"use_forward_shading" : true
 		},
 		{
+			"custom_metalness" : 0.7,
+			"custom_roughness" : 0.32,
 			"instanced" : false,
 			"model_lods" : 
 			[
@@ -260,12 +262,24 @@
 			]
 		}
 	],
+	"sky_color_top" : 
+	[
+		0.0,
+		0.447,
+		0.643,
+		1.0
+	],
 	"sun_color" : 
 	[
 		1.0,
 		0.94999999999999996,
 		0.94999999999999996
 	],
-	"sun_direction" : [],
+	"sun_direction" : 
+	[
+		-54.0,
+		-24.0,
+		-24.0
+	],
 	"volumetric_fog_enabled" : false
 }

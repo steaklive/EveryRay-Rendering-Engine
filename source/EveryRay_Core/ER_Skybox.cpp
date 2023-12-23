@@ -58,10 +58,10 @@ namespace EveryRay_Core
 		if (scene->IsValueInSceneRoot("sky_color_bottom"))
 		{
 			mBottomColor = scene->GetValueFromSceneRoot<XMFLOAT4>("sky_color_bottom");
-			mBottomColorEditor[0] = mTopColor.x;
-			mBottomColorEditor[1] = mTopColor.y;
-			mBottomColorEditor[2] = mTopColor.z;
-			mBottomColorEditor[3] = mTopColor.w;
+			mBottomColorEditor[0] = mBottomColor.x;
+			mBottomColorEditor[1] = mBottomColor.y;
+			mBottomColorEditor[2] = mBottomColor.z;
+			mBottomColorEditor[3] = mBottomColor.w;
 		}
 
 		//model & geometry

@@ -292,7 +292,7 @@ namespace EveryRay_Core
 				ImGui::Text("Mouse Position: <invalid>");
 			
 			ImGui::Separator();
-			ImGui::Checkbox("Open Editor", &ER_Utility::IsEditorMode);
+			ImGui::Checkbox("Editor Mode", &ER_Utility::IsEditorMode);
 			
 			if (ImGui::CollapsingHeader("Profiler"))
 			{
