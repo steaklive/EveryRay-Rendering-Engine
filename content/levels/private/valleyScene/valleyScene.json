@@ -2366,10 +2366,11 @@
 	"sun_direction" : [],
 	"terrain_num_tiles" : 16,
 	"terrain_texture_splat_layer0" : "splat_terrainGrass2Texture.dds",
-	"terrain_texture_splat_layer1" : "9247.jpg",
+	"terrain_texture_splat_layer1" : "splat_terrainGrass3Texture.dds",
 	"terrain_texture_splat_layer2" : "splat_terrainRocksTexture.dds",
 	"terrain_texture_splat_layer3" : "splat_terrainSandTexture.dds",
 	"terrain_tile_resolution" : 512,
 	"terrain_tile_scale" : 2.0,
-	"volumetric_fog_enabled" : true
+	"terrain_tessellated_height_scale" : 328.0,
+	"terrain_non_tessellated_height_scale" : 200.0
 }

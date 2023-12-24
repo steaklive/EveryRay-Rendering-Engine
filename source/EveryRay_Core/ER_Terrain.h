@@ -221,7 +221,8 @@ namespace EveryRay_Core
 		int mNumTiles = 0;
 		int mTileResolution = 0; //texture res. of one terrain tile (based on heightmap)
 		float mTileScale = 0.0f;
-		float mTerrainTessellatedHeightScale = 328.0f;
+		float mTerrainTessellatedHeightScale = 1.0f; // GPU scale
+		float mTerrainNonTessellatedHeightScale = 0.0f; // CPU scale
 		bool mUseDynamicTessellation = true;
 		int mTessellationFactor = 4;
 		int mTessellationFactorDynamic = 64;

@@ -154,6 +154,9 @@ namespace EveryRay_Core
 
 		mTileScale = aScene->GetValueFromSceneRoot<float>("terrain_tile_scale");
 
+		mTerrainTessellatedHeightScale = aScene->GetValueFromSceneRoot<float>("terrain_tessellated_height_scale");
+		mTerrainNonTessellatedHeightScale = aScene->GetValueFromSceneRoot<float>("terrain_non_tessellated_height_scale");
+
 		mTileResolution = aScene->GetValueFromSceneRoot<int>("terrain_tile_resolution");
 		if (mTileResolution == 0)
 			throw ER_CoreException("Tile resolution (= heightmap texture tile resolution) of the terrain is 0!");
@@ -417,6 +420,8 @@ namespace EveryRay_Core
 
 		// Copy the image data into the height map array.
 		{
+			assert(mTerrainNonTessellatedHeightScale > std::numeric_limits<float>::epsilon());
+
 			int tileSize = mTileResolution * mTileScale;
 			for (j = 0; j < static_cast<int>(mHeight); j++)
 			{
@@ -426,7 +431,7 @@ namespace EveryRay_Core
 
 					// Store the height at this point in the height map array.
 					mHeightMaps[tileIndex]->mData[index].x = static_cast<float>(i * mTileScale + tileSize * (tileIndexX - 1));
-					mHeightMaps[tileIndex]->mData[index].y = static_cast<float>(rawImage[index]) / 200.0f;//TODO mTerrainNonTessellatedHeightScale;
+					mHeightMaps[tileIndex]->mData[index].y = static_cast<float>(rawImage[index]) / mTerrainNonTessellatedHeightScale;
 					mHeightMaps[tileIndex]->mData[index].z = static_cast<float>(j * mTileScale - tileSize * tileIndexY);
 
 					if (tileIndex > 0) //a way to fix the seams between tiles...
