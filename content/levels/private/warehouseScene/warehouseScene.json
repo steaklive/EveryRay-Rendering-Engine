@@ -11,16 +11,125 @@
 		41.799999999999997,
 		-100.0
 	],
-	"light_probe_global_cam_position" :
-	[		
+	"foliage_zones" : 
+	[
+		{
+			"average_scale" : 4.0,
+			"distribution_radius" : 10.0,
+			"patch_count" : 15,
+			"position" : 
+			[
+				-80.157096862792969,
+				1.4817519187927246,
+				-104.22709655761719
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"type" : 3
+		},
+		{
+			"average_scale" : 3.0,
+			"distribution_radius" : 7.0,
+			"patch_count" : 10,
+			"position" : 
+			[
+				-90.437744140625,
+				1.4817519187927246,
+				-101.01137542724609
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"type" : 3
+		},
+		{
+			"average_scale" : 3.0,
+			"distribution_radius" : 7.0,
+			"patch_count" : 10,
+			"position" : 
+			[
+				-99.727340698242188,
+				1.4817519187927246,
+				-136.72879028320312
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"type" : 3
+		},
+		{
+			"average_scale" : 3.0,
+			"distribution_radius" : 7.0,
+			"patch_count" : 10,
+			"position" : 
+			[
+				-105.06842041015625,
+				1.4817519187927246,
+				-139.89178466796875
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"type" : 3
+		},
+		{
+			"average_scale" : 3.0,
+			"distribution_radius" : 7.0,
+			"patch_count" : 10,
+			"position" : 
+			[
+				-46.681800842285156,
+				1.4817519187927246,
+				-98.097564697265625
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"type" : 3
+		},
+		{
+			"average_scale" : 3.0,
+			"distribution_radius" : 7.0,
+			"patch_count" : 10,
+			"position" : 
+			[
+				-0.05545508861541748,
+				1.4817519187927246,
+				-84.868003845214844
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"type" : 3
+		},
+		{
+			"average_scale" : 3.0,
+			"distribution_radius" : 7.0,
+			"patch_count" : 10,
+			"position" : 
+			[
+				6.5143194198608398,
+				1.4817519187927246,
+				-76.393844604492188
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"type" : 3
+		},
+		{
+			"average_scale" : 3.0,
+			"distribution_radius" : 7.0,
+			"patch_count" : 10,
+			"position" : 
+			[
+				-122.54261016845703,
+				1.4817519187927246,
+				-103.39128112792969
+			],
+			"texture_path" : "content\\textures\\foliage\\grass_type2.png",
+			"type" : 3
+		}
+	],
+	"light_probe_global_cam_position" : 
+	[
 		-90.0,
 		50.0,
 		-100.0
 	],
+	"light_probes_diffuse_distance" : 18.0,
+	"light_probes_specular_distance" : -1.0,
 	"light_probes_volume_bounds_max" : 
 	[
 		100.0,
-		90.2,
+		90.200000000000003,
 		20.0
 	],
 	"light_probes_volume_bounds_min" : 
@@ -29,8 +138,6 @@
 		0.20000000000000001,
 		-160.0
 	],
-	"light_probes_diffuse_distance" : 18.0,
-	"light_probes_specular_distance" : -1.0,
 	"rendering_objects" : 
 	[
 		{
@@ -313,6 +420,173 @@
 			]
 		},
 		{
+			"instanced" : true,
+			"instances_transforms" : 
+			[
+				{
+					"transform" : 
+					[
+						0.22560082376003265,
+						0.0,
+						0.0,
+						-95.291534423828125,
+						0.0,
+						0.24665234982967377,
+						0.0,
+						1.63079833984375,
+						0.0,
+						0.0,
+						0.24767887592315674,
+						-139.60090637207031,
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					]
+				},
+				{
+					"transform" : 
+					[
+						0.57493889331817627,
+						0.0,
+						0.0,
+						-188.13749694824219,
+						0.0,
+						0.56000000238418579,
+						0.0,
+						1.63079833984375,
+						0.0,
+						0.0,
+						0.58749806880950928,
+						-130.83268737792969,
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					]
+				}
+			],
+			"model_path" : "content\\models\\default_plane\\plane.fbx",
+			"name" : "Mud Planes",
+			"new_materials" : 
+			[
+				{
+					"name" : "GBufferMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\mud.png",
+					"normal" : "content\\textures\\PBR\\Dirt\\Ground_Dirt_007_normal.jpg"
+				}
+			],
+			"transform" : 
+			[
+				0.22560082376003265,
+				0.0,
+				0.0,
+				-95.291534423828125,
+				0.0,
+				0.24665234982967377,
+				0.0,
+				1.63079833984375,
+				0.0,
+				0.0,
+				0.24767887592315674,
+				-139.60090637207031,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"custom_metalness" : 0.83999999999999997,
+			"custom_roughness" : 0.40000000000000002,
+			"instanced" : true,
+			"instances_transforms" : 
+			[
+				{
+					"transform" : 
+					[
+						1.0,
+						0.0,
+						0.0,
+						-3.1648039817810059,
+						0.0,
+						1.0,
+						0.0,
+						1.63079833984375,
+						0.0,
+						0.0,
+						1.0,
+						-129.44810485839844,
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					]
+				},
+				{
+					"transform" : 
+					[
+						0.48234549164772034,
+						4.0970161307996023e-07,
+						0.59046024084091187,
+						-114.21123504638672,
+						-4.2601345739967655e-07,
+						1.0,
+						-1.3733668424720236e-08,
+						1.63079833984375,
+						-0.53392565250396729,
+						-4.277669063412759e-07,
+						0.53341853618621826,
+						-59.570835113525391,
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					]
+				}
+			],
+			"model_path" : "content\\models\\default_plane\\plane.fbx",
+			"name" : "Puddle Planes",
+			"new_materials" : 
+			[
+				{
+					"name" : "GBufferMaterial"
+				}
+			],
+			"textures" : 
+			[
+				{
+					"albedo" : "content\\textures\\puddle.png",
+					"reflection_mask" : "content\\textures\\puddle_mask.png"
+				}
+			],
+			"transform" : 
+			[
+				0.48234549164772034,
+				4.0970161307996023e-07,
+				0.59046024084091187,
+				-114.21123504638672,
+				-4.2601345739967655e-07,
+				1.0,
+				-1.3733668424720236e-08,
+				1.63079833984375,
+				-0.53392565250396729,
+				-4.277669063412759e-07,
+				0.53341853618621826,
+				-59.570835113525391,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			],
+			"use_reflection" : true
+		},
+		{
 			"instanced" : false,
 			"model_path" : "content\\models\\private\\Abandoned_Factory_Hall\\hall.fbx",
 			"name" : "Factory Hall",
@@ -330,7 +604,7 @@
 			],
 			"transform" : 
 			[
-				6.3705596923828125,
+				6.3703575134277344,
 				0.0,
 				0.0,
 				-198.37889099121094,
@@ -351,8 +625,8 @@
 		},
 		{
 			"instanced" : false,
-			"model_path" : "content\\models\\vegetation\\trees\\acer\\tree_acer_middle2.fbx",
-			"name" : "Acer Tree",
+			"model_path" : "content\\models\\private\\Abandoned_Factory_Hall\\foliage.fbx",
+			"name" : "Factory Hall's Foliage",
 			"new_materials" : 
 			[
 				{
@@ -371,33 +645,29 @@
 			"textures" : 
 			[
 				{
-					"albedo" : "content\\models\\vegetation\\trees\\acer\\leaves0018_41_m_przod.png",
-					"normal" : "content\\models\\vegetation\\trees\\acer\\leaves0018_41_m_przod_n.png"
-				},
-				{
-					"albedo" : "content\\models\\vegetation\\trees\\acer\\BarkDecidious0164_5_M_TILED_dark.jpg",
-					"normal" : "content\\models\\vegetation\\trees\\acer\\BarkDecidious0164_5_M_TILED_dark_normal-min.png"
+					"albedo" : "content\\models\\private\\Abandoned_Factory_Hall\\textures\\leaves.png"
 				}
 			],
 			"transform" : 
 			[
-				2.2799999713897705,
+				6.3699436187744141,
 				0.0,
 				0.0,
-				-225.62400817871094,
+				-21.120677947998047,
 				0.0,
-				2.2799999713897705,
+				6.3859152793884277,
 				0.0,
-				15.236104011535645,
+				6.6233110427856445,
 				0.0,
 				0.0,
-				2.2799999713897705,
-				-84.303199768066406,
+				6.3859152793884277,
+				-105.31425476074219,
 				0.0,
 				0.0,
 				0.0,
 				1.0
-			]
+			],
+			"use_in_global_lightprobe_rendering" : true
 		},
 		{
 			"instanced" : false,
@@ -413,6 +683,9 @@
 				},
 				{
 					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
 				}
 			],
 			"textures" : 
@@ -554,6 +827,9 @@
 				},
 				{
 					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
 				}
 			],
 			"textures" : 
@@ -771,18 +1047,18 @@
 			],
 			"transform" : 
 			[
-				11.994518280029297,
-				3.5576199104714323e-12,
-				-2.1836123778484762e-05,
-				-172.382080078125,
-				2.1826537704328075e-05,
-				-1.9550484466890339e-06,
-				11.999786376953125,
-				1.4720711708068848,
-				0.0,
-				-12.000000953674316,
-				-1.9550134311430156e-06,
-				-40.502735137939453,
+				-1.090916612156434e-05,
+				-11.999997138977051,
+				-3.2757292501628399e-05,
+				-106.61513519287109,
+				-1.9853873753361562e-11,
+				-3.2758656743681058e-05,
+				11.999497413635254,
+				1.5463135242462158,
+				-11.988583564758301,
+				1.0919552551058587e-05,
+				9.935973918628882e-12,
+				-70.245597839355469,
 				0.0,
 				0.0,
 				0.0,
@@ -931,7 +1207,7 @@
 				{
 					"transform" : 
 					[
-						11.994016647338867,
+						11.99248218536377,
 						0.0,
 						0.0,
 						-133.31446838378906,
@@ -1062,18 +1338,18 @@
 			],
 			"transform" : 
 			[
-				11.992166519165039,
+				11.99248218536377,
 				0.0,
 				0.0,
-				-133.44369506835938,
+				-133.31446838378906,
 				0.0,
-				-5.2453822263487382e-07,
-				12.000016212463379,
-				1.559999942779541,
+				-5.2453663101914572e-07,
+				12.0,
+				1.5463135242462158,
 				0.0,
-				-12.000035285949707,
-				-5.2453736998359091e-07,
-				-77.023216247558594,
+				-12.0,
+				-5.2453663101914572e-07,
+				-59.517074584960938,
 				0.0,
 				0.0,
 				0.0,
@@ -2437,18 +2713,18 @@
 				{
 					"transform" : 
 					[
-						9.5211191177368164,
-						-3.0417709350585938,
-						-1.4789942724746652e-05,
-						61.030040740966797,
-						1.3609844245365821e-05,
-						-5.977228738629492e-06,
+						2.0088744163513184,
+						-9.7959213256835938,
+						7.5457406637724489e-05,
+						-144.32925415039062,
+						1.3610037967737298e-05,
+						7.982328679645434e-05,
 						10.0,
 						1.4869036674499512,
-						-3.0401623249053955,
-						-9.5261564254760742,
-						-1.5520076885877643e-06,
-						-59.058292388916016,
+						-9.790797233581543,
+						-2.0099258422851562,
+						2.9383187211351469e-05,
+						-147.0408935546875,
 						0.0,
 						0.0,
 						0.0,
@@ -2484,18 +2760,18 @@
 			],
 			"transform" : 
 			[
-				7.3271870613098145,
-				3.2089676856994629,
-				1.4026848305093154e-07,
-				-29.301349639892578,
-				0.0,
-				-3.4969099260706571e-07,
-				8.0,
-				1.409635066986084,
-				3.2085251808166504,
-				-7.3281979560852051,
-				-3.2032582453211944e-07,
-				-66.691429138183594,
+				2.0088744163513184,
+				-9.7959213256835938,
+				7.5457406637724489e-05,
+				-144.32925415039062,
+				1.3610037967737298e-05,
+				7.982328679645434e-05,
+				10.0,
+				1.4869036674499512,
+				-9.790797233581543,
+				-2.0099258422851562,
+				2.9383187211351469e-05,
+				-147.0408935546875,
 				0.0,
 				0.0,
 				0.0,
@@ -3343,6 +3619,13 @@
 			]
 		}
 	],
+	"sky_color_top" : 
+	[
+		0.96999999999999997,
+		0.96999999999999997,
+		0.93000000000000005,
+		1.0
+	],
 	"sun_color" : 
 	[
 		1.0,
@@ -3350,5 +3633,5 @@
 		0.94999999999999996
 	],
 	"sun_direction" : [],
-	"volumetric_fog_enabled" : true
+	"sun_intensity" : 6.5
 }

@@ -127,6 +127,9 @@ namespace EveryRay_Core {
 		else
 			mDirectionalLight->SetColor(XMFLOAT3(1.0, 0.0, 0.0));
 
+		if (mScene->IsValueInSceneRoot("sun_intensity"))
+			mDirectionalLight->mLightIntensity = mScene->GetValueFromSceneRoot<float>("sun_intensity");
+
 #pragma endregion
 
 		#pragma region INIT_SKYBOX

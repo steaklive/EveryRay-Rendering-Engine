@@ -429,7 +429,7 @@ float3 GetFinalColor(VS_OUTPUT vsOutput, bool IBL, int forcedCascadeShadowIndex 
 
     float3 indirectLighting = float3(0, 0, 0);
     if (isFakeAmbient)
-        indirectLighting = float3(0.02f, 0.02f, 0.02f) * diffuseAlbedo;
+        indirectLighting = float3(0.02f, 0.02f, 0.02f) * diffuseAlbedo * SunColor.rgb * SunColor.a;
     
     bool skipIndirectLighting = (RenderingObjectFlags & RENDERING_OBJECT_FLAG_SKIP_INDIRECT_DIF) && (RenderingObjectFlags & RENDERING_OBJECT_FLAG_SKIP_INDIRECT_SPEC);
     if (IBL && !skipIndirectLighting)
