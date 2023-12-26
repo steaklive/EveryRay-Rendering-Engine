@@ -11,6 +11,7 @@
 		41.799999999999997,
 		-100.0
 	],
+	"posteffects_ssr_default" : true,
 	"foliage_zones" : 
 	[
 		{
@@ -600,6 +601,9 @@
 				},
 				{
 					"name" : "RenderToLightProbeMaterial"
+				},
+				{
+					"name" : "VoxelizationMaterial"
 				}
 			],
 			"transform" : 

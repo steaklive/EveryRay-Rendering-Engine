@@ -898,6 +898,10 @@ namespace EveryRay_Core
 
 					if (mSceneJsonRoot["posteffects_volumes"][i].isMember("posteffects_ssr_enabled"))
 						values.ssrEnable = mSceneJsonRoot["posteffects_volumes"][i]["posteffects_ssr_enabled"].asBool();
+					if (mSceneJsonRoot["posteffects_volumes"][i].isMember("posteffects_ssr_maxthickness"))
+						values.ssrMaxThickness = mSceneJsonRoot["posteffects_volumes"][i]["posteffects_ssr_maxthickness"].asFloat();
+					if (mSceneJsonRoot["posteffects_volumes"][i].isMember("posteffects_ssr_stepsize"))
+						values.ssrStepSize = mSceneJsonRoot["posteffects_volumes"][i]["posteffects_ssr_stepsize"].asFloat();
 
 					if (mSceneJsonRoot["posteffects_volumes"][i].isMember("posteffects_vignette_enabled"))
 						values.vignetteEnable = mSceneJsonRoot["posteffects_volumes"][i]["posteffects_vignette_enabled"].asBool();
@@ -920,8 +924,28 @@ namespace EveryRay_Core
 			}
 		}
 
+		// set default flags
+
 		if (mSceneJsonRoot.isMember("posteffects_aa_enabled"))
 			pp->SetUseAntiAliasing(mSceneJsonRoot["posteffects_aa_enabled"].asBool());
+
+		if (mSceneJsonRoot.isMember("posteffects_ssr_default"))
+			pp->SetUseSSR(mSceneJsonRoot["posteffects_ssr_default"].asBool(), true);
+
+		if (mSceneJsonRoot.isMember("posteffects_sss_default"))
+			pp->SetUseSSS(mSceneJsonRoot["posteffects_sss_default"].asBool(), true);
+
+		if (mSceneJsonRoot.isMember("posteffects_vignette_default"))
+			pp->SetUseVignette(mSceneJsonRoot["posteffects_vignette_default"].asBool(), true);
+
+		if (mSceneJsonRoot.isMember("posteffects_tonmapping_default"))
+			pp->SetUseTonemapping(mSceneJsonRoot["posteffects_tonmapping_default"].asBool(), true);
+
+		if (mSceneJsonRoot.isMember("posteffects_linearfog_default"))
+			pp->SetUseLinearFog(mSceneJsonRoot["posteffects_linearfog_default"].asBool(), true);
+
+		if (mSceneJsonRoot.isMember("posteffects_colorgrading_default"))
+			pp->SetUseColorGrading(mSceneJsonRoot["posteffects_colorgrading_default"].asBool(), true);
 	}
 	void ER_Scene::SavePostProcessingVolumesData()
 	{

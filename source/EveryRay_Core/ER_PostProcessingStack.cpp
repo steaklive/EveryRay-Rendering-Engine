@@ -323,8 +323,8 @@ namespace EveryRay_Core {
 		{
 			ImGui::Checkbox("SSR - On", &mUseSSRDefault);
 			ImGui::SliderInt("Ray count", &mSSRRayCount, 0, 100);
-			ImGui::SliderFloat("Step Size", &mSSRStepSize, 0.0f, 10.0f);
-			ImGui::SliderFloat("Max Thickness", &mSSRMaxThickness, 0.0f, 0.01f);
+			ImGui::SliderFloat("Step Size", &mSSRStepSizeDefault, 0.0f, 10.0f);
+			ImGui::SliderFloat("Max Thickness", &mSSRMaxThicknessDefault, 0.0f, 0.01f);
 		}
 
 		if (ImGui::CollapsingHeader("Tonemap"))
@@ -519,7 +519,11 @@ namespace EveryRay_Core {
 			mLinearFogDensity = mLinearFogDensityDefault;
 
 			mUseTonemap = mUseTonemapDefault;
+			
 			mUseSSR = mUseSSRDefault;
+			mSSRMaxThickness = mSSRMaxThicknessDefault;
+			mSSRStepSize = mSSRStepSizeDefault;
+
 			mUseSSS = mUseSSSDefault;
 
 			mUseVignette = mUseVignetteDefault;
@@ -540,7 +544,11 @@ namespace EveryRay_Core {
 			mLinearFogDensity = currentVolume.values.linearFogDensity;
 
 			mUseTonemap = currentVolume.values.tonemappingEnable;
+			
 			mUseSSR = currentVolume.values.ssrEnable;
+			mSSRMaxThickness = currentVolume.values.ssrMaxThickness;
+			mSSRStepSize = currentVolume.values.ssrStepSize;
+
 			mUseSSS = currentVolume.values.sssEnable;
 
 			mUseVignette = currentVolume.values.vignetteEnable;

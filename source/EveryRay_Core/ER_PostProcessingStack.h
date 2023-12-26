@@ -66,12 +66,35 @@ namespace EveryRay_Core
 		int colorGradingLUTIndex;
 
 		bool sssEnable;
+
 		bool ssrEnable;
+		float ssrMaxThickness;
+		float ssrStepSize;
 	};
 	struct PostEffectsVolume
 	{
 		PostEffectsVolume(ER_Core& pCore, const XMFLOAT4X4& aTransform, const PostEffectsVolumeValues& aValues, const std::string& aName);
 		~PostEffectsVolume();
+
+		bool operator==(const PostEffectsVolume& aVolume) const
+		{
+			return
+				values.linearFogColor[0] == aVolume.values.linearFogColor[0] &&
+				values.linearFogColor[1] == aVolume.values.linearFogColor[1] &&
+				values.linearFogColor[2] == aVolume.values.linearFogColor[2] &&
+				values.linearFogDensity == aVolume.values.linearFogDensity &&
+				values.linearFogEnable == aVolume.values.linearFogEnable &&
+				values.vignetteSoftness == aVolume.values.vignetteSoftness &&
+				values.vignetteRadius == aVolume.values.vignetteRadius &&
+				values.vignetteEnable == aVolume.values.vignetteEnable &&
+				values.tonemappingEnable == aVolume.values.tonemappingEnable &&
+				values.colorGradingEnable == aVolume.values.colorGradingEnable &&
+				values.colorGradingLUTIndex == aVolume.values.colorGradingLUTIndex &&
+				values.sssEnable == aVolume.values.sssEnable &&
+				values.ssrEnable == aVolume.values.ssrEnable &&
+				values.ssrMaxThickness == aVolume.values.ssrMaxThickness &&
+				values.ssrStepSize == aVolume.values.ssrStepSize;
+		}
 
 		void UpdateDebugVolumeAABB();
 		void DrawDebugVolume(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, ER_RHI_GPURootSignature* rs);
@@ -115,22 +138,62 @@ namespace EveryRay_Core
 		void Update();
 		void Config() { mShowDebug = !mShowDebug; }
 
-		void SetUseLinearFog(bool value) { mUseLinearFog = value; }
+		void SetUseLinearFog(bool value, bool isDefault = false)
+		{ 
+			if (!isDefault)
+				mUseLinearFog = value;
+			else
+				mUseLinearFogDefault = value;
+		}
 		void SetLinearFogColor(float r, float g, float b) { mLinearFogColor[0] = r; mLinearFogColor[1] = g; mLinearFogColor[2] = b; }
 		void SetLinearFogDensity(float value) { mLinearFogDensity = value; }
 
 		void SetUseAntiAliasing(bool value) { mUseFXAA = value; }
-		void SetUseSSS(bool value) { mUseSSS = value; }
-		void SetUseSSR(bool value) { mUseSSR = value; }
 
-		void SetUseColorGrading(bool value) { mUseColorGrading = value; }
+		void SetUseSSS(bool value, bool isDefault = false) 
+		{ 
+			if (!isDefault)
+				mUseSSS = value;
+			else
+				mUseSSSDefault = value;
+		}
+
+		void SetUseSSR(bool value, bool isDefault = false)
+		{ 
+			if (!isDefault)
+				mUseSSR = value;
+			else
+				mUseSSRDefault = value;
+		}
+		void SetSSRMaxThickness(float value) { mSSRMaxThickness = value; }
+		void SetSSRStepSize(float value) { mSSRStepSize = value; }
+
+		void SetUseColorGrading(bool value, bool isDefault = false) 
+		{ 
+			if (!isDefault)
+				mUseColorGrading = value;
+			else
+				mUseColorGradingDefault = value;
+		}
 		void SetColorGradingLUT(UINT value) { mColorGradingCurrentLUTIndex = value; }
 
-		void SetUseVignette(bool value) { mUseVignette = value; }
+		void SetUseVignette(bool value, bool isDefault = false)
+		{
+			if (!isDefault)
+				mUseVignette = value;
+			else
+				mUseVignetteDefault = value;
+		}
 		void SetVignetteSoftness(float value) { mVignetteSoftness = value; }
 		void SetVignetteRadius(float value) { mVignetteRadius = value; }
 
-		void SetUseTonemapping(bool value) { mUseTonemap = value; }
+		void SetUseTonemapping(bool value, bool isDefault = false) 
+		{ 
+			if (!isDefault)
+				mUseTonemap = value;
+			else
+				mUseTonemapDefault = value;
+		}
 
 		void ReservePostEffectsVolumes(int count);
 		bool AddPostEffectsVolume(const XMFLOAT4X4& aTransform, const PostEffectsVolumeValues& aValues, const std::string& aName);
@@ -187,8 +250,10 @@ namespace EveryRay_Core
 		bool mUseSSRDefault = false;
 		bool mUseSSR = false;
 		int mSSRRayCount = 50;
-		float mSSRStepSize = 0.741f;
-		float mSSRMaxThickness = 0.00021f;
+		float mSSRStepSizeDefault = 0.741f;
+		float mSSRStepSize = mSSRStepSizeDefault;
+		float mSSRMaxThicknessDefault = 0.00021f;
+		float mSSRMaxThickness = mSSRMaxThicknessDefault;
 		std::string mSSRPassPSOName = "ER_RHI_GPUPipelineStateObject: Post Processing - SSR";
 		ER_RHI_GPURootSignature* mSSRRS = nullptr;
 
@@ -210,7 +275,7 @@ namespace EveryRay_Core
 		float mLinearFogColorDefault[3] = { 166.0f / 255.0f, 188.0f / 255.0f, 196.0f / 255.0f };
 		float mLinearFogColor[3] = { 166.0f / 255.0f, 188.0f / 255.0f, 196.0f / 255.0f };
 		float mLinearFogDensityDefault = 730.0f;
-		float mLinearFogDensity = 730.0f;
+		float mLinearFogDensity = mLinearFogDensityDefault;
 		float mLinearFogNearZ = 0.0f;
 		float mLinearFogFarZ = 0.0f;
 		std::string mLinearFogPassPSOName = "ER_RHI_GPUPipelineStateObject: Post Processing - Linear Fog";
@@ -242,9 +307,9 @@ namespace EveryRay_Core
 		ER_RHI_GPUConstantBuffer<PostEffectsCBuffers::VignetteCB> mVignetteConstantBuffer;
 		ER_RHI_GPUShader* mVignettePS = nullptr;
 		float mVignetteRadiusDefault = 0.75f;
-		float mVignetteRadius = 0.0f;
+		float mVignetteRadius = mVignetteRadiusDefault;
 		float mVignetteSoftnessDefault = 0.5f;
-		float mVignetteSoftness = 0.5f;
+		float mVignetteSoftness = mVignetteSoftnessDefault;
 		bool mUseVignetteDefault = true;
 		bool mUseVignette = true;
 		std::string mVignettePassPSOName = "ER_RHI_GPUPipelineStateObject: Post Processing - Vignette";
