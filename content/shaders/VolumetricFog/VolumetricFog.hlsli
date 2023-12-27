@@ -1,5 +1,3 @@
-#define VOLUMETRIC_FOG_VOXEL_SIZE_Z 128
-
 float LinearToExponentialDepth(float z, float NearPlaneZ, float FarPlaneZ)
 {
     float z_buffer_params_y = FarPlaneZ / NearPlaneZ;
@@ -33,7 +31,8 @@ float3 GetWorldPosFromVoxelID(uint3 texCoord, float jitter, float near, float fa
 float3 GetUVFromVolumetricFogVoxelWorldPos(float3 worldPos, float n, float f, float4x4 viewProj, float3 volumeSize)
 {
     float4 ndc = mul(float4(worldPos, 1.0f), viewProj);
-    ndc = ndc / ndc.w;
+    if (ndc.w > 0.0f)
+        ndc /= ndc.w;
     
     float3 uv;
     uv.x = ndc.x * 0.5f + 0.5f;

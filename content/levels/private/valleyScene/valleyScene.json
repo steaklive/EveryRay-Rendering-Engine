@@ -1551,64 +1551,6 @@
 			]
 		},
 		{
-			"instanced" : false,
-			"model_lods" : 
-			[
-				{
-					"path" : "content\\models\\dragon\\dragon_lod_high.fbx"
-				},
-				{
-					"path" : "content\\models\\dragon\\dragon_lod_mid.fbx"
-				},
-				{
-					"path" : "content\\models\\dragon\\dragon_lod_low.fbx"
-				}
-			],
-			"model_path" : "content\\models\\dragon\\dragon_lod_high.fbx",
-			"name" : "Dragon (Green)",
-			"new_materials" : 
-			[
-				{
-					"name" : "ShadowMapMaterial"
-				},
-				{
-					"name" : "GBufferMaterial"
-				},
-				{
-					"name" : "VoxelizationMaterial"
-				}
-			],
-			"terrain_placement" : true,
-			"terrain_splat_channel" : 4,
-			"textures" : 
-			[
-				{
-					"albedo" : "content\\textures\\colors\\green.png",
-					"normal" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_normal-dx.png",
-					"roughness" : "content\\textures\\PBR\\Bathroom\\bathroomtile1_roughness.png"
-				}
-			],
-			"transform" : 
-			[
-				1.6671211719512939,
-				0.0,
-				1.2030911445617676,
-				-3.1524653434753418,
-				0.0,
-				2.0559000968933105,
-				0.0,
-				-0.16924595832824707,
-				-1.2030911445617676,
-				0.0,
-				1.6671211719512939,
-				-5.2266368865966797,
-				0.0,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
 			"instanced" : true,
 			"model_lods" : 
 			[
@@ -2078,7 +2020,7 @@
 			],
 			"skip_indirect_specular" : true,
 			"terrain_placement" : true,
-			"terrain_procedural_instance_count" : 2000,
+			"terrain_procedural_instance_count" : 2500,
 			"terrain_procedural_instance_scale_max" : 1.5,
 			"terrain_procedural_instance_scale_min" : 0.5,
 			"terrain_procedural_instance_yaw_max" : 180.0,
@@ -2155,7 +2097,7 @@
 			],
 			"skip_indirect_specular" : true,
 			"terrain_placement" : true,
-			"terrain_procedural_instance_count" : 2000,
+			"terrain_procedural_instance_count" : 2500,
 			"terrain_procedural_instance_scale_max" : 0.59999999999999998,
 			"terrain_procedural_instance_scale_min" : 0.40000000000000002,
 			"terrain_procedural_instance_yaw_max" : 180.0,
@@ -2232,7 +2174,7 @@
 			],
 			"skip_indirect_specular" : true,
 			"terrain_placement" : true,
-			"terrain_procedural_instance_count" : 2000,
+			"terrain_procedural_instance_count" : 2500,
 			"terrain_procedural_instance_scale_max" : 0.59999999999999998,
 			"terrain_procedural_instance_scale_min" : 0.40000000000000002,
 			"terrain_procedural_instance_yaw_max" : 180.0,
@@ -2309,7 +2251,7 @@
 			],
 			"skip_indirect_specular" : true,
 			"terrain_placement" : true,
-			"terrain_procedural_instance_count" : 1500,
+			"terrain_procedural_instance_count" : 1900,
 			"terrain_procedural_instance_scale_max" : 2.5,
 			"terrain_procedural_instance_scale_min" : 1.5,
 			"terrain_procedural_instance_yaw_max" : 180.0,

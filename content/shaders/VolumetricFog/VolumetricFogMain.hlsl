@@ -78,7 +78,7 @@ void CSInjection(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DT
     
     if (texCoord.x < VolumeSize.x && texCoord.y < VolumeSize.y && texCoord.z < VolumeSize.z)
     {
-        float jitter = frac((GetBlueNoiseSample(texCoord) - 0.5f) * (1.0f - EPSILON) * CameraNearFar_FrameIndex_PreviousFrameBlend.z);
+        float jitter = /*frac(*/(GetBlueNoiseSample(texCoord) - 0.5f) * (1.0f - EPSILON);// * CameraNearFar_FrameIndex_PreviousFrameBlend.z);
         float3 voxelWorldPos = GetWorldPosFromVoxelID(texCoord, jitter, CameraNearFar_FrameIndex_PreviousFrameBlend.x, CameraNearFar_FrameIndex_PreviousFrameBlend.y, InvViewProj, VolumeSize.xyz);
         float3 voxelWorldPosNoJitter = GetWorldPosFromVoxelID(texCoord, 0.0f, CameraNearFar_FrameIndex_PreviousFrameBlend.x, CameraNearFar_FrameIndex_PreviousFrameBlend.y, InvViewProj, VolumeSize.xyz);
         float3 viewDir = normalize(CameraPosition.xyz - voxelWorldPos);
@@ -127,10 +127,17 @@ float GetSliceThickness(int z, float near, float far)
 float4 Accumulate(int z, float4 result /*color (rgb) & transmittance (alpha)*/, float4 colorDensityPerSlice /*color (rgb) & density (alpha)*/)
 {
     colorDensityPerSlice.a = max(colorDensityPerSlice.a, 0.000001);
-    float thickness = GetSliceThickness(z, CameraNearFar_FrameIndex_PreviousFrameBlend.x, CameraNearFar_FrameIndex_PreviousFrameBlend.y);
-    float sliceTransmittance = exp(-colorDensityPerSlice.a * thickness * ThicknessFactor);
+    //float thickness = GetSliceThickness(z, CameraNearFar_FrameIndex_PreviousFrameBlend.x, CameraNearFar_FrameIndex_PreviousFrameBlend.y);
+    //float sliceTransmittance = exp(-colorDensityPerSlice.a * thickness * ThicknessFactor);
+
+    // Seb Hillaire's improved transmission by calculating an integral over slice depth instead of
+	// constant per slice value. Light still constant per slice, but that's acceptable. See slide 28 of
+	// Physically-based & Unified Volumetric Rendering in Frostbite
+	// http://www.frostbite.com/2015/08/physically-based-unified-volumetric-rendering-in-frostbite/
+    float sliceTransmittance = exp(-colorDensityPerSlice.a / VolumeSize.z);
 
     float3 sliceScattering = colorDensityPerSlice.rgb * (1.0f - sliceTransmittance) / colorDensityPerSlice.a;
+
     result.rgb += sliceScattering * result.a;
     result.a *= sliceTransmittance;
     return result;

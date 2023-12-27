@@ -184,7 +184,7 @@ namespace EveryRay_Core {
 		ImGui::SliderFloat("Anisotropy", &mAnisotropy, 0.0f, 1.0f);
 		ImGui::SliderFloat("Density", &mDensity, 0.1f, 10.0f);
 		ImGui::SliderFloat("Strength", &mStrength, 0.0f, 50.0f);
-		ImGui::SliderFloat("Thickness", &mThicknessFactor, 0.0f, 0.1f);
+		//ImGui::SliderFloat("Thickness", &mThicknessFactor, 0.0f, 0.1f);
 		ImGui::SliderFloat("Blending with scene", &mBlendingWithSceneColorFactor, 0.0f, 1.0f);
 		ImGui::SliderFloat("Blending with previous frame", &mPreviousFrameBlendFactor, 0.0f, 1.0f);
 		ImGui::SliderFloat("Custom near plane", &mCustomNearPlane, 0.01f, 10.0f);
