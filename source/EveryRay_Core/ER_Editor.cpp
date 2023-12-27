@@ -93,7 +93,8 @@ namespace EveryRay_Core
 				mCamera->SetNearPlaneDistance(nearPlaneDist);
 				ImGui::SliderFloat("Far Plane", &farPlaneDist, 150.0f, 200000.0f);
 				mCamera->SetFarPlaneDistance(farPlaneDist);
-				ImGui::Checkbox("CPU frustum culling", &ER_Utility::IsMainCameraCPUFrustumCulling);
+				ImGui::Checkbox("CPU frustum culling", &ER_Utility::IsMainCameraCPUCulling);
+				ImGui::Checkbox("GPU frustum culling", &ER_Utility::IsMainCameraGPUCulling);
 			}
 
 			if (ImGui::CollapsingHeader("Environment - Lights"))

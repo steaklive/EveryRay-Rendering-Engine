@@ -897,7 +897,7 @@ namespace EveryRay_Core
 			CreateIndirectInstanceData(); // only happens once but we need to do it after the first update (i.e. after we placed the instances and calculated their AABBs)
 		else // fallback for old CPU frustum culling (i.e., makes sense for non-instanced objects)
 		{
-			if (ER_Utility::IsMainCameraCPUFrustumCulling && camera)
+			if (ER_Utility::IsMainCameraCPUCulling && camera)
 				PerformCPUFrustumCull(camera);
 			else
 			{
@@ -1268,9 +1268,9 @@ namespace EveryRay_Core
 		if (mIsInstanced) {
 			if (mIsIndirectlyRendered) // LODs are also updated in ER_GPUCuller, so no need to do that here
 				return;
-			if (!ER_Utility::IsMainCameraCPUFrustumCulling && mInstanceData.size() == 0)
+			if (!ER_Utility::IsMainCameraCPUCulling && mInstanceData.size() == 0)
 				return;
-			if (ER_Utility::IsMainCameraCPUFrustumCulling && mTempPostCullingInstanceData.size() == 0)
+			if (ER_Utility::IsMainCameraCPUCulling && mTempPostCullingInstanceData.size() == 0)
 				return;
 
 			mTempPostLoddingInstanceData.clear();
@@ -1278,11 +1278,11 @@ namespace EveryRay_Core
 				mTempPostLoddingInstanceData.push_back({});
 
 			//traverse through original or culled instance data (sort of "read-only") to rebalance LOD's instance buffers
-			int length = (ER_Utility::IsMainCameraCPUFrustumCulling) ? static_cast<int>(mTempPostCullingInstanceData.size()) : static_cast<int>(mInstanceData[0].size());
+			int length = (ER_Utility::IsMainCameraCPUCulling) ? static_cast<int>(mTempPostCullingInstanceData.size()) : static_cast<int>(mInstanceData[0].size());
 			for (int i = 0; i < length; i++)
 			{
 				XMFLOAT3 pos;
-				XMMATRIX mat = (ER_Utility::IsMainCameraCPUFrustumCulling) ? XMLoadFloat4x4(&mTempPostCullingInstanceData[i].World) : XMLoadFloat4x4(&mInstanceData[0][i].World);
+				XMMATRIX mat = (ER_Utility::IsMainCameraCPUCulling) ? XMLoadFloat4x4(&mTempPostCullingInstanceData[i].World) : XMLoadFloat4x4(&mInstanceData[0][i].World);
 				ER_MatrixHelper::GetTranslation(mat, pos);
 
 				float distanceToCameraSqr =
@@ -1292,13 +1292,13 @@ namespace EveryRay_Core
 
 				//XMMATRIX newMat;
 				if (distanceToCameraSqr <= sqrDistLod0) {
-					mTempPostLoddingInstanceData[0].push_back((ER_Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
+					mTempPostLoddingInstanceData[0].push_back((ER_Utility::IsMainCameraCPUCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
 				}
 				else if (sqrDistLod0 < distanceToCameraSqr && distanceToCameraSqr <= sqrDistLod1) {
-					mTempPostLoddingInstanceData[1].push_back((ER_Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
+					mTempPostLoddingInstanceData[1].push_back((ER_Utility::IsMainCameraCPUCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
 				}
 				else if (sqrDistLod1 < distanceToCameraSqr && distanceToCameraSqr <= sqrDistLod2) {
-					mTempPostLoddingInstanceData[2].push_back((ER_Utility::IsMainCameraCPUFrustumCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
+					mTempPostLoddingInstanceData[2].push_back((ER_Utility::IsMainCameraCPUCulling) ? mTempPostCullingInstanceData[i].World : mInstanceData[0][i].World);
 				}
 			}
 

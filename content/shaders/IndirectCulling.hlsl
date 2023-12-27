@@ -11,7 +11,7 @@ cbuffer CameraConstants : register(b1)
 {
 	float4 FrustumPlanes[6];
 	float4 LODCameraSqrDistances;
-	float4 CameraPos;
+	float4 CameraPos; // .w - skip cull
 };
 
 StructuredBuffer<Instance> instanceData : register(t0);
@@ -88,7 +88,7 @@ void CSMain(int3 DTid : SV_DispatchThreadID)
 
 	Instance data = instanceData[index];
 
-	bool isCulled = PerformFrustumCull(data.AABBmin, data.AABBmax);
+	bool isCulled = CameraPos.w > 0.0 ? false : PerformFrustumCull(data.AABBmin, data.AABBmax);
 	if (!isCulled)
 	{
 		int lod = CalculateLodIndex(data.WorldMat);

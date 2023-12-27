@@ -14,7 +14,8 @@ namespace EveryRay_Core
 	bool ER_Utility::IsWindEditor = false;
 	bool ER_Utility::IsFoliageEditor = false;
 	bool ER_Utility::IsPostEffectsVolumeEditor = false;
-	bool ER_Utility::IsMainCameraCPUFrustumCulling = true;
+	bool ER_Utility::IsMainCameraCPUCulling = true;
+	bool ER_Utility::IsMainCameraGPUCulling = true;
 
 	bool ER_Utility::StopDrawingRenderingObjects = false;
 	bool ER_Utility::IsWireframe = false;

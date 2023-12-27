@@ -103,7 +103,7 @@ namespace EveryRay_Core
 				foliage->SetDynamicLODMaxDistance(mMaxDistanceToCamera);
 
 				foliage->Update(gameTime);
-				foliage->PerformCPUFrustumCulling((ER_Utility::IsMainCameraCPUFrustumCulling && mEnableCulling) ? camera : nullptr);
+				foliage->PerformCPUFrustumCulling((ER_Utility::IsMainCameraCPUCulling && mEnableCulling) ? camera : nullptr);
 			}
 		}
 		UpdateImGui();

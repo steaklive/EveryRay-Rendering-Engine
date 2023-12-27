@@ -146,7 +146,7 @@ namespace EveryRay_Core
 			ER_Utility::DistancesLOD[0] * ER_Utility::DistancesLOD[0], 
 			ER_Utility::DistancesLOD[1] * ER_Utility::DistancesLOD[1],
 			ER_Utility::DistancesLOD[2] * ER_Utility::DistancesLOD[2], 0.0f);
-		mCameraConstantBuffer.Data.CameraPos = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, 1.0f);
+		mCameraConstantBuffer.Data.CameraPos = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, ER_Utility::IsMainCameraGPUCulling ? -1.0f : 1.0f);
 		mCameraConstantBuffer.ApplyChanges(rhi);
 
 		for (ER_SceneObject& obPair : aScene->objects)
