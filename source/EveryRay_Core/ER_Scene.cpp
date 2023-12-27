@@ -912,8 +912,8 @@ namespace EveryRay_Core
 
 					if (mSceneJsonRoot["posteffects_volumes"][i].isMember("posteffects_colorgrading_enabled"))
 						values.colorGradingEnable = mSceneJsonRoot["posteffects_volumes"][i]["posteffects_colorgrading_enabled"].asBool();
-					if (mSceneJsonRoot["posteffects_volumes"][i].isMember("posteffects_colorgrading_lut"))
-						values.colorGradingLUTIndex = mSceneJsonRoot["posteffects_volumes"][i]["posteffects_colorgrading_lut"].asUInt();
+					if (mSceneJsonRoot["posteffects_volumes"][i].isMember("posteffects_colorgrading_lut_name"))
+						values.colorGradingLUTName = mSceneJsonRoot["posteffects_volumes"][i]["posteffects_colorgrading_lut_name"].asString();
 
 					std::string name = "";
 					if (mSceneJsonRoot["posteffects_volumes"][i].isMember("volume_name"))

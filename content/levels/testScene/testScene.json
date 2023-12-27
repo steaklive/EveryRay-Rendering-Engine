@@ -201,7 +201,7 @@
 	[
 		{
 			"posteffects_colorgrading_enabled" : false,
-			"posteffects_colorgrading_lut" : 1,
+			"posteffects_colorgrading_lut_name" : "content\\shaders\\LUT_1.png",
 			"posteffects_linearfog_color" : 
 			[
 				0.94999999999999996,
@@ -239,7 +239,7 @@
 		},
 		{
 			"posteffects_colorgrading_enabled" : true,
-			"posteffects_colorgrading_lut" : 1,
+			"posteffects_colorgrading_lut_name" : "content\\shaders\\LUT_2.png",
 			"posteffects_linearfog_color" : 
 			[
 				0.94999999999999996,
@@ -277,7 +277,7 @@
 		},
 		{
 			"posteffects_colorgrading_enabled" : true,
-			"posteffects_colorgrading_lut" : 2,
+			"posteffects_colorgrading_lut_name" : "content\\shaders\\LUT_3.png",
 			"posteffects_linearfog_color" : 
 			[
 				0.94999999999999996,

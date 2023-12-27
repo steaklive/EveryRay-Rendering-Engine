@@ -63,7 +63,7 @@ namespace EveryRay_Core
 		bool tonemappingEnable;
 		
 		bool colorGradingEnable;
-		int colorGradingLUTIndex;
+		std::string colorGradingLUTName;
 
 		bool sssEnable;
 
@@ -89,7 +89,7 @@ namespace EveryRay_Core
 				values.vignetteEnable == aVolume.values.vignetteEnable &&
 				values.tonemappingEnable == aVolume.values.tonemappingEnable &&
 				values.colorGradingEnable == aVolume.values.colorGradingEnable &&
-				values.colorGradingLUTIndex == aVolume.values.colorGradingLUTIndex &&
+				values.colorGradingLUTName == aVolume.values.colorGradingLUTName &&
 				values.sssEnable == aVolume.values.sssEnable &&
 				values.ssrEnable == aVolume.values.ssrEnable &&
 				values.ssrMaxThickness == aVolume.values.ssrMaxThickness &&
@@ -115,6 +115,8 @@ namespace EveryRay_Core
 
 		ER_RenderableAABB* debugGizmoAABB = nullptr;
 		ER_AABB aabb;
+
+		ER_RHI_GPUTexture* colorGradingLUT = nullptr;
 
 		std::string name;
 		bool isEnabled = true;
@@ -175,7 +177,6 @@ namespace EveryRay_Core
 			else
 				mUseColorGradingDefault = value;
 		}
-		void SetColorGradingLUT(UINT value) { mColorGradingCurrentLUTIndex = value; }
 
 		void SetUseVignette(bool value, bool isDefault = false)
 		{
@@ -285,10 +286,9 @@ namespace EveryRay_Core
 
 		// LUT Color Grading
 		ER_RHI_GPUTexture* mColorGradingRT = nullptr;
-		ER_RHI_GPUTexture* mLUTs[3] = { nullptr, nullptr, nullptr };
 		ER_RHI_GPUShader* mColorGradingPS = nullptr;
-		const UINT mColorGradingCurrentLUTIndexDefault = 2;
-		UINT mColorGradingCurrentLUTIndex = 2;
+		ER_RHI_GPUTexture* mColorGradingLUT = nullptr; // just a pointer to the volume's LUT
+		ER_RHI_GPUTexture* mColorGradingDefaultLUT = nullptr;
 		bool mUseColorGradingDefault = true;
 		bool mUseColorGrading = true;
 		std::string mColorGradingPassPSOName = "ER_RHI_GPUPipelineStateObject: Post Processing - Color Grading";

@@ -53,6 +53,7 @@ namespace EveryRay_Core {
 		DeleteObject(mFXAART);
 		DeleteObject(mLinearFogRT);
 		DeleteObject(mVolumetricFogRT);
+		DeleteObject(mColorGradingDefaultLUT);
 
 		DeleteObject(mTonemappingPS);
 		DeleteObject(mSSRPS);
@@ -182,14 +183,9 @@ namespace EveryRay_Core {
 
 		//Color grading
 		{
-			mLUTs[0] = rhi->CreateGPUTexture(L"");
-			mLUTs[0]->CreateGPUTextureResource(rhi, "content\\shaders\\LUT_1.png");
-			mLUTs[1] = rhi->CreateGPUTexture(L"");
-			mLUTs[1]->CreateGPUTextureResource(rhi, "content\\shaders\\LUT_2.png");
-			mLUTs[2] = rhi->CreateGPUTexture(L"");
-			mLUTs[2]->CreateGPUTextureResource(rhi, "content\\shaders\\LUT_3.png");
-			//...more
-			
+			mColorGradingDefaultLUT  = rhi->CreateGPUTexture(L"content\\shaders\\LUT_3.png");
+			mColorGradingDefaultLUT->CreateGPUTextureResource(rhi, mColorGradingDefaultLUT->debugName);
+
 			mColorGradingPS = rhi->CreateGPUShader();
 			mColorGradingPS->CompileShader(rhi, "content\\shaders\\ColorGrading.hlsl", "PSMain", ER_PIXEL);
 
@@ -335,14 +331,9 @@ namespace EveryRay_Core {
 		if (ImGui::CollapsingHeader("Color Grading"))
 		{
 			ImGui::Checkbox("Color Grading - On", &mUseColorGradingDefault);
-
-			ImGui::TextWrapped("Current LUT");
-			const int size = sizeof(mLUTs) / sizeof(mLUTs[0]);
-			for (int i = 0; i < size; i++)
-			{
-				std::string name = "LUT " + std::to_string(i);
-				ImGui::RadioButton(name.c_str(), &(static_cast<int>(mColorGradingCurrentLUTIndexDefault)), i);
-			}
+			
+			//if (mColorGradingLUT)
+			//	ImGui::TextWrapped(mColorGradingLUT->debugName.c_str());
 		}
 
 		if (ImGui::CollapsingHeader("Vignette"))
@@ -531,7 +522,7 @@ namespace EveryRay_Core {
 			mVignetteRadius = mVignetteRadiusDefault;
 
 			mUseColorGrading = mUseColorGradingDefault;
-			mColorGradingCurrentLUTIndex = mColorGradingCurrentLUTIndexDefault;
+			mColorGradingLUT = mColorGradingDefaultLUT;
 		}
 		else
 		{
@@ -541,22 +532,22 @@ namespace EveryRay_Core {
 			mLinearFogColor[0] = currentVolume.values.linearFogColor[0];
 			mLinearFogColor[1] = currentVolume.values.linearFogColor[1];
 			mLinearFogColor[2] = currentVolume.values.linearFogColor[2];
-			mLinearFogDensity = currentVolume.values.linearFogDensity;
+			mLinearFogDensity = currentVolume.values.linearFogDensity > std::numeric_limits<float>::epsilon() ? currentVolume.values.linearFogDensity : mLinearFogDensityDefault;
 
 			mUseTonemap = currentVolume.values.tonemappingEnable;
 			
 			mUseSSR = currentVolume.values.ssrEnable;
-			mSSRMaxThickness = currentVolume.values.ssrMaxThickness;
-			mSSRStepSize = currentVolume.values.ssrStepSize;
+			mSSRMaxThickness = currentVolume.values.ssrMaxThickness > std::numeric_limits<float>::epsilon() ? currentVolume.values.ssrMaxThickness : mSSRMaxThicknessDefault;
+			mSSRStepSize = currentVolume.values.ssrStepSize > std::numeric_limits<float>::epsilon() ? currentVolume.values.ssrStepSize : mSSRStepSizeDefault;
 
 			mUseSSS = currentVolume.values.sssEnable;
 
 			mUseVignette = currentVolume.values.vignetteEnable;
-			mVignetteSoftness = currentVolume.values.vignetteSoftness;
-			mVignetteRadius = currentVolume.values.vignetteRadius;
+			mVignetteSoftness = currentVolume.values.vignetteSoftness > std::numeric_limits<float>::epsilon() ? currentVolume.values.vignetteSoftness : mVignetteSoftnessDefault;
+			mVignetteRadius = currentVolume.values.vignetteRadius > std::numeric_limits<float>::epsilon() ? currentVolume.values.vignetteRadius : mVignetteRadiusDefault;
 
 			mUseColorGrading = currentVolume.values.colorGradingEnable;
-			mColorGradingCurrentLUTIndex = currentVolume.values.colorGradingLUTIndex;
+			mColorGradingLUT = currentVolume.colorGradingLUT ? currentVolume.colorGradingLUT : mColorGradingDefaultLUT;
 		}
 	}
 
@@ -631,7 +622,7 @@ namespace EveryRay_Core {
 		assert(aInputTexture);
 		auto rhi = mCore.GetRHI();
 
-		rhi->SetShaderResources(ER_PIXEL, { mLUTs[mColorGradingCurrentLUTIndex], aInputTexture }, 0, mColorGradingRS, COLORGRADING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
+		rhi->SetShaderResources(ER_PIXEL, { mColorGradingLUT, aInputTexture }, 0, mColorGradingRS, COLORGRADING_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX);
 	}
 
 	void ER_PostProcessingStack::PrepareDrawingVignette(ER_RHI_GPUTexture* aInputTexture)
@@ -947,11 +938,18 @@ namespace EveryRay_Core {
 
 		debugGizmoAABB = new ER_RenderableAABB(pCore, DebugPostEffectsVolumeColor);
 		debugGizmoAABB->InitializeGeometry({ aabb.first, aabb.second });
+
+		if (aValues.colorGradingEnable && !aValues.colorGradingLUTName.empty())
+		{
+			colorGradingLUT = pCore.GetRHI()->CreateGPUTexture(ER_Utility::ToWideString(aValues.colorGradingLUTName));
+			colorGradingLUT->CreateGPUTextureResource(pCore.GetRHI(), aValues.colorGradingLUTName);
+		}
 	}
 
 	PostEffectsVolume::~PostEffectsVolume()
 	{
 		DeleteObject(debugGizmoAABB);
+		DeleteObject(colorGradingLUT);
 	}
 
 	void PostEffectsVolume::UpdateDebugVolumeAABB()

@@ -11,7 +11,42 @@
 		41.799999999999997,
 		-100.0
 	],
-	"posteffects_ssr_default" : true,
+	"posteffects_volumes" : 
+	[
+		{
+			"posteffects_colorgrading_enabled" : true,
+			"posteffects_colorgrading_lut_name" : "content\\levels\\private\\warehouseScene\\LUT_warehouse.png",
+			"posteffects_linearfog_enabled" : true,
+			"posteffects_linearfog_color" : [0.95, 0.9, 0.95],
+			"posteffects_linearfog_density" : 2500,
+			"posteffects_ssr_enabled" : true,
+			"posteffects_sss_enabled" : false,
+			"posteffects_tonemapping_enabled" : true,
+			"posteffects_vignette_enabled" : true,
+			"posteffects_vignette_radius" : 0.75,
+			"posteffects_vignette_softness" : 0.5,
+			"volume_name" : "PP_Main",
+			"volume_transform" : 
+			[
+				2000.0,
+				0.0,
+				0.0,
+				955.496826171875,
+				0.0,
+				250.0,
+				0.0,
+				243.18017578125,
+				0.0,
+				0.0,
+				2000.0,
+				-674.8160400390625,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		}
+	],
 	"foliage_zones" : 
 	[
 		{
