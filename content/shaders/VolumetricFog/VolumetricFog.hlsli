@@ -15,7 +15,7 @@ float ExponentialToLinearDepth(float z, float n, float f)
 
 float3 GetWorldPosFromVoxelID(uint3 texCoord, float jitter, float near, float far, float4x4 invViewProj, float3 volumeSize)
 {
-    float viewZ = near * pow(far / near, (float(texCoord.z) + 0.5f + jitter) / volumeSize.z);
+    float viewZ = near * pow(far / near, min((float(texCoord.z) + 0.5f + jitter) / volumeSize.z, 1.0f));
     float3 uv = float3((float(texCoord.x) + 0.5f) / volumeSize.x, (float(texCoord.y) + 0.5f) / volumeSize.y, viewZ / far);
     
     float3 ndc;

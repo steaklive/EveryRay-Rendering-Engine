@@ -78,22 +78,17 @@ void CSInjection(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DT
     
     if (texCoord.x < VolumeSize.x && texCoord.y < VolumeSize.y && texCoord.z < VolumeSize.z)
     {
-        float jitter = /*frac(*/(GetBlueNoiseSample(texCoord) - 0.5f) * (1.0f - EPSILON);// * CameraNearFar_FrameIndex_PreviousFrameBlend.z);
+        float jitter = frac((GetBlueNoiseSample(texCoord) - 0.5f) * (1.0f - EPSILON) * CameraNearFar_FrameIndex_PreviousFrameBlend.z);
         float3 voxelWorldPos = GetWorldPosFromVoxelID(texCoord, jitter, CameraNearFar_FrameIndex_PreviousFrameBlend.x, CameraNearFar_FrameIndex_PreviousFrameBlend.y, InvViewProj, VolumeSize.xyz);
         float3 voxelWorldPosNoJitter = GetWorldPosFromVoxelID(texCoord, 0.0f, CameraNearFar_FrameIndex_PreviousFrameBlend.x, CameraNearFar_FrameIndex_PreviousFrameBlend.y, InvViewProj, VolumeSize.xyz);
         float3 viewDir = normalize(CameraPosition.xyz - voxelWorldPos);
 
         float3 lighting = float3(0.0, 0.0, 0.0);
         float visibility = GetVisibility(voxelWorldPos, ShadowMatrix);
-        float visibility2 = GetVisibility(voxelWorldPosNoJitter, ShadowMatrix);
+        //float visibility2 = GetVisibility(voxelWorldPosNoJitter, ShadowMatrix);
 
         if (visibility > EPSILON)
             lighting += visibility * SunColor.xyz * HenyeyGreensteinPhaseFunction(viewDir, -SunDirection.xyz, Anisotropy);
-        else if (visibility2 <= EPSILON)
-        {
-            VoxelWriteTexture[texCoord] = float4(0.0, 0.0, 0.0, 0.0);
-            return;
-        }
         
         float4 result = float4(lighting * Strength * Density, visibility * Density);
         
