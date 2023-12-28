@@ -223,6 +223,8 @@ namespace EveryRay_Core
 		std::vector<PostEffectsVolume> mPostEffectsVolumes;
 		int mCurrentActivePostEffectsVolumeIndex = -1; // the one we are currently in
 		int mSelectedEditorPostEffectsVolumeIndex = -1; // the one selected for editing via ImGui
+		int mPrevSelectedEditorPostEffectsVolumeIndex = -1; // the one selected for editing via ImGui in last frame
+		bool mAreValuesSetFromVolumeForEditing = false;
 		float mEditorPostEffectsVolumeMatrixTranslation[3];
 		float mEditorPostEffectsVolumeMatrixRotation[3];
 		float mEditorPostEffectsVolumeMatrixScale[3];

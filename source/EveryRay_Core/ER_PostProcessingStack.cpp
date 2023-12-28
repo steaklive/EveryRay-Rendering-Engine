@@ -282,83 +282,97 @@ namespace EveryRay_Core {
 			return;
 
 		ImGui::Begin("Post Processing Stack Config");
-		ImGui::TextWrapped("You can change default values below (visible if outside the volume or when the volume is disabled)");
+		ImGui::TextWrapped("Enable the editor mode and volume editor to change the values below.");
 		
-		if (ImGui::CollapsingHeader("Linear Fog"))
+		ImGui::Checkbox("Enable volume editor", &ER_Utility::IsPostEffectsVolumeEditor);
+
+		const bool isEditorActive = ER_Utility::IsEditorMode && ER_Utility::IsPostEffectsVolumeEditor;
+
+		if (isEditorActive)
 		{
-			ImGui::Checkbox("Fog - On", &mUseLinearFogDefault);
-			ImGui::ColorEdit3("Color", mLinearFogColorDefault);
-			ImGui::SliderFloat("Density", &mLinearFogDensityDefault, 1.0f, 10000.0f);
+			std::string message = "Currently editing: ";
+			message += mSelectedEditorPostEffectsVolumeIndex == -1 ? "Default Volume" : mPostEffectsVolumes[mSelectedEditorPostEffectsVolumeIndex].name;
+			ImGui::TextColored(ImVec4{ 0.5f, 1.0f, 0.2f, 1.0f }, message.c_str());
 		}
 
-		if (ImGui::CollapsingHeader("Separable Subsurface Scattering"))
+		const bool editDefault = isEditorActive && mSelectedEditorPostEffectsVolumeIndex == -1;
+
 		{
-			ER_Illumination* illumination = mCore.GetLevel()->mIllumination;
+			if (ImGui::CollapsingHeader("Linear Fog") && isEditorActive)
+			{
+				ImGui::Checkbox("Fog - On", editDefault ? &mUseLinearFogDefault : &mUseLinearFog);
+				ImGui::ColorEdit3("Color", editDefault ? mLinearFogColorDefault : mLinearFogColor);
+				ImGui::SliderFloat("Density", editDefault ? &mLinearFogDensityDefault : &mLinearFogDensity, 1.0f, 10000.0f);
+			}
 
-			ImGui::Checkbox("SSS - On", &mUseSSSDefault);
-			illumination->SetSSS(mUseSSS);
+			if (ImGui::CollapsingHeader("Separable Subsurface Scattering") && isEditorActive)
+			{
+				ER_Illumination* illumination = mCore.GetLevel()->mIllumination;
 
-			float strength = illumination->GetSSSStrength();
-			ImGui::SliderFloat("SSS Strength", &strength, 0.0f, 15.0f);
-			illumination->SetSSSStrength(strength);
+				ImGui::Checkbox("SSS - On", editDefault ? &mUseSSSDefault : &mUseSSS);
+				illumination->SetSSS(mUseSSS);
 
-			float translucency = illumination->GetSSSTranslucency();
-			ImGui::SliderFloat("SSS Translucency", &translucency, 0.0f, 1.0f);
-			illumination->SetSSSTranslucency(translucency);
+				float strength = illumination->GetSSSStrength();
+				ImGui::SliderFloat("SSS Strength", &strength, 0.0f, 15.0f);
+				illumination->SetSSSStrength(strength);
 
-			float width = illumination->GetSSSWidth();
-			ImGui::SliderFloat("SSS Width", &width, 0.0f, 0.1f);
-			illumination->SetSSSWidth(width);
+				float translucency = illumination->GetSSSTranslucency();
+				ImGui::SliderFloat("SSS Translucency", &translucency, 0.0f, 1.0f);
+				illumination->SetSSSTranslucency(translucency);
 
-			float lightPlaneScale = illumination->GetSSSDirLightPlaneScale();
-			ImGui::SliderFloat("Dir light plane scale", &lightPlaneScale, 0.0f, 10.0f);
-			illumination->SetSSSDirLightPlaneScale(lightPlaneScale);
-		}
+				float width = illumination->GetSSSWidth();
+				ImGui::SliderFloat("SSS Width", &width, 0.0f, 0.1f);
+				illumination->SetSSSWidth(width);
 
-		if (ImGui::CollapsingHeader("Screen Space Reflections"))
-		{
-			ImGui::Checkbox("SSR - On", &mUseSSRDefault);
-			ImGui::SliderInt("Ray count", &mSSRRayCount, 0, 100);
-			ImGui::SliderFloat("Step Size", &mSSRStepSizeDefault, 0.0f, 10.0f);
-			ImGui::SliderFloat("Max Thickness", &mSSRMaxThicknessDefault, 0.0f, 0.01f);
-		}
+				float lightPlaneScale = illumination->GetSSSDirLightPlaneScale();
+				ImGui::SliderFloat("Dir light plane scale", &lightPlaneScale, 0.0f, 10.0f);
+				illumination->SetSSSDirLightPlaneScale(lightPlaneScale);
+			}
 
-		if (ImGui::CollapsingHeader("Tonemap"))
-		{
-			ImGui::Checkbox("Tonemap - On", &mUseTonemapDefault);
-		}
+			if (ImGui::CollapsingHeader("Screen Space Reflections") && isEditorActive)
+			{
+				ImGui::Checkbox("SSR - On", editDefault ? &mUseSSRDefault : &mUseSSR);
+				//ImGui::SliderInt("Ray count", &mSSRRayCount, 0, 100);
+				ImGui::SliderFloat("Step Size", editDefault ? &mSSRStepSizeDefault : &mSSRStepSize, 0.0f, 10.0f);
+				ImGui::SliderFloat("Max Thickness", editDefault ? &mSSRMaxThicknessDefault : &mSSRMaxThickness, 0.0f, 0.01f);
+			}
 
-		if (ImGui::CollapsingHeader("Color Grading"))
-		{
-			ImGui::Checkbox("Color Grading - On", &mUseColorGradingDefault);
-			
-			//if (mColorGradingLUT)
-			//	ImGui::TextWrapped(mColorGradingLUT->debugName.c_str());
-		}
+			if (ImGui::CollapsingHeader("Tonemap") && isEditorActive)
+			{
+				ImGui::Checkbox("Tonemap - On", editDefault ? &mUseTonemapDefault : &mUseTonemap);
+			}
 
-		if (ImGui::CollapsingHeader("Vignette"))
-		{
-			ImGui::Checkbox("Vignette - On", &mUseVignetteDefault);
-			ImGui::SliderFloat("Radius", &mVignetteRadiusDefault, 0.000f, 1.0f);
-			ImGui::SliderFloat("Softness", &mVignetteSoftnessDefault, 0.000f, 1.0f);
-		}
+			if (ImGui::CollapsingHeader("Color Grading") && isEditorActive)
+			{
+				ImGui::Checkbox("Color Grading - On", editDefault ? &mUseColorGradingDefault : &mUseColorGrading);
 
-		if (ImGui::CollapsingHeader("FXAA"))
-		{
-			ImGui::Checkbox("FXAA - On", &mUseFXAA);
+				//if (mColorGradingLUT)
+				//	ImGui::TextWrapped(mColorGradingLUT->debugName.c_str());
+			}
+
+			if (ImGui::CollapsingHeader("Vignette") && isEditorActive)
+			{
+				ImGui::Checkbox("Vignette - On", editDefault ? &mUseVignetteDefault : &mUseVignette);
+				ImGui::SliderFloat("Radius", editDefault ? &mVignetteRadiusDefault : &mVignetteRadius, 0.000f, 1.0f);
+				ImGui::SliderFloat("Softness", editDefault ? &mVignetteSoftnessDefault : &mVignetteSoftness, 0.000f, 1.0f);
+			}
+
+			if (ImGui::CollapsingHeader("FXAA") && isEditorActive)
+			{
+				ImGui::Checkbox("FXAA - On", &mUseFXAA);
+			}
 		}
 
 		ImGui::Separator();
-		ImGui::TextWrapped("You can transform the volumes below (when editor is enabled)");
-		ImGui::TextWrapped("Note: saving the values from above to the volume is not yet supported!");
 		ImGui::Checkbox("Show debug gizmo volumes", &mShowDebugVolumes);
-		ImGui::Checkbox("Enable volume editor", &ER_Utility::IsPostEffectsVolumeEditor);
-		
+		ImGui::TextWrapped("Only saving transforms is supported for now!");
 		if (ImGui::Button("Save volume changes"))
 			mCore.GetLevel()->mScene->SavePostProcessingVolumesData();
+		ImGui::SameLine();
+		if (ImGui::Button("Deselect volume"))
+			mSelectedEditorPostEffectsVolumeIndex = -1;
 
-		bool editable = ER_Utility::IsEditorMode && ER_Utility::IsPostEffectsVolumeEditor;
-		if (editable)
+		if (isEditorActive)
 		{
 			ER_Utility::DisableAllEditors();
 			ER_Utility::IsPostEffectsVolumeEditor = true;
@@ -366,6 +380,7 @@ namespace EveryRay_Core {
 			for (int i = 0; i < static_cast<int>(mPostEffectsVolumes.size()); i++)
 				mEditorPostEffectsVolumesNames[i] = mPostEffectsVolumes[i].name.c_str();
 
+			mPrevSelectedEditorPostEffectsVolumeIndex = mSelectedEditorPostEffectsVolumeIndex;
 			ImGui::PushItemWidth(-1);
 			ImGui::ListBox("##empty", &mSelectedEditorPostEffectsVolumeIndex, mEditorPostEffectsVolumesNames, static_cast<int>(mPostEffectsVolumes.size()), 5);
 
@@ -475,6 +490,20 @@ namespace EveryRay_Core {
 	void ER_PostProcessingStack::UpdatePostEffectsVolumes()
 	{
 		mCurrentActivePostEffectsVolumeIndex = -1;
+
+		if (ER_Utility::IsEditorMode && ER_Utility::IsPostEffectsVolumeEditor)
+		{
+			if (!mAreValuesSetFromVolumeForEditing || mSelectedEditorPostEffectsVolumeIndex == -1 ||
+				mPrevSelectedEditorPostEffectsVolumeIndex != mSelectedEditorPostEffectsVolumeIndex)
+			{
+				SetPostEffectsValuesFromVolume(mSelectedEditorPostEffectsVolumeIndex);
+				mAreValuesSetFromVolumeForEditing = true;
+			}
+			return;
+		}
+		else
+			mAreValuesSetFromVolumeForEditing = false;
+		
 		// TODO: add priority system at some point
 		for (int i = 0; i < static_cast<int>(mPostEffectsVolumes.size()); i++)
 		{
