@@ -11,6 +11,8 @@ static float clearColorBlack[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 static float clearColorWhite[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 static float clearColorRed[4]	= { 1.0f, 0.0f, 0.0f, 1.0f };
 
+static std::string engineVersionString = "v1.0";
+
 namespace EveryRay_Core
 {
 	class ER_Utility

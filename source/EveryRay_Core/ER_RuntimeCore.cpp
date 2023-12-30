@@ -91,6 +91,32 @@ namespace EveryRay_Core
 		ImGui::CreateContext();
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		ImGuiStyle& style = ImGui::GetStyle();
+		const ImVec4 grayMainCol = ImVec4(0.39f, 0.39f, 0.39f, 1.0f);
+		const ImVec4 grayDarkerCol = ImVec4(0.19f, 0.19f, 0.19f, 1.0f);
+		const ImVec4 grayBrighterCol = ImVec4(0.59f, 0.59f, 0.59f, 1.0f);
+		const ImVec4 greenMainCol = ImVec4(0.295f, 0.46f, 0.11f, 1.0f);
+		const ImVec4 greenDarkerCol = ImVec4(0.195f, 0.26f, 0.11f, 1.0f);
+		const ImVec4 greenBrighterCol = ImVec4(0.295f, 0.76f, 0.11f, 1.0f);
+		const ImVec4 whiteCol = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+		style.Colors[ImGuiCol_FrameBg] = grayMainCol;
+		style.Colors[ImGuiCol_FrameBgHovered] = grayDarkerCol;
+		style.Colors[ImGuiCol_FrameBgActive] = grayBrighterCol;
+		style.Colors[ImGuiCol_FrameBg] = grayMainCol;
+		style.Colors[ImGuiCol_TitleBg] = grayMainCol;
+		style.Colors[ImGuiCol_TitleBgActive] = greenMainCol;
+		style.Colors[ImGuiCol_Button] = greenMainCol;
+		style.Colors[ImGuiCol_ButtonHovered] = greenDarkerCol;
+		style.Colors[ImGuiCol_ButtonActive] = grayMainCol;
+		style.Colors[ImGuiCol_Header] = greenMainCol;
+		style.Colors[ImGuiCol_HeaderHovered] = greenDarkerCol;
+		style.Colors[ImGuiCol_HeaderActive] = grayMainCol;
+		style.Colors[ImGuiCol_CheckMark] = whiteCol;
+		style.Colors[ImGuiCol_ResizeGrip] = greenDarkerCol;
+		style.Colors[ImGuiCol_ResizeGripHovered] = greenMainCol;
+		style.Colors[ImGuiCol_ResizeGripActive] = grayMainCol;
+		style.Colors[ImGuiCol_SliderGrab] = greenMainCol;
+		style.Colors[ImGuiCol_SliderGrabActive] = grayMainCol;
 
 		ImGui_ImplWin32_Init(mWindowHandle);
 		if (mRHI)
@@ -282,9 +308,6 @@ namespace EveryRay_Core
 		ImGui::SetNextWindowBgAlpha(0.9f); // Transparent background
 		if (ImGui::Begin("EveryRay - Rendering Engine"))
 		{
-			ImGui::TextColored(ImVec4(0.52f, 0.78f, 0.04f, 1), "Welcome to EveryRay!");
-			ImGui::Separator();
-			
 			ImGui::TextColored(ImVec4(0.95f, 0.5f, 0.0f, 1), "FPS: (%.1f FPS), %.3f ms/frame", ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
 			if (ImGui::IsMousePosValid())
 				ImGui::Text("Mouse Position: (%.1f,%.1f)", ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);

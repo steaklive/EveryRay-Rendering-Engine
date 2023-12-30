@@ -2,6 +2,7 @@
 
 #include "..\EveryRay_Core\ER_RuntimeCore.h"
 #include "..\EveryRay_Core\ER_CoreException.h"
+#include "..\EveryRay_Core\ER_Utility.h"
 #include "..\EveryRay_Core\RHI\ER_RHI.h"
 #include "..\EveryRay_Core\RHI\DX12\ER_RHI_DX12.h"
 
@@ -22,11 +23,19 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR command
 	//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF|_CRTDBG_LEAK_CHECK_DF);
 	//#endif
 
+	const std::string platformName = "Win64 DX12";
+	const std::string windowClassName = "EveryRay Main Window Class";
+	std::string windowMainName = "EveryRay - Rendering Engine";
+	windowMainName += " " + engineVersionString + " | ";
+	windowMainName += platformName;
+
 #if defined(DEBUG) || defined(_DEBUG)
-	std::unique_ptr<ER_RuntimeCore> game(new ER_RuntimeCore(new ER_RHI_DX12(), instance, L"EveryRay Main Window Class", L"EveryRay - Rendering Engine | Win64 DX12 (Debug)", showCommand, false));
+	windowMainName += " (Debug)";
 #else
-	std::unique_ptr<ER_RuntimeCore> game(new ER_RuntimeCore(new ER_RHI_DX12(), instance, L"EveryRay Main Window Class", L"EveryRay - Rendering Engine | Win64 DX12 (Release)", showCommand, false));
+	windowMainName += " (Release)";
 #endif
+	std::unique_ptr<ER_RuntimeCore> game(new ER_RuntimeCore(new ER_RHI_DX12(), instance, ER_Utility::ToWideString(windowClassName).c_str(), ER_Utility::ToWideString(windowMainName).c_str(), showCommand, false));
+
 	try {
 		game->Run();
 	}
