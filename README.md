@@ -91,6 +91,7 @@ I originally started developing this project on DX11 several years ago with the 
 
 # Screenshots
 
+![picture](screenshots/EveryRay_v1_0_WarehouseScene.png)
 ![picture](screenshots/EveryRay_v1_0_ValleyScene.png)
 ![picture](screenshots/EveryRayMaterials.png)
 ![picture](screenshots/EveryRaySponza.png)
