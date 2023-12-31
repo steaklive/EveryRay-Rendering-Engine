@@ -1481,8 +1481,8 @@
 			"posteffects_ssr_enabled" : false,
 			"posteffects_sss_enabled" : false,
 			"posteffects_tonemapping_enabled" : true,
-			"posteffects_vignette_enabled" : false,
-			"posteffects_vignette_radius" : 0.62,
+			"posteffects_vignette_enabled" : true,
+			"posteffects_vignette_radius" : 0.79,
 			"posteffects_vignette_softness" : 0.67000000000000004,
 			"volume_name" : "PP_Main",
 			"volume_transform" : 
@@ -1595,7 +1595,8 @@
 			"textures" : 
 			[
 				{
-					"albedo" : "content\\models\\private\\Plants\\Fern\\Plant1_Plant1_AlbedoTransparency.dds"
+					"albedo" : "content\\models\\private\\Plants\\Fern\\Plant1_Plant1_AlbedoTransparency.dds",
+					"normal" : "content\\textures\\emptyNormalMap.jpg"
 				}
 			],
 			"transform" : 
