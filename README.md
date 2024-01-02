@@ -12,8 +12,8 @@
 Lastly, "EveryRay" was made by a graphics programmer for those who are interested in real-time rendering and who do not want to spend time setting up a bunch of engine-related things that are needed when you begin writing your personal engine of any kind. You can think of "EveryRay" as a "toy engine/tech demo on steroids" or, in other words, a simple sandbox with minimal UI for testing complex ideas with the help of various prepared functionalities.
 
 You can read more about the architecture of "EveryRay" in the documentation:
-- TODO link to "Engine Overview" .md
-- TODO link to "Graphics Overview" .md
+- [Engine Overview](https://github.com/steaklive/EveryRay-Rendering-Engine/blob/master/doc/Engine_Overview.md) 
+- [Graphics Overview](https://github.com/steaklive/EveryRay-Rendering-Engine/blob/master/doc/Graphics_Overview.md) 
 
 You can see a video demonstration of "EveryRay" here (scroll down for screenshots):
 - https://youtu.be/_htQNxesr9U (TODO to be updated)
@@ -35,7 +35,7 @@ You can see a video demonstration of "EveryRay" here (scroll down for screenshot
 - Post Processing Volumes with _Linear Fog, Screen Space Reflections, Separable Subsurface Scattering, Tonemapping, LUT color grading, Vignette, Anti-aliasing (FXAA)_
 - Special materials: _Snow, Fresnel-Outline, Fake-Transparency (reflect+refract), Fur Shell_
 
-You can read more in - TODO link to "Graphics Overview" .md
+You can read more in [Graphics Overview](https://github.com/steaklive/EveryRay-Rendering-Engine/blob/master/doc/Graphics_Overview.md) 
 
 # Engine features
 - Concept of an "ER_RHI" (aka "Rendering Hardware Interface"): graphics API is abstracted from the general code (systems, etc.)
@@ -60,7 +60,7 @@ You can read more in - TODO link to "Graphics Overview" .md
 - ImGUI, ImGuizmo
 - Input from mouse, keyboard and gamepad (XInput, but you can add your own)
 
- You can read more in - TODO link to "Engine Overview" .md
+ You can read more in [Engine Overview](https://github.com/steaklive/EveryRay-Rendering-Engine/blob/master/doc/Engine_Overview.md) 
 
 # Controls
 - "Mouse + Right Click" or "Right Thumbstick" - camera rotation
