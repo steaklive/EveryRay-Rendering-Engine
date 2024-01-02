@@ -100,9 +100,6 @@ _Graphics_
 ![picture](screenshots/EveryRayMaterials.png)
 ![picture](screenshots/EveryRaySponza.png)
 
-# Note on the API (TODO move to "Engine Overview")
-I originally started developing this project on DX11 several years ago with the mindset of DX11/OpenGL-era APIs (single threaded renderer, immediate context, etc.). However, only recently I added support for DX12 into EveryRay and, unfortunately, I only had time for "1 to 1" port from DX11 to DX12 (which also took many months and is still not 100% ready to replace DX11). That means that DX12 is currently underused in the engine and is not bringing any improvements yet (in performance, for example). This will likely change in the future, as I start refactoring/adding support to many new DX12-era concepts (i.e. async compute, multithreaded command list submission, bindless, etc.). That will take time and serious changes in the architecture of EveryRay, but it would be worth it alongside with other novel features, like DirectX Raytracing or mesh shaders. DX12 can be more powerful than DX11 when you treat it with care:)
-
 # External Dependencies
 - DirectXTK (https://github.com/Microsoft/DirectXTK)
 - ImGui (https://github.com/ocornut/imgui)
