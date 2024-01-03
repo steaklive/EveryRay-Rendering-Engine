@@ -216,10 +216,10 @@
     <ResourceCompile Include="EveryRay_Runtime_Win64_DX11.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="bunny.ico" />
+    <Text Include="..\..\external\ImGUI\LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\..\external\ImGUI\LICENSE.txt" />
+    <Image Include="..\everyray.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

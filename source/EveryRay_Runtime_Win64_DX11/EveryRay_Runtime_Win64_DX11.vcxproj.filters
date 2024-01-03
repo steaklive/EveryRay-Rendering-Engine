@@ -90,13 +90,13 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="bunny.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
     <Text Include="..\..\external\ImGUI\LICENSE.txt">
       <Filter>Source Files\ImGui</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\everyray.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
