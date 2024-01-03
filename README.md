@@ -79,6 +79,26 @@ You can read more in [Graphics Overview](https://github.com/steaklive/EveryRay-R
 
 Gamepad is currently not supported/tested with ImGui.
 
+# Screenshots
+
+![picture](screenshots/EveryRay_v1_0_WarehouseScene.png)
+![picture](screenshots/EveryRay_v1_0_ValleyScene.png)
+![picture](screenshots/EveryRayMaterials.png)
+![picture](screenshots/EveryRaySponza.png)
+![picture](screenshots/EveryRayCollisionDetection.png)
+![picture](screenshots/EveryRayWater.png)
+
+# Scenes
+
+Over the years many scenes have been created for "EveryRay". However, to make things simpler, only a few are included in the public version of this repository:
+| Name               | Description | Screenshot  |
+| -----------        | ----- | ----------- |
+| testScene_simple   | Default startup scene with a few basic objects | <img src="screenshots/EveryRay_testScene_simple.png" width="350"/>
+| testScene          | Advanced scene with various materials, post-effects volumes, foliage, lights, and light probes | <img src="screenshots/EveryRay_v1_0_TestScene.png" width="350"/>
+| terrainScene       | Foliage and several types of GPU indirect objects scattered on top of terrain | <img src="screenshots/EveryRay_v1_0_TerrainScene.png" width="350"/>
+
+Learn more about levels in [Engine Overview](https://github.com/steaklive/EveryRay-Rendering-Engine/blob/master/doc/Engine_Overview.md) 
+
 # Roadmap
 Big features that require a branch/merge request and a considerable amount of time.
 
@@ -100,13 +120,6 @@ _Graphics_
  * [ ] Better Anti-Aliasing (SMAA, TAA, explore FSR/DLSS)
  * [ ] Hardware accelerated ray-tracing (i.e., DXR shadows, reflections, AO)
  * [ ] High-poly geometry with mesh shaders
-
-# Screenshots
-
-![picture](screenshots/EveryRay_v1_0_WarehouseScene.png)
-![picture](screenshots/EveryRay_v1_0_ValleyScene.png)
-![picture](screenshots/EveryRayMaterials.png)
-![picture](screenshots/EveryRaySponza.png)
 
 # External Dependencies
 - DirectXTK (https://github.com/Microsoft/DirectXTK)
