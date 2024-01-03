@@ -92,12 +92,11 @@ namespace EveryRay_Core
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		ImGuiStyle& style = ImGui::GetStyle();
-		const ImVec4 grayMainCol = ImVec4(0.39f, 0.39f, 0.39f, 1.0f);
+		const ImVec4 grayMainCol = ImVec4(0.24f, 0.31f, 0.36f, 1.0f);
 		const ImVec4 grayDarkerCol = ImVec4(0.19f, 0.19f, 0.19f, 1.0f);
 		const ImVec4 grayBrighterCol = ImVec4(0.59f, 0.59f, 0.59f, 1.0f);
-		const ImVec4 greenMainCol = ImVec4(0.295f, 0.46f, 0.11f, 1.0f);
-		const ImVec4 greenDarkerCol = ImVec4(0.195f, 0.26f, 0.11f, 1.0f);
-		const ImVec4 greenBrighterCol = ImVec4(0.295f, 0.76f, 0.11f, 1.0f);
+		const ImVec4 greenMainCol = ImVec4(0.082f, 0.24f, 0.235f, 1.0f);
+		const ImVec4 greenBrighterCol = ImVec4(0.255f, 0.64f, 0.486f, 1.0f);
 		const ImVec4 whiteCol = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 		style.Colors[ImGuiCol_FrameBg] = grayMainCol;
 		style.Colors[ImGuiCol_FrameBgHovered] = grayDarkerCol;
@@ -106,14 +105,14 @@ namespace EveryRay_Core
 		style.Colors[ImGuiCol_TitleBg] = grayMainCol;
 		style.Colors[ImGuiCol_TitleBgActive] = greenMainCol;
 		style.Colors[ImGuiCol_Button] = greenMainCol;
-		style.Colors[ImGuiCol_ButtonHovered] = greenDarkerCol;
+		style.Colors[ImGuiCol_ButtonHovered] = greenBrighterCol;
 		style.Colors[ImGuiCol_ButtonActive] = grayMainCol;
 		style.Colors[ImGuiCol_Header] = greenMainCol;
-		style.Colors[ImGuiCol_HeaderHovered] = greenDarkerCol;
+		style.Colors[ImGuiCol_HeaderHovered] = greenBrighterCol;
 		style.Colors[ImGuiCol_HeaderActive] = grayMainCol;
 		style.Colors[ImGuiCol_CheckMark] = whiteCol;
-		style.Colors[ImGuiCol_ResizeGrip] = greenDarkerCol;
-		style.Colors[ImGuiCol_ResizeGripHovered] = greenMainCol;
+		style.Colors[ImGuiCol_ResizeGrip] = greenMainCol;
+		style.Colors[ImGuiCol_ResizeGripHovered] = greenBrighterCol;
 		style.Colors[ImGuiCol_ResizeGripActive] = grayMainCol;
 		style.Colors[ImGuiCol_SliderGrab] = greenMainCol;
 		style.Colors[ImGuiCol_SliderGrabActive] = grayMainCol;
