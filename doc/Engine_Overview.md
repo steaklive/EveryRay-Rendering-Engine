@@ -116,15 +116,20 @@ A lot of graphics systems can be toggled right when you start the engine, howeve
  <img src="../screenshots/EveryRay_testScene_simple.png" width="500"/>
 </p>
 
- At the moment of writing this documentation, it doesn't do much except for showing or changing some properties of the following systems:
+ At the moment of writing this documentation, it doesn't do much except for showing or changing some properties of the following systems (refer to [Graphics Overview](https://github.com/steaklive/EveryRay-Rendering-Engine/blob/master/doc/Graphics_Overview.md) for more info on them):
 - Rendering Objects (**transforms** _(also per instance)_, custom material settings, activation/deactivation, showing AABB gizmos and stats)
 - Foliage zones (**transforms**, showing AABB gizmo and stats)
 - Post effects volumes (**transforms**, custom effects settings, activation/deactivation, showing AABB gizmos)
-- Directional & non-directional lights editor (**transforms**, custom properties, etc.)
+- Directional & non-directional lights (**transforms**, custom properties, etc.)
+- Wind (rotation, custom properties)
 - Sky (color data)
 - Camera (speed, FOV, near/far planes, frustum culling toggles)
 
-Highlighted values from above can even be saved back to ```.json``` of the scene after modifications with ImGuizmo or ImGui _(by pressing the "Save" buttons in the editor)_. More data available for saving is planned in the future releases of the engine. Ideally, it would be nice to have every single non-debug toggle "saveable" via UI.
+There are some additional handy functionalities in the _editor mode_, such as:
+- resetting camera position/direction
+- moving camera to a selected entity (foliage zone, rendering object or its selected instance, post effect volume, etc.)
+- automatically placing/dropping an entity (rendering object or a foliage zone) on terrain if it exists in the scene
+- **highlighted values** from above can even be saved back to ```.json``` of the scene after modifications with ImGuizmo or ImGui _(by pressing the "Save" buttons in the editor)_. More data available for saving is planned in the future releases of the engine; ideally, it would be nice to have every single non-debug toggle "saveable" via UI.
 
 
 # EveryRay - Engine Overview - RHI
