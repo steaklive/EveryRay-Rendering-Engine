@@ -16,10 +16,6 @@
 		{
 			"scene_name" : "terrainScene",
 			"scene_path" : "content\\levels\\terrainScene\\"
-		},
-		{
-			"scene_name" : "warehouseScene",
-			"scene_path" : "content\\levels\\private\\warehouseScene\\"
 		}
 	],
 	"startup_scene" : "testScene_simple"
