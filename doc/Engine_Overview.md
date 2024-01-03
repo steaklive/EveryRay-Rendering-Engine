@@ -110,7 +110,22 @@ You can also load other scenes via ImGui's drop down menu or reload the current 
 
 # EveryRay - Engine Overview - Editor
 
-TODO
+A lot of graphics systems can be toggled right when you start the engine, however, "EveryRay" also has a simple in-built scene _editor mode_ done via ImGui and ImGuizmo. 
+
+<p align="center">
+ <img src="../screenshots/EveryRay_testScene_simple.png" width="500"/>
+</p>
+
+ At the moment of writing this documentation, it doesn't do much except for showing or changing some properties of the following systems:
+- Rendering Objects (**transforms** _(also per instance)_, custom material settings, activation/deactivation, showing AABB gizmos and stats)
+- Foliage zones (**transforms**, showing AABB gizmo and stats)
+- Post effects volumes (**transforms**, custom effects settings, activation/deactivation, showing AABB gizmos)
+- Directional & non-directional lights editor (**transforms**, custom properties, etc.)
+- Sky (color data)
+- Camera (speed, FOV, near/far planes, frustum culling toggles)
+
+Highlighted values from above can even be saved back to ```.json``` of the scene after modifications with ImGuizmo or ImGui _(by pressing the "Save" buttons in the editor)_. More data available for saving is planned in the future releases of the engine. Ideally, it would be nice to have every single non-debug toggle "saveable" via UI.
+
 
 # EveryRay - Engine Overview - RHI
 
