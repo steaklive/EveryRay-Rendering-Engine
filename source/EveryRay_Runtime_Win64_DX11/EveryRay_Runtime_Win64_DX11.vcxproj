@@ -138,6 +138,9 @@
       <Command>copy /Y "$(SolutionDir)\external\JsonCpp\lib\$(Configuration)\jsoncpp.dll" "$(SolutionDir)\bin\x64\dx11\$(Configuration)\"
 copy /Y "$(SolutionDir)\external\Assimp\lib\x64\assimp-vc141-mtd.dll" "$(SolutionDir)\bin\x64\dx11\$(Configuration)\"</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>copy /Y "$(SolutionDir)\source\everyray.ico" "$(SolutionDir)\bin\x64\dx11\"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -194,6 +197,9 @@ copy /Y "$(SolutionDir)\external\Assimp\lib\x64\assimp-vc141-mtd.dll" "$(Solutio
       <Command>copy /Y "$(SolutionDir)\external\JsonCpp\lib\$(Configuration)\jsoncpp.dll" "$(SolutionDir)\bin\x64\dx11\$(Configuration)\"
 copy /Y "$(SolutionDir)\external\Assimp\lib\x64\assimp-vc141-mt.dll" "$(SolutionDir)\bin\x64\dx11\$(Configuration)\"</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>copy /Y "$(SolutionDir)\source\everyray.ico" "$(SolutionDir)\bin\x64\dx11\"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\external\ImGUI\imconfig.h" />
