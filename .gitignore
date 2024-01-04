@@ -9,10 +9,12 @@ source/EveryRay_Runtime_Win64_DX11/Release
 source/EveryRay_Runtime_Win64_DX12/Debug/
 source/EveryRay_Runtime_Win64_DX12/Release
 
-bin/x64/dx11/Debug/EveryRay_Core_Win64_DX11.lib
-bin/x64/dx11/Release/EveryRay_Core_Win64_DX11.lib
-bin/x64/dx12/Debug/EveryRay_Core_Win64_DX12.lib
-bin/x64/dx12/Release/EveryRay_Core_Win64_DX12.lib
+# ignore bin folders
+bin/
+!bin/x64/dx11/Debug/imgui.ini
+!bin/x64/dx11/Release/imgui.ini
+!bin/x64/dx12/Debug/imgui.ini
+!bin/x64/dx12/Release/imgui.ini
 
 # ignore files debug files
 *.obj
