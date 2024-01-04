@@ -134,6 +134,10 @@
       <AdditionalLibraryDirectories>$(SolutionDir)\external\JsonCpp\lib\Debug;$(SolutionDir)\external\Assimp\lib\x64;$(SolutionDir)\external\DirectXTex\Bin\Desktop_2019\x64\Debug;$(SolutionDir)\external\DirectXTK12\Bin\Desktop_2017_Win10\x64\Debug;$(SolutionDir)\bin\x64\dx12\Debug;$(WindowsSDK_LibraryPath_x64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <DelayLoadDLLs>d3d12.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)\external\JsonCpp\lib\$(Configuration)\jsoncpp.dll" "$(SolutionDir)\bin\x64\dx12\$(Configuration)\"
+copy /Y "$(SolutionDir)\external\Assimp\lib\x64\assimp-vc141-mtd.dll" "$(SolutionDir)\bin\x64\dx12\$(Configuration)\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -186,6 +190,10 @@
       <AdditionalDependencies>jsoncpp.lib;assimp-vc141-mt.lib;dxcompiler.lib;d3d12.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;DirectXTK12.lib;Shlwapi.lib;DirectXTex.lib;dinput8.lib;EveryRay_Core_Win64_DX12.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>d3d12.dll</DelayLoadDLLs>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)\external\JsonCpp\lib\$(Configuration)\jsoncpp.dll" "$(SolutionDir)\bin\x64\dx12\$(Configuration)\"
+copy /Y "$(SolutionDir)\external\Assimp\lib\x64\assimp-vc141-mt.dll" "$(SolutionDir)\bin\x64\dx12\$(Configuration)\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\external\ImGUI\imconfig.h" />

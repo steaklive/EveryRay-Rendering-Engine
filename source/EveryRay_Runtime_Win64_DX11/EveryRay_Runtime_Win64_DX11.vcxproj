@@ -134,6 +134,10 @@
       <AdditionalDependencies>assimp-vc141-mtd.lib;Shlwapi.lib;d3d11.lib;DirectXTK.lib;DirectXTex.lib;d3dcompiler.lib;dinput8.lib;dxguid.lib;EveryRay_Core_Win64_DX11.lib;jsoncpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\external\JsonCpp\lib\Debug;$(SolutionDir)\external\Assimp\lib\x64;$(SolutionDir)\external\DirectXTex\Bin\Desktop_2019\x64\Debug;$(SolutionDir)\external\DirectXTK\Bin\Desktop_2019_Win10\x64\Debug;$(SolutionDir)\bin\x64\dx11\Debug;$(WindowsSDK_LibraryPath_x64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)\external\JsonCpp\lib\$(Configuration)\jsoncpp.dll" "$(SolutionDir)\bin\x64\dx11\$(Configuration)\"
+copy /Y "$(SolutionDir)\external\Assimp\lib\x64\assimp-vc141-mtd.dll" "$(SolutionDir)\bin\x64\dx11\$(Configuration)\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -186,6 +190,10 @@
       <AdditionalLibraryDirectories>$(SolutionDir)\external\DirectXTex\Bin\Desktop_2019\x64\Release;$(SolutionDir)\external\JsonCpp\lib\Release;$(SolutionDir)\external\Assimp\lib\x64;$(SolutionDir)\external\DirectXTK\Bin\Desktop_2019_Win10\x64\Release;$(SolutionDir)\bin\x64\dx11\Release;$(WindowsSDK_LibraryPath_x64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>jsoncpp.lib;assimp-vc141-mt.lib;Shlwapi.lib;d3d11.lib;DirectXTK.lib;DirectXTex.lib;d3dcompiler.lib;dinput8.lib;dxguid.lib;EveryRay_Core_Win64_DX11.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)\external\JsonCpp\lib\$(Configuration)\jsoncpp.dll" "$(SolutionDir)\bin\x64\dx11\$(Configuration)\"
+copy /Y "$(SolutionDir)\external\Assimp\lib\x64\assimp-vc141-mt.dll" "$(SolutionDir)\bin\x64\dx11\$(Configuration)\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\external\ImGUI\imconfig.h" />
