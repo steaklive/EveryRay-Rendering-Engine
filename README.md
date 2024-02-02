@@ -24,7 +24,7 @@ You can read more about the architecture of "EveryRay" in the documentation:
 - [Graphics Overview](https://github.com/steaklive/EveryRay-Rendering-Engine/blob/master/doc/Graphics_Overview.md) 
 
 You can see a video demonstration of "EveryRay" here (scroll down for screenshots):
-- https://youtu.be/_htQNxesr9U (TODO to be updated)
+- https://youtu.be/jnN1lxqrDyc?si=9-9O8PVqQM1qs06y
 
 # Rendering features
 - Deferred + Forward Rendering

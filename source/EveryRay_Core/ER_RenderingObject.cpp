@@ -19,11 +19,23 @@
 #include "ER_Scene.h"
 
 #define LOAD_OLD_INSTANCED_DATA_FOR_GPU_INDIRECT_OBJECTS 0 // uncommnet if you need to debug "direct" instancing code (old-way)
+#define ALLOW_ANY_QUALITY_TEXTURE_LOAD 1
 
 namespace EveryRay_Core
 {
 	static int currentSplatChannnel = (int)TerrainSplatChannels::NONE;
 	static const int maxInstancesHeightUI = 5;
+
+	static const wchar_t* texPostfixDDS = L".dds";
+	static const wchar_t* texPostfixDDS_Capital = L".DDS";
+	static const wchar_t* texPostfixTGA = L".tga";
+	static const wchar_t* texPostfixTGA_Capital = L".TGA";
+	static const wchar_t* texPostfixQuality[RenderingObjectTextureQuality::OBJECT_TEXTURE_COUNT] =
+	{
+		 L"_lq",
+		 L"_mq",
+		 L"_hq"
+	};
 
 	ER_RenderingObject::ER_RenderingObject(const std::string& pName, int index, ER_Core& pCore, ER_Camera& pCamera, const std::string& pModelPath, bool availableInEditor, bool isInstanced)
 		:
@@ -311,8 +323,8 @@ namespace EveryRay_Core
 		loadStatus = false;
 	}
 
-	// This is main method for loading textures before going to RHI
-	// It supports quality levels, format check and different types of textures
+	// This is the main method for loading textures before sending them to RHI.
+	// It supports quality levels, format checks and different types of textures.
 	void ER_RenderingObject::LoadTexture(ER_RHI_GPUTexture** aTexture, bool* loadStat, const std::wstring& path, int meshIndex, bool isPlaceholder)
 	{
 		if (!mIsLoaded)
@@ -325,48 +337,51 @@ namespace EveryRay_Core
 		const int texQualityCount = RenderingObjectTextureQuality::OBJECT_TEXTURE_COUNT;
 		assert((int)mCurrentTextureQuality < texQualityCount);
 
-		const wchar_t* postfixQuality[RenderingObjectTextureQuality::OBJECT_TEXTURE_COUNT] =
-		{
-			 L"_lq",
-			 L"_mq",
-			 L"_hq"
-		};
-
 		std::wstring possiblePaths[RenderingObjectTextureQuality::OBJECT_TEXTURE_COUNT];
 
 		for (int i = 0; i < (int)RenderingObjectTextureQuality::OBJECT_TEXTURE_COUNT; i++)
 		{
 			possiblePaths[i] = path;
-			possiblePaths[i].insert(path.length() - extensionSymbolCount, std::wstring(postfixQuality[i]));
+			possiblePaths[i].insert(path.length() - extensionSymbolCount, std::wstring(texPostfixQuality[i]));
 		}
 
-		const wchar_t* postfixDDS = L".dds";
-		const wchar_t* postfixDDS_Capital = L".DDS";
-		const wchar_t* postfixTGA = L".tga";
-		const wchar_t* postfixTGA_Capital = L".TGA";
-		bool ddsLoader = (path.substr(path.length() - extensionSymbolCount) == std::wstring(postfixDDS)) || (path.substr(path.length() - extensionSymbolCount) == std::wstring(postfixDDS_Capital));
-		bool tgaLoader = (path.substr(path.length() - extensionSymbolCount) == std::wstring(postfixTGA)) || (path.substr(path.length() - extensionSymbolCount) == std::wstring(postfixTGA_Capital));
+		bool ddsLoader = (path.substr(path.length() - extensionSymbolCount) == std::wstring(texPostfixDDS)) || (path.substr(path.length() - extensionSymbolCount) == std::wstring(texPostfixDDS_Capital));
+		bool tgaLoader = (path.substr(path.length() - extensionSymbolCount) == std::wstring(texPostfixTGA)) || (path.substr(path.length() - extensionSymbolCount) == std::wstring(texPostfixTGA_Capital));
 		std::string errorMessage = mModel->GetFileName() + " of mesh index: " + std::to_string(meshIndex);
 
 		{
-			bool didExist = false;
-			//we start traversing through different texture quality levels unless we hit the first one
-			for (int i = static_cast<int>(mCurrentTextureQuality); i >= 0; i--)
+			bool existedInCache = false;
+			int currentTexQualityIndex = 0;
+
+			// we start traversing downwards through different texture quality levels unless we hit the first existing one on disk
+			for (currentTexQualityIndex = static_cast<int>(mCurrentTextureQuality); currentTexQualityIndex >= 0; currentTexQualityIndex--)
 			{
-				*aTexture = mCore->AddOrGetGPUTextureFromCache(possiblePaths[i], &didExist, false, true, loadStat, true);
-				if (didExist)
+				*aTexture = mCore->AddOrGetGPUTextureFromCache(possiblePaths[currentTexQualityIndex], &existedInCache, false, true, loadStat, true);
+				if (existedInCache || (!existedInCache && loadStat && *loadStat && *aTexture)) //success
 					break;
-
-				if (loadStat && !didExist)
-				{
-					if (*loadStat && *aTexture) // success
-						break;
-
-					if (!*loadStat && i <= 0) // after we traversed all possible levels, lets load the original path (maybe the texture does not have postfix)
-						*aTexture = mCore->AddOrGetGPUTextureFromCache(path, &didExist);
-				}
-
 			}
+
+			// if we haven't found anything, we start traversing upwards in case we have higher quality versions of the requested texture (imo better than showing a placeholder)
+#if ALLOW_ANY_QUALITY_TEXTURE_LOAD
+			if (!existedInCache && loadStat && !*loadStat)
+			{
+				for (currentTexQualityIndex = static_cast<int>(mCurrentTextureQuality) + 1; currentTexQualityIndex < RenderingObjectTextureQuality::OBJECT_TEXTURE_COUNT; currentTexQualityIndex++)
+				{
+					*aTexture = mCore->AddOrGetGPUTextureFromCache(possiblePaths[currentTexQualityIndex], &existedInCache, false, true, loadStat, true);
+					if (existedInCache || (!existedInCache && loadStat && *loadStat && *aTexture)) //success
+					{
+						std::wstring msg = L"[ER Logger][ER_RenderingObject] Warning! Loaded a texture which quality is higher than the graphics preset setting! : " + possiblePaths[currentTexQualityIndex] + L'\n';
+						ER_OUTPUT_LOG(msg.c_str());
+						break;
+					}
+				}
+			}
+#endif
+			// after we have traversed all possible levels and still haven't found anything, lets try to load the original/unmodified path (and if that fails, we will load a placeholder);
+			// this can happen if the texture does not have any quality-specific versions on disk
+			if (!existedInCache && loadStat && !*loadStat) 
+				*aTexture = mCore->AddOrGetGPUTextureFromCache(path, &existedInCache);
+
 			assert(*aTexture);
 
 			if (!isPlaceholder/* && !didExist*/)
