@@ -537,7 +537,8 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_Terrain::Draw(TerrainRenderPass aPass, const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget, ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade)
+	void ER_Terrain::Draw(TerrainRenderPass aPass, const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget,
+		ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade, ER_Camera* aCustomCamera, bool skipCulling)
 	{
 		if (!mEnabled || !mLoaded)
 			return;
@@ -546,7 +547,7 @@ namespace EveryRay_Core
 			return;
 
 		ER_RHI* rhi = mCore->GetRHI();
-		ER_Camera* camera = (ER_Camera*)(mCore->GetServices().FindService(ER_Camera::TypeIdClass()));
+		ER_Camera* camera = aCustomCamera ? aCustomCamera : (ER_Camera*)(mCore->GetServices().FindService(ER_Camera::TypeIdClass()));
 
 		if (worldShadowMapper && aPass != TerrainRenderPass::TERRAIN_GBUFFER)
 		{
@@ -584,7 +585,7 @@ namespace EveryRay_Core
 		mTerrainConstantBuffer.ApplyChanges(rhi);
 
 		for (int i = 0; i < mHeightMaps.size(); i++)
-			DrawTessellated(aPass, aRenderTargets, aDepthTarget, i, worldShadowMapper, probeManager, shadowMapCascade);
+			DrawTessellated(aPass, aRenderTargets, aDepthTarget, i, worldShadowMapper, probeManager, shadowMapCascade, skipCulling);
 	}
 
 	void ER_Terrain::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, ER_RHI_GPURootSignature* rs)
@@ -628,13 +629,14 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_Terrain::DrawTessellated(TerrainRenderPass aPass, const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget, int tileIndex, ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade)
+	void ER_Terrain::DrawTessellated(TerrainRenderPass aPass, const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget, int tileIndex,
+		ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade, bool skipCulling)
 	{
 		if (aPass == TerrainRenderPass::TERRAIN_SHADOW)
 			assert(shadowMapCascade != -1);
 		
 		//for shadow mapping pass we dont want to cull with main camera frustum
-		if (mHeightMaps[tileIndex]->IsCulled() && (aPass == TerrainRenderPass::TERRAIN_FORWARD || aPass == TerrainRenderPass::TERRAIN_GBUFFER))
+		if (mHeightMaps[tileIndex]->IsCulled() && !skipCulling)
 			return;
 
 		ER_RHI* rhi = mCore->GetRHI();

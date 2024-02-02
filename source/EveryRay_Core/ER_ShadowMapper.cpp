@@ -330,7 +330,7 @@ namespace EveryRay_Core
 
 			rhi->BeginEventTag("EveryRay: Shadow Maps (terrain), cascade " + std::to_string(i));
 			if (terrain)
-				terrain->Draw(TerrainRenderPass::TERRAIN_SHADOW, { mShadowMaps[i] }, nullptr, this, nullptr, i);
+				terrain->Draw(TerrainRenderPass::TERRAIN_SHADOW, { mShadowMaps[i] }, nullptr, this, nullptr, i, nullptr, true);
 			rhi->EndEventTag();
 
 			rhi->BeginEventTag("EveryRay: Shadow Maps (objects), cascade " + std::to_string(i));

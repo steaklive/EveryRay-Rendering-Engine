@@ -18,6 +18,7 @@
 #include "ER_QuadRenderer.h"
 #include "ER_RenderToLightProbeMaterial.h"
 #include "ER_MaterialsCallbacks.h"
+#include "ER_Terrain.h"
 
 #define DIFFUSE_PROBE 0
 #define SPECULAR_PROBE 1
@@ -209,6 +210,16 @@ namespace EveryRay_Core
 					//TODO draw sun
 					//...
 					//skybox->UpdateSun(game.GetCoreTime(), mCubemapCameras[cubeMapFace]);
+				}
+
+				// terrain
+				{
+					ER_Terrain* terrain = game.GetLevel()->mTerrain;
+					if (terrain)
+					{
+						terrain->Draw(TerrainRenderPass::TERRAIN_FORWARD, { aTextureNonConvoluted }, aDepthBuffers[cubeMapFaceIndex],
+							game.GetLevel()->mShadowMapper, nullptr, -1, mCubemapCameras[cubeMapFaceIndex], true);
+					}
 				}
 
 				// We don't do lodding because it is bound to main camera... We force pick lod 0.
@@ -432,7 +443,7 @@ namespace EveryRay_Core
 		else
 		{
 			assert(mCubemapTexture);
-			mCubemapTexture->CreateGPUTextureResource(rhi, probeName, true, false, true, &mIsProbeLoadedFromDisk);
+			mCubemapTexture->CreateGPUTextureResource(rhi, probeName, true, false, true, &mIsProbeLoadedFromDisk, true);
 			if (!mIsProbeLoadedFromDisk)
 			{
 				std::wstring message = L"[ER Logger][ER_LightProbe] Could not load probe's texture file: " + probeName + L". This probe will be recomputed and saved to disk. \n";
@@ -440,7 +451,7 @@ namespace EveryRay_Core
 			}
 			else
 			{
-				std::wstring message = L"[ER Logger][ER_LightProbe] Successfully loaded specular probe's cubemap texture: " + probeName + L"\n";
+				std::wstring message = L"[ER Logger][ER_LightProbe] Successfully loaded probe's cubemap texture: " + probeName + L"\n";
 				ER_OUTPUT_LOG(message.c_str());
 			}
 		}
