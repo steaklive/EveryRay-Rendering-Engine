@@ -217,7 +217,7 @@ namespace EveryRay_Core
 					ER_Terrain* terrain = game.GetLevel()->mTerrain;
 					if (terrain)
 					{
-						terrain->Draw(TerrainRenderPass::TERRAIN_FORWARD, { aTextureNonConvoluted }, aDepthBuffers[cubeMapFaceIndex],
+						terrain->Draw(TerrainRenderPass::TERRAIN_LIGHTPROBE, { aTextureNonConvoluted }, aDepthBuffers[cubeMapFaceIndex],
 							game.GetLevel()->mShadowMapper, nullptr, -1, mCubemapCameras[cubeMapFaceIndex], true);
 					}
 				}

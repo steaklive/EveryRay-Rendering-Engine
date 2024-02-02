@@ -46,7 +46,8 @@ namespace EveryRay_Core
 	{
 		TERRAIN_GBUFFER,
 		TERRAIN_FORWARD,
-		TERRAIN_SHADOW
+		TERRAIN_SHADOW,
+		TERRAIN_LIGHTPROBE
 	};
 
 	namespace TerrainCBufferData {
@@ -191,6 +192,9 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mPS = nullptr;
 		std::string mTerrainMainPassPSOName = "ER_RHI_GPUPipelineStateObject: Terrain - Main Pass";
 		std::string mTerrainMainPassWireframePSOName = "ER_RHI_GPUPipelineStateObject: Terrain - Main (Wireframe) Pass";
+
+		ER_RHI_GPUShader* mPS_LightProbe = nullptr;
+		std::string mTerrainLightProbePassPSOName = "ER_RHI_GPUPipelineStateObject: Terrain - Light Probe Pass";
 
 		ER_RHI_GPUShader* mDS_ShadowMap = nullptr;
 		ER_RHI_GPUShader* mPS_ShadowMap = nullptr;

@@ -61,6 +61,9 @@ namespace EveryRay_Core
 			mPS = rhi->CreateGPUShader();
 			mPS->CompileShader(rhi, "content\\shaders\\Terrain\\Terrain.hlsl", "PSMain", ER_PIXEL);
 
+			mPS_LightProbe = rhi->CreateGPUShader();
+			mPS_LightProbe->CompileShader(rhi, "content\\shaders\\Terrain\\Terrain.hlsl", "PSLightProbe", ER_PIXEL);
+
 			mPS_ShadowMap = rhi->CreateGPUShader();
 			mPS_ShadowMap->CompileShader(rhi, "content\\shaders\\Terrain\\Terrain.hlsl", "PSShadowMap", ER_PIXEL);
 
@@ -112,6 +115,7 @@ namespace EveryRay_Core
 		DeleteObject(mDS);
 		DeleteObject(mDS_ShadowMap);
 		DeleteObject(mPS);
+		DeleteObject(mPS_LightProbe);
 		DeleteObject(mPS_ShadowMap);
 		DeleteObject(mPS_GBuffer);
 		DeleteObject(mPlaceOnTerrainCS);
@@ -652,6 +656,8 @@ namespace EveryRay_Core
 			psoName = mTerrainShadowPassPSOName;
 		else if (aPass == TERRAIN_GBUFFER)
 			psoName = ER_Utility::IsWireframe ? mTerrainGBufferPassWireframePSOName : mTerrainGBufferPassPSOName;
+		else if (aPass == TERRAIN_LIGHTPROBE)
+			psoName = mTerrainLightProbePassPSOName;
 
 		rhi->SetRootSignature(rootSig);
 		rhi->SetVertexBuffers({ mHeightMaps[tileIndex]->mVertexBufferTS });
@@ -679,6 +685,8 @@ namespace EveryRay_Core
 				rhi->SetShader(mDS);
 				if (aPass == TerrainRenderPass::TERRAIN_FORWARD)
 					rhi->SetShader(mPS);
+				else if (aPass == TerrainRenderPass::TERRAIN_LIGHTPROBE)
+					rhi->SetShader(mPS_LightProbe);
 				else if (aPass == TerrainRenderPass::TERRAIN_GBUFFER)
 					rhi->SetShader(mPS_GBuffer);
 
@@ -714,7 +722,7 @@ namespace EveryRay_Core
 			resources[2] = mSplatChannelTextures[1];
 			resources[3] = mSplatChannelTextures[2];
 			resources[4] = mSplatChannelTextures[3];
-			if (aPass == TerrainRenderPass::TERRAIN_FORWARD)
+			if (aPass == TerrainRenderPass::TERRAIN_FORWARD || aPass == TerrainRenderPass::TERRAIN_LIGHTPROBE)
 			{
 				if (worldShadowMapper)
 				{
@@ -722,7 +730,7 @@ namespace EveryRay_Core
 						resources[5 + c] = worldShadowMapper->GetShadowTexture(c);
 				}
 
-				if (probeManager && probeManager->AreGlobalProbesReady())
+				if (aPass == TerrainRenderPass::TERRAIN_FORWARD && probeManager && probeManager->AreGlobalProbesReady())
 				{
 					resources[8] = probeManager->GetGlobalDiffuseProbe()->GetCubemapTexture();
 					resources[12] = probeManager->GetGlobalSpecularProbe()->GetCubemapTexture();
