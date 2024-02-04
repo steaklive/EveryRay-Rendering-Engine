@@ -1,8 +1,10 @@
 #pragma once
 #include "ER_Material.h"
 
+// TODO these serve no purpose for now because we support this material only in DX11
 #define RENDERTOLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
-#define RENDERTOLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 1
+#define RENDERTOLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_VERTEX_SRV_INDEX 1
+#define RENDERTOLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 2
 
 namespace EveryRay_Core
 {

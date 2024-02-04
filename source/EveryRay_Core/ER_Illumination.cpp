@@ -201,11 +201,11 @@ namespace EveryRay_Core {
 			mForwardLightingPS_Transparent = rhi->CreateGPUShader();
 			mForwardLightingPS_Transparent->CompileShader(rhi, "content\\shaders\\ForwardLighting.hlsl", "PSMain_Transparent", ER_PIXEL);
 
-			mForwardLightingDiffuseProbesPS = rhi->CreateGPUShader();
-			mForwardLightingDiffuseProbesPS->CompileShader(rhi, "content\\shaders\\ForwardLighting.hlsl", "PSMain_DiffuseProbes", ER_PIXEL);
-
-			mForwardLightingSpecularProbesPS = rhi->CreateGPUShader();
-			mForwardLightingSpecularProbesPS->CompileShader(rhi, "content\\shaders\\ForwardLighting.hlsl", "PSMain_SpecularProbes", ER_PIXEL);
+			//mForwardLightingDiffuseProbesPS = rhi->CreateGPUShader();
+			//mForwardLightingDiffuseProbesPS->CompileShader(rhi, "content\\shaders\\ForwardLighting.hlsl", "PSMain_DiffuseProbes", ER_PIXEL);
+			//
+			//mForwardLightingSpecularProbesPS = rhi->CreateGPUShader();
+			//mForwardLightingSpecularProbesPS->CompileShader(rhi, "content\\shaders\\ForwardLighting.hlsl", "PSMain_SpecularProbes", ER_PIXEL);
 		}
 		
 		//cbuffers

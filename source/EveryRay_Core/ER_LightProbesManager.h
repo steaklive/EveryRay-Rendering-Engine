@@ -52,8 +52,8 @@ namespace EveryRay_Core
 
 		bool AreProbesReady() { return mDiffuseProbesReady && mSpecularProbesReady; }
 		void SetLevelPath(const std::wstring& aPath) { mLevelPath = aPath; };
-		void ComputeOrLoadLocalProbes(ER_Core& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox = nullptr);
-		void ComputeOrLoadGlobalProbes(ER_Core& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox);
+		void ComputeOrLoadLocalProbes(ER_Core& game, ProbesRenderingObjectsInfo& aObjects);
+		void ComputeOrLoadGlobalProbes(ER_Core& game, ProbesRenderingObjectsInfo& aObjects);
 		void DrawDebugProbes(ER_RHI* rhi, ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, ER_ProbeType aType, ER_RHI_GPURootSignature* rs);
 		void UpdateProbes(ER_Core& game);
 		int GetCellIndex(const XMFLOAT3& pos, ER_ProbeType aType);

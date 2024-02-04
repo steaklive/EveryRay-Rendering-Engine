@@ -598,7 +598,7 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_LightProbesManager::ComputeOrLoadGlobalProbes(ER_Core& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox)
+	void ER_LightProbesManager::ComputeOrLoadGlobalProbes(ER_Core& game, ProbesRenderingObjectsInfo& aObjects)
 	{
 		assert(skybox);
 
@@ -611,7 +611,7 @@ namespace EveryRay_Core
 			if (!mGlobalDiffuseProbe->LoadProbeFromDisk(game, diffuseProbesPath))
 			{
 				if (game.GetRHI()->GetAPI() == ER_GRAPHICS_API::DX11)
-					mGlobalDiffuseProbe->Compute(game, mTempDiffuseCubemapFacesRT, mTempDiffuseCubemapFacesConvolutedRT, mTempDiffuseCubemapDepthBuffers, diffuseProbesPath, aObjects, mQuadRenderer, skybox);
+					mGlobalDiffuseProbe->Compute(game, mTempDiffuseCubemapFacesRT, mTempDiffuseCubemapFacesConvolutedRT, mTempDiffuseCubemapDepthBuffers, diffuseProbesPath, aObjects, mQuadRenderer);
 				else
 					throw ER_CoreException("ER_LightProbesManager: Computing & saving the probes is only possible on DX11 at the moment");
 			}
@@ -628,7 +628,7 @@ namespace EveryRay_Core
 			if (!mGlobalSpecularProbe->LoadProbeFromDisk(game, specularProbesPath))
 			{
 				if (game.GetRHI()->GetAPI() == ER_GRAPHICS_API::DX11)
-					mGlobalSpecularProbe->Compute(game, mTempSpecularCubemapFacesRT, mTempSpecularCubemapFacesConvolutedRT, mTempSpecularCubemapDepthBuffers, specularProbesPath, aObjects, mQuadRenderer, skybox);
+					mGlobalSpecularProbe->Compute(game, mTempSpecularCubemapFacesRT, mTempSpecularCubemapFacesConvolutedRT, mTempSpecularCubemapDepthBuffers, specularProbesPath, aObjects, mQuadRenderer);
 				else
 					throw ER_CoreException("ER_LightProbesManager: Computing & saving the probes is only possible on DX11 at the moment");
 			}
@@ -639,7 +639,7 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_LightProbesManager::ComputeOrLoadLocalProbes(ER_Core& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox)
+	void ER_LightProbesManager::ComputeOrLoadLocalProbes(ER_Core& game, ProbesRenderingObjectsInfo& aObjects)
 	{
 		ER_RHI* rhi = game.GetRHI();
 
@@ -677,7 +677,7 @@ namespace EveryRay_Core
 				if (!probe.IsLoadedFromDisk())
 				{
 					if (game.GetRHI()->GetAPI() == ER_GRAPHICS_API::DX11)
-						probe.Compute(game, mTempDiffuseCubemapFacesRT, mTempDiffuseCubemapFacesConvolutedRT, mTempDiffuseCubemapDepthBuffers, diffuseProbesPath, aObjects, mQuadRenderer, skybox);
+						probe.Compute(game, mTempDiffuseCubemapFacesRT, mTempDiffuseCubemapFacesConvolutedRT, mTempDiffuseCubemapDepthBuffers, diffuseProbesPath, aObjects, mQuadRenderer);
 					else
 						throw ER_CoreException("ER_LightProbesManager: Computing & saving the probes is only possible on DX11 at the moment");
 				}
@@ -736,7 +736,7 @@ namespace EveryRay_Core
 				if (!probe.IsLoadedFromDisk())
 				{
 					if (game.GetRHI()->GetAPI() == ER_GRAPHICS_API::DX11)
-						probe.Compute(game, mTempSpecularCubemapFacesRT, mTempSpecularCubemapFacesConvolutedRT, mTempSpecularCubemapDepthBuffers, specularProbesPath, aObjects, mQuadRenderer, skybox);
+						probe.Compute(game, mTempSpecularCubemapFacesRT, mTempSpecularCubemapFacesConvolutedRT, mTempSpecularCubemapDepthBuffers, specularProbesPath, aObjects, mQuadRenderer);
 					else
 						throw ER_CoreException("ER_LightProbesManager: Computing & saving the probes is only possible on DX11 at the moment");
 

@@ -31,16 +31,15 @@ namespace EveryRay_Core
 	class ER_GPUCuller : public ER_CoreComponent
 	{
 	public:
-		ER_GPUCuller(ER_Core& game, ER_Camera& camera);
+		ER_GPUCuller(ER_Core& game);
 		~ER_GPUCuller();
 
 		void Initialize();
-		void PerformCull(ER_Scene* aScene);
-		void ClearCounters(ER_Scene* aScene);
+		void PerformCull(ER_Scene* aScene, ER_Camera* aCamera);
+		void ClearCounters(ER_Scene* aScene, ER_Camera* aCamera);
 
 	private:
 		ER_Core& mCore;
-		ER_Camera& mCamera;
 
 		ER_RHI_GPUShader* mIndirectCullingCS = nullptr;
 		ER_RHI_GPUShader* mIndirectCullingClearCS = nullptr;

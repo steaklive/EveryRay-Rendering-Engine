@@ -35,7 +35,7 @@ TextureCube<float4> SpecularGlobalProbeTexture : register(t12); // global probe 
 TextureCubeArray<float4> SpecularProbesTextureArray: register(t13); //linear array of specular cubemap textures
 StructuredBuffer<int> SpecularProbesCellsWithProbeIndicesArray : register(t14); //linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
 StructuredBuffer<int> SpecularProbesTextureArrayIndices : register(t15); //array of all specular probes in scene with indices in 'IrradianceSpecularProbesTextureArray' for each probe (-1 if not in array)
-StructuredBuffer<float3> SpecularProbesPositionsArray : register(t16); //linear array of all specular probes positions
+StructuredBuffer<float4> SpecularProbesPositionsArray : register(t16); //linear array of all specular probes positions
 
 Texture2D<float4> IntegrationTexture : register(t17);
 
@@ -72,7 +72,7 @@ struct LightProbeInfo
     TextureCubeArray<float4> SpecularProbesTextureArray;
     StructuredBuffer<int> SpecularProbesCellsWithProbeIndicesArray;
     StructuredBuffer<int> SpecularProbesTextureArrayIndices;
-    StructuredBuffer<float3> SpecularProbesPositionsArray;
+    StructuredBuffer<float4> SpecularProbesPositionsArray;
     
     float4 diffuseProbeCellsCount;
     float4 specularProbeCellsCount;
@@ -611,7 +611,7 @@ float3 GetSpecularIrradiance(float3 worldPos, float3 camPos, float3 reflectDir, 
             // calculate the probe with the closest distance to the position
             if (indexInTexArray != -1)
             {
-                float curDistance = distance(worldPos, probesInfo.SpecularProbesPositionsArray[currentIndex]);
+                float curDistance = distance(worldPos, probesInfo.SpecularProbesPositionsArray[currentIndex].xyz);
                 if (curDistance < closestProbeDistance)
                 {
                     closestProbeDistance = curDistance;

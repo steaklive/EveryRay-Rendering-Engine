@@ -56,6 +56,7 @@ namespace EveryRay_Core
 		virtual void Update(const ER_CoreTime& gameTime) override;
 		virtual void UpdateViewMatrix(bool leftHanded = false);
 		virtual void UpdateProjectionMatrix(bool leftHanded = false);
+		void UpdateFrustum();
 		void ApplyRotation(CXMMATRIX transform);
 		void ApplyRotation(const XMFLOAT4X4& transform);
 

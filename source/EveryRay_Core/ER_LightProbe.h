@@ -29,7 +29,7 @@ namespace EveryRay_Core
 		void Initialize(ER_Core& game, ER_DirectionalLight* light, ER_ShadowMapper* shadowMapper, int size, int aProbeType, int index);
 
 		void Compute(ER_Core& game, ER_RHI_GPUTexture* aTextureNonConvoluted, ER_RHI_GPUTexture* aTextureConvoluted, ER_RHI_GPUTexture** aDepthBuffers,
-			const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, ER_QuadRenderer* quadRenderer, ER_Skybox* skybox = nullptr);
+			const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, ER_QuadRenderer* quadRenderer);
 		void UpdateProbe(const ER_CoreTime& gameTime);
 
 		bool LoadProbeFromDisk(ER_Core& game, const std::wstring& levelPath);
@@ -52,7 +52,7 @@ namespace EveryRay_Core
 	private:
 		void StoreSphericalHarmonicsFromCubemap(ER_Core& game, ER_RHI_GPUTexture* aTextureConvoluted);
 		void SaveProbeOnDisk(ER_Core& game, const std::wstring& levelPath, ER_RHI_GPUTexture* aTextureConvoluted);
-		void DrawGeometryToProbe(ER_Core& game, ER_RHI_GPUTexture* aTextureNonConvoluted, ER_RHI_GPUTexture** aDepthBuffers, const LightProbeRenderingObjectsInfo& objectsToRender, ER_Skybox* skybox);
+		void DrawGeometryToProbe(ER_Core& game, ER_RHI_GPUTexture* aTextureNonConvoluted, ER_RHI_GPUTexture** aDepthBuffers, const LightProbeRenderingObjectsInfo& objectsToRender);
 		void ConvoluteProbe(ER_Core& game, ER_QuadRenderer* quadRenderer, ER_RHI_GPUTexture* aTextureNonConvoluted, ER_RHI_GPUTexture* aTextureConvoluted);
 		std::wstring GetConstructedProbeName(const std::wstring& levelPath, bool inSphericalHarmonics = false);
 

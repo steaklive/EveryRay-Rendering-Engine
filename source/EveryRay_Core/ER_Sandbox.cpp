@@ -146,6 +146,13 @@ namespace EveryRay_Core {
 		game.CPUProfiler()->EndCPUTime("Shadow mapper init");
 #pragma endregion
 
+		#pragma region INIT_GPU_CULLER
+		game.CPUProfiler()->BeginCPUTime("GPU Culler init");
+		mGPUCuller = new ER_GPUCuller(game);
+		mGPUCuller->Initialize();
+		game.CPUProfiler()->EndCPUTime("GPU Culler init");
+#pragma endregion
+
 		#pragma region INIT_POST_PROCESSING
 		game.CPUProfiler()->BeginCPUTime("Post processing stack init");
         mPostProcessingStack = new ER_PostProcessingStack(game, camera);
@@ -217,13 +224,6 @@ namespace EveryRay_Core {
 		game.CPUProfiler()->EndCPUTime("Wind init");
 #pragma endregion
 
-		#pragma region INIT_GPU_CULLER
-		game.CPUProfiler()->BeginCPUTime("GPU Culler init");
-		mGPUCuller = new ER_GPUCuller(game, camera);
-		mGPUCuller->Initialize();
-		game.CPUProfiler()->EndCPUTime("GPU Culler init");
-#pragma endregion
-
 		#pragma region INIT_MATERIAL_CALLBACKS
 		game.CPUProfiler()->BeginCPUTime("Material callbacks init");
 		ER_MaterialSystems materialSystems;
@@ -292,14 +292,10 @@ namespace EveryRay_Core {
 		if (mFoliageSystem && mFoliageSystem->HasFoliage())
 			mFoliageSystem->Update(gameTime);
 
+		ER_Camera* camera = (ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass());
 		// TODO: consider moving all debug gizmos to a separate debug renderer system
-		mWind->UpdateProxyModel(gameTime,
-			((ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass()))->ViewMatrix4X4(),
-			((ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass()))->ProjectionMatrix4X4());
-		// TODO: consider moving all debug gizmos to a separate debug renderer system
-		mDirectionalLight->UpdateProxyModel(gameTime, 
-			((ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass()))->ViewMatrix4X4(),
-			((ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass()))->ProjectionMatrix4X4());
+		mWind->UpdateProxyModel(gameTime, camera->ViewMatrix4X4(),camera->ProjectionMatrix4X4());
+		mDirectionalLight->UpdateProxyModel(gameTime, camera->ViewMatrix4X4(), camera->ProjectionMatrix4X4());
 		
 		for (auto& pointLight : mPointLights)
 			pointLight->Update(gameTime);
@@ -341,11 +337,13 @@ namespace EveryRay_Core {
 	void ER_Sandbox::Draw(ER_Core& game, const ER_CoreTime& gameTime)
 	{
 		ER_RHI* rhi = game.GetRHI();
+		ER_Camera* camera = (ER_Camera*)game.GetServices().FindService(ER_Camera::TypeIdClass());
+
 		rhi->SetTopologyType(ER_RHI_PRIMITIVE_TYPE::ER_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		
 		#pragma region GPU_CULLING
-		rhi->BeginEventTag("EveryRay: GPU Culling");
-		mGPUCuller->PerformCull(mScene);
+		rhi->BeginEventTag("EveryRay: GPU culling (Main camera)");
+		mGPUCuller->PerformCull(mScene, camera);
 		rhi->EndEventTag();
 #pragma endregion
 
@@ -395,12 +393,12 @@ namespace EveryRay_Core {
 				if (mLightProbesManager->IsEnabled() && !mLightProbesManager->AreProbesReady())
 				{
 					game.CPUProfiler()->BeginCPUTime("Compute or load light probes");
-					mLightProbesManager->ComputeOrLoadLocalProbes(game, mScene->objects, mSkybox);
-					mLightProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
+					mLightProbesManager->ComputeOrLoadLocalProbes(game, mScene->objects);
+					mLightProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects);
 					game.CPUProfiler()->EndCPUTime("Compute or load light probes");
 				}
 				else if (!mLightProbesManager->IsEnabled() && !mLightProbesManager->AreGlobalProbesReady())
-					mLightProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects, mSkybox);
+					mLightProbesManager->ComputeOrLoadGlobalProbes(game, mScene->objects);
 			}
 		}
 		rhi->EndEventTag();

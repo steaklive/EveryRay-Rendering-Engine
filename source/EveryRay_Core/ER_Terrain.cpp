@@ -1065,6 +1065,8 @@ namespace EveryRay_Core
 		//...
 		//DeleteObject(terrainBuffer);
 #endif
+		rhi->BeginEventTag("EveryRay: Place on terrain CS");
+
 		rhi->SetRootSignature(mTerrainPlacementPassRS, true);		
 		if (!rhi->IsPSOReady(mTerrainPlacementPassPSOName, true))
 		{
@@ -1090,10 +1092,13 @@ namespace EveryRay_Core
 		rhi->UnsetPSO();
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 
+		rhi->EndEventTag();
+
 #ifdef ER_PLATFORM_WIN64_DX11
 		if (needsCPUReadback)
 			ReadbackPlacedPositions(outputBuffer, inputBuffer, positions, positionsCount); //direct readback in the dx11 immediate context
 #endif
+
 	}
 
 	// Read-back (GPU to CPU) new positions from placement compute pass
@@ -1102,6 +1107,7 @@ namespace EveryRay_Core
 	void ER_Terrain::ReadbackPlacedPositions(ER_RHI_GPUBuffer* outputBuffer, ER_RHI_GPUBuffer* inputBuffer, XMFLOAT4* positions, int positionsCount)
 	{
 		ER_RHI* rhi = GetCore()->GetRHI();
+		rhi->BeginEventTag("EveryRay: Place on terrain readback");
 
 		rhi->BeginCopyCommandList();
 		rhi->CopyBuffer(outputBuffer, inputBuffer, 0, true);
@@ -1117,6 +1123,8 @@ namespace EveryRay_Core
 				positions[i] = newPositions[i];
 		}
 		rhi->EndBufferRead(outputBuffer);
+
+		rhi->EndEventTag();
 	}
 
 	HeightMap::HeightMap(int width, int height)
