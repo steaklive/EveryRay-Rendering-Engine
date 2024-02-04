@@ -28,7 +28,7 @@ Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t5);
 TextureCube<float4> DiffuseGlobalProbeTexture : register(t8); // global probe (fallback)
 StructuredBuffer<int> DiffuseProbesCellsWithProbeIndicesArray : register(t9); //linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
 StructuredBuffer<float3> DiffuseSphericalHarmonicsCoefficientsArray : register(t10); //linear array of all diffuse probes 2nd order coefficients (9)
-StructuredBuffer<float3> DiffuseProbesPositionsArray : register(t11); //linear array of all diffuse probes positions
+StructuredBuffer<float4> DiffuseProbesPositionsArray : register(t11); //linear array of all diffuse probes positions
 
 TextureCube<float4> SpecularGlobalProbeTexture : register(t12); // global probe (fallback)
 TextureCubeArray<float4> SpecularProbesTextureArray: register(t13); //linear array of specular cubemap textures
@@ -65,7 +65,7 @@ struct LightProbeInfo
     TextureCube<float4> globalIrradianceSpecularProbeTexture;
     
     StructuredBuffer<int> DiffuseProbesCellsWithProbeIndicesArray;
-    StructuredBuffer<float3> DiffuseProbesPositionsArray;
+    StructuredBuffer<float4> DiffuseProbesPositionsArray;
     StructuredBuffer<float3> DiffuseSphericalHarmonicsCoefficientsArray;
 
     TextureCubeArray<float4> SpecularProbesTextureArray;
@@ -484,7 +484,7 @@ float3 GetDiffuseIrradiance(float3 worldPos, float3 normal, float3 camPos, bool 
                     SH[s] = probesInfo.DiffuseSphericalHarmonicsCoefficientsArray[currentIndex * SPHERICAL_HARMONICS_COEF_COUNT + s];
         
                 cellProbesSamples[i] = GetDiffuseIrradianceFromSphericalHarmonics(normal, SH);
-                cellProbesPositions[i] = probesInfo.DiffuseProbesPositionsArray[currentIndex];
+                cellProbesPositions[i] = probesInfo.DiffuseProbesPositionsArray[currentIndex].xyz;
             }
         }
         

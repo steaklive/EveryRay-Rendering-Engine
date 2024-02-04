@@ -175,14 +175,6 @@ namespace EveryRay_Core {
 		game.CPUProfiler()->EndCPUTime("Volumetric Fog init");
 #pragma endregion
 
-		#pragma region INIT_LIGHTPROBES_MANAGER
-		game.CPUProfiler()->BeginCPUTime("Light probes manager init");
-		mLightProbesManager = new ER_LightProbesManager(game, camera, mScene, mDirectionalLight, mShadowMapper);
-		mLightProbesManager->SetLevelPath(ER_Utility::ToWideString(sceneFolderPath));
-		mIllumination->SetProbesManager(mLightProbesManager);
-		game.CPUProfiler()->EndCPUTime("Light probes manager init");
-#pragma endregion
-
 		#pragma region INIT_TERRAIN
 		if (mScene->IsValueInSceneRoot("terrain_num_tiles"))
 		{
@@ -198,6 +190,14 @@ namespace EveryRay_Core {
 				object.second->PlaceProcedurallyOnTerrain(true);
 			}
 		}
+#pragma endregion
+
+		#pragma region INIT_LIGHTPROBES_MANAGER
+		game.CPUProfiler()->BeginCPUTime("Light probes manager init");
+		mLightProbesManager = new ER_LightProbesManager(game, camera, mScene, mDirectionalLight, mShadowMapper);
+		mLightProbesManager->SetLevelPath(ER_Utility::ToWideString(sceneFolderPath));
+		mIllumination->SetProbesManager(mLightProbesManager);
+		game.CPUProfiler()->EndCPUTime("Light probes manager init");
 #pragma endregion
 
 		#pragma region INIT_FOLIAGE_MANAGER

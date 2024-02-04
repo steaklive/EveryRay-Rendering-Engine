@@ -90,7 +90,8 @@ namespace EveryRay_Core
 		void AddProbeToCells(ER_LightProbe& aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds);
 		bool IsProbeInCell(ER_LightProbe& aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds);
 		void UpdateProbesByType(ER_Core& game, ER_ProbeType aType);
-		
+		void PlaceProbesOnTerrain(ER_Core& game, ER_RHI_GPUBuffer* outputBuffer, ER_RHI_GPUBuffer* inputBuffer, XMFLOAT4* positions, int positionsCount, float customDampDelta = FLT_MAX);
+
 		ER_QuadRenderer* mQuadRenderer = nullptr;
 		ER_Camera& mMainCamera;
 
@@ -107,6 +108,8 @@ namespace EveryRay_Core
 		std::string mDiffuseDebugLightProbePassPSOName = "ER_RHI_GPUPipelineStateObject: Light Probes Manager - Diffuse Debug Probe Pass";
 		ER_RHI_GPUBuffer* mDiffuseProbesCellsIndicesGPUBuffer = nullptr;
 		ER_RHI_GPUBuffer* mDiffuseProbesPositionsGPUBuffer = nullptr;
+		ER_RHI_GPUBuffer* mDiffuseInputPositionsOnTerrainBuffer = nullptr;
+		ER_RHI_GPUBuffer* mDiffuseOutputPositionsOnTerrainBuffer = nullptr;
 		ER_RHI_GPUBuffer* mDiffuseProbesSphericalHarmonicsGPUBuffer = nullptr;
 		ER_RHI_GPUTexture* mTempDiffuseCubemapFacesRT = nullptr;
 		ER_RHI_GPUTexture* mTempDiffuseCubemapFacesConvolutedRT = nullptr;
@@ -134,6 +137,8 @@ namespace EveryRay_Core
 		ER_RHI_GPUBuffer* mSpecularProbesTexArrayIndicesGPUBuffer = nullptr;
 		ER_RHI_GPUBuffer* mSpecularProbesCellsIndicesGPUBuffer = nullptr;
 		ER_RHI_GPUBuffer* mSpecularProbesPositionsGPUBuffer = nullptr;
+		ER_RHI_GPUBuffer* mSpecularInputPositionsOnTerrainBuffer = nullptr;
+		ER_RHI_GPUBuffer* mSpecularOutputPositionsOnTerrainBuffer = nullptr;
 		ER_RHI_GPUTexture* mTempSpecularCubemapFacesRT = nullptr;
 		ER_RHI_GPUTexture* mTempSpecularCubemapFacesConvolutedRT = nullptr;
 		ER_RHI_GPUTexture* mTempSpecularCubemapDepthBuffers[CUBEMAP_FACES_COUNT] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
@@ -156,6 +161,12 @@ namespace EveryRay_Core
 		float mDistanceBetweenSpecularProbes = 0.0f;
 		float mSpecularProbesVolumeSize = 0.0f;
 		int mMaxSpecularProbesInVolumeCount = 0;
+
+		bool mIsPlacedOnTerrain = false;
+
+		// height offset of the bottom layer of probes (negative values - offset above terrain)
+		float mTerrainPlacementHeightDeltaDiffuseProbes = 0.0f;
+		float mTerrainPlacementHeightDeltaSpecularProbes = 0.0f;
 
 		std::wstring mLevelPath;
 		bool mEnabled = true;

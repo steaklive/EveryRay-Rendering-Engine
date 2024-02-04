@@ -17,6 +17,21 @@
 		150.80000000000001,
 		-900.0
 	],
+	"light_probes_volume_bounds_max" : 
+	[
+		1000.0,
+		0.0,
+		1000.0
+	],
+	"light_probes_volume_bounds_min" : 
+	[
+		-1000.0,
+		0.0,
+		-1000.0
+	],
+	"light_probes_place_on_terrain" : true,
+	"light_probes_diffuse_distance" : 40.0,
+	"light_probes_diffuse_on_terrain_height_delta" : -10.0,
 	"foliage_zones" : 
 	[
 		{
