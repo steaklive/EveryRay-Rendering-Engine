@@ -75,6 +75,9 @@ namespace EveryRay_Core
 		{
 			mTerrainPlacementHeightDeltaDiffuseProbes = scene->GetValueFromSceneRoot<float>("light_probes_diffuse_on_terrain_height_delta");
 			mTerrainPlacementHeightDeltaSpecularProbes = scene->GetValueFromSceneRoot<float>("light_probes_specular_on_terrain_height_delta");
+
+			mCurrentProbeCountPerCell = PROBE_COUNT_PER_CELL_2D;
+			mIs2DCellsGrid = true; // for now we only support 2D grid of probes that are placed on terrain (y value is ignored for cells but not for probes)
 		}
 
 		mDistanceBetweenDiffuseProbes = scene->IsValueInSceneRoot("light_probes_diffuse_distance") ? scene->GetValueFromSceneRoot<float>("light_probes_diffuse_distance") : -1.0f;
@@ -164,10 +167,10 @@ namespace EveryRay_Core
 		SetupGlobalDiffuseProbe(core, camera, scene, light, shadowMapper);
 
 		mDiffuseProbesCountX = (maxBounds.x - minBounds.x) / mDistanceBetweenDiffuseProbes + 1;
-		if (!mIsPlacedOnTerrain)
+		if (!mIs2DCellsGrid)
 			mDiffuseProbesCountY = (maxBounds.y - minBounds.y) / mDistanceBetweenDiffuseProbes + 1;
 		else
-			mDiffuseProbesCountY = 1; // for now we only support one height layer of probes that are placeable on terrain
+			mDiffuseProbesCountY = 1;
 		mDiffuseProbesCountZ = (maxBounds.z - minBounds.z) / mDistanceBetweenDiffuseProbes + 1;
 		mDiffuseProbesCountTotal = mDiffuseProbesCountX * mDiffuseProbesCountY * mDiffuseProbesCountZ;
 		assert(mDiffuseProbesCountTotal);
@@ -176,12 +179,12 @@ namespace EveryRay_Core
 		// cells setup
 		mDiffuseProbesCellsCountX = (mDiffuseProbesCountX - 1);
 		mDiffuseProbesCellsCountZ = (mDiffuseProbesCountZ - 1);
-		if (!mIsPlacedOnTerrain)
+		if (!mIs2DCellsGrid)
 		{
 			mDiffuseProbesCellsCountY = (mDiffuseProbesCountY - 1);
 			mDiffuseProbesCellsCountTotal = mDiffuseProbesCellsCountX * mDiffuseProbesCellsCountY * mDiffuseProbesCellsCountZ;
 		}
-		else // for now we only support 2D cells of probes that are placeable on terrain
+		else
 		{
 			mDiffuseProbesCellsCountY = 1;
 			mDiffuseProbesCellsCountTotal = mDiffuseProbesCellsCountX * mDiffuseProbesCellsCountZ;
@@ -192,8 +195,8 @@ namespace EveryRay_Core
 
 		float probeCellPositionOffset = static_cast<float>(mDistanceBetweenDiffuseProbes) / 2.0f;
 		mDiffuseProbesCellBounds = {
-			XMFLOAT3(-probeCellPositionOffset, -probeCellPositionOffset, -probeCellPositionOffset),
-			XMFLOAT3(probeCellPositionOffset, probeCellPositionOffset, probeCellPositionOffset) };
+			XMFLOAT3(-probeCellPositionOffset, mIs2DCellsGrid ? 0.0f : -probeCellPositionOffset, -probeCellPositionOffset),
+			XMFLOAT3(probeCellPositionOffset, mIs2DCellsGrid ? 0.0f : probeCellPositionOffset, probeCellPositionOffset) };
 		{
 			for (int cellsY = 0; cellsY < mDiffuseProbesCellsCountY; cellsY++)
 			{
@@ -203,7 +206,7 @@ namespace EveryRay_Core
 					{
 						XMFLOAT3 pos = XMFLOAT3(
 							minBounds.x + probeCellPositionOffset + cellsX * mDistanceBetweenDiffuseProbes,
-							minBounds.y + probeCellPositionOffset + cellsY * mDistanceBetweenDiffuseProbes,
+							minBounds.y + mIs2DCellsGrid ? 0.0f : probeCellPositionOffset + cellsY * mDistanceBetweenDiffuseProbes,
 							minBounds.z + probeCellPositionOffset + cellsZ * mDistanceBetweenDiffuseProbes);
 
 						int index = cellsY * (mDiffuseProbesCellsCountX * mDiffuseProbesCellsCountZ) + cellsX * mDiffuseProbesCellsCountZ + cellsZ;
@@ -214,7 +217,7 @@ namespace EveryRay_Core
 			}
 		}
 
-		// simple 3D grid distribution of probes or 2D grid when placeable on terrain
+		// simple 3D grid distribution of probes or 2D grid (i.e. when placeable on terrain)
 		for (int i = 0; i < mDiffuseProbesCountTotal; i++)
 			mDiffuseProbes.emplace_back(core, light, shadowMapper, DIFFUSE_PROBE_SIZE, DIFFUSE_PROBE, i);
 
@@ -268,19 +271,19 @@ namespace EveryRay_Core
 		}
 
 		// probe cell's indices GPU buffer, tex. array indices GPU/CPU buffers
-		int* diffuseProbeCellsIndicesCPUBuffer = new int[mDiffuseProbesCellsCountTotal * PROBE_COUNT_PER_CELL];
+		int* diffuseProbeCellsIndicesCPUBuffer = new int[mDiffuseProbesCellsCountTotal * mCurrentProbeCountPerCell];
 		for (int probeIndex = 0; probeIndex < mDiffuseProbesCellsCountTotal; probeIndex++)
 		{
-			for (int indices = 0; indices < PROBE_COUNT_PER_CELL; indices++)
+			for (int indices = 0; indices < mCurrentProbeCountPerCell; indices++)
 			{
 				if (indices >= mDiffuseProbesCells[probeIndex].lightProbeIndices.size())
-					diffuseProbeCellsIndicesCPUBuffer[probeIndex * PROBE_COUNT_PER_CELL + indices] = -1;
+					diffuseProbeCellsIndicesCPUBuffer[probeIndex * mCurrentProbeCountPerCell + indices] = -1;
 				else
-					diffuseProbeCellsIndicesCPUBuffer[probeIndex * PROBE_COUNT_PER_CELL + indices] = mDiffuseProbesCells[probeIndex].lightProbeIndices[indices];
+					diffuseProbeCellsIndicesCPUBuffer[probeIndex * mCurrentProbeCountPerCell + indices] = mDiffuseProbesCells[probeIndex].lightProbeIndices[indices];
 			}
 		}
 		mDiffuseProbesCellsIndicesGPUBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: diffuse probes cells indices buffer");
-		mDiffuseProbesCellsIndicesGPUBuffer->CreateGPUBufferResource(rhi, diffuseProbeCellsIndicesCPUBuffer, mDiffuseProbesCellsCountTotal * PROBE_COUNT_PER_CELL, sizeof(int), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
+		mDiffuseProbesCellsIndicesGPUBuffer->CreateGPUBufferResource(rhi, diffuseProbeCellsIndicesCPUBuffer, mDiffuseProbesCellsCountTotal * mCurrentProbeCountPerCell, sizeof(int), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 		DeleteObjects(diffuseProbeCellsIndicesCPUBuffer);
 		
 		std::string name = "Debug diffuse lightprobes ";
@@ -320,7 +323,10 @@ namespace EveryRay_Core
 		SetupGlobalSpecularProbe(game, camera, scene, light, shadowMapper);
 
 		mSpecularProbesCountX = (maxBounds.x - minBounds.x) / mDistanceBetweenSpecularProbes + 1;
-		mSpecularProbesCountY = (maxBounds.y - minBounds.y) / mDistanceBetweenSpecularProbes + 1;
+		if (!mIs2DCellsGrid)
+			mSpecularProbesCountY = (maxBounds.y - minBounds.y) / mDistanceBetweenSpecularProbes + 1;
+		else
+			mSpecularProbesCountY = 1;
 		mSpecularProbesCountZ = (maxBounds.z - minBounds.z) / mDistanceBetweenSpecularProbes + 1;
 		mSpecularProbesCountTotal = mSpecularProbesCountX * mSpecularProbesCountY * mSpecularProbesCountZ;
 		assert(mSpecularProbesCountTotal);
@@ -328,16 +334,24 @@ namespace EveryRay_Core
 
 		// cells setup
 		mSpecularProbesCellsCountX = (mSpecularProbesCountX - 1);
-		mSpecularProbesCellsCountY = (mSpecularProbesCountY - 1);
 		mSpecularProbesCellsCountZ = (mSpecularProbesCountZ - 1);
-		mSpecularProbesCellsCountTotal = mSpecularProbesCellsCountX * mSpecularProbesCellsCountY * mSpecularProbesCellsCountZ;
+		if (!mIs2DCellsGrid)
+		{
+			mSpecularProbesCellsCountY = (mSpecularProbesCountY - 1);
+			mSpecularProbesCellsCountTotal = mSpecularProbesCellsCountX * mSpecularProbesCellsCountY * mSpecularProbesCellsCountZ;
+		}
+		else
+		{
+			mSpecularProbesCellsCountY = 1;
+			mSpecularProbesCellsCountTotal = mSpecularProbesCellsCountX * mSpecularProbesCellsCountZ;
+		}
 		mSpecularProbesCells.resize(mSpecularProbesCellsCountTotal, {});
 		assert(mSpecularProbesCellsCountTotal);
 
 		float probeCellPositionOffset = static_cast<float>(mDistanceBetweenSpecularProbes) / 2.0f;
 		mSpecularProbesCellBounds = {
-			XMFLOAT3(-probeCellPositionOffset, -probeCellPositionOffset, -probeCellPositionOffset),
-			XMFLOAT3(probeCellPositionOffset, probeCellPositionOffset, probeCellPositionOffset) };
+			XMFLOAT3(-probeCellPositionOffset, mIs2DCellsGrid ? 0.0f : -probeCellPositionOffset, -probeCellPositionOffset),
+			XMFLOAT3(probeCellPositionOffset, mIs2DCellsGrid ? 0.0f : probeCellPositionOffset, probeCellPositionOffset) };
 		
 		for (int cellsY = 0; cellsY < mSpecularProbesCellsCountY; cellsY++)
 		{
@@ -347,7 +361,7 @@ namespace EveryRay_Core
 				{
 					XMFLOAT3 pos = XMFLOAT3(
 						minBounds.x + probeCellPositionOffset + cellsX * mDistanceBetweenSpecularProbes,
-						minBounds.y + probeCellPositionOffset + cellsY * mDistanceBetweenSpecularProbes,
+						minBounds.y + mIs2DCellsGrid ? 0.0f : probeCellPositionOffset + cellsY * mDistanceBetweenSpecularProbes,
 						minBounds.z + probeCellPositionOffset + cellsZ * mDistanceBetweenSpecularProbes);
 
 					int index = cellsY * (mSpecularProbesCellsCountX * mSpecularProbesCellsCountZ) + cellsX * mSpecularProbesCellsCountZ + cellsZ;
@@ -357,7 +371,7 @@ namespace EveryRay_Core
 			}
 		}
 
-		// simple 3D grid distribution of probes
+		// simple 3D grid distribution of probes or 2D grid (i.e. when placeable on terrain)
 		for (size_t i = 0; i < mSpecularProbesCountTotal; i++)
 			mSpecularProbes.emplace_back(game, light, shadowMapper, SPECULAR_PROBE_SIZE, SPECULAR_PROBE, i);
 
@@ -381,27 +395,50 @@ namespace EveryRay_Core
 		}
 
 		// all probes positions GPU buffer
-		XMFLOAT3* specularProbesPositionsCPUBuffer = new XMFLOAT3[mSpecularProbesCountTotal];
-		for (int probeIndex = 0; probeIndex < mSpecularProbesCountTotal; probeIndex++)
-			specularProbesPositionsCPUBuffer[probeIndex] = mSpecularProbes[probeIndex].GetPosition();
-		mSpecularProbesPositionsGPUBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: specular probes positions buffer");
-		mSpecularProbesPositionsGPUBuffer->CreateGPUBufferResource(rhi, specularProbesPositionsCPUBuffer, mSpecularProbesCountTotal, sizeof(XMFLOAT3), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
-		DeleteObjects(specularProbesPositionsCPUBuffer);
+		{
+			XMFLOAT4* specularProbesPositionsCPUBuffer = new XMFLOAT4[mSpecularProbesCountTotal];
+		
+			for (int probeIndex = 0; probeIndex < mSpecularProbesCountTotal; probeIndex++)
+				specularProbesPositionsCPUBuffer[probeIndex] = XMFLOAT4(mSpecularProbes[probeIndex].GetPosition().x,mSpecularProbes[probeIndex].GetPosition().y,mSpecularProbes[probeIndex].GetPosition().z, 1.0);
+			mSpecularProbesPositionsGPUBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: specular probes positions buffer");
+			mSpecularProbesPositionsGPUBuffer->CreateGPUBufferResource(rhi, specularProbesPositionsCPUBuffer, mSpecularProbesCountTotal, sizeof(XMFLOAT4), mIsPlacedOnTerrain, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
+			
+			if (mIsPlacedOnTerrain)
+			{
+				mSpecularInputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: On-terrain placement input positions buffer (specular probes)");
+				mSpecularInputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, specularProbesPositionsCPUBuffer, mSpecularProbesCountTotal, sizeof(XMFLOAT4), false, ER_BIND_UNORDERED_ACCESS, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
+
+				mSpecularOutputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: On-terrain placement output positions buffer (specular probes)");
+				mSpecularOutputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, specularProbesPositionsCPUBuffer, mSpecularProbesCountTotal, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L /*legacy from DX11*/, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
+
+				PlaceProbesOnTerrain(game, mSpecularOutputPositionsOnTerrainBuffer, mSpecularInputPositionsOnTerrainBuffer, specularProbesPositionsCPUBuffer, mSpecularProbesCountTotal, mTerrainPlacementHeightDeltaSpecularProbes);
+
+				rhi->UpdateBuffer(mSpecularProbesPositionsGPUBuffer, (void*)specularProbesPositionsCPUBuffer, mSpecularProbesCountTotal * sizeof(XMFLOAT4));
+
+				for (int i = 0; i < mSpecularProbesCountTotal; i++)
+					mSpecularProbes[i].SetPosition(XMFLOAT3(specularProbesPositionsCPUBuffer[i].x, specularProbesPositionsCPUBuffer[i].y, specularProbesPositionsCPUBuffer[i].z));
+
+				DeleteObject(mSpecularInputPositionsOnTerrainBuffer);
+				DeleteObject(mSpecularOutputPositionsOnTerrainBuffer);
+			}
+
+			DeleteObjects(specularProbesPositionsCPUBuffer);
+		}
 
 		// probe cell's indices GPU buffer, tex. array indices GPU/CPU buffers
-		int* specularProbeCellsIndicesCPUBuffer = new int[mSpecularProbesCellsCountTotal * PROBE_COUNT_PER_CELL];
+		int* specularProbeCellsIndicesCPUBuffer = new int[mSpecularProbesCellsCountTotal * mCurrentProbeCountPerCell];
 		for (int probeIndex = 0; probeIndex < mSpecularProbesCellsCountTotal; probeIndex++)
 		{
-			for (int indices = 0; indices < PROBE_COUNT_PER_CELL; indices++)
+			for (int indices = 0; indices < mCurrentProbeCountPerCell; indices++)
 			{
 				if (indices >= mSpecularProbesCells[probeIndex].lightProbeIndices.size())
-					specularProbeCellsIndicesCPUBuffer[probeIndex * PROBE_COUNT_PER_CELL + indices] = -1;
+					specularProbeCellsIndicesCPUBuffer[probeIndex * mCurrentProbeCountPerCell + indices] = -1;
 				else
-					specularProbeCellsIndicesCPUBuffer[probeIndex * PROBE_COUNT_PER_CELL + indices] = mSpecularProbesCells[probeIndex].lightProbeIndices[indices];
+					specularProbeCellsIndicesCPUBuffer[probeIndex * mCurrentProbeCountPerCell + indices] = mSpecularProbesCells[probeIndex].lightProbeIndices[indices];
 			}
 		}
 		mSpecularProbesCellsIndicesGPUBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: specular probes cells indices buffer");
-		mSpecularProbesCellsIndicesGPUBuffer->CreateGPUBufferResource(rhi, specularProbeCellsIndicesCPUBuffer,	mSpecularProbesCellsCountTotal * PROBE_COUNT_PER_CELL, sizeof(int), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
+		mSpecularProbesCellsIndicesGPUBuffer->CreateGPUBufferResource(rhi, specularProbeCellsIndicesCPUBuffer,	mSpecularProbesCellsCountTotal * mCurrentProbeCountPerCell, sizeof(int), false, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 		DeleteObjects(specularProbeCellsIndicesCPUBuffer);
 
 		mSpecularProbesTexArrayIndicesCPUBuffer = new int[mSpecularProbesCountTotal];
@@ -443,7 +480,7 @@ namespace EveryRay_Core
 				if (IsProbeInCell(aProbe, cell, mDiffuseProbesCellBounds))
 					cell.lightProbeIndices.push_back(index);
 
-				if (cell.lightProbeIndices.size() > PROBE_COUNT_PER_CELL)
+				if (cell.lightProbeIndices.size() > mCurrentProbeCountPerCell)
 					throw ER_CoreException("Too many diffuse probes per cell!");
 			}
 		}
@@ -455,7 +492,7 @@ namespace EveryRay_Core
 				if (IsProbeInCell(aProbe, cell, mSpecularProbesCellBounds))
 					cell.lightProbeIndices.push_back(index);
 
-				if (cell.lightProbeIndices.size() > PROBE_COUNT_PER_CELL)
+				if (cell.lightProbeIndices.size() > mCurrentProbeCountPerCell)
 					throw ER_CoreException("Too many specular probes per cell!");
 			}
 		}
@@ -469,7 +506,7 @@ namespace EveryRay_Core
 		if (aType == DIFFUSE_PROBE)
 		{
 			int xIndex = floor((pos.x - mSceneProbesMinBounds.x) / static_cast<float>(mDistanceBetweenDiffuseProbes));
-			int yIndex = floor((pos.y - mSceneProbesMinBounds.y) / static_cast<float>(mDistanceBetweenDiffuseProbes));
+			int yIndex = mIs2DCellsGrid ? 0 : floor((pos.y - mSceneProbesMinBounds.y) / static_cast<float>(mDistanceBetweenDiffuseProbes));
 			int zIndex = floor((pos.z - mSceneProbesMinBounds.z) / static_cast<float>(mDistanceBetweenDiffuseProbes));
 
 			if (xIndex < 0 || xIndex > mDiffuseProbesCellsCountX)
@@ -495,7 +532,7 @@ namespace EveryRay_Core
 		else
 		{
 			int xIndex = floor((pos.x - mSceneProbesMinBounds.x) / static_cast<float>(mDistanceBetweenSpecularProbes));
-			int yIndex = floor((pos.y - mSceneProbesMinBounds.y) / static_cast<float>(mDistanceBetweenSpecularProbes));
+			int yIndex = mIs2DCellsGrid ? 0 : floor((pos.y - mSceneProbesMinBounds.y) / static_cast<float>(mDistanceBetweenSpecularProbes));
 			int zIndex = floor((pos.z - mSceneProbesMinBounds.z) / static_cast<float>(mDistanceBetweenSpecularProbes));
 
 			if (xIndex < 0 || xIndex > mSpecularProbesCellsCountX)
@@ -546,9 +583,19 @@ namespace EveryRay_Core
 			aCellBounds.first.y + aCell.position.y,
 			aCellBounds.first.z + aCell.position.z);
 
-		return	(pos.x <= (maxBounds.x + epsilon) && pos.x >= (minBounds.x - epsilon)) &&
+		if (mIs2DCellsGrid)
+		{
+			return	
+				(pos.x <= (maxBounds.x + epsilon) && pos.x >= (minBounds.x - epsilon)) &&
+				(pos.z <= (maxBounds.z + epsilon) && pos.z >= (minBounds.z - epsilon));
+		}
+		else
+		{
+			return	
+				(pos.x <= (maxBounds.x + epsilon) && pos.x >= (minBounds.x - epsilon)) &&
 				(pos.y <= (maxBounds.y + epsilon) && pos.y >= (minBounds.y - epsilon)) &&
 				(pos.z <= (maxBounds.z + epsilon) && pos.z >= (minBounds.z - epsilon));
+		}
 	}
 
 	void ER_LightProbesManager::ComputeOrLoadGlobalProbes(ER_Core& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox)
@@ -856,8 +903,6 @@ namespace EveryRay_Core
 		if (!terrain)
 			throw ER_CoreException("You want to place light probes on terrain but terrain is not found in the scene!");
 
-		terrain->PlaceOnTerrain(outputBuffer, inputBuffer, positions, positionsCount, TerrainSplatChannels::NONE, nullptr, 0, -customDampDelta);
+		terrain->PlaceOnTerrain(outputBuffer, inputBuffer, positions, positionsCount, TerrainSplatChannels::NONE, nullptr, 0, customDampDelta);
 	}
-
 }
-

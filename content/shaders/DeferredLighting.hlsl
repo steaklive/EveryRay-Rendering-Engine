@@ -47,7 +47,7 @@ cbuffer LightProbesCBuffer : register(b1)
 {
     float4 DiffuseProbesCellsCount;
     float4 SpecularProbesCellsCount; //x,y,z,total
-    float4 SceneLightProbesBounds; //volume's extent of all scene's probes
+    float4 SceneLightProbesBounds; //volume's extent of all scene's probes, w < 0.0 - 2D grid (i.e. terrain scene)
     float DistanceBetweenDiffuseProbes;
     float DistanceBetweenSpecularProbes;
 }

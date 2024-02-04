@@ -7,7 +7,8 @@
 #define SPECULAR_PROBE_SIZE 128 //cubemap dimension
 
 #define MAX_CUBEMAPS_IN_VOLUME_PER_AXIS 6 // == cbrt(2048 / CUBEMAP_FACES_COUNT), 2048 - tex. array limit (DX11)
-#define PROBE_COUNT_PER_CELL 8 // 3D cube cell of probes in each vertex
+#define PROBE_COUNT_PER_CELL_3D 8
+#define PROBE_COUNT_PER_CELL_2D 4
 
 #define SPHERICAL_HARMONICS_ORDER 2
 #define SPHERICAL_HARMONICS_COEF_COUNT (SPHERICAL_HARMONICS_ORDER + 1) * (SPHERICAL_HARMONICS_ORDER + 1)
@@ -77,6 +78,8 @@ namespace EveryRay_Core
 		XMFLOAT4 GetProbesCellsCount(ER_ProbeType aType);
 		const XMFLOAT3& GetSceneProbesVolumeMin() { return mSceneProbesMinBounds; }
 		const XMFLOAT3& GetSceneProbesVolumeMax() { return mSceneProbesMaxBounds; }
+
+		bool Is2DCellGrid() { return mIsPlacedOnTerrain; } // by default we use 3D cell grid, but terrain scenes is a special case for now and use 2D
 
 		bool IsEnabled() { return mEnabled; }
 		bool AreGlobalProbesReady() { return mGlobalDiffuseProbeReady && mGlobalSpecularProbeReady; }
@@ -167,6 +170,10 @@ namespace EveryRay_Core
 		// height offset of the bottom layer of probes (negative values - offset above terrain)
 		float mTerrainPlacementHeightDeltaDiffuseProbes = 0.0f;
 		float mTerrainPlacementHeightDeltaSpecularProbes = 0.0f;
+
+		// by default 3D, but terrain can change that to 2D
+		int mCurrentProbeCountPerCell = PROBE_COUNT_PER_CELL_3D;
+		bool mIs2DCellsGrid = false;
 
 		std::wstring mLevelPath;
 		bool mEnabled = true;

@@ -943,7 +943,10 @@ namespace EveryRay_Core {
 		{
 			mLightProbesConstantBuffer.Data.DiffuseProbesCellsCount = mProbesManager->GetProbesCellsCount(DIFFUSE_PROBE);
 			mLightProbesConstantBuffer.Data.SpecularProbesCellsCount = mProbesManager->GetProbesCellsCount(SPECULAR_PROBE);
-			mLightProbesConstantBuffer.Data.SceneLightProbesBounds = XMFLOAT4{ mProbesManager->GetSceneProbesVolumeMin().x, mProbesManager->GetSceneProbesVolumeMin().y, mProbesManager->GetSceneProbesVolumeMin().z, 1.0f };
+			mLightProbesConstantBuffer.Data.SceneLightProbesBounds = XMFLOAT4{ 
+				mProbesManager->GetSceneProbesVolumeMin().x,
+				mProbesManager->GetSceneProbesVolumeMin().y,
+				mProbesManager->GetSceneProbesVolumeMin().z, mProbesManager->Is2DCellGrid() ? -1.0f : 1.0f };
 			mLightProbesConstantBuffer.Data.DistanceBetweenDiffuseProbes = mProbesManager->GetDistanceBetweenDiffuseProbes();
 			mLightProbesConstantBuffer.Data.DistanceBetweenSpecularProbes = mProbesManager->GetDistanceBetweenSpecularProbes();
 			mLightProbesConstantBuffer.ApplyChanges(rhi);
@@ -1108,7 +1111,10 @@ namespace EveryRay_Core {
 			{
 				mLightProbesConstantBuffer.Data.DiffuseProbesCellsCount = mProbesManager->GetProbesCellsCount(DIFFUSE_PROBE);
 				mLightProbesConstantBuffer.Data.SpecularProbesCellsCount = mProbesManager->GetProbesCellsCount(SPECULAR_PROBE);
-				mLightProbesConstantBuffer.Data.SceneLightProbesBounds = XMFLOAT4{ mProbesManager->GetSceneProbesVolumeMin().x, mProbesManager->GetSceneProbesVolumeMin().y, mProbesManager->GetSceneProbesVolumeMin().z, 1.0f };
+				mLightProbesConstantBuffer.Data.SceneLightProbesBounds = XMFLOAT4{ 
+					mProbesManager->GetSceneProbesVolumeMin().x,
+					mProbesManager->GetSceneProbesVolumeMin().y,
+					mProbesManager->GetSceneProbesVolumeMin().z, mProbesManager->Is2DCellGrid() ? -1.0f : 1.0f };
 				mLightProbesConstantBuffer.Data.DistanceBetweenDiffuseProbes = mProbesManager->GetDistanceBetweenDiffuseProbes();
 				mLightProbesConstantBuffer.Data.DistanceBetweenSpecularProbes = mProbesManager->GetDistanceBetweenSpecularProbes();
 				mLightProbesConstantBuffer.ApplyChanges(rhi);

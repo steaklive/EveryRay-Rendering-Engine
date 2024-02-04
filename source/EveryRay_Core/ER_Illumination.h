@@ -145,7 +145,7 @@ namespace EveryRay_Core
 		{
 			XMFLOAT4 DiffuseProbesCellsCount; //x,y,z,total
 			XMFLOAT4 SpecularProbesCellsCount; //x,y,z,total
-			XMFLOAT4 SceneLightProbesBounds; //volume's extent of all scene's probes
+			XMFLOAT4 SceneLightProbesBounds; //volume's extent of all scene's probes, w < 0.0 - 2D grid (i.e. terrain scene)
 			float DistanceBetweenDiffuseProbes;
 			float DistanceBetweenSpecularProbes;
 		};
