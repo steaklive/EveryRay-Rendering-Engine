@@ -13,7 +13,8 @@ static const float4 ColorWhite = { 1, 1, 1, 1 };
 static const float Pi = 3.141592654f;
 
 static const int NUM_SHADOW_CASCADES = 3;
-static const int NUM_OF_PROBES_PER_CELL = 8;
+static const int NUM_OF_PROBES_PER_CELL_3D = 8;
+static const int NUM_OF_PROBES_PER_CELL_2D = 4;
 static const int SPECULAR_PROBE_MIP_COUNT = 6;
 static const int SPHERICAL_HARMONICS_ORDER = 2;
 static const int SPHERICAL_HARMONICS_COEF_COUNT = (SPHERICAL_HARMONICS_ORDER + 1) * (SPHERICAL_HARMONICS_ORDER + 1);
@@ -28,13 +29,13 @@ Texture2D<float> CascadedShadowTextures[NUM_OF_SHADOW_CASCADES] : register(t5);
 TextureCube<float4> DiffuseGlobalProbeTexture : register(t8); // global probe (fallback)
 StructuredBuffer<int> DiffuseProbesCellsWithProbeIndicesArray : register(t9); //linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
 StructuredBuffer<float3> DiffuseSphericalHarmonicsCoefficientsArray : register(t10); //linear array of all diffuse probes 2nd order coefficients (9)
-StructuredBuffer<float3> DiffuseProbesPositionsArray : register(t11); //linear array of all diffuse probes positions
+StructuredBuffer<float4> DiffuseProbesPositionsArray : register(t11); //linear array of all diffuse probes positions
 
 TextureCube<float4> SpecularGlobalProbeTexture : register(t12); // global probe (fallback)
 TextureCubeArray<float4> SpecularProbesTextureArray: register(t13); //linear array of specular cubemap textures
 StructuredBuffer<int> SpecularProbesCellsWithProbeIndicesArray : register(t14); //linear array of cells with NUM_OF_PROBES_PER_CELL probes' indices in each cell
 StructuredBuffer<int> SpecularProbesTextureArrayIndices : register(t15); //array of all specular probes in scene with indices in 'IrradianceSpecularProbesTextureArray' for each probe (-1 if not in array)
-StructuredBuffer<float3> SpecularProbesPositionsArray : register(t16); //linear array of all specular probes positions
+StructuredBuffer<float4> SpecularProbesPositionsArray : register(t16); //linear array of all specular probes positions
 
 Texture2D<float4> IntegrationTexture : register(t17);
 
@@ -65,13 +66,13 @@ struct LightProbeInfo
     TextureCube<float4> globalIrradianceSpecularProbeTexture;
     
     StructuredBuffer<int> DiffuseProbesCellsWithProbeIndicesArray;
-    StructuredBuffer<float3> DiffuseProbesPositionsArray;
+    StructuredBuffer<float4> DiffuseProbesPositionsArray;
     StructuredBuffer<float3> DiffuseSphericalHarmonicsCoefficientsArray;
 
     TextureCubeArray<float4> SpecularProbesTextureArray;
     StructuredBuffer<int> SpecularProbesCellsWithProbeIndicesArray;
     StructuredBuffer<int> SpecularProbesTextureArrayIndices;
-    StructuredBuffer<float3> SpecularProbesPositionsArray;
+    StructuredBuffer<float4> SpecularProbesPositionsArray;
     
     float4 diffuseProbeCellsCount;
     float4 specularProbeCellsCount;
@@ -267,9 +268,9 @@ float3 Schlick_Fresnel_Roughness(float cosTheta, float3 F0, float roughness)
     return F0 + (max(float3(a, a, a), F0) - F0) * pow(1.0f - cosTheta, 5.0f);
 }
 
-static float3 cellProbesPositions[NUM_OF_PROBES_PER_CELL];
-static float3 cellProbesSamples[NUM_OF_PROBES_PER_CELL];
-static bool cellProbesExistanceFlags[NUM_OF_PROBES_PER_CELL];
+static float3 cellProbesPositions3D[NUM_OF_PROBES_PER_CELL_3D];
+static float3 cellProbesSamples3D[NUM_OF_PROBES_PER_CELL_3D];
+static bool cellProbesExistanceFlags3D[NUM_OF_PROBES_PER_CELL_3D];
 // ==============================================================================================================
 // Trilinear interpolation of probes in a cell (7 lerps) based on "Irradiance Volumes for Games" by N. Tatarchuk.
 // There are some extra checks for edge cases (i.e., if the probe is culled, then don't lerp).
@@ -280,50 +281,50 @@ float3 GetTrilinearInterpolationFromNeighbourProbes(float3 pos, float distanceBe
     float3 result = float3(0.0, 0.0, 0.0);
     
     float cellDistance = distanceBetweenDiffuseProbes;
-    float distanceX0 = abs(cellProbesPositions[0].x - pos.x) / cellDistance;
-    float distanceY0 = abs(cellProbesPositions[0].y - pos.y) / cellDistance;
-    float distanceZ0 = abs(cellProbesPositions[0].z - pos.z) / cellDistance;
+    float distanceX0 = abs(cellProbesPositions3D[0].x - pos.x) / cellDistance;
+    float distanceY0 = abs(cellProbesPositions3D[0].y - pos.y) / cellDistance;
+    float distanceZ0 = abs(cellProbesPositions3D[0].z - pos.z) / cellDistance;
     
     // bottom-left, bottom-right, upper-left, upper-right, bottom-total, upper-total
     bool sideHasColor[6] = { true, true, true, true, true, true };
     
     float3 bottomLeft = float3(0.0, 0.0, 0.0);
-    if (cellProbesExistanceFlags[0] && cellProbesExistanceFlags[1])
-        bottomLeft = lerp(cellProbesSamples[0], cellProbesSamples[1], distanceZ0);
-    else if (cellProbesExistanceFlags[0] && !cellProbesExistanceFlags[1])
-        bottomLeft = cellProbesSamples[0];
-    else if (!cellProbesExistanceFlags[0] && cellProbesExistanceFlags[1])
-        bottomLeft = cellProbesSamples[1];
+    if (cellProbesExistanceFlags3D[0] && cellProbesExistanceFlags3D[1])
+        bottomLeft = lerp(cellProbesSamples3D[0], cellProbesSamples3D[1], distanceZ0);
+    else if (cellProbesExistanceFlags3D[0] && !cellProbesExistanceFlags3D[1])
+        bottomLeft = cellProbesSamples3D[0];
+    else if (!cellProbesExistanceFlags3D[0] && cellProbesExistanceFlags3D[1])
+        bottomLeft = cellProbesSamples3D[1];
     else
         sideHasColor[0] = false;
         
     float3 bottomRight = float3(0.0, 0.0, 0.0);
-    if (cellProbesExistanceFlags[2] && cellProbesExistanceFlags[3])
-        bottomRight = lerp(cellProbesSamples[2], cellProbesSamples[3], distanceZ0);
-    else if (cellProbesExistanceFlags[2] && !cellProbesExistanceFlags[3])
-        bottomRight = cellProbesSamples[2];
-    else if (!cellProbesExistanceFlags[2] && cellProbesExistanceFlags[3])
-        bottomRight = cellProbesSamples[3];
+    if (cellProbesExistanceFlags3D[2] && cellProbesExistanceFlags3D[3])
+        bottomRight = lerp(cellProbesSamples3D[2], cellProbesSamples3D[3], distanceZ0);
+    else if (cellProbesExistanceFlags3D[2] && !cellProbesExistanceFlags3D[3])
+        bottomRight = cellProbesSamples3D[2];
+    else if (!cellProbesExistanceFlags3D[2] && cellProbesExistanceFlags3D[3])
+        bottomRight = cellProbesSamples3D[3];
     else
         sideHasColor[1] = false;
         
     float3 upperLeft = float3(0.0, 0.0, 0.0);
-    if (cellProbesExistanceFlags[4] && cellProbesExistanceFlags[5])
-        upperLeft = lerp(cellProbesSamples[4], cellProbesSamples[5], distanceZ0);
-    else if (cellProbesExistanceFlags[4] && !cellProbesExistanceFlags[5])
-        upperLeft = cellProbesSamples[4];
-    else if (!cellProbesExistanceFlags[4] && cellProbesExistanceFlags[5])
-        upperLeft = cellProbesSamples[5];
+    if (cellProbesExistanceFlags3D[4] && cellProbesExistanceFlags3D[5])
+        upperLeft = lerp(cellProbesSamples3D[4], cellProbesSamples3D[5], distanceZ0);
+    else if (cellProbesExistanceFlags3D[4] && !cellProbesExistanceFlags3D[5])
+        upperLeft = cellProbesSamples3D[4];
+    else if (!cellProbesExistanceFlags3D[4] && cellProbesExistanceFlags3D[5])
+        upperLeft = cellProbesSamples3D[5];
     else
         sideHasColor[2] = false;
     
     float3 upperRight = float3(0.0, 0.0, 0.0);
-    if (cellProbesExistanceFlags[6] && cellProbesExistanceFlags[7])
-        upperRight = lerp(cellProbesSamples[6], cellProbesSamples[7], distanceZ0);
-    else if (cellProbesExistanceFlags[6] && !cellProbesExistanceFlags[7])
-        upperRight = cellProbesSamples[6];
-    else if (!cellProbesExistanceFlags[6] && cellProbesExistanceFlags[7])
-        upperRight = cellProbesSamples[7];
+    if (cellProbesExistanceFlags3D[6] && cellProbesExistanceFlags3D[7])
+        upperRight = lerp(cellProbesSamples3D[6], cellProbesSamples3D[7], distanceZ0);
+    else if (cellProbesExistanceFlags3D[6] && !cellProbesExistanceFlags3D[7])
+        upperRight = cellProbesSamples3D[6];
+    else if (!cellProbesExistanceFlags3D[6] && cellProbesExistanceFlags3D[7])
+        upperRight = cellProbesSamples3D[7];
     else
         sideHasColor[3] = false;
     
@@ -357,17 +358,68 @@ float3 GetTrilinearInterpolationFromNeighbourProbes(float3 pos, float distanceBe
     return result;
 }
 
+static float3 cellProbesPositions2D[NUM_OF_PROBES_PER_CELL_2D];
+static float3 cellProbesSamples2D[NUM_OF_PROBES_PER_CELL_2D];
+static bool cellProbesExistanceFlags2D[NUM_OF_PROBES_PER_CELL_2D];
+// ==============================================================================================================
+// Bilinear interpolation of probes in a cell (3 lerps)
+// There are some extra checks for edge cases (i.e., if the probe is culled, then don't lerp).
+// In theory, it is possible to get rid of 'ifs' and optimize this function but readability will be lost.
+// ==============================================================================================================
+float3 GetBilinearInterpolationFromNeighbourProbes(float3 pos, float distanceBetweenDiffuseProbes)
+{
+    float3 result = float3(0.0, 0.0, 0.0);
+    
+    float cellDistance = distanceBetweenDiffuseProbes;
+    float distanceX0 = abs(cellProbesPositions2D[0].x - pos.x) / cellDistance;
+    //float distanceY0 = abs(cellProbesPositions2D[0].y - pos.y) / cellDistance;
+    float distanceZ0 = abs(cellProbesPositions2D[0].z - pos.z) / cellDistance;
+    
+    // left, right
+    bool sideHasColor[2] = { true, true };
+    
+    float3 left = float3(0.0, 0.0, 0.0);
+    if (cellProbesExistanceFlags2D[0] && cellProbesExistanceFlags2D[1])
+        left = lerp(cellProbesSamples2D[0], cellProbesSamples2D[1], distanceZ0);
+    else if (cellProbesExistanceFlags2D[0] && !cellProbesExistanceFlags2D[1])
+        left = cellProbesSamples2D[0];
+    else if (!cellProbesExistanceFlags2D[0] && cellProbesExistanceFlags2D[1])
+        left = cellProbesSamples2D[1];
+    else
+        sideHasColor[0] = false;
+        
+    float3 right = float3(0.0, 0.0, 0.0);
+    if (cellProbesExistanceFlags2D[2] && cellProbesExistanceFlags2D[3])
+        right = lerp(cellProbesSamples2D[2], cellProbesSamples2D[3], distanceZ0);
+    else if (cellProbesExistanceFlags2D[2] && !cellProbesExistanceFlags2D[3])
+        right = cellProbesSamples2D[2];
+    else if (!cellProbesExistanceFlags2D[2] && cellProbesExistanceFlags2D[3])
+        right = cellProbesSamples2D[3];
+    else
+        sideHasColor[1] = false;
+
+    if (sideHasColor[0] && sideHasColor[1])
+        result = lerp(left, right, distanceX0);
+    else if (sideHasColor[0] && !sideHasColor[1])
+        result = left;
+    else if (!sideHasColor[0] && sideHasColor[1])
+        result = right;
+    
+    return result;
+}
+
 // ==============================================================================================================
 // Calculate probes cell index (fast uniform-grid searching approach)
 // WARNING: can not do multiple indices per pos. (i.e., when pos. is on the edge of several cells)
 // ==============================================================================================================
-int GetLightProbesCellIndex(float3 pos, float4 probesCellsCount, float3 sceneProbeBounds, float distanceBetweenProbes, float probeSkips = 1.0f)
+int GetLightProbesCellIndex(float3 pos, float4 probesCellsCount, float4 sceneProbeBounds, float distanceBetweenProbes, float probeSkips = 1.0f)
 {
+    const bool is2DGrid = sceneProbeBounds.w < 0.0;
     int finalIndex = -1;
     float3 index = (pos - sceneProbeBounds.xyz) / (distanceBetweenProbes * probeSkips);
     if (index.x < 0.0f || index.x > probesCellsCount.x)
         return -1;
-    if (index.y < 0.0f || index.y > probesCellsCount.y)
+    if (!is2DGrid && (index.y < 0.0f || index.y > probesCellsCount.y))
         return -1;
     if (index.z < 0.0f || index.z > probesCellsCount.z)
         return -1;
@@ -375,12 +427,16 @@ int GetLightProbesCellIndex(float3 pos, float4 probesCellsCount, float3 scenePro
 	//hacky way to prevent from out-of-bounds
     if (index.x == probesCellsCount.x)
         index.x = probesCellsCount.x - 1;
-    if (index.y == probesCellsCount.y)
-        index.y = probesCellsCount.y - 1;
     if (index.z == probesCellsCount.z)
         index.z = probesCellsCount.z - 1;
-
-    finalIndex = floor(index.y) * (probesCellsCount.x * probesCellsCount.z) + floor(index.x) * probesCellsCount.z + floor(index.z);
+    if (!is2DGrid)
+    {
+        if (index.y == probesCellsCount.y)
+            index.y = probesCellsCount.y - 1;
+        finalIndex = floor(index.y) * (probesCellsCount.x * probesCellsCount.z) + floor(index.x) * probesCellsCount.z + floor(index.z);
+    }
+    else
+        finalIndex = floor(index.x) * probesCellsCount.z + floor(index.z);
 
     if (finalIndex >= probesCellsCount.w)
         return -1;
@@ -457,8 +513,8 @@ float3 GetDiffuseIrradianceFromSphericalHarmonics(float3 normal, float3 shCoef[S
 // ====================================================================================================================
 // Get diffuse irradiance from probes:
 // 1) probes cell index is calculated for the cascade
-// 2) 8 probes colors (or less if out of the current cascade) are calculated from Spherical Harmonics array
-// 3) Final probe colors are trilinearly interpolated and the final diffuse result is returned
+// 2) 8 (3d grid) or 4 (2d grid) probes colors, or less if out of the current cascade, are calculated from Spherical Harmonics array
+// 3) Final probe colors are trilinearly (3d) or bilinearly (2d) interpolated and the final diffuse result is returned
 // ====================================================================================================================
 float3 GetDiffuseIrradiance(float3 worldPos, float3 normal, float3 camPos, bool useGlobalDiffuseProbe, in SamplerState linearSampler,
     in LightProbeInfo probesInfo)
@@ -466,29 +522,55 @@ float3 GetDiffuseIrradiance(float3 worldPos, float3 normal, float3 camPos, bool 
     float3 finalSum = float3(0.0, 0.0, 0.0);
     if (useGlobalDiffuseProbe)
         return probesInfo.globalIrradianceDiffuseProbeTexture.SampleLevel(linearSampler, normal, 0).rgb;
-    
-    int diffuseProbesCellIndex = GetLightProbesCellIndex(worldPos, probesInfo.diffuseProbeCellsCount, probesInfo.sceneLightProbeBounds.xyz, probesInfo.distanceBetweenDiffuseProbes);
+
+    const bool is2DGrid = probesInfo.sceneLightProbeBounds.w < 0.0;
+
+    int diffuseProbesCellIndex = GetLightProbesCellIndex(worldPos, probesInfo.diffuseProbeCellsCount, probesInfo.sceneLightProbeBounds, probesInfo.distanceBetweenDiffuseProbes);
     if (diffuseProbesCellIndex != -1)
     {
-        for (int i = 0; i < NUM_OF_PROBES_PER_CELL; i++)
+        // TODO ideally to change to a permutation
+        if (!is2DGrid)
         {
-            cellProbesExistanceFlags[i] = false;
-            int currentIndex = probesInfo.DiffuseProbesCellsWithProbeIndicesArray[NUM_OF_PROBES_PER_CELL * diffuseProbesCellIndex + i];
-
-            if (currentIndex != -1)
+            for (int i = 0; i < NUM_OF_PROBES_PER_CELL_3D; i++)
             {
-                cellProbesExistanceFlags[i] = true;
+                cellProbesExistanceFlags3D[i] = false;
+                int currentIndex = probesInfo.DiffuseProbesCellsWithProbeIndicesArray[NUM_OF_PROBES_PER_CELL_3D * diffuseProbesCellIndex + i];
+
+                if (currentIndex != -1)
+                {
+                    cellProbesExistanceFlags3D[i] = true;
             
-                float3 SH[SPHERICAL_HARMONICS_COEF_COUNT];
-                for (int s = 0; s < SPHERICAL_HARMONICS_COEF_COUNT; s++)
-                    SH[s] = probesInfo.DiffuseSphericalHarmonicsCoefficientsArray[currentIndex * SPHERICAL_HARMONICS_COEF_COUNT + s];
+                    float3 SH[SPHERICAL_HARMONICS_COEF_COUNT];
+                    for (int s = 0; s < SPHERICAL_HARMONICS_COEF_COUNT; s++)
+                        SH[s] = probesInfo.DiffuseSphericalHarmonicsCoefficientsArray[currentIndex * SPHERICAL_HARMONICS_COEF_COUNT + s];
         
-                cellProbesSamples[i] = GetDiffuseIrradianceFromSphericalHarmonics(normal, SH);
-                cellProbesPositions[i] = probesInfo.DiffuseProbesPositionsArray[currentIndex];
+                    cellProbesSamples3D[i] = GetDiffuseIrradianceFromSphericalHarmonics(normal, SH);
+                    cellProbesPositions3D[i] = probesInfo.DiffuseProbesPositionsArray[currentIndex].xyz;
+                }
             }
+            finalSum = GetTrilinearInterpolationFromNeighbourProbes(worldPos, probesInfo.distanceBetweenDiffuseProbes);
         }
+        else
+        {
+            for (int i = 0; i < NUM_OF_PROBES_PER_CELL_2D; i++)
+            {
+                cellProbesExistanceFlags2D[i] = false;
+                int currentIndex = probesInfo.DiffuseProbesCellsWithProbeIndicesArray[NUM_OF_PROBES_PER_CELL_2D * diffuseProbesCellIndex + i];
+
+                if (currentIndex != -1)
+                {
+                    cellProbesExistanceFlags2D[i] = true;
+            
+                    float3 SH[SPHERICAL_HARMONICS_COEF_COUNT];
+                    for (int s = 0; s < SPHERICAL_HARMONICS_COEF_COUNT; s++)
+                        SH[s] = probesInfo.DiffuseSphericalHarmonicsCoefficientsArray[currentIndex * SPHERICAL_HARMONICS_COEF_COUNT + s];
         
-        finalSum = GetTrilinearInterpolationFromNeighbourProbes(worldPos, probesInfo.distanceBetweenDiffuseProbes);
+                    cellProbesSamples2D[i] = GetDiffuseIrradianceFromSphericalHarmonics(normal, SH);
+                    cellProbesPositions2D[i] = probesInfo.DiffuseProbesPositionsArray[currentIndex].xyz;
+                }
+            }
+            finalSum = GetBilinearInterpolationFromNeighbourProbes(worldPos, probesInfo.distanceBetweenDiffuseProbes);
+        }
     }
     else
         return probesInfo.globalIrradianceDiffuseProbeTexture.SampleLevel(linearSampler, normal, 0).rgb;
@@ -498,7 +580,7 @@ float3 GetDiffuseIrradiance(float3 worldPos, float3 normal, float3 camPos, bool 
 // ====================================================================================================================
 // Get specular irradiance from probes:
 // 1) probes cell index
-// 2) 8 probes are processed and the closest is found
+// 2) 8 (3D) or 4(2D) probes are processed and the closest is found
 // 3) Final probe with the closest distance to the position is sampled from 'IrradianceSpecularProbesTextureArray'
 // ====================================================================================================================
 float3 GetSpecularIrradiance(float3 worldPos, float3 camPos, float3 reflectDir, int mipIndex, bool useGlobalSpecularProbe, in SamplerState linearSampler,
@@ -508,14 +590,18 @@ float3 GetSpecularIrradiance(float3 worldPos, float3 camPos, float3 reflectDir, 
     if (useGlobalSpecularProbe)
         return finalSum;
     
-    int specularProbesCellIndex = GetLightProbesCellIndex(worldPos, probesInfo.specularProbeCellsCount, probesInfo.sceneLightProbeBounds.xyz, probesInfo.distanceBetweenSpecularProbes);
+    const bool is2DGrid = probesInfo.sceneLightProbeBounds.w < 0.0;
+    const int numProbesPerCell = is2DGrid ? NUM_OF_PROBES_PER_CELL_2D : NUM_OF_PROBES_PER_CELL_3D;
+
+    int specularProbesCellIndex = GetLightProbesCellIndex(worldPos, probesInfo.specularProbeCellsCount, probesInfo.sceneLightProbeBounds, probesInfo.distanceBetweenSpecularProbes);
     if (specularProbesCellIndex >= 0 && specularProbesCellIndex < probesInfo.specularProbeCellsCount.w)
     {
         int closestProbeTexArrayIndex = -1;
         int closestProbeDistance = FLT_MAX;
-        for (int i = 0; i < NUM_OF_PROBES_PER_CELL; i++)
+        
+        for (int i = 0; i < numProbesPerCell; i++)
         {
-            int currentIndex = probesInfo.SpecularProbesCellsWithProbeIndicesArray[NUM_OF_PROBES_PER_CELL * specularProbesCellIndex + i];
+            int currentIndex = probesInfo.SpecularProbesCellsWithProbeIndicesArray[numProbesPerCell * specularProbesCellIndex + i];
             
             // get global probes-texture array index for current probe's global index 
             int indexInTexArray = -1;
@@ -525,7 +611,7 @@ float3 GetSpecularIrradiance(float3 worldPos, float3 camPos, float3 reflectDir, 
             // calculate the probe with the closest distance to the position
             if (indexInTexArray != -1)
             {
-                float curDistance = distance(worldPos, probesInfo.SpecularProbesPositionsArray[currentIndex]);
+                float curDistance = distance(worldPos, probesInfo.SpecularProbesPositionsArray[currentIndex].xyz);
                 if (curDistance < closestProbeDistance)
                 {
                     closestProbeDistance = curDistance;

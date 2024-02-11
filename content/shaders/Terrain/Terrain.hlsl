@@ -235,8 +235,8 @@ DS_OUTPUT DSShadowMap(PatchData input, float2 uv : SV_DomainLocation, OutputPatc
     return output;
 }
 
-float4 PSMain(DS_OUTPUT IN) : SV_Target
-{   
+float4 GetFinalColor(DS_OUTPUT IN)
+{
     float2 uvTile = IN.texcoord;
     
     //float4 height = HeightTexture.Sample(LinearSamplerClamp, uvTile + 1.0f / TileSize);
@@ -267,6 +267,16 @@ float4 PSMain(DS_OUTPUT IN) : SV_Target
     float3 indirectLighting = IndirectLightingPBR(SunDirection.xyz, normal, diffuseAlbedo.rgb, IN.worldPos.xyz, roughness, float3(0.04, 0.04, 0.04), metalness, CameraPosition.xyz,
         true, probesInfo, SamplerLinear, SamplerClamp, IntegrationTexture, ao, false);
     return float4(directLighting * shadow + indirectLighting, 1.0f);
+}
+
+float4 PSMain(DS_OUTPUT IN) : SV_Target
+{   
+    return GetFinalColor(IN);
+}
+float4 PSLightProbe(DS_OUTPUT IN) : SV_Target
+{
+    float3 col = GetFinalColor(IN).rgb;
+    return float4(GetGammaCorrectColor(col), 1.0);
 }
 
 struct PS_GBUFFER_OUTPUT

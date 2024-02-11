@@ -18,6 +18,8 @@
 #include "ER_QuadRenderer.h"
 #include "ER_RenderToLightProbeMaterial.h"
 #include "ER_MaterialsCallbacks.h"
+#include "ER_Terrain.h"
+#include "ER_GPUCuller.h"
 
 #define DIFFUSE_PROBE 0
 #define SPECULAR_PROBE 1
@@ -82,6 +84,7 @@ namespace EveryRay_Core
 			mCubemapCameras[i]->SetUp(cubemapUpDirections[i]);
 			mCubemapCameras[i]->UpdateViewMatrix(true); //fix for mirrored result due to right-hand coordinate system
 			mCubemapCameras[i]->UpdateProjectionMatrix(true); //fix for mirrored result due to right-hand coordinate system
+			mCubemapCameras[i]->UpdateFrustum();
 		}
 
 		mConvolutionCB.Initialize(rhi, "ER_RHI_GPUBuffer: Light Probe Convolution CB");
@@ -95,6 +98,7 @@ namespace EveryRay_Core
 			mCubemapCameras[i]->SetPosition(pos);
 			mCubemapCameras[i]->UpdateViewMatrix(true); //fix for mirrored result due to right-hand coordinate system
 			mCubemapCameras[i]->UpdateProjectionMatrix(true); //fix for mirrored result due to right-hand coordinate system
+			mCubemapCameras[i]->UpdateFrustum();
 		}
 	}
 
@@ -134,7 +138,7 @@ namespace EveryRay_Core
 	}
 
 	void ER_LightProbe::Compute(ER_Core& game, ER_RHI_GPUTexture* aTextureNonConvoluted, ER_RHI_GPUTexture* aTextureConvoluted,
-		ER_RHI_GPUTexture** aDepthBuffers, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, ER_QuadRenderer* quadRenderer, ER_Skybox* skybox)
+		ER_RHI_GPUTexture** aDepthBuffers, const std::wstring& levelPath, const LightProbeRenderingObjectsInfo& objectsToRender, ER_QuadRenderer* quadRenderer)
 	{
 		if (game.GetRHI()->GetAPI() != ER_GRAPHICS_API::DX11)
 			throw ER_CoreException("Computing light probes is only available on DX11 at the moment.");
@@ -155,7 +159,7 @@ namespace EveryRay_Core
 		rhi->SetViewport(newViewPort);
 
 		//sadly, we can't combine or multi-thread these two functions, because of the artifacts on edges of the convoluted faces of the cubemap...
-		DrawGeometryToProbe(game, aTextureNonConvoluted, aDepthBuffers, objectsToRender, skybox);
+		DrawGeometryToProbe(game, aTextureNonConvoluted, aDepthBuffers, objectsToRender);
 		ConvoluteProbe(game, quadRenderer, aTextureNonConvoluted, aTextureConvoluted);
 
 		rhi->SetViewport(oldViewport);
@@ -175,12 +179,14 @@ namespace EveryRay_Core
 	}
 
 	void ER_LightProbe::DrawGeometryToProbe(ER_Core& game, ER_RHI_GPUTexture* aTextureNonConvoluted, ER_RHI_GPUTexture** aDepthBuffers,
-		const LightProbeRenderingObjectsInfo& objectsToRender, ER_Skybox* skybox)
+		const LightProbeRenderingObjectsInfo& objectsToRender)
 	{
 		if (game.GetRHI()->GetAPI() != ER_GRAPHICS_API::DX11)
 			throw ER_CoreException("Rendering to light probes is only available on DX11 at the moment.");
 
 		ER_RHI* rhi = game.GetRHI();
+		rhi->BeginEventTag("EveryRay: Draw geometry to probe");
+
 		bool isGlobal = (mIndex == -1);
 
 		std::string materialListenerName = ((mProbeType == DIFFUSE_PROBE) ? "diffuse_" : "specular_") + ER_MaterialHelper::renderToLightProbeMaterialName;
@@ -194,53 +200,82 @@ namespace EveryRay_Core
 		//draw world to probe
 		for (int cubeMapFaceIndex = 0; cubeMapFaceIndex < CUBEMAP_FACES_COUNT; cubeMapFaceIndex++)
 		{
+			const std::string fullMaterialName = materialListenerName + "_" + std::to_string(cubeMapFaceIndex);
+
 			// Set the render target and clear it.
 			int rtvShift = (mProbeType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT;
 			rhi->SetRenderTargets({ aTextureNonConvoluted }, aDepthBuffers[cubeMapFaceIndex], nullptr, cubeMapFaceIndex * rtvShift);
 			rhi->ClearRenderTarget(aTextureNonConvoluted, clearColorBlack, cubeMapFaceIndex);
 			rhi->ClearDepthStencilTarget(aDepthBuffers[cubeMapFaceIndex], 1.0f, 0);
 
-			//rendering objects and sky
+			// skybox
 			{
+				ER_Skybox* skybox = game.GetLevel()->mSkybox;
 				if (skybox)
 				{
 					skybox->Update(game.GetCoreTime(), mCubemapCameras[cubeMapFaceIndex]);
+
+					const std::string skyboxTagName = "EveryRay: Draw skybox to probe: " + fullMaterialName;
+					rhi->BeginEventTag(skyboxTagName);
 					skybox->Draw(aTextureNonConvoluted, mCubemapCameras[cubeMapFaceIndex], aDepthBuffers[cubeMapFaceIndex]);
 					//TODO draw sun
 					//...
 					//skybox->UpdateSun(game.GetCoreTime(), mCubemapCameras[cubeMapFace]);
+					rhi->EndEventTag();
 				}
+			}
 
-				// We don't do lodding because it is bound to main camera... We force pick lod 0.
-				// This is incorrect and might cause issues like: 
-				// Probe P is next to object A, but object A is far from main camera => A does not have lod 0, probe P can not render A.
-				const int lod = 0;
-
-				//TODO change to culled objects per face (not a priority since we compute probes once)
-				for (auto& object : objectsToRender)
+			// terrain
+			{
+				ER_Terrain* terrain = game.GetLevel()->mTerrain;
+				if (terrain)
 				{
-					if (isGlobal && !object.second->IsUsedForGlobalLightProbeRendering())
-						continue;
+					const std::string terrainTagName = "EveryRay: Draw terrain to probe: " + fullMaterialName;
+					rhi->BeginEventTag(terrainTagName);
+					terrain->Draw(TerrainRenderPass::TERRAIN_LIGHTPROBE, { aTextureNonConvoluted }, aDepthBuffers[cubeMapFaceIndex],
+						game.GetLevel()->mShadowMapper, nullptr, -1, mCubemapCameras[cubeMapFaceIndex], true);
+					rhi->EndEventTag();
+				}
+			}
 
-					if (!object.second->IsInLightProbe())
-						continue;
-				
-					auto materialInfo = object.second->GetMaterials().find(materialListenerName + "_" + std::to_string(cubeMapFaceIndex));
-					if (materialInfo != object.second->GetMaterials().end())
+			// gpu culling
+			{
+				const std::string cullingTagName = "EveryRay: GPU culling for probe camera: " + fullMaterialName;
+				rhi->BeginEventTag(cullingTagName);
+				game.GetLevel()->mGPUCuller->PerformCull(game.GetLevel()->mScene, mCubemapCameras[cubeMapFaceIndex]);
+				rhi->EndEventTag();
+			}
+
+			// rendering objects
+			for (auto& object : objectsToRender)
+			{
+				if (isGlobal && !object.second->IsUsedForGlobalLightProbeRendering())
+					continue;
+
+				if (!object.second->IsInLightProbes())
+					continue;
+
+				auto materialInfo = object.second->GetMaterials().find(fullMaterialName);
+				if (materialInfo != object.second->GetMaterials().end())
+				{
+					const std::string tagName = "EveryRay: Draw rendering object " + object.second->GetName() + " to probe : " + fullMaterialName;
+
+					rhi->BeginEventTag(tagName);
+					for (int meshIndex = 0; meshIndex < object.second->GetMeshCount(); meshIndex++)
 					{
-						for (int meshIndex = 0; meshIndex < object.second->GetMeshCount(); meshIndex++)
-						{
-							materialInfo->second->PrepareShaders();
-							static_cast<ER_RenderToLightProbeMaterial*>(materialInfo->second)->PrepareForRendering(matSystems, object.second, meshIndex, mCubemapCameras[cubeMapFaceIndex], nullptr);
-							object.second->DrawLOD(materialInfo->first, false, meshIndex, lod, true);
-						}
+						materialInfo->second->PrepareShaders();
+						static_cast<ER_RenderToLightProbeMaterial*>(materialInfo->second)->PrepareForRendering(matSystems, object.second, meshIndex, mCubemapCameras[cubeMapFaceIndex], nullptr);
+						object.second->Draw(materialInfo->first, true, meshIndex);
 					}
+					rhi->EndEventTag();
 				}
 			}
 		}
 
 		if (mProbeType == SPECULAR_PROBE)
 			rhi->GenerateMips(aTextureNonConvoluted, nullptr);
+
+		rhi->EndEventTag();
 	}
 
 	void ER_LightProbe::ConvoluteProbe(ER_Core& game, ER_QuadRenderer* quadRenderer, ER_RHI_GPUTexture* aTextureNonConvoluted, ER_RHI_GPUTexture* aTextureConvoluted)
@@ -253,6 +288,8 @@ namespace EveryRay_Core
 			mipCount = SPECULAR_PROBE_MIP_COUNT;
 
 		ER_RHI* rhi = game.GetRHI();
+
+		rhi->BeginEventTag("EveryRay: Convolute probe");
 
 		int totalMips = (mipCount == -1) ? 1 : mipCount;
 		int rtvShift = (mProbeType == DIFFUSE_PROBE) ? 1 : SPECULAR_PROBE_MIP_COUNT;
@@ -297,6 +334,7 @@ namespace EveryRay_Core
 		rhi->UnbindRenderTargets();
 		rhi->UnbindResourcesFromShader(ER_VERTEX);
 		rhi->UnbindResourcesFromShader(ER_PIXEL);
+		rhi->EndEventTag();
 	}
 
 	void ER_LightProbe::SaveProbeOnDisk(ER_Core& game, const std::wstring& levelPath, ER_RHI_GPUTexture* aTextureConvoluted)
@@ -432,7 +470,7 @@ namespace EveryRay_Core
 		else
 		{
 			assert(mCubemapTexture);
-			mCubemapTexture->CreateGPUTextureResource(rhi, probeName, true, false, true, &mIsProbeLoadedFromDisk);
+			mCubemapTexture->CreateGPUTextureResource(rhi, probeName, true, false, true, &mIsProbeLoadedFromDisk, true);
 			if (!mIsProbeLoadedFromDisk)
 			{
 				std::wstring message = L"[ER Logger][ER_LightProbe] Could not load probe's texture file: " + probeName + L". This probe will be recomputed and saved to disk. \n";
@@ -440,7 +478,7 @@ namespace EveryRay_Core
 			}
 			else
 			{
-				std::wstring message = L"[ER Logger][ER_LightProbe] Successfully loaded specular probe's cubemap texture: " + probeName + L"\n";
+				std::wstring message = L"[ER Logger][ER_LightProbe] Successfully loaded probe's cubemap texture: " + probeName + L"\n";
 				ER_OUTPUT_LOG(message.c_str());
 			}
 		}

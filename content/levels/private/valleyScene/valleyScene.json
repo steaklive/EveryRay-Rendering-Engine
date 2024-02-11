@@ -11,6 +11,29 @@
 		150.80000000000001,
 		-900.0
 	],
+	"light_probe_global_cam_position" : 
+	[
+		900.0,
+		150.80000000000001,
+		-900.0
+	],
+	"light_probes_place_on_terrain" : true,
+	"light_probes_diffuse_distance" : 40.0,
+	"light_probes_diffuse_on_terrain_height_delta" : -10.0,
+	"light_probes_specular_distance" : 80.0,
+	"light_probes_specular_on_terrain_height_delta" : -30.0,
+	"light_probes_volume_bounds_max" : 
+	[
+		1800.0,
+		0.0,
+		1200.0
+	],
+	"light_probes_volume_bounds_min" : 
+	[
+		-1000.0,
+		0.0,
+		-1000.0
+	],
 	"foliage_zones" : 
 	[
 		{

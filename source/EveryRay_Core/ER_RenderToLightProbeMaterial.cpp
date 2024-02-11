@@ -8,6 +8,7 @@
 #include "ER_Mesh.h"
 #include "ER_ShadowMapper.h"
 #include "ER_DirectionalLight.h"
+#include "ER_Illumination.h"
 
 namespace EveryRay_Core
 {
@@ -79,8 +80,21 @@ namespace EveryRay_Core
 		mConstantBuffer.Data.SunColor = XMFLOAT4{ neededSystems.mDirectionalLight->GetColor().x, neededSystems.mDirectionalLight->GetColor().y, neededSystems.mDirectionalLight->GetColor().z, neededSystems.mDirectionalLight->mLightIntensity };
 		mConstantBuffer.Data.CameraPosition = XMFLOAT4{ cubemapCamera->Position().x, cubemapCamera->Position().y, cubemapCamera->Position().z, 1.0f };
 		mConstantBuffer.ApplyChanges(rhi);
-		rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer() }, 0, rs, RENDERTOLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+
+		if (!rhi->IsRootConstantSupported())
+		{
+			rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer(), aObj->GetObjectsFakeRootConstantBuffer().Buffer() },
+				0, rs, RENDERTOLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+		}
+		else
+			rhi->SetConstantBuffers(ER_VERTEX, { mConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer() }, 0, rs, RENDERTOLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 		rhi->SetConstantBuffers(ER_PIXEL,  { mConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer() }, 0, rs, RENDERTOLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+
+		if (aObj->IsGPUIndirectlyRendered())
+		{
+			rhi->SetShaderResources(ER_VERTEX, { aObj->GetIndirectNewInstanceBuffer() }, LIGHTING_SRV_INDEX_INDIRECT_INSTANCE_BUFFER /*because we use a standard forward shader*/,
+				rs, RENDERTOLIGHTPROBE_MAT_ROOT_DESCRIPTOR_TABLE_VERTEX_SRV_INDEX);
+		}
 
 		std::vector<ER_RHI_GPUResource*> resources;
 		resources.push_back(aObj->GetTextureData(meshIndex).AlbedoMap);

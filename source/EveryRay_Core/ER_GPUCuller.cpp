@@ -22,8 +22,8 @@
 namespace EveryRay_Core
 {
 
-	ER_GPUCuller::ER_GPUCuller(ER_Core& game, ER_Camera& camera)
-		: mCamera(camera), mCore(game)
+	ER_GPUCuller::ER_GPUCuller(ER_Core& game)
+		: mCore(game)
 	{
 	}
 
@@ -74,9 +74,10 @@ namespace EveryRay_Core
 		mCameraConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: GPU Culler Camera CB");
 	}
 
-	void ER_GPUCuller::ClearCounters(ER_Scene* aScene)
+	void ER_GPUCuller::ClearCounters(ER_Scene* aScene, ER_Camera* aCamera)
 	{
 		assert(aScene);
+		assert(aCamera);
 		auto rhi = mCore.GetRHI();
 
 		rhi->SetRootSignature(mIndirectCullingClearRS, true);
@@ -121,14 +122,20 @@ namespace EveryRay_Core
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 	}
 
-	void ER_GPUCuller::PerformCull(ER_Scene* aScene)
+	void ER_GPUCuller::PerformCull(ER_Scene* aScene, ER_Camera* aCamera)
 	{
 		assert(aScene);
-
-		ClearCounters(aScene);
+		assert(aCamera);
 
 		mIndirectCullsCounterPerFrame = 0;
+
 		auto rhi = mCore.GetRHI();
+
+		rhi->BeginEventTag("EveryRay: GPU culling - Clear counters");
+		ClearCounters(aScene, aCamera);
+		rhi->EndEventTag();
+
+		rhi->BeginEventTag("EveryRay: GPU culling - Main pass");
 
 		rhi->SetRootSignature(mIndirectCullingRS, true);
 		if (!rhi->IsPSOReady(mPSOName, true))
@@ -141,12 +148,12 @@ namespace EveryRay_Core
 		rhi->SetPSO(mPSOName, true);
 
 		for (int i = 0; i < 6; ++i)
-			mCameraConstantBuffer.Data.FrustumPlanes[i] = mCamera.GetFrustum().Planes()[i];
+			mCameraConstantBuffer.Data.FrustumPlanes[i] = aCamera->GetFrustum().Planes()[i];
 		mCameraConstantBuffer.Data.LodCameraDistances = XMFLOAT4(
 			ER_Utility::DistancesLOD[0] * ER_Utility::DistancesLOD[0], 
 			ER_Utility::DistancesLOD[1] * ER_Utility::DistancesLOD[1],
 			ER_Utility::DistancesLOD[2] * ER_Utility::DistancesLOD[2], 0.0f);
-		mCameraConstantBuffer.Data.CameraPos = XMFLOAT4(mCamera.Position().x, mCamera.Position().y, mCamera.Position().z, ER_Utility::IsMainCameraGPUCulling ? -1.0f : 1.0f);
+		mCameraConstantBuffer.Data.CameraPos = XMFLOAT4(aCamera->Position().x, aCamera->Position().y, aCamera->Position().z, ER_Utility::IsMainCameraGPUCulling ? -1.0f : 1.0f);
 		mCameraConstantBuffer.ApplyChanges(rhi);
 
 		for (ER_SceneObject& obPair : aScene->objects)
@@ -182,6 +189,8 @@ namespace EveryRay_Core
 		}
 		rhi->UnsetPSO();
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
+
+		rhi->EndEventTag();
 	}
 
 #if ER_PLATFORM_WIN64_DX11

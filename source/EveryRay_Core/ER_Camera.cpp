@@ -186,13 +186,13 @@ namespace EveryRay_Core
 		UpdateProjectionMatrix();
 		Reset();
 
-		mFrustum.SetMatrix(ViewProjectionMatrix());
+		UpdateFrustum();
 	}
 
 	void ER_Camera::Update(const ER_CoreTime& gameTime)
 	{
 		UpdateViewMatrix();
-		mFrustum.SetMatrix(ViewProjectionMatrix());
+		UpdateFrustum();
 	}
 
 	void ER_Camera::UpdateViewMatrix(bool leftHanded)
@@ -213,6 +213,11 @@ namespace EveryRay_Core
 			? XMMatrixPerspectiveFovLH(mFieldOfView, mAspectRatio, mNearPlaneDistance, mFarPlaneDistance)
 			: XMMatrixPerspectiveFovRH(mFieldOfView, mAspectRatio, mNearPlaneDistance, mFarPlaneDistance);
 		XMStoreFloat4x4(&mProjectionMatrix, projectionMatrix);
+	}
+
+	void ER_Camera::UpdateFrustum()
+	{
+		mFrustum.SetMatrix(ViewProjectionMatrix());
 	}
 
 	void ER_Camera::ApplyRotation(CXMMATRIX transform)

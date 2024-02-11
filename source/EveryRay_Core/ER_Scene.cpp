@@ -450,10 +450,8 @@ namespace EveryRay_Core
 					if (isInstanced) //be careful with the instancing support in shaders of the materials! (i.e., maybe the material does not have instancing entry point/support)
 						shaderEntries.vertexEntry = shaderEntries.vertexEntry + "_instancing";
 					
-					if (name == ER_MaterialHelper::gbufferMaterialName)
-						aObject->SetInGBuffer(true);
-					if (name == ER_MaterialHelper::renderToLightProbeMaterialName)
-						aObject->SetInLightProbe(true);
+					aObject->SetInGBuffer(name == ER_MaterialHelper::gbufferMaterialName);
+					aObject->SetInLightProbes(name == ER_MaterialHelper::renderToLightProbeMaterialName);
 
 					if (name == ER_MaterialHelper::shadowMapMaterialName)
 					{

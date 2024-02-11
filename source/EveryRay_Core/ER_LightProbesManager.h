@@ -7,7 +7,8 @@
 #define SPECULAR_PROBE_SIZE 128 //cubemap dimension
 
 #define MAX_CUBEMAPS_IN_VOLUME_PER_AXIS 6 // == cbrt(2048 / CUBEMAP_FACES_COUNT), 2048 - tex. array limit (DX11)
-#define PROBE_COUNT_PER_CELL 8 // 3D cube cell of probes in each vertex
+#define PROBE_COUNT_PER_CELL_3D 8
+#define PROBE_COUNT_PER_CELL_2D 4
 
 #define SPHERICAL_HARMONICS_ORDER 2
 #define SPHERICAL_HARMONICS_COEF_COUNT (SPHERICAL_HARMONICS_ORDER + 1) * (SPHERICAL_HARMONICS_ORDER + 1)
@@ -51,8 +52,8 @@ namespace EveryRay_Core
 
 		bool AreProbesReady() { return mDiffuseProbesReady && mSpecularProbesReady; }
 		void SetLevelPath(const std::wstring& aPath) { mLevelPath = aPath; };
-		void ComputeOrLoadLocalProbes(ER_Core& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox = nullptr);
-		void ComputeOrLoadGlobalProbes(ER_Core& game, ProbesRenderingObjectsInfo& aObjects, ER_Skybox* skybox);
+		void ComputeOrLoadLocalProbes(ER_Core& game, ProbesRenderingObjectsInfo& aObjects);
+		void ComputeOrLoadGlobalProbes(ER_Core& game, ProbesRenderingObjectsInfo& aObjects);
 		void DrawDebugProbes(ER_RHI* rhi, ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, ER_ProbeType aType, ER_RHI_GPURootSignature* rs);
 		void UpdateProbes(ER_Core& game);
 		int GetCellIndex(const XMFLOAT3& pos, ER_ProbeType aType);
@@ -78,6 +79,8 @@ namespace EveryRay_Core
 		const XMFLOAT3& GetSceneProbesVolumeMin() { return mSceneProbesMinBounds; }
 		const XMFLOAT3& GetSceneProbesVolumeMax() { return mSceneProbesMaxBounds; }
 
+		bool Is2DCellGrid() { return mIsPlacedOnTerrain; } // by default we use 3D cell grid, but terrain scenes is a special case for now and use 2D
+
 		bool IsEnabled() { return mEnabled; }
 		bool AreGlobalProbesReady() { return mGlobalDiffuseProbeReady && mGlobalSpecularProbeReady; }
 
@@ -90,7 +93,8 @@ namespace EveryRay_Core
 		void AddProbeToCells(ER_LightProbe& aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds);
 		bool IsProbeInCell(ER_LightProbe& aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds);
 		void UpdateProbesByType(ER_Core& game, ER_ProbeType aType);
-		
+		void PlaceProbesOnTerrain(ER_Core& game, ER_RHI_GPUBuffer* outputBuffer, ER_RHI_GPUBuffer* inputBuffer, XMFLOAT4* positions, int positionsCount, float customDampDelta = FLT_MAX);
+
 		ER_QuadRenderer* mQuadRenderer = nullptr;
 		ER_Camera& mMainCamera;
 
@@ -107,6 +111,8 @@ namespace EveryRay_Core
 		std::string mDiffuseDebugLightProbePassPSOName = "ER_RHI_GPUPipelineStateObject: Light Probes Manager - Diffuse Debug Probe Pass";
 		ER_RHI_GPUBuffer* mDiffuseProbesCellsIndicesGPUBuffer = nullptr;
 		ER_RHI_GPUBuffer* mDiffuseProbesPositionsGPUBuffer = nullptr;
+		ER_RHI_GPUBuffer* mDiffuseInputPositionsOnTerrainBuffer = nullptr;
+		ER_RHI_GPUBuffer* mDiffuseOutputPositionsOnTerrainBuffer = nullptr;
 		ER_RHI_GPUBuffer* mDiffuseProbesSphericalHarmonicsGPUBuffer = nullptr;
 		ER_RHI_GPUTexture* mTempDiffuseCubemapFacesRT = nullptr;
 		ER_RHI_GPUTexture* mTempDiffuseCubemapFacesConvolutedRT = nullptr;
@@ -134,6 +140,8 @@ namespace EveryRay_Core
 		ER_RHI_GPUBuffer* mSpecularProbesTexArrayIndicesGPUBuffer = nullptr;
 		ER_RHI_GPUBuffer* mSpecularProbesCellsIndicesGPUBuffer = nullptr;
 		ER_RHI_GPUBuffer* mSpecularProbesPositionsGPUBuffer = nullptr;
+		ER_RHI_GPUBuffer* mSpecularInputPositionsOnTerrainBuffer = nullptr;
+		ER_RHI_GPUBuffer* mSpecularOutputPositionsOnTerrainBuffer = nullptr;
 		ER_RHI_GPUTexture* mTempSpecularCubemapFacesRT = nullptr;
 		ER_RHI_GPUTexture* mTempSpecularCubemapFacesConvolutedRT = nullptr;
 		ER_RHI_GPUTexture* mTempSpecularCubemapDepthBuffers[CUBEMAP_FACES_COUNT] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
@@ -156,6 +164,16 @@ namespace EveryRay_Core
 		float mDistanceBetweenSpecularProbes = 0.0f;
 		float mSpecularProbesVolumeSize = 0.0f;
 		int mMaxSpecularProbesInVolumeCount = 0;
+
+		bool mIsPlacedOnTerrain = false;
+
+		// height offset of the bottom layer of probes (negative values - offset above terrain)
+		float mTerrainPlacementHeightDeltaDiffuseProbes = 0.0f;
+		float mTerrainPlacementHeightDeltaSpecularProbes = 0.0f;
+
+		// by default 3D, but terrain can change that to 2D
+		int mCurrentProbeCountPerCell = PROBE_COUNT_PER_CELL_3D;
+		bool mIs2DCellsGrid = false;
 
 		std::wstring mLevelPath;
 		bool mEnabled = true;

@@ -46,7 +46,8 @@ namespace EveryRay_Core
 	{
 		TERRAIN_GBUFFER,
 		TERRAIN_FORWARD,
-		TERRAIN_SHADOW
+		TERRAIN_SHADOW,
+		TERRAIN_LIGHTPROBE
 	};
 
 	namespace TerrainCBufferData {
@@ -141,7 +142,8 @@ namespace EveryRay_Core
 		UINT GetWidth() { return mWidth; }
 		UINT GetHeight() { return mHeight; }
 
-		void Draw(TerrainRenderPass aPass, const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr, ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr, int shadowMapCascade = -1);
+		void Draw(TerrainRenderPass aPass, const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget = nullptr,
+			ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr, int shadowMapCascade = -1, ER_Camera* aCustomCamera = nullptr, bool skipCulling = false);
 		void DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, ER_RHI_GPURootSignature* rs);
 		void Update(const ER_CoreTime& gameTime);
 		void Config() { mShowDebug = !mShowDebug; }
@@ -155,7 +157,7 @@ namespace EveryRay_Core
 		void SetTerrainHeightScale(float scale) { mTerrainTessellatedHeightScale = scale; }
 		HeightMap* GetHeightmap(int index) { return mHeightMaps.at(index); }
 		void PlaceOnTerrain(ER_RHI_GPUBuffer* outputBuffer, ER_RHI_GPUBuffer* inputBuffer, XMFLOAT4* positions, int positionsCount,
-			TerrainSplatChannels splatChannel = TerrainSplatChannels::NONE,	XMFLOAT4* terrainVertices = nullptr, int terrainVertexCount = 0, float customDampDelta = FLT_MAX);
+			TerrainSplatChannels splatChannel = TerrainSplatChannels::NONE,	XMFLOAT4* terrainVertices = nullptr, int terrainVertexCount = 0, float customDampDelta = FLT_MAX, bool needsCPUReadback = true);
 		void ReadbackPlacedPositions(ER_RHI_GPUBuffer* outputBuffer, ER_RHI_GPUBuffer* inputBuffer, XMFLOAT4* positions, int positionsCount);
 		//float GetHeightScale(bool tessellated) { if (tessellated) return mTerrainTessellatedHeightScale; else return mTerrainNonTessellatedHeightScale; }
 
@@ -173,7 +175,8 @@ namespace EveryRay_Core
 		void LoadTextures(const std::wstring& aTexturesPath, const std::wstring& splatLayer0Path, const std::wstring& splatLayer1Path,	const std::wstring& splatLayer2Path, const std::wstring& splatLayer3Path);
 		void LoadSplatmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path);
 		void LoadHeightmapPerTileGPU(int tileIndexX, int tileIndexY, const std::wstring& path);
-		void DrawTessellated(TerrainRenderPass aPass, const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget, int i, ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr, int shadowMapCascade = -1);
+		void DrawTessellated(TerrainRenderPass aPass, const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget, int tileIndex,
+			ER_ShadowMapper* worldShadowMapper = nullptr, ER_LightProbesManager* probeManager = nullptr, int shadowMapCascade = -1, bool skipCulling = false);
 
 		ER_DirectionalLight& mDirectionalLight;
 
@@ -189,6 +192,9 @@ namespace EveryRay_Core
 		ER_RHI_GPUShader* mPS = nullptr;
 		std::string mTerrainMainPassPSOName = "ER_RHI_GPUPipelineStateObject: Terrain - Main Pass";
 		std::string mTerrainMainPassWireframePSOName = "ER_RHI_GPUPipelineStateObject: Terrain - Main (Wireframe) Pass";
+
+		ER_RHI_GPUShader* mPS_LightProbe = nullptr;
+		std::string mTerrainLightProbePassPSOName = "ER_RHI_GPUPipelineStateObject: Terrain - Light Probe Pass";
 
 		ER_RHI_GPUShader* mDS_ShadowMap = nullptr;
 		ER_RHI_GPUShader* mPS_ShadowMap = nullptr;

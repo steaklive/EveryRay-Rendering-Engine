@@ -165,7 +165,7 @@ namespace EveryRay_Core
 		void LoadAssignedMeshTextures(int meshIndex);
 
 		void Draw(const std::string& materialName, bool toDepth = false, int meshIndex = -1);
-		void DrawLOD(const std::string& materialName, bool toDepth, int meshIndex, int lod, bool skipCulling = false);
+		void DrawLOD(const std::string& materialName, bool toDepth /*remove? probably legacy code that i don't remember anymore*/, int meshIndex, int lod, bool skipCulling = false);
 		void DrawAABB(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, ER_RHI_GPURootSignature* rs);
 		void Update(const ER_CoreTime& time);
 
@@ -276,8 +276,8 @@ namespace EveryRay_Core
 		bool IsParallaxOcclusionMapping() { return mIsPOM; }
 		void SetParallaxOcclusionMapping(bool value) { mIsPOM = value; }
 
-		bool IsInLightProbe() { return mIsInLightProbe; }
-		void SetInLightProbe(bool value) { mIsInLightProbe = value; }
+		bool IsInLightProbes() { return mIsInLightProbes; }
+		void SetInLightProbes(bool value) { mIsInLightProbes = value; }
 
 		bool IsTransparent() { return mIsTransparent; }
 		void SetTransparency(bool value) { mIsTransparent = value; }
@@ -474,7 +474,7 @@ namespace EveryRay_Core
 		bool													mIsPOM = false;
 		bool													mIsCulled = false; //only for non-instanced objects
 		bool													mIsMarkedAsFoliage = false;
-		bool													mIsInLightProbe = false;
+		bool													mIsInLightProbes = false; // can be rendered into probes or not
 		bool													mIsSeparableSubsurfaceScattering = false;
 		bool													mIsInVoxelization = false;
 		bool													mIsInGbuffer = false;

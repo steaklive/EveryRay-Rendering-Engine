@@ -61,6 +61,9 @@ namespace EveryRay_Core
 			mPS = rhi->CreateGPUShader();
 			mPS->CompileShader(rhi, "content\\shaders\\Terrain\\Terrain.hlsl", "PSMain", ER_PIXEL);
 
+			mPS_LightProbe = rhi->CreateGPUShader();
+			mPS_LightProbe->CompileShader(rhi, "content\\shaders\\Terrain\\Terrain.hlsl", "PSLightProbe", ER_PIXEL);
+
 			mPS_ShadowMap = rhi->CreateGPUShader();
 			mPS_ShadowMap->CompileShader(rhi, "content\\shaders\\Terrain\\Terrain.hlsl", "PSShadowMap", ER_PIXEL);
 
@@ -112,6 +115,7 @@ namespace EveryRay_Core
 		DeleteObject(mDS);
 		DeleteObject(mDS_ShadowMap);
 		DeleteObject(mPS);
+		DeleteObject(mPS_LightProbe);
 		DeleteObject(mPS_ShadowMap);
 		DeleteObject(mPS_GBuffer);
 		DeleteObject(mPlaceOnTerrainCS);
@@ -537,7 +541,8 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_Terrain::Draw(TerrainRenderPass aPass, const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget, ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade)
+	void ER_Terrain::Draw(TerrainRenderPass aPass, const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget,
+		ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade, ER_Camera* aCustomCamera, bool skipCulling)
 	{
 		if (!mEnabled || !mLoaded)
 			return;
@@ -546,7 +551,7 @@ namespace EveryRay_Core
 			return;
 
 		ER_RHI* rhi = mCore->GetRHI();
-		ER_Camera* camera = (ER_Camera*)(mCore->GetServices().FindService(ER_Camera::TypeIdClass()));
+		ER_Camera* camera = aCustomCamera ? aCustomCamera : (ER_Camera*)(mCore->GetServices().FindService(ER_Camera::TypeIdClass()));
 
 		if (worldShadowMapper && aPass != TerrainRenderPass::TERRAIN_GBUFFER)
 		{
@@ -584,7 +589,7 @@ namespace EveryRay_Core
 		mTerrainConstantBuffer.ApplyChanges(rhi);
 
 		for (int i = 0; i < mHeightMaps.size(); i++)
-			DrawTessellated(aPass, aRenderTargets, aDepthTarget, i, worldShadowMapper, probeManager, shadowMapCascade);
+			DrawTessellated(aPass, aRenderTargets, aDepthTarget, i, worldShadowMapper, probeManager, shadowMapCascade, skipCulling);
 	}
 
 	void ER_Terrain::DrawDebugGizmos(ER_RHI_GPUTexture* aRenderTarget, ER_RHI_GPUTexture* aDepth, ER_RHI_GPURootSignature* rs)
@@ -628,13 +633,14 @@ namespace EveryRay_Core
 		}
 	}
 
-	void ER_Terrain::DrawTessellated(TerrainRenderPass aPass, const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget, int tileIndex, ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade)
+	void ER_Terrain::DrawTessellated(TerrainRenderPass aPass, const std::vector<ER_RHI_GPUTexture*>& aRenderTargets, ER_RHI_GPUTexture* aDepthTarget, int tileIndex,
+		ER_ShadowMapper* worldShadowMapper, ER_LightProbesManager* probeManager, int shadowMapCascade, bool skipCulling)
 	{
 		if (aPass == TerrainRenderPass::TERRAIN_SHADOW)
 			assert(shadowMapCascade != -1);
 		
 		//for shadow mapping pass we dont want to cull with main camera frustum
-		if (mHeightMaps[tileIndex]->IsCulled() && (aPass == TerrainRenderPass::TERRAIN_FORWARD || aPass == TerrainRenderPass::TERRAIN_GBUFFER))
+		if (mHeightMaps[tileIndex]->IsCulled() && !skipCulling)
 			return;
 
 		ER_RHI* rhi = mCore->GetRHI();
@@ -650,6 +656,8 @@ namespace EveryRay_Core
 			psoName = mTerrainShadowPassPSOName;
 		else if (aPass == TERRAIN_GBUFFER)
 			psoName = ER_Utility::IsWireframe ? mTerrainGBufferPassWireframePSOName : mTerrainGBufferPassPSOName;
+		else if (aPass == TERRAIN_LIGHTPROBE)
+			psoName = mTerrainLightProbePassPSOName;
 
 		rhi->SetRootSignature(rootSig);
 		rhi->SetVertexBuffers({ mHeightMaps[tileIndex]->mVertexBufferTS });
@@ -677,6 +685,8 @@ namespace EveryRay_Core
 				rhi->SetShader(mDS);
 				if (aPass == TerrainRenderPass::TERRAIN_FORWARD)
 					rhi->SetShader(mPS);
+				else if (aPass == TerrainRenderPass::TERRAIN_LIGHTPROBE)
+					rhi->SetShader(mPS_LightProbe);
 				else if (aPass == TerrainRenderPass::TERRAIN_GBUFFER)
 					rhi->SetShader(mPS_GBuffer);
 
@@ -712,7 +722,7 @@ namespace EveryRay_Core
 			resources[2] = mSplatChannelTextures[1];
 			resources[3] = mSplatChannelTextures[2];
 			resources[4] = mSplatChannelTextures[3];
-			if (aPass == TerrainRenderPass::TERRAIN_FORWARD)
+			if (aPass == TerrainRenderPass::TERRAIN_FORWARD || aPass == TerrainRenderPass::TERRAIN_LIGHTPROBE)
 			{
 				if (worldShadowMapper)
 				{
@@ -720,7 +730,7 @@ namespace EveryRay_Core
 						resources[5 + c] = worldShadowMapper->GetShadowTexture(c);
 				}
 
-				if (probeManager && probeManager->AreGlobalProbesReady())
+				if (aPass == TerrainRenderPass::TERRAIN_FORWARD && probeManager && probeManager->AreGlobalProbesReady())
 				{
 					resources[8] = probeManager->GetGlobalDiffuseProbe()->GetCubemapTexture();
 					resources[12] = probeManager->GetGlobalSpecularProbe()->GetCubemapTexture();
@@ -1031,18 +1041,23 @@ namespace EveryRay_Core
 		return isColliding;
 	}
 
-	// Method for displacing points on terrain (send some points to the GPU, get transformed points from the GPU).
+	// Method for displacing points on terrain: send some points to the GPU, get transformed points from the GPU on the CPU (optional).
 	// GPU does everything in a compute shader (it finds a proper terrain tile, checks for the splat channel and transforms the provided points).
 	// There is also some older functionality (USE_RAYCASTING_FOR_ON_TERRAIN_PLACEMENT) if you do not want to check heightmap collisions (fast) but use raycasts to geometry instead (slow).
 	// 
 	// Use cases: 
 	// - placing ER_RenderingObject(s) on terrain (even their instances individually)
 	// - placing ER_Foliage patches on terrain (batch placement)
+	// - placing ER_LightProbe(s) on terrain
 	void ER_Terrain::PlaceOnTerrain(ER_RHI_GPUBuffer* outputBuffer, ER_RHI_GPUBuffer* inputBuffer, XMFLOAT4* positions, int positionsCount,
-		TerrainSplatChannels splatChannel, XMFLOAT4* terrainVertices, int terrainVertexCount, float customDampDelta)
+		TerrainSplatChannels splatChannel, XMFLOAT4* terrainVertices, int terrainVertexCount, float customDampDelta, bool needsCPUReadback)
 	{
-		assert(inputBuffer && outputBuffer);
+		assert(inputBuffer);
+		if (needsCPUReadback)
+			assert(outputBuffer);
 		ER_RHI* rhi = GetCore()->GetRHI();
+
+		assert(inputBuffer->GetStride() == sizeof(XMFLOAT4)); // for now we only support XMFLOAT4 buffers for placement
 
 #if USE_RAYCASTING_FOR_ON_TERRAIN_PLACEMENT
 		ER_RHI_GPUBuffer* terrainBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: Terrain raycasting placement data");
@@ -1050,6 +1065,8 @@ namespace EveryRay_Core
 		//...
 		//DeleteObject(terrainBuffer);
 #endif
+		rhi->BeginEventTag("EveryRay: Place on terrain CS");
+
 		rhi->SetRootSignature(mTerrainPlacementPassRS, true);		
 		if (!rhi->IsPSOReady(mTerrainPlacementPassPSOName, true))
 		{
@@ -1075,9 +1092,13 @@ namespace EveryRay_Core
 		rhi->UnsetPSO();
 		rhi->UnbindResourcesFromShader(ER_COMPUTE);
 
+		rhi->EndEventTag();
+
 #ifdef ER_PLATFORM_WIN64_DX11
-		ReadbackPlacedPositions(outputBuffer, inputBuffer, positions, positionsCount); //direct readback in the dx11 immediate context
+		if (needsCPUReadback)
+			ReadbackPlacedPositions(outputBuffer, inputBuffer, positions, positionsCount); //direct readback in the dx11 immediate context
 #endif
+
 	}
 
 	// Read-back (GPU to CPU) new positions from placement compute pass
@@ -1086,6 +1107,7 @@ namespace EveryRay_Core
 	void ER_Terrain::ReadbackPlacedPositions(ER_RHI_GPUBuffer* outputBuffer, ER_RHI_GPUBuffer* inputBuffer, XMFLOAT4* positions, int positionsCount)
 	{
 		ER_RHI* rhi = GetCore()->GetRHI();
+		rhi->BeginEventTag("EveryRay: Place on terrain readback");
 
 		rhi->BeginCopyCommandList();
 		rhi->CopyBuffer(outputBuffer, inputBuffer, 0, true);
@@ -1101,6 +1123,8 @@ namespace EveryRay_Core
 				positions[i] = newPositions[i];
 		}
 		rhi->EndBufferRead(outputBuffer);
+
+		rhi->EndEventTag();
 	}
 
 	HeightMap::HeightMap(int width, int height)
