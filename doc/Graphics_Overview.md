@@ -11,7 +11,7 @@ In _EveryRay_ ```ER_GPUCuller``` is responsible for the process mentioned above:
 
 Potentially, ```ER_GPUCuller``` can be extended for dealing with other data, such as foliage (more in "Foliage" section), lights per screen tile (more in "Direct Lighting"), voxels for cone traced objects (more in "Indirect Lighting"), etc. You can also be creative and combine the GPU culling passes asynchronously with rendering passes (such as shadows), re-use the results of a previous frame and do many other things which will be described here once implemented.
 
-Although at this point we have only prepared the objects that are visible on screen, their triangles can be not fully visible (i.e. some might be outside the view or be overlapped by the triangles in front). This can also lead to significant wasted performance and, although geometry was never a bottleneck in _EveryRay_, I still consider implementing a _HiZ culling_ as an update to the system in the future.
+Although at this point we have only prepared the objects that are visible on screen, their triangles can be not fully visible (i.e. some might be outside the view or be overlapped by the triangles in front). This can also lead to significant wasted performance and, although geometry has never been a bottleneck in _EveryRay_ so far, I still consider implementing a _HiZ culling_ as an update to the system in the future.
 
 
 
@@ -37,6 +37,26 @@ For direct light source a classic _cascaded shadow mapping_ approach is used wit
 ```ER_ShadowMapper``` already provides some useful advancements: 2 ways of calculating projected matrix (bounding sphere or volume), texel-size increment updates (for fixing jittering), LOD-skipping, graphics quality presets (more in "Extra - Graphics config") etc.
 
 # Frame - Illumination
+
+Illumination is a complex subject that requires a certain level of creativity and compromise in real-time graphics. This section focuses on how we currently shade our pixels in _EveryRay_.
+
+To make it short, let's divide our illumination into two parts: _direct_ and _indirect_. ```ER_Illumination``` aims to cover both with the help of some other systems, such as ```ER_Material```s. 
+
+If we look at _direct_ lighting, there are a few keypoints to mention:
+1) The engine uses both _deferred_ (```DeferredLighting.hlsl```) and _forward_ (```ForwardLighting.hlsl```) rendering paths which mostly share the same code from ```Lighting.hlsli```. Deferred rendering is done first and is used if the object has ```ER_GBufferMaterial``` assigned to it. Forward rendering is done after deferred and is used if the object has one of the _standard_ materials assigned to it. Those _standard_ materials can be rendered on top of each other (in the order they are assigned) and are used for special features, such as _fur, snow, effects, transparency,_ etc. which require special shading models and shaders.
+2) Our default shading model is _physically based_ (Cook-Torrance, GGX, Schlick) and is coded in ```Lighting.hlsli```; if you want to modify something, it will be applied to both rendering paths.
+3) In forward rendering it is also possible to use _parallax occlusion mapping_ (hopefully, support for deferred mode will be added in the future).
+4) Currently, directional and non-directional lights' contributions are included in lighting, however, no optimizations have been made yet for the non-directional shading. It is a big topic but worth investigating once we want to support hundreds and thousands of light sources in a frame (_tiled deferred_ and _forward+_ techniques can be implemented).
+
+If we look at _indirect_ lighting, it also divides into 2 parts: _static_ and _dynamic_.
+
+_Static_ indirect lighting uses ```ER_LightProbe```s (for diffuse and specular) that capture radiance in defined points in space and are managed inside ```ER_LightProbeManager```. There are some interesting details to mention that are specific to _EveryRay_:
+1) Every scene can have local light probes assigned either in a uniform 3D grid or 2D-scattered on top of the terrain's surface (if it exists in the scene). A user must specify the bounds (```light_probes_volume_bounds_min```, ```light_probes_volume_bounds_max```) and can specify a few other extra parameters, such as distances between probes of each type, etc.
+2) If the scene has no probes assigned, a set of 2 global probes (diffuse and specular) is always generated for the level and is used as a fallback for _static_ lighting. Usually, it makes sense to include big objects (such as terrain, buildings, etc.) that contribute to the radiance in the global probes, which is possible to do with ```use_in_global_lightprobe_rendering``` field in the scene's file.
+3) Probes (both local and global) are generated in the first frame if the user does not have probe data on disk in the root of the scene (```/diffuse_probes/``` and ```/specular_probes/```). Any object with ```ER_LightProbeMaterial``` assigned will be rendered to local probes (in _forward_-style) both in _diffuse_ (rendered to low-res cubemap, convoluted and encoded with _spherical harmonics_ and stored as text data) and in _specular_ (stored as 128x128 mipped cubemap ```.dds``` textures). Each file contains a probe's position in its name which makes it easier to debug and replace if needed: _if you delete the file, it will be regenerated upon the next launch of the scene_.
+4) ```Lighting.hlsi``` also deals with retrieving data from the probes and applying it to the shading of the current pixel during ```DeferredLighting.hlsl``` or ```ForwardLighting.hlsl```. For _diffuse_ probes, we send a set of GPU buffers for probes _sperical harmonics_ coefficients, positions and _cells_ with probe indices (in the case of a 3D grid, a cell is 8 probes with each probe covering the space of a vertex in a uniform 3D volume). Then, during shading, a world-space position that we want to shade finds an appropriate _cell_ with a fast uniform grid approach and finally interpolates the radiance data from the neighbouring probes (in the case of a 3D grid, _trilinearly_). For _specular_ probes, we send a similar set of GPU buffers, but instead of interpolating, we just find the closest probe to our world position. If we have a lot of specular probes in the scene, it gets expensive to carry all of them in GPU memory, which is why we only keep several ones that are next to the camera and constantly unload/cull the ones that are far from the camera's current position (in the future it might be worth changing specular probes loading to _bindless_ resources in order to mitigate hardware limits).
+5) The probe system does not support re-loading and updates during the frame, however, it might be extended for such purposes and modern ray-tracing pipelines.
+
 	# Direct Lighting
 		# Standard and Special Materials (+ POM)
 	# Indirect Lighting
