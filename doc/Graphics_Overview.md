@@ -11,7 +11,7 @@ In _EveryRay_ ```ER_GPUCuller``` is responsible for the process mentioned above:
 
 Potentially, ```ER_GPUCuller``` can be extended for dealing with other data, such as foliage (more in "Foliage" section), lights per screen tile (more in "Direct Lighting"), voxels for cone traced objects (more in "Indirect Lighting"), etc. You can also be creative and combine the GPU culling passes asynchronously with rendering passes (such as shadows), re-use the results of a previous frame and do many other things which will be described here once implemented.
 
-Although at this point we have only prepared the objects that are visible on screen, their triangles can be not fully visible (i.e. some might be outside the view or be overlapped by the triangles in front). This can also lead to significant wasted performance and, although geometry has never been a bottleneck in _EveryRay_ so far, I still consider implementing a _HiZ culling_ as an update to the system in the future.
+_Note: Although at this point we have only prepared the objects that are visible on screen, their triangles can be not fully visible (i.e. some might be outside the view or be overlapped by the triangles in front). This can also lead to significant wasted performance and, although geometry has never been a bottleneck in _EveryRay_ so far, I still consider implementing a HiZ culling as an update to the system in the future. _
 
 
 
@@ -38,18 +38,53 @@ For direct light source a classic _cascaded shadow mapping_ approach is used wit
 
 # Frame - Illumination
 
-Illumination is a complex subject that requires a certain level of creativity and compromise in real-time graphics. This section focuses on how we currently shade our pixels in _EveryRay_.
+Illumination is a complex subject that requires a certain level of creativity and compromise in real-time graphics. This section focuses on how we currently shade our pixels in _EveryRay_. To start with, let's divide our illumination into two big parts: _direct_ and _indirect_. On a high level, ```ER_Illumination``` aims to take care of both with the help of some additional systems described below. 
 
-To make it short, let's divide our illumination into two parts: _direct_ and _indirect_. ```ER_Illumination``` aims to cover both with the help of some other systems, such as ```ER_Material```s. 
+## Illumination - Direct Lighting
+If we look at _direct_ lighting, there are a few key points to talk about.
 
-If we look at _direct_ lighting, there are a few keypoints to mention:
-1) The engine uses both _deferred_ (```DeferredLighting.hlsl```) and _forward_ (```ForwardLighting.hlsl```) rendering paths which mostly share the same code from ```Lighting.hlsli```. Deferred rendering is done first and is used if the object has ```ER_GBufferMaterial``` assigned to it. Forward rendering is done after deferred and is used if the object has one of the _standard_ materials assigned to it. Those _standard_ materials can be rendered on top of each other (in the order they are assigned) and are used for special features, such as _fur, snow, effects, transparency,_ etc. which require special shading models and shaders.
-2) Our default shading model is _physically based_ (Cook-Torrance, GGX, Schlick) and is coded in ```Lighting.hlsli```; if you want to modify something, it will be applied to both rendering paths.
-3) In forward rendering it is also possible to use _parallax occlusion mapping_ (hopefully, support for deferred mode will be added in the future).
-4) Currently, directional and non-directional lights' contributions are included in lighting, however, no optimizations have been made yet for the non-directional shading. It is a big topic but worth investigating once we want to support hundreds and thousands of light sources in a frame (_tiled deferred_ and _forward+_ techniques can be implemented).
+Firstly, the engine uses both _deferred_ (```DeferredLighting.hlsl```) and _forward_ (```ForwardLighting.hlsl```) rendering paths which mostly share the same code from ```Lighting.hlsli```. Deferred rendering is done first and is used if the object has ```ER_GBufferMaterial``` assigned to it. Forward rendering is done after deferred and is used if ```ER_RenderingObject``` has one of the _standard_ materials assigned to it. Let's briefly talk about _materials_ in the engine. 
 
-If we look at _indirect_ lighting, it also divides into 2 parts: _static_ and _dynamic_.
+### Illumination - Direct Lighting - Materials
+We can specify materials in a scene file for every ```ER_RenderingObject``` in a following way:
 
+```json			
+"new_materials" : 
+[
+	{
+		"name" : "ShadowMapMaterial"
+	},
+	{
+		"name" : "GBufferMaterial"
+	},
+	{
+		"name" : "RenderToLightProbeMaterial"
+	},
+	{
+		"name" : "VoxelizationMaterial"
+	},
+	{
+		"name" : "FresnelOutlineMaterial"
+	},
+	{
+		...
+	}
+],
+```
+
+Each of the materials has its class and is derived from ```ER_Material```. In _EveryRay_ there are _standard_ materials and a few _non-standard_ materials, such as ```ER_ShadowMapMaterial``` or ```ER_GBufferMaterial```. By _non-standard_ we mean materials that are processed in their bigger systems, such as ```ER_ShadowMapper``` or ```ER_GBuffer``` respectively. In other cases, materials are called _standard_ and do not need any processing outside their classes. Usually, _standard_ materials serve an artistic purpose, are rendered on top of each other (in the order they were assigned in the scene file), and are used for special features, such as _fur, snow, effects, transparency_ and everything that requires special shading models and shaders. 
+
+_Note: The material system heavily relies on the C++ side of things which is not ideal and can be improved in the future. For example, it would be nice to make it more generic and artist-friendly by using scripting or JSON when declaring materials instead of creating separate ```.cpp/h``` files._
+
+### Illumination - Direct Lighting - Shading
+
+Our default shading model is _physically based_ (Cook-Torrance, GGX, Schlick from "Real Shading in Unreal Engine 4" by B. Karis) and is coded in the aforementioned ```Lighting.hlsli``` file. In general, if you want to modify something lighting-specific, it will be applied to both _forward_ and _deferred_ rendering paths. However, there are some edge cases, such as _parallax occlusion mapping_ ("Practical Parallax Occlusion Mapping For Highly Detailed Surface Rendering" by N. Tatarchuk) with soft self-shadowing which is for now only possible in _forward_.
+
+The contributions from directional (```ER_DirectionalLight```) and non-directional light sources (```ER_PointLight```) are included in the total lighting, however, no optimizations have been made yet for the non-directional shading. It is a big topic but worth investigating once we want to support hundreds and thousands of light sources in a frame (_tiled deferred_ and _forward+_ techniques can be implemented to remedy that).
+
+Finally, if we look at _indirect_ lighting (in order to complete our _global illumination_ of the scene), we should first divide it into 2 parts: _static_ and _dynamic_.
+
+## Illumination - Static Indirect Lighting
 _Static_ indirect lighting uses ```ER_LightProbe```s (for diffuse and specular) that capture radiance in defined points in space and are managed inside ```ER_LightProbeManager```. There are some interesting details to mention that are specific to _EveryRay_:
 1) Every scene can have local light probes assigned either in a uniform 3D grid or 2D-scattered on top of the terrain's surface (if it exists in the scene). A user must specify the bounds (```light_probes_volume_bounds_min```, ```light_probes_volume_bounds_max```) and can specify a few other extra parameters, such as distances between probes of each type, etc.
 2) If the scene has no probes assigned, a set of 2 global probes (diffuse and specular) is always generated for the level and is used as a fallback for _static_ lighting. Usually, it makes sense to include big objects (such as terrain, buildings, etc.) that contribute to the radiance in the global probes, which is possible to do with ```use_in_global_lightprobe_rendering``` field in the scene's file.
@@ -57,11 +92,13 @@ _Static_ indirect lighting uses ```ER_LightProbe```s (for diffuse and specular) 
 4) ```Lighting.hlsi``` also deals with retrieving data from the probes and applying it to the shading of the current pixel during ```DeferredLighting.hlsl``` or ```ForwardLighting.hlsl```. For _diffuse_ probes, we send a set of GPU buffers for probes _sperical harmonics_ coefficients, positions and _cells_ with probe indices (in the case of a 3D grid, a cell is 8 probes with each probe covering the space of a vertex in a uniform 3D volume). Then, during shading, a world-space position that we want to shade finds an appropriate _cell_ with a fast uniform grid approach and finally interpolates the radiance data from the neighbouring probes (in the case of a 3D grid, _trilinearly_). For _specular_ probes, we send a similar set of GPU buffers, but instead of interpolating, we just find the closest probe to our world position. If we have a lot of specular probes in the scene, it gets expensive to carry all of them in GPU memory, which is why we only keep several ones that are next to the camera and constantly unload/cull the ones that are far from the camera's current position (in the future it might be worth changing specular probes loading to _bindless_ resources in order to mitigate hardware limits).
 5) The probe system does not support re-loading and updates during the frame, however, it might be extended for such purposes and modern ray-tracing pipelines.
 
-	# Direct Lighting
-		# Standard and Special Materials (+ POM)
-	# Indirect Lighting
-		# Static - Light Probe System
-		# Dynamic - Cascaded Voxel Cone Tracing
+## Illumination - Dynamic Indirect Lighting
+_Dynamic_ indirect lighting uses _Voxel Cone Tracing_ technique as a foundation ("Interactive Indirect Illumination Using Voxel Cone Tracing" by C. Crassin et al). Any ```ER_RenderingObject``` which has ```ER_VoxelizationMaterial``` is going to get voxelized (vertex-geometry-pixel shader pipeline), written to a volume and later cone traced in ```VoxelConeTracingMain.hlsl```. I have written high-level optimizations for the system and added volume _cascades_ around the main camera's position in order to support bigger scenes.
+
+The technique itself is heavy on VRAM and bandwidth and might be improved further by encoding voxel data in octrees instead of 3D textures. In addition, you want to voxelize very low-poly versions of the objects which is why voxelization of the lowest LODs might be a good optimization as well. Last but not least, you can even do GPU culling of voxels that are inside of the volume instead of fully voxelizing the meshes. 
+
+All in all, although the technique is not perfect, it produces very convincing results for diffuse indirect illumination (not so much for specular due to blockiness) in a few milliseconds. In the future, I consider moving to _hardware accelerated ray tracing_ pipeline for higher-end GPUs but I will try to keep the support of the existing systems as long as possible.
+
 # Frame - Terrain
 # Frame - Foliage
 # Frame - Volumetric Fog
