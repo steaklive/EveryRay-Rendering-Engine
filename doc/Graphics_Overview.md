@@ -11,7 +11,7 @@ In _EveryRay_ ```ER_GPUCuller``` is responsible for the process mentioned above:
 
 Potentially, ```ER_GPUCuller``` can be extended for dealing with other data, such as foliage (more in "Foliage" section), lights per screen tile (more in "Direct Lighting"), voxels for cone traced objects (more in "Indirect Lighting"), etc. You can also be creative and combine the GPU culling passes asynchronously with rendering passes (such as shadows), re-use the results of a previous frame and do many other things which will be described here once implemented.
 
-_Note: Although at this point we have only prepared the objects that are visible on screen, their triangles can be not fully visible (i.e. some might be outside the view or be overlapped by the triangles in front). This can also lead to significant wasted performance and, although geometry has never been a bottleneck in _EveryRay_ so far, I still consider implementing a HiZ culling as an update to the system in the future. _
+_Note: Although at this point we have only prepared the objects that are visible on screen, their triangles can be not fully visible (i.e. some might be outside the view or be overlapped by the triangles in front). This can also lead to significant wasted performance and, although geometry has never been a bottleneck in EveryRay so far, I still consider implementing a HiZ culling as an update to the system in the future._
 
 
 
