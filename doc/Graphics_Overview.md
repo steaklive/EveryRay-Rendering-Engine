@@ -100,6 +100,48 @@ The technique itself is heavy on VRAM and bandwidth and might be improved furthe
 All in all, although the technique is not perfect, it produces very convincing results for diffuse indirect illumination (not so much for specular due to blockiness) in a few milliseconds. In the future, I consider moving to _hardware accelerated ray tracing_ pipeline for higher-end GPUs but I will try to keep the support of the existing systems as long as possible.
 
 # Frame - Terrain
+_EveryRay_ supports tiled terrain rendering with 4-channel splat mapping and a GPU tessellation shader pipeline. ```ER_Terrain``` is a system of _EveryRay_ which handles everything for terrain: data loading, rendering, culling, CPU-collision, objects' placement, etc. Some of those functionalities are explained below.
+
+## Terrain - Data
+If you want to have terrain in the scene, you should first create a ```/terrain/``` folder inside your scene folder in ```content/``` and place various textures that you have generated externally (i.e. in "World Machine" or any other terrain-generation tool). Normally, you want a set of height and splat maps (named as ```terrainSplat_xi_yj``` and ```terrainHeight_xi_yj.png```, where ```i```, ```j,``` are the tile indices) together with splat textures that will be loaded on GPU for the displacement of vertices and shading _(you can also load and store raw data on CPU, i.e. from ```.r16``` files)_. Lastly, you must configure the terrain in the scene file like this:
+
+```json
+"terrain_non_tessellated_height_scale" : 200.0,
+"terrain_num_tiles" : 16,
+"terrain_tessellated_height_scale" : 328.0,
+"terrain_texture_splat_layer0" : "splat_terrainGrass2Texture.dds",
+"terrain_texture_splat_layer1" : "splat_terrainGrass3Texture.dds",
+"terrain_texture_splat_layer2" : "splat_terrainRocksTexture.dds",
+"terrain_texture_splat_layer3" : "splat_terrainSandTexture.dds",
+"terrain_tile_resolution" : 512,
+"terrain_tile_scale" : 2.0
+```
+
+## Terrain - Rendering
+Once the data from above is loaded via ```ER_Terrain::LoadTerrainData()```, the rendering can begin. The engine supports both _deferred_ and _forward_ rendering of the terrain with _deferred_ being the default way. In addition, the terrain can be rendered into shadow maps and light probes which will happen in one shader - ```Terrain.hlsl```. It executes a vertex - hull - domain - pixel shader pipeline per visible tile and pass with dynamic tessellation based on the distance from the camera's position. Additionally, it is possible to generate normals from the height map inside that shader _(in theory, we can also approximate ambient occlusion)_.
+
+## Terrain - Objects placement
+It is possible to place an arbitrary array of positions (i.e. from ```ER_RenderingObject```s, ```ER_LightProbe```s or ```ER_Foliage```) on the terrain by doing a point/height/splat collision in a GPU compute-shader (```PlaceObjectsOnTerrain.hlsl```) and reading back the new positions on the CPU (done in ```ER_Terrain::PlaceOnTerrain()```). It is way faster than doing that on the CPU and you can process thousands of objects that way in one go. You can do it both in run time in the editor via ImGui and, if you have specified on-terrain placement in the scene file, it can be done in the first frame of the engine during level load/reload.
+
+For example, for ```ER_RenderingObject```s the scene file can contain the following fields:
+```json
+"terrain_placement" : true,
+"terrain_procedural_instance_count" : 3000,
+"terrain_procedural_instance_scale_max" : 0.60000000000000009,
+"terrain_procedural_instance_scale_min" : 0.40000000000000002,
+"terrain_procedural_instance_yaw_max" : 180.0,
+"terrain_procedural_instance_yaw_min" : -180.0,
+"terrain_procedural_zone_center_pos" : 
+[
+	500.0,
+	0,
+	-500.0
+],
+"terrain_procedural_zone_radius" : 1300,
+"terrain_splat_channel" : 4,
+```
+As you have noticed, it's also possible to do a simple procedural (random) placement of instances in a specified zone with a defined set of parameters (scale and rotations bounds, elevation from terrain, etc.).
+
 # Frame - Foliage
 # Frame - Volumetric Fog
 # Frame - Volumetric Clouds
