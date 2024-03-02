@@ -143,6 +143,64 @@ For example, for ```ER_RenderingObject```s the scene file can contain the follow
 As you have noticed, it's also possible to do a simple procedural (random) placement of instances in a specified zone with a defined set of parameters (scale and rotations bounds, elevation from terrain, etc.).
 
 # Frame - Foliage
+_EveryRay_ renders foliage patches using billboard quad geometry which has been a common method for many years, however, the engine has some extensions that are worth explaining here. Before we go into them, you can study ```ER_FoliageManager``` which is a class that handles everything foliage-related.
+
+## Foliage - Data
+In principle, _EveryRay_ processes collections of so-called _foliage zones_ - 2D volumes of foliage, each with a set of defined properties from the scene file (i.e. size, patches count, textures, type, etc.):
+
+```json
+"foliage_zones" : 
+[
+	{
+		"average_scale" : 3.5,
+		"distribution_radius" : 1300.0,
+		"patch_count" : 300,
+		"placed_on_terrain" : true,
+		"placed_splat_channel" : 0,
+		"position" : 
+		[
+			500,
+			0,
+			-500
+		],
+		"texture_path" : "content\\textures\\foliage\\grass_flower_type1_pink.png",
+		"type" : 3
+	},
+	{
+		"average_scale" : 2.0,
+		"distribution_radius" : 600.0,
+		"patch_count" : 50000,
+		"placed_on_terrain" : true,
+		"placed_splat_channel" : 0,
+		"position" : 
+		[
+			-300,
+			0,
+			-900
+		],
+		"texture_path" : "content\\textures\\foliage\\grass_type6.png",
+		"type" : 2
+	},
+	{
+		...
+	}
+]
+```
+By _type_ we mean how billboard geometry is formed based on the pre-existing setups _(in theory, it is possible to easily extend the system and add your custom types)_:
+```C++
+enum FoliageBillboardType
+{
+	SINGLE = 0,
+	TWO_QUADS_CROSSING = 1,
+	THREE_QUADS_CROSSING = 2,
+	MULTIPLE_QUADS_CROSSING = 3
+};
+```
+## Foliage - Rendering
+After being loaded, the foliage zones are culled on the CPU, the patches in the zone are also CPU-culled based on the distance from the camera _(not yet on the GPU)_ and then are sent to the GPU for rendering: ```Foliage.hlsl``` contains everything needed. The shader supports vertex displacement affected by ```ER_Wind``` system, voxelization for GI (if needed), and uses a simplified _deferred_ shading model _(foliage patches are not rendered into shadows yet, but the global shadow maps are sampled from and being contributed to the foliage shading)_.
+
+Last but not least, it is also possible to place a foliage zone on the terrain and scatter its contents (patches) on it. That is similar to the process which is described in the section "Frame - Terrain".
+
 # Frame - Volumetric Fog
 # Frame - Volumetric Clouds
 # Frame - Post Effects
