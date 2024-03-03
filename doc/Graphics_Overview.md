@@ -214,5 +214,75 @@ Volumetric clouds are a simplification of the technique from _"The Real-time Vol
 In _EveryRay_ ```ER_VolumetricClouds``` is the system that manages the effect and it is attachable to any scene. Most importantly, _EveryRay_ uses compute shaders for the ray marching (```VolumetricCloudsCS.hlsl```) and pixel passes for composite (```VolumetricCloudsComposite.hlsl```) and blur (```VolumetricCloudsBlur.hlsl```). The output resolution, which we upsample and blur to the target resolution with ```UpsampleBlur.hlsl``` compute shader, is scalable and based on the selected _graphics preset_ (refer to "Extra - Graphics config" section of the documentation). The system is also affected by ```ER_Wind``` system of the engine.
 
 # Frame - Post Effects
+_EveryRay_ implements a simple version of a post-processing stack (```ER_PostProcessingStack```) with a few useful effects layered on top of each other. There will be no in-depth explanation of those effects given here except for some minor comments. In the end, an overview of _post effects volumes_ of _EveryRay_ is presented.
+
+## Post Effects - Linear Fog
+```LinearFog.hlsl```: A simple linear distance fog based on the depth from the depth buffer. 
+## Post Effects - Screen Space Subsurface Scattering
+```SSS.hlsl```: An implementation of https://github.com/iryoku/separable-sss with horizontal and vertical blurring. At least one ```ER_RenderingObject``` must have a set ```use_sss``` flag in a scene file, otherwise this pass is skipped.
+## Post Effects - Screen Space Reflections
+```SSR.hlsl```: A simple/naive ray-marched version with no improvements so far...
+## Post Effects - Tonemapping
+```Tonemap.hlsl```: A simple Reinhard-based tonemapper.
+## Post Effects - Color grading
+```ColorGrading.hlsl```: A LUT-based color grading pass (custom LUT can be added per volume/scene).
+## Post Effects - Vignette
+```Vignette.hlsl```
+## Post Effects - Anti-aliasing
+```FXAA.hlsl```: For now, the engine only uses a simple FXAA method; more techniques will be added in the future.
+
+## Post Effects - Volumes
+_EveryRay_ implements a concept of _volumes_ - 3D volumes that are defined per scene and contain a unique set of properties of a post-effects stack that is applied immediately once the main camera hits the volume. For example, a volume can be defined like this:
+
+```json
+"posteffects_volumes" : 
+[
+	{
+		"posteffects_colorgrading_enabled" : false,
+		"posteffects_colorgrading_lut_name" : "content\\shaders\\LUT_1.png",
+		"posteffects_linearfog_color" : 
+		[
+			0.94999999999999996,
+			0.90000000000000002,
+			0.94999999999999996
+		],
+		"posteffects_linearfog_density" : 2000,
+		"posteffects_linearfog_enabled" : true,
+		"posteffects_ssr_enabled" : false,
+		"posteffects_sss_enabled" : false,
+		"posteffects_tonemapping_enabled" : true,
+		"posteffects_vignette_enabled" : false,
+		"posteffects_vignette_radius" : 0.62,
+		"posteffects_vignette_softness" : 0.67000000000000004,
+		"volume_name" : "PP_1",
+		"volume_transform" : 
+		[
+			20.0,
+			0.0,
+			0.0,
+			-50.0,
+			0.0,
+			20.0,
+			0.0,
+			15.0,
+			0.0,
+			0.0,
+			20.0,
+			200.0,
+			0.0,
+			0.0,
+			0.0,
+			1.0
+		]
+	},
+	{
+		...
+	}
+]
+```
+A user can modify the volumes in runtime using gizmos and save the results to the scene file. It is also possible to define some global properties of effects that are applicable outside of volumes. 
+
+_Note: In the future, there are plans to add a priority system for switching between volumes._
+
 # Extra - Graphics config
 # Extra - Texture and model cache
