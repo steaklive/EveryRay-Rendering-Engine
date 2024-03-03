@@ -202,7 +202,17 @@ After being loaded, the foliage zones are culled on the CPU, the patches in the 
 Last but not least, it is also possible to place a foliage zone on the terrain and scatter its contents (patches) on it. That is similar to the process which is described in the section "Frame - Terrain".
 
 # Frame - Volumetric Fog
+Volumetric fog is based on the technique from _"Assassin's Creed 4: Black Flag Road to next-gen graphics"_ publication by B. Wronski, which makes this section rather short without any details about how the technique works. 
+
+In _EveryRay_ ```ER_VolumetricFog``` is the system that manages the effect and it is attachable to any scene. Most importantly, _EveryRay_ uses compute shaders for injection _(with previous frame reprojection)_ and accumulation passes (```VolumetricFogMain.hlsl```) and a pixel shader for the composite pass (```VolumetricFogComposite.hlsl```). The volume resolution is scalable and based on the selected _graphics preset_ (refer to "Extra - Graphics config" section of the documentation).
+
+_Note: In the future, support for non-directional light sources can be added to the system and indirect dispatch functionality coupled with GPU culling can be used to achieve better performance in the injection pass._
+
 # Frame - Volumetric Clouds
+Volumetric clouds are a simplification of the technique from _"The Real-time Volumetric Cloudscapes of Horizon: Zero Dawn"_ publication by A. Schneider, which makes this section rather short without any details about how the technique works. 
+
+In _EveryRay_ ```ER_VolumetricClouds``` is the system that manages the effect and it is attachable to any scene. Most importantly, _EveryRay_ uses compute shaders for the ray marching (```VolumetricCloudsCS.hlsl```) and pixel passes for composite (```VolumetricCloudsComposite.hlsl```) and blur (```VolumetricCloudsBlur.hlsl```). The output resolution, which we upsample and blur to the target resolution with ```UpsampleBlur.hlsl``` compute shader, is scalable and based on the selected _graphics preset_ (refer to "Extra - Graphics config" section of the documentation). The system is also affected by ```ER_Wind``` system of the engine.
+
 # Frame - Post Effects
 # Extra - Graphics config
 # Extra - Texture and model cache
