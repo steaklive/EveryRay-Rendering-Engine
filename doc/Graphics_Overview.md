@@ -5,6 +5,10 @@ _Note: Making any engine is hard and making it close to the current AAA engines 
 
 ![picture](images/graphics_overview_final.jpg)
 
+Passes in RenderDoc:
+
+![picture](images/graphics_overview_passes.jpg)
+
 # Frame - GPU culling
 Our main goal is to render triangles that are formed from the vertices of ```ER_Mesh```es that are part of every ```ER_RenderingObject```. Doing that can be a bottleneck which is why we want to minimize the amount of unnecessary drawcalls in the engine as early as possible. Normally, this is achieved by _culling_ various data in the engine both on CPU and on GPU. Culling is a big topic which is still not ideal in _EveryRay_, however, some significant time has been invested into it.
 
@@ -152,6 +156,12 @@ If you want to have terrain in the scene, you should first create a ```/terrain/
 
 ## Terrain - Rendering
 Once the data from above is loaded via ```ER_Terrain::LoadTerrainData()```, the rendering can begin. The engine supports both _deferred_ and _forward_ rendering of the terrain with _deferred_ being the default way. In addition, the terrain can be rendered into shadow maps and light probes which will happen in one shader - ```Terrain.hlsl```. It executes a vertex - hull - domain - pixel shader pipeline per visible tile and pass with dynamic tessellation based on the distance from the camera's position. Additionally, it is possible to generate normals from the height map inside that shader _(in theory, we can also approximate ambient occlusion)_.
+
+Wireframe:
+![picture](images/graphics_overview_terrain_tessellation.jpg)
+
+Terrain tiles:
+![picture](images/graphics_overview_terrain_tiles.jpg)
 
 ## Terrain - Objects placement
 It is possible to place an arbitrary array of positions (i.e. from ```ER_RenderingObject```s, ```ER_LightProbe```s or ```ER_Foliage```) on the terrain by doing a point/height/splat collision in a GPU compute-shader (```PlaceObjectsOnTerrain.hlsl```) and reading back the new positions on the CPU (done in ```ER_Terrain::PlaceOnTerrain()```). It is way faster than doing that on the CPU and you can process thousands of objects that way in one go. You can do it both in run time in the editor via ImGui and, if you have specified on-terrain placement in the scene file, it can be done in the first frame of the engine during level load/reload.
