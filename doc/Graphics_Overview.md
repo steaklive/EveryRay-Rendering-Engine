@@ -3,12 +3,16 @@ This page gives a high-level overview of the most important graphics systems of 
 
 _Note: Making any engine is hard and making it close to the current AAA engines is even harder. _EveryRay_ has been my multi-year hobby project outside a AAA job, which is why it is far (but not very far:) ) from what you normally see in a frame of modern engines/titles. The industry is always evolving, the implementations of systems are getting more complex and involved, and the optimizations are being performed just on a completely different level in comparison to hobby projects. But you have to start somewhere, right?! This page gives that starting point for those who are interested in AAA graphics and who want to learn how this particular engine attempts to render its frames in a "modern" way. Enjoy!_
 
+![picture](images/graphics_overview_final.jpg)
+
 # Frame - GPU culling
 Our main goal is to render triangles that are formed from the vertices of ```ER_Mesh```es that are part of every ```ER_RenderingObject```. Doing that can be a bottleneck which is why we want to minimize the amount of unnecessary drawcalls in the engine as early as possible. Normally, this is achieved by _culling_ various data in the engine both on CPU and on GPU. Culling is a big topic which is still not ideal in _EveryRay_, however, some significant time has been invested into it.
 
 Firstly, all ```ER_RenderingObject```s are CPU-culled against the camera view: everything outside the view frustum is ignored for the next passes. This works well for singular objects and simple scenes and can even work for instanced objects to some extent: traversing through all instances on CPU, culling (even with multi-threading) and then updating the instanced buffers on GPU with a readback to CPU can get really expensive for big number of instances. And if you add different LODs/meshes/objects, this gets even slower.
 
 What we can do instead and what _EveryRay_ does is processing such objects indirectly on GPU without any CPU overhead. For now, it only works for static objects (so for dynamic prefer the method above) which have huge amount of instances (its not worth doing that for low count). In modern APIs it is possible to prepare instanced data on GPU (in other words, cull the instances in a compute shader) and then pass that info to the rendering passes with indirect draw commands of your API without any readbacks.  _Although its not yet implemented in _EveryRay_, but if your API supports indirect multi-draw command, you can even draw multiple different objects in one call!_
+
+![picture](images/graphics_overview_culling.jpg)
 
 In _EveryRay_ ```ER_GPUCuller``` is responsible for the process mentioned above: the system simply runs a GPU compute pass (```IndirectCulling.hlsl```) for every object where it frustum-culls its instances, prepares their LODs and writes everything in one GPU buffer for future processing in the frame. This already makes the workflow more efficient and modern for some scenarios than simple old-school CPU frustum culling.
 
@@ -28,12 +32,18 @@ Since _EveryRay_ can use _deferred rendering_ (see "Direct Lighting"), we might 
 
 _Note: So far I have not optimized any of the targets above for bandwidth. In theory, it is trivial to pack our data smarter (i.e. not waste unnecessary bits, reduce precision, pack normals into 2 instead of 3 channels, etc.) and perhaps those optimizations will come one day. A separate depth-prepass option is also considered for the future updates._
 
+![picture](images/graphics_overview_gbuffer_albedo.jpg)
+![picture](images/graphics_overview_gbuffer_normals.jpg)
+![picture](images/graphics_overview_gbuffer_depth.jpg)
 
 # Frame - Shadows
 
 _Shadows rendering_ was one of the first systems implemented in _EveryRay_ which is why it has been carrying some legacy code and is far from perfect _(I have refactored parts of it though)_. 
 
 In abstract, similarly to ```ER_GBuffer```, shadows are being handled in ```ER_ShadowMapper``` which finds objects with ```ER_ShadowMaterial``` and renders those into several depth targets, aka "shadow maps" (```ShadpowMap.hlsl```).
+
+One of the cascades:
+![picture](images/graphics_overview_csm.jpg)
 
 For direct light source a classic _cascaded shadow mapping_ approach is used with ```NUM_SHADOW_CASCADES``` (by default equal to 3). For other sources there is nothing implemented yet, however, there is plenty of room for ideas: atlas-based approaches, dual-paraboloid mapping, static shadow mapping, etc.
 
@@ -87,6 +97,9 @@ Our default shading model is _physically based_ (Cook-Torrance, GGX, Schlick fro
 
 The contributions from directional (```ER_DirectionalLight```) and non-directional light sources (```ER_PointLight```) are included in the total lighting, however, no optimizations have been made yet for the non-directional shading. It is a big topic but worth investigating once we want to support hundreds and thousands of light sources in a frame (_tiled deferred_ and _forward+_ techniques can be implemented to remedy that).
 
+Direct-only result:
+![picture](images/graphics_overview_directlighting_only.jpg)
+
 Finally, if we look at _indirect_ lighting (in order to complete our _global illumination_ of the scene), we should first divide it into 2 parts: _static_ and _dynamic_.
 
 ## Illumination - Static Indirect Lighting
@@ -97,12 +110,27 @@ _Static_ indirect lighting uses ```ER_LightProbe```s (for diffuse and specular) 
 4) ```Lighting.hlsi``` also deals with retrieving data from the probes and applying it to the shading of the current pixel during ```DeferredLighting.hlsl``` or ```ForwardLighting.hlsl```. For _diffuse_ probes, we send a set of GPU buffers for probes _sperical harmonics_ coefficients, positions and _cells_ with probe indices (in the case of a 3D grid, a cell is 8 probes with each probe covering the space of a vertex in a uniform 3D volume). Then, during shading, a world-space position that we want to shade finds an appropriate _cell_ with a fast uniform grid approach and finally interpolates the radiance data from the neighbouring probes (in the case of a 3D grid, _trilinearly_). For _specular_ probes, we send a similar set of GPU buffers, but instead of interpolating, we just find the closest probe to our world position. If we have a lot of specular probes in the scene, it gets expensive to carry all of them in GPU memory, which is why we only keep several ones that are next to the camera and constantly unload/cull the ones that are far from the camera's current position (in the future it might be worth changing specular probes loading to _bindless_ resources in order to mitigate hardware limits).
 5) The probe system does not support re-loading and updates during the frame, however, it might be extended for such purposes and modern ray-tracing pipelines.
 
+Probes debug:
+![picture](images/graphics_overview_probes.jpg)
+
+Direct + static indirect result:
+![picture](images/graphics_overview_directlighting.jpg)
+
 ## Illumination - Dynamic Indirect Lighting
 _Dynamic_ indirect lighting uses _Voxel Cone Tracing_ technique as a foundation ("Interactive Indirect Illumination Using Voxel Cone Tracing" by C. Crassin et al). Any ```ER_RenderingObject``` which has ```ER_VoxelizationMaterial``` is going to get voxelized (vertex-geometry-pixel shader pipeline), written to a volume and later cone traced in ```VoxelConeTracingMain.hlsl```. I have written high-level optimizations for the system and added volume _cascades_ around the main camera's position in order to support bigger scenes.
 
 The technique itself is heavy on VRAM and bandwidth and might be improved further by encoding voxel data in octrees instead of 3D textures. In addition, you want to voxelize very low-poly versions of the objects which is why voxelization of the lowest LODs might be a good optimization as well. Last but not least, you can even do GPU culling of voxels that are inside of the volume instead of fully voxelizing the meshes. 
 
 All in all, although the technique is not perfect, it produces very convincing results for diffuse indirect illumination (not so much for specular due to blockiness) in a few milliseconds. In the future, I consider moving to _hardware accelerated ray tracing_ pipeline for higher-end GPUs but I will try to keep the support of the existing systems as long as possible.
+
+Voxelization debug:
+![picture](images/graphics_overview_dynamic_indirect_voxels.jpg)
+
+Dynamic indirect-only result:
+![picture](images/graphics_overview_dynamic_indirect.jpg)
+
+Total lighting (direct + indirect static + indirect dynamic):
+![picture](images/graphics_overview_composite_lighting.jpg)
 
 # Frame - Terrain
 _EveryRay_ supports tiled terrain rendering with 4-channel splat mapping and a GPU tessellation shader pipeline. ```ER_Terrain``` is a system of _EveryRay_ which handles everything for terrain: data loading, rendering, culling, CPU-collision, objects' placement, etc. Some of those functionalities are explained below.
@@ -206,6 +234,9 @@ After being loaded, the foliage zones are culled on the CPU, the patches in the 
 
 Last but not least, it is also possible to place a foliage zone on the terrain and scatter its contents (patches) on it. That is similar to the process which is described in the section "Frame - Terrain".
 
+![picture](images/graphics_overview_no_foliage.jpg)
+![picture](images/graphics_overview_composite_lighting.jpg)
+
 # Frame - Volumetric Fog
 Volumetric fog is based on the technique from _"Assassin's Creed 4: Black Flag Road to next-gen graphics"_ publication by B. Wronski, which makes this section rather short without any details about how the technique works. 
 
@@ -213,13 +244,23 @@ In _EveryRay_ ```ER_VolumetricFog``` is the system that manages the effect and i
 
 _Note: In the future, support for non-directional light sources can be added to the system and indirect dispatch functionality coupled with GPU culling can be used to achieve better performance in the injection pass._
 
+![picture](images/graphics_overview_vol_fog.jpg)
+
 # Frame - Volumetric Clouds
 Volumetric clouds are a simplification of the technique from _"The Real-time Volumetric Cloudscapes of Horizon: Zero Dawn"_ publication by A. Schneider, which makes this section rather short without any details about how the technique works. 
 
 In _EveryRay_ ```ER_VolumetricClouds``` is the system that manages the effect and it is attachable to any scene. Most importantly, _EveryRay_ uses compute shaders for the ray marching (```VolumetricCloudsCS.hlsl```) and pixel passes for composite (```VolumetricCloudsComposite.hlsl```) and blur (```VolumetricCloudsBlur.hlsl```). The output resolution, which we upsample and blur to the target resolution with ```UpsampleBlur.hlsl``` compute shader, is scalable and based on the selected _graphics preset_ (refer to "Extra - Graphics config" section of the documentation). The system is also affected by ```ER_Wind``` system of the engine.
 
+![picture](images/graphics_overview_vol_clouds.jpg)
+
 # Frame - Post Effects
 _EveryRay_ implements a simple version of a post-processing stack (```ER_PostProcessingStack```) with a few useful effects layered on top of each other. There will be no in-depth explanation of those effects given here except for some minor comments. In the end, an overview of _post effects volumes_ of _EveryRay_ is presented.
+
+Before:
+![picture](images/graphics_overview_composite_lighting.jpg)
+
+After:
+![picture](images/graphics_overview_final.jpg)
 
 ## Post Effects - Linear Fog
 ```LinearFog.hlsl```: A simple linear distance fog based on the depth from the depth buffer. 
