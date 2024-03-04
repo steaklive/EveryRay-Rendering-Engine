@@ -5,9 +5,10 @@ _Note: Making any engine is hard and making it close to the current AAA engines 
 
 ![picture](images/graphics_overview_final.jpg)
 
-Passes in RenderDoc:
-
-![picture](images/graphics_overview_passes.jpg)
+Passes _(or their groups to be exact)_ in RenderDoc:
+<p align="center">
+ <img src="images/graphics_overview_passes.jpg"/>
+</p>
 
 # Frame - GPU culling
 Our main goal is to render triangles that are formed from the vertices of ```ER_Mesh```es that are part of every ```ER_RenderingObject```. Doing that can be a bottleneck which is why we want to minimize the amount of unnecessary drawcalls in the engine as early as possible. Normally, this is achieved by _culling_ various data in the engine both on CPU and on GPU. Culling is a big topic which is still not ideal in _EveryRay_, however, some significant time has been invested into it.
@@ -16,7 +17,10 @@ Firstly, all ```ER_RenderingObject```s are CPU-culled against the camera view: e
 
 What we can do instead and what _EveryRay_ does is processing such objects indirectly on GPU without any CPU overhead. For now, it only works for static objects (so for dynamic prefer the method above) which have huge amount of instances (its not worth doing that for low count). In modern APIs it is possible to prepare instanced data on GPU (in other words, cull the instances in a compute shader) and then pass that info to the rendering passes with indirect draw commands of your API without any readbacks.  _Although its not yet implemented in _EveryRay_, but if your API supports indirect multi-draw command, you can even draw multiple different objects in one call!_
 
-![picture](images/graphics_overview_culling.jpg)
+An example of indirect draw call for one of the meshes:
+<p align="center">
+ <img src="images/graphics_overview_culling.jpg"/>
+</p>
 
 In _EveryRay_ ```ER_GPUCuller``` is responsible for the process mentioned above: the system simply runs a GPU compute pass (```IndirectCulling.hlsl```) for every object where it frustum-culls its instances, prepares their LODs and writes everything in one GPU buffer for future processing in the frame. This already makes the workflow more efficient and modern for some scenarios than simple old-school CPU frustum culling.
 
@@ -47,7 +51,10 @@ _Shadows rendering_ was one of the first systems implemented in _EveryRay_ which
 In abstract, similarly to ```ER_GBuffer```, shadows are being handled in ```ER_ShadowMapper``` which finds objects with ```ER_ShadowMaterial``` and renders those into several depth targets, aka "shadow maps" (```ShadpowMap.hlsl```).
 
 One of the cascades:
-![picture](images/graphics_overview_csm.jpg)
+
+<p align="center">
+ <img src="images/graphics_overview_csm.jpg" width="500"/>
+</p>
 
 For direct light source a classic _cascaded shadow mapping_ approach is used with ```NUM_SHADOW_CASCADES``` (by default equal to 3). For other sources there is nothing implemented yet, however, there is plenty of room for ideas: atlas-based approaches, dual-paraboloid mapping, static shadow mapping, etc.
 
@@ -128,10 +135,14 @@ The technique itself is heavy on VRAM and bandwidth and might be improved furthe
 All in all, although the technique is not perfect, it produces very convincing results for diffuse indirect illumination (not so much for specular due to blockiness) in a few milliseconds. In the future, I consider moving to _hardware accelerated ray tracing_ pipeline for higher-end GPUs but I will try to keep the support of the existing systems as long as possible.
 
 Voxelization debug:
-![picture](images/graphics_overview_dynamic_indirect_voxels.jpg)
+<p align="center">
+ <img src="images/graphics_overview_dynamic_indirect_voxels.jpg" width="800"/>
+</p>
 
 Dynamic indirect-only result:
-![picture](images/graphics_overview_dynamic_indirect.jpg)
+<p align="center">
+ <img src="images/graphics_overview_dynamic_indirect.jpg" width="800"/>
+</p>
 
 Total lighting (direct + indirect static + indirect dynamic):
 ![picture](images/graphics_overview_composite_lighting.jpg)
@@ -244,7 +255,10 @@ After being loaded, the foliage zones are culled on the CPU, the patches in the 
 
 Last but not least, it is also possible to place a foliage zone on the terrain and scatter its contents (patches) on it. That is similar to the process which is described in the section "Frame - Terrain".
 
+Without foliage:
 ![picture](images/graphics_overview_no_foliage.jpg)
+
+With foliage:
 ![picture](images/graphics_overview_composite_lighting.jpg)
 
 # Frame - Volumetric Fog
