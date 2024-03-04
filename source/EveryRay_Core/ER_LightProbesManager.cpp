@@ -600,8 +600,6 @@ namespace EveryRay_Core
 
 	void ER_LightProbesManager::ComputeOrLoadGlobalProbes(ER_Core& game, ProbesRenderingObjectsInfo& aObjects)
 	{
-		assert(skybox);
-
 		// DIFFUSE_PROBE
 		{
 			if (mGlobalDiffuseProbeReady)
