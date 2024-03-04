@@ -285,4 +285,24 @@ A user can modify the volumes in runtime using gizmos and save the results to th
 _Note: In the future, there are plans to add a priority system for switching between volumes._
 
 # Extra - Graphics config
-# Extra - Texture and model cache
+_EveryRay_ supports different graphics options that the user can choose from. This allows the engine to run on different hardware with decent framerates. In general, it is always a good idea to keep the systems in the engine scalable and improve/reduce their quality based on some presets, similar to video games' PC settings.
+
+_EveryRay_ only has a basic set of presets ("Very Low", "Low", "Medium", "High", "Ultra high") that affect a limited number of systems in one or another way. Presets are located in ```graphics_config.json``` file _(a user can add their own)_ and the default one is loaded upon the start of the engine when the graphics systems are being created.
+
+```json
+{
+	"preset_name" : "high",
+	"resolution_width" : 1920,
+	"resolution_height" : 1080,
+	"texture_quality" : 2, // resolutions for ER_RenderingObject(s)
+	"foliage_quality" : 3, // density/amount of patches
+	"shadow_quality" : 2, // CSM resolution
+	"aa_quality" : 1,
+	"sss_quality" : 1,
+	"gi_quality" : 2, // voxel cone tracing volumes resolutions
+	"volumetric_fog_quality" : 2, // volume resolution
+	"volumetric_clouds_quality" : 3 // output resolution
+},
+```
+
+_Note: As of v1.0, I have personally tested the engine on the "Very Low" preset which allowed the engine to run on one of my test machines with GTX 850m (2GB), i5-4200m at 720p in ~30FPS._
