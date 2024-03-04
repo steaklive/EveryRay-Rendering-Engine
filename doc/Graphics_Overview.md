@@ -12,7 +12,7 @@ What we can do instead and what _EveryRay_ does is processing such objects indir
 
 In _EveryRay_ ```ER_GPUCuller``` is responsible for the process mentioned above: the system simply runs a GPU compute pass (```IndirectCulling.hlsl```) for every object where it frustum-culls its instances, prepares their LODs and writes everything in one GPU buffer for future processing in the frame. This already makes the workflow more efficient and modern for some scenarios than simple old-school CPU frustum culling.
 
-Potentially, ```ER_GPUCuller``` can be extended for dealing with other data, such as foliage (more in "Foliage" section), lights per screen tile (more in "Direct Lighting"), voxels for cone traced objects (more in "Indirect Lighting"), etc. You can also be creative and combine the GPU culling passes asynchronously with rendering passes (such as shadows), re-use the results of a previous frame and do many other things which will be described here once implemented.
+Potentially, ```ER_GPUCuller``` can be extended for dealing with other data, such as foliage, lights per screen tile, voxels, etc. You can also be creative and combine the GPU culling passes asynchronously with rendering passes (such as shadows), re-use the results of a previous frame and do many other things which will be described here once implemented.
 
 _Note: Although at this point we have only prepared the objects that are visible on screen, their triangles can be not fully visible (i.e. some might be outside the view or be overlapped by the triangles in front). This can also lead to significant wasted performance and, although geometry has never been a bottleneck in EveryRay so far, I still consider implementing a HiZ culling as an update to the system in the future._
 
@@ -26,7 +26,7 @@ Since _EveryRay_ can use _deferred rendering_ (see "Direct Lighting"), we might 
 - Extra target #1 (roughness, metalness, height, etc.)
 - Extra target #2 ("RenderingObjectFlags" bitmasks)
 
-So far I have not optimized any of the targets above for bandwidth. In theory, it is trivial to pack our data smarter (i.e. not waste unnecessary bits, reduce precision, pack normals into 2 instead of 3 channels, etc.) and perhaps those optimizations will come one day. _Note: a separate depth-prepass option is considered for future updates._
+_Note: So far I have not optimized any of the targets above for bandwidth. In theory, it is trivial to pack our data smarter (i.e. not waste unnecessary bits, reduce precision, pack normals into 2 instead of 3 channels, etc.) and perhaps those optimizations will come one day. A separate depth-prepass option is also considered for the future updates._
 
 
 # Frame - Shadows
@@ -41,15 +41,17 @@ For direct light source a classic _cascaded shadow mapping_ approach is used wit
 
 # Frame - Illumination
 
-Illumination is a complex subject that requires a certain level of creativity and compromise in real-time graphics. This section focuses on how we currently shade our pixels in _EveryRay_. To start with, let's divide our illumination into two big parts: _direct_ and _indirect_. On a high level, ```ER_Illumination``` aims to take care of both with the help of some additional systems described below. 
+Illumination is a complex subject that requires a certain level of creativity and compromise in real-time graphics. This section focuses on how we currently shade our pixels in _EveryRay_. 
+
+To start with, let's divide our illumination into two big parts: _direct_ and _indirect_. On a high level, ```ER_Illumination``` aims to take care of both with the help of some additional systems described below. 
 
 ## Illumination - Direct Lighting
 If we look at _direct_ lighting, there are a few key points to talk about.
 
-Firstly, the engine uses both _deferred_ (```DeferredLighting.hlsl```) and _forward_ (```ForwardLighting.hlsl```) rendering paths which mostly share the same code from ```Lighting.hlsli```. Deferred rendering is done first and is used if the object has ```ER_GBufferMaterial``` assigned to it. Forward rendering is done after deferred and is used if ```ER_RenderingObject``` has one of the _standard_ materials assigned to it. Let's briefly talk about _materials_ in the engine. 
+Firstly, the engine uses both _deferred_ (```DeferredLighting.hlsl```) and _forward_ (```ForwardLighting.hlsl```) rendering paths which mostly share the same code from ```Lighting.hlsli```. Deferred rendering is done first and is used by default if the object has ```ER_GBufferMaterial``` assigned to it. Forward rendering is done after deferred and is used if ```ER_RenderingObject``` has one of the _standard_ materials assigned to it or has a set ```use_forward_shading``` flag in the scene file. Let's briefly talk about _materials_ in the engine. 
 
 ### Illumination - Direct Lighting - Materials
-We can specify materials in a scene file for every ```ER_RenderingObject``` in a following way:
+We can specify materials in a scene file for every ```ER_RenderingObject``` in the following way:
 
 ```json			
 "new_materials" : 
@@ -290,7 +292,7 @@ _Note: In the future, there are plans to add a priority system for switching bet
 # Extra - Graphics config
 _EveryRay_ supports different graphics options that the user can choose from. This allows the engine to run on different hardware with decent framerates. In general, it is always a good idea to keep the systems in the engine scalable and improve/reduce their quality based on some presets, similar to video games' PC settings.
 
-_EveryRay_ only has a basic set of presets ("Very Low", "Low", "Medium", "High", "Ultra high") that affect a limited number of systems in one or another way. Presets are located in ```graphics_config.json``` file _(a user can add their own)_ and the default one is loaded upon the start of the engine when the graphics systems are being created.
+_EveryRay_ only has a basic set of presets ("Very Low", "Low", "Medium", "High", "Ultra high") that affect a limited number of systems in one or another way. Presets are located in ```graphics_config.json``` file _(a user can add their own preset inside)_ and the default one is loaded upon the start of the engine when the graphics systems are being created.
 
 ```json
 {
@@ -308,4 +310,4 @@ _EveryRay_ only has a basic set of presets ("Very Low", "Low", "Medium", "High",
 },
 ```
 
-_Note: As of v1.0, I have personally tested the engine on the "Very Low" preset which allowed the engine to run on one of my test machines with GTX 850m (2GB), i5-4200m at 720p in ~30FPS._
+_Note: As of v1.0, I have personally tested the engine on the "Very Low" preset which allowed the engine to run on one of my weakest test machines with GTX 850m (2GB), i5-4200m at 720p in ~30FPS._
