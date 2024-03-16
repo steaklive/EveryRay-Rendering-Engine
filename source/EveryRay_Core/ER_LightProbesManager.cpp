@@ -241,33 +241,25 @@ namespace EveryRay_Core
 
 		// all probes positions GPU buffer
 		{
-			XMFLOAT4* diffuseProbesPositionsCPUBuffer = new XMFLOAT4[mDiffuseProbesCountTotal];
+			assert(!mDiffuseProbesPositionsTempCPUBuffer);
+
+			mDiffuseProbesPositionsTempCPUBuffer = new XMFLOAT4[mDiffuseProbesCountTotal];
 			for (int probeIndex = 0; probeIndex < mDiffuseProbesCountTotal; probeIndex++)
-				diffuseProbesPositionsCPUBuffer[probeIndex] = XMFLOAT4(mDiffuseProbes[probeIndex].GetPosition().x, mDiffuseProbes[probeIndex].GetPosition().y, mDiffuseProbes[probeIndex].GetPosition().z, 1.0);
+				mDiffuseProbesPositionsTempCPUBuffer[probeIndex] = XMFLOAT4(mDiffuseProbes[probeIndex].GetPosition().x, mDiffuseProbes[probeIndex].GetPosition().y, mDiffuseProbes[probeIndex].GetPosition().z, 1.0);
 
 			mDiffuseProbesPositionsGPUBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: diffuse probes positions buffer");
-			mDiffuseProbesPositionsGPUBuffer->CreateGPUBufferResource(rhi, diffuseProbesPositionsCPUBuffer, mDiffuseProbesCountTotal, sizeof(XMFLOAT4), mIsPlacedOnTerrain, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
+			mDiffuseProbesPositionsGPUBuffer->CreateGPUBufferResource(rhi, mDiffuseProbesPositionsTempCPUBuffer, mDiffuseProbesCountTotal, sizeof(XMFLOAT4), mIsPlacedOnTerrain, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 
 			if (mIsPlacedOnTerrain)
 			{
 				mDiffuseInputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: On-terrain placement input positions buffer (diffuse probes)");
-				mDiffuseInputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, diffuseProbesPositionsCPUBuffer, mDiffuseProbesCountTotal, sizeof(XMFLOAT4), false , ER_BIND_UNORDERED_ACCESS, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
+				mDiffuseInputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, mDiffuseProbesPositionsTempCPUBuffer, mDiffuseProbesCountTotal, sizeof(XMFLOAT4), false , ER_BIND_UNORDERED_ACCESS, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 
 				mDiffuseOutputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: On-terrain placement output positions buffer (diffuse probes)");
-				mDiffuseOutputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, diffuseProbesPositionsCPUBuffer, mDiffuseProbesCountTotal, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L /*legacy from DX11*/, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
+				mDiffuseOutputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, mDiffuseProbesPositionsTempCPUBuffer, mDiffuseProbesCountTotal, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L /*legacy from DX11*/, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
 
-				PlaceProbesOnTerrain(core, mDiffuseOutputPositionsOnTerrainBuffer, mDiffuseInputPositionsOnTerrainBuffer, diffuseProbesPositionsCPUBuffer, mDiffuseProbesCountTotal, mTerrainPlacementHeightDeltaDiffuseProbes);
-
-				rhi->UpdateBuffer(mDiffuseProbesPositionsGPUBuffer, (void*)diffuseProbesPositionsCPUBuffer, mDiffuseProbesCountTotal * sizeof(XMFLOAT4));
-
-				for (int i = 0; i < mDiffuseProbesCountTotal; i++)
-					mDiffuseProbes[i].SetPosition(XMFLOAT3(diffuseProbesPositionsCPUBuffer[i].x, diffuseProbesPositionsCPUBuffer[i].y, diffuseProbesPositionsCPUBuffer[i].z));
-
-				DeleteObject(mDiffuseInputPositionsOnTerrainBuffer);
-				DeleteObject(mDiffuseOutputPositionsOnTerrainBuffer);
+				PlaceProbesOnTerrain(core, DIFFUSE_PROBE, mDiffuseOutputPositionsOnTerrainBuffer, mDiffuseInputPositionsOnTerrainBuffer, mDiffuseProbesPositionsTempCPUBuffer, mDiffuseProbesCountTotal, mTerrainPlacementHeightDeltaDiffuseProbes);
 			}
-
-			DeleteObjects(diffuseProbesPositionsCPUBuffer);
 		}
 
 		// probe cell's indices GPU buffer, tex. array indices GPU/CPU buffers
@@ -396,33 +388,24 @@ namespace EveryRay_Core
 
 		// all probes positions GPU buffer
 		{
-			XMFLOAT4* specularProbesPositionsCPUBuffer = new XMFLOAT4[mSpecularProbesCountTotal];
+			assert(!mSpecularProbesPositionsTempCPUBuffer);
+			mSpecularProbesPositionsTempCPUBuffer = new XMFLOAT4[mSpecularProbesCountTotal];
 		
 			for (int probeIndex = 0; probeIndex < mSpecularProbesCountTotal; probeIndex++)
-				specularProbesPositionsCPUBuffer[probeIndex] = XMFLOAT4(mSpecularProbes[probeIndex].GetPosition().x,mSpecularProbes[probeIndex].GetPosition().y,mSpecularProbes[probeIndex].GetPosition().z, 1.0);
+				mSpecularProbesPositionsTempCPUBuffer[probeIndex] = XMFLOAT4(mSpecularProbes[probeIndex].GetPosition().x,mSpecularProbes[probeIndex].GetPosition().y,mSpecularProbes[probeIndex].GetPosition().z, 1.0);
 			mSpecularProbesPositionsGPUBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: specular probes positions buffer");
-			mSpecularProbesPositionsGPUBuffer->CreateGPUBufferResource(rhi, specularProbesPositionsCPUBuffer, mSpecularProbesCountTotal, sizeof(XMFLOAT4), mIsPlacedOnTerrain, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
+			mSpecularProbesPositionsGPUBuffer->CreateGPUBufferResource(rhi, mSpecularProbesPositionsTempCPUBuffer, mSpecularProbesCountTotal, sizeof(XMFLOAT4), mIsPlacedOnTerrain, ER_BIND_SHADER_RESOURCE, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 			
 			if (mIsPlacedOnTerrain)
 			{
 				mSpecularInputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: On-terrain placement input positions buffer (specular probes)");
-				mSpecularInputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, specularProbesPositionsCPUBuffer, mSpecularProbesCountTotal, sizeof(XMFLOAT4), false, ER_BIND_UNORDERED_ACCESS, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
+				mSpecularInputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, mSpecularProbesPositionsTempCPUBuffer, mSpecularProbesCountTotal, sizeof(XMFLOAT4), false, ER_BIND_UNORDERED_ACCESS, 0, ER_RESOURCE_MISC_BUFFER_STRUCTURED);
 
 				mSpecularOutputPositionsOnTerrainBuffer = rhi->CreateGPUBuffer("ER_RHI_GPUBuffer: On-terrain placement output positions buffer (specular probes)");
-				mSpecularOutputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, specularProbesPositionsCPUBuffer, mSpecularProbesCountTotal, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L /*legacy from DX11*/, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
+				mSpecularOutputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, mSpecularProbesPositionsTempCPUBuffer, mSpecularProbesCountTotal, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L /*legacy from DX11*/, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
 
-				PlaceProbesOnTerrain(game, mSpecularOutputPositionsOnTerrainBuffer, mSpecularInputPositionsOnTerrainBuffer, specularProbesPositionsCPUBuffer, mSpecularProbesCountTotal, mTerrainPlacementHeightDeltaSpecularProbes);
-
-				rhi->UpdateBuffer(mSpecularProbesPositionsGPUBuffer, (void*)specularProbesPositionsCPUBuffer, mSpecularProbesCountTotal * sizeof(XMFLOAT4));
-
-				for (int i = 0; i < mSpecularProbesCountTotal; i++)
-					mSpecularProbes[i].SetPosition(XMFLOAT3(specularProbesPositionsCPUBuffer[i].x, specularProbesPositionsCPUBuffer[i].y, specularProbesPositionsCPUBuffer[i].z));
-
-				DeleteObject(mSpecularInputPositionsOnTerrainBuffer);
-				DeleteObject(mSpecularOutputPositionsOnTerrainBuffer);
+				PlaceProbesOnTerrain(game, SPECULAR_PROBE, mSpecularOutputPositionsOnTerrainBuffer, mSpecularInputPositionsOnTerrainBuffer, mSpecularProbesPositionsTempCPUBuffer, mSpecularProbesCountTotal, mTerrainPlacementHeightDeltaSpecularProbes);
 			}
-
-			DeleteObjects(specularProbesPositionsCPUBuffer);
 		}
 
 		// probe cell's indices GPU buffer, tex. array indices GPU/CPU buffers
@@ -834,6 +817,12 @@ namespace EveryRay_Core
 				oldInstancedData[i].World._44 = isCulled ? 1.0f : 0.0f;
 				//writing cubemap index to [0][0] of world instanced matrix (since we don't need scale)
 				oldInstancedData[i].World._11 = -1.0f;
+				//updating position
+				const XMFLOAT3& pos = probes[i].GetPosition();
+				oldInstancedData[i].World._41 = pos.x;
+				oldInstancedData[i].World._42 = pos.y;
+				oldInstancedData[i].World._43 = pos.z;
+
 				if (!isCulled)
 				{
 					if (aType == DIFFUSE_PROBE)
@@ -885,6 +874,12 @@ namespace EveryRay_Core
 
 	void ER_LightProbesManager::UpdateProbes(ER_Core& game)
 	{
+		// delete temp CPU buffers in the first frame (we should have the positions in probes already)
+		if (mDiffuseProbesPositionsTempCPUBuffer)
+			DeleteObjects(mDiffuseProbesPositionsTempCPUBuffer);
+		if (mSpecularProbesPositionsTempCPUBuffer)
+			DeleteObjects(mSpecularProbesPositionsTempCPUBuffer);
+
 		//int difProbeCellIndexCamera = GetCellIndex(mMainCamera.Position(), DIFFUSE_PROBE);
 		if (mDistanceBetweenSpecularProbes > 0)
 			assert(mMaxSpecularProbesInVolumeCount > 0);
@@ -893,7 +888,7 @@ namespace EveryRay_Core
 		UpdateProbesByType(game, SPECULAR_PROBE);
 	}
 
-	void ER_LightProbesManager::PlaceProbesOnTerrain(ER_Core& game, ER_RHI_GPUBuffer* outputBuffer, ER_RHI_GPUBuffer* inputBuffer, XMFLOAT4* positions, int positionsCount, float customDampDelta /*= FLT_MAX*/)
+	void ER_LightProbesManager::PlaceProbesOnTerrain(ER_Core& game, ER_ProbeType aType, ER_RHI_GPUBuffer* outputBuffer, ER_RHI_GPUBuffer* inputBuffer, XMFLOAT4* positions, int positionsCount, float customDampDelta /*= FLT_MAX*/)
 	{
 		assert(mIsPlacedOnTerrain);
 		
@@ -902,5 +897,35 @@ namespace EveryRay_Core
 			throw ER_CoreException("You want to place light probes on terrain but terrain is not found in the scene!");
 
 		terrain->PlaceOnTerrain(outputBuffer, inputBuffer, positions, positionsCount, TerrainSplatChannels::NONE, nullptr, 0, customDampDelta);
+
+		ER_RHI_GPUBuffer* finalGPUBuffer = (aType == DIFFUSE_PROBE) ? mDiffuseProbesPositionsGPUBuffer : mSpecularProbesPositionsGPUBuffer;
+
+#ifndef ER_PLATFORM_WIN64_DX11
+		const std::string probeTypeName = (aType == DIFFUSE_PROBE) ? "diffuse" : "specular";
+		const std::string eventName = "On-terrain placement callback - placement of probes: " + probeTypeName;
+		terrain->ReadbackPlacedPositionsOnInitEvent->AddListener(eventName, 
+			[&, aType, finalGPUBuffer, outputBuffer, inputBuffer, positions, positionsCount, rhi = game.GetRHI(), sandbox = game.GetLevel()](ER_Terrain* aTerrain)
+			{
+				assert(aTerrain);
+				aTerrain->ReadbackPlacedPositions(outputBuffer, inputBuffer, positions, positionsCount);
+
+				rhi->UpdateBuffer(finalGPUBuffer, (void*)positions, positionsCount * sizeof(XMFLOAT4), true);
+
+				if (aType == DIFFUSE_PROBE)
+					for (int i = 0; i < positionsCount; i++)
+						sandbox->mLightProbesManager->SetDiffuseProbePosition(i, XMFLOAT3(positions[i].x, positions[i].y, positions[i].z));
+				else
+					for (int i = 0; i < positionsCount; i++)
+						sandbox->mLightProbesManager->SetSpecularProbePosition(i, XMFLOAT3(positions[i].x, positions[i].y, positions[i].z));
+			}
+		);
+#else
+		std::vector<ER_LightProbe>& probes = (aType == DIFFUSE_PROBE) ? mDiffuseProbes : mSpecularProbes;
+
+		game.GetRHI()->UpdateBuffer(finalGPUBuffer, (void*)positions, positionsCount * sizeof(XMFLOAT4));
+
+		for (int i = 0; i < positionsCount; i++)
+			probes[i].SetPosition(XMFLOAT3(positions[i].x, positions[i].y, positions[i].z));
+#endif
 	}
 }

@@ -420,12 +420,14 @@ namespace EveryRay_Core
 
 	void ER_RHI_DX12::BeginEventTag(const std::string& aName, bool isComputeQueue)
 	{
-		PIXBeginEvent(isComputeQueue ? mCommandListCompute[mCurrentComputeCommandListIndex].Get() : mCommandListGraphics[mCurrentGraphicsCommandListIndex].Get(), 0, aName.c_str());
+		if (mCurrentGraphicsCommandListIndex >= 0 || mCurrentComputeCommandListIndex >= 0)
+			PIXBeginEvent(isComputeQueue ? mCommandListCompute[mCurrentComputeCommandListIndex].Get() : mCommandListGraphics[mCurrentGraphicsCommandListIndex].Get(), 0, aName.c_str());
 	}
 
 	void ER_RHI_DX12::EndEventTag(bool isComputeQueue)
 	{
-		PIXEndEvent(isComputeQueue ? mCommandListCompute[mCurrentComputeCommandListIndex].Get() : mCommandListGraphics[mCurrentGraphicsCommandListIndex].Get());
+		if (mCurrentGraphicsCommandListIndex >= 0 || mCurrentComputeCommandListIndex >= 0)
+			PIXEndEvent(isComputeQueue ? mCommandListCompute[mCurrentComputeCommandListIndex].Get() : mCommandListGraphics[mCurrentGraphicsCommandListIndex].Get());
 	}
 
 	void ER_RHI_DX12::BeginGraphicsCommandList(int index)

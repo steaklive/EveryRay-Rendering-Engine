@@ -19,9 +19,13 @@
 cbuffer CBufferTerrain : register(b0)
 {
     float HeightScale;
-    float SplatChannel;
     float TerrainTileCount;
-    float PlacementHeightDelta;
+}
+
+cbuffer CBufferTerrainProps : register(b1)
+{
+    uint SplatChannel;
+    uint PlacementHeightDelta;
 }
 
 struct TerrainTileData
@@ -237,7 +241,7 @@ float FindHeightFromHeightmap(float x, float z, int tileIndex)
     return height * HeightScale;
 }
 
-bool IsOnSplatMap(float x, float z, int tileIndex, float channel)
+bool IsOnSplatMap(float x, float z, int tileIndex, uint channel)
 {
     float2 uv = GetTextureCoordinates(x, z, tileIndex);
     uv.y = 1.0f - uv.y;
@@ -245,13 +249,13 @@ bool IsOnSplatMap(float x, float z, int tileIndex, float channel)
     float percentage = 0.2f;
     
     float4 value = TerrainTilesSplatTextures.SampleLevel(LinearSampler, float3(uv, tileIndex), 0);
-    if (channel == 0.0f && value.r > percentage)
+    if (channel == 0 && value.r > percentage)
         return true;
-    else if (channel == 1.0f && value.g > percentage)
+    else if (channel == 1u && value.g > percentage)
         return true;
-    else if (channel == 2.0f && value.b > percentage)
+    else if (channel == 2u && value.b > percentage)
         return true;
-    else if (channel == 3.0f && value.a > percentage)
+    else if (channel == 3u && value.a > percentage)
         return true;
     else
         return false;
@@ -275,11 +279,11 @@ void CSMain(uint3 threadID : SV_DispatchThreadID, uint groupIndex : SV_GroupInde
     
     if (tileIndex >= 0)
     {
-        if (SplatChannel == -1.0f || IsOnSplatMap(x, z, tileIndex, SplatChannel))
+        if (SplatChannel == 255 || IsOnSplatMap(x, z, tileIndex, SplatChannel))
 #if USE_RAYCASTING
         InputOutputPositions[threadID.x].y = FindHeightFromPosition(vertexCount, x, z);
 #else
-            InputOutputPositions[threadID.x].y = FindHeightFromHeightmap(x, z, tileIndex) - PlacementHeightDelta;
+            InputOutputPositions[threadID.x].y = FindHeightFromHeightmap(x, z, tileIndex) - asfloat(PlacementHeightDelta);
 #endif
         else
             InputOutputPositions[threadID.x].y = -999.0f; //culled

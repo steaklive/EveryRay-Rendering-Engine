@@ -23,6 +23,7 @@
 #define PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0
 #define PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX 1
 #define PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX 2
+#define PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_ROOT_CONSTANT_INDEX 3
 
 //used for gbuffer, shadows, forward
 #define TERRAIN_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX 0 
@@ -87,7 +88,7 @@ namespace EveryRay_Core
 				mTerrainCommonPassRS->Finalize(rhi, "ER_RHI_GPURootSignature: Terrain Common Pass", true);
 			}
 
-			mTerrainPlacementPassRS = rhi->CreateRootSignature(3, 2);
+			mTerrainPlacementPassRS = rhi->CreateRootSignature(4, 2);
 			if (mTerrainPlacementPassRS)
 			{
 				mTerrainPlacementPassRS->InitStaticSampler(rhi, 0, ER_RHI_SAMPLER_STATE::ER_BILINEAR_CLAMP);
@@ -95,11 +96,14 @@ namespace EveryRay_Core
 				mTerrainPlacementPassRS->InitDescriptorTable(rhi, PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_SRV }, { 0 }, { 3 });
 				mTerrainPlacementPassRS->InitDescriptorTable(rhi, PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_UAV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 });
 				mTerrainPlacementPassRS->InitDescriptorTable(rhi, PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_CBV }, { 0 }, { 1 });
+				mTerrainPlacementPassRS->InitConstant(rhi, PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_ROOT_CONSTANT_INDEX, 1 /*we already use 1 slots for CBVs*/, 2 /* only 2 constants*/, ER_RHI_SHADER_VISIBILITY_ALL);
+
 				mTerrainPlacementPassRS->Finalize(rhi, "ER_RHI_GPURootSignature: Terrain Placement Pass");
 			}
 		}
 		mTerrainConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Terrain CB");
-		mPlaceOnTerrainConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Place On Terrain CB");
+		mPlaceOnTerrainGlobalConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Place On Terrain Global CB");
+		mPlaceOnTerrainPropConstantBuffer.Initialize(rhi, "ER_RHI_GPUBuffer: Place On Terrain Prop CB");
 		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 			mTerrainShadowBuffers[i].Initialize(rhi, "ER_RHI_GPUBuffer: Terrain Shadow CB #" + std::to_string(i));
 	}
@@ -127,7 +131,8 @@ namespace EveryRay_Core
 		DeleteObject(mTerrainPlacementPassRS);
 
 		mTerrainConstantBuffer.Release();
-		mPlaceOnTerrainConstantBuffer.Release();
+		mPlaceOnTerrainGlobalConstantBuffer.Release();
+		mPlaceOnTerrainPropConstantBuffer.Release();
 		for (int i = 0; i < NUM_SHADOW_CASCADES; i++)
 			mTerrainShadowBuffers[i].Release();
 
@@ -1050,7 +1055,7 @@ namespace EveryRay_Core
 	// - placing ER_Foliage patches on terrain (batch placement)
 	// - placing ER_LightProbe(s) on terrain
 	void ER_Terrain::PlaceOnTerrain(ER_RHI_GPUBuffer* outputBuffer, ER_RHI_GPUBuffer* inputBuffer, XMFLOAT4* positions, int positionsCount,
-		TerrainSplatChannels splatChannel, XMFLOAT4* terrainVertices, int terrainVertexCount, float customDampDelta, bool needsCPUReadback)
+		TerrainSplatChannels splatCh, XMFLOAT4* terrainVertices, int terrainVertexCount, float customDampDelta, bool needsCPUReadback)
 	{
 		assert(inputBuffer);
 		if (needsCPUReadback)
@@ -1076,13 +1081,33 @@ namespace EveryRay_Core
 			rhi->FinalizePSO(mTerrainPlacementPassPSOName, true);
 		}
 		rhi->SetPSO(mTerrainPlacementPassPSOName, true);
-		mPlaceOnTerrainConstantBuffer.Data.HeightScale = mTerrainTessellatedHeightScale;
-		mPlaceOnTerrainConstantBuffer.Data.SplatChannel = splatChannel == TerrainSplatChannels::NONE ? -1.0f : static_cast<float>(splatChannel);
-		mPlaceOnTerrainConstantBuffer.Data.TerrainTileCount = static_cast<int>(mNumTiles);
-		mPlaceOnTerrainConstantBuffer.Data.PlacementHeightDelta = abs(customDampDelta - FLT_MAX) < std::numeric_limits<float>::epsilon() ? mPlacementHeightDelta : customDampDelta;
-		mPlaceOnTerrainConstantBuffer.ApplyChanges(rhi);
-		rhi->SetConstantBuffers(ER_COMPUTE, { mPlaceOnTerrainConstantBuffer.Buffer() }, 0,
-			mTerrainPlacementPassRS, PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
+
+		mPlaceOnTerrainGlobalConstantBuffer.Data.HeightScale = mTerrainTessellatedHeightScale;
+		mPlaceOnTerrainGlobalConstantBuffer.Data.TerrainTileCount = static_cast<int>(mNumTiles);
+		mPlaceOnTerrainGlobalConstantBuffer.ApplyChanges(rhi);
+
+		UINT splatChannel = (splatCh == TerrainSplatChannels::NONE) ? 255 : static_cast<UINT>(splatCh);
+		UINT placementHeightDelta;
+		float placementHeightDeltaF = abs(customDampDelta - FLT_MAX) < std::numeric_limits<float>::epsilon() ? mPlacementHeightDelta : customDampDelta;
+		memcpy(&placementHeightDelta, &placementHeightDeltaF, sizeof(float));
+
+		if (rhi->IsRootConstantSupported())
+		{
+			rhi->SetConstantBuffers(ER_COMPUTE, { mPlaceOnTerrainGlobalConstantBuffer.Buffer() }, 0,
+				mTerrainPlacementPassRS, PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
+			rhi->SetRootConstant(splatChannel, PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_ROOT_CONSTANT_INDEX, 0, true);
+			rhi->SetRootConstant(placementHeightDelta, PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_ROOT_CONSTANT_INDEX, 1, true);
+		}
+		else
+		{
+			mPlaceOnTerrainPropConstantBuffer.Data.SplatChannel = splatChannel;
+			mPlaceOnTerrainPropConstantBuffer.Data.PlacementHeightDelta = placementHeightDelta;
+			mPlaceOnTerrainPropConstantBuffer.ApplyChanges(rhi);
+
+			rhi->SetConstantBuffers(ER_COMPUTE, { mPlaceOnTerrainGlobalConstantBuffer.Buffer(), mPlaceOnTerrainPropConstantBuffer.Buffer() }, 0,
+				mTerrainPlacementPassRS, PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX, true);
+		}
+
 		rhi->SetShaderResources(ER_COMPUTE, { mTerrainTilesDataGPU, mTerrainTilesHeightmapsArrayTexture, mTerrainTilesSplatmapsArrayTexture }, 0,
 			mTerrainPlacementPassRS, PLACEMENT_PASS_ROOT_DESCRIPTOR_TABLE_SRV_INDEX, true);
 		rhi->SetUnorderedAccessResources(ER_COMPUTE, { inputBuffer }, 0,

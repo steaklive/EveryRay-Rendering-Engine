@@ -73,12 +73,15 @@ namespace EveryRay_Core
 			float TileSize;
 		};
 
-		struct ER_ALIGN_GPU_BUFFER PlaceOnTerrainData
+		struct ER_ALIGN_GPU_BUFFER PlaceOnTerrainGlobalData
 		{
 			float HeightScale;
-			float SplatChannel;
 			float TerrainTileCount;
-			float PlacementHeightDelta;
+		};
+		struct ER_ALIGN_GPU_BUFFER PlaceOnTerrainPropData
+		{
+			UINT SplatChannel;
+			UINT PlacementHeightDelta;
 		};
 	}
 
@@ -157,7 +160,7 @@ namespace EveryRay_Core
 		void SetTerrainHeightScale(float scale) { mTerrainTessellatedHeightScale = scale; }
 		HeightMap* GetHeightmap(int index) { return mHeightMaps.at(index); }
 		void PlaceOnTerrain(ER_RHI_GPUBuffer* outputBuffer, ER_RHI_GPUBuffer* inputBuffer, XMFLOAT4* positions, int positionsCount,
-			TerrainSplatChannels splatChannel = TerrainSplatChannels::NONE,	XMFLOAT4* terrainVertices = nullptr, int terrainVertexCount = 0, float customDampDelta = FLT_MAX, bool needsCPUReadback = true);
+			TerrainSplatChannels splatCh = TerrainSplatChannels::NONE,	XMFLOAT4* terrainVertices = nullptr, int terrainVertexCount = 0, float customDampDelta = FLT_MAX, bool needsCPUReadback = true);
 		void ReadbackPlacedPositions(ER_RHI_GPUBuffer* outputBuffer, ER_RHI_GPUBuffer* inputBuffer, XMFLOAT4* positions, int positionsCount);
 		//float GetHeightScale(bool tessellated) { if (tessellated) return mTerrainTessellatedHeightScale; else return mTerrainNonTessellatedHeightScale; }
 
@@ -182,7 +185,8 @@ namespace EveryRay_Core
 
 		ER_RHI_GPUConstantBuffer<TerrainCBufferData::TerrainShadowCB> mTerrainShadowBuffers[NUM_SHADOW_CASCADES];
 		ER_RHI_GPUConstantBuffer<TerrainCBufferData::TerrainCB> mTerrainConstantBuffer;
-		ER_RHI_GPUConstantBuffer<TerrainCBufferData::PlaceOnTerrainData> mPlaceOnTerrainConstantBuffer;
+		ER_RHI_GPUConstantBuffer<TerrainCBufferData::PlaceOnTerrainGlobalData> mPlaceOnTerrainGlobalConstantBuffer;
+		ER_RHI_GPUConstantBuffer<TerrainCBufferData::PlaceOnTerrainPropData> mPlaceOnTerrainPropConstantBuffer;
 
 		ER_RHI_InputLayout* mInputLayout = nullptr;
 

@@ -84,6 +84,9 @@ namespace EveryRay_Core
 		bool IsEnabled() { return mEnabled; }
 		bool AreGlobalProbesReady() { return mGlobalDiffuseProbeReady && mGlobalSpecularProbeReady; }
 
+		void SetDiffuseProbePosition(int index, const XMFLOAT3& pos) { mDiffuseProbes[index].SetPosition(pos); }
+		void SetSpecularProbePosition(int index, const XMFLOAT3& pos) { mSpecularProbes[index].SetPosition(pos); }
+
 		bool mDebugDiscardCulledProbes = false;//used in DebugLightProbeMaterial
 	private:
 		void SetupGlobalDiffuseProbe(ER_Core& game, ER_Camera& camera, ER_Scene* scene, ER_DirectionalLight* light, ER_ShadowMapper* shadowMapper);
@@ -93,7 +96,8 @@ namespace EveryRay_Core
 		void AddProbeToCells(ER_LightProbe& aProbe, ER_ProbeType aType, const XMFLOAT3& minBounds, const XMFLOAT3& maxBounds);
 		bool IsProbeInCell(ER_LightProbe& aProbe, ER_LightProbeCell& aCell, ER_AABB& aCellBounds);
 		void UpdateProbesByType(ER_Core& game, ER_ProbeType aType);
-		void PlaceProbesOnTerrain(ER_Core& game, ER_RHI_GPUBuffer* outputBuffer, ER_RHI_GPUBuffer* inputBuffer, XMFLOAT4* positions, int positionsCount, float customDampDelta = FLT_MAX);
+		void PlaceProbesOnTerrain(ER_Core& game, ER_ProbeType aType, ER_RHI_GPUBuffer* outputBuffer, ER_RHI_GPUBuffer* inputBuffer, 
+			XMFLOAT4* positions, int positionsCount, float customDampDelta = FLT_MAX);
 
 		ER_QuadRenderer* mQuadRenderer = nullptr;
 		ER_Camera& mMainCamera;
@@ -111,6 +115,7 @@ namespace EveryRay_Core
 		std::string mDiffuseDebugLightProbePassPSOName = "ER_RHI_GPUPipelineStateObject: Light Probes Manager - Diffuse Debug Probe Pass";
 		ER_RHI_GPUBuffer* mDiffuseProbesCellsIndicesGPUBuffer = nullptr;
 		ER_RHI_GPUBuffer* mDiffuseProbesPositionsGPUBuffer = nullptr;
+		XMFLOAT4* mDiffuseProbesPositionsTempCPUBuffer = nullptr;
 		ER_RHI_GPUBuffer* mDiffuseInputPositionsOnTerrainBuffer = nullptr;
 		ER_RHI_GPUBuffer* mDiffuseOutputPositionsOnTerrainBuffer = nullptr;
 		ER_RHI_GPUBuffer* mDiffuseProbesSphericalHarmonicsGPUBuffer = nullptr;
@@ -140,6 +145,7 @@ namespace EveryRay_Core
 		ER_RHI_GPUBuffer* mSpecularProbesTexArrayIndicesGPUBuffer = nullptr;
 		ER_RHI_GPUBuffer* mSpecularProbesCellsIndicesGPUBuffer = nullptr;
 		ER_RHI_GPUBuffer* mSpecularProbesPositionsGPUBuffer = nullptr;
+		XMFLOAT4* mSpecularProbesPositionsTempCPUBuffer = nullptr;
 		ER_RHI_GPUBuffer* mSpecularInputPositionsOnTerrainBuffer = nullptr;
 		ER_RHI_GPUBuffer* mSpecularOutputPositionsOnTerrainBuffer = nullptr;
 		ER_RHI_GPUTexture* mTempSpecularCubemapFacesRT = nullptr;
