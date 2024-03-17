@@ -85,6 +85,8 @@ using namespace DirectX;
 #define ER_GPU_BUFFER_ALIGNMENT 256
 #endif
 
+#define ER_PLATFORM_SUPPORTS_IMMEDIATE_CONTEXT ER_PLATFORM_WIN64_DX11
+
 #define NUM_SHADOW_CASCADES 3
 #define MAX_LOD 3
 #define MAX_MESH_COUNT 32 // should match with IndirectCulling.hlsli

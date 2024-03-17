@@ -73,7 +73,7 @@ namespace EveryRay_Core
 		ER_RHI_GPUBuffer* GetSpecularProbesPositionsBuffer() const { return mSpecularProbesPositionsGPUBuffer; }
 		float GetDistanceBetweenSpecularProbes() { return mDistanceBetweenSpecularProbes; }
 
-		ER_RHI_GPUTexture* GetIntegrationMap() { return mIntegrationMapTextureSRV; }
+		ER_RHI_GPUTexture* GetIntegrationMap() const { return mIntegrationMapTextureSRV; }
 		
 		XMFLOAT4 GetProbesCellsCount(ER_ProbeType aType);
 		const XMFLOAT3& GetSceneProbesVolumeMin() { return mSceneProbesMinBounds; }

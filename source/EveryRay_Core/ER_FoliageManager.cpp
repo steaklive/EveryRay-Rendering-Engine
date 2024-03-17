@@ -323,7 +323,7 @@ namespace EveryRay_Core
 				mOutputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, mCurrentPositions, mPatchesCount, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L /*legacy from DX11*/, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
 
 				terrain->PlaceOnTerrain(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mCurrentPositions, mPatchesCount, (TerrainSplatChannels)mTerrainSplatChannel, nullptr, 0, mPlacementHeightDelta);
-#ifndef ER_PLATFORM_WIN64_DX11
+#if !ER_PLATFORM_SUPPORTS_IMMEDIATE_CONTEXT
 				std::string eventName = "On-terrain placement callback - initialization of foliage: " + mName;
 				terrain->ReadbackPlacedPositionsOnInitEvent->AddListener(eventName, [&](ER_Terrain* aTerrain)
 					{ 
@@ -582,7 +582,7 @@ namespace EveryRay_Core
 						mOutputPositionsOnTerrainBuffer->CreateGPUBufferResource(rhi, mCurrentPositions, mPatchesCount, sizeof(XMFLOAT4), false, ER_BIND_NONE, 0x10000L | 0x20000L /*legacy from DX11*/, ER_RESOURCE_MISC_BUFFER_STRUCTURED); //should be STAGING
 
 						terrain->PlaceOnTerrain(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mCurrentPositions, mPatchesCount, currentChannel, nullptr, 0, mPlacementHeightDelta);
-#ifndef ER_PLATFORM_WIN64_DX11
+#if !ER_PLATFORM_SUPPORTS_IMMEDIATE_CONTEXT
 						std::string eventName = "On-terrain placement callback - update of foliage: " + mName;
 						terrain->ReadbackPlacedPositionsOnUpdateEvent->AddListener(eventName, [&](ER_Terrain* aTerrain)
 							{

@@ -900,7 +900,7 @@ namespace EveryRay_Core
 
 		ER_RHI_GPUBuffer* finalGPUBuffer = (aType == DIFFUSE_PROBE) ? mDiffuseProbesPositionsGPUBuffer : mSpecularProbesPositionsGPUBuffer;
 
-#ifndef ER_PLATFORM_WIN64_DX11
+#if !ER_PLATFORM_SUPPORTS_IMMEDIATE_CONTEXT
 		const std::string probeTypeName = (aType == DIFFUSE_PROBE) ? "diffuse" : "specular";
 		const std::string eventName = "On-terrain placement callback - placement of probes: " + probeTypeName;
 		terrain->ReadbackPlacedPositionsOnInitEvent->AddListener(eventName, 

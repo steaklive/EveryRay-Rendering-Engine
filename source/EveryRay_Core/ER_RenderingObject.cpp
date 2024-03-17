@@ -802,7 +802,7 @@ namespace EveryRay_Core
 				terrain->PlaceOnTerrain(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, &currentPos, 1, (TerrainSplatChannels)mTerrainProceduralPlacementSplatChannel,
 					nullptr, 0, abs(mTerrainProceduralPlacementHeightDelta) < std::numeric_limits<float>::epsilon() ? FLT_MAX : mTerrainProceduralPlacementHeightDelta);
 			
-#ifndef ER_PLATFORM_WIN64_DX11
+#if !ER_PLATFORM_SUPPORTS_IMMEDIATE_CONTEXT
 				std::string eventName = "On-terrain placement callback - initialization of ER_RenderingObject: " + mName;
 				terrain->ReadbackPlacedPositionsOnInitEvent->AddListener(eventName, [&](ER_Terrain* aTerrain)
 					{
@@ -848,7 +848,7 @@ namespace EveryRay_Core
 				terrain->PlaceOnTerrain(mOutputPositionsOnTerrainBuffer, mInputPositionsOnTerrainBuffer, mTempInstancesPositions, mInstanceCount, (TerrainSplatChannels)mTerrainProceduralPlacementSplatChannel,
 					nullptr, 0, abs(mTerrainProceduralPlacementHeightDelta) < std::numeric_limits<float>::epsilon() ? FLT_MAX : mTerrainProceduralPlacementHeightDelta);
 				
-#ifndef ER_PLATFORM_WIN64_DX11
+#if !ER_PLATFORM_SUPPORTS_IMMEDIATE_CONTEXT
 				std::string eventName = "On-terrain placement callback - initialization of ER_RenderingObject: " + mName;
 				terrain->ReadbackPlacedPositionsOnInitEvent->AddListener(eventName, [&](ER_Terrain* aTerrain)
 					{

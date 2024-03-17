@@ -1119,11 +1119,10 @@ namespace EveryRay_Core
 
 		rhi->EndEventTag();
 
-#ifdef ER_PLATFORM_WIN64_DX11
+#if ER_PLATFORM_SUPPORTS_IMMEDIATE_CONTEXT
 		if (needsCPUReadback)
 			ReadbackPlacedPositions(outputBuffer, inputBuffer, positions, positionsCount); //direct readback in the dx11 immediate context
 #endif
-
 	}
 
 	// Read-back (GPU to CPU) new positions from placement compute pass
