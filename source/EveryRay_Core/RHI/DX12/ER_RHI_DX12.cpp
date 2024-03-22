@@ -304,6 +304,11 @@ namespace EveryRay_Core
 				mGenerateMips2DRS->InitDescriptorTable(this, 1, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 });
 				mGenerateMips2DRS->InitConstant(this, 2, 0, 3);
 				mGenerateMips2DRS->Finalize(this, "ER_RHI_GPURootSignature: Generate Mips 2D");
+
+				InitializePSO(mGenerateMips2DPSOName, true);
+				SetRootSignatureToPSO(mGenerateMips2DPSOName, mGenerateMips2DRS, true);
+				SetShader(mGenerateMips2DCS);
+				FinalizePSO(mGenerateMips2DPSOName, true);
 			}
 
 			mGenerateMips3DRS = CreateRootSignature(3, 1);
@@ -314,6 +319,11 @@ namespace EveryRay_Core
 				mGenerateMips3DRS->InitDescriptorTable(this, 1, { ER_RHI_DESCRIPTOR_RANGE_TYPE::ER_RHI_DESCRIPTOR_RANGE_TYPE_UAV }, { 0 }, { 1 });
 				mGenerateMips3DRS->InitConstant(this, 2, 0, 4);
 				mGenerateMips3DRS->Finalize(this, "ER_RHI_GPURootSignature: Generate Mips 3D");
+
+				InitializePSO(mGenerateMips3DPSOName, true);
+				SetRootSignatureToPSO(mGenerateMips3DPSOName, mGenerateMips3DRS, true);
+				SetShader(mGenerateMips3DCS);
+				FinalizePSO(mGenerateMips3DPSOName, true);
 			}
 		}
 
