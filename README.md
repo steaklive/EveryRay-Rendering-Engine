@@ -4,7 +4,7 @@
  <img src="screenshots/ER_banner_full_color_1k.png" width="750"/>
 </p>
 
-Ver 1.0 ([Change Log](https://github.com/steaklive/EveryRay-Rendering-Engine/blob/master/CHANGE_LOG.md)) 
+Ver 1.1.1 ([Change Log](https://github.com/steaklive/EveryRay-Rendering-Engine/blob/master/CHANGE_LOG.md)) 
 
 <p align="center">
  <img src="screenshots/EveryRay_testScene_simple.png"/>
