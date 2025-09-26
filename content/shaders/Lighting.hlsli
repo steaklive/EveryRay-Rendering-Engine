@@ -414,6 +414,11 @@ float3 GetBilinearInterpolationFromNeighbourProbes(float3 pos, float distanceBet
 // ==============================================================================================================
 int GetLightProbesCellIndex(float3 pos, float4 probesCellsCount, float4 sceneProbeBounds, float distanceBetweenProbes, float probeSkips = 1.0f)
 {
+    if(probesCellsCount.w <= 0)
+    {
+        return -1;
+    }
+
     const bool is2DGrid = sceneProbeBounds.w < 0.0;
     int finalIndex = -1;
     float3 index = (pos - sceneProbeBounds.xyz) / (distanceBetweenProbes * probeSkips);
