@@ -1134,6 +1134,10 @@ namespace EveryRay_Core {
 			}
 			else
 			{
+				mLightProbesConstantBuffer.Data.DiffuseProbesCellsCount = XMFLOAT4{ 0, 0, 0, 0 };
+				mLightProbesConstantBuffer.Data.SpecularProbesCellsCount = XMFLOAT4{ 0, 0, 0, 0 };
+				mLightProbesConstantBuffer.ApplyChanges(rhi);
+
 				if (rhi->IsRootConstantSupported())
 				{
 					rhi->SetConstantBuffers(ER_VERTEX, { mForwardLightingConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
@@ -1144,7 +1148,7 @@ namespace EveryRay_Core {
 					rhi->SetConstantBuffers(ER_VERTEX, { mForwardLightingConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 					rhi->SetConstantBuffers(ER_VERTEX, { aObj->GetObjectsFakeRootConstantBuffer().Buffer() }, 3 /* we used 0-2 slots already*/, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 				}
-				rhi->SetConstantBuffers(ER_PIXEL,  { mForwardLightingConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
+				rhi->SetConstantBuffers(ER_PIXEL,  { mForwardLightingConstantBuffer.Buffer(), aObj->GetObjectsConstantBuffer().Buffer(), mLightProbesConstantBuffer.Buffer() }, 0, mForwardLightingRS, FORWARD_LIGHTING_PASS_ROOT_DESCRIPTOR_TABLE_CBV_INDEX);
 			}
 
 			std::vector<ER_RHI_GPUResource*> resources(LIGHTING_SRV_INDEX_MAX_RESERVED_FOR_TEXTURES + 1);
