@@ -1,5 +1,9 @@
 # EveryRay - Change Log
 
+# 1.1.1
+Fixed:
+- on terrain light probes placement on DX12
+
 # 1.1
 Added:
 - support for terrain in light probes
