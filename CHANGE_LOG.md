@@ -1,5 +1,9 @@
 # EveryRay - Change Log
 
+# 1.1.2
+Fixed:
+- AMD crash in `ER_Illumination::PrepareResourcesForForwardLighting` with uninitialized `LightProbesCBuffer` (PR: https://github.com/steaklive/EveryRay-Rendering-Engine/pull/100)
+  
 # 1.1.1
 Fixed:
 - on terrain light probes placement on DX12
